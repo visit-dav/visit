@@ -3072,3 +3072,65 @@ CInsertRectilinearTransformInfoIntoDataset(avtDataRepresentation &data,
         rgrid->GetFieldData()->AddArray(xformarray);
     }
 }
+
+
+// ****************************************************************************
+//  Function:  CCalculateHistogram
+//
+//  Purpose:
+//      Calculates a histogram.
+//
+//  Arguments:
+//      data     The data to examine
+//      args     The CalculateHistogramArgs, typed as void *.
+//      
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2007
+//
+// ****************************************************************************
+
+void
+CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
+{
+    CalculateHistogramArgs *cha = (CalculateHistogramArgs *) args;
+
+    errOccurred = false;
+
+    if (!data.Valid())
+    {
+        errOccurred = true;
+        return; 
+    }
+
+    vtkDataSet *ds = data.GetDataVTK();
+    vtkDataArray *arr = ds->GetCellData()->GetArray(cha->variable.c_str());
+    if (arr == NULL)
+    {
+        arr = ds->GetPointData()->GetArray(cha->variable.c_str());
+    }
+    if (arr == NULL)
+    {
+        errOccurred = true;
+        return; 
+    }
+    if (arr->GetNumberOfComponents() != 1)
+    {
+        errOccurred = true;
+        return; 
+    }
+
+    int ntups = arr->GetNumberOfTuples();
+    int nbins = cha->numVals.size();
+    double min = cha->min;
+    double max = cha->max;
+    for (int i = 0 ; i < ntups ; i++)
+    {
+        double val = arr->GetTuple1(i);
+        int idx = (int)(nbins*((val-min)/(max-min)));
+        idx = (idx < 0 ? 0 : idx);
+        idx = (idx >= nbins ? nbins-1 : idx);
+        cha->numVals[idx]++;
+    }
+}
+

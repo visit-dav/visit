@@ -125,6 +125,9 @@ class     vtkDataArray;
 //    Kathleen Bonnell, Tue Jul 29 09:50:17 PDT 2008
 //    Added CGetNumberOfRealNodes.
 //
+//    Hank Childs, Fri May 21 11:22:21 CDT 2010
+//    Added CCalculateHistogram.
+//
 // ****************************************************************************
 
 //
@@ -136,6 +139,8 @@ PIPELINE_API void CGetDataExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CUpdateData(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CAddInputToAppendFilter(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CBreakVTKPipelineConnections(avtDataRepresentation &, 
+                                               void *, bool &);
+PIPELINE_API void CCalculateHistogram(avtDataRepresentation &, 
                                                void *, bool &);
 PIPELINE_API void CGetAllDatasets(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfZones(avtDataRepresentation &, void *, bool &);
@@ -232,6 +237,14 @@ typedef struct
     std::vector<int>          domains;
     std::vector<std::string>  labels;
 } GetAllDatasetsArgs;
+
+typedef struct
+{
+    double                         min;
+    double                         max;
+    std::string                    variable;
+    std::vector<VISIT_LONG_LONG>   numVals;
+} CalculateHistogramArgs;
 
 
 #endif
