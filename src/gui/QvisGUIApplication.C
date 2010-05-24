@@ -50,6 +50,7 @@
 #include <QMessageBox>
 #include <QPrintDialog>
 #include <QPrinter>
+#include <QPrinterInfo>
 #include <QProcess>
 #include <QSocketNotifier>
 #include <QStatusBar>
@@ -6345,11 +6346,15 @@ QvisGUIApplication::SaveWindow()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
-//   Guntehr H. Weber, Mon Oct 26 10:52:46 PDT 2009
+//   Gunther H. Weber, Mon Oct 26 10:52:46 PDT 2009
 //   Disable using native MacOS print dialog if VISIT_MAC_NO_CARBON is set
 //   since Snow Leopard is removing Carbon, which is used to create the dialog.
 //   This change makes compilation possible, but trying to print on Snow
 //   Snow Leopard will crash.
+//
+//   Brad Whitlock, Mon May 24 13:36:14 PDT 2010
+//   Set the QPrinter's printer name into the printer attributes if there was
+//   no valid printer name. Print after the dialog is dismissed on Mac too.
 //
 // ****************************************************************************
     
@@ -6499,7 +6504,7 @@ QvisGUIApplication::SetPrinterOptions()
         // print once the options are set.
         //
         if(okayToPrint)
-            GetViewerMethods()->PrintWindow();
+            PrintWindow();
     }
     else
     {
@@ -6508,17 +6513,31 @@ QvisGUIApplication::SetPrinterOptions()
         // If we've never set up the printer options, set them up now using
         // Qt's printer object and printer dialog.
         //
+        PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
         if(printer == 0)
         {
             int timeid = visitTimer->StartTimer();
+
+            // Create a new printer object.
             printer = new QPrinter;
-            printerObserver = new ObserverToCallback(
-                GetViewerState()->GetPrinterAttributes(),
+
+            // If the printer attributes have no printer name then set the
+            // printer object's name into the printer attributes.
+            p->SetCreator("VisIt");
+            if(p->GetPrinterName() == "")
+            {
+                p->SetPrinterName(printer->printerName().toStdString());
+                p->Notify();
+            }
+
+            // Create an observer for the printer attributes that will copy
+            // their values into the printer object when there are changes.
+            printerObserver = new ObserverToCallback(p,
                 UpdatePrinterAttributes, (void *)printer);
-            GetViewerState()->GetPrinterAttributes()->SetCreator(
-                GetViewerProxy()->GetLocalUserName());
-            PrinterAttributesToQPrinter(GetViewerState()->GetPrinterAttributes(),
-                printer);
+
+            // Store the printer attributes into the printer object.
+            PrinterAttributesToQPrinter(p, printer);
+
             visitTimer->StopTimer(timeid, "Setting up printer");
         }
 
@@ -6528,17 +6547,16 @@ QvisGUIApplication::SetPrinterOptions()
             //
             // Send all of the Qt printer options to the viewer
             //
-            PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
             QPrinterToPrinterAttributes(printer, p);
-            p->SetCreator(GetViewerProxy()->GetLocalUserName());
+            p->SetCreator("VisIt");
             printerObserver->SetUpdate(false);
             p->Notify();
-#ifdef WIN32
+#if defined(WIN32) || defined(Q_WS_MACX)
             //
-            // Tell the viewer to print the image because the Windows printer
-            // dialog has the word "Print" to click when you're done setting
-            // options. This says to me that Windows applications expect to
-            // print once the options are set.
+            // Tell the viewer to print the image because Windows & Mac printer
+            // dialogs have the word "Print" to click when you're done setting
+            // options. This says to me that applications expect to print once
+            // the options are set.
             //
             PrintWindow();
 #endif
@@ -6621,12 +6639,26 @@ QPrinterToPrinterAttributes(QPrinter *printer, PrinterAttributes *p)
 //   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Mon May 24 13:42:17 PDT 2010
+//   Only allow valid printer names.
+//
 // ****************************************************************************
 
 static void
 PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
 {
-    printer->setPrinterName(p->GetPrinterName().c_str());
+    // Only set the printer name if it is a valid name.
+    QString printerName(p->GetPrinterName().c_str());
+    QList<QPrinterInfo> availablePrinters(QPrinterInfo::availablePrinters());
+    for(int i = 0; i < availablePrinters.size(); ++i)
+    {
+        if(availablePrinters[i].printerName() == printerName)
+        {
+            printer->setPrinterName(printerName);
+            break;
+        }
+    }
+
     printer->setPrintProgram(p->GetPrintProgram().c_str());
     printer->setCreator(p->GetCreator().c_str());
     printer->setDocName(p->GetDocumentName().c_str());
