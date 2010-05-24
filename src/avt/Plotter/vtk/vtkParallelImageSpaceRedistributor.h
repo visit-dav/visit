@@ -79,6 +79,9 @@
 //    I added a SetCommunicator method so this library is not dependent on
 //    AVT.
 //
+//    Hank Childs, Sun May 23 16:12:11 CDT 2010
+//    Add argument to IncrementOutgoingCellTypes.
+//
 // ****************************************************************************
 
 class PLOTTER_API vtkParallelImageSpaceRedistributor :
@@ -119,7 +122,8 @@ class PLOTTER_API vtkParallelImageSpaceRedistributor :
     int              WhichProcessorsForCell(float *pts, vtkIdType npts,
                                      vtkIdType *cellPts, std::vector<int>&);
     void             IncrementOutgoingCellCounts(float *pts, vtkIdType npts,
-                                     vtkIdType *cellPts, std::vector<int>&);
+                                     vtkIdType *cellPts, std::vector<int>&, 
+                                     std::vector<int>&);
     float           *CreateTransformedPoints();
     vtkMatrix4x4    *CreateWorldToDisplayMatrix();
 };
