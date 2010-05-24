@@ -891,6 +891,10 @@
 #     Cyrus Harrison, Fri May  7 13:58:35 PDT 2010
 #     Added build & install of pyparsing module to the python build process.
 #
+#     Brad Whitlock, Mon May 24 15:30:40 PDT 2010
+#     I added more patching for VTK using Mac and Cocoa. This prevents a crash
+#     later in offscreen saves that have annotations.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -3697,8 +3701,10 @@ diff -rp a/Rendering/vtkImagingFactory.cxx VTK/Rendering/vtkImagingFactory.cxx
 *** a/Rendering/vtkImagingFactory.cxx
 --- VTK/Rendering/vtkImagingFactory.cxx
 *************** vtkObject* vtkImagingFactory::CreateInst
-*** 202,215 ****
---- 202,233 ----
+*** 200,233 ****
+--- 200,269 ----
+  #ifdef VTK_USE_CARBON
+    if (!strcmp("CarbonOpenGL",rl))
       {
       if(strcmp(vtkclassname, "vtkTextMapper") == 0)
         {
@@ -3731,6 +3737,42 @@ diff -rp a/Rendering/vtkImagingFactory.cxx VTK/Rendering/vtkImagingFactory.cxx
         return vtkOpenGLPolyDataMapper2D::New();
         }
       }
+  #endif
+  #ifdef VTK_USE_COCOA
+    if (!strcmp("CocoaOpenGL",rl))
+      {
+      if(strcmp(vtkclassname, "vtkTextMapper") == 0)
+        {
++ #if defined(VTK_USE_MANGLED_MESA)
++       if ( vtkImagingFactory::UseMesaClasses )
++         {
++         return vtkMesaFreeTypeTextMapper::New();
++         }
++ #endif
+        return vtkOpenGLFreeTypeTextMapper::New();
+        }
+      if(strcmp(vtkclassname, "vtkImageMapper") == 0)
+        {
++ #if defined(VTK_USE_MANGLED_MESA)
++       if ( vtkImagingFactory::UseMesaClasses )
++         {
++         return vtkMesaImageMapper::New();
++         }
++ #endif
+        return vtkOpenGLImageMapper::New();
+        }
+      if(strcmp(vtkclassname, "vtkPolyDataMapper2D") == 0)
+        {
++ #if defined(VTK_USE_MANGLED_MESA)
++       if ( vtkImagingFactory::UseMesaClasses )
++         {
++         return vtkMesaPolyDataMapper2D::New();
++         }
++ #endif
+        return vtkOpenGLPolyDataMapper2D::New();
+        }
+      }
+  #endif
 diff -rp a/Utilities/ftgl/CMakeLists.txt VTK/Utilities/ftgl/CMakeLists.txt
 *** a/Utilities/ftgl/CMakeLists.txt
 --- VTK/Utilities/ftgl/CMakeLists.txt
