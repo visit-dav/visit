@@ -175,7 +175,9 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%soverrideToroidalWinding = %d\n", prefix, atts->GetOverrideToroidalWinding());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shitRate = %g\n", prefix, atts->GetHitRate());
+    SNPRINTF(tmpStr, 1000, "%swindingPairConfidence = %g\n", prefix, atts->GetWindingPairConfidence());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%speriodicityConsistency = %g\n", prefix, atts->GetPeriodicityConsistency());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sadjustPlane = %d\n", prefix, atts->GetAdjustPlane());
     str += tmpStr;
@@ -824,7 +826,7 @@ PoincareAttributes_GetOverrideToroidalWinding(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetHitRate(PyObject *self, PyObject *args)
+PoincareAttributes_SetWindingPairConfidence(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
@@ -832,18 +834,42 @@ PoincareAttributes_SetHitRate(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the hitRate in the object.
-    obj->data->SetHitRate(dval);
+    // Set the windingPairConfidence in the object.
+    obj->data->SetWindingPairConfidence(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetHitRate(PyObject *self, PyObject *args)
+PoincareAttributes_GetWindingPairConfidence(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetHitRate());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetWindingPairConfidence());
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetPeriodicityConsistency(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the periodicityConsistency in the object.
+    obj->data->SetPeriodicityConsistency(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetPeriodicityConsistency(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPeriodicityConsistency());
     return retval;
 }
 
@@ -1673,8 +1699,10 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetMaxToroidalWinding", PoincareAttributes_GetMaxToroidalWinding, METH_VARARGS},
     {"SetOverrideToroidalWinding", PoincareAttributes_SetOverrideToroidalWinding, METH_VARARGS},
     {"GetOverrideToroidalWinding", PoincareAttributes_GetOverrideToroidalWinding, METH_VARARGS},
-    {"SetHitRate", PoincareAttributes_SetHitRate, METH_VARARGS},
-    {"GetHitRate", PoincareAttributes_GetHitRate, METH_VARARGS},
+    {"SetWindingPairConfidence", PoincareAttributes_SetWindingPairConfidence, METH_VARARGS},
+    {"GetWindingPairConfidence", PoincareAttributes_GetWindingPairConfidence, METH_VARARGS},
+    {"SetPeriodicityConsistency", PoincareAttributes_SetPeriodicityConsistency, METH_VARARGS},
+    {"GetPeriodicityConsistency", PoincareAttributes_GetPeriodicityConsistency, METH_VARARGS},
     {"SetAdjustPlane", PoincareAttributes_SetAdjustPlane, METH_VARARGS},
     {"GetAdjustPlane", PoincareAttributes_GetAdjustPlane, METH_VARARGS},
     {"SetOverlaps", PoincareAttributes_SetOverlaps, METH_VARARGS},
@@ -1799,8 +1827,10 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetMaxToroidalWinding(self, NULL);
     if(strcmp(name, "overrideToroidalWinding") == 0)
         return PoincareAttributes_GetOverrideToroidalWinding(self, NULL);
-    if(strcmp(name, "hitRate") == 0)
-        return PoincareAttributes_GetHitRate(self, NULL);
+    if(strcmp(name, "windingPairConfidence") == 0)
+        return PoincareAttributes_GetWindingPairConfidence(self, NULL);
+    if(strcmp(name, "periodicityConsistency") == 0)
+        return PoincareAttributes_GetPeriodicityConsistency(self, NULL);
     if(strcmp(name, "adjustPlane") == 0)
         return PoincareAttributes_GetAdjustPlane(self, NULL);
     if(strcmp(name, "overlaps") == 0)
@@ -1950,8 +1980,10 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetMaxToroidalWinding(self, tuple);
     else if(strcmp(name, "overrideToroidalWinding") == 0)
         obj = PoincareAttributes_SetOverrideToroidalWinding(self, tuple);
-    else if(strcmp(name, "hitRate") == 0)
-        obj = PoincareAttributes_SetHitRate(self, tuple);
+    else if(strcmp(name, "windingPairConfidence") == 0)
+        obj = PoincareAttributes_SetWindingPairConfidence(self, tuple);
+    else if(strcmp(name, "periodicityConsistency") == 0)
+        obj = PoincareAttributes_SetPeriodicityConsistency(self, tuple);
     else if(strcmp(name, "adjustPlane") == 0)
         obj = PoincareAttributes_SetAdjustPlane(self, tuple);
     else if(strcmp(name, "overlaps") == 0)

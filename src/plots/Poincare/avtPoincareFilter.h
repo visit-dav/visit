@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtPoincareFilter.h                              //
+//                          avtPoincareFilter.h                              //
 // ************************************************************************* //
 
 #ifndef AVT_Poincare_FILTER_H
@@ -89,7 +89,8 @@ class avtPoincareFilter : public avtStreamlineFilter
       maxToroidalWinding = value; };
     void SetOverrideToroidalWinding( unsigned int value) { override = value; }
 
-    void SetHitRate( double val ) { hitrate = val; }
+    void SetWindingPairConfidence( double val ) { windingPairConfidence = val; }
+    void SetPeriodicityConsistency( double val ) { periodicityConsistency = val; }
 
     void SetAdjustPlane( int val ) { adjust_plane = val; }
 
@@ -173,7 +174,8 @@ class avtPoincareFilter : public avtStreamlineFilter
     unsigned int maxToroidalWinding;
     unsigned int override;
 
-    double hitrate;
+    double windingPairConfidence;
+    double periodicityConsistency;
     int adjust_plane;
     unsigned int overlaps;
 

@@ -41,6 +41,8 @@
 #if !defined(StreamlineAnalyzerLib_h)
 #define StreamlineAnalyzerLib_h
 
+//#define STRAIGHTLINE_SKELETON 1
+
 //#include <Core/Geometry/Point.h>
 //#include <Core/Geometry/Vector.h>
 
@@ -90,13 +92,18 @@ public:
 
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
+
+  unsigned int toroidalPeriod;
+  unsigned int poloidalPeriod;
+
   unsigned int windingGroupOffset;
   unsigned int islands;
+
   float nnodes;
 
   float confidence;
   float ridgelineVariance;
-  unsigned int ridgelinePeriod;
+
 
   unsigned int nPuncturesNeeded;
 
@@ -150,17 +157,15 @@ public:
                                             double > > &windingSetList );
 
   unsigned int
-  periodicityStats( unsigned int base_period,
-                    vector< Point >& points,
+  periodicityStats( vector< Point >& points,
                     vector< pair< unsigned int, double > >& stats );
 
 
   unsigned int
-  periodicityChecks( unsigned int winding,
-                     unsigned int period,
-                     vector< Point >& points,
+  periodicityChecks( vector< Point >& points,
                      vector< pair< unsigned int, double > >& stats,
-                     bool intTest );
+                     double &consistency,
+                     bool useBest );
 
   double
   calculateSumOfSquares( vector< Point >& poloidalWinding_points,
@@ -170,7 +175,6 @@ public:
   bool
   rationalCheck( vector< Point >& points,
                  unsigned int toroidalWinding,
-                 unsigned int &island,
                  unsigned int &nnodes,
                  float delta=0.01);
 
@@ -185,7 +189,8 @@ public:
   fieldlineProperties( vector< Point > &ptList,
                        unsigned int override,
                        unsigned int maxToroidalWinding,
-                       float hitrate,
+                       double windingPairConfidence,
+                       double periodicityConsistency,
                        bool findIslandCenters );
 
   unsigned int
