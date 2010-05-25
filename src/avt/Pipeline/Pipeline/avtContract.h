@@ -100,6 +100,9 @@ typedef ref_ptr<avtContract> avtContract_p;
 //    Cyrus Harrison, Sat Feb 20 21:37:24 PST 2010
 //    Added Print() which calls 'operator<<' to get around visiblity issues.
 //
+//    Dave Pugmire, Tue May 25 10:15:35 EDT 2010
+//    Add domain single domain replication to all processors.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtContract
@@ -133,6 +136,10 @@ class PIPELINE_API avtContract
                                { return doingOnDemandStreaming; };
     void                SetOnDemandStreaming(bool b)
                                { doingOnDemandStreaming = b; };
+    bool                ReplicateSingleDomainOnAllProcessors()
+                               { return replicateSingleDomainOnAllProcessors; }
+    void                SetReplicateSingleDomainOnAllProcessors(bool b)
+                               { replicateSingleDomainOnAllProcessors = b; }    
 
     avtDataRequest_p    GetDataRequest(void)   { return data; };
     int                 GetPipelineIndex(void) { return pipelineIndex; };
@@ -151,6 +158,7 @@ class PIPELINE_API avtContract
     bool                useLoadBalancing;
     bool                haveCurvilinearMeshOptimizations;
     bool                haveRectilinearMeshOptimizations;
+    bool                replicateSingleDomainOnAllProcessors;
     int                 nFilters;
 
   private:

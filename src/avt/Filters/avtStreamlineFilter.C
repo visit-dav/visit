@@ -431,11 +431,11 @@ avtStreamlineFilter::GetDomain(const DomainType &domain,
                                double X, double Y, double Z)
 {
     if (DebugStream::Level5())
-        debug5<<"avtStreamlineFilter::GetDomain("<<domain<<" "<<X<<" "<<Y<<" "<<Z<<");"<<endl;
+        debug5<<"avtStreamlineFilter::GetDomain("<<domain<<" "<<X<<" "<<Y<<" "<<Z<<") = ";
     vtkDataSet *ds = NULL;
 
-    if (DebugStream::Level5())
-        debug5<<"OperatingOnDemand() = "<<OperatingOnDemand()<<endl;
+//    if (DebugStream::Level5())
+//        debug5<<"OperatingOnDemand() = "<<OperatingOnDemand()<<endl;
 
     if (OperatingOnDemand())
     {
@@ -480,7 +480,7 @@ avtStreamlineFilter::GetDomain(const DomainType &domain,
     }
     
     if (DebugStream::Level5())
-        debug5<<"GetDomain("<<domain<<") = "<<ds<<endl;
+        debug5<<ds<<endl;
 
     return ds;
 }
@@ -1228,6 +1228,11 @@ avtStreamlineFilter::Execute(void)
     SetMaxQueueLength(cacheQLen);
 
 #ifdef PARALLEL
+    /*
+    if (numDomains == 1)
+        method = STREAMLINE_STAGED_LOAD_ONDEMAND;
+    */
+    
     if (method == STREAMLINE_STAGED_LOAD_ONDEMAND)
         slAlgo = new avtSerialSLAlgorithm(this);
     else if (method == STREAMLINE_PARALLEL_STATIC_DOMAINS)
@@ -1417,6 +1422,7 @@ avtStreamlineFilter::Initialize()
         for (int i = 0; i < ds_list.domains.size(); i++)
             myDoms[ ds_list.domains[i] ] = rank;
         SumIntArrayAcrossAllProcessors(&myDoms[0],&domainToRank[0],numDomains);
+        debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<endl;
 #endif
         for (int i = 0; i < ds_list.domains.size(); i++)
         {
@@ -2944,6 +2950,7 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
         out_dr->AddSecondaryVariable(pathlineNextTimeVar.c_str());
         pathlineVar = in_dr->GetOriginalVariable();
     }
+    
     avtContract_p out_contract;
     if ( *out_dr )
         out_contract = new avtContract(in_contract, out_dr);
@@ -2952,6 +2959,16 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
 
     //out_contract->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
     out_contract->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+
+#ifdef PARALLEL
+    /*
+    if (numDomains == 1)
+    {
+        debug5<<"Replicate domains"<<endl;
+        out_contract->SetReplicateSingleDomainOnAllProcessors(true);
+    }
+    */
+#endif
 
     if (doPathlines)
     {
@@ -3024,4 +3041,24 @@ avtStreamlineFilter::GetTerminatedStreamlines(vector<avtStreamlineWrapper *> &sl
     sls.resize(0);
     if (slAlgo)
         slAlgo->GetTerminatedSLs(sls);
+}
+
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::DeleteStreamlines
+//
+//  Purpose:
+//      Delete streamlines
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Tue May 25 10:15:35 EDT 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::DeleteStreamlines(vector<int> &slIDs)
+{
+    slAlgo->DeleteStreamlines(slIDs);
 }

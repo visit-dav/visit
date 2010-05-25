@@ -59,6 +59,9 @@ static const char* bool2str(bool b) { return b ? "yes" : "no"; }
 //
 //  Modifications:
 //
+//    Dave Pugmire, Tue May 25 10:15:35 EDT 2010
+//    Add domain single domain replication to all processors.
+//
 // ****************************************************************************
 ostream& operator<<(ostream &os, const avtContract& c)
 {
@@ -66,6 +69,7 @@ ostream& operator<<(ostream &os, const avtContract& c)
        << "\tpipeline index: " << c.pipelineIndex << "\n"
        << "\tstreaming possible: " << bool2str(c.canDoStreaming) << "\n"
        << "\tstreaming: " << bool2str(c.doingOnDemandStreaming) << "\n"
+       << "\treplicateSingleDoms: " << bool2str(c.replicateSingleDomainOnAllProcessors) << "\n"
        << "\tload balancing: " << bool2str(c.useLoadBalancing) << "\n"
        << "\tmesh optimizations:" << "\n"
        << "\t\tcurvilinear: " << bool2str(c.haveCurvilinearMeshOptimizations)
@@ -104,6 +108,9 @@ ostream& operator<<(ostream &os, const avtContract& c)
 //    Hank Childs, Sun Mar  9 08:02:29 PST 2008
 //    Initialize doingOnDemandStreaming.
 //
+//    Dave Pugmire, Tue May 25 10:15:35 EDT 2010
+//    Add domain single domain replication to all processors.
+//
 // ****************************************************************************
 
 avtContract::avtContract(avtDataRequest_p d, int pi)
@@ -116,6 +123,7 @@ avtContract::avtContract(avtDataRequest_p d, int pi)
     haveCurvilinearMeshOptimizations = false;
     haveRectilinearMeshOptimizations = false;
     doingOnDemandStreaming           = false;
+    replicateSingleDomainOnAllProcessors = false;
 }
 
 
@@ -208,6 +216,9 @@ avtContract::~avtContract()
 //    Hank Childs, Sun Mar  9 08:02:29 PST 2008
 //    Added doingOnDemandStreaming.
 //
+//    Dave Pugmire, Tue May 25 10:15:35 EDT 2010
+//    Add domain single domain replication to all processors.
+//
 // ****************************************************************************
 
 avtContract &
@@ -221,6 +232,7 @@ avtContract::operator=(const avtContract &ps)
     haveCurvilinearMeshOptimizations = ps.haveCurvilinearMeshOptimizations;
     haveRectilinearMeshOptimizations = ps.haveRectilinearMeshOptimizations;
     doingOnDemandStreaming = ps.doingOnDemandStreaming;
+    replicateSingleDomainOnAllProcessors = ps.replicateSingleDomainOnAllProcessors;
 
     return *this;
 }
@@ -297,6 +309,8 @@ avtContract::DebugDump(avtWebpage *webpage)
                             YesOrNo(haveRectilinearMeshOptimizations));
     webpage->AddTableEntry2("Doing on demand streaming", 
                             YesOrNo(doingOnDemandStreaming));
+    webpage->AddTableEntry2("Replicating single domain on all processors",
+                            YesOrNo(replicateSingleDomainOnAllProcessors));
     sprintf(str, "%d", nFilters);
     webpage->AddTableEntry2("Number of known filters", str);
     webpage->EndTable();
