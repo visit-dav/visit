@@ -312,7 +312,6 @@ VISIT_3RDPARTY_VAR(VISIT_SILO_DIR      "Path containing the Silo library's inclu
 VISIT_3RDPARTY_DEP(VISIT_SILO_LIBDEP   "Silo library dependencies" SILO_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_VISUS_DIR     "Path containing the ViSUS library's include and lib" VISUS_DIR)
 VISIT_3RDPARTY_VAR(VISIT_XDMF_DIR      "Path containing the Xdmf library's include and lib" XDMF_DIR)
-
 #-----------------------------------------------------------------------------
 # Read the version
 #-----------------------------------------------------------------------------
@@ -542,7 +541,6 @@ INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckSymbolExists.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/FindX11.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
-#INCLUDE(${CMAKE_ROOT}/Modules/CheckPrototypeExists.cmake)
 
 IF(VISIT_PYTHON_SCRIPTING)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItPython.cmake)
@@ -1084,11 +1082,12 @@ ENDIF(UNIX AND NOT APPLE)
 # Windows-specific settings
 IF (WIN32)
   ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
-  IF ("${VISIT_MSVC_VERSION}" STREQUAL "MSVC80")
+  # we want GTE 1400
+  IF (MSVC_VERSION GREATER 1399)
       ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
       ADD_DEFINITIONS(-D_SCL_NO_DEPRECATE -D_SCL_SECURE_NO_DEPRECATE)
       ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
-  ENDIF ("${VISIT_MSVC_VERSION}" STREQUAL "MSVC80")
+  ENDIF (MSVC_VERSION GREATER 1399)
 
   # cmake automatically uses _DEBUG and MDd for Debug flags, but our
   # third-party libs are NOT debug versions, so we won't be able to
