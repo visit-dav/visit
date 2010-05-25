@@ -358,6 +358,37 @@ avtSLAlgorithm::GetTerminatedSLs(vector<avtStreamlineWrapper *> &v)
 }
 
 
+// ****************************************************************************
+//  Method: avtSLAlgorithm::DeleteStreamlines
+//
+//  Purpose:
+//      Delete streamlines.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Tue May 25 10:15:35 EDT 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtSLAlgorithm::DeleteStreamlines(std::vector<int> &slIDs)
+{
+    list<avtStreamlineWrapper *>::iterator s;
+    vector<int>::const_iterator i;
+
+    for (s=terminatedSLs.begin(); s != terminatedSLs.end(); ++s)
+    {
+        for (i=slIDs.begin(); i != slIDs.end(); i++)
+            if ((*s)->id == (*i))
+            {
+                terminatedSLs.erase(s);
+                delete *s;
+                break;
+            }
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CalculateTimingStatistics

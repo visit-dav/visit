@@ -217,6 +217,9 @@ class avtSLAlgorithm;
 //   Re-order define's for source type to match recent changes in the 
 //   streamline attributes.
 //
+//   Dave Pugmire, Tue May 25 10:15:35 EDT 2010
+//   Added DeleteStreamlines method.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : 
@@ -351,6 +354,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     void                      GetStreamlinesFromInitialSeeds(std::vector<avtStreamlineWrapper *> &sls);
     void                      AddSeedpoints(std::vector<avtVector> &pts,
                                             std::vector<std::vector<int> > &ids);
+    void                      DeleteStreamlines(std::vector<int> &slIDs);
     virtual void              CreateStreamlineOutput( 
                                                      vector<avtStreamlineWrapper *> &streamlines)
                                                     = 0;

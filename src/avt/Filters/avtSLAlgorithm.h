@@ -84,6 +84,9 @@
 //   Dave Pugmire, Tue Apr  6 08:24:44 EDT 2010
 //   Make sure the avtStreamlineFilter baseclass gets called.
 //
+//   Dave Pugmire, Tue May 25 10:15:35 EDT 2010
+//   Added DeleteStreamlines method.
+//
 // ****************************************************************************
 
 class avtSLAlgorithm
@@ -99,6 +102,7 @@ class avtSLAlgorithm
     virtual void              PostExecute();
     virtual void              GetTerminatedSLs(vector<avtStreamlineWrapper *> &v);
     virtual void              AddStreamlines(std::vector<avtStreamlineWrapper*> &sls) = 0;
+    virtual void              DeleteStreamlines(std::vector<int> &slIDs);
 
   protected:
     virtual void              RunAlgorithm() = 0;
