@@ -101,13 +101,16 @@
       </Field>
 
       <Field name="maxToroidalWinding" label="Max Toroidal Winding" type="int">
-        30
+        0
       </Field>
       <Field name="overrideToroidalWinding" label="Override Toroidal Winding" type="int">
         0
       </Field>
-      <Field name="hitRate" label="Hit Rate" type="double">
+      <Field name="windingPairConfidence" label="Winding Pair Confidence" type="double">
         0.900000
+      </Field>
+      <Field name="periodicityConsistency" label="Periodicity Consistency" type="double">
+        0.800000
       </Field>
       <Field name="adjustPlane" label="Adjust plane" type="int">
         -1

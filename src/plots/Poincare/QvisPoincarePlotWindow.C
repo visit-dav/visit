@@ -278,7 +278,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
       new QLabel(tr("Max Toroidal Winding"), secondTab);
     mainLayout->addWidget(maxToroidalWindingLabel, 0, 0);
     maxToroidalWinding = new QSpinBox(secondTab);
-    maxToroidalWinding->setMinimum(1);
+    maxToroidalWinding->setMinimum(0);
     maxToroidalWinding->setMaximum(1000);
     connect(maxToroidalWinding, SIGNAL(valueChanged(int)),
             this, SLOT(maxToroidalWindingChanged(int)));
@@ -294,12 +294,21 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(overrideToroidalWindingChanged(int)));
     mainLayout->addWidget(overrideToroidalWinding, 1, 1);
 
-    hitRateLabel = new QLabel(tr("Hit Rate"), secondTab);
-    mainLayout->addWidget(hitRateLabel, 2, 0);
-    hitRate = new QLineEdit(secondTab);
-    connect(hitRate, SIGNAL(returnPressed()),
-            this, SLOT(hitRateProcessText()));
-    mainLayout->addWidget(hitRate, 2, 1);
+    windingPairConfidenceLabel =
+      new QLabel(tr("Winding Pair Confidence"), secondTab);
+    mainLayout->addWidget(windingPairConfidenceLabel, 2, 0);
+    windingPairConfidence = new QLineEdit(secondTab);
+    connect(windingPairConfidence, SIGNAL(returnPressed()),
+            this, SLOT(windingPairConfidenceProcessText()));
+    mainLayout->addWidget(windingPairConfidence, 2, 1);
+
+    periodicityConsistencyLabel =
+      new QLabel(tr("Periodicity Consistency"), secondTab);
+    mainLayout->addWidget(periodicityConsistencyLabel, 3, 0);
+    periodicityConsistency = new QLineEdit(secondTab);
+    connect(periodicityConsistency, SIGNAL(returnPressed()),
+            this, SLOT(periodicityConsistencyProcessText()));
+    mainLayout->addWidget(periodicityConsistency, 3, 1);
 
     overlapsLabel = new QLabel(tr("Overlaps"), secondTab);
     mainLayout->addWidget(overlapsLabel, 4, 0, Qt::AlignTop);
@@ -783,8 +792,11 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             overrideToroidalWinding->setValue(atts->GetOverrideToroidalWinding());
             overrideToroidalWinding->blockSignals(false);
             break;
-          case PoincareAttributes::ID_hitRate:
-            hitRate->setText(DoubleToQString(atts->GetHitRate()));
+          case PoincareAttributes::ID_windingPairConfidence:
+            windingPairConfidence->setText(DoubleToQString(atts->GetWindingPairConfidence()));
+            break;
+          case PoincareAttributes::ID_periodicityConsistency:
+            periodicityConsistency->setText(DoubleToQString(atts->GetPeriodicityConsistency()));
             break;
           case PoincareAttributes::ID_adjustPlane:
             adjustPlane->blockSignals(true);
@@ -1061,17 +1073,31 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do hitRate
-    if(which_widget == PoincareAttributes::ID_hitRate || doAll)
+    // Do windingPairConfidence
+    if(which_widget == PoincareAttributes::ID_windingPairConfidence || doAll)
     {
         double val;
-        if(LineEditGetDouble(hitRate, val))
-            atts->SetHitRate(val);
+        if(LineEditGetDouble(windingPairConfidence, val))
+            atts->SetWindingPairConfidence(val);
         else
         {
-            ResettingError(tr("hitRate"),
-                DoubleToQString(atts->GetHitRate()));
-            atts->SetHitRate(atts->GetHitRate());
+            ResettingError(tr("windingPairConfidence"),
+                DoubleToQString(atts->GetWindingPairConfidence()));
+            atts->SetWindingPairConfidence(atts->GetWindingPairConfidence());
+        }
+    }
+
+    // Do periodicityConsistency
+    if(which_widget == PoincareAttributes::ID_periodicityConsistency || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(periodicityConsistency, val))
+            atts->SetPeriodicityConsistency(val);
+        else
+        {
+            ResettingError(tr("periodicityConsistency"),
+                DoubleToQString(atts->GetPeriodicityConsistency()));
+            atts->SetPeriodicityConsistency(atts->GetPeriodicityConsistency());
         }
     }
 
@@ -1460,9 +1486,17 @@ QvisPoincarePlotWindow::overrideToroidalWindingChanged(int val)
 
 
 void
-QvisPoincarePlotWindow::hitRateProcessText()
+QvisPoincarePlotWindow::windingPairConfidenceProcessText()
 {
-    GetCurrentValues(PoincareAttributes::ID_hitRate);
+    GetCurrentValues(PoincareAttributes::ID_windingPairConfidence);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::periodicityConsistencyProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_periodicityConsistency);
     Apply();
 }
 

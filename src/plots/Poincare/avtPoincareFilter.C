@@ -64,8 +64,6 @@
 
 #include <utility>
 
-//#define STRAIGHTLINE_SKELETON 1
-
 #ifdef STRAIGHTLINE_SKELETON
 #include "skelet.h"
 #endif
@@ -117,9 +115,10 @@ static const int DATA_Solid = 12;
 // ****************************************************************************
 
 avtPoincareFilter::avtPoincareFilter() :
-    maxToroidalWinding( 30 ),
+    maxToroidalWinding( 0 ),
     override( 0 ),
-    hitrate( 0.90 ),
+    windingPairConfidence( 0.90 ),
+    periodicityConsistency( 0.80 ),
     adjust_plane(-1),
     overlaps(1),
 
@@ -517,7 +516,8 @@ avtPoincareFilter::ClassifyStreamlines()
           FLlib.fieldlineProperties( streamlines[i].streamlinePts,
                                      override,
                                      maxToroidalWinding,
-                                     hitrate,
+                                     windingPairConfidence,
+                                     periodicityConsistency,
                                      showOPoints );
 
         poincareClassification[i] = fi;
@@ -564,7 +564,8 @@ avtPoincareFilter::ClassifyStreamlines()
                << "  islands = " << fi.islands
                << "  nodes = " << fi.nnodes
                << "  confidence = " << fi.confidence
-               << "  ridgelinePeriod = " << fi.ridgelinePeriod
+               << "  toroidalPeriod = " << fi.toroidalPeriod
+               << "  poloidalPeriod = " << fi.poloidalPeriod
                << "  complete " << (fi.analysisStatus == FieldlineInfo::COMPLETED ? "Yes " : "No ")
                << (streamlines[i].slSeg->terminated ? 0 : streamlines[i].slSeg->termination )
                << endl << endl;
@@ -672,12 +673,13 @@ avtPoincareFilter::CreatePoincareOutput()
         unsigned int toroidalWinding = poincareClassification[i].toroidalWinding;
         unsigned int poloidalWinding = poincareClassification[i].poloidalWinding;
         unsigned int islands         = poincareClassification[i].islands;
-        unsigned int windingGroupOffset            = poincareClassification[i].windingGroupOffset;
+        unsigned int windingGroupOffset = poincareClassification[i].windingGroupOffset;
         unsigned int nnodes          = (unsigned int) poincareClassification[i].nnodes;
         double confidence            = poincareClassification[i].confidence;
         bool   complete              = poincareClassification[i].analysisStatus == FieldlineInfo::COMPLETED;
 
-        unsigned int ridgelinePeriod = (unsigned int) poincareClassification[i].ridgelinePeriod;
+        unsigned int toroidalPeriod = poincareClassification[i].toroidalPeriod;
+        unsigned int poloidalPeriod = poincareClassification[i].poloidalPeriod;
         double ridgelineVariance     = poincareClassification[i].ridgelineVariance;
 
         vector< Point > OPoints      = poincareClassification[i].OPoints;
@@ -727,8 +729,9 @@ avtPoincareFilter::CreatePoincareOutput()
         
         puncturePts.resize( planes.size() );
 
-        std::vector < std::vector < Point > > tempPts;
-        tempPts.resize(toroidalWinding);
+        std::vector < Point > tempPts;
+
+//      std::vector< std::vector < Point > > islandPts;
         
         unsigned int startIndex = 0;
         
@@ -802,117 +805,55 @@ avtPoincareFilter::CreatePoincareOutput()
                         puncturePts[p][bin].push_back( point );
                         
                         bin = (bin + 1) % toroidalWinding;
+
+                        if( p == 0 && puncturePts[p][bin].size() > 1 )
+                        {
+                          int ic = puncturePts[p][bin].size()-2;
+
+                          double len = (puncturePts[p][bin][ic]-
+                                        puncturePts[p][bin][ic+1]).length();
+                  
+                          tempPts.push_back( Point( (float) tempPts.size()/50.0,
+                                                    0,
+                                                    len) );
+                        }
                     }
                 }
             }
 
-            if( p == 0 )
-            {
-              for( unsigned int i=0; i<puncturePts[0].size(); ++i )
-              {
-                for( unsigned int j=0; j<puncturePts[0][i].size()-1; ++j )
-                {
-                  double len = (puncturePts[0][i][j]-
-                                puncturePts[0][i][j+1]).length();
-                  
-                  tempPts[i].push_back( Point( (float) tempPts.size()/50.0,
-                                               0,
-                                               len) );
-                }
-              }
-            }
+//          if( p == 0 )
+//          {
+//            islandPts.resize( toroidalWinding );
+
+//            for( unsigned int i=0; i<toroidalWinding; ++i )
+//            {
+//              for( unsigned int j=6; j<puncturePts[p][i].size(); ++j )
+//              {
+//                double len = (puncturePts[p][i][j-6]-
+//                              puncturePts[p][i][j]).length();
+
+//                islandPts[i].push_back( Point( (float) islandPts[i].size()/50.0,
+//                                               0,
+//                                               -1.0+(float)i*.1+len) );
+
+//              }
+
+//              vector< pair< unsigned int, double > > stats;
+
+//              FLlib.periodicityStats( islandPts[i], stats );
+//            }
+//          }
         }
         
 
-        unsigned int npts = 0;
-
-        // Set up the plane equation as the base analysis takes place in
-        // the X-Z plane.
-        Vector planeN( 0, 1, 0 );
+        // Get the ridgeline points. There is one point between each
+        // Z plane puncture.
+        Vector planeN( 0, 0, 1 );
         Vector planePt(0,0,0);
         
         // Set up the plane equation.
         double plane[4];
-        
-        // Get the centroid of the puncture points.
-        Vector centroid[4];
 
-        for( unsigned int cc=0; cc<4; ++cc)
-        {
-          if( cc == 0 )
-            planeN = Vector( 1, 0, 0 );
-          else if( cc == 1 )
-            planeN = Vector( -1, 0, 0 );
-          else if( cc == 2 )
-            planeN = Vector( 0, -1, 0 );
-          else if( cc == 3 )
-            planeN = Vector( 0, 1, 0 );
-
-          plane[0] = planeN.x;
-          plane[1] = planeN.y;
-          plane[2] = planeN.z;
-          plane[3] = Dot( planePt, planeN );
-          
-          currPt = streamlines[i].streamlinePts[0];
-          currDist = Dot(planeN, currPt) - plane[3];
-          
-          centroid[cc] = Vector(0,0,0);
-          npts = 0;
-
-          for( unsigned int j=1; j<streamlines[i].streamlinePts.size(); ++j)
-          {
-            lastPt = currPt;
-            currPt = streamlines[i].streamlinePts[j];
-            
-            // Poloidal plane distances.
-            lastDist = currDist;
-            currDist = Dot( planeN, currPt ) - plane[3];
-            
-            // First look at only points that intersect the poloidal plane.
-            if( SIGN(lastDist) != SIGN(currDist) ) 
-            {
-              Vector dir(currPt-lastPt);
-              
-              double dot = Dot(planeN, dir);
-              
-              // If the segment is in the same direction as the poloidal plane
-              // then find where it intersects the plane.
-              if( dot > 0.0 )
-              {
-                Vector w = (Vector) lastPt - planePt;
-                
-                double t = -Dot(planeN, w ) / dot;
-                
-                Point point = Point(lastPt + dir * t);
-                
-                centroid[cc] += (Vector) point;
-                ++npts;
-              }
-            }
-          }
-
-          centroid[cc] /= (float) npts;
-        }
-
-
-        Vector normalZ0 =
-          Cross(centroid[2] - centroid[0], centroid[3] - centroid[0]);
-        Vector normalZ1 =
-          Cross(centroid[3] - centroid[1], centroid[2] - centroid[1]);
-
-        normalZ0.normalize();
-        normalZ1.normalize();
-
-        Vector normalZ = (normalZ0 + normalZ1) / 2.0;
-
-        // Set up the Z plane equation. Because the centroid of the puncture
-        // plot is not on the z axis use it as the normal for the z plane.
-        planeN = normalZ;
-
-        // Get the ridgeline points. There is one point between each
-        // poloidal plane puncture.
-        
-        // Set up the plane equation.
         plane[0] = planeN.x;
         plane[1] = planeN.y;
         plane[2] = planeN.z;
@@ -920,10 +861,12 @@ avtPoincareFilter::CreatePoincareOutput()
             
         std::vector < Point > ridgelinePts;
 
+        // Start looking for the z max after the first Z plane
+        // intersetion is found.
         bool haveFirstIntersection = false;
         double maxZ = 0;
 
-        // So to get the winding groups consistant start examining the
+        // To get the winding groups consistant start examining the
         // streamline in the same place for each plane.
         currPt = streamlines[i].streamlinePts[0];
         currDist = planeN.dot( currPt ) - plane[3];
@@ -950,9 +893,11 @@ avtPoincareFilter::CreatePoincareOutput()
             if( dot > 0.0 )
             {
               if( haveFirstIntersection )
+              {
                 ridgelinePts.push_back( Point( (float) ridgelinePts.size()/50.0,
                                                0,
                                                maxZ) );
+              }
               else
                 haveFirstIntersection = true;
 
@@ -1215,7 +1160,8 @@ avtPoincareFilter::CreatePoincareOutput()
         
         //    topology.push_back(topo);
 
-        if( !showIslands || (showIslands && islands) ) 
+        if( !showIslands ||
+            (showIslands && type == FieldlineInfo::ISLAND_CHAIN) ) 
         {
             double color_value = 0;
             
@@ -1268,15 +1214,29 @@ avtPoincareFilter::CreatePoincareOutput()
             }
 
             if( showRidgelines )
-              loadPoints( dt, ridgelinePts, ridgelinePeriod,
+              loadPoints( dt, tempPts,
+                          toroidalPeriod,
+//                        tempPts.size(),
                           nnodes, islands, poloidalWinding,
                           dataValue, color_value, true );
 
             if( showRidgelines )
-              for( unsigned int i=0; i<toroidalWinding; ++i )
-                loadPoints( dt, tempPts[i], nnodes,
-                            nnodes, islands, poloidalWinding,
-                            dataValue, color_value, true );
+              loadPoints( dt, ridgelinePts,
+                          poloidalPeriod,
+//                        ridgelinePts.size(),
+                          nnodes, islands, poloidalWinding,
+                          dataValue, color_value, true );
+
+//             if( islands && showRidgelines )
+//          {
+//            for( unsigned int i=0; i<toroidalWinding; ++i )
+//            {
+//              loadPoints( dt, islandPts[i],
+//                             islandPts[i].size(),
+//                          nnodes, islands, poloidalWinding,
+//                          dataValue, color_value, true );
+//            }
+//          }
 
 //     double best_period = 0;
 //     double best_amp = 0;
@@ -1735,7 +1695,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
               vtkCellArray *cells = vtkCellArray::New();
               vtkFloatArray *scalars = vtkFloatArray::New();
 
-              unsigned int npts = ceil((nodes[p][j].size()-n)/ (float) nnodes);
+              unsigned int npts = ceil((nodes[p][j].size()-n) / (float) nnodes);
             
               cells->InsertNextCell(npts);
               scalars->Allocate    (npts);

@@ -32,6 +32,8 @@ PoincareEnginePluginInfo.C
 avtPoincarePlot.C
 avtPoincareFilter.C
 StreamlineAnalyzerLib.C
+#prim.C
+#skelet.C
 ${COMMON_SOURCES}
 )
 
@@ -118,5 +120,5 @@ IF(VISIT_PARALLEL)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
+

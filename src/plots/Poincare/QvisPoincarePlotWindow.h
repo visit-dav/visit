@@ -113,7 +113,8 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void absTolProcessText();
     void maxToroidalWindingChanged(int val);
     void overrideToroidalWindingChanged(int val);
-    void hitRateProcessText();
+    void windingPairConfidenceProcessText();
+    void periodicityConsistencyProcessText();
     void adjustPlaneChanged(int val);
     void overlapsChanged(int val);
     void meshTypeChanged(int val);
@@ -160,7 +161,8 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLineEdit *absTol;
     QSpinBox *maxToroidalWinding;
     QSpinBox *overrideToroidalWinding;
-    QLineEdit *hitRate;
+    QLineEdit *windingPairConfidence;
+    QLineEdit *periodicityConsistency;
     QWidget      *overlaps;
     QButtonGroup *overlapsButtonGroup;
     QWidget      *meshType;
@@ -202,7 +204,8 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *absTolLabel;
     QLabel *maxToroidalWindingLabel;
     QLabel *overrideToroidalWindingLabel;
-    QLabel *hitRateLabel;
+    QLabel *windingPairConfidenceLabel;
+    QLabel *periodicityConsistencyLabel;
     QLabel *adjustPlaneLabel;
     QLabel *overlapsLabel;
     QLabel *meshTypeLabel;

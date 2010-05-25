@@ -156,7 +156,8 @@ public:
     void SetAbsTol(double absTol_);
     void SetMaxToroidalWinding(int maxToroidalWinding_);
     void SetOverrideToroidalWinding(int overrideToroidalWinding_);
-    void SetHitRate(double hitRate_);
+    void SetWindingPairConfidence(double windingPairConfidence_);
+    void SetPeriodicityConsistency(double periodicityConsistency_);
     void SetAdjustPlane(int adjustPlane_);
     void SetOverlaps(OverlapType overlaps_);
     void SetMeshType(ShowMeshType meshType_);
@@ -204,7 +205,8 @@ public:
     double               GetAbsTol() const;
     int                  GetMaxToroidalWinding() const;
     int                  GetOverrideToroidalWinding() const;
-    double               GetHitRate() const;
+    double               GetWindingPairConfidence() const;
+    double               GetPeriodicityConsistency() const;
     int                  GetAdjustPlane() const;
     OverlapType          GetOverlaps() const;
     ShowMeshType         GetMeshType() const;
@@ -304,7 +306,8 @@ public:
         ID_absTol,
         ID_maxToroidalWinding,
         ID_overrideToroidalWinding,
-        ID_hitRate,
+        ID_windingPairConfidence,
+        ID_periodicityConsistency,
         ID_adjustPlane,
         ID_overlaps,
         ID_meshType,
@@ -351,7 +354,8 @@ private:
     double         absTol;
     int            maxToroidalWinding;
     int            overrideToroidalWinding;
-    double         hitRate;
+    double         windingPairConfidence;
+    double         periodicityConsistency;
     int            adjustPlane;
     int            overlaps;
     int            meshType;
@@ -386,6 +390,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "iiiDDDiidddiidiiiidddbbiasibibibbbbbbbbiiii"
+#define POINCAREATTRIBUTES_TMFS "iiiDDDiidddiiddiiiidddbbiasibibibbbbbbbbiiii"
 
 #endif
