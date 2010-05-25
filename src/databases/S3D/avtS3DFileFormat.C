@@ -413,7 +413,7 @@ avtS3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             scalar->hasDataExtents = false;
             scalar->treatAsASCII = false;
 
-            NcAtt *units = v->get_att("units");
+            NcAtt *units = v->get_att(NcToken("units"));
             if (units)
             {
                 long nv = units->num_vals();
@@ -769,7 +769,7 @@ avtS3DFileFormat::GetVar(int timeState, int domain, const char *varname)
     }
 
     // Get the scaling factor.
-    NcAtt *scaling = v->get_att("scale_factor");
+    NcAtt *scaling = v->get_att(NcToken("scale_factor"));
     float scaling_factor = 1;
     if (scaling)
     {
