@@ -1943,9 +1943,12 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 //   Dave Pugmire, Tue Mar 23 11:11:11 EDT 2010
 //   Moved zone-to-node centering to the streamline plot.
 //
+//   Dave Pugmire, Wed May 26 13:48:24 EDT 2010
+//   New return type from avtStreamline::Advance()
+//
 // ****************************************************************************
 
-avtIVPSolver::Result
+void
 avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg, 
                                      vtkDataSet *ds,
                                      double *extents,
@@ -2004,7 +2007,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 
     //slSeg->Debug();
     int numSteps = slSeg->sl->size();
-    avtIVPSolver::Result result;
+    avtStreamline::Result result;
 
     // When restarting a streamline one step is always taken. To avoid
     // this unneed step check to see if the termination criteria was
@@ -2012,7 +2015,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     if (DebugStream::Level4())
         debug4<<"IntegrateDomain: slSeg->terminated= "<<slSeg->terminated<<endl;
 
-    if( ! slSeg->terminated )
+    if (!slSeg->terminated)
     {
         if (intersectObj)
             slSeg->sl->SetIntersectionObject(intersectObj);
@@ -2026,22 +2029,25 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         }
         else
         {
-          if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR) {
-            avtIVPM3DC1Field field(velocity1);
-            result = slSeg->sl->Advance(&field,
-                                        slSeg->terminationType,
-                                        slSeg->termination);
-          } else {
-            avtIVPVTKField field(velocity1);
-            result = slSeg->sl->Advance(&field,
-                                        slSeg->terminationType,
-                                        slSeg->termination);
-          }
+            if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR)
+            {
+                avtIVPM3DC1Field field(velocity1);
+                result = slSeg->sl->Advance(&field,
+                                            slSeg->terminationType,
+                                            slSeg->termination);
+            }
+            else
+            {
+                avtIVPVTKField field(velocity1);
+                result = slSeg->sl->Advance(&field,
+                                            slSeg->terminationType,
+                                            slSeg->termination);
+            }
         }
         
         // Termination criteria was met.
-        slSeg->terminated = (result == avtIVPSolver::TERMINATE);
-
+        slSeg->terminated = (result == avtStreamline::TERMINATE);
+        
         if (DebugStream::Level5())
         {
           debug5<<"Advance:= "<<result<<endl;
@@ -2049,60 +2055,30 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         }
     }
     else
-        result = avtIVPSolver::TERMINATE;
+        result = avtStreamline::TERMINATE;
 
-    //slSeg->Debug();
-    if (result == avtIVPSolver::OUTSIDE_DOMAIN)
+    //Streamline exited this domain.
+    if (result == avtStreamline::EXIT_DOMAIN)
     {
-        if (DebugStream::Level5())
-          debug5 << numSteps << "  " <<  slSeg->sl->size() << endl;
-
-        numSteps = slSeg->sl->size() - numSteps;
-
-        slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
         DomainType oldDomain = slSeg->domain;
-
-        //Set the new domain.
         SetDomain(slSeg);
+        int domCnt = slSeg->seedPtDomainList.size();
         
-        // We are in the same domain.
-        if (slSeg->seedPtDomainList.size() > 1)
+        //If we land in none, or the same domain, we're done.
+        if (domCnt == 0 || (domCnt == 1 && slSeg->domain == oldDomain))
         {
-            if (DebugStream::Level5())
-              debug5 << slSeg->domain << "  " <<  oldDomain << "  " << numSteps << endl;
-              
-            // pathline terminates if timestep is out of bounds.
-            if (doPathlines && slSeg->domain.timeStep == -1)
-            {
-                slSeg->status = avtStreamlineWrapper::TERMINATE;
-            }
-
-            numSteps = slSeg->sl->size() - numSteps;
-            if (slSeg->domain == oldDomain && numSteps == 0)
-            {
-                slSeg->status = avtStreamlineWrapper::TERMINATE;
-            }
-            else
-            {
-                slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
-            }
+            slSeg->status = avtStreamlineWrapper::TERMINATE;
         }
-        // Not in any or just one domain.
         else
-        {
-          slSeg->status = avtStreamlineWrapper::TERMINATE;
-        }
+            slSeg->status = avtStreamlineWrapper::OUTOFBOUNDS;
     }
     else
-    {
         slSeg->status = avtStreamlineWrapper::TERMINATE;
-    }
     
     velocity1->Delete();
     if (DebugStream::Level4())
         debug4<<"::IntegrateDomain() result= "<<result<<endl;
     visitTimer->StopTimer(t0, "IntegrateDomain");
-    return result;
 }
 
 
@@ -2160,10 +2136,7 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg,
 
         double extents[6] = { 0.,0., 0.,0., 0.,0. };
         intervalTree->GetElementExtents(slSeg->domain.domain, extents);
-        avtIVPSolver::Result result =
-          IntegrateDomain(slSeg, ds, extents, maxSteps);
-        if (DebugStream::Level5())
-            debug5<<"ISL: result= "<<result<<endl;
+        IntegrateDomain(slSeg, ds, extents, maxSteps);
 
         //SL exited this domain.
         if (slSeg->status == avtStreamlineWrapper::OUTOFBOUNDS)

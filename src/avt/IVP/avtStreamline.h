@@ -123,11 +123,22 @@ class vtkObject;
 //   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
 //   Use a vector instead of a list for the integration steps.
 //
+//   Dave Pugmire, Wed May 26 13:48:24 EDT 2010
+//   New return enum.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
 {
   public:
+    enum Result
+    {
+        TERMINATE,
+        POINT_OUTSIDE_DOMAIN,
+        EXIT_DOMAIN,
+        ERROR,
+    };
+
     enum ScalarValueType {NONE=0, SPEED=1, VORTICITY=2, SCALAR_VARIABLE=4};
 
     typedef std::vector<avtIVPStep*>::const_iterator iterator;
@@ -136,9 +147,9 @@ class IVP_API avtStreamline
     avtStreamline();
     ~avtStreamline();
 
-    avtIVPSolver::Result Advance(const avtIVPField* field,
-                                 avtIVPSolver::TerminateType termType,
-                                 double end);
+    avtStreamline::Result Advance(const avtIVPField* field,
+                                  avtIVPSolver::TerminateType termType,
+                                  double end);
 
     void      SetScalarValueType(ScalarValueType t) {scalarValueType = t;}
     void      SetIntersectionObject(vtkObject *obj);
@@ -172,10 +183,10 @@ class IVP_API avtStreamline
     avtStreamline( const avtStreamline& );
     avtStreamline& operator=( const avtStreamline& );
     
-    avtIVPSolver::Result DoAdvance(avtIVPSolver* ivp,
-                                   const avtIVPField* field,
-                                   avtIVPSolver::TerminateType termType,
-                                   double end);
+    avtStreamline::Result DoAdvance(avtIVPSolver* ivp,
+                                    const avtIVPField* field,
+                                    avtIVPSolver::TerminateType termType,
+                                    double end);
 
     void      HandleGhostZones(bool forward, double *extents);
     void      HandleIntersections(avtIVPStep *step,
@@ -202,6 +213,7 @@ class IVP_API avtStreamline
 
     // Solver.
     avtIVPSolver*       _ivpSolver;
+    static const double minH;
 
   public:
     //Bookeeping
@@ -209,6 +221,21 @@ class IVP_API avtStreamline
 
     std::vector<std::string> scalars;
 };
+
+inline std::ostream& operator<<( std::ostream& out, const avtStreamline::Result &res )
+{
+    switch (res)
+    {
+      case avtStreamline::TERMINATE: out<<"TERMINATE"; break;
+      case avtStreamline::POINT_OUTSIDE_DOMAIN: out<<"POINTOUTSIDE_DOMAIN"; break;
+      case avtStreamline::EXIT_DOMAIN: out<<"EXIT_DOMAIN"; break;
+      case avtStreamline::ERROR: out<<"ERROR"; break;
+      default:
+        out<<"UNKNOWN_RESULT"; break;
+    }
+    return out;
+}
+
 
 #endif // AVT_STREAMLINE_H
 
