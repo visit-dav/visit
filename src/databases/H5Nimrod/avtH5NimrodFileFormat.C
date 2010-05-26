@@ -227,9 +227,11 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             H5G_GROUP,
             NULL);
     debug5<< "num_groups = "<<num_groups <<endl;
-    char name[MAXLENGTH], name1[MAXLENGTH], name2[MAXLENGTH];
+    char name[MAXLENGTH], name1[MAXLENGTH], name2[MAXLENGTH],
+      stepnumber[MAXLENGTH];
 
     nsteps = 0;
+
     for (int idx = 0; idx < num_groups; idx++)
     {
         int len_of_name = MAXLENGTH;
@@ -240,8 +242,35 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
         {
             sprintf (name1, "/%s", name);
             stepnames.push_back( name );
+
             nsteps++;
+
             group_id = H5Gopen (root_id, name1);
+
+            memset( stepnumber, 0, MAXLENGTH );
+
+            if (H5NIMROD_read_attrib (group_id, "Step number", &stepnumber) == H5NIMROD_ERR)
+            {
+              H5Gclose(group_id);
+              H5Fclose(file);
+              EXCEPTION1 (InvalidFilesException, filename);
+            }
+
+            cycles.push_back( atoi(stepnumber) );
+
+            debug5 << "step number: " << stepnumber << std::endl;
+
+            if (H5NIMROD_read_attrib (group_id, "time", &time) == H5NIMROD_ERR)
+            {
+              H5Gclose(group_id);
+              H5Fclose(file);
+              EXCEPTION1 (InvalidFilesException, filename);
+            }
+
+            times.push_back( time );
+
+            debug5 << "time: " << time << std::endl;
+
             nvectorvars = H5NIMROD_get_num_objects_matching_pattern (group_id,
                     name1,
                     H5G_GROUP,
@@ -373,8 +402,11 @@ avtH5NimrodFileFormat::PopulateDatabaseMetaData (avtDatabaseMetaData * md,
                 vectorvardims[idx]);
     }
 
+    md->SetCyclesAreAccurate(true);
+    md->SetCycles( cycles );
 
-
+    md->SetTimesAreAccurate(true);
+    md->SetTimes( times );
 }
 
 
@@ -602,3 +634,53 @@ avtH5NimrodFileFormat::GetVectorVar (int timestate, const char *varname)
 }
 
 
+// ****************************************************************************
+//  Method: avtH5NimrodFileFormat::GetCycles
+//
+//  Purpose:
+//      Returns the cycles
+//
+//  Arguments:
+//      c          the cycles
+//
+//  Programmer: allen
+//  Creation:   
+//
+// ****************************************************************************
+
+
+void avtH5NimrodFileFormat::GetCycles(std::vector<int> &c)
+{
+    c = cycles;
+
+    metadata->SetCyclesAreAccurate(true);
+    metadata->SetCycles( cycles );
+
+    metadata->SetTimesAreAccurate(true);
+    metadata->SetTimes( times );
+}
+
+// ****************************************************************************
+//  Method: avtH5NimrodFileFormat::GetTimes
+//
+//  Purpose:
+//      Returns the times
+//
+//  Arguments:
+//      t          the times
+//
+//  Programmer: allen
+//  Creation:   
+//
+// ****************************************************************************
+
+void avtH5NimrodFileFormat::GetTimes(std::vector<double> &t)
+{
+    t = times;
+
+    metadata->SetCyclesAreAccurate(true);
+    metadata->SetCycles( cycles );
+
+    metadata->SetTimesAreAccurate(true);
+    metadata->SetTimes( times );
+}

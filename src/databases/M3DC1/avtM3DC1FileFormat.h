@@ -82,8 +82,8 @@ class avtM3DC1FileFormat : public avtMTSDFileFormat
     // If you know the times and cycle numbers, overload this function.
     // Otherwise, VisIt will make up some reasonable ones for you.
     //
-    // virtual void        GetCycles(std::vector<int> &);
-    // virtual void        GetTimes(std::vector<double> &);
+    virtual void        GetCycles(std::vector<int> &);
+    virtual void        GetTimes(std::vector<double> &);
     //
 
     virtual int            GetNTimesteps(void);
@@ -120,7 +120,8 @@ class avtM3DC1FileFormat : public avtMTSDFileFormat
     avtCentering m_dataLocation;
     float m_perturbationScale;
 
-    std::vector<float> m_timeSteps;
+    std::vector<int>    m_cycles;
+    std::vector<double> m_times;
 
   public:
     std::vector<std::string> m_scalarVarNames;

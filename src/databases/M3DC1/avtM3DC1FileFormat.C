@@ -128,7 +128,7 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
 int
 avtM3DC1FileFormat::GetNTimesteps(void)
 {
-    return m_timeSteps.size();
+    return m_times.size();
 }
 
 
@@ -309,6 +309,12 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       amd->hideFromGUI = true;
       md->Add(amd);
     }
+
+    md->SetCyclesAreAccurate(true);
+    md->SetCycles( m_cycles );
+
+    md->SetTimesAreAccurate(true);
+    md->SetTimes( m_times );
 }
 
 
@@ -1570,7 +1576,8 @@ avtM3DC1FileFormat::LoadFile()
         double time;
         if ( ! ReadAttribute( groupID, "time", &time ) )
           EXCEPTION2( UnexpectedValueException, "time", "Not found or wrong type" );
-        m_timeSteps.push_back( time );
+        m_times.push_back( time );
+        m_cycles.push_back( t );
 
         // Read in the field information.
         hid_t fieldID = H5Gopen( groupID, "fields", H5P_DEFAULT);
@@ -1649,3 +1656,54 @@ avtM3DC1FileFormat::LoadFile()
     debug1 << "SUCCESS in opening M3D C1 file " << m_filename << endl;
 }
 
+
+// ****************************************************************************
+//  Method: avtM3DC1FileFormat::GetCycles
+//
+//  Purpose:
+//      Returns the cycles
+//
+//  Arguments:
+//      c          the cycles
+//
+//  Programmer: allen
+//  Creation:   
+//
+// ****************************************************************************
+
+
+void avtM3DC1FileFormat::GetCycles(std::vector<int> &cycles)
+{
+    cycles = m_cycles;
+
+    metadata->SetCyclesAreAccurate(true);
+    metadata->SetCycles( m_cycles );
+
+    metadata->SetTimesAreAccurate(true);
+    metadata->SetTimes( m_times );
+}
+
+// ****************************************************************************
+//  Method: avtM3DC1FileFormat::GetTimes
+//
+//  Purpose:
+//      Returns the times
+//
+//  Arguments:
+//      t          the times
+//
+//  Programmer: allen
+//  Creation:   
+//
+// ****************************************************************************
+
+void avtM3DC1FileFormat::GetTimes(std::vector<double> &times)
+{
+    times = m_times;
+
+    metadata->SetCyclesAreAccurate(true);
+    metadata->SetCycles( m_cycles );
+
+    metadata->SetTimesAreAccurate(true);
+    metadata->SetTimes( m_times );
+}

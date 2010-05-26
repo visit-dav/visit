@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 
 hid_t
 _normalize_h5_type (hid_t type)
@@ -34,6 +35,13 @@ _normalize_h5_type (hid_t type)
             {
                 return H5T_NATIVE_FLOAT;
             }
+            break;
+        case H5T_STRING:
+          if( H5Tis_variable_str( type ) )
+            return H5T_C_S1;
+          else
+            return type;
+            break;
         default:
             ;                                /* NOP */
     }
