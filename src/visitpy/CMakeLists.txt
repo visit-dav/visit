@@ -233,6 +233,9 @@ ELSE(VISIT_STATIC)
         visitpy
         ${PYTHON_LIBRARIES}
     )
+    IF(NOT APPLE)
+        SET_TARGET_PROPERTIES(visitmodule PROPERTIES INSTALL_RPATH "$ORIGIN")
+    ENDIF(NOT APPLE)
 
     # Create the front end visit module
     IF(NOT WIN32)
@@ -243,6 +246,9 @@ ELSE(VISIT_STATIC)
         TARGET_LINK_LIBRARIES(visitfrontend
             ${PYTHON_LIBRARIES}
         )
+        IF(NOT APPLE)
+           SET_TARGET_PROPERTIES(visitfrontend PROPERTIES INSTALL_RPATH "$ORIGIN")
+        ENDIF(NOT APPLE)
         VISIT_INSTALL_TARGETS(visitfrontend)
     ENDIF(NOT WIN32)
 

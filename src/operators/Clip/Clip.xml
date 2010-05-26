@@ -92,8 +92,5 @@
       <Include file="header" quoted="false">
         PlaneAttributes.h
       </Include>
-      <Include file="header" quoted="false">
-        avtVector.h
-      </Include>
     </Attribute>
   </Plugin>
