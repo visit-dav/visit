@@ -457,6 +457,9 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
 //   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
 //   Set the velStart/velEnd direction based on integration direction.
 //
+//   Dave Pugmire, Wed May 26 13:48:24 EDT 2010
+//   The velStart/velEnd direction was reversed.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -558,13 +561,13 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
 
         if (end < 0.0)
         {
-            ivpstep->velStart = (*field)(t,yCur);
-            ivpstep->velEnd = (*field)((t+h),yNew);
+            ivpstep->velStart = -(*field)(t,yCur);
+            ivpstep->velEnd = -(*field)((t+h),yNew);
         }
         else
         {
-            ivpstep->velStart = - (*field)(t,yCur);
-            ivpstep->velEnd = - (*field)((t+h),yNew);
+            ivpstep->velStart = (*field)(t,yCur);
+            ivpstep->velEnd = (*field)((t+h),yNew);
         }
 
         // Update the history to save the last 5 vector values.

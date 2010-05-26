@@ -329,7 +329,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     virtual bool              CheckOnDemandViability(void);
 
     void                      IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSteps=-1);
-    avtIVPSolver::Result      IntegrateDomain(avtStreamlineWrapper *slSeg, 
+    void                      IntegrateDomain(avtStreamlineWrapper *slSeg, 
                                               vtkDataSet *ds,
                                               double *extents,
                                               int maxSteps=-1);
