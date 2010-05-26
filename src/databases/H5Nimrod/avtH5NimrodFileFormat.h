@@ -87,8 +87,8 @@ class avtH5NimrodFileFormat : public avtMTSDFileFormat
     // If you know the times and cycle numbers, overload this function.
     // Otherwise, VisIt will make up some reasonable ones for you.
     //
-    // virtual void        GetCycles(std::vector<int> &);
-    // virtual void        GetTimes(std::vector<double> &);
+    virtual void        GetCycles(std::vector<int> &c);
+    virtual void        GetTimes(std::vector<double> &t);
     //
 
     virtual int            GetNTimesteps(void);
@@ -105,6 +105,8 @@ class avtH5NimrodFileFormat : public avtMTSDFileFormat
     std::string                      fname;
     int                              nsteps;
     std::vector<std::string >        stepnames;
+    std::vector<int>                 cycles;
+    std::vector<double>              times;
     int                              structured;
     int                              ndims;
     hsize_t                          grid_dims[3];
@@ -117,8 +119,7 @@ class avtH5NimrodFileFormat : public avtMTSDFileFormat
     std::vector<std::string >        vectorvarnames;
     std::vector<int>                 vectorvardims;
 
-
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+    virtual void   PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 };
 
 

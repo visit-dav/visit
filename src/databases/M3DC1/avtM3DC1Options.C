@@ -70,7 +70,7 @@ GetM3DC1ReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
 
-    rv->SetInt("Number of poloidal planes", 1);
+//    rv->SetInt("Number of poloidal planes", 1);
 
     rv->SetEnum("Mesh refinement", 1);
     vector<string> refinement;
