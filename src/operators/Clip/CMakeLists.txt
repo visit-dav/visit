@@ -90,10 +90,10 @@ SET(INSTALLTARGETS IClipOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(GClipOperator ${LIBG_SOURCES})
-    TARGET_LINK_LIBRARIES(GClipOperator visitcommon gui avtmath)
+    TARGET_LINK_LIBRARIES(GClipOperator visitcommon gui)
 
     ADD_LIBRARY(VClipOperator ${LIBV_SOURCES})
-    TARGET_LINK_LIBRARIES(VClipOperator visitcommon viewer avtmath)
+    TARGET_LINK_LIBRARIES(VClipOperator visitcommon viewer)
     SET(INSTALLTARGETS ${INSTALLTARGETS} GClipOperator VClipOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -103,7 +103,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SClipOperator ${LIBS_SOURCES})
-        TARGET_LINK_LIBRARIES(SClipOperator visitcommon visitpy avtmath ${PYTHON_LIBRARY})
+        TARGET_LINK_LIBRARIES(SClipOperator visitcommon visitpy ${PYTHON_LIBRARY})
         SET(INSTALLTARGETS ${INSTALLTARGETS} SClipOperator)
     ENDIF(VISIT_PYTHON_SCRIPTING)
 
@@ -114,12 +114,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EClipOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EClipOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser avtmath )
+TARGET_LINK_LIBRARIES(EClipOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EClipOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EClipOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EClipOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par avtmath)
+    TARGET_LINK_LIBRARIES(EClipOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EClipOperator_par)
 ENDIF(VISIT_PARALLEL)
 

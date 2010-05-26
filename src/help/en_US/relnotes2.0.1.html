@@ -19,6 +19,8 @@
 <li>If a non-compliant Nek file is encountered, VisIt is better at reporting to the user why the file is non-compliant.</li>
 <li>It no longer crashes the GUI when you delete the last variable in the Threshold operator's attributes window.</li>
 <li>Large, time-varying PlainText files can now be processed with a constant memory footprint.</li>
+<li>Symbols needed by "import visit" in a Python interpreter have been exposed so they are not hidden by default when building with visibility=hidden.</li>
+<li>The visit.so and visitmodule.so Python modules now are installed with $ORIGIN rpath so their dependent shared libraries can be found when Python imports the modules.</li>
 </ul>
 <p><b><font size="4">Enhancements in version 2.0.1</font></b></p>
 <ul>
