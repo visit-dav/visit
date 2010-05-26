@@ -209,21 +209,31 @@
 
 #define NO_ARGUMENTS() if(!PyArg_ParseTuple(args, "")) return NULL;
 
+#if defined(_WIN32)
+# define VISITMODULE_API   /* not affected */
+#else
+# if __GNUC__ >= 4
+#   define VISITMODULE_API __attribute__ ((visibility("default")))
+# else
+#   define VISITMODULE_API /* not affected */
+# endif
+#endif
+
 //
 // Make the initvisit function callable from C.
 //
 extern "C"
 {
-    void initvisit();
-    void initvisit2();
-    void cli_initvisit(int, bool, int, char **, int, char **);
-    void cli_runscript(const char *);
+    VISITMODULE_API void initvisit();
+    VISITMODULE_API void initvisit2();
+    VISITMODULE_API void cli_initvisit(int, bool, int, char **, int, char **);
+    VISITMODULE_API void cli_runscript(const char *);
 
     // Expose these functions so we can call them from a facade
     // VisIt module from "import visit" inside of Python.
-    PyObject *visit_Launch(PyObject *, PyObject *);
-    PyObject *visit_SetDebugLevel(PyObject *, PyObject *);
-    PyObject *visit_AddArgument(PyObject *, PyObject *);
+    VISITMODULE_API PyObject *visit_Launch(PyObject *, PyObject *);
+    VISITMODULE_API PyObject *visit_SetDebugLevel(PyObject *, PyObject *);
+    VISITMODULE_API PyObject *visit_AddArgument(PyObject *, PyObject *);
 }
 
 //

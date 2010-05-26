@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-400142
 * All rights reserved.
@@ -172,7 +172,7 @@ cleanupvisit(void)
 }
 
 /*****************************************************************************
- * Function: ReadLIBPATH
+ * Function: ReadVisItEnvironment
  *
  * Purpose: 
  *   Reads LIBPATH that would be set up by the VisIt script that
@@ -191,55 +191,75 @@ cleanupvisit(void)
  * Creation:   Wed Nov 22 15:17:56 PST 2006
  *
  * Modifications:
- *   
+ *   Brad Whitlock, Wed May 26 15:49:37 PST 2010
+ *   I changed the function so it also reads VISITPLUGINDIR.
+ *
  * ***************************************************************************/
 
-char *
-ReadLIBPATH(const char *visitProgram)
+int
+ReadVisItEnvironment(const char *visitProgram, char **LIBPATH,
+    char **VISITPLUGINDIR)
 {
     FILE *p = NULL;
-    char *LIBPATH = NULL;
     char line[2000];
     char *command =  NULL;
-    int vpdLen = 0;
-    const char *vpd = "LIBPATH=";
+    int lpLen = 0, vpdLen = 0, ldlpLen = 0;
+    const char *lp = "LIBPATH=";
+    const char *vpd = "VISITPLUGINDIR=";
+    lpLen = strlen(lp);
     vpdLen = strlen(vpd);
+
+    *LIBPATH = NULL;
+    *VISITPLUGINDIR = NULL;
 
     command = (char*)malloc(strlen(visitProgram) + 1 + strlen(" -env"));
     if(command == NULL)
-        return NULL;
+        return 0;
     sprintf(command, "%s -env", visitProgram);
     p = popen(command, "r");
     if(p == NULL)
     {
         free(command);
-        return NULL;
+        return 0;
     }
 
     while(!feof(p))
     {
         fgets(line, 2000, p);
-        if(strncmp(line, vpd, vpdLen) == 0)
+        if(strncmp(line, lp, lpLen) == 0)
         {
             char *value = NULL, *end = NULL;
             int len;
-            value = line + vpdLen;
+            value = line + lpLen;
             len = strlen(value);
             /* Trim off the newlines and colons at the end.*/
             end = value + len;
             while(*end == '\0' || *end == '\n' || *end == ':')
                 *end-- = '\0';
             /* Copy the string. */
-            LIBPATH=(char *)malloc(len + 1);
-            strcpy(LIBPATH, value);
-            break;
+            *LIBPATH=(char *)malloc(len + 1);
+            strcpy(*LIBPATH, value);
+        }
+        else if(strncmp(line, vpd, vpdLen) == 0)
+        {
+            char *value = NULL, *end = NULL;
+            int len;
+            value = line;
+            len = strlen(value);
+            /* Trim off the newlines and colons at the end.*/
+            end = value + len;
+            while(*end == '\0' || *end == '\n' || *end == ':')
+                *end-- = '\0';
+            /* Copy the string. */
+            *VISITPLUGINDIR=(char *)malloc(len + 1);
+            strcpy(*VISITPLUGINDIR, value);
         }
     }
 
     pclose(p);
     free(command);
 
-    return LIBPATH;
+    return 1;
 }
 
 /*****************************************************************************
@@ -262,13 +282,18 @@ ReadLIBPATH(const char *visitProgram)
  * Creation:   Wed Dec 13 10:45:58 PDT 2006
  *
  * Modifications:
- *   
+ *   Brad Whitlock, Wed May 26 15:50:34 PST 2010
+ *   Use provided arguments to get the right version of VisIt. Also set 
+ *   VISITPLUGINDIR.
+ *
  * ***************************************************************************/
 
 PyObject *
 visit_frontend_Launch(PyObject *self, PyObject *args)
 {
-    char *visitProgram = NULL, *LIBPATH = NULL;
+    char *visitProgram = NULL, *visitProgramWithArgs = NULL,
+         *LIBPATH = NULL, *VISITPLUGINDIR = NULL;
+    int i, slen = 0;
     PyCFunction func = NULL;
     static char *visitProgramDefault = "visit";
 #if defined(_WIN32)
@@ -300,10 +325,28 @@ visit_frontend_Launch(PyObject *self, PyObject *args)
     fprintf(stderr, "visitProgram = %s\n", visitProgram);
 #endif
 
+    /* Decorate visitProgram with any arguments we have added. */
+    slen = strlen(visitProgram) + 1;
+    for(i = 0; moduleState->arguments[i] != NULL; i++)
+        slen += strlen(moduleState->arguments[i]) + 1 + 1;
+    visitProgramWithArgs = (char *)malloc(slen);
+    strcpy(visitProgramWithArgs, visitProgram);
+    slen = strlen(visitProgramWithArgs);
+    for(i = 0; moduleState->arguments[i] != NULL; i++)
+    {
+        sprintf(&visitProgramWithArgs[slen], " %s", moduleState->arguments[i]);
+        slen += (strlen(moduleState->arguments[i]) + 1);
+    }
+#ifdef DEBUG_PRINT
+    fprintf(stderr, "visitProgramWithArgs = %s\n", visitProgramWithArgs);
+#endif
+
     /* Read the LIBPATH that would be used by the specified VisIt program
      * so we know where to look for visitmodule.so
      */
-    LIBPATH = ReadLIBPATH(visitProgram);
+    ReadVisItEnvironment(visitProgramWithArgs, &LIBPATH, &VISITPLUGINDIR);
+    free(visitProgramWithArgs);
+    visitProgramWithArgs = NULL;
     if(LIBPATH == 0)
     {
 #ifdef DEBUG_PRINT
@@ -315,6 +358,19 @@ visit_frontend_Launch(PyObject *self, PyObject *args)
     else
     {
         fprintf(stderr, "LIBPATH = %s\n", LIBPATH);
+    }
+#endif
+    if(VISITPLUGINDIR == 0)
+    {
+#ifdef DEBUG_PRINT
+        fprintf(stderr, "VISITPLUGINDIR = NULL\n");
+#endif
+        return NULL;
+    }
+#ifdef DEBUG_PRINT
+    else
+    {
+        fprintf(stderr, "VISITPLUGINDIR = %s\n", VISITPLUGINDIR);
     }
 #endif
 
@@ -339,6 +395,11 @@ visit_frontend_Launch(PyObject *self, PyObject *args)
     putenv(envcommand);
     free(VISITHOME);
     free(envcommand);
+#else
+    /* UNIX */
+
+    /* Set the plugin dir */
+    putenv(VISITPLUGINDIR);
 #endif
 
     /* Save off the name of the module file that we will have to load
