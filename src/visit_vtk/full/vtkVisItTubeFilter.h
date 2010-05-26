@@ -50,6 +50,7 @@
 #define __vtkVisItTubeFilter_h
 
 #include "vtkPolyDataAlgorithm.h"
+#include <visit_vtk_exports.h>
 
 #define VTK_VARY_RADIUS_OFF 0
 #define VTK_VARY_RADIUS_BY_SCALAR 1
@@ -72,7 +73,7 @@ class vtkPoints;
 //   Jeremy Meredith, Wed May 26 14:52:29 EDT 2010
 //   Allow cell scalars for tube radius.
 //
-class VTK_GRAPHICS_EXPORT vtkVisItTubeFilter : public vtkPolyDataAlgorithm
+class VISIT_VTK_API vtkVisItTubeFilter : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeRevisionMacro(vtkVisItTubeFilter,vtkPolyDataAlgorithm);
