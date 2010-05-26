@@ -157,6 +157,11 @@ avtPlainTextFileFormat::avtPlainTextFileFormat(const char *fn,
 //  Programmer: Jeremy Meredith
 //  Creation:   January 24, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Wed May 26 09:05:44 PDT 2010
+//    Fix memory bloat issue from STL.
+//
 // ****************************************************************************
 
 void
@@ -164,6 +169,9 @@ avtPlainTextFileFormat::FreeUpResources(void)
 {
     variableNames.clear();
     data.clear();
+    std::vector< std::vector<float> > tmp;
+    data.swap(tmp); // this makes capacity() drop to 0, which is better than
+                    // what clear() does.
     fileRead = false;
 }
 
