@@ -35,7 +35,9 @@
 # DAMAGE.
 #
 # Modifications:
-#   
+#   Brad Whitlock, Wed May 26 09:54:12 PDT 2010
+#   I added Jean Favre's life.c which simulates the "game of life".
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -187,6 +189,9 @@ ADD_SIMV2_SIMULATION(curve curve.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fcurve fcurve.f)
 
 ADD_SIMV2_SIMULATION(interleave interleave.c)
+
+ADD_SIMV2_SIMULATION(life life.c)
+ADD_PARALLEL_SIMV2_SIMULATION(life_par life.c)
 
 ADD_SIMV2_SIMULATION(material material.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fmaterial fmaterial.f)
