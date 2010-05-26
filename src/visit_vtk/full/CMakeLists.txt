@@ -87,6 +87,7 @@ vtkVisItSplitter.C
 vtkVisItStreamLine.C
 vtkVisItStructuredGrid.C
 vtkVisItStructuredGridNormals.C
+vtkVisItTubeFilter.C
 vtkVisItTIFFWriter.C
 vtkVisItTensorGlyph.C
 vtkVolumeFromVolume.C

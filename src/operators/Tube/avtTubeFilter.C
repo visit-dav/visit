@@ -47,7 +47,7 @@
 #include <vtkConnectedTubeFilter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include <vtkTubeFilter.h>
+#include <vtkVisItTubeFilter.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <ImproperUseException.h>
@@ -177,6 +177,10 @@ avtTubeFilter::Equivalent(const AttributeGroup *a)
 //    the VTK one is limited to nodal variables.  This should be
 //    cleaned up if we make this operator visible by default.
 //
+//    Jeremy Meredith, Wed May 26 14:54:35 EDT 2010
+//    We made a clone of the vtk tube filter to add support for
+//    cell-scalar based radius scaling.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -194,7 +198,7 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         EXCEPTION0(ImproperUseException);
     }
 
-    vtkTubeFilter          *vtktube = vtkTubeFilter::New();
+    vtkVisItTubeFilter     *vtktube = vtkVisItTubeFilter::New();
     vtkCleanPolyData       *cpd     = vtkCleanPolyData::New();
     vtkConnectedTubeFilter *tube    = vtkConnectedTubeFilter::New();
     vtkDataSet *output;

@@ -118,6 +118,8 @@ QvisTubeWindow::~QvisTubeWindow()
 // Creation:   omitted
 //
 // Modifications:
+//   Jeremy Meredith, Wed May 26 14:55:13 EDT 2010
+//   Modified the tube filter to support cell-scalar radius scaling.
 //   
 // ****************************************************************************
 
@@ -127,7 +129,7 @@ QvisTubeWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    scaleByVarFlag = new QCheckBox(tr("Scale width by variable?  (Nodal)"), central);
+    scaleByVarFlag = new QCheckBox(tr("Scale width by variable?"), central);
     connect(scaleByVarFlag, SIGNAL(toggled(bool)),
             this, SLOT(scaleByVarFlagChanged(bool)));
     mainLayout->addWidget(scaleByVarFlag, 0,0);
