@@ -55,7 +55,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkTriangle.h>
 
-using     std::string;
+using std::string;
 
 // ****************************************************************************
 //  Method: avtEMSTDFileFormat::Identify

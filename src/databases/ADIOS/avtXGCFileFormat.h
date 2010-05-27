@@ -52,7 +52,6 @@ class ADIOSFileObject;
 class avtFileFormatInterface;
 class vtkRectilinearGrid;
 
-
 // ****************************************************************************
 //  Class: avtXGCFileFormat
 //
