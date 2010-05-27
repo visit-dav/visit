@@ -35,10 +35,12 @@
 # DAMAGE.
 #
 # Modifications:
-#
 #   David M. Camp, Th Jan 14 11:50:00 PST 2010
 #   Added new function ADD_TARGET_DEFINITIONS to add defines to targets.
 #   This was needed for the plots to define ENGINE only for the engine build.
+#
+#   Brad Whitlock, Thu May 27 09:30:00 PDT 2010
+#   Wrap setting the compiler in an if-exists test.
 #
 #****************************************************************************/
 
@@ -51,9 +53,13 @@
 # Build shared libraries since we're building plugins.
 SET(BUILD_SHARED_LIBS 1)
 
-# Force the same compiler as VisIt
-SET(CMAKE_C_COMPILER @CMAKE_C_COMPILER@)
-SET(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@)
+# Force the same compiler as VisIt, if we can
+IF(EXISTS @CMAKE_C_COMPILER@)
+    SET(CMAKE_C_COMPILER @CMAKE_C_COMPILER@)
+ENDIF(EXISTS @CMAKE_C_COMPILER@)
+IF(EXISTS @CMAKE_CXX_COMPILER@)
+    SET(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@)
+ENDIF(EXISTS @CMAKE_CXX_COMPILER@)
 
 # Commonly used VisIt include directories
 SET(VISIT_COMMON_INCLUDES
