@@ -7968,6 +7968,127 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
 }
 
 // ****************************************************************************
+//  Method: avtSiloFileFormat::RemapFacelistForPolyhedronZones
+//
+//  Purpose:
+//      Correct the zoneno array in a facelist where the associated
+//      zonelist has polyhedral elements that will get split up into zoo
+//      elements.
+//
+//  Arguments:
+//      sfl       The Silo facelist object to correct.
+//      szl       The Silo zonelist object associated with the facelist.
+//
+//  Programmer:   Eric Brugger
+//  Creation:     May 27, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::RemapFacelistForPolyhedronZones(DBfacelist *sfl,
+    DBzonelist *szl)
+{
+    //
+    // Check if the facelist needs remapping and if not return.
+    //
+    bool needsRemapping = false;
+    for (int i = 0 ; i < szl->nshapes ; i++)
+    {
+        if (szl->shapetype[i] == DB_ZONETYPE_POLYHEDRON)
+        {
+            needsRemapping = true;
+            break;
+        }
+    }
+    if (!needsRemapping)
+        return;
+
+    //
+    // Form the remap array for the normal zones.
+    //
+    int nfaces = sfl->nfaces;
+    int *zoneno = sfl->zoneno;
+
+    int nzones = szl->nzones;
+    int *remap = new int[nzones];
+
+    int iremap = 0, inewzoneno = 0;
+    for (int i = 0 ; i < szl->nshapes ; i++)
+    {
+        const int shapecnt = szl->shapecnt[i];
+        const int shapesize = szl->shapesize[i];
+        const int shapetype = szl->shapetype[i];
+        if (shapetype != DB_ZONETYPE_POLYHEDRON)
+        {
+            for (int j = 0; j < shapecnt; j++)
+            {
+                remap[iremap++] = inewzoneno;
+                inewzoneno++;
+            }
+        }
+        else
+        {
+            iremap += shapecnt;
+        }
+    }
+
+    //
+    // Form the remap array for the polyhedral zones.
+    //
+    int izonelist = 0;
+    int *zonelist = szl->nodelist;
+    iremap = 0;
+    for (int i = 0 ; i < szl->nshapes ; i++)
+    {
+        const int shapecnt = szl->shapecnt[i];
+        const int shapesize = szl->shapesize[i];
+        const int shapetype = szl->shapetype[i];
+        if (shapetype == DB_ZONETYPE_POLYHEDRON)
+        {
+            for (int j = 0; j < shapecnt; j++)
+            {
+                remap[iremap++] = inewzoneno;
+
+                const int nfaces = zonelist[izonelist++];
+                for (int k = 0; k < nfaces; k++)
+                {
+                    const int nnodes = zonelist[izonelist];
+                    izonelist += nnodes + 1;
+                    if (nnodes < 5)
+                        inewzoneno++;
+                    else
+                        inewzoneno += nnodes - 4 + 1;
+                }
+            }
+        }
+        else
+        {
+            izonelist += shapecnt * shapesize;
+            iremap += shapecnt;
+        }
+    }
+
+    //
+    // Remap the zoneno array.
+    //
+    int *zoneno2 = new int[nfaces];
+
+    for (int i = 0; i < nfaces; i++)
+    {
+         zoneno2[i] = remap[zoneno[i]];
+    }
+    for (int i = 0; i < nfaces; i++)
+    {
+         zoneno[i] = zoneno2[i];
+    }
+
+    delete [] remap;
+    delete [] zoneno2;
+}
+
+// ****************************************************************************
 //  Method: avtSiloFileFormat::GetUnstructuredMesh
 //
 //  Purpose:
@@ -8067,6 +8188,12 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
 //    Mark C. Miller, Tue Jan 12 17:53:17 PST 2010
 //    Use CreateDataArray for global node numbers and handle long long case
 //    as well. Vary interface to HandleGlobalZoneIds for versions of Silo. 
+//
+//    Eric Brugger, Thu May 27 16:00:03 PDT 2010
+//    I added a call to a newly written method that remaps the zoneno
+//    array of a Silo facelist object when the zonelist associated with the
+//    facelist has polyhedral elements.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -8127,6 +8254,10 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     if (um->faces != NULL && um->ndims == 3)
     {
         DBfacelist *sfl = um->faces;
+        DBzonelist *szl = um->zones;
+
+        RemapFacelistForPolyhedronZones(sfl, szl);
+
         fl = new avtFacelist(sfl->nodelist, sfl->lnodelist,
                              sfl->nshapes, sfl->shapecnt, sfl->shapesize,
                              sfl->zoneno, sfl->origin);

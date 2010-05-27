@@ -308,6 +308,11 @@ avtFacelist::CalcFacelist(vtkUnstructuredGrid *ugrid, vtkPolyData *pdata)
 //  Programmer: Hank Childs
 //  Creation:   June 20, 2002
 //
+//  Modifications:
+//    Eric Brugger, Fri Apr 30 15:35:44 PDT 2010
+//    I enhanced the routine to handle all face types by mapping the remaining
+//    shapes to VTK_VERTEX and VTK_POLYGON.
+//
 // ****************************************************************************
 
 void
@@ -328,9 +333,12 @@ avtFacelist::CalcFacelistFromPoints(vtkPoints *pts, vtkPolyData *pdata)
     for (i = 0 ; i < nshapes ; i++)
     {
         int  numnodes = shapesize[i];
-        int  vtktype = -1;
+        int  vtktype;
         switch (numnodes)
         {
+          case 1:
+            vtktype = VTK_VERTEX;
+            break;
           case 2:
             vtktype = VTK_LINE;
             break;
@@ -341,12 +349,8 @@ avtFacelist::CalcFacelistFromPoints(vtkPoints *pts, vtkPolyData *pdata)
             vtktype = VTK_QUAD;
             break;
           default:
-            debug1 << "Cannot handle type " << numnodes << endl;
+            vtktype = VTK_POLYGON;
             break;
-        }
-        if (vtktype == -1)
-        {
-            continue;
         }
         for (j = 0 ; j < shapecnt[i] ; j++)
         {
