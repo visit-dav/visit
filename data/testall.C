@@ -2704,15 +2704,40 @@ build_poly3d(DBfile *dbfile, int size)
     d = ALLOC_N (float, nzones);
     p = ALLOC_N (float, nzones);
 
-    xcenter = 0.;
-    ycenter = 0.;
-    for (i = 0; i < nzones; i++) {
-        float avgx = (x[i] + x[i+1]) / 2.0;
-        float avgy = (y[i] + y[i+1]) / 2.0;
-        dist = sqrt((avgx - xcenter) * (avgx - xcenter) +
-                    (avgy - ycenter) * (avgy - ycenter));
-        d[i] = dist;
-        p[i] = 1. / (dist + .0001);
+    iz = 0;
+    for (i = 0; i < nx; i++)
+    {
+        for (j = 0; j < ny / 2; j++)
+        {
+            for (k = 0; k < nz / 2 - 1; k++)
+            {
+                d[iz] = 2.15 + (k * 0.3);
+                iz++;
+            }
+        }
+    }
+    for (i = 0; i < nx; i++)
+    {
+        for (j = 0; j < ny / 2; j++)
+        {
+            d[iz] = 3.35;
+            iz++;
+        }
+    }
+    for (i = 0; i < nx; i++)
+    {
+        for (j = 0; j < ny; j++)
+        {
+            for (k = 0; k < nz / 2; k++)
+            {
+                d[iz] = 3.65 + (k * 0.3);
+                iz++;
+            }
+        }
+    }
+    for (i = 0; i < nzones; i++)
+    {
+        p[i] = 1. / (d[i] + .0001);
     }
 
     //
