@@ -251,6 +251,9 @@ typedef struct _GroupInfo
 //    Added haveAmrGroupInfo, which is used to prevent collsion of amr
 //    levels info with connectivity group info.
 //
+//    Eric Brugger, Thu May 27 15:54:50 PDT 2010
+//    I added RemapFacelistForPolyhedronZones.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -396,6 +399,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataSet           *GetCurve(DBfile *, const char *);
     vtkDataSet           *GetUnstructuredMesh(DBfile *, const char *,
                                               int, const char *);
+
+    void                  RemapFacelistForPolyhedronZones(DBfacelist *,
+                                                          DBzonelist *);
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,7,1)
     void                  HandleGlobalZoneIds(const char *, int, void*, int, int);
