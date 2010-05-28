@@ -98,11 +98,11 @@ do
    echo "The VisIt executable $property"           >> $output
    echo ""                                         >> $output
    $cmd INSTALL_NOTES                              >> $output
+   $cmd VisIt-$version-i386-installer.dmg          >> $output
+   $cmd VisIt-$version-x86_64-installer.dmg        >> $output
    $cmd visit-install                              >> $output
    $cmd jvisit$version.tar.gz                      >> $output
    $cmd visit$version.exe                          >> $output
-   $cmd visit$version2.darwin-i386.tar.gz          >> $output
-   $cmd visit$version2.darwin-x86_64.tar.gz        >> $output
    $cmd visit$version2.ibm-aix-pwr.tar.gz          >> $output
    $cmd visit$version2.ibm-aix-pwr64.tar.gz        >> $output
    $cmd visit$version2.linux-altix.tar.gz          >> $output
