@@ -7950,6 +7950,10 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
 //  Creation:     May 27, 2010
 //
 //  Modifications:
+//      Eric Brugger, Fri May 28 12:11:37 PDT 2010
+//      I added a test to check if either the facelist or zonelist are NULL
+//      and return if so.  Either one can be NULL and it is still a valid
+//      Silo unstructured mesh.
 //
 // ****************************************************************************
 
@@ -7957,6 +7961,13 @@ void
 avtSiloFileFormat::RemapFacelistForPolyhedronZones(DBfacelist *sfl,
     DBzonelist *szl)
 {
+    //
+    // If either the facelist or zonelist is NULL, return.  Either one
+    // can be NULL and it i s a valid mesh.
+    //
+    if (sfl == 0 || szl == 0)
+        return;
+
     //
     // Check if the facelist needs remapping and if not return.
     //
