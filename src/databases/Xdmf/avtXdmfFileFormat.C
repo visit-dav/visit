@@ -450,18 +450,18 @@ std::vector<std::string> avtXdmfFileFormat::GetComponentNames(std::string attrib
 
     int tensorLength = 0;
     if (attributeType == XDMF_ATTRIBUTE_TYPE_TENSOR || attributeType == XDMF_ATTRIBUTE_TYPE_TENSOR6) {
-        tensorLength = (int) sqrt(numComponents);
+        tensorLength = (int) sqrt((float)numComponents);
     }
 
     for (int i = 0; i < numComponents; ++i) {
         std::stringstream name;
         if (attributeType == XDMF_ATTRIBUTE_TYPE_TENSOR || attributeType == XDMF_ATTRIBUTE_TYPE_TENSOR6) {
-            int padding = (int) log10(tensorLength) + 1;
+            int padding = (int) log10((float)tensorLength) + 1;
             name << attributeName << "-" << setw(padding) << (int) (i / tensorLength) + 1 << "-" << setw(padding) << (i
                     % tensorLength) + 1;
         }
         else {
-            name << attributeName << "-" << setw((int) log10(numComponents) + 1) << i + 1;
+            name << attributeName << "-" << setw((int) log10((float)numComponents) + 1) << i + 1;
         }
         componentNames.push_back(name.str());
     }
@@ -1164,7 +1164,7 @@ avtXdmfFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     // Read in the array
     if (attribute->GetAttributeType() == XDMF_ATTRIBUTE_TYPE_TENSOR6) {
         // Rearrange Components to Make Square Matrix
-        int tensorSize = (int)sqrt(this->GetNumberOfSymmetricalTensorComponents(numXdmfComponents));
+        int tensorSize = (int)sqrt((float)this->GetNumberOfSymmetricalTensorComponents(numXdmfComponents));
         if(tensorSize == 0)
         {
             EXCEPTION1(InvalidVariableException, varname);
