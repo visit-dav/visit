@@ -235,6 +235,10 @@
 #    Mark C. Miller, Wed May 12 09:58:44 PDT 2010
 #    Added logic to check for a previous instance of this script still
 #    running.
+#
+#    Eric Brugger, Thu May 27 17:04:35 PDT 2010
+#    Removed the partial skips for arbpoly.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -573,9 +577,6 @@ skipList_dueTo_parallelRendering="\
 
 skipList_dueTo_temporaryBugs="\
           davinci,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
-          davinci,serial:tests/meshtype/arbpoly.py:arbpoly_01,arbpoly_02,arbpoly_03 \
-          davinci,parallel:tests/meshtype/arbpoly.py:arbpoly_01,arbpoly_02,arbpoly_03 \
-          davinci,scalable,parallel,icet:tests/meshtype/arbpoly.py:arbpoly_01,arbpoly_02,arbpoly_03 \
           davinci,serial:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
           davinci,parallel:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
           davinci,scalable,parallel,icet:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
