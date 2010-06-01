@@ -1328,9 +1328,23 @@ avtStreamlineFilter::Initialize()
 {
     //MOVE TO ALGO. InitStatistics();
     dataSpatialDimension = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+    if (*dbp == NULL)
+      EXCEPTION1(InvalidFilesException, db.c_str());
+    avtDatabaseMetaData *md = dbp->GetMetaData(0);
+
+    if (doPathlines)
+    {
+      if (md->AreAllTimesAccurateAndValid() != true)
+      {
+        avtCallback::IssueWarning("Pathlines - The time data does not appear to be accurate and valid. Will continue.");
+      }
+    }
 
     // Get/Compute the interval tree.
     avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents();
+
     bool dontUseIntervalTree = false;
     if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition())
     {
@@ -1455,11 +1469,6 @@ avtStreamlineFilter::Initialize()
     numTimeSteps = 1;
     if (doPathlines)
     {
-        std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
-        ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
-        if (*dbp == NULL)
-            EXCEPTION1(InvalidFilesException, db.c_str());
-        avtDatabaseMetaData *md = dbp->GetMetaData(0);
         if (DebugStream::Level5())
             debug5<<"Times: [";
         for (int i = 0; i < md->GetTimes().size()-1; i++)
@@ -1467,11 +1476,15 @@ avtStreamlineFilter::Initialize()
             vector<double> intv(2);
             intv[0] = md->GetTimes()[i];
             intv[1] = md->GetTimes()[i+1];
-            if (intv[0] == intv[1])
+
+            if (intv[0] >= intv[1])
             {
+              avtCallback::IssueWarning("Pathlines - Found two adjacent steps that are not inceasing or equal in time. Setting the time difference to 1. This change will most likely affect the results.");
+
                 intv[0] = (double)i;
                 intv[1] = (double)i+1;
             }
+
             domainTimeIntervals.push_back(intv);
             if (DebugStream::Level5())
                 debug5<<" ("<<intv[0]<<", "<<intv[1]<<")";
@@ -1503,19 +1516,18 @@ avtStreamlineFilter::Initialize()
         }
 #endif
     }
-    else
+    else //if (!doPathlines)
     {
-        // Wee need to set seedTimeStep0 even for streamlines since it is used
+
+//      ARS - commented as the doPathlines check below as will always fail
+//      because this scope is the !doPathline.
+
+        // We need to set seedTimeStep0 even for streamlines since it is used
         // as time for the streamline seeds.
-        std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
-        ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
-        if (*dbp == NULL)
-            EXCEPTION1(InvalidFilesException, db.c_str());
-        avtDatabaseMetaData *md = dbp->GetMetaData(0);
-        if (doPathlines)
-            seedTime0 = md->GetTimes()[activeTimeStep];
-        else
-            seedTime0 = 0.;
+//         if (doPathlines)
+//             seedTime0 = md->GetTimes()[activeTimeStep];
+//         else
+        seedTime0 = 0.;
         seedTimeStep0 = activeTimeStep;
     }
 }
@@ -1996,11 +2008,15 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
                                                    false,false, false);
         t1 = md->GetTimes()[slSeg->domain.timeStep];
         t2 = md->GetTimes()[slSeg->domain.timeStep+1];
-        if (t1 == t2)
+
+        if (t1 >= t2)
         {
-            t1 = (double)slSeg->domain.timeStep;
-            t2 = (double)(slSeg->domain.timeStep+1);
+          avtCallback::IssueWarning("Pathlines - Found two adjacent steps that are not inceasing or are equal in time. Setting the time difference to 1. This change will most likely affect the results.");
+
+          t1 = (double)slSeg->domain.timeStep;
+          t2 = (double)(slSeg->domain.timeStep+1);
         }
+
         velocity1->SetCurrentTime(t1);
         velocity1->SetNextTime(t2);
     }
