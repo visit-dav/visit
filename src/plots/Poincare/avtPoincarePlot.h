@@ -49,6 +49,7 @@
 
 #include <PoincareAttributes.h>
 
+class     avtShiftCenteringFilter;
 class     avtLookupTable;
 class     avtVariableLegend;
 class     avtVariableMapper;
@@ -83,6 +84,7 @@ class avtPoincarePlot : public avtLineDataPlot
     avtVariableMapper          *varMapper;
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
+    avtShiftCenteringFilter    *shiftCenteringFilter;
     avtLookupTable             *avtLUT;
     avtPoincareFilter          *poincareFilter;
 
