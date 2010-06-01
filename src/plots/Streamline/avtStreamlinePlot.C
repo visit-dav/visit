@@ -50,6 +50,8 @@
 #include <avtVariableMapper.h>
 #include <avtLookupTable.h>
 
+#include <avtCallback.h>
+
 #include <StreamlineAttributes.h>
 
 // ****************************************************************************
@@ -221,6 +223,8 @@ avtStreamlinePlot::ApplyOperators(avtDataObject_p input)
     // streamline filter will not play with it.
     if(centering == AVT_ZONECENT)
     {
+        avtCallback::IssueWarning("The vector field being used to generate the streamline(s) is zone (cell) centered. Streamline requires nodal data, moving data from from zones to the nodes. This change in centering may have unintended consequences." );
+
         if(shiftCenteringFilter != NULL)
             delete shiftCenteringFilter;
         shiftCenteringFilter = new avtShiftCenteringFilter(AVT_NODECENT);
