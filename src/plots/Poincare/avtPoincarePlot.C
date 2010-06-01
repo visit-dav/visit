@@ -43,12 +43,15 @@
 #include <avtPoincarePlot.h>
 
 #include <avtPoincareFilter.h>
+#include <avtShiftCenteringFilter.h>
 #include <avtLookupTable.h>
 #include <avtVariableLegend.h>
 #include <avtVariableMapper.h>
 #include <avtPoincareFilter.h>
 #include <InvalidLimitsException.h>
 #include <vtkPlane.h>
+
+#include <avtCallback.h>
 
 // ****************************************************************************
 //  Method: avtPoincarePlot constructor
@@ -68,7 +71,9 @@ avtPoincarePlot::avtPoincarePlot()
 #ifdef ENGINE
     poincareFilter = new avtPoincareFilter;
 #endif
-    avtLUT = new avtLookupTable; 
+    shiftCenteringFilter = NULL;
+    avtLUT = new avtLookupTable;
+
     varMapper = new avtVariableMapper;
     varMapper->SetLookupTable(avtLUT->GetLookupTable());
 
@@ -180,10 +185,31 @@ avtDataObject_p
 avtPoincarePlot::ApplyOperators(avtDataObject_p input)
 {
 #ifdef ENGINE
+    avtDataObject_p dob = input; 
 
+    // Try to determine the centering.  If we have an expression, we won't
+    // be able to.  So be conservative and assume the worst.
+    avtCentering centering = AVT_ZONECENT;
+    if (input->GetInfo().GetAttributes().ValidVariable(varname))
+        centering = input->GetInfo().GetAttributes().GetCentering(varname);
+
+    // If the variable centering is zonal, convert it to nodal or the
+    // streamline filter will not play with it.
+    if(centering == AVT_ZONECENT)
+    {
+        avtCallback::IssueWarning("The vector field being used to generate the streamline(s) is zone (cell) centered. Streamline requires nodal data, moving data from from zones to the nodes. This change in centering may have unintended consequences." );
+
+        if(shiftCenteringFilter != NULL)
+            delete shiftCenteringFilter;
+        shiftCenteringFilter = new avtShiftCenteringFilter(AVT_NODECENT);
+        shiftCenteringFilter->SetInput(input);
+        dob = shiftCenteringFilter->GetOutput();
+    }
+
+
+    // Add the Poincare filter.
     poincareFilter->SetInput(input);
-
-    avtDataObject_p dob = poincareFilter->GetOutput();
+    dob = poincareFilter->GetOutput();
     return dob;
 #else
     return input;
