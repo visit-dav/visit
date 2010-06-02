@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jun 2 15:11:22 PST 2010
+#   Disable MakeMili on windows.
 #
 #****************************************************************************/
 
@@ -46,9 +48,9 @@ ELSE(VISIT_DBIO_ONLY)
     ADD_SUBDIRECTORY(convert)
     ADD_SUBDIRECTORY(embedviewer)
     ADD_SUBDIRECTORY(imagetools)
-    IF(${MILI_FOUND})
+    IF(${MILI_FOUND} AND NOT WIN32)
         ADD_SUBDIRECTORY(makemili)
-    ENDIF(${MILI_FOUND})
+    ENDIF(${MILI_FOUND} AND NOT WIN32)
     IF(NOT WIN32)
         ADD_SUBDIRECTORY(mcurvit)
     ENDIF(NOT WIN32)
