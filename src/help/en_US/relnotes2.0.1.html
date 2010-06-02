@@ -22,6 +22,7 @@
 <li>Symbols needed by "import visit" in a Python interpreter have been exposed so they are not hidden by default when building with visibility=hidden.</li>
 <li>The visit.so and visitmodule.so Python modules now are installed with $ORIGIN rpath so their dependent shared libraries can be found when Python imports the modules.</li>
 <li>A couple of bugs were corrected with the reading of unstructured meshes with polyhedral elements in the Silo database reader.</li>
+<li>The visit.so Python module used by "import visit" now contains additional initialization to prevent crashes when executing user-defined callback functions.</li>
 </ul>
 <p><b><font size="4">Enhancements in version 2.0.1</font></b></p>
 <ul>
