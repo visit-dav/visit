@@ -690,6 +690,10 @@ static PyMethodDef visit_methods[] = {
  *   Brad Whitlock, Web Feb 3 10:21:23 PDT 2010
  *   Always make the initvisit function visible.
  *
+ *   Brad Whitlock, Wed Jun  2 13:32:10 PDT 2010
+ *   Make a call to init threads since that creates the global interpreter
+ *   lock that we need later for callbacks to work.
+ *
  * ***************************************************************************/
 
 void 
@@ -704,6 +708,9 @@ initvisit(void)
         moduleState = (VisItModuleState*)malloc(sizeof(VisItModuleState));
         memset(moduleState, 0, sizeof(VisItModuleState));
     }
+
+    /* Make sure that threads are init'd */
+    PyEval_InitThreads();
 
     /* Add the VisIt module to Python. Note that we're passing just a
      * couple of methods and then the interface that we load will
