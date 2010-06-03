@@ -115,13 +115,16 @@ avtSLAlgorithm::~avtSLAlgorithm()
 //   Dave Pugmire, Mon Mar 23 18:33:10 EDT 2009
 //   Make changes for point decomposed domain databases.
 //
+//   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
+//   Use new name "GetCurrentLocation".
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtSLAlgorithm::GetDomain(avtStreamlineWrapper *slSeg)
 {
     avtVector pt;
-    slSeg->GetEndPoint(pt);
+    slSeg->GetCurrentLocation(pt);
     return GetDomain(slSeg->domain, pt.x, pt.y, pt.z);
 }
 

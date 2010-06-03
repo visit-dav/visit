@@ -113,6 +113,11 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
 //
+//  Modifications:
+//
+//   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
+//   Use new name "GetCurrentLocation".
+//
 // ****************************************************************************
 
 void
@@ -153,7 +158,7 @@ avtSerialSLAlgorithm::AddStreamlines(vector<avtStreamlineWrapper *> &sls)
     for ( int i = i0; i < i1; i++)
     {
         avtStreamlineWrapper *s = sls[i];
-        s->GetEndPoint(endPt);
+        s->GetCurrentLocation(endPt);
         if (PointInDomain(endPt, s->domain))
             activeSLs.push_back(s);
         else

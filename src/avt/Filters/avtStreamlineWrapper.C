@@ -245,37 +245,9 @@ avtStreamlineWrapper::Serialize(MemStream::Mode mode,
            << endl;
 }
 
-// ****************************************************************************
-//  Method: avtStreamlineWrapper::GetStartPoint
-//
-//  Purpose:
-//      Gets the starting point.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Generalized domain to include domain/time. Pathine cleanup.
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-// ****************************************************************************
-
-void
-avtStreamlineWrapper::GetStartPoint(avtVector &pt, double &t) const
-{
-    pt = sl->PtStart();
-    t = sl->TMin();
-
-    //debug5<<"avtStreamlineWrapper::GetStartPoint() = "<<pt<<" T= "<<t<<endl;
-}
-
 
 // ****************************************************************************
-//  Method: avtStreamlineWrapper::GetEndPoint
+//  Method: avtStreamlineWrapper::GetCurrentLocation
 //
 //  Purpose:
 //      Gets the ending point.
@@ -288,21 +260,24 @@ avtStreamlineWrapper::GetStartPoint(avtVector &pt, double &t) const
 //    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
 //    No longer have fwd/bwd solvers.
 //
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Generalized domain to include domain/time. Pathine cleanup.
+//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
+//    Generalized domain to include domain/time. Pathine cleanup.
 //
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//    Hank Childs, Thu Jun  3 09:49:43 PDT 2010
+//    Renamed to GetCurrentLocation.
+//    
 // ****************************************************************************
 
 void
-avtStreamlineWrapper::GetEndPoint(avtVector &pt, double &t) const
+avtStreamlineWrapper::GetCurrentLocation(avtVector &pt, double &t) const
 {
-    sl->PtEnd(pt);
-    t = sl->TMax();
+    sl->CurrentLocation(pt);
+    t = sl->CurrentTime();
 
-    //debug5<<"avtStreamlineWrapper::GetEndPoint() = "<<pt<<" T= "<<t<<endl;
+    //debug5<<"avtStreamlineWrapper::GetCurrentLocation() = "<<pt<<" T= "<<t<<endl;
 }
 
 
