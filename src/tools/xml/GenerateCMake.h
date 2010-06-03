@@ -765,12 +765,14 @@ class CMakeGeneratorPlugin : public Plugin
         }
 
         out << endl;
-        // Extract extra link directories from LDFLAGS if they have ${} or $()
+        // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         vector<QString> linkDirs;
         for (size_t i=0; i<ldflags.size(); i++)
         {
             if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))
                  linkDirs.push_back(ldflags[i]);
+            else if(ldflags[i].startsWith("-L"))
+                 linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
         }
         out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} " << ToString(linkDirs) << ")" << endl;
         out << endl;
