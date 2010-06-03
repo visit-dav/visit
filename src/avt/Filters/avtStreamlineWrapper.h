@@ -129,6 +129,9 @@ class AVTFILTERS_API DomainType
 //   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
 //   Remove the Dir member data.
 //
+//   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
+//   Renamed GetEndPt to GetCurrentLocation, remove GetStartPt.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineWrapper
@@ -153,10 +156,9 @@ class AVTFILTERS_API avtStreamlineWrapper
 
     void UpdateDomainCount(DomainType &dom);
     void ComputeStatistics();
-    void GetStartPoint(avtVector &pt, double &t) const;
-    void GetEndPoint(avtVector &pt, double &t) const;
-    void GetStartPoint(avtVector &pt) const {double t; GetStartPoint(pt,t); }
-    void GetEndPoint(avtVector &pt) const {double t; GetEndPoint(pt,t); }
+    void GetCurrentLocation(avtVector &pt, double &t) const;
+    void GetCurrentLocation(avtVector &pt) const 
+                                         {double t; GetCurrentLocation(pt,t); }
 
     void Debug();
     void Serialize(MemStream::Mode mode,

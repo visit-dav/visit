@@ -329,6 +329,10 @@ avtStreamlineFilter::ComputeRankList(const vector<int> &domList,
 //
 //   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //   Changed interface to DebugStream to obtain current debug level.
+//   
+//   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
+//   Use new name "GetCurrentLocation".
+//
 // ****************************************************************************
 
 void
@@ -336,7 +340,7 @@ avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
 {
     avtVector endPt;
     double t;
-    slSeg->GetEndPoint(endPt, t);
+    slSeg->GetCurrentLocation(endPt, t);
     double xyz[3] = {endPt.x, endPt.y, endPt.z};
 
     int timeStep = GetTimeStep(t);
@@ -2124,6 +2128,10 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 //
 //   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //   Changed interface to DebugStream to obtain current debug level.
+//   
+//   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
+//   Use new name "GetCurrentLocation".
+//
 // ****************************************************************************
 
 void
@@ -2135,7 +2143,7 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg,
     
     //Get the required domain.
     avtVector pt;
-    slSeg->GetEndPoint(pt);
+    slSeg->GetCurrentLocation(pt);
     vtkDataSet *ds = GetDomain(slSeg->domain, pt.x, pt.y, pt.z);
 
     if (DebugStream::Level4())
@@ -2578,7 +2586,8 @@ avtStreamlineFilter::CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
     {
         avtStreamlineWrapper *slSeg = streamlines[i];
         if (DebugStream::Level5())
-          debug5<<"Create seed: id= "<<slSeg->id<<" dom= "<<slSeg->domain<<" pt= "<<slSeg->sl->PtStart()<<endl;
+          //debug5<<"Create seed: id= "<<slSeg->id<<" dom= "<<slSeg->domain<<" pt= "<<slSeg->sl->PtStart()<<endl;
+          debug5<<"Create seed: id= "<<slSeg->id<<" dom= "<<slSeg->domain<<endl;
     }
 }
 

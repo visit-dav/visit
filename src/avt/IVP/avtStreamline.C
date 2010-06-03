@@ -60,9 +60,9 @@ const double avtStreamline::minH = 1e-9;
 //
 //  Modifications:
 //  
-//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//    Reworked the termination code. Added a type enum and value. Made num steps
-//    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
+//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
+//   Reworked the termination code. Added a type enum and value. Made num steps
+//   a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
 //
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
 //   Remove wantVorticity, intialize scalarValueType.
@@ -73,23 +73,24 @@ const double avtStreamline::minH = 1e-9;
 //   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
 //   Don't record intersection points, just count them.
 //
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
+//   Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
+//   Switch from avtVec to avtVector.
 //  
+//   Hank Childs, Thu Jun  3 10:58:32 PDT 2010
+//   Remove _t0 and _p0, which are no longer used.
+//
 // ****************************************************************************
 
 avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
                              const avtVector &p_start, int ID) :
     scalarValueType(NONE)
 {
-    _t0 = t_start;
-    _p0 = p_start;
     id = ID;
     intersectionsSet = false;
     numIntersections = 0;
     
     _ivpSolver = model->Clone();
-    _ivpSolver->Reset(_t0, _p0);
+    _ivpSolver->Reset(t_start, p_start);
 }
 
 
@@ -496,37 +497,44 @@ avtStreamline::HandleGhostZones(bool forward, double *extents)
 
 
 // ****************************************************************************
-//  Method: avtStreamline::TMin
+//  Method: avtStreamline::CurrentTime
 //
 //  Purpose:
-//      Returns the minimum t value.
+//      Returns the current t value.
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
-// ****************************************************************************
-
-double 
-avtStreamline::TMin() const
-{
-    return  _steps.empty() ? _t0 : (*(_steps.begin()))->tStart;
-}
-
-// ****************************************************************************
-//  Method: avtStreamline::TMax
-//
-//  Purpose:
-//      Returns the manimum t value.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
+//  Modifications:
+//     
+//     Hank Childs, Thu Jun  3 09:29:32 PDT 2010
+//     If we haven't taken any steps, then get the time from the solver.
+//     Renamed to CurrentTime.
+//     
 // ****************************************************************************
 
 double
-avtStreamline::TMax() const
+avtStreamline::CurrentTime() const
 {
-    return  _steps.empty() ? _t0 : (*(--_steps.end()))->tEnd;
+    return _ivpSolver->GetCurrentT();
+}
+
+
+// ****************************************************************************
+//  Method: avtStreamline::CurrentLocation
+//
+//  Purpose:
+//      Sets the current location of the integration.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 3, 2010
+//
+// ****************************************************************************
+
+void
+avtStreamline::CurrentLocation(avtVector &end)
+{
+    end = _ivpSolver->GetCurrentY();
 }
 
 
@@ -583,32 +591,6 @@ avtStreamline::size() const
     return _steps.size();
 }
 
-
-// ****************************************************************************
-//  Method: avtStreamline::PtEnd
-//
-//  Purpose:
-//      Sets the ending locations for the forward and backward integrations.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-//  Modifications:
-//
-//    Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//    Reworked the termination code. Added a type enum and value. Made num steps
-//    a termination criterion. Code cleanup: We no longer need fwd/bwd solvers.
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-// ****************************************************************************
-
-void
-avtStreamline::PtEnd(avtVector &end)
-{
-    end = _ivpSolver->GetCurrentY();
-}
 
 // ****************************************************************************
 //  Method: avtStreamline::SetIntersectionObject
@@ -767,6 +749,9 @@ avtStreamline::IntersectPlane(const avtVector &p0, const avtVector &p1)
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Option to serialize steps.
 //
+//   Hank Childs, Thu Jun  3 10:58:32 PDT 2010
+//   Remove _t0 and _p0, which are no longer used.
+//
 // ****************************************************************************
 
 void
@@ -776,8 +761,6 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
 {
     if (DebugStream::Level5())
         debug5<<"  avtStreamline::Serialize "<<(mode==MemStream::READ?"READ":"WRITE")<<" serSteps= "<<serializeSteps<<endl;
-    buff.io(mode, _p0);
-    buff.io(mode, _t0);
     buff.io(mode, scalarValueType);
     buff.io(mode, numIntersections);
 

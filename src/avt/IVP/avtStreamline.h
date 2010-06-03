@@ -126,6 +126,10 @@ class vtkObject;
 //   Dave Pugmire, Wed May 26 13:48:24 EDT 2010
 //   New return enum.
 //
+//   Hank Childs, Thu Jun  3 10:44:46 PDT 2010
+//   Remove TMin, PtStart, TStart, IsForward, IsBackward, and IsBothDir.
+//   Rename TMax to GetCurrentTime, PtEnd to GetCurrentLocation.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
@@ -154,17 +158,8 @@ class IVP_API avtStreamline
     void      SetScalarValueType(ScalarValueType t) {scalarValueType = t;}
     void      SetIntersectionObject(vtkObject *obj);
     
-    // Min/Max T of integrated streamlines.
-    double    TMin() const;
-    double    TMax() const;
-
-    avtVector PtStart() const { return _p0; }
-    void      PtEnd(avtVector &end);
-    double    TStart() const { return _t0; }
-
-    bool      IsForward() const { return true; }
-    bool      IsBackward() const { return false; }
-    bool      IsBothDir() const { return false; }
+    double    CurrentTime() const;
+    void      CurrentLocation(avtVector &end);
 
     // Integration steps.
     size_t    size()  const;
@@ -205,10 +200,6 @@ class IVP_API avtStreamline
     int numIntersections;
     double     intersectPlaneEq[4];
 
-    // Initial T and seed point.
-    double _t0;
-    avtVector _p0;
-    
     ScalarValueType    scalarValueType;
 
     // Solver.
