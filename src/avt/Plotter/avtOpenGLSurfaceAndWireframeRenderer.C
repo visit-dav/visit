@@ -3992,6 +3992,11 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
 //   Make sure that a display list has been created before it is called.
 //   Also re-organize code to be more intuitive for display lists.
 //
+//   Eric Brugger, Wed Jun  2 13:59:24 PDT 2010
+//   I moved the code that shifts edges toward the viewer in DrawEdges2
+//   up in the call sequence to the routine DrawEdges so that it would
+//   always be executed when DrawEdges is executed.
+//
 // ****************************************************************************
 
 void
@@ -4010,6 +4015,59 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
         edgesListId.push_back(0);
 
     VTKRen->GetRenderWindow()->MakeCurrent();
+
+    //
+    // If any edges in the list of edges are supposed to appear just
+    // on top of polygons on the surface, We need to bring edges just
+    // a little bit closer to the viewer. GL has some support for this
+    // kind of thing through the glPolygonOffset and GL_POLYGON_OFFSET_FILL
+    // settings. However, it is my understanding that that functionality
+    // is specific to the case in which the same graphics primitves are
+    // being drawn in two passes, once to produce polygon interiors and
+    // a second time to produce polygon edges. That isn't really what
+    // we're doing here. We are drawing an entirely different set of
+    // primitives, lines. Granted, those lines may have been computed
+    // as the edges of the polygons we've drawn previously. However, 
+    // from the point of view GL and its display lists, they are totally
+    // different lists of primitives. So, we can't rely on GL's
+    // glPolygonOffset stuff to help us here.
+    //
+    bool didZShift = false;
+    if (ShouldDrawSurface() && surfaceListId.size() > 0)
+    {
+        //
+        // examine the current projection matrix to compute a zShift 
+        // see documentation for glFrustum for what C, D and r are
+        //
+        float pmatrix[16];
+        glGetFloatv(GL_PROJECTION_MATRIX, pmatrix);
+        double C = pmatrix[10];
+        double D = pmatrix[14];
+        double r = (C-1.)/(C+1.);
+        double farPlane = D * (1.-r)/2.;
+        double nearPlane = farPlane / r;
+
+        // compute a shift based upon total range in Z
+        double zShift1 = (farPlane - nearPlane) / 1.0e+4;
+
+        // compute a shift based upon distance between eye and near clip
+        double zShift2 = nearPlane / 2.0;
+
+        // use whatever shift is smaller
+        double zShift = zShift1 < zShift2 ? zShift1 : zShift2;
+
+        //
+        // Modify the viewing transformation to shift things forward in Z
+        //
+        float current_matrix[16];
+        glPushMatrix();
+        glGetFloatv(GL_MODELVIEW_MATRIX, current_matrix);
+        glLoadIdentity();
+        glTranslatef(0.0, 0.0, zShift);
+        glMultMatrixf(current_matrix);
+
+        didZShift = true;
+    }
 
     if (immediateModeRendering) 
     {
@@ -4054,6 +4112,12 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 #endif
         glCallList(edgesListId[inputNum]);
     }
+
+    //
+    // Undue changes we made to the view transform 
+    //
+    if (didZShift)
+        glPopMatrix();
 }
 
 // ****************************************************************************
@@ -4103,6 +4167,11 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //    Tom Fogal, Tue Apr 27 17:26:03 MDT 2010
 //    Remove special case Mesa code; always follow path.  This fixes legends.py
 //    when using HW-accel'd parallel rendering.
+//
+//    Eric Brugger, Wed Jun  2 13:59:24 PDT 2010
+//    I moved the code that shifts edges toward the viewer in DrawEdges2
+//    up in the call sequence to the routine DrawEdges so that it would
+//    always be executed when DrawEdges is executed.
 //
 // ****************************************************************************
 
@@ -4263,59 +4332,6 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
 
     glDisable(GL_LIGHTING);
 
-    //
-    // If any edges in the list of edges are supposed to appear just
-    // on top of polygons on the surface, We need to bring edges just
-    // a little bit closer to the viewer. GL has some support for this
-    // kind of thing through the glPolygonOffset and GL_POLYGON_OFFSET_FILL
-    // settings. However, it is my understanding that that functionality
-    // is specific to the case in which the same graphics primitves are
-    // being drawn in two passes, once to produce polygon interiors and
-    // a second time to produce polygon edges. That isn't really what
-    // we're doing here. We are drawing an entirely different set of
-    // primitives, lines. Granted, those lines may have been computed
-    // as the edges of the polygons we've drawn previously. However, 
-    // from the point of view GL and its display lists, they are totally
-    // different lists of primitives. So, we can't rely on GL's
-    // glPolygonOffset stuff to help us here.
-    //
-    bool didZShift = false;
-    if (ShouldDrawSurface() && surfaceListId.size() > 0)
-    {
-        //
-        // examine the current projection matrix to compute a zShift 
-        // see documentation for glFrustum for what C, D and r are
-        //
-        float pmatrix[16];
-        glGetFloatv(GL_PROJECTION_MATRIX, pmatrix);
-        double C = pmatrix[10];
-        double D = pmatrix[14];
-        double r = (C-1.)/(C+1.);
-        double farPlane = D * (1.-r)/2.;
-        double nearPlane = farPlane / r;
-
-        // compute a shift based upon total range in Z
-        double zShift1 = (farPlane - nearPlane) / 1.0e+4;
-
-        // compute a shift based upon distance between eye and near clip
-        double zShift2 = nearPlane / 2.0;
-
-        // use whatever shift is smaller
-        double zShift = zShift1 < zShift2 ? zShift1 : zShift2;
-
-        //
-        // Modify the viewing transformation to shift things forward in Z
-        //
-        float current_matrix[16];
-        glPushMatrix();
-        glGetFloatv(GL_MODELVIEW_MATRIX, current_matrix);
-        glLoadIdentity();
-        glTranslatef(0.0, 0.0, zShift);
-        glMultMatrixf(current_matrix);
-
-        didZShift = true;
-    }
-
     // draw all the points
     if (drawEdgeVerts)
     {
@@ -4362,11 +4378,6 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
 
     glEnable(GL_LIGHTING);
 
-    //
-    // Undue changes we made to the view transform 
-    //
-    if (didZShift)
-        glPopMatrix();
 } // DrawEdges
 
 
