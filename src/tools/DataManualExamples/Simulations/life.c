@@ -640,17 +640,15 @@ int main(int argc, char **argv)
     simulation_data sim;
     simulation_data_ctor(&sim);
 
+    SimulationArguments(argc, argv);
+    VisItSetupEnvironment();
+
 #ifdef PARALLEL
     /* Initialize MPI */
     MPI_Init(&argc, &argv);
     MPI_Comm_rank (MPI_COMM_WORLD, &sim.par_rank);
     MPI_Comm_size (MPI_COMM_WORLD, &sim.par_size);
-#endif
 
-    SimulationArguments(argc, argv);
-    VisItSetupEnvironment();
-
-#ifdef PARALLEL
     /* Adjust the life partitioning */
     sim.life.Nrows = NN/sim.par_size; /* assume they divide evenly */
     if((float)(NN)/sim.par_size - NN/sim.par_size > 0.0)

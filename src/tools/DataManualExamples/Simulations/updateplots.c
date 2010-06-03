@@ -413,18 +413,16 @@ int main(int argc, char **argv)
     simulation_data sim;
     simulation_data_ctor(&sim);
 
-#ifdef PARALLEL
-    /* Initialize MPI */
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank (MPI_COMM_WORLD, &sim.par_rank);
-    MPI_Comm_size (MPI_COMM_WORLD, &sim.par_size);
-#endif
-
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
 #ifdef PARALLEL
+    /* Initialize MPI */
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank (MPI_COMM_WORLD, &sim.par_rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &sim.par_size);
+
     /* Install callback functions for global communication. */
     VisItSetBroadcastIntFunction(visit_broadcast_int_callback);
     VisItSetBroadcastStringFunction(visit_broadcast_string_callback);
