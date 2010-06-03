@@ -549,9 +549,11 @@ SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify(void *dpy)
 // Creation:   Wed Feb 21 11:36:13 PDT 2007
 //
 // Modifications:
-//   
 //   Hank Childs, Mon Dec 14 16:04:01 PST 2009
 //   Add support for new SIL interface.
+//
+//   Brad Whitlock, Thu Jun  3 14:39:43 PDT 2010
+//   I fixed a bug with the SIL changes.
 //
 // ****************************************************************************
 #include <avtSILRestriction.h>
@@ -579,7 +581,7 @@ SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
         avtSILCollection_p collection = silr->GetSILCollection(cIndex);
         if(*collection != NULL && collection->GetRole() == SIL_DOMAIN) 
         {
-            int nSets = collection->GetNumberOfSubsets(); 
+            nSets = collection->GetNumberOfSubsets(); 
             for(size_t si = 0; si < nSets && !validName; ++si)
             {
                 if(!firstNameSet)
