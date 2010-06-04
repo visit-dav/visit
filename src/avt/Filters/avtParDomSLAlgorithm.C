@@ -151,7 +151,7 @@ avtParDomSLAlgorithm::AddStreamlines(std::vector<avtStreamlineWrapper*> &sls)
         if (OwnDomain(s->domain))
         {
             avtVector endPt;
-            s->GetEndPoint(endPt);
+            s->GetCurrentLocation(endPt);
             
             if (PointInDomain(endPt, s->domain))
                 activeSLs.push_back(s);
