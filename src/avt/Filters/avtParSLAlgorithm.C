@@ -1041,6 +1041,9 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &recvSLs)
 //    Dave Pugmire, Tue Mar 17 12:02:10 EDT 2009
 //    Use new new RecvSLs method, then check for terminations.
 //
+//    Hank Childs, Fri Jun  4 03:52:48 PDT 2010
+//    Rename GetEndPt to GetCurrentLocation.
+//
 // ****************************************************************************
 int
 avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &streamlines,
@@ -1056,7 +1059,7 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &streamlines,
     for (s = recvSLs.begin(); s != recvSLs.end(); ++s)
     {
         avtVector pt;
-        (*s)->GetEndPoint(pt);
+        (*s)->GetCurrentLocation(pt);
 
         if (PointInDomain(pt, (*s)->domain))
         {
