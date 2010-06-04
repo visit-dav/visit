@@ -9017,6 +9017,8 @@ function build_visit
     # A dbio-only build disables pretty much everything else.
     if [[ "${DO_DBIO_ONLY}" == "yes" ]] ; then
        EXTRA_FEATURES="--enable-dbio-only"
+    else
+       EXTRA_FEATURES="${EXTRA_FEATURES} --enable-install-thirdparty"
     fi
     ./configure ${PARFLAGS} ${EXTRA_FEATURES}
     if [[ $? != 0 ]] ; then
