@@ -2132,6 +2132,9 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 //   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
 //   Use new name "GetCurrentLocation".
 //
+//   Hank Childs, Fri Jun  4 05:13:49 PDT 2010
+//   Remove call for collecting statistics that was a no-op.
+//
 // ****************************************************************************
 
 void
@@ -2155,9 +2158,6 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg,
     }
     else
     {
-        // Integrate over this domain.
-        slSeg->UpdateDomainCount(slSeg->domain);
-
         double extents[6] = { 0.,0., 0.,0., 0.,0. };
         intervalTree->GetElementExtents(slSeg->domain.domain, extents);
         IntegrateDomain(slSeg, ds, extents, maxSteps);

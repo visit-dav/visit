@@ -154,8 +154,6 @@ class AVTFILTERS_API avtStreamlineWrapper
     avtStreamlineWrapper(avtStreamline *s, int ID=-1);
     ~avtStreamlineWrapper();
 
-    void UpdateDomainCount(DomainType &dom);
-    void ComputeStatistics();
     void GetCurrentLocation(avtVector &pt, double &t) const;
     void GetCurrentLocation(avtVector &pt) const 
                                          {double t; GetCurrentLocation(pt,t); }
@@ -185,9 +183,6 @@ class AVTFILTERS_API avtStreamlineWrapper
     DomainType domain;
     Status status;
     
-    // statistical bookeeping.
-    //std::vector<int> domainVisitCnts;
-    int maxCnt, sum, numDomainsVisited;
     long id, sequenceCnt;
     long long sortKey;
 };

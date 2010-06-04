@@ -87,7 +87,6 @@ avtStreamlineWrapper::avtStreamlineWrapper()
     sequenceCnt = 0;
     terminated = false;
     sl = NULL;
-    maxCnt = sum= numDomainsVisited = 0;
     id = -1;
     sortKey = 0;
     
@@ -124,7 +123,6 @@ avtStreamlineWrapper::avtStreamlineWrapper(avtStreamline *s, int ID)
     status = UNSET;
     domain = -1;
     sequenceCnt = 0;
-    maxCnt = sum= numDomainsVisited = 0;
     id = ID;
     terminated = false;
     termination = 0.0;
@@ -280,64 +278,6 @@ avtStreamlineWrapper::GetCurrentLocation(avtVector &pt, double &t) const
     //debug5<<"avtStreamlineWrapper::GetCurrentLocation() = "<<pt<<" T= "<<t<<endl;
 }
 
-
-// ****************************************************************************
-//  Method: avtStreamlineWrapper::UpdateDomainCount
-//
-//  Purpose:
-//      Updates the domain count.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//  Modifictaions:
-//
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Generalized domain to include domain/time. Pathine cleanup.
-//
-// ****************************************************************************
-
-void
-avtStreamlineWrapper::UpdateDomainCount(DomainType &dom)
-{
-    /*
-    if (dom.domain+1 > domainVisitCnts.size())
-        domainVisitCnts.resize(dom.domain+1, 0);
-
-    domainVisitCnts[dom.domain]++;
-    */
-}
-
-
-// ****************************************************************************
-//  Method: avtStreamlineWrapper::ComputeStatistics
-//
-//  Purpose:
-//      Computes statistics on the number of domains visited.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-// ****************************************************************************
-
-void
-avtStreamlineWrapper::ComputeStatistics()
-{
-    maxCnt = 0;
-    sum = 0;
-    numDomainsVisited = 0;
-    /*
-    for (size_t i = 0; i < domainVisitCnts.size(); i++)
-    {
-        int cnt = domainVisitCnts[i];
-        if (cnt > maxCnt)
-            maxCnt = cnt;
-        if (cnt > 0)
-            numDomainsVisited++;
-        sum += cnt;
-    }
-    */
-}
 
 // ****************************************************************************
 //  Method: avtStreamlineWrapper::IdSeqCompare
