@@ -38,6 +38,9 @@
 #   Kathleen Bonnell, Wed Jun 2 15:11:22 PST 2010
 #   Disable MakeMili on windows.
 #
+#   Kathleen Bonnell, Fri Jun  4 14:46:56 PDT 2010
+#   Change ${MILI_FOUND} to MILI_FOUND.
+#
 #****************************************************************************/
 
 IF(VISIT_DBIO_ONLY)
@@ -48,9 +51,9 @@ ELSE(VISIT_DBIO_ONLY)
     ADD_SUBDIRECTORY(convert)
     ADD_SUBDIRECTORY(embedviewer)
     ADD_SUBDIRECTORY(imagetools)
-    IF(${MILI_FOUND} AND NOT WIN32)
+    IF(MILI_FOUND AND NOT WIN32)
         ADD_SUBDIRECTORY(makemili)
-    ENDIF(${MILI_FOUND} AND NOT WIN32)
+    ENDIF(MILI_FOUND AND NOT WIN32)
     IF(NOT WIN32)
         ADD_SUBDIRECTORY(mcurvit)
     ENDIF(NOT WIN32)
