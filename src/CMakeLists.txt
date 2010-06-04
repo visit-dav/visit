@@ -121,6 +121,10 @@
 #    Kathleen Bonnell, Tue May 11 13:01:44 MST 2010 
 #    Set HAVE_SELECT to TRUE on windows. 
 #
+#    Kathleen Bonnell, Fri Jun 4 7:58:34 PDT 2010
+#    Changed logic for finding SVN_REVISION so check is not performed on
+#    any platform if not building from a working copy. 
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1143,25 +1147,23 @@ SET(VISIT_SVN_REVISION "Unknown")
 IF(EXISTS SVN_REVISION)
     FILE(STRINGS SVN_REVISION VISIT_SVN_REVISION)
 ELSE(EXISTS SVN_REVISION)
-    FIND_PACKAGE(Subversion)
-    IF(Subversion_FOUND)
-        IF(UNIX AND EXISTS ${VISIT_SOURCE_DIR}/.svn)
-            # Only try and determine the version number if it looks like
-            # we're in a working copy (a .svn directory should be present)
+    IF (EXISTS ${VISIT_SOURCE_DIR}/.svn)
+        # Only try and determine the version number if it looks like
+        # we're in a working copy (a .svn directory should be present)
+        FIND_PACKAGE(Subversion)
+        IF(Subversion_FOUND)
             Subversion_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
             SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-        ENDIF(UNIX AND EXISTS ${VISIT_SOURCE_DIR}/.svn)
-    ELSE(Subversion_FOUND)
-        IF(WIN32)
-            # THIS NEEDS TO BE UPDATED: FindTortoiseSVN.cmake needs to use
-            # keyword substituion and templates!@
-            INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
-            IF(TortoiseSVN_FOUND)
-                TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
-                SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
-            ENDIF(TortoiseSVN_FOUND)
-        ENDIF(WIN32)
-    ENDIF(Subversion_FOUND)
+        ELSE(Subversion_FOUND)
+            IF(WIN32)
+                INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTortoiseSVN.cmake)
+                IF(TortoiseSVN_FOUND)
+                    TortoiseSVN_WC_INFO(${PROJECT_SOURCE_DIR} VISIT)
+                    SET(VISIT_SVN_REVISION "${VISIT_WC_REVISION}")
+                ENDIF(TortoiseSVN_FOUND)
+            ENDIF(WIN32)
+        ENDIF(Subversion_FOUND)
+    ENDIF (EXISTS ${VISIT_SOURCE_DIR}/.svn)
 ENDIF(EXISTS SVN_REVISION)
 
 #-----------------------------------------------------------------------------
@@ -1601,7 +1603,7 @@ ELSE (NOT WIN32)
             COMMAND ${MAKENSIS} 
                     /DVisItVersion=${VISIT_VERSION} 
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE} 
-                    /DINSTALL_PREFIX=${CIP_NATIVE} 
+                    /DINSTALLER_LOCATION=${VISIT_BINARY_DIR} 
                      ${VISIT_WINDOWS_DIR}/installation/sourceinstallation.nsi
             DEPENDS ${VISIT_WINDOWS_DIR}/installation/sourceinstallation.nsi
         )
