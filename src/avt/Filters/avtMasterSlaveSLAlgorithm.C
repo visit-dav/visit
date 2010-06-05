@@ -753,8 +753,13 @@ avtMasterSLAlgorithm::PrintStatus()
 //  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
 //  Control print information for large domain problems.
 //
+//  Hank Childs, Sat Jun  5 11:29:13 CDT 2010
+//  Change return type to void, since it wasn't returning anything and the
+//  calling function wasn't looking for a return value.
+//
 // ****************************************************************************
-bool
+
+void
 avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
 {
     int src = status[0];

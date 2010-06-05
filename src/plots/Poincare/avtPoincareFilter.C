@@ -41,26 +41,27 @@
 // ************************************************************************* //
 
 #include <avtPoincareFilter.h>
-#include <avtSLAlgorithm.h>
-#include <avtStreamline.h>
 
-#include <vtkDataSet.h>
-#include <vtkSlicer.h>
-#include <vtkPolyData.h>
-#include <vtkTubeFilter.h>
-#include <vtkPolyLine.h>
-#include <vtkQuad.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkCleanPolyData.h>
-
+#include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
-#include <vtkPointData.h>
-#include <vtkAppendPolyData.h>
-#include <vtkSphereSource.h>
+#include <vtkCleanPolyData.h>
+#include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkPolyLine.h>
+#include <vtkQuad.h>
+#include <vtkSlicer.h>
+#include <vtkSphereSource.h>
+#include <vtkTubeFilter.h>
+#include <vtkUnstructuredGrid.h>
+
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
+#include <avtSLAlgorithm.h>
+#include <avtStateRecorderIntegralCurve.h>
+#include <avtStreamline.h>
 
 #include <utility>
 
@@ -263,8 +264,11 @@ avtPoincareFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtPoincareFilter::CreateStreamlineOutput(vector<avtStreamline *> &sls)
+avtPoincareFilter::CreateStreamlineOutput(vector<avtStreamline *> &sls2)
 {
+    vector<avtStateRecorderIntegralCurve *> sls;
+    for (int k = 0 ; k < sls2.size() ; k++)
+        sls.push_back((avtStateRecorderIntegralCurve *) sls2[k]);
     streamlines.resize(sls.size());
     
     for ( int i=0; i<sls.size(); ++i )
@@ -274,7 +278,7 @@ avtPoincareFilter::CreateStreamlineOutput(vector<avtStreamline *> &sls)
         unsigned int j = sls[i]->id;
 
         streamlines[j].sl = sls[i];
-        avtStreamline::iterator siter = sls[i]->begin();
+        avtStateRecorderIntegralCurve::iterator siter = sls[i]->begin();
         streamlines[j].streamlinePts.resize(0);
         
         while (siter != sls[i]->end())

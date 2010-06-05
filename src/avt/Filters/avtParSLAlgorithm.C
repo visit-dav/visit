@@ -419,7 +419,7 @@ avtParSLAlgorithm::MergeTerminatedSLSequences()
     //Merge the sequences together, put them into terminated list.
     for (int i = 0; i < seqs.size(); i++)
     {
-        avtStreamline *s = avtStreamline::MergeStreamlineSequence(seqs[i]);
+        avtStreamline *s = seqs[i][0]->MergeIntegralCurveSequence(seqs[i]);
         terminatedSLs.push_back(s);
     }
 }
@@ -978,6 +978,10 @@ avtParSLAlgorithm::DoSendSLs(int dst,
 //  Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //  Use avtStreamlines, not avtStreamlineWrappers.
 //
+//  Hank Childs, Sat Jun  5 16:21:27 CDT 2010
+//  Use the PICS filter to instantiate integral curves, as this is now
+//  an abstract type.
+//
 // ****************************************************************************
 
 int
@@ -1022,7 +1026,7 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &recvSLs)
 
                 for (int j = 0; j < numSLs; j++)
                 {
-                    avtStreamline *sl = new avtStreamline;
+                    avtStreamline *sl = streamlineFilter->CreateIntegralCurve();
                     sl->Serialize(MemStream::READ, buff, GetSolver());
                     recvSLs.push_back(sl);
                     slCount++;

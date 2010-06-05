@@ -43,8 +43,11 @@
 #ifndef AVT_Poincare_FILTER_H
 #define AVT_Poincare_FILTER_H
 
-
 #include <avtStreamlineFilter.h>
+
+
+class     avtStateRecorderIntegralCurve;
+
 
 // ****************************************************************************
 //  Class: avtPoincareFilter
@@ -195,7 +198,7 @@ class avtPoincareFilter : public avtStreamlineFilter
       public:
         SLHelper() {}
         ~SLHelper() {}
-        avtStreamline *sl;
+        avtStateRecorderIntegralCurve *sl;
         std::vector<avtVector> streamlinePts;
     };
 

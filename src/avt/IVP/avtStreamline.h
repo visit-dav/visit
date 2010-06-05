@@ -37,11 +37,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtStreamline.h                             //
+//                             avtIntegralCurve.h                            //
 // ************************************************************************* //
 
-#ifndef AVT_STREAMLINE_H
-#define AVT_STREAMLINE_H
+#ifndef AVT_INTEGRAL_CURVE_H
+#define AVT_INTEGRAL_CURVE_H
 
 #include <avtIVPSolver.h>
 #include <MemStream.h>
@@ -97,7 +97,7 @@ class IVP_API DomainType
     int domain, timeStep;
 
     friend std::ostream& operator<<(std::ostream &out, const DomainType &d)
-    {   
+    {
         out<<"["<<d.domain<<", "<<d.timeStep<<"]";
         return out;
     }
@@ -105,32 +105,13 @@ class IVP_API DomainType
 
 
 // ****************************************************************************
-//  Class: avtStreamline
+//  Class: avtIntegralCurve
 //
 //  Purpose:
-//      avtStreamline is a straightforward implementation of streamlines, based
-//      on avtIVPSolver. It currently keeps two avtIVPSolver instances for 
-//      forward and backward integration, cloned from a model instance passed 
-//      to it. Through this model instance, a user of avtStreamline is able to 
-//      select any IVP scheme to be used in the streamline integration.
-//
-//      A streamline is advanced through the advance() method, and 
-//      avtStreamline keeps track of the current integration length in both 
-//      forward and backward time as well as the avtIVPSteps corresponding to 
-//      the streamline. Based the list of accumulated steps, a simple 
-//      interpolation facility is provided that allows querying the 
-//      streamline points and derivatives at arbitrary parameters, independent 
-//      of the actual nature of the representation (be it a high-order 
-//      polynomial or a simple polyline). In the future, avtStreamline 
-//      could be augmented by methods that take care of typical tasks such as 
-//      e.g. generating a piecewise linear representation for rendering. 
-//      Furthermore, avtStreamline provides boundary detection.
-//
-//      It is not necessarily intended that other streamline implementation 
-//      (such as the planned AMR streamlines) derive from avtStreamline, but 
-//      this is certainly possible if enough functionality can be reused. A 
-//      restructuring of avtStreamline is anticipated once more experience has 
-//      been gathered.
+//      avtIntegralCurve is a straightforward implementation of integral curves,
+//      based on avtIVPSolver.  Through this model instance, a user of 
+//      avtIntegralCurve is able to select any IVP scheme to be used in the 
+//      integration.
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
@@ -186,6 +167,10 @@ class IVP_API DomainType
 //   Hank Childs, Fri Jun  4 15:45:39 CDT 2010
 //   Combine this class with the contents of avtStreamlineWrapper.
 //
+//   Hank Childs, Fri Jun  4 21:30:18 CDT 2010
+//   Separate out portions specific to Poincare and Streamline into
+//   avtStateRecorderIntegralCurve.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
@@ -212,10 +197,6 @@ class IVP_API avtStreamline
         SERIALIZE_INC_SEQ = 2,
     };
 
-
-    enum ScalarValueType {NONE=0, SPEED=1, VORTICITY=2, SCALAR_VARIABLE=4};
-
-    typedef std::vector<avtIVPStep*>::const_iterator iterator;
     avtStreamline(const avtIVPSolver* model, const double& t_start, 
                   const avtVector &p_start, int ID);
     avtStreamline();
@@ -225,30 +206,25 @@ class IVP_API avtStreamline
                                   avtIVPSolver::TerminateType termType,
                                   double end);
 
-    void      SetScalarValueType(ScalarValueType t) {scalarValueType = t;}
-    void      SetIntersectionObject(vtkObject *obj);
-    
     double    CurrentTime() const;
     void      CurrentLocation(avtVector &end);
 
-    // Integration steps.
-    size_t    size()  const;
-    iterator  begin() const;
-    iterator  end()   const;
-
     void      Debug() const;
     
-    void      Serialize(MemStream::Mode mode, MemStream &buff, 
+    virtual void      Serialize(MemStream::Mode mode, MemStream &buff, 
                         avtIVPSolver *solver);
-    static avtStreamline* MergeStreamlineSequence(std::vector<avtStreamline *> &v);
+
+    // Could be static ... only virtual to get to the right method.
+    // (Temporary solution until we build a communicator class.)
+    virtual avtStreamline*
+                      MergeIntegralCurveSequence(
+                              std::vector<avtStreamline *> &v) {;};
     static bool IdSeqCompare(const avtStreamline *slA,
                              const avtStreamline *slB);
     static bool IdRevSeqCompare(const avtStreamline *slA,
                                 const avtStreamline *slB);
     static bool DomainCompare(const avtStreamline *slA,
                               const avtStreamline *slB);
-
-    int       GetVariableIdx(const std::string &var) const;
 
   protected:
     avtStreamline( const avtStreamline& );
@@ -258,47 +234,39 @@ class IVP_API avtStreamline
                                     const avtIVPField* field,
                                     avtIVPSolver::TerminateType termType,
                                     double end);
+    virtual void AnalyzeStep(avtIVPStep *step,
+                         const avtIVPField* field,
+                         avtIVPSolver::TerminateType termType,
+                         double end, avtIVPSolver::Result *result) = 0;
 
     void      HandleGhostZones(bool forward, double *extents);
-    void      HandleIntersections(avtIVPStep *step,
-                                  avtIVPSolver::TerminateType termType,
-                                  double end,
-                                  avtIVPSolver::Result *result);
-    bool      IntersectPlane(const avtVector &p0, const avtVector &p1);
 
   public:
-    // Integration steps.
-    std::vector<avtIVPStep*> _steps;
-
     double termination;
     avtIVPSolver::TerminateType terminationType;
     bool terminated;
 
-    unsigned long serializeFlags;
+    // needed for ghost cells
+    avtIVPStep lastStep;
+    bool lastStepValid;
 
-    // Helpers needed for computing figuring out which domain to use next
+    // Helpers needed for figuring out which domain to use next
     std::vector<DomainType> seedPtDomainList;
     DomainType domain;
     Status status;
 
-    long id, sequenceCnt;
+    unsigned long serializeFlags;
+
+    long sequenceCnt;
     long long sortKey;
 
+    long id;
+
   protected:
-
-    // Intersection points.
-    bool intersectionsSet;
-    int numIntersections;
-    double     intersectPlaneEq[4];
-
-    ScalarValueType    scalarValueType;
 
     // Solver.
     avtIVPSolver*       _ivpSolver;
     static const double minH;
-
-  public:
-    std::vector<std::string> scalars;
 };
 
 inline std::ostream& operator<<( std::ostream& out, const avtStreamline::Result &res )

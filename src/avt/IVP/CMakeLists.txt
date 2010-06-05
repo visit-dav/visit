@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Hank Childs, Sat Jun  5 16:26:46 CDT 2010
+#   Add avtStateRecorderIntegralCurve.
+#
 #****************************************************************************/
 
 SET(AVTIVP_SOURCES
@@ -46,6 +49,7 @@ avtIVPM3DC1Field.C
 avtIVPM3DC1Integrator.C
 avtIVPVTKField.C
 avtIVPVTKTimeVaryingField.C
+avtStateRecorderIntegralCurve.C
 avtStreamline.C
 MemStream.C
 )

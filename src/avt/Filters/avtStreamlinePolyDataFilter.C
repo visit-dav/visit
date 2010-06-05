@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <avtStreamlinePolyDataFilter.h>
-#include "avtStreamline.h"
+
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkCleanPolyData.h>
@@ -52,6 +52,9 @@
 #include <vtkPolyLine.h>
 #include <vtkRibbonFilter.h>
 #include <vtkTubeFilter.h>
+
+#include <avtParallel.h>
+#include <avtStateRecorderIntegralCurve.h>
 
 std::string avtStreamlinePolyDataFilter::colorvarArrayName = "colorVar";
 std::string avtStreamlinePolyDataFilter::paramArrayName = "params";
@@ -107,8 +110,7 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
     vtkAppendPolyData *append = vtkAppendPolyData::New();
     for (int i = 0; i < streamlines.size(); i++)
     {
-        avtStreamline *sl = (avtStreamline *) streamlines[i];
-        vector<float> thetas;
+        avtStreamline *sl = streamlines[i];
         vtkPolyData *pd = GetVTKPolyData(sl, sl->id);
 
         if (pd == NULL)
@@ -170,11 +172,15 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
 //   Dave Pugmire, Tue Apr  6 08:24:44 EDT 2010
 //   Bug fix for setting opacity.
 //
+//   Hank Childs, Sat Jun  5 16:24:25 CDT 2010
+//   Use avtStateRecorderIntegralCurves.
+//
 // ****************************************************************************
 
 vtkPolyData *
-avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl, int id)
+avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl2, int id)
 {
+    avtStateRecorderIntegralCurve *sl = (avtStateRecorderIntegralCurve *) sl2;
     if (sl == NULL || sl->size() == 0)
         return NULL;
 
@@ -209,7 +215,7 @@ avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl, int id)
     params->Allocate(sl->size());
     tangents->SetNumberOfComponents(3);
     tangents->SetNumberOfTuples(sl->size());
-    avtStreamline::iterator siter;
+    avtStateRecorderIntegralCurve::iterator siter;
     
     unsigned int i = 0;
     float val = 0.0, theta = 0.0, param = 0.0;
