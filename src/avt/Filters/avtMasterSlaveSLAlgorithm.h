@@ -152,8 +152,11 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
 //  detect when slave set is done and mark done. Modify logic in how masters
 //  make decisions. Add domainOffloading (case 5).
 //
-//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
-//   Change Execute to RunAlgorithm.
+//  Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//  Change Execute to RunAlgorithm.
+//
+//  Hank Childs, Sat Jun  5 11:29:13 CDT 2010
+//  Change return value of UpdateSlaveStatus.
 //
 // ****************************************************************************
 
@@ -204,7 +207,7 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     void                      FindSlackers(int oobFactor=-1,
                                            bool randomize= true,
                                            bool checkJustUpdated=false);
-    bool                      UpdateSlaveStatus(std::vector<int> &);
+    void                      UpdateSlaveStatus(std::vector<int> &);
     void                      PrintStatus();
 
     void                      Case1(int &counter);

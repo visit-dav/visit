@@ -89,6 +89,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
+#include <avtStateRecorderIntegralCurve.h>
 #include <avtStreamline.h>
 #include <avtVector.h>
 
@@ -254,6 +255,26 @@ avtStreamlineFilter::~avtStreamlineFilter()
     if (intersectObj)
         intersectObj->Delete();
 }
+
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::CreateIntegralCurve
+//
+//  Purpose:
+//      Each derived type of avtPICSFilter must know how to create an integral
+//      curve.  The streamline filter creates an avtStateRecorderIntegralCurve.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 5, 2010
+//
+// ****************************************************************************
+
+avtStreamline *
+avtStreamlineFilter::CreateIntegralCurve(void)
+{
+    return new avtStateRecorderIntegralCurve;
+}
+
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::ComputeRankList
@@ -1977,12 +1998,13 @@ avtStreamlineFilter::DomainToRank(DomainType &domain)
 // ****************************************************************************
 
 void
-avtStreamlineFilter::IntegrateDomain(avtStreamline *sl, 
+avtStreamlineFilter::IntegrateDomain(avtStreamline *sl2, 
                                      vtkDataSet *ds,
                                      double *extents,
                                      int maxSteps )
 {
     int t0 = visitTimer->StartTimer();
+    avtStateRecorderIntegralCurve *sl = (avtStateRecorderIntegralCurve *)sl2;
     sl->scalars.resize(0);
     if (coloringVariable != "")
         sl->scalars.push_back(coloringVariable);
@@ -2530,6 +2552,9 @@ avtStreamlineFilter::AddSeedpoints(std::vector<avtVector> &pts,
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sat Jun  5 16:26:12 CDT 2010
+//   Use avtStateRecorderIntegralCurves.
+//
 // ****************************************************************************
 
 void
@@ -2537,16 +2562,16 @@ avtStreamlineFilter::CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
                                                 std::vector<avtStreamline *> &streamlines,
                                                 std::vector<std::vector<int> > &ids)
 {
-    avtStreamline::ScalarValueType scalarVal = avtStreamline::NONE;
+    avtStateRecorderIntegralCurve::ScalarValueType scalarVal = avtStateRecorderIntegralCurve::NONE;
     if (coloringMethod == STREAMLINE_COLOR_SPEED)
-        scalarVal = avtStreamline::SPEED;
+        scalarVal = avtStateRecorderIntegralCurve::SPEED;
     else if (coloringMethod == STREAMLINE_COLOR_VORTICITY)
-        scalarVal = avtStreamline::VORTICITY;
+        scalarVal = avtStateRecorderIntegralCurve::VORTICITY;
     else if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
-        scalarVal = avtStreamline::SCALAR_VARIABLE;
+        scalarVal = avtStateRecorderIntegralCurve::SCALAR_VARIABLE;
 
     if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
-        scalarVal = (avtStreamline::ScalarValueType)(scalarVal | avtStreamline::VORTICITY);
+        scalarVal = (avtStateRecorderIntegralCurve::ScalarValueType)(scalarVal | avtStateRecorderIntegralCurve::VORTICITY);
 
 
     for (int i = 0; i < pts.size(); i++)
@@ -2565,8 +2590,10 @@ avtStreamlineFilter::CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
             if (streamlineDirection == VTK_INTEGRATE_FORWARD ||
                 streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
             {
-                avtStreamline *sl = new avtStreamline(solver, seedTime0, pts[i],
-                                                      GetNextStreamlineID());
+                avtStateRecorderIntegralCurve *sl = new 
+                                    avtStateRecorderIntegralCurve(solver, 
+                                                seedTime0, pts[i], 
+                                                GetNextStreamlineID());
                 sl->SetScalarValueType(scalarVal);
                 
                 sl->domain = dom;
@@ -2580,7 +2607,9 @@ avtStreamlineFilter::CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
             if (streamlineDirection == VTK_INTEGRATE_BACKWARD ||
                 streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
             {
-                avtStreamline *sl = new avtStreamline(solver, seedTime0, pts[i],
+                avtStateRecorderIntegralCurve *sl = new 
+                                    avtStateRecorderIntegralCurve(solver, 
+                                                         seedTime0, pts[i],
                                                          GetNextStreamlineID());
                 sl->SetScalarValueType(scalarVal);
                 sl->domain = dom;

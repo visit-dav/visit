@@ -223,6 +223,9 @@ class avtSLAlgorithm;
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sat Jun  5 16:21:27 CDT 2010
+//   Add virtual method CreateIntegralCurve.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : 
@@ -236,6 +239,8 @@ class AVTFILTERS_API avtStreamlineFilter :
     virtual const char       *GetType(void)  { return "avtStreamlineFilter"; };
     virtual const char       *GetDescription(void)
                                   { return "Creating streamlines"; };
+
+    virtual avtStreamline    *CreateIntegralCurve();
 
     // Methods to set the filter's attributes.
     void                      SetSourceType(int sourceType);

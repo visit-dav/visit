@@ -47,7 +47,6 @@
 #include <limits>
 #include <ImproperUseException.h>
 #include <DebugStream.h>
-#include <vtkPlane.h>
 #include <avtVector.h>
 #include <algorithm>
 
@@ -87,27 +86,30 @@ using namespace std;
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Incorporate avtStreamlineWrapper into avtStreamline.
 //
+//   Hank Childs, Sat Jun  5 16:29:56 CDT 2010
+//   Separate out portions related to Streamline and Poincare into 
+//   avtStateRecorderIntegralCurve.
+//
 // ****************************************************************************
 
 avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
-                             const avtVector &p_start, int ID) :
-    scalarValueType(NONE)
+                             const avtVector &p_start, int ID)
 {
-    intersectionsSet = false;
-    numIntersections = 0;
-    
     _ivpSolver = model->Clone();
     _ivpSolver->Reset(t_start, p_start);
 
     status = STATUS_UNSET;
     domain = -1;
-    sequenceCnt = 0;
     terminated = false;
     id = ID;
-    sortKey = 0;
 
     termination = 0.0;
     terminationType = avtIVPSolver::TIME;
+
+    lastStepValid = false;
+
+    sequenceCnt = 0;
+    sortKey = 0;
     serializeFlags = 0;
 }
 
@@ -132,24 +134,29 @@ avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Incorporate avtStreamlineWrapper into avtStreamline.
 //
+//   Hank Childs, Sat Jun  5 16:29:56 CDT 2010
+//   Separate out portions related to Streamline and Poincare into 
+//   avtStateRecorderIntegralCurve.
+//
 // ****************************************************************************
 
-avtStreamline::avtStreamline() :
-    scalarValueType(NONE)
+avtStreamline::avtStreamline()
 {
-    intersectionsSet = false;
     _ivpSolver = NULL;
-    numIntersections = 0;
 
     status = STATUS_UNSET;
     domain = -1;
-    sequenceCnt = 0;
     terminated = false;
     id = -1;
-    sortKey = 0;
 
     termination = 0.0;
     terminationType = avtIVPSolver::TIME;
+
+    lastStepValid = false;
+
+    sequenceCnt = 0;
+    sortKey = 0;
+
     serializeFlags = 0;
 }
 
@@ -173,33 +180,7 @@ avtStreamline::~avtStreamline()
         delete _ivpSolver;
     
     _ivpSolver = NULL;
-    for(iterator si = begin(); si != end(); si++)
-         delete *si;
 }
-
-// ****************************************************************************
-//  Method: avtStreamline::GetVariableIdx
-//
-//  Purpose:
-//      Lookup the index of a variable.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   December 29, 2009
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-int
-avtStreamline::GetVariableIdx(const std::string &var) const
-{
-    for (int i = 0; i < scalars.size(); i++)
-        if (scalars[i] == var)
-            return i;
-
-    return -1;
-}
-
 
 // ****************************************************************************
 //  Method: avtStreamline::Advance
@@ -314,6 +295,10 @@ avtStreamline::Advance(const avtIVPField* field,
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Incorporate avtStreamlineWrapper into avtStreamline.
 //
+//   Hank Childs, Sat Jun  5 16:29:56 CDT 2010
+//   Separate out portions related to Streamline and Poincare into 
+//   avtStateRecorderIntegralCurve.
+//
 // ****************************************************************************
 
 avtStreamline::Result
@@ -337,14 +322,11 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
         avtIVPState state;
         ivp->GetState(state);
 
-        // create new step to be filled in by ivp
-        avtIVPStep* step = new avtIVPStep;
+        avtIVPStep step;
 
         try
         {
-            result = ivp->Step(field, termType, end, step);
-            if (intersectionsSet)
-                HandleIntersections(step, termType, end, &result);
+            result = ivp->Step(field, termType, end, &step);
             debug5<<"Step to "<<ivp->GetCurrentY()<<endl;
         }
         catch (avtIVPField::Undefined&)
@@ -373,7 +355,6 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             h = h/2;
             if (fabs(h) < minH)
             {
-                delete step;
                 if (!field->HasGhostZones())
                 {
                     double bbox[6];
@@ -390,8 +371,6 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             }
 
             ivp->SetNextStepSize(h);
-            // retry step
-            delete step;
             continue;
         }
         
@@ -399,21 +378,12 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
         {
         }
 
-        // record step if it was successful
-        if (result == avtIVPSolver::OK ||
-            result == avtIVPSolver::TERMINATE)
+        AnalyzeStep(&step, field, termType, end, &result);
+        if (result == avtIVPSolver::TERMINATE || result == avtIVPSolver::OK)
         {
-            //Set scalar value, if any...
-            if (scalarValueType & VORTICITY)
-                step->ComputeVorticity(field);
-            if (scalarValueType & SPEED)
-                step->ComputeSpeed(field);
-            if (!scalars.empty())
-                step->ComputeScalarVariables(scalars, field);
-
-            _steps.push_back(step);
+            lastStep = step;
+            lastStepValid = true;
             stepTaken = true;
-            
             if (result == avtIVPSolver::TERMINATE)
             {
                 rc = avtStreamline::RESULT_TERMINATE;
@@ -422,7 +392,6 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
         }
         else
         {
-            delete step;
             rc = avtStreamline::RESULT_ERROR;
             break;
         }
@@ -472,15 +441,19 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
-//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
-//   Use a vector instead of a list for the integration steps.
+//    Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//    Use a vector instead of a list for the integration steps.
+//
+//    Hank Childs, Sat Jun  5 16:29:56 CDT 2010
+//    Set up jump direction and distance based on new data member for last 
+//    step, since the list of steps is now in a derived type.
 //
 // ****************************************************************************
 
 void
 avtStreamline::HandleGhostZones(bool forward, double *extents)
 {
-    if (_steps.empty() || extents == NULL)
+    if (!lastStepValid || extents == NULL)
         return;
     
     // Determine the minimum non-zero data extent.
@@ -501,8 +474,8 @@ avtStreamline::HandleGhostZones(bool forward, double *extents)
         return;
     
     //Get the direction of the last step.
-    avtVector pt = _steps.back()->front();
-    avtVector dir = _steps.back()->velEnd;
+    avtVector pt = lastStep.front();
+    avtVector dir = lastStep.velEnd;
     double len = dir.length();
     
     if ( len == 0.0 )
@@ -522,9 +495,9 @@ avtStreamline::HandleGhostZones(bool forward, double *extents)
     _ivpSolver->SetCurrentT(_ivpSolver->GetCurrentT() + leapingDistance);
     
     if (forward)
-        (*(--_steps.end()))->tEnd += leapingDistance;
+        lastStep.tEnd += leapingDistance;
     else
-        (*_steps.begin())->tEnd -= leapingDistance;
+        lastStep.tEnd -= leapingDistance;
     
     if (DebugStream::Level5())
         debug5<<" ==> "<<newPt<<" T: "<<_ivpSolver->GetCurrentT()<<endl;
@@ -574,181 +547,6 @@ avtStreamline::CurrentLocation(avtVector &end)
 
 
 // ****************************************************************************
-//  Method: avtStreamline::begin
-//
-//  Purpose:
-//      Returns the first iterator.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-avtStreamline::iterator
-avtStreamline::begin() const
-{
-    return _steps.begin();
-}
-
-
-// ****************************************************************************
-//  Method: avtStreamline::end
-//
-//  Purpose:
-//      Returns the last iterator.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-avtStreamline::iterator
-avtStreamline::end() const
-{
-    return _steps.end();
-}
-
-
-// ****************************************************************************
-//  Method: avtStreamline::size
-//
-//  Purpose:
-//      Returns the number of iterations to do.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-// ****************************************************************************
-
-size_t
-avtStreamline::size() const
-{
-    return _steps.size();
-}
-
-
-// ****************************************************************************
-//  Method: avtStreamline::SetIntersectionObject
-//
-//  Purpose:
-//      Defines an object for streamline intersection.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 10, 2009
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
-//   Store plane equation.
-//
-// ****************************************************************************
-
-void
-avtStreamline::SetIntersectionObject(vtkObject *obj)
-{
-    // Only plane supported for now.
-    if (!obj->IsA("vtkPlane"))
-        EXCEPTION1(ImproperUseException, "Only plane supported.");
-
-    intersectionsSet = true;
-    avtVector intersectPlanePt = avtVector(((vtkPlane *)obj)->GetOrigin());
-    avtVector intersectPlaneNorm = avtVector(((vtkPlane *)obj)->GetNormal());
-
-    intersectPlaneNorm.normalize();
-    intersectPlaneEq[0] = intersectPlaneNorm.x;
-    intersectPlaneEq[1] = intersectPlaneNorm.y;
-    intersectPlaneEq[2] = intersectPlaneNorm.z;
-    intersectPlaneEq[3] = intersectPlanePt.length();
-}
-
-// ****************************************************************************
-//  Method: avtStreamline::HandleIntersections
-//
-//  Purpose:
-//      Defines an object for streamline intersection.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 10, 2009
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
-//   Don't record intersection points, just count them.
-//
-//   Dave Pugmire, Fri Feb 19 16:57:04 EST 2010
-//   Replace _steps.size()==0 with _steps.empty()
-//
-// ****************************************************************************
-
-void
-avtStreamline::HandleIntersections(avtIVPStep *step,
-                                   avtIVPSolver::TerminateType termType,
-                                   double end,
-                                   avtIVPSolver::Result *result)
-{
-    if (step == NULL || _steps.empty())
-        return;
-    
-    avtIVPStep *step0 = _steps.back();
-
-    if (IntersectPlane(step0->front(), step->front()))
-    {
-        numIntersections++;
-        if (termType == avtIVPSolver::INTERSECTIONS &&
-            numIntersections >= (int)end)
-        {
-            *result = avtIVPSolver::TERMINATE;
-        }
-    }
-}
-
-// ****************************************************************************
-//  Method: avtStreamline::IntersectPlane
-//
-//  Purpose:
-//      Intersect streamline with a plane.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 10, 2009
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
-//   Don't record intersection points, just count them.
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-// ****************************************************************************
-
-bool
-avtStreamline::IntersectPlane(const avtVector &p0, const avtVector &p1)
-{
-    double distP0 = intersectPlaneEq[0] * p0.x +
-                    intersectPlaneEq[1] * p0.y +
-                    intersectPlaneEq[2] * p0.z +
-                    intersectPlaneEq[3];
-
-    double distP1 = intersectPlaneEq[0] * p1.x +
-                    intersectPlaneEq[1] * p1.y +
-                    intersectPlaneEq[2] * p1.z +
-                    intersectPlaneEq[3];
-
-#define SIGN(x) ((x) < 0.0 ? -1 : 1)
-
-    // If either point on the plane, or points on opposite
-    // sides of the plane, the line intersects.
-    if (distP0 == 0.0 || distP1 == 0.0 ||
-        SIGN(distP0) != SIGN(distP1))
-    {
-        return true;
-    }
-
-    return false;
-}
-
-
-// ****************************************************************************
 //  Method: avtStreamline::Serialize
 //
 //  Purpose:
@@ -790,15 +588,18 @@ avtStreamline::IntersectPlane(const avtVector &p0, const avtVector &p1)
 //    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //    Use avtStreamlines, not avtStreamlineWrappers.
 //
+//    Hank Childs, Sat Jun  5 16:29:56 CDT 2010
+//    Separate out portions related to Streamline and Poincare into 
+//    avtStateRecorderIntegralCurve.
+//
 // ****************************************************************************
 
 void
 avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff, 
                          avtIVPSolver *solver)
 {
-    bool serializeSteps = serializeFlags&SERIALIZE_STEPS;
     if (DebugStream::Level5())
-        debug5<<"  avtStreamline::Serialize "<<(mode==MemStream::READ?"READ":"WRITE")<<" serSteps= "<<serializeSteps<<endl;
+        debug5<<"  avtStreamline::Serialize "<<(mode==MemStream::READ?"READ":"WRITE")<<endl;
     buff.io(mode, id);
     buff.io(mode, domain);
     buff.io(mode, status);
@@ -806,47 +607,7 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, termination);
     buff.io(mode, terminationType);
     
-    if ((serializeFlags & SERIALIZE_INC_SEQ) && mode == MemStream::WRITE)
-    {
-        long seqCnt = sequenceCnt+1;
-        buff.io(mode, seqCnt);
-    }
-    else
-        buff.io(mode, sequenceCnt);
-
-
-    buff.io(mode, scalarValueType);
-    buff.io(mode, numIntersections);
-
-    // R/W the steps.
-    if (mode == MemStream::WRITE)
-    {
-        size_t sz = _steps.size();
-        if (serializeSteps)
-        {
-            buff.io(mode, sz);
-            for (iterator si = _steps.begin(); si != _steps.end(); si++)
-                (*si)->Serialize(mode, buff);
-        }
-        else
-        {
-            sz = 0;
-            buff.io(mode, sz);
-        }
-    }
-    else
-    {
-        _steps.clear();
-        size_t sz = 0;
-        buff.io( mode, sz );
-        debug5<<"Read step cnt= "<<sz<<endl;
-        for ( size_t i = 0; i < sz; i++ )
-        {
-            avtIVPStep *s = new avtIVPStep;
-            s->Serialize( mode, buff );
-            _steps.push_back( s );
-        }
-    }
+    lastStep.Serialize(mode, buff);
 
     if ( mode == MemStream::WRITE )
     {
@@ -870,7 +631,14 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
         _ivpSolver->PutState(solverState);
     }    
 
-    serializeFlags = 0;
+    if ((serializeFlags & SERIALIZE_INC_SEQ) && mode == MemStream::WRITE)
+    {
+        long seqCnt = sequenceCnt+1;
+        buff.io(mode, seqCnt);
+    }
+    else
+        buff.io(mode, sequenceCnt);
+
     if (DebugStream::Level5())
         debug5 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
 }
@@ -893,12 +661,12 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
 bool
 avtStreamline::IdSeqCompare(const avtStreamline *slA,
                                    const avtStreamline *slB)
-{                                  
+{
     if (slA->id == slB->id)
         return slA->sequenceCnt < slB->sequenceCnt;
-        
+
     return slA->id < slB->id;
-}   
+}
 
 // ****************************************************************************
 //  Method: avtStreamline::IdRevSeqCompare
@@ -918,76 +686,18 @@ avtStreamline::IdSeqCompare(const avtStreamline *slA,
 bool
 avtStreamline::IdRevSeqCompare(const avtStreamline *slA,
                                    const avtStreamline *slB)
-{   
+{
     if (slA->id == slB->id)
         return slA->sequenceCnt > slB->sequenceCnt;
-    
+
     return slA->id < slB->id;
 }
 
 bool
 avtStreamline::DomainCompare(const avtStreamline *slA,
                                     const avtStreamline *slB)
-{   
+{
     return slA->domain < slB->domain;
 }
 
-// ****************************************************************************
-//  Method: avtStreamline::MergeStreamlineSequence
-//
-//  Purpose:
-//      Merge a vector of streamline sequences into a single streamline.
-//      This is destructive, extra streamlines are deleted.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   September 24, 2009
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
-//   Sorting can be done independant of streamline direction. Changed streamline
-//   step from list to vector.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Move this method from avtStreamlineWrapper.
-//
-// ****************************************************************************
-
-avtStreamline*
-avtStreamline::MergeStreamlineSequence(std::vector<avtStreamline *> &v)
-{   
-    if (v.size() == 0)
-        return NULL;
-    else if (v.size() == 1)
-        return v[0];
-    
-    //Sort the streamlines by Id,seq.
-    std::sort(v.begin(), v.end(), avtStreamline::IdRevSeqCompare);
-    
-    //Make sure all ids are the same.
-    if (v.front()->id != v.back()->id)
-        return NULL;
-    
-    //We want to merge others into the "last" sequence, since it has the right
-    //sover state, sequenceCnt, etc. The vector is reverse sorted, so we can
-    //merge them in order.
-    
-    avtStreamline *s = v.front();
-    
-    for (int i = 1; i < v.size(); i++)
-    {   
-        std::vector<avtIVPStep*>::reverse_iterator si;
-        for (si = v[i]->_steps.rbegin(); si != v[i]->_steps.rend(); si++)
-        {   
-            avtIVPStep *step = new avtIVPStep(*(*si));
-            s->_steps.insert(s->_steps.begin(), step);
-        }
-        
-        delete v[i];
-    }
-    
-
-    v.resize(0);
-    return s;
-}
 
