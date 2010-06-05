@@ -239,10 +239,13 @@ avtMasterSlaveSLAlgorithm::~avtMasterSlaveSLAlgorithm()
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Message size and number of receives put in Initialize().
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtMasterSlaveSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
+avtMasterSlaveSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
 {
     int numRecvs = nProcs-1;
     if (numRecvs > 64)
@@ -258,7 +261,7 @@ avtMasterSlaveSLAlgorithm::ResetStreamlinesForContinueExecute()
 }
 
 void
-avtMasterSlaveSLAlgorithm::AddStreamlines(std::vector<avtStreamlineWrapper*> &sls)
+avtMasterSlaveSLAlgorithm::AddStreamlines(std::vector<avtStreamline*> &sls)
 {
     EXCEPTION0(ImproperUseException);
 }
@@ -495,10 +498,13 @@ avtMasterSLAlgorithm::~avtMasterSLAlgorithm()
 //   Dave Pugmire, Fri Feb 12 09:30:27 EST 2010
 //   Wrong initial sizes for status and prevStatus.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
+avtMasterSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
 {
     SortStreamlines(seedPts);
     avtMasterSlaveSLAlgorithm::Initialize(seedPts);
@@ -1156,12 +1162,17 @@ avtMasterSLAlgorithm::ProcessOffloadSL(vector<int> &status)
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
 //
+//  Modifications:
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
 avtMasterSLAlgorithm::ProcessNewStreamlines()
 {
-    list<avtStreamlineWrapper*> newSLs;
+    list<avtStreamline*> newSLs;
     RecvSLs(newSLs);
     if (!newSLs.empty())
     {
@@ -1199,7 +1210,7 @@ avtMasterSLAlgorithm::ManageWorkgroup()
             domLoaded[i] = 0;
         }
         
-        list<avtStreamlineWrapper *>::const_iterator s;
+        list<avtStreamline *>::const_iterator s;
         for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
             slDomCnts[DomToIdx( (*s)->domain )] ++;
     
@@ -1460,8 +1471,11 @@ avtMasterSLAlgorithm::FindSlackers(int oobFactor,
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
-//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
-//  Bug fix. Case1 never happened. forgot the "not" empty.
+//   Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//   Bug fix. Case1 never happened. forgot the "not" empty.
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
@@ -1473,7 +1487,7 @@ avtMasterSLAlgorithm::Case1(int &counter)
     
     FindSlackers();
     
-    vector< vector< avtStreamlineWrapper *> > distributeSLs(nProcs);
+    vector< vector< avtStreamline *> > distributeSLs(nProcs);
     bool streamlinesToSend = false;
     
     for (int i = 0; i < slackers.size(); i++)
@@ -1483,7 +1497,7 @@ avtMasterSLAlgorithm::Case1(int &counter)
         
         int cnt = 0;
         int slackerRank = slaveInfo[slackers[i]].rank;
-        list<avtStreamlineWrapper *>::iterator s = activeSLs.begin();
+        list<avtStreamline *>::iterator s = activeSLs.begin();
 
         while ( !activeSLs.empty() && cnt < maxCnt)
         {
@@ -1540,6 +1554,9 @@ avtMasterSLAlgorithm::Case1(int &counter)
 //   Dave Pugmire, Fri Feb 12 09:30:27 EST 2010
 //   Fix memory leak of domCnts.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 static bool domCntCompare( const int *a, const int *b) { return a[1] > b[1]; }
@@ -1552,7 +1569,7 @@ avtMasterSLAlgorithm::Case2(int &counter)
     
     FindSlackers();
     
-    vector< vector< avtStreamlineWrapper *> > distributeSLs(nProcs);
+    vector< vector< avtStreamline *> > distributeSLs(nProcs);
     bool streamlinesToSend = false;
 
     for (int s = 0; s < slackers.size(); s++)
@@ -1607,7 +1624,7 @@ avtMasterSLAlgorithm::Case2(int &counter)
 
         int cnt = 0;
 
-        list<avtStreamlineWrapper *>::iterator sl = activeSLs.begin();
+        list<avtStreamline *>::iterator sl = activeSLs.begin();
         
         while ( !activeSLs.empty() && cnt < maxCnt)
         {
@@ -2052,10 +2069,13 @@ avtSlaveSLAlgorithm::HandleLatencyTimer(int activeSLCnt, bool checkMaxLatency)
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtSlaveSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
+avtSlaveSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
 {
     avtMasterSlaveSLAlgorithm::Initialize(seedPts);
     status.resize(NUM_DOMAINS,0);
@@ -2074,6 +2094,11 @@ avtSlaveSLAlgorithm::Initialize(std::vector<avtStreamlineWrapper *> &seedPts)
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
@@ -2090,7 +2115,7 @@ avtSlaveSLAlgorithm::UpdateStatus()
     }
     
     //Increment/decrement all the streamlines we have.
-    list<avtStreamlineWrapper *>::const_iterator s;
+    list<avtStreamline *>::const_iterator s;
     
     bool prevWorkToDo = workToDo;
     workToDo = false;
@@ -2195,13 +2220,13 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 //   Dave Pugmire, Wed Mar 25 09:10:52 EDT 2009
 //   Enable latency.
 //
-//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
-//  Resend status if getting no work from master. This is related to the tmp fix
-//  above in the master.
+//   Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//   Resend status if getting no work from master. This is related to the tmp
+//   fix above in the master.
 //  
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
-//   Latency time was not always being reported accurately. Only send the latency
-//   saving status update once.
+//   Latency time was not always being reported accurately. Only send the 
+//   latency saving status update once.
 //
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Change Execute to RunAlgorithm.
@@ -2209,12 +2234,15 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 //   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   Add auto-load code for slaves.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
 avtSlaveSLAlgorithm::RunAlgorithm()
 {
-    list<avtStreamlineWrapper *>::const_iterator si;
+    list<avtStreamline *>::const_iterator si;
     int timer = visitTimer->StartTimer();
 
     //Send initial status.
@@ -2225,7 +2253,7 @@ avtSlaveSLAlgorithm::RunAlgorithm()
     while (1)
     {
         //Fill oobSLs list.
-        list<avtStreamlineWrapper *>::iterator si = activeSLs.begin();
+        list<avtStreamline *>::iterator si = activeSLs.begin();
         while (si != activeSLs.end())
         {
             if (!DomainLoaded((*si)->domain))
@@ -2270,7 +2298,7 @@ avtSlaveSLAlgorithm::RunAlgorithm()
         HandleLatencyTimer(activeSLs.size());
         while (!activeSLs.empty() && !done)
         {
-            avtStreamlineWrapper *s = activeSLs.front();
+            avtStreamline *s = activeSLs.front();
 
             forceSend = false;
             if (activeSLs.size() <= LATENCY_SEND_CNT)
@@ -2290,7 +2318,7 @@ avtSlaveSLAlgorithm::RunAlgorithm()
             activeSLs.pop_front();
             debug1<<"Integrate "<<s->domain<<".....";
             IntegrateStreamline(s);
-            if (s->status == avtStreamlineWrapper::TERMINATE)
+            if (s->status == avtStreamline::STATUS_TERMINATE)
             {
                 terminatedSLs.push_back(s);
                 numTerminated++;
@@ -2368,12 +2396,15 @@ avtSlaveSLAlgorithm::RunAlgorithm()
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
 //   Bug fix. Didn't use new DomainType structure for MSG_SEND_SL.
 //
-//  Dave Pugmire, Wed Mar 18 21:55:32 EDT 2009
-//  Improve the logic for streamline offloading. Only offload streamlines
-//  in unloaded domains.
+//   Dave Pugmire, Wed Mar 18 21:55:32 EDT 2009
+//   Improve the logic for streamline offloading. Only offload streamlines
+//   in unloaded domains.
 //
-//  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
-//  Handle streamline offloading (case5).
+//   Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
+//   Handle streamline offloading (case5).
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
@@ -2421,14 +2452,14 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             else
                 num = maxCnt;
 
-            vector< avtStreamlineWrapper *> sendSLs;
+            vector< avtStreamline *> sendSLs;
 
             for (int d = 0; d < numDoms; d++)
             {
                 int domIdx = msg[4+d];
                 DomainType dom = IdxToDom(domIdx);
                 
-                list<avtStreamlineWrapper *>::iterator s = activeSLs.begin();
+                list<avtStreamline *>::iterator s = activeSLs.begin();
                 while (s != activeSLs.end() &&
                        sendSLs.size() < num)
                 {
@@ -2473,8 +2504,8 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             int num = msg[4];
 
             debug1<<"MSG: Send "<<num<<" x dom= "<<dom<<" to "<<dst;
-            list<avtStreamlineWrapper *>::iterator s = activeSLs.begin();
-            vector< avtStreamlineWrapper *> sendSLs;
+            list<avtStreamline *>::iterator s = activeSLs.begin();
+            vector< avtStreamline *> sendSLs;
             while (s != activeSLs.end() &&
                    sendSLs.size() < num)
             {

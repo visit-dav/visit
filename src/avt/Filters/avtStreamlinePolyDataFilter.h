@@ -61,14 +61,19 @@
 // Programmer: Hank Childs (refactoring) / Dave Pugmire (actual code)
 // Creation:   December 2, 2008
 //
+// Modifications:
+//
 //   Dave Pugmire, Mon Feb  2 14:39:35 EST 2009
-//   Moved GetVTKPolyData from avtStreamlineWrapper to here.
+//   Moved GetVTKPolyData from avtStreamline to here.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Add tangentsArrayName (for Christoph Garth).
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
@@ -86,7 +91,7 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
   protected:
     vtkPolyData*              GetVTKPolyData(avtStreamline *sl, int id);
     void                      CreateStreamlineOutput( 
-                                 vector<avtStreamlineWrapper *> &streamlines );
+                                 vector<avtStreamline *> &streamlines );
 };
 
 

@@ -66,11 +66,14 @@ class SlaveInfo;
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //   Allow masters to share work loads.
 //   
-//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
-//  Change how timings are reported/calculated.
+//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//   Change how timings are reported/calculated.
 //
-//  Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
-//  New counters.
+//   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
+//   New counters.
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
@@ -81,11 +84,11 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
                               int maxCount);
     virtual ~avtMasterSlaveSLAlgorithm();
     
-    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
+    virtual void              Initialize(std::vector<avtStreamline *> &);
     virtual const char*       AlgoName() const {return "MasterSlave";}
     
     virtual void              ResetStreamlinesForContinueExecute();
-    virtual void              AddStreamlines(std::vector<avtStreamlineWrapper*> &sls);
+    virtual void              AddStreamlines(std::vector<avtStreamline*> &sls);
 
     static avtMasterSlaveSLAlgorithm* Create(avtStreamlineFilter *slFilter,
                                              int maxCount,
@@ -166,7 +169,7 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     virtual ~avtMasterSLAlgorithm();
 
     virtual const char*       AlgoName() const {return "MasterSlave";}
-    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
+    virtual void              Initialize(std::vector<avtStreamline *> &);
 
   protected:
     virtual void              RunAlgorithm();
@@ -193,7 +196,7 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     int                       master;
     std::vector<SlaveInfo>    slaveInfo, masterInfo;
     std::vector<int>          slDomCnts, domLoaded, slackers;
-    std::list<avtStreamlineWrapper *> activeSLs;
+    std::list<avtStreamline *> activeSLs;
 
     void                      SendAllSlavesMsg(int msg);
     void                      SendAllSlavesMsg(std::vector<int> &msg);
@@ -247,7 +250,7 @@ class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
                         int masterRank);
     virtual ~avtSlaveSLAlgorithm();
 
-    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
+    virtual void              Initialize(std::vector<avtStreamline *> &);
     virtual void              SendStatus(bool forceSend=false);
     virtual void              UpdateStatus();
 
@@ -257,7 +260,7 @@ class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
     int                       master, numTerminated, timeout;
     bool                      workToDo;
     std::vector<int>          status, prevStatus;
-    std::list<avtStreamlineWrapper *> activeSLs, oobSLs;
+    std::list<avtStreamline *> activeSLs, oobSLs;
 
     void                      ProcessMessages(bool &done, bool &newMsg);
     void                      HandleLatencyTimer(int activeSLCnt,

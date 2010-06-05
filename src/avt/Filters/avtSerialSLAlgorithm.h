@@ -62,6 +62,9 @@
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Change Execute to RunAlgorithm.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 class avtSerialSLAlgorithm : public avtSLAlgorithm
@@ -71,13 +74,13 @@ class avtSerialSLAlgorithm : public avtSLAlgorithm
     virtual ~avtSerialSLAlgorithm();
     
     virtual const char*       AlgoName() const {return "Serial";}
-    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
+    virtual void              Initialize(std::vector<avtStreamline *> &);
     virtual void              ResetStreamlinesForContinueExecute();
-    virtual void              AddStreamlines(std::vector<avtStreamlineWrapper*> &sls);
+    virtual void              AddStreamlines(std::vector<avtStreamline*> &sls);
 
   protected:
     virtual void              RunAlgorithm();
-    std::list<avtStreamlineWrapper *> activeSLs, oobSLs;
+    std::list<avtStreamline *> activeSLs, oobSLs;
     
 };
 

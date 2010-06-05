@@ -42,7 +42,7 @@
 
 #include <avtPoincareFilter.h>
 #include <avtSLAlgorithm.h>
-#include <avtStreamlineWrapper.h>
+#include <avtStreamline.h>
 
 #include <vtkDataSet.h>
 #include <vtkSlicer.h>
@@ -248,7 +248,8 @@ avtPoincareFilter::PostExecute(void)
 //  Modifications:
 //
 //    Dave Pugmire (for Allen Sanderson), Wed Feb 25 09:52:11 EST 2009
-//    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new code.
+//    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new 
+//    code.
 //
 //    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
 //    Moved GetStreamlinePoints to this method.
@@ -256,10 +257,13 @@ avtPoincareFilter::PostExecute(void)
 //    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //    Add ability to restart streamline integration.
 //
+//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//    Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtPoincareFilter::CreateStreamlineOutput(vector<avtStreamlineWrapper *> &sls)
+avtPoincareFilter::CreateStreamlineOutput(vector<avtStreamline *> &sls)
 {
     streamlines.resize(sls.size());
     
@@ -269,11 +273,11 @@ avtPoincareFilter::CreateStreamlineOutput(vector<avtStreamlineWrapper *> &sls)
         // the seeds were generated.
         unsigned int j = sls[i]->id;
 
-        streamlines[j].slSeg = sls[i];
-        avtStreamline::iterator siter = sls[i]->sl->begin();
+        streamlines[j].sl = sls[i];
+        avtStreamline::iterator siter = sls[i]->begin();
         streamlines[j].streamlinePts.resize(0);
         
-        while (siter != sls[i]->sl->end())
+        while (siter != sls[i]->end())
         {
             avtVector pt;
             pt.x = (*siter)->front()[0];
@@ -284,7 +288,7 @@ avtPoincareFilter::CreateStreamlineOutput(vector<avtStreamlineWrapper *> &sls)
             
             ++siter;
         }
-        //cerr<<"CreateStreamlineOutput: "<<streamlines[i].slSeg->id<<" pts= "<<streamlines[i].streamlinePts.size()<<" term= "<<streamlines[i].slSeg->termination<<endl;
+        //cerr<<"CreateStreamlineOutput: "<<streamlines[i].sl->id<<" pts= "<<streamlines[i].streamlinePts.size()<<" term= "<<streamlines[i].sl->termination<<endl;
     }
 }
 
@@ -400,7 +404,7 @@ avtPoincareFilter::ContinueExecute()
 {
     debug5 << "Continue execute " << endl;
 
-    vector<avtStreamlineWrapper *> sls;
+    vector<avtStreamline *> sls;
     
     GetTerminatedStreamlines(sls);
     CreateStreamlineOutput(sls);
@@ -489,10 +493,14 @@ avtPoincareFilter::UpdateDataObjectInfo(void)
 //
 //  Modifications:
 //    Dave Pugmire (for Allen Sanderson), Wed Feb 25 09:52:11 EST 2009
-//    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new code.
+//    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new 
+//    code.
 //
 //    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //    Add ability to restart streamline integration.
+//
+//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//    Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
@@ -531,15 +539,15 @@ avtPoincareFilter::ClassifyStreamlines()
 
         // Check to see if there are enough points for the analysis.
         if( fi.nPuncturesNeeded != 0 &&
-            fi.nPuncturesNeeded > streamlines[i].slSeg->termination/2 )
+            fi.nPuncturesNeeded > streamlines[i].sl->termination/2 )
         {
           analysisComplete = false;
 
-          streamlines[i].slSeg->termination = 2 * fi.nPuncturesNeeded;
-          streamlines[i].slSeg->terminated = false;
+          streamlines[i].sl->termination = 2 * fi.nPuncturesNeeded;
+          streamlines[i].sl->terminated = false;
         }
         else
-          streamlines[i].slSeg->terminated = true;
+          streamlines[i].sl->terminated = true;
 
         // See if O Points from an island need to be added.
         if( fi.analysisStatus & FieldlineInfo::ADD_O_POINTS )
@@ -554,7 +562,7 @@ avtPoincareFilter::ClassifyStreamlines()
             safetyFactor = 0;
 
         if(verboseFlag )
-          cerr <<"Classify Streamline: "<<i<<" id= "<<streamlines[i].slSeg->id
+          cerr <<"Classify Streamline: "<<i<<" id= "<<streamlines[i].sl->id
                << "  ptCnt = " << streamlines[i].streamlinePts.size()
                << "  type = " << fi.type
                << "  toroidal/poloidal windings = " <<  fi.toroidalWinding
@@ -567,7 +575,7 @@ avtPoincareFilter::ClassifyStreamlines()
                << "  toroidalPeriod = " << fi.toroidalPeriod
                << "  poloidalPeriod = " << fi.poloidalPeriod
                << "  complete " << (fi.analysisStatus == FieldlineInfo::COMPLETED ? "Yes " : "No ")
-               << (streamlines[i].slSeg->terminated ? 0 : streamlines[i].slSeg->termination )
+               << (streamlines[i].sl->terminated ? 0 : streamlines[i].sl->termination )
                << endl << endl;
     }
 

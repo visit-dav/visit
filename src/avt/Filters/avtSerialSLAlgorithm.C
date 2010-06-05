@@ -97,7 +97,7 @@ avtSerialSLAlgorithm::~avtSerialSLAlgorithm()
 // ****************************************************************************
 
 void
-avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
+avtSerialSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 {
     avtSLAlgorithm::Initialize(seedPts);
 
@@ -118,10 +118,13 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 //   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
 //   Use new name "GetCurrentLocation".
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtSerialSLAlgorithm::AddStreamlines(vector<avtStreamlineWrapper *> &sls)
+avtSerialSLAlgorithm::AddStreamlines(vector<avtStreamline *> &sls)
 {
     int nSeeds = sls.size();
     int i0 = 0, i1 = nSeeds;
@@ -157,8 +160,8 @@ avtSerialSLAlgorithm::AddStreamlines(vector<avtStreamlineWrapper *> &sls)
     avtVector endPt;
     for ( int i = i0; i < i1; i++)
     {
-        avtStreamlineWrapper *s = sls[i];
-        s->GetCurrentLocation(endPt);
+        avtStreamline *s = sls[i];
+        s->CurrentLocation(endPt);
         if (PointInDomain(endPt, s->domain))
             activeSLs.push_back(s);
         else
@@ -193,6 +196,9 @@ avtSerialSLAlgorithm::AddStreamlines(vector<avtStreamlineWrapper *> &sls)
 //   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
 //   Move some initialization into RunAlgorithm.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
@@ -205,7 +211,7 @@ avtSerialSLAlgorithm::RunAlgorithm()
     SortStreamlines(activeSLs);
     if (!activeSLs.empty())
     {
-        avtStreamlineWrapper *s = activeSLs.front();
+        avtStreamline *s = activeSLs.front();
         GetDomain(s);
     }
 
@@ -214,7 +220,7 @@ avtSerialSLAlgorithm::RunAlgorithm()
         // Integrate all loaded domains.
         while (! activeSLs.empty())
         {
-            avtStreamlineWrapper *s = activeSLs.front();
+            avtStreamline *s = activeSLs.front();
             activeSLs.pop_front();
 
             if (DomainLoaded(s->domain))
@@ -229,7 +235,7 @@ avtSerialSLAlgorithm::RunAlgorithm()
                 GetDomain(s);
 #endif
                 IntegrateStreamline(s);
-                if (s->status == avtStreamlineWrapper::TERMINATE)
+                if (s->status == avtStreamline::STATUS_TERMINATE)
                     terminatedSLs.push_back(s);
                 else
                     oobSLs.push_back(s);
@@ -247,7 +253,7 @@ avtSerialSLAlgorithm::RunAlgorithm()
         oobSLs.clear();
         
         SortStreamlines(activeSLs);
-        avtStreamlineWrapper *s = activeSLs.front();
+        avtStreamline *s = activeSLs.front();
         GetDomain(s);
     }
 
@@ -265,6 +271,8 @@ avtSerialSLAlgorithm::RunAlgorithm()
 //
 //  Modifications:
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
@@ -273,7 +281,7 @@ avtSerialSLAlgorithm::ResetStreamlinesForContinueExecute()
 {
     while (! terminatedSLs.empty())
     {
-        avtStreamlineWrapper *s = terminatedSLs.front();
+        avtStreamline *s = terminatedSLs.front();
         terminatedSLs.pop_front();
         
         activeSLs.push_back(s);

@@ -68,6 +68,9 @@
 //    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //    Add ability to restart streamline integration.
 //
+//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//    Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 #include "StreamlineAnalyzerLib.h"
@@ -121,7 +124,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual avtContract_p     ModifyContract(avtContract_p);
     virtual void              UpdateDataObjectInfo(void);
     virtual void              CreateStreamlineOutput( 
-                                   vector<avtStreamlineWrapper *> &sls);
+                                   vector<avtStreamline *> &sls);
 
   virtual void drawPoints( avtDataTree *dt,
                            vector < Point > &nodes );
@@ -192,7 +195,7 @@ class avtPoincareFilter : public avtStreamlineFilter
       public:
         SLHelper() {}
         ~SLHelper() {}
-        avtStreamlineWrapper *slSeg;
+        avtStreamline *sl;
         std::vector<avtVector> streamlinePts;
     };
 

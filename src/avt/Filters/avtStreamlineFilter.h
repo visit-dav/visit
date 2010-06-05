@@ -62,7 +62,7 @@ class vtkTubeFilter;
 class vtkPolyData;
 class vtkRibbonFilter;
 class vtkAppendPolyData;
-class avtStreamlineWrapper;
+class avtStreamline;
 class DomainType;
 class avtSLAlgorithm;
 
@@ -220,6 +220,9 @@ class avtSLAlgorithm;
 //   Dave Pugmire, Tue May 25 10:15:35 EDT 2010
 //   Added DeleteStreamlines method.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : 
@@ -328,8 +331,8 @@ class AVTFILTERS_API avtStreamlineFilter :
     virtual void              ExamineContract(avtContract_p);
     virtual bool              CheckOnDemandViability(void);
 
-    void                      IntegrateStreamline(avtStreamlineWrapper *slSeg, int maxSteps=-1);
-    void                      IntegrateDomain(avtStreamlineWrapper *slSeg, 
+    void                      IntegrateStreamline(avtStreamline *sl, int maxSteps=-1);
+    void                      IntegrateDomain(avtStreamline *sl, 
                                               vtkDataSet *ds,
                                               double *extents,
                                               int maxSteps=-1);
@@ -349,23 +352,23 @@ class AVTFILTERS_API avtStreamlineFilter :
 
     int                       GetNextStreamlineID(){ int id = MaxID; MaxID++; return id;}
     void                      CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
-                                                         std::vector<avtStreamlineWrapper *> &streamlines,
+                                                         std::vector<avtStreamline *> &streamlines,
                                                          std::vector<std::vector<int> > &ids);
-    void                      GetStreamlinesFromInitialSeeds(std::vector<avtStreamlineWrapper *> &sls);
+    void                      GetStreamlinesFromInitialSeeds(std::vector<avtStreamline *> &sls);
     void                      AddSeedpoints(std::vector<avtVector> &pts,
                                             std::vector<std::vector<int> > &ids);
     void                      DeleteStreamlines(std::vector<int> &slIDs);
     virtual void              CreateStreamlineOutput( 
-                                                     vector<avtStreamlineWrapper *> &streamlines)
+                                                     vector<avtStreamline *> &streamlines)
                                                     = 0;
-    void                      GetTerminatedStreamlines(vector<avtStreamlineWrapper *> &sls);
+    void                      GetTerminatedStreamlines(vector<avtStreamline *> &sls);
 
     // Helper functions.
     bool                      PointInDomain(avtVector &pt, DomainType &domain);
     int                       DomainToRank(DomainType &domain);
     void                      ComputeDomainToRankMapping();
     bool                      OwnDomain(DomainType &domain);
-    void                      SetDomain(avtStreamlineWrapper *slSeg);
+    void                      SetDomain(avtStreamline *sl);
     void                      Initialize();
     void                      ComputeRankList(const std::vector<int> &domList, 
                                               std::vector<int> &ranks, 

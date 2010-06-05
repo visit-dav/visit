@@ -62,8 +62,8 @@
 //   integration was not handled correctly after the code refactor. Added
 //   HandleOOBSL().
 //
-//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
-//    Change numTerminated to numSLChange.
+//   Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
+//   Change numTerminated to numSLChange.
 //
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Remove ExchangeSLs.
@@ -77,6 +77,9 @@
 //   Hank Childs, Fri Feb 19 16:20:45 CST 2010
 //   Add PreRunAlgorithm.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 class avtParDomSLAlgorithm : public avtParSLAlgorithm
@@ -85,8 +88,8 @@ class avtParDomSLAlgorithm : public avtParSLAlgorithm
     avtParDomSLAlgorithm(avtStreamlineFilter *slFilter, int maxCount);
     virtual ~avtParDomSLAlgorithm();
 
-    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
-    virtual void              AddStreamlines(std::vector<avtStreamlineWrapper*> &sls);
+    virtual void              Initialize(std::vector<avtStreamline *> &);
+    virtual void              AddStreamlines(std::vector<avtStreamline*> &sls);
     virtual void              ResetStreamlinesForContinueExecute();
     virtual const char*       AlgoName() const {return "ParallelStaticDomains";}
 
@@ -94,11 +97,11 @@ class avtParDomSLAlgorithm : public avtParSLAlgorithm
     virtual void              RunAlgorithm();
     virtual void              PreRunAlgorithm();
     void                      ExchangeTermination();
-    void                      HandleOOBSL(avtStreamlineWrapper *s);
+    void                      HandleOOBSL(avtStreamline *s);
     
     int                       numSLChange, totalNumStreamlines;
 
-    std::list<avtStreamlineWrapper *> activeSLs;
+    std::list<avtStreamline *> activeSLs;
     int                       maxCnt;
 };
 

@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <avtStreamlinePolyDataFilter.h>
-#include "avtStreamlineWrapper.h"
+#include "avtStreamline.h"
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkCleanPolyData.h>
@@ -89,11 +89,14 @@ std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
 avtStreamlinePolyDataFilter::CreateStreamlineOutput(
-                                   vector<avtStreamlineWrapper *> &streamlines)
+                                   vector<avtStreamline *> &streamlines)
 {
     debug5 << "::CreateStreamlineOutput " << streamlines.size() << endl;
 
@@ -104,9 +107,9 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
     vtkAppendPolyData *append = vtkAppendPolyData::New();
     for (int i = 0; i < streamlines.size(); i++)
     {
-        avtStreamlineWrapper *slSeg = (avtStreamlineWrapper *) streamlines[i];
+        avtStreamline *sl = (avtStreamline *) streamlines[i];
         vector<float> thetas;
-        vtkPolyData *pd = GetVTKPolyData(slSeg->sl, slSeg->id);
+        vtkPolyData *pd = GetVTKPolyData(sl, sl->id);
 
         if (pd == NULL)
             continue;
@@ -156,7 +159,7 @@ avtStreamlinePolyDataFilter::CreateStreamlineOutput(
 //   Add new coloring methods, length, time and ID.
 //
 //   Dave Pugmire, Mon Feb  2 14:39:35 EST 2009
-//   Moved this method from avtStreamlineWrapper to avtStreamlinePolyDataFilter.
+//   Moved this method from avtStreamline to avtStreamlinePolyDataFilter.
 //
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
 //   Handle color by variable.

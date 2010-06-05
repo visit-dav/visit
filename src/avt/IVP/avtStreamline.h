@@ -52,6 +52,55 @@
 class vtkObject;
 
 // ****************************************************************************
+// Class: DomainType
+//
+// Purpose:
+//    Encapsulate the a domain/timestep.
+//    
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Mar 10 12:41:11 EDT 2009
+//
+// Modifications:
+//
+//   Dave Pugmire, Mon May 11 12:41:51 EDT 2009
+//   Fix operator< so that that std::map works.
+//
+// ****************************************************************************
+
+class IVP_API DomainType
+{
+  public:
+    DomainType() :domain(-1), timeStep(0) {}
+    DomainType(const int &d) :domain(d), timeStep(0) {}
+    DomainType(const int &d, const int &t) :domain(d), timeStep(t) {}
+    ~DomainType() {}
+
+    void operator=(const DomainType &dt)
+    {
+        domain=dt.domain;
+        timeStep=dt.timeStep;
+    }
+
+    bool operator==(const DomainType &dt) const
+    {
+        return (domain == dt.domain &&
+                timeStep == dt.timeStep);
+    }
+    bool operator<(const DomainType &dt) const
+    {
+        return (domain < dt.domain) ||
+               (!(domain < dt.domain) && timeStep < dt.timeStep);
+    }
+
+    //Members
+    int domain, timeStep;
+
+    friend ostream& operator<<(ostream &out, const DomainType &d);
+};
+
+
+// ****************************************************************************
 //  Class: avtStreamline
 //
 //  Purpose:
@@ -130,6 +179,9 @@ class vtkObject;
 //   Remove TMin, PtStart, TStart, IsForward, IsBackward, and IsBothDir.
 //   Rename TMax to GetCurrentTime, PtEnd to GetCurrentLocation.
 //
+//   Hank Childs, Fri Jun  4 15:45:39 CDT 2010
+//   Combine this class with the contents of avtStreamlineWrapper.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
@@ -137,17 +189,31 @@ class IVP_API avtStreamline
   public:
     enum Result
     {
-        TERMINATE,
-        POINT_OUTSIDE_DOMAIN,
-        EXIT_DOMAIN,
-        ERROR,
+        RESULT_TERMINATE,
+        RESULT_POINT_OUTSIDE_DOMAIN,
+        RESULT_EXIT_DOMAIN,
+        RESULT_ERROR,
     };
+
+    enum Status
+    {
+        STATUS_UNSET=-1,
+        STATUS_TERMINATE,
+        STATUS_OUTOFBOUNDS
+    };
+
+    enum SerializeFlags
+    {
+        SERIALIZE_STEPS = 1,
+        SERIALIZE_INC_SEQ = 2,
+    };
+
 
     enum ScalarValueType {NONE=0, SPEED=1, VORTICITY=2, SCALAR_VARIABLE=4};
 
     typedef std::vector<avtIVPStep*>::const_iterator iterator;
     avtStreamline(const avtIVPSolver* model, const double& t_start, 
-                  const avtVector &p_start, int ID=-1);
+                  const avtVector &p_start, int ID);
     avtStreamline();
     ~avtStreamline();
 
@@ -169,8 +235,14 @@ class IVP_API avtStreamline
     void      Debug() const;
     
     void      Serialize(MemStream::Mode mode, MemStream &buff, 
-                        avtIVPSolver *solver,
-                        bool serializeSteps=false);
+                        avtIVPSolver *solver);
+    static avtStreamline* MergeStreamlineSequence(std::vector<avtStreamline *> &v);
+    static bool IdSeqCompare(const avtStreamline *slA,
+                             const avtStreamline *slB);
+    static bool IdRevSeqCompare(const avtStreamline *slA,
+                                const avtStreamline *slB);
+    static bool DomainCompare(const avtStreamline *slA,
+                              const avtStreamline *slB);
 
     int       GetVariableIdx(const std::string &var) const;
 
@@ -193,6 +265,21 @@ class IVP_API avtStreamline
   public:
     // Integration steps.
     std::vector<avtIVPStep*> _steps;
+
+    double termination;
+    avtIVPSolver::TerminateType terminationType;
+    bool terminated;
+
+    unsigned long serializeFlags;
+
+    // Helpers needed for computing figuring out which domain to use next
+    std::vector<DomainType> seedPtDomainList;
+    DomainType domain;
+    Status status;
+
+    long id, sequenceCnt;
+    long long sortKey;
+
   protected:
 
     // Intersection points.
@@ -207,9 +294,6 @@ class IVP_API avtStreamline
     static const double minH;
 
   public:
-    //Bookeeping
-    int id;
-
     std::vector<std::string> scalars;
 };
 
@@ -217,10 +301,10 @@ inline std::ostream& operator<<( std::ostream& out, const avtStreamline::Result 
 {
     switch (res)
     {
-      case avtStreamline::TERMINATE: out<<"TERMINATE"; break;
-      case avtStreamline::POINT_OUTSIDE_DOMAIN: out<<"POINTOUTSIDE_DOMAIN"; break;
-      case avtStreamline::EXIT_DOMAIN: out<<"EXIT_DOMAIN"; break;
-      case avtStreamline::ERROR: out<<"ERROR"; break;
+      case avtStreamline::RESULT_TERMINATE: out<<"TERMINATE"; break;
+      case avtStreamline::RESULT_POINT_OUTSIDE_DOMAIN: out<<"POINTOUTSIDE_DOMAIN"; break;
+      case avtStreamline::RESULT_EXIT_DOMAIN: out<<"EXIT_DOMAIN"; break;
+      case avtStreamline::RESULT_ERROR: out<<"ERROR"; break;
       default:
         out<<"UNKNOWN_RESULT"; break;
     }

@@ -108,10 +108,13 @@ avtParSLAlgorithm::~avtParSLAlgorithm()
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Limit the number of async recvs outstanding.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts,
+avtParSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts,
                               int msgSz,
                               int numRecvs)
 {
@@ -174,6 +177,9 @@ avtParSLAlgorithm::PostExecute()
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Limit the number of async recvs outstanding.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
@@ -191,10 +197,10 @@ avtParSLAlgorithm::InitRequests()
 }
 
 static int
-CountIDs(list<avtStreamlineWrapper *> &l, int id)
+CountIDs(list<avtStreamline *> &l, int id)
 {
     int cnt = 0;
-    list<avtStreamlineWrapper*>::const_iterator si = l.begin();
+    list<avtStreamline*>::const_iterator si = l.begin();
     for (si = l.begin(); si != l.end(); si++)
     {
         if ((*si)->id == id)
@@ -216,6 +222,11 @@ CountIDs(list<avtStreamlineWrapper *> &l, int id)
 //  Programmer: Dave Pugmire
 //  Creation:   September 21, 2009
 //
+//  Modifications:
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
@@ -235,10 +246,10 @@ avtParSLAlgorithm::ExchangeSLSteps()
     long *idBuffer = new long[2*N], *myIDs = new long[2*N];
 
     //Sort the terminated/communicated SLs by id.
-    terminatedSLs.sort(avtStreamlineWrapper::IdSeqCompare);
-    communicatedSLs.sort(avtStreamlineWrapper::IdSeqCompare);
+    terminatedSLs.sort(avtStreamline::IdSeqCompare);
+    communicatedSLs.sort(avtStreamline::IdSeqCompare);
 
-    vector<vector<avtStreamlineWrapper *> >sendSLs(N);
+    vector<vector<avtStreamline *> >sendSLs(N);
     vector<int> owners(N);
     
     int minId = 0;
@@ -261,7 +272,7 @@ avtParSLAlgorithm::ExchangeSLSteps()
 
         //Set array for SLs that terminated here. Update sequence counts for communicated
         //SLs.
-        list<avtStreamlineWrapper*>::iterator t = terminatedSLs.begin();
+        list<avtStreamline*>::iterator t = terminatedSLs.begin();
         while (t != terminatedSLs.end() && (*t)->id <= maxId)
         {
             if ((*t)->id >= minId)
@@ -275,7 +286,7 @@ avtParSLAlgorithm::ExchangeSLSteps()
             t++;
         }
         
-        list<avtStreamlineWrapper*>::const_iterator c = communicatedSLs.begin();
+        list<avtStreamline*>::const_iterator c = communicatedSLs.begin();
         while (c != communicatedSLs.end() && (*c)->id <= maxId)
         {
             if ((*c)->id >= minId)
@@ -301,7 +312,7 @@ avtParSLAlgorithm::ExchangeSLSteps()
         //Send communicatedSLs to the owners.
         while (!communicatedSLs.empty())
         {
-            avtStreamlineWrapper *s = communicatedSLs.front();
+            avtStreamline *s = communicatedSLs.front();
             if (s->id <= maxId)
             {
                 int idx = s->id%N;
@@ -310,7 +321,7 @@ avtParSLAlgorithm::ExchangeSLSteps()
                     terminatedSLs.push_back(s);
                 else
                 {
-                    s->serializeFlags = avtStreamlineWrapper::SERIALIZE_STEPS; //Write SL steps.
+                    s->serializeFlags = avtStreamline::SERIALIZE_STEPS; //Write SL steps.
                     sendSLs[idx].push_back(s);
                     owners[idx] = owner;
                 }
@@ -339,7 +350,7 @@ avtParSLAlgorithm::ExchangeSLSteps()
             RecvSLs(terminatedSLs);
             
             //See if we have all the sequences we need.
-            terminatedSLs.sort(avtStreamlineWrapper::IdSeqCompare);
+            terminatedSLs.sort(avtStreamline::IdSeqCompare);
             bool needMore = false;
             for (int i = 0; i < N && !needMore; i++)
                 if (idBuffer[i] == rank)
@@ -370,26 +381,31 @@ avtParSLAlgorithm::ExchangeSLSteps()
 //  Programmer: Dave Pugmire
 //  Creation:   Sept 21, 2009
 //
+//  Modifications:
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
 avtParSLAlgorithm::MergeTerminatedSLSequences()
 {
     //Sort them by id and sequence so we can process them one at a time.
-    terminatedSLs.sort(avtStreamlineWrapper::IdSeqCompare);
+    terminatedSLs.sort(avtStreamline::IdSeqCompare);
 
     //Split them up into sequences.
-    vector<vector<avtStreamlineWrapper *> > seqs;
+    vector<vector<avtStreamline *> > seqs;
     while (!terminatedSLs.empty())
     {
-        avtStreamlineWrapper *s = terminatedSLs.front();
+        avtStreamline *s = terminatedSLs.front();
         terminatedSLs.pop_front();
         
         //Empty or new ID, add a new entry.
         if (seqs.size() == 0 ||
             seqs[seqs.size()-1][0]->id != s->id)
         {
-            vector<avtStreamlineWrapper *> v;
+            vector<avtStreamline *> v;
             v.push_back(s);
             seqs.push_back(v);
         }
@@ -403,7 +419,7 @@ avtParSLAlgorithm::MergeTerminatedSLSequences()
     //Merge the sequences together, put them into terminated list.
     for (int i = 0; i < seqs.size(); i++)
     {
-        avtStreamlineWrapper *s = avtStreamlineWrapper::MergeStreamlineSequence(seqs[i]);
+        avtStreamline *s = avtStreamline::MergeStreamlineSequence(seqs[i]);
         terminatedSLs.push_back(s);
     }
 }
@@ -833,33 +849,36 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
 //   Dave Pugmire, Thu Sep 24 14:03:46 EDT 2009
 //   Call new method, DoSendSLs.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
 avtParSLAlgorithm::SendSLs(int dst, 
-                           vector<avtStreamlineWrapper*> &sls)
+                           vector<avtStreamline*> &sls)
 {
 
     for (int i = 0; i < sls.size(); i++)
     {
-        avtStreamlineWrapper *slSeg = sls[i];
-        slSeg->serializeFlags |= avtStreamlineWrapper::SERIALIZE_INC_SEQ;
+        avtStreamline *sl = sls[i];
+        sl->serializeFlags |= avtStreamline::SERIALIZE_INC_SEQ;
     }
 
     if (DoSendSLs(dst, sls))
     {
         for (int i = 0; i < sls.size(); i++)
         {
-            avtStreamlineWrapper *slSeg = sls[i];
+            avtStreamline *sl = sls[i];
             
             //Add if id/seq is unique. (single streamlines can be sent to multiple dst).
-            list<avtStreamlineWrapper*>::const_iterator si = communicatedSLs.begin();
+            list<avtStreamline*>::const_iterator si = communicatedSLs.begin();
             bool found = false;
             for (si = communicatedSLs.begin(); !found && si != communicatedSLs.end(); si++)
-                found = ((*si)->id == slSeg->id && (*si)->sequenceCnt == slSeg->sequenceCnt);
+                found = ((*si)->id == sl->id && (*si)->sequenceCnt == sl->sequenceCnt);
         
             if (!found)
-                communicatedSLs.push_back(slSeg);
+                communicatedSLs.push_back(sl);
         }
         
         //Empty the array.
@@ -882,11 +901,14 @@ avtParSLAlgorithm::SendSLs(int dst,
 //   Hank Childs, Sat Feb 20 16:53:18 CST 2010
 //   Don't output timing values to the timing logs.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 bool
 avtParSLAlgorithm::DoSendSLs(int dst, 
-                             vector<avtStreamlineWrapper*> &sls)
+                             vector<avtStreamline*> &sls)
 {
     if (dst == rank)
         return false;
@@ -901,8 +923,8 @@ avtParSLAlgorithm::DoSendSLs(int dst,
 
     for (int i = 0; i < sls.size(); i++)
     {
-        avtStreamlineWrapper *slSeg = sls[i];
-        slSeg->Serialize(MemStream::WRITE, buff, GetSolver());
+        avtStreamline *sl = sls[i];
+        sl->Serialize(MemStream::WRITE, buff, GetSolver());
         SLCommCnt.value ++;
     }
     
@@ -953,10 +975,13 @@ avtParSLAlgorithm::DoSendSLs(int dst,
 //  Hank Childs, Sat Feb 20 16:53:18 CST 2010
 //  Don't output timing values to the timing logs.
 //
+//  Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//  Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 int
-avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &recvSLs)
+avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &recvSLs)
 {
     int communicationTimer = visitTimer->StartTimer();
     int slCount = 0;
@@ -997,9 +1022,9 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &recvSLs)
 
                 for (int j = 0; j < numSLs; j++)
                 {
-                    avtStreamlineWrapper *slSeg = new avtStreamlineWrapper;
-                    slSeg->Serialize(MemStream::READ, buff, GetSolver());
-                    recvSLs.push_back(slSeg);
+                    avtStreamline *sl = new avtStreamline;
+                    sl->Serialize(MemStream::READ, buff, GetSolver());
+                    recvSLs.push_back(sl);
                     slCount++;
                 }
             }
@@ -1044,22 +1069,25 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &recvSLs)
 //    Hank Childs, Fri Jun  4 03:52:48 PDT 2010
 //    Rename GetEndPt to GetCurrentLocation.
 //
+//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//    Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 int
-avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &streamlines,
+avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &streamlines,
                            int &earlyTerminations )
 {
-    list<avtStreamlineWrapper *> recvSLs;
+    list<avtStreamline *> recvSLs;
     RecvSLs(recvSLs);
 
     earlyTerminations = 0;
     int slCount = 0;
     //Check to see if they in this domain.
-    list<avtStreamlineWrapper *>::iterator s;
+    list<avtStreamline *>::iterator s;
     for (s = recvSLs.begin(); s != recvSLs.end(); ++s)
     {
         avtVector pt;
-        (*s)->GetCurrentLocation(pt);
+        (*s)->CurrentLocation(pt);
 
         if (PointInDomain(pt, (*s)->domain))
         {
@@ -1086,16 +1114,20 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamlineWrapper *> &streamlines,
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
-// Modifications:
+//
+//  Modifications:
 //
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Add early terminations flag.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 bool
-avtParSLAlgorithm::ExchangeSLs(list<avtStreamlineWrapper *> &streamlines,
-                               vector<vector< avtStreamlineWrapper *> > &sendSLs,
+avtParSLAlgorithm::ExchangeSLs(list<avtStreamline *> &streamlines,
+                               vector<vector< avtStreamline *> > &sendSLs,
                                int &earlyTerminations )
 {
     bool newStreamlines = false;
@@ -1104,7 +1136,7 @@ avtParSLAlgorithm::ExchangeSLs(list<avtStreamlineWrapper *> &streamlines,
     // Do the SL sends.
     for (int i = 0; i < nProcs; i++)
     { 
-        vector<avtStreamlineWrapper *> &sl = sendSLs[i];
+        vector<avtStreamline *> &sl = sendSLs[i];
         
         if (i != rank)
             SendSLs(i, sl);

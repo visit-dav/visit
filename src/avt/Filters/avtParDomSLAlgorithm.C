@@ -114,10 +114,13 @@ avtParDomSLAlgorithm::~avtParDomSLAlgorithm()
 //   Establish how many streamlines there are once each proc determines if a
 //   seed is in the domain.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
+avtParDomSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 {
     int numRecvs = nProcs-1;
     if (numRecvs > 64)
@@ -139,19 +142,22 @@ avtParDomSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
 //
 //  Modifications:
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::AddStreamlines(std::vector<avtStreamlineWrapper*> &sls)
+avtParDomSLAlgorithm::AddStreamlines(std::vector<avtStreamline*> &sls)
 {
     //Get the SLs that I own.
     for (int i = 0; i < sls.size(); i++)
     {
-        avtStreamlineWrapper *s = sls[i];
+        avtStreamline *s = sls[i];
         if (OwnDomain(s->domain))
         {
             avtVector endPt;
-            s->GetCurrentLocation(endPt);
+            s->CurrentLocation(endPt);
             
             if (PointInDomain(endPt, s->domain))
                 activeSLs.push_back(s);
@@ -168,7 +174,7 @@ avtParDomSLAlgorithm::AddStreamlines(std::vector<avtStreamlineWrapper*> &sls)
     for (int i = 0; i < numSeedPoints; i++)
         idBuffer[i] = 0;
     
-    list<avtStreamlineWrapper *>::iterator s;
+    list<avtStreamline *>::iterator s;
     for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
         idBuffer[(*s)->id]++;
 
@@ -191,7 +197,7 @@ avtParDomSLAlgorithm::AddStreamlines(std::vector<avtStreamlineWrapper*> &sls)
     /*
     debug5<<"Init_totalNumStreamlines= "<<totalNumStreamlines<<endl;
     debug5<<"My SLs: "<<endl;
-    list<avtStreamlineWrapper *>::iterator s;
+    list<avtStreamline *>::iterator s;
     for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
         debug5<<"ID "<<(*s)->id<<" dom= "<<(*s)->domain<<endl;
     */
@@ -284,14 +290,17 @@ avtParDomSLAlgorithm::PreRunAlgorithm()
 //   integration was not handled correctly after the code refactor. Added
 //   HandleOOBSL().
 //
-//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
-//    Change numTerminated to numSLChange.
+//   Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
+//   Change numTerminated to numSLChange.
 //
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Remove ExchangeSLs() method.
 //
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Replace Execute() with RunAlgorithm().
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
@@ -304,15 +313,15 @@ avtParDomSLAlgorithm::RunAlgorithm()
     while (totalNumStreamlines > 0)
     {
         //Integrate upto maxCnt streamlines.
-        list<avtStreamlineWrapper *>::iterator s;
+        list<avtStreamline *>::iterator s;
         int cnt = 0;
         while (cnt < maxCnt && !activeSLs.empty())
         {
-            avtStreamlineWrapper *s = activeSLs.front();
+            avtStreamline *s = activeSLs.front();
             activeSLs.pop_front();
             
             IntegrateStreamline(s);
-            if (s->status == avtStreamlineWrapper::TERMINATE)
+            if (s->status == avtStreamline::STATUS_TERMINATE)
             {
                 debug5<<"TerminatedSL: "<<s->id<<endl;
                 terminatedSLs.push_back(s);
@@ -362,10 +371,13 @@ avtParDomSLAlgorithm::RunAlgorithm()
 //   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
 //   Bug fix. Set the new domain before communicating SL.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s)
+avtParDomSLAlgorithm::HandleOOBSL(avtStreamline *s)
 {
     // The integrated streamline could lie in multiple domains.
     // Duplicate the SL and send to the proper owner.
@@ -384,7 +396,7 @@ avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s)
         }
         else
         {
-            vector<avtStreamlineWrapper *> sls;
+            vector<avtStreamline *> sls;
             sls.push_back(s);
             SendSLs(domRank, sls);
             //debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> "<<domRank<<endl;
@@ -403,6 +415,8 @@ avtParDomSLAlgorithm::HandleOOBSL(avtStreamlineWrapper *s)
 //
 //  Modifications:
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
@@ -411,7 +425,7 @@ avtParDomSLAlgorithm::ResetStreamlinesForContinueExecute()
 {
     while (! terminatedSLs.empty())
     {
-        avtStreamlineWrapper *s = terminatedSLs.front();
+        avtStreamline *s = terminatedSLs.front();
         terminatedSLs.pop_front();
         
         activeSLs.push_back(s);
