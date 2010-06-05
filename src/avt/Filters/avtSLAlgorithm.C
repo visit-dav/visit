@@ -48,8 +48,8 @@
 
 using namespace std;
 
-static bool slDomainCompare(const avtStreamlineWrapper *slA, 
-                            const avtStreamlineWrapper *slB)
+static bool slDomainCompare(const avtStreamline *slA, 
+                            const avtStreamline *slB)
 {
     return slA->sortKey < slB->sortKey;
 }
@@ -118,14 +118,17 @@ avtSLAlgorithm::~avtSLAlgorithm()
 //   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
 //   Use new name "GetCurrentLocation".
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtSLAlgorithm::GetDomain(avtStreamlineWrapper *slSeg)
+avtSLAlgorithm::GetDomain(avtStreamline *sl)
 {
     avtVector pt;
-    slSeg->GetCurrentLocation(pt);
-    return GetDomain(slSeg->domain, pt.x, pt.y, pt.z);
+    sl->CurrentLocation(pt);
+    return GetDomain(sl->domain, pt.x, pt.y, pt.z);
 }
 
 // ****************************************************************************
@@ -159,10 +162,15 @@ avtSLAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtSLAlgorithm::IntegrateStreamline(avtStreamlineWrapper *s)
+avtSLAlgorithm::IntegrateStreamline(avtStreamline *s)
 {
     int timerHandle = visitTimer->StartTimer();
 
@@ -186,10 +194,13 @@ avtSLAlgorithm::IntegrateStreamline(avtStreamlineWrapper *s)
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
 //   Initialize the initial domain load count and timer.  
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtSLAlgorithm::Initialize(vector<avtStreamlineWrapper *> &seedPts)
+avtSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 {
     numSeedPoints = seedPts.size();
 
@@ -234,6 +245,9 @@ avtSLAlgorithm::Execute()
 //   Dave Pugmire, Tue Mar 24 08:15:04 EDT 2009
 //   Report stats if timer is enabled.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
@@ -241,7 +255,7 @@ avtSLAlgorithm::PostExecute()
 {
     debug1<<"avtSLAlgorithm::PostExecute()\n";
 
-    vector<avtStreamlineWrapper *> v;
+    vector<avtStreamline *> v;
     
     while (! terminatedSLs.empty())
     {
@@ -275,13 +289,16 @@ avtSLAlgorithm::PostExecute()
 //   Dave Pugmire, Tue Aug 11 13:44:44 EDT 2009
 //   Fix compiler warning.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtSLAlgorithm::SortStreamlines(list<avtStreamlineWrapper *> &sl)
+avtSLAlgorithm::SortStreamlines(list<avtStreamline *> &sl)
 {
     int timerHandle = visitTimer->StartTimer();
-    list<avtStreamlineWrapper*>::iterator s;
+    list<avtStreamline*>::iterator s;
 
     //Set sortkey to -domain. (So that loaded domains sort first).
     for (s=sl.begin(); s != sl.end(); ++s)
@@ -315,13 +332,16 @@ avtSLAlgorithm::SortStreamlines(list<avtStreamlineWrapper *> &sl)
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
-avtSLAlgorithm::SortStreamlines(vector<avtStreamlineWrapper *> &sl)
+avtSLAlgorithm::SortStreamlines(vector<avtStreamline *> &sl)
 {
     int timerHandle = visitTimer->StartTimer();
-    vector<avtStreamlineWrapper*>::iterator s;
+    vector<avtStreamline*>::iterator s;
 
     //Set sortkey to -domain. (So that loaded domains sort first).
     for (s=sl.begin(); s != sl.end(); ++s)
@@ -348,13 +368,15 @@ avtSLAlgorithm::SortStreamlines(vector<avtStreamlineWrapper *> &sl)
 //
 //  Modifications:
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
 void
-avtSLAlgorithm::GetTerminatedSLs(vector<avtStreamlineWrapper *> &v)
+avtSLAlgorithm::GetTerminatedSLs(vector<avtStreamline *> &v)
 {
-    list<avtStreamlineWrapper *>::const_iterator s;
+    list<avtStreamline *>::const_iterator s;
     
     for (s=terminatedSLs.begin(); s != terminatedSLs.end(); ++s)
         v.push_back(*s);
@@ -372,12 +394,15 @@ avtSLAlgorithm::GetTerminatedSLs(vector<avtStreamlineWrapper *> &v)
 //
 //  Modifications:
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 void
 avtSLAlgorithm::DeleteStreamlines(std::vector<int> &slIDs)
 {
-    list<avtStreamlineWrapper *>::iterator s;
+    list<avtStreamline *>::iterator s;
     vector<int>::const_iterator i;
 
     for (s=terminatedSLs.begin(); s != terminatedSLs.end(); ++s)

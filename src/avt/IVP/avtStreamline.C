@@ -48,9 +48,21 @@
 #include <ImproperUseException.h>
 #include <DebugStream.h>
 #include <vtkPlane.h>
-
+#include <avtVector.h>
+#include <algorithm>
 
 const double avtStreamline::minH = 1e-9;
+
+
+using namespace std;
+
+
+ostream& operator<<(ostream &out, const DomainType &d)
+{   
+    out<<"["<<d.domain<<", "<<d.timeStep<<"]";
+    return out;
+}
+
 
 // ****************************************************************************
 //  Method: avtStreamline constructor
@@ -79,18 +91,31 @@ const double avtStreamline::minH = 1e-9;
 //   Hank Childs, Thu Jun  3 10:58:32 PDT 2010
 //   Remove _t0 and _p0, which are no longer used.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Incorporate avtStreamlineWrapper into avtStreamline.
+//
 // ****************************************************************************
 
 avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
                              const avtVector &p_start, int ID) :
     scalarValueType(NONE)
 {
-    id = ID;
     intersectionsSet = false;
     numIntersections = 0;
     
     _ivpSolver = model->Clone();
     _ivpSolver->Reset(t_start, p_start);
+
+    status = STATUS_UNSET;
+    domain = -1;
+    sequenceCnt = 0;
+    terminated = false;
+    id = ID;
+    sortKey = 0;
+
+    termination = 0.0;
+    terminationType = avtIVPSolver::TIME;
+    serializeFlags = 0;
 }
 
 
@@ -111,6 +136,9 @@ avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
 //   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
 //   Don't record intersection points, just count them.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Incorporate avtStreamlineWrapper into avtStreamline.
+//
 // ****************************************************************************
 
 avtStreamline::avtStreamline() :
@@ -119,6 +147,17 @@ avtStreamline::avtStreamline() :
     intersectionsSet = false;
     _ivpSolver = NULL;
     numIntersections = 0;
+
+    status = STATUS_UNSET;
+    domain = -1;
+    sequenceCnt = 0;
+    terminated = false;
+    id = -1;
+    sortKey = 0;
+
+    termination = 0.0;
+    terminationType = avtIVPSolver::TIME;
+    serializeFlags = 0;
 }
 
 
@@ -279,6 +318,9 @@ avtStreamline::Advance(const avtIVPField* field,
 //   Dave Pugmire, Wed May 26 13:48:24 EDT 2010
 //   Use a new return code.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Incorporate avtStreamlineWrapper into avtStreamline.
+//
 // ****************************************************************************
 
 avtStreamline::Result
@@ -292,7 +334,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
     // catch cases where the start position is outside the 
     // domain of field
     if (!field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()))
-        return avtStreamline::POINT_OUTSIDE_DOMAIN;
+        return avtStreamline::RESULT_POINT_OUTSIDE_DOMAIN;
 
     avtStreamline::Result rc;
     bool stepTaken = false;
@@ -350,7 +392,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
                     debug5<<"avtStreamline::DoAdvance() DONE  result= OUTSIDE_DOMAIN "
                           << "step= " << h <<endl;
 
-                rc = avtStreamline::EXIT_DOMAIN;
+                rc = avtStreamline::RESULT_EXIT_DOMAIN;
                 break;
             }
 
@@ -381,20 +423,20 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             
             if (result == avtIVPSolver::TERMINATE)
             {
-                rc = avtStreamline::TERMINATE;
+                rc = avtStreamline::RESULT_TERMINATE;
                 break;
             }
         }
         else
         {
             delete step;
-            rc = avtStreamline::ERROR;
+            rc = avtStreamline::RESULT_ERROR;
             break;
         }
     }
 
     if (!stepTaken)
-        rc = avtStreamline::ERROR;
+        rc = avtStreamline::RESULT_ERROR;
     
     return rc;
 }
@@ -746,21 +788,40 @@ avtStreamline::IntersectPlane(const avtVector &p0, const avtVector &p1)
 //    Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
 //    Don't record intersection points, just count them.
 //
-//   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
-//   Option to serialize steps.
+//    Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
+//    Option to serialize steps.
 //
-//   Hank Childs, Thu Jun  3 10:58:32 PDT 2010
-//   Remove _t0 and _p0, which are no longer used.
+//    Hank Childs, Thu Jun  3 10:58:32 PDT 2010
+//    Remove _t0 and _p0, which are no longer used.
+//
+//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//    Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
 void
 avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff, 
-                         avtIVPSolver *solver,
-                         bool serializeSteps)
+                         avtIVPSolver *solver)
 {
+    bool serializeSteps = serializeFlags&SERIALIZE_STEPS;
     if (DebugStream::Level5())
         debug5<<"  avtStreamline::Serialize "<<(mode==MemStream::READ?"READ":"WRITE")<<" serSteps= "<<serializeSteps<<endl;
+    buff.io(mode, id);
+    buff.io(mode, domain);
+    buff.io(mode, status);
+    buff.io(mode, terminated);
+    buff.io(mode, termination);
+    buff.io(mode, terminationType);
+    
+    if ((serializeFlags & SERIALIZE_INC_SEQ) && mode == MemStream::WRITE)
+    {
+        long seqCnt = sequenceCnt+1;
+        buff.io(mode, seqCnt);
+    }
+    else
+        buff.io(mode, sequenceCnt);
+
+
     buff.io(mode, scalarValueType);
     buff.io(mode, numIntersections);
 
@@ -815,6 +876,125 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
         _ivpSolver = solver->Clone();
         _ivpSolver->PutState(solverState);
     }    
+
+    serializeFlags = 0;
     if (DebugStream::Level5())
         debug5 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
 }
+
+// ****************************************************************************
+//  Method: avtStreamline::IdSeqCompare
+//
+//  Purpose:
+//      Sort streamlines by id, then sequence number.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//    Move this method from avtStreamlineWrapper.
+//
+// ****************************************************************************
+bool
+avtStreamline::IdSeqCompare(const avtStreamline *slA,
+                                   const avtStreamline *slB)
+{                                  
+    if (slA->id == slB->id)
+        return slA->sequenceCnt < slB->sequenceCnt;
+        
+    return slA->id < slB->id;
+}   
+
+// ****************************************************************************
+//  Method: avtStreamline::IdRevSeqCompare
+//
+//  Purpose:
+//      Sort streamlines by id, then reverse sequence number.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//    Move this method from avtStreamlineWrapper.
+//
+// ****************************************************************************
+bool
+avtStreamline::IdRevSeqCompare(const avtStreamline *slA,
+                                   const avtStreamline *slB)
+{   
+    if (slA->id == slB->id)
+        return slA->sequenceCnt > slB->sequenceCnt;
+    
+    return slA->id < slB->id;
+}
+
+bool
+avtStreamline::DomainCompare(const avtStreamline *slA,
+                                    const avtStreamline *slB)
+{   
+    return slA->domain < slB->domain;
+}
+
+// ****************************************************************************
+//  Method: avtStreamline::MergeStreamlineSequence
+//
+//  Purpose:
+//      Merge a vector of streamline sequences into a single streamline.
+//      This is destructive, extra streamlines are deleted.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+//  Modifications:
+//
+//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
+//   Sorting can be done independant of streamline direction. Changed streamline
+//   step from list to vector.
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Move this method from avtStreamlineWrapper.
+//
+// ****************************************************************************
+
+avtStreamline*
+avtStreamline::MergeStreamlineSequence(std::vector<avtStreamline *> &v)
+{   
+    if (v.size() == 0)
+        return NULL;
+    else if (v.size() == 1)
+        return v[0];
+    
+    //Sort the streamlines by Id,seq.
+    std::sort(v.begin(), v.end(), avtStreamline::IdRevSeqCompare);
+    
+    //Make sure all ids are the same.
+    if (v.front()->id != v.back()->id)
+        return NULL;
+    
+    //We want to merge others into the "last" sequence, since it has the right
+    //sover state, sequenceCnt, etc. The vector is reverse sorted, so we can
+    //merge them in order.
+    
+    avtStreamline *s = v.front();
+    
+    for (int i = 1; i < v.size(); i++)
+    {   
+        std::vector<avtIVPStep*>::reverse_iterator si;
+        for (si = v[i]->_steps.rbegin(); si != v[i]->_steps.rend(); si++)
+        {   
+            avtIVPStep *step = new avtIVPStep(*(*si));
+            s->_steps.insert(s->_steps.begin(), step);
+        }
+        
+        delete v[i];
+    }
+    
+
+    v.resize(0);
+    return s;
+}
+

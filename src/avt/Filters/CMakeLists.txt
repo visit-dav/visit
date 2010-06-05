@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Hank Childs, Fri Jun  4 17:03:43 CDT 2010
+#   Remove avtStreamlineWrapper.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -76,7 +79,6 @@ avtSLAlgorithm.C
 avtSmoothPolyDataFilter.C
 avtStreamlineFilter.C
 avtStreamlinePolyDataFilter.C
-avtStreamlineWrapper.C
 avtSummationFilter.C
 avtSurfaceFilter.C
 avtTiledImageCompositor.C

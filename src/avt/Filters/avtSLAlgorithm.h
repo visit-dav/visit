@@ -44,7 +44,7 @@
 #define AVT_SL_ALGORITHM_H
 
 #include <avtStreamlineFilter.h>
-#include "avtStreamlineWrapper.h"
+#include "avtStreamline.h"
 
 // ****************************************************************************
 // Class: avtSLAlgorithm
@@ -87,6 +87,9 @@
 //   Dave Pugmire, Tue May 25 10:15:35 EDT 2010
 //   Added DeleteStreamlines method.
 //
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
 // ****************************************************************************
 
 class avtSLAlgorithm
@@ -96,12 +99,12 @@ class avtSLAlgorithm
     virtual ~avtSLAlgorithm();
 
     //Execution of the algorithm.
-    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &);
+    virtual void              Initialize(std::vector<avtStreamline *> &);
     void                      Execute();
     virtual void              ResetStreamlinesForContinueExecute() = 0;
     virtual void              PostExecute();
-    virtual void              GetTerminatedSLs(vector<avtStreamlineWrapper *> &v);
-    virtual void              AddStreamlines(std::vector<avtStreamlineWrapper*> &sls) = 0;
+    virtual void              GetTerminatedSLs(vector<avtStreamline *> &v);
+    virtual void              AddStreamlines(std::vector<avtStreamline*> &sls) = 0;
     virtual void              DeleteStreamlines(std::vector<int> &slIDs);
 
   protected:
@@ -110,7 +113,7 @@ class avtSLAlgorithm
     virtual void              PostRunAlgorithm() {}
 
     avtStreamlineFilter *streamlineFilter;
-    std::list<avtStreamlineWrapper *> terminatedSLs;
+    std::list<avtStreamline *> terminatedSLs;
     int                       numDomains, numTimeSteps, numSeedPoints;
     virtual const char*       AlgoName() const = 0;
     
@@ -118,8 +121,8 @@ class avtSLAlgorithm
     avtIVPSolver *            GetSolver() {return streamlineFilter->solver; }
     virtual bool              PointInDomain(avtVector &pt, DomainType &dom)
     { return streamlineFilter->avtStreamlineFilter::PointInDomain(pt, dom); }
-    virtual void              IntegrateStreamline(avtStreamlineWrapper *slSeg);
-    vtkDataSet               *GetDomain(avtStreamlineWrapper *slSeg);
+    virtual void              IntegrateStreamline(avtStreamline *sl);
+    vtkDataSet               *GetDomain(avtStreamline *sl);
     vtkDataSet               *GetDomain(const DomainType &dom,
                                         double X=0, double Y=0, double Z=0);
     virtual bool              DomainLoaded(DomainType &dom) const
@@ -132,8 +135,8 @@ class avtSLAlgorithm
     int                       DomCacheSize() const { return streamlineFilter->cacheQLen; }
 
     //Utility functions.
-    virtual void              SortStreamlines(std::list<avtStreamlineWrapper *> &);
-    virtual void              SortStreamlines(std::vector<avtStreamlineWrapper *> &);
+    virtual void              SortStreamlines(std::list<avtStreamline *> &);
+    virtual void              SortStreamlines(std::vector<avtStreamline *> &);
     //Statistics and timers.
     class SLStatistics
     {

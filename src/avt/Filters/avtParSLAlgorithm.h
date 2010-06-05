@@ -63,8 +63,8 @@
 //   Dave Pugmire, Tue Mar 17 12:02:10 EDT 2009
 //   Create a new RecvSLs method that doesn't check for domain inclusion.
 //   
-//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
-//  Change how timings are reported/calculated.
+//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//   Change how timings are reported/calculated.
 //
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Message size and number of receives as member data. Add msgID to track msgs.
@@ -72,6 +72,9 @@
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Replace Execute() with RunAlgorithm(). Add a Pre/Post RunAlgorithm.
 //   Add code to exchange communicated SLs after all processing is complete.
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
@@ -81,7 +84,7 @@ class avtParSLAlgorithm : public avtSLAlgorithm
     avtParSLAlgorithm(avtStreamlineFilter *slFilter);
     virtual ~avtParSLAlgorithm();
 
-    virtual void              Initialize(std::vector<avtStreamlineWrapper *> &,
+    virtual void              Initialize(std::vector<avtStreamline *> &,
                                          int, int);
     virtual void              PostExecute();
 
@@ -97,19 +100,19 @@ class avtParSLAlgorithm : public avtSLAlgorithm
     void                      SendAllMsg(std::vector<int> &msg);
     void                      RecvMsgs(std::vector<std::vector<int> > &msgs);
     void                      SendSLs(int dst,
-                                      std::vector<avtStreamlineWrapper*> &);
+                                      std::vector<avtStreamline*> &);
     bool                      DoSendSLs(int dst,
-                                        std::vector<avtStreamlineWrapper*> &);
-    int                       RecvSLs(std::list<avtStreamlineWrapper*> &);
-    int                       RecvSLs(std::list<avtStreamlineWrapper*> &,
+                                        std::vector<avtStreamline*> &);
+    int                       RecvSLs(std::list<avtStreamline*> &);
+    int                       RecvSLs(std::list<avtStreamline*> &,
                                       int &earlyTerminations);
-    bool                      ExchangeSLs(std::list<avtStreamlineWrapper *> &,
-                                          std::vector<std::vector<avtStreamlineWrapper *> >&,
+    bool                      ExchangeSLs(std::list<avtStreamline *> &,
+                                          std::vector<std::vector<avtStreamline *> >&,
                                           int &earlyTerminations );
     void                      MergeTerminatedSLSequences();
 
     int                       rank, nProcs;
-    std::list<avtStreamlineWrapper *> communicatedSLs;
+    std::list<avtStreamline *> communicatedSLs;
     std::map<MPI_Request, unsigned char*> sendSLBufferMap, recvSLBufferMap;
     std::map<MPI_Request, int *> sendIntBufferMap, recvIntBufferMap;
 
