@@ -57,13 +57,6 @@ const double avtStreamline::minH = 1e-9;
 using namespace std;
 
 
-ostream& operator<<(ostream &out, const DomainType &d)
-{   
-    out<<"["<<d.domain<<", "<<d.timeStep<<"]";
-    return out;
-}
-
-
 // ****************************************************************************
 //  Method: avtStreamline constructor
 //

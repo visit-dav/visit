@@ -96,7 +96,11 @@ class IVP_API DomainType
     //Members
     int domain, timeStep;
 
-    friend ostream& operator<<(ostream &out, const DomainType &d);
+    friend std::ostream& operator<<(std::ostream &out, const DomainType &d)
+    {   
+        out<<"["<<d.domain<<", "<<d.timeStep<<"]";
+        return out;
+    }
 };
 
 
