@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtSLAlgorithm.C                             //
+//                              avtICAlgorithm.C                             //
 // ************************************************************************* //
 
-#include "avtSLAlgorithm.h"
+#include "avtICAlgorithm.h"
 #include <TimingsManager.h>
 #include <DebugStream.h>
 #include <iostream>
@@ -48,17 +48,17 @@
 
 using namespace std;
 
-static bool slDomainCompare(const avtStreamline *slA, 
-                            const avtStreamline *slB)
+static bool icDomainCompare(const avtIntegralCurve *icA, 
+                            const avtIntegralCurve *icB)
 {
-    return slA->sortKey < slB->sortKey;
+    return icA->sortKey < icB->sortKey;
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::avtSLAlgorithm
+//  Method: avtICAlgorithm::avtICAlgorithm
 //
 //  Purpose:
-//      avtSLAlgorithm constructor.
+//      avtICAlgorithm constructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -76,20 +76,20 @@ static bool slDomainCompare(const avtStreamline *slA,
 //
 // ****************************************************************************
 
-avtSLAlgorithm::avtSLAlgorithm( avtPICSFilter *slFilter ) :
+avtICAlgorithm::avtICAlgorithm( avtPICSFilter *f ) :
     TotalTime("totT"), IOTime("ioT"), IntegrateTime("intT"), SortTime("sorT"), ExtraTime("extT"),
     IntegrateCnt("intC"), DomLoadCnt("domLC"), DomPurgeCnt("domPC")
 {
-    picsFilter = slFilter;
+    picsFilter = f;
     numDomains = picsFilter->numDomains;
     numTimeSteps = picsFilter->numTimeSteps;
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::~avtSLAlgorithm
+//  Method: avtICAlgorithm::~avtICAlgorithm
 //
 //  Purpose:
-//      avtSLAlgorithm destructor.
+//      avtICAlgorithm destructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -101,13 +101,13 @@ avtSLAlgorithm::avtSLAlgorithm( avtPICSFilter *slFilter ) :
 //
 // ****************************************************************************
 
-avtSLAlgorithm::~avtSLAlgorithm()
+avtICAlgorithm::~avtICAlgorithm()
 {
     picsFilter = NULL;
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::GetDomain
+//  Method: avtICAlgorithm::GetDomain
 //
 //  Purpose:
 //      Retrieve a domain.
@@ -135,15 +135,15 @@ avtSLAlgorithm::~avtSLAlgorithm()
 // ****************************************************************************
 
 vtkDataSet *
-avtSLAlgorithm::GetDomain(avtStreamline *sl)
+avtICAlgorithm::GetDomain(avtIntegralCurve *ic)
 {
     avtVector pt;
-    sl->CurrentLocation(pt);
-    return GetDomain(sl->domain, pt.x, pt.y, pt.z);
+    ic->CurrentLocation(pt);
+    return GetDomain(ic->domain, pt.x, pt.y, pt.z);
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::GetDomain
+//  Method: avtICAlgorithm::GetDomain
 //
 //  Purpose:
 //      Retrieve a domain.
@@ -154,7 +154,7 @@ avtSLAlgorithm::GetDomain(avtStreamline *sl)
 // ****************************************************************************
 
 vtkDataSet *
-avtSLAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
+avtICAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
 {
     int timerHandle = visitTimer->StartTimer();
     vtkDataSet *ds = picsFilter->GetDomain(dom, X, Y, Z);
@@ -165,7 +165,7 @@ avtSLAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::AdvectParticle
+//  Method: avtICAlgorithm::AdvectParticle
 //
 //  Purpose:
 //      Advects a particle through one domain.
@@ -185,7 +185,7 @@ avtSLAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
 // ****************************************************************************
 
 void
-avtSLAlgorithm::AdvectParticle(avtStreamline *s)
+avtICAlgorithm::AdvectParticle(avtIntegralCurve *s)
 {
     int timerHandle = visitTimer->StartTimer();
 
@@ -196,7 +196,7 @@ avtSLAlgorithm::AdvectParticle(avtStreamline *s)
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::Initialize
+//  Method: avtICAlgorithm::Initialize
 //
 //  Purpose:
 //      Do any post Execuction processing.
@@ -218,7 +218,7 @@ avtSLAlgorithm::AdvectParticle(avtStreamline *s)
 // ****************************************************************************
 
 void
-avtSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
+avtICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
 {
     numSeedPoints = seedPts.size();
 
@@ -229,7 +229,7 @@ avtSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::Execute
+//  Method: avtICAlgorithm::Execute
 //
 //  Purpose:
 //      Execute the algorithm.
@@ -242,7 +242,7 @@ avtSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 // ****************************************************************************
 
 void
-avtSLAlgorithm::Execute()
+avtICAlgorithm::Execute()
 {
     PreRunAlgorithm();
     RunAlgorithm();
@@ -250,7 +250,7 @@ avtSLAlgorithm::Execute()
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::PostExecute
+//  Method: avtICAlgorithm::PostExecute
 //
 //  Purpose:
 //      Do any post Execuction processing.
@@ -269,11 +269,11 @@ avtSLAlgorithm::Execute()
 // ****************************************************************************
 
 void
-avtSLAlgorithm::PostExecute()
+avtICAlgorithm::PostExecute()
 {
-    debug1<<"avtSLAlgorithm::PostExecute()\n";
+    debug1<<"avtICAlgorithm::PostExecute()\n";
 
-    vector<avtStreamline *> v;
+    vector<avtIntegralCurve *> v;
     
     while (! terminatedICs.empty())
     {
@@ -291,7 +291,7 @@ avtSLAlgorithm::PostExecute()
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::SortIntegralCurves
+//  Method: avtICAlgorithm::SortIntegralCurves
 //
 //  Purpose:
 //      Sort streamlines based on the domains they span.
@@ -317,13 +317,13 @@ avtSLAlgorithm::PostExecute()
 // ****************************************************************************
 
 void
-avtSLAlgorithm::SortIntegralCurves(list<avtStreamline *> &sl)
+avtICAlgorithm::SortIntegralCurves(list<avtIntegralCurve *> &ic)
 {
     int timerHandle = visitTimer->StartTimer();
-    list<avtStreamline*>::iterator s;
+    list<avtIntegralCurve*>::iterator s;
 
     //Set sortkey to -domain. (So that loaded domains sort first).
-    for (s=sl.begin(); s != sl.end(); ++s)
+    for (s=ic.begin(); s != ic.end(); ++s)
     {
         long long d = (*s)->domain.domain, t = (*s)->domain.timeStep;
         long long key = (d<<32) + t;
@@ -334,14 +334,14 @@ avtSLAlgorithm::SortIntegralCurves(list<avtStreamline *> &sl)
             (*s)->sortKey = key;
     }
 
-    sl.sort(slDomainCompare);
+    ic.sort(icDomainCompare);
     
     SortTime.value += visitTimer->StopTimer(timerHandle, "SortIntegralCurves()");
 }
 
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::SortIntegralCurves
+//  Method: avtICAlgorithm::SortIntegralCurves
 //
 //  Purpose:
 //      Sort streamlines based on the domains they span.
@@ -364,13 +364,13 @@ avtSLAlgorithm::SortIntegralCurves(list<avtStreamline *> &sl)
 // ****************************************************************************
 
 void
-avtSLAlgorithm::SortIntegralCurves(vector<avtStreamline *> &sl)
+avtICAlgorithm::SortIntegralCurves(vector<avtIntegralCurve *> &ic)
 {
     int timerHandle = visitTimer->StartTimer();
-    vector<avtStreamline*>::iterator s;
+    vector<avtIntegralCurve*>::iterator s;
 
     //Set sortkey to -domain. (So that loaded domains sort first).
-    for (s=sl.begin(); s != sl.end(); ++s)
+    for (s=ic.begin(); s != ic.end(); ++s)
     {
         if ( DomainLoaded((*s)->domain))
             (*s)->sortKey = -(*s)->domain.domain;
@@ -378,13 +378,13 @@ avtSLAlgorithm::SortIntegralCurves(vector<avtStreamline *> &sl)
             (*s)->sortKey = (*s)->domain.domain;
     }
 
-    sort(sl.begin(), sl.end(), slDomainCompare);
+    sort(ic.begin(), ic.end(), icDomainCompare);
     
     SortTime.value += visitTimer->StopTimer(timerHandle, "SortIntegralCurves()");
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::GetTerminatedICs
+//  Method: avtICAlgorithm::GetTerminatedICs
 //
 //  Purpose:
 //      Return an array of terminated streamlines.
@@ -404,9 +404,9 @@ avtSLAlgorithm::SortIntegralCurves(vector<avtStreamline *> &sl)
 // ****************************************************************************
 
 void
-avtSLAlgorithm::GetTerminatedICs(vector<avtStreamline *> &v)
+avtICAlgorithm::GetTerminatedICs(vector<avtIntegralCurve *> &v)
 {
-    list<avtStreamline *>::const_iterator s;
+    list<avtIntegralCurve *>::const_iterator s;
     
     for (s=terminatedICs.begin(); s != terminatedICs.end(); ++s)
         v.push_back(*s);
@@ -414,7 +414,7 @@ avtSLAlgorithm::GetTerminatedICs(vector<avtStreamline *> &v)
 
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::DeleteIntegralCurves
+//  Method: avtICAlgorithm::DeleteIntegralCurves
 //
 //  Purpose:
 //      Delete streamlines.
@@ -434,14 +434,14 @@ avtSLAlgorithm::GetTerminatedICs(vector<avtStreamline *> &v)
 // ****************************************************************************
 
 void
-avtSLAlgorithm::DeleteIntegralCurves(std::vector<int> &slIDs)
+avtICAlgorithm::DeleteIntegralCurves(std::vector<int> &icIDs)
 {
-    list<avtStreamline *>::iterator s;
+    list<avtIntegralCurve *>::iterator s;
     vector<int>::const_iterator i;
 
     for (s=terminatedICs.begin(); s != terminatedICs.end(); ++s)
     {
-        for (i=slIDs.begin(); i != slIDs.end(); i++)
+        for (i=icIDs.begin(); i != icIDs.end(); i++)
             if ((*s)->id == (*i))
             {
                 terminatedICs.erase(s);
@@ -453,7 +453,7 @@ avtSLAlgorithm::DeleteIntegralCurves(std::vector<int> &slIDs)
 
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::CalculateTimingStatistics
+//  Method: avtICAlgorithm::CalculateTimingStatistics
 //
 //  Purpose:
 //      Calculate the timings.
@@ -465,7 +465,7 @@ avtSLAlgorithm::DeleteIntegralCurves(std::vector<int> &slIDs)
 // ****************************************************************************
 
 void
-avtSLAlgorithm::CompileTimingStatistics()
+avtICAlgorithm::CompileTimingStatistics()
 {
     ComputeStatistic(TotalTime);
     ComputeStatistic(IOTime);
@@ -474,7 +474,7 @@ avtSLAlgorithm::CompileTimingStatistics()
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::CalculateCounterStatistics
+//  Method: avtICAlgorithm::CalculateCounterStatistics
 //
 //  Purpose:
 //      Calculate the statistics
@@ -493,7 +493,7 @@ avtSLAlgorithm::CompileTimingStatistics()
 // ****************************************************************************
 
 void
-avtSLAlgorithm::CompileCounterStatistics()
+avtICAlgorithm::CompileCounterStatistics()
 {
     ComputeStatistic(IntegrateCnt);
     DomLoadCnt.value += picsFilter->GetLoadDSCount();
@@ -506,7 +506,7 @@ avtSLAlgorithm::CompileCounterStatistics()
 
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::CompileAlgorithmStatistics
+//  Method: avtICAlgorithm::CompileAlgorithmStatistics
 //
 //  Purpose:
 //      Calculate the statistics
@@ -518,7 +518,7 @@ avtSLAlgorithm::CompileCounterStatistics()
 // ****************************************************************************
 
 void
-avtSLAlgorithm::CompileAlgorithmStatistics()
+avtICAlgorithm::CompileAlgorithmStatistics()
 {
     CompileTimingStatistics();
     CompileCounterStatistics();
@@ -529,7 +529,7 @@ avtSLAlgorithm::CompileAlgorithmStatistics()
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::ComputeStatistic
+//  Method: avtICAlgorithm::ComputeStatistic
 //
 //  Purpose:
 //      Compute statistics over a value.
@@ -548,7 +548,7 @@ avtSLAlgorithm::CompileAlgorithmStatistics()
 // ****************************************************************************
 
 void
-avtSLAlgorithm::ComputeStatistic(SLStatistics &stats)
+avtICAlgorithm::ComputeStatistic(ICStatistics &stats)
 {
 #ifndef PARALLEL
 
@@ -618,7 +618,7 @@ avtSLAlgorithm::ComputeStatistic(SLStatistics &stats)
 
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::ComputeDomainLoadStatistic
+//  Method: avtICAlgorithm::ComputeDomainLoadStatistic
 //
 //  Purpose:
 //      Compute domain loading statistics.
@@ -637,7 +637,7 @@ avtSLAlgorithm::ComputeStatistic(SLStatistics &stats)
 // ****************************************************************************
 
 void
-avtSLAlgorithm::ComputeDomainLoadStatistic()
+avtICAlgorithm::ComputeDomainLoadStatistic()
 {
     //Figure out the domain loads...
     std::map<unsigned long, int>::iterator it;
@@ -726,7 +726,7 @@ avtSLAlgorithm::ComputeDomainLoadStatistic()
 
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::CalculateExtraTime
+//  Method: avtICAlgorithm::CalculateExtraTime
 //
 //  Purpose:
 //      Calculate extra time.
@@ -737,7 +737,7 @@ avtSLAlgorithm::ComputeDomainLoadStatistic()
 // ****************************************************************************
 
 void
-avtSLAlgorithm::CalculateExtraTime()
+avtICAlgorithm::CalculateExtraTime()
 {
     ExtraTime.value = TotalTime.value;
     if (IOTime.value > 0.0)
@@ -749,7 +749,7 @@ avtSLAlgorithm::CalculateExtraTime()
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::ReportStatistics
+//  Method: avtICAlgorithm::ReportStatistics
 //
 //  Purpose:
 //      Report stats.
@@ -760,7 +760,7 @@ avtSLAlgorithm::CalculateExtraTime()
 // ****************************************************************************
 
 void
-avtSLAlgorithm::ReportStatistics()
+avtICAlgorithm::ReportStatistics()
 {
     CompileAlgorithmStatistics();
 
@@ -779,7 +779,7 @@ avtSLAlgorithm::ReportStatistics()
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::ReportStatistics
+//  Method: avtICAlgorithm::ReportStatistics
 //
 //  Purpose:
 //      Output timings to a stream.
@@ -797,7 +797,7 @@ avtSLAlgorithm::ReportStatistics()
 // ****************************************************************************
 
 void
-avtSLAlgorithm::ReportStatistics(ostream &os)
+avtICAlgorithm::ReportStatistics(ostream &os)
 {
     int nCPUs = 1;
 #ifdef PARALLEL
@@ -827,7 +827,7 @@ avtSLAlgorithm::ReportStatistics(ostream &os)
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::ReportTimings
+//  Method: avtICAlgorithm::ReportTimings
 //
 //  Purpose:
 //      Print timing data.
@@ -842,7 +842,7 @@ avtSLAlgorithm::ReportStatistics(ostream &os)
 //
 // ****************************************************************************
 void
-avtSLAlgorithm::ReportTimings(ostream &os, bool totals)
+avtICAlgorithm::ReportTimings(ostream &os, bool totals)
 {
     os<<"Timings: *********************************************"<<endl;
     if (totals)
@@ -859,7 +859,7 @@ avtSLAlgorithm::ReportTimings(ostream &os, bool totals)
 
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::ReportCounters
+//  Method: avtICAlgorithm::ReportCounters
 //
 //  Purpose:
 //      Print timing data.
@@ -874,7 +874,7 @@ avtSLAlgorithm::ReportTimings(ostream &os, bool totals)
 //
 // ****************************************************************************
 void
-avtSLAlgorithm::ReportCounters(ostream &os, bool totals)
+avtICAlgorithm::ReportCounters(ostream &os, bool totals)
 {
     os<<"Counters: ********************************************"<<endl;
     
@@ -895,7 +895,7 @@ avtSLAlgorithm::ReportCounters(ostream &os, bool totals)
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::PrintTiming
+//  Method: avtICAlgorithm::PrintTiming
 //
 //  Purpose:
 //      Print timing data.
@@ -910,10 +910,10 @@ avtSLAlgorithm::ReportCounters(ostream &os, bool totals)
 //
 // ****************************************************************************
 void
-avtSLAlgorithm::PrintTiming(ostream &os, 
+avtICAlgorithm::PrintTiming(ostream &os, 
                             char *str, 
-                            const SLStatistics &s,
-                            const SLStatistics &t,
+                            const ICStatistics &s,
+                            const ICStatistics &t,
                             bool total)
 {
     string strFmt = str;
@@ -947,7 +947,7 @@ avtSLAlgorithm::PrintTiming(ostream &os,
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::PrintCounter
+//  Method: avtICAlgorithm::PrintCounter
 //
 //  Purpose:
 //      Print counter data.
@@ -962,9 +962,9 @@ avtSLAlgorithm::PrintTiming(ostream &os,
 //
 // ****************************************************************************
 void
-avtSLAlgorithm::PrintCounter(ostream &os, 
+avtICAlgorithm::PrintCounter(ostream &os, 
                              char *str, 
-                             const SLStatistics &s,
+                             const ICStatistics &s,
                              bool total)
 {
     string strFmt = str;

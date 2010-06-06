@@ -103,7 +103,7 @@ std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 
 void
 avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(
-                                   vector<avtStreamline *> &streamlines)
+                                   vector<avtIntegralCurve *> &streamlines)
 {
     debug5 << "::CreateIntegralCurveOutput " << streamlines.size() << endl;
 
@@ -114,7 +114,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(
     vtkAppendPolyData *append = vtkAppendPolyData::New();
     for (int i = 0; i < streamlines.size(); i++)
     {
-        avtStreamline *sl = streamlines[i];
+        avtIntegralCurve *sl = streamlines[i];
         vtkPolyData *pd = GetVTKPolyData(sl, sl->id);
 
         if (pd == NULL)
@@ -150,7 +150,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(
 //  Method: avtStreamlinePolyDataFilter::GetVTKPolyData
 //
 //  Purpose:
-//      Converts the avtStreamline into a VTK poly data object.
+//      Converts the avtIntegralCurve into a VTK poly data object.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
@@ -182,7 +182,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(
 // ****************************************************************************
 
 vtkPolyData *
-avtStreamlinePolyDataFilter::GetVTKPolyData(avtStreamline *sl2, int id)
+avtStreamlinePolyDataFilter::GetVTKPolyData(avtIntegralCurve *sl2, int id)
 {
     avtStateRecorderIntegralCurve *sl = (avtStateRecorderIntegralCurve *) sl2;
     if (sl == NULL || sl->size() == 0)

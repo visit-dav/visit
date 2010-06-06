@@ -42,6 +42,9 @@
 #   Hank Childs, Sat Jun  5 19:03:22 CDT 2010
 #   Add avtPICSFilter.
 #
+#   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
+#   Renamed avt*SLAlgorithm to avt*ICAlgorithm.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -56,6 +59,7 @@ avtFacelistFilter.C
 avtFeatureEdgesFilter.C
 avtGhostZoneAndFacelistFilter.C
 avtGhostZoneFilter.C
+avtICAlgorithm.C
 avtImageCommunicator.C
 avtImageCompositer.C
 avtLinearTransformFilter.C
@@ -63,11 +67,11 @@ avtLineoutFilter.C
 avtLineScanFilter.C
 avtLineToPolylineFilter.C
 avtMassVoxelExtractor.C
-avtMasterSlaveSLAlgorithm.C
+avtMasterSlaveICAlgorithm.C
 avtMeshLogFilter.C
 avtNamedSelectionFilter.C
-avtParDomSLAlgorithm.C
-avtParSLAlgorithm.C
+avtParDomICAlgorithm.C
+avtParICAlgorithm.C
 avtPICSFilter.C
 avtPointToGlyphFilter.C
 avtRayCompositer.C
@@ -76,10 +80,9 @@ avtResampleFilter.C
 avtSamplePointCommunicator.C
 avtSamplePointExtractor.C
 avtSamplePointToSurfaceFilter.C
-avtSerialSLAlgorithm.C
+avtSerialICAlgorithm.C
 avtShiftCenteringFilter.C
 avtSimilarityTransformFilter.C
-avtSLAlgorithm.C
 avtSmoothPolyDataFilter.C
 avtStreamlineFilter.C
 avtStreamlinePolyDataFilter.C

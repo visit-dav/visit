@@ -74,10 +74,13 @@ class     avtStateRecorderIntegralCurve;
 //    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //    Use avtStreamlines, not avtStreamlineWrappers.
 //
+//    Hank Childs, Sun Jun  6 14:54:08 CDT 2010
+//    Convert references from avtStreamline to avtIntegralCurve, the new name
+//    for the abstract base type.
+//
 // ****************************************************************************
 
 #include "StreamlineAnalyzerLib.h"
-
 
 class avtPoincareFilter : public avtStreamlineFilter
 {
@@ -127,7 +130,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual avtContract_p     ModifyContract(avtContract_p);
     virtual void              UpdateDataObjectInfo(void);
     virtual void              CreateIntegralCurveOutput( 
-                                   vector<avtStreamline *> &sls);
+                                   vector<avtIntegralCurve *> &sls);
 
   virtual void drawPoints( avtDataTree *dt,
                            vector < Point > &nodes );

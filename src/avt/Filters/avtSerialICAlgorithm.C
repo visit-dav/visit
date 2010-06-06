@@ -37,19 +37,19 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtSerialSLAlgorithm.C                       //
+//                              avtSerialICAlgorithm.C                       //
 // ************************************************************************* //
 
-#include "avtSerialSLAlgorithm.h"
+#include "avtSerialICAlgorithm.h"
 #include <TimingsManager.h>
 
 using namespace std;
 
 // ****************************************************************************
-//  Method: avtSerialSLAlgorithm::avtSerialSLAlgorithm
+//  Method: avtSerialICAlgorithm::avtSerialICAlgorithm
 //
 //  Purpose:
-//      avtSerialSLAlgorithm constructor.
+//      avtSerialICAlgorithm constructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -61,28 +61,28 @@ using namespace std;
 //
 // ****************************************************************************
 
-avtSerialSLAlgorithm::avtSerialSLAlgorithm( avtPICSFilter *slFilter )
-    : avtSLAlgorithm(slFilter)
+avtSerialICAlgorithm::avtSerialICAlgorithm( avtPICSFilter *picsFilter )
+    : avtICAlgorithm(picsFilter)
 {
 }
 
 // ****************************************************************************
-//  Method: avtSerialSLAlgorithm::~avtSerialSLAlgorithm
+//  Method: avtSerialICAlgorithm::~avtSerialICAlgorithm
 //
 //  Purpose:
-//      avtSerialSLAlgorithm destructor.
+//      avtSerialICAlgorithm destructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 // ****************************************************************************
 
-avtSerialSLAlgorithm::~avtSerialSLAlgorithm()
+avtSerialICAlgorithm::~avtSerialICAlgorithm()
 {
 }
 
 // ****************************************************************************
-//  Method: avtSerialSLAlgorithm::Initialize
+//  Method: avtSerialICAlgorithm::Initialize
 //
 //  Purpose:
 //      Initialization.
@@ -105,15 +105,15 @@ avtSerialSLAlgorithm::~avtSerialSLAlgorithm()
 // ****************************************************************************
 
 void
-avtSerialSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
+avtSerialICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
 {
-    avtSLAlgorithm::Initialize(seedPts);
+    avtICAlgorithm::Initialize(seedPts);
 
     AddIntegralCurves(seedPts);
 }
 
 // ****************************************************************************
-//  Method: avtSerialSLAlogrithm::AddIntegralCurves
+//  Method: avtSerialICAlgorithm::AddIntegralCurves
 //
 //  Purpose:
 //      Add streamlines
@@ -135,9 +135,9 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 // ****************************************************************************
 
 void
-avtSerialSLAlgorithm::AddIntegralCurves(vector<avtStreamline *> &sls)
+avtSerialICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
 {
-    int nSeeds = sls.size();
+    int nSeeds = ics.size();
     int i0 = 0, i1 = nSeeds;
 
  #ifdef PARALLEL
@@ -160,28 +160,28 @@ avtSerialSLAlgorithm::AddIntegralCurves(vector<avtStreamline *> &sls)
     
     //Delete the seeds I don't need.
     for (int i = 0; i < i0; i++)
-        delete sls[i];
+        delete ics[i];
     for (int i = i1; i < nSeeds; i++)
-        delete sls[i];
+        delete ics[i];
 #endif
     
     debug5 << "I have seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
     
-    // Filter the seeds for proper domain inclusion and fill the activeSLs list.
+    // Filter the seeds for proper domain inclusion and fill the activeICs list.
     avtVector endPt;
     for ( int i = i0; i < i1; i++)
     {
-        avtStreamline *s = sls[i];
+        avtIntegralCurve *s = ics[i];
         s->CurrentLocation(endPt);
         if (PointInDomain(endPt, s->domain))
-            activeSLs.push_back(s);
+            activeICs.push_back(s);
         else
             delete s;
     }
 }
 
 // ****************************************************************************
-//  Method: avtSerialSLAlgorithm::RunAlgorithm
+//  Method: avtSerialICAlgorithm::RunAlgorithm
 //
 //  Purpose:
 //      Execute the serial streamline algorithm.
@@ -197,7 +197,7 @@ avtSerialSLAlgorithm::AddIntegralCurves(vector<avtStreamline *> &sls)
 //   Hank Childs, Sat Apr 11 23:18:32 CDT 2009
 //   Make an explicit call to GetDomain before calling AdvectParticle.
 //   If we don't make this call, AdvectParticle will call GetDomain for 
-//   us.  But by calling it explicitly, it goes through the avtSLAlgorithm
+//   us.  But by calling it explicitly, it goes through the avtICAlgorithm
 //   bookkeeping logic, meaning that I/O will correctly be counted as I/O,
 //   instead of being rolled in with integration time.
 //
@@ -217,26 +217,26 @@ avtSerialSLAlgorithm::AddIntegralCurves(vector<avtStreamline *> &sls)
 // ****************************************************************************
 
 void
-avtSerialSLAlgorithm::RunAlgorithm()
+avtSerialICAlgorithm::RunAlgorithm()
 {
-    debug1<<"avtSerialSLAlgorithm::RunAlgorithm()\n";
+    debug1<<"avtSerialICAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
 
     //Sort the streamlines and load the first domain.
-    SortIntegralCurves(activeSLs);
-    if (!activeSLs.empty())
+    SortIntegralCurves(activeICs);
+    if (!activeICs.empty())
     {
-        avtStreamline *s = activeSLs.front();
+        avtIntegralCurve *s = activeICs.front();
         GetDomain(s);
     }
 
     while (1)
     {
         // Integrate all loaded domains.
-        while (! activeSLs.empty())
+        while (! activeICs.empty())
         {
-            avtStreamline *s = activeSLs.front();
-            activeSLs.pop_front();
+            avtIntegralCurve *s = activeICs.front();
+            activeICs.pop_front();
 
             if (DomainLoaded(s->domain))
             {
@@ -250,25 +250,25 @@ avtSerialSLAlgorithm::RunAlgorithm()
                 GetDomain(s);
 #endif
                 AdvectParticle(s);
-                if (s->status == avtStreamline::STATUS_TERMINATE)
+                if (s->status == avtIntegralCurve::STATUS_TERMINATE)
                     terminatedICs.push_back(s);
                 else
-                    oobSLs.push_back(s);
+                    oobICs.push_back(s);
             }
             else
-                oobSLs.push_back(s);
+                oobICs.push_back(s);
         }
 
         //We are done!
-        if (oobSLs.empty())
+        if (oobICs.empty())
             break;
 
         //Sort the remaining streamlines, get the next domain, continue.
-        activeSLs = oobSLs;
-        oobSLs.clear();
+        activeICs = oobICs;
+        oobICs.clear();
         
-        SortIntegralCurves(activeSLs);
-        avtStreamline *s = activeSLs.front();
+        SortIntegralCurves(activeICs);
+        avtIntegralCurve *s = activeICs.front();
         GetDomain(s);
     }
 
@@ -276,7 +276,7 @@ avtSerialSLAlgorithm::RunAlgorithm()
 }
 
 // ****************************************************************************
-//  Method: avtSerialSLAlgorithm::ResetIntegralCurvesForContinueExecute
+//  Method: avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute
 //
 //  Purpose:
 //      Reset for continued streamline integration.
@@ -296,13 +296,13 @@ avtSerialSLAlgorithm::RunAlgorithm()
 // ****************************************************************************
 
 void
-avtSerialSLAlgorithm::ResetIntegralCurvesForContinueExecute()
+avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute()
 {
     while (! terminatedICs.empty())
     {
-        avtStreamline *s = terminatedICs.front();
+        avtIntegralCurve *s = terminatedICs.front();
         terminatedICs.pop_front();
         
-        activeSLs.push_back(s);
+        activeICs.push_back(s);
     }
 }

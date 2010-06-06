@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtStreamline.C                              //
+//                            avtIntegralCurve.C                             //
 // ************************************************************************* //
 
-#include <avtStreamline.h>
+#include <avtIntegralCurve.h>
 
 #include <list>
 #include <iostream>
@@ -50,14 +50,14 @@
 #include <avtVector.h>
 #include <algorithm>
 
-const double avtStreamline::minH = 1e-9;
+const double avtIntegralCurve::minH = 1e-9;
 
 
 using namespace std;
 
 
 // ****************************************************************************
-//  Method: avtStreamline constructor
+//  Method: avtIntegralCurve constructor
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
@@ -92,8 +92,9 @@ using namespace std;
 //
 // ****************************************************************************
 
-avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
-                             const avtVector &p_start, int ID)
+avtIntegralCurve::avtIntegralCurve(const avtIVPSolver* model, 
+                                   const double& t_start,
+                                   const avtVector &p_start, int ID)
 {
     _ivpSolver = model->Clone();
     _ivpSolver->Reset(t_start, p_start);
@@ -115,7 +116,7 @@ avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
 
 
 // ****************************************************************************
-//  Method: avtStreamline constructor
+//  Method: avtIntegralCurve constructor
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
@@ -140,7 +141,7 @@ avtStreamline::avtStreamline(const avtIVPSolver* model, const double& t_start,
 //
 // ****************************************************************************
 
-avtStreamline::avtStreamline()
+avtIntegralCurve::avtIntegralCurve()
 {
     _ivpSolver = NULL;
 
@@ -162,7 +163,7 @@ avtStreamline::avtStreamline()
 
 
 // ****************************************************************************
-//  Method: avtStreamline destructor
+//  Method: avtIntegralCurve destructor
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
@@ -174,7 +175,7 @@ avtStreamline::avtStreamline()
 //    
 // ****************************************************************************
 
-avtStreamline::~avtStreamline()
+avtIntegralCurve::~avtIntegralCurve()
 {
     if ( _ivpSolver )
         delete _ivpSolver;
@@ -183,7 +184,7 @@ avtStreamline::~avtStreamline()
 }
 
 // ****************************************************************************
-//  Method: avtStreamline::Advance
+//  Method: avtIntegralCurve::Advance
 //
 //  Purpose:
 //      Advances the streamline.
@@ -215,17 +216,17 @@ avtStreamline::~avtStreamline()
 //
 // ****************************************************************************
 
-avtStreamline::Result 
-avtStreamline::Advance(const avtIVPField* field,
-                       avtIVPSolver::TerminateType termType,
-                       double end)
+avtIntegralCurve::Result 
+avtIntegralCurve::Advance(const avtIVPField* field,
+                          avtIVPSolver::TerminateType termType,
+                          double end)
 {
     return DoAdvance(_ivpSolver, field, termType, end);
 }
 
 
 // ****************************************************************************
-//  Method: avtStreamline::DoAdvance
+//  Method: avtIntegralCurve::DoAdvance
 //
 //  Purpose:
 //      Does the real work of advancing the streamline.
@@ -301,20 +302,20 @@ avtStreamline::Advance(const avtIVPField* field,
 //
 // ****************************************************************************
 
-avtStreamline::Result
-avtStreamline::DoAdvance(avtIVPSolver* ivp,
-                         const avtIVPField* field,
-                         avtIVPSolver::TerminateType termType,
-                         double end)
+avtIntegralCurve::Result
+avtIntegralCurve::DoAdvance(avtIVPSolver* ivp,
+                            const avtIVPField* field,
+                            avtIVPSolver::TerminateType termType,
+                            double end)
 {
     avtIVPSolver::Result result;
 
     // catch cases where the start position is outside the 
     // domain of field
     if (!field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()))
-        return avtStreamline::RESULT_POINT_OUTSIDE_DOMAIN;
+        return avtIntegralCurve::RESULT_POINT_OUTSIDE_DOMAIN;
 
-    avtStreamline::Result rc;
+    avtIntegralCurve::Result rc;
     bool stepTaken = false;
     while (1)
     {
@@ -363,10 +364,10 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
                 }
 
                 if (DebugStream::Level5())
-                    debug5<<"avtStreamline::DoAdvance() DONE  result= OUTSIDE_DOMAIN "
-                          << "step= " << h <<endl;
+                    debug5<<"avtIntegralCurve::DoAdvance() DONE  result= "
+                          <<"OUTSIDE_DOMAIN, step= " << h <<endl;
 
-                rc = avtStreamline::RESULT_EXIT_DOMAIN;
+                rc = avtIntegralCurve::RESULT_EXIT_DOMAIN;
                 break;
             }
 
@@ -386,26 +387,26 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             stepTaken = true;
             if (result == avtIVPSolver::TERMINATE)
             {
-                rc = avtStreamline::RESULT_TERMINATE;
+                rc = avtIntegralCurve::RESULT_TERMINATE;
                 break;
             }
         }
         else
         {
-            rc = avtStreamline::RESULT_ERROR;
+            rc = avtIntegralCurve::RESULT_ERROR;
             break;
         }
     }
 
     if (!stepTaken)
-        rc = avtStreamline::RESULT_ERROR;
+        rc = avtIntegralCurve::RESULT_ERROR;
     
     return rc;
 }
 
 
 // ****************************************************************************
-//  Method: avtStreamline::HandleGhostZones
+//  Method: avtIntegralCurve::HandleGhostZones
 //
 //  Purpose:
 //      Handles the logic for when we jump out into a ghost zone.
@@ -451,7 +452,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
 // ****************************************************************************
 
 void
-avtStreamline::HandleGhostZones(bool forward, double *extents)
+avtIntegralCurve::HandleGhostZones(bool forward, double *extents)
 {
     if (!lastStepValid || extents == NULL)
         return;
@@ -505,7 +506,7 @@ avtStreamline::HandleGhostZones(bool forward, double *extents)
 
 
 // ****************************************************************************
-//  Method: avtStreamline::CurrentTime
+//  Method: avtIntegralCurve::CurrentTime
 //
 //  Purpose:
 //      Returns the current t value.
@@ -522,14 +523,14 @@ avtStreamline::HandleGhostZones(bool forward, double *extents)
 // ****************************************************************************
 
 double
-avtStreamline::CurrentTime() const
+avtIntegralCurve::CurrentTime() const
 {
     return _ivpSolver->GetCurrentT();
 }
 
 
 // ****************************************************************************
-//  Method: avtStreamline::CurrentLocation
+//  Method: avtIntegralCurve::CurrentLocation
 //
 //  Purpose:
 //      Sets the current location of the integration.
@@ -540,14 +541,14 @@ avtStreamline::CurrentTime() const
 // ****************************************************************************
 
 void
-avtStreamline::CurrentLocation(avtVector &end)
+avtIntegralCurve::CurrentLocation(avtVector &end)
 {
     end = _ivpSolver->GetCurrentY();
 }
 
 
 // ****************************************************************************
-//  Method: avtStreamline::Serialize
+//  Method: avtIntegralCurve::Serialize
 //
 //  Purpose:
 //      Serializes a streamline so it can be sent to another processor.
@@ -595,11 +596,12 @@ avtStreamline::CurrentLocation(avtVector &end)
 // ****************************************************************************
 
 void
-avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff, 
-                         avtIVPSolver *solver)
+avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff, 
+                            avtIVPSolver *solver)
 {
     if (DebugStream::Level5())
-        debug5<<"  avtStreamline::Serialize "<<(mode==MemStream::READ?"READ":"WRITE")<<endl;
+        debug5<<"  avtIntegralCurve::Serialize "
+              <<(mode==MemStream::READ?"READ":"WRITE")<<endl;
     buff.io(mode, id);
     buff.io(mode, domain);
     buff.io(mode, status);
@@ -640,11 +642,11 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
         buff.io(mode, sequenceCnt);
 
     if (DebugStream::Level5())
-        debug5 << "DONE: avtStreamline::Serialize. sz= "<<buff.buffLen() << endl;
+        debug5 << "DONE: avtIntegralCurve::Serialize. sz= "<<buff.buffLen() << endl;
 }
 
 // ****************************************************************************
-//  Method: avtStreamline::IdSeqCompare
+//  Method: avtIntegralCurve::IdSeqCompare
 //
 //  Purpose:
 //      Sort streamlines by id, then sequence number.
@@ -659,17 +661,17 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
 //
 // ****************************************************************************
 bool
-avtStreamline::IdSeqCompare(const avtStreamline *slA,
-                                   const avtStreamline *slB)
+avtIntegralCurve::IdSeqCompare(const avtIntegralCurve *icA,
+                               const avtIntegralCurve *icB)
 {
-    if (slA->id == slB->id)
-        return slA->sequenceCnt < slB->sequenceCnt;
+    if (icA->id == icB->id)
+        return icA->sequenceCnt < icB->sequenceCnt;
 
-    return slA->id < slB->id;
+    return icA->id < icB->id;
 }
 
 // ****************************************************************************
-//  Method: avtStreamline::IdRevSeqCompare
+//  Method: avtIntegralCurve::IdRevSeqCompare
 //
 //  Purpose:
 //      Sort streamlines by id, then reverse sequence number.
@@ -684,20 +686,20 @@ avtStreamline::IdSeqCompare(const avtStreamline *slA,
 //
 // ****************************************************************************
 bool
-avtStreamline::IdRevSeqCompare(const avtStreamline *slA,
-                                   const avtStreamline *slB)
+avtIntegralCurve::IdRevSeqCompare(const avtIntegralCurve *icA,
+                                  const avtIntegralCurve *icB)
 {
-    if (slA->id == slB->id)
-        return slA->sequenceCnt > slB->sequenceCnt;
+    if (icA->id == icB->id)
+        return icA->sequenceCnt > icB->sequenceCnt;
 
-    return slA->id < slB->id;
+    return icA->id < icB->id;
 }
 
 bool
-avtStreamline::DomainCompare(const avtStreamline *slA,
-                                    const avtStreamline *slB)
+avtIntegralCurve::DomainCompare(const avtIntegralCurve *icA,
+                                const avtIntegralCurve *icB)
 {
-    return slA->domain < slB->domain;
+    return icA->domain < icB->domain;
 }
 
 

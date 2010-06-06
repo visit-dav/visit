@@ -37,17 +37,17 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtParSLAlgorithm.h                          //
+//                              avtParICAlgorithm.h                          //
 // ************************************************************************* //
 
-#ifndef AVT_PAR_SL_ALGORITHM_H
-#define AVT_PAR_SL_ALGORITHM_H
+#ifndef AVT_PAR_IC_ALGORITHM_H
+#define AVT_PAR_IC_ALGORITHM_H
 #ifdef PARALLEL
 
-#include "avtSLAlgorithm.h"
+#include "avtICAlgorithm.h"
 
 // ****************************************************************************
-// Class: avtParSLAlgorithm
+// Class: avtParICAlgorithm
 //
 // Purpose:
 //    Abstract base class for parallel streamline algorithms.
@@ -58,7 +58,7 @@
 // Modifications:
 //
 //   Dave Pugmire, Thu Feb 12 08:43:01 EST 2009
-//   Removed ComputeStatistics. (Moved to avtSLAlgorithm)
+//   Removed ComputeStatistics. (Moved to avtICAlgorithm)
 //
 //   Dave Pugmire, Tue Mar 17 12:02:10 EDT 2009
 //   Create a new RecvSLs method that doesn't check for domain inclusion.
@@ -79,15 +79,19 @@
 //   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
 //   Change reference from avtStreamlineFilter to avtPICSFilter.
 //
+//   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
+//   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
+//   as opposed to streamlines.
+//
 // ****************************************************************************
 
-class avtParSLAlgorithm : public avtSLAlgorithm
+class avtParICAlgorithm : public avtICAlgorithm
 {
   public:
-    avtParSLAlgorithm(avtPICSFilter *slFilter);
-    virtual ~avtParSLAlgorithm();
+    avtParICAlgorithm(avtPICSFilter *icFilter);
+    virtual ~avtParICAlgorithm();
 
-    virtual void              Initialize(std::vector<avtStreamline *> &,
+    virtual void              Initialize(std::vector<avtIntegralCurve *> &,
                                          int, int);
     virtual void              PostExecute();
 
@@ -96,30 +100,30 @@ class avtParSLAlgorithm : public avtSLAlgorithm
     void                      InitRequests();
     void                      CheckPendingSendRequests();
     void                      CleanupAsynchronous();
-    void                      ExchangeSLSteps();
+    void                      ExchangeICSteps();
     void                      PostRecvStatusReq(int idx);
-    void                      PostRecvSLReq(int idx);
+    void                      PostRecvICReq(int idx);
     void                      SendMsg(int dest, std::vector<int> &msg);
     void                      SendAllMsg(std::vector<int> &msg);
     void                      RecvMsgs(std::vector<std::vector<int> > &msgs);
-    void                      SendSLs(int dst,
-                                      std::vector<avtStreamline*> &);
-    bool                      DoSendSLs(int dst,
-                                        std::vector<avtStreamline*> &);
-    int                       RecvSLs(std::list<avtStreamline*> &);
-    int                       RecvSLs(std::list<avtStreamline*> &,
+    void                      SendICs(int dst,
+                                      std::vector<avtIntegralCurve*> &);
+    bool                      DoSendICs(int dst,
+                                        std::vector<avtIntegralCurve*> &);
+    int                       RecvICs(std::list<avtIntegralCurve*> &);
+    int                       RecvICs(std::list<avtIntegralCurve*> &,
                                       int &earlyTerminations);
-    bool                      ExchangeSLs(std::list<avtStreamline *> &,
-                                          std::vector<std::vector<avtStreamline *> >&,
+    bool                      ExchangeICs(std::list<avtIntegralCurve *> &,
+                                          std::vector<std::vector<avtIntegralCurve *> >&,
                                           int &earlyTerminations );
-    void                      MergeTerminatedSLSequences();
+    void                      MergeTerminatedICSequences();
 
     int                       rank, nProcs;
-    std::list<avtStreamline *> communicatedSLs;
-    std::map<MPI_Request, unsigned char*> sendSLBufferMap, recvSLBufferMap;
+    std::list<avtIntegralCurve *> communicatedICs;
+    std::map<MPI_Request, unsigned char*> sendICBufferMap, recvICBufferMap;
     std::map<MPI_Request, int *> sendIntBufferMap, recvIntBufferMap;
 
-    std::vector<MPI_Request>  statusRecvRequests, slRecvRequests;
+    std::vector<MPI_Request>  statusRecvRequests, icRecvRequests;
 
     virtual void              CompileTimingStatistics();
     virtual void              CompileCounterStatistics();
@@ -128,13 +132,13 @@ class avtParSLAlgorithm : public avtSLAlgorithm
     virtual void              ReportCounters(ostream &os, bool totals);
 
     //Timers.
-    SLStatistics              CommTime;
+    ICStatistics              CommTime;
     //Counters.
-    SLStatistics              MsgCnt, SLCommCnt, BytesCnt;
+    ICStatistics              MsgCnt, ICCommCnt, BytesCnt;
 
   private:
     static int                STATUS_TAG, STREAMLINE_TAG;
-    int                       statusMsgSz, slMsgSz, numAsyncRecvs, msgID;
+    int                       statusMsgSz, icMsgSz, numAsyncRecvs, msgID;
 };
 
 #endif

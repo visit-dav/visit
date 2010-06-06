@@ -59,9 +59,7 @@
 
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
-#include <avtSLAlgorithm.h>
 #include <avtStateRecorderIntegralCurve.h>
-#include <avtStreamline.h>
 
 #include <utility>
 
@@ -264,7 +262,7 @@ avtPoincareFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtPoincareFilter::CreateIntegralCurveOutput(vector<avtStreamline *> &sls2)
+avtPoincareFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *> &sls2)
 {
     vector<avtStateRecorderIntegralCurve *> sls;
     for (int k = 0 ; k < sls2.size() ; k++)
@@ -411,7 +409,7 @@ avtPoincareFilter::ContinueExecute()
 {
     debug5 << "Continue execute " << endl;
 
-    vector<avtStreamline *> sls;
+    vector<avtIntegralCurve *> sls;
     
     GetTerminatedIntegralCurves(sls);
     CreateIntegralCurveOutput(sls);

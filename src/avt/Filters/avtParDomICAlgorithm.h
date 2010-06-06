@@ -37,17 +37,17 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtParDomSLAlgorithm.h                       //
+//                              avtParDomICAlgorithm.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_PAR_DOM_SL_ALGORITHM_H
-#define AVT_PAR_DOM_SL_ALGORITHM_H
+#ifndef AVT_PAR_DOM_IC_ALGORITHM_H
+#define AVT_PAR_DOM_IC_ALGORITHM_H
 
 #ifdef PARALLEL
-#include "avtParSLAlgorithm.h"
+#include "avtParICAlgorithm.h"
 
 // ****************************************************************************
-// Class: avtParDomSLAlgorithm
+// Class: avtParDomICAlgorithm
 //
 // Purpose:
 //    A streamline algorithm that parallelizes over domains.
@@ -85,16 +85,20 @@
 //   particle advection, as opposed to streamlines.  Also change reference
 //   from avtStreamlineFilter to avtPICSFilter.
 //
+//   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
+//   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
+//   as opposed to streamlines.
+//
 // ****************************************************************************
 
-class avtParDomSLAlgorithm : public avtParSLAlgorithm
+class avtParDomICAlgorithm : public avtParICAlgorithm
 {
   public:
-    avtParDomSLAlgorithm(avtPICSFilter *slFilter, int maxCount);
-    virtual ~avtParDomSLAlgorithm();
+    avtParDomICAlgorithm(avtPICSFilter *slFilter, int maxCount);
+    virtual ~avtParDomICAlgorithm();
 
-    virtual void              Initialize(std::vector<avtStreamline *> &);
-    virtual void              AddIntegralCurves(std::vector<avtStreamline*> &sls);
+    virtual void              Initialize(std::vector<avtIntegralCurve *> &);
+    virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &sls);
     virtual void              ResetIntegralCurvesForContinueExecute();
     virtual const char*       AlgoName() const {return "ParallelStaticDomains";}
 
@@ -102,11 +106,11 @@ class avtParDomSLAlgorithm : public avtParSLAlgorithm
     virtual void              RunAlgorithm();
     virtual void              PreRunAlgorithm();
     void                      ExchangeTermination();
-    void                      HandleOOBSL(avtStreamline *s);
+    void                      HandleOOBIC(avtIntegralCurve *s);
     
-    int                       numSLChange, totalNumIntegralCurves;
+    int                       numICChange, totalNumIntegralCurves;
 
-    std::list<avtStreamline *> activeSLs;
+    std::list<avtIntegralCurve *> activeICs;
     int                       maxCnt;
 };
 
