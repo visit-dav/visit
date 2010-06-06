@@ -79,6 +79,10 @@
 //   Rename CreateIntegralCurveOutput to reflect the new emphasis in particle 
 //   advection, as opposed to streamlines.
 //
+//   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
+//   Convert references from avtStreamline to avtIntegralCurve, the new name
+//   for the abstract base type.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
@@ -93,9 +97,9 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
     static                    std::string tangentsArrayName;
 
   protected:
-    vtkPolyData*              GetVTKPolyData(avtStreamline *sl, int id);
+    vtkPolyData*              GetVTKPolyData(avtIntegralCurve *sl, int id);
     void                      CreateIntegralCurveOutput( 
-                                 vector<avtStreamline *> &streamlines );
+                                 vector<avtIntegralCurve *> &streamlines );
 };
 
 

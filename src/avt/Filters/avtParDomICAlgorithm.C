@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtParDomSLAlgorithm.h                       //
+//                              avtParDomICAlgorithm.h                       //
 // ************************************************************************* //
 
-#include "avtParDomSLAlgorithm.h"
+#include "avtParDomICAlgorithm.h"
 #include <TimingsManager.h>
 
 using namespace std;
@@ -48,10 +48,10 @@ using namespace std;
 #ifdef PARALLEL
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::avtParDomSLAlgorithm
+//  Method: avtParDomICAlgorithm::avtParDomICAlgorithm
 //
 //  Purpose:
-//      avtParDomSLAlgorithm constructor.
+//      avtParDomICAlgorithm constructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -66,32 +66,32 @@ using namespace std;
 //
 // ****************************************************************************
 
-avtParDomSLAlgorithm::avtParDomSLAlgorithm(avtPICSFilter *slFilter,
+avtParDomICAlgorithm::avtParDomICAlgorithm(avtPICSFilter *icFilter,
                                            int maxCount)
-    : avtParSLAlgorithm(slFilter)
+    : avtParICAlgorithm(icFilter)
 {
-    numSLChange = 0;
+    numICChange = 0;
     totalNumIntegralCurves = 0;
     maxCnt = maxCount;
 }
 
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::~avtParDomSLAlgorithm
+//  Method: avtParDomICAlgorithm::~avtParDomICAlgorithm
 //
 //  Purpose:
-//      avtParDomSLAlgorithm destructor
+//      avtParDomICAlgorithm destructor
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 // ****************************************************************************
-avtParDomSLAlgorithm::~avtParDomSLAlgorithm()
+avtParDomICAlgorithm::~avtParDomICAlgorithm()
 {
 }
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::Initialize
+//  Method: avtParDomICAlgorithm::Initialize
 //
 //  Purpose:
 //      Initialization.
@@ -124,19 +124,19 @@ avtParDomSLAlgorithm::~avtParDomSLAlgorithm()
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
+avtParDomICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
 {
     int numRecvs = nProcs-1;
     if (numRecvs > 64)
         numRecvs = 64;
     
-    avtParSLAlgorithm::Initialize(seedPts, 1, numRecvs);
-    numSLChange = 0;
+    avtParICAlgorithm::Initialize(seedPts, 1, numRecvs);
+    numICChange = 0;
     AddIntegralCurves(seedPts);
 }
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::AddIntegralCurves
+//  Method: avtParDomICAlgorithm::AddIntegralCurves
 //
 //  Purpose:
 //      Add streamlines
@@ -156,19 +156,19 @@ avtParDomSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::AddIntegralCurves(std::vector<avtStreamline*> &sls)
+avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
 {
-    //Get the SLs that I own.
-    for (int i = 0; i < sls.size(); i++)
+    //Get the ICs that I own.
+    for (int i = 0; i < ics.size(); i++)
     {
-        avtStreamline *s = sls[i];
+        avtIntegralCurve *s = ics[i];
         if (OwnDomain(s->domain))
         {
             avtVector endPt;
             s->CurrentLocation(endPt);
             
             if (PointInDomain(endPt, s->domain))
-                activeSLs.push_back(s);
+                activeICs.push_back(s);
             else
                 delete s;
         }
@@ -182,8 +182,8 @@ avtParDomSLAlgorithm::AddIntegralCurves(std::vector<avtStreamline*> &sls)
     for (int i = 0; i < numSeedPoints; i++)
         idBuffer[i] = 0;
     
-    list<avtStreamline *>::iterator s;
-    for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
+    list<avtIntegralCurve *>::iterator s;
+    for (s = activeICs.begin(); s != activeICs.end(); ++s)
         idBuffer[(*s)->id]++;
 
     SumIntArrayAcrossAllProcessors(idBuffer, idBuffer2, numSeedPoints);
@@ -200,17 +200,17 @@ avtParDomSLAlgorithm::AddIntegralCurves(std::vector<avtStreamline*> &sls)
     delete [] idBuffer2;
     */
 
-    totalNumIntegralCurves = activeSLs.size();
+    totalNumIntegralCurves = activeICs.size();
     SumIntAcrossAllProcessors(totalNumIntegralCurves);
     /*
     debug5<<"Init_totalNumIntegralCurves= "<<totalNumIntegralCurves<<endl;
-    debug5<<"My SLs: "<<endl;
-    list<avtStreamline *>::iterator s;
-    for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
+    debug5<<"My ICs: "<<endl;
+    list<avtIntegralCurve *>::iterator s;
+    for (s = activeICs.begin(); s != activeICs.end(); ++s)
         debug5<<"ID "<<(*s)->id<<" dom= "<<(*s)->domain<<endl;
     */
 
-    debug1<<"My SLcount= "<<activeSLs.size()<<endl;
+    debug1<<"My ICcount= "<<activeICs.size()<<endl;
     debug1<<"I own: [";
     for (int i = 0; i < numDomains; i++)
     {
@@ -223,7 +223,7 @@ avtParDomSLAlgorithm::AddIntegralCurves(std::vector<avtStreamline*> &sls)
 
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::ExchangeTermination()
+//  Method: avtParDomICAlgorithm::ExchangeTermination()
 //
 //  Purpose:
 //      Send/recv terminations.
@@ -243,17 +243,17 @@ avtParDomSLAlgorithm::AddIntegralCurves(std::vector<avtStreamline*> &sls)
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::ExchangeTermination()
+avtParDomICAlgorithm::ExchangeTermination()
 {
     // If I have terminations, send it out.
-    if (numSLChange != 0)
+    if (numICChange != 0)
     {
         vector<int> msg(1);
-        msg[0] = numSLChange;
+        msg[0] = numICChange;
         SendAllMsg(msg);
         
-        totalNumIntegralCurves += numSLChange;
-        numSLChange = 0;
+        totalNumIntegralCurves += numICChange;
+        numICChange = 0;
     }
 
     // Check to see if msgs are coming in.
@@ -261,16 +261,16 @@ avtParDomSLAlgorithm::ExchangeTermination()
     RecvMsgs(msgs);
     for (int i = 0; i < msgs.size(); i++)
     {
-        debug2<<msgs[i][1]<<" slChange= "<<msgs[i][1]<<endl;
+        debug2<<msgs[i][1]<<" icChange= "<<msgs[i][1]<<endl;
         totalNumIntegralCurves += msgs[i][1];
     }
 }
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::PreRunAlgorithm
+//  Method: avtParDomICAlgorithm::PreRunAlgorithm
 //
 //  Purpose:
-//      "PreRun" for static domain SL algorithm.  In this case, initialize
+//      "PreRun" for static domain IC algorithm.  In this case, initialize
 //      the cell locators.  If we don't do it now, we will have processors
 //      busy waiting, and then doing the initialization when they finally
 //      get work ... meaning unnecessary delays.
@@ -281,16 +281,16 @@ avtParDomSLAlgorithm::ExchangeTermination()
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::PreRunAlgorithm()
+avtParDomICAlgorithm::PreRunAlgorithm()
 {
     picsFilter->InitializeLocators();
 }
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::RunAlgorithm
+//  Method: avtParDomICAlgorithm::RunAlgorithm
 //
 //  Purpose:
-//      Execute the static domain SL algorithm.
+//      Execute the static domain IC algorithm.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -300,13 +300,13 @@ avtParDomSLAlgorithm::PreRunAlgorithm()
 //   Dave Pugmire, Wed Feb  4 16:17:40 EST 2009
 //   Regression fix. Handling streamlines that lie in multiple domains after
 //   integration was not handled correctly after the code refactor. Added
-//   HandleOOBSL().
+//   HandleOOBIC().
 //
 //   Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
-//   Change numTerminated to numSLChange.
+//   Change numTerminated to numICChange.
 //
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
-//   Remove ExchangeSLs() method.
+//   Remove ExchangeICs() method.
 //
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Replace Execute() with RunAlgorithm().
@@ -321,38 +321,38 @@ avtParDomSLAlgorithm::PreRunAlgorithm()
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::RunAlgorithm()
+avtParDomICAlgorithm::RunAlgorithm()
 {
-    debug1<<"avtParDomSLAlgorithm::RunAlgorithm()\n";
+    debug1<<"avtParDomICAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
     
     while (totalNumIntegralCurves > 0)
     {
         //Integrate upto maxCnt streamlines.
-        list<avtStreamline *>::iterator s;
+        list<avtIntegralCurve *>::iterator s;
         int cnt = 0;
-        while (cnt < maxCnt && !activeSLs.empty())
+        while (cnt < maxCnt && !activeICs.empty())
         {
-            avtStreamline *s = activeSLs.front();
-            activeSLs.pop_front();
+            avtIntegralCurve *s = activeICs.front();
+            activeICs.pop_front();
             
             AdvectParticle(s);
-            if (s->status == avtStreamline::STATUS_TERMINATE)
+            if (s->status == avtIntegralCurve::STATUS_TERMINATE)
             {
-                debug5<<"TerminatedSL: "<<s->id<<endl;
+                debug5<<"TerminatedIC: "<<s->id<<endl;
                 terminatedICs.push_back(s);
-                numSLChange--;
+                numICChange--;
             }
             else
-                HandleOOBSL(s);
+                HandleOOBIC(s);
             
             cnt++;
         }
 
-        //Check for new SLs.
+        //Check for new ICs.
         int earlyTerminations = 0;
-        RecvSLs(activeSLs, earlyTerminations);
-        //numSLChange -= earlyTerminations;
+        RecvICs(activeICs, earlyTerminations);
+        //numICChange -= earlyTerminations;
 
         ExchangeTermination();
         CheckPendingSendRequests();
@@ -364,7 +364,7 @@ avtParDomSLAlgorithm::RunAlgorithm()
 
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::HandleOOBSL
+//  Method: avtParDomICAlgorithm::HandleOOBIC
 //
 //  Purpose:
 //      Handle an out of bounds streamline.
@@ -393,35 +393,35 @@ avtParDomSLAlgorithm::RunAlgorithm()
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::HandleOOBSL(avtStreamline *s)
+avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 {
     // The integrated streamline could lie in multiple domains.
-    // Duplicate the SL and send to the proper owner.
+    // Duplicate the IC and send to the proper owner.
     for (int i = 0; i < s->seedPtDomainList.size(); i++)
     {
         // if i > 0, we create new streamlines.
         //        if (i > 0)
-        //            numSLChange++;
+        //            numICChange++;
 
         int domRank = DomainToRank(s->seedPtDomainList[i]);
         s->domain = s->seedPtDomainList[i];
         if (domRank == rank)
         {
-            activeSLs.push_back(s);
+            activeICs.push_back(s);
             //debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> me"<<endl;
         }
         else
         {
-            vector<avtStreamline *> sls;
-            sls.push_back(s);
-            SendSLs(domRank, sls);
+            vector<avtIntegralCurve *> ics;
+            ics.push_back(s);
+            SendICs(domRank, ics);
             //debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> "<<domRank<<endl;
         }
     }
 }
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::ResetIntegralCurvesForContinueExecute
+//  Method: avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute
 //
 //  Purpose:
 //      Reset for continued streamline integration.
@@ -441,15 +441,15 @@ avtParDomSLAlgorithm::HandleOOBSL(avtStreamline *s)
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::ResetIntegralCurvesForContinueExecute()
+avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute()
 {
     while (! terminatedICs.empty())
     {
-        avtStreamline *s = terminatedICs.front();
+        avtIntegralCurve *s = terminatedICs.front();
         terminatedICs.pop_front();
         
-        activeSLs.push_back(s);
-        numSLChange++;
+        activeICs.push_back(s);
+        numICChange++;
     }
 
     ExchangeTermination();

@@ -173,7 +173,7 @@ class IVP_API DomainType
 //
 // ****************************************************************************
 
-class IVP_API avtStreamline
+class IVP_API avtIntegralCurve
 {
   public:
     enum Result
@@ -197,12 +197,12 @@ class IVP_API avtStreamline
         SERIALIZE_INC_SEQ = 2,
     };
 
-    avtStreamline(const avtIVPSolver* model, const double& t_start, 
+    avtIntegralCurve(const avtIVPSolver* model, const double& t_start, 
                   const avtVector &p_start, int ID);
-    avtStreamline();
-    ~avtStreamline();
+    avtIntegralCurve();
+    ~avtIntegralCurve();
 
-    avtStreamline::Result Advance(const avtIVPField* field,
+    avtIntegralCurve::Result Advance(const avtIVPField* field,
                                   avtIVPSolver::TerminateType termType,
                                   double end);
 
@@ -216,21 +216,21 @@ class IVP_API avtStreamline
 
     // Could be static ... only virtual to get to the right method.
     // (Temporary solution until we build a communicator class.)
-    virtual avtStreamline*
+    virtual avtIntegralCurve*
                       MergeIntegralCurveSequence(
-                              std::vector<avtStreamline *> &v) {;};
-    static bool IdSeqCompare(const avtStreamline *slA,
-                             const avtStreamline *slB);
-    static bool IdRevSeqCompare(const avtStreamline *slA,
-                                const avtStreamline *slB);
-    static bool DomainCompare(const avtStreamline *slA,
-                              const avtStreamline *slB);
+                              std::vector<avtIntegralCurve *> &v) {;};
+    static bool IdSeqCompare(const avtIntegralCurve *slA,
+                             const avtIntegralCurve *slB);
+    static bool IdRevSeqCompare(const avtIntegralCurve *slA,
+                                const avtIntegralCurve *slB);
+    static bool DomainCompare(const avtIntegralCurve *slA,
+                              const avtIntegralCurve *slB);
 
   protected:
-    avtStreamline( const avtStreamline& );
-    avtStreamline& operator=( const avtStreamline& );
+    avtIntegralCurve( const avtIntegralCurve& );
+    avtIntegralCurve& operator=( const avtIntegralCurve& );
     
-    avtStreamline::Result DoAdvance(avtIVPSolver* ivp,
+    avtIntegralCurve::Result DoAdvance(avtIVPSolver* ivp,
                                     const avtIVPField* field,
                                     avtIVPSolver::TerminateType termType,
                                     double end);
@@ -269,14 +269,14 @@ class IVP_API avtStreamline
     static const double minH;
 };
 
-inline std::ostream& operator<<( std::ostream& out, const avtStreamline::Result &res )
+inline std::ostream& operator<<( std::ostream& out, const avtIntegralCurve::Result &res )
 {
     switch (res)
     {
-      case avtStreamline::RESULT_TERMINATE: out<<"TERMINATE"; break;
-      case avtStreamline::RESULT_POINT_OUTSIDE_DOMAIN: out<<"POINTOUTSIDE_DOMAIN"; break;
-      case avtStreamline::RESULT_EXIT_DOMAIN: out<<"EXIT_DOMAIN"; break;
-      case avtStreamline::RESULT_ERROR: out<<"ERROR"; break;
+      case avtIntegralCurve::RESULT_TERMINATE: out<<"TERMINATE"; break;
+      case avtIntegralCurve::RESULT_POINT_OUTSIDE_DOMAIN: out<<"POINTOUTSIDE_DOMAIN"; break;
+      case avtIntegralCurve::RESULT_EXIT_DOMAIN: out<<"EXIT_DOMAIN"; break;
+      case avtIntegralCurve::RESULT_ERROR: out<<"ERROR"; break;
       default:
         out<<"UNKNOWN_RESULT"; break;
     }

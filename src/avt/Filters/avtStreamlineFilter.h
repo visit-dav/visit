@@ -213,8 +213,8 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     virtual const char       *GetDescription(void)
                                   { return "Creating streamlines"; };
 
-    virtual avtStreamline    *CreateIntegralCurve();
-    virtual avtStreamline    *CreateIntegralCurve(
+    virtual avtIntegralCurve    *CreateIntegralCurve();
+    virtual avtIntegralCurve    *CreateIntegralCurve(
                                         const avtIVPSolver* model,
                                         const double& t_start,
                                         const avtVector &p_start, int ID);
@@ -268,7 +268,6 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     void                      GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
 
     virtual std::vector<avtVector> GetInitialLocations(void);
-    friend class avtSLAlgorithm;
 };
 
 

@@ -42,16 +42,16 @@
 
 /**
 TODO:
-Sort: Bias sorting to "my domain". SLs on this domain will be coming to you.
+Sort: Bias sorting to "my domain". ICs on this domain will be coming to you.
 
-Consider the leaveDomains SLs and the balancing at the same time.
+Consider the leaveDomains ICs and the balancing at the same time.
 
  **/
 
 #include <avtPICSFilter.h>
-#include "avtSerialSLAlgorithm.h"
-#include "avtParDomSLAlgorithm.h"
-#include "avtMasterSlaveSLAlgorithm.h"
+#include "avtSerialICAlgorithm.h"
+#include "avtParDomICAlgorithm.h"
+#include "avtMasterSlaveICAlgorithm.h"
 #include <math.h>
 #include <visitstream.h>
 
@@ -89,8 +89,6 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
-#include <avtStateRecorderIntegralCurve.h>
-#include <avtStreamline.h>
 #include <avtVector.h>
 
 #include <DebugStream.h>
@@ -123,7 +121,7 @@ avtPICSFilter::avtPICSFilter()
     seedTime0 = 0.0;
     pathlineNextTimeVar = "__pathlineNextTimeVar__";
     pathlineVar = "";
-    avtSLAlgorithm *slAlgo = NULL;
+    avtICAlgorithm *icAlgo = NULL;
 
     maxStepLength = 0.;
     terminationType = avtIVPSolver::TIME;
@@ -247,44 +245,44 @@ avtPICSFilter::ComputeRankList(const vector<int> &domList,
 // ****************************************************************************
 
 void
-avtPICSFilter::SetDomain(avtStreamline *sl)
+avtPICSFilter::SetDomain(avtIntegralCurve *ic)
 {
     avtVector endPt;
-    sl->CurrentLocation(endPt);
-    double t = sl->CurrentTime();
+    ic->CurrentLocation(endPt);
+    double t = ic->CurrentTime();
     double xyz[3] = {endPt.x, endPt.y, endPt.z};
 
     int timeStep = GetTimeStep(t);
 
-    sl->seedPtDomainList.resize(0);
+    ic->seedPtDomainList.resize(0);
     vector<int> doms;
     intervalTree->GetElementsListFromRange(xyz, xyz, doms);
     if (DebugStream::Level5())
         debug5<<"SetDomain(): pt= "<<endPt<<" T= "<<t<<" step= "<<timeStep<<endl;
     for (int i = 0; i < doms.size(); i++)
-        sl->seedPtDomainList.push_back(DomainType(doms[i], timeStep));
-    sl->domain = DomainType(-1,0);
+        ic->seedPtDomainList.push_back(DomainType(doms[i], timeStep));
+    ic->domain = DomainType(-1,0);
     // 1 domain, easy.
-    if (sl->seedPtDomainList.size() == 1)
-        sl->domain = sl->seedPtDomainList[0];
+    if (ic->seedPtDomainList.size() == 1)
+        ic->domain = ic->seedPtDomainList[0];
 
     // Point in multiple domains. See if we can shorten the list by 
     //looking at "my" domains.
-    else if (sl->seedPtDomainList.size() > 1)
+    else if (ic->seedPtDomainList.size() > 1)
     {
         // See if the point is contained in a domain owned by "me".
         vector<DomainType> newDomList;
         bool foundOwner = false;
-        for (int i = 0; i < sl->seedPtDomainList.size(); i++)
+        for (int i = 0; i < ic->seedPtDomainList.size(); i++)
         {
-            DomainType dom = sl->seedPtDomainList[i];
+            DomainType dom = ic->seedPtDomainList[i];
             if (OwnDomain(dom))
             {
                 // If point is inside domain, we are done.
                 if (PointInDomain(endPt, dom))
                 {
-                    sl->seedPtDomainList.resize(0);
-                    sl->seedPtDomainList.push_back(dom);
+                    ic->seedPtDomainList.resize(0);
+                    ic->seedPtDomainList.push_back(dom);
                     foundOwner = true;
                     break;
                 }
@@ -293,24 +291,24 @@ avtPICSFilter::SetDomain(avtStreamline *sl)
                 newDomList.push_back(dom);
         }
 
-        // Update the list in sl.
+        // Update the list in ic.
         if (!foundOwner)
         {
-            sl->seedPtDomainList.resize(0);
+            ic->seedPtDomainList.resize(0);
             for (int i = 0; i < newDomList.size(); i++)
-                sl->seedPtDomainList.push_back(newDomList[i]);
+                ic->seedPtDomainList.push_back(newDomList[i]);
         }
     }
     
-    if (sl->seedPtDomainList.size() == 1)
-        sl->domain = sl->seedPtDomainList[0];
+    if (ic->seedPtDomainList.size() == 1)
+        ic->domain = ic->seedPtDomainList[0];
     if (DebugStream::Level5())
-        debug5<<"SetDomain: "<<sl->domain<<endl;
+        debug5<<"SetDomain: "<<ic->domain<<endl;
     /*
     debug1<<"::SetDomain() pt=["<<endPt.xyz[0]<<" "<<endPt.xyz[1]
           <<" "<<endPt.xyz[2]<<"] in domains: ";
-    for (int i = 0; i < sl->seedPtDomainList.size(); i++)
-        debug1<<sl->seedPtDomainList[i]<<", ";
+    for (int i = 0; i < ic->seedPtDomainList.size(); i++)
+        debug1<<ic->seedPtDomainList[i]<<", ";
     debug1<<endl;
     */
 }
@@ -774,9 +772,9 @@ void
 avtPICSFilter::Execute(void)
 {
     Initialize();
-    vector<avtStreamline *> sls;
-    GetIntegralCurvesFromInitialSeeds(sls);
-    numSeedPts = sls.size();
+    vector<avtIntegralCurve *> ics;
+    GetIntegralCurvesFromInitialSeeds(ics);
+    numSeedPts = ics.size();
 
     SetMaxQueueLength(cacheQLen);
 
@@ -787,36 +785,36 @@ avtPICSFilter::Execute(void)
     */
     
     if (method == STREAMLINE_STAGED_LOAD_ONDEMAND)
-        slAlgo = new avtSerialSLAlgorithm(this);
+        icAlgo = new avtSerialICAlgorithm(this);
     else if (method == STREAMLINE_PARALLEL_STATIC_DOMAINS)
-        slAlgo = new avtParDomSLAlgorithm(this, maxCount);
+        icAlgo = new avtParDomICAlgorithm(this, maxCount);
     else if (method == STREAMLINE_MASTER_SLAVE)
     {
-        slAlgo = avtMasterSlaveSLAlgorithm::Create(this,
+        icAlgo = avtMasterSlaveICAlgorithm::Create(this,
                                                    maxCount,
                                                    PAR_Rank(),
                                                    PAR_Size(),
                                                    workGroupSz);
     }
 #else
-    slAlgo = new avtSerialSLAlgorithm(this);
+    icAlgo = new avtSerialICAlgorithm(this);
 #endif
 
     InitialIOTime = visitTimer->LookupTimer("Reading dataset");
     
-    slAlgo->Initialize(sls);
-    slAlgo->Execute();
+    icAlgo->Initialize(ics);
+    icAlgo->Execute();
 
     while (ContinueExecute())
     {
-        slAlgo->ResetIntegralCurvesForContinueExecute();
-        slAlgo->Execute();
+        icAlgo->ResetIntegralCurvesForContinueExecute();
+        icAlgo->Execute();
     }
     
-    slAlgo->PostExecute();
+    icAlgo->PostExecute();
 
-    delete slAlgo;
-    slAlgo = NULL;
+    delete icAlgo;
+    icAlgo = NULL;
     
     delete intervalTree;
     intervalTree = NULL;
@@ -1517,18 +1515,17 @@ avtPICSFilter::DomainToRank(DomainType &domain)
 // ****************************************************************************
 
 void
-avtPICSFilter::IntegrateDomain(avtStreamline *sl2, 
+avtPICSFilter::IntegrateDomain(avtIntegralCurve *ic,
                                      vtkDataSet *ds,
                                      double *extents,
                                      int maxSteps )
 {
     int t0 = visitTimer->StartTimer();
-    avtStateRecorderIntegralCurve *sl = (avtStateRecorderIntegralCurve *)sl2;
     
     avtDataAttributes &a = GetInput()->GetInfo().GetAttributes();
 
     if (DebugStream::Level4())
-        debug4<<"avtPICSFilter::IntegrateDom(dom= "<<sl->domain<<")"<<endl;
+        debug4<<"avtPICSFilter::IntegrateDom(dom= "<<ic->domain<<")"<<endl;
 
     // prepare streamline integration ingredients
     vtkVisItInterpolatedVelocityField* velocity1 =
@@ -1536,7 +1533,7 @@ avtPICSFilter::IntegrateDomain(avtStreamline *sl2,
     velocity1->SetDataSet(ds);
 
     vtkVisItCellLocator *cellLocator = NULL;
-    std::map<DomainType, vtkVisItCellLocator*>::iterator it = domainToCellLocatorMap.find(sl->domain);
+    std::map<DomainType, vtkVisItCellLocator*>::iterator it = domainToCellLocatorMap.find(ic->domain);
     
     if (it != domainToCellLocatorMap.end())
         cellLocator = it->second;
@@ -1553,89 +1550,88 @@ avtPICSFilter::IntegrateDomain(avtStreamline *sl2,
         if (*dbp == NULL)
             EXCEPTION1(InvalidFilesException, db.c_str());
         
-        avtDatabaseMetaData *md = dbp->GetMetaData(sl->domain.timeStep,
+        avtDatabaseMetaData *md = dbp->GetMetaData(ic->domain.timeStep,
                                                    false,false, false);
-        t1 = md->GetTimes()[sl->domain.timeStep];
-        t2 = md->GetTimes()[sl->domain.timeStep+1];
+        t1 = md->GetTimes()[ic->domain.timeStep];
+        t2 = md->GetTimes()[ic->domain.timeStep+1];
 
         if (t1 >= t2)
         {
           avtCallback::IssueWarning("Pathlines - Found two adjacent steps that are not increasing or are equal in time. Setting the time difference to 1. This change will most likely affect the results.");
 
-          t1 = (double)sl->domain.timeStep;
-          t2 = (double)(sl->domain.timeStep+1);
+          t1 = (double)ic->domain.timeStep;
+          t2 = (double)(ic->domain.timeStep+1);
         }
 
         velocity1->SetCurrentTime(t1);
         velocity1->SetNextTime(t2);
     }
 
-    //sl->Debug();
-    int numSteps = sl->size();
-    avtStreamline::Result result;
+    //ic->Debug();
+    avtIntegralCurve::Result result;
 
     // When restarting a streamline one step is always taken. To avoid
     // this unneed step check to see if the termination criteria was
     // previously met.
     if (DebugStream::Level4())
-        debug4<<"IntegrateDomain: sl->terminated= "<<sl->terminated<<endl;
+        debug4<<"IntegrateDomain: ic->terminated= "<<ic->terminated<<endl;
 
-    if (!sl->terminated)
+    if (!ic->terminated)
     {
         if (doPathlines)
         {
             avtIVPVTKTimeVaryingField field(velocity1, t1, t2);
-            result = sl->Advance(&field,
-                                        sl->terminationType,
-                                        sl->termination);
+            result = ic->Advance(&field,
+                                        ic->terminationType,
+                                        ic->termination);
         }
         else
         {
             if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR)
             {
                 avtIVPM3DC1Field field(velocity1);
-                result = sl->Advance(&field,
-                                            sl->terminationType,
-                                            sl->termination);
+                result = ic->Advance(&field,
+                                            ic->terminationType,
+                                            ic->termination);
             }
             else
             {
                 avtIVPVTKField field(velocity1);
-                result = sl->Advance(&field,
-                                            sl->terminationType,
-                                            sl->termination);
+                result = ic->Advance(&field,
+                                            ic->terminationType,
+                                            ic->termination);
             }
         }
         
         // Termination criteria was met.
-        sl->terminated = (result == avtStreamline::RESULT_TERMINATE);
+        ic->terminated = (result == avtIntegralCurve::RESULT_TERMINATE);
         
         if (DebugStream::Level5())
         {
           debug5<<"Advance:= "<<result<<endl;
-          debug5<<"IntegrateDomain: sl->terminated= "<<sl->terminated<<endl;
+          debug5<<"IntegrateDomain: ic->terminated= "<<ic->terminated<<endl;
         }
     }
     else
-        result = avtStreamline::RESULT_TERMINATE;
+        result = avtIntegralCurve::RESULT_TERMINATE;
 
     //Particle exited this domain.
-    if (result == avtStreamline::RESULT_EXIT_DOMAIN)
+    if (result == avtIntegralCurve::RESULT_EXIT_DOMAIN)
     {
-        DomainType oldDomain = sl->domain;
-        SetDomain(sl);
-        int domCnt = sl->seedPtDomainList.size();
+        DomainType oldDomain = ic->domain;
+        SetDomain(ic);
+        int domCnt = ic->seedPtDomainList.size();
         
         //If we land in none, or the same domain, we're done.
-        if (domCnt == 0 || (domCnt == 1 && sl->domain == oldDomain))
+        if (domCnt == 0 || (domCnt == 1 && ic->domain == oldDomain))
         {
-            sl->status = avtStreamline::STATUS_TERMINATE;
+            ic->status = avtIntegralCurve::STATUS_TERMINATE;
         }
         else
-            sl->status = avtStreamline::STATUS_OUTOFBOUNDS;
+            ic->status = avtIntegralCurve::STATUS_OUTOFBOUNDS;
     }
     else
-        sl->status = avtStreamline::STATUS_TERMINATE;
+        ic->status = avtIntegralCurve::STATUS_TERMINATE;
     
     velocity1->Delete();
     if (DebugStream::Level4())
@@ -1683,47 +1679,47 @@ avtPICSFilter::IntegrateDomain(avtStreamline *sl2,
 // ****************************************************************************
 
 void
-avtPICSFilter::AdvectParticle(avtStreamline *sl,
+avtPICSFilter::AdvectParticle(avtIntegralCurve *ic,
                                          int maxSteps)
 {
     int t1 = visitTimer->StartTimer();
-    sl->status = avtStreamline::STATUS_UNSET;
+    ic->status = avtIntegralCurve::STATUS_UNSET;
     
     //Get the required domain.
     avtVector pt;
-    sl->CurrentLocation(pt);
-    vtkDataSet *ds = GetDomain(sl->domain, pt.x, pt.y, pt.z);
+    ic->CurrentLocation(pt);
+    vtkDataSet *ds = GetDomain(ic->domain, pt.x, pt.y, pt.z);
 
     if (DebugStream::Level4())
-        debug4 << "avtPICSFilter::AdvectParticle("<<pt<<" "<<sl->domain<<")"<<endl;
+        debug4 << "avtPICSFilter::AdvectParticle("<<pt<<" "<<ic->domain<<")"<<endl;
 
     if (ds == NULL)
     {
-        sl->status = avtStreamline::STATUS_TERMINATE;
+        ic->status = avtIntegralCurve::STATUS_TERMINATE;
     }
     else
     {
         double extents[6] = { 0.,0., 0.,0., 0.,0. };
-        intervalTree->GetElementExtents(sl->domain.domain, extents);
-        IntegrateDomain(sl, ds, extents, maxSteps);
+        intervalTree->GetElementExtents(ic->domain.domain, extents);
+        IntegrateDomain(ic, ds, extents, maxSteps);
 
-        //SL exited this domain.
-        if (sl->status == avtStreamline::STATUS_OUTOFBOUNDS)
+        //IC exited this domain.
+        if (ic->status == avtIntegralCurve::STATUS_OUTOFBOUNDS)
         {
             if (DebugStream::Level5())
                 debug5<<"OOB: call set domain\n";
-            SetDomain(sl);
+            SetDomain(ic);
         }
-        //SL terminates.
+        //IC terminates.
         else
         {
             if (DebugStream::Level5()) debug5<<"Terminate!\n";
-            sl->status = avtStreamline::STATUS_TERMINATE;
+            ic->status = avtIntegralCurve::STATUS_TERMINATE;
         }
     }
     
     if (DebugStream::Level4())
-        debug4 << "AdvectParticle DONE: status = "<<sl->status<<" doms= "<<sl->seedPtDomainList<<endl;
+        debug4 << "AdvectParticle DONE: status = "<<ic->status<<" doms= "<<ic->seedPtDomainList<<endl;
     visitTimer->StopTimer(t1, "AdvectParticle");
 }
 
@@ -1933,7 +1929,7 @@ randMinus1_1()
 // ****************************************************************************
 
 void
-avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtStreamline *> &streamlines)
+avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *> &streamlines)
 {
     std::vector<avtVector> seedPts = GetInitialLocations();
 
@@ -1957,12 +1953,12 @@ void
 avtPICSFilter::AddSeedpoints(std::vector<avtVector> &pts,
                              std::vector<std::vector<int> > &ids)
 {
-    if (slAlgo == NULL)
+    if (icAlgo == NULL)
         EXCEPTION1(ImproperUseException, "Improper call of avtPICSFilter::AddSeedpoints");
     
-    vector<avtStreamline *> sls;
-    CreateIntegralCurvesFromSeeds(pts, sls, ids);
-    slAlgo->AddIntegralCurves(sls);
+    vector<avtIntegralCurve *> ics;
+    CreateIntegralCurvesFromSeeds(pts, ics, ids);
+    icAlgo->AddIntegralCurves(ics);
 }
 
 // ****************************************************************************
@@ -1983,13 +1979,13 @@ avtPICSFilter::AddSeedpoints(std::vector<avtVector> &pts,
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
 //   Hank Childs, Sat Jun  5 16:26:12 CDT 2010
-//   Use avtStateRecorderIntegralCurves.
+//   Use avtIntegralCurves.
 //
 // ****************************************************************************
 
 void
 avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
-                                                std::vector<avtStreamline *> &streamlines,
+                                                std::vector<avtIntegralCurve *> &streamlines,
                                                 std::vector<std::vector<int> > &ids)
 {
     for (int i = 0; i < pts.size(); i++)
@@ -2008,29 +2004,29 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             if (integrationDirection == VTK_INTEGRATE_FORWARD ||
                 integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
             {
-                avtStreamline *sl = CreateIntegralCurve(solver,
+                avtIntegralCurve *ic = CreateIntegralCurve(solver,
                                                         seedTime0, pts[i], 
                                                         GetNextCurveID());
-                sl->domain = dom;
-                sl->termination = termination;
-                sl->terminationType = terminationType;
+                ic->domain = dom;
+                ic->termination = termination;
+                ic->terminationType = terminationType;
             
-                streamlines.push_back(sl);
-                seedPtIds.push_back(sl->id);
+                streamlines.push_back(ic);
+                seedPtIds.push_back(ic->id);
             }
             
             if (integrationDirection == VTK_INTEGRATE_BACKWARD ||
                 integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
             {
-                avtStreamline *sl = CreateIntegralCurve(solver,
+                avtIntegralCurve *ic = CreateIntegralCurve(solver,
                                                         seedTime0, pts[i], 
                                                         GetNextCurveID());
-                sl->domain = dom;
-                sl->termination = -termination;
-                sl->terminationType = terminationType;
+                ic->domain = dom;
+                ic->termination = -termination;
+                ic->terminationType = terminationType;
             
-                streamlines.push_back(sl);
-                seedPtIds.push_back(sl->id);
+                streamlines.push_back(ic);
+                seedPtIds.push_back(ic->id);
             }
         }
         
@@ -2038,16 +2034,16 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
     }
     
     //Sort them on domain.
-    std::sort(streamlines.begin(), streamlines.end(), avtStreamline::DomainCompare);
+    std::sort(streamlines.begin(), streamlines.end(), avtIntegralCurve::DomainCompare);
 
     for (int i = 0; i < streamlines.size(); i++)
     {
-        avtStreamline *sl = streamlines[i];
+        avtIntegralCurve *ic = streamlines[i];
         if (DebugStream::Level5())
         {
             avtVector loc;
-            sl->CurrentLocation(loc);
-            debug5<<"Create seed: id= "<<sl->id<<", dom= "<<sl->domain
+            ic->CurrentLocation(loc);
+            debug5<<"Create seed: id= "<<ic->id<<", dom= "<<ic->domain
                   <<", loc= " << loc <<endl;
         }
     }
@@ -2215,11 +2211,11 @@ avtPICSFilter::ExamineContract(avtContract_p in_contract)
 // ****************************************************************************
 
 void
-avtPICSFilter::GetTerminatedIntegralCurves(vector<avtStreamline *> &sls)
+avtPICSFilter::GetTerminatedIntegralCurves(vector<avtIntegralCurve *> &ics)
 {
-    sls.resize(0);
-    if (slAlgo)
-        slAlgo->GetTerminatedICs(sls);
+    ics.resize(0);
+    if (icAlgo)
+        icAlgo->GetTerminatedICs(ics);
 }
 
 
@@ -2237,7 +2233,7 @@ avtPICSFilter::GetTerminatedIntegralCurves(vector<avtStreamline *> &sls)
 // ****************************************************************************
 
 void
-avtPICSFilter::DeleteIntegralCurves(vector<int> &slIDs)
+avtPICSFilter::DeleteIntegralCurves(vector<int> &icIDs)
 {
-    slAlgo->DeleteIntegralCurves(slIDs);
+    icAlgo->DeleteIntegralCurves(icIDs);
 }

@@ -43,7 +43,7 @@
 #ifndef AVT_STATE_RECORDER_INTEGRAL_CURVE_H
 #define AVT_STATE_RECORDER_INTEGRAL_CURVE_H
 
-#include <avtStreamline.h>
+#include <avtIntegralCurve.h>
 
 
 // ****************************************************************************
@@ -60,7 +60,7 @@
 //
 // ****************************************************************************
 
-class IVP_API avtStateRecorderIntegralCurve : public avtStreamline
+class IVP_API avtStateRecorderIntegralCurve : public avtIntegralCurve
 {
   public:
     enum ScalarValueType {NONE=0, SPEED=1, VORTICITY=2, SCALAR_VARIABLE=4};
@@ -106,9 +106,9 @@ class IVP_API avtStateRecorderIntegralCurve : public avtStreamline
                          double end, avtIVPSolver::Result *result);
     // Could be static ... only virtual to get to the right method.
     // (Temporary solution until we build a communicator class.)
-    virtual avtStreamline*
+    virtual avtIntegralCurve*
                       MergeIntegralCurveSequence(
-                              std::vector<avtStreamline *> &v);
+                              std::vector<avtIntegralCurve *> &v);
 
     // Intersection points.
     bool intersectionsSet;

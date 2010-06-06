@@ -43,7 +43,7 @@
 #ifndef AVT_PICS_FILTER_H
 #define AVT_PICS_FILTER_H
 
-#include <avtStreamline.h>
+#include <avtIntegralCurve.h>
 #include <avtDatasetOnDemandFilter.h>
 #include <avtDatasetToDatasetFilter.h>
 #include <avtIVPDopri5.h>
@@ -58,7 +58,7 @@
 
 class vtkVisItCellLocator;
 class DomainType;
-class avtSLAlgorithm;
+class avtICAlgorithm;
 
 #define STREAMLINE_TERMINATE_DISTANCE 0
 #define STREAMLINE_TERMINATE_TIME 1
@@ -86,6 +86,12 @@ class avtSLAlgorithm;
 // Programmer: Hank Childs (extracted base class from avtStreamlineFilter)
 // Creation:   June 5, 2010
 //
+// Modifications:
+//
+//   Hank Childs, Sun Jun  6 15:26:15 CDT 2010
+//   Rename all methods and data members to reflect integral curves, not 
+//   streamlines.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -100,8 +106,8 @@ class AVTFILTERS_API avtPICSFilter :
     virtual const char       *GetDescription(void)
                                   { return "Advecting particles"; };
 
-    virtual avtStreamline          *CreateIntegralCurve() = 0;
-    virtual avtStreamline          *CreateIntegralCurve(
+    virtual avtIntegralCurve          *CreateIntegralCurve() = 0;
+    virtual avtIntegralCurve          *CreateIntegralCurve(
                                         const avtIVPSolver* model, 
                                         const double& t_start,
                                         const avtVector &p_start, int ID) = 0;
@@ -130,7 +136,7 @@ class AVTFILTERS_API avtPICSFilter :
     double termination;
     int    integrationDirection;
     int    dataSpatialDimension;
-    avtSLAlgorithm *slAlgo;
+    avtICAlgorithm *icAlgo;
 
     avtContract_p lastContract;
 
@@ -169,8 +175,8 @@ class AVTFILTERS_API avtPICSFilter :
     virtual void              ExamineContract(avtContract_p);
     virtual bool              CheckOnDemandViability(void);
 
-    void                      AdvectParticle(avtStreamline *sl, int maxSteps=-1);
-    void                      IntegrateDomain(avtStreamline *sl, 
+    void                      AdvectParticle(avtIntegralCurve *ic, int maxSteps=-1);
+    void                      IntegrateDomain(avtIntegralCurve *ic, 
                                               vtkDataSet *ds,
                                               double *extents,
                                               int maxSteps=-1);
@@ -182,29 +188,29 @@ class AVTFILTERS_API avtPICSFilter :
 
     int                       GetNextCurveID(){ int id = MaxID; MaxID++; return id;}
     void                      CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
-                                                         std::vector<avtStreamline *> &streamlines,
+                                                         std::vector<avtIntegralCurve *> &ics,
                                                          std::vector<std::vector<int> > &ids);
-    void                      GetIntegralCurvesFromInitialSeeds(std::vector<avtStreamline *> &sls);
+    void                      GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *> &ics);
     void                      AddSeedpoints(std::vector<avtVector> &pts,
                                             std::vector<std::vector<int> > &ids);
-    void                      DeleteIntegralCurves(std::vector<int> &slIDs);
-    virtual void              CreateIntegralCurveOutput(vector<avtStreamline *> &streamlines)
+    void                      DeleteIntegralCurves(std::vector<int> &icIDs);
+    virtual void              CreateIntegralCurveOutput(vector<avtIntegralCurve *> &ics)
                                                     = 0;
-    void                      GetTerminatedIntegralCurves(vector<avtStreamline *> &sls);
+    void                      GetTerminatedIntegralCurves(vector<avtIntegralCurve *> &ics);
 
     // Helper functions.
     bool                      PointInDomain(avtVector &pt, DomainType &domain);
     int                       DomainToRank(DomainType &domain);
     void                      ComputeDomainToRankMapping();
     bool                      OwnDomain(DomainType &domain);
-    void                      SetDomain(avtStreamline *sl);
+    void                      SetDomain(avtIntegralCurve *ic);
     void                      Initialize();
     void                      ComputeRankList(const std::vector<int> &domList, 
                                               std::vector<int> &ranks, 
                                               std::vector<int> &doms );
     vtkVisItCellLocator      *SetupLocator(const DomainType &, vtkDataSet *);
     
-    friend class avtSLAlgorithm;
+    friend class avtICAlgorithm;
 };
 
 

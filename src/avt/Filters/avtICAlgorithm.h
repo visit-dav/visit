@@ -37,17 +37,17 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtSLAlgorithm.h                             //
+//                              avtICAlgorithm.h                             //
 // ************************************************************************* //
 
-#ifndef AVT_SL_ALGORITHM_H
-#define AVT_SL_ALGORITHM_H
+#ifndef AVT_IC_ALGORITHM_H
+#define AVT_IC_ALGORITHM_H
 
 #include <avtPICSFilter.h>
-#include "avtStreamline.h"
+#include "avtIntegralCurve.h"
 
 // ****************************************************************************
-// Class: avtSLAlgorithm
+// Class: avtICAlgorithm
 //
 // Purpose:
 //    Abstract base class for streamline algorithms.
@@ -95,22 +95,26 @@
 //   particle advection, as opposed to streamlines.  Also change reference
 //   from avtStreamlineFilter to avtPICSFilter.
 //
+//   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
+//   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
+//   as opposed to streamlines.
+//
 // ****************************************************************************
 
-class avtSLAlgorithm
+class avtICAlgorithm
 {
   public:
-    avtSLAlgorithm( avtPICSFilter *slFilter );
-    virtual ~avtSLAlgorithm();
+    avtICAlgorithm( avtPICSFilter *picsFilter );
+    virtual ~avtICAlgorithm();
 
     //Execution of the algorithm.
-    virtual void              Initialize(std::vector<avtStreamline *> &);
+    virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     void                      Execute();
     virtual void              ResetIntegralCurvesForContinueExecute() = 0;
     virtual void              PostExecute();
-    virtual void              GetTerminatedICs(vector<avtStreamline *> &v);
-    virtual void              AddIntegralCurves(std::vector<avtStreamline*> &sls) = 0;
-    virtual void              DeleteIntegralCurves(std::vector<int> &slIDs);
+    virtual void              GetTerminatedICs(vector<avtIntegralCurve *> &v);
+    virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics) = 0;
+    virtual void              DeleteIntegralCurves(std::vector<int> &icIDs);
 
   protected:
     virtual void              RunAlgorithm() = 0;
@@ -118,7 +122,7 @@ class avtSLAlgorithm
     virtual void              PostRunAlgorithm() {}
 
     avtPICSFilter *picsFilter;
-    std::list<avtStreamline *> terminatedICs;
+    std::list<avtIntegralCurve *> terminatedICs;
     int                       numDomains, numTimeSteps, numSeedPoints;
     virtual const char*       AlgoName() const = 0;
     
@@ -126,8 +130,8 @@ class avtSLAlgorithm
     avtIVPSolver *            GetSolver() {return picsFilter->solver; }
     virtual bool              PointInDomain(avtVector &pt, DomainType &dom)
     { return picsFilter->avtPICSFilter::PointInDomain(pt, dom); }
-    virtual void              AdvectParticle(avtStreamline *sl);
-    vtkDataSet               *GetDomain(avtStreamline *sl);
+    virtual void              AdvectParticle(avtIntegralCurve *ic);
+    vtkDataSet               *GetDomain(avtIntegralCurve *ic);
     vtkDataSet               *GetDomain(const DomainType &dom,
                                         double X=0, double Y=0, double Z=0);
     virtual bool              DomainLoaded(DomainType &dom) const
@@ -140,13 +144,13 @@ class avtSLAlgorithm
     int                       DomCacheSize() const { return picsFilter->cacheQLen; }
 
     //Utility functions.
-    virtual void              SortIntegralCurves(std::list<avtStreamline *> &);
-    virtual void              SortIntegralCurves(std::vector<avtStreamline *> &);
+    virtual void              SortIntegralCurves(std::list<avtIntegralCurve *> &);
+    virtual void              SortIntegralCurves(std::vector<avtIntegralCurve *> &);
     //Statistics and timers.
-    class SLStatistics
+    class ICStatistics
     {
       public:
-        SLStatistics(std::string s="")
+        ICStatistics(std::string s="")
         {
             nm = s;
             value = 0.0;
@@ -158,7 +162,7 @@ class avtSLAlgorithm
         float value;
         std::string nm;
 
-        friend ostream& operator<<(std::ostream &out, const avtSLAlgorithm::SLStatistics &s)
+        friend ostream& operator<<(std::ostream &out, const avtICAlgorithm::ICStatistics &s)
         //friend ostream& operator<<(std::ostream &out)
         {
             out<<s.nm<<" V: "<<s.value<<" "<<s.total<<" ["<<s.min<<", "<<s.max<<", "<<s.mean<<" : "<<s.sigma<<"]";
@@ -171,7 +175,7 @@ class avtSLAlgorithm
     virtual void              CompileTimingStatistics();
     virtual void              CompileCounterStatistics();
     virtual void              CalculateExtraTime();    
-    virtual void              ComputeStatistic(SLStatistics &stats);
+    virtual void              ComputeStatistic(ICStatistics &stats);
     virtual void              ComputeDomainLoadStatistic();
     virtual void              ReportStatistics(ostream &os);
     virtual void              ReportTimings(ostream &os, bool totals);
@@ -179,19 +183,19 @@ class avtSLAlgorithm
 
     void                      PrintTiming(ostream &os,
                                           char *str, 
-                                          const SLStatistics &s,
-                                          const SLStatistics &t,
+                                          const ICStatistics &s,
+                                          const ICStatistics &t,
                                           bool total);
     void                      PrintCounter(ostream &os,
                                            char *str,
-                                           const SLStatistics &s,
+                                           const ICStatistics &s,
                                            bool total);
 
     //Timers.
-    SLStatistics              TotalTime, IOTime, IntegrateTime, SortTime,
+    ICStatistics              TotalTime, IOTime, IntegrateTime, SortTime,
                               ExtraTime;
     //Counters.
-    SLStatistics              IntegrateCnt, DomLoadCnt, DomPurgeCnt;
+    ICStatistics              IntegrateCnt, DomLoadCnt, DomPurgeCnt;
 
     //Special counters.
     int                       domainsUsed, totDomainsLoaded, domainLoadedMin, domainLoadedMax;

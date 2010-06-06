@@ -62,7 +62,7 @@
 
 avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(const avtIVPSolver* model, const double& t_start,
                              const avtVector &p_start, int ID) :
-    avtStreamline(model, t_start, p_start, ID), scalarValueType(NONE)
+    avtIntegralCurve(model, t_start, p_start, ID), scalarValueType(NONE)
 {
     intersectionsSet = false;
     numIntersections = 0;
@@ -352,7 +352,7 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
                          avtIVPSolver *solver)
 {
     // Have the base class serialize its part
-    avtStreamline::Serialize(mode, buff, solver);
+    avtIntegralCurve::Serialize(mode, buff, solver);
 
     bool serializeSteps = serializeFlags&SERIALIZE_STEPS;
     if (DebugStream::Level5())
@@ -398,7 +398,7 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
 
 
 // ****************************************************************************
-//  Method: avtStreamline::MergeIntegralCurveSequence
+//  Method: avtStateRecorderIntegralCurve::MergeIntegralCurveSequence
 //
 //  Purpose:
 //      Merge a vector of streamline sequences into a single streamline.
@@ -418,8 +418,8 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
 //
 // ****************************************************************************
 
-avtStreamline *
-avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtStreamline *> &v2)
+avtIntegralCurve *
+avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v2)
 {
     std::vector<avtStateRecorderIntegralCurve *> v;
     for (int j = 0 ; j < v2.size() ; j++)
@@ -431,7 +431,7 @@ avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtStreaml
         return v[0];
 
     //Sort the streamlines by Id,seq.
-    std::sort(v.begin(), v.end(), avtStreamline::IdRevSeqCompare);
+    std::sort(v.begin(), v.end(), avtIntegralCurve::IdRevSeqCompare);
 
     //Make sure all ids are the same.
     if (v.front()->id != v.back()->id)

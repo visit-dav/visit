@@ -37,16 +37,16 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtSerialSLAlgorithm.h                         //
+//                            avtSerialICAlgorithm.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_SERIAL_SL_ALGORITHM_H
-#define AVT_SERIAL_SL_ALGORITHM_H
+#ifndef AVT_SERIAL_IC_ALGORITHM_H
+#define AVT_SERIAL_IC_ALGORITHM_H
 
-#include "avtSLAlgorithm.h"
+#include "avtICAlgorithm.h"
 
 // ****************************************************************************
-// Class: avtSerialSLAlgorithm
+// Class: avtSerialICAlgorithm
 //
 // Purpose:
 //    A class for performing serial streamline integration.
@@ -70,22 +70,26 @@
 //   particle advection, as opposed to streamlines.  Also change reference
 //   from avtStreamlineFilter to avtPICSFilter.
 //
+//   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
+//   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
+//   as opposed to streamlines.
+//
 // ****************************************************************************
 
-class avtSerialSLAlgorithm : public avtSLAlgorithm
+class avtSerialICAlgorithm : public avtICAlgorithm
 {
   public:
-    avtSerialSLAlgorithm( avtPICSFilter *slFilter );
-    virtual ~avtSerialSLAlgorithm();
+    avtSerialICAlgorithm( avtPICSFilter *picsFilter );
+    virtual ~avtSerialICAlgorithm();
     
     virtual const char*       AlgoName() const {return "Serial";}
-    virtual void              Initialize(std::vector<avtStreamline *> &);
+    virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     virtual void              ResetIntegralCurvesForContinueExecute();
-    virtual void              AddIntegralCurves(std::vector<avtStreamline*> &sls);
+    virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics);
 
   protected:
     virtual void              RunAlgorithm();
-    std::list<avtStreamline *> activeSLs, oobSLs;
+    std::list<avtIntegralCurve *> activeICs, oobICs;
     
 };
 

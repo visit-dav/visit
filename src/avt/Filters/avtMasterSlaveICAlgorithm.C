@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtMasterSlaveSLAlgorithm.C                  //
+//                              avtMasterSlaveICAlgorithm.C                  //
 // ************************************************************************* //
 
-#include "avtMasterSlaveSLAlgorithm.h"
+#include "avtMasterSlaveICAlgorithm.h"
 #include <TimingsManager.h>
 #include <iostream>
 #include <iomanip>
@@ -54,17 +54,17 @@ static bool MASTER_BALANCING = false;
 static bool SLAVE_AUTO_LOAD_DOMS = false;
 static int LATENCY_SEND_CNT = 2;
 
-int avtMasterSlaveSLAlgorithm::MSG_STATUS = 420003;
-int avtMasterSlaveSLAlgorithm::MSG_DONE = 420004;
-int avtMasterSlaveSLAlgorithm::MSG_SEND_SL = 420005;
-int avtMasterSlaveSLAlgorithm::MSG_LOAD_DOMAIN = 420006;
-int avtMasterSlaveSLAlgorithm::MSG_SEND_SL_HINT = 420007;
-int avtMasterSlaveSLAlgorithm::MSG_FORCE_SEND_STATUS = 420008;
-int avtMasterSlaveSLAlgorithm::MSG_MASTER_STATUS = 420009;
-int avtMasterSlaveSLAlgorithm::MSG_OFFLOAD_SL = 420010;
+int avtMasterSlaveICAlgorithm::MSG_STATUS = 420003;
+int avtMasterSlaveICAlgorithm::MSG_DONE = 420004;
+int avtMasterSlaveICAlgorithm::MSG_SEND_IC = 420005;
+int avtMasterSlaveICAlgorithm::MSG_LOAD_DOMAIN = 420006;
+int avtMasterSlaveICAlgorithm::MSG_SEND_IC_HINT = 420007;
+int avtMasterSlaveICAlgorithm::MSG_FORCE_SEND_STATUS = 420008;
+int avtMasterSlaveICAlgorithm::MSG_MASTER_STATUS = 420009;
+int avtMasterSlaveICAlgorithm::MSG_OFFLOAD_IC = 420010;
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::Create
+//  Method: avtMasterSlaveICAlgorithm::Create
 //
 //  Purpose:
 //      Static method to create and conifigure classes.
@@ -82,16 +82,16 @@ int avtMasterSlaveSLAlgorithm::MSG_OFFLOAD_SL = 420010;
 //
 // ****************************************************************************
 
-avtMasterSlaveSLAlgorithm*
-avtMasterSlaveSLAlgorithm::Create(avtPICSFilter *slFilter,
+avtMasterSlaveICAlgorithm*
+avtMasterSlaveICAlgorithm::Create(avtPICSFilter *picsFilter,
                                   int maxCount,
                                   int rank,
                                   int nProcs,
                                   int workGroupSz)
 {
-    debug1<<"avtMasterSlaveSLAlgorithm::Create\n";
+    debug1<<"avtMasterSlaveICAlgorithm::Create\n";
     
-    avtMasterSlaveSLAlgorithm *algo = NULL;
+    avtMasterSlaveICAlgorithm *algo = NULL;
     int numMasters = 1;
     int extra = 0;
     
@@ -146,7 +146,7 @@ avtMasterSlaveSLAlgorithm::Create(avtPICSFilter *slFilter,
                 master = 0;
         }
         
-        algo = new avtMasterSLAlgorithm(slFilter, maxCount, workGroupSz, slaves, master, masters);
+        algo = new avtMasterICAlgorithm(picsFilter, maxCount, workGroupSz, slaves, master, masters);
 
         debug1<<"I am a master. My slaves are: "<<slaves<<endl;
         debug1<<"My masterMaster is "<<master<<". Masters= "<<masters<<endl;
@@ -159,7 +159,7 @@ avtMasterSlaveSLAlgorithm::Create(avtPICSFilter *slFilter,
             if (rank >= masterList[m][0] && rank <= masterList[m][1])
             {
                 debug1<<"I am a slave. My master is "<<m<<endl;
-                algo = new avtSlaveSLAlgorithm(slFilter, maxCount, m);
+                algo = new avtSlaveICAlgorithm(picsFilter, maxCount, m);
                 break;
             }
     }
@@ -172,10 +172,10 @@ avtMasterSlaveSLAlgorithm::Create(avtPICSFilter *slFilter,
 
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm
+//  Method: avtMasterSlaveICAlgorithm::avtMasterSlaveICAlgorithm
 //
 //  Purpose:
-//      avtMasterSlaveSLAlgorithm constructor.
+//      avtMasterSlaveICAlgorithm constructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -197,9 +197,9 @@ avtMasterSlaveSLAlgorithm::Create(avtPICSFilter *slFilter,
 //  
 // ****************************************************************************
 
-avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm(avtPICSFilter *slFilter,
+avtMasterSlaveICAlgorithm::avtMasterSlaveICAlgorithm(avtPICSFilter *picsFilter,
                                                      int maxCount)
-    : avtParSLAlgorithm(slFilter),
+    : avtParICAlgorithm(picsFilter),
       SleepTime("sleepT"), LatencyTime("latT"), MaxLatencyTime("maxLatT"), SleepCnt("sleepC"),
       LatencySavingCnt("latSaveCnt"), OffloadCnt("offloadCnt")
 {
@@ -211,22 +211,22 @@ avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm(avtPICSFilter *slFilter,
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::~avtMasterSlaveSLAlgorithm
+//  Method: avtMasterSlaveICAlgorithm::~avtMasterSlaveICAlgorithm
 //
 //  Purpose:
-//      avtMasterSlaveSLAlgorithm destructor
+//      avtMasterSlaveICAlgorithm destructor
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 // ****************************************************************************
 
-avtMasterSlaveSLAlgorithm::~avtMasterSlaveSLAlgorithm()
+avtMasterSlaveICAlgorithm::~avtMasterSlaveICAlgorithm()
 {
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::Initialize
+//  Method: avtMasterSlaveICAlgorithm::Initialize
 //
 //  Purpose:
 //      Initializization.
@@ -245,30 +245,30 @@ avtMasterSlaveSLAlgorithm::~avtMasterSlaveSLAlgorithm()
 // ****************************************************************************
 
 void
-avtMasterSlaveSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
+avtMasterSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 {
     int numRecvs = nProcs-1;
     if (numRecvs > 64)
         numRecvs = 64;
     
-    avtParSLAlgorithm::Initialize(seedPts, 2+NUM_DOMAINS, numRecvs);
+    avtParICAlgorithm::Initialize(seedPts, 2+NUM_DOMAINS, numRecvs);
 }
 
 void
-avtMasterSlaveSLAlgorithm::ResetIntegralCurvesForContinueExecute()
+avtMasterSlaveICAlgorithm::ResetIntegralCurvesForContinueExecute()
 {
     EXCEPTION0(ImproperUseException);
 }
 
 void
-avtMasterSlaveSLAlgorithm::AddIntegralCurves(std::vector<avtStreamline*> &sls)
+avtMasterSlaveICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
 {
     EXCEPTION0(ImproperUseException);
 }
 
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::Sleep
+//  Method: avtMasterSlaveICAlgorithm::Sleep
 //
 //  Purpose:
 //      Sleep for a spell
@@ -279,7 +279,7 @@ avtMasterSlaveSLAlgorithm::AddIntegralCurves(std::vector<avtStreamline*> &sls)
 // ****************************************************************************
 
 void
-avtMasterSlaveSLAlgorithm::Sleep()
+avtMasterSlaveICAlgorithm::Sleep()
 {
     if (sleepMicroSec > 0)
     {
@@ -293,7 +293,7 @@ avtMasterSlaveSLAlgorithm::Sleep()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::CompileTimingStatistics
+//  Method: avtMasterSlaveICAlgorithm::CompileTimingStatistics
 //
 //  Purpose:
 //      Calculate statistics.
@@ -307,9 +307,9 @@ avtMasterSlaveSLAlgorithm::Sleep()
 // ****************************************************************************
 
 void
-avtMasterSlaveSLAlgorithm::CompileTimingStatistics()
+avtMasterSlaveICAlgorithm::CompileTimingStatistics()
 {
-    avtParSLAlgorithm::CompileTimingStatistics();
+    avtParICAlgorithm::CompileTimingStatistics();
 
     ComputeStatistic(SleepTime);
     ComputeStatistic(LatencyTime);
@@ -317,7 +317,7 @@ avtMasterSlaveSLAlgorithm::CompileTimingStatistics()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::CompileCounterStatistics
+//  Method: avtMasterSlaveICAlgorithm::CompileCounterStatistics
 //
 //  Purpose:
 //      Calculate statistics.
@@ -328,15 +328,15 @@ avtMasterSlaveSLAlgorithm::CompileTimingStatistics()
 // ****************************************************************************
 
 void
-avtMasterSlaveSLAlgorithm::CompileCounterStatistics()
+avtMasterSlaveICAlgorithm::CompileCounterStatistics()
 {
-    avtParSLAlgorithm::CompileCounterStatistics();
+    avtParICAlgorithm::CompileCounterStatistics();
     ComputeStatistic(SleepCnt);
     ComputeStatistic(LatencySavingCnt);
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::CalculateExtraTime
+//  Method: avtMasterSlaveICAlgorithm::CalculateExtraTime
 //
 //  Purpose:
 //      Calculate ExtraTime.
@@ -350,16 +350,16 @@ avtMasterSlaveSLAlgorithm::CompileCounterStatistics()
 // ****************************************************************************
 
 void
-avtMasterSlaveSLAlgorithm::CalculateExtraTime()
+avtMasterSlaveICAlgorithm::CalculateExtraTime()
 {
-    avtParSLAlgorithm::CalculateExtraTime();
+    avtParICAlgorithm::CalculateExtraTime();
     
     if (SleepTime.value > 0.0)
         ExtraTime.value -= SleepTime.value;
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::ReportTimings
+//  Method: avtMasterSlaveICAlgorithm::ReportTimings
 //
 //  Purpose:
 //      Report timings.
@@ -370,9 +370,9 @@ avtMasterSlaveSLAlgorithm::CalculateExtraTime()
 // ****************************************************************************
 
 void
-avtMasterSlaveSLAlgorithm::ReportTimings(ostream &os, bool totals)
+avtMasterSlaveICAlgorithm::ReportTimings(ostream &os, bool totals)
 {
-    avtParSLAlgorithm::ReportTimings(os, totals);
+    avtParICAlgorithm::ReportTimings(os, totals);
     
     PrintTiming(os, "SleepTime", SleepTime, TotalTime, totals);
     PrintTiming(os, "LatencyTime", LatencyTime, TotalTime, totals);
@@ -380,7 +380,7 @@ avtMasterSlaveSLAlgorithm::ReportTimings(ostream &os, bool totals)
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveSLAlgorithm::ReportCounters
+//  Method: avtMasterSlaveICAlgorithm::ReportCounters
 //
 //  Purpose:
 //      Report counters.
@@ -397,9 +397,9 @@ avtMasterSlaveSLAlgorithm::ReportTimings(ostream &os, bool totals)
 // ****************************************************************************
 
 void
-avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
+avtMasterSlaveICAlgorithm::ReportCounters(ostream &os, bool totals)
 {
-    avtParSLAlgorithm::ReportCounters(os, totals);
+    avtParICAlgorithm::ReportCounters(os, totals);
     PrintCounter(os, "SleepCnt", SleepCnt, totals);
     PrintCounter(os, "LSaveCnt", LatencySavingCnt, totals);
     PrintCounter(os, "OffldCnt", OffloadCnt, totals);
@@ -409,10 +409,10 @@ avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::avtMasterSLAlgorithm
+//  Method: avtMasterICAlgorithm::avtMasterICAlgorithm
 //
 //  Purpose:
-//      avtMasterSLAlgorithm constructor.
+//      avtMasterICAlgorithm constructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -430,13 +430,13 @@ avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
 //
 // ****************************************************************************
 
-avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtPICSFilter *slFilter,
+avtMasterICAlgorithm::avtMasterICAlgorithm(avtPICSFilter *picsFilter,
                                            int maxCount,
                                            int workGrpSz,
                                            vector<int> &slaves,
                                            int mst,
                                            vector<int> &masters)
-    : avtMasterSlaveSLAlgorithm(slFilter, maxCount)
+    : avtMasterSlaveICAlgorithm(picsFilter, maxCount)
 {
     // Sleeping master seems to increase latency.
     sleepMicroSec = 0;
@@ -451,7 +451,7 @@ avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtPICSFilter *slFilter,
     for (int i = 0; i < masters.size(); i++)
         masterInfo.push_back(SlaveInfo(masters[i], NUM_DOMAINS));
     
-    slDomCnts.resize(NUM_DOMAINS,0);
+    icDomCnts.resize(NUM_DOMAINS,0);
     domLoaded.resize(NUM_DOMAINS,0);
 
     case1Cnt = 0;
@@ -464,22 +464,22 @@ avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtPICSFilter *slFilter,
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::~avtMasterSLAlgorithm
+//  Method: avtMasterICAlgorithm::~avtMasterICAlgorithm
 //
 //  Purpose:
-//      avtMasterSLAlgorithm destructor.
+//      avtMasterICAlgorithm destructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 // ****************************************************************************
 
-avtMasterSLAlgorithm::~avtMasterSLAlgorithm()
+avtMasterICAlgorithm::~avtMasterICAlgorithm()
 {
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::Initialize
+//  Method: avtMasterICAlgorithm::Initialize
 //
 //  Purpose:
 //      Initializization
@@ -507,10 +507,10 @@ avtMasterSLAlgorithm::~avtMasterSLAlgorithm()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
+avtMasterICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 {
     SortIntegralCurves(seedPts);
-    avtMasterSlaveSLAlgorithm::Initialize(seedPts);
+    avtMasterSlaveICAlgorithm::Initialize(seedPts);
     int nSeeds = seedPts.size();
 
     int numMasters;
@@ -543,9 +543,9 @@ avtMasterSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
         delete seedPts[i];
     
     for (int i = i0; i < i1; i++)
-        activeSLs.push_back(seedPts[i]);
+        activeICs.push_back(seedPts[i]);
     
-    workGroupActiveSLs = activeSLs.size();
+    workGroupActiveICs = activeICs.size();
     done = false;
     slaveUpdate = false;
     masterUpdate = false;
@@ -554,7 +554,7 @@ avtMasterSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::CompileTimingStatistics
+//  Method: avtMasterICAlgorithm::CompileTimingStatistics
 //
 //  Purpose:
 //      Calculate statistics. For the master, we need to be a little tricky.
@@ -571,18 +571,18 @@ avtMasterSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::CompileTimingStatistics()
+avtMasterICAlgorithm::CompileTimingStatistics()
 {
     LatencyTime.value = -1;
     MaxLatencyTime.value = -1;
     IOTime.value = -1;
     IntegrateTime.value = -1;
     SortTime.value = -1;
-    avtMasterSlaveSLAlgorithm::CompileTimingStatistics();
+    avtMasterSlaveICAlgorithm::CompileTimingStatistics();
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::CompileCounterStatistics
+//  Method: avtMasterICAlgorithm::CompileCounterStatistics
 //
 //  Purpose:
 //      Calculate statistics. For the master, we need to be a little tricky.
@@ -596,17 +596,17 @@ avtMasterSLAlgorithm::CompileTimingStatistics()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::CompileCounterStatistics()
+avtMasterICAlgorithm::CompileCounterStatistics()
 {
     IntegrateCnt.value = -1;
     DomLoadCnt.value = -1;
     DomPurgeCnt.value = -1;
-    avtMasterSlaveSLAlgorithm::CompileCounterStatistics();
+    avtMasterSlaveICAlgorithm::CompileCounterStatistics();
 }
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::ReportCounters
+//  Method: avtMasterICAlgorithm::ReportCounters
 //
 //  Purpose:
 //      Report counters.
@@ -622,9 +622,9 @@ avtMasterSLAlgorithm::CompileCounterStatistics()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::ReportCounters(ostream &os, bool totals)
+avtMasterICAlgorithm::ReportCounters(ostream &os, bool totals)
 {
-    avtMasterSlaveSLAlgorithm::ReportCounters(os, totals);
+    avtMasterSlaveICAlgorithm::ReportCounters(os, totals);
     
     if (!totals)
     {
@@ -659,7 +659,7 @@ avtMasterSLAlgorithm::ReportCounters(ostream &os, bool totals)
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::PrintStatus
+//  Method: avtMasterICAlgorithm::PrintStatus
 //
 //  Purpose:
 //      Display the slave status
@@ -681,7 +681,7 @@ avtMasterSLAlgorithm::ReportCounters(ostream &os, bool totals)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::PrintStatus()
+avtMasterICAlgorithm::PrintStatus()
 {
     if (masterInfo.size() > 0)
     {
@@ -702,7 +702,7 @@ avtMasterSLAlgorithm::PrintStatus()
     if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
     {
         for ( int i = 0; i < NUM_DOMAINS; i++)
-            debug1<<setw(4)<<slDomCnts[i]<<" ";
+            debug1<<setw(4)<<icDomCnts[i]<<" ";
     }
     debug1<<"]\n";
     
@@ -721,17 +721,17 @@ avtMasterSLAlgorithm::PrintStatus()
     }
     debug1<<"] ("<<cnt<<")"<<endl;
 
-    vector<int> slaveSLs(NUM_DOMAINS,0);
+    vector<int> slaveICs(NUM_DOMAINS,0);
     for (int i = 0; i < slaveInfo.size(); i++)
         for (int j = 0; j < NUM_DOMAINS; j++)
-            slaveSLs[j] += slaveInfo[i].domainCnt[j];
+            slaveICs[j] += slaveInfo[i].domainCnt[j];
     debug1<<"SCounts:           [";
     if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
     {
         for ( int i = 0; i < NUM_DOMAINS; i++)
         {
-            debug1<<setw(4)<<slaveSLs[i]<<" ";
-            cnt += slaveSLs[i];
+            debug1<<setw(4)<<slaveICs[i]<<" ";
+            cnt += slaveICs[i];
         }
     }
     debug1<<"] ("<<cnt<<")"<<endl;
@@ -740,7 +740,7 @@ avtMasterSLAlgorithm::PrintStatus()
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::UpdateSlaveStatus
+//  Method: avtMasterICAlgorithm::UpdateSlaveStatus
 //
 //  Purpose:
 //      Update the slave status.
@@ -763,17 +763,17 @@ avtMasterSLAlgorithm::PrintStatus()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
+avtMasterICAlgorithm::UpdateSlaveStatus(vector<int> &status)
 {
     int src = status[0];
     int msg = status[1];
     int nTerm = status[2];
     
-    workGroupActiveSLs -= nTerm;
-    if (workGroupActiveSLs < 0)
+    workGroupActiveICs -= nTerm;
+    if (workGroupActiveICs < 0)
     {
         debug1<<"HACK: Need to figure out how the count got messed up!"<<endl;
-        workGroupActiveSLs = 0;
+        workGroupActiveICs = 0;
     }
 
     debug1<<"SlaveStatus: "<<src<<" ";
@@ -795,7 +795,7 @@ avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::RunAlgorithm
+//  Method: avtMasterICAlgorithm::RunAlgorithm
 //
 //  Purpose:
 //      Execute the master loop of the master/slave algorithm.
@@ -817,7 +817,7 @@ avtMasterSLAlgorithm::UpdateSlaveStatus(vector<int> &status)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::RunAlgorithm()
+avtMasterICAlgorithm::RunAlgorithm()
 {
     int timer = visitTimer->StartTimer();
     
@@ -826,7 +826,7 @@ avtMasterSLAlgorithm::RunAlgorithm()
 
     while (!done)
     {
-        debug1<<"Looping SLs= "<<workGroupActiveSLs<<endl;
+        debug1<<"Looping ICs= "<<workGroupActiveICs<<endl;
         ProcessMessages();
         ProcessNewIntegralCurves();
         ManageWorkgroup();
@@ -843,7 +843,7 @@ avtMasterSLAlgorithm::RunAlgorithm()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::PostLoopProcessing()
+//  Method: avtMasterICAlgorithm::PostLoopProcessing()
 //
 //  Purpose:
 //      See if we are done.
@@ -860,16 +860,16 @@ avtMasterSLAlgorithm::RunAlgorithm()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::PostLoopProcessing()
+avtMasterICAlgorithm::PostLoopProcessing()
 {
     SendStatus();
     
     //This is a hack....
-    if (activeSLs.empty() && workGroupActiveSLs > 0)
+    if (activeICs.empty() && workGroupActiveICs > 0)
     {
         bool haveActiveSlaves = false;
         for (int i = 0; i < slaveInfo.size(); i++)
-            if (slaveInfo[i].slCount != 0)
+            if (slaveInfo[i].icCount != 0)
             {
                 haveActiveSlaves = true;
                 break;
@@ -877,7 +877,7 @@ avtMasterSLAlgorithm::PostLoopProcessing()
         if (!haveActiveSlaves)
         {
             debug1<<"HACK: Need to figure out how the count got messed up!"<<endl;
-            //workGroupActiveSLs = 0;
+            //workGroupActiveICs = 0;
             //SendStatus(true);
         }
     }
@@ -887,12 +887,12 @@ avtMasterSLAlgorithm::PostLoopProcessing()
     if (master == -1) //I'm root master.
     {
         debug1<<"See if we are done.\n";
-        if (workGroupActiveSLs == 0)
+        if (workGroupActiveICs == 0)
         {
             debug1<<"I'm done!\n";
             done = true;
             for (int i = 0; i < masterInfo.size(); i++)
-                if (masterInfo[i].slCount != 0)
+                if (masterInfo[i].icCount != 0)
                 {
                     done = false;
                     break;
@@ -912,7 +912,7 @@ avtMasterSLAlgorithm::PostLoopProcessing()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::UpdateStatus
+//  Method: avtMasterICAlgorithm::UpdateStatus
 //
 //  Purpose:
 //      Update my status.
@@ -923,19 +923,19 @@ avtMasterSLAlgorithm::PostLoopProcessing()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::UpdateStatus()
+avtMasterICAlgorithm::UpdateStatus()
 {
     for (int i = 0; i < status.size(); i++)
         status[i] = 0;
     
-    status[0] = workGroupActiveSLs;
+    status[0] = workGroupActiveICs;
     for (int i = 0; i < NUM_DOMAINS; i++)
         status[i+1] = domLoaded[i];
 }
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::SendStatus
+//  Method: avtMasterICAlgorithm::SendStatus
 //
 //  Purpose:
 //      Send master status to my master.
@@ -951,7 +951,7 @@ avtMasterSLAlgorithm::UpdateStatus()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::SendStatus(bool forceSend)
+avtMasterICAlgorithm::SendStatus(bool forceSend)
 {
     UpdateStatus();
 
@@ -974,7 +974,7 @@ avtMasterSLAlgorithm::SendStatus(bool forceSend)
     {
         vector<int> msg(NUM_DOMAINS+2);
         msg[0] = MSG_MASTER_STATUS;
-        msg[1] = workGroupActiveSLs;
+        msg[1] = workGroupActiveICs;
         for (int i = 0; i < NUM_DOMAINS; i++)
             msg[i+2] = domLoaded[i];
 
@@ -997,7 +997,7 @@ avtMasterSLAlgorithm::SendStatus(bool forceSend)
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::ProcessMessages
+//  Method: avtMasterICAlgorithm::ProcessMessages
 //
 //  Purpose:
 //      Handle incoming messages.
@@ -1008,7 +1008,7 @@ avtMasterSLAlgorithm::SendStatus(bool forceSend)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::ProcessMessages()
+avtMasterICAlgorithm::ProcessMessages()
 {
     vector<vector<int> > msgs;
     RecvMsgs(msgs);
@@ -1028,13 +1028,13 @@ avtMasterSLAlgorithm::ProcessMessages()
             ProcessSlaveUpdate(msg);
         else if (msgType == MSG_MASTER_STATUS)
             ProcessMasterUpdate(msg);
-        else if (msgType == MSG_OFFLOAD_SL)
-            ProcessOffloadSL(msg);
+        else if (msgType == MSG_OFFLOAD_IC)
+            ProcessOffloadIC(msg);
     }
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::ProcessSlaveUpdate
+//  Method: avtMasterICAlgorithm::ProcessSlaveUpdate
 //
 //  Purpose:
 //      Process status messages from slaves.
@@ -1045,14 +1045,14 @@ avtMasterSLAlgorithm::ProcessMessages()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::ProcessSlaveUpdate(vector<int> &status)
+avtMasterICAlgorithm::ProcessSlaveUpdate(vector<int> &status)
 {
     UpdateSlaveStatus(status);
     slaveUpdate = true;
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::ProcessMasterUpdate
+//  Method: avtMasterICAlgorithm::ProcessMasterUpdate
 //
 //  Purpose:
 //      Process status messages from masters.
@@ -1068,13 +1068,13 @@ avtMasterSLAlgorithm::ProcessSlaveUpdate(vector<int> &status)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::ProcessMasterUpdate(vector<int> &status)
+avtMasterICAlgorithm::ProcessMasterUpdate(vector<int> &status)
 {
     int src = status[0];
     int msg = status[1];
-    int nSLs = status[2];
+    int nICs = status[2];
 
-    debug1<<"MasterUpdateStatus: "<<src<<" "<<msg<<" "<<nSLs<<" ";
+    debug1<<"MasterUpdateStatus: "<<src<<" "<<msg<<" "<<nICs<<" ";
     if (NUM_DOMAINS < MAX_DOMAIN_PRINT) debug1<<status;
     debug1<<endl;
     
@@ -1087,7 +1087,7 @@ avtMasterSLAlgorithm::ProcessMasterUpdate(vector<int> &status)
             for (int j = 3; j < status.size(); j++)
                 domStatus.push_back(status[j]);
             masterInfo[i].Update(domStatus, false);
-            masterInfo[i].slCount = nSLs;
+            masterInfo[i].icCount = nICs;
             break;
         }
     }
@@ -1096,7 +1096,7 @@ avtMasterSLAlgorithm::ProcessMasterUpdate(vector<int> &status)
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::ProcessOffloadSL
+//  Method: avtMasterICAlgorithm::ProcessOffloadIC
 //
 //  Purpose:
 //      Offload work to another master.
@@ -1112,7 +1112,7 @@ avtMasterSLAlgorithm::ProcessMasterUpdate(vector<int> &status)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::ProcessOffloadSL(vector<int> &status)
+avtMasterICAlgorithm::ProcessOffloadIC(vector<int> &status)
 {
     int src = status[0];
     int msg = status[1];
@@ -1130,8 +1130,8 @@ avtMasterSLAlgorithm::ProcessOffloadSL(vector<int> &status)
     // Find slaves with domains send offload message.
     for (int i = 0; i < slaveInfo.size(); i++)
     {
-        debug1<<" "<<slaveInfo[i].rank<<": "<<slaveInfo[i].slCount<<endl;
-        if (slaveInfo[i].slCount > 0)
+        debug1<<" "<<slaveInfo[i].rank<<": "<<slaveInfo[i].icCount<<endl;
+        if (slaveInfo[i].icCount > 0)
         {
             vector<int> domsToSend;
             for (int d = 0; d < doms.size(); d++)
@@ -1144,12 +1144,12 @@ avtMasterSLAlgorithm::ProcessOffloadSL(vector<int> &status)
             if (domsToSend.size() > 0)
             {
                 vector<int> msg;
-                msg.push_back(MSG_OFFLOAD_SL);
+                msg.push_back(MSG_OFFLOAD_IC);
                 msg.push_back(dst);
                 msg.push_back(domsToSend.size());
                 for (int j = 0; j < domsToSend.size(); j++)
                     msg.push_back(domsToSend[j]);
-                //slaveInfo[i].RemoveSL(doms[d]);
+                //slaveInfo[i].RemoveIC(doms[d]);
                 
                 debug1<<"Send OFFLOAD MSG: "<<slaveInfo[i].rank<<" ==> "<<dst<<" "<<msg<<endl;
                 SendMsg(slaveInfo[i].rank, msg);
@@ -1162,7 +1162,7 @@ avtMasterSLAlgorithm::ProcessOffloadSL(vector<int> &status)
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::NewIntegralCurves
+//  Method: avtMasterICAlgorithm::NewIntegralCurves
 //
 //  Purpose:
 //      Handle incoming streamlines.
@@ -1182,17 +1182,17 @@ avtMasterSLAlgorithm::ProcessOffloadSL(vector<int> &status)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::ProcessNewIntegralCurves()
+avtMasterICAlgorithm::ProcessNewIntegralCurves()
 {
-    list<avtStreamline*> newSLs;
-    RecvSLs(newSLs);
-    if (!newSLs.empty())
+    list<avtIntegralCurve*> newICs;
+    RecvICs(newICs);
+    if (!newICs.empty())
     {
-        debug1<<"avtMasterSLAlgorithm::ProcessNewIntegralCurves() cnt "<<workGroupActiveSLs<<" ==> ";
-        workGroupActiveSLs += newSLs.size();
-        debug1<<workGroupActiveSLs<<endl;
+        debug1<<"avtMasterICAlgorithm::ProcessNewIntegralCurves() cnt "<<workGroupActiveICs<<" ==> ";
+        workGroupActiveICs += newICs.size();
+        debug1<<workGroupActiveICs<<endl;
 
-        activeSLs.splice(activeSLs.end(), newSLs);
+        activeICs.splice(activeICs.end(), newICs);
 
         // We need to process for slaves now.
         slaveUpdate = true;
@@ -1200,7 +1200,7 @@ avtMasterSLAlgorithm::ProcessNewIntegralCurves()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::ManageWorkgroup
+//  Method: avtMasterICAlgorithm::ManageWorkgroup
 //
 //  Purpose:
 //      Manage workgroup.
@@ -1211,20 +1211,20 @@ avtMasterSLAlgorithm::ProcessNewIntegralCurves()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::ManageWorkgroup()
+avtMasterICAlgorithm::ManageWorkgroup()
 {
     if (slaveUpdate)
     {
         //Update our counters.
         for (int i = 0; i < NUM_DOMAINS; i++)
         {
-            slDomCnts[i] = 0;
+            icDomCnts[i] = 0;
             domLoaded[i] = 0;
         }
         
-        list<avtStreamline *>::const_iterator s;
-        for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
-            slDomCnts[DomToIdx( (*s)->domain )] ++;
+        list<avtIntegralCurve *>::const_iterator s;
+        for (s = activeICs.begin(); s != activeICs.end(); ++s)
+            icDomCnts[DomToIdx( (*s)->domain )] ++;
     
         for (int i = 0; i < slaveInfo.size(); i++)
             for ( int d = 0; d < NUM_DOMAINS; d++)
@@ -1254,7 +1254,7 @@ avtMasterSLAlgorithm::ManageWorkgroup()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::ManageSlaves
+//  Method: avtMasterICAlgorithm::ManageSlaves
 //
 //  Purpose:
 //      Manage slaves workgroup.
@@ -1266,13 +1266,13 @@ avtMasterSLAlgorithm::ManageWorkgroup()
 //
 //  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
 //  Modifications to the logic that made a big impact on domain loading.
-//  After a domain is loaded, there is opportunity to send SLs to it (case 3)
+//  After a domain is loaded, there is opportunity to send ICs to it (case 3)
 //  Do this after each case 4.  Increase the case3 overload factor. Add case5.
 //
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::ManageSlaves()
+avtMasterICAlgorithm::ManageSlaves()
 {
     /*
       Case1(case1Cnt);
@@ -1312,7 +1312,7 @@ avtMasterSLAlgorithm::ManageSlaves()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::ManageMasters
+//  Method: avtMasterICAlgorithm::ManageMasters
 //
 //  Purpose:
 //      Manage slaves workgroup.
@@ -1328,7 +1328,7 @@ avtMasterSLAlgorithm::ManageSlaves()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::ManageMasters()
+avtMasterICAlgorithm::ManageMasters()
 {
     // Don't bother if no masters...
     if (masterInfo.size() == 0)
@@ -1340,7 +1340,7 @@ avtMasterSLAlgorithm::ManageMasters()
     {
         if (masterInfo[i].initialized)
         {
-            if (masterInfo[i].slCount == 0)
+            if (masterInfo[i].icCount == 0)
                 idleMasters.push_back(masterInfo[i].rank);
             else
                 busyMasters.push_back(masterInfo[i].rank);
@@ -1369,7 +1369,7 @@ avtMasterSLAlgorithm::ManageMasters()
     {
         // Have busy
         vector<int> msg(NUM_DOMAINS+2,0);
-        msg[0] = MSG_OFFLOAD_SL;
+        msg[0] = MSG_OFFLOAD_IC;
         msg[1] = idleMasters[i];
         for (int j = 0; j < NUM_DOMAINS; j++)
             msg[2+j] = masterInfo[idleMasters[i]].domainLoaded[j];
@@ -1378,7 +1378,7 @@ avtMasterSLAlgorithm::ManageMasters()
         if (busyMasters[i] == rank)
         {
             msg.insert(msg.begin(), rank);
-            ProcessOffloadSL(msg);
+            ProcessOffloadIC(msg);
         }
         else
             SendMsg(busyMasters[i], msg);
@@ -1387,7 +1387,7 @@ avtMasterSLAlgorithm::ManageMasters()
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::SendAllSlavesMsg
+//  Method: avtMasterICAlgorithm::SendAllSlavesMsg
 //
 //  Purpose:
 //      Send a message to all slaves.
@@ -1398,14 +1398,14 @@ avtMasterSLAlgorithm::ManageMasters()
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::SendAllSlavesMsg(int msg)
+avtMasterICAlgorithm::SendAllSlavesMsg(int msg)
 {
     vector<int> msgVec(1,msg);
     SendAllSlavesMsg(msgVec);
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::SendAllSlavesMsg
+//  Method: avtMasterICAlgorithm::SendAllSlavesMsg
 //
 //  Purpose:
 //      Send a message to all slaves.
@@ -1416,14 +1416,14 @@ avtMasterSLAlgorithm::SendAllSlavesMsg(int msg)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::SendAllSlavesMsg(vector<int> &msg)
+avtMasterICAlgorithm::SendAllSlavesMsg(vector<int> &msg)
 {
     for (int i = 0; i < slaveInfo.size(); i++)
         SendMsg(slaveInfo[i].rank, msg);
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::FindSlackers
+//  Method: avtMasterICAlgorithm::FindSlackers
 //
 //  Purpose:
 //      Find slaves with no work to do
@@ -1443,7 +1443,7 @@ avtMasterSLAlgorithm::SendAllSlavesMsg(vector<int> &msg)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::FindSlackers(int oobFactor,
+avtMasterICAlgorithm::FindSlackers(int oobFactor,
                                    bool randomize,
                                    bool checkJustUpdated)
 {
@@ -1452,12 +1452,12 @@ avtMasterSLAlgorithm::FindSlackers(int oobFactor,
     //if oobFactor != -1, find slaves with between 0 and oobFactor OOB streamlines.
 
     for (int i = 0; i < slaveInfo.size(); i++)
-        if (slaveInfo[i].slLoadedCount <= LATENCY_SEND_CNT ||
+        if (slaveInfo[i].icLoadedCount <= LATENCY_SEND_CNT ||
             (slaveInfo[i].justUpdated && checkJustUpdated))
         {
             if ( oobFactor != -1 &&
-                 slaveInfo[i].slOOBCount > 0 &&
-                 slaveInfo[i].slOOBCount < oobFactor)
+                 slaveInfo[i].icOOBCount > 0 &&
+                 slaveInfo[i].icOOBCount < oobFactor)
                 slackers.push_back(i);
             else
                 slackers.push_back(i);
@@ -1469,10 +1469,10 @@ avtMasterSLAlgorithm::FindSlackers(int oobFactor,
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::Case1
+//  Method: avtMasterICAlgorithm::Case1
 //
 //  Purpose:
-//      Case1 of masterslave algorithm. Give SLs to slaves who have domain
+//      Case1 of masterslave algorithm. Give ICs to slaves who have domain
 //      loaded.
 //
 //  Programmer: Dave Pugmire
@@ -1492,47 +1492,47 @@ avtMasterSLAlgorithm::FindSlackers(int oobFactor,
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::Case1(int &counter)
+avtMasterICAlgorithm::Case1(int &counter)
 {
-    if (activeSLs.empty())
+    if (activeICs.empty())
         return;
     
     FindSlackers();
     
-    vector< vector< avtStreamline *> > distributeSLs(nProcs);
+    vector< vector< avtIntegralCurve *> > distributeICs(nProcs);
     bool streamlinesToSend = false;
     
     for (int i = 0; i < slackers.size(); i++)
     {
-        if (activeSLs.empty())
+        if (activeICs.empty())
             break;
         
         int cnt = 0;
         int slackerRank = slaveInfo[slackers[i]].rank;
-        list<avtStreamline *>::iterator s = activeSLs.begin();
+        list<avtIntegralCurve *>::iterator s = activeICs.begin();
 
-        while ( !activeSLs.empty() && cnt < maxCnt)
+        while ( !activeICs.empty() && cnt < maxCnt)
         {
             int sDom = DomToIdx( (*s)->domain );
             if (slaveInfo[slackers[i]].domainLoaded[sDom])
             {
-                distributeSLs[slackerRank].push_back(*s);
-                slaveInfo[slackers[i]].AddSL(sDom, DomCacheSize());
-                s = activeSLs.erase(s);
+                distributeICs[slackerRank].push_back(*s);
+                slaveInfo[slackers[i]].AddIC(sDom, DomCacheSize());
+                s = activeICs.erase(s);
                 streamlinesToSend = true;
                 cnt++;
             }
             else
                 ++s;
-            if (s == activeSLs.end())
+            if (s == activeICs.end())
                 break;
         }
         
         if (cnt > 0)
         {
-            debug1<<"Case 1: "<<slackerRank<<" Send "<<cnt<<" SLs [";
-            for (int j = 0; j < distributeSLs[slackerRank].size(); j++)
-                debug1<<distributeSLs[slackerRank][j]->domain<<" ";
+            debug1<<"Case 1: "<<slackerRank<<" Send "<<cnt<<" ICs [";
+            for (int j = 0; j < distributeICs[slackerRank].size(); j++)
+                debug1<<distributeICs[slackerRank][j]->domain<<" ";
             debug1<<"]\n";
             counter++;
         }
@@ -1541,7 +1541,7 @@ avtMasterSLAlgorithm::Case1(int &counter)
     if (streamlinesToSend)
     {
         int earlyTerminations = 0;
-        ExchangeSLs(activeSLs, distributeSLs, earlyTerminations);
+        ExchangeICs(activeICs, distributeICs, earlyTerminations);
         
         if (earlyTerminations != 0)
             EXCEPTION0(ImproperUseException);
@@ -1550,10 +1550,10 @@ avtMasterSLAlgorithm::Case1(int &counter)
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::Case2
+//  Method: avtMasterICAlgorithm::Case2
 //
 //  Purpose:
-//      Case2 of masterslave algorithm. Give SLs to slaves and force domain load
+//      Case2 of masterslave algorithm. Give ICs to slaves and force domain load
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -1574,40 +1574,40 @@ avtMasterSLAlgorithm::Case1(int &counter)
 static bool domCntCompare( const int *a, const int *b) { return a[1] > b[1]; }
 
 void
-avtMasterSLAlgorithm::Case2(int &counter)
+avtMasterICAlgorithm::Case2(int &counter)
 {
-    if (activeSLs.empty())
+    if (activeICs.empty())
         return;
     
     FindSlackers();
     
-    vector< vector< avtStreamline *> > distributeSLs(nProcs);
+    vector< vector< avtIntegralCurve *> > distributeICs(nProcs);
     bool streamlinesToSend = false;
 
     for (int s = 0; s < slackers.size(); s++)
     {
-        if (activeSLs.empty())
+        if (activeICs.empty())
             break;
         
         int slackerRank = slaveInfo[slackers[s]].rank;
     
         vector<int*> domCnts;
-        for (int i = 0; i < slDomCnts.size(); i++)
-            if (slDomCnts[i] > 0)
+        for (int i = 0; i < icDomCnts.size(); i++)
+            if (icDomCnts[i] > 0)
             {
                 int *entry = new int[2];
                 entry[0] = i;
-                entry[1] = slDomCnts[i];
+                entry[1] = icDomCnts[i];
                 domCnts.push_back(entry);
             }
 
-        if (slDomCnts.size() == 0)
+        if (icDomCnts.size() == 0)
             continue;
-        //Sort on SL count per domain.
+        //Sort on IC count per domain.
         sort(domCnts.begin(),domCnts.end(), domCntCompare);
         if (false)
         {
-            debug1<<"SL sort: [";
+            debug1<<"IC sort: [";
             for (int i = 0; i < domCnts.size(); i++)
                 debug1<<domCnts[i][0]<<" "<<domCnts[i][1]<<", ";
             debug1<<"]\n";
@@ -1636,22 +1636,22 @@ avtMasterSLAlgorithm::Case2(int &counter)
 
         int cnt = 0;
 
-        list<avtStreamline *>::iterator sl = activeSLs.begin();
+        list<avtIntegralCurve *>::iterator ic = activeICs.begin();
         
-        while ( !activeSLs.empty() && cnt < maxCnt)
+        while ( !activeICs.empty() && cnt < maxCnt)
         {
-            int sDom = DomToIdx( (*sl)->domain );
+            int sDom = DomToIdx( (*ic)->domain );
             if (sDom == domToLoad && cnt < maxCnt)
             {
-                distributeSLs[slackerRank].push_back(*sl);
-                slaveInfo[slackers[s]].AddSL(sDom, DomCacheSize());
+                distributeICs[slackerRank].push_back(*ic);
+                slaveInfo[slackers[s]].AddIC(sDom, DomCacheSize());
                 cnt++;
-                slDomCnts[domToLoad]--;
-                sl = activeSLs.erase(sl);
+                icDomCnts[domToLoad]--;
+                ic = activeICs.erase(ic);
             }
             else
-                ++sl;
-            if (sl == activeSLs.end())
+                ++ic;
+            if (ic == activeICs.end())
                 break;
         }
             
@@ -1661,11 +1661,11 @@ avtMasterSLAlgorithm::Case2(int &counter)
         if (cnt > 0)
         {
             streamlinesToSend = true;
-            if (distributeSLs[slackerRank].size() > 0)
+            if (distributeICs[slackerRank].size() > 0)
             {
-                debug1<<"Case 2: "<<slackerRank<<" Send "<<cnt<<" SLs [";
-                for (int j = 0; j < distributeSLs[slackerRank].size(); j++)
-                    debug1<<distributeSLs[slackerRank][j]->domain<<" ";
+                debug1<<"Case 2: "<<slackerRank<<" Send "<<cnt<<" ICs [";
+                for (int j = 0; j < distributeICs[slackerRank].size(); j++)
+                    debug1<<distributeICs[slackerRank][j]->domain<<" ";
                 debug1<<"]\n";
                 counter++;
             }
@@ -1676,17 +1676,17 @@ avtMasterSLAlgorithm::Case2(int &counter)
     {
         for (int i = 0; i < nProcs; i++)
         {
-            if (distributeSLs[i].size() > 0)
-                SendSLs(i, distributeSLs[i]);
+            if (distributeICs[i].size() > 0)
+                SendICs(i, distributeICs[i]);
         }
     }    
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::Case3
+//  Method: avtMasterICAlgorithm::Case3
 //
 //  Purpose:
-//      Case3 of masterslave algorithm. Send SLs to another slave.
+//      Case3 of masterslave algorithm. Send ICs to another slave.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -1697,7 +1697,7 @@ avtMasterSLAlgorithm::Case2(int &counter)
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
-//   Bug fix. Didn't use new DomainType structure for MSG_SEND_SL.
+//   Bug fix. Didn't use new DomainType structure for MSG_SEND_IC.
 //   
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //   Allow masters to share work loads.
@@ -1705,7 +1705,7 @@ avtMasterSLAlgorithm::Case2(int &counter)
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::Case3(int overloadFactor,
+avtMasterICAlgorithm::Case3(int overloadFactor,
                             int NDomainFactor,
                             int &counter )
 {
@@ -1726,11 +1726,11 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
                  slaveInfo[slackerIdx].domainCnt[d] > 0)
             {
                 //debug1<<"   dom= "<<d<<endl;
-                // Find a partner who has the domain and has fewer than overloadFactor SLs.
+                // Find a partner who has the domain and has fewer than overloadFactor ICs.
                 for (int j = 0; j < slaveInfo.size(); j++)
                 {
                     if (j != slackerIdx && slaveInfo[j].domainLoaded[d] &&
-                        slaveInfo[j].slCount < overloadFactor)
+                        slaveInfo[j].icCount < overloadFactor)
                     {
                         //debug1<<"      partner= "<<j<<endl;
                         domPartner.push_back(j);
@@ -1760,8 +1760,8 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
         }
     }
 
-    int maxSLsToSend = 5*maxCnt;
-    int maxDestSLs = overloadFactor;
+    int maxICsToSend = 5*maxCnt;
+    int maxDestICs = overloadFactor;
 
     // Send messages out.
     for (int i = 0; i < sender.size(); i++)
@@ -1771,19 +1771,19 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
         int d = dom[i];
         int n = sendSlave.domainCnt[d];
 
-        if (n > maxSLsToSend)
-            n = maxSLsToSend;
+        if (n > maxICsToSend)
+            n = maxICsToSend;
 
         //Dest already has enough work.
-        if (recvSlave.slCount > maxDestSLs)
+        if (recvSlave.icCount > maxDestICs)
             continue;
     
         // Cap it.
-        if (recvSlave.slCount + n > maxDestSLs)
-            n = maxDestSLs - recvSlave.slCount;
+        if (recvSlave.icCount + n > maxDestICs)
+            n = maxDestICs - recvSlave.icCount;
 
         vector<int> msg;
-        msg.push_back(MSG_SEND_SL);
+        msg.push_back(MSG_SEND_IC);
         msg.push_back(recvSlave.rank);
 
         DomainType dd = IdxToDom(d);
@@ -1792,14 +1792,14 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
         
         for (int i = 0; i < n; i++)
         {
-            recvSlave.AddSL(d, DomCacheSize());
-            sendSlave.RemoveSL(d);
+            recvSlave.AddIC(d, DomCacheSize());
+            sendSlave.RemoveIC(d);
         }
 
         if (n > 0)
         {
             debug1<<"Case 3: "<<sendSlave.rank<<" ==["<<n<<"]==> "<<recvSlave.rank<<"  d= "<<d;
-            debug1<<" ***   "<<recvSlave.rank<<" now has "<<recvSlave.slCount<<" cap= "<<maxDestSLs<<endl;
+            debug1<<" ***   "<<recvSlave.rank<<" now has "<<recvSlave.icCount<<" cap= "<<maxDestICs<<endl;
             SendMsg(sendSlave.rank, msg);
             counter++;
         }
@@ -1807,7 +1807,7 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
 }
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::Case4
+//  Method: avtMasterICAlgorithm::Case4
 //
 //  Purpose:
 //      Case4 of masterslave algorithm. Tell a slave to load a domain.
@@ -1826,13 +1826,13 @@ avtMasterSLAlgorithm::Case3(int overloadFactor,
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::Case4(int oobThreshold,
+avtMasterICAlgorithm::Case4(int oobThreshold,
                             int &counter )
 {
     slackers.resize(0);
     
     for (int i = 0; i < slaveInfo.size(); i++)
-        if (slaveInfo[i].slLoadedCount == 0 && slaveInfo[i].slOOBCount >= oobThreshold)
+        if (slaveInfo[i].icLoadedCount == 0 && slaveInfo[i].icOOBCount >= oobThreshold)
             slackers.push_back(i);
     random_shuffle(slackers.begin(), slackers.end());
 
@@ -1868,10 +1868,10 @@ avtMasterSLAlgorithm::Case4(int oobThreshold,
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::Case5
+//  Method: avtMasterICAlgorithm::Case5
 //
 //  Purpose:
-//      Case5 of masterslave algorithm. Advise slave to send SLs to other slave.
+//      Case5 of masterslave algorithm. Advise slave to send ICs to other slave.
 //  
 //
 //  Programmer: Dave Pugmire
@@ -1891,17 +1891,17 @@ avtMasterSLAlgorithm::Case4(int oobThreshold,
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counter)
+avtMasterICAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counter)
 {
     vector<int> slackers, overWorked;
     vector<int *> overWorkedCnt;
     //Get folks with too much work to do.
     for (int i = 0; i < slaveInfo.size(); i++)
-        if (slaveInfo[i].slCount > overworkThreshold)
+        if (slaveInfo[i].icCount > overworkThreshold)
         {
             int *v = new int[2];
             v[0] = i;
-            v[1] = slaveInfo[i].slCount;
+            v[1] = slaveInfo[i].icCount;
             overWorkedCnt.push_back(v);
         }
 
@@ -1916,7 +1916,7 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
 
     //Get slackers with no work and no unloaded domains.
     for (int i = 0; i < slaveInfo.size(); i++)
-        if (!slaveInfo[i].justUpdated && slaveInfo[i].slCount == 0)
+        if (!slaveInfo[i].justUpdated && slaveInfo[i].icCount == 0)
             slackers.push_back(i);
     if (slackers.size() == 0)
         return;
@@ -1973,7 +1973,7 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
     for (int i = 0; i < senders.size(); i++)
     {
         vector<int> msg;
-        msg.push_back(MSG_SEND_SL_HINT);
+        msg.push_back(MSG_SEND_IC_HINT);
         msg.push_back(receivers[i]);
         msg.push_back(doms[i].size());
         for (int j = 0; j < doms[i].size(); j++)
@@ -1989,10 +1989,10 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
 
 
 // ****************************************************************************
-//  Method: avtSlaveSLAlgorithm::avtSlaveSLAlgorithm
+//  Method: avtSlaveICAlgorithm::avtSlaveICAlgorithm
 //
 //  Purpose:
-//      avtSlaveSLAlgorithm constructor.
+//      avtSlaveICAlgorithm constructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -2004,32 +2004,32 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
 //
 // ****************************************************************************
 
-avtSlaveSLAlgorithm::avtSlaveSLAlgorithm(avtPICSFilter *slFilter,
+avtSlaveICAlgorithm::avtSlaveICAlgorithm(avtPICSFilter *picsFilter,
                                          int maxCount,
                                          int masterRank)
-    : avtMasterSlaveSLAlgorithm(slFilter, maxCount)
+    : avtMasterSlaveICAlgorithm(picsFilter, maxCount)
 {
     master = masterRank;
     timeout = 0;
 }
 
 // ****************************************************************************
-//  Method: avtSlaveSLAlgorithm::avtSlaveSLAlgorithm
+//  Method: avtSlaveICAlgorithm::avtSlaveICAlgorithm
 //
 //  Purpose:
-//      avtSlaveSLAlgorithm destructor
+//      avtSlaveICAlgorithm destructor
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 // ****************************************************************************
 
-avtSlaveSLAlgorithm::~avtSlaveSLAlgorithm()
+avtSlaveICAlgorithm::~avtSlaveICAlgorithm()
 {
 }
 
 // ****************************************************************************
-//  Method: avtSlaveSLAlgorithm::HandleLatencyTimer
+//  Method: avtSlaveICAlgorithm::HandleLatencyTimer
 //
 //  Purpose:
 //      Handle latency timer.
@@ -2045,14 +2045,14 @@ avtSlaveSLAlgorithm::~avtSlaveSLAlgorithm()
 // ****************************************************************************
 
 void
-avtSlaveSLAlgorithm::HandleLatencyTimer(int activeSLCnt, bool checkMaxLatency)
+avtSlaveICAlgorithm::HandleLatencyTimer(int activeICCnt, bool checkMaxLatency)
 {
-    if (latencyTimer == -1 && activeSLCnt == 0)
+    if (latencyTimer == -1 && activeICCnt == 0)
     {
         latencyTimer = visitTimer->StartTimer();
         debug1<<"++++++++++++++++++++++++++++++++++++++++++Begin latency!\n";
     }
-    else if (latencyTimer != -1 && activeSLCnt > 0)
+    else if (latencyTimer != -1 && activeICCnt > 0)
     {
         double t = visitTimer->StopTimer(latencyTimer, "Latency");
         latencyHistory.push_back(t);
@@ -2068,7 +2068,7 @@ avtSlaveSLAlgorithm::HandleLatencyTimer(int activeSLCnt, bool checkMaxLatency)
 
 
 // ****************************************************************************
-//  Method: avtSlaveSLAlgorithm::Initialize
+//  Method: avtSlaveICAlgorithm::Initialize
 //
 //  Purpose:
 //      Initialize the slave
@@ -2087,9 +2087,9 @@ avtSlaveSLAlgorithm::HandleLatencyTimer(int activeSLCnt, bool checkMaxLatency)
 // ****************************************************************************
 
 void
-avtSlaveSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
+avtSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 {
-    avtMasterSlaveSLAlgorithm::Initialize(seedPts);
+    avtMasterSlaveICAlgorithm::Initialize(seedPts);
     status.resize(NUM_DOMAINS,0);
     prevStatus.resize(NUM_DOMAINS,0);
     numTerminated = 0;
@@ -2098,7 +2098,7 @@ avtSlaveSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
 
 
 // ****************************************************************************
-//  Method: avtSlaveSLAlgorithm::UpdateStatus
+//  Method: avtSlaveICAlgorithm::UpdateStatus
 //
 //  Purpose:
 //      Update status vectors.
@@ -2114,7 +2114,7 @@ avtSlaveSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
 // ****************************************************************************
 
 void
-avtSlaveSLAlgorithm::UpdateStatus()
+avtSlaveICAlgorithm::UpdateStatus()
 {
     for (int i = 0; i < status.size(); i++)
         status[i] = 0;
@@ -2127,11 +2127,11 @@ avtSlaveSLAlgorithm::UpdateStatus()
     }
     
     //Increment/decrement all the streamlines we have.
-    list<avtStreamline *>::const_iterator s;
+    list<avtIntegralCurve *>::const_iterator s;
     
     bool prevWorkToDo = workToDo;
     workToDo = false;
-    for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
+    for (s = activeICs.begin(); s != activeICs.end(); ++s)
         if (DomainLoaded((*s)->domain))
         {
             status[DomToIdx( (*s)->domain )] ++;
@@ -2140,7 +2140,7 @@ avtSlaveSLAlgorithm::UpdateStatus()
         else
             status[DomToIdx( (*s)->domain )] --;
 
-    for (s = oobSLs.begin(); s != oobSLs.end(); ++s)
+    for (s = oobICs.begin(); s != oobICs.end(); ++s)
     {
         if (DomainLoaded((*s)->domain))
         {
@@ -2159,7 +2159,7 @@ avtSlaveSLAlgorithm::UpdateStatus()
 
 
 // ****************************************************************************
-//  Method: avtSlaveSLAlgorithm::SendStatus
+//  Method: avtSlaveICAlgorithm::SendStatus
 //
 //  Purpose:
 //      Send status to master.
@@ -2175,7 +2175,7 @@ avtSlaveSLAlgorithm::UpdateStatus()
 // ****************************************************************************
 
 void
-avtSlaveSLAlgorithm::SendStatus(bool forceSend)
+avtSlaveICAlgorithm::SendStatus(bool forceSend)
 {
     UpdateStatus();
     
@@ -2215,7 +2215,7 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 
 
 // ****************************************************************************
-//  Method: avtSlaveSLAlgorithm::RunAlgorithm
+//  Method: avtSlaveICAlgorithm::RunAlgorithm
 //
 //  Purpose:
 //      Execute the slave loop of the master/slave algorithm.
@@ -2255,26 +2255,26 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 // ****************************************************************************
 
 void
-avtSlaveSLAlgorithm::RunAlgorithm()
+avtSlaveICAlgorithm::RunAlgorithm()
 {
-    list<avtStreamline *>::const_iterator si;
+    list<avtIntegralCurve *>::const_iterator si;
     int timer = visitTimer->StartTimer();
 
     //Send initial status.
     SendStatus(true);
     Barrier();
-    HandleLatencyTimer(activeSLs.size());
+    HandleLatencyTimer(activeICs.size());
     
     while (1)
     {
-        //Fill oobSLs list.
-        list<avtStreamline *>::iterator si = activeSLs.begin();
-        while (si != activeSLs.end())
+        //Fill oobICs list.
+        list<avtIntegralCurve *>::iterator si = activeICs.begin();
+        while (si != activeICs.end())
         {
             if (!DomainLoaded((*si)->domain))
             {
-                oobSLs.push_back(*si);
-                si = activeSLs.erase(si);
+                oobICs.push_back(*si);
+                si = activeICs.erase(si);
             }
             else
                 ++si;
@@ -2284,7 +2284,7 @@ avtSlaveSLAlgorithm::RunAlgorithm()
         bool sentLatencySavingStatus = false;
         
         //Check for a case4A overide...
-        if (SLAVE_AUTO_LOAD_DOMS && activeSLs.empty() && (oobSLs.size() > case4AThreshold))
+        if (SLAVE_AUTO_LOAD_DOMS && activeICs.empty() && (oobICs.size() > case4AThreshold))
         {
             debug1<<"Checking for 4A.... "<<endl;
             int candidate = -1;
@@ -2304,19 +2304,19 @@ avtSlaveSLAlgorithm::RunAlgorithm()
                 //Get the domain, and return to the top of the while loop.
                 DomainType dom = IdxToDom(candidate);
                 GetDomain(dom);
-                activeSLs.splice(activeSLs.end(), oobSLs);
-                oobSLs.clear();
+                activeICs.splice(activeICs.end(), oobICs);
+                oobICs.clear();
                 continue; //Drop out of loop, recompute active/oobs.
             }
         }
 
-        HandleLatencyTimer(activeSLs.size());
-        while (!activeSLs.empty() && !done)
+        HandleLatencyTimer(activeICs.size());
+        while (!activeICs.empty() && !done)
         {
-            avtStreamline *s = activeSLs.front();
+            avtIntegralCurve *s = activeICs.front();
 
             forceSend = false;
-            if (activeSLs.size() <= LATENCY_SEND_CNT)
+            if (activeICs.size() <= LATENCY_SEND_CNT)
             {
                 if( !sentLatencySavingStatus)
                 {
@@ -2330,10 +2330,10 @@ avtSlaveSLAlgorithm::RunAlgorithm()
             else
                 sentLatencySavingStatus = false;
             
-            activeSLs.pop_front();
+            activeICs.pop_front();
             debug1<<"Integrate "<<s->domain<<".....";
             AdvectParticle(s);
-            if (s->status == avtStreamline::STATUS_TERMINATE)
+            if (s->status == avtIntegralCurve::STATUS_TERMINATE)
             {
                 terminatedICs.push_back(s);
                 numTerminated++;
@@ -2343,9 +2343,9 @@ avtSlaveSLAlgorithm::RunAlgorithm()
             {
                 debug1<<"OOB. dom= "<<s->domain<<endl;
                 if (DomainLoaded(s->domain))
-                    activeSLs.push_back(s);
+                    activeICs.push_back(s);
                 else
-                    oobSLs.push_back(s);
+                    oobICs.push_back(s);
             }
             
             ProcessMessages(done, newMsgs);
@@ -2354,12 +2354,12 @@ avtSlaveSLAlgorithm::RunAlgorithm()
         if (done)
             break;
 
-        activeSLs.splice(activeSLs.end(), oobSLs);
-        oobSLs.clear();
+        activeICs.splice(activeICs.end(), oobICs);
+        oobICs.clear();
         
-        //See if we have any SLs.
+        //See if we have any ICs.
         int earlyTerminations = 0;
-        bool newSLs = RecvSLs(activeSLs, earlyTerminations);
+        bool newICs = RecvICs(activeICs, earlyTerminations);
         numTerminated += earlyTerminations;
         ProcessMessages(done, newMsgs);
         CheckPendingSendRequests();
@@ -2378,16 +2378,16 @@ avtSlaveSLAlgorithm::RunAlgorithm()
     HandleLatencyTimer(0,false);
     CheckPendingSendRequests();
 
-    debug1<<"Slave done: activeSLs= "<<activeSLs.size()<<" oobSLs= "<<oobSLs.size()<<endl;
-    if (!activeSLs.empty())
+    debug1<<"Slave done: activeICs= "<<activeICs.size()<<" oobICs= "<<oobICs.size()<<endl;
+    if (!activeICs.empty())
     {
         debug1<<"activeproblem "<<endl;
-        terminatedICs.splice(terminatedICs.end(), activeSLs);
+        terminatedICs.splice(terminatedICs.end(), activeICs);
     }
-    if (!oobSLs.empty())
+    if (!oobICs.empty())
     {
         debug1<<"oobproblem "<<endl;
-        terminatedICs.splice(terminatedICs.end(), oobSLs);
+        terminatedICs.splice(terminatedICs.end(), oobICs);
     }
 
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
@@ -2395,7 +2395,7 @@ avtSlaveSLAlgorithm::RunAlgorithm()
 
 
 // ****************************************************************************
-//  Method: avtSlaveSLAlgorithm::ProcessMessages
+//  Method: avtSlaveICAlgorithm::ProcessMessages
 //
 //  Purpose:
 //      Processes messages from master.
@@ -2409,7 +2409,7 @@ avtSlaveSLAlgorithm::RunAlgorithm()
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
-//   Bug fix. Didn't use new DomainType structure for MSG_SEND_SL.
+//   Bug fix. Didn't use new DomainType structure for MSG_SEND_IC.
 //
 //   Dave Pugmire, Wed Mar 18 21:55:32 EDT 2009
 //   Improve the logic for streamline offloading. Only offload streamlines
@@ -2424,7 +2424,7 @@ avtSlaveSLAlgorithm::RunAlgorithm()
 // ****************************************************************************
 
 void
-avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
+avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
 {
     vector<vector<int> > msgs;
     RecvMsgs(msgs);
@@ -2453,38 +2453,38 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
         }
 
         //Offload unloaded domains.
-        else if (msgType == MSG_OFFLOAD_SL ||
-                 msgType == MSG_SEND_SL_HINT)
+        else if (msgType == MSG_OFFLOAD_IC ||
+                 msgType == MSG_SEND_IC_HINT)
         {
-            debug1<<"Slave: MSG_OFFLOAD_SL I have "<<activeSLs.size()<<" to offer"<<endl;
+            debug1<<"Slave: MSG_OFFLOAD_IC I have "<<activeICs.size()<<" to offer"<<endl;
             debug1<<msg<<endl;
             
             int dst = msg[2];
             int numDoms = msg[3];
             int num = 10*maxCnt;
-            if (msgType == MSG_OFFLOAD_SL)
+            if (msgType == MSG_OFFLOAD_IC)
                 num = 10*maxCnt;
             else
                 num = maxCnt;
 
-            vector< avtStreamline *> sendSLs;
+            vector< avtIntegralCurve *> sendICs;
 
             for (int d = 0; d < numDoms; d++)
             {
                 int domIdx = msg[4+d];
                 DomainType dom = IdxToDom(domIdx);
                 
-                list<avtStreamline *>::iterator s = activeSLs.begin();
-                while (s != activeSLs.end() &&
-                       sendSLs.size() < num)
+                list<avtIntegralCurve *>::iterator s = activeICs.begin();
+                while (s != activeICs.end() &&
+                       sendICs.size() < num)
                 {
-                    if (msgType == MSG_OFFLOAD_SL)
+                    if (msgType == MSG_OFFLOAD_IC)
                     {
                         if ((*s)->domain == dom &&
                             !DomainLoaded(dom))
                         {
-                            sendSLs.push_back(*s);
-                            s = activeSLs.erase(s);
+                            sendICs.push_back(*s);
+                            s = activeICs.erase(s);
                             numTerminated++;
                         }
                         else
@@ -2494,8 +2494,8 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
                     {
                         if ((*s)->domain == dom)
                         {
-                            sendSLs.push_back(*s);
-                            s = activeSLs.erase(s);
+                            sendICs.push_back(*s);
+                            s = activeICs.erase(s);
                         }
                         else
                             s++;
@@ -2503,39 +2503,39 @@ avtSlaveSLAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
                 }
             }
             
-            if (sendSLs.size() > 0)
+            if (sendICs.size() > 0)
             {
-                debug1<<"OFFLOAD: Send "<<sendSLs.size()<<" to "<<dst<<endl;
-                SendSLs(dst, sendSLs);
-                OffloadCnt.value += sendSLs.size();
+                debug1<<"OFFLOAD: Send "<<sendICs.size()<<" to "<<dst<<endl;
+                SendICs(dst, sendICs);
+                OffloadCnt.value += sendICs.size();
             }
         }
         
         //Send streamlines to another slave.
-        else if (msgType == MSG_SEND_SL)
+        else if (msgType == MSG_SEND_IC)
         {
             int dst = msg[2];
             DomainType dom = IdxToDom(msg[3]);
             int num = msg[4];
 
             debug1<<"MSG: Send "<<num<<" x dom= "<<dom<<" to "<<dst;
-            list<avtStreamline *>::iterator s = activeSLs.begin();
-            vector< avtStreamline *> sendSLs;
-            while (s != activeSLs.end() &&
-                   sendSLs.size() < num)
+            list<avtIntegralCurve *>::iterator s = activeICs.begin();
+            vector< avtIntegralCurve *> sendICs;
+            while (s != activeICs.end() &&
+                   sendICs.size() < num)
             {
                 if ((*s)->domain == dom)
                 {
-                    sendSLs.push_back(*s);
-                    s = activeSLs.erase(s);
+                    sendICs.push_back(*s);
+                    s = activeICs.erase(s);
                 }
                 else
                     ++s;
             }
 
-            debug1<<" sent "<<sendSLs.size()<<endl;
-            if (sendSLs.size() > 0)
-                SendSLs(dst, sendSLs);
+            debug1<<" sent "<<sendICs.size()<<endl;
+            if (sendICs.size() > 0)
+                SendICs(dst, sendICs);
         }
     }
 }
@@ -2559,7 +2559,7 @@ SlaveInfo::SlaveInfo( int r, int nDomains )
 {
     justUpdated = false;
     initialized = false;
-    canGive = canAccept = slCount = slLoadedCount = slOOBCount = 0;
+    canGive = canAccept = icCount = icLoadedCount = icOOBCount = 0;
     domLoadedCount = 0;
     domainCnt.resize(nDomains, 0);
     domainLoaded.resize(nDomains, false);
@@ -2567,10 +2567,10 @@ SlaveInfo::SlaveInfo( int r, int nDomains )
 }
 
 // ****************************************************************************
-//  Method: SlaveInfo::AddSL
+//  Method: SlaveInfo::AddIC
 //
 //  Purpose:
-//      Update when passing a SL.
+//      Update when passing a IC.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -2583,23 +2583,23 @@ SlaveInfo::SlaveInfo( int r, int nDomains )
 // ****************************************************************************
 
 void
-SlaveInfo::AddSL(int slDomain, int domCache)
+SlaveInfo::AddIC(int icDomain, int domCache)
 {
     bool underPurgeLimit = (domLoadedCount <= domCache);
     //We assume that it will get loaded..
-    if (domainLoaded[slDomain] == false)
+    if (domainLoaded[icDomain] == false)
         domLoadedCount++;
-    domainLoaded[slDomain] = true;
-    domainCnt[slDomain]++;
-    slCount++;
-    slLoadedCount++;
+    domainLoaded[icDomain] = true;
+    domainCnt[icDomain]++;
+    icCount++;
+    icLoadedCount++;
     justUpdated = false;
     
     if (underPurgeLimit && domLoadedCount > domCache)
         debug1<<"WARNING: "<<rank<<" Purge is coming. "<<domLoadedCount<<endl;
     if (domainHistory.size() == 0 ||
-        (domainHistory.size() > 0 && slDomain != domainHistory[domainHistory.size()-1]))
-        domainHistory.push_back(slDomain);      
+        (domainHistory.size() > 0 && icDomain != domainHistory[domainHistory.size()-1]))
+        domainHistory.push_back(icDomain);      
 }
 
 // ****************************************************************************
@@ -2614,27 +2614,27 @@ SlaveInfo::AddSL(int slDomain, int domCache)
 // ****************************************************************************
 
 void
-SlaveInfo::LoadDom( int slDomain )
+SlaveInfo::LoadDom( int icDomain )
 {
     bool underPurgeLimit = (domLoadedCount <= 3);
-    if (domainLoaded[slDomain] == false)
+    if (domainLoaded[icDomain] == false)
         domLoadedCount++;
     
-    domainLoaded[slDomain] = true;
-    slLoadedCount += domainCnt[slDomain];
-    slOOBCount -= domainCnt[slDomain];
+    domainLoaded[icDomain] = true;
+    icLoadedCount += domainCnt[icDomain];
+    icOOBCount -= domainCnt[icDomain];
     
     if (underPurgeLimit && domLoadedCount > 3)
         debug1<<"WARNING: "<<rank<<" Purge is coming!\n";
     
     if (domainHistory.size() == 0 ||
-        (domainHistory.size() > 0 && slDomain != domainHistory[domainHistory.size()-1]))
-        domainHistory.push_back(slDomain);
+        (domainHistory.size() > 0 && icDomain != domainHistory[domainHistory.size()-1]))
+        domainHistory.push_back(icDomain);
 }
 
 
 // ****************************************************************************
-//  Method: SlaveInfo::RemoveSL
+//  Method: SlaveInfo::RemoveIC
 //
 //  Purpose:
 //      Update when removing a domain.
@@ -2645,15 +2645,15 @@ SlaveInfo::LoadDom( int slDomain )
 // ****************************************************************************
     
 void
-SlaveInfo::RemoveSL( int dom )
+SlaveInfo::RemoveIC( int dom )
 {
     domainCnt[dom]--;
     //We assume that it will get loaded..
-    slCount--;
+    icCount--;
     if (domainLoaded[dom])
-        slLoadedCount--;
+        icLoadedCount--;
     else
-        slOOBCount--;
+        icOOBCount--;
     justUpdated = false;
 }
 
@@ -2676,9 +2676,9 @@ SlaveInfo::Update( vector<int> &status, bool debug )
 {
     justUpdated = true;
     initialized = true;
-    slCount = 0;
-    slLoadedCount = 0;
-    slOOBCount = 0;
+    icCount = 0;
+    icLoadedCount = 0;
+    icOOBCount = 0;
     domLoadedCount = 0;
     
     for (int i = 0; i < domainCnt.size(); i++)
@@ -2693,15 +2693,15 @@ SlaveInfo::Update( vector<int> &status, bool debug )
         {
             domainCnt[i] = (cnt-1);
             domainLoaded[i] = true;
-            slCount += (cnt-1);
-            slLoadedCount += (cnt-1);
+            icCount += (cnt-1);
+            icLoadedCount += (cnt-1);
         }
         else if (cnt < 0)
         {
             domainCnt[i] = -cnt;
             domainLoaded[i] = false;
-            slCount += (-cnt);
-            slOOBCount += (-cnt);
+            icCount += (-cnt);
+            icOOBCount += (-cnt);
         }
     }
     
@@ -2734,9 +2734,9 @@ SlaveInfo::Update( vector<int> &status, bool debug )
 void
 SlaveInfo::Debug()
 {
-    bool slacker = (slLoadedCount == 0);
+    bool slacker = (icLoadedCount == 0);
     debug1<<setw(2)<<rank;
-    debug1<<": "<<setw(3)<<slCount<<" ("<<setw(3)<<slLoadedCount<<", "<<setw(3)<<slOOBCount<<") [";
+    debug1<<": "<<setw(3)<<icCount<<" ("<<setw(3)<<icLoadedCount<<", "<<setw(3)<<icOOBCount<<") [";
     if (domainCnt.size() < MAX_DOMAIN_PRINT)
     {
         for (int i = 0; i < domainCnt.size(); i++)
@@ -2756,7 +2756,7 @@ SlaveInfo::Debug()
     if (justUpdated)
     {
         debug1<<" ***";
-        if (slLoadedCount <= LATENCY_SEND_CNT)
+        if (icLoadedCount <= LATENCY_SEND_CNT)
             debug1<<" SLACKER: "<<rank;
         else
             debug1<<" UPDATE: "<<rank;              

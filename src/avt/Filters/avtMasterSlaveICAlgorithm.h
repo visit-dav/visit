@@ -37,20 +37,20 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtMasterSlaveSLAlgorithm.h                  //
+//                              avtMasterSlaveICAlgorithm.h                  //
 // ************************************************************************* //
 
-#ifndef AVT_MASTER_SLAVE_SL_ALGORITHM_H
-#define AVT_MASTER_SLAVE_SL_ALGORITHM_H
+#ifndef AVT_MASTER_SLAVE_IC_ALGORITHM_H
+#define AVT_MASTER_SLAVE_IC_ALGORITHM_H
 
-#include "avtParSLAlgorithm.h"
+#include "avtParICAlgorithm.h"
 
 #ifdef PARALLEL
 
 class SlaveInfo;
 
 // ****************************************************************************
-// Class: avtMasterSlaveSLAlgorithm
+// Class: avtMasterSlaveICAlgorithm
 //
 // Purpose:
 //    Abstract base class for master-slave algorithm.
@@ -80,22 +80,26 @@ class SlaveInfo;
 //   particle advection, as opposed to streamlines.  Also change reference
 //   from avtStreamlineFilter to avtPICSFilter.
 //
+//   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
+//   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
+//   as opposed to streamlines.
+//
 // ****************************************************************************
 
-class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
+class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
 {
   public:
-    avtMasterSlaveSLAlgorithm(avtPICSFilter *slFilter,
+    avtMasterSlaveICAlgorithm(avtPICSFilter *picsFilter,
                               int maxCount);
-    virtual ~avtMasterSlaveSLAlgorithm();
+    virtual ~avtMasterSlaveICAlgorithm();
     
-    virtual void              Initialize(std::vector<avtStreamline *> &);
+    virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     virtual const char*       AlgoName() const {return "MasterSlave";}
     
     virtual void              ResetIntegralCurvesForContinueExecute();
-    virtual void              AddIntegralCurves(std::vector<avtStreamline*> &sls);
+    virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics);
 
-    static avtMasterSlaveSLAlgorithm* Create(avtPICSFilter *slFilter,
+    static avtMasterSlaveICAlgorithm* Create(avtPICSFilter *picsFilter,
                                              int maxCount,
                                              int rank,
                                              int nProcs,
@@ -122,16 +126,16 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
     int                        sleepMicroSec;
     void                       Sleep();
     
-    static int                 MSG_STATUS, MSG_DONE, MSG_SEND_SL,
-                               MSG_LOAD_DOMAIN, MSG_SEND_SL_HINT,
+    static int                 MSG_STATUS, MSG_DONE, MSG_SEND_IC,
+                               MSG_LOAD_DOMAIN, MSG_SEND_IC_HINT,
                                MSG_FORCE_SEND_STATUS, MSG_MASTER_STATUS,
-                               MSG_OFFLOAD_SL;
+                               MSG_OFFLOAD_IC;
 
     //Statistics and coutners.
     int                       latencyTimer;
     std::vector<double>       latencyHistory;
-    SLStatistics              SleepTime, LatencyTime, MaxLatencyTime;
-    SLStatistics              SleepCnt, LatencySavingCnt, OffloadCnt;
+    ICStatistics              SleepTime, LatencyTime, MaxLatencyTime;
+    ICStatistics              SleepCnt, LatencySavingCnt, OffloadCnt;
     virtual void              CompileTimingStatistics();
     virtual void              CompileCounterStatistics();
     virtual void              CalculateExtraTime();
@@ -141,7 +145,7 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
 
 
 // ****************************************************************************
-// Class: avtMasterSLAlgorithm
+// Class: avtMasterICAlgorithm
 //
 // Purpose:
 //    Master portion of the master-slave algorithm.
@@ -165,19 +169,19 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
 //
 // ****************************************************************************
 
-class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
+class avtMasterICAlgorithm : public avtMasterSlaveICAlgorithm
 {
   public:
-    avtMasterSLAlgorithm(avtPICSFilter *slFilter,
+    avtMasterICAlgorithm(avtPICSFilter *picsFilter,
                          int maxCount,
                          int workGrpSz,
                          std::vector<int> &slaves,
                          int master,
                          std::vector<int> &masters);
-    virtual ~avtMasterSLAlgorithm();
+    virtual ~avtMasterICAlgorithm();
 
     virtual const char*       AlgoName() const {return "MasterSlave";}
-    virtual void              Initialize(std::vector<avtStreamline *> &);
+    virtual void              Initialize(std::vector<avtIntegralCurve *> &);
 
   protected:
     virtual void              RunAlgorithm();
@@ -188,7 +192,7 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     virtual void              SendStatus(bool forceSend=false);
     virtual void              ProcessSlaveUpdate(std::vector<int> &);
     virtual void              ProcessMasterUpdate(std::vector<int> &);
-    virtual void              ProcessOffloadSL(std::vector<int> &);
+    virtual void              ProcessOffloadIC(std::vector<int> &);
     virtual void              ProcessNewIntegralCurves();
     virtual void              ManageWorkgroup();
     virtual void              ManageSlaves();
@@ -197,14 +201,14 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     virtual void              CompileCounterStatistics();
     virtual void              ReportCounters(ostream &os, bool totals);
 
-    int                       workGroupActiveSLs, workGroupSz;
+    int                       workGroupActiveICs, workGroupSz;
     bool                      done, slaveUpdate, masterUpdate;
     int                       case1Cnt, case2Cnt, case3ACnt, case3BCnt, case3CCnt, case4ACnt, case4BCnt,
                               case5ACnt, case5BCnt, case6Cnt;
     int                       master;
     std::vector<SlaveInfo>    slaveInfo, masterInfo;
-    std::vector<int>          slDomCnts, domLoaded, slackers;
-    std::list<avtStreamline *> activeSLs;
+    std::vector<int>          icDomCnts, domLoaded, slackers;
+    std::list<avtIntegralCurve *> activeICs;
 
     void                      SendAllSlavesMsg(int msg);
     void                      SendAllSlavesMsg(std::vector<int> &msg);
@@ -229,7 +233,7 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
 
 
 // ****************************************************************************
-// Class: avtSlaveSLAlgorithm
+// Class: avtSlaveICAlgorithm
 //
 // Purpose:
 //    Slave portion of the master-slave algorithm.
@@ -250,15 +254,15 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
 //
 // ****************************************************************************
 
-class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
+class avtSlaveICAlgorithm : public avtMasterSlaveICAlgorithm
 {
   public:
-    avtSlaveSLAlgorithm(avtPICSFilter *slFilter,
+    avtSlaveICAlgorithm(avtPICSFilter *picsFilter,
                         int maxCount,
                         int masterRank);
-    virtual ~avtSlaveSLAlgorithm();
+    virtual ~avtSlaveICAlgorithm();
 
-    virtual void              Initialize(std::vector<avtStreamline *> &);
+    virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     virtual void              SendStatus(bool forceSend=false);
     virtual void              UpdateStatus();
 
@@ -268,10 +272,10 @@ class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
     int                       master, numTerminated, timeout;
     bool                      workToDo;
     std::vector<int>          status, prevStatus;
-    std::list<avtStreamline *> activeSLs, oobSLs;
+    std::list<avtIntegralCurve *> activeICs, oobICs;
 
     void                      ProcessMessages(bool &done, bool &newMsg);
-    void                      HandleLatencyTimer(int activeSLCnt,
+    void                      HandleLatencyTimer(int activeICCnt,
                                                  bool checkMaxLatency=true);
 };
 
@@ -297,15 +301,15 @@ class SlaveInfo
     SlaveInfo( int r, int nDomains );
     ~SlaveInfo() {}
 
-    void AddSL(int slDomain, int domCache);
-    void LoadDom( int slDomain );
-    void RemoveSL( int dom );
+    void AddIC(int icDomain, int domCache);
+    void LoadDom( int icDomain );
+    void RemoveIC( int dom );
     void Update( vector<int> &status, bool debug=false );
     void Reset() { justUpdated = false; }
     void Debug();
 
     bool justUpdated, initialized;
-    int canGive, canAccept, slCount, slLoadedCount, slOOBCount, rank;
+    int canGive, canAccept, icCount, icLoadedCount, icOOBCount, rank;
     int domLoadedCount;
     vector<int> domainCnt;
     vector<bool> domainLoaded;

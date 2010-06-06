@@ -37,24 +37,24 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtParSLAlgorithm.C                          //
+//                              avtParICAlgorithm.C                          //
 // ************************************************************************* //
 
-#include "avtParSLAlgorithm.h"
+#include "avtParICAlgorithm.h"
 #include <TimingsManager.h>
 
 using namespace std;
 
 #ifdef PARALLEL
 
-int avtParSLAlgorithm::STATUS_TAG =  420000;
-int avtParSLAlgorithm::STREAMLINE_TAG = 420001;
+int avtParICAlgorithm::STATUS_TAG =  420000;
+int avtParICAlgorithm::STREAMLINE_TAG = 420001;
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::avtParSLAlgorithm
+//  Method: avtParICAlgorithm::avtParICAlgorithm
 //
 //  Purpose:
-//      avtParSLAlgorithm constructor.
+//      avtParICAlgorithm constructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -67,35 +67,35 @@ int avtParSLAlgorithm::STREAMLINE_TAG = 420001;
 //   
 // ****************************************************************************
 
-avtParSLAlgorithm::avtParSLAlgorithm(avtPICSFilter *slFilter)
-    : avtSLAlgorithm(slFilter),
-      CommTime("comT"), MsgCnt("msgC"), SLCommCnt("slcC"), BytesCnt("byteC")
+avtParICAlgorithm::avtParICAlgorithm(avtPICSFilter *icFilter)
+    : avtICAlgorithm(icFilter),
+      CommTime("comT"), MsgCnt("msgC"), ICCommCnt("iccC"), BytesCnt("byteC")
 {
     nProcs = PAR_Size();
     rank = PAR_Rank();
     msgID = 0;
     statusMsgSz = -1;
     numAsyncRecvs = -1;
-    slMsgSz = 10*1024*1024;
+    icMsgSz = 10*1024*1024;
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::~avtParSLAlgorithm
+//  Method: avtParICAlgorithm::~avtParICAlgorithm
 //
 //  Purpose:
-//      avtParSLAlgorithm destructor.
+//      avtParICAlgorithm destructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 // ****************************************************************************
 
-avtParSLAlgorithm::~avtParSLAlgorithm()
+avtParICAlgorithm::~avtParICAlgorithm()
 {
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::Initialize
+//  Method: avtParICAlgorithm::Initialize
 //
 //  Purpose:
 //      Initialize the request buffers.
@@ -114,7 +114,7 @@ avtParSLAlgorithm::~avtParSLAlgorithm()
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts,
+avtParICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts,
                               int msgSz,
                               int numRecvs)
 {
@@ -125,13 +125,13 @@ avtParSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts,
     if (statusMsgSz <= 0 || numAsyncRecvs <= 0)
         EXCEPTION0(ImproperUseException);
     
-    avtSLAlgorithm::Initialize(seedPts);
+    avtICAlgorithm::Initialize(seedPts);
     InitRequests();
 }
 
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::PostRunAlgorithm
+//  Method: avtParICAlgorithm::PostRunAlgorithm
 //
 //  Purpose:
 //      Cleanup.
@@ -142,13 +142,13 @@ avtParSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts,
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::PostRunAlgorithm()
+avtParICAlgorithm::PostRunAlgorithm()
 {
-    ExchangeSLSteps();
+    ExchangeICSteps();
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::PostExecute
+//  Method: avtParICAlgorithm::PostExecute
 //
 //  Purpose:
 //      Cleanup.
@@ -159,14 +159,14 @@ avtParSLAlgorithm::PostRunAlgorithm()
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::PostExecute()
+avtParICAlgorithm::PostExecute()
 {
     CleanupAsynchronous();
-    avtSLAlgorithm::PostExecute();
+    avtICAlgorithm::PostExecute();
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::InitRequests
+//  Method: avtParICAlgorithm::InitRequests
 //
 //  Purpose:
 //      Initialize the request buffers.
@@ -183,24 +183,24 @@ avtParSLAlgorithm::PostExecute()
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::InitRequests()
+avtParICAlgorithm::InitRequests()
 {
-    debug5<<"avtParSLAlgorithm::InitRequests() sz= "<<numAsyncRecvs<<endl;
+    debug5<<"avtParICAlgorithm::InitRequests() sz= "<<numAsyncRecvs<<endl;
     statusRecvRequests.resize(numAsyncRecvs, MPI_REQUEST_NULL);
-    slRecvRequests.resize(numAsyncRecvs, MPI_REQUEST_NULL);
+    icRecvRequests.resize(numAsyncRecvs, MPI_REQUEST_NULL);
     
     for (int i = 0; i < statusRecvRequests.size(); i++)
     {
         PostRecvStatusReq(i);
-        PostRecvSLReq(i);
+        PostRecvICReq(i);
     }
 }
 
 static int
-CountIDs(list<avtStreamline *> &l, int id)
+CountIDs(list<avtIntegralCurve *> &l, int id)
 {
     int cnt = 0;
-    list<avtStreamline*>::const_iterator si = l.begin();
+    list<avtIntegralCurve*>::const_iterator si = l.begin();
     for (si = l.begin(); si != l.end(); si++)
     {
         if ((*si)->id == id)
@@ -210,7 +210,7 @@ CountIDs(list<avtStreamline *> &l, int id)
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::ExchangeSLSteps
+//  Method: avtParICAlgorithm::ExchangeICSteps
 //
 //  Purpose:
 //      Communicate streamlines pieces to destinations.
@@ -230,9 +230,9 @@ CountIDs(list<avtStreamline *> &l, int id)
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::ExchangeSLSteps()
+avtParICAlgorithm::ExchangeICSteps()
 {
-    debug5<<"ExchangeSLSteps: communicatedSLs: "<<communicatedSLs.size();
+    debug5<<"ExchangeICSteps: communicatedICs: "<<communicatedICs.size();
     debug5<<" terminatedICs: "<<terminatedICs.size()<<endl;
 
     //Communicate to everyone where the terminators are located.
@@ -245,11 +245,11 @@ avtParSLAlgorithm::ExchangeSLSteps()
     
     long *idBuffer = new long[2*N], *myIDs = new long[2*N];
 
-    //Sort the terminated/communicated SLs by id.
-    terminatedICs.sort(avtStreamline::IdSeqCompare);
-    communicatedSLs.sort(avtStreamline::IdSeqCompare);
+    //Sort the terminated/communicated ICs by id.
+    terminatedICs.sort(avtIntegralCurve::IdSeqCompare);
+    communicatedICs.sort(avtIntegralCurve::IdSeqCompare);
 
-    vector<vector<avtStreamline *> >sendSLs(N);
+    vector<vector<avtIntegralCurve *> >sendICs(N);
     vector<int> owners(N);
     
     int minId = 0;
@@ -266,13 +266,13 @@ avtParSLAlgorithm::ExchangeSLSteps()
             idBuffer[i+N] = 0;
             myIDs[i] = 0;
             myIDs[i+N] = 0;
-            sendSLs[i].resize(0);
+            sendICs[i].resize(0);
             owners[i] = 0;
         }
 
-        //Set array for SLs that terminated here. Update sequence counts for communicated
-        //SLs.
-        list<avtStreamline*>::iterator t = terminatedICs.begin();
+        //Set array for ICs that terminated here. Update sequence counts for communicated
+        //ICs.
+        list<avtIntegralCurve*>::iterator t = terminatedICs.begin();
         while (t != terminatedICs.end() && (*t)->id <= maxId)
         {
             if ((*t)->id >= minId)
@@ -286,8 +286,8 @@ avtParSLAlgorithm::ExchangeSLSteps()
             t++;
         }
         
-        list<avtStreamline*>::const_iterator c = communicatedSLs.begin();
-        while (c != communicatedSLs.end() && (*c)->id <= maxId)
+        list<avtIntegralCurve*>::const_iterator c = communicatedICs.begin();
+        while (c != communicatedICs.end() && (*c)->id <= maxId)
         {
             if ((*c)->id >= minId)
             {
@@ -308,11 +308,11 @@ avtParSLAlgorithm::ExchangeSLSteps()
             debug5<<"]"<<endl;
         }
         
-        //Now we know where all SLs belong and how many sequences for each.
-        //Send communicatedSLs to the owners.
-        while (!communicatedSLs.empty())
+        //Now we know where all ICs belong and how many sequences for each.
+        //Send communicatedICs to the owners.
+        while (!communicatedICs.empty())
         {
-            avtStreamline *s = communicatedSLs.front();
+            avtIntegralCurve *s = communicatedICs.front();
             if (s->id <= maxId)
             {
                 int idx = s->id%N;
@@ -321,11 +321,11 @@ avtParSLAlgorithm::ExchangeSLSteps()
                     terminatedICs.push_back(s);
                 else
                 {
-                    s->serializeFlags = avtStreamline::SERIALIZE_STEPS; //Write SL steps.
-                    sendSLs[idx].push_back(s);
+                    s->serializeFlags = avtIntegralCurve::SERIALIZE_STEPS; //Write IC steps.
+                    sendICs[idx].push_back(s);
                     owners[idx] = owner;
                 }
-                communicatedSLs.pop_front();
+                communicatedICs.pop_front();
             }
             else
                 break;
@@ -333,24 +333,24 @@ avtParSLAlgorithm::ExchangeSLSteps()
         
         for (int i = 0; i < N; i++)
         {
-            if (sendSLs[i].size() > 0)
+            if (sendICs[i].size() > 0)
             {
-                DoSendSLs(owners[i], sendSLs[i]);
+                DoSendICs(owners[i], sendICs[i]);
 
-                for (int j = 0; j < sendSLs[i].size(); j++)
-                    delete sendSLs[i][j];
+                for (int j = 0; j < sendICs[i].size(); j++)
+                    delete sendICs[i][j];
             }
         }
         
         //Wait for all the sequences to arrive. The total number is known for
-        //each SL, so wait until they all come.
+        //each IC, so wait until they all come.
         bool seqGathered = false;
         while (!seqGathered)
         {
-            RecvSLs(terminatedICs);
+            RecvICs(terminatedICs);
             
             //See if we have all the sequences we need.
-            terminatedICs.sort(avtStreamline::IdSeqCompare);
+            terminatedICs.sort(avtIntegralCurve::IdSeqCompare);
             bool needMore = false;
             for (int i = 0; i < N && !needMore; i++)
                 if (idBuffer[i] == rank)
@@ -365,15 +365,15 @@ avtParSLAlgorithm::ExchangeSLSteps()
         minId += N;
     }
 
-    //All SLs are distributed, merge the sequences into single streamlines.
-    MergeTerminatedSLSequences();
+    //All ICs are distributed, merge the sequences into single streamlines.
+    MergeTerminatedICSequences();
     
     delete [] idBuffer;
     delete [] myIDs;
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::MergeTerminatedSLSequences
+//  Method: avtParICAlgorithm::MergeTerminatedICSequences
 //
 //  Purpose:
 //      Merge streamline sequences.
@@ -389,23 +389,23 @@ avtParSLAlgorithm::ExchangeSLSteps()
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::MergeTerminatedSLSequences()
+avtParICAlgorithm::MergeTerminatedICSequences()
 {
     //Sort them by id and sequence so we can process them one at a time.
-    terminatedICs.sort(avtStreamline::IdSeqCompare);
+    terminatedICs.sort(avtIntegralCurve::IdSeqCompare);
 
     //Split them up into sequences.
-    vector<vector<avtStreamline *> > seqs;
+    vector<vector<avtIntegralCurve *> > seqs;
     while (!terminatedICs.empty())
     {
-        avtStreamline *s = terminatedICs.front();
+        avtIntegralCurve *s = terminatedICs.front();
         terminatedICs.pop_front();
         
         //Empty or new ID, add a new entry.
         if (seqs.size() == 0 ||
             seqs[seqs.size()-1][0]->id != s->id)
         {
-            vector<avtStreamline *> v;
+            vector<avtIntegralCurve *> v;
             v.push_back(s);
             seqs.push_back(v);
         }
@@ -419,13 +419,13 @@ avtParSLAlgorithm::MergeTerminatedSLSequences()
     //Merge the sequences together, put them into terminated list.
     for (int i = 0; i < seqs.size(); i++)
     {
-        avtStreamline *s = seqs[i][0]->MergeIntegralCurveSequence(seqs[i]);
+        avtIntegralCurve *s = seqs[i][0]->MergeIntegralCurveSequence(seqs[i]);
         terminatedICs.push_back(s);
     }
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::CleanupAsynchronous
+//  Method: avtParICAlgorithm::CleanupAsynchronous
 //
 //  Purpose:
 //      Claenup the buffers used when doing asynchronous processing.
@@ -436,7 +436,7 @@ avtParSLAlgorithm::MergeTerminatedSLSequences()
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::CleanupAsynchronous()
+avtParICAlgorithm::CleanupAsynchronous()
 {
     for (int i = 0; i < statusRecvRequests.size(); i++)
     {
@@ -445,22 +445,22 @@ avtParSLAlgorithm::CleanupAsynchronous()
             MPI_Cancel(&req);
     } 
 
-    for (int i = 0; i < slRecvRequests.size(); i++)
+    for (int i = 0; i < icRecvRequests.size(); i++)
     {
-        MPI_Request req = slRecvRequests[i];
+        MPI_Request req = icRecvRequests[i];
         if (req != MPI_REQUEST_NULL)
             MPI_Cancel(&req);
     }
 
     // Cleanup recv buffers.
     map<MPI_Request, unsigned char*>::const_iterator it;
-    for (it = recvSLBufferMap.begin(); it != recvSLBufferMap.end(); ++it)
+    for (it = recvICBufferMap.begin(); it != recvICBufferMap.end(); ++it)
     {
         char *buff = (char *)it->second;
         if (it->second != NULL)
             delete [] it->second;
     }
-    recvSLBufferMap.clear();
+    recvICBufferMap.clear();
 
     map<MPI_Request, int*>::const_iterator itt;
     for (itt = recvIntBufferMap.begin(); itt != recvIntBufferMap.end(); ++itt)
@@ -474,7 +474,7 @@ avtParSLAlgorithm::CleanupAsynchronous()
 
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::CheckPendingSendRequests
+//  Method: avtParICAlgorithm::CheckPendingSendRequests
 //
 //  Purpose:
 //      Check to see if there are any pending send requests.
@@ -498,18 +498,18 @@ avtParSLAlgorithm::CleanupAsynchronous()
 //
 // ****************************************************************************
 void
-avtParSLAlgorithm::CheckPendingSendRequests()
+avtParICAlgorithm::CheckPendingSendRequests()
 {
-    debug5<<"avtParSLAlgorithm::CheckPendingSendRequests()\n";
+    debug5<<"avtParICAlgorithm::CheckPendingSendRequests()\n";
     int communicationTimer = visitTimer->StartTimer();
     
-    if (sendSLBufferMap.size() > 0)
+    if (sendICBufferMap.size() > 0)
     {
         vector<MPI_Request> req, copy;
 
         int notCompleted = 0;
         map<MPI_Request, unsigned char*>::const_iterator it;
-        for (it = sendSLBufferMap.begin(); it != sendSLBufferMap.end(); ++it)
+        for (it = sendICBufferMap.begin(); it != sendICBufferMap.end(); ++it)
         {
             if (it->first != MPI_REQUEST_NULL && it->second != NULL)
             {
@@ -520,7 +520,7 @@ avtParSLAlgorithm::CheckPendingSendRequests()
                 notCompleted++;
         }
 
-        debug5 << "\tCheckPendingSendRequests() SL completed = "<<req.size()
+        debug5 << "\tCheckPendingSendRequests() IC completed = "<<req.size()
                <<" not completed: "<<notCompleted<<endl;
 
         if (req.size() > 0)
@@ -534,14 +534,14 @@ avtParSLAlgorithm::CheckPendingSendRequests()
             {
                 int idx = indices[i];
                 MPI_Request r = copy[idx];
-                unsigned char *buff = sendSLBufferMap[r];
+                unsigned char *buff = sendICBufferMap[r];
                 debug5 << "\tidx = " << idx << " r = " << r << " buff = " 
                        << (void *)buff << endl;
                 if (buff)
                     delete [] buff;
 
-                sendSLBufferMap[r] = NULL;
-                sendSLBufferMap.erase(r);
+                sendICBufferMap[r] = NULL;
+                sendICBufferMap.erase(r);
             }
             
             delete [] indices;
@@ -604,7 +604,7 @@ avtParSLAlgorithm::CheckPendingSendRequests()
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::PostRecvStatusReq
+//  Method: avtParICAlgorithm::PostRecvStatusReq
 //
 //  Purpose:
 //      Receives status requests.
@@ -618,13 +618,13 @@ avtParSLAlgorithm::CheckPendingSendRequests()
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::PostRecvStatusReq(int idx)
+avtParICAlgorithm::PostRecvStatusReq(int idx)
 {
     MPI_Request req;
     int *buff = new int[statusMsgSz];
 
     MPI_Irecv(buff, statusMsgSz, MPI_INT, MPI_ANY_SOURCE,
-              avtParSLAlgorithm::STATUS_TAG,
+              avtParICAlgorithm::STATUS_TAG,
               VISIT_MPI_COMM, &req);
     debug5 << "Post Statusrecv " <<idx<<" req= "<<req<<endl;
     statusRecvRequests[idx] = req;
@@ -632,7 +632,7 @@ avtParSLAlgorithm::PostRecvStatusReq(int idx)
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::PostRecvSLReq
+//  Method: avtParICAlgorithm::PostRecvICReq
 //
 //  Purpose:
 //      Receives status requests.
@@ -648,23 +648,23 @@ avtParSLAlgorithm::PostRecvStatusReq(int idx)
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::PostRecvSLReq(int idx)
+avtParICAlgorithm::PostRecvICReq(int idx)
 {
     MPI_Request req;
-    unsigned char *buff = new unsigned char[slMsgSz];
-    MPI_Irecv(buff, slMsgSz,
+    unsigned char *buff = new unsigned char[icMsgSz];
+    MPI_Irecv(buff, icMsgSz,
               MPI_UNSIGNED_CHAR, MPI_ANY_SOURCE,
-              avtParSLAlgorithm::STREAMLINE_TAG, 
+              avtParICAlgorithm::STREAMLINE_TAG, 
               VISIT_MPI_COMM, &req);
 
-    debug5 << "Post SLrecv " <<idx<<" req= "<<req<<endl;
-    slRecvRequests[idx] = req;
-    recvSLBufferMap[req] = buff;
+    debug5 << "Post ICrecv " <<idx<<" req= "<<req<<endl;
+    icRecvRequests[idx] = req;
+    recvICBufferMap[req] = buff;
 }
 
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::SendMsg
+//  Method: avtParICAlgorithm::SendMsg
 //
 //  Purpose:
 //      Send an asynchronous message.
@@ -683,7 +683,7 @@ avtParSLAlgorithm::PostRecvSLReq(int idx)
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::SendMsg(int dst,
+avtParICAlgorithm::SendMsg(int dst,
                            vector<int> &msg)
 {
     int communicationTimer = visitTimer->StartTimer();
@@ -704,7 +704,7 @@ avtParSLAlgorithm::SendMsg(int dst,
     debug5<<"]"<<endl;
         
     int err = MPI_Isend(buff, statusMsgSz, MPI_INT, dst,
-                        avtParSLAlgorithm::STATUS_TAG,
+                        avtParICAlgorithm::STATUS_TAG,
                         VISIT_MPI_COMM, &req);
 
     sendIntBufferMap[req] = buff;
@@ -720,7 +720,7 @@ avtParSLAlgorithm::SendMsg(int dst,
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::SendAllMsg
+//  Method: avtParICAlgorithm::SendAllMsg
 //
 //  Purpose:
 //      Broadcast a message.
@@ -734,7 +734,7 @@ avtParSLAlgorithm::SendMsg(int dst,
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::SendAllMsg(vector<int> &msg)
+avtParICAlgorithm::SendAllMsg(vector<int> &msg)
 {
     for (int i = 0; i < nProcs; i++)
         if (i != rank)
@@ -742,7 +742,7 @@ avtParSLAlgorithm::SendAllMsg(vector<int> &msg)
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::RecvMsgs
+//  Method: avtParICAlgorithm::RecvMsgs
 //
 //  Purpose:
 //      Recieve any messages.
@@ -764,9 +764,9 @@ avtParSLAlgorithm::SendAllMsg(vector<int> &msg)
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
+avtParICAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
 {
-    debug5<<"avtParSLAlgorithm::RecvMsgs()\n";
+    debug5<<"avtParICAlgorithm::RecvMsgs()\n";
     int communicationTimer = visitTimer->StartTimer();
     
     msgs.resize(0);
@@ -833,7 +833,7 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::SendSLs
+//  Method: avtParICAlgorithm::SendICs
 //
 //  Purpose:
 //      Send streamlines to a dst.
@@ -847,7 +847,7 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
 //   Memory leak fix.
 //
 //   Dave Pugmire, Thu Sep 24 14:03:46 EDT 2009
-//   Call new method, DoSendSLs.
+//   Call new method, DoSendICs.
 //
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
@@ -855,40 +855,40 @@ avtParSLAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::SendSLs(int dst, 
-                           vector<avtStreamline*> &sls)
+avtParICAlgorithm::SendICs(int dst, 
+                           vector<avtIntegralCurve*> &ics)
 {
 
-    for (int i = 0; i < sls.size(); i++)
+    for (int i = 0; i < ics.size(); i++)
     {
-        avtStreamline *sl = sls[i];
-        sl->serializeFlags |= avtStreamline::SERIALIZE_INC_SEQ;
+        avtIntegralCurve *ic = ics[i];
+        ic->serializeFlags |= avtIntegralCurve::SERIALIZE_INC_SEQ;
     }
 
-    if (DoSendSLs(dst, sls))
+    if (DoSendICs(dst, ics))
     {
-        for (int i = 0; i < sls.size(); i++)
+        for (int i = 0; i < ics.size(); i++)
         {
-            avtStreamline *sl = sls[i];
+            avtIntegralCurve *ic = ics[i];
             
             //Add if id/seq is unique. (single streamlines can be sent to multiple dst).
-            list<avtStreamline*>::const_iterator si = communicatedSLs.begin();
+            list<avtIntegralCurve*>::const_iterator si = communicatedICs.begin();
             bool found = false;
-            for (si = communicatedSLs.begin(); !found && si != communicatedSLs.end(); si++)
-                found = ((*si)->id == sl->id && (*si)->sequenceCnt == sl->sequenceCnt);
+            for (si = communicatedICs.begin(); !found && si != communicatedICs.end(); si++)
+                found = ((*si)->id == ic->id && (*si)->sequenceCnt == ic->sequenceCnt);
         
             if (!found)
-                communicatedSLs.push_back(sl);
+                communicatedICs.push_back(ic);
         }
         
         //Empty the array.
-        sls.resize(0);
+        ics.resize(0);
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::DoSendSLs
+//  Method: avtParICAlgorithm::DoSendICs
 //
 //  Purpose:
 //      Send streamlines to a dst.
@@ -907,13 +907,13 @@ avtParSLAlgorithm::SendSLs(int dst,
 // ****************************************************************************
 
 bool
-avtParSLAlgorithm::DoSendSLs(int dst, 
-                             vector<avtStreamline*> &sls)
+avtParICAlgorithm::DoSendICs(int dst, 
+                             vector<avtIntegralCurve*> &ics)
 {
     if (dst == rank)
         return false;
   
-    size_t szz = sls.size();
+    size_t szz = ics.size();
     if (szz == 0)
         return false;
 
@@ -921,15 +921,15 @@ avtParSLAlgorithm::DoSendSLs(int dst,
     MemStream buff;
     buff.write(&szz, 1);
 
-    for (int i = 0; i < sls.size(); i++)
+    for (int i = 0; i < ics.size(); i++)
     {
-        avtStreamline *sl = sls[i];
-        sl->Serialize(MemStream::WRITE, buff, GetSolver());
-        SLCommCnt.value ++;
+        avtIntegralCurve *ic = ics[i];
+        ic->Serialize(MemStream::WRITE, buff, GetSolver());
+        ICCommCnt.value ++;
     }
     
     // Break it up into multiple messages if needed.
-    if (buff.buffLen() > slMsgSz)
+    if (buff.buffLen() > icMsgSz)
         EXCEPTION0(ImproperUseException);
     
     // Copy it into a byte buffer.
@@ -940,23 +940,23 @@ avtParSLAlgorithm::DoSendSLs(int dst,
     //Send it along.
     MPI_Request req;
     int err = MPI_Isend(msg, sz, MPI_UNSIGNED_CHAR, dst,
-                        avtParSLAlgorithm::STREAMLINE_TAG,
+                        avtParICAlgorithm::STREAMLINE_TAG,
                         VISIT_MPI_COMM, &req);
     debug5<<err<<" = MPI_Isend(msg, "<<sz<<", MPI_UNSIGNED_CHAR, to "<<dst<<", req= "<<req<<endl;
-    sendSLBufferMap[req] = msg;
+    sendICBufferMap[req] = msg;
 
     BytesCnt.value += sz;
     bool nov = visitTimer->GetNeverOutputValue();
     visitTimer->NeverOutput(true);
     CommTime.value += visitTimer->StopTimer(communicationTimer,
-                                            "SendSLs");
+                                            "SendICs");
     visitTimer->NeverOutput(nov);
     debug5 << "DONE  CheckPendingSendRequests()\n";
     return true;
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::RecvSLs
+//  Method: avtParICAlgorithm::RecvICs
 //
 //  Purpose:
 //      Recv streamlines.
@@ -985,21 +985,21 @@ avtParSLAlgorithm::DoSendSLs(int dst,
 // ****************************************************************************
 
 int
-avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &recvSLs)
+avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs)
 {
     int communicationTimer = visitTimer->StartTimer();
-    int slCount = 0;
+    int icCount = 0;
 
     while (true)
     {
-        int nReq = slRecvRequests.size();
+        int nReq = icRecvRequests.size();
         MPI_Status *status = new MPI_Status[nReq];
         int *indices = new int[nReq];
         int num = 0, err;
 
         vector<MPI_Request> copy;
-        for (int i = 0; i < slRecvRequests.size(); i++)
-            copy.push_back(slRecvRequests[i]);
+        for (int i = 0; i < icRecvRequests.size(); i++)
+            copy.push_back(icRecvRequests[i]);
         err = MPI_Testsome(nReq, &copy[0], &num, indices, status);
 
         if (num > 0)
@@ -1007,34 +1007,34 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &recvSLs)
             for (int i = 0; i < num; i++)
             {
                 int idx = indices[i];
-                MPI_Request req = slRecvRequests[idx];
+                MPI_Request req = icRecvRequests[idx];
                 if (req == MPI_REQUEST_NULL)
                     continue;
                 
                 //Grab the bytes, unserialize them, add to list.
-                unsigned char *msg = recvSLBufferMap[req];
-                recvSLBufferMap.erase(req);
+                unsigned char *msg = recvICBufferMap[req];
+                recvICBufferMap.erase(req);
                 if (msg == NULL)
                     continue;
         
-                MemStream buff(slMsgSz, msg);
+                MemStream buff(icMsgSz, msg);
                 delete [] msg;
                 msg = NULL;
 
-                size_t numSLs;
-                buff.read(numSLs);
+                size_t numICs;
+                buff.read(numICs);
 
-                for (int j = 0; j < numSLs; j++)
+                for (int j = 0; j < numICs; j++)
                 {
-                    avtStreamline *sl = picsFilter->CreateIntegralCurve();
-                    sl->Serialize(MemStream::READ, buff, GetSolver());
-                    recvSLs.push_back(sl);
-                    slCount++;
+                    avtIntegralCurve *ic = picsFilter->CreateIntegralCurve();
+                    ic->Serialize(MemStream::READ, buff, GetSolver());
+                    recvICs.push_back(ic);
+                    icCount++;
                 }
             }
 
             for (int i = 0; i < num; i++)
-                PostRecvSLReq(indices[i]);
+                PostRecvICReq(indices[i]);
         }
 
         delete [] status;
@@ -1047,14 +1047,14 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &recvSLs)
     bool nov = visitTimer->GetNeverOutputValue();
     visitTimer->NeverOutput(true);
     CommTime.value += visitTimer->StopTimer(communicationTimer,
-                                            "RecvSLs");
+                                            "RecvICs");
     visitTimer->NeverOutput(nov);
     debug5 << "DONE  CheckPendingSendRequests()\n";
-    return slCount;
+    return icCount;
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::RecvSLs
+//  Method: avtParICAlgorithm::RecvICs
 //
 //  Purpose:
 //      Recv streamlines.
@@ -1078,17 +1078,17 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &recvSLs)
 //
 // ****************************************************************************
 int
-avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &streamlines,
+avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &streamlines,
                            int &earlyTerminations )
 {
-    list<avtStreamline *> recvSLs;
-    RecvSLs(recvSLs);
+    list<avtIntegralCurve *> recvICs;
+    RecvICs(recvICs);
 
     earlyTerminations = 0;
-    int slCount = 0;
+    int icCount = 0;
     //Check to see if they in this domain.
-    list<avtStreamline *>::iterator s;
-    for (s = recvSLs.begin(); s != recvSLs.end(); ++s)
+    list<avtIntegralCurve *>::iterator s;
+    for (s = recvICs.begin(); s != recvICs.end(); ++s)
     {
         avtVector pt;
         (*s)->CurrentLocation(pt);
@@ -1096,7 +1096,7 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &streamlines,
         if (PointInDomain(pt, (*s)->domain))
         {
             streamlines.push_back(*s);
-            slCount++;
+            icCount++;
         }
         else
         {
@@ -1106,12 +1106,12 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &streamlines,
         }
     }
 
-    return slCount;
+    return icCount;
 }
 
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::ExchangeSLs
+//  Method: avtParICAlgorithm::ExchangeICs
 //
 //  Purpose:
 //      Exchange streamlines.
@@ -1130,35 +1130,35 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &streamlines,
 // ****************************************************************************
 
 bool
-avtParSLAlgorithm::ExchangeSLs(list<avtStreamline *> &streamlines,
-                               vector<vector< avtStreamline *> > &sendSLs,
+avtParICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &streamlines,
+                               vector<vector< avtIntegralCurve *> > &sendICs,
                                int &earlyTerminations )
 {
     bool newIntegralCurves = false;
     earlyTerminations = 0;
 
-    // Do the SL sends.
+    // Do the IC sends.
     for (int i = 0; i < nProcs; i++)
     { 
-        vector<avtStreamline *> &sl = sendSLs[i];
+        vector<avtIntegralCurve *> &ic = sendICs[i];
         
         if (i != rank)
-            SendSLs(i, sl);
+            SendICs(i, ic);
         else // Pass them to myself....
         {
-            for (int j = 0; j < sl.size(); j++)
-                streamlines.push_back(sl[j]);
+            for (int j = 0; j < ic.size(); j++)
+                streamlines.push_back(ic[j]);
         }
     }
 
     // See if there are any recieves....
-    int numNewSLs = RecvSLs(streamlines, earlyTerminations);
-    newIntegralCurves = (numNewSLs > 0);
+    int numNewICs = RecvICs(streamlines, earlyTerminations);
+    newIntegralCurves = (numNewICs > 0);
     return newIntegralCurves;
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::CalculateTimingStatistics
+//  Method: avtParICAlgorithm::CalculateTimingStatistics
 //
 //  Purpose:
 //      Compute statistics over a value.
@@ -1169,14 +1169,14 @@ avtParSLAlgorithm::ExchangeSLs(list<avtStreamline *> &streamlines,
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::CompileTimingStatistics()
+avtParICAlgorithm::CompileTimingStatistics()
 {
-    avtSLAlgorithm::CompileTimingStatistics();
+    avtICAlgorithm::CompileTimingStatistics();
     ComputeStatistic(CommTime);
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::CalculateCounterStatistics
+//  Method: avtParICAlgorithm::CalculateCounterStatistics
 //
 //  Purpose:
 //      Compute statistics over a value.
@@ -1188,16 +1188,16 @@ avtParSLAlgorithm::CompileTimingStatistics()
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::CompileCounterStatistics()
+avtParICAlgorithm::CompileCounterStatistics()
 {
-    avtSLAlgorithm::CompileCounterStatistics();
+    avtICAlgorithm::CompileCounterStatistics();
     ComputeStatistic(MsgCnt);
-    ComputeStatistic(SLCommCnt);
+    ComputeStatistic(ICCommCnt);
     ComputeStatistic(BytesCnt);
 }
 
 // ****************************************************************************
-//  Method: avtParallelSLAlgorithm::CalculateExtraTime
+//  Method: avtParallelICAlgorithm::CalculateExtraTime
 //
 //  Purpose:
 //      Calculate extra time.
@@ -1211,15 +1211,15 @@ avtParSLAlgorithm::CompileCounterStatistics()
 // ****************************************************************************
 
 void
-avtParSLAlgorithm::CalculateExtraTime()
+avtParICAlgorithm::CalculateExtraTime()
 {
-    avtSLAlgorithm::CalculateExtraTime();
+    avtICAlgorithm::CalculateExtraTime();
     if (CommTime.value > 0.0)
         ExtraTime.value -= CommTime.value;
 }
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::ReportTimings
+//  Method: avtParICAlgorithm::ReportTimings
 //
 //  Purpose:
 //      Print timing data.
@@ -1229,16 +1229,16 @@ avtParSLAlgorithm::CalculateExtraTime()
 //
 // ****************************************************************************
 void
-avtParSLAlgorithm::ReportTimings(ostream &os, bool totals)
+avtParICAlgorithm::ReportTimings(ostream &os, bool totals)
 {
-    avtSLAlgorithm::ReportTimings(os, totals);
+    avtICAlgorithm::ReportTimings(os, totals);
 
     PrintTiming(os, "CommTime", CommTime, TotalTime, totals);
 }
 
 
 // ****************************************************************************
-//  Method: avtParSLAlgorithm::ReportCounters
+//  Method: avtParICAlgorithm::ReportCounters
 //
 //  Purpose:
 //      Print timing data.
@@ -1248,12 +1248,12 @@ avtParSLAlgorithm::ReportTimings(ostream &os, bool totals)
 //
 // ****************************************************************************
 void
-avtParSLAlgorithm::ReportCounters(ostream &os, bool totals)
+avtParICAlgorithm::ReportCounters(ostream &os, bool totals)
 {
-    avtSLAlgorithm::ReportCounters(os, totals);
+    avtICAlgorithm::ReportCounters(os, totals);
 
     PrintCounter(os, "MsgCount", MsgCnt, totals);
-    PrintCounter(os, "SLComCnt", SLCommCnt, totals);
+    PrintCounter(os, "ICComCnt", ICCommCnt, totals);
     PrintCounter(os, "ComBytes", BytesCnt, totals);
 }
 

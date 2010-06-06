@@ -76,6 +76,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <avtDataTree.h>
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
+#include <avtIntegralCurve.h>
 #include <avtIVPVTKField.h>
 #include <avtIVPVTKTimeVaryingField.h>
 #include <avtIVPDopri5.h>
@@ -86,7 +87,6 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <avtMetaData.h>
 #include <avtParallel.h>
 #include <avtStateRecorderIntegralCurve.h>
-#include <avtStreamline.h>
 #include <avtVector.h>
 
 #include <DebugStream.h>
@@ -243,7 +243,7 @@ avtStreamlineFilter::~avtStreamlineFilter()
 //
 // ****************************************************************************
 
-avtStreamline *
+avtIntegralCurve *
 avtStreamlineFilter::CreateIntegralCurve(void)
 {
     avtStateRecorderIntegralCurve *rv = new avtStateRecorderIntegralCurve();
@@ -271,7 +271,7 @@ avtStreamlineFilter::CreateIntegralCurve(void)
 //
 // ****************************************************************************
 
-avtStreamline *
+avtIntegralCurve *
 avtStreamlineFilter::CreateIntegralCurve(const avtIVPSolver* model,
                                          const double& t_start,
                                          const avtVector &p_start, int ID) 
