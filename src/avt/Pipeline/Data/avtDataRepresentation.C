@@ -947,8 +947,11 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    for dump output.
 //
 //    Jeremy Meredith, Thu Apr  1 16:42:41 EDT 2010
-//    Accound for removed point/cell arrays when determining how many
+//    Account for removed point/cell arrays when determining how many
 //    of each of those we need to actually write.
+//
+//    Hank Childs, Sun Jun  6 11:15:23 CDT 2010
+//    Account for NULL vtkPoints objects. 
 //
 // ****************************************************************************
 
@@ -1123,6 +1126,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
     int dims[3] = { -1, -1, -1 };
     int vtktype = asVTK->GetDataObjectType();
     int ptcnt = -1;
+    vtkPoints *pts = NULL;
 
     switch (vtktype)
     {
@@ -1134,17 +1138,20 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
       case VTK_STRUCTURED_GRID:
         mesh_type = "curvilinear mesh";
         ((vtkStructuredGrid *) asVTK)->GetDimensions(dims);
-        ptcnt=((vtkStructuredGrid *) asVTK)->GetPoints()->GetReferenceCount();
+        pts = ((vtkStructuredGrid *) asVTK)->GetPoints();
+        ptcnt=(pts ? pts->GetReferenceCount() : -2);
         break;
 
       case VTK_UNSTRUCTURED_GRID:
         mesh_type = "unstructured mesh";
-        ptcnt=((vtkUnstructuredGrid *) asVTK)->GetPoints()->GetReferenceCount();
+        pts = ((vtkUnstructuredGrid *) asVTK)->GetPoints();
+        ptcnt=(pts ? pts->GetReferenceCount() : -2);
         break;
 
       case VTK_POLY_DATA:
         mesh_type = "poly data mesh";
-        ptcnt=((vtkPolyData *) asVTK)->GetPoints()->GetReferenceCount();
+        pts = ((vtkPolyData *) asVTK)->GetPoints();
+        ptcnt=(pts ? pts->GetReferenceCount() : -2);
         break;
     }
 
@@ -1171,9 +1178,14 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         oss << "Refs to mesh = " << asVTK->GetReferenceCount() 
             << ", to points = "  << ptcnt << "<br>";
     }
-    else
+    else if (ptcnt == -1)
     {
         oss << "Refs to mesh = " << asVTK->GetReferenceCount() << "<br>";
+    }
+    else
+    {
+        oss << "Refs to mesh = " << asVTK->GetReferenceCount() 
+            << " (mesh has NULL vtkPoints object)" << "<br>";
     }
 
     // Do field data.
