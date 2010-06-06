@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtSerialStreamlineAlgorithm.h               //
+//                            avtSerialSLAlgorithm.h                         //
 // ************************************************************************* //
 
 #ifndef AVT_SERIAL_SL_ALGORITHM_H
@@ -65,18 +65,23 @@
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change the names of several methods to reflect the new emphasis in
+//   particle advection, as opposed to streamlines.  Also change reference
+//   from avtStreamlineFilter to avtPICSFilter.
+//
 // ****************************************************************************
 
 class avtSerialSLAlgorithm : public avtSLAlgorithm
 {
   public:
-    avtSerialSLAlgorithm( avtStreamlineFilter *slFilter );
+    avtSerialSLAlgorithm( avtPICSFilter *slFilter );
     virtual ~avtSerialSLAlgorithm();
     
     virtual const char*       AlgoName() const {return "Serial";}
     virtual void              Initialize(std::vector<avtStreamline *> &);
-    virtual void              ResetStreamlinesForContinueExecute();
-    virtual void              AddStreamlines(std::vector<avtStreamline*> &sls);
+    virtual void              ResetIntegralCurvesForContinueExecute();
+    virtual void              AddIntegralCurves(std::vector<avtStreamline*> &sls);
 
   protected:
     virtual void              RunAlgorithm();

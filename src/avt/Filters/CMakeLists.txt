@@ -39,6 +39,9 @@
 #   Hank Childs, Fri Jun  4 17:03:43 CDT 2010
 #   Remove avtStreamlineWrapper.
 #
+#   Hank Childs, Sat Jun  5 19:03:22 CDT 2010
+#   Add avtPICSFilter.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -65,6 +68,7 @@ avtMeshLogFilter.C
 avtNamedSelectionFilter.C
 avtParDomSLAlgorithm.C
 avtParSLAlgorithm.C
+avtPICSFilter.C
 avtPointToGlyphFilter.C
 avtRayCompositer.C
 avtRayTracer.C

@@ -54,9 +54,14 @@ using namespace std;
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//    Remove reference to avtStreamlineFilter, add reference to avtPICSFilter.
+//
 // ****************************************************************************
 
-avtSerialSLAlgorithm::avtSerialSLAlgorithm( avtStreamlineFilter *slFilter )
+avtSerialSLAlgorithm::avtSerialSLAlgorithm( avtPICSFilter *slFilter )
     : avtSLAlgorithm(slFilter)
 {
 }
@@ -94,6 +99,9 @@ avtSerialSLAlgorithm::~avtSerialSLAlgorithm()
 //   Change parallelization strategy, since it was loading up on the last
 //   processor and we want it to be more spread out.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Change name of method called to AddIntegralCurves.
+//
 // ****************************************************************************
 
 void
@@ -101,11 +109,11 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 {
     avtSLAlgorithm::Initialize(seedPts);
 
-    AddStreamlines(seedPts);
+    AddIntegralCurves(seedPts);
 }
 
 // ****************************************************************************
-//  Method: avtSerialSLAlogrithm::AddStreamlines
+//  Method: avtSerialSLAlogrithm::AddIntegralCurves
 //
 //  Purpose:
 //      Add streamlines
@@ -121,10 +129,13 @@ avtSerialSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename method to AddIntegralCurves.
+//
 // ****************************************************************************
 
 void
-avtSerialSLAlgorithm::AddStreamlines(vector<avtStreamline *> &sls)
+avtSerialSLAlgorithm::AddIntegralCurves(vector<avtStreamline *> &sls)
 {
     int nSeeds = sls.size();
     int i0 = 0, i1 = nSeeds;
@@ -184,8 +195,8 @@ avtSerialSLAlgorithm::AddStreamlines(vector<avtStreamline *> &sls)
 //   Make changes for point decomposed domain databases.
 //
 //   Hank Childs, Sat Apr 11 23:18:32 CDT 2009
-//   Make an explicit call to GetDomain before calling IntegrateStreamline.
-//   If we don't make this call, IntegrateStreamline will call GetDomain for 
+//   Make an explicit call to GetDomain before calling AdvectParticle.
+//   If we don't make this call, AdvectParticle will call GetDomain for 
 //   us.  But by calling it explicitly, it goes through the avtSLAlgorithm
 //   bookkeeping logic, meaning that I/O will correctly be counted as I/O,
 //   instead of being rolled in with integration time.
@@ -199,6 +210,10 @@ avtSerialSLAlgorithm::AddStreamlines(vector<avtStreamline *> &sls)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename several methods that reflect the new emphasis in particle 
+//   advection, as opposed to streamlines.
+//
 // ****************************************************************************
 
 void
@@ -208,7 +223,7 @@ avtSerialSLAlgorithm::RunAlgorithm()
     int timer = visitTimer->StartTimer();
 
     //Sort the streamlines and load the first domain.
-    SortStreamlines(activeSLs);
+    SortIntegralCurves(activeSLs);
     if (!activeSLs.empty())
     {
         avtStreamline *s = activeSLs.front();
@@ -229,14 +244,14 @@ avtSerialSLAlgorithm::RunAlgorithm()
                 // In serial, we return that every domain is loaded.
                 // That's basically okay.
                 // But it screws up time reporting, because the domain isn't
-                // loaded until IntegrateStreamline calls GetDomain.
+                // loaded until AdvectParticle calls GetDomain.
                 // So call it explicitly first, so I/O can be correctly 
                 // counted.
                 GetDomain(s);
 #endif
-                IntegrateStreamline(s);
+                AdvectParticle(s);
                 if (s->status == avtStreamline::STATUS_TERMINATE)
-                    terminatedSLs.push_back(s);
+                    terminatedICs.push_back(s);
                 else
                     oobSLs.push_back(s);
             }
@@ -252,7 +267,7 @@ avtSerialSLAlgorithm::RunAlgorithm()
         activeSLs = oobSLs;
         oobSLs.clear();
         
-        SortStreamlines(activeSLs);
+        SortIntegralCurves(activeSLs);
         avtStreamline *s = activeSLs.front();
         GetDomain(s);
     }
@@ -261,7 +276,7 @@ avtSerialSLAlgorithm::RunAlgorithm()
 }
 
 // ****************************************************************************
-//  Method: avtSerialSLAlgorithm::ResetStreamlinesForContinueExecute
+//  Method: avtSerialSLAlgorithm::ResetIntegralCurvesForContinueExecute
 //
 //  Purpose:
 //      Reset for continued streamline integration.
@@ -274,15 +289,19 @@ avtSerialSLAlgorithm::RunAlgorithm()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as 
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
-avtSerialSLAlgorithm::ResetStreamlinesForContinueExecute()
+avtSerialSLAlgorithm::ResetIntegralCurvesForContinueExecute()
 {
-    while (! terminatedSLs.empty())
+    while (! terminatedICs.empty())
     {
-        avtStreamline *s = terminatedSLs.front();
-        terminatedSLs.pop_front();
+        avtStreamline *s = terminatedICs.front();
+        terminatedICs.pop_front();
         
         activeSLs.push_back(s);
     }

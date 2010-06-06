@@ -75,22 +75,27 @@ class SlaveInfo;
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change the names of several methods to reflect the new emphasis in
+//   particle advection, as opposed to streamlines.  Also change reference
+//   from avtStreamlineFilter to avtPICSFilter.
+//
 // ****************************************************************************
 
 class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
 {
   public:
-    avtMasterSlaveSLAlgorithm(avtStreamlineFilter *slFilter,
+    avtMasterSlaveSLAlgorithm(avtPICSFilter *slFilter,
                               int maxCount);
     virtual ~avtMasterSlaveSLAlgorithm();
     
     virtual void              Initialize(std::vector<avtStreamline *> &);
     virtual const char*       AlgoName() const {return "MasterSlave";}
     
-    virtual void              ResetStreamlinesForContinueExecute();
-    virtual void              AddStreamlines(std::vector<avtStreamline*> &sls);
+    virtual void              ResetIntegralCurvesForContinueExecute();
+    virtual void              AddIntegralCurves(std::vector<avtStreamline*> &sls);
 
-    static avtMasterSlaveSLAlgorithm* Create(avtStreamlineFilter *slFilter,
+    static avtMasterSlaveSLAlgorithm* Create(avtPICSFilter *slFilter,
                                              int maxCount,
                                              int rank,
                                              int nProcs,
@@ -163,7 +168,7 @@ class avtMasterSlaveSLAlgorithm : public avtParSLAlgorithm
 class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
 {
   public:
-    avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
+    avtMasterSLAlgorithm(avtPICSFilter *slFilter,
                          int maxCount,
                          int workGrpSz,
                          std::vector<int> &slaves,
@@ -184,7 +189,7 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
     virtual void              ProcessSlaveUpdate(std::vector<int> &);
     virtual void              ProcessMasterUpdate(std::vector<int> &);
     virtual void              ProcessOffloadSL(std::vector<int> &);
-    virtual void              ProcessNewStreamlines();
+    virtual void              ProcessNewIntegralCurves();
     virtual void              ManageWorkgroup();
     virtual void              ManageSlaves();
     virtual void              ManageMasters();
@@ -248,7 +253,7 @@ class avtMasterSLAlgorithm : public avtMasterSlaveSLAlgorithm
 class avtSlaveSLAlgorithm : public avtMasterSlaveSLAlgorithm
 {
   public:
-    avtSlaveSLAlgorithm(avtStreamlineFilter *slFilter,
+    avtSlaveSLAlgorithm(avtPICSFilter *slFilter,
                         int maxCount,
                         int masterRank);
     virtual ~avtSlaveSLAlgorithm();

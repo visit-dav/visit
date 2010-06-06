@@ -384,6 +384,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
 //   Safer setting of attributes (more checks for enums).
 //
+//   Hank Childs, Sun Jun  6 11:53:33 CDT 2010
+//   Change method name from streamline direction to integration direction.
+//
 // ****************************************************************************
 
 void
@@ -463,7 +466,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
                                      atts.GetTermination());
     streamlineFilter->SetDisplayMethod(atts.GetDisplayMethod());
 
-    streamlineFilter->SetStreamlineDirection(atts.GetStreamlineDirection());
+    streamlineFilter->SetIntegrationDirection(atts.GetStreamlineDirection());
 
     streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()),
                                         atts.GetColoringVariable());

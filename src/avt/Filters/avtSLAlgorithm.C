@@ -68,18 +68,21 @@ static bool slDomainCompare(const avtStreamline *slA,
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
-//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
-//  Change how timings are reported/calculated.
+//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//   Change how timings are reported/calculated.
 //     
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change reference from streamline filter to PICS filter.
+//
 // ****************************************************************************
 
-avtSLAlgorithm::avtSLAlgorithm( avtStreamlineFilter *slFilter ) :
+avtSLAlgorithm::avtSLAlgorithm( avtPICSFilter *slFilter ) :
     TotalTime("totT"), IOTime("ioT"), IntegrateTime("intT"), SortTime("sorT"), ExtraTime("extT"),
     IntegrateCnt("intC"), DomLoadCnt("domLC"), DomPurgeCnt("domPC")
 {
-    streamlineFilter = slFilter;
-    numDomains = streamlineFilter->numDomains;
-    numTimeSteps = streamlineFilter->numTimeSteps;
+    picsFilter = slFilter;
+    numDomains = picsFilter->numDomains;
+    numTimeSteps = picsFilter->numTimeSteps;
 }
 
 // ****************************************************************************
@@ -91,11 +94,16 @@ avtSLAlgorithm::avtSLAlgorithm( avtStreamlineFilter *slFilter ) :
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
+//  Modifications:
+//
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change reference from streamline filter to PICS filter.
+//
 // ****************************************************************************
 
 avtSLAlgorithm::~avtSLAlgorithm()
 {
-    streamlineFilter = NULL;
+    picsFilter = NULL;
 }
 
 // ****************************************************************************
@@ -120,6 +128,9 @@ avtSLAlgorithm::~avtSLAlgorithm()
 //
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
+//
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change reference from streamline filter to PICS filter.
 //
 // ****************************************************************************
 
@@ -146,7 +157,7 @@ vtkDataSet *
 avtSLAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
 {
     int timerHandle = visitTimer->StartTimer();
-    vtkDataSet *ds = streamlineFilter->avtStreamlineFilter::GetDomain(dom, X, Y, Z);
+    vtkDataSet *ds = picsFilter->GetDomain(dom, X, Y, Z);
     IOTime.value += visitTimer->StopTimer(timerHandle, "GetDomain()");
     
     return ds;
@@ -154,10 +165,10 @@ avtSLAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::IntegrateStreamline
+//  Method: avtSLAlgorithm::AdvectParticle
 //
 //  Purpose:
-//      Integrate a streamline through one domain.
+//      Advects a particle through one domain.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -167,16 +178,20 @@ avtSLAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
-avtSLAlgorithm::IntegrateStreamline(avtStreamline *s)
+avtSLAlgorithm::AdvectParticle(avtStreamline *s)
 {
     int timerHandle = visitTimer->StartTimer();
 
-    streamlineFilter->IntegrateStreamline(s);
+    picsFilter->AdvectParticle(s);
 
-    IntegrateTime.value += visitTimer->StopTimer(timerHandle, "IntegrateStreamline()");
+    IntegrateTime.value += visitTimer->StopTimer(timerHandle, "AdvectParticle()");
     IntegrateCnt.value++;
 }
 
@@ -197,6 +212,9 @@ avtSLAlgorithm::IntegrateStreamline(avtStreamline *s)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change reference from streamline filter to PICS filter.
+//
 // ****************************************************************************
 
 void
@@ -204,9 +222,9 @@ avtSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 {
     numSeedPoints = seedPts.size();
 
-    IOTime.value = streamlineFilter->InitialIOTime;
-    TotalTime.value = streamlineFilter->InitialIOTime;
-    DomLoadCnt.value = streamlineFilter->InitialDomLoads;
+    IOTime.value = picsFilter->InitialIOTime;
+    TotalTime.value = picsFilter->InitialIOTime;
+    DomLoadCnt.value = picsFilter->InitialDomLoads;
 }
 
 
@@ -257,13 +275,13 @@ avtSLAlgorithm::PostExecute()
 
     vector<avtStreamline *> v;
     
-    while (! terminatedSLs.empty())
+    while (! terminatedICs.empty())
     {
-        v.push_back(terminatedSLs.front());
-        terminatedSLs.pop_front();
+        v.push_back(terminatedICs.front());
+        terminatedICs.pop_front();
     }
 
-    streamlineFilter->CreateStreamlineOutput(v);
+    picsFilter->CreateIntegralCurveOutput(v);
 
     for (int i = 0; i < v.size(); i++)
         delete v[i];
@@ -273,7 +291,7 @@ avtSLAlgorithm::PostExecute()
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::SortStreamlines
+//  Method: avtSLAlgorithm::SortIntegralCurves
 //
 //  Purpose:
 //      Sort streamlines based on the domains they span.
@@ -292,10 +310,14 @@ avtSLAlgorithm::PostExecute()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
-avtSLAlgorithm::SortStreamlines(list<avtStreamline *> &sl)
+avtSLAlgorithm::SortIntegralCurves(list<avtStreamline *> &sl)
 {
     int timerHandle = visitTimer->StartTimer();
     list<avtStreamline*>::iterator s;
@@ -314,12 +336,12 @@ avtSLAlgorithm::SortStreamlines(list<avtStreamline *> &sl)
 
     sl.sort(slDomainCompare);
     
-    SortTime.value += visitTimer->StopTimer(timerHandle, "SortStreamlines()");
+    SortTime.value += visitTimer->StopTimer(timerHandle, "SortIntegralCurves()");
 }
 
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::SortStreamlines
+//  Method: avtSLAlgorithm::SortIntegralCurves
 //
 //  Purpose:
 //      Sort streamlines based on the domains they span.
@@ -335,10 +357,14 @@ avtSLAlgorithm::SortStreamlines(list<avtStreamline *> &sl)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
-avtSLAlgorithm::SortStreamlines(vector<avtStreamline *> &sl)
+avtSLAlgorithm::SortIntegralCurves(vector<avtStreamline *> &sl)
 {
     int timerHandle = visitTimer->StartTimer();
     vector<avtStreamline*>::iterator s;
@@ -354,11 +380,11 @@ avtSLAlgorithm::SortStreamlines(vector<avtStreamline *> &sl)
 
     sort(sl.begin(), sl.end(), slDomainCompare);
     
-    SortTime.value += visitTimer->StopTimer(timerHandle, "SortStreamlines()");
+    SortTime.value += visitTimer->StopTimer(timerHandle, "SortIntegralCurves()");
 }
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::GetTerminatedSLs
+//  Method: avtSLAlgorithm::GetTerminatedICs
 //
 //  Purpose:
 //      Return an array of terminated streamlines.
@@ -371,20 +397,24 @@ avtSLAlgorithm::SortStreamlines(vector<avtStreamline *> &sl)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
-avtSLAlgorithm::GetTerminatedSLs(vector<avtStreamline *> &v)
+avtSLAlgorithm::GetTerminatedICs(vector<avtStreamline *> &v)
 {
     list<avtStreamline *>::const_iterator s;
     
-    for (s=terminatedSLs.begin(); s != terminatedSLs.end(); ++s)
+    for (s=terminatedICs.begin(); s != terminatedICs.end(); ++s)
         v.push_back(*s);
 }
 
 
 // ****************************************************************************
-//  Method: avtSLAlgorithm::DeleteStreamlines
+//  Method: avtSLAlgorithm::DeleteIntegralCurves
 //
 //  Purpose:
 //      Delete streamlines.
@@ -397,20 +427,24 @@ avtSLAlgorithm::GetTerminatedSLs(vector<avtStreamline *> &v)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
-avtSLAlgorithm::DeleteStreamlines(std::vector<int> &slIDs)
+avtSLAlgorithm::DeleteIntegralCurves(std::vector<int> &slIDs)
 {
     list<avtStreamline *>::iterator s;
     vector<int>::const_iterator i;
 
-    for (s=terminatedSLs.begin(); s != terminatedSLs.end(); ++s)
+    for (s=terminatedICs.begin(); s != terminatedICs.end(); ++s)
     {
         for (i=slIDs.begin(); i != slIDs.end(); i++)
             if ((*s)->id == (*i))
             {
-                terminatedSLs.erase(s);
+                terminatedICs.erase(s);
                 delete *s;
                 break;
             }
@@ -419,7 +453,7 @@ avtSLAlgorithm::DeleteStreamlines(std::vector<int> &slIDs)
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::CalculateTimingStatistics
+//  Method: avtSLAlgorithm::CalculateTimingStatistics
 //
 //  Purpose:
 //      Calculate the timings.
@@ -440,7 +474,7 @@ avtSLAlgorithm::CompileTimingStatistics()
 }
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::CalculateCounterStatistics
+//  Method: avtSLAlgorithm::CalculateCounterStatistics
 //
 //  Purpose:
 //      Calculate the statistics
@@ -453,14 +487,17 @@ avtSLAlgorithm::CompileTimingStatistics()
 //   Dave Pugmire, Thu Mar 26 12:02:27 EDT 2009
 //   Add counters for domain loading.
 //
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change reference from streamline filter to PICS filter.
+//
 // ****************************************************************************
 
 void
 avtSLAlgorithm::CompileCounterStatistics()
 {
     ComputeStatistic(IntegrateCnt);
-    DomLoadCnt.value += streamlineFilter->GetLoadDSCount();
-    DomPurgeCnt.value += streamlineFilter->GetPurgeDSCount();
+    DomLoadCnt.value += picsFilter->GetLoadDSCount();
+    DomPurgeCnt.value += picsFilter->GetPurgeDSCount();
     ComputeStatistic(DomLoadCnt);
     ComputeStatistic(DomPurgeCnt);
 
@@ -469,7 +506,7 @@ avtSLAlgorithm::CompileCounterStatistics()
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::CompileAlgorithmStatistics
+//  Method: avtSLAlgorithm::CompileAlgorithmStatistics
 //
 //  Purpose:
 //      Calculate the statistics
@@ -492,7 +529,7 @@ avtSLAlgorithm::CompileAlgorithmStatistics()
 }
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::ComputeStatistic
+//  Method: avtSLAlgorithm::ComputeStatistic
 //
 //  Purpose:
 //      Compute statistics over a value.
@@ -581,7 +618,7 @@ avtSLAlgorithm::ComputeStatistic(SLStatistics &stats)
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::ComputeDomainLoadStatistic
+//  Method: avtSLAlgorithm::ComputeDomainLoadStatistic
 //
 //  Purpose:
 //      Compute domain loading statistics.
@@ -589,8 +626,13 @@ avtSLAlgorithm::ComputeStatistic(SLStatistics &stats)
 //  Programmer: Dave Pugmire
 //  Creation:   March 26, 2009
 //
+//  Modifications:
+//
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Compute avgDomainLoaded, instead of 1.0/avgDomainLoaded.
+//
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change reference from streamline filter to PICS filter.
 //
 // ****************************************************************************
 
@@ -603,18 +645,18 @@ avtSLAlgorithm::ComputeDomainLoadStatistic()
     for (int i = 0; i < numDomains; i++)
         domLoads[i] = 0;
 
-    domainsUsed = streamlineFilter->domainLoadCount.size();
+    domainsUsed = picsFilter->domainLoadCount.size();
     totDomainsLoaded = 0;
     domainLoadedMin = 0;
     domainLoadedMax = 0;
     avgDomainLoaded = 0.0;
     
-    for (it = streamlineFilter->domainLoadCount.begin(); it != streamlineFilter->domainLoadCount.end(); it++)
+    for (it = picsFilter->domainLoadCount.begin(); it != picsFilter->domainLoadCount.end(); it++)
     {
         domLoads[it->first] = it->second;
         totDomainsLoaded += it->second;
         
-        if (it == streamlineFilter->domainLoadCount.begin())
+        if (it == picsFilter->domainLoadCount.begin())
         {
             domainLoadedMin = it->second;
             domainLoadedMax = it->second;
@@ -684,7 +726,7 @@ avtSLAlgorithm::ComputeDomainLoadStatistic()
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::CalculateExtraTime
+//  Method: avtSLAlgorithm::CalculateExtraTime
 //
 //  Purpose:
 //      Calculate extra time.
@@ -763,14 +805,13 @@ avtSLAlgorithm::ReportStatistics(ostream &os)
 #endif
     os<<endl;
     os<<"ReportBegin: ***********************************************"<<endl;
-    string db = streamlineFilter->GetInput()->GetInfo().GetAttributes().GetFullDBName();
+    string db = picsFilter->GetInput()->GetInfo().GetAttributes().GetFullDBName();
     os<<"File= "<<db<<endl;
     os<<"Method= "<<AlgoName()<<" nCPUs= "<<nCPUs<<" nDom= "<<numDomains;
     os<<" nPts= "<<numSeedPoints<<endl;
-    os<<"Seeds= "<<streamlineFilter->SeedInfoString()<<endl;
-    os<<"maxCount= "<<streamlineFilter->maxCount;
-    os<<" domCache= "<<streamlineFilter->cacheQLen;
-    os<<" workGrp=  "<<streamlineFilter->workGroupSz<<endl;
+    os<<"maxCount= "<<picsFilter->maxCount;
+    os<<" domCache= "<<picsFilter->cacheQLen;
+    os<<" workGrp=  "<<picsFilter->workGroupSz<<endl;
     os<<endl;
 
     ReportTimings(os, true);

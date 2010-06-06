@@ -80,17 +80,22 @@
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change the names of several methods to reflect the new emphasis in
+//   particle advection, as opposed to streamlines.  Also change reference
+//   from avtStreamlineFilter to avtPICSFilter.
+//
 // ****************************************************************************
 
 class avtParDomSLAlgorithm : public avtParSLAlgorithm
 {
   public:
-    avtParDomSLAlgorithm(avtStreamlineFilter *slFilter, int maxCount);
+    avtParDomSLAlgorithm(avtPICSFilter *slFilter, int maxCount);
     virtual ~avtParDomSLAlgorithm();
 
     virtual void              Initialize(std::vector<avtStreamline *> &);
-    virtual void              AddStreamlines(std::vector<avtStreamline*> &sls);
-    virtual void              ResetStreamlinesForContinueExecute();
+    virtual void              AddIntegralCurves(std::vector<avtStreamline*> &sls);
+    virtual void              ResetIntegralCurvesForContinueExecute();
     virtual const char*       AlgoName() const {return "ParallelStaticDomains";}
 
   protected:
@@ -99,7 +104,7 @@ class avtParDomSLAlgorithm : public avtParSLAlgorithm
     void                      ExchangeTermination();
     void                      HandleOOBSL(avtStreamline *s);
     
-    int                       numSLChange, totalNumStreamlines;
+    int                       numSLChange, totalNumIntegralCurves;
 
     std::list<avtStreamline *> activeSLs;
     int                       maxCnt;

@@ -341,6 +341,9 @@ avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
 //    Dave Pugmire, Tue Aug 11 10:33:05 EDT 2009
 //    Add number of intersections termination criterion
 //    
+//    Hank Childs, Sun Jun  6 11:53:33 CDT 2010
+//    Change method name from streamline direction to integration direction.
+//
 // ****************************************************************************
 
 void
@@ -370,7 +373,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetIntersectionObject(intPlane);    
     intPlane->Delete();
     
-    poincareFilter->SetStreamlineDirection(0);
+    poincareFilter->SetIntegrationDirection(0);
 
     switch (atts.GetSourceType())
     {

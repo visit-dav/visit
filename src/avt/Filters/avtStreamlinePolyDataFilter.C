@@ -64,7 +64,7 @@ std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::CreateStreamlineOutput
+//  Method: avtStreamlineFilter::CreateIntegralCurveOutput
 //
 //  Purpose:
 //      Create the VTK poly data output from the streamline.
@@ -95,13 +95,17 @@ std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
-avtStreamlinePolyDataFilter::CreateStreamlineOutput(
+avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(
                                    vector<avtStreamline *> &streamlines)
 {
-    debug5 << "::CreateStreamlineOutput " << streamlines.size() << endl;
+    debug5 << "::CreateIntegralCurveOutput " << streamlines.size() << endl;
 
     if (streamlines.size() == 0)
         return;

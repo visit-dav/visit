@@ -76,12 +76,15 @@
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change reference from avtStreamlineFilter to avtPICSFilter.
+//
 // ****************************************************************************
 
 class avtParSLAlgorithm : public avtSLAlgorithm
 {
   public:
-    avtParSLAlgorithm(avtStreamlineFilter *slFilter);
+    avtParSLAlgorithm(avtPICSFilter *slFilter);
     virtual ~avtParSLAlgorithm();
 
     virtual void              Initialize(std::vector<avtStreamline *> &,

@@ -238,7 +238,7 @@ avtPoincareFilter::PostExecute(void)
 }
 
 // ****************************************************************************
-//  Method: avtPoincareFilter::CreateStreamlineOutput
+//  Method: avtPoincareFilter::CreateIntegralCurveOutput
 //
 //  Purpose:
 //      Create the VTK poly data output from the streamline.
@@ -264,7 +264,7 @@ avtPoincareFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtPoincareFilter::CreateStreamlineOutput(vector<avtStreamline *> &sls2)
+avtPoincareFilter::CreateIntegralCurveOutput(vector<avtStreamline *> &sls2)
 {
     vector<avtStateRecorderIntegralCurve *> sls;
     for (int k = 0 ; k < sls2.size() ; k++)
@@ -292,7 +292,7 @@ avtPoincareFilter::CreateStreamlineOutput(vector<avtStreamline *> &sls2)
             
             ++siter;
         }
-        //cerr<<"CreateStreamlineOutput: "<<streamlines[i].sl->id<<" pts= "<<streamlines[i].streamlinePts.size()<<" term= "<<streamlines[i].sl->termination<<endl;
+        //cerr<<"CreateIntegralCurveOutput: "<<streamlines[i].sl->id<<" pts= "<<streamlines[i].streamlinePts.size()<<" term= "<<streamlines[i].sl->termination<<endl;
     }
 }
 
@@ -401,6 +401,9 @@ avtPoincareFilter::Execute()
 //
 //  Modifications:
 //
+//    Hank Childs, Sun Jun  6 11:53:33 CDT 2010
+//    Use new names that have integral curves instead of streamlines.
+//
 // ****************************************************************************
 
 bool
@@ -410,8 +413,8 @@ avtPoincareFilter::ContinueExecute()
 
     vector<avtStreamline *> sls;
     
-    GetTerminatedStreamlines(sls);
-    CreateStreamlineOutput(sls);
+    GetTerminatedIntegralCurves(sls);
+    CreateIntegralCurveOutput(sls);
 
     if (! ClassifyStreamlines())
     {
