@@ -43,7 +43,7 @@
 #ifndef AVT_SL_ALGORITHM_H
 #define AVT_SL_ALGORITHM_H
 
-#include <avtStreamlineFilter.h>
+#include <avtPICSFilter.h>
 #include "avtStreamline.h"
 
 // ****************************************************************************
@@ -58,7 +58,7 @@
 // Modifications:
 //
 //    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
-//    Add a SortStreamlines that takes a vector.
+//    Add a SortIntegralCurves that takes a vector.
 //
 //   Dave Pugmire, Fri Feb  6 14:42:07 EST 2009
 //   Add histogram to the statistics.
@@ -85,58 +85,63 @@
 //   Make sure the avtStreamlineFilter baseclass gets called.
 //
 //   Dave Pugmire, Tue May 25 10:15:35 EDT 2010
-//   Added DeleteStreamlines method.
+//   Added DeleteIntegralCurves method.
 //
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
+//
+//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
+//   Change the names of several methods to reflect the new emphasis in 
+//   particle advection, as opposed to streamlines.  Also change reference
+//   from avtStreamlineFilter to avtPICSFilter.
 //
 // ****************************************************************************
 
 class avtSLAlgorithm
 {
   public:
-    avtSLAlgorithm( avtStreamlineFilter *slFilter );
+    avtSLAlgorithm( avtPICSFilter *slFilter );
     virtual ~avtSLAlgorithm();
 
     //Execution of the algorithm.
     virtual void              Initialize(std::vector<avtStreamline *> &);
     void                      Execute();
-    virtual void              ResetStreamlinesForContinueExecute() = 0;
+    virtual void              ResetIntegralCurvesForContinueExecute() = 0;
     virtual void              PostExecute();
-    virtual void              GetTerminatedSLs(vector<avtStreamline *> &v);
-    virtual void              AddStreamlines(std::vector<avtStreamline*> &sls) = 0;
-    virtual void              DeleteStreamlines(std::vector<int> &slIDs);
+    virtual void              GetTerminatedICs(vector<avtStreamline *> &v);
+    virtual void              AddIntegralCurves(std::vector<avtStreamline*> &sls) = 0;
+    virtual void              DeleteIntegralCurves(std::vector<int> &slIDs);
 
   protected:
     virtual void              RunAlgorithm() = 0;
     virtual void              PreRunAlgorithm() {}
     virtual void              PostRunAlgorithm() {}
 
-    avtStreamlineFilter *streamlineFilter;
-    std::list<avtStreamline *> terminatedSLs;
+    avtPICSFilter *picsFilter;
+    std::list<avtStreamline *> terminatedICs;
     int                       numDomains, numTimeSteps, numSeedPoints;
     virtual const char*       AlgoName() const = 0;
     
     //Helper accessor funcstions to the filter.
-    avtIVPSolver *            GetSolver() {return streamlineFilter->solver; }
+    avtIVPSolver *            GetSolver() {return picsFilter->solver; }
     virtual bool              PointInDomain(avtVector &pt, DomainType &dom)
-    { return streamlineFilter->avtStreamlineFilter::PointInDomain(pt, dom); }
-    virtual void              IntegrateStreamline(avtStreamline *sl);
+    { return picsFilter->avtPICSFilter::PointInDomain(pt, dom); }
+    virtual void              AdvectParticle(avtStreamline *sl);
     vtkDataSet               *GetDomain(avtStreamline *sl);
     vtkDataSet               *GetDomain(const DomainType &dom,
                                         double X=0, double Y=0, double Z=0);
     virtual bool              DomainLoaded(DomainType &dom) const
-    { return streamlineFilter->avtStreamlineFilter::DomainLoaded(dom); }
+    { return picsFilter->avtPICSFilter::DomainLoaded(dom); }
     
     bool                      OwnDomain(DomainType &dom)
-    {return streamlineFilter->avtStreamlineFilter::OwnDomain(dom); }
+    {return picsFilter->avtPICSFilter::OwnDomain(dom); }
     int                       DomainToRank(DomainType &dom)
-    {return streamlineFilter->avtStreamlineFilter::DomainToRank(dom); }
-    int                       DomCacheSize() const { return streamlineFilter->cacheQLen; }
+    {return picsFilter->avtPICSFilter::DomainToRank(dom); }
+    int                       DomCacheSize() const { return picsFilter->cacheQLen; }
 
     //Utility functions.
-    virtual void              SortStreamlines(std::list<avtStreamline *> &);
-    virtual void              SortStreamlines(std::vector<avtStreamline *> &);
+    virtual void              SortIntegralCurves(std::list<avtStreamline *> &);
+    virtual void              SortIntegralCurves(std::vector<avtStreamline *> &);
     //Statistics and timers.
     class SLStatistics
     {

@@ -66,12 +66,12 @@ using namespace std;
 //
 // ****************************************************************************
 
-avtParDomSLAlgorithm::avtParDomSLAlgorithm(avtStreamlineFilter *slFilter,
+avtParDomSLAlgorithm::avtParDomSLAlgorithm(avtPICSFilter *slFilter,
                                            int maxCount)
     : avtParSLAlgorithm(slFilter)
 {
     numSLChange = 0;
-    totalNumStreamlines = 0;
+    totalNumIntegralCurves = 0;
     maxCnt = maxCount;
 }
 
@@ -117,6 +117,10 @@ avtParDomSLAlgorithm::~avtParDomSLAlgorithm()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename method called in this function to reflect the new emphasis 
+//   in particle advection, as opposed to streamlines.
+//
 // ****************************************************************************
 
 void
@@ -128,11 +132,11 @@ avtParDomSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
     
     avtParSLAlgorithm::Initialize(seedPts, 1, numRecvs);
     numSLChange = 0;
-    AddStreamlines(seedPts);
+    AddIntegralCurves(seedPts);
 }
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::AddStreamlines
+//  Method: avtParDomSLAlgorithm::AddIntegralCurves
 //
 //  Purpose:
 //      Add streamlines
@@ -145,10 +149,14 @@ avtParDomSLAlgorithm::Initialize(vector<avtStreamline *> &seedPts)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::AddStreamlines(std::vector<avtStreamline*> &sls)
+avtParDomSLAlgorithm::AddIntegralCurves(std::vector<avtStreamline*> &sls)
 {
     //Get the SLs that I own.
     for (int i = 0; i < sls.size(); i++)
@@ -192,10 +200,10 @@ avtParDomSLAlgorithm::AddStreamlines(std::vector<avtStreamline*> &sls)
     delete [] idBuffer2;
     */
 
-    totalNumStreamlines = activeSLs.size();
-    SumIntAcrossAllProcessors(totalNumStreamlines);
+    totalNumIntegralCurves = activeSLs.size();
+    SumIntAcrossAllProcessors(totalNumIntegralCurves);
     /*
-    debug5<<"Init_totalNumStreamlines= "<<totalNumStreamlines<<endl;
+    debug5<<"Init_totalNumIntegralCurves= "<<totalNumIntegralCurves<<endl;
     debug5<<"My SLs: "<<endl;
     list<avtStreamline *>::iterator s;
     for (s = activeSLs.begin(); s != activeSLs.end(); ++s)
@@ -228,6 +236,10 @@ avtParDomSLAlgorithm::AddStreamlines(std::vector<avtStreamline*> &sls)
 //    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
 //    Change numTerminated to numSLChange.
 //
+//    Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//    Rename data members to reflect the new emphasis in particle advection, as
+//    opposed to streamlines.
+//
 // ****************************************************************************
 
 void
@@ -240,7 +252,7 @@ avtParDomSLAlgorithm::ExchangeTermination()
         msg[0] = numSLChange;
         SendAllMsg(msg);
         
-        totalNumStreamlines += numSLChange;
+        totalNumIntegralCurves += numSLChange;
         numSLChange = 0;
     }
 
@@ -250,7 +262,7 @@ avtParDomSLAlgorithm::ExchangeTermination()
     for (int i = 0; i < msgs.size(); i++)
     {
         debug2<<msgs[i][1]<<" slChange= "<<msgs[i][1]<<endl;
-        totalNumStreamlines += msgs[i][1];
+        totalNumIntegralCurves += msgs[i][1];
     }
 }
 
@@ -271,7 +283,7 @@ avtParDomSLAlgorithm::ExchangeTermination()
 void
 avtParDomSLAlgorithm::PreRunAlgorithm()
 {
-    streamlineFilter->InitializeLocators();
+    picsFilter->InitializeLocators();
 }
 
 // ****************************************************************************
@@ -302,6 +314,10 @@ avtParDomSLAlgorithm::PreRunAlgorithm()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename data members to reflect the new emphasis in particle advection, as
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
@@ -310,7 +326,7 @@ avtParDomSLAlgorithm::RunAlgorithm()
     debug1<<"avtParDomSLAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
     
-    while (totalNumStreamlines > 0)
+    while (totalNumIntegralCurves > 0)
     {
         //Integrate upto maxCnt streamlines.
         list<avtStreamline *>::iterator s;
@@ -320,11 +336,11 @@ avtParDomSLAlgorithm::RunAlgorithm()
             avtStreamline *s = activeSLs.front();
             activeSLs.pop_front();
             
-            IntegrateStreamline(s);
+            AdvectParticle(s);
             if (s->status == avtStreamline::STATUS_TERMINATE)
             {
                 debug5<<"TerminatedSL: "<<s->id<<endl;
-                terminatedSLs.push_back(s);
+                terminatedICs.push_back(s);
                 numSLChange--;
             }
             else
@@ -405,7 +421,7 @@ avtParDomSLAlgorithm::HandleOOBSL(avtStreamline *s)
 }
 
 // ****************************************************************************
-//  Method: avtParDomSLAlgorithm::ResetStreamlinesForContinueExecute
+//  Method: avtParDomSLAlgorithm::ResetIntegralCurvesForContinueExecute
 //
 //  Purpose:
 //      Reset for continued streamline integration.
@@ -418,15 +434,19 @@ avtParDomSLAlgorithm::HandleOOBSL(avtStreamline *s)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
-avtParDomSLAlgorithm::ResetStreamlinesForContinueExecute()
+avtParDomSLAlgorithm::ResetIntegralCurvesForContinueExecute()
 {
-    while (! terminatedSLs.empty())
+    while (! terminatedICs.empty())
     {
-        avtStreamline *s = terminatedSLs.front();
-        terminatedSLs.pop_front();
+        avtStreamline *s = terminatedICs.front();
+        terminatedICs.pop_front();
         
         activeSLs.push_back(s);
         numSLChange++;

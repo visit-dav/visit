@@ -43,28 +43,12 @@
 #ifndef AVT_STREAMLINE_FILTER_H
 #define AVT_STREAMLINE_FILTER_H
 
-#include <avtStreamline.h>
-#include <avtDatasetOnDemandFilter.h>
-#include <avtDatasetToDatasetFilter.h>
-#include <avtIVPDopri5.h>
-#include <avtVec.h>
-#include <avtIntervalTree.h>
-#include <MemStream.h>
-#include <filters_exports.h>
-#ifdef PARALLEL
-#include <avtParallel.h>
-#include <mpi.h>
-#endif
+#include <avtPICSFilter.h>
 
-class vtkVisItCellLocator;
-class vtkVisItStreamLine;
 class vtkTubeFilter;
 class vtkPolyData;
 class vtkRibbonFilter;
 class vtkAppendPolyData;
-class avtStreamline;
-class DomainType;
-class avtSLAlgorithm;
 
 #define STREAMLINE_SOURCE_POINT      0
 #define STREAMLINE_SOURCE_POINT_LIST 1
@@ -86,18 +70,6 @@ class avtSLAlgorithm;
 #define STREAMLINE_DISPLAY_TUBES     1
 #define STREAMLINE_DISPLAY_RIBBONS   2
 
-#define STREAMLINE_TERMINATE_DISTANCE 0
-#define STREAMLINE_TERMINATE_TIME 1
-#define STREAMLINE_TERMINATE_STEPS 2
-#define STREAMLINE_TERMINATE_INTERSECTIONS 3
-
-#define STREAMLINE_INTEGRATE_DORMAND_PRINCE 0
-#define STREAMLINE_INTEGRATE_ADAMS_BASHFORTH 1
-#define STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR 2
-
-#define STREAMLINE_STAGED_LOAD_ONDEMAND 0
-#define STREAMLINE_PARALLEL_STATIC_DOMAINS 1
-#define STREAMLINE_MASTER_SLAVE 2
 
 // ****************************************************************************
 // Class: avtStreamlineFilter
@@ -226,11 +198,12 @@ class avtSLAlgorithm;
 //   Hank Childs, Sat Jun  5 16:21:27 CDT 2010
 //   Add virtual method CreateIntegralCurve.
 //
+//   Hank Childs, Sat Jun  5 15:02:43 PDT 2010
+//   Separated out much of the base infrastructure into the avtPICSFilter.
+//
 // ****************************************************************************
 
-class AVTFILTERS_API avtStreamlineFilter : 
-    virtual public avtDatasetOnDemandFilter,
-    virtual public avtDatasetToDatasetFilter
+class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
 {
   public:
                               avtStreamlineFilter();
@@ -241,18 +214,14 @@ class AVTFILTERS_API avtStreamlineFilter :
                                   { return "Creating streamlines"; };
 
     virtual avtStreamline    *CreateIntegralCurve();
+    virtual avtStreamline    *CreateIntegralCurve(
+                                        const avtIVPSolver* model,
+                                        const double& t_start,
+                                        const avtVector &p_start, int ID);
 
     // Methods to set the filter's attributes.
     void                      SetSourceType(int sourceType);
-    void                      SetMaxStepLength(double len);
-    void                      SetTermination(int type, double term);
     void                      SetIntersectionObject(vtkObject *obj);
-    void                      SetPathlines(bool pathlines, double time0=0.0);
-    void                      SetIntegrationType(int algo);
-    void                      SetStreamlineAlgorithm(int algo, int maxCnt,
-                                                     int domainCache,
-                                                     int workGrpSz);
-    void                      SetTolerances(double reltol, double abstol);
 
     void                      SetPointSource(double pt[3]);
     void                      SetLineSource(double pt[3], double pt2[3]);
@@ -265,45 +234,19 @@ class AVTFILTERS_API avtStreamlineFilter :
 
     void                      SetDisplayMethod(int d);
     void                      SetPointDensity(int den);
-    void                      SetStreamlineDirection(int dir);
     void                      SetColoringMethod(int, const std::string &var="");
     void                      SetOpacityVariable(const std::string &var);
 
-    void                      InitializeLocators(void);
+    virtual void              PostExecute(void);
+    virtual void              UpdateDataObjectInfo(void);
+    virtual avtContract_p     ModifyContract(avtContract_p);
 
   protected:
     int    sourceType;   
-    double maxStepLength;
-    double relTol;
-    double absTol;
-    avtIVPSolver::TerminateType terminationType;
-    int integrationType;
-    double termination;
     int    displayMethod;
     int    pointDensity1, pointDensity2, pointDensity3;
-    int    streamlineDirection;
     int    coloringMethod;
     std::string coloringVariable, opacityVariable;
-    int    dataSpatialDimension;
-    avtSLAlgorithm *slAlgo;
-
-    avtContract_p lastContract;
-
-
-    std::vector<std::vector<double> > domainTimeIntervals;
-    std::string pathlineVar, pathlineNextTimeVar;
-    bool   doPathlines;
-    double seedTime0;
-    int    seedTimeStep0;
-
-    avtIntervalTree *intervalTree;
-    bool             specifyPoint;
-    avtIVPSolver *solver;
-
-    int numDomains, numTimeSteps, cacheQLen;
-    std::vector<int> domainToRank;
-    std::vector<vtkDataSet*>dataSets;
-    std::map<DomainType, vtkVisItCellLocator*> domainToCellLocatorMap;
 
     // Various starting locations for streamlines.
     std::string             SeedInfoString() const;
@@ -312,40 +255,9 @@ class AVTFILTERS_API avtStreamlineFilter :
     double planeOrigin[3], planeNormal[3], planeUpAxis[3], planeRadius;
     double sphereOrigin[3], sphereRadius;
     double boxExtents[6];
-    std::vector<double> pointList;
     bool   useWholeBox;
 
     vtkObject *intersectObj;
-
-    // Data retrieved from contract
-    int activeTimeStep;
-
-    //Timings helpers.
-    int                       numSeedPts, MaxID;
-    int                       method;
-    int                       maxCount, workGroupSz;
-    double                    InitialIOTime;
-    int                       InitialDomLoads;
-
-    virtual void              Execute(void);
-    virtual bool              ContinueExecute() {return false;}
-    virtual void              UpdateDataObjectInfo(void);
-    virtual void              PreExecute(void);
-    virtual void              PostExecute(void);
-    virtual avtContract_p     ModifyContract(avtContract_p);
-    virtual void              ExamineContract(avtContract_p);
-    virtual bool              CheckOnDemandViability(void);
-
-    void                      IntegrateStreamline(avtStreamline *sl, int maxSteps=-1);
-    void                      IntegrateDomain(avtStreamline *sl, 
-                                              vtkDataSet *ds,
-                                              double *extents,
-                                              int maxSteps=-1);
-    virtual vtkDataSet        *GetDomain(const DomainType &, double = 0.0, double = 0.0, double = 0.0);
-    virtual int               GetTimeStep(double &t) const;
-    virtual bool              DomainLoaded(DomainType &) const;
-
-    void                      SetZToZero(vtkPolyData *) const;
 
     void                      GenerateSeedPointsFromPoint(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromLine(std::vector<avtVector> &pts);
@@ -355,31 +267,7 @@ class AVTFILTERS_API avtStreamlineFilter :
     void                      GenerateSeedPointsFromCircle(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
 
-    int                       GetNextStreamlineID(){ int id = MaxID; MaxID++; return id;}
-    void                      CreateStreamlinesFromSeeds(std::vector<avtVector> &pts,
-                                                         std::vector<avtStreamline *> &streamlines,
-                                                         std::vector<std::vector<int> > &ids);
-    void                      GetStreamlinesFromInitialSeeds(std::vector<avtStreamline *> &sls);
-    void                      AddSeedpoints(std::vector<avtVector> &pts,
-                                            std::vector<std::vector<int> > &ids);
-    void                      DeleteStreamlines(std::vector<int> &slIDs);
-    virtual void              CreateStreamlineOutput( 
-                                                     vector<avtStreamline *> &streamlines)
-                                                    = 0;
-    void                      GetTerminatedStreamlines(vector<avtStreamline *> &sls);
-
-    // Helper functions.
-    bool                      PointInDomain(avtVector &pt, DomainType &domain);
-    int                       DomainToRank(DomainType &domain);
-    void                      ComputeDomainToRankMapping();
-    bool                      OwnDomain(DomainType &domain);
-    void                      SetDomain(avtStreamline *sl);
-    void                      Initialize();
-    void                      ComputeRankList(const std::vector<int> &domList, 
-                                              std::vector<int> &ranks, 
-                                              std::vector<int> &doms );
-    vtkVisItCellLocator      *SetupLocator(const DomainType &, vtkDataSet *);
-    
+    virtual std::vector<avtVector> GetInitialLocations(void);
     friend class avtSLAlgorithm;
 };
 

@@ -126,7 +126,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual void              PostExecute(void);
     virtual avtContract_p     ModifyContract(avtContract_p);
     virtual void              UpdateDataObjectInfo(void);
-    virtual void              CreateStreamlineOutput( 
+    virtual void              CreateIntegralCurveOutput( 
                                    vector<avtStreamline *> &sls);
 
   virtual void drawPoints( avtDataTree *dt,

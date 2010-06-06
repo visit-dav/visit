@@ -83,7 +83,7 @@ int avtMasterSlaveSLAlgorithm::MSG_OFFLOAD_SL = 420010;
 // ****************************************************************************
 
 avtMasterSlaveSLAlgorithm*
-avtMasterSlaveSLAlgorithm::Create(avtStreamlineFilter *slFilter,
+avtMasterSlaveSLAlgorithm::Create(avtPICSFilter *slFilter,
                                   int maxCount,
                                   int rank,
                                   int nProcs,
@@ -197,7 +197,7 @@ avtMasterSlaveSLAlgorithm::Create(avtStreamlineFilter *slFilter,
 //  
 // ****************************************************************************
 
-avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm(avtStreamlineFilter *slFilter,
+avtMasterSlaveSLAlgorithm::avtMasterSlaveSLAlgorithm(avtPICSFilter *slFilter,
                                                      int maxCount)
     : avtParSLAlgorithm(slFilter),
       SleepTime("sleepT"), LatencyTime("latT"), MaxLatencyTime("maxLatT"), SleepCnt("sleepC"),
@@ -255,13 +255,13 @@ avtMasterSlaveSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
 }
 
 void
-avtMasterSlaveSLAlgorithm::ResetStreamlinesForContinueExecute()
+avtMasterSlaveSLAlgorithm::ResetIntegralCurvesForContinueExecute()
 {
     EXCEPTION0(ImproperUseException);
 }
 
 void
-avtMasterSlaveSLAlgorithm::AddStreamlines(std::vector<avtStreamline*> &sls)
+avtMasterSlaveSLAlgorithm::AddIntegralCurves(std::vector<avtStreamline*> &sls)
 {
     EXCEPTION0(ImproperUseException);
 }
@@ -430,7 +430,7 @@ avtMasterSlaveSLAlgorithm::ReportCounters(ostream &os, bool totals)
 //
 // ****************************************************************************
 
-avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtStreamlineFilter *slFilter,
+avtMasterSLAlgorithm::avtMasterSLAlgorithm(avtPICSFilter *slFilter,
                                            int maxCount,
                                            int workGrpSz,
                                            vector<int> &slaves,
@@ -501,12 +501,15 @@ avtMasterSLAlgorithm::~avtMasterSLAlgorithm()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename several methods called in this function to reflect the new emphasis //   in particle advection, as opposed to streamlines.
+//
 // ****************************************************************************
 
 void
 avtMasterSLAlgorithm::Initialize(std::vector<avtStreamline *> &seedPts)
 {
-    SortStreamlines(seedPts);
+    SortIntegralCurves(seedPts);
     avtMasterSlaveSLAlgorithm::Initialize(seedPts);
     int nSeeds = seedPts.size();
 
@@ -825,7 +828,7 @@ avtMasterSLAlgorithm::RunAlgorithm()
     {
         debug1<<"Looping SLs= "<<workGroupActiveSLs<<endl;
         ProcessMessages();
-        ProcessNewStreamlines();
+        ProcessNewIntegralCurves();
         ManageWorkgroup();
         
         CheckPendingSendRequests();
@@ -1159,7 +1162,7 @@ avtMasterSLAlgorithm::ProcessOffloadSL(vector<int> &status)
 
 
 // ****************************************************************************
-//  Method: avtMasterSLAlgorithm::NewStreamlines
+//  Method: avtMasterSLAlgorithm::NewIntegralCurves
 //
 //  Purpose:
 //      Handle incoming streamlines.
@@ -1172,16 +1175,20 @@ avtMasterSLAlgorithm::ProcessOffloadSL(vector<int> &status)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as
+//   opposed to streamlines.
+//
 // ****************************************************************************
 
 void
-avtMasterSLAlgorithm::ProcessNewStreamlines()
+avtMasterSLAlgorithm::ProcessNewIntegralCurves()
 {
     list<avtStreamline*> newSLs;
     RecvSLs(newSLs);
     if (!newSLs.empty())
     {
-        debug1<<"avtMasterSLAlgorithm::ProcessNewStreamlines() cnt "<<workGroupActiveSLs<<" ==> ";
+        debug1<<"avtMasterSLAlgorithm::ProcessNewIntegralCurves() cnt "<<workGroupActiveSLs<<" ==> ";
         workGroupActiveSLs += newSLs.size();
         debug1<<workGroupActiveSLs<<endl;
 
@@ -1997,7 +2004,7 @@ avtMasterSLAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
 //
 // ****************************************************************************
 
-avtSlaveSLAlgorithm::avtSlaveSLAlgorithm(avtStreamlineFilter *slFilter,
+avtSlaveSLAlgorithm::avtSlaveSLAlgorithm(avtPICSFilter *slFilter,
                                          int maxCount,
                                          int masterRank)
     : avtMasterSlaveSLAlgorithm(slFilter, maxCount)
@@ -2242,6 +2249,9 @@ avtSlaveSLAlgorithm::SendStatus(bool forceSend)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename several methods called in this function to reflect the new emphasis //   in particle advection, as opposed to streamlines.
+//
 // ****************************************************************************
 
 void
@@ -2322,10 +2332,10 @@ avtSlaveSLAlgorithm::RunAlgorithm()
             
             activeSLs.pop_front();
             debug1<<"Integrate "<<s->domain<<".....";
-            IntegrateStreamline(s);
+            AdvectParticle(s);
             if (s->status == avtStreamline::STATUS_TERMINATE)
             {
-                terminatedSLs.push_back(s);
+                terminatedICs.push_back(s);
                 numTerminated++;
                 debug1<<"TERM. nT= "<<numTerminated<<endl;
             }
@@ -2372,12 +2382,12 @@ avtSlaveSLAlgorithm::RunAlgorithm()
     if (!activeSLs.empty())
     {
         debug1<<"activeproblem "<<endl;
-        terminatedSLs.splice(terminatedSLs.end(), activeSLs);
+        terminatedICs.splice(terminatedICs.end(), activeSLs);
     }
     if (!oobSLs.empty())
     {
         debug1<<"oobproblem "<<endl;
-        terminatedSLs.splice(terminatedSLs.end(), oobSLs);
+        terminatedICs.splice(terminatedICs.end(), oobSLs);
     }
 
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");

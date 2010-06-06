@@ -67,7 +67,7 @@ int avtParSLAlgorithm::STREAMLINE_TAG = 420001;
 //   
 // ****************************************************************************
 
-avtParSLAlgorithm::avtParSLAlgorithm(avtStreamlineFilter *slFilter)
+avtParSLAlgorithm::avtParSLAlgorithm(avtPICSFilter *slFilter)
     : avtSLAlgorithm(slFilter),
       CommTime("comT"), MsgCnt("msgC"), SLCommCnt("slcC"), BytesCnt("byteC")
 {
@@ -233,7 +233,7 @@ void
 avtParSLAlgorithm::ExchangeSLSteps()
 {
     debug5<<"ExchangeSLSteps: communicatedSLs: "<<communicatedSLs.size();
-    debug5<<" terminatedSLs: "<<terminatedSLs.size()<<endl;
+    debug5<<" terminatedICs: "<<terminatedICs.size()<<endl;
 
     //Communicate to everyone where the terminators are located.
     //Do this "N" streamlines at a time, so we don't have a super big buffer.
@@ -246,7 +246,7 @@ avtParSLAlgorithm::ExchangeSLSteps()
     long *idBuffer = new long[2*N], *myIDs = new long[2*N];
 
     //Sort the terminated/communicated SLs by id.
-    terminatedSLs.sort(avtStreamline::IdSeqCompare);
+    terminatedICs.sort(avtStreamline::IdSeqCompare);
     communicatedSLs.sort(avtStreamline::IdSeqCompare);
 
     vector<vector<avtStreamline *> >sendSLs(N);
@@ -272,8 +272,8 @@ avtParSLAlgorithm::ExchangeSLSteps()
 
         //Set array for SLs that terminated here. Update sequence counts for communicated
         //SLs.
-        list<avtStreamline*>::iterator t = terminatedSLs.begin();
-        while (t != terminatedSLs.end() && (*t)->id <= maxId)
+        list<avtStreamline*>::iterator t = terminatedICs.begin();
+        while (t != terminatedICs.end() && (*t)->id <= maxId)
         {
             if ((*t)->id >= minId)
             {
@@ -318,7 +318,7 @@ avtParSLAlgorithm::ExchangeSLSteps()
                 int idx = s->id%N;
                 int owner = idBuffer[idx];
                 if (owner == rank)
-                    terminatedSLs.push_back(s);
+                    terminatedICs.push_back(s);
                 else
                 {
                     s->serializeFlags = avtStreamline::SERIALIZE_STEPS; //Write SL steps.
@@ -347,14 +347,14 @@ avtParSLAlgorithm::ExchangeSLSteps()
         bool seqGathered = false;
         while (!seqGathered)
         {
-            RecvSLs(terminatedSLs);
+            RecvSLs(terminatedICs);
             
             //See if we have all the sequences we need.
-            terminatedSLs.sort(avtStreamline::IdSeqCompare);
+            terminatedICs.sort(avtStreamline::IdSeqCompare);
             bool needMore = false;
             for (int i = 0; i < N && !needMore; i++)
                 if (idBuffer[i] == rank)
-                    needMore = (CountIDs(terminatedSLs, i+minId) < idBuffer[i+N]);
+                    needMore = (CountIDs(terminatedICs, i+minId) < idBuffer[i+N]);
             
             //Everyone done.
             seqGathered = !needMore;
@@ -392,14 +392,14 @@ void
 avtParSLAlgorithm::MergeTerminatedSLSequences()
 {
     //Sort them by id and sequence so we can process them one at a time.
-    terminatedSLs.sort(avtStreamline::IdSeqCompare);
+    terminatedICs.sort(avtStreamline::IdSeqCompare);
 
     //Split them up into sequences.
     vector<vector<avtStreamline *> > seqs;
-    while (!terminatedSLs.empty())
+    while (!terminatedICs.empty())
     {
-        avtStreamline *s = terminatedSLs.front();
-        terminatedSLs.pop_front();
+        avtStreamline *s = terminatedICs.front();
+        terminatedICs.pop_front();
         
         //Empty or new ID, add a new entry.
         if (seqs.size() == 0 ||
@@ -414,13 +414,13 @@ avtParSLAlgorithm::MergeTerminatedSLSequences()
             seqs[seqs.size()-1].push_back(s);
         }
     }
-    terminatedSLs.clear();
+    terminatedICs.clear();
     
     //Merge the sequences together, put them into terminated list.
     for (int i = 0; i < seqs.size(); i++)
     {
         avtStreamline *s = seqs[i][0]->MergeIntegralCurveSequence(seqs[i]);
-        terminatedSLs.push_back(s);
+        terminatedICs.push_back(s);
     }
 }
 
@@ -1026,7 +1026,7 @@ avtParSLAlgorithm::RecvSLs(list<avtStreamline *> &recvSLs)
 
                 for (int j = 0; j < numSLs; j++)
                 {
-                    avtStreamline *sl = streamlineFilter->CreateIntegralCurve();
+                    avtStreamline *sl = picsFilter->CreateIntegralCurve();
                     sl->Serialize(MemStream::READ, buff, GetSolver());
                     recvSLs.push_back(sl);
                     slCount++;
@@ -1134,7 +1134,7 @@ avtParSLAlgorithm::ExchangeSLs(list<avtStreamline *> &streamlines,
                                vector<vector< avtStreamline *> > &sendSLs,
                                int &earlyTerminations )
 {
-    bool newStreamlines = false;
+    bool newIntegralCurves = false;
     earlyTerminations = 0;
 
     // Do the SL sends.
@@ -1153,8 +1153,8 @@ avtParSLAlgorithm::ExchangeSLs(list<avtStreamline *> &streamlines,
 
     // See if there are any recieves....
     int numNewSLs = RecvSLs(streamlines, earlyTerminations);
-    newStreamlines = (numNewSLs > 0);
-    return newStreamlines;
+    newIntegralCurves = (numNewSLs > 0);
+    return newIntegralCurves;
 }
 
 // ****************************************************************************
@@ -1197,7 +1197,7 @@ avtParSLAlgorithm::CompileCounterStatistics()
 }
 
 // ****************************************************************************
-//  Method: avtParallelStreamlineFilter::CalculateExtraTime
+//  Method: avtParallelSLAlgorithm::CalculateExtraTime
 //
 //  Purpose:
 //      Calculate extra time.

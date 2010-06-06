@@ -75,6 +75,10 @@
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename CreateIntegralCurveOutput to reflect the new emphasis in particle 
+//   advection, as opposed to streamlines.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
@@ -90,7 +94,7 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
 
   protected:
     vtkPolyData*              GetVTKPolyData(avtStreamline *sl, int id);
-    void                      CreateStreamlineOutput( 
+    void                      CreateIntegralCurveOutput( 
                                  vector<avtStreamline *> &streamlines );
 };
 
