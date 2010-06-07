@@ -155,7 +155,7 @@
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) 
-: QFrame(0, Qt::SplashScreen)
+: QFrame(0, Qt::SplashScreen | Qt::X11BypassWindowManagerHint | Qt::WindowStaysOnBottomHint)
 {
 #ifdef Q_WS_MACX
     setWindowModality(Qt::WindowModal);
