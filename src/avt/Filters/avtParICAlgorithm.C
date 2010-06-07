@@ -111,12 +111,15 @@ avtParICAlgorithm::~avtParICAlgorithm()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
+//   Rename to InitializeBuffers to prevent name collision.
+//
 // ****************************************************************************
 
 void
-avtParICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts,
-                              int msgSz,
-                              int numRecvs)
+avtParICAlgorithm::InitializeBuffers(vector<avtIntegralCurve *> &seedPts,
+                                     int msgSz,
+                                     int numRecvs)
 {
     //Standardmsg + 1(sender rank) +1(msg ID).
     statusMsgSz = msgSz+1+1;

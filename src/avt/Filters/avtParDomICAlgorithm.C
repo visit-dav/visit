@@ -121,6 +121,9 @@ avtParDomICAlgorithm::~avtParDomICAlgorithm()
 //   Rename method called in this function to reflect the new emphasis 
 //   in particle advection, as opposed to streamlines.
 //
+//   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
+//   Reflect change in name to InitializeBuffers method.
+//
 // ****************************************************************************
 
 void
@@ -130,7 +133,7 @@ avtParDomICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
     if (numRecvs > 64)
         numRecvs = 64;
     
-    avtParICAlgorithm::Initialize(seedPts, 1, numRecvs);
+    avtParICAlgorithm::InitializeBuffers(seedPts, 1, numRecvs);
     numICChange = 0;
     AddIntegralCurves(seedPts);
 }

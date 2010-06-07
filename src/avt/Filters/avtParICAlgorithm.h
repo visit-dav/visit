@@ -83,6 +83,9 @@
 //   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
 //   as opposed to streamlines.
 //
+//   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
+//   Rename Initialize method to be InitializeBuffers to prevent name collision.
+//
 // ****************************************************************************
 
 class avtParICAlgorithm : public avtICAlgorithm
@@ -91,7 +94,7 @@ class avtParICAlgorithm : public avtICAlgorithm
     avtParICAlgorithm(avtPICSFilter *icFilter);
     virtual ~avtParICAlgorithm();
 
-    virtual void              Initialize(std::vector<avtIntegralCurve *> &,
+    virtual void              InitializeBuffers(std::vector<avtIntegralCurve *> &,
                                          int, int);
     virtual void              PostExecute();
 

@@ -242,6 +242,9 @@ avtMasterSlaveICAlgorithm::~avtMasterSlaveICAlgorithm()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
+//   Reflect change in method name to InitializeBuffers.
+//
 // ****************************************************************************
 
 void
@@ -251,7 +254,7 @@ avtMasterSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
     if (numRecvs > 64)
         numRecvs = 64;
     
-    avtParICAlgorithm::Initialize(seedPts, 2+NUM_DOMAINS, numRecvs);
+    avtParICAlgorithm::InitializeBuffers(seedPts, 2+NUM_DOMAINS, numRecvs);
 }
 
 void
