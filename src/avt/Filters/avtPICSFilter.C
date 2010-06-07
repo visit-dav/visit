@@ -577,7 +577,7 @@ avtPICSFilter::SetTermination(int type, double term)
 //
 // Arguments:
 //   algo : Type of algorithm
-//   maxCnt : maximum number of streamlines to process before distributing.
+//   maxCnt : maximum number of integral curves to process before distributing.
 //
 // Programmer: Dave Pugmire
 // Creation:   Thu Mar  5 09:51:00 EST 2009
@@ -605,7 +605,7 @@ avtPICSFilter::SetPathlines(bool pathlines, double time0)
 //
 // Arguments:
 //   algo : Type of algorithm
-//   maxCnt : maximum number of streamlines to process before distributing.
+//   maxCnt : maximum number of integral curves to process before distributing.
 //
 // Programmer: Dave Pugmire
 // Creation:   Thu Jul 31 12:46:32 EDT 2008
@@ -1073,8 +1073,8 @@ avtPICSFilter::Initialize()
 //      ARS - commented as the doPathlines check below as will always fail
 //      because this scope is the !doPathline.
 
-        // We need to set seedTimeStep0 even for streamlines since it is used
-        // as time for the streamline seeds.
+        // We need to set seedTimeStep0 even for non-time varying since it is used
+        // as time for the seeds.
 //         if (doPathlines)
 //             seedTime0 = md->GetTimes()[activeTimeStep];
 //         else
@@ -1929,13 +1929,12 @@ randMinus1_1()
 // ****************************************************************************
 
 void
-avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *> &streamlines)
+avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *> &curves)
 {
     std::vector<avtVector> seedPts = GetInitialLocations();
 
-    //Create streamlines from the seed points.
     vector<vector<int> > ids;
-    CreateIntegralCurvesFromSeeds(seedPts, streamlines, ids);
+    CreateIntegralCurvesFromSeeds(seedPts, curves, ids);
 }
 
 // ****************************************************************************
@@ -1965,7 +1964,7 @@ avtPICSFilter::AddSeedpoints(std::vector<avtVector> &pts,
 //  Method: avtPICSFilter::CreateIntegralCurvesFromSeeds
 //
 //  Purpose:
-//      Create streamlines from seed points.
+//      Create integral curves from seed points.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
@@ -1985,7 +1984,7 @@ avtPICSFilter::AddSeedpoints(std::vector<avtVector> &pts,
 
 void
 avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
-                                                std::vector<avtIntegralCurve *> &streamlines,
+                                                std::vector<avtIntegralCurve *> &curves,
                                                 std::vector<std::vector<int> > &ids)
 {
     for (int i = 0; i < pts.size(); i++)
@@ -2011,7 +2010,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                 ic->termination = termination;
                 ic->terminationType = terminationType;
             
-                streamlines.push_back(ic);
+                curves.push_back(ic);
                 seedPtIds.push_back(ic->id);
             }
             
@@ -2025,7 +2024,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                 ic->termination = -termination;
                 ic->terminationType = terminationType;
             
-                streamlines.push_back(ic);
+                curves.push_back(ic);
                 seedPtIds.push_back(ic->id);
             }
         }
@@ -2034,11 +2033,11 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
     }
     
     //Sort them on domain.
-    std::sort(streamlines.begin(), streamlines.end(), avtIntegralCurve::DomainCompare);
+    std::sort(curves.begin(), curves.end(), avtIntegralCurve::DomainCompare);
 
-    for (int i = 0; i < streamlines.size(); i++)
+    for (int i = 0; i < curves.size(); i++)
     {
-        avtIntegralCurve *ic = streamlines[i];
+        avtIntegralCurve *ic = curves[i];
         if (DebugStream::Level5())
         {
             avtVector loc;
@@ -2223,7 +2222,7 @@ avtPICSFilter::GetTerminatedIntegralCurves(vector<avtIntegralCurve *> &ics)
 //  Method: avtPICSFilter::DeleteIntegralCurves
 //
 //  Purpose:
-//      Delete streamlines
+//      Delete integral curves
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Tue May 25 10:15:35 EDT 2010

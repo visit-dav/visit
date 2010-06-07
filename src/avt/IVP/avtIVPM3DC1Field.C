@@ -57,6 +57,12 @@
 //  Creationist: Allen Sanderson
 //  Creation:   20 November 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jun  7 14:48:03 CDT 2010
+//    Initialize variables to prevent compiler warning.  (They are unused and
+//    just to get the template instantiation right.)
+//
 // ****************************************************************************
 
 avtIVPM3DC1Field::avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity ) 
@@ -81,8 +87,8 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity 
       ds->GetCellData()->GetArray("hidden/elements")->GetNumberOfTuples();
 
   // Dummy variable to the template class
-  int   *intPtr, intVar;
-  float *fltPtr, fltVar;
+  int   *intPtr, intVar = 0;
+  float *fltPtr, fltVar = 0;
 
   // Single values from the header attributes.
   intPtr = SetDataPointer( ds, intVar, "hidden/header/linear", nelms, 1 );
