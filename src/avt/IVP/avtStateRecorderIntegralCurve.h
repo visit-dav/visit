@@ -58,6 +58,11 @@
 //  Programmer: Hank Childs (refactoring of work from others)
 //  Creation:   June 4, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  8 09:30:45 CDT 2010
+//    Place sequence tracking code from base class into this class.
+//
 // ****************************************************************************
 
 class IVP_API avtStateRecorderIntegralCurve : public avtIntegralCurve
@@ -82,8 +87,19 @@ class IVP_API avtStateRecorderIntegralCurve : public avtIntegralCurve
 
     virtual void      Serialize(MemStream::Mode mode, MemStream &buff, 
                                 avtIVPSolver *solver);
+    virtual void      PrepareForSend(void)
+                           { serializeFlags |= SERIALIZE_INC_SEQ; };
+    virtual bool      SameCurve(avtIntegralCurve *ic);
 
     int       GetVariableIdx(const std::string &var) const;
+
+    static avtIntegralCurve*
+                      MergeIntegralCurveSequence(
+                              std::vector<avtIntegralCurve *> &v);
+    static bool IdSeqCompare(const avtIntegralCurve *slA,
+                             const avtIntegralCurve *slB);
+    static bool IdRevSeqCompare(const avtIntegralCurve *slA,
+                                const avtIntegralCurve *slB);
 
   protected:
     avtStateRecorderIntegralCurve( const avtStateRecorderIntegralCurve& );
@@ -99,16 +115,14 @@ class IVP_API avtStateRecorderIntegralCurve : public avtIntegralCurve
     // Integration steps.
     std::vector<avtIVPStep*> _steps;
 
+    unsigned long serializeFlags;
+    long sequenceCnt;
+
   protected:
     virtual void AnalyzeStep(avtIVPStep *step,
                          const avtIVPField* field,
                          avtIVPSolver::TerminateType termType,
                          double end, avtIVPSolver::Result *result);
-    // Could be static ... only virtual to get to the right method.
-    // (Temporary solution until we build a communicator class.)
-    virtual avtIntegralCurve*
-                      MergeIntegralCurveSequence(
-                              std::vector<avtIntegralCurve *> &v);
 
     // Intersection points.
     bool intersectionsSet;

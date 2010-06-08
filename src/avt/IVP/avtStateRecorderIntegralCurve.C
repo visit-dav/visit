@@ -66,6 +66,9 @@ avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(const avtIVPSolver*
 {
     intersectionsSet = false;
     numIntersections = 0;
+
+    sequenceCnt = 0;
+    serializeFlags = 0;
 }
 
 
@@ -82,6 +85,8 @@ avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve() :
 {
     intersectionsSet = false;
     numIntersections = 0;
+    sequenceCnt = 0;
+    serializeFlags = 0;
 }
 
 
@@ -345,6 +350,12 @@ avtStateRecorderIntegralCurve::IntersectPlane(const avtVector &p0, const avtVect
 //  Programmer: Hank Childs
 //  Creation:   June 4, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  8 09:30:45 CDT 2010
+//    Add portions for sequence tracking, which were previously in the base
+//    class.
+//
 // ****************************************************************************
 
 void
@@ -391,6 +402,14 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
         }
     }
 
+    if ((serializeFlags & SERIALIZE_INC_SEQ) && mode == MemStream::WRITE)
+    {
+        long seqCnt = sequenceCnt+1;
+        buff.io(mode, seqCnt);
+    }
+    else
+        buff.io(mode, sequenceCnt);
+
     serializeFlags = 0;
     if (DebugStream::Level5())
         debug5 << "DONE: avtStateRecorderIntegralCurve::Serialize. sz= "<<buff.buffLen() << endl;
@@ -431,7 +450,8 @@ avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegra
         return v[0];
 
     //Sort the streamlines by Id,seq.
-    std::sort(v.begin(), v.end(), avtIntegralCurve::IdRevSeqCompare);
+    std::sort(v.begin(), v.end(), 
+              avtStateRecorderIntegralCurve::IdRevSeqCompare);
 
     //Make sure all ids are the same.
     if (v.front()->id != v.back()->id)
@@ -459,4 +479,80 @@ avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegra
     v.resize(0);
     return s;
 }
+
+// ****************************************************************************
+//  Method: avtStateRecorderIntegralCurve::IdSeqCompare
+//
+//  Purpose:
+//      Sort streamlines by id, then sequence number.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//    Move this method from avtStreamlineWrapper.
+//
+// ****************************************************************************
+bool
+avtStateRecorderIntegralCurve::IdSeqCompare(const avtIntegralCurve *icA,
+                                            const avtIntegralCurve *icB)
+{
+    avtStateRecorderIntegralCurve *sicA = (avtStateRecorderIntegralCurve *) icA;
+    avtStateRecorderIntegralCurve *sicB = (avtStateRecorderIntegralCurve *) icB;
+
+    if (sicA->id == sicB->id)
+        return sicA->sequenceCnt < sicB->sequenceCnt;
+
+    return sicA->id < sicB->id;
+}
+
+// ****************************************************************************
+//  Method: avtStateRecorderIntegralCurve::IdRevSeqCompare
+//
+//  Purpose:
+//      Sort streamlines by id, then reverse sequence number.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//    Move this method from avtStreamlineWrapper.
+//
+// ****************************************************************************
+bool
+avtStateRecorderIntegralCurve::IdRevSeqCompare(const avtIntegralCurve *icA,
+                                               const avtIntegralCurve *icB)
+{
+    avtStateRecorderIntegralCurve *sicA = (avtStateRecorderIntegralCurve *) icA;
+    avtStateRecorderIntegralCurve *sicB = (avtStateRecorderIntegralCurve *) icB;
+
+    if (sicA->id == sicB->id)
+        return sicA->sequenceCnt > sicB->sequenceCnt;
+
+    return sicA->id < sicB->id;
+}
+
+
+// ****************************************************************************
+//  Method: avtStateRecorderIntegralCurve::SameCurve
+//
+//  Purpose:
+//      Checks to see if two curves are the same.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 8, 2010
+//
+// ****************************************************************************
+
+bool
+avtStateRecorderIntegralCurve::SameCurve(avtIntegralCurve *ic)
+{
+    avtStateRecorderIntegralCurve *sic = (avtStateRecorderIntegralCurve *) ic;
+    return (id == sic->id) && (sequenceCnt == sic->sequenceCnt);
+}
+
 

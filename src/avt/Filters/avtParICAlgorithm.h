@@ -86,6 +86,9 @@
 //   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
 //   Rename Initialize method to be InitializeBuffers to prevent name collision.
 //
+//   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
+//   Rename method to make its communication pattern more clear.
+//
 // ****************************************************************************
 
 class avtParICAlgorithm : public avtICAlgorithm
@@ -103,7 +106,7 @@ class avtParICAlgorithm : public avtICAlgorithm
     void                      InitRequests();
     void                      CheckPendingSendRequests();
     void                      CleanupAsynchronous();
-    void                      ExchangeICSteps();
+    void                      RestoreIntegralCurveSequence();
     void                      PostRecvStatusReq(int idx);
     void                      PostRecvICReq(int idx);
     void                      SendMsg(int dest, std::vector<int> &msg);
