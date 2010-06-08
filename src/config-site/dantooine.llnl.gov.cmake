@@ -46,11 +46,12 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-O2 -fno-common -fexceptions -fvisibility=
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ## (configured w/ mpi compiler wrapper)
 VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpic++)
+#VISIT_OPTION_DEFAULT(VISIT_MPI_FORTRAN_COMPILER /usr/bin/mpif77)
 
 ##
 ## Enable fortran for example programs.
 ##
-#VISIT_OPTION_DEFAULT(VISIT_FORTRAN ON)
+VISIT_OPTION_DEFAULT(VISIT_FORTRAN ON)
 
 ##############################################################
 ##
