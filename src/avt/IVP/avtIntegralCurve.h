@@ -171,6 +171,9 @@ class IVP_API DomainType
 //   Separate out portions specific to Poincare and Streamline into
 //   avtStateRecorderIntegralCurve.
 //
+//   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
+//   Put sequence tracking code into avtStateRecorderIntegralCurve.
+//
 // ****************************************************************************
 
 class IVP_API avtIntegralCurve
@@ -212,17 +215,11 @@ class IVP_API avtIntegralCurve
     void      Debug() const;
     
     virtual void      Serialize(MemStream::Mode mode, MemStream &buff, 
-                        avtIVPSolver *solver);
+                                avtIVPSolver *solver);
+    virtual void      PrepareForSend(void) { ; };
+    virtual bool      SameCurve(avtIntegralCurve *ic)
+                               { return id == ic->id; };
 
-    // Could be static ... only virtual to get to the right method.
-    // (Temporary solution until we build a communicator class.)
-    virtual avtIntegralCurve*
-                      MergeIntegralCurveSequence(
-                              std::vector<avtIntegralCurve *> &v) {;};
-    static bool IdSeqCompare(const avtIntegralCurve *slA,
-                             const avtIntegralCurve *slB);
-    static bool IdRevSeqCompare(const avtIntegralCurve *slA,
-                                const avtIntegralCurve *slB);
     static bool DomainCompare(const avtIntegralCurve *slA,
                               const avtIntegralCurve *slB);
 
@@ -253,12 +250,9 @@ class IVP_API avtIntegralCurve
     // Helpers needed for figuring out which domain to use next
     std::vector<DomainType> seedPtDomainList;
     DomainType domain;
-    Status status;
-
-    unsigned long serializeFlags;
-
-    long sequenceCnt;
     long long sortKey;
+
+    Status status;
 
     long id;
 

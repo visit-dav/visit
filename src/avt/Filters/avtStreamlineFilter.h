@@ -201,6 +201,9 @@ class vtkAppendPolyData;
 //   Hank Childs, Sat Jun  5 15:02:43 PDT 2010
 //   Separated out much of the base infrastructure into the avtPICSFilter.
 //
+//   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
+//   Add method GetCommunicationPattern.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
@@ -268,6 +271,8 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     void                      GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
 
     virtual std::vector<avtVector> GetInitialLocations(void);
+    virtual CommunicationPattern   GetCommunicationPattern(void)
+                                      { return RestoreSequence; };
 };
 
 

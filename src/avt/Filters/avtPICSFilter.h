@@ -92,6 +92,9 @@ class avtICAlgorithm;
 //   Rename all methods and data members to reflect integral curves, not 
 //   streamlines.
 //
+//   Hank Childs, Tue Jun  8 09:11:36 CDT 2010
+//   Added communication pattern enum and virtual method.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -99,6 +102,13 @@ class AVTFILTERS_API avtPICSFilter :
     virtual public avtDatasetToDatasetFilter
 {
   public:
+    typedef enum
+    {
+        RestoreSequence = 0,
+        ReturnToOriginatingProcessor,
+        LeaveOnCurrentProcessor,
+        UndefinedCommunicationPattern
+    } CommunicationPattern;
                               avtPICSFilter();
     virtual                  ~avtPICSFilter();
 
@@ -112,6 +122,7 @@ class AVTFILTERS_API avtPICSFilter :
                                         const double& t_start,
                                         const avtVector &p_start, int ID) = 0;
     virtual std::vector<avtVector>  GetInitialLocations() = 0;
+    virtual CommunicationPattern    GetCommunicationPattern() = 0;
 
     // Methods to set the filter's attributes.
     void                      SetMaxStepLength(double len);

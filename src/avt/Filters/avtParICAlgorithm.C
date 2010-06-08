@@ -41,7 +41,11 @@
 // ************************************************************************* //
 
 #include "avtParICAlgorithm.h"
+
+#include <avtStateRecorderIntegralCurve.h>
+
 #include <TimingsManager.h>
+#include <VisItException.h>
 
 using namespace std;
 
@@ -137,17 +141,45 @@ avtParICAlgorithm::InitializeBuffers(vector<avtIntegralCurve *> &seedPts,
 //  Method: avtParICAlgorithm::PostRunAlgorithm
 //
 //  Purpose:
-//      Cleanup.
+//      Carry out whatever communication pattern is necessary to get the 
+//      integral curves in their intended location.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   September 24, 2009
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  8 09:30:45 CDT 2010
+//    Add infrastructure to support new communication patterns.
 //
 // ****************************************************************************
 
 void
 avtParICAlgorithm::PostRunAlgorithm()
 {
-    ExchangeICSteps();
+    // We are enumerating the possible communication styles and then just
+    // calling the correct one.  This is an okay solution if there are a small
+    // number of styles (which there are right now).  That said, it would be
+    // perfectly fine if someone wanted to make this more extensible to handle
+    // a wide array of communication patterns ... it just didn't seem worth
+    // the effort when this was implemented.
+
+    avtPICSFilter::CommunicationPattern pattern = 
+                                         picsFilter->GetCommunicationPattern();
+ 
+    if (pattern == avtPICSFilter::RestoreSequence)
+        RestoreIntegralCurveSequence();
+    else if (pattern == avtPICSFilter::LeaveOnCurrentProcessor)
+        ;
+    else if (pattern == avtPICSFilter::ReturnToOriginatingProcessor)
+    { 
+        EXCEPTION1(VisItException, 
+                   "This communication pattern has not been implemented."); 
+    }
+    else
+    { 
+        EXCEPTION1(VisItException, "Undefined communication pattern");
+    }
 }
 
 // ****************************************************************************
@@ -213,7 +245,7 @@ CountIDs(list<avtIntegralCurve *> &l, int id)
 }
 
 // ****************************************************************************
-//  Method: avtParICAlgorithm::ExchangeICSteps
+//  Method: avtParICAlgorithm::RestoreIntegralCurveSequence
 //
 //  Purpose:
 //      Communicate streamlines pieces to destinations.
@@ -230,13 +262,17 @@ CountIDs(list<avtIntegralCurve *> &l, int id)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
+//   Rename method, as we plan to add more communication methods.
+//
 // ****************************************************************************
 
 void
-avtParICAlgorithm::ExchangeICSteps()
+avtParICAlgorithm::RestoreIntegralCurveSequence()
 {
-    debug5<<"ExchangeICSteps: communicatedICs: "<<communicatedICs.size();
-    debug5<<" terminatedICs: "<<terminatedICs.size()<<endl;
+    debug5<<"RestoreIntegralCurveSequence: communicatedICs: "
+          <<communicatedICs.size()
+          <<" terminatedICs: "<<terminatedICs.size()<<endl;
 
     //Communicate to everyone where the terminators are located.
     //Do this "N" streamlines at a time, so we don't have a super big buffer.
@@ -249,8 +285,8 @@ avtParICAlgorithm::ExchangeICSteps()
     long *idBuffer = new long[2*N], *myIDs = new long[2*N];
 
     //Sort the terminated/communicated ICs by id.
-    terminatedICs.sort(avtIntegralCurve::IdSeqCompare);
-    communicatedICs.sort(avtIntegralCurve::IdSeqCompare);
+    terminatedICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
+    communicatedICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
 
     vector<vector<avtIntegralCurve *> >sendICs(N);
     vector<int> owners(N);
@@ -283,7 +319,7 @@ avtParICAlgorithm::ExchangeICSteps()
                 int idx = (*t)->id % N;
                 myIDs[idx] = rank;
                 myIDs[idx+N] += 1;
-                debug5<<"I own id= "<<(*t)->id<<" "<<(*t)->sequenceCnt<<" idx= "<<idx<<endl;
+                debug5<<"I own id= "<<(*t)->id<<" "<<(((avtStateRecorderIntegralCurve *)*t))->sequenceCnt<<" idx= "<<idx<<endl;
             }
 
             t++;
@@ -296,7 +332,7 @@ avtParICAlgorithm::ExchangeICSteps()
             {
                 int idx = (*c)->id % N;
                 myIDs[idx+N] += 1;
-                debug5<<"I have "<<(*c)->id<<" "<<(*c)->sequenceCnt<<" idx= "<<idx<<endl;
+                debug5<<"I have "<<(*c)->id<<" "<<(((avtStateRecorderIntegralCurve *)*c))->sequenceCnt<<" idx= "<<idx<<endl;
             }
             c++;
         }
@@ -324,7 +360,7 @@ avtParICAlgorithm::ExchangeICSteps()
                     terminatedICs.push_back(s);
                 else
                 {
-                    s->serializeFlags = avtIntegralCurve::SERIALIZE_STEPS; //Write IC steps.
+                    ((avtStateRecorderIntegralCurve *)s)->serializeFlags = avtIntegralCurve::SERIALIZE_STEPS; //Write IC steps.
                     sendICs[idx].push_back(s);
                     owners[idx] = owner;
                 }
@@ -353,7 +389,7 @@ avtParICAlgorithm::ExchangeICSteps()
             RecvICs(terminatedICs);
             
             //See if we have all the sequences we need.
-            terminatedICs.sort(avtIntegralCurve::IdSeqCompare);
+            terminatedICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
             bool needMore = false;
             for (int i = 0; i < N && !needMore; i++)
                 if (idBuffer[i] == rank)
@@ -389,13 +425,16 @@ avtParICAlgorithm::ExchangeICSteps()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
+//   Reflect movement of some routines to state recorder IC class.
+//
 // ****************************************************************************
 
 void
 avtParICAlgorithm::MergeTerminatedICSequences()
 {
     //Sort them by id and sequence so we can process them one at a time.
-    terminatedICs.sort(avtIntegralCurve::IdSeqCompare);
+    terminatedICs.sort(avtStateRecorderIntegralCurve::IdSeqCompare);
 
     //Split them up into sequences.
     vector<vector<avtIntegralCurve *> > seqs;
@@ -422,7 +461,8 @@ avtParICAlgorithm::MergeTerminatedICSequences()
     //Merge the sequences together, put them into terminated list.
     for (int i = 0; i < seqs.size(); i++)
     {
-        avtIntegralCurve *s = seqs[i][0]->MergeIntegralCurveSequence(seqs[i]);
+        avtIntegralCurve *s = 
+            avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(seqs[i]);
         terminatedICs.push_back(s);
     }
 }
@@ -855,17 +895,20 @@ avtParICAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
+//   Use virtual methods to reduce dependence on a specific communication
+//   pattern.
+//
 // ****************************************************************************
 
 void
-avtParICAlgorithm::SendICs(int dst, 
-                           vector<avtIntegralCurve*> &ics)
+avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics)
 {
 
     for (int i = 0; i < ics.size(); i++)
     {
         avtIntegralCurve *ic = ics[i];
-        ic->serializeFlags |= avtIntegralCurve::SERIALIZE_INC_SEQ;
+        ic->PrepareForSend();
     }
 
     if (DoSendICs(dst, ics))
@@ -878,7 +921,7 @@ avtParICAlgorithm::SendICs(int dst,
             list<avtIntegralCurve*>::const_iterator si = communicatedICs.begin();
             bool found = false;
             for (si = communicatedICs.begin(); !found && si != communicatedICs.end(); si++)
-                found = ((*si)->id == ic->id && (*si)->sequenceCnt == ic->sequenceCnt);
+                found = (*si)->SameCurve(ic);
         
             if (!found)
                 communicatedICs.push_back(ic);

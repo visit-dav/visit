@@ -101,6 +101,7 @@ avtIntegralCurve::avtIntegralCurve(const avtIVPSolver* model,
 
     status = STATUS_UNSET;
     domain = -1;
+    sortKey = 0;
     terminated = false;
     id = ID;
 
@@ -108,10 +109,6 @@ avtIntegralCurve::avtIntegralCurve(const avtIVPSolver* model,
     terminationType = avtIVPSolver::TIME;
 
     lastStepValid = false;
-
-    sequenceCnt = 0;
-    sortKey = 0;
-    serializeFlags = 0;
 }
 
 
@@ -147,6 +144,7 @@ avtIntegralCurve::avtIntegralCurve()
 
     status = STATUS_UNSET;
     domain = -1;
+    sortKey = 0;
     terminated = false;
     id = -1;
 
@@ -154,11 +152,6 @@ avtIntegralCurve::avtIntegralCurve()
     terminationType = avtIVPSolver::TIME;
 
     lastStepValid = false;
-
-    sequenceCnt = 0;
-    sortKey = 0;
-
-    serializeFlags = 0;
 }
 
 
@@ -593,6 +586,10 @@ avtIntegralCurve::CurrentLocation(avtVector &end)
 //    Separate out portions related to Streamline and Poincare into 
 //    avtStateRecorderIntegralCurve.
 //
+//    Hank Childs, Tue Jun  8 09:30:45 CDT 2010
+//    Separate out portions related to sequence tracking into
+//    avtStateRecorderIntegralCurve.
+//
 // ****************************************************************************
 
 void
@@ -633,66 +630,8 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
         _ivpSolver->PutState(solverState);
     }    
 
-    if ((serializeFlags & SERIALIZE_INC_SEQ) && mode == MemStream::WRITE)
-    {
-        long seqCnt = sequenceCnt+1;
-        buff.io(mode, seqCnt);
-    }
-    else
-        buff.io(mode, sequenceCnt);
-
     if (DebugStream::Level5())
         debug5 << "DONE: avtIntegralCurve::Serialize. sz= "<<buff.buffLen() << endl;
-}
-
-// ****************************************************************************
-//  Method: avtIntegralCurve::IdSeqCompare
-//
-//  Purpose:
-//      Sort streamlines by id, then sequence number.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   September 24, 2009
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//    Move this method from avtStreamlineWrapper.
-//
-// ****************************************************************************
-bool
-avtIntegralCurve::IdSeqCompare(const avtIntegralCurve *icA,
-                               const avtIntegralCurve *icB)
-{
-    if (icA->id == icB->id)
-        return icA->sequenceCnt < icB->sequenceCnt;
-
-    return icA->id < icB->id;
-}
-
-// ****************************************************************************
-//  Method: avtIntegralCurve::IdRevSeqCompare
-//
-//  Purpose:
-//      Sort streamlines by id, then reverse sequence number.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   September 24, 2009
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//    Move this method from avtStreamlineWrapper.
-//
-// ****************************************************************************
-bool
-avtIntegralCurve::IdRevSeqCompare(const avtIntegralCurve *icA,
-                                  const avtIntegralCurve *icB)
-{
-    if (icA->id == icB->id)
-        return icA->sequenceCnt > icB->sequenceCnt;
-
-    return icA->id < icB->id;
 }
 
 bool
