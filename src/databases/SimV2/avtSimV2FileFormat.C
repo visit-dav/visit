@@ -248,7 +248,10 @@ avtSimV2FileFormat::ActivateTimestep()
 // Creation:   Tue Mar  9 11:11:27 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun  8 11:51:09 PDT 2010
+//   I fixed an error where the wrong mesh metadata was used for domain 
+//   piece name.
+//
 // ****************************************************************************
 
 void
@@ -324,7 +327,7 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
     }
 
     char *domainPieceName = NULL;
-    if(simv2_MeshMetaData_getDomainTitle(h, &domainPieceName) == VISIT_OKAY)
+    if(simv2_MeshMetaData_getDomainPieceName(h, &domainPieceName) == VISIT_OKAY)
     {
         mesh->blockPieceName = domainPieceName;
         free(domainPieceName);
