@@ -125,6 +125,12 @@
 #    Changed logic for finding SVN_REVISION so check is not performed on
 #    any platform if not building from a working copy. 
 #
+#    Eric Brugger, Mon Jun  7 18:31:27 PDT 2010
+#    I corrected the code that adds a "current" symbolic link to a binary
+#    distribution created by CPACK, that I then commented out since CPACK
+#    doesn't handle symbolic links properly. You can read the comment in
+#    the code for more information.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -372,13 +378,24 @@ ELSE(WIN32)
         SET(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
         SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
     ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
-    INSTALL(CODE "
-      MESSAGE(STATUS \"Symlinking current to \${VISIT_VERSION}\")
-      EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
-        COMMAND \${CMAKE_COMMAND} -E create_symlink
-        \"${VISIT_VERSION}\"
-        \"${CMAKE_INSTALL_PREFIX}/current\")
-    ")
+    #
+    # Uncomment the following code when CPACK is fixed so that it handles
+    # symbolic links properly. Currently CPACK removes all symbolic links and
+    # replaces files with hard links. If a symbolic link is to a directory
+    # it creates a hard link for every file in the directory hierarchy that
+    # the link points to. Besides being wasteful it can also create an
+    # invalid tar file since it only stores 100 characters of hard link
+    # information in the tar file, which we run into with some of our files
+    # in the include directory.
+    #
+    # INSTALL(CODE "
+    #   MESSAGE(\"Symlinking current to ${VISIT_VERSION}\")
+    #   EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
+    #   COMMAND \${CMAKE_COMMAND} -E create_symlink
+    #   \"${VISIT_VERSION}\"
+    #   \"current\")
+    # ")
+    #
 ENDIF(WIN32)
 MARK_AS_ADVANCED(
 VISIT_INSTALLED_VERSION_BIN 
