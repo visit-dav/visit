@@ -125,11 +125,10 @@
 #    Changed logic for finding SVN_REVISION so check is not performed on
 #    any platform if not building from a working copy. 
 #
-#    Eric Brugger, Mon Jun  7 18:31:27 PDT 2010
-#    I corrected the code that adds a "current" symbolic link to a binary
-#    distribution created by CPACK, that I then commented out since CPACK
-#    doesn't handle symbolic links properly. You can read the comment in
-#    the code for more information.
+#    Eric Brugger, Wed Jun  9 13:06:18 PDT 2010
+#    I made a correction to a MESSAGE statement in the code that adds the
+#    current link to the installation directory and added a comment that
+#    explains why the flawed code we have there is actually what we want.
 #
 #****************************************************************************/
 
@@ -379,23 +378,27 @@ ELSE(WIN32)
         SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
     ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
     #
-    # Uncomment the following code when CPACK is fixed so that it handles
-    # symbolic links properly. Currently CPACK removes all symbolic links and
-    # replaces files with hard links. If a symbolic link is to a directory
-    # it creates a hard link for every file in the directory hierarchy that
-    # the link points to. Besides being wasteful it can also create an
-    # invalid tar file since it only stores 100 characters of hard link
-    # information in the tar file, which we run into with some of our files
-    # in the include directory.
+    # Note that the last line in the EXECUTE_PROCESS command below should
+    # have a "\" before the ${CMAKE_INSTALL_PREFIX} to be truely correct.
+    # The code creates a symbolic link from "current" to the current visit
+    # version number.  Because of the coding error it succeeds when doing
+    # a "make install" and fails when doing a "make package", which is
+    # exactly what we want.  We do this because CPACK may create an
+    # invalid tar file if the distribution contains a link to a directory.
+    # This happens because CPACK removes the symbolic link and replaces all
+    # the files in the directory pointed to by the symbolic link with hard
+    # links.  It only stores 100 characters of path information in the hard
+    # link so long paths may get truncated resulting in invalid files.  We
+    # have a bunch of files with paths greater than 100 character so this
+    # fails in our case.
     #
-    # INSTALL(CODE "
-    #   MESSAGE(\"Symlinking current to ${VISIT_VERSION}\")
-    #   EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
-    #   COMMAND \${CMAKE_COMMAND} -E create_symlink
-    #   \"${VISIT_VERSION}\"
-    #   \"current\")
-    # ")
-    #
+    INSTALL(CODE "
+      MESSAGE(\"Symlinking current to ${VISIT_VERSION}\")
+      EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
+        COMMAND \${CMAKE_COMMAND} -E create_symlink
+        \"${VISIT_VERSION}\"
+        \"${CMAKE_INSTALL_PREFIX}/current\")
+    ")
 ENDIF(WIN32)
 MARK_AS_ADVANCED(
 VISIT_INSTALLED_VERSION_BIN 

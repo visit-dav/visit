@@ -100,6 +100,11 @@ exec perl -x $0 ${1+"$@"};
 #    Jeremy Meredith, Wed Feb  3 16:00:24 EST 2010
 #    Stop supporting legacy versions (pre-1.4.1).
 #
+#    Eric Brugger, Wed Jun  9 13:17:20 PDT 2010
+#    I added logic which causes the script to handle the case where the
+#    current link is missing.  In this case it sorts the versions of all the
+#    versions and uses the last one.
+#
 ###############################################################################
 
 
@@ -351,6 +356,12 @@ else
     @exeversions = map {m|^$visitdirquoted/(.*?)/|; $_ = $1;} @exe;
     $current_version = readlink("$visitdir/current");
     $beta_version    = readlink("$visitdir/beta");
+
+    if (! defined $current_version)
+    {
+        @sorted_versions = sort {$b cmp $a} @exeversions;
+        $current_version = @sorted_versions[0];
+    }
 
     if ($want_version)
     {
