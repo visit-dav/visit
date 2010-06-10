@@ -897,6 +897,9 @@
 #
 #     Mark C. Miller, Thu Jun 10 10:42:25 PDT 2010
 #     Updated ITAPS libs to what was available begining of June, 2010.
+#
+#     Mark C. Miller, Thu Jun 10 10:45:56 PDT 2010
+#     Update date in message regarding ITAPS libs.
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -9843,7 +9846,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "HDF4"     "$HDF4_VERSION  $HDF4_FILE"      $ON_HDF4 \
            "HDF5"     "$HDF5_VERSION  $HDF5_FILE"      $ON_HDF5 \
            "IceT"     "$ICET_VERSION  $ICET_FILE"      $ON_ICET \
-           "ITAPS"    "15Apr09 Versions of MOAB, FMDB, GRUMMP"    $ON_ITAPS \
+           "ITAPS"    "Jun-2010 Versions of MOAB, FMDB, GRUMMP"    $ON_ITAPS \
            "Mili"     "$MILI_VERSION $MILI_FILE (not available from the web)"      $ON_MILI \
            "NetCDF"   "$NETCDF_VERSION  $NETCDF_FILE"    $ON_NETCDF \
            "TCMALLOC" "$TCMALLOC_VERSION   $TCMALLOC_FILE (not available from the web)"      $ON_TCMALLOC \
