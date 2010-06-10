@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="host" type="string">login1.eureka.alcf.anl.gov</Field>
-    <Field name="hostAliases" type="string">login1.eureka.alcf.anl.gov vs##-mgmt.alcf.anl.gov vs##-mgmt vs##</Field>
+    <Field name="host" type="string">eureka.alcf.anl.gov</Field>
+    <Field name="hostAliases" type="string">eureka.alcf.anl.gov login#.eureka.alcf.anl.gov vs##-mgmt.alcf.anl.gov vs##-mgmt vs##</Field>
     <Field name="hostNickname" type="string">ANL Eureka</Field>
     <Field name="directory" type="string">/soft/apps/visit</Field>
     <Field name="tunnelSSH" type="bool">true</Field>
