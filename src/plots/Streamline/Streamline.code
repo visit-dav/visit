@@ -17,6 +17,9 @@ Definition:
 //    Hank Childs, Sat Mar  3 09:00:12 PST 2007
 //    Disable useWholeBox if we are copying box extents.
 //
+//    Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//    New seed sources.
+//
 // ****************************************************************************
 
 bool
@@ -58,7 +61,7 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
             SetPlaneOrigin(plane->GetOrigin());
             SetPlaneNormal(plane->GetNormal());
             SetPlaneUpAxis(plane->GetUpAxis());
-            SetPlaneRadius(plane->GetRadius());
+            SetRadius(plane->GetRadius());
             retval = true;
         }
     }
@@ -68,7 +71,7 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
         {
             const SphereAttributes *sphere = (const SphereAttributes *)atts;
             SetSphereOrigin(sphere->GetOrigin());
-            SetSphereRadius(sphere->GetRadius());
+            SetRadius(sphere->GetRadius());
             retval = true;
         }
     }   
@@ -80,7 +83,7 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
             SetPlaneOrigin(plane->GetOrigin());
             SetPlaneNormal(plane->GetNormal());
             SetPlaneUpAxis(plane->GetUpAxis());
-            SetPlaneRadius(plane->GetRadius());
+            SetRadius(plane->GetRadius());
             retval = true;
         }
     }
@@ -148,7 +151,7 @@ StreamlineAttributes::CreateCompatible(const std::string &tname) const
         p->SetOrigin(GetPlaneOrigin());
         p->SetNormal(GetPlaneNormal());
         p->SetUpAxis(GetPlaneUpAxis());
-        p->SetRadius(GetPlaneRadius());
+        p->SetRadius(GetRadius());
         p->SetHaveRadius(true);
         retval = p;
     }
@@ -156,7 +159,7 @@ StreamlineAttributes::CreateCompatible(const std::string &tname) const
     {
         SphereAttributes *s = new SphereAttributes;
         s->SetOrigin(GetSphereOrigin());
-        s->SetRadius(GetSphereRadius());
+        s->SetRadius(GetRadius());
         retval = s;
     }
     else if(tname == "CircleAttributes")
@@ -165,7 +168,7 @@ StreamlineAttributes::CreateCompatible(const std::string &tname) const
         p->SetOrigin(GetPlaneOrigin());
         p->SetNormal(GetPlaneNormal());
         p->SetUpAxis(GetPlaneUpAxis());
-        p->SetRadius(GetPlaneRadius());
+        p->SetRadius(GetRadius());
         p->SetHaveRadius(true);
         retval = p;
     }
@@ -218,95 +221,125 @@ Definition:
 bool
 StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &obj) const
 {
-    // If we're in point source mode and the points differ, sourcePointsDiffer
-    // evaluates to true.
-    bool sourcePointsDiffer = ((sourceType == SpecifiedPoint) &&
-       POINT_DIFFERS(pointSource, obj.pointSource));
+    //Check the general stuff first...
+    if (sourceType != obj.sourceType ||
+        termination != obj.termination ||
+        terminationType != obj.terminationType ||
+        streamlineDirection != obj.streamlineDirection ||
+        integrationType != obj.integrationType ||
+        maxStepLength != obj.maxStepLength ||
+        relTol != obj.relTol ||
+        absTol != obj.absTol ||
+        pathlines != obj.pathlines ||
+        coloringVariable != obj.coloringVariable ||
+        (displayMethod != obj.displayMethod && obj.displayMethod == Ribbons) ||
+        (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
 
-    // If we're in line source mode and the line differs, sourceLineDiffers
-    // evaluates to true.
-    bool sourceLineDiffers = ((sourceType == SpecifiedLine) &&
-       (POINT_DIFFERS(lineStart, obj.lineStart) ||
-        POINT_DIFFERS(lineEnd, obj.lineEnd)));
-
-    // If we're in plane source mode and the plane differs, sourcePlaneDiffers
-    // evaluates to true.
-    bool sourcePlaneDiffers = ((sourceType == SpecifiedPlane) &&
-       (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
-        POINT_DIFFERS(planeNormal, obj.planeNormal) ||
-        POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
-        planeRadius != obj.planeRadius));
-
-    // If we're in sphere source mode and the sphere differs, sourceSphereDiffers
-    // evaluates to true.
-    bool sourceSphereDiffers = ((sourceType == SpecifiedSphere) &&
-       (POINT_DIFFERS(sphereOrigin, obj.sphereOrigin) ||
-        (sphereRadius != obj.sphereRadius)));
-
-    bool sourcePointListDiffers = (sourceType == SpecifiedPointList);
-    if (sourcePointListDiffers)
+        ((opacityType == VariableRange) && (obj.opacityType != VariableRange ||
+                                            opacityVariable != obj.opacityVariable)))
     {
-        sourcePointListDiffers = false;
+        return true;
+    }
+         
+    //Check by source type.
+    if ((sourceType == SpecifiedPoint) && POINT_DIFFERS(pointSource, obj.pointSource))
+    {
+        return true;
+    }
+
+    if (sourceType == SpecifiedLine)
+    {
+        if (POINT_DIFFERS(lineStart, obj.lineStart) ||
+            POINT_DIFFERS(lineEnd, obj.lineEnd) ||
+            randomSamples != obj.randomSamples ||
+            (!randomSamples && (sampleDensity0 != obj.sampleDensity0)) ||
+            (randomSamples && (randomSeed != obj.randomSeed ||
+                               numberOfRandomSamples != obj.numberOfRandomSamples)))
+        {
+            return true;
+        }
+    }
+
+    if (sourceType == SpecifiedPlane)
+    {
+        if (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
+            POINT_DIFFERS(planeNormal, obj.planeNormal) ||
+            POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
+            sampleDistance0 != obj.sampleDistance0 ||
+            sampleDistance1 != obj.sampleDistance1 ||
+            randomSamples != obj.randomSamples ||
+            fillInterior != obj.fillInterior ||
+            (randomSamples && (randomSeed != obj.randomSeed ||
+                               numberOfRandomSamples != obj.numberOfRandomSamples)) ||
+            (!randomSamples && (sampleDensity0 != obj.sampleDensity0 ||
+                                sampleDensity1 != obj.sampleDensity1)))
+        {
+            return true;
+        }
+    }
+
+    if (sourceType == SpecifiedCircle)
+    {
+        if (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
+            POINT_DIFFERS(planeNormal, obj.planeNormal) ||
+            POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
+            radius != obj.radius ||
+            randomSamples != obj.randomSamples ||
+            fillInterior != obj.fillInterior ||
+            (randomSamples && (randomSeed != obj.randomSeed ||
+                               numberOfRandomSamples != obj.numberOfRandomSamples)) ||
+            (!randomSamples && fillInterior && (sampleDensity0 != obj.sampleDensity0 ||
+                                                sampleDensity1 != obj.sampleDensity1)) ||
+            (!randomSamples && !fillInterior && (sampleDensity0 != obj.sampleDensity0)))
+        {
+            return true;
+        }
+    }
+
+    if (sourceType == SpecifiedSphere)
+    {
+        if (POINT_DIFFERS(sphereOrigin, obj.sphereOrigin) ||
+            radius != obj.radius ||
+            randomSamples != obj.randomSamples ||
+            fillInterior != obj.fillInterior ||
+            (randomSamples && (randomSeed != obj.randomSeed ||
+                               numberOfRandomSamples != obj.numberOfRandomSamples)) ||
+            (!randomSamples && (sampleDensity0 != obj.sampleDensity0 ||
+                                sampleDensity1 != obj.sampleDensity1 ||
+                                sampleDensity2 != obj.sampleDensity2)))
+        {
+            return true;
+        }
+    }
+
+    if (sourceType == SpecifiedBox)
+    {
+        if (POINT_DIFFERS(boxExtents, obj.boxExtents) ||
+            POINT_DIFFERS(boxExtents+3, obj.boxExtents+3) ||
+            useWholeBox != obj.useWholeBox ||
+            randomSamples != obj.randomSamples ||
+            fillInterior != obj.fillInterior ||
+            (randomSamples && (randomSeed != obj.randomSeed ||
+                               numberOfRandomSamples != obj.numberOfRandomSamples)) ||
+            (!randomSamples && (sampleDensity0 != obj.sampleDensity0 ||
+                                sampleDensity1 != obj.sampleDensity1 ||
+                                sampleDensity2 != obj.sampleDensity2)))
+        {
+            return true;
+        }
+    }
+    
+    if (sourceType == SpecifiedPointList)
+    {
         if (pointList.size() != obj.pointList.size())
-            sourcePointListDiffers = true;
+            return true;
         else
             for (int i = 0 ; i < pointList.size() ; i++)
                 if (pointList[i] != obj.pointList[i])
-                    sourcePointListDiffers = true;
+                    return true;
     }
 
-    // If we're in circle source mode and the plane differs, sourcePlaneDiffers
-    // evaluates to true.
-    bool sourceCircleDiffers = ((sourceType == SpecifiedCircle) &&
-       (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
-        POINT_DIFFERS(planeNormal, obj.planeNormal) ||
-        POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
-        planeRadius != obj.planeRadius));
-
-    // If we're in box source mode and the box differs, boxDiffers
-    // evaluates to true.
-    bool boxSourceDiffers = (sourceType == SpecifiedBox) &&
-        (POINT_DIFFERS(boxExtents, obj.boxExtents) ||
-         POINT_DIFFERS(boxExtents+3, obj.boxExtents+3));
-    if (useWholeBox != obj.useWholeBox)
-        boxSourceDiffers = true;
-
-    // Other things need to be true before we start paying attention to
-    // point density.
-    bool densityMatters = (sourceType == SpecifiedLine ||
-        sourceType == SpecifiedPlane || sourceType == SpecifiedSphere ||
-        sourceType == SpecifiedBox || sourceType == SpecifiedCircle) &&
-        (pointDensity != obj.pointDensity);
-
-    //If opacity is turned on, or the variable changes...
-    bool opacityMatters = (opacityType == VariableRange) &&
-                          (obj.opacityType != VariableRange ||
-                           opacityVariable != obj.opacityVariable);
-
-    //Ribbons requires the engine to calculate vorticity.
-    bool displayMatters = (displayMethod != obj.displayMethod && obj.displayMethod == Ribbons);
-
-    return (sourceType != obj.sourceType) ||
-           (streamlineDirection != obj.streamlineDirection) ||
-           displayMatters ||
-           (termination != obj.termination) ||
-           (terminationType != obj.terminationType) ||
-           (integrationType != obj.integrationType) ||
-           (maxStepLength != obj.maxStepLength) ||
-           (relTol != obj.relTol) ||
-           (absTol != obj.absTol) ||
-           (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
-           (pathlines != obj.pathlines) ||
-           (coloringVariable != obj.coloringVariable) ||
-           opacityMatters ||
-           sourcePointsDiffer ||
-           sourceLineDiffers ||
-           sourcePlaneDiffers ||
-           sourceSphereDiffers ||
-           sourceCircleDiffers ||
-           sourcePointListDiffers ||
-           boxSourceDiffers ||
-           densityMatters;
+    return false;
 }
 
 Function: ProcessOldVersions

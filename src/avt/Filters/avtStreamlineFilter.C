@@ -104,7 +104,16 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <mpi.h>
 #endif
 
-#define INIT_POINT(p, a, b, c) (p)[0] = a; (p)[1] = b; (p)[2] = c;
+static float random01()
+{
+    return (float)rand()/(float)RAND_MAX;
+}
+
+static float random_11()
+{
+    return (random01()*2.0) - 1.0;
+}
+
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter constructor
@@ -167,6 +176,9 @@ Consider the leaveDomains SLs and the balancing at the same time.
 //   Hank Childs, Sat Jun  5 16:06:26 PDT 2010
 //   Remove data members that are being put into avtPICSFilter.
 //
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
@@ -180,19 +192,18 @@ avtStreamlineFilter::avtStreamlineFilter()
     //
     // Initialize source values.
     //
+    //
+    // Initialize source values.
+    //
     sourceType = STREAMLINE_SOURCE_POINT;
-    INIT_POINT(pointSource, 0., 0., 0.);
-    INIT_POINT(lineStart, 0., 0., 0.);
-    INIT_POINT(lineEnd, 1., 0., 0.);
-    INIT_POINT(planeOrigin, 0., 0., 0.);
-    INIT_POINT(planeNormal, 0., 0., 1.);
-    INIT_POINT(planeUpAxis, 0., 1., 0.);
-    planeRadius = 1.4142136;
-    INIT_POINT(sphereOrigin, 0., 0., 0.);
-    sphereRadius = 1.;
-    INIT_POINT(boxExtents, 0., 1., 0.);
-    INIT_POINT(boxExtents+3, 1., 0., 1.);
-    useWholeBox = false;
+    sampleDensity[0] = sampleDensity[1] = sampleDensity[2] = 0;
+    sampleDistance[0] = sampleDistance[1] = sampleDistance[2] = 0.0;
+    numSamplePoints = 0;
+    randomSamples = false;
+    randomSeed = 0;
+    fill = false;
+    useBBox = false;
+
     intersectObj = NULL;
 }
 
@@ -404,29 +415,6 @@ avtStreamlineFilter::SetDisplayMethod(int d)
 
 
 // ****************************************************************************
-// Method: avtStreamlineFilter::SetSourceType
-//
-// Purpose: 
-//   Sets the type of source to be used in the streamline process.
-//
-// Arguments:
-//   t : The new streamline source type.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 6 12:58:04 PDT 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtStreamlineFilter::SetSourceType(int t)
-{
-    sourceType = t;
-}
-
-
-// ****************************************************************************
 // Method: avtStreamlineFilter::SetPointSource
 //
 // Purpose: 
@@ -439,15 +427,17 @@ avtStreamlineFilter::SetSourceType(int t)
 // Creation:   Wed Nov 6 12:58:36 PDT 2002
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
 //   
 // ****************************************************************************
 
 void
-avtStreamlineFilter::SetPointSource(double pt[3])
+avtStreamlineFilter::SetPointSource(const double *p)
 {
-    pointSource[0] = pt[0];
-    pointSource[1] = pt[1];
-    pointSource[2] = pt[2];
+    sourceType = STREAMLINE_SOURCE_POINT;
+    points[0].set(p);
 }
 
 
@@ -465,17 +455,27 @@ avtStreamlineFilter::SetPointSource(double pt[3])
 // Creation:   Wed Nov 6 12:58:59 PDT 2002
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
 //   
 // ****************************************************************************
 
 void
-avtStreamlineFilter::SetLineSource(double pt[3], double pt2[3])
+avtStreamlineFilter::SetLineSource(const double *p0, const double *p1,
+                                   int den, bool rand, int seed, int numPts)
 {
-    for(int i = 0; i < 3; ++i)
-    {
-        lineStart[i] = pt[i];
-        lineEnd[i] = pt2[i];
-    }
+    sourceType = STREAMLINE_SOURCE_LINE;
+    points[0].set(p0);
+    points[1].set(p1);
+    
+    numSamplePoints = numPts;
+    sampleDensity[0] = den;
+    sampleDensity[1] = 0;
+    sampleDensity[2] = 0;
+    
+    randomSamples = rand;
+    randomSeed = seed;
 }
 
 
@@ -495,20 +495,77 @@ avtStreamlineFilter::SetLineSource(double pt[3], double pt2[3])
 // Creation:   Wed Nov 6 12:59:47 PDT 2002
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
 //   
 // ****************************************************************************
 
 void
-avtStreamlineFilter::SetPlaneSource(double O[3], double N[3], double U[3], 
-                                    double R)
+avtStreamlineFilter::SetPlaneSource(double O[3], double N[3], double U[3],
+                                    int den1, int den2, double dist1, double dist2,
+                                    bool f, 
+                                    bool rand, int seed, int numPts)
 {
-    for(int i = 0; i < 3; ++i)
-    {
-        planeOrigin[i] = O[i];
-        planeNormal[i] = N[i];
-        planeUpAxis[i] = U[i];
-    }
-    planeRadius = R;
+    sourceType = STREAMLINE_SOURCE_PLANE;
+    points[0].set(O);
+    vectors[0].set(N);
+    vectors[1].set(U);
+    
+    sampleDensity[0] = den1;
+    sampleDensity[1] = den2;
+    sampleDensity[2] = 0;
+    sampleDistance[0] = dist1;
+    sampleDistance[1] = dist2;
+    sampleDistance[2] = 0.0;
+    numSamplePoints = numPts;
+
+    randomSamples = rand;
+    randomSeed = seed;
+    fill = f;
+}
+
+// ****************************************************************************
+// Method: avtStreamlineFilter::SetCircleSource
+//
+// Purpose: 
+//   Sets the plane source information.
+//
+// Arguments:
+//   O : The plane origin.
+//   N : The plane normal.
+//   U : The plane up axis.
+//   R : The plane radius.
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Jun 10 10:44:02 EDT 2010
+//
+// Modifications:
+//
+//   
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetCircleSource(double O[3], double N[3], double U[3], double r,
+                                     int den1, int den2,
+                                     bool f, bool rand, int seed, int numPts)
+{
+    sourceType = STREAMLINE_SOURCE_CIRCLE;
+    points[0].set(O);
+    vectors[0].set(N);
+    vectors[1].set(U);
+    
+    sampleDensity[0] = den1;
+    sampleDensity[1] = den2;
+    sampleDensity[2] = 0;
+    sampleDistance[0] = r;
+    sampleDistance[1] = 0.0;
+    sampleDistance[2] = 0.0;
+    numSamplePoints = numPts;
+
+    randomSamples = rand;
+    randomSeed = seed;
+    fill = f;
 }
 
 
@@ -526,16 +583,30 @@ avtStreamlineFilter::SetPlaneSource(double O[3], double N[3], double U[3],
 // Creation:   Wed Nov 6 13:00:34 PST 2002
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
 //   
 // ****************************************************************************
 
 void
-avtStreamlineFilter::SetSphereSource(double O[3], double R)
+avtStreamlineFilter::SetSphereSource(double O[3], double R,
+                                     int den1, int den2, int den3,
+                                     bool f, bool rand, int seed, int numPts)
 {
-    sphereOrigin[0] = O[0];
-    sphereOrigin[1] = O[1];
-    sphereOrigin[2] = O[2];
-    sphereRadius = R;
+    sourceType = STREAMLINE_SOURCE_SPHERE;
+    points[0].set(O);
+    sampleDistance[0] = R;
+    sampleDistance[1] = 0.0;
+    sampleDistance[2] = 0.0;
+    sampleDensity[0] = den1;
+    sampleDensity[1] = den2;
+    sampleDensity[2] = den3;
+
+    numSamplePoints = numPts;
+    randomSamples = rand;
+    randomSeed = seed;
+    fill = f;
 }
 
 
@@ -552,14 +623,30 @@ avtStreamlineFilter::SetSphereSource(double O[3], double R)
 // Creation:   Wed Nov 6 13:01:11 PST 2002
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
 //   
 // ****************************************************************************
 
 void
-avtStreamlineFilter::SetBoxSource(double E[6])
+avtStreamlineFilter::SetBoxSource(double E[6], bool wholeBox,
+                                  int den1, int den2, int den3,
+                                  bool f, bool rand, int seed, int numPts)
 {
-    for(int i = 0; i < 6; ++i)
-        boxExtents[i] = E[i];
+    sourceType = STREAMLINE_SOURCE_BOX;
+    points[0].set(E[0], E[2], E[4]);
+    points[1].set(E[1], E[3], E[5]);
+
+    sampleDensity[0] = den1;
+    sampleDensity[1] = den2;
+    sampleDensity[2] = den3;
+
+    useBBox = wholeBox;
+    numSamplePoints = numPts;
+    randomSamples = rand;
+    randomSeed = seed;
+    fill = f;
 }
 
 
@@ -576,15 +663,18 @@ avtStreamlineFilter::SetBoxSource(double E[6])
 // Creation:   May 3, 2009
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
 //   
 // ****************************************************************************
 
 void
 avtStreamlineFilter::SetPointListSource(const std::vector<double> &ptList)
 {
-    pointList = ptList;
+    sourceType = STREAMLINE_SOURCE_POINT_LIST;
+    listOfPoints = ptList;
 }
-
 
 // ****************************************************************************
 // Method: avtStreamlineFilter::SeedInfoString
@@ -606,6 +696,9 @@ avtStreamlineFilter::SetPointListSource(const std::vector<double> &ptList)
 //   Dave Pugmire (for Christoph Garth), Wed Jan 20 09:28:59 EST 2010
 //   Add circle source.
 //
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
+//
 // ****************************************************************************
 
 std::string
@@ -614,31 +707,32 @@ avtStreamlineFilter::SeedInfoString() const
     char buff[256];
     if (sourceType == STREAMLINE_SOURCE_POINT)
         sprintf(buff, "Point [%g %g %g]", 
-                pointSource[0], pointSource[1], pointSource[2]);
+                points[0].x, points[0].y, points[0].z);
     else if (sourceType == STREAMLINE_SOURCE_LINE)
-        sprintf(buff, "Line [%g %g %g] [%g %g %g] D: %d", 
-                lineStart[0], lineStart[1], lineStart[2],
-                lineEnd[0], lineEnd[1], lineEnd[2], pointDensity1);
+        sprintf(buff, "Line [%g %g %g] [%g %g %g] D: %d",
+                points[0].x, points[0].y, points[0].z,
+                points[1].x, points[1].y, points[1].z, sampleDensity[0]);
     else if (sourceType == STREAMLINE_SOURCE_PLANE)
-        sprintf(buff, "Plane O[%g %g %g] N[%g %g %g] R: %g D: %d %d",
-                planeOrigin[0], planeOrigin[1], planeOrigin[2],
-                planeNormal[0], planeNormal[1], planeNormal[2],
-                planeRadius, pointDensity1, pointDensity2);
+        sprintf(buff, "Plane O[%g %g %g] N[%g %g %g] D: %d %d",
+                points[0].x, points[0].y, points[0].z,
+                vectors[0].x, vectors[0].y, vectors[0].z,
+                sampleDensity[0], sampleDensity[1]);
     else if (sourceType == STREAMLINE_SOURCE_SPHERE)
         sprintf(buff, "Sphere [%g %g %g] %g D: %d %d",
-                sphereOrigin[0],sphereOrigin[1],sphereOrigin[2],
-                sphereRadius, pointDensity1, pointDensity2);
+                points[0].x, points[0].y, points[0].z, sampleDistance[0],
+                sampleDensity[0], sampleDensity[1]);
     else if (sourceType == STREAMLINE_SOURCE_BOX)
         sprintf(buff, "Box [%g %g] [%g %g] [%g %g] D: %d %d %d",
-                boxExtents[0], boxExtents[1],
-                boxExtents[2], boxExtents[3],
-                boxExtents[4], boxExtents[5],
-                pointDensity1, pointDensity2, pointDensity3);
+                points[0].x, points[1].x,
+                points[0].y, points[1].y,
+                points[0].z, points[1].z,
+                sampleDensity[0], sampleDensity[1], sampleDensity[2]);
     else if (sourceType == STREAMLINE_SOURCE_CIRCLE)
         sprintf(buff, "Cirlce O[%g %g %g] N[%g %g %g] R: %g D: %d %d",
-                planeOrigin[0], planeOrigin[1], planeOrigin[2],
-                planeNormal[0], planeNormal[1], planeNormal[2],
-                planeRadius, pointDensity1, pointDensity2);    
+                points[0].x, points[0].y, points[0].z,
+                vectors[0].x, vectors[0].y, vectors[0].z,
+                sampleDistance[0],
+                sampleDensity[0], sampleDensity[1]);
     else if (sourceType == STREAMLINE_SOURCE_POINT_LIST)
         strcpy(buff, "Point list [points not printed]");
     else
@@ -804,12 +898,20 @@ randMinus1_1()
 //                           David Pugmire)
 //  Creation:   June 5, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
+//
 // ****************************************************************************
 
 std::vector<avtVector>
 avtStreamlineFilter::GetInitialLocations(void)
 {
     std::vector<avtVector> seedPts;
+    
+    if (randomSamples)
+        srand(randomSeed);
 
     // Add seed points based on the source.
     if(sourceType == STREAMLINE_SOURCE_POINT)
@@ -840,36 +942,67 @@ avtStreamlineFilter::GetInitialLocations(void)
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::GenerateSeedPointsFromPoint(std::vector<avtVector> &pts)
 {
-    double z0 = (dataSpatialDimension > 2) ? pointSource[2] : 0.0;
-    avtVector pt(pointSource[0], pointSource[1], z0);
-    pts.push_back(pt);
+    pts.push_back(points[0]);
 }
 
 
+// ****************************************************************************
+//  Method: avtStreamlineFilter::GenerateSeedPointsFromLine
+//
+//  Purpose:
+//      
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
+// ****************************************************************************
 
 void
 avtStreamlineFilter::GenerateSeedPointsFromLine(std::vector<avtVector> &pts)
 {
-    vtkLineSource* line = vtkLineSource::New();
-    double z0 = (dataSpatialDimension > 2) ? lineStart[2] : 0.;
-    double z1 = (dataSpatialDimension > 2) ? lineEnd[2] : 0.;
-    line->SetPoint1(lineStart[0], lineStart[1], z0);
-    line->SetPoint2(lineEnd[0], lineEnd[1], z1);
-    line->SetResolution(pointDensity1);
-    line->Update();
+    avtVector v = points[1]-points[0];
 
-    for (int i = 0; i< line->GetOutput()->GetNumberOfPoints(); i++)
+    if (randomSamples)
     {
-        double *pt = line->GetOutput()->GetPoint(i);
-        avtVector p(pt[0], pt[1], pt[2]);
-        pts.push_back(p);
+        for (int i = 0; i < numSamplePoints; i++)
+        {
+            avtVector p = points[0] + random01()*v;
+            pts.push_back(p);
+        }
     }
-    line->Delete();
+    else
+    {
+        double t = 0.0, dt;
+        if (sampleDensity[0] == 1)
+        {
+            t = 0.5;
+            dt = 0.5;
+        }
+        else
+            dt = 1.0/(double)(sampleDensity[0]-1);
+    
+        for (int i = 0; i < sampleDensity[0]; i++)
+        {
+            avtVector p = points[0] + t*v;
+            pts.push_back(p);
+            t = t+dt;
+        }
+    }
 }
 
 // ****************************************************************************
@@ -881,40 +1014,93 @@ avtStreamlineFilter::GenerateSeedPointsFromLine(std::vector<avtVector> &pts)
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
 {
-    vtkPlaneSource* plane = vtkPlaneSource::New();
-    plane->SetXResolution(pointDensity1);
-    plane->SetYResolution(pointDensity2);
-    avtVector O(planeOrigin), U(planeUpAxis), N(planeNormal);
+    //Generate all points on a plane at the origin with Normal=Z.
+    //Use the following matrix to xform them to the user specified plane.
     
-    U.normalize();
-    N.normalize();
-    if(dataSpatialDimension <= 2)
-        N = avtVector(0.,0.,1.);
-    // Determine the right vector.
-    avtVector R(U % N);
-    R.normalize();
-    plane->SetOrigin(O.x, O.y, O.z);
-    avtVector P1(U * (2./1.414214) * planeRadius + O);
-    avtVector P2(R * (2./1.414214) * planeRadius + O);
-    plane->SetPoint2(P1.x, P1.y, P1.z);
-    plane->SetPoint1(P2.x, P2.y, P2.z);
-    plane->SetNormal(N.x, N.y, N.z);
-    plane->SetCenter(O.x, O.y, O.z);
-    plane->SetResolution(pointDensity1, pointDensity2);
-    plane->Update();
+    avtVector X0(1,0,0), Y0(0,1,0), Z0(0,0,1), C0(0,0,0);
+    avtVector Y1=vectors[1], Z1=vectors[0], C1=points[0];
 
-    for (int i = 0; i< plane->GetOutput()->GetNumberOfPoints(); i++)
+    // Move the sample center to the origin.
+    C1.x -= (sampleDistance[0]/2.0);
+    C1.y -= (sampleDistance[1]/2.0);
+
+    avtVector X1 = Y1.cross(Z1);
+    avtMatrix m = avtMatrix::CreateFrameToFrameConversion(X1, Y1, Z1, C1,
+                                                          X0, Y0, Z0, C0);
+    float x0 = 0.0, y0 = 0.0;
+    float x1 = sampleDistance[0], y1 = sampleDistance[1];
+
+    if (randomSamples)
     {
-        double *pt = plane->GetOutput()->GetPoint(i);
-        avtVector p(pt[0], pt[1], pt[2]);
-        pts.push_back(p);
+        float dX = x1-x0, dY = y1-y0;
+        if (!fill)
+        {
+            // There are 4 sides. Create a vector that we will shuffle each time.
+            vector<int> sides(4);
+            for (int i = 0; i < 4; i++)
+                sides[i] = i;
+
+            avtVector p;
+            for (int i = 0; i < numSamplePoints; i++)
+            {
+                random_shuffle(sides.begin(), sides.end());
+                if (sides[0] == 0) //Bottom side.
+                    p.set(x0 + random01()*dX, y0, 0.0f);
+                else if (sides[0] == 1) //Top side.
+                    p.set(x0 + random01()*dX, y1, 0.0f);
+                else if (sides[0] == 2) //Right side.
+                    p.set(x0, y0+random01()*dY, 0.0f);
+                else //Left side.
+                    p.set(x1, y0+random01()*dY, 0.0f);
+                
+                p = m*p;
+                pts.push_back(p);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < numSamplePoints; i++)
+            {
+                avtVector p(x0 + random01()*dX,
+                            y0 + random01()*dY,
+                            0.0);
+                p = m*p;
+                pts.push_back(p);
+            }
+        }
     }
-    plane->Delete();
+    else
+    {
+        float dX = (x1-x0)/(float)(sampleDensity[0]-1), dY = (y1-y0)/(float)(sampleDensity[1]-1);
+        for (int x = 0; x < sampleDensity[0]; x++)
+        {
+            for (int y = 0; y < sampleDensity[1]; y++)
+            {
+                if (!fill &&
+                    !((x == 0 || x == sampleDensity[0]-1) ||
+                      (y == 0 || y == sampleDensity[1]-1)))
+                {
+                    continue;
+                }
+                
+                avtVector p(x0+((float)x*dX), 
+                            y0+((float)y*dY),
+                            0.0);
+                p = m*p;
+                pts.push_back(p);
+            }
+        }
+    }
 }
 
 // ****************************************************************************
@@ -926,28 +1112,86 @@ avtStreamlineFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
 //  Programmer: Christoph Garth
 //  Creation:   January 20, 2010
 //
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::GenerateSeedPointsFromCircle(std::vector<avtVector> &pts)
 {
-    avtVector O(planeOrigin), U(planeUpAxis), N(planeNormal);
+    //Generate all points on a plane at the origin with Normal=Z.
+    //Use the following matrix to xform them to the user specified plane.
     
-    U.normalize();
-    N.normalize();
-    if(dataSpatialDimension <= 2)
-        N = avtVector(0.,0.,1.);
-        
-    // Determine the right vector.
-    avtVector R(U % N);
-    R.normalize();
-
-    for (int i = 0; i<pointDensity1; i++)
+    avtVector X0(1,0,0), Y0(0,1,0), Z0(0,0,1), C0(0,0,0);
+    avtVector Y1=vectors[1], Z1=vectors[0], C1=points[0];
+    avtVector X1 = Y1.cross(Z1);
+    avtMatrix m = avtMatrix::CreateFrameToFrameConversion(X1, Y1, Z1, C1,
+                                                          X0, Y0, Z0, C0);
+    float R = sampleDistance[0];
+    if (randomSamples)
     {
-        double t = (6.28318531*i) / pointDensity1;
+        if (fill)
+        {
+            int n = numSamplePoints;
+            while (n)
+            {
+                //Randomly sample a unit square, check if pt in circle.
+                float x = random_11(), y = random_11();
+                if (x*x + y*y <= 1.0) //inside the circle!
+                {
+                    avtVector p = m * avtVector(x*R, y*R, 0.0);
+                    pts.push_back(p);
+                    n--;
+                }
+            }
+        }
+        else
+        {
+            float TWO_PI = M_PI*2.0f;
+            for (int i = 0; i < numSamplePoints; i++)
+            {
+                float theta = random01() * TWO_PI;
+                avtVector p(cos(theta)*R, sin(theta)*R, 0.0);
+                p = m*p;
+                pts.push_back(p);
+            }
+        }
+    }
+    else
+    {
+        float TWO_PI = M_PI*2.0f;
+        if (fill)
+        {
+            float dTheta = TWO_PI / (float)sampleDensity[0];
+            float dR = R/(float)sampleDensity[1];
 
-        avtVector p = planeRadius * (cos(t) * U + sin(t) * R) + O;
-        pts.push_back(p);
+            float theta = 0.0;                
+            for (int i = 0; i < sampleDensity[0]; i++)
+            {
+                float r = dR;
+                for (int j = 0; j < sampleDensity[1]; j++)
+                {
+                    avtVector p(cos(theta)*r, sin(theta)*r, 0.0);
+                    p = m*p;
+                    pts.push_back(p);
+                    r += dR;
+                }
+                theta += dTheta;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < sampleDensity[0]; i++)
+            {
+                float t = (TWO_PI*i) / (float)sampleDensity[0];
+                avtVector p(cos(t)*R, sin(t)*R, 0.0);
+                p = m*p;
+                pts.push_back(p);
+            }
+        }
     }
 }
 
@@ -960,28 +1204,77 @@ avtStreamlineFilter::GenerateSeedPointsFromCircle(std::vector<avtVector> &pts)
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::GenerateSeedPointsFromSphere(std::vector<avtVector> &pts)
 {
-    vtkSphereSource* sphere = vtkSphereSource::New();
-    sphere->SetCenter(sphereOrigin[0], sphereOrigin[1], sphereOrigin[2]);
-    sphere->SetRadius(sphereRadius);
-    sphere->SetLatLongTessellation(1);
-    double t = double(30 - pointDensity1) / 29.;
-    double angle = t * 3. + (1. - t) * 30.;
-    sphere->SetPhiResolution(int(angle));
-    sphere->SetThetaResolution(int(angle));
-
-    sphere->Update();
-    for (int i = 0; i < sphere->GetOutput()->GetNumberOfPoints(); i++)
+    float R = sampleDistance[0];
+    if (randomSamples)
     {
-        double *pt = sphere->GetOutput()->GetPoint(i);
-        avtVector p(pt[0], pt[1], pt[2]);
-        pts.push_back(p);
+        if (fill)
+        {
+            int n = numSamplePoints;
+            while (n)
+            {
+                //Randomly sample a unit cube, check if pt in sphere.
+                float x = random_11(), y = random_11(), z = random_11();
+                if (x*x + y*y  + z*z <= 1.0) //inside the sphere!
+                {
+                    avtVector p = avtVector(x*R, y*R, z*R) + points[0];
+                    pts.push_back(p);
+                    n--;
+                }
+            }
+        }
+        else
+        {
+            float TWO_PI = M_PI*2.0f;
+            for (int i = 0; i < numSamplePoints; i++)
+            {
+                float theta = random01()*TWO_PI;
+                float u = random_11()*R;
+                float x = sqrt(R-(u*u));
+                avtVector p(cos(theta)*x, sin(theta)*x, u);
+                pts.push_back(p+points[0]);
+            }
+        }
     }
-    sphere->Delete();
+    else
+    {
+        if (fill)
+        {
+            cout<<"TODO"<<endl;
+        }
+        else //LAT-LONG
+        {
+            vtkSphereSource* sphere = vtkSphereSource::New();
+            sphere->SetCenter(points[0].x, points[0].y, points[0].z);
+            sphere->SetRadius(R);
+            sphere->SetLatLongTessellation(1);
+            double t = double(30 - sampleDensity[0]) / 29.;
+            double angle = t * 3. + (1. - t) * 30.;
+            sphere->SetPhiResolution(int(angle));
+
+            t = double(30 - sampleDensity[1]) / 29.;
+            angle = t * 3. + (1. - t) * 30.;
+            sphere->SetThetaResolution(int(angle));
+            
+            sphere->Update();
+            for (int i = 0; i < sphere->GetOutput()->GetNumberOfPoints(); i++)
+            {
+                double *pt = sphere->GetOutput()->GetPoint(i);
+                avtVector p(pt[0], pt[1], pt[2]);
+                pts.push_back(p);
+            }
+            sphere->Delete();
+        }
+    }
 }
 
 // ****************************************************************************
@@ -993,71 +1286,113 @@ avtStreamlineFilter::GenerateSeedPointsFromSphere(std::vector<avtVector> &pts)
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::GenerateSeedPointsFromBox(std::vector<avtVector> &pts)
 {
-    int npts = (pointDensity1+1)*(pointDensity2+1);
-
-    int nZvals = 1;
-    if(dataSpatialDimension > 2)
+    if (useBBox)
     {
-        npts *= (pointDensity3+1);
-        nZvals = (pointDensity3+1);
+        double bbox[6];
+        intervalTree->GetExtents(bbox);
+        points[0].set(bbox[0], bbox[2], bbox[4]);
+        points[1].set(bbox[1], bbox[3], bbox[5]);
     }
 
-    //Whole domain, ask intervalTree.
-    if (useWholeBox)
-        intervalTree->GetExtents( boxExtents );
+    avtVector diff = points[1]-points[0];
 
-    float dX = boxExtents[1] - boxExtents[0];
-    float dY = boxExtents[3] - boxExtents[2];
-    float dZ = boxExtents[5] - boxExtents[4];
-
-    // If using whole box, shrink the extents inward by 0.5%
-    const float shrink = 0.005;
-    if (useWholeBox)
+    if (randomSamples)
     {
-        if (dX > 0.0)
+        if (fill)
         {
-            boxExtents[0] += (shrink*dX);
-            boxExtents[1] -= (shrink*dX);
-            dX = boxExtents[1] - boxExtents[0];
-        }
-        if ( dY > 0.0 )
-        {
-            boxExtents[2] += (shrink*dY);
-            boxExtents[3] -= (shrink*dY);
-            dY = boxExtents[3] - boxExtents[2];
-        }
-        if ( dZ > 0.0 )
-        {
-            boxExtents[4] += (shrink*dZ);
-            boxExtents[5] -= (shrink*dZ);
-            dZ = boxExtents[5] - boxExtents[4];
-        }
-    }
-
-    int index = 0;
-    for(int k = 0; k < nZvals; ++k)
-    {
-        float Z = 0.;
-        if(dataSpatialDimension > 2)
-            Z = (float(k) / float(pointDensity3)) * dZ + boxExtents[4];
-        for(int j = 0; j < pointDensity2+1; ++j)
-        {
-            float Y = (float(j) / float(pointDensity2)) * dY +boxExtents[2];
-            for(int i = 0; i < pointDensity1+1; ++i)
+            for (int i = 0; i < numSamplePoints; i++)
             {
-                float X = (float(i) / float(pointDensity1)) * dX 
-                    + boxExtents[0];
-                avtVector p(X,Y,Z);
+                avtVector p(points[0].x + (diff.x * random01()),
+                            points[0].y + (diff.y * random01()),
+                            points[0].z + (diff.z * random01()));
+                pts.push_back(p);
+            }
+        }
+        else
+        {
+            // There are 6 faces. Create a vector that we will shuffle each time.
+            vector<int> faces(6);
+            for (int i = 0; i < 6; i++)
+                faces[i] = i;
+            
+            avtVector p;
+            for (int i = 0; i < numSamplePoints; i++)
+            {
+                random_shuffle(faces.begin(), faces.end());
+                if (faces[0] == 0) //X=0 face.
+                    p.set(points[0].x,
+                          points[0].y + (diff.y * random01()),
+                          points[0].z + (diff.z * random01()));
+                else if (faces[0] == 1) //X=1 face.
+                    p.set(points[1].x,
+                          points[0].y + (diff.y * random01()),
+                          points[0].z + (diff.z * random01()));
+                else if (faces[0] == 2) //Y=0 face.
+                    p.set(points[0].x + (diff.x * random01()),
+                          points[0].y,
+                          points[0].z + (diff.z * random01()));
+                else if (faces[0] == 3) //Y=1 face.
+                    p.set(points[0].x + (diff.x * random01()),
+                          points[1].y,
+                          points[0].z + (diff.z * random01()));
+                else if (faces[0] == 4) //Z=0 face.
+                    p.set(points[0].x + (diff.x * random01()),
+                          points[0].y + (diff.y * random01()),
+                          points[0].z);
+                else if (faces[0] == 5) //Z=1 face.
+                    p.set(points[0].x + (diff.x * random01()),
+                          points[0].y + (diff.y * random01()),
+                          points[1].z);
                 pts.push_back(p);
             }
         }
     }
+    else
+    {
+        diff.x /= (sampleDensity[0]-1);
+        diff.y /= (sampleDensity[1]-1);
+        diff.z /= (sampleDensity[2]-1);
 
+        if (fill)
+        {
+            for (int i = 0; i < sampleDensity[0]; i++)
+                for (int j = 0; j < sampleDensity[1]; j++)
+                    for (int k = 0; k < sampleDensity[2]; k++)
+                    {
+                        avtVector p(points[0].x + i*diff.x,
+                                    points[0].y + j*diff.y,
+                                    points[0].z + k*diff.z);
+                        pts.push_back(p);
+                    }
+        }
+        else
+        {
+            for (int i = 0; i < sampleDensity[0]; i++)
+                for (int j = 0; j < sampleDensity[1]; j++)
+                    for (int k = 0; k < sampleDensity[2]; k++)
+                    {
+                        if ((i == 0 || i == sampleDensity[0]-1) ||
+                            (j == 0 || j == sampleDensity[1]-1) ||
+                            (k == 0 || k == sampleDensity[2]-1))
+                        {
+                            avtVector p(points[0].x + i*diff.x,
+                                        points[0].y + j*diff.y,
+                                        points[0].z + k*diff.z);
+                            pts.push_back(p);
+                        }
+                    }
+        }
+    }
 }
 
 // ****************************************************************************
@@ -1069,25 +1404,29 @@ avtStreamlineFilter::GenerateSeedPointsFromBox(std::vector<avtVector> &pts)
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
 //
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &pts)
 {
-    if ((pointList.size() % 3) != 0)
+    if ((listOfPoints.size() % 3) != 0)
     {
         EXCEPTION1(VisItException, "The seed points for the streamline "
                    "are incorrectly specified.  The number of values must be a "
                    "multiple of 3 (X, Y, Z).");
     }
-    int npts = pointList.size() / 3;
+    int npts = listOfPoints.size() / 3;
     for (int i = 0 ; i < npts ; i++)
     {
-        avtVector p(pointList[3*i], pointList[3*i+1], pointList[3*i+2]);
+        avtVector p(listOfPoints[3*i], listOfPoints[3*i+1], listOfPoints[3*i+2]);
         pts.push_back(p);
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::ModifyContract

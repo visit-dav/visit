@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int StreamlineAttributes_numAdditionalAtts = 59;
+    private static int StreamlineAttributes_numAdditionalAtts = 67;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -146,12 +146,11 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         planeUpAxis[0] = 0;
         planeUpAxis[1] = 1;
         planeUpAxis[2] = 0;
-        planeRadius = 1;
+        radius = 1;
         sphereOrigin = new double[3];
         sphereOrigin[0] = 0;
         sphereOrigin[1] = 0;
         sphereOrigin[2] = 0;
-        sphereRadius = 1;
         boxExtents = new double[6];
         boxExtents[0] = 0;
         boxExtents[1] = 1;
@@ -170,7 +169,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         pointList.addElement(new Double(0));
         pointList.addElement(new Double(1));
         pointList.addElement(new Double(0));
-        pointDensity = 2;
+        sampleDensity0 = 1;
+        sampleDensity1 = 1;
+        sampleDensity2 = 1;
         displayMethod = DISPLAYMETHOD_LINES;
         showSeeds = false;
         showHeads = false;
@@ -214,6 +215,13 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         opacityVarMaxFlag = false;
         tubeDisplayDensity = 10;
         geomDisplayQuality = DISPLAYQUALITY_MEDIUM;
+        sampleDistance0 = 1;
+        sampleDistance1 = 1;
+        sampleDistance2 = 1;
+        fillInterior = true;
+        randomSamples = false;
+        randomSeed = 0;
+        numberOfRandomSamples = 1;
     }
 
     public StreamlineAttributes(int nMoreFields)
@@ -247,12 +255,11 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         planeUpAxis[0] = 0;
         planeUpAxis[1] = 1;
         planeUpAxis[2] = 0;
-        planeRadius = 1;
+        radius = 1;
         sphereOrigin = new double[3];
         sphereOrigin[0] = 0;
         sphereOrigin[1] = 0;
         sphereOrigin[2] = 0;
-        sphereRadius = 1;
         boxExtents = new double[6];
         boxExtents[0] = 0;
         boxExtents[1] = 1;
@@ -271,7 +278,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         pointList.addElement(new Double(0));
         pointList.addElement(new Double(1));
         pointList.addElement(new Double(0));
-        pointDensity = 2;
+        sampleDensity0 = 1;
+        sampleDensity1 = 1;
+        sampleDensity2 = 1;
         displayMethod = DISPLAYMETHOD_LINES;
         showSeeds = false;
         showHeads = false;
@@ -315,6 +324,13 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         opacityVarMaxFlag = false;
         tubeDisplayDensity = 10;
         geomDisplayQuality = DISPLAYQUALITY_MEDIUM;
+        sampleDistance0 = 1;
+        sampleDistance1 = 1;
+        sampleDistance2 = 1;
+        fillInterior = true;
+        randomSamples = false;
+        randomSeed = 0;
+        numberOfRandomSamples = 1;
     }
 
     public StreamlineAttributes(StreamlineAttributes obj)
@@ -356,13 +372,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         planeUpAxis[1] = obj.planeUpAxis[1];
         planeUpAxis[2] = obj.planeUpAxis[2];
 
-        planeRadius = obj.planeRadius;
+        radius = obj.radius;
         sphereOrigin = new double[3];
         sphereOrigin[0] = obj.sphereOrigin[0];
         sphereOrigin[1] = obj.sphereOrigin[1];
         sphereOrigin[2] = obj.sphereOrigin[2];
 
-        sphereRadius = obj.sphereRadius;
         boxExtents = new double[6];
         for(i = 0; i < obj.boxExtents.length; ++i)
             boxExtents[i] = obj.boxExtents[i];
@@ -375,7 +390,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             pointList.addElement(new Double(dv.doubleValue()));
         }
 
-        pointDensity = obj.pointDensity;
+        sampleDensity0 = obj.sampleDensity0;
+        sampleDensity1 = obj.sampleDensity1;
+        sampleDensity2 = obj.sampleDensity2;
         displayMethod = obj.displayMethod;
         showSeeds = obj.showSeeds;
         showHeads = obj.showHeads;
@@ -419,6 +436,13 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         opacityVarMaxFlag = obj.opacityVarMaxFlag;
         tubeDisplayDensity = obj.tubeDisplayDensity;
         geomDisplayQuality = obj.geomDisplayQuality;
+        sampleDistance0 = obj.sampleDistance0;
+        sampleDistance1 = obj.sampleDistance1;
+        sampleDistance2 = obj.sampleDistance2;
+        fillInterior = obj.fillInterior;
+        randomSamples = obj.randomSamples;
+        randomSeed = obj.randomSeed;
+        numberOfRandomSamples = obj.numberOfRandomSamples;
 
         SelectAll();
     }
@@ -496,13 +520,14 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 planeOrigin_equal &&
                 planeNormal_equal &&
                 planeUpAxis_equal &&
-                (planeRadius == obj.planeRadius) &&
+                (radius == obj.radius) &&
                 sphereOrigin_equal &&
-                (sphereRadius == obj.sphereRadius) &&
                 boxExtents_equal &&
                 (useWholeBox == obj.useWholeBox) &&
                 pointList_equal &&
-                (pointDensity == obj.pointDensity) &&
+                (sampleDensity0 == obj.sampleDensity0) &&
+                (sampleDensity1 == obj.sampleDensity1) &&
+                (sampleDensity2 == obj.sampleDensity2) &&
                 (displayMethod == obj.displayMethod) &&
                 (showSeeds == obj.showSeeds) &&
                 (showHeads == obj.showHeads) &&
@@ -545,7 +570,14 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (opacityVarMinFlag == obj.opacityVarMinFlag) &&
                 (opacityVarMaxFlag == obj.opacityVarMaxFlag) &&
                 (tubeDisplayDensity == obj.tubeDisplayDensity) &&
-                (geomDisplayQuality == obj.geomDisplayQuality));
+                (geomDisplayQuality == obj.geomDisplayQuality) &&
+                (sampleDistance0 == obj.sampleDistance0) &&
+                (sampleDistance1 == obj.sampleDistance1) &&
+                (sampleDistance2 == obj.sampleDistance2) &&
+                (fillInterior == obj.fillInterior) &&
+                (randomSamples == obj.randomSamples) &&
+                (randomSeed == obj.randomSeed) &&
+                (numberOfRandomSamples == obj.numberOfRandomSamples));
     }
 
     public String GetName() { return "Streamline"; }
@@ -666,9 +698,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(8);
     }
 
-    public void SetPlaneRadius(double planeRadius_)
+    public void SetRadius(double radius_)
     {
-        planeRadius = planeRadius_;
+        radius = radius_;
         Select(9);
     }
 
@@ -688,293 +720,341 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(10);
     }
 
-    public void SetSphereRadius(double sphereRadius_)
-    {
-        sphereRadius = sphereRadius_;
-        Select(11);
-    }
-
     public void SetBoxExtents(double[] boxExtents_)
     {
         for(int i = 0; i < 6; ++i)
              boxExtents[i] = boxExtents_[i];
-        Select(12);
+        Select(11);
     }
 
     public void SetUseWholeBox(boolean useWholeBox_)
     {
         useWholeBox = useWholeBox_;
-        Select(13);
+        Select(12);
     }
 
     public void SetPointList(Vector pointList_)
     {
         pointList = pointList_;
+        Select(13);
+    }
+
+    public void SetSampleDensity0(int sampleDensity0_)
+    {
+        sampleDensity0 = sampleDensity0_;
         Select(14);
     }
 
-    public void SetPointDensity(int pointDensity_)
+    public void SetSampleDensity1(int sampleDensity1_)
     {
-        pointDensity = pointDensity_;
+        sampleDensity1 = sampleDensity1_;
         Select(15);
+    }
+
+    public void SetSampleDensity2(int sampleDensity2_)
+    {
+        sampleDensity2 = sampleDensity2_;
+        Select(16);
     }
 
     public void SetDisplayMethod(int displayMethod_)
     {
         displayMethod = displayMethod_;
-        Select(16);
+        Select(17);
     }
 
     public void SetShowSeeds(boolean showSeeds_)
     {
         showSeeds = showSeeds_;
-        Select(17);
+        Select(18);
     }
 
     public void SetShowHeads(boolean showHeads_)
     {
         showHeads = showHeads_;
-        Select(18);
+        Select(19);
     }
 
     public void SetTubeRadius(double tubeRadius_)
     {
         tubeRadius = tubeRadius_;
-        Select(19);
+        Select(20);
     }
 
     public void SetRibbonWidth(double ribbonWidth_)
     {
         ribbonWidth = ribbonWidth_;
-        Select(20);
+        Select(21);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(21);
+        Select(22);
     }
 
     public void SetColoringMethod(int coloringMethod_)
     {
         coloringMethod = coloringMethod_;
-        Select(22);
+        Select(23);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(23);
+        Select(24);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(24);
+        Select(25);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(25);
+        Select(26);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(26);
+        Select(27);
     }
 
     public void SetStreamlineDirection(int streamlineDirection_)
     {
         streamlineDirection = streamlineDirection_;
-        Select(27);
+        Select(28);
     }
 
     public void SetRelTol(double relTol_)
     {
         relTol = relTol_;
-        Select(28);
+        Select(29);
     }
 
     public void SetAbsTol(double absTol_)
     {
         absTol = absTol_;
-        Select(29);
+        Select(30);
     }
 
     public void SetTerminationType(int terminationType_)
     {
         terminationType = terminationType_;
-        Select(30);
+        Select(31);
     }
 
     public void SetIntegrationType(int integrationType_)
     {
         integrationType = integrationType_;
-        Select(31);
+        Select(32);
     }
 
     public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
     {
         streamlineAlgorithmType = streamlineAlgorithmType_;
-        Select(32);
+        Select(33);
     }
 
     public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
     {
         maxStreamlineProcessCount = maxStreamlineProcessCount_;
-        Select(33);
+        Select(34);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(34);
+        Select(35);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(35);
+        Select(36);
     }
 
     public void SetPathlines(boolean pathlines_)
     {
         pathlines = pathlines_;
-        Select(36);
+        Select(37);
     }
 
     public void SetColoringVariable(String coloringVariable_)
     {
         coloringVariable = coloringVariable_;
-        Select(37);
+        Select(38);
     }
 
     public void SetLegendMinFlag(boolean legendMinFlag_)
     {
         legendMinFlag = legendMinFlag_;
-        Select(38);
+        Select(39);
     }
 
     public void SetLegendMaxFlag(boolean legendMaxFlag_)
     {
         legendMaxFlag = legendMaxFlag_;
-        Select(39);
+        Select(40);
     }
 
     public void SetLegendMin(double legendMin_)
     {
         legendMin = legendMin_;
-        Select(40);
+        Select(41);
     }
 
     public void SetLegendMax(double legendMax_)
     {
         legendMax = legendMax_;
-        Select(41);
+        Select(42);
     }
 
     public void SetDisplayBegin(double displayBegin_)
     {
         displayBegin = displayBegin_;
-        Select(42);
+        Select(43);
     }
 
     public void SetDisplayEnd(double displayEnd_)
     {
         displayEnd = displayEnd_;
-        Select(43);
+        Select(44);
     }
 
     public void SetDisplayBeginFlag(boolean displayBeginFlag_)
     {
         displayBeginFlag = displayBeginFlag_;
-        Select(44);
+        Select(45);
     }
 
     public void SetDisplayEndFlag(boolean displayEndFlag_)
     {
         displayEndFlag = displayEndFlag_;
-        Select(45);
+        Select(46);
     }
 
     public void SetSeedDisplayRadius(double seedDisplayRadius_)
     {
         seedDisplayRadius = seedDisplayRadius_;
-        Select(46);
+        Select(47);
     }
 
     public void SetHeadDisplayType(int headDisplayType_)
     {
         headDisplayType = headDisplayType_;
-        Select(47);
+        Select(48);
     }
 
     public void SetHeadDisplayRadius(double headDisplayRadius_)
     {
         headDisplayRadius = headDisplayRadius_;
-        Select(48);
+        Select(49);
     }
 
     public void SetHeadDisplayHeight(double headDisplayHeight_)
     {
         headDisplayHeight = headDisplayHeight_;
-        Select(49);
+        Select(50);
     }
 
     public void SetOpacityType(int opacityType_)
     {
         opacityType = opacityType_;
-        Select(50);
+        Select(51);
     }
 
     public void SetOpacityVariable(String opacityVariable_)
     {
         opacityVariable = opacityVariable_;
-        Select(51);
+        Select(52);
     }
 
     public void SetOpacity(double opacity_)
     {
         opacity = opacity_;
-        Select(52);
+        Select(53);
     }
 
     public void SetOpacityVarMin(double opacityVarMin_)
     {
         opacityVarMin = opacityVarMin_;
-        Select(53);
+        Select(54);
     }
 
     public void SetOpacityVarMax(double opacityVarMax_)
     {
         opacityVarMax = opacityVarMax_;
-        Select(54);
+        Select(55);
     }
 
     public void SetOpacityVarMinFlag(boolean opacityVarMinFlag_)
     {
         opacityVarMinFlag = opacityVarMinFlag_;
-        Select(55);
+        Select(56);
     }
 
     public void SetOpacityVarMaxFlag(boolean opacityVarMaxFlag_)
     {
         opacityVarMaxFlag = opacityVarMaxFlag_;
-        Select(56);
+        Select(57);
     }
 
     public void SetTubeDisplayDensity(int tubeDisplayDensity_)
     {
         tubeDisplayDensity = tubeDisplayDensity_;
-        Select(57);
+        Select(58);
     }
 
     public void SetGeomDisplayQuality(int geomDisplayQuality_)
     {
         geomDisplayQuality = geomDisplayQuality_;
-        Select(58);
+        Select(59);
+    }
+
+    public void SetSampleDistance0(double sampleDistance0_)
+    {
+        sampleDistance0 = sampleDistance0_;
+        Select(60);
+    }
+
+    public void SetSampleDistance1(double sampleDistance1_)
+    {
+        sampleDistance1 = sampleDistance1_;
+        Select(61);
+    }
+
+    public void SetSampleDistance2(double sampleDistance2_)
+    {
+        sampleDistance2 = sampleDistance2_;
+        Select(62);
+    }
+
+    public void SetFillInterior(boolean fillInterior_)
+    {
+        fillInterior = fillInterior_;
+        Select(63);
+    }
+
+    public void SetRandomSamples(boolean randomSamples_)
+    {
+        randomSamples = randomSamples_;
+        Select(64);
+    }
+
+    public void SetRandomSeed(int randomSeed_)
+    {
+        randomSeed = randomSeed_;
+        Select(65);
+    }
+
+    public void SetNumberOfRandomSamples(int numberOfRandomSamples_)
+    {
+        numberOfRandomSamples = numberOfRandomSamples_;
+        Select(66);
     }
 
     // Property getting methods
@@ -987,13 +1067,14 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public double[]       GetPlaneOrigin() { return planeOrigin; }
     public double[]       GetPlaneNormal() { return planeNormal; }
     public double[]       GetPlaneUpAxis() { return planeUpAxis; }
-    public double         GetPlaneRadius() { return planeRadius; }
+    public double         GetRadius() { return radius; }
     public double[]       GetSphereOrigin() { return sphereOrigin; }
-    public double         GetSphereRadius() { return sphereRadius; }
     public double[]       GetBoxExtents() { return boxExtents; }
     public boolean        GetUseWholeBox() { return useWholeBox; }
     public Vector         GetPointList() { return pointList; }
-    public int            GetPointDensity() { return pointDensity; }
+    public int            GetSampleDensity0() { return sampleDensity0; }
+    public int            GetSampleDensity1() { return sampleDensity1; }
+    public int            GetSampleDensity2() { return sampleDensity2; }
     public int            GetDisplayMethod() { return displayMethod; }
     public boolean        GetShowSeeds() { return showSeeds; }
     public boolean        GetShowHeads() { return showHeads; }
@@ -1037,6 +1118,13 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public boolean        GetOpacityVarMaxFlag() { return opacityVarMaxFlag; }
     public int            GetTubeDisplayDensity() { return tubeDisplayDensity; }
     public int            GetGeomDisplayQuality() { return geomDisplayQuality; }
+    public double         GetSampleDistance0() { return sampleDistance0; }
+    public double         GetSampleDistance1() { return sampleDistance1; }
+    public double         GetSampleDistance2() { return sampleDistance2; }
+    public boolean        GetFillInterior() { return fillInterior; }
+    public boolean        GetRandomSamples() { return randomSamples; }
+    public int            GetRandomSeed() { return randomSeed; }
+    public int            GetNumberOfRandomSamples() { return numberOfRandomSamples; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1060,105 +1148,121 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(8, buf))
             buf.WriteDoubleArray(planeUpAxis);
         if(WriteSelect(9, buf))
-            buf.WriteDouble(planeRadius);
+            buf.WriteDouble(radius);
         if(WriteSelect(10, buf))
             buf.WriteDoubleArray(sphereOrigin);
         if(WriteSelect(11, buf))
-            buf.WriteDouble(sphereRadius);
-        if(WriteSelect(12, buf))
             buf.WriteDoubleArray(boxExtents);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(12, buf))
             buf.WriteBool(useWholeBox);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(13, buf))
             buf.WriteDoubleVector(pointList);
+        if(WriteSelect(14, buf))
+            buf.WriteInt(sampleDensity0);
         if(WriteSelect(15, buf))
-            buf.WriteInt(pointDensity);
+            buf.WriteInt(sampleDensity1);
         if(WriteSelect(16, buf))
-            buf.WriteInt(displayMethod);
+            buf.WriteInt(sampleDensity2);
         if(WriteSelect(17, buf))
-            buf.WriteBool(showSeeds);
+            buf.WriteInt(displayMethod);
         if(WriteSelect(18, buf))
-            buf.WriteBool(showHeads);
+            buf.WriteBool(showSeeds);
         if(WriteSelect(19, buf))
-            buf.WriteDouble(tubeRadius);
+            buf.WriteBool(showHeads);
         if(WriteSelect(20, buf))
-            buf.WriteDouble(ribbonWidth);
+            buf.WriteDouble(tubeRadius);
         if(WriteSelect(21, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteDouble(ribbonWidth);
         if(WriteSelect(22, buf))
-            buf.WriteInt(coloringMethod);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(23, buf))
-            buf.WriteString(colorTableName);
+            buf.WriteInt(coloringMethod);
         if(WriteSelect(24, buf))
-            singleColor.Write(buf);
+            buf.WriteString(colorTableName);
         if(WriteSelect(25, buf))
-            buf.WriteBool(legendFlag);
+            singleColor.Write(buf);
         if(WriteSelect(26, buf))
-            buf.WriteBool(lightingFlag);
+            buf.WriteBool(legendFlag);
         if(WriteSelect(27, buf))
-            buf.WriteInt(streamlineDirection);
+            buf.WriteBool(lightingFlag);
         if(WriteSelect(28, buf))
-            buf.WriteDouble(relTol);
+            buf.WriteInt(streamlineDirection);
         if(WriteSelect(29, buf))
-            buf.WriteDouble(absTol);
+            buf.WriteDouble(relTol);
         if(WriteSelect(30, buf))
-            buf.WriteInt(terminationType);
+            buf.WriteDouble(absTol);
         if(WriteSelect(31, buf))
-            buf.WriteInt(integrationType);
+            buf.WriteInt(terminationType);
         if(WriteSelect(32, buf))
-            buf.WriteInt(streamlineAlgorithmType);
+            buf.WriteInt(integrationType);
         if(WriteSelect(33, buf))
-            buf.WriteInt(maxStreamlineProcessCount);
+            buf.WriteInt(streamlineAlgorithmType);
         if(WriteSelect(34, buf))
-            buf.WriteInt(maxDomainCacheSize);
+            buf.WriteInt(maxStreamlineProcessCount);
         if(WriteSelect(35, buf))
-            buf.WriteInt(workGroupSize);
+            buf.WriteInt(maxDomainCacheSize);
         if(WriteSelect(36, buf))
-            buf.WriteBool(pathlines);
+            buf.WriteInt(workGroupSize);
         if(WriteSelect(37, buf))
-            buf.WriteString(coloringVariable);
+            buf.WriteBool(pathlines);
         if(WriteSelect(38, buf))
-            buf.WriteBool(legendMinFlag);
+            buf.WriteString(coloringVariable);
         if(WriteSelect(39, buf))
-            buf.WriteBool(legendMaxFlag);
+            buf.WriteBool(legendMinFlag);
         if(WriteSelect(40, buf))
-            buf.WriteDouble(legendMin);
+            buf.WriteBool(legendMaxFlag);
         if(WriteSelect(41, buf))
-            buf.WriteDouble(legendMax);
+            buf.WriteDouble(legendMin);
         if(WriteSelect(42, buf))
-            buf.WriteDouble(displayBegin);
+            buf.WriteDouble(legendMax);
         if(WriteSelect(43, buf))
-            buf.WriteDouble(displayEnd);
+            buf.WriteDouble(displayBegin);
         if(WriteSelect(44, buf))
-            buf.WriteBool(displayBeginFlag);
+            buf.WriteDouble(displayEnd);
         if(WriteSelect(45, buf))
-            buf.WriteBool(displayEndFlag);
+            buf.WriteBool(displayBeginFlag);
         if(WriteSelect(46, buf))
-            buf.WriteDouble(seedDisplayRadius);
+            buf.WriteBool(displayEndFlag);
         if(WriteSelect(47, buf))
-            buf.WriteInt(headDisplayType);
+            buf.WriteDouble(seedDisplayRadius);
         if(WriteSelect(48, buf))
-            buf.WriteDouble(headDisplayRadius);
+            buf.WriteInt(headDisplayType);
         if(WriteSelect(49, buf))
-            buf.WriteDouble(headDisplayHeight);
+            buf.WriteDouble(headDisplayRadius);
         if(WriteSelect(50, buf))
-            buf.WriteInt(opacityType);
+            buf.WriteDouble(headDisplayHeight);
         if(WriteSelect(51, buf))
-            buf.WriteString(opacityVariable);
+            buf.WriteInt(opacityType);
         if(WriteSelect(52, buf))
-            buf.WriteDouble(opacity);
+            buf.WriteString(opacityVariable);
         if(WriteSelect(53, buf))
-            buf.WriteDouble(opacityVarMin);
+            buf.WriteDouble(opacity);
         if(WriteSelect(54, buf))
-            buf.WriteDouble(opacityVarMax);
+            buf.WriteDouble(opacityVarMin);
         if(WriteSelect(55, buf))
-            buf.WriteBool(opacityVarMinFlag);
+            buf.WriteDouble(opacityVarMax);
         if(WriteSelect(56, buf))
-            buf.WriteBool(opacityVarMaxFlag);
+            buf.WriteBool(opacityVarMinFlag);
         if(WriteSelect(57, buf))
-            buf.WriteInt(tubeDisplayDensity);
+            buf.WriteBool(opacityVarMaxFlag);
         if(WriteSelect(58, buf))
+            buf.WriteInt(tubeDisplayDensity);
+        if(WriteSelect(59, buf))
             buf.WriteInt(geomDisplayQuality);
+        if(WriteSelect(60, buf))
+            buf.WriteDouble(sampleDistance0);
+        if(WriteSelect(61, buf))
+            buf.WriteDouble(sampleDistance1);
+        if(WriteSelect(62, buf))
+            buf.WriteDouble(sampleDistance2);
+        if(WriteSelect(63, buf))
+            buf.WriteBool(fillInterior);
+        if(WriteSelect(64, buf))
+            buf.WriteBool(randomSamples);
+        if(WriteSelect(65, buf))
+            buf.WriteInt(randomSeed);
+        if(WriteSelect(66, buf))
+            buf.WriteInt(numberOfRandomSamples);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1193,155 +1297,179 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             SetPlaneUpAxis(buf.ReadDoubleArray());
             break;
         case 9:
-            SetPlaneRadius(buf.ReadDouble());
+            SetRadius(buf.ReadDouble());
             break;
         case 10:
             SetSphereOrigin(buf.ReadDoubleArray());
             break;
         case 11:
-            SetSphereRadius(buf.ReadDouble());
-            break;
-        case 12:
             SetBoxExtents(buf.ReadDoubleArray());
             break;
-        case 13:
+        case 12:
             SetUseWholeBox(buf.ReadBool());
             break;
-        case 14:
+        case 13:
             SetPointList(buf.ReadDoubleVector());
             break;
+        case 14:
+            SetSampleDensity0(buf.ReadInt());
+            break;
         case 15:
-            SetPointDensity(buf.ReadInt());
+            SetSampleDensity1(buf.ReadInt());
             break;
         case 16:
-            SetDisplayMethod(buf.ReadInt());
+            SetSampleDensity2(buf.ReadInt());
             break;
         case 17:
-            SetShowSeeds(buf.ReadBool());
+            SetDisplayMethod(buf.ReadInt());
             break;
         case 18:
-            SetShowHeads(buf.ReadBool());
+            SetShowSeeds(buf.ReadBool());
             break;
         case 19:
-            SetTubeRadius(buf.ReadDouble());
+            SetShowHeads(buf.ReadBool());
             break;
         case 20:
-            SetRibbonWidth(buf.ReadDouble());
+            SetTubeRadius(buf.ReadDouble());
             break;
         case 21:
-            SetLineWidth(buf.ReadInt());
+            SetRibbonWidth(buf.ReadDouble());
             break;
         case 22:
-            SetColoringMethod(buf.ReadInt());
+            SetLineWidth(buf.ReadInt());
             break;
         case 23:
-            SetColorTableName(buf.ReadString());
+            SetColoringMethod(buf.ReadInt());
             break;
         case 24:
-            singleColor.Read(buf);
-            Select(24);
+            SetColorTableName(buf.ReadString());
             break;
         case 25:
-            SetLegendFlag(buf.ReadBool());
+            singleColor.Read(buf);
+            Select(25);
             break;
         case 26:
-            SetLightingFlag(buf.ReadBool());
+            SetLegendFlag(buf.ReadBool());
             break;
         case 27:
-            SetStreamlineDirection(buf.ReadInt());
+            SetLightingFlag(buf.ReadBool());
             break;
         case 28:
-            SetRelTol(buf.ReadDouble());
+            SetStreamlineDirection(buf.ReadInt());
             break;
         case 29:
-            SetAbsTol(buf.ReadDouble());
+            SetRelTol(buf.ReadDouble());
             break;
         case 30:
-            SetTerminationType(buf.ReadInt());
+            SetAbsTol(buf.ReadDouble());
             break;
         case 31:
-            SetIntegrationType(buf.ReadInt());
+            SetTerminationType(buf.ReadInt());
             break;
         case 32:
-            SetStreamlineAlgorithmType(buf.ReadInt());
+            SetIntegrationType(buf.ReadInt());
             break;
         case 33:
-            SetMaxStreamlineProcessCount(buf.ReadInt());
+            SetStreamlineAlgorithmType(buf.ReadInt());
             break;
         case 34:
-            SetMaxDomainCacheSize(buf.ReadInt());
+            SetMaxStreamlineProcessCount(buf.ReadInt());
             break;
         case 35:
-            SetWorkGroupSize(buf.ReadInt());
+            SetMaxDomainCacheSize(buf.ReadInt());
             break;
         case 36:
-            SetPathlines(buf.ReadBool());
+            SetWorkGroupSize(buf.ReadInt());
             break;
         case 37:
-            SetColoringVariable(buf.ReadString());
+            SetPathlines(buf.ReadBool());
             break;
         case 38:
-            SetLegendMinFlag(buf.ReadBool());
+            SetColoringVariable(buf.ReadString());
             break;
         case 39:
-            SetLegendMaxFlag(buf.ReadBool());
+            SetLegendMinFlag(buf.ReadBool());
             break;
         case 40:
-            SetLegendMin(buf.ReadDouble());
+            SetLegendMaxFlag(buf.ReadBool());
             break;
         case 41:
-            SetLegendMax(buf.ReadDouble());
+            SetLegendMin(buf.ReadDouble());
             break;
         case 42:
-            SetDisplayBegin(buf.ReadDouble());
+            SetLegendMax(buf.ReadDouble());
             break;
         case 43:
-            SetDisplayEnd(buf.ReadDouble());
+            SetDisplayBegin(buf.ReadDouble());
             break;
         case 44:
-            SetDisplayBeginFlag(buf.ReadBool());
+            SetDisplayEnd(buf.ReadDouble());
             break;
         case 45:
-            SetDisplayEndFlag(buf.ReadBool());
+            SetDisplayBeginFlag(buf.ReadBool());
             break;
         case 46:
-            SetSeedDisplayRadius(buf.ReadDouble());
+            SetDisplayEndFlag(buf.ReadBool());
             break;
         case 47:
-            SetHeadDisplayType(buf.ReadInt());
+            SetSeedDisplayRadius(buf.ReadDouble());
             break;
         case 48:
-            SetHeadDisplayRadius(buf.ReadDouble());
+            SetHeadDisplayType(buf.ReadInt());
             break;
         case 49:
-            SetHeadDisplayHeight(buf.ReadDouble());
+            SetHeadDisplayRadius(buf.ReadDouble());
             break;
         case 50:
-            SetOpacityType(buf.ReadInt());
+            SetHeadDisplayHeight(buf.ReadDouble());
             break;
         case 51:
-            SetOpacityVariable(buf.ReadString());
+            SetOpacityType(buf.ReadInt());
             break;
         case 52:
-            SetOpacity(buf.ReadDouble());
+            SetOpacityVariable(buf.ReadString());
             break;
         case 53:
-            SetOpacityVarMin(buf.ReadDouble());
+            SetOpacity(buf.ReadDouble());
             break;
         case 54:
-            SetOpacityVarMax(buf.ReadDouble());
+            SetOpacityVarMin(buf.ReadDouble());
             break;
         case 55:
-            SetOpacityVarMinFlag(buf.ReadBool());
+            SetOpacityVarMax(buf.ReadDouble());
             break;
         case 56:
-            SetOpacityVarMaxFlag(buf.ReadBool());
+            SetOpacityVarMinFlag(buf.ReadBool());
             break;
         case 57:
-            SetTubeDisplayDensity(buf.ReadInt());
+            SetOpacityVarMaxFlag(buf.ReadBool());
             break;
         case 58:
+            SetTubeDisplayDensity(buf.ReadInt());
+            break;
+        case 59:
             SetGeomDisplayQuality(buf.ReadInt());
+            break;
+        case 60:
+            SetSampleDistance0(buf.ReadDouble());
+            break;
+        case 61:
+            SetSampleDistance1(buf.ReadDouble());
+            break;
+        case 62:
+            SetSampleDistance2(buf.ReadDouble());
+            break;
+        case 63:
+            SetFillInterior(buf.ReadBool());
+            break;
+        case 64:
+            SetRandomSamples(buf.ReadBool());
+            break;
+        case 65:
+            SetRandomSeed(buf.ReadInt());
+            break;
+        case 66:
+            SetNumberOfRandomSamples(buf.ReadInt());
             break;
         }
     }
@@ -1373,13 +1501,14 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + doubleArrayToString("planeOrigin", planeOrigin, indent) + "\n";
         str = str + doubleArrayToString("planeNormal", planeNormal, indent) + "\n";
         str = str + doubleArrayToString("planeUpAxis", planeUpAxis, indent) + "\n";
-        str = str + doubleToString("planeRadius", planeRadius, indent) + "\n";
+        str = str + doubleToString("radius", radius, indent) + "\n";
         str = str + doubleArrayToString("sphereOrigin", sphereOrigin, indent) + "\n";
-        str = str + doubleToString("sphereRadius", sphereRadius, indent) + "\n";
         str = str + doubleArrayToString("boxExtents", boxExtents, indent) + "\n";
         str = str + boolToString("useWholeBox", useWholeBox, indent) + "\n";
         str = str + doubleVectorToString("pointList", pointList, indent) + "\n";
-        str = str + intToString("pointDensity", pointDensity, indent) + "\n";
+        str = str + intToString("sampleDensity0", sampleDensity0, indent) + "\n";
+        str = str + intToString("sampleDensity1", sampleDensity1, indent) + "\n";
+        str = str + intToString("sampleDensity2", sampleDensity2, indent) + "\n";
         str = str + indent + "displayMethod = ";
         if(displayMethod == DISPLAYMETHOD_LINES)
             str = str + "DISPLAYMETHOD_LINES";
@@ -1496,6 +1625,13 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(geomDisplayQuality == DISPLAYQUALITY_SUPER)
             str = str + "DISPLAYQUALITY_SUPER";
         str = str + "\n";
+        str = str + doubleToString("sampleDistance0", sampleDistance0, indent) + "\n";
+        str = str + doubleToString("sampleDistance1", sampleDistance1, indent) + "\n";
+        str = str + doubleToString("sampleDistance2", sampleDistance2, indent) + "\n";
+        str = str + boolToString("fillInterior", fillInterior, indent) + "\n";
+        str = str + boolToString("randomSamples", randomSamples, indent) + "\n";
+        str = str + intToString("randomSeed", randomSeed, indent) + "\n";
+        str = str + intToString("numberOfRandomSamples", numberOfRandomSamples, indent) + "\n";
         return str;
     }
 
@@ -1510,13 +1646,14 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private double[]       planeOrigin;
     private double[]       planeNormal;
     private double[]       planeUpAxis;
-    private double         planeRadius;
+    private double         radius;
     private double[]       sphereOrigin;
-    private double         sphereRadius;
     private double[]       boxExtents;
     private boolean        useWholeBox;
     private Vector         pointList; // vector of Double objects
-    private int            pointDensity;
+    private int            sampleDensity0;
+    private int            sampleDensity1;
+    private int            sampleDensity2;
     private int            displayMethod;
     private boolean        showSeeds;
     private boolean        showHeads;
@@ -1560,5 +1697,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private boolean        opacityVarMaxFlag;
     private int            tubeDisplayDensity;
     private int            geomDisplayQuality;
+    private double         sampleDistance0;
+    private double         sampleDistance1;
+    private double         sampleDistance2;
+    private boolean        fillInterior;
+    private boolean        randomSamples;
+    private int            randomSeed;
+    private int            numberOfRandomSamples;
 }
 
