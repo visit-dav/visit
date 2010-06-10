@@ -249,6 +249,12 @@ static const int maxCoincidentNodelists = 12;
 //
 //    Mark C. Miller Tue Mar 30 16:28:48 PDT 2010
 //    Temporarily reset to using DB_ALL error level as DB_TOP is causing hangs.
+//
+//    Cyrus Harrison, Thu Jun 10 16:15:36 PDT 2010
+//    Changed default init of 'metadataIsTimeVarying' member to true.
+//    This helps to deal w/ a chicken & egg senairo when detecting if a silo
+//    dataset has time varying metadata.
+//
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -269,7 +275,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     searchForAnnotInt = false;
     readGlobalInfo = false;
     connectivityIsTimeVarying = false;
-    metadataIsTimeVarying = false;
+    metadataIsTimeVarying = true;
     groupInfo.haveGroups = false;
     haveAmrGroupInfo = false;
     hasDisjointElements = false;
@@ -1403,6 +1409,11 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Tue Dec 15 14:01:48 PST 2009
 //    Added metadataIsTimeVarying
+//
+//    Cyrus Harrison, Thu Jun 10 16:15:36 PDT 2010
+//    Set 'metadataIsTimeVarying' member var to false if silo var
+//    'MetadataIsTimeVarying' is not equal 1 or does not exist.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
@@ -1455,8 +1466,12 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
             {
                 int mdFlag;
                 DBReadVar(dbfile, "MetadataIsTimeVarying", &mdFlag);
-                if (mdFlag == 1)
-                    metadataIsTimeVarying = true;
+                if (mdFlag != 1)
+                    metadataIsTimeVarying = false;
+            }
+            else
+            {
+                metadataIsTimeVarying = false;
             }
 
             if (DBInqVarExists(dbfile, "AlphabetizeVariables"))
