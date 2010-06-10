@@ -84,6 +84,9 @@
 //    Dave Pugmire, Mon Feb 15 14:05:19 EST 2010
 //    Add perpendiculars method and unary - operator.
 //
+//    Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//    Add set() methods.
+//
 // ****************************************************************************
 class MATH_API avtVector
 {
@@ -128,6 +131,10 @@ class MATH_API avtVector
     // element access
     double& operator[](const size_t &i);
     const double& operator[](const size_t &i) const;
+    void  set(const double *v);
+    void  set(const float *v);
+    void  set(double, double, double);
+    void  set(float, float, float);
 
     // 2-norm
     double     norm() const;
@@ -399,6 +406,34 @@ inline avtVector lerp(const double &t, const avtVector &v0, const avtVector &v1)
                      one_minus_t*v0.y + t*v1.y,
                      one_minus_t*v0.z + t*v1.z);
     return result;
+}
+
+inline void avtVector::set(const double *v)
+{
+    x=v[0];
+    y=v[1];
+    z=v[2];
+}
+
+inline void avtVector::set(const float *v)
+{
+    x=v[0];
+    y=v[1];
+    z=v[2];
+}
+
+inline void avtVector::set(double v0, double v1, double v2)
+{
+    x = v0;
+    y = v1;
+    z = v2;
+}
+
+inline void avtVector::set(float v0, float v1, float v2)
+{
+    x = v0;
+    y = v1;
+    z = v2;
 }
 
 

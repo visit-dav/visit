@@ -387,6 +387,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Hank Childs, Sun Jun  6 11:53:33 CDT 2010
 //   Change method name from streamline direction to integration direction.
 //
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
 // ****************************************************************************
 
 void
@@ -404,51 +407,48 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     switch (atts.GetSourceType())
     {
       case StreamlineAttributes::SpecifiedPoint:
-        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
         streamlineFilter->SetPointSource(atts.GetPointSource());
         break;
-
       case StreamlineAttributes::SpecifiedPointList:
-        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_POINT_LIST);
         streamlineFilter->SetPointListSource(atts.GetPointList());
         break;
 
       case StreamlineAttributes::SpecifiedLine:
-        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_LINE);
-        streamlineFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd());
-        streamlineFilter->SetPointDensity(atts.GetPointDensity());
+        streamlineFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd(),
+                                        atts.GetSampleDensity0(),
+                                        atts.GetRandomSamples(), atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
+        break;
+      case StreamlineAttributes::SpecifiedPlane:
+        streamlineFilter->SetPlaneSource(atts.GetPlaneOrigin(),
+                                         atts.GetPlaneNormal(),
+                                         atts.GetPlaneUpAxis(),
+                                         atts.GetSampleDensity0(), atts.GetSampleDensity1(),
+                                         atts.GetSampleDistance0(), atts.GetSampleDistance1(),
+                                         atts.GetFillInterior(),
+                                         atts.GetRandomSamples(), atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
         break;
 
       case StreamlineAttributes::SpecifiedCircle:
-        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_CIRCLE);
-        streamlineFilter->SetPlaneSource(atts.GetPlaneOrigin(),
-                                         atts.GetPlaneNormal(),
-                                         atts.GetPlaneUpAxis(),
-                                         atts.GetPlaneRadius());
-        streamlineFilter->SetPointDensity(atts.GetPointDensity());
+        streamlineFilter->SetCircleSource(atts.GetPlaneOrigin(),
+                                          atts.GetPlaneNormal(),
+                                          atts.GetPlaneUpAxis(),
+                                          atts.GetRadius(),
+                                          atts.GetSampleDensity0(), atts.GetSampleDensity1(),
+                                          atts.GetFillInterior(),
+                                          atts.GetRandomSamples(), atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
         break;
-
-      case StreamlineAttributes::SpecifiedPlane:
-        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_PLANE);
-        streamlineFilter->SetPlaneSource(atts.GetPlaneOrigin(),
-                                         atts.GetPlaneNormal(),
-                                         atts.GetPlaneUpAxis(),
-                                         atts.GetPlaneRadius());
-        streamlineFilter->SetPointDensity(atts.GetPointDensity());
-        break;
-
       case StreamlineAttributes::SpecifiedSphere:
-        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_SPHERE);
-        streamlineFilter->SetSphereSource(atts.GetSphereOrigin(),
-                                          atts.GetSphereRadius());
-        streamlineFilter->SetPointDensity(atts.GetPointDensity());
+        streamlineFilter->SetSphereSource(atts.GetSphereOrigin(), atts.GetRadius(),
+                                          atts.GetSampleDensity0(), atts.GetSampleDensity1(), atts.GetSampleDensity2(),
+                                          atts.GetFillInterior(),
+                                          atts.GetRandomSamples(), atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
         break;
 
       case StreamlineAttributes::SpecifiedBox:
-        streamlineFilter->SetSourceType(STREAMLINE_SOURCE_BOX);
-        streamlineFilter->SetBoxSource(atts.GetBoxExtents());
-        streamlineFilter->SetUseWholeBox(atts.GetUseWholeBox());
-        streamlineFilter->SetPointDensity(atts.GetPointDensity());
+        streamlineFilter->SetBoxSource(atts.GetBoxExtents(),atts.GetUseWholeBox(),
+                                       atts.GetSampleDensity0(), atts.GetSampleDensity1(), atts.GetSampleDensity2(),
+                                       atts.GetFillInterior(),
+                                       atts.GetRandomSamples(), atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
         break;
     }
 

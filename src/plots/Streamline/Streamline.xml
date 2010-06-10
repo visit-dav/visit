@@ -123,16 +123,13 @@
         1.000000
         0.000000
       </Field>
-      <Field name="planeRadius" label="Plane radius" type="double" enabler="sourceType:SpecifiedPlane">
+      <Field name="radius" label="Radius" type="double">
         1.000000
       </Field>
       <Field name="sphereOrigin" label="Sphere origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedSphere">
         0.000000
         0.000000
         0.000000
-      </Field>
-      <Field name="sphereRadius" label="Sphere radius" type="double" enabler="sourceType:SpecifiedSphere">
-        1.000000
       </Field>
       <Field name="boxExtents" label="Box extents" type="doubleArray" length="6" enabler="sourceType:SpecifiedBox">
         0.000000
@@ -156,8 +153,14 @@
         1.000000
         0.000000
       </Field>
-      <Field name="pointDensity" label="Point density" type="int" enabler="sourceType:SpecifiedLine,SpecifiedPlane,SpecifiedSphere,SpecifiedBox">
-        2
+      <Field name="sampleDensity0" label="sampleDensity0" type="int">
+        1
+      </Field>
+      <Field name="sampleDensity1" label="sampleDensity1" type="int">
+        1
+      </Field>
+      <Field name="sampleDensity2" label="sampleDensity2" type="int">
+        1
       </Field>
       <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">
         Lines
@@ -288,6 +291,27 @@
       </Field>
       <Field name="geomDisplayQuality" label="geomDisplayQuality" type="enum" subtype="DisplayQuality">
         Medium
+      </Field>
+      <Field name="sampleDistance0" label="sampleDistance0" type="double">
+        1.000000
+      </Field>
+      <Field name="sampleDistance1" label="sampleDistance1" type="double">
+        1.000000
+      </Field>
+      <Field name="sampleDistance2" label="sampleDistance2" type="double">
+        1.000000
+      </Field>
+      <Field name="fillInterior" label="fillInterior" type="bool">
+        true
+      </Field>
+      <Field name="randomSamples" label="randomSamples" type="bool">
+        false
+      </Field>
+      <Field name="randomSeed" label="randomSeed" type="int">
+        0
+      </Field>
+      <Field name="numberOfRandomSamples" label="numberOfRandomSamples" type="int">
+        1
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

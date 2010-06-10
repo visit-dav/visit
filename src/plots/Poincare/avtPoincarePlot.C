@@ -344,6 +344,9 @@ avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
 //    Hank Childs, Sun Jun  6 11:53:33 CDT 2010
 //    Change method name from streamline direction to integration direction.
 //
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
 // ****************************************************************************
 
 void
@@ -378,29 +381,27 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     switch (atts.GetSourceType())
     {
       case PoincareAttributes::SpecifiedPoint:
-        poincareFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
         poincareFilter->SetPointSource(atts.GetPointSource());
         break;
 
       case PoincareAttributes::SpecifiedLine:
         if( atts.GetPointDensity() > 1 )
         {
-          poincareFilter->SetSourceType(STREAMLINE_SOURCE_LINE);
-          poincareFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd());
-          poincareFilter->SetPointDensity(atts.GetPointDensity()-1);
+            poincareFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd(),
+                                          atts.GetPointDensity()-1,
+                                          false, 0, 0);
         }
         else
         {
-          double pt[3];
+            double pt[3];
 
-          pt[0] = (atts.GetLineStart()[0] + atts.GetLineEnd()[0]) / 2;
-          pt[1] = (atts.GetLineStart()[1] + atts.GetLineEnd()[1]) / 2;
-          pt[2] = (atts.GetLineStart()[2] + atts.GetLineEnd()[2]) / 2;
-
-          poincareFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
-          poincareFilter->SetPointSource(pt);
+            pt[0] = (atts.GetLineStart()[0] + atts.GetLineEnd()[0]) / 2;
+            pt[1] = (atts.GetLineStart()[1] + atts.GetLineEnd()[1]) / 2;
+            pt[2] = (atts.GetLineStart()[2] + atts.GetLineEnd()[2]) / 2;
+            
+            poincareFilter->SetPointSource(pt);
         }
-
+        
         break;
     }
 

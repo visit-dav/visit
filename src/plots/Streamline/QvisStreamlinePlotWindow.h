@@ -43,6 +43,9 @@
 
 // Forward declarations
 class QLabel;
+class QGroupBox;
+class QListWidget;
+class QListWidgetItem;
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
@@ -52,6 +55,7 @@ class QvisColorButton;
 class QvisLineWidthWidget;
 class QvisVariableButton;
 class QvisOpacitySlider;
+class QPushButton;
 class StreamlineAttributes;
 
 // ****************************************************************************
@@ -115,6 +119,9 @@ class StreamlineAttributes;
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -142,6 +149,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
     void UpdateSourceAttributes();
+    void TurnOffSourceAttributes();
     void UpdateAlgorithmAttributes();
     void UpdateIntegrationAttributes();
     void UpdateTerminationType();
@@ -162,10 +170,19 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void planeOriginProcessText();
     void planeNormalProcessText();
     void planeUpAxisProcessText();
-    void planeRadiusProcessText();
+    void radiusProcessText();
     void sphereOriginProcessText();
     void sphereRadiusProcessText();
-    void pointDensityChanged(int val);
+    void sampleDensity0Changed(int val);
+    void sampleDensity1Changed(int val);
+    void sampleDensity2Changed(int val);
+    void sampleDistance0ProcessText();
+    void sampleDistance1ProcessText();
+    void sampleDistance2ProcessText();
+    void randomSamplesChanged(bool);
+    void randomSeedChanged(int);
+    void numberOfRandomSamplesChanged(int);
+    void fillInteriorChanged(bool);
     void maxSLCountChanged(int val);
     void maxDomainCacheChanged(int val);
     void workGroupSizeChanged(int val);
@@ -206,6 +223,12 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void tubeDisplayDensityChanged(int);
     void seedDisplayQualityChanged(int);
     void headDisplayTypeChanged(int);
+    void pointListClicked(QListWidgetItem*);
+    void pointListDoubleClicked(QListWidgetItem*);
+    void addPoint();
+    void deletePoint();
+    void readPoints();
+    void textChanged(const QString &currentText);
 
   private:
     int plotType;
@@ -224,26 +247,34 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *lineStartLabel;
     QLineEdit *lineEnd;
     QLabel    *lineEndLabel;
-    QLineEdit *pointList;
-    QLabel    *pointListLabel;
-    QLabel    *pointListInfo;
+    QListWidget *pointList;
+    QPushButton *pointListDelPoint, *pointListAddPoint, *pointListReadPoints;
     QLineEdit *planeOrigin;
     QLabel    *planeOriginLabel;
     QLineEdit *planeNormal;
     QLabel    *planeNormalLabel;
     QLineEdit *planeUpAxis;
     QLabel    *planeUpAxisLabel;
-    QLineEdit *planeRadius;
-    QLabel    *planeRadiusLabel;
+    QLineEdit *radius;
+    QLabel    *radiusLabel;
     QLineEdit *sphereOrigin;
     QLabel    *sphereOriginLabel;
-    QLineEdit *sphereRadius;
-    QLabel    *sphereRadiusLabel;
     QCheckBox *useWholeBox;
     QLineEdit *boxExtents[3];
     QLabel    *boxExtentsLabel[3];
-    QLabel    *pointDensityLabel;
-    QSpinBox  *pointDensity;
+    QLabel    *sampleDensityLabel[3], *sampleDistanceLabel[3];
+    QSpinBox  *sampleDensity[3];
+    QLineEdit *sampleDistance[3];
+
+    QGroupBox *samplingGroup;
+    QCheckBox *randomSamples;
+    QSpinBox  *numberOfRandomSamples;
+    QLabel    *numberOfRandomSamplesLabel;
+    QSpinBox  *randomSeed;
+    QLabel    *randomSeedLabel;
+    QCheckBox *fillInterior;
+
+
     QComboBox *displayMethod;
     QCheckBox *showSeeds, *showHeads;
     QLabel    *seedRadiusLabel, *headRadiusLabel, *headHeightLabel;
@@ -251,7 +282,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *headDisplayTypeLabel;
     QLineEdit *seedRadius, *headRadius, *headHeight;
     QLineEdit *tubeRadius, *ribbonWidth;
-    QLabel    *radiusLabel;
+    QLabel    *geomRadiusLabel;
     QvisLineWidthWidget *lineWidth;
     QLabel    *lineWidthLabel;
     QLabel    *lineWidthDummy;

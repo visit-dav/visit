@@ -204,6 +204,9 @@ class vtkAppendPolyData;
 //   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
 //   Add method GetCommunicationPattern.
 //
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
@@ -223,17 +226,25 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
                                         const avtVector &p_start, int ID);
 
     // Methods to set the filter's attributes.
-    void                      SetSourceType(int sourceType);
     void                      SetIntersectionObject(vtkObject *obj);
 
-    void                      SetPointSource(double pt[3]);
-    void                      SetLineSource(double pt[3], double pt2[3]);
-    void                      SetPlaneSource(double O[3], double N[3],
-                                             double U[3], double R);
-    void                      SetSphereSource(double O[3], double R);
+    void                      SetPointSource(const double *p);
+    void                      SetLineSource(const double *p0, const double *p1,
+                                            int den, bool rand, int seed, int numPts);
+    
+    void                      SetPlaneSource(double O[3], double N[3], double U[3], 
+                                             int den1, int den2, double dist1, double dist2,
+                                             bool fill, bool rand, int seed, int numPts);
+    void                      SetCircleSource(double O[3], double N[3], double U[3], double r,
+                                              int den1, int den2,
+                                              bool fill, bool rand, int seed, int numPts);
+    void                      SetSphereSource(double O[3], double R,
+                                              int den1, int den2, int den3,
+                                              bool fill, bool rand, int seed, int numPts);
+    void                      SetBoxSource(double E[6], bool wholeBox,
+                                           int den1, int den2, int den3,
+                                           bool fill, bool rand, int seed, int numPts);
     void                      SetPointListSource(const std::vector<double> &);
-    void                      SetBoxSource(double E[6]);
-    void                      SetUseWholeBox(bool b) { useWholeBox = b; };
 
     void                      SetDisplayMethod(int d);
     void                      SetPointDensity(int den);
@@ -252,13 +263,18 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     std::string coloringVariable, opacityVariable;
 
     // Various starting locations for streamlines.
+    std::vector<avtVector> pointList;
+    avtVector points[2];
+    avtVector vectors[2];
+    std::vector<double> listOfPoints;
+    int       numSamplePoints;
+    int       sampleDensity[3];
+    double    sampleDistance[3];
+    bool      randomSamples;
+    int       randomSeed;
+    bool      fill, useBBox;
+
     std::string             SeedInfoString() const;
-    double pointSource[3];
-    double lineStart[3], lineEnd[3];
-    double planeOrigin[3], planeNormal[3], planeUpAxis[3], planeRadius;
-    double sphereOrigin[3], sphereRadius;
-    double boxExtents[6];
-    bool   useWholeBox;
 
     vtkObject *intersectObj;
 

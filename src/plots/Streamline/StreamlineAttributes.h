@@ -180,13 +180,14 @@ public:
     void SetPlaneOrigin(const double *planeOrigin_);
     void SetPlaneNormal(const double *planeNormal_);
     void SetPlaneUpAxis(const double *planeUpAxis_);
-    void SetPlaneRadius(double planeRadius_);
+    void SetRadius(double radius_);
     void SetSphereOrigin(const double *sphereOrigin_);
-    void SetSphereRadius(double sphereRadius_);
     void SetBoxExtents(const double *boxExtents_);
     void SetUseWholeBox(bool useWholeBox_);
     void SetPointList(const doubleVector &pointList_);
-    void SetPointDensity(int pointDensity_);
+    void SetSampleDensity0(int sampleDensity0_);
+    void SetSampleDensity1(int sampleDensity1_);
+    void SetSampleDensity2(int sampleDensity2_);
     void SetDisplayMethod(DisplayMethod displayMethod_);
     void SetShowSeeds(bool showSeeds_);
     void SetShowHeads(bool showHeads_);
@@ -230,6 +231,13 @@ public:
     void SetOpacityVarMaxFlag(bool opacityVarMaxFlag_);
     void SetTubeDisplayDensity(int tubeDisplayDensity_);
     void SetGeomDisplayQuality(DisplayQuality geomDisplayQuality_);
+    void SetSampleDistance0(double sampleDistance0_);
+    void SetSampleDistance1(double sampleDistance1_);
+    void SetSampleDistance2(double sampleDistance2_);
+    void SetFillInterior(bool fillInterior_);
+    void SetRandomSamples(bool randomSamples_);
+    void SetRandomSeed(int randomSeed_);
+    void SetNumberOfRandomSamples(int numberOfRandomSamples_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -247,16 +255,17 @@ public:
           double         *GetPlaneNormal();
     const double         *GetPlaneUpAxis() const;
           double         *GetPlaneUpAxis();
-    double               GetPlaneRadius() const;
+    double               GetRadius() const;
     const double         *GetSphereOrigin() const;
           double         *GetSphereOrigin();
-    double               GetSphereRadius() const;
     const double         *GetBoxExtents() const;
           double         *GetBoxExtents();
     bool                 GetUseWholeBox() const;
     const doubleVector   &GetPointList() const;
           doubleVector   &GetPointList();
-    int                  GetPointDensity() const;
+    int                  GetSampleDensity0() const;
+    int                  GetSampleDensity1() const;
+    int                  GetSampleDensity2() const;
     DisplayMethod        GetDisplayMethod() const;
     bool                 GetShowSeeds() const;
     bool                 GetShowHeads() const;
@@ -304,6 +313,13 @@ public:
     bool                 GetOpacityVarMaxFlag() const;
     int                  GetTubeDisplayDensity() const;
     DisplayQuality       GetGeomDisplayQuality() const;
+    double               GetSampleDistance0() const;
+    double               GetSampleDistance1() const;
+    double               GetSampleDistance2() const;
+    bool                 GetFillInterior() const;
+    bool                 GetRandomSamples() const;
+    int                  GetRandomSeed() const;
+    int                  GetNumberOfRandomSamples() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -382,13 +398,14 @@ public:
         ID_planeOrigin,
         ID_planeNormal,
         ID_planeUpAxis,
-        ID_planeRadius,
+        ID_radius,
         ID_sphereOrigin,
-        ID_sphereRadius,
         ID_boxExtents,
         ID_useWholeBox,
         ID_pointList,
-        ID_pointDensity,
+        ID_sampleDensity0,
+        ID_sampleDensity1,
+        ID_sampleDensity2,
         ID_displayMethod,
         ID_showSeeds,
         ID_showHeads,
@@ -432,6 +449,13 @@ public:
         ID_opacityVarMaxFlag,
         ID_tubeDisplayDensity,
         ID_geomDisplayQuality,
+        ID_sampleDistance0,
+        ID_sampleDistance1,
+        ID_sampleDistance2,
+        ID_fillInterior,
+        ID_randomSamples,
+        ID_randomSeed,
+        ID_numberOfRandomSamples,
         ID__LAST
     };
 
@@ -445,13 +469,14 @@ private:
     double         planeOrigin[3];
     double         planeNormal[3];
     double         planeUpAxis[3];
-    double         planeRadius;
+    double         radius;
     double         sphereOrigin[3];
-    double         sphereRadius;
     double         boxExtents[6];
     bool           useWholeBox;
     doubleVector   pointList;
-    int            pointDensity;
+    int            sampleDensity0;
+    int            sampleDensity1;
+    int            sampleDensity2;
     int            displayMethod;
     bool           showSeeds;
     bool           showHeads;
@@ -495,11 +520,18 @@ private:
     bool           opacityVarMaxFlag;
     int            tubeDisplayDensity;
     int            geomDisplayQuality;
+    double         sampleDistance0;
+    double         sampleDistance1;
+    double         sampleDistance2;
+    bool           fillInterior;
+    bool           randomSamples;
+    int            randomSeed;
+    int            numberOfRandomSamples;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDdDbd*iibbddiisabbiddiiiiiibsbbddddbbdiddisdddbbii"
+#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDDbd*iiiibbddiisabbiddiiiiiibsbbddddbbdiddisdddbbiidddbbii"
 
 #endif
