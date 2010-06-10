@@ -63,6 +63,9 @@
 #    Added logic to handle 'special' case in which the ITAPS_C plugin
 #    itself is being built against a single iMesh implementation. This is
 #    to facilitate development (as opposed to installation) of ITAPS plugin.
+#
+#    Mark C. Miller, Mon Jun  7 09:40:31 PDT 2010
+#    Made it print path to iMesh implementation in status message.
 #****************************************************************************/
 
 FUNCTION(ITAPS_ADD_IMPLEMENTATION IMPL)
@@ -161,7 +164,7 @@ FUNCTION(CONFIGURE_ITAPS)
     ENDFOREACH(IMPL ${ITAPS_IMPLEMENTATIONS})
 
     FOREACH(IMPL ${ITAPS_IMPLEMENTATIONS})
-        MESSAGE(STATUS "  ${IMPL}")
+        MESSAGE(STATUS "  ${IMPL}: ${ITAPS_${IMPL}_INCLUDE_DIR}")
         # Just print info for now
         #MESSAGE(STATUS "    includes  =${ITAPS_${IMPL}_INCLUDE_DIR}")
         #MESSAGE(STATUS "    patterns  =${ITAPS_${IMPL}_FILE_PATTERNS}")
