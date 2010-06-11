@@ -395,7 +395,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     samplingLayout->addWidget(randomSeedLabel, sRow, 3);
     randomSeed = new QSpinBox(samplingGroup);
     randomSeed->setMinimum(0);
-    randomSeed->setMaximum(10000000000);
+    randomSeed->setMaximum(100000000);
     connect(randomSeed, SIGNAL(valueChanged(int)), this, SLOT(randomSeedChanged(int)));
     samplingLayout->addWidget(randomSeed, sRow, 4);
     randomSeedLabel->setBuddy(randomSeed);
