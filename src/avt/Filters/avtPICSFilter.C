@@ -2131,13 +2131,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
     out_contract->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
 #ifdef PARALLEL
-    /*
-    if (numDomains == 1)
-    {
-        debug5<<"Replicate domains"<<endl;
-        out_contract->SetReplicateSingleDomainOnAllProcessors(true);
-    }
-    */
+    //out_contract->SetReplicateSingleDomainOnAllProcessors(true);
 #endif
 
     if (doPathlines)

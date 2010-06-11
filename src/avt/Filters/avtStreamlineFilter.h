@@ -207,6 +207,9 @@ class vtkAppendPolyData;
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources.
 //
+//   Dave Pugmire, Fri Jun 11 15:12:04 EDT 2010
+//   Remove seed densities.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
@@ -247,7 +250,6 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     void                      SetPointListSource(const std::vector<double> &);
 
     void                      SetDisplayMethod(int d);
-    void                      SetPointDensity(int den);
     void                      SetColoringMethod(int, const std::string &var="");
     void                      SetOpacityVariable(const std::string &var);
 
@@ -258,7 +260,6 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
   protected:
     int    sourceType;   
     int    displayMethod;
-    int    pointDensity1, pointDensity2, pointDensity3;
     int    coloringMethod;
     std::string coloringVariable, opacityVariable;
 
