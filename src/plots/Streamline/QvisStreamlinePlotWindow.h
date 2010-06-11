@@ -172,7 +172,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void planeUpAxisProcessText();
     void radiusProcessText();
     void sphereOriginProcessText();
-    void sphereRadiusProcessText();
     void sampleDensity0Changed(int val);
     void sampleDensity1Changed(int val);
     void sampleDensity2Changed(int val);
