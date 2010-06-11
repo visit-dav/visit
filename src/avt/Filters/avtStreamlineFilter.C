@@ -179,19 +179,16 @@ static float random_11()
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources. 
 //
+//   Dave Pugmire, Fri Jun 11 15:12:04 EDT 2010
+//   Remove seed densities.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
 {
-    pointDensity1 = 1;
-    pointDensity2 = 1;
-    pointDensity3 = 1;
     coloringMethod = STREAMLINE_COLOR_SPEED;
     displayMethod = STREAMLINE_DISPLAY_LINES;
 
-    //
-    // Initialize source values.
-    //
     //
     // Initialize source values.
     //
@@ -741,37 +738,6 @@ avtStreamlineFilter::SeedInfoString() const
     string str = buff;
     return str;
 }
-
-
-// ****************************************************************************
-// Method: avtStreamlineFilter::SetPointDensity
-//
-// Purpose: 
-//   Sets the point density used for streamlines. The meaning depends on the
-//   source type.
-//
-// Arguments:
-//   den : The new point density.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 6 13:03:12 PST 2002
-//
-// Modifications:
-//
-//   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
-//   Add 3 point density vars.
-//   
-// ****************************************************************************
-
-void
-avtStreamlineFilter::SetPointDensity(int den)
-{
-    pointDensity1 = (den > 0) ? den : 1;
-    pointDensity2 = pointDensity1;
-    pointDensity3 = pointDensity1;
-}
-
-
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::PostExecute
