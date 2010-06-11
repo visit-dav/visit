@@ -900,6 +900,14 @@
 #
 #     Mark C. Miller, Thu Jun 10 10:45:56 PDT 2010
 #     Update date in message regarding ITAPS libs.
+#
+#     Eric Brugger, Thu Jun 10 16:20:09 PDT 2010
+#     I added zlib to the list of dependent libraries for silo in the config
+#     site file.
+#
+#     Eric Brugger, Thu Jun 10 17:35:17 PDT 2010
+#     I added the option "--download-only", which only downloads the files.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1162,6 +1170,7 @@ export ON_MORE="off"
 export DO_DBIO_ONLY="no"
 export DO_STATIC_BUILD="no"
 export USE_VISIBILITY_HIDDEN="no"
+DOWNLOAD_ONLY="no"
 
 if [[ "$CXX_COMPILER" == "g++" ]] ; then
     VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-1)
@@ -8870,7 +8879,11 @@ function build_hostconf
         >> $HOSTCONF
         if [[ "$DO_HDF5" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
+            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 /usr/lib z \${VISIT_HDF5_LIBDEP})" \
+            >> $HOSTCONF
+        else
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z \${VISIT_HDF5_LIBDEP})" \
             >> $HOSTCONF
         fi
     fi
@@ -9308,6 +9321,7 @@ usage () {
   printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "!$GRAPHICAL"
   printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
   printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
+  printf "%-15s %s [%s]\n" "--download-only" "Only download the specified packages" "false"
   printf "%-15s %s [%s]\n" "--exodus" "Build Exodus (requires NetCDF)" "$DO_EXODUS"
   printf "%-15s %s [%s]\n" "--fastbit" "Build FastBit" "$DO_FASTBIT"
   printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
@@ -9551,6 +9565,7 @@ for arg in "${arguments[@]}" ; do
         --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
         --dbio-only) DO_DBIO_ONLY="yes";;
         --debug) set -vx;;
+        --download-only) DOWNLOAD_ONLY="yes";;
         --fastbit) DO_FASTBIT="yes"; ON_FASTBIT="on"
                   DO_HDF5="yes"; ON_HDF5="on";;
         --exodus) DO_EXODUS="yes"; ON_EXODUS="on"
@@ -9973,23 +9988,25 @@ if [[ $VISITARCH == "" ]] ; then
     fi
 fi
 
-if [[ ! -d "$THIRD_PARTY_PATH" ]] ; then
-   if [[ "$THIRD_PARTY_PATH" == "./visit" ]] ; then
-      mkdir "$THIRD_PARTY_PATH"
-      if [[ $? != 0 ]] ; then
-          error "Unable to write files to the third party library location." \
-                "Bailing out."
-      fi
-   else
-      error "The location to install the third party libraries does not exit." \
-            "Bailing out"
-   fi
-fi
-
 START_DIR="$PWD"
-cd "$THIRD_PARTY_PATH"
-if [[ $? != 0 ]] ; then
-   error "Unable to access the third party location. Bailing out."
+if [[ "$DOWNLOAD_ONLY" == "no" ]] ; then
+   if [[ ! -d "$THIRD_PARTY_PATH" ]] ; then
+      if [[ "$THIRD_PARTY_PATH" == "./visit" ]] ; then
+         mkdir "$THIRD_PARTY_PATH"
+         if [[ $? != 0 ]] ; then
+            error "Unable to write files to the third party library location." \
+                  "Bailing out."
+         fi
+      else
+         error "The location to install the third party libraries does not exist." \
+               "Bailing out"
+      fi
+   fi
+
+   cd "$THIRD_PARTY_PATH"
+   if [[ $? != 0 ]] ; then
+      error "Unable to access the third party location. Bailing out."
+   fi
 fi
 export VISITDIR=${VISITDIR:-$(pwd)}
 
@@ -10024,7 +10041,7 @@ if [[ $? == 0 ]] ; then
    DO_QT="no"
 fi
 
-if [[ "$DO_QT" == "yes" ]] ; then
+if [[ "$DO_QT" == "yes" && "$DOWNLOAD_ONLY" == "no" ]] ; then
     qt_license_prompt
     if [[ $? != 0 ]] ;then
         error "Qt4 Open Source Edition License Declined. Bailing out."
@@ -10069,6 +10086,13 @@ if [[ $? != 0 ]] ; then
    error "Stopping build because necessary files aren't available."
 fi
 
+#
+# Exit if we were told to only download the files.
+#
+if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
+    info "Successfully downloaded the specified files."
+    exit 0
+fi
 
 #
 # We are now ready to build.
