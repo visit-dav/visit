@@ -24,6 +24,9 @@
 <li>The visit.so and visitmodule.so Python modules now are installed with $ORIGIN rpath so their dependent shared libraries can be found when Python imports the modules.</li>
 <li>A couple of bugs were corrected with the reading of unstructured meshes with polyhedral elements in the Silo database reader.</li>
 <li>The visit.so Python module used by "import visit" now contains additional initialization to prevent crashes when executing user-defined callback functions.</li>
+<li>A parallel bug with the Elliptical Compactness query was fixed. The bug resulted in incorrect ellipse axis fitting for multi-domain problems.</li>
+<li>A bug preventing Silo's 'MetaDataIsTimeVarying' flag from working was fixed.</li>
+<li>A bug with parsing bool arguments for Python Filter contract wrappers was resolved.</li>
 </ul>
 <p><b><font size="4">Enhancements in version 2.0.1</font></b></p>
 <ul>

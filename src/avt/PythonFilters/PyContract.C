@@ -145,6 +145,8 @@ Contract_ShouldUseLoadBalancing(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -155,7 +157,7 @@ Contract_UseLoadBalancing(PyObject *self, PyObject *args)
 
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -182,6 +184,8 @@ Contract_UseLoadBalancing(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -192,7 +196,7 @@ Contract_SetHaveRectilinearMeshOptimizations(PyObject *self, PyObject *args)
 
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -247,6 +251,8 @@ Contract_GetHaveRectilinearMeshOptimizations(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -257,7 +263,7 @@ Contract_SetHaveCurvilinearMeshOptimizations(PyObject *self, PyObject *args)
 
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -335,6 +341,8 @@ Contract_DoingOnDemandStreaming(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -345,7 +353,7 @@ Contract_SetOnDemandStreaming(PyObject *self, PyObject *args)
 
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -373,6 +381,8 @@ Contract_SetOnDemandStreaming(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -383,7 +393,7 @@ Contract_SetDataRequest(PyObject *self, PyObject *args)
 
     // get python data request ...
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(!PyDataRequest_Check(py_val))

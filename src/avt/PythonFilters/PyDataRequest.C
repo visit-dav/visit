@@ -761,6 +761,8 @@ DataRequest_NeedStructuredIndices(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -771,7 +773,7 @@ DataRequest_SetNeedStructuredIndices(PyObject *self, PyObject *args)
 
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -1192,6 +1194,8 @@ DataRequest_MayRequireZones(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -1201,7 +1205,7 @@ DataRequest_SetMayRequireZones(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -1258,6 +1262,8 @@ DataRequest_MayRequireNodes(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -1267,7 +1273,7 @@ DataRequest_SetMayRequireNodes(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -1323,6 +1329,8 @@ DataRequest_MustMaintainOriginalConnectivity(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -1333,7 +1341,7 @@ DataRequest_SetMaintainOriginalConnectivity(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -1364,6 +1372,8 @@ DataRequest_SetMaintainOriginalConnectivity(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -1375,7 +1385,7 @@ DataRequest_SetDesiredGhostDataType(PyObject *self, PyObject *args)
 
     int val = -1;
     PyObject *py_obj;
-    if(!PyArg_ParseTuple(args, "o", &py_obj))
+    if(!PyArg_ParseTuple(args, "O", &py_obj))
         return NULL;
 
     if(PyInt_Check(py_obj))
@@ -1470,6 +1480,8 @@ DataRequest_NeedValidFaceConnectivity(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -1480,7 +1492,7 @@ DataRequest_SetNeedValidFaceConnectivity(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -1536,6 +1548,8 @@ DataRequest_UsesAllDomains(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -1546,7 +1560,7 @@ DataRequest_SetUsesAllDomains(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -1602,6 +1616,8 @@ DataRequest_NeedMixedVariableReconstruction(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -1612,7 +1628,7 @@ DataRequest_SetNeedMixedVariableReconstruction(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -1668,6 +1684,8 @@ DataRequest_NeedSmoothMaterialInterfaces(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -1678,7 +1696,7 @@ DataRequest_SetNeedSmoothMaterialInterfaces(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -1735,6 +1753,8 @@ DataRequest_NeedCleanZonesOnly(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -1745,7 +1765,7 @@ DataRequest_SetNeedCleanZonesOnly(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -2089,6 +2109,8 @@ DataRequest_SimplifyHeavilyMixedZones(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -2099,7 +2121,7 @@ DataRequest_SetSimplifyHeavilyMixedZones(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -2188,6 +2210,8 @@ DataRequest_SetMaxMaterialsPerZone(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -2198,7 +2222,7 @@ DataRequest_VariablesAreTheSame(PyObject *self, PyObject *args)
 
     // parse bool from args
     PyObject *py_obj;
-    if(!PyArg_ParseTuple(args, "o", &py_obj))
+    if(!PyArg_ParseTuple(args, "O", &py_obj))
         return NULL;
     if(!PyDataRequest_Check(py_obj))
         return NULL;
@@ -2227,6 +2251,8 @@ DataRequest_VariablesAreTheSame(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -2237,7 +2263,7 @@ DataRequest_AddDataSelection(PyObject *self, PyObject *args)
 
     // parse bool from args
     PyObject *py_obj;
-    if(!PyArg_ParseTuple(args, "o", &py_obj))
+    if(!PyArg_ParseTuple(args, "O", &py_obj))
         return NULL;
 
     if(!PyDataSelection_Check(py_obj))
@@ -2377,6 +2403,8 @@ DataRequest_NeedNativePrecision(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -2387,7 +2415,7 @@ DataRequest_SetNeedNativePrecision(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -2418,6 +2446,8 @@ DataRequest_SetNeedNativePrecision(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -2428,7 +2458,7 @@ DataRequest_UpdateAdmissibleDataTypes(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PySequence_Check(py_val) == 0)
@@ -2706,6 +2736,8 @@ DataRequest_DiscBoundaryOnly(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -2716,7 +2748,7 @@ DataRequest_SetDiscBoundaryOnly(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -2768,6 +2800,8 @@ DataRequest_PassNativeCSG(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -2778,7 +2812,7 @@ DataRequest_SetPassNativeCSG(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -2835,6 +2869,8 @@ DataRequest_TransformVectorsDuringProject(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -2845,7 +2881,7 @@ DataRequest_SetTransformVectorsDuringProject(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
@@ -2902,6 +2938,8 @@ DataRequest_NeedPostGhostMaterialInfo(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  9 08:58:23 PST 2010
 //
 // Modifications:
+//  Cyrus Harrison, Mon Jun 14 10:34:27 PDT 2010
+//  Use 'O' instead of 'o'.
 //
 // ****************************************************************************
 static PyObject *
@@ -2912,7 +2950,7 @@ DataRequest_SetNeedPostGhostMaterialInfo(PyObject *self, PyObject *args)
     avtDataRequest_p request = *(obj->request);
     // parse bool from args
     PyObject *py_val;
-    if(!PyArg_ParseTuple(args, "o", &py_val))
+    if(!PyArg_ParseTuple(args, "O", &py_val))
         return NULL;
 
     if(PyBool_Check(py_val) == 0)
