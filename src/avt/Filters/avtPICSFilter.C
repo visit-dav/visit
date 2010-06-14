@@ -389,7 +389,6 @@ avtPICSFilter::GetDomain(const DomainType &domain,
         }
         */
         ds = dataSets[domain.domain];
-
     }
     
     if (DebugStream::Level5())
@@ -463,7 +462,6 @@ avtPICSFilter::DomainLoaded(DomainType &domain) const
 #ifdef PARALLEL
     if (OperatingOnDemand())
         return avtDatasetOnDemandFilter::DomainLoaded(domain.domain, domain.timeStep);
-
     return PAR_Rank() == domainToRank[domain.domain];
 #endif
     
@@ -779,12 +777,7 @@ avtPICSFilter::Execute(void)
     SetMaxQueueLength(cacheQLen);
 
 #ifdef PARALLEL
-    /*
-    if (numDomains == 1)
-        method = STREAMLINE_STAGED_LOAD_ONDEMAND;
-    */
-    
-    if (method == STREAMLINE_STAGED_LOAD_ONDEMAND)
+    if (method == STREAMLINE_LOAD_ONDEMAND)
         icAlgo = new avtSerialICAlgorithm(this);
     else if (method == STREAMLINE_PARALLEL_STATIC_DOMAINS)
         icAlgo = new avtParDomICAlgorithm(this, maxCount);
@@ -872,12 +865,14 @@ avtPICSFilter::Execute(void)
 //   Only set seedTime0 to the simulation time for pathlines and not 
 //   streamlines.
 //
+//   Dave Pugmire, Mon Jun 14 14:16:57 EDT 2010
+//   Allow serial algorithm to be run in parallel on single domain datasets.
+//
 // ****************************************************************************
 
 void
 avtPICSFilter::Initialize()
 {
-    //MOVE TO ALGO. InitStatistics();
     dataSpatialDimension = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
     std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
     ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
@@ -887,10 +882,10 @@ avtPICSFilter::Initialize()
 
     if (doPathlines)
     {
-      if (md->AreAllTimesAccurateAndValid() != true)
-      {
-        avtCallback::IssueWarning("Pathlines - The time data does not appear to be accurate and valid. Will continue.");
-      }
+        if (md->AreAllTimesAccurateAndValid() != true)
+        {
+            avtCallback::IssueWarning("Pathlines - The time data does not appear to be accurate and valid. Will continue.");
+        }
     }
 
     // Get/Compute the interval tree.
@@ -950,7 +945,6 @@ avtPICSFilter::Initialize()
 #ifdef PARALLEL
     int rank = PAR_Rank();
     int nProcs = PAR_Size();
-    //MOVE TO ALGO statusMsgSz = numDomains+2;
 #endif
     
     // Assign domains to processors, if needed.
@@ -982,12 +976,17 @@ avtPICSFilter::Initialize()
 
         // Set and communicate all the domains.
 #ifdef PARALLEL
-        vector<int> myDoms;
-        myDoms.resize(numDomains, 0);
-        for (int i = 0; i < ds_list.domains.size(); i++)
-            myDoms[ ds_list.domains[i] ] = rank;
-        SumIntArrayAcrossAllProcessors(&myDoms[0],&domainToRank[0],numDomains);
-        debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<endl;
+        if (numDomains > 1)
+        {
+            vector<int> myDoms;
+            myDoms.resize(numDomains, 0);
+            for (int i = 0; i < ds_list.domains.size(); i++)
+                myDoms[ ds_list.domains[i] ] = rank;
+            SumIntArrayAcrossAllProcessors(&myDoms[0],&domainToRank[0],numDomains);
+            debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<endl;
+        }
+        else
+            domainToRank[0] = rank;
 #endif
         for (int i = 0; i < ds_list.domains.size(); i++)
         {
@@ -1002,9 +1001,13 @@ avtPICSFilter::Initialize()
     // If not operating on demand, the method *has* to be parallel static domains.
     if ( ! OperatingOnDemand() )
         method = STREAMLINE_PARALLEL_STATIC_DOMAINS;
+
+    // Parallel and one domains, use the serial algorithm.
+    if (numDomains == 1)
+        method = STREAMLINE_LOAD_ONDEMAND;
 #else
     // for serial, it's all load on demand.
-    method = STREAMLINE_STAGED_LOAD_ONDEMAND;
+    method = STREAMLINE_LOAD_ONDEMAND;
 #endif
 
     if (DebugStream::Level5())
@@ -1030,7 +1033,7 @@ avtPICSFilter::Initialize()
 
             if (intv[0] >= intv[1])
             {
-              avtCallback::IssueWarning("Pathlines - Found two adjacent steps that are not inceasing or equal in time. Setting the time difference to 1. This change will most likely affect the results.");
+                avtCallback::IssueWarning("Pathlines - Found two adjacent steps that are not inceasing or equal in time. Setting the time difference to 1. This change will most likely affect the results.");
 
                 intv[0] = (double)i;
                 intv[1] = (double)i+1;
@@ -2057,6 +2060,11 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2010
 //
+//  Modifications:
+//
+//   Dave Pugmire, Mon Jun 14 14:16:57 EDT 2010
+//   Allow serial algorithm to be run in parallel on single domain datasets.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -2131,7 +2139,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
     out_contract->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
 #ifdef PARALLEL
-    //out_contract->SetReplicateSingleDomainOnAllProcessors(true);
+    out_contract->SetReplicateSingleDomainOnAllProcessors(true);
 #endif
 
     if (doPathlines)
