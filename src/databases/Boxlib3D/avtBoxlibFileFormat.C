@@ -1520,6 +1520,10 @@ avtBoxlibFileFormat::GetVisMF(int index)
 //    Hank Childs, Wed Jan 11 09:40:17 PST 2006
 //    Change mesh type to AMR.
 //
+//    Hank Childs, Mon Jun 14 14:28:15 PDT 2010
+//    Use new AMR infrastructure if there are no materials.  (It doesn't work
+//    with materials yet.)
+//
 // ****************************************************************************
 
 void
@@ -1536,6 +1540,8 @@ avtBoxlibFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Prevent VisIt from sorting the variables.
     md->SetMustAlphabetizeVariables(false);
 
+    bool useFastTrack = (nMaterials <= 0);
+
     char mesh_name[32] = "Mesh";
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = mesh_name;
@@ -1545,23 +1551,32 @@ avtBoxlibFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->spatialDimension = dimension;
     mesh->topologicalDimension = dimension;
     mesh->hasSpatialExtents = false;
-    mesh->blockTitle = "patches";
-    mesh->blockPieceName = "patch";
-    mesh->numGroups = nLevels;
-    mesh->groupTitle = "levels";
-    mesh->groupPieceName = "level";
-    vector<int> groupIds(totalPatches);
-    vector<string> blockPieceNames(totalPatches);
-    for (int i = 0 ; i < totalPatches ; i++)
+
+    vector<int> groupIds;
+    vector<string> blockPieceNames;
+
+    if (useFastTrack)
+        mesh->SetAMRInfo("level", "patch", 1, patchesPerLevel);
+    else
     {
-        char tmpName[128];
-        int level, local_patch;
-        GetLevelAndLocalPatchNumber(i, level, local_patch);
-        groupIds[i] = level;
-        sprintf(tmpName, "level%d,patch%d", level, local_patch);
-        blockPieceNames[i] = tmpName;
+        groupIds.resize(totalPatches);
+        blockPieceNames.resize(totalPatches);
+        mesh->blockTitle = "patches";
+        mesh->blockPieceName = "patch";
+        mesh->numGroups = nLevels;
+        mesh->groupTitle = "levels";
+        mesh->groupPieceName = "level";
+        for (int i = 0 ; i < totalPatches ; i++)
+        {
+            char tmpName[128];
+            int level, local_patch;
+            GetLevelAndLocalPatchNumber(i, level, local_patch);
+            groupIds[i] = level;
+            sprintf(tmpName, "level%d,patch%d", level, local_patch);
+            blockPieceNames[i] = tmpName;
+        }
+        mesh->blockNames = blockPieceNames;
     }
-    mesh->blockNames = blockPieceNames;
 #if BL_SPACEDIM==2
     // coordSys == 0 <- XYZ
     // coordSys == 1 <- ZR
@@ -1579,7 +1594,8 @@ avtBoxlibFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 #endif
     md->Add(mesh);
-    md->AddGroupInformation(nLevels, totalPatches, groupIds);
+    if (! useFastTrack)
+        md->AddGroupInformation(nLevels, totalPatches, groupIds);
 
     int v;
     for (v = 0; v < nVars; ++v)
