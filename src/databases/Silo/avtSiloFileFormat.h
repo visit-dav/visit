@@ -257,6 +257,9 @@ typedef struct _GroupInfo
 //    Eric Brugger, Thu May 27 15:54:50 PDT 2010
 //    I added RemapFacelistForPolyhedronZones.
 //
+//    Cyrus Harrison, Mon Jun 14 15:45:46 PDT 2010
+//    Added metadataIsTimeVaryingChecked & CheckForTimeVaryingMetadata().
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -264,10 +267,10 @@ class avtSiloFileFormat : public avtSTMDFileFormat
   public:
                           avtSiloFileFormat(const char *, DBOptionsAttributes*);
     virtual              ~avtSiloFileFormat();
-    
+
     virtual void          FreeUpResources(void);
     virtual const char   *GetType(void) { return "Silo File Format"; };
-    
+
     virtual void         *GetAuxiliaryData(const char *var, int,
                                            const char *type, void *args,
                                            DestructorFunction &);
@@ -305,6 +308,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     bool                  readGlobalInfo;
     bool                  connectivityIsTimeVarying;
     bool                  metadataIsTimeVarying;
+    bool                  metadataIsTimeVaryingChecked;
     bool                  hasDisjointElements;
     string                codeNameGuess;
 
@@ -439,7 +443,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     avtSpecies           *CalcSpecies(DBfile *, char *);
     vtkDataArray         *GetGlobalNodeIds(int, const char *);
     vtkDataArray         *GetGlobalZoneIds(int, const char *);
-    
+
     avtIntervalTree      *GetSpatialExtents(const char *);
     avtIntervalTree      *GetDataExtents(const char *);
 
@@ -487,6 +491,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     DBmultimatspecies    *GetMultimatspec(const char *path, const char *name);
     DBmultimatspecies    *QueryMultimatspec(const char *path, const char *name);
     void                  RemoveMultimatspec(DBmultimatspecies *ms);
+    void                  CheckForTimeVaryingMetadata(DBfile *toc);
 };
 
 

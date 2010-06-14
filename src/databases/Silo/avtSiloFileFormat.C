@@ -255,6 +255,10 @@ static const int maxCoincidentNodelists = 12;
 //    This helps to deal w/ a chicken & egg senairo when detecting if a silo
 //    dataset has time varying metadata.
 //
+//    Cyrus Harrison, Mon Jun 14 15:25:48 PDT 2010
+//    Reverted previous change to init of 'metadataIsTimeVarying' & added
+//    init of 'metadataIsTimeVaryingCheck'.
+//
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -275,7 +279,8 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     searchForAnnotInt = false;
     readGlobalInfo = false;
     connectivityIsTimeVarying = false;
-    metadataIsTimeVarying = true;
+    metadataIsTimeVarying = false;
+    metadataIsTimeVaryingChecked = false;
     groupInfo.haveGroups = false;
     haveAmrGroupInfo = false;
     hasDisjointElements = false;
@@ -365,11 +370,25 @@ avtSiloFileFormat::~avtSiloFileFormat()
 //  Programmer: Mark C. Miller
 //  Creation:   February 9, 2004 
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Jun 14 15:34:22 PDT 2010
+//    Added check for time varying metadata.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ActivateTimestep(void)
 {
-    OpenFile(tocIndex);
+    DBfile *toc = OpenFile(tocIndex);
+    // note:
+    // We actually create a new instance of the file format class for every
+    // timestep. For each instance the 'metadataIsTimeVaryingChecked'
+    // starts out as false so this flag really only saves us work if a timestep
+    // is viewed more than once.
+    if(!metadataIsTimeVaryingChecked)
+    {
+        CheckForTimeVaryingMetadata(toc);
+        metadataIsTimeVaryingChecked = true;
+    }
 }
 
 // ****************************************************************************
@@ -1414,6 +1433,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Set 'metadataIsTimeVarying' member var to false if silo var
 //    'MetadataIsTimeVarying' is not equal 1 or does not exist.
 //
+//    Cyrus Harrison.
+//    Reverted previous change. Moved init of 'metadataIsTimeVarying'
+//    out of this function & into CheckForTimeVaryingMetadata().
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
@@ -1460,18 +1483,6 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                 DBReadVar(dbfile, "ConnectivityIsTimeVarying", &tvFlag);
                 if (tvFlag == 1)
                     connectivityIsTimeVarying = true;
-            }
-
-            if (DBInqVarExists(dbfile, "MetadataIsTimeVarying"))
-            {
-                int mdFlag;
-                DBReadVar(dbfile, "MetadataIsTimeVarying", &mdFlag);
-                if (mdFlag != 1)
-                    metadataIsTimeVarying = false;
-            }
-            else
-            {
-                metadataIsTimeVarying = false;
             }
 
             if (DBInqVarExists(dbfile, "AlphabetizeVariables"))
@@ -13060,6 +13071,32 @@ void avtSiloFileFormat::RemoveMultimatspec(DBmultimatspecies *ms)
             multimatspec_name.erase(itn);
             break;
         }
+    }
+}
+
+// ****************************************************************************
+//  Function: CheckForTimeVaryingMetadata
+//
+//  Purpose:
+//      Checks the existance & value of the flag 'MetadataIsTimeVarying'
+//      to determine if the metadata & sil potentially change between
+//      time steps.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Mon Jun 14 15:30:11 PDT 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtSiloFileFormat::CheckForTimeVaryingMetadata(DBfile *toc)
+{
+    if (DBInqVarExists(toc, "MetadataIsTimeVarying"))
+    {
+        int mdFlag;
+        DBReadVar(toc, "MetadataIsTimeVarying", &mdFlag);
+        if (mdFlag == 1)
+            metadataIsTimeVarying = true;
     }
 }
 
