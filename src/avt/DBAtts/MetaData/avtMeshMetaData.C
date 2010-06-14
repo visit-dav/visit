@@ -1211,6 +1211,11 @@ avtMeshMetaData::Print(ostream &out, int indent) const
 //  Programmer: Hank Childs
 //  Creation:   December 11, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jun 14 14:27:16 PDT 2010
+//    Fix crash for nlevels == 1 && patchs -> patches.
+//
 // ****************************************************************************
 
 void
@@ -1227,6 +1232,8 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
         numBlocks += patchesPerLevel[i];
     this->numBlocks = numBlocks;
     this->blockTitle = patchName + "s";
+    if (patchName == "patch" || patchName == "Patch")
+        this->blockTitle = patchName + "es";
     this->blockPieceName = patchName;
     this->numGroups = nlevels;
     this->groupTitle = levelName + "s";
@@ -1283,6 +1290,13 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
         else
             sprintf(str, ":n+%d:", origin);
         base_string += str;
+    }
+    if (nlevels <= 1)
+    {
+        // logic above doesn't work for nlevels == 1, just override
+        sprintf(str, "@%s%d,%s%%d@n+%d:", levelName.c_str(), origin, 
+                                          patchName.c_str(), origin);
+        base_string = str;
     }
 
     NameschemeAttributes atts;
