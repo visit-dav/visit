@@ -908,6 +908,9 @@
 #     Eric Brugger, Thu Jun 10 17:35:17 PDT 2010
 #     I added the option "--download-only", which only downloads the files.
 #
+#     Mark C. Miller, Mon Jun 14 08:53:09 PDT 2010
+#     Removed --enable-iMesh from build_moab as newer versions of MOAB don't
+#     use that configure flag.
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -8238,7 +8241,7 @@ function build_itaps_moab
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/itaps/MOAB/$ITAPS_MOAB_VERSION/$VISITARCH" \
-        --enable-imesh=nofortran --with-zlib \
+        --with-zlib \
         $WITHHDF5ARG "$WITHSZIPARG" "$WITHNETCDFARG"
     if [[ $? != 0 ]] ; then
        warn "ITAPS_MOAB configure failed.  Giving up"
