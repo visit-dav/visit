@@ -1,0 +1,111 @@
+#!/bin/sh
+
+testEmail="brugger1@llnl.gov"
+
+#
+# list of users who want email every night with the log file
+#
+logRecipients="miller86@llnl.gov hankchilds@gmail.com jsmeredith@ornl.gov"
+logRecipients="${logRecipients} ahern@ornl.gov"
+
+#
+# Parse the command line to determine the host to run on.
+#
+host="alastor"
+
+for abc
+do
+   case $1 in
+      -host)
+         host=$2
+         shift 2
+         ;;
+   esac
+done
+
+#
+# Check that we have a checkout of src data and test sitting in our directory.
+#
+if test ! -e src ; then
+   echo "The src directory does not exist."
+   exit 1
+fi
+if test ! -e data ; then
+   echo "The data directory does not exist."
+   exit 1
+fi
+if test ! -e test ; then
+   echo "The test directory does not exist."
+   exit 1
+fi
+
+#
+# Determine the revision number of the last pass.
+#
+lastpass=0
+if test -e src/svn_bin/lastpass_$host ; then
+   lastpass=`cat src/svn_bin/lastpass_$host`
+fi
+
+#
+# Create the awk script to determine the users that modified visit
+# since the last pass.
+#
+rm -f parse_users
+cat <<EOF > parse_users
+BEGIN { FS = " " }
+      { if (\$1 > $lastpass) print \$2 }
+EOF
+
+#
+# Determine the list of users who modified the source since the last pass.
+#
+rm -f modifiers
+touch modifiers
+if test "$lastpass" != "0" ; then
+   svn status -v -u src data test | tr -d '\*' | tr -s ' ' | cut -d' ' -f3-4 | grep '^[0-9]' | gawk -f parse_users | sort | uniq >> modifiers
+fi
+rm -f parse_users
+
+#
+# Build the email list of modifiers.
+#
+modifiersEmails=
+for user in `cat modifiers` ; do
+    useremail=`./src/svn_bin/nersc_username_to_email $user`
+    modifiersEmails="$modifiersEmails $useremail"
+done
+rm -f modifiers
+
+#
+# Build the complete email list, making sure we don't wind up including a
+# user from logrecipients and modifiers twice.
+#
+emailList="`echo $logRecipients` `echo $modifiersEmails`"
+emailList=`echo $emailList | tr ' ' '\n' | sort | uniq`
+
+#
+# Create the email and send it.
+#
+rm -rf mailmsg
+cat > mailmsg << EOF
+From: visit-developers@ornl.gov
+Subject: The test suite run on $host failed
+The test suite run on $host failed.
+
+The list of users who have modified VisIt since the
+test suite last succesfully PASSED or PASSED w/SKIPS
+is...
+
+EOF
+echo $modifiersEmails | tr ' ' '\n' | sort >> mailmsg
+echo "" >> mailmsg
+echo "The test suite results are at http://portal.nersc.gov/project/visit/"
+echo "" >> mailmsg
+
+if test -n "$testEmail"; then
+   cat mailmsg | /usr/sbin/sendmail $testEmail
+else
+   cat mailmsg | /usr/sbin/sendmail $emailList
+fi
+rm -f mailmsg

@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# Untar the html
+tar zxmf html.tar.gz -C /project/projectdirs/visit/www
+
+cd /project/projectdirs/visit/www
+
+# Set the permissions
+newDir=`ls -t | head -1`
+chgrp -R visit $newDir
+chmod -R g+rwX,o+rX $newDir
+
+# update top-level index.html file
+rm -f index.html
+echo "<html><head><title>VisIt Regression Results</title></head><body bgcolor=\"#a0a0f0\">" > index.html
+echo "<H1>Results of VisIt Regression Tests</H1>" >> index.html
+echo "<table border>" >> index.html
+echo "<tr>" >> index.html
+echo "   <td><b>Timestamp</b></td>" >> index.html
+echo "   <td><b>Mode</b></td>" >> index.html
+echo "   <td><b>Result</b></td>" >> index.html
+echo "</tr>" >> index.html
+
+ls -1t /project/projectdirs/visit/www/*/*/index.html | while read testLine; do
+
+    theMode=`echo $testLine | cut -d'/' -f7`
+    theRelDir=`echo $testLine | cut -d'/' -f6-`
+    theRelDir="./${theRelDir}"
+    theTimeStamp=`ls -l --time-style=+"%A_%b_%d_%I:%M%p" $testLine | tr -s ' ' | cut -d' ' -f6`
+
+    echo "<tr>" >> index.html
+    echo "<td>${theTimeStamp}</td>" >> index.html
+    echo "<td><a href=\"${theRelDir}\">${theMode}</a></td>" >> index.html
+
+    hasFailed=`grep -m 1 Failed $testLine 2>/dev/null`
+    if test "$hasFailed" = ""; then
+        hasFailed=`grep -m 1 Unacceptable $testLine 2>/dev/null`
+    fi
+    hasSkips=`grep -m 1 Skipped $testLine 2>/dev/null`
+    if test "$hasFailed" = ""; then
+        if test "$hasSkips" = ""; then
+            echo "<td bgcolor="#00ff00"><b>Passed</b></td>" >> index.html
+        else
+            echo "<td bgcolor="#0000ff"><b>Passed w/Skips</b></td>" >>index.html
+        fi
+    else
+        echo "<td bgcolor="#ff0000"><b>Failed</b></td>" >> index.html
+    fi
+    echo "</tr>" >> index.html
+done
+
+echo "</table>" >> index.html
+echo "</html>" >> index.html
+
+chgrp -R visit index.html
+chmod -R g+rwX,o+rX index.html
