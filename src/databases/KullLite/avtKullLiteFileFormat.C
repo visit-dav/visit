@@ -123,6 +123,9 @@ const char   *avtKullLiteFileFormat::MESHNAME = "mesh";
 //    Brad Whitlock, Mon Aug 28 14:26:00 PST 2006
 //    Added m_names_per_domain.
 //
+//    Mark C. Miller, Mon Jun 14 09:44:31 PDT 2010
+//    Add logic to ignore comment lines beginning with '#' AFTER 'MKF'
+//    designator.
 // ****************************************************************************
 
 avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname) 
@@ -152,12 +155,16 @@ avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname)
         int last_slash = a.find_last_of('/');
         if (last_slash != string::npos)
             prefix = a.substr(0, last_slash + 1);
-        inf >> b;
+        inf.getline(b, sizeof(b)); // get end-of-line of 'MKF' line
+        inf.getline(b, sizeof(b));
         while (inf && !inf.eof())
         {
-            a = prefix + b;
-            my_filenames.push_back(a);
-            inf >> b;
+            if (b[0] != '#')
+            {
+                a = prefix + b;
+                my_filenames.push_back(a);
+            }
+            inf.getline(b, sizeof(b)-1);
         }
     }
     else // We're opening a single file, it's not an index
