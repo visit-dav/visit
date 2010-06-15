@@ -1,0 +1,246 @@
+#!/bin/sh
+
+#
+# Determine the users name and e-mail address.
+#
+user=`whoami`
+
+#
+# Set the user e-mail address.
+#
+userNersc=unknown
+userEmail=unknown
+case $user in
+    bonnell)
+        userNersc=bonnell
+        userEmail=bonnell2@llnl.gov
+        ;;
+    kbonnell)
+        userNersc=bonnell
+        userEmail=bonnell2@llnl.gov
+        ;;
+    brugger)
+        userNersc=brugger
+        userEmail=brugger1@llnl.gov
+        ;;
+    hrchilds)
+        userNersc=hrchilds
+        userEmail=hankchilds3@gmail.com
+        ;;
+    mcmiller)
+        userNersc=miller86
+        userEmail=miller86@llnl.gov
+        ;;
+    miller)
+        userNersc=miller86
+        userEmail=miller86@llnl.gov
+        ;;
+    miller86)
+        userNersc=miller86
+        userEmail=miller86@llnl.gov
+        ;;
+    whitlocb)
+        userNersc=whitlocb
+        userEmail=whitlock2@llnl.gov
+        ;;
+esac
+
+if test "$userEmail" = "unknown" ; then
+    echo "Unknown user name. Exiting."
+    exit 1
+fi
+
+#
+# Parse the command line to determine if we should run the test suite
+# on the trunk or RC.
+#
+branch="trunk"
+revision="latest"
+serial="false"
+
+for abc
+do
+    case $1 in
+        -trunk)
+            branch="trunk"
+            shift
+            ;;
+        -2.0RC)
+            branch="2.0RC"
+            shift
+            ;;
+        -serial)
+            serial="true"
+            shift
+            ;;
+        -parallel)
+            serial="false"
+            shift
+            ;;
+        -r)
+            revision=$2
+            shift 2
+            ;;
+    esac
+done
+
+#
+# Run the test suite on alastor.
+#
+rm -f alastor
+cat <<EOF > alastor
+#!/bin/sh
+
+dateTag=\`date +%y%b%d-%H:%M\`
+
+if test "$serial" = "true" ; then
+    modes="alastor,serial"
+else
+    modes="alastor,serial alastor,parallel alastor,scalable,parallel,icet"
+fi
+
+skipList_for_Alastor="\
+    alastor,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
+    alastor,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
+    alastor,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
+    alastor,serial:tests/rendering/specular.py:specular_02,specular_03,specular_04,specular_05 \
+    alastor,parallel:tests/rendering/specular.py:specular_02,specular_03,specular_04,specular_05 \
+    alastor,scalable,parallel,icet:tests/rendering/specular.py:specular_02,specular_03,specular_04,specular_05 \
+    alastor,serial:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
+    alastor,parallel:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
+    alastor,scalable,parallel,icet:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
+    alastor,serial:tests/plots/volumePlot.py:volumeScaling_06 \
+    alastor,parallel:tests/plots/volumePlot.py:volumeScaling_06 \
+    alastor,scalable,parallel,icet:tests/plots/volumePlot.py:volumeScaling_06 \
+    alastor,serial:tests/rendering/legends.py:legends_05 \
+    alastor,parallel:tests/rendering/legends.py:legends_05 \
+    alastor,scalable,parallel,icet:tests/rendering/legends.py:legends_05 \
+    alastor,parallel:tests/queries/line_scan.py:ls_1_16,ls_1_18 \
+    alastor,scalable,parallel,icet:tests/queries/line_scan.py:ls_1_16,ls_1_18 \
+    alastor,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
+    alastor,parallel:tests/rendering/compositing.py \
+    alastor,scalable,parallel,icet:tests/rendering/compositing.py \
+    alastor,scalable,parallel,icet:tests/databases/boxlib.py"
+
+skipList="\$skipList_for_Alastor"
+
+# Create the test directory.
+if test ! -e /nfs/tmp2/$user; then
+    mkdir /nfs/tmp2/$user
+fi
+if test "$branch" = "trunk" ; then
+    workingDir="test_trunk"
+else
+    workingDir="test_rc"
+fi
+rm -rf /nfs/tmp2/$user/$workingDir
+mkdir /nfs/tmp2/$user/$workingDir
+cp visit-update-test-website /nfs/tmp2/$user/$workingDir
+cp visit-notify-test-failure /nfs/tmp2/$user/$workingDir
+cd /nfs/tmp2/$user/$workingDir
+
+# Check out the source
+echo "Checkout of $branch started at: \`date\`" | mail -s "Checkout started" $userEmail
+if test "$branch" = "trunk" ; then
+    if test "$revision" = "latest" ; then
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/trunk/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/trunk/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/trunk/test >> buildlog 2>&1
+    else
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/trunk/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/trunk/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/trunk/test -r $revision >> buildlog 2>&1
+    fi
+else
+    if test "$revision" = "latest" ; then
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/test >> buildlog 2>&1
+    else
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/test -r $revision >> buildlog 2>&1
+    fi
+fi
+echo "Checkout of $branch completed at: \`date\`" | mail -s "Checkout completed" $userEmail
+
+# Build the code
+cd src
+export PATH=\$PATH:/usr/bin/X11
+ln -s yana1.cmake config-site/\`hostname\`.cmake
+if test "$serial" = "true" ; then
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/yana1.cmake
+fi
+/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_BUILD_ALL_PLUGINS=1 >> ../buildlog 2>&1
+make -j 12 >> ../buildlog 2>&1
+echo "Source build completed at: \`date\`" | mail -s "Source build completed" $userEmail
+
+# Build the test data
+cd ../data
+make -j 8 test >> ../buildlog 2>&1
+echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
+
+# Run the tests, consolidating the results in one directory
+cd ../test
+rm -rf \$dateTag
+mkdir \$dateTag
+for m in \$modes; do
+    # set pixel diff-tolerances slightly above zero for mode
+    # containing 'scalable'
+    diffTols=""
+    if test -n "\$(echo \$m | grep scalable)"; then
+        diffTols="-pixdiff 2 -avgdiff 1"
+    fi
+
+    # Run the test
+    ./runtest -q -s "\$skipList_for_Alastor" -m "\$m" -l 1200 \$diffTols -notrackmem >> ../buildlog 2>&1
+
+    # Move the results to the consolidation directory
+    theMode=\`echo \$m | tr ',' '_'\`
+    mv html \$dateTag/\$theMode
+    echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
+done
+
+# Determine if the test suite passed or failed.
+hasFailed=""
+for m in \$modes; do
+    theMode=\`echo \$m | tr ',' '_'\`
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 Failed 2>/dev/null\`
+    fi
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" grep -m 1 Unacceptable 2>/dev/null\`
+    fi
+done
+
+# If the test suite failed send out an e-mail notifying the users.
+cd ..
+if test "\$hasFailed" != ""; then
+   ./visit-notify-test-failure -host alastor
+fi
+
+# If the test suite passed then update the revision number indicating the
+# last pass.
+if test "\$hasFailed" = ""; then
+    svn update src/svn_bin/lastpass_alastor
+    svnRevision=\`svn info src | grep "Revision:" | cut -d' ' -f2\`
+    rm -f src/svn_bin/lastpass_alastor
+    echo "\$svnRevision" > src/svn_bin/lastpass_alastor
+    svn commit -m "Update the revision number of the last test suite pass." src/svn_bin/lastpass_alastor
+fi
+
+# Send the results to euclid
+cd test
+tar cf - \$dateTag | gzip > html.tar.gz
+scp html.tar.gz $userNersc@euclid.nersc.gov:
+
+# Update the web site.
+scp ../visit-update-test-website $userNersc@euclid.nersc.gov:
+ssh euclid.nersc.gov "chmod 750 visit-update-test-website;./visit-update-test-website"
+echo "Results posted at: \`date\`" | mail -s "Results posted" $userEmail
+EOF
+
+scp alastor alastor:alastor_testit
+scp visit-update-test-website alastor:
+scp visit-notify-test-failure alastor:
+ssh alastor "chmod 750 alastor_testit;srun -n 1 -p pdebug -t 8:00:00 --exclusive ./alastor_testit" &
