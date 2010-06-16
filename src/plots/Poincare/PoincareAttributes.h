@@ -180,7 +180,9 @@ public:
     void SetVerboseFlag(bool verboseFlag_);
     void SetShowRidgelines(bool showRidgelines_);
     void SetShowLines(bool showLines_);
+    void SetLineWidth(int lineWidth_);
     void SetShowPoints(bool showPoints_);
+    void SetPointSize(int pointSize_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
@@ -231,7 +233,9 @@ public:
     bool                 GetVerboseFlag() const;
     bool                 GetShowRidgelines() const;
     bool                 GetShowLines() const;
+    int                  GetLineWidth() const;
     bool                 GetShowPoints() const;
+    int                  GetPointSize() const;
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
     StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
@@ -330,7 +334,9 @@ public:
         ID_verboseFlag,
         ID_showRidgelines,
         ID_showLines,
+        ID_lineWidth,
         ID_showPoints,
+        ID_pointSize,
         ID_legendFlag,
         ID_lightingFlag,
         ID_streamlineAlgorithmType,
@@ -378,7 +384,9 @@ private:
     bool           verboseFlag;
     bool           showRidgelines;
     bool           showLines;
+    int            lineWidth;
     bool           showPoints;
+    int            pointSize;
     bool           legendFlag;
     bool           lightingFlag;
     int            streamlineAlgorithmType;
@@ -390,6 +398,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "iiiDDDiidddiiddiiiidddbbiasibibibbbbbbbbiiii"
+#define POINCAREATTRIBUTES_TMFS "iiiDDDiidddiiddiiiidddbbiasibibibbbbbibibbiiii"
 
 #endif

@@ -188,8 +188,14 @@
       <Field name="showLines" label="Show Lines" type="bool">
         true
       </Field>
+      <Field name="lineWidth" label="Line width" type="linewidth">
+        0
+      </Field>
       <Field name="showPoints" label="Show Points" type="bool">
         false
+      </Field>
+      <Field name="pointSize" label="size" type="int">
+        1
       </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true

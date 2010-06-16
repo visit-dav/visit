@@ -42,16 +42,19 @@
 
 #include <avtPoincarePlot.h>
 
+#include <vtkProperty.h>
+#include <vtkPlane.h>
+
 #include <avtPoincareFilter.h>
 #include <avtShiftCenteringFilter.h>
 #include <avtLookupTable.h>
+#include <avtUserDefinedMapper.h>
 #include <avtVariableLegend.h>
-#include <avtVariableMapper.h>
-#include <avtPoincareFilter.h>
 #include <InvalidLimitsException.h>
-#include <vtkPlane.h>
 
 #include <avtCallback.h>
+
+#include <LineAttributes.h>
 
 // ****************************************************************************
 //  Method: avtPoincarePlot constructor
@@ -71,11 +74,19 @@ avtPoincarePlot::avtPoincarePlot()
 #ifdef ENGINE
     poincareFilter = new avtPoincareFilter;
 #endif
+    property = vtkProperty::New();
+
     shiftCenteringFilter = NULL;
     avtLUT = new avtLookupTable;
 
-    varMapper = new avtVariableMapper;
-    varMapper->SetLookupTable(avtLUT->GetLookupTable());
+    renderer = avtSurfaceAndWireframeRenderer::New();
+
+    avtCustomRenderer_p cr;
+    CopyTo(cr, renderer);
+
+    mapper = new avtUserDefinedMapper(cr);
+
+//    glyphMapper = new avtVariablePointGlyphMapper;
 
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Poincare");
@@ -108,16 +119,31 @@ avtPoincarePlot::~avtPoincarePlot()
     }
 #endif
 
-    if (varMapper != NULL)
+    if (property != NULL)
     {
-        delete varMapper;
-        varMapper = NULL;
+        property->Delete();
+        property = NULL;
     }
+
+    if (mapper != NULL)
+    {
+        delete mapper;
+        mapper = NULL;
+    }
+
     if (avtLUT != NULL)
     {
         delete avtLUT;
         avtLUT = NULL;
     }
+
+//     if (glyphMapper != NULL)
+//     {
+//         delete glyphMapper;
+//         glyphMapper = NULL;
+//     }
+
+    renderer = NULL;
 
     //
     // Do not delete the varLegend since it is being held by varLegendRefPtr.
@@ -160,7 +186,7 @@ avtPoincarePlot::Create()
 avtMapper *
 avtPoincarePlot::GetMapper(void)
 {
-    return varMapper;
+    return mapper;
 }
 
 
@@ -257,6 +283,8 @@ void
 avtPoincarePlot::CustomizeBehavior(void)
 {
     SetLegendRanges();
+    renderer->SetProperty(property);
+
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetShiftFactor(0.3);
 }
@@ -360,6 +388,10 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
 #ifdef ENGINE
 
+    property->SetLineWidth(LineWidth2Int( Int2LineWidth(atts.GetLineWidth()) ));
+
+//    glyphMapper->SetPointSize(atts.GetPointSize());
+
     // Streamline specific attributes (avtStreamlineFilter).
 
     // Make the number of punctures 2x because the Poincare analysis
@@ -388,7 +420,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         if( atts.GetPointDensity() > 1 )
         {
             poincareFilter->SetLineSource(atts.GetLineStart(), atts.GetLineEnd(),
-                                          atts.GetPointDensity()-1,
+                                          atts.GetPointDensity(),
                                           false, 0, 0);
         }
         else
@@ -471,10 +503,38 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         avtLUT->SetLUTColors(atts.GetSingleColor().GetColor(), 1);
     }
     
-    //SetLighting(atts.GetLightingFlag());
-    varMapper->TurnLightingOn();
-    varMapper->SetSpecularIsInappropriate(false);
+    SetLighting(atts.GetLightingFlag());
     SetLegend(atts.GetLegendFlag());
+}
+
+// ****************************************************************************
+//  Method: avtStreamlinePlot::SetLighting
+//
+//  Purpose:
+//      Turns the lighting on or off.
+//
+//  Arguments:
+//      lightingOn   true if the lighting should be turned on, false otherwise.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 28, 2000
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+void
+avtPoincarePlot::SetLighting(bool lightingOn)
+{
+    if (lightingOn)
+    {
+        mapper->GlobalLightingOff();
+    }
+    else
+    {
+        mapper->GlobalLightingOn();
+    }
 }
 
 // ****************************************************************************
@@ -500,14 +560,14 @@ avtPoincarePlot::SetLegend(bool legendOn)
         varLegend->LegendOn();
         varLegend->SetLookupTable(avtLUT->GetLookupTable());
         varLegend->SetScaling();
-        varMapper->SetLookupTable(avtLUT->GetLookupTable());
+        renderer->SetLookupTable(avtLUT->GetLookupTable());
 
         //
         //  Retrieve the actual range of the data
         //
-        varMapper->SetMin(0.);
-        varMapper->SetMaxOff();
-        varMapper->SetLimitsMode(0);
+//         renderer->SetMin(0.);
+//         renderer->SetMaxOff();
+//         renderer->SetLimitsMode(0);
         SetLegendRanges();
     }
     else
@@ -533,24 +593,25 @@ avtPoincarePlot::SetLegend(bool legendOn)
 void
 avtPoincarePlot::SetLegendRanges()
 {
-    double min, max;
-    varMapper->GetVarRange(min, max);
+    double min = 0.0, max = 1.0;
+    if (*(mapper->GetInput()) != NULL)
+        mapper->GetRange(min, max);
 
     if (atts.GetMinFlag())
         min = atts.GetMin();
     if (atts.GetMaxFlag())
         max = atts.GetMax();
 
-    if (atts.GetMinFlag() && atts.GetMaxFlag() && min >= max)
+    if (max < -1e+30 && min > 1e+30)
     {
-        EXCEPTION1(InvalidLimitsException, false); 
+        min = 0;
+        max = 1;
     }
-    varMapper->SetMin(min);
-    varMapper->SetMax(max);
 
-    //
+    renderer->SetRange(min, max);
+  
     // Set the range for the legend's text and colors.
-    //
+    varLegend->SetScaling(0);
     varLegend->SetVarRange(min, max);
     varLegend->SetRange(min, max);
 }

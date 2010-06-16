@@ -46,7 +46,7 @@
 #include <avtStreamlineFilter.h>
 
 
-class     avtStateRecorderIntegralCurve;
+class avtStateRecorderIntegralCurve;
 
 
 // ****************************************************************************
@@ -123,14 +123,12 @@ class avtPoincareFilter : public avtStreamlineFilter
 
   protected:
     // Streamline overides.
-    virtual void              Execute(void);
-    virtual bool              ContinueExecute();
-    virtual void              PreExecute(void);
-    virtual void              PostExecute(void);
-    virtual avtContract_p     ModifyContract(avtContract_p);
-    virtual void              UpdateDataObjectInfo(void);
-    virtual void              CreateIntegralCurveOutput( 
-                                   vector<avtIntegralCurve *> &sls);
+    virtual void Execute(void);
+    virtual bool ContinueExecute();
+    virtual void PreExecute(void);
+    virtual void PostExecute(void);
+    virtual void UpdateDataObjectInfo(void);
+    virtual void GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic);
 
   virtual void drawPoints( avtDataTree *dt,
                            vector < Point > &nodes );
@@ -176,6 +174,8 @@ class avtPoincareFilter : public avtStreamlineFilter
     bool                      ClassifyStreamlines();
     avtDataTree               *CreatePoincareOutput();
 
+    void CreateIntegralCurveOutput(std::vector<avtIntegralCurve*,
+                                   std::allocator<avtIntegralCurve*> >&) {};
 
     FusionPSE::FieldlineLib FLlib;         
 
@@ -201,12 +201,12 @@ class avtPoincareFilter : public avtStreamlineFilter
       public:
         SLHelper() {}
         ~SLHelper() {}
-        avtStateRecorderIntegralCurve *sl;
+        avtStateRecorderIntegralCurve *ic;
         std::vector<avtVector> streamlinePts;
+        FieldlineProperties properties;
     };
 
     std::vector<SLHelper> streamlines;
-    std::vector<FieldlineInfo> poincareClassification;
 };
 
 
