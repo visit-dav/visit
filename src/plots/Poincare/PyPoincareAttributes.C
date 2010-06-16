@@ -77,6 +77,23 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     std::string str; 
     char tmpStr[1000]; 
 
+    const char *opacityType_names = "Explicit, ColorTable";
+    switch (atts->GetOpacityType())
+    {
+      case PoincareAttributes::Explicit:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sExplicit  # %s\n", prefix, prefix, opacityType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::ColorTable:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sColorTable  # %s\n", prefix, prefix, opacityType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sminPunctures = %d\n", prefix, atts->GetMinPunctures());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxPunctures = %d\n", prefix, atts->GetMaxPunctures());
@@ -257,11 +274,15 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
-    const char *dataValue_names = "OriginalValue, InputOrder, PointIndex, Plane, WindingOrder, "
-        "WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, PoloidalWindings, "
-        "SafetyFactor, Confidence, RidgelineVariance";
+    const char *dataValue_names = "Solid, OriginalValue, InputOrder, PointIndex, Plane, "
+        "WindingOrder, WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, "
+        "PoloidalWindings, SafetyFactor, Confidence, RidgelineVariance";
     switch (atts->GetDataValue())
     {
+      case PoincareAttributes::Solid:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSolid  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
       case PoincareAttributes::OriginalValue:
           SNPRINTF(tmpStr, 1000, "%sdataValue = %sOriginalValue  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
@@ -407,6 +428,63 @@ PoincareAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetOpacityType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the opacityType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetOpacityType(PoincareAttributes::Opacity(ival));
+    else
+    {
+        fprintf(stderr, "An invalid opacityType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Explicit, ColorTable.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetOpacityType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOpacityType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetOpacity(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the opacity in the object.
+    obj->data->SetOpacity(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetOpacity(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacity());
+    return retval;
 }
 
 /*static*/ PyObject *
@@ -1255,16 +1333,17 @@ PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the dataValue in the object.
-    if(ival >= 0 && ival < 12)
+    if(ival >= 0 && ival < 13)
         obj->data->SetDataValue(PoincareAttributes::DataValue(ival));
     else
     {
         fprintf(stderr, "An invalid dataValue value was given. "
-                        "Valid values are in the range of [0,11]. "
+                        "Valid values are in the range of [0,12]. "
                         "You can also use the following names: "
-                        "OriginalValue, InputOrder, PointIndex, Plane, WindingOrder, "
-                        "WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, PoloidalWindings, "
-                        "SafetyFactor, Confidence, RidgelineVariance.");
+                        "Solid, OriginalValue, InputOrder, PointIndex, Plane, "
+                        "WindingOrder, WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, "
+                        "PoloidalWindings, SafetyFactor, Confidence, RidgelineVariance"
+                        ".");
         return NULL;
     }
 
@@ -1725,6 +1804,10 @@ PoincareAttributes_GetWorkGroupSize(PyObject *self, PyObject *args)
 
 PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"Notify", PoincareAttributes_Notify, METH_VARARGS},
+    {"SetOpacityType", PoincareAttributes_SetOpacityType, METH_VARARGS},
+    {"GetOpacityType", PoincareAttributes_GetOpacityType, METH_VARARGS},
+    {"SetOpacity", PoincareAttributes_SetOpacity, METH_VARARGS},
+    {"GetOpacity", PoincareAttributes_GetOpacity, METH_VARARGS},
     {"SetMinPunctures", PoincareAttributes_SetMinPunctures, METH_VARARGS},
     {"GetMinPunctures", PoincareAttributes_GetMinPunctures, METH_VARARGS},
     {"SetMaxPunctures", PoincareAttributes_SetMaxPunctures, METH_VARARGS},
@@ -1845,6 +1928,15 @@ PoincareAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyPoincareAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "opacityType") == 0)
+        return PoincareAttributes_GetOpacityType(self, NULL);
+    if(strcmp(name, "Explicit") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Explicit));
+    if(strcmp(name, "ColorTable") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::ColorTable));
+
+    if(strcmp(name, "opacity") == 0)
+        return PoincareAttributes_GetOpacity(self, NULL);
     if(strcmp(name, "minPunctures") == 0)
         return PoincareAttributes_GetMinPunctures(self, NULL);
     if(strcmp(name, "maxPunctures") == 0)
@@ -1932,6 +2024,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetColorTableName(self, NULL);
     if(strcmp(name, "dataValue") == 0)
         return PoincareAttributes_GetDataValue(self, NULL);
+    if(strcmp(name, "Solid") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Solid));
     if(strcmp(name, "OriginalValue") == 0)
         return PyInt_FromLong(long(PoincareAttributes::OriginalValue));
     if(strcmp(name, "InputOrder") == 0)
@@ -2014,7 +2108,11 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "minPunctures") == 0)
+    if(strcmp(name, "opacityType") == 0)
+        obj = PoincareAttributes_SetOpacityType(self, tuple);
+    else if(strcmp(name, "opacity") == 0)
+        obj = PoincareAttributes_SetOpacity(self, tuple);
+    else if(strcmp(name, "minPunctures") == 0)
         obj = PoincareAttributes_SetMinPunctures(self, tuple);
     else if(strcmp(name, "maxPunctures") == 0)
         obj = PoincareAttributes_SetMaxPunctures(self, tuple);

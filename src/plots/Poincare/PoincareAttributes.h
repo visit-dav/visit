@@ -89,8 +89,14 @@ public:
         ColorBySingleColor,
         ColorByColorTable
     };
+    enum Opacity
+    {
+        Explicit,
+        ColorTable
+    };
     enum DataValue
     {
+        Solid,
         OriginalValue,
         InputOrder,
         PointIndex,
@@ -143,6 +149,8 @@ public:
     void SelectColorTableName();
 
     // Property setting methods
+    void SetOpacityType(Opacity opacityType_);
+    void SetOpacity(double opacity_);
     void SetMinPunctures(int minPunctures_);
     void SetMaxPunctures(int maxPunctures_);
     void SetSourceType(SourceType sourceType_);
@@ -191,6 +199,8 @@ public:
     void SetWorkGroupSize(int workGroupSize_);
 
     // Property getting methods
+    Opacity              GetOpacityType() const;
+    double               GetOpacity() const;
     int                  GetMinPunctures() const;
     int                  GetMaxPunctures() const;
     SourceType           GetSourceType() const;
@@ -273,6 +283,11 @@ public:
 protected:
     static std::string ColoringMethod_ToString(int);
 public:
+    static std::string Opacity_ToString(Opacity);
+    static bool Opacity_FromString(const std::string &, Opacity &);
+protected:
+    static std::string Opacity_ToString(int);
+public:
     static std::string DataValue_ToString(DataValue);
     static bool DataValue_FromString(const std::string &, DataValue &);
 protected:
@@ -297,7 +312,9 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_minPunctures = 0,
+        ID_opacityType = 0,
+        ID_opacity,
+        ID_minPunctures,
         ID_maxPunctures,
         ID_sourceType,
         ID_pointSource,
@@ -347,6 +364,8 @@ public:
     };
 
 private:
+    int            opacityType;
+    double         opacity;
     int            minPunctures;
     int            maxPunctures;
     int            sourceType;
@@ -398,6 +417,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "iiiDDDiidddiiddiiiidddbbiasibibibbbbbibibbiiii"
+#define POINCAREATTRIBUTES_TMFS "idiiiDDDiidddiiddiiiidddbbiasibibibbbbbibibbiiii"
 
 #endif
