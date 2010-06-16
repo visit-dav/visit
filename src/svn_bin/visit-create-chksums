@@ -105,11 +105,9 @@ do
    $cmd visit$version.exe                          >> $output
    $cmd visit$version2.ibm-aix-pwr.tar.gz          >> $output
    $cmd visit$version2.ibm-aix-pwr64.tar.gz        >> $output
-   $cmd visit$version2.linux-altix.tar.gz          >> $output
-   $cmd visit$version2.linux-ellipse.tar.gz        >> $output
    $cmd visit$version2.linux-rhel3.tar.gz          >> $output
    $cmd visit$version2.linux-ubuntu8.tar.gz        >> $output
-   $cmd visit$version2.linux-x86_64-fedora4.tar.gz >> $output
+   $cmd visit$version2.linux-x86_64-rhel4.tar.gz   >> $output
    $cmd visit$version2.linux-x86_64-ubuntu8.tar.gz >> $output
    $cmd visit$version2.linux-x86_64.tar.gz         >> $output
 
@@ -160,6 +158,7 @@ do
    $cmd vtk-5.0.0c.tar.gz                          >> ../visit$version/$output
    $cmd vtk-5.0.0d.tar.gz                          >> ../visit$version/$output
    $cmd vtk-5.0.0e.tar.gz                          >> ../visit$version/$output
+   $cmd vtk-5.0.0f.tar.gz                          >> ../visit$version/$output
    cd ../visit$version
 
    shift
