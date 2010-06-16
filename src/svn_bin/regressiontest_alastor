@@ -84,6 +84,12 @@ do
     esac
 done
 
+if test "$branch" = "trunk" ; then
+    workingDir="test_trunk"
+else
+    workingDir="test_rc"
+fi
+
 #
 # Run the test suite on alastor.
 #
@@ -109,29 +115,19 @@ skipList_for_Alastor="\
     alastor,serial:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
     alastor,parallel:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
     alastor,scalable,parallel,icet:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
-    alastor,serial:tests/plots/volumePlot.py:volumeScaling_06 \
-    alastor,parallel:tests/plots/volumePlot.py:volumeScaling_06 \
-    alastor,scalable,parallel,icet:tests/plots/volumePlot.py:volumeScaling_06 \
-    alastor,serial:tests/rendering/legends.py:legends_05 \
-    alastor,parallel:tests/rendering/legends.py:legends_05 \
-    alastor,scalable,parallel,icet:tests/rendering/legends.py:legends_05 \
     alastor,parallel:tests/queries/line_scan.py:ls_1_16,ls_1_18 \
     alastor,scalable,parallel,icet:tests/queries/line_scan.py:ls_1_16,ls_1_18 \
     alastor,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
     alastor,parallel:tests/rendering/compositing.py \
     alastor,scalable,parallel,icet:tests/rendering/compositing.py \
-    alastor,scalable,parallel,icet:tests/databases/boxlib.py"
+    alastor,scalable,parallel,icet:tests/databases/boxlib.py \
+    alastor,scalable,parallel,icet:tests/session/legendproperties.py:legendproperties00"
 
 skipList="\$skipList_for_Alastor"
 
 # Create the test directory.
 if test ! -e /nfs/tmp2/$user; then
     mkdir /nfs/tmp2/$user
-fi
-if test "$branch" = "trunk" ; then
-    workingDir="test_trunk"
-else
-    workingDir="test_rc"
 fi
 rm -rf /nfs/tmp2/$user/$workingDir
 mkdir /nfs/tmp2/$user/$workingDir
@@ -209,7 +205,7 @@ for m in \$modes; do
         hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 Failed 2>/dev/null\`
     fi
     if test "\$hasFailed" = ""; then
-        hasFailed=\`cat "\$dateTag/\$theMode/index.html" grep -m 1 Unacceptable 2>/dev/null\`
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 Unacceptable 2>/dev/null\`
     fi
 done
 

@@ -41,7 +41,7 @@ ls -1t /project/projectdirs/visit/www/*/*/index.html | while read testLine; do
         if test "$hasSkips" = ""; then
             echo "<td bgcolor="#00ff00"><b>Passed</b></td>" >> index.html
         else
-            echo "<td bgcolor="#0000ff"><b>Passed w/Skips</b></td>" >>index.html
+            echo "<td bgcolor="#00ff00"><b>Passed w/Skips</b></td>" >>index.html
         fi
     else
         echo "<td bgcolor="#ff0000"><b>Failed</b></td>" >> index.html
