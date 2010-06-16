@@ -71,7 +71,7 @@ using namespace std;
 
 #define SIGN(x) ((x) < 0.0 ? -1 : 1)
 
-#define RADIUS 0.0005
+#define RADIUS 0.0075
 
 static const int DATA_OriginalValue = 0;
 static const int DATA_InputOrder = 1;
@@ -86,6 +86,46 @@ static const int DATA_SafetyFactor = 9;
 static const int DATA_Confidence = 10;
 static const int DATA_RidgelineVariance = 11;
 static const int DATA_Solid = 12;
+
+// ****************************************************************************
+//  Method: CreateSphere
+//
+//  Programmer:
+//  Creation:   Tue Oct 7 09:02:52 PDT 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+static vtkPolyData *
+CreateSphere(float val, double rad, double pt[3])
+{
+    // Create the sphere polydata.
+    vtkSphereSource *sphere = vtkSphereSource::New();
+    sphere->SetCenter(pt[0], pt[1], pt[2]);
+    sphere->SetRadius(rad);
+    sphere->SetLatLongTessellation(1);
+    sphere->SetPhiResolution(8);
+    sphere->SetThetaResolution(8);
+    vtkPolyData *sphereData = sphere->GetOutput();
+    sphereData->Update();
+
+    // Set the sphere's scalar to val.
+    vtkFloatArray *arr = vtkFloatArray::New();
+    int npts = sphereData->GetNumberOfPoints();
+    arr->SetNumberOfTuples(npts);
+    for (int i = 0; i < npts; ++i)
+        arr->SetTuple1(i, val);
+    arr->SetName("colorVar");
+    sphereData->GetPointData()->SetScalars(arr);
+    arr->Delete();
+
+    sphereData->Register(NULL);
+    sphere->Delete();
+
+    return sphereData;
+}
+
 
 // ****************************************************************************
 //  Method: avtPoincareFilter constructor
@@ -154,36 +194,6 @@ avtPoincareFilter::~avtPoincareFilter()
     streamlines.resize(0);
 }
 
-static vtkPolyData *
-CreateSphere(float val, double rad, double pt[3])
-{
-    // Create the sphere polydata.
-    vtkSphereSource *sphere = vtkSphereSource::New();
-    sphere->SetCenter(pt[0], pt[1], pt[2]);
-    sphere->SetRadius(rad);
-    sphere->SetLatLongTessellation(1);
-    sphere->SetPhiResolution(8);
-    sphere->SetThetaResolution(8);
-    vtkPolyData *sphereData = sphere->GetOutput();
-    sphereData->Update();
-
-    // Set the sphere's scalar to val.
-    vtkFloatArray *arr = vtkFloatArray::New();
-    int npts = sphereData->GetNumberOfPoints();
-    arr->SetNumberOfTuples(npts);
-    for (int i = 0; i < npts; ++i)
-        arr->SetTuple1(i, val);
-    arr->SetName("colorVar");
-    sphereData->GetPointData()->SetScalars(arr);
-    arr->Delete();
-
-    sphereData->Register(NULL);
-    sphere->Delete();
-
-    return sphereData;
-}
-
-
 // ****************************************************************************
 //  Method: avtPoincareFilter::PreExecute
 //
@@ -236,25 +246,15 @@ avtPoincareFilter::PostExecute(void)
 }
 
 // ****************************************************************************
-//  Method: avtPoincareFilter::CreateIntegralCurveOutput
+//  Method: avtPoincareFilter::GetStreamlinePoints
 //
 //  Purpose:
-//      Create the VTK poly data output from the streamline.
+//      Gets the points from the streamline and changes them in to a Vector.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Tue Dec  23 12:51:29 EST 2008
 //
 //  Modifications:
-//
-//    Dave Pugmire (for Allen Sanderson), Wed Feb 25 09:52:11 EST 2009
-//    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new 
-//    code.
-//
-//    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
-//    Moved GetStreamlinePoints to this method.
-//
-//    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
-//    Add ability to restart streamline integration.
 //
 //    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //    Use avtStreamlines, not avtStreamlineWrappers.
@@ -262,24 +262,32 @@ avtPoincareFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtPoincareFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *> &sls2)
+avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic2)
 {
-    vector<avtStateRecorderIntegralCurve *> sls;
-    for (int k = 0 ; k < sls2.size() ; k++)
-        sls.push_back((avtStateRecorderIntegralCurve *) sls2[k]);
-    streamlines.resize(sls.size());
-    
-    for ( int i=0; i<sls.size(); ++i )
-    {
-        // Use the streamline id so that the point are in the order that
-        // the seeds were generated.
-        unsigned int j = sls[i]->id;
+    vector<avtStateRecorderIntegralCurve *> ic;
 
-        streamlines[j].sl = sls[i];
-        avtStateRecorderIntegralCurve::iterator siter = sls[i]->begin();
+    for (int k = 0 ; k < ic2.size() ; k++)
+        ic.push_back((avtStateRecorderIntegralCurve *) ic2[k]);
+
+    streamlines.resize(ic.size());
+    
+    for ( int i=0; i<ic.size(); ++i )
+    {
+        // Use the streamline id so that the streamlines are in the
+        // order that the seeds were generated.
+        unsigned int j = ic[i]->id;
+
+        // Save off the streamline wrapper
+        streamlines[j].ic = ic[i];
+
+        // Get all of the points from the streamline which are stored
+        // as an array and move them into a vector for easier
+        // manipulation by the analsysi code.
         streamlines[j].streamlinePts.resize(0);
+
+        avtStateRecorderIntegralCurve::iterator siter = ic[i]->begin();
         
-        while (siter != sls[i]->end())
+        while (siter != ic[i]->end())
         {
             avtVector pt;
             pt.x = (*siter)->front()[0];
@@ -290,69 +298,7 @@ avtPoincareFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *> &sls2)
             
             ++siter;
         }
-        //cerr<<"CreateIntegralCurveOutput: "<<streamlines[i].sl->id<<" pts= "<<streamlines[i].streamlinePts.size()<<" term= "<<streamlines[i].sl->termination<<endl;
     }
-}
-
-// ****************************************************************************
-//  Method: avtPoincareFilter::ModifyContract
-//
-//  Purpose:
-//      
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Fri Nov  7 13:15:45 EST 2008
-//
-//  Modifications:
-//
-//
-// ****************************************************************************
-
-avtContract_p
-avtPoincareFilter::ModifyContract(avtContract_p in_contract)
-{
-//     avtDataRequest_p in_dr = in_contract->GetDataRequest();
-//     avtDataRequest_p out_dr = NULL;
-
-//     if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR )
-//     {
-//         out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
-
-//         // Add in the other fields that the M3D Interpolation needs
-//         // for doing their Newton's Metod.
-
-//         // Assume the user has selected B as the primary variable.
-//      // Which is ignored.
-
-//         // Single variables stored as attributes on the header
-//         out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
-//         out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
-        
-//         out_dr->AddSecondaryVariable("hidden/header/bzero");    // /bzero
-//         out_dr->AddSecondaryVariable("hidden/header/rzero");    // /rzero
-        
-
-//         // The mesh - N elememts x 7
-//         out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
-
-//         // Variables on the mesh - N elements x 20
-//         out_dr->AddSecondaryVariable("hidden/equilibrium/f");  // /equilibrium/fields/f
-//         out_dr->AddSecondaryVariable("hidden/equilibrium/psi");// /equilibrium/fields/psi
-
-//         out_dr->AddSecondaryVariable("hidden/f");      // /time_XXX/fields/f
-//         out_dr->AddSecondaryVariable("hidden/f_i");    // /time_XXX/fields/f_i
-//         out_dr->AddSecondaryVariable("hidden/psi");    // /time_XXX/fields/psi
-//         out_dr->AddSecondaryVariable("hidden/psi_i");  // /time_XXX/fields/psi_i
-//     }
-    
-//     avtContract_p out_contract;
-//     if ( *out_dr )
-//         out_contract = new avtContract(in_contract, out_dr);
-//     else
-//         out_contract = new avtContract(in_contract);
-
-//     return avtStreamlineFilter::ModifyContract(out_contract);
-  return avtStreamlineFilter::ModifyContract(in_contract);
 }
 
 // ****************************************************************************
@@ -409,27 +355,27 @@ avtPoincareFilter::ContinueExecute()
 {
     debug5 << "Continue execute " << endl;
 
-    vector<avtIntegralCurve *> sls;
+    vector<avtIntegralCurve *> ic;
     
-    GetTerminatedIntegralCurves(sls);
-    CreateIntegralCurveOutput(sls);
+    GetTerminatedIntegralCurves(ic);
+    GetIntegralCurvePoints(ic);
 
     if (! ClassifyStreamlines())
     {
       for ( int i=0; i<streamlines.size(); ++i )
       {
         // For Island Chains add in the O Points.
-        if( 0 && poincareClassification[i].type ==
-            FieldlineInfo::ISLAND_CHAIN &&
-            poincareClassification[i].analysisStatus ==
-            FieldlineInfo::ADD_O_POINTS)
+        if( 0 && streamlines[i].properties.type ==
+            FieldlineProperties::ISLAND_CHAIN &&
+            streamlines[i].properties.analysisState ==
+            FieldlineProperties::ADD_O_POINTS)
         {
-          poincareClassification[i].analysisStatus &=
-            !FieldlineInfo::ADD_O_POINTS;
+          streamlines[i].properties.analysisState =
+            FieldlineProperties::TERMINATED;
 
           std::vector<std::vector<int> > ids;
           
-          AddSeedpoints( poincareClassification[i].OPoints, ids);
+          AddSeedpoints( streamlines[i].properties.OPoints, ids);
         }
       }
 
@@ -516,71 +462,75 @@ avtPoincareFilter::ClassifyStreamlines()
 
     bool analysisComplete = true;
 
-    poincareClassification.resize(streamlines.size());
-    
-    for ( int i = 0; i < streamlines.size(); i++ )
+    for ( unsigned int i=0; i<streamlines.size(); ++i )
     {
+        FieldlineProperties fp = streamlines[i].properties;
+
         // If the analysis is completed then skip it.
-//         if(poincareClassification[i].analysisStatus &
-//         FieldlineInfo::COMPLETED )
-//        continue;
+        if( fp.analysisState == FieldlineProperties::COMPLETED ||
+            fp.analysisState == FieldlineProperties::TERMINATED )
+          continue;
 
-        FieldlineInfo fi =
-          FLlib.fieldlineProperties( streamlines[i].streamlinePts,
-                                     override,
-                                     maxToroidalWinding,
-                                     windingPairConfidence,
-                                     periodicityConsistency,
-                                     showOPoints );
+        FLlib.fieldlineProperties( streamlines[i].streamlinePts,
+                                   streamlines[i].properties,
+                                   override,
+                                   maxToroidalWinding,
+                                   windingPairConfidence,
+                                   periodicityConsistency,
+                                   showOPoints );
 
-        poincareClassification[i] = fi;
+        fp = streamlines[i].properties;
 
         // Make the number of punctures 2x because the Poincare analysis
         // uses only the punctures in the same direction as the plane normal
         // while the streamline uses the plane regardless of the normal.
 
-        if( fi.nPuncturesNeeded > maxPunctures )
-          fi.nPuncturesNeeded = maxPunctures;
+        if( fp.nPuncturesNeeded > maxPunctures )
+          fp.nPuncturesNeeded = maxPunctures;
 
         // Check to see if there are enough points for the analysis.
-        if( fi.nPuncturesNeeded != 0 &&
-            fi.nPuncturesNeeded > streamlines[i].sl->termination/2 )
+        if( fp.nPuncturesNeeded != 0 &&
+            fp.nPuncturesNeeded != streamlines[i].ic->termination/2 )
         {
           analysisComplete = false;
 
-          streamlines[i].sl->termination = 2 * fi.nPuncturesNeeded;
-          streamlines[i].sl->terminated = false;
+          streamlines[i].ic->termination = 2 * fp.nPuncturesNeeded;
+          streamlines[i].ic->terminated = false;
         }
         else
-          streamlines[i].sl->terminated = true;
+        {
+          streamlines[i].ic->terminated = true;
+          streamlines[i].properties.analysisState =
+            FieldlineProperties::TERMINATED;
+        }
 
         // See if O Points from an island need to be added.
-        if( fi.analysisStatus & FieldlineInfo::ADD_O_POINTS )
-          analysisComplete = false;
+//         if( fp.analysisState & FieldlineProperties::ADD_O_POINTS )
+//           analysisComplete = false;
 
         double safetyFactor;
         
-        if ( fi.poloidalWinding > 0 )
+        if ( fp.poloidalWinding > 0 )
             safetyFactor =
-              (double) fi.toroidalWinding / (double) fi.poloidalWinding;
+              (double) fp.toroidalWinding / (double) fp.poloidalWinding;
         else
             safetyFactor = 0;
 
         if(verboseFlag )
-          cerr <<"Classify Streamline: "<<i<<" id= "<<streamlines[i].sl->id
+          cerr <<"Classify Streamline: "<<i<<" id= "<<streamlines[i].ic->id
                << "  ptCnt = " << streamlines[i].streamlinePts.size()
-               << "  type = " << fi.type
-               << "  toroidal/poloidal windings = " <<  fi.toroidalWinding
-               << "/" << fi.poloidalWinding
+               << "  type = " << fp.type
+               << "  toroidal/poloidal windings = " <<  fp.toroidalWinding
+               << "/" << fp.poloidalWinding
                << "  (" << safetyFactor << ")"
-               << "  windingGroupOffset = " << fi.windingGroupOffset
-               << "  islands = " << fi.islands
-               << "  nodes = " << fi.nnodes
-               << "  confidence = " << fi.confidence
-               << "  toroidalPeriod = " << fi.toroidalPeriod
-               << "  poloidalPeriod = " << fi.poloidalPeriod
-               << "  complete " << (fi.analysisStatus == FieldlineInfo::COMPLETED ? "Yes " : "No ")
-               << (streamlines[i].sl->terminated ? 0 : streamlines[i].sl->termination )
+               << "  windingGroupOffset = " << fp.windingGroupOffset
+               << "  islands = " << fp.islands
+               << "  nodes = " << fp.nnodes
+               << "  confidence = " << fp.confidence
+               << "  toroidalPeriod = " << fp.toroidalPeriod
+               << "  poloidalPeriod = " << fp.poloidalPeriod
+               << "  complete " << (fp.analysisState == FieldlineProperties::COMPLETED ? "Yes " : "No ")
+               << (streamlines[i].ic->terminated ? 0 : streamlines[i].ic->termination )
                << endl << endl;
     }
 
@@ -682,35 +632,39 @@ avtPoincareFilter::CreatePoincareOutput()
     
     for ( int i=0; i<streamlines.size(); ++i )
     {
-        FieldlineInfo::FieldlineType type = poincareClassification[i].type;
-        unsigned int toroidalWinding = poincareClassification[i].toroidalWinding;
-        unsigned int poloidalWinding = poincareClassification[i].poloidalWinding;
-        unsigned int islands         = poincareClassification[i].islands;
-        unsigned int windingGroupOffset = poincareClassification[i].windingGroupOffset;
-        unsigned int nnodes          = (unsigned int) poincareClassification[i].nnodes;
-        double confidence            = poincareClassification[i].confidence;
-        bool   complete              = poincareClassification[i].analysisStatus == FieldlineInfo::COMPLETED;
+        FieldlineProperties properties = streamlines[i].properties;
 
-        unsigned int toroidalPeriod = poincareClassification[i].toroidalPeriod;
-        unsigned int poloidalPeriod = poincareClassification[i].poloidalPeriod;
-        double ridgelineVariance     = poincareClassification[i].ridgelineVariance;
+        FieldlineProperties::FieldlineType type = properties.type;
+        bool complete =
+          (properties.analysisState == FieldlineProperties::COMPLETED);
 
-        vector< Point > OPoints      = poincareClassification[i].OPoints;
+        unsigned int toroidalWinding = properties.toroidalWinding;
+        unsigned int poloidalWinding = properties.poloidalWinding;
+        unsigned int islands         = properties.islands;
+        unsigned int windingGroupOffset = properties.windingGroupOffset;
+        unsigned int nnodes          = properties.nnodes;
+
+        double confidence            = properties.confidence;
+        unsigned int toroidalPeriod = properties.toroidalPeriod;
+        unsigned int poloidalPeriod = properties.poloidalPeriod;
+        double ridgelineVariance     = properties.ridgelineVariance;
+
+        vector< Point > OPoints      = properties.OPoints;
 
         bool completeIslands = true;
 
         // If toroidal winding is zero, skip it.
-        if( type == FieldlineInfo::CHAOTIC )
+        if( type == FieldlineProperties::CHAOTIC )
         {
           if( showChaotic )
             toroidalWinding = 1;
           else
             continue;
         }
-        else if( type == FieldlineInfo::UNKNOWN ) 
+        else if( type == FieldlineProperties::UNKNOWN_TYPE ) 
         {
             if( verboseFlag ) 
-              cerr << i << " SKIPPING UNKNOWN " << endl;
+              cerr << i << " SKIPPING UNKNOWN TYPE " << endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
             //      topology.push_back(topo);
@@ -744,7 +698,7 @@ avtPoincareFilter::CreatePoincareOutput()
 
         std::vector < Point > tempPts;
 
-//      std::vector< std::vector < Point > > islandPts;
+        std::vector< std::vector < Point > > islandPts;
         
         unsigned int startIndex = 0;
         
@@ -834,28 +788,30 @@ avtPoincareFilter::CreatePoincareOutput()
                 }
             }
 
-//          if( p == 0 )
-//          {
-//            islandPts.resize( toroidalWinding );
+         if( p == 0 && islands )
+         {
+           int offset = nnodes;
 
-//            for( unsigned int i=0; i<toroidalWinding; ++i )
-//            {
-//              for( unsigned int j=6; j<puncturePts[p][i].size(); ++j )
-//              {
-//                double len = (puncturePts[p][i][j-6]-
-//                              puncturePts[p][i][j]).length();
+           islandPts.resize( toroidalWinding );
 
-//                islandPts[i].push_back( Point( (float) islandPts[i].size()/50.0,
-//                                               0,
-//                                               -1.0+(float)i*.1+len) );
+           for( unsigned int i=0; i<toroidalWinding; ++i )
+           {
+             for( unsigned int j=offset; j<puncturePts[p][i].size(); ++j )
+             {
+               double len = (puncturePts[p][i][j-offset]-
+                             puncturePts[p][i][j]).length();
 
-//              }
+               islandPts[i].push_back( Point( (float) islandPts[i].size()/50.0,
+                                              0,
+                                              -1.5+(float)i*.1+len) );
 
-//              vector< pair< unsigned int, double > > stats;
+             }
 
-//              FLlib.periodicityStats( islandPts[i], stats );
-//            }
-//          }
+             vector< pair< unsigned int, double > > stats;
+
+//             FLlib.periodicityStats( islandPts[i], stats, 2 );
+           }
+         }
         }
         
 
@@ -1090,10 +1046,10 @@ avtPoincareFilter::CreatePoincareOutput()
         
         for( unsigned int p=0; p<planes.size(); p++ ) 
         {
-            if( type == FieldlineInfo::CHAOTIC )
+            if( type == FieldlineProperties::CHAOTIC )
               nnodes = puncturePts[p][0].size();
 
-            else if( type != FieldlineInfo::RATIONAL )
+            else if( type != FieldlineProperties::RATIONAL )
             {
                 if( overlaps == 1 || overlaps == 3 )
                     FLlib.removeOverlap( puncturePts[p], nnodes,
@@ -1145,17 +1101,16 @@ avtPoincareFilter::CreatePoincareOutput()
                << toroidalWinding << ":" << poloidalWinding << " ("
                << (double) toroidalWinding / (double) poloidalWinding << ")  ";
 
-          if( type == FieldlineInfo::RATIONAL )
+          if( type == FieldlineProperties::RATIONAL )
             cerr << "rational surface  ";
 
-          else if( type == FieldlineInfo::FLUX_SURFACE )
+          else if( type == FieldlineProperties::FLUX_SURFACE )
             cerr << "flux surface  ";
 
-          else if( type == FieldlineInfo::ISLAND_CHAIN )
-            cerr << "island chain that contains "
-                 << islands << " islands  ";
+          else if( type == FieldlineProperties::ISLAND_CHAIN )
+            cerr << islands << " island chain  ";
 
-          else if( type == FieldlineInfo::CHAOTIC )
+          else if( type == FieldlineProperties::CHAOTIC )
             cerr << "chaotic  ";
 
           cerr << "with " << nnodes << " nodes"
@@ -1163,7 +1118,7 @@ avtPoincareFilter::CreatePoincareOutput()
                << "confidence " << confidence
                << endl;
 
-          if( type == FieldlineInfo::ISLAND_CHAIN && islands != toroidalWinding ) 
+          if( type == FieldlineProperties::ISLAND_CHAIN && islands != toroidalWinding ) 
             cerr << "WARNING - The island count does not match the toroidalWinding count" << endl;
         }
         
@@ -1174,7 +1129,7 @@ avtPoincareFilter::CreatePoincareOutput()
         //    topology.push_back(topo);
 
         if( !showIslands ||
-            (showIslands && type == FieldlineInfo::ISLAND_CHAIN) ) 
+            (showIslands && type == FieldlineProperties::ISLAND_CHAIN) ) 
         {
             double color_value = 0;
             
@@ -1191,16 +1146,16 @@ avtPoincareFilter::CreatePoincareOutput()
               color_value = confidence;
             else if( dataValue == DATA_RidgelineVariance )
               color_value = ridgelineVariance;
-                  
+
             // Currently the surface mesh is a structquad so set the dims - it
             // really should be and unstructured surface so multiple surface
             // can be generated.
             if( is_curvemesh ) 
             {
-              if( type == FieldlineInfo::RATIONAL ) 
+              if( type == FieldlineProperties::RATIONAL ) 
                 loadCurve( dt, puncturePts, nnodes, islands, windingGroupOffset,
                            dataValue, color_value );
-              else if( type == FieldlineInfo::CHAOTIC )
+              else if( type == FieldlineProperties::CHAOTIC )
               {
                 bool tmpLines  = showLines;
                 bool tmpPoints = showPoints;
@@ -1216,7 +1171,7 @@ avtPoincareFilter::CreatePoincareOutput()
               else
                 loadCurve( dt, puncturePts, nnodes, dataValue, color_value );
 
-              if( type == FieldlineInfo::ISLAND_CHAIN && showOPoints )
+              if( type == FieldlineProperties::ISLAND_CHAIN && showOPoints )
                 findIslandCenter( dt, puncturePts, dataValue, color_value );
 //              drawPoints( dt, OPoints );
             }
@@ -1240,16 +1195,16 @@ avtPoincareFilter::CreatePoincareOutput()
                           nnodes, islands, poloidalWinding,
                           dataValue, color_value, true );
 
-//             if( islands && showRidgelines )
-//          {
-//            for( unsigned int i=0; i<toroidalWinding; ++i )
-//            {
-//              loadPoints( dt, islandPts[i],
-//                             islandPts[i].size(),
-//                          nnodes, islands, poloidalWinding,
-//                          dataValue, color_value, true );
-//            }
-//          }
+            if( islands && showRidgelines )
+            {
+              for( unsigned int i=0; i<toroidalWinding; ++i )
+              {
+                loadPoints( dt, islandPts[i],
+                            islandPts[i].size(),
+                            nnodes, islands, poloidalWinding,
+                            dataValue, color_value, true );
+              }
+            }
 
 //     double best_period = 0;
 //     double best_amp = 0;

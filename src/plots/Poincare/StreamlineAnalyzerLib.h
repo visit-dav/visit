@@ -57,11 +57,29 @@ typedef avtVector Vector;
 using namespace std;
 
 
-class FieldlineInfo {
+class FieldlineProperties {
 
 public:
 
-enum FieldlineType { UNKNOWN  = 0,
+  FieldlineProperties()
+  {
+    type = FieldlineProperties::UNKNOWN_TYPE;
+    analysisState = FieldlineProperties::UNKNOWN_STATE;
+    
+    toroidalWinding = 0;
+    poloidalWinding = 0;
+    windingGroupOffset = 0;
+    islands = 0;
+    nnodes  = 0;
+    
+    confidence        = 0;
+    nPuncturesNeeded  = 0;
+    toroidalPeriod    = 0;
+    poloidalPeriod    = 0;
+    ridgelineVariance = 0;
+  };
+
+enum FieldlineType { UNKNOWN_TYPE  = 0,
 
                      PERIODIC = 10,
                      RATIONAL = 11,
@@ -74,21 +92,25 @@ enum FieldlineType { UNKNOWN  = 0,
                      
                      CHAOTIC = 30 };
   
-enum analysisStatus { IN_PROCESS = 0x0001,
-                      COMPLETED  = 0x0002,
-                      TERMINATED = 0x0004,
+enum AnalysisState { UNKNOWN_STATE = 0,
 
-                      DELETE     = 0x0008,
+                     ADDING_POINTS = 10,
+                     NODE_COUNT_STABILITY_TEST = 11,
 
-                      ADD          = 0x00F0,
-                      ADD_O_POINTS = 0x0010,
-                      ADD_X_POINTS = 0x0020 };
+                     COMPLETED  = 30,
+                     TERMINATED = 40,
+                     
+                     DELETE     = 99,
+
+                     ADD          = 50,
+                     ADD_O_POINTS = 51,
+                     ADD_X_POINTS = 52 };
 
 public:
 
   FieldlineType type;
 
-  int analysisStatus;
+  AnalysisState analysisState;
 
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
@@ -158,13 +180,17 @@ public:
 
   unsigned int
   periodicityStats( vector< Point >& points,
-                    vector< pair< unsigned int, double > >& stats );
+                    vector< pair< unsigned int, double > >& stats,
+                    unsigned int max_period,
+                    unsigned int min_gcd );
 
 
   unsigned int
   periodicityChecks( vector< Point >& points,
                      vector< pair< unsigned int, double > >& stats,
                      double &consistency,
+                     unsigned int max_period,
+                     unsigned int min_gcd,
                      bool useBest );
 
   double
@@ -176,7 +202,7 @@ public:
   rationalCheck( vector< Point >& points,
                  unsigned int toroidalWinding,
                  unsigned int &nnodes,
-                 float delta=0.01);
+                 float delta=0.01 );
 
   bool
   islandChecks( vector< Point >& points,
@@ -185,8 +211,9 @@ public:
                 unsigned int &nnodes,
                 bool &complete );
 
-  FieldlineInfo 
+  void
   fieldlineProperties( vector< Point > &ptList,
+                       FieldlineProperties &fi,
                        unsigned int override,
                        unsigned int maxToroidalWinding,
                        double windingPairConfidence,

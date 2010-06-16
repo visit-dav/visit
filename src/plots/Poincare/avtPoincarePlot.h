@@ -48,11 +48,13 @@
 #include <avtPlot.h>
 
 #include <PoincareAttributes.h>
+#include <avtSurfaceAndWireframeRenderer.h>
 
+class     vtkProperty;
 class     avtShiftCenteringFilter;
 class     avtLookupTable;
+class     avtUserDefinedMapper;
 class     avtVariableLegend;
-class     avtVariableMapper;
 class     avtPoincareFilter;
 
 // ****************************************************************************
@@ -81,7 +83,9 @@ class avtPoincarePlot : public avtLineDataPlot
   protected:
     PoincareAttributes          atts;
 
-    avtVariableMapper          *varMapper;
+    vtkProperty                 *property;
+    avtSurfaceAndWireframeRenderer_p renderer;
+    avtUserDefinedMapper       *mapper;
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
     avtShiftCenteringFilter    *shiftCenteringFilter;
@@ -96,6 +100,7 @@ class avtPoincarePlot : public avtLineDataPlot
     virtual avtContract_p       EnhanceSpecification(avtContract_p in_contract);
 
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; }
+    void                        SetLighting(bool lightingOn);
     void                        SetLegend(bool legendOn);
     void                        SetLegendRanges();
 

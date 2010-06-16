@@ -54,7 +54,6 @@
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 
@@ -562,12 +561,31 @@ QvisPoincarePlotWindow::CreateWindowContents()
     showLines = new QCheckBox(tr("Show Lines"), optionsGroup);
     connect(showLines, SIGNAL(toggled(bool)),
             this, SLOT(showLinesChanged(bool)));
-    optionsLayout->addWidget(showLines, 1, 0);
+    optionsLayout->addWidget(showLines, 0, 0);
+
+    lineWidthLabel = new QLabel(tr("Line width"), central);
+    optionsLayout->addWidget(lineWidthLabel, 1, 0);
+
+    lineWidth = new QvisLineWidthWidget(0, central);
+    connect(lineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineWidthChanged(int)));
+    optionsLayout->addWidget(lineWidth, 1, 1, Qt::AlignLeft);
+
 
     showPoints = new QCheckBox(tr("Show Points"), optionsGroup);
     connect(showPoints, SIGNAL(toggled(bool)),
             this, SLOT(showPointsChanged(bool)));
-    optionsLayout->addWidget(showPoints, 1, 1);
+    optionsLayout->addWidget(showPoints, 0, 2);
+
+    pointSizeLabel = new QLabel(tr("Point size"), central);
+    optionsLayout->addWidget(pointSizeLabel, 1, 2);
+
+    pointSize = new QSpinBox(sourceGroup);
+    pointSize->setMinimum(1);
+    pointSize->setMaximum(10);
+    connect(pointSize, SIGNAL(valueChanged(int)),
+            this, SLOT(pointSizeChanged(int)));
+    optionsLayout->addWidget(pointSize, 1, 3, Qt::AlignLeft);
 
     //
     // Create the misc stuff
@@ -914,12 +932,25 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
           case PoincareAttributes::ID_showLines:
             showLines->blockSignals(true);
             showLines->setChecked(atts->GetShowLines());
+            lineWidthLabel->setEnabled( (atts->GetShowLines() == true ) );
+            lineWidth->setEnabled( (atts->GetShowLines() == true ) );
             showLines->blockSignals(false);
             break;
+          case PoincareAttributes::ID_lineWidth:
+            lineWidth->blockSignals(true);
+            lineWidth->SetLineWidth(atts->GetLineWidth());
+            lineWidth->blockSignals(false);
           case PoincareAttributes::ID_showPoints:
             showPoints->blockSignals(true);
             showPoints->setChecked(atts->GetShowPoints());
+            pointSizeLabel->setEnabled( (atts->GetShowPoints() == true ) );
+            pointSize->setEnabled( (atts->GetShowPoints() == true ) );
             showPoints->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_pointSize:
+            pointSize->blockSignals(true);
+            pointSize->setValue(atts->GetPointSize());
+            pointSize->blockSignals(false);
             break;
           case PoincareAttributes::ID_showRidgelines:
             showRidgelines->blockSignals(true);
@@ -1731,5 +1762,20 @@ void
 QvisPoincarePlotWindow::workGroupSizeChanged(int val)
 {
     atts->SetWorkGroupSize(val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::pointSizeChanged(int val)
+{
+    atts->SetPointSize(val); 
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::lineWidthChanged(int val)
+{
+    atts->SetLineWidth(val);
+    SetUpdate(false);
     Apply();
 }
