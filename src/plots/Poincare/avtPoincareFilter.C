@@ -73,19 +73,19 @@ using namespace std;
 
 #define RADIUS 0.0075
 
-static const int DATA_OriginalValue = 0;
-static const int DATA_InputOrder = 1;
-static const int DATA_PointIndex = 2;
-static const int DATA_Plane = 3;
-static const int DATA_WindingOrder = 4;
-static const int DATA_WindingPointOrder = 5;
-static const int DATA_WindingPointOrderModulo = 6;
-static const int DATA_ToroidalWindings = 7;
-static const int DATA_PoloidalWindings = 8;
-static const int DATA_SafetyFactor = 9;
-static const int DATA_Confidence = 10;
-static const int DATA_RidgelineVariance = 11;
-static const int DATA_Solid = 12;
+static const int DATA_None = 0;
+static const int DATA_OriginalValue = 1;
+static const int DATA_InputOrder = 2;
+static const int DATA_PointIndex = 3;
+static const int DATA_Plane = 4;
+static const int DATA_WindingOrder = 5;
+static const int DATA_WindingPointOrder = 6;
+static const int DATA_WindingPointOrderModulo = 7;
+static const int DATA_ToroidalWindings = 8;
+static const int DATA_PoloidalWindings = 9;
+static const int DATA_SafetyFactor = 10;
+static const int DATA_Confidence = 11;
+static const int DATA_RidgelineVariance = 12;
 
 // ****************************************************************************
 //  Method: CreateSphere
@@ -1131,7 +1131,7 @@ avtPoincareFilter::CreatePoincareOutput()
         if( !showIslands ||
             (showIslands && type == FieldlineProperties::ISLAND_CHAIN) ) 
         {
-            double color_value = 0;
+            double color_value;
             
             if( dataValue == DATA_OriginalValue ||
                 dataValue == DATA_InputOrder )
@@ -1146,6 +1146,8 @@ avtPoincareFilter::CreatePoincareOutput()
               color_value = confidence;
             else if( dataValue == DATA_RidgelineVariance )
               color_value = ridgelineVariance;
+            else
+                color_value = 0;
 
             // Currently the surface mesh is a structquad so set the dims - it
             // really should be and unstructured surface so multiple surface

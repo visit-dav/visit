@@ -36,7 +36,21 @@
         ColorByColorTable
       </Enum>
 
+      <Enum name="Opacity">
+        Explicit
+        ColorTable
+      </Enum>
+
+      <Field name="opacityType" label="Opacity" type="enum" subtype="Opacity">
+        Explicit
+      </Field>
+
+      <Field name="opacity" label="Opacity" type="opacity">
+        1.000000
+      </Field>
+
       <Enum name="DataValue">
+        Solid
         OriginalValue
         InputOrder
         PointIndex
@@ -47,8 +61,8 @@
         ToroidalWindings
         PoloidalWindings
         SafetyFactor
-	Confidence
-	RidgelineVariance
+        Confidence
+        RidgelineVariance
       </Enum>
 
       <Enum name="StreamlineAlgorithmType">
@@ -144,7 +158,7 @@
       </Field>
 
       <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">
-        ColorBySingleColor
+        ColorByColorTable
       </Field>
 
       <Field name="singleColor" label="Single color" type="color" length="4">

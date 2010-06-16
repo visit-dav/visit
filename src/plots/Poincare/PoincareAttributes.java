@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int PoincareAttributes_numAdditionalAtts = 46;
+    private static int PoincareAttributes_numAdditionalAtts = 48;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -81,18 +81,22 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 0;
     public final static int COLORINGMETHOD_COLORBYCOLORTABLE = 1;
 
-    public final static int DATAVALUE_ORIGINALVALUE = 0;
-    public final static int DATAVALUE_INPUTORDER = 1;
-    public final static int DATAVALUE_POINTINDEX = 2;
-    public final static int DATAVALUE_PLANE = 3;
-    public final static int DATAVALUE_WINDINGORDER = 4;
-    public final static int DATAVALUE_WINDINGPOINTORDER = 5;
-    public final static int DATAVALUE_WINDINGPOINTORDERMODULO = 6;
-    public final static int DATAVALUE_TOROIDALWINDINGS = 7;
-    public final static int DATAVALUE_POLOIDALWINDINGS = 8;
-    public final static int DATAVALUE_SAFETYFACTOR = 9;
-    public final static int DATAVALUE_CONFIDENCE = 10;
-    public final static int DATAVALUE_RIDGELINEVARIANCE = 11;
+    public final static int OPACITY_EXPLICIT = 0;
+    public final static int OPACITY_COLORTABLE = 1;
+
+    public final static int DATAVALUE_SOLID = 0;
+    public final static int DATAVALUE_ORIGINALVALUE = 1;
+    public final static int DATAVALUE_INPUTORDER = 2;
+    public final static int DATAVALUE_POINTINDEX = 3;
+    public final static int DATAVALUE_PLANE = 4;
+    public final static int DATAVALUE_WINDINGORDER = 5;
+    public final static int DATAVALUE_WINDINGPOINTORDER = 6;
+    public final static int DATAVALUE_WINDINGPOINTORDERMODULO = 7;
+    public final static int DATAVALUE_TOROIDALWINDINGS = 8;
+    public final static int DATAVALUE_POLOIDALWINDINGS = 9;
+    public final static int DATAVALUE_SAFETYFACTOR = 10;
+    public final static int DATAVALUE_CONFIDENCE = 11;
+    public final static int DATAVALUE_RIDGELINEVARIANCE = 12;
 
     public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
@@ -103,6 +107,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     {
         super(PoincareAttributes_numAdditionalAtts);
 
+        opacityType = OPACITY_EXPLICIT;
+        opacity = 1;
         minPunctures = 10;
         maxPunctures = 100;
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
@@ -136,7 +142,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         max = 0;
         minFlag = false;
         maxFlag = false;
-        colorType = COLORINGMETHOD_COLORBYSINGLECOLOR;
+        colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
         singleColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
         dataValue = DATAVALUE_SAFETYFACTOR;
@@ -164,6 +170,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     {
         super(PoincareAttributes_numAdditionalAtts + nMoreFields);
 
+        opacityType = OPACITY_EXPLICIT;
+        opacity = 1;
         minPunctures = 10;
         maxPunctures = 100;
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
@@ -197,7 +205,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         max = 0;
         minFlag = false;
         maxFlag = false;
-        colorType = COLORINGMETHOD_COLORBYSINGLECOLOR;
+        colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
         singleColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
         dataValue = DATAVALUE_SAFETYFACTOR;
@@ -227,6 +235,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
         int i;
 
+        opacityType = obj.opacityType;
+        opacity = obj.opacity;
         minPunctures = obj.minPunctures;
         maxPunctures = obj.maxPunctures;
         sourceType = obj.sourceType;
@@ -319,7 +329,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             lineEnd_equal = (lineEnd[i] == obj.lineEnd[i]);
 
         // Create the return value
-        return ((minPunctures == obj.minPunctures) &&
+        return ((opacityType == obj.opacityType) &&
+                (opacity == obj.opacity) &&
+                (minPunctures == obj.minPunctures) &&
                 (maxPunctures == obj.maxPunctures) &&
                 (sourceType == obj.sourceType) &&
                 pointSource_equal &&
@@ -371,22 +383,34 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "2.0"; }
 
     // Property setting methods
+    public void SetOpacityType(int opacityType_)
+    {
+        opacityType = opacityType_;
+        Select(0);
+    }
+
+    public void SetOpacity(double opacity_)
+    {
+        opacity = opacity_;
+        Select(1);
+    }
+
     public void SetMinPunctures(int minPunctures_)
     {
         minPunctures = minPunctures_;
-        Select(0);
+        Select(2);
     }
 
     public void SetMaxPunctures(int maxPunctures_)
     {
         maxPunctures = maxPunctures_;
-        Select(1);
+        Select(3);
     }
 
     public void SetSourceType(int sourceType_)
     {
         sourceType = sourceType_;
-        Select(2);
+        Select(4);
     }
 
     public void SetPointSource(double[] pointSource_)
@@ -394,7 +418,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         pointSource[0] = pointSource_[0];
         pointSource[1] = pointSource_[1];
         pointSource[2] = pointSource_[2];
-        Select(3);
+        Select(5);
     }
 
     public void SetPointSource(double e0, double e1, double e2)
@@ -402,7 +426,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         pointSource[0] = e0;
         pointSource[1] = e1;
         pointSource[2] = e2;
-        Select(3);
+        Select(5);
     }
 
     public void SetLineStart(double[] lineStart_)
@@ -410,7 +434,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lineStart[0] = lineStart_[0];
         lineStart[1] = lineStart_[1];
         lineStart[2] = lineStart_[2];
-        Select(4);
+        Select(6);
     }
 
     public void SetLineStart(double e0, double e1, double e2)
@@ -418,7 +442,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lineStart[0] = e0;
         lineStart[1] = e1;
         lineStart[2] = e2;
-        Select(4);
+        Select(6);
     }
 
     public void SetLineEnd(double[] lineEnd_)
@@ -426,7 +450,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lineEnd[0] = lineEnd_[0];
         lineEnd[1] = lineEnd_[1];
         lineEnd[2] = lineEnd_[2];
-        Select(5);
+        Select(7);
     }
 
     public void SetLineEnd(double e0, double e1, double e2)
@@ -434,250 +458,252 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         lineEnd[0] = e0;
         lineEnd[1] = e1;
         lineEnd[2] = e2;
-        Select(5);
+        Select(7);
     }
 
     public void SetPointDensity(int pointDensity_)
     {
         pointDensity = pointDensity_;
-        Select(6);
+        Select(8);
     }
 
     public void SetIntegrationType(int integrationType_)
     {
         integrationType = integrationType_;
-        Select(7);
+        Select(9);
     }
 
     public void SetMaxStepLength(double maxStepLength_)
     {
         maxStepLength = maxStepLength_;
-        Select(8);
+        Select(10);
     }
 
     public void SetRelTol(double relTol_)
     {
         relTol = relTol_;
-        Select(9);
+        Select(11);
     }
 
     public void SetAbsTol(double absTol_)
     {
         absTol = absTol_;
-        Select(10);
+        Select(12);
     }
 
     public void SetMaxToroidalWinding(int maxToroidalWinding_)
     {
         maxToroidalWinding = maxToroidalWinding_;
-        Select(11);
+        Select(13);
     }
 
     public void SetOverrideToroidalWinding(int overrideToroidalWinding_)
     {
         overrideToroidalWinding = overrideToroidalWinding_;
-        Select(12);
+        Select(14);
     }
 
     public void SetWindingPairConfidence(double windingPairConfidence_)
     {
         windingPairConfidence = windingPairConfidence_;
-        Select(13);
+        Select(15);
     }
 
     public void SetPeriodicityConsistency(double periodicityConsistency_)
     {
         periodicityConsistency = periodicityConsistency_;
-        Select(14);
+        Select(16);
     }
 
     public void SetAdjustPlane(int adjustPlane_)
     {
         adjustPlane = adjustPlane_;
-        Select(15);
+        Select(17);
     }
 
     public void SetOverlaps(int overlaps_)
     {
         overlaps = overlaps_;
-        Select(16);
+        Select(18);
     }
 
     public void SetMeshType(int meshType_)
     {
         meshType = meshType_;
-        Select(17);
+        Select(19);
     }
 
     public void SetNumberPlanes(int numberPlanes_)
     {
         numberPlanes = numberPlanes_;
-        Select(18);
+        Select(20);
     }
 
     public void SetSinglePlane(double singlePlane_)
     {
         singlePlane = singlePlane_;
-        Select(19);
+        Select(21);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(20);
+        Select(22);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(21);
+        Select(23);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(22);
+        Select(24);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(23);
+        Select(25);
     }
 
     public void SetColorType(int colorType_)
     {
         colorType = colorType_;
-        Select(24);
+        Select(26);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(25);
+        Select(27);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(26);
+        Select(28);
     }
 
     public void SetDataValue(int dataValue_)
     {
         dataValue = dataValue_;
-        Select(27);
+        Select(29);
     }
 
     public void SetShowOPoints(boolean showOPoints_)
     {
         showOPoints = showOPoints_;
-        Select(28);
+        Select(30);
     }
 
     public void SetOPointMaxInterations(int OPointMaxInterations_)
     {
         OPointMaxInterations = OPointMaxInterations_;
-        Select(29);
+        Select(31);
     }
 
     public void SetShowXPoints(boolean showXPoints_)
     {
         showXPoints = showXPoints_;
-        Select(30);
+        Select(32);
     }
 
     public void SetXPointMaxInterations(int XPointMaxInterations_)
     {
         XPointMaxInterations = XPointMaxInterations_;
-        Select(31);
+        Select(33);
     }
 
     public void SetShowChaotic(boolean showChaotic_)
     {
         showChaotic = showChaotic_;
-        Select(32);
+        Select(34);
     }
 
     public void SetShowIslands(boolean showIslands_)
     {
         showIslands = showIslands_;
-        Select(33);
+        Select(35);
     }
 
     public void SetVerboseFlag(boolean verboseFlag_)
     {
         verboseFlag = verboseFlag_;
-        Select(34);
+        Select(36);
     }
 
     public void SetShowRidgelines(boolean showRidgelines_)
     {
         showRidgelines = showRidgelines_;
-        Select(35);
+        Select(37);
     }
 
     public void SetShowLines(boolean showLines_)
     {
         showLines = showLines_;
-        Select(36);
+        Select(38);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(37);
+        Select(39);
     }
 
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(38);
+        Select(40);
     }
 
     public void SetPointSize(int pointSize_)
     {
         pointSize = pointSize_;
-        Select(39);
+        Select(41);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(40);
+        Select(42);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(41);
+        Select(43);
     }
 
     public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
     {
         streamlineAlgorithmType = streamlineAlgorithmType_;
-        Select(42);
+        Select(44);
     }
 
     public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
     {
         maxStreamlineProcessCount = maxStreamlineProcessCount_;
-        Select(43);
+        Select(45);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(44);
+        Select(46);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(45);
+        Select(47);
     }
 
     // Property getting methods
+    public int            GetOpacityType() { return opacityType; }
+    public double         GetOpacity() { return opacity; }
     public int            GetMinPunctures() { return minPunctures; }
     public int            GetMaxPunctures() { return maxPunctures; }
     public int            GetSourceType() { return sourceType; }
@@ -729,96 +755,100 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(minPunctures);
+            buf.WriteInt(opacityType);
         if(WriteSelect(1, buf))
-            buf.WriteInt(maxPunctures);
+            buf.WriteDouble(opacity);
         if(WriteSelect(2, buf))
-            buf.WriteInt(sourceType);
+            buf.WriteInt(minPunctures);
         if(WriteSelect(3, buf))
-            buf.WriteDoubleArray(pointSource);
+            buf.WriteInt(maxPunctures);
         if(WriteSelect(4, buf))
-            buf.WriteDoubleArray(lineStart);
+            buf.WriteInt(sourceType);
         if(WriteSelect(5, buf))
-            buf.WriteDoubleArray(lineEnd);
+            buf.WriteDoubleArray(pointSource);
         if(WriteSelect(6, buf))
-            buf.WriteInt(pointDensity);
+            buf.WriteDoubleArray(lineStart);
         if(WriteSelect(7, buf))
-            buf.WriteInt(integrationType);
+            buf.WriteDoubleArray(lineEnd);
         if(WriteSelect(8, buf))
-            buf.WriteDouble(maxStepLength);
+            buf.WriteInt(pointDensity);
         if(WriteSelect(9, buf))
-            buf.WriteDouble(relTol);
+            buf.WriteInt(integrationType);
         if(WriteSelect(10, buf))
-            buf.WriteDouble(absTol);
+            buf.WriteDouble(maxStepLength);
         if(WriteSelect(11, buf))
-            buf.WriteInt(maxToroidalWinding);
+            buf.WriteDouble(relTol);
         if(WriteSelect(12, buf))
-            buf.WriteInt(overrideToroidalWinding);
+            buf.WriteDouble(absTol);
         if(WriteSelect(13, buf))
-            buf.WriteDouble(windingPairConfidence);
+            buf.WriteInt(maxToroidalWinding);
         if(WriteSelect(14, buf))
-            buf.WriteDouble(periodicityConsistency);
+            buf.WriteInt(overrideToroidalWinding);
         if(WriteSelect(15, buf))
-            buf.WriteInt(adjustPlane);
+            buf.WriteDouble(windingPairConfidence);
         if(WriteSelect(16, buf))
-            buf.WriteInt(overlaps);
+            buf.WriteDouble(periodicityConsistency);
         if(WriteSelect(17, buf))
-            buf.WriteInt(meshType);
+            buf.WriteInt(adjustPlane);
         if(WriteSelect(18, buf))
-            buf.WriteInt(numberPlanes);
+            buf.WriteInt(overlaps);
         if(WriteSelect(19, buf))
-            buf.WriteDouble(singlePlane);
+            buf.WriteInt(meshType);
         if(WriteSelect(20, buf))
-            buf.WriteDouble(min);
+            buf.WriteInt(numberPlanes);
         if(WriteSelect(21, buf))
-            buf.WriteDouble(max);
+            buf.WriteDouble(singlePlane);
         if(WriteSelect(22, buf))
-            buf.WriteBool(minFlag);
+            buf.WriteDouble(min);
         if(WriteSelect(23, buf))
-            buf.WriteBool(maxFlag);
+            buf.WriteDouble(max);
         if(WriteSelect(24, buf))
-            buf.WriteInt(colorType);
+            buf.WriteBool(minFlag);
         if(WriteSelect(25, buf))
-            singleColor.Write(buf);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(26, buf))
-            buf.WriteString(colorTableName);
+            buf.WriteInt(colorType);
         if(WriteSelect(27, buf))
-            buf.WriteInt(dataValue);
+            singleColor.Write(buf);
         if(WriteSelect(28, buf))
-            buf.WriteBool(showOPoints);
+            buf.WriteString(colorTableName);
         if(WriteSelect(29, buf))
-            buf.WriteInt(OPointMaxInterations);
+            buf.WriteInt(dataValue);
         if(WriteSelect(30, buf))
-            buf.WriteBool(showXPoints);
+            buf.WriteBool(showOPoints);
         if(WriteSelect(31, buf))
-            buf.WriteInt(XPointMaxInterations);
+            buf.WriteInt(OPointMaxInterations);
         if(WriteSelect(32, buf))
-            buf.WriteBool(showChaotic);
+            buf.WriteBool(showXPoints);
         if(WriteSelect(33, buf))
-            buf.WriteBool(showIslands);
+            buf.WriteInt(XPointMaxInterations);
         if(WriteSelect(34, buf))
-            buf.WriteBool(verboseFlag);
+            buf.WriteBool(showChaotic);
         if(WriteSelect(35, buf))
-            buf.WriteBool(showRidgelines);
+            buf.WriteBool(showIslands);
         if(WriteSelect(36, buf))
-            buf.WriteBool(showLines);
+            buf.WriteBool(verboseFlag);
         if(WriteSelect(37, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteBool(showRidgelines);
         if(WriteSelect(38, buf))
-            buf.WriteBool(showPoints);
+            buf.WriteBool(showLines);
         if(WriteSelect(39, buf))
-            buf.WriteInt(pointSize);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(40, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteBool(showPoints);
         if(WriteSelect(41, buf))
-            buf.WriteBool(lightingFlag);
+            buf.WriteInt(pointSize);
         if(WriteSelect(42, buf))
-            buf.WriteInt(streamlineAlgorithmType);
+            buf.WriteBool(legendFlag);
         if(WriteSelect(43, buf))
-            buf.WriteInt(maxStreamlineProcessCount);
+            buf.WriteBool(lightingFlag);
         if(WriteSelect(44, buf))
-            buf.WriteInt(maxDomainCacheSize);
+            buf.WriteInt(streamlineAlgorithmType);
         if(WriteSelect(45, buf))
+            buf.WriteInt(maxStreamlineProcessCount);
+        if(WriteSelect(46, buf))
+            buf.WriteInt(maxDomainCacheSize);
+        if(WriteSelect(47, buf))
             buf.WriteInt(workGroupSize);
     }
 
@@ -827,142 +857,148 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         switch(index)
         {
         case 0:
-            SetMinPunctures(buf.ReadInt());
+            SetOpacityType(buf.ReadInt());
             break;
         case 1:
-            SetMaxPunctures(buf.ReadInt());
+            SetOpacity(buf.ReadDouble());
             break;
         case 2:
-            SetSourceType(buf.ReadInt());
+            SetMinPunctures(buf.ReadInt());
             break;
         case 3:
-            SetPointSource(buf.ReadDoubleArray());
+            SetMaxPunctures(buf.ReadInt());
             break;
         case 4:
-            SetLineStart(buf.ReadDoubleArray());
+            SetSourceType(buf.ReadInt());
             break;
         case 5:
-            SetLineEnd(buf.ReadDoubleArray());
+            SetPointSource(buf.ReadDoubleArray());
             break;
         case 6:
-            SetPointDensity(buf.ReadInt());
+            SetLineStart(buf.ReadDoubleArray());
             break;
         case 7:
-            SetIntegrationType(buf.ReadInt());
+            SetLineEnd(buf.ReadDoubleArray());
             break;
         case 8:
-            SetMaxStepLength(buf.ReadDouble());
+            SetPointDensity(buf.ReadInt());
             break;
         case 9:
-            SetRelTol(buf.ReadDouble());
+            SetIntegrationType(buf.ReadInt());
             break;
         case 10:
-            SetAbsTol(buf.ReadDouble());
+            SetMaxStepLength(buf.ReadDouble());
             break;
         case 11:
-            SetMaxToroidalWinding(buf.ReadInt());
+            SetRelTol(buf.ReadDouble());
             break;
         case 12:
-            SetOverrideToroidalWinding(buf.ReadInt());
+            SetAbsTol(buf.ReadDouble());
             break;
         case 13:
-            SetWindingPairConfidence(buf.ReadDouble());
+            SetMaxToroidalWinding(buf.ReadInt());
             break;
         case 14:
-            SetPeriodicityConsistency(buf.ReadDouble());
+            SetOverrideToroidalWinding(buf.ReadInt());
             break;
         case 15:
-            SetAdjustPlane(buf.ReadInt());
+            SetWindingPairConfidence(buf.ReadDouble());
             break;
         case 16:
-            SetOverlaps(buf.ReadInt());
+            SetPeriodicityConsistency(buf.ReadDouble());
             break;
         case 17:
-            SetMeshType(buf.ReadInt());
+            SetAdjustPlane(buf.ReadInt());
             break;
         case 18:
-            SetNumberPlanes(buf.ReadInt());
+            SetOverlaps(buf.ReadInt());
             break;
         case 19:
-            SetSinglePlane(buf.ReadDouble());
+            SetMeshType(buf.ReadInt());
             break;
         case 20:
-            SetMin(buf.ReadDouble());
+            SetNumberPlanes(buf.ReadInt());
             break;
         case 21:
-            SetMax(buf.ReadDouble());
+            SetSinglePlane(buf.ReadDouble());
             break;
         case 22:
-            SetMinFlag(buf.ReadBool());
+            SetMin(buf.ReadDouble());
             break;
         case 23:
-            SetMaxFlag(buf.ReadBool());
+            SetMax(buf.ReadDouble());
             break;
         case 24:
-            SetColorType(buf.ReadInt());
+            SetMinFlag(buf.ReadBool());
             break;
         case 25:
-            singleColor.Read(buf);
-            Select(25);
+            SetMaxFlag(buf.ReadBool());
             break;
         case 26:
-            SetColorTableName(buf.ReadString());
+            SetColorType(buf.ReadInt());
             break;
         case 27:
-            SetDataValue(buf.ReadInt());
+            singleColor.Read(buf);
+            Select(27);
             break;
         case 28:
-            SetShowOPoints(buf.ReadBool());
+            SetColorTableName(buf.ReadString());
             break;
         case 29:
-            SetOPointMaxInterations(buf.ReadInt());
+            SetDataValue(buf.ReadInt());
             break;
         case 30:
-            SetShowXPoints(buf.ReadBool());
+            SetShowOPoints(buf.ReadBool());
             break;
         case 31:
-            SetXPointMaxInterations(buf.ReadInt());
+            SetOPointMaxInterations(buf.ReadInt());
             break;
         case 32:
-            SetShowChaotic(buf.ReadBool());
+            SetShowXPoints(buf.ReadBool());
             break;
         case 33:
-            SetShowIslands(buf.ReadBool());
+            SetXPointMaxInterations(buf.ReadInt());
             break;
         case 34:
-            SetVerboseFlag(buf.ReadBool());
+            SetShowChaotic(buf.ReadBool());
             break;
         case 35:
-            SetShowRidgelines(buf.ReadBool());
+            SetShowIslands(buf.ReadBool());
             break;
         case 36:
-            SetShowLines(buf.ReadBool());
+            SetVerboseFlag(buf.ReadBool());
             break;
         case 37:
-            SetLineWidth(buf.ReadInt());
+            SetShowRidgelines(buf.ReadBool());
             break;
         case 38:
-            SetShowPoints(buf.ReadBool());
+            SetShowLines(buf.ReadBool());
             break;
         case 39:
-            SetPointSize(buf.ReadInt());
+            SetLineWidth(buf.ReadInt());
             break;
         case 40:
-            SetLegendFlag(buf.ReadBool());
+            SetShowPoints(buf.ReadBool());
             break;
         case 41:
-            SetLightingFlag(buf.ReadBool());
+            SetPointSize(buf.ReadInt());
             break;
         case 42:
-            SetStreamlineAlgorithmType(buf.ReadInt());
+            SetLegendFlag(buf.ReadBool());
             break;
         case 43:
-            SetMaxStreamlineProcessCount(buf.ReadInt());
+            SetLightingFlag(buf.ReadBool());
             break;
         case 44:
-            SetMaxDomainCacheSize(buf.ReadInt());
+            SetStreamlineAlgorithmType(buf.ReadInt());
             break;
         case 45:
+            SetMaxStreamlineProcessCount(buf.ReadInt());
+            break;
+        case 46:
+            SetMaxDomainCacheSize(buf.ReadInt());
+            break;
+        case 47:
             SetWorkGroupSize(buf.ReadInt());
             break;
         }
@@ -971,6 +1007,13 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
+        str = str + indent + "opacityType = ";
+        if(opacityType == OPACITY_EXPLICIT)
+            str = str + "OPACITY_EXPLICIT";
+        if(opacityType == OPACITY_COLORTABLE)
+            str = str + "OPACITY_COLORTABLE";
+        str = str + "\n";
+        str = str + doubleToString("opacity", opacity, indent) + "\n";
         str = str + intToString("minPunctures", minPunctures, indent) + "\n";
         str = str + intToString("maxPunctures", maxPunctures, indent) + "\n";
         str = str + indent + "sourceType = ";
@@ -1030,6 +1073,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
         str = str + indent + "dataValue = ";
+        if(dataValue == DATAVALUE_SOLID)
+            str = str + "DATAVALUE_SOLID";
         if(dataValue == DATAVALUE_ORIGINALVALUE)
             str = str + "DATAVALUE_ORIGINALVALUE";
         if(dataValue == DATAVALUE_INPUTORDER)
@@ -1085,6 +1130,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
+    private int            opacityType;
+    private double         opacity;
     private int            minPunctures;
     private int            maxPunctures;
     private int            sourceType;

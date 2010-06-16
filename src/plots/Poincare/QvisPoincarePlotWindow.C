@@ -417,6 +417,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     dataLayout->addWidget(dataValueLabel, 0, 0);
 
     dataValueCombo = new QComboBox(dataGroup);
+    dataValueCombo->addItem(tr("None"));
     dataValueCombo->addItem(tr("OriginalValue"));
     dataValueCombo->addItem(tr("InputOrder"));
     dataValueCombo->addItem(tr("PointIndex"));
@@ -475,7 +476,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     displayLayout->setMargin(5);
     displayLayout->setSpacing(10);
 
-    meshTypeLabel = new QLabel(tr("Mesh:"), displayGroup);
+    meshTypeLabel = new QLabel(tr("Mesh type:"), displayGroup);
     displayLayout->addWidget(meshTypeLabel, 0, 0);
 
     meshTypeCombo = new QComboBox(displayGroup);
@@ -519,34 +520,55 @@ QvisPoincarePlotWindow::CreateWindowContents()
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
     colorLayout->setMargin(5);
     colorLayout->setSpacing(10);
-    colorLayout->setColumnStretch(2, 10);
+//    colorLayout->setColumnStretch(2, 10);
 
-//     colorTypeLabel = new QLabel(tr("Color type"), colorGroup);
-//     colorLayout->addWidget(colorTypeLabel,6,0);
-    colorType = new QWidget(colorGroup);
-    colorTypeButtonGroup= new QButtonGroup(colorType);
-
-    QRadioButton *colorTypeSingleColor =
-      new QRadioButton(tr("Custom"), colorType);
-    colorTypeButtonGroup->addButton(colorTypeSingleColor,0);
-    colorLayout->addWidget(colorTypeSingleColor, 0, 0);
-
+    singleColorLabel = new QLabel(tr("Single color"), colorGroup);
     singleColor = new QvisColorButton(colorGroup);
     connect(singleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(singleColorChanged(const QColor&)));
+    colorLayout->addWidget(singleColorLabel, 0, 0, Qt::AlignLeft);
     colorLayout->addWidget(singleColor, 0, 1, Qt::AlignLeft);
 
-    QRadioButton *colorTypeColorTable =
-      new QRadioButton(tr("Color Table"), colorType);
-    colorTypeButtonGroup->addButton(colorTypeColorTable,1);
-    colorLayout->addWidget(colorTypeColorTable, 0, 2, Qt::AlignRight);
-    connect(colorTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorTypeChanged(int)));
-
+    colorTableNameLabel = new QLabel(tr("Color table"), colorGroup);
     colorTableName = new QvisColorTableButton(colorGroup);
     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
-    colorLayout->addWidget(colorTableName, 0, 3, Qt::AlignLeft);
+    colorLayout->addWidget(colorTableNameLabel, 0, 0, Qt::AlignLeft);
+    colorLayout->addWidget(colorTableName, 0, 1, Qt::AlignLeft);
+
+
+    // Create the use-color-table-opacity checkbox
+
+    // Create the radio buttons
+    opacityButtonsLabel = new QLabel(tr("Opacity"), central);
+    colorLayout->addWidget(opacityButtonsLabel, 0, 2, Qt::AlignRight);
+
+    opacityButtons = new QButtonGroup(central);
+
+    opacityButtonSetExplicit = new QRadioButton(tr("Set explicitly"), central);
+    opacityButtonSetExplicit->setChecked(true);
+    opacityButtons->addButton(opacityButtonSetExplicit, 0);
+    colorLayout->addWidget(opacityButtonSetExplicit, 0, 3, Qt::AlignLeft);
+    opacityButtonColorTable = new QRadioButton(tr("From color table"), central);
+    opacityButtons->addButton(opacityButtonColorTable, 1);
+    colorLayout->addWidget(opacityButtonColorTable, 0, 4);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
+    connect(opacityButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(setOpaacityClicked(int)));
+
+    //
+    // Create the opacity slider
+    //
+//    opacitySliderLabel = new QLabel(tr("Opacity"), central);
+//    colorLayout->addWidget(opacitySliderLabel, 1, 2);
+
+    opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central);
+    opacitySlider->setTickInterval(64);
+    opacitySlider->setGradientColor(QColor(0, 0, 0));
+    connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
+            this, SLOT(changedOpacity(int, const void*)));
+    colorLayout->addWidget(opacitySlider, 1, 3, 1, 2);
 
 
    // Create the options group box.
@@ -564,7 +586,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     optionsLayout->addWidget(showLines, 0, 0);
 
     lineWidthLabel = new QLabel(tr("Line width"), central);
-    optionsLayout->addWidget(lineWidthLabel, 1, 0);
+    optionsLayout->addWidget(lineWidthLabel, 1, 0, Qt::AlignRight);
 
     lineWidth = new QvisLineWidthWidget(0, central);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
@@ -578,7 +600,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     optionsLayout->addWidget(showPoints, 0, 2);
 
     pointSizeLabel = new QLabel(tr("Point size"), central);
-    optionsLayout->addWidget(pointSizeLabel, 1, 2);
+    optionsLayout->addWidget(pointSizeLabel, 1, 2, Qt::AlignRight);
 
     pointSize = new QSpinBox(sourceGroup);
     pointSize->setMinimum(1);
@@ -873,27 +895,6 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             connect(maxFlag, SIGNAL(toggled(bool)),
                     this, SLOT(maxFlagChanged(bool)));
             break;
-          case PoincareAttributes::ID_colorType:
-            colorTypeButtonGroup->blockSignals(true);
-            if(colorTypeButtonGroup->button((int)atts->GetColorType()) != 0)
-                colorTypeButtonGroup->button((int)atts->GetColorType())->setChecked(true);
-
-            if (atts->GetColorType() == PoincareAttributes::ColorBySingleColor)
-            {
-                singleColor->setEnabled(true);
-                colorTableName->setEnabled(false);
-                dataValueCombo->setEnabled(false);
-                dataValueLabel->setEnabled(false);
-            }
-            else
-            {
-                singleColor->setEnabled(false);
-                colorTableName->setEnabled(true);
-                dataValueCombo->setEnabled(true);
-                dataValueLabel->setEnabled(true);
-            }
-            colorTypeButtonGroup->blockSignals(false);
-            break;
           case PoincareAttributes::ID_singleColor:
             { // new scope
                 QColor tempcolor = QColor(atts->GetSingleColor().Red(),
@@ -909,9 +910,59 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             colorTableName->setColorTable(QString(atts->GetColorTableName().c_str()));
             colorTableName->blockSignals(false);
             break;
-          case PoincareAttributes::ID_dataValue:
+          case PoincareAttributes::ID_opacity:
+            opacitySlider->blockSignals(true);
+            opacitySlider->setValue(int((float)atts->GetOpacity() * 255.f));
+            opacitySlider->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_opacityType:
+            opacityButtons->blockSignals(true);
+            opacityButtons->button(atts->GetOpacityType())->setChecked(true);
+            opacitySlider->setEnabled(!atts->GetOpacityType());
+//            opacitySliderLabel->setEnabled(!atts->GetOpacityType());
+            opacityButtons->blockSignals(false);
+            break;
+           case PoincareAttributes::ID_dataValue:
             dataValueCombo->blockSignals(true);
             dataValueCombo->setCurrentIndex((int)atts->GetDataValue());
+
+            if( (int) atts->GetDataValue() == 0 )
+            {
+              singleColorLabel->setEnabled(true);
+              singleColorLabel->show();
+              singleColor->setEnabled(true);
+              singleColor->show();
+              
+              colorTableNameLabel->setEnabled(false);
+              colorTableNameLabel->hide();
+              colorTableName->setEnabled(false);
+              colorTableName->hide();
+
+              opacityButtonsLabel->setEnabled(false);
+              opacityButtonSetExplicit->setEnabled(false);
+              opacityButtonColorTable->setEnabled(false);
+//            opacitySliderLabel->setEnabled(false);
+              opacitySlider->setEnabled(false);
+            }
+            else
+            {
+              singleColorLabel->setEnabled(false);
+              singleColorLabel->hide();
+              singleColor->setEnabled(false);
+              singleColor->hide();
+              
+              colorTableNameLabel->setEnabled(true);
+              colorTableNameLabel->show();
+              colorTableName->setEnabled(true);
+              colorTableName->show();
+
+              opacityButtonsLabel->setEnabled(true);
+              opacityButtonSetExplicit->setEnabled(true);
+              opacityButtonColorTable->setEnabled(true);
+//            opacitySliderLabel->setEnabled(!atts->GetOpacityType());
+              opacitySlider->setEnabled(!atts->GetOpacityType());
+            }
+
             dataValueCombo->blockSignals(false);
             break;
           case PoincareAttributes::ID_showOPoints:
@@ -1640,6 +1691,25 @@ QvisPoincarePlotWindow::colorTableNameChanged(bool useDefault,
     Apply();
 }
 
+void
+QvisPoincarePlotWindow::setOpaacityClicked(int opacity)
+{
+    // Only do it if it changed.
+    if(opacity != atts->GetOpacityType())
+    {
+        atts->SetOpacityType(PoincareAttributes::Opacity(opacity));
+//        opacitySliderLabel->setEnabled(!opacity);
+        opacitySlider->setEnabled(!opacity);
+        Apply();
+    }
+}
+
+void
+QvisPoincarePlotWindow::changedOpacity(int opacity, const void*)
+{
+    atts->SetOpacity((float)opacity/255.);
+    Apply();
+}
 
 void
 QvisPoincarePlotWindow::dataValueChanged(int val)
@@ -1647,7 +1717,7 @@ QvisPoincarePlotWindow::dataValueChanged(int val)
     if(val != atts->GetDataValue())
     {
         atts->SetDataValue(PoincareAttributes::DataValue(val));
-        SetUpdate(false);
+        atts->SetColorType(PoincareAttributes::ColoringMethod(val?1:0));
         Apply();
     }
 }

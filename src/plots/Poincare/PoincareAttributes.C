@@ -230,36 +230,73 @@ PoincareAttributes::ColoringMethod_FromString(const std::string &s, PoincareAttr
 }
 
 //
+// Enum conversion methods for PoincareAttributes::Opacity
+//
+
+static const char *Opacity_strings[] = {
+"Explicit", "ColorTable"};
+
+std::string
+PoincareAttributes::Opacity_ToString(PoincareAttributes::Opacity t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return Opacity_strings[index];
+}
+
+std::string
+PoincareAttributes::Opacity_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return Opacity_strings[index];
+}
+
+bool
+PoincareAttributes::Opacity_FromString(const std::string &s, PoincareAttributes::Opacity &val)
+{
+    val = PoincareAttributes::Explicit;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == Opacity_strings[i])
+        {
+            val = (Opacity)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for PoincareAttributes::DataValue
 //
 
 static const char *DataValue_strings[] = {
-"OriginalValue", "InputOrder", "PointIndex", 
-"Plane", "WindingOrder", "WindingPointOrder", 
-"WindingPointOrderModulo", "ToroidalWindings", "PoloidalWindings", 
-"SafetyFactor", "Confidence", "RidgelineVariance"
-};
+"Solid", "OriginalValue", "InputOrder", 
+"PointIndex", "Plane", "WindingOrder", 
+"WindingPointOrder", "WindingPointOrderModulo", "ToroidalWindings", 
+"PoloidalWindings", "SafetyFactor", "Confidence", 
+"RidgelineVariance"};
 
 std::string
 PoincareAttributes::DataValue_ToString(PoincareAttributes::DataValue t)
 {
     int index = int(t);
-    if(index < 0 || index >= 12) index = 0;
+    if(index < 0 || index >= 13) index = 0;
     return DataValue_strings[index];
 }
 
 std::string
 PoincareAttributes::DataValue_ToString(int t)
 {
-    int index = (t < 0 || t >= 12) ? 0 : t;
+    int index = (t < 0 || t >= 13) ? 0 : t;
     return DataValue_strings[index];
 }
 
 bool
 PoincareAttributes::DataValue_FromString(const std::string &s, PoincareAttributes::DataValue &val)
 {
-    val = PoincareAttributes::OriginalValue;
-    for(int i = 0; i < 12; ++i)
+    val = PoincareAttributes::Solid;
+    for(int i = 0; i < 13; ++i)
     {
         if(s == DataValue_strings[i])
         {
@@ -325,6 +362,8 @@ PoincareAttributes::StreamlineAlgorithmType_FromString(const std::string &s, Poi
 
 void PoincareAttributes::Init()
 {
+    opacityType = Explicit;
+    opacity = 1;
     minPunctures = 10;
     maxPunctures = 100;
     sourceType = SpecifiedPoint;
@@ -355,7 +394,7 @@ void PoincareAttributes::Init()
     max = 0;
     minFlag = false;
     maxFlag = false;
-    colorType = ColorBySingleColor;
+    colorType = ColorByColorTable;
     dataValue = SafetyFactor;
     showOPoints = false;
     OPointMaxInterations = 2;
@@ -396,6 +435,8 @@ void PoincareAttributes::Init()
 
 void PoincareAttributes::Copy(const PoincareAttributes &obj)
 {
+    opacityType = obj.opacityType;
+    opacity = obj.opacity;
     minPunctures = obj.minPunctures;
     maxPunctures = obj.maxPunctures;
     sourceType = obj.sourceType;
@@ -625,7 +666,9 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
         lineEnd_equal = (lineEnd[i] == obj.lineEnd[i]);
 
     // Create the return value
-    return ((minPunctures == obj.minPunctures) &&
+    return ((opacityType == obj.opacityType) &&
+            (opacity == obj.opacity) &&
+            (minPunctures == obj.minPunctures) &&
             (maxPunctures == obj.maxPunctures) &&
             (sourceType == obj.sourceType) &&
             pointSource_equal &&
@@ -839,6 +882,8 @@ PoincareAttributes::NewInstance(bool copy) const
 void
 PoincareAttributes::SelectAll()
 {
+    Select(ID_opacityType,               (void *)&opacityType);
+    Select(ID_opacity,                   (void *)&opacity);
     Select(ID_minPunctures,              (void *)&minPunctures);
     Select(ID_maxPunctures,              (void *)&maxPunctures);
     Select(ID_sourceType,                (void *)&sourceType);
@@ -916,6 +961,18 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     bool addToParent = false;
     // Create a node for PoincareAttributes.
     DataNode *node = new DataNode("PoincareAttributes");
+
+    if(completeSave || !FieldsEqual(ID_opacityType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacityType", Opacity_ToString(opacityType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_opacity, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("opacity", opacity));
+    }
 
     if(completeSave || !FieldsEqual(ID_minPunctures, &defaultObject))
     {
@@ -1231,6 +1288,24 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("opacityType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetOpacityType(Opacity(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Opacity value;
+            if(Opacity_FromString(node->AsString(), value))
+                SetOpacityType(value);
+        }
+    }
+    if((node = searchNode->GetNode("opacity")) != 0)
+        SetOpacity(node->AsDouble());
     if((node = searchNode->GetNode("minPunctures")) != 0)
         SetMinPunctures(node->AsInt());
     if((node = searchNode->GetNode("maxPunctures")) != 0)
@@ -1361,7 +1436,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 12)
+            if(ival >= 0 && ival < 13)
                 SetDataValue(DataValue(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1426,6 +1501,20 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+PoincareAttributes::SetOpacityType(PoincareAttributes::Opacity opacityType_)
+{
+    opacityType = opacityType_;
+    Select(ID_opacityType, (void *)&opacityType);
+}
+
+void
+PoincareAttributes::SetOpacity(double opacity_)
+{
+    opacity = opacity_;
+    Select(ID_opacity, (void *)&opacity);
+}
 
 void
 PoincareAttributes::SetMinPunctures(int minPunctures_)
@@ -1758,6 +1847,18 @@ PoincareAttributes::SetWorkGroupSize(int workGroupSize_)
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+PoincareAttributes::Opacity
+PoincareAttributes::GetOpacityType() const
+{
+    return Opacity(opacityType);
+}
+
+double
+PoincareAttributes::GetOpacity() const
+{
+    return opacity;
+}
 
 int
 PoincareAttributes::GetMinPunctures() const
@@ -2123,6 +2224,8 @@ PoincareAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
+    case ID_opacityType:               return "opacityType";
+    case ID_opacity:                   return "opacity";
     case ID_minPunctures:              return "minPunctures";
     case ID_maxPunctures:              return "maxPunctures";
     case ID_sourceType:                return "sourceType";
@@ -2193,6 +2296,8 @@ PoincareAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
+    case ID_opacityType:               return FieldType_enum;
+    case ID_opacity:                   return FieldType_opacity;
     case ID_minPunctures:              return FieldType_int;
     case ID_maxPunctures:              return FieldType_int;
     case ID_sourceType:                return FieldType_enum;
@@ -2263,6 +2368,8 @@ PoincareAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
+    case ID_opacityType:               return "enum";
+    case ID_opacity:                   return "opacity";
     case ID_minPunctures:              return "int";
     case ID_maxPunctures:              return "int";
     case ID_sourceType:                return "enum";
@@ -2335,6 +2442,16 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_opacityType:
+        {  // new scope
+        retval = (opacityType == obj.opacityType);
+        }
+        break;
+    case ID_opacity:
+        {  // new scope
+        retval = (opacity == obj.opacity);
+        }
+        break;
     case ID_minPunctures:
         {  // new scope
         retval = (minPunctures == obj.minPunctures);
@@ -2699,3 +2816,4 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            showLines != obj.showLines ||
            showPoints != obj.showPoints;
 }
+
