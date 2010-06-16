@@ -105,6 +105,10 @@ exec perl -x $0 ${1+"$@"};
 #    current link is missing.  In this case it sorts the versions of all the
 #    versions and uses the last one.
 #
+#    Cyrus Harrison, Wed Jun 16 12:10:08 PDT 2010
+#    Removed '-v' full patch warning. Changed the order of insertion for
+#    '-forceversion' when full patch is specified via '-v'.
+#
 ###############################################################################
 
 
@@ -284,11 +288,9 @@ elsif ($ver_set)
         ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+$/$1/;
         ($ver_patch = $ver) =~ s/^\d+\.\d+\.(\d+)$/$1/;
         ($ver_beta  = -1);
-        print STDERR "WARNING: full patchlevel was specified with -v.\n";
-        print STDERR "Assuming '-forceversion $ver' was intended.\n";
         if ($progname eq "visit")
         {
-            push @visitargs, "-forceversion", $ver;
+            unshift @visitargs, "-forceversion", $ver;
         }
     } elsif (grep /^\d+\.\d+b$/, $ver) {
         # e.g. -v 1.7b
