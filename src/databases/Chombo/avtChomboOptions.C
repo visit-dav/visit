@@ -71,6 +71,7 @@ GetChomboReadOptions(void)
     rv->SetBool("Enable only root level by default", false);
     rv->SetBool("Enable only explicitly defined materials by default", false);
     rv->SetBool("Check for mapping file and import coordinates if available", true);
+    rv->SetBool("Use particle_nid and polymer_id to connect particles", false);
     return rv;
 }
 
