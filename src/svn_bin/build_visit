@@ -44,7 +44,7 @@
 #          Qt       qt-everywhere-opensource-src-4.6.1.tar.gz
 #          Mesa     MesaLib-7.5.tar.gz
 #          Python   Python-2.6.4tgz
-#          VTK      vtk-5.0.0e.tar.gz
+#          VTK      vtk-5.0.0f.tar.gz
 #          CMake    cmake-2.8.0.tar.gz
 #
 #        The following optional libraries need to be in the current directory
@@ -911,6 +911,10 @@
 #     Mark C. Miller, Mon Jun 14 08:53:09 PDT 2010
 #     Removed --enable-iMesh from build_moab as newer versions of MOAB don't
 #     use that configure flag.
+#
+#     Eric Brugger, Thu Jun 17 15:48:19 PDT 2010
+#     I modified the script to use vtk-5.0.0f.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1212,8 +1216,8 @@ fi
 export VISIT_VERSION=${VISIT_VERSION:-"2.0.0"}
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
-export VTK_FILE=${VTK_FILE:-"vtk-5.0.0e.tar.gz"}
-export VTK_VERSION=${VTK_VERSION:-"5.0.0e"}
+export VTK_FILE=${VTK_FILE:-"vtk-5.0.0f.tar.gz"}
+export VTK_VERSION=${VTK_VERSION:-"5.0.0f"}
 export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK"}
 
 export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.0.tar.gz"}
@@ -3949,7 +3953,7 @@ function apply_vtk_500d_patch
 
 function apply_vtk_patch
 {
-   if [[ ${VTK_VERSION} == 5.0.0e ]] ; then
+   if [[ ${VTK_VERSION} == 5.0.0f ]] ; then
        apply_vtk_500d_patch
        if [[ $? != 0 ]] ; then
            return 1
