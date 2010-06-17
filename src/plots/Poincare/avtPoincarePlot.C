@@ -489,6 +489,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetShowIslands( atts.GetShowIslands() );
     poincareFilter->SetShowLines(atts.GetShowLines());
     poincareFilter->SetShowPoints(atts.GetShowPoints());
+    poincareFilter->SetPointScale(atts.GetPointSize());
     poincareFilter->SetShowRidgelines(atts.GetShowRidgelines());
     poincareFilter->SetVerboseFlag( atts.GetVerboseFlag() );
 #endif

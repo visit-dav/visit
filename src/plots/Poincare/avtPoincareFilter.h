@@ -118,6 +118,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     void SetShowIslands( bool val ) { showIslands = val; }
     void SetShowLines( bool val )   { showLines = val; }
     void SetShowPoints( bool val )  { showPoints = val; }
+    void SetPointScale(int scale)   { pointScale = scale; }
     void SetVerboseFlag( bool val ) { verboseFlag = val; }
     void SetShowRidgelines( bool val )   { showRidgelines = val; }
 
@@ -195,6 +196,7 @@ class avtPoincareFilter : public avtStreamlineFilter
   
     bool showOPoints, showIslands, showChaotic;
     bool showLines, showPoints, showRidgelines, verboseFlag;
+    int  pointScale;
 
     class SLHelper
     {

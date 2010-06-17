@@ -6,49 +6,34 @@
       avtPoincareFilter.C
       StreamlineAnalyzerLib.C
     </Files>
-
     <Attribute name="PoincareAttributes" purpose="Attributes for the Poincare plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Poincare.code">
       <Enum name="SourceType">
         SpecifiedPoint
         SpecifiedLine
       </Enum>
-
       <Enum name="IntegrationType">
         DormandPrince
         AdamsBashforth
         M3DC1Integrator
       </Enum>
-
       <Enum name="OverlapType">
         Raw
         Remove
         Merge
         Smooth
       </Enum>
-
       <Enum name="ShowMeshType">
         Curves
         Surfaces
       </Enum>
-
       <Enum name="ColoringMethod">
         ColorBySingleColor
         ColorByColorTable
       </Enum>
-
       <Enum name="Opacity">
         Explicit
         ColorTable
       </Enum>
-
-      <Field name="opacityType" label="Opacity" type="enum" subtype="Opacity">
-        Explicit
-      </Field>
-
-      <Field name="opacity" label="Opacity" type="opacity">
-        1.000000
-      </Field>
-
       <Enum name="DataValue">
         Solid
         OriginalValue
@@ -64,20 +49,23 @@
         Confidence
         RidgelineVariance
       </Enum>
-
       <Enum name="StreamlineAlgorithmType">
         LoadOnDemand
         ParallelStaticDomains
         MasterSlave
       </Enum>
-
+      <Field name="opacityType" label="Opacity" type="enum" subtype="Opacity">
+        Explicit
+      </Field>
+      <Field name="opacity" label="Opacity" type="opacity">
+        1.000000
+      </Field>
       <Field name="minPunctures" label="Minimum number of Punctures" type="int">
         10
       </Field>
       <Field name="maxPunctures" label="Maximum number of Punctures" type="int">
         100
       </Field>
-
       <Field name="sourceType" label="Streamline Source" type="enum" subtype="SourceType">
         SpecifiedPoint
       </Field>
@@ -99,8 +87,6 @@
       <Field name="pointDensity" label="Point density" type="int" enabler="sourceType:SpecifiedLine">
         1
       </Field>
-
-
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         AdamsBashforth
       </Field>
@@ -113,7 +99,6 @@
       <Field name="absTol" label="abs. tolerance" type="double">
         0.000010
       </Field>
-
       <Field name="maxToroidalWinding" label="Max Toroidal Winding" type="int">
         0
       </Field>
@@ -132,18 +117,15 @@
       <Field name="overlaps" label="Overlaps" type="enum" subtype="OverlapType">
         Remove
       </Field>
-
       <Field name="meshType" label="Mesh Type" type="enum" subtype="ShowMeshType">
         Curves
       </Field>
       <Field name="numberPlanes" label="Number of planes" type="int">
         1
       </Field>
-
       <Field name="singlePlane" label="Single plane" type="double">
-        0
+        0.000000
       </Field>
-
       <Field name="min" label="min" type="double">
         0.000000
       </Field>
@@ -156,11 +138,9 @@
       <Field name="maxFlag" label="maxFlag" type="bool">
         false
       </Field>
-
       <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">
         ColorByColorTable
       </Field>
-
       <Field name="singleColor" label="Single color" type="color" length="4">
         0
         0
@@ -173,7 +153,6 @@
       <Field name="dataValue" label="dataValue" type="enum" subtype="DataValue">
         SafetyFactor
       </Field>
-
       <Field name="showOPoints" label="Detect O Points" type="bool">
         false
       </Field>
@@ -198,7 +177,6 @@
       <Field name="showRidgelines" label="Show Ridgelines" type="bool">
         false
       </Field>
-
       <Field name="showLines" label="Show Lines" type="bool">
         true
       </Field>
@@ -217,7 +195,6 @@
       <Field name="lightingFlag" label="Lighting" type="bool">
         true
       </Field>
-
       <Field name="streamlineAlgorithmType" label="Streamline algorithm type" type="enum" subtype="StreamlineAlgorithmType">
         LoadOnDemand
       </Field>
@@ -230,7 +207,6 @@
       <Field name="workGroupSize" label="Work group size" type="int">
         32
       </Field>
-
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">
