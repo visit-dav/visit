@@ -375,6 +375,9 @@ avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources.
 //
+//   Dave Pugmire, Thu Jun 17 09:42:16 EDT 2010
+//   Update line width w/o an engine update.
+//
 // ****************************************************************************
 
 void
@@ -385,10 +388,9 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         atts.ChangesRequireRecalculation(*(const PoincareAttributes*)newAtts);
     
     atts = *newAtts;
+    property->SetLineWidth(LineWidth2Int( Int2LineWidth(atts.GetLineWidth()) ));
 
 #ifdef ENGINE
-
-    property->SetLineWidth(LineWidth2Int( Int2LineWidth(atts.GetLineWidth()) ));
 
 //    glyphMapper->SetPointSize(atts.GetPointSize());
 
