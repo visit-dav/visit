@@ -130,6 +130,10 @@
 #    current link to the installation directory and added a comment that
 #    explains why the flawed code we have there is actually what we want.
 #
+#    Eric Brugger, Thu Jun 17 13:38:03 PDT 2010
+#    I modified the file to add -DMPICH_IGNORE_CXX_SEEK wherever -DPARALLEL
+#    is specified to eliminate a compile failure with some versions of mpi.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -846,7 +850,7 @@ FUNCTION(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
         ENDFOREACH(I)
 
         SET(${mlibs}   ${MPI_LIBRARIES} CACHE STRING "MPI libraries")
-        SET(${mflags}  "-DPARALLEL ${MPI_INCLUDE_PATH_CONV} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
+        SET(${mflags}  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK ${MPI_INCLUDE_PATH_CONV} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
         SET(${mlflags} "${MPI_LINK_FLAGS}" CACHE STRING "Parallel linker flags")
 
         #
@@ -898,21 +902,21 @@ IF(VISIT_PARALLEL)
             SET(VISIT_PARALLEL_FORTRAN_LIBS  ${VISIT_MPI_FORTRAN_LIBS} CACHE STRING "MPI libraries for Fortran")
 
             IF(VISIT_MPI_C_FLAGS)
-                SET(VISIT_PARALLEL_CFLAGS  "-DPARALLEL ${VISIT_MPI_C_FLAGS}" CACHE STRING "Parallel CFLAGS")
+                SET(VISIT_PARALLEL_CFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK ${VISIT_MPI_C_FLAGS}" CACHE STRING "Parallel CFLAGS")
             ELSE(VISIT_MPI_C_FLAGS)
-                SET(VISIT_PARALLEL_CFLAGS  "-DPARALLEL" CACHE STRING "Parallel CFLAGS")
+                SET(VISIT_PARALLEL_CFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK" CACHE STRING "Parallel CFLAGS")
             ENDIF(VISIT_MPI_C_FLAGS)
 
             IF(VISIT_MPI_CXX_FLAGS)
-                SET(VISIT_PARALLEL_CXXFLAGS  "-DPARALLEL ${VISIT_MPI_CXX_FLAGS}" CACHE STRING "Parallel CXXFLAGS")
+                SET(VISIT_PARALLEL_CXXFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK ${VISIT_MPI_CXX_FLAGS}" CACHE STRING "Parallel CXXFLAGS")
             ELSE(VISIT_MPI_CXX_FLAGS)
-                SET(VISIT_PARALLEL_CXXFLAGS  "-DPARALLEL" CACHE STRING "Parallel CXXFLAGS")
+                SET(VISIT_PARALLEL_CXXFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK" CACHE STRING "Parallel CXXFLAGS")
             ENDIF(VISIT_MPI_CXX_FLAGS)
 
             IF(VISIT_MPI_FORTRAN_FLAGS)
-                SET(VISIT_PARALLEL_FORTRANFLAGS  "-DPARALLEL ${VISIT_MPI_FORTRAN_FLAGS}" CACHE STRING "Parallel Fortran flags")
+                SET(VISIT_PARALLEL_FORTRANFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK ${VISIT_MPI_FORTRAN_FLAGS}" CACHE STRING "Parallel Fortran flags")
             ELSE(VISIT_MPI_FORTRAN_FLAGS)
-                SET(VISIT_PARALLEL_FORTRANFLAGS  "-DPARALLEL" CACHE STRING "Parallel flags for Fortran")
+                SET(VISIT_PARALLEL_FORTRANFLAGS  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK" CACHE STRING "Parallel flags for Fortran")
             ENDIF(VISIT_MPI_FORTRAN_FLAGS)
 
             IF(VISIT_MPI_LD_FLAGS)

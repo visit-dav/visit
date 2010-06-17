@@ -43,10 +43,10 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.5/${VISITARCH})
 ##
 SET(VISIT_C_COMPILER gcc)
 SET(VISIT_C_FLAGS "-march=barcelona -fPIC")
-SET(VISIT_MPI_C_FLAGS "-DMPICH_IGNORE_CXX_SEEK -I/opt/mpt/3.0.2/xt/mpich2-gnu/include")
+SET(VISIT_MPI_C_FLAGS "-I/opt/mpt/3.0.2/xt/mpich2-gnu/include")
 SET(VISIT_CXX_COMPILER g++)
 SET(VISIT_CXX_FLAGS "-march=barcelona -fPIC")
-SET(VISIT_MPI_CXX_FLAGS "-DMPICH_IGNORE_CXX_SEEK -I/opt/mpt/3.0.2/xt/mpich2-gnu/include")
+SET(VISIT_MPI_CXX_FLAGS "-I/opt/mpt/3.0.2/xt/mpich2-gnu/include")
 # Get these via CC -v
 SET(VISIT_MPI_LD_FLAGS "-Wl,-wrap=open,-wrap=fopen,-wrap=open64,-wrap=creat,-wrap=fdopen,-wrap=freopen -Wl,-wrap=close,-wrap=fclose -Wl,-wrap=write,-wrap=read,-wrap=fwrite,-wrap=fread -Wl,-wrap=lseek,-wrap=lseek64,-wrap=fseek,-wrap=fflush -Wl,-wrap=fsync,-wrap=fdatasync -Wl,-wrap=truncate,-wrap=ftruncate,-wrap=truncate64,-wrap=ftruncate64,-wrap=mkdir -L/opt/xt-service/2.1.41HD/lib/snos64")
 SET(VISIT_MPI_LIBS /u0/u/uselton/build/ipm/lib/libipmMEGA.a /usr/common/graphics/installs/visit_3rdparty/lib_pgi_parts/dfixuk.o /usr/common/graphics/installs/visit_3rdparty/lib_pgi_parts/dfloatuk.o /usr/common/graphics/installs/visit_3rdparty/lib_pgi_parts/cbzero.o /usr/common/graphics/installs/visit_3rdparty/lib_pgi_parts/va_arg.o /opt/pgi/default/linux86-64/default/lib/libpgc.a /opt/mpt/3.0.2/xt/mpich2-gnu/lib/libmpich.a /opt/mpt/3.0.2/xt/pmi/lib/libpmi.a /opt/mpt/3.0.2/xt/util/lib/libalpslli.a /opt/mpt/3.0.2/xt/util/lib/libalpsutil.a portals pthread)
