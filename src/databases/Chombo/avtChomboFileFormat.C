@@ -50,12 +50,14 @@
 
 #include <vtkFieldData.h>
 #include <vtkCellData.h>
+#include <vtkCellArray.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkPolyData.h>
 #include <vtkCellType.h>
 
 #include <DBOptionsAttributes.h>
@@ -119,6 +121,10 @@ using     std::string;
 //    Hank Childs, Fri Mar  5 13:16:52 PST 2010
 //    Initialize hasParticles.
 //
+//    Gunther H. Weber, Thu Jun 17 10:10:17 PDT 2010
+//    Added ability to connect particle mesh based on polymer_id and
+//    particle_nid
+//
 // ****************************************************************************
 
 avtChomboFileFormat::avtChomboFileFormat(const char *filename, 
@@ -134,6 +140,7 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
     mappingFileExists = false;
     mappingIs3D = false;
     hasParticles = false;
+    connectParticles = false;
     if (atts != NULL)
     {
         for (int i = 0; i < atts->GetNumberOfOptions(); ++i)
@@ -146,6 +153,8 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
                 enableOnlyExplicitMaterials = atts->GetBool("Enable only explicitly defined materials by default");
             else if (atts->GetName(i) == "Check for mapping file and import coordinates if available")
                 checkForMappingFile = atts->GetBool("Check for mapping file and import coordinates if available");
+            else if (atts->GetName(i) == "Use particle_nid and polymer_id to connect particles")
+                connectParticles = atts->GetBool("Use particle_nid and polymer_id to connect particles");
             else
                 debug1 << "Ignoring unknown option " << atts->GetName(i) << endl;
         }
@@ -1955,7 +1964,29 @@ avtChomboFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Gunther H. Weber, Wed Jun 10 18:28:24 PDT 2009
 //    Added ability to handle particle data in Chombo files.
 //
+//    Gunther H. Weber, Thu Jun 17 10:10:17 PDT 2010
+//    Added ability to connect particle mesh based on polymer_id and
+//    particle_nid
+//
 // ****************************************************************************
+
+// Comaprator class used to sort an array with integers so that the permutation
+// of integers gives an order so that all prticles belonging to a single polymer
+// are next to each other and in correct order along the polymer.
+class LookUpOrderCmp
+{
+    public:
+        LookUpOrderCmp(const int32_t *d1, const int32_t *d2) : order1Var(d1), order2Var(d2) {}
+        bool operator()(vtkIdType a, vtkIdType b)
+        {
+            return order1Var[a] < order1Var[b] ||
+                order1Var[a] == order1Var[b] && order2Var[a] < order2Var[b];
+        }
+
+    private:
+        const int32_t *order1Var;
+        const int32_t *order2Var;
+};
 
 vtkDataSet *
 avtChomboFileFormat::GetMesh(int patch, const char *meshname)
@@ -2322,6 +2353,69 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             }
         }
 
+        int32_t *particleOrder = 0;
+        int32_t *polymerNo = 0;
+
+        if (connectParticles &&
+            std::find(
+                particleVarnames.begin(), particleVarnames.end(), "particle_nid"
+                     ) != particleVarnames.end() &&
+            std::find(
+                particleVarnames.begin(), particleVarnames.end(), "polymer_id"
+                     ) != particleVarnames.end())
+        {
+            dataSet = H5Dopen(file_handle, "/particles/particle_nid");
+
+            if ( dataSet > 0)
+            {
+                hid_t dataSpace = H5Dget_space(dataSet);
+                if (H5Sis_simple(dataSpace))
+                {
+                    hsize_t nParticlesCheck;
+                    if (H5Sget_simple_extent_ndims(dataSpace) == 1)
+                    {
+                        H5Sget_simple_extent_dims(dataSpace, &nParticlesCheck, NULL);
+                        if (nParticles == nParticlesCheck)
+                        {
+                            particleOrder = new int32_t[nParticles];
+                            H5Dread(dataSet, H5T_NATIVE_INT32, H5S_ALL, H5S_ALL, H5P_DEFAULT, particleOrder);
+                        }
+                    }
+                }
+                H5Dclose(dataSet);
+            }
+
+            dataSet = H5Dopen(file_handle, "/particles/polymer_id");
+            if ( dataSet > 0)
+            {
+                hid_t dataSpace = H5Dget_space(dataSet);
+                if (H5Sis_simple(dataSpace))
+                {
+                    hsize_t nParticlesCheck;
+                    if (H5Sget_simple_extent_ndims(dataSpace) == 1)
+                    {
+                        H5Sget_simple_extent_dims(dataSpace, &nParticlesCheck, NULL);
+                        if (nParticles == nParticlesCheck)
+                        {
+                            polymerNo = new int32_t[nParticles];
+                            H5Dread(dataSet, H5T_NATIVE_INT32, H5S_ALL, H5S_ALL, H5P_DEFAULT, polymerNo);
+                        }
+                    }
+                }
+                H5Dclose(dataSet);
+            }
+
+            // Check if both data sets for connecting particles were loaded
+            if (!(particleOrder && polymerNo))
+            {
+                // No, delete any that may be loaded and set pointers to zero
+                delete[] particleOrder;
+                particleOrder = 0;
+                delete[] polymerNo;
+                polymerNo = 0;
+            }
+        }
+
         H5Fclose(file_handle);
         file_handle = -1;
 
@@ -2337,21 +2431,66 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         delete[] zPos;
         delete[] datasetname;
 
-        //
-        // Create a vtkUnstructuredGrid to contain the point cells.
-        //
-        vtkUnstructuredGrid* ugrid = vtkUnstructuredGrid::New();
-        ugrid->SetPoints(points);
-        points->Delete();
-        ugrid->Allocate(nParticles);
-        vtkIdType onevertex;
-        for(int i = 0; i < nParticles; ++i)
+        if (particleOrder)
         {
-            onevertex = i;
-            ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex);
-        }
+            // Create an integer array with proper permutation of particles such that
+            // all particles on same polymer are "next" to each other and that particles
+            // within a polymer are ordered according to particle_nid
+            vtkIdType *orderPermutation = new vtkIdType[nParticles];
+            for (vtkIdType i=0; i <nParticles; ++i) orderPermutation[i]=i;
 
-        return ugrid;
+            LookUpOrderCmp cmp(polymerNo, particleOrder);
+            std::sort(orderPermutation, orderPermutation+nParticles, cmp);
+
+            //
+            // Create poly data
+            //
+            vtkPolyData *pd = vtkPolyData::New();
+            pd->SetPoints(points);
+            points->Delete();
+            vtkCellArray *verts = vtkCellArray::New();
+            pd->SetVerts(verts);
+            verts->Delete();
+            for (vtkIdType i= 0; i<nParticles; ++i)
+            {
+                verts->InsertNextCell(1);
+                verts->InsertCellPoint(i);
+            }
+            vtkCellArray *lines = vtkCellArray::New();
+            pd->SetLines(lines);
+            lines->Delete();
+            for (vtkIdType i=0; i<nParticles-1; ++i)
+            {
+                if (polymerNo[i] == polymerNo[i+1])
+                {
+                    lines->InsertNextCell(2);
+                    lines->InsertCellPoint(orderPermutation[i]);
+                    lines->InsertCellPoint(orderPermutation[i+1]);
+                }
+            }
+
+            delete[] particleOrder;
+            delete[] polymerNo;
+
+            return pd;
+        }
+        else {
+            //
+            // Create a vtkUnstructuredGrid to contain the point cells.
+            //
+            vtkUnstructuredGrid* ugrid = vtkUnstructuredGrid::New();
+            ugrid->SetPoints(points);
+            points->Delete();
+            ugrid->Allocate(nParticles);
+            vtkIdType onevertex;
+            for(int i = 0; i < nParticles; ++i)
+            {
+                onevertex = i;
+                ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex);
+            }
+
+            return ugrid;
+        }
     }
     else
         EXCEPTION1(InvalidVariableException, meshname);
