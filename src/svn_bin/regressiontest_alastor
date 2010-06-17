@@ -232,7 +232,7 @@ scp html.tar.gz $userNersc@euclid.nersc.gov:
 
 # Update the web site.
 scp ../visit-update-test-website $userNersc@euclid.nersc.gov:
-ssh euclid.nersc.gov "chmod 750 visit-update-test-website;./visit-update-test-website"
+ssh $userNersc@euclid.nersc.gov "chmod 750 visit-update-test-website;./visit-update-test-website"
 echo "Results posted at: \`date\`" | mail -s "Results posted" $userEmail
 EOF
 
