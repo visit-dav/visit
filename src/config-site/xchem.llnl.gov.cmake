@@ -49,8 +49,8 @@ VISIT_OPTION_DEFAULT(VISIT_EXE_LINKER_FLAGS "-Wl,-rpath=/usr/lib64/tls")
 ## Add parallel arguments.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -DMPICH_IGNORE_CXX_SEEK -I/opt/llnl/mpich2_shared/ch3-ssm/include)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -DMPICH_IGNORE_CXX_SEEK -I/opt/llnl/mpich2_shared/ch3-ssm/include)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/opt/llnl/mpich2_shared/ch3-ssm/include)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/opt/llnl/mpich2_shared/ch3-ssm/include)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/opt/llnl/mpich2_shared/ch3-ssm/lib -Wl,-rpath=/opt/llnl/mpich2_shared/ch3-ssm/lib -Wl,-rpath=/usr/lib64/tls")
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich rt)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/llnl/mpich2_shared/ch3-ssm/lib;/usr/lib64/tls")

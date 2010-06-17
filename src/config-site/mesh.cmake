@@ -52,7 +52,6 @@ SET(VISIT_C_COMPILER gcc)
 SET(VISIT_C_FLAGS "-m64 -fPIC")
 SET(VISIT_CXX_COMPILER g++)
 SET(VISIT_CXX_FLAGS "-m64 -fPIC")
-SET(VISIT_MPI_CXX_FLAGS "-DMPICH_IGNORE_CXX_SEEK")
 
 ##
 ## Database reader plugin support libraries
