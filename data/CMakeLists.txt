@@ -67,6 +67,10 @@
 #   Brad Whitlock, Thu Apr 29 11:50:42 PDT 2010
 #   I added xdmf2d.C
 #
+#   Eric Brugger, Thu Jun 17 15:24:51 PDT 2010
+#   I added logic to only create the Silo data files if VisIt is being
+#   built with the Silo library.
+#
 #****************************************************************************/
 cmake_minimum_required(VERSION 2.6)
 
@@ -377,62 +381,69 @@ IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
                 GROUP_READ GROUP_WRITE GROUP_EXECUTE
                 WORLD_READ WORLD_EXECUTE)
 ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
-    ADD_CUSTOM_COMMAND(OUTPUT curv2d.silo curv2d_colmajor.silo
-                              curv3d.silo curv3d_colmajor.silo
-                              poly3d.silo rect2d.silo
-                              rect3d.silo ucd2d.silo ucd3d.silo
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/testall
-                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/testall)
-    ADD_CUSTOM_COMMAND(OUTPUT globe.silo globe_mat0.silo
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/globe
-                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/globe)
-    ADD_CUSTOM_COMMAND(OUTPUT dbA00.pdb dbB00.pdb dbC00.pdb
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/correlationtest
-                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/correlationtest)
-    ADD_CUSTOM_COMMAND(OUTPUT multi_curv2d.silo multi_curv3d.silo
-                              multi_point2d.silo multi_rect2d.silo
+    IF(SILO_FOUND)
+        ADD_CUSTOM_COMMAND(OUTPUT curv2d.silo curv2d_colmajor.silo
+                                  curv3d.silo curv3d_colmajor.silo
+                                  poly3d.silo rect2d.silo
+                                  rect3d.silo ucd2d.silo ucd3d.silo
+                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/testall
+                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/testall)
+        ADD_CUSTOM_COMMAND(OUTPUT globe.silo globe_mat0.silo
+                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/globe
+                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/globe)
+        ADD_CUSTOM_COMMAND(OUTPUT dbA00.pdb dbB00.pdb dbC00.pdb
+                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/correlationtest
+                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/correlationtest)
+        ADD_CUSTOM_COMMAND(OUTPUT multi_curv2d.silo multi_curv3d.silo
+                                  multi_point2d.silo multi_rect2d.silo
+                                  multi_rect3d.silo multi_ucd3d.silo
+                                  hist_ucd3d_0000 hist_ucd3d_0001
+                                  hist_ucd3d_0002 hist_ucd3d_0003
+                                  hist_ucd3d_0004 hist_ucd3d_0005
+                                  hist_ucd3d_0006 hist_ucd3d_0007
+                                  hist_ucd3d_0008 hist_ucd3d_0009
+                                  histne_ucd3d_0000 histne_ucd3d_0001
+                                  histne_ucd3d_0002 histne_ucd3d_0003
+                                  histne_ucd3d_0004 histne_ucd3d_0005
+                                  histne_ucd3d_0006 histne_ucd3d_0007
+                                  histne_ucd3d_0008 histne_ucd3d_0009
+                                  multi_ucd3d_ti_0001 multi_ucd3d_ti_0002
+                                  multi_ucd3d_ti_0003 multi_ucd3d_ti_base
+                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/multi_test
+                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/multi_test)
+        ADD_CUSTOM_COMMAND(OUTPUT noise.silo
+                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/noise
+                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/noise)
+        ADD_CUSTOM_COMMAND(OUTPUT tire.silo
+                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tire
+                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tire)
+
+        ADD_CUSTOM_TARGET(create_data_examples ALL
+                          DEPENDS
+                              curv2d.silo curv3d.silo dbA00.pdb dbB00.pdb
+                              globe.silo globe_mat0.silo multi_rect2d.silo
                               multi_rect3d.silo multi_ucd3d.silo
-                              hist_ucd3d_0000 hist_ucd3d_0001 hist_ucd3d_0002
-                              hist_ucd3d_0003 hist_ucd3d_0004 hist_ucd3d_0005
-                              hist_ucd3d_0006 hist_ucd3d_0007 hist_ucd3d_0008
-                              hist_ucd3d_0009
-                              histne_ucd3d_0000 histne_ucd3d_0001
-                              histne_ucd3d_0002 histne_ucd3d_0003
-                              histne_ucd3d_0004 histne_ucd3d_0005
-                              histne_ucd3d_0006 histne_ucd3d_0007
-                              histne_ucd3d_0008 histne_ucd3d_0009
-                              multi_ucd3d_ti_0001 multi_ucd3d_ti_0002
-                              multi_ucd3d_ti_0003 multi_ucd3d_ti_base
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/multi_test
-                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/multi_test)
-    ADD_CUSTOM_COMMAND(OUTPUT noise.silo
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/noise
-                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/noise)
-    ADD_CUSTOM_COMMAND(OUTPUT tire.silo
-                       COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tire
-                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tire)
+                              noise.silo poly3d.silo rect2d.silo rect3d.silo
+                              tire.silo ucd2d.silo ucd3d.silo
+                         )
 
-    ADD_CUSTOM_TARGET(create_data_examples ALL
-                      DEPENDS
-                          curv2d.silo curv3d.silo dbA00.pdb dbB00.pdb
-                          globe.silo globe_mat0.silo
-                          multi_rect2d.silo multi_rect3d.silo multi_ucd3d.silo
-                          noise.silo poly3d.silo rect2d.silo rect3d.silo
-                          tire.silo ucd2d.silo ucd3d.silo
-                     )
-
-    INSTALL(FILES
-                curv2d.silo curv3d.silo dbA00.pdb dbB00.pdb
-                globe.silo globe_mat0.silo
-                multi_rect2d.silo multi_rect3d.silo multi_ucd3d.silo
-                noise.silo poly3d.silo rect2d.silo rect3d.silo
-                tire.silo ucd2d.silo ucd3d.silo
-            DESTINATION
-                data
-            PERMISSIONS
-                OWNER_READ OWNER_WRITE
-                GROUP_READ GROUP_WRITE
-                WORLD_READ)
+        INSTALL(FILES
+                    curv2d.silo curv3d.silo dbA00.pdb dbB00.pdb
+                    globe.silo globe_mat0.silo
+                    multi_rect2d.silo multi_rect3d.silo multi_ucd3d.silo
+                    noise.silo poly3d.silo rect2d.silo rect3d.silo
+                    tire.silo ucd2d.silo ucd3d.silo
+                DESTINATION
+                    data
+                PERMISSIONS
+                    OWNER_READ OWNER_WRITE
+                    GROUP_READ GROUP_WRITE
+                    WORLD_READ)
+    ELSE(SILO_FOUND)
+        MESSAGE(STATUS "Data files not included since visit_dist_data.tar.gz")
+        MESSAGE(STATUS "is missing and VisIt is not being built with Silo")
+        MESSAGE(STATUS "support.")
+    ENDIF(SILO_FOUND)
 ENDIF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
 
 
