@@ -146,6 +146,10 @@ class DBOptionsAttributes;
 //    Gunther H. Weber, Tue Sep 15 11:25:21 PDT 2009
 //    Added support for 3D mappings for 2D files
 //
+//    Gunther H. Weber, Thu Jun 17 10:10:17 PDT 2010
+//    Added ability to connect particle mesh based on polymer_id and
+//    particle_nid
+//
 // ****************************************************************************
 
 class avtChomboFileFormat : public avtSTMDFileFormat
@@ -178,6 +182,7 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     std::vector<std::string>  varnames;
     int                    nMaterials;
     bool                   hasParticles;
+    bool                   connectParticles;
     std::vector<std::string>  particleVarnames;
     double                 dtime;
     int                    cycle;
