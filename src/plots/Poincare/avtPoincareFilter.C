@@ -71,7 +71,8 @@ using namespace std;
 
 #define SIGN(x) ((x) < 0.0 ? -1 : 1)
 
-#define RADIUS 0.0075
+//#define RADIUS 0.0075
+#define RADIUS 0.0010
 
 static const int DATA_None = 0;
 static const int DATA_OriginalValue = 1;
@@ -168,7 +169,8 @@ avtPoincareFilter::avtPoincareFilter() :
     showIslands( false ),
     showLines( true ),
     showPoints( false ),
-    verboseFlag( true )
+    verboseFlag( true ),
+    pointScale(1)
 {
     planes.resize(1);
     planes[0] = 0;
@@ -1496,7 +1498,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     double pt[3] =
                       { nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z };
                     
-                    double rad = RADIUS;
+                    double rad = RADIUS*pointScale;
                     
                     if( color == DATA_PointIndex )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
@@ -1533,7 +1535,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     double pt[3] =
                       { nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z };
                     
-                    double rad = RADIUS;
+                    double rad = RADIUS*pointScale;
                     
                     if( color == DATA_PointIndex )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
@@ -1790,7 +1792,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     double pt[3] =
                       { nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z };
                     
-                    double rad = RADIUS;
+                    double rad = RADIUS*pointScale;
                     
                     if( color == DATA_PointIndex )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
@@ -2211,7 +2213,7 @@ avtPoincareFilter::findIslandCenter( avtDataTree *dt,
                                  0,
                                  (*SL).lower.vertex->point.y };
 
-                double rad = RADIUS;
+                double rad = RADIUS*pointScale;
                       
                 vtkPolyData *ball = CreateSphere(nlines, rad, pt);
                       
@@ -2659,7 +2661,7 @@ avtPoincareFilter::loadPoints( avtDataTree *dt,
       else
         pt[0] = nodes[i].x;
           
-      double rad = RADIUS;
+      double rad = RADIUS*pointScale;
 
       if( color == DATA_PointIndex )
         color_value = i;

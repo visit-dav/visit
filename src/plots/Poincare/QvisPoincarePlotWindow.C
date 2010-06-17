@@ -604,7 +604,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
     pointSize = new QSpinBox(sourceGroup);
     pointSize->setMinimum(1);
-    pointSize->setMaximum(10);
+    pointSize->setMaximum(50);
     connect(pointSize, SIGNAL(valueChanged(int)),
             this, SLOT(pointSizeChanged(int)));
     optionsLayout->addWidget(pointSize, 1, 3, Qt::AlignLeft);

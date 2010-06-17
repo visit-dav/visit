@@ -2814,6 +2814,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            singlePlane != obj.singlePlane ||
 
            showLines != obj.showLines ||
-           showPoints != obj.showPoints;
+           showPoints != obj.showPoints ||
+           pointSize != obj.pointSize;
 }
 
