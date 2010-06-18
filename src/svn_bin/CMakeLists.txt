@@ -32,7 +32,6 @@ IF(WIN32)
         host_llnl_xchem.xml
         host_llnl_yana.xml
         host_llnl_zeus.xml
-        host_nersc_davinci.xml
         host_nersc_franklin.xml
         host_nersc_hopper.xml
         host_nersc_euclid.xml
