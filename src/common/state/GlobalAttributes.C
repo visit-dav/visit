@@ -72,7 +72,11 @@ void GlobalAttributes::Init()
     createTimeDerivativeExpressions = true;
     createVectorMagnitudeExpressions = true;
     newPlotsInheritSILRestriction = true;
+#ifdef WIN32
+    userDirForSessionFiles = true;
+#else
     userDirForSessionFiles = false;
+#endif
     saveCrashRecoveryFile = true;
     applySelection = true;
     ignoreExtentsFromDbs = false;

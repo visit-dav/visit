@@ -52,7 +52,7 @@
     <Field name="newPlotsInheritSILRestriction" label="New plots inherit SIL restriction" type="bool">
       true
     </Field>
-    <Field name="userDirForSessionFiles" label="Use the user directory for session files" type="bool">
+    <Field name="userDirForSessionFiles" label="Use the user directory for session files" type="bool" init="true">
       false
     </Field>
     <Field name="saveCrashRecoveryFile" label="Save a crash recovert file" type="bool">
