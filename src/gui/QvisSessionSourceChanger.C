@@ -175,6 +175,10 @@ QvisSessionSourceChanger::setSources(const stringVector &keys,
 //   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Bonnell, Fri Jun 18 15:13:22 MST 2010 
+//   Set useLists' zeroth item to selected, instead of ci'th. Prevents
+//   a segv in some instances.
+//
 // ****************************************************************************
 
 void
@@ -200,7 +204,7 @@ QvisSessionSourceChanger::updateControls(int ci)
             {
                 for(size_t i = 0; i < pos->second.size(); ++i)
                     useList->addItem(pos->second[i].c_str());        
-                useList->item(ci)->setSelected(true);
+                useList->item(0)->setSelected(true);
             }
         }
     }

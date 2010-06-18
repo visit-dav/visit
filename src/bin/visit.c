@@ -1178,6 +1178,8 @@ HandleConfigFiles(const char *path, void (*cb)(const char *, void *),
             char *ini = fd.cFileName + len-4;
             char *vses = fd.cFileName + len-5;
             char *vsesgui = fd.cFileName + len-5-4;
+            char *session = fd.cFileName + len-8;
+            char *sessiongui = fd.cFileName + len-8-4;
 
             if(log != NULL)
             {
@@ -1185,11 +1187,15 @@ HandleConfigFiles(const char *path, void (*cb)(const char *, void *),
                 if(ini >= fd.cFileName)     fprintf(log, "\t\t%s\n", ini);
                 if(vses >= fd.cFileName)    fprintf(log, "\t\t%s\n", vses);
                 if(vsesgui >= fd.cFileName) fprintf(log, "\t\t%s\n", vsesgui);
+                if(session >= fd.cFileName)    fprintf(log, "\t\t%s\n", session);
+                if(sessiongui >= fd.cFileName) fprintf(log, "\t\t%s\n", sessiongui);
             }
 
             if((ini >= fd.cFileName && _stricmp(ini, ".ini") == 0)   ||
-               (vses >= fd.cFileName && _stricmp(vses, ".vses") == 0) ||
-               (vsesgui >= fd.cFileName && _stricmp(vsesgui, ".vses.gui") == 0)
+              (vses >= fd.cFileName && _stricmp(vses, ".vses") == 0) ||
+             (vsesgui >= fd.cFileName && _stricmp(vsesgui, ".vses.gui") == 0) ||
+             (session >= fd.cFileName && _stricmp(session, ".session") == 0) ||
+             (sessiongui >= fd.cFileName && _stricmp(sessiongui, ".session.gui") == 0)
               )
             {
                 if(_strnicmp(fd.cFileName, "visit-config", 12) == 0)
