@@ -35,6 +35,9 @@
 # DAMAGE.
 #
 # Modifications:
+#    Eric Brugger, Fri Jun 18 15:28:07 PDT 2010
+#    I renamed the executable to makemili_ser so that the internal launcher
+#    can find it when the user runs makemili.
 #
 #****************************************************************************/
 
@@ -50,10 +53,10 @@ ${MILI_INCLUDE_DIR}
 
 LINK_DIRECTORIES(${MILI_LIBRARY_DIR})
 
-ADD_EXECUTABLE(makemili ${SOURCES})
+ADD_EXECUTABLE(makemili_ser ${SOURCES})
 
-TARGET_LINK_LIBRARIES(makemili
+TARGET_LINK_LIBRARIES(makemili_ser
 ${MILI_LIB}
 ) 
 
-VISIT_INSTALL_TARGETS(makemili)
+VISIT_INSTALL_TARGETS(makemili_ser)
