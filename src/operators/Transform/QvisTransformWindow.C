@@ -136,6 +136,9 @@ QvisTransformWindow::~QvisTransformWindow()
 //    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
 //    Flag for vector transformations.
 //
+//    Jeremy Meredith, Fri Jun 18 11:29:03 EDT 2010
+//    Fixed a widget parent bug (1st page widget pointing to 3rd page parent).
+//
 // ****************************************************************************
 
 void
@@ -257,7 +260,7 @@ QvisTransformWindow::CreateWindowContents()
     mainLayout->addWidget(translateZ, 8,6);
     
     transformVectors1 = new QCheckBox(tr("Transform vectors"),
-                                 thirdPage);
+                                 firstPage);
     mainLayout->addWidget(transformVectors1, 9, 0);
     connect(transformVectors1, SIGNAL(toggled(bool)),
             this, SLOT(transformVectorsChanged(bool)));
