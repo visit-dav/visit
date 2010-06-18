@@ -6183,6 +6183,9 @@ ViewerSubject::ImportEntireStateWithDifferentSources()
 //   Brad Whitlock, Fri May  9 14:54:53 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Bonnell, Fri Jun 18 15:11:42 MST 2010
+//   Use '.session' as extension on windows, too.
+//
 // ****************************************************************************
 
 void
@@ -6190,11 +6193,7 @@ ViewerSubject::RemoveCrashRecoveryFile() const
 {
     QString filename(GetUserVisItDirectory().c_str());
     filename += "crash_recovery";
-#if defined(_WIN32)
-    filename += ".vses";
-#else
     filename += ".session";
-#endif
     // Remove the viewer's crash recovery file if it exists.
     QFile cr(filename);
     if(cr.exists())

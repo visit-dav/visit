@@ -30,10 +30,14 @@
 <li>A bug with parsing bool arguments for Python Filter contract wrappers was resolved.</li>
 <li>The PDB reader was enhanced so it provides laserid and rayid variables for laser rays.</li>
 <li>By request of an LLNL code team, PDB reader was changed so it no longer exchanges the X/Z axes.</li>
+<li>A bug in Restore Session with Sources was fixed so that gui will no longer crash when second (or greater) source is selected.</li>
 </ul>
 <p><b><font size="4">Enhancements in version 2.0.1</font></b></p>
 <ul>
 <li>The Boxlib reader now represents the AMR nesting structure in a more efficient manner.  Adding plots, changing time slices, etc, should be noticably faster for simulations with large numbers of patch.</li>
+<li>Windows installer was improved slightly to play better with Windows 7 / Vista.</li>
+<li>Default save location for session files on windows is no longer current directory.</li>
+<li>Session files on windows are now saved with '.session' extension for compatibility with *nix platforms.  Old sessions with '.vses' extension can still be loaded.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version of VisIt: <a href="relnotes2.0.0.html">VisIt 2.0 Release Notes</a>.</p>
 </body>

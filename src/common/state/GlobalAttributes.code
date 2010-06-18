@@ -1,3 +1,10 @@
+Initialization: userDirForSessionFiles
+#ifdef WIN32
+    userDirForSessionFiles = true;
+#else
+    userDirForSessionFiles = false;
+#endif
+
 Function: CreateNode
 Declaration: virtual bool CreateNode(DataNode *node, bool, bool);
 Definition:

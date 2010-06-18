@@ -4172,16 +4172,16 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
+//   Use '.session' on windows, too. Send sessionDir to getSaveFileName 
+//   instead of '.'
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::SaveSession()
 {
-#if defined(_WIN32)
-    QString sessionExtension(".vses");
-#else
     QString sessionExtension(".session");
-#endif
 
     // Create the name of a VisIt session file to use.
     QString defaultFile;
@@ -4191,7 +4191,7 @@ QvisGUIApplication::SaveSession()
 
     // Get the name of the file that the user saved.
     QString sFilter(tr("VisIt session") + QString(" (*") + sessionExtension + ")");
-    QString fileName = QFileDialog::getSaveFileName(mainWin,tr("Save Session File"),".", sFilter);
+    QString fileName = QFileDialog::getSaveFileName(mainWin,tr("Save Session File"), sessionDir.c_str(), sFilter);
 
     // If the user chose to save a file, tell the viewer to write its state
     // to that file.
@@ -4216,17 +4216,15 @@ QvisGUIApplication::SaveSession()
 // Creation:   Mon May 9 14:57:08 PST 2005
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
+//   Use '.session' on windows, too. 
 //   
 // ****************************************************************************
 
 QString
 QvisGUIApplication::SaveSessionFile(const QString &fileName)
 {
-#if defined(_WIN32)
-    QString sessionExtension(".vses");
-#else
     QString sessionExtension(".session");
-#endif
 
     // Force the file to have a .session extension.
     QString sessionName(fileName);
@@ -4446,6 +4444,9 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
 //   Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
 //   Resolved AIX linking error w/ auto std::string to QString conversion.
 //
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
+//   Search for '.session' on windows. Keep .vses for loading older sessions.
+//   
 // ****************************************************************************
 
 void
@@ -4455,7 +4456,7 @@ QvisGUIApplication::RestoreSession()
     QString s(QFileDialog::getOpenFileName(mainWin,tr("Open VisIt Session File"),
                                            sessionDir.c_str(),
 #if defined(_WIN32)
-              "VisIt session (*.vses)"));
+              "VisIt session (*.session *.vses)"));
 #else
               "VisIt session (*.session)"));
 #endif
@@ -4496,6 +4497,9 @@ QvisGUIApplication::RestoreSession()
 //   Jeremy Meredith, Thu Aug  7 15:39:55 EDT 2008
 //   Removed unused var.
 //
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
+//   Search for '.session' on windows. Keep .vses for loading older sessions.
+//   
 // ****************************************************************************
 
 void
@@ -4505,7 +4509,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
     QString s(QFileDialog::getOpenFileName(mainWin,tr("Open VisIt Session File"),
                                            sessionDir.c_str(),
 #if defined(_WIN32)
-              "VisIt session (*.vses)"));
+              "VisIt session (*.session *.vses)"));
 #else
               "VisIt session (*.session)"));
 #endif
@@ -7047,6 +7051,9 @@ QvisGUIApplication::updateVisIt()
 //   Brad Whitlock, Thu Oct  2 14:41:25 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
+//   Windows sessions now use '.session' extension.
+//   
 // ****************************************************************************
 
 void
@@ -7063,11 +7070,7 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
 
         QString visitDir(GetUserVisItDirectory().c_str());
         QString fileName(visitDir + "update_version");
-#if defined(_WIN32)
-        fileName += ".vses";
-#else
         fileName += ".session";
-#endif
 
         // Tell the viewer to save a session file.
         GetViewerMethods()->ExportEntireState(fileName.toStdString());
@@ -7714,13 +7717,19 @@ QvisGUIApplication::GetNumMovieFrames()
 //   Brad Whitlock, Thu Jan 31 10:07:59 PST 2008
 //   Windows portability.
 //
+//   Kathleen Bonnell, Fri Jun 18 12:10:15 MST 2010 
+//   Cannot assume path separators are stored according to platform specifics.
+//   Check unix style first.  Also don't substitute if idx < 0.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::UpdateSessionDir( const std::string &sessionFileName )
 {
-    int idx = sessionFileName.rfind(VISIT_SLASH_STRING);
-    if ( idx != 0 )
+    int idx = sessionFileName.rfind("/");
+    if (idx < 0)
+        idx = sessionFileName.rfind("\\");
+    if ( idx > 0 )
         sessionDir = sessionFileName.substr( 0, idx+1 );
 }
 
@@ -8162,6 +8171,8 @@ QvisGUIApplication::InterpreterSync()
 // Creation:   Thu Jan 31 11:05:37 PST 2008
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
+//   Windows sessions now use '.session' extinsion.
 //   
 // ****************************************************************************
 
@@ -8170,11 +8181,7 @@ QvisGUIApplication::CrashRecoveryFile() const
 {
     QString s(GetUserVisItDirectory().c_str());
     s += "crash_recovery";
-#if defined(_WIN32)
-    s += ".vses";
-#else
     s += ".session";
-#endif
     return s;
 }
 
