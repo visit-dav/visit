@@ -131,7 +131,6 @@ if test ! -e /nfs/tmp2/$user; then
 fi
 rm -rf /nfs/tmp2/$user/$workingDir
 mkdir /nfs/tmp2/$user/$workingDir
-cp visit-update-test-website /nfs/tmp2/$user/$workingDir
 cp visit-notify-test-failure /nfs/tmp2/$user/$workingDir
 cd /nfs/tmp2/$user/$workingDir
 
@@ -228,15 +227,21 @@ fi
 # Send the results to euclid
 cd test
 tar cf - \$dateTag | gzip > html.tar.gz
-scp html.tar.gz $userNersc@euclid.nersc.gov:
-
-# Update the web site.
-scp ../visit-update-test-website $userNersc@euclid.nersc.gov:
-ssh $userNersc@euclid.nersc.gov "chmod 750 visit-update-test-website;./visit-update-test-website"
-echo "Results posted at: \`date\`" | mail -s "Results posted" $userEmail
 EOF
 
+chmod 750 alastor
+
 scp alastor alastor:alastor_testit
-scp visit-update-test-website alastor:
 scp visit-notify-test-failure alastor:
-ssh alastor "chmod 750 alastor_testit;srun -n 1 -p pdebug -t 8:00:00 --exclusive ./alastor_testit" &
+
+# Run the test suite.
+ssh alastor "srun -n 1 -p pdebug -t 8:00:00 --exclusive ./alastor_testit"
+
+# Copy the results to euclid
+ssh alastor "scp /nfs/tmp2/$user/$workingDir/test/html.tar.gz $userNersc@euclid.nersc.gov:"
+echo "Results copied to euclid at: \`date\`" | mail -s "Results copied" $userEmail
+
+# Post the results.
+scp visit-update-test-website $userNersc@euclid.nersc.gov:
+ssh $userNersc@euclid.nersc.gov "./visit-update-test-website"
+echo "Results posted at: \`date\`" | mail -s "Results posted" $userEmail
