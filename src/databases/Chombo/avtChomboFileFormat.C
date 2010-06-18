@@ -89,7 +89,8 @@
 #define H5_USE_16_API
 #include <hdf5.h>
 #include <visit-hdf5.h>
-
+#include <boost/cstdint.hpp>
+using     boost::int32_t;
 using     std::string;
 
 
