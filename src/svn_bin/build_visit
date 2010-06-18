@@ -915,6 +915,9 @@
 #     Eric Brugger, Thu Jun 17 15:48:19 PDT 2010
 #     I modified the script to use vtk-5.0.0f.
 #
+#     Eric Brugger, Thu Jun 17 17:06:14 PDT 2010
+#     I modified some of the vtk patches to work with vtk-5.0.0f.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -3461,8 +3464,8 @@ diff -c a/Utilities/DICOMParser/DICOMParser.cxx VTK/Utilities/DICOMParser/DICOMP
   #include <string>
 + #include <string.h>
   #include <map>
+  #include <cstring>
   
-  #include "DICOMConfig.h"
 EOF
   if [[ $? != 0 ]] ; then
      warn "Unable to patch VTK. Wrong version?"
@@ -3487,7 +3490,7 @@ diff -c a/Utilities/DICOMParser/DICOMAppHelper.cxx VTK/Utilities/DICOMParser/DIC
 + #include <string.h>
   #include <math.h>
   #include <algorithm>
-  
+  #include <cstring>
 EOF
    if [[ $? != 0 ]] ; then
       warn "Unable to patch VTK. Wrong version?"
@@ -3508,9 +3511,9 @@ diff -c a/Utilities/DICOMParser/DICOMFile.cxx VTK/Utilities/DICOMParser/DICOMFil
   #include <stdio.h>
   #include <string>
 + #include <string.h>
+  #include <cstring>
   
   #include "DICOMConfig.h"
-  #include "DICOMFile.h"
 EOF
     if [[ $? != 0 ]] ; then
        warn "Unable to patch VTK. Wrong version?"
