@@ -16,28 +16,35 @@
 <ul>
 <li>A bug was fixed in the Spreadsheet plot, restoring its ability to select the domain whose data is shown.</li>
 <li>The resample operator's distributed resampling mode now works correctly in parallel (as one would expect).</li>
-<li>A bug was fixed where number of passive scalars in legacy Nek files was being misinterpreted.</li>
-<li>If a non-compliant Nek file is encountered, VisIt is better at reporting to the user why the file is non-compliant.</li>
-<li>It no longer crashes the GUI when you delete the last variable in the Threshold operator's attributes window.</li>
-<li>Large, time-varying PlainText files can now be processed with a constant memory footprint.</li>
-<li>Symbols needed by "import visit" in a Python interpreter have been exposed so they are not hidden by default when building with visibility=hidden.</li>
-<li>The visit.so and visitmodule.so Python modules now are installed with $ORIGIN rpath so their dependent shared libraries can be found when Python imports the modules.</li>
-<li>Certain AMR meshes with only one refinement level were crashing VisIt.  This has been fixed.</li>
-<li>A couple of bugs were corrected with the reading of unstructured meshes with polyhedral elements in the Silo database reader.</li>
-<li>The visit.so Python module used by "import visit" now contains additional initialization to prevent crashes when executing user-defined callback functions.</li>
 <li>A parallel bug with the Elliptical Compactness query was fixed. The bug resulted in incorrect ellipse axis fitting for multi-domain problems.</li>
+<li>The GUI no longer crashes when you delete the last variable in the Threshold operator's attributes window.</li>
+<li>VisIt no longer crashes with certain AMR meshes with only one refinement level.</li>
+<li>A bug was fixed where the number of passive scalars in legacy Nek files was being misinterpreted.</li>
+<li>If a non-compliant Nek file is encountered, VisIt is better at reporting to the user why the file is non-compliant.</li>
+<li>A bug in Restore Session with Sources was fixed so that the GUI will no longer crash when a second (or greater) source is selected.</li>
+<li>The makemili tool now runs again.</li>
+<li>Large, time-varying PlainText files can now be processed with a constant memory footprint.</li>
+<li>A couple of bugs were corrected with the reading of unstructured meshes with polyhedral elements in the Silo database reader.</li>
 <li>A bug preventing Silo's 'MetaDataIsTimeVarying' flag from working was fixed.</li>
+<li>The PDB reader was changed so that it no longer exchanges the X/Z axes, as requested by an LLNL code team.</li>
+<li>The symbols needed by "import visit" in a Python interpreter have been exposed so they are not hidden by default when building with visibility=hidden.</li>
+<li>The visit.so and visitmodule.so Python modules are now installed with $ORIGIN rpath so their dependent shared libraries can be found when Python imports the modules.</li>
+<li>The visit.so Python module used by "import visit" now contains additional initialization to prevent crashes when executing user-defined callback functions.</li>
 <li>A bug with parsing bool arguments for Python Filter contract wrappers was resolved.</li>
-<li>The PDB reader was enhanced so it provides laserid and rayid variables for laser rays.</li>
-<li>By request of an LLNL code team, PDB reader was changed so it no longer exchanges the X/Z axes.</li>
-<li>A bug in Restore Session with Sources was fixed so that gui will no longer crash when second (or greater) source is selected.</li>
+<li>It is now again possible to untar a binary distribution on a Unix system and have it run. Note that using the visit-install script is still the prefered method to install visit.</li>
+<li>The build_visit script was modified to add "-lz" to the list  of dependent libraries for Silo.</li>
+<li>The build_visit script was modified to use vtk-5.0.0f, which has some fixes so that it compiles with GCC 4.3 or newer compilers. If you already have vtk-5.0.0e built on your system there is no reason to upgrade to vtk-5.0.0f.</li>
+<li>The build system was modified to add "-DMPICH_IGNORE_CXX_SEEK" when building a parallel version so that VisIt would compile with MPI 2 implementations.</li>
+<li>The build system was modified so that it would no longer try to create the Silo data files if VisIt was configured without support for Silo.</li>
 </ul>
 <p><b><font size="4">Enhancements in version 2.0.1</font></b></p>
 <ul>
-<li>The Boxlib reader now represents the AMR nesting structure in a more efficient manner.  Adding plots, changing time slices, etc, should be noticably faster for simulations with large numbers of patch.</li>
-<li>Windows installer was improved slightly to play better with Windows 7 / Vista.</li>
-<li>Default save location for session files on windows is no longer current directory.</li>
-<li>Session files on windows are now saved with '.session' extension for compatibility with *nix platforms.  Old sessions with '.vses' extension can still be loaded.</li>
+<li>The Boxlib reader now represents the AMR nesting structure in a more efficient manner.  Adding plots, changing time slices, etc, should be noticably faster for simulations with large numbers of patches.</li>
+<li>The Windows installer was improved to work better with Windows 7 and Vista.</li>
+<li>The default save location for session files on windows is no longer the current directory.</li>
+<li>Session files on windows are now saved with a '.session' extension for compatibility with Unix platforms.  Old sessions with a '.vses' extension can still be loaded.</li>
+<li>The PDB reader was enhanced so it provides laserid and rayid variables for laser rays.</li>
+<li>The option "--download-only" was added to the build_visit script, which only downloads the specified files.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version of VisIt: <a href="relnotes2.0.0.html">VisIt 2.0 Release Notes</a>.</p>
 </body>
