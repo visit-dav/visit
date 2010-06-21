@@ -908,6 +908,9 @@
 #     Eric Brugger, Thu Jun 17 17:06:14 PDT 2010
 #     I modified some of the vtk patches to work with vtk-5.0.0f.
 #
+#     Eric Brugger, Mon Jun 21 09:11:33 PDT 2010
+#     I set the VisIt version number to 2.0.1.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1206,7 +1209,7 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION:-"2.0.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.0.1"}
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE:-"vtk-5.0.0f.tar.gz"}
