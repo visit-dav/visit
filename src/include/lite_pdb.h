@@ -210,6 +210,9 @@ struct s_data_alignment {
    int short_alignment;
    int int_alignment;
    int long_alignment;
+#if PDB_LITE_VARIANT == 1
+   int longlong_alignment;
+#endif
    int float_alignment;
    int double_alignment;
    int struct_alignment;
@@ -226,6 +229,10 @@ struct s_data_standard {
    int int_order;
    int long_bytes;
    int long_order;
+#if PDB_LITE_VARIANT == 1
+   int longlong_bytes;
+   int longlong_order;
+#endif
    int float_bytes;
    long *float_format;
    int *float_order;

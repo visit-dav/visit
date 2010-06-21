@@ -2293,6 +2293,9 @@ PF3DFileFormat::MasterInformation::GetNDomains() const
 //   I added some coding to handle a weird case where float and double 
 //   alignments appear to be reversed.
 //
+//   Mark C. Miller, Mon Jun 21 12:28:13 PDT 2010
+//   Reverted Brad's fix (above). Now, lite_pdb.h header file should get
+//   PDB Lite's structures correct via new cmake tests in FindSilo.cmake.
 // ****************************************************************************
 
 bool
@@ -2405,24 +2408,6 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
                 fclose(out);
             }
 #endif
-            debug4 << "char_alignment = " << pdb->filePointer()->align->char_alignment << endl;
-            debug4 << "short_alignment = " << pdb->filePointer()->align->short_alignment << endl;
-            debug4 << "int_alignment = " << pdb->filePointer()->align->int_alignment << endl;
-            debug4 << "long_alignment = " << pdb->filePointer()->align->long_alignment << endl;
-            debug4 << "float_alignment = " << pdb->filePointer()->align->float_alignment << endl;
-            debug4 << "double_alignment = " << pdb->filePointer()->align->double_alignment << endl;
-
-            int float_alignment = pdb->filePointer()->align->float_alignment;
-            int double_alignment = pdb->filePointer()->align->double_alignment;
-            if(float_alignment > double_alignment)
-            {
-                debug4 << "float_alignment > double_alignment That must be an error. "
-                          "Swap alignments for float and double." << endl;
-                int tmp = float_alignment;
-                float_alignment = double_alignment;
-                double_alignment = tmp;
-            }
-
             // Now iterate through the fields in the __@history variable type
             // And populate the member data. We'll just promote everything
             // that's not char to double and long. This will make some access
@@ -2522,7 +2507,8 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
                 else if(strcmp(m->base_type, "float") == 0)
                 {
                     // Advance offset if necessary.
-                    for(; ((unsigned long)(mptr)) % float_alignment != 0; ++mptr);
+                    for(; ((unsigned long)(mptr)) % pdb->filePointer()->
+                        align->float_alignment != 0; ++mptr);
 
                     float *src = (float *)mptr;
                     double *dest = new double[mSize];
@@ -2537,7 +2523,8 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
                 else if(strcmp(m->base_type, "double") == 0)
                 {
                     // Advance offset if necessary.
-                    for(; ((unsigned long)(mptr)) % double_alignment != 0; ++mptr);
+                    for(; ((unsigned long)(mptr)) % pdb->filePointer()->
+                        align->double_alignment != 0; ++mptr);
 
                     double *src = (double *)mptr;
                     double *dest = new double[mSize];

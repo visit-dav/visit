@@ -77,6 +77,8 @@
 #   Hank Childs, Tue Jan  5 07:16:29 PST 2010
 #   Replace xml2makefile with xml2cmake.
 #
+#   Mark C. Miller, Mon Jun 14 10:13:38 PDT 2010
+#   Updated commands/readme to support cmake style of building.
 # ----------------------------------------------------------------------------
 #
 
@@ -144,12 +146,16 @@ cat >> $1 <<- EOF
     If the above commands fail, you may need to use this appraoch...
 
     Manual commands for installing and UNinstalling
+    (Note: Ensure you have a new enough version of cmake, 2.8 or
+    later, in your path or use the version of cmake that is part
+    of the VisIt installation.)
     ----------------------------------------------------------------
     To untar the plugin...
         % gunzip < $pluginName.tar.gz | tar xvf -
     To install...
         % cd $pluginName
         % xml2cmake -clobber $pluginName.xml
+        % cmake .
         % make
     To UNinstall...
         % cd $pluginName
@@ -218,6 +224,7 @@ testBuildPluginTarball () {
 	    return
 	fi
     fi
+    cmake .
     make 1>$oldDir/visit_plugin_${thePluginName}_make.log 2>&1
     hadError=$?
     if test -z "$deleteIt" || test "$deleteIt" != "0"; then
