@@ -2166,7 +2166,9 @@ PP_ZFileReader::GetRayMesh(int state, const char *mesh)
 // Creation:   Mon Jun 7 09:44:13 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 21 09:51:31 PDT 2010
+//   I fixed the order of the coordinates.
+//
 // ****************************************************************************
 
 template <class T>
@@ -2199,9 +2201,9 @@ ConstructRayMesh_CreateMesh_3D(const int *mxp, const int *kptryp,
 
             for(int i = i1; i < i2; ++i)
             {
-                *tmp++ = float(raypz[i]);
                 *tmp++ = float(raypx[i]);
                 *tmp++ = float(raypy[i]);
+                *tmp++ = float(raypz[i]);
 
                 if(i > i1)
                 {
@@ -3796,10 +3798,6 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
 //    Brad Whitlock, Wed Aug 6 12:16:01 PDT 2003
 //    I stole this code from avtRevolveFilter in the Revolve operator.
 //
-//    Brad Whitlock, Fri Jun 18 10:26:59 PDT 2010
-//    I turned off the swap XZ behavior because the code team asked me to. That
-//    behavior crept in undocumented and they don't like it.
-//
 // ****************************************************************************
 
 static void
@@ -3884,10 +3882,6 @@ GetRotationMatrix(double angle, const double axis[3], vtkMatrix4x4 *mat)
     rot3->SetElement(0, 1, -sin_angle);
     rot3->SetElement(1, 1, cos_angle);
 
-#ifdef SWAP_XZ_AXES
-    // The code team asked me to turn this behavior off! So, SWAP_XZ_AXES
-    // is not defined.
-
     //
     // The X-coordinate is actually the Z-axis.  So swap 'X' and 'Z'.
     //
@@ -3897,7 +3891,6 @@ GetRotationMatrix(double angle, const double axis[3], vtkMatrix4x4 *mat)
     swap1->SetElement(2, 2, 0.);
     swap1->SetElement(0, 2, 1.);
     swap1->SetElement(2, 0, 1.);
-#endif
 
     //
     // Now set up our matrix.
@@ -3905,12 +3898,8 @@ GetRotationMatrix(double angle, const double axis[3], vtkMatrix4x4 *mat)
     vtkMatrix4x4 *tmp  = vtkMatrix4x4::New();
     vtkMatrix4x4 *tmp2 = vtkMatrix4x4::New();
     vtkMatrix4x4 *tmp3 = vtkMatrix4x4::New();
-#ifdef SWAP_XZ_AXES
     vtkMatrix4x4::Multiply4x4(swap1, rot5, tmp3);
     vtkMatrix4x4::Multiply4x4(tmp3, rot4, tmp);
-#else
-    vtkMatrix4x4::Multiply4x4(rot5, rot4, tmp);
-#endif
     vtkMatrix4x4::Multiply4x4(tmp, rot3, tmp2);
     vtkMatrix4x4::Multiply4x4(tmp2, rot2, tmp);
     vtkMatrix4x4::Multiply4x4(tmp, rot1, mat);
@@ -3923,9 +3912,7 @@ GetRotationMatrix(double angle, const double axis[3], vtkMatrix4x4 *mat)
     rot3->Delete();
     rot4->Delete();
     rot5->Delete();
-#ifdef SWAP_XZ_AXES
     swap1->Delete();
-#endif
 }
 
 // ****************************************************************************
