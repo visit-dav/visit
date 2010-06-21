@@ -64,9 +64,40 @@ ENDIF (WIN32)
 
 # We use Silo for PDB most of the time so set up additional PDB variables.
 IF(SILO_FOUND)
+
+    # Determine which PDB Lite variant we are using
+    SET(MSG "    Check for PDB Lite variant")
+    SET(TRY_RUN_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/CMakeTmp)
+    TRY_RUN(TRY_RUN_RESULT HAVE_PDBLITE_VARIANT 
+        ${TRY_RUN_DIR}
+        ${VISIT_SOURCE_DIR}/CMake/FindPDBLiteVariant.C
+        CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${VISIT_SOURCE_DIR}/include"
+                    "-DLINK_DIRECTORIES:STRING=${SILO_LIBRARY_DIR}"
+                    "-DLINK_LIBRARIES:STRING=${SILO_LIB}"
+        OUTPUT_VARIABLE OUTPUT
+    )
+    IF(HAVE_PDBLITE_VARIANT)
+        IF("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
+            MESSAGE(STATUS "${MSG} - failed to run, defaulting to newest variant")
+            SET(PDB_LITE_VARIANT 1 CACHE INTERNAL "PDB Lite variant")
+        ELSE("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
+            SET(PDB_LITE_VARIANT ${TRY_RUN_RESULT} CACHE INTERNAL "PDB Lite variant")
+            IF(PDB_LITE_VARIANT EQUAL 1)
+                MESSAGE(STATUS "${MSG} - found (${TRY_RUN_RESULT}: newest variant)")
+            ELSE(PDB_LITE_VARIANT EQUAL 1)
+                MESSAGE(STATUS "${MSG} - found (${TRY_RUN_RESULT}: older variant)")
+            ENDIF(PDB_LITE_VARIANT EQUAL 1)
+        ENDIF("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
+    ELSE(HAVE_PDBLITE_VARIANT)
+        MESSAGE(STATUS "${MSG} - ${OUTPUT_VARIABLE} ${OUTPUT}") 
+        MESSAGE(STATUS "${MSG} - failed to compile, defaulting to newest variant")
+        SET(PDB_LITE_VARIANT 0 CACHE INTERNAL "PDB Lite variant")
+    ENDIF(HAVE_PDBLITE_VARIANT)
+
     SET(PDB_FOUND 1 CACHE BOOL "PDB library found")
     SET(PDB_INCLUDE_DIR ${SILO_INCLUDE_DIR} CACHE PATH "PDB include directory")
     SET(PDB_LIBRARY_DIR ${SILO_LIBRARY_DIR} CACHE PATH "PDB library directory")
     SET(PDB_LIB ${SILO_LIB} CACHE STRING "PDB library")
     MARK_AS_ADVANCED(PDB_INCLUDE_DIR PDB_LIBRARY_DIR PDB_LIB)
+
 ENDIF(SILO_FOUND)
