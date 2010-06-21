@@ -1415,7 +1415,7 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
 int
 PP_ZFileReader::GetNumLasers(const std::string &irayu)
 {
-    int nRayDomains = 0;
+    int nRayDomains = 1;
     TypeEnum irayu_type;
     int irayu_nTotalElements = 0, *irayu_dims = NULL, irayu_ndims = 0;
     if(pdb->SymbolExists(irayu.c_str(), &irayu_type, &irayu_nTotalElements, 
