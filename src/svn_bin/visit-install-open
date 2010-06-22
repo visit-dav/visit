@@ -394,5 +394,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth up yana xchem eucild ellipse
+   rm -f hoth up yana xchem euclid ellipse
 fi
