@@ -62,6 +62,7 @@
 extern "C" {
 #endif
 
+#include <visit-config.h> /* For PDB_LITE_HAS_LONG_LONG */
 #include <setjmp.h> /* For the setjmp/long structure jmp_buf. */
 #include <stdio.h>
 #include <lite_score.h> /* For type definitions */ 
@@ -210,7 +211,7 @@ struct s_data_alignment {
    int short_alignment;
    int int_alignment;
    int long_alignment;
-#if PDB_LITE_VARIANT == 1
+#ifdef PDB_LITE_HAS_LONG_LONG 
    int longlong_alignment;
 #endif
    int float_alignment;
@@ -229,7 +230,7 @@ struct s_data_standard {
    int int_order;
    int long_bytes;
    int long_order;
-#if PDB_LITE_VARIANT == 1
+#ifdef PDB_LITE_HAS_LONG_LONG 
    int longlong_bytes;
    int longlong_order;
 #endif
