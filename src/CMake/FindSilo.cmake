@@ -41,6 +41,9 @@
 #    Kathleen Bonnell, Thu Apr  8 17:17:22 MST 2010
 #    Add install and copy of silex for windows.
 #
+#    Mark C. Miller, Mon Jun 21 16:55:51 PDT 2010
+#    Replaced logic to TRY_RUN a tiny PDB Lite test to simply query the
+#    Silo version number.
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file 
@@ -65,34 +68,22 @@ ENDIF (WIN32)
 # We use Silo for PDB most of the time so set up additional PDB variables.
 IF(SILO_FOUND)
 
-    # Determine which PDB Lite variant we are using
-    SET(MSG "    Check for PDB Lite variant")
-    SET(TRY_RUN_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/CMakeTmp)
-    TRY_RUN(TRY_RUN_RESULT HAVE_PDBLITE_VARIANT 
-        ${TRY_RUN_DIR}
-        ${VISIT_SOURCE_DIR}/CMake/FindPDBLiteVariant.C
-        CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${VISIT_SOURCE_DIR}/include"
-                    "-DLINK_DIRECTORIES:STRING=${SILO_LIBRARY_DIR}"
-                    "-DLINK_LIBRARIES:STRING=${SILO_LIB}"
-        OUTPUT_VARIABLE OUTPUT
-    )
-    IF(HAVE_PDBLITE_VARIANT)
-        IF("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
-            MESSAGE(STATUS "${MSG} - failed to run, defaulting to newest variant")
-            SET(PDB_LITE_VARIANT 1 CACHE INTERNAL "PDB Lite variant")
-        ELSE("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
-            SET(PDB_LITE_VARIANT ${TRY_RUN_RESULT} CACHE INTERNAL "PDB Lite variant")
-            IF(PDB_LITE_VARIANT EQUAL 1)
-                MESSAGE(STATUS "${MSG} - found (${TRY_RUN_RESULT}: newest variant)")
-            ELSE(PDB_LITE_VARIANT EQUAL 1)
-                MESSAGE(STATUS "${MSG} - found (${TRY_RUN_RESULT}: older variant)")
-            ENDIF(PDB_LITE_VARIANT EQUAL 1)
-        ENDIF("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
-    ELSE(HAVE_PDBLITE_VARIANT)
-        MESSAGE(STATUS "${MSG} - ${OUTPUT_VARIABLE} ${OUTPUT}") 
-        MESSAGE(STATUS "${MSG} - failed to compile, defaulting to newest variant")
-        SET(PDB_LITE_VARIANT 0 CACHE INTERNAL "PDB Lite variant")
-    ENDIF(HAVE_PDBLITE_VARIANT)
+    # Inspect Silo version number to infer whether or not PDB Lite (in Silo)
+    # has support for long long type. Failure to either find silo.h header file
+    # or find a matching line in that file with Silo_version will result in
+    # executing the block where VERSION_LESS is true. That is appropriate as
+    # older versions of Silo do not have a PDB Lite with long long support.
+    FILE(STRINGS ${SILO_INCLUDE_DIR}/silo.h SILO_VERSION_LINE REGEX Silo_version_[0-9]_[0-9]_[0-9])
+    STRING(REGEX REPLACE "(.*) Silo_version_([0-9])_[0-9]_[0-9]" \\2 SILO_MAJ_NO "${SILO_VERSION_LINE}")
+    STRING(REGEX REPLACE "(.*) Silo_version_[0-9]_([0-9])_[0-9]" \\2 SILO_MIN_NO "${SILO_VERSION_LINE}")
+    STRING(REGEX REPLACE "(.*) Silo_version_[0-9]_[0-9]_([0-9])" \\2 SILO_PAT_NO "${SILO_VERSION_LINE}")
+    IF("${SILO_MAJ_NO}.${SILO_MIN_NO}.${SILO_PAT_NO}" VERSION_LESS 4.7.2)
+        SET(PDB_LITE_HAS_LONG_LONG 0 CACHE INTERNAL "Support for longlong type in PDB Lite")
+        MESSAGE(STATUS "    PDB Lite does not have long long support")
+    ELSE("${SILO_MAJ_NO}.${SILO_MIN_NO}.${SILO_PAT_NO}" VERSION_LESS 4.7.2)
+        SET(PDB_LITE_HAS_LONG_LONG 1 CACHE INTERNAL "Support for longlong type in PDB Lite")
+        MESSAGE(STATUS "    PDB Lite has long long support")
+    ENDIF("${SILO_MAJ_NO}.${SILO_MIN_NO}.${SILO_PAT_NO}" VERSION_LESS 4.7.2)
 
     SET(PDB_FOUND 1 CACHE BOOL "PDB library found")
     SET(PDB_INCLUDE_DIR ${SILO_INCLUDE_DIR} CACHE PATH "PDB include directory")
