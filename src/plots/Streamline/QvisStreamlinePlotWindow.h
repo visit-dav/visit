@@ -56,6 +56,8 @@ class QvisLineWidthWidget;
 class QvisVariableButton;
 class QvisOpacitySlider;
 class QPushButton;
+class QButtonGroup;
+class QRadioButton;
 class StreamlineAttributes;
 
 // ****************************************************************************
@@ -122,6 +124,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources.
 //
+//   Dave Pugmire, Wed Jun 23 16:44:36 EDT 2010
+//   Repace fill interior checkbox with radio button.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -181,7 +186,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void randomSamplesChanged(bool);
     void randomSeedChanged(int);
     void numberOfRandomSamplesChanged(int);
-    void fillInteriorChanged(bool);
+    void fillChanged(int);
     void maxSLCountChanged(int val);
     void maxDomainCacheChanged(int val);
     void workGroupSizeChanged(int val);
@@ -271,7 +276,9 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *numberOfRandomSamplesLabel;
     QSpinBox  *randomSeed;
     QLabel    *randomSeedLabel;
-    QCheckBox *fillInterior;
+    QLabel    *fillLabel;
+    QButtonGroup *fillButtonGroup;
+    QRadioButton *fillButtons[2];
 
 
     QComboBox *displayMethod;

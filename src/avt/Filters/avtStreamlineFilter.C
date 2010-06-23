@@ -985,6 +985,9 @@ avtStreamlineFilter::GenerateSeedPointsFromLine(std::vector<avtVector> &pts)
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources.
 //
+//   Dave Pugmire, Wed Jun 23 16:44:36 EDT 2010
+//   Fix the centering.
+//
 // ****************************************************************************
 
 void
@@ -996,15 +999,14 @@ avtStreamlineFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
     avtVector X0(1,0,0), Y0(0,1,0), Z0(0,0,1), C0(0,0,0);
     avtVector Y1=vectors[1], Z1=vectors[0], C1=points[0];
 
-    // Move the sample center to the origin.
-    C1.x -= (sampleDistance[0]/2.0);
-    C1.y -= (sampleDistance[1]/2.0);
-
     avtVector X1 = Y1.cross(Z1);
     avtMatrix m = avtMatrix::CreateFrameToFrameConversion(X1, Y1, Z1, C1,
                                                           X0, Y0, Z0, C0);
-    float x0 = 0.0, y0 = 0.0;
-    float x1 = sampleDistance[0], y1 = sampleDistance[1];
+    
+    float x0 = -(sampleDistance[0]/2.0);
+    float y0 = -(sampleDistance[0]/2.0);
+    float x1 = (sampleDistance[0]/2.0);
+    float y1 = (sampleDistance[0]/2.0);
 
     if (randomSamples)
     {
@@ -1062,6 +1064,7 @@ avtStreamlineFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
                 avtVector p(x0+((float)x*dX), 
                             y0+((float)y*dY),
                             0.0);
+
                 p = m*p;
                 pts.push_back(p);
             }
@@ -1082,6 +1085,9 @@ avtStreamlineFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
 //
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources.
+//
+//   Dave Pugmire, Wed Jun 23 16:44:36 EDT 2010
+//   Add circle center for interior sampling.
 //
 // ****************************************************************************
 
@@ -1146,6 +1152,7 @@ avtStreamlineFilter::GenerateSeedPointsFromCircle(std::vector<avtVector> &pts)
                     r += dR;
                 }
                 theta += dTheta;
+                pts.push_back(points[0]);
             }
         }
         else
@@ -1174,6 +1181,9 @@ avtStreamlineFilter::GenerateSeedPointsFromCircle(std::vector<avtVector> &pts)
 //
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources.
+//
+//   Dave Pugmire, Wed Jun 23 16:44:36 EDT 2010
+//   Bug fix for random sampling on a sphere. Implment uniform interior sampling.
 //
 // ****************************************************************************
 
@@ -1204,33 +1214,52 @@ avtStreamlineFilter::GenerateSeedPointsFromSphere(std::vector<avtVector> &pts)
             for (int i = 0; i < numSamplePoints; i++)
             {
                 float theta = random01()*TWO_PI;
-                float u = random_11()*R;
-                float x = sqrt(R-(u*u));
+                float u = random_11();
+                float x = sqrt(1.0-(u*u));
                 avtVector p(cos(theta)*x, sin(theta)*x, u);
+                p.normalize();
+                p *= R;
                 pts.push_back(p+points[0]);
             }
         }
     }
     else
     {
+        vtkSphereSource* sphere = vtkSphereSource::New();
+        sphere->SetCenter(points[0].x, points[0].y, points[0].z);
+        sphere->SetRadius(R);
+        sphere->SetLatLongTessellation(1);
+        double t = double(30 - sampleDensity[0]) / 29.;
+        double angle = t * 3. + (1. - t) * 30.;
+        sphere->SetPhiResolution(int(angle));
+
+        t = double(30 - sampleDensity[1]) / 29.;
+        angle = t * 3. + (1. - t) * 30.;
+        sphere->SetThetaResolution(int(angle));
+
         if (fill)
         {
-            cout<<"TODO"<<endl;
+            float dR = R/(float)sampleDensity[2];
+            float r = dR;
+            for (int i = 0; i < sampleDensity[2]; i++)
+            {
+                sphere->SetRadius(r);
+                sphere->Update();
+
+                for (int j = 0; j < sphere->GetOutput()->GetNumberOfPoints(); j++)
+                {
+                    double *pt = sphere->GetOutput()->GetPoint(j);
+                    avtVector p(pt[0], pt[1], pt[2]);
+                    pts.push_back(p);
+                }
+                r = r+dR;
+            }
+            //Add center, R=0 sample.
+            pts.push_back(points[0]);
+
         }
         else //LAT-LONG
         {
-            vtkSphereSource* sphere = vtkSphereSource::New();
-            sphere->SetCenter(points[0].x, points[0].y, points[0].z);
-            sphere->SetRadius(R);
-            sphere->SetLatLongTessellation(1);
-            double t = double(30 - sampleDensity[0]) / 29.;
-            double angle = t * 3. + (1. - t) * 30.;
-            sphere->SetPhiResolution(int(angle));
-
-            t = double(30 - sampleDensity[1]) / 29.;
-            angle = t * 3. + (1. - t) * 30.;
-            sphere->SetThetaResolution(int(angle));
-            
             sphere->Update();
             for (int i = 0; i < sphere->GetOutput()->GetNumberOfPoints(); i++)
             {
@@ -1238,8 +1267,9 @@ avtStreamlineFilter::GenerateSeedPointsFromSphere(std::vector<avtVector> &pts)
                 avtVector p(pt[0], pt[1], pt[2]);
                 pts.push_back(p);
             }
-            sphere->Delete();
         }
+        
+        sphere->Delete();
     }
 }
 
