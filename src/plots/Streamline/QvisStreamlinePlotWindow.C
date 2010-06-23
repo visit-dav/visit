@@ -52,6 +52,8 @@
 #include <QPushButton>
 #include <QTabWidget>
 #include <QToolTip>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisColorButton.h>
 #include <QvisLineWidthWidget.h>
@@ -374,11 +376,19 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     gRow++;
     
     int sRow = 0;
-    fillInterior = new QCheckBox(tr("Fill Interior"), samplingGroup);
-    connect(fillInterior, SIGNAL(toggled(bool)),this, SLOT(fillInteriorChanged(bool)));
-    samplingLayout->addWidget(fillInterior, sRow, 0);
+    fillLabel = new QLabel(tr("Sampling along:"), samplingGroup);
+    samplingLayout->addWidget(fillLabel, sRow, 0);
+    fillButtonGroup = new QButtonGroup(samplingGroup);
+    fillButtons[0] = new QRadioButton(tr("Exterior"), samplingGroup);
+    fillButtons[1] = new QRadioButton(tr("Interior"), samplingGroup);
+    fillButtons[0]->setChecked(true);
+    fillButtonGroup->addButton(fillButtons[0], 0);
+    fillButtonGroup->addButton(fillButtons[1], 1);
+    samplingLayout->addWidget(fillButtons[0], sRow, 1);
+    samplingLayout->addWidget(fillButtons[1], sRow, 2);
+    connect(fillButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(fillChanged(int)));
     sRow++;
-
+    
     randomSamples = new QCheckBox(tr("Random"), samplingGroup);
     connect(randomSamples, SIGNAL(toggled(bool)),this, SLOT(randomSamplesChanged(bool)));
     samplingLayout->addWidget(randomSamples, sRow, 0);
@@ -1573,10 +1583,10 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
               break;
 
             case StreamlineAttributes::ID_fillInterior:
-              fillInterior->blockSignals(true);
-              fillInterior->setChecked(streamAtts->GetFillInterior());
+              fillButtonGroup->blockSignals(true);
+              fillButtonGroup->button(streamAtts->GetFillInterior()?1:0)->setChecked(true);
               UpdateSourceAttributes();
-              fillInterior->blockSignals(false);
+              fillButtonGroup->blockSignals(false);
               break;
 
             case StreamlineAttributes::ID_randomSeed:
@@ -1622,7 +1632,9 @@ QvisStreamlinePlotWindow::TurnOffSourceAttributes()
     TurnOff(randomSamples);
     TurnOff(numberOfRandomSamples, numberOfRandomSamplesLabel);
     TurnOff(randomSeed, randomSeedLabel);
-    TurnOff(fillInterior);
+    TurnOff(fillLabel);
+    TurnOff(fillButtons[0]);
+    TurnOff(fillButtons[1]);
     for (int i = 0; i < 3; i++)
     {
         TurnOff(sampleDensity[i], sampleDensityLabel[i]);
@@ -1800,7 +1812,9 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     
     if (enableFill)
     {
-        TurnOn(fillInterior);
+        TurnOn(fillLabel);
+        TurnOn(fillButtons[0]);
+        TurnOn(fillButtons[1]);
     }
     if (showSampling)
         TurnOn(samplingGroup);
@@ -2980,9 +2994,9 @@ QvisStreamlinePlotWindow::randomSamplesChanged(bool val)
 }
 
 void
-QvisStreamlinePlotWindow::fillInteriorChanged(bool val)
+QvisStreamlinePlotWindow::fillChanged(int index)
 {
-    streamAtts->SetFillInterior(val);
+    streamAtts->SetFillInterior(index == 1);
     Apply();
 }
 

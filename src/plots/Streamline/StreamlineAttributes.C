@@ -1009,13 +1009,14 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     else if(atts->TypeName() == "PlaneAttributes")
     {
-        if(sourceType == SpecifiedPlane)
+        if(sourceType == SpecifiedPlane || sourceType == SpecifiedCircle)
         {
             const PlaneAttributes *plane = (const PlaneAttributes *)atts;
             SetPlaneOrigin(plane->GetOrigin());
             SetPlaneNormal(plane->GetNormal());
             SetPlaneUpAxis(plane->GetUpAxis());
-            SetRadius(plane->GetRadius());
+            if (sourceType == SpecifiedCircle)
+                SetRadius(plane->GetRadius());
             retval = true;
         }
     }
@@ -1029,18 +1030,6 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
             retval = true;
         }
     }   
-    else if(atts->TypeName() == "CircleAttributes")
-    {
-        if(sourceType == SpecifiedCircle)
-        {
-            const PlaneAttributes *plane = (const PlaneAttributes *)atts;
-            SetPlaneOrigin(plane->GetOrigin());
-            SetPlaneNormal(plane->GetNormal());
-            SetPlaneUpAxis(plane->GetUpAxis());
-            SetRadius(plane->GetRadius());
-            retval = true;
-        }
-    }
     else if(atts->TypeName() == "BoxExtents")
     {
         if(sourceType == SpecifiedBox)
