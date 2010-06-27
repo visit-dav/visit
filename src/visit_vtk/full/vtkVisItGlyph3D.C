@@ -29,6 +29,7 @@
 #include <vtkPolyData.h>
 #include <vtkTransform.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkAppendPolyData.h>
 
 vtkCxxRevisionMacro(vtkVisItGlyph3D, "$Revision: 1.107 $");
 vtkStandardNewMacro(vtkVisItGlyph3D);
@@ -108,6 +109,10 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //    Hank Childs, Fri Jan 29 16:25:29 PST 2010
 //    Add support for treating vectors as 2D ... for data that is 10^15.
 //
+//    Hank Childs, Sun Jun 27 12:18:41 PDT 2010
+//    Only glyph points that have VTK_VERTEXs.  Also pass edges, quads, etc
+//    through the filter.
+//
 //*****************************************************************************
 void vtkVisItGlyph3D::Execute()
 {
@@ -122,7 +127,7 @@ void vtkVisItGlyph3D::Execute()
   int requestedGhostLevel;
   unsigned char* inGhostLevels=0;
   vtkDataArray *inNormals = NULL, *sourceNormals = NULL;
-  vtkIdType numPts, numSourcePts, numSourceCells, inPtId, i;
+  vtkIdType numPts, numSourcePts, numSourceCells, i;
   int index;
   vtkPoints *sourcePts = NULL;
   vtkPoints *newPts;
@@ -139,7 +144,7 @@ void vtkVisItGlyph3D::Execute()
   vtkIdType ptIncr, cellId;
   int haveVectors, haveNormals;
   double scalex,scaley,scalez, den;
-  vtkPolyData *output = this->GetOutput();
+  vtkPolyData *output = vtkPolyData::New();
   vtkPointData *outputPD = output->GetPointData();
   vtkCellData *outputCD = output->GetCellData();
   vtkDataSet *input = this->GetInput();
@@ -390,6 +395,21 @@ void vtkVisItGlyph3D::Execute()
     outOrigCells->SetName(inOrigCells->GetName());
     }
 
+  int connSize = 0;
+  int numVerts = 0;
+  int numCells = input->GetNumberOfCells();
+  vtkIdList *ptIds = vtkIdList::New();
+  for (i = 0 ; i < numCells ; i++)
+  {
+      vtkIdType c = input->GetCellType(i);
+      if (c == VTK_VERTEX)
+          numVerts++;
+      else
+      {
+          input->GetCellPoints(i, ptIds);
+          connSize += ptIds->GetNumberOfIds()+1;
+      }
+  }
   // Setting up for calls to PolyData::InsertNextCell()
   if (this->IndexMode != VTK_INDEXING_OFF )
     {
@@ -404,10 +424,15 @@ void vtkVisItGlyph3D::Execute()
   // point attributes.
   //
   ptIncr=0;
-  for (inPtId=0; inPtId < numPts; inPtId++)
+  for (int cellIdx = 0 ; cellIdx < numCells ; cellIdx++)
     {
+    vtkIdType c = input->GetCellType(cellIdx);
+    if (c != VTK_VERTEX)
+       continue;
+    input->GetCellPoints(cellIdx, ptIds);
+    vtkIdType inPtId = ptIds->GetId(0);
     scalex = scaley = scalez = 1.0;
-    if ( ! (inPtId % 10000) )
+    if ( (cellIdx % 10000) == 0 )
       {
       this->UpdateProgress ((double)inPtId/numPts);
       if (this->GetAbortExecute())
@@ -751,6 +776,39 @@ void vtkVisItGlyph3D::Execute()
   output->Squeeze();
   trans->Delete();
   pts->Delete();
+
+  if (connSize > 0 && (input->GetDataObjectType() == VTK_POLY_DATA || 
+                       input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID))
+  {
+     vtkPolyData *in_polydata = (vtkPolyData *) input;
+
+     // we have non-verts ... make a separate output for the non-verts and then 
+     // append them together.
+     vtkPolyData *output2 = vtkPolyData::New();
+     output2->SetPoints(in_polydata->GetPoints());
+     output2->GetPointData()->ShallowCopy(in_polydata->GetPointData());
+     // ignore cell data ... it won't match up with glyphed verts anyway.
+     output2->Allocate(connSize);
+     for (i = 0 ; i < numCells ; i++)
+     {
+       vtkIdType c = input->GetCellType(i);
+       if (c == VTK_VERTEX)
+           continue;
+       input->GetCellPoints(i, ptIds);
+       output2->InsertNextCell(c, ptIds);
+     }
+     vtkAppendPolyData *appender = vtkAppendPolyData::New();
+     appender->AddInput(output2);
+     appender->AddInput(output);
+     appender->Update();
+     GetOutput()->ShallowCopy(appender->GetOutput());
+     output2->Delete();
+     appender->Delete();
+  }
+  else
+     GetOutput()->ShallowCopy(output);
+  output->Delete();
+  ptIds->Delete();
 }
 
 //----------------------------------------------------------------------------
