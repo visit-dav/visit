@@ -588,6 +588,11 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%snumberOfRandomSamples = %d\n", prefix, atts->GetNumberOfRandomSamples());
     str += tmpStr;
+    if(atts->GetForceNodeCenteredData())
+        SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -2632,6 +2637,30 @@ StreamlineAttributes_GetNumberOfRandomSamples(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+StreamlineAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the forceNodeCenteredData in the object.
+    obj->data->SetForceNodeCenteredData(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetForceNodeCenteredData(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetForceNodeCenteredData()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
@@ -2770,6 +2799,8 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetRandomSeed", StreamlineAttributes_GetRandomSeed, METH_VARARGS},
     {"SetNumberOfRandomSamples", StreamlineAttributes_SetNumberOfRandomSamples, METH_VARARGS},
     {"GetNumberOfRandomSamples", StreamlineAttributes_GetNumberOfRandomSamples, METH_VARARGS},
+    {"SetForceNodeCenteredData", StreamlineAttributes_SetForceNodeCenteredData, METH_VARARGS},
+    {"GetForceNodeCenteredData", StreamlineAttributes_GetForceNodeCenteredData, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -3020,6 +3051,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetRandomSeed(self, NULL);
     if(strcmp(name, "numberOfRandomSamples") == 0)
         return StreamlineAttributes_GetNumberOfRandomSamples(self, NULL);
+    if(strcmp(name, "forceNodeCenteredData") == 0)
+        return StreamlineAttributes_GetForceNodeCenteredData(self, NULL);
 
     return Py_FindMethod(PyStreamlineAttributes_methods, self, name);
 }
@@ -3168,6 +3201,8 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetRandomSeed(self, tuple);
     else if(strcmp(name, "numberOfRandomSamples") == 0)
         obj = StreamlineAttributes_SetNumberOfRandomSamples(self, tuple);
+    else if(strcmp(name, "forceNodeCenteredData") == 0)
+        obj = StreamlineAttributes_SetForceNodeCenteredData(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

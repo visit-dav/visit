@@ -530,10 +530,16 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     // Create the absolute tolerance text field.
     absTolLabel = new QLabel(tr("Absolute tolerance"), integrationGroup);
     absTol = new QLineEdit(integrationGroup);
-    connect(absTol, SIGNAL(returnPressed()),
-            this, SLOT(absTolProcessText()));
+    connect(absTol, SIGNAL(returnPressed()), this, SLOT(absTolProcessText()));
     integrationLayout->addWidget(absTolLabel, 3,0);
     integrationLayout->addWidget(absTol, 3, 1);
+
+    forceNodalLabel = new QLabel(tr("Force node centering"), integrationGroup);
+    forceNodal = new QCheckBox(integrationGroup);
+    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
+    integrationLayout->addWidget(forceNodalLabel, 4,0);
+    integrationLayout->addWidget(forceNodal, 4, 1);
+    
 
     // ----------------------------------------------------------------------
     // Appearance tab
@@ -1600,6 +1606,12 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
               numberOfRandomSamples->setValue(streamAtts->GetNumberOfRandomSamples());
               numberOfRandomSamples->blockSignals(false);
               break;
+
+        case StreamlineAttributes::ID_forceNodeCenteredData:
+            forceNodal->blockSignals(true);
+            forceNodal->setChecked(streamAtts->GetForceNodeCenteredData());
+            forceNodal->blockSignals(false);
+            break;
         }
     }
 }
@@ -2871,6 +2883,13 @@ void
 QvisStreamlinePlotWindow::absTolProcessText()
 {
     GetCurrentValues(StreamlineAttributes::ID_absTol);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::forceNodalChanged(bool val)
+{
+    streamAtts->SetForceNodeCenteredData(val);
     Apply();
 }
 

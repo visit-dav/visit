@@ -238,6 +238,7 @@ public:
     void SetRandomSamples(bool randomSamples_);
     void SetRandomSeed(int randomSeed_);
     void SetNumberOfRandomSamples(int numberOfRandomSamples_);
+    void SetForceNodeCenteredData(bool forceNodeCenteredData_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -320,6 +321,7 @@ public:
     bool                 GetRandomSamples() const;
     int                  GetRandomSeed() const;
     int                  GetNumberOfRandomSamples() const;
+    bool                 GetForceNodeCenteredData() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -456,6 +458,7 @@ public:
         ID_randomSamples,
         ID_randomSeed,
         ID_numberOfRandomSamples,
+        ID_forceNodeCenteredData,
         ID__LAST
     };
 
@@ -527,11 +530,12 @@ private:
     bool           randomSamples;
     int            randomSeed;
     int            numberOfRandomSamples;
+    bool           forceNodeCenteredData;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDDbd*iiiibbddiisabbiddiiiiiibsbbddddbbdiddisdddbbiidddbbii"
+#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDDbd*iiiibbddiisabbiddiiiiiibsbbddddbbdiddisdddbbiidddbbiib"
 
 #endif

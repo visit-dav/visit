@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int StreamlineAttributes_numAdditionalAtts = 67;
+    private static int StreamlineAttributes_numAdditionalAtts = 68;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -222,6 +222,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         randomSamples = false;
         randomSeed = 0;
         numberOfRandomSamples = 1;
+        forceNodeCenteredData = false;
     }
 
     public StreamlineAttributes(int nMoreFields)
@@ -331,6 +332,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         randomSamples = false;
         randomSeed = 0;
         numberOfRandomSamples = 1;
+        forceNodeCenteredData = false;
     }
 
     public StreamlineAttributes(StreamlineAttributes obj)
@@ -443,6 +445,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         randomSamples = obj.randomSamples;
         randomSeed = obj.randomSeed;
         numberOfRandomSamples = obj.numberOfRandomSamples;
+        forceNodeCenteredData = obj.forceNodeCenteredData;
 
         SelectAll();
     }
@@ -577,7 +580,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (fillInterior == obj.fillInterior) &&
                 (randomSamples == obj.randomSamples) &&
                 (randomSeed == obj.randomSeed) &&
-                (numberOfRandomSamples == obj.numberOfRandomSamples));
+                (numberOfRandomSamples == obj.numberOfRandomSamples) &&
+                (forceNodeCenteredData == obj.forceNodeCenteredData));
     }
 
     public String GetName() { return "Streamline"; }
@@ -1057,6 +1061,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(66);
     }
 
+    public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
+    {
+        forceNodeCenteredData = forceNodeCenteredData_;
+        Select(67);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double         GetMaxStepLength() { return maxStepLength; }
@@ -1125,6 +1135,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public boolean        GetRandomSamples() { return randomSamples; }
     public int            GetRandomSeed() { return randomSeed; }
     public int            GetNumberOfRandomSamples() { return numberOfRandomSamples; }
+    public boolean        GetForceNodeCenteredData() { return forceNodeCenteredData; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1263,6 +1274,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(randomSeed);
         if(WriteSelect(66, buf))
             buf.WriteInt(numberOfRandomSamples);
+        if(WriteSelect(67, buf))
+            buf.WriteBool(forceNodeCenteredData);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1471,6 +1484,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         case 66:
             SetNumberOfRandomSamples(buf.ReadInt());
             break;
+        case 67:
+            SetForceNodeCenteredData(buf.ReadBool());
+            break;
         }
     }
 
@@ -1632,6 +1648,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("randomSamples", randomSamples, indent) + "\n";
         str = str + intToString("randomSeed", randomSeed, indent) + "\n";
         str = str + intToString("numberOfRandomSamples", numberOfRandomSamples, indent) + "\n";
+        str = str + boolToString("forceNodeCenteredData", forceNodeCenteredData, indent) + "\n";
         return str;
     }
 
@@ -1704,5 +1721,6 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private boolean        randomSamples;
     private int            randomSeed;
     private int            numberOfRandomSamples;
+    private boolean        forceNodeCenteredData;
 }
 

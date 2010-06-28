@@ -219,6 +219,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         maxStepLength != obj.maxStepLength ||
         relTol != obj.relTol ||
         absTol != obj.absTol ||
+        forceNodeCenteredData != obj.forceNodeCenteredData ||
         pathlines != obj.pathlines ||
         coloringVariable != obj.coloringVariable ||
         (displayMethod != obj.displayMethod && obj.displayMethod == Ribbons) ||

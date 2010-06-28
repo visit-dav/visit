@@ -313,6 +313,9 @@
       <Field name="numberOfRandomSamples" label="numberOfRandomSamples" type="int">
         1
       </Field>
+      <Field name="forceNodeCenteredData" label="forceNodeCenteredData" type="bool">
+        false
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">
