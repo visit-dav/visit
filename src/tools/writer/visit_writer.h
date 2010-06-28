@@ -162,12 +162,19 @@ void write_point_mesh(const char *filename, int useBinary, int npts,
 //  Programmer: Hank Childs
 //  Creation:   September 2, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jun 28 11:49:41 PDT 2010
+//    Add pixel and voxel.
+//
 // ***************************************************************************/
 
 #define VISIT_VERTEX         1
 #define VISIT_LINE           3
 #define VISIT_TRIANGLE       5
+#define VISIT_PIXEL          8
 #define VISIT_QUAD           9
+#define VISIT_VOXEL         11
 #define VISIT_TETRA         10
 #define VISIT_HEXAHEDRON    12
 #define VISIT_WEDGE         13
