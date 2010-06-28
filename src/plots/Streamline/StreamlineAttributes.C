@@ -533,6 +533,7 @@ void StreamlineAttributes::Init()
     randomSamples = false;
     randomSeed = 0;
     numberOfRandomSamples = 1;
+    forceNodeCenteredData = false;
 
     StreamlineAttributes::SelectAll();
 }
@@ -645,6 +646,7 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     randomSamples = obj.randomSamples;
     randomSeed = obj.randomSeed;
     numberOfRandomSamples = obj.numberOfRandomSamples;
+    forceNodeCenteredData = obj.forceNodeCenteredData;
 
     StreamlineAttributes::SelectAll();
 }
@@ -910,7 +912,8 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (fillInterior == obj.fillInterior) &&
             (randomSamples == obj.randomSamples) &&
             (randomSeed == obj.randomSeed) &&
-            (numberOfRandomSamples == obj.numberOfRandomSamples));
+            (numberOfRandomSamples == obj.numberOfRandomSamples) &&
+            (forceNodeCenteredData == obj.forceNodeCenteredData));
 }
 
 // ****************************************************************************
@@ -1234,6 +1237,7 @@ StreamlineAttributes::SelectAll()
     Select(ID_randomSamples,             (void *)&randomSamples);
     Select(ID_randomSeed,                (void *)&randomSeed);
     Select(ID_numberOfRandomSamples,     (void *)&numberOfRandomSamples);
+    Select(ID_forceNodeCenteredData,     (void *)&forceNodeCenteredData);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1670,6 +1674,12 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("numberOfRandomSamples", numberOfRandomSamples));
     }
 
+    if(completeSave || !FieldsEqual(ID_forceNodeCenteredData, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("forceNodeCenteredData", forceNodeCenteredData));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1980,6 +1990,8 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetRandomSeed(node->AsInt());
     if((node = searchNode->GetNode("numberOfRandomSamples")) != 0)
         SetNumberOfRandomSamples(node->AsInt());
+    if((node = searchNode->GetNode("forceNodeCenteredData")) != 0)
+        SetForceNodeCenteredData(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2470,6 +2482,13 @@ StreamlineAttributes::SetNumberOfRandomSamples(int numberOfRandomSamples_)
     Select(ID_numberOfRandomSamples, (void *)&numberOfRandomSamples);
 }
 
+void
+StreamlineAttributes::SetForceNodeCenteredData(bool forceNodeCenteredData_)
+{
+    forceNodeCenteredData = forceNodeCenteredData_;
+    Select(ID_forceNodeCenteredData, (void *)&forceNodeCenteredData);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2954,6 +2973,12 @@ StreamlineAttributes::GetNumberOfRandomSamples() const
     return numberOfRandomSamples;
 }
 
+bool
+StreamlineAttributes::GetForceNodeCenteredData() const
+{
+    return forceNodeCenteredData;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -3127,6 +3152,7 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_randomSamples:             return "randomSamples";
     case ID_randomSeed:                return "randomSeed";
     case ID_numberOfRandomSamples:     return "numberOfRandomSamples";
+    case ID_forceNodeCenteredData:     return "forceNodeCenteredData";
     default:  return "invalid index";
     }
 }
@@ -3218,6 +3244,7 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_randomSamples:             return FieldType_bool;
     case ID_randomSeed:                return FieldType_int;
     case ID_numberOfRandomSamples:     return FieldType_int;
+    case ID_forceNodeCenteredData:     return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -3309,6 +3336,7 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_randomSamples:             return "bool";
     case ID_randomSeed:                return "int";
     case ID_numberOfRandomSamples:     return "int";
+    case ID_forceNodeCenteredData:     return "bool";
     default:  return "invalid index";
     }
 }
@@ -3710,6 +3738,11 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (numberOfRandomSamples == obj.numberOfRandomSamples);
         }
         break;
+    case ID_forceNodeCenteredData:
+        {  // new scope
+        retval = (forceNodeCenteredData == obj.forceNodeCenteredData);
+        }
+        break;
     default: retval = false;
     }
 
@@ -3765,6 +3798,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         maxStepLength != obj.maxStepLength ||
         relTol != obj.relTol ||
         absTol != obj.absTol ||
+        forceNodeCenteredData != obj.forceNodeCenteredData ||
         pathlines != obj.pathlines ||
         coloringVariable != obj.coloringVariable ||
         (displayMethod != obj.displayMethod && obj.displayMethod == Ribbons) ||

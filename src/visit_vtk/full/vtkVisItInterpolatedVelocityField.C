@@ -47,12 +47,15 @@
 #include <vtkIdList.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkCellData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItCellLocator.h>
 
 #include <vtkVisItUtility.h>
 #include <DebugStream.h>
 
+static void
+InterpVector(vtkGenericCell *cell, int numPts, vtkDataArray *vectors, double *weights, double *vel);
 
 vtkVisItInterpolatedVelocityField* vtkVisItInterpolatedVelocityField::New()
 {
@@ -127,10 +130,19 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
     vtkDataArray *vectors2 =  NULL;
     if (doPathlines)
         vectors2 = ds->GetPointData()->GetArray(nextTimeName.c_str());
+
+    bool nodeCenteredVector = true;
     if (vectors == NULL)
     {
-        debug1 <<" vtkVisItInterpolatedVelocityField::Can't locate vectors to interpolate" << endl;
-        return false;
+        vectors = ds->GetCellData()->GetVectors();
+        if (vectors == NULL)
+        {
+            debug1 <<" vtkVisItInterpolatedVelocityField::Can't locate vectors to interpolate" << endl;
+            return false;
+        }
+        nodeCenteredVector = false;
+        if (doPathlines)
+            vectors2 = ds->GetCellData()->GetArray(nextTimeName.c_str());
     }
     if (doPathlines && vectors2 == NULL)
     {
@@ -167,55 +179,75 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
         int subId = 0;
         locator->IgnoreGhostsOff();
         int success = locator->FindClosestPointWithinRadius(pt, rad, resPt,
-                                                                cell, subId, dist);
+                                                            cell, subId, dist);
     }
    
     if (cell < 0)
         return false;
 
-    vtkGenericCell *GenCell = vtkGenericCell::New();
-    ds->GetCell(cell, GenCell);
     lastCell = cell;
 
-    int numPts = GenCell->GetNumberOfPoints();
+    //For zone centered vector fields:
+    if (!nodeCenteredVector)
+    {
+        vectors->GetTuple(cell, vel);
+        
+        if (doPathlines)
+        {
+            double vel2[3];
+            vectors2->GetTuple(cell, vel2);
+            double prop1 = 1. - (t - curTime) / (nextTime - curTime);
+            vel[0] = prop1*vel[0] + (1-prop1)*vel2[0];
+            vel[1] = prop1*vel[1] + (1-prop1)*vel2[1];
+            vel[2] = prop1*vel[2] + (1-prop1)*vel2[2];
+        }
+    }
+    else
+    {
+        vtkGenericCell *GenCell = vtkGenericCell::New();
+        ds->GetCell(cell, GenCell);
+        
+        int numPts = GenCell->GetNumberOfPoints();
 
-    double closestPoint[3];
-    int subId;
-    double dist2;
-    int val = GenCell->EvaluatePosition(pt, closestPoint, subId, pcoords, dist2, weights);
-    if (val <= 0)
-        return false;
-    // interpolate the vectors
+        double closestPoint[3], dist2;
+        int subId;
+        int val = GenCell->EvaluatePosition(pt, closestPoint, subId, pcoords, dist2, weights);
+
+        if (val <= 0)
+        {
+            GenCell->Delete();
+            return false;
+        }
+        // interpolate the vectors
+        InterpVector(GenCell, numPts, vectors, weights, vel);
+
+        if (doPathlines)
+        {
+            double vel2[3];
+            InterpVector(GenCell, numPts, vectors2, weights, vel2);
+            
+            double prop1 = 1. - (t - curTime) / (nextTime - curTime);
+            vel[0] = prop1*vel[0] + (1-prop1)*vel2[0];
+            vel[1] = prop1*vel[1] + (1-prop1)*vel2[1];
+            vel[2] = prop1*vel[2] + (1-prop1)*vel2[2];
+        }
+        GenCell->Delete();
+    }
+
+    return true;
+}
+
+
+static void
+InterpVector(vtkGenericCell *cell, int numPts, vtkDataArray *vectors, double *weights, double *vel)
+{
     vel[0] = vel[1] = vel[2] = 0;
     double vec[3];
     for (int j=0; j < numPts; j++)
     {
-      int id = GenCell->PointIds->GetId(j);
-      vectors->GetTuple(id, vec);
-      for (int i=0; i < 3; i++)
-      {
-        vel[i] += vec[i] * weights[j];
-      }
-    }
-    if (doPathlines)
-    {
-      double vel2[3] = { 0, 0, 0 };
-      double vel1[3] = { vel[0], vel[1], vel[2] };
-      for (int j=0; j < numPts; j++)
-      {
-        int id = GenCell->PointIds->GetId(j);
-        vectors2->GetTuple(id, vec);
+        int id = cell->PointIds->GetId(j);
+        vectors->GetTuple(id, vec);
         for (int i=0; i < 3; i++)
-        {
-          vel2[i] += vec[i] * weights[j];
-        }
-      }
-      double prop1 = 1. - (t - curTime) / (nextTime - curTime);
-      vel[0] = prop1*vel1[0] + (1-prop1)*vel2[0];
-      vel[1] = prop1*vel1[1] + (1-prop1)*vel2[1];
-      vel[2] = prop1*vel1[2] + (1-prop1)*vel2[2];
+            vel[i] += vec[i] * weights[j];
     }
-    GenCell->Delete();
-
-    return true;
 }

@@ -219,12 +219,9 @@ avtStreamlinePlot::ApplyOperators(avtDataObject_p input)
     if (input->GetInfo().GetAttributes().ValidVariable(varname))
         centering = input->GetInfo().GetAttributes().GetCentering(varname);
 
-    // If the variable centering is zonal, convert it to nodal or the
-    // streamline filter will not play with it.
-    if(centering == AVT_ZONECENT)
+    //Convert from zonal to nodal, if requested.
+    if(centering == AVT_ZONECENT && atts.GetForceNodeCenteredData())
     {
-        avtCallback::IssueWarning("The vector field being used to generate the streamline(s) is zone (cell) centered. Streamline requires nodal data, moving data from from zones to the nodes. This change in centering may have unintended consequences." );
-
         if(shiftCenteringFilter != NULL)
             delete shiftCenteringFilter;
         shiftCenteringFilter = new avtShiftCenteringFilter(AVT_NODECENT);

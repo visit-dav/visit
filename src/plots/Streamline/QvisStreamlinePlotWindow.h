@@ -233,6 +233,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void deletePoint();
     void readPoints();
     void textChanged(const QString &currentText);
+    void forceNodalChanged(bool);
 
   private:
     int plotType;
@@ -245,6 +246,8 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *relTolLabel;
     QLineEdit *absTol;
     QLabel    *absTolLabel;
+    QLabel    *forceNodalLabel;
+    QCheckBox *forceNodal;
     QLineEdit *pointSource;
     QLabel    *pointSourceLabel;
     QLineEdit *lineStart;
