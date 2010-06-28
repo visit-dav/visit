@@ -100,7 +100,7 @@ do
    $cmd INSTALL_NOTES                              >> $output
    $cmd VisIt-$version-i386-installer.dmg          >> $output
    $cmd VisIt-$version-x86_64-installer.dmg        >> $output
-   $cmd visit-install2.0.1                         >> $output
+   $cmd visit-install$version2                     >> $output
    $cmd jvisit$version.tar.gz                      >> $output
    $cmd visit$version.exe                          >> $output
    $cmd visit$version2.ibm-aix-pwr.tar.gz          >> $output
@@ -113,7 +113,7 @@ do
    echo ""                                         >> $output
    echo "The VisIt source code $property"          >> $output
    echo ""                                         >> $output
-   $cmd build_visit2.0.1                           >> $output
+   $cmd build_visit$version2                       >> $output
    $cmd $dist.tar.gz                               >> $output
    $cmd visitdev$version.exe                       >> $output
    cd ../visit_third_party
