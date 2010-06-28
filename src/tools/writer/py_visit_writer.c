@@ -50,7 +50,8 @@ static PyObject *ErrorExc;
 
 static int connectionTypes[][2] = {
     { VISIT_VERTEX, 1 }, { VISIT_LINE,       2 }, { VISIT_TRIANGLE, 3 }, { VISIT_QUAD,    4 }, 
-    { VISIT_TETRA,  4 }, { VISIT_HEXAHEDRON, 8 }, { VISIT_WEDGE,    6 }, { VISIT_PYRAMID, 5 } };
+    { VISIT_TETRA,  4 }, { VISIT_HEXAHEDRON, 8 }, { VISIT_WEDGE,    6 }, { VISIT_PYRAMID, 5 },
+    { VISIT_PIXEL,  4 }, { VISIT_VOXEL,      8 } };
 
 enum TokenTypes { endOfList = 0, logicalToken, integerToken };
 
@@ -544,7 +545,7 @@ static int convertCell( int nCellsDone, PyObject *cellItem, int *cellTypes, int 
     visItWriterIntegerTokens cellTypeToken[] = { 
         { integerToken, VISIT_VERTEX, "vertex" }, { integerToken, VISIT_LINE, "line" }, { integerToken, VISIT_TRIANGLE, "triangle" }, 
         { integerToken, VISIT_QUAD, "quad" }, { integerToken, VISIT_TETRA, "tetrahedron" }, { integerToken, VISIT_HEXAHEDRON, "hexahedron" }, 
-        { integerToken, VISIT_WEDGE, "wedge" }, { integerToken, VISIT_PYRAMID, "pyramid" }, { endOfList, 0, NULL } };
+        { integerToken, VISIT_WEDGE, "wedge" }, { integerToken, VISIT_PYRAMID, "pyramid" }, {integerToken, VISIT_PIXEL, "pixel"}, {integerToken, VISIT_VOXEL, "voxel"}, { endOfList, 0, NULL } };
 
     if( ( len = getLength( cellItem, "cellItem" ) ) < 0 ) return( setErrorAndReturnInt( -1, "cell element at index %d of cellTypeConnection", nCellsDone ) );
     if( len == 0 ) return( setErrorAndReturnInt( 0, "cell element at index %d of cellTypeConnection is empty", nCellsDone ) );
@@ -787,6 +788,12 @@ DL_EXPORT( void ) initvisit_writer( void )
 
     member = PyInt_FromLong( VISIT_PYRAMID );
     PyModule_AddObject( m, "pyramid", member );
+
+    member = PyInt_FromLong( VISIT_PIXEL );
+    PyModule_AddObject( m, "pixel", member );
+
+    member = PyInt_FromLong( VISIT_VOXEL );
+    PyModule_AddObject( m, "voxel", member );
 
     member = PyString_FromString( version );
     PyModule_AddObject( m, "version", member );

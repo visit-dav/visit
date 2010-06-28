@@ -722,6 +722,11 @@ void write_point_mesh(const char *filename, int ub, int npts, float *pts,
  *  Programmer: Hank Childs
  *  Creation:   September 3, 2004
  * 
+ *  Modifications:
+ * 
+ *    Hank Childs, Mon Jun 28 12:19:25 PDT 2010
+ *    Support for pixels and voxels.
+ *
  * ************************************************************************* */
 
 static int num_points_for_cell(int celltype)
@@ -741,10 +746,16 @@ static int num_points_for_cell(int celltype)
        case VISIT_QUAD:
          npts = 4;
          break;
+       case VISIT_PIXEL:
+         npts = 4;
+         break;
        case VISIT_TETRA:
          npts = 4;
          break;
        case VISIT_HEXAHEDRON:
+         npts = 8;
+         break;
+       case VISIT_VOXEL:
          npts = 8;
          break;
        case VISIT_WEDGE:
