@@ -37,6 +37,7 @@
 *****************************************************************************/
 #include <avtExprNode.h>
 
+#include <avtCoordinateExtremaExpression.h>
 #include <avtCylindricalRadiusExpression.h>
 #include <avtDataIdExpression.h>
 #include <avtExpressionComponentMacro.h>
@@ -62,6 +63,9 @@
 //
 // Modifications:
 //   
+//   Hank Childs, Mon Jun 28 06:43:20 PDT 2010
+//   Add avtCoordinateExtrema.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -155,7 +159,51 @@ avtFunctionExpr::CreateMeshFilters(const string &functionName) const
         return ecm;
     }
     else if (functionName == "zonetype")
+    {
         return new avtZoneTypeExpression();
+    }
+    else if (functionName == "minx_coord")
+    {
+        avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
+        ce->SetGetMinimum(true);
+        ce->SetDimension(0);
+        return ce;
+    }
+    else if (functionName == "maxx_coord")
+    {
+        avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
+        ce->SetGetMinimum(false);
+        ce->SetDimension(0);
+        return ce;
+    }
+    else if (functionName == "miny_coord")
+    {
+        avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
+        ce->SetGetMinimum(true);
+        ce->SetDimension(1);
+        return ce;
+    }
+    else if (functionName == "maxy_coord")
+    {
+        avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
+        ce->SetGetMinimum(false);
+        ce->SetDimension(1);
+        return ce;
+    }
+    else if (functionName == "minz_coord")
+    {
+        avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
+        ce->SetGetMinimum(true);
+        ce->SetDimension(2);
+        return ce;
+    }
+    else if (functionName == "maxz_coord")
+    {
+        avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
+        ce->SetGetMinimum(false);
+        ce->SetDimension(1);
+        return ce;
+    }
 
     return 0;
 }

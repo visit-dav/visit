@@ -156,6 +156,9 @@
 //    Kathleen Bonnell, Mon Apr 27 17:35:25 PDT 2009
 //    Added sinh, cosh, tanh to expr_trig.
 //
+//    Hank Childs, Mon Jun 28 06:49:16 PDT 2010
+//    Add [min|max][x|y|z]_coord.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -311,6 +314,12 @@ const char *expr_mesh[] = {
     "external_node",
     "global_nodeid",
     "global_zoneid",
+    "maxx_coord",
+    "maxy_coord",
+    "maxz_coord",
+    "minx_coord",
+    "miny_coord",
+    "minz_coord",
     "nodeid",
     "polar",
     "polar_radius",

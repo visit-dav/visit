@@ -45,6 +45,9 @@
 #    Hank Childs, Thu May 20 21:26:47 PDT 2010
 #    Add Base10LogWithMin.
 #
+#    Hank Childs, Mon Jun 28 06:43:20 PDT 2010
+#    Add CoordinateExtrema.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -111,6 +114,7 @@ General/avtArrayDecomposeExpression.C
 General/avtColorComposeExpression.C
 General/avtConnComponentsExpression.C
 General/avtConstantFunctionExpression.C
+General/avtCoordinateExtremaExpression.C
 General/avtCurlExpression.C
 General/avtCurveDomainExpression.C
 General/avtCurveExpression.C
