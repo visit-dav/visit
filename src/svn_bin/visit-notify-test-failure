@@ -1,6 +1,6 @@
 #!/bin/sh
 
-testEmail="brugger1@llnl.gov"
+testEmail=""
 
 #
 # list of users who want email every night with the log file
@@ -45,6 +45,7 @@ fi
 lastpass=0
 if test -e src/svn_bin/lastpass_$host ; then
    lastpass=`cat src/svn_bin/lastpass_$host`
+   lastpass=`expr $lastpass + 1` 
 fi
 
 #
@@ -100,7 +101,7 @@ is...
 EOF
 echo $modifiersEmails | tr ' ' '\n' | sort >> mailmsg
 echo "" >> mailmsg
-echo "The test suite results are at http://portal.nersc.gov/project/visit/"
+echo "The test suite results are at http://portal.nersc.gov/project/visit/" >> mailmsg
 echo "" >> mailmsg
 
 if test -n "$testEmail"; then

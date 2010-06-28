@@ -54,6 +54,7 @@ fi
 # Parse the command line to determine if we should run the test suite
 # on the trunk or RC.
 #
+debug="false"
 branch="trunk"
 revision="latest"
 serial="false"
@@ -75,6 +76,10 @@ do
             ;;
         -parallel)
             serial="false"
+            shift
+            ;;
+        -d)
+            debug="true"
             shift
             ;;
         -r)
@@ -135,7 +140,9 @@ cp visit-notify-test-failure /nfs/tmp2/$user/$workingDir
 cd /nfs/tmp2/$user/$workingDir
 
 # Check out the source
-echo "Checkout of $branch started at: \`date\`" | mail -s "Checkout started" $userEmail
+if test "$debug" = "true" ; then
+   echo "Checkout of $branch started at: \`date\`" | mail -s "Checkout started" $userEmail
+fi
 if test "$branch" = "trunk" ; then
     if test "$revision" = "latest" ; then
         svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/trunk/src > buildlog 2>&1
@@ -157,7 +164,9 @@ else
         svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/test -r $revision >> buildlog 2>&1
     fi
 fi
-echo "Checkout of $branch completed at: \`date\`" | mail -s "Checkout completed" $userEmail
+if test "$debug" = "true" ; then
+    echo "Checkout of $branch completed at: \`date\`" | mail -s "Checkout completed" $userEmail
+fi
 
 # Build the code
 cd src
@@ -168,12 +177,16 @@ if test "$serial" = "true" ; then
 fi
 /usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_BUILD_ALL_PLUGINS=1 >> ../buildlog 2>&1
 make -j 12 >> ../buildlog 2>&1
-echo "Source build completed at: \`date\`" | mail -s "Source build completed" $userEmail
+if test "$debug" = "true" ; then
+    echo "Source build completed at: \`date\`" | mail -s "Source build completed" $userEmail
+fi
 
 # Build the test data
 cd ../data
 make -j 8 test >> ../buildlog 2>&1
-echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
+if test "$debug" = "true" ; then
+    echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
+fi
 
 # Run the tests, consolidating the results in one directory
 cd ../test
@@ -193,7 +206,9 @@ for m in \$modes; do
     # Move the results to the consolidation directory
     theMode=\`echo \$m | tr ',' '_'\`
     mv html \$dateTag/\$theMode
-    echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
+    if test "$debug" = "true" ; then
+        echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
+    fi
 done
 
 # Determine if the test suite passed or failed.
@@ -239,9 +254,13 @@ ssh alastor "srun -n 1 -p pdebug -t 8:00:00 --exclusive ./alastor_testit"
 
 # Copy the results to euclid
 ssh alastor "scp /nfs/tmp2/$user/$workingDir/test/html.tar.gz $userNersc@euclid.nersc.gov:"
-echo "Results copied to euclid at: \`date\`" | mail -s "Results copied" $userEmail
+if test "$debug" = "true" ; then
+    echo "Results copied to euclid at: `date`" | mail -s "Results copied" $userEmail
+fi
 
 # Post the results.
 scp visit-update-test-website $userNersc@euclid.nersc.gov:
 ssh $userNersc@euclid.nersc.gov "./visit-update-test-website"
-echo "Results posted at: \`date\`" | mail -s "Results posted" $userEmail
+if test "$debug" = "true" ; then
+    echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
+fi
