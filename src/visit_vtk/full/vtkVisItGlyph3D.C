@@ -404,6 +404,11 @@ void vtkVisItGlyph3D::Execute()
       vtkIdType c = input->GetCellType(i);
       if (c == VTK_VERTEX)
           numVerts++;
+      else if (c == VTK_POLY_VERTEX)
+      {
+          input->GetCellPoints(i, ptIds);
+          numVerts += ptIds->GetNumberOfIds();
+      }
       else
       {
           input->GetCellPoints(i, ptIds);
@@ -427,10 +432,13 @@ void vtkVisItGlyph3D::Execute()
   for (int cellIdx = 0 ; cellIdx < numCells ; cellIdx++)
     {
     vtkIdType c = input->GetCellType(cellIdx);
-    if (c != VTK_VERTEX)
+    if (c != VTK_VERTEX && c != VTK_POLY_VERTEX)
        continue;
     input->GetCellPoints(cellIdx, ptIds);
-    vtkIdType inPtId = ptIds->GetId(0);
+    // only 1 iteration for VTK_VERTEX, multiple for VTK_POLY_VERTEX
+    for (int j = 0 ; j < ptIds->GetNumberOfIds() ; j++) 
+    {
+    vtkIdType inPtId = ptIds->GetId(j);
     scalex = scaley = scalez = 1.0;
     if ( (cellIdx % 10000) == 0 )
       {
@@ -739,6 +747,7 @@ void vtkVisItGlyph3D::Execute()
 
     ptIncr += numSourcePts;
     } 
+  }
   
   // Update ourselves and release memory
   //
@@ -792,7 +801,7 @@ void vtkVisItGlyph3D::Execute()
      for (i = 0 ; i < numCells ; i++)
      {
        vtkIdType c = input->GetCellType(i);
-       if (c == VTK_VERTEX)
+       if (c == VTK_VERTEX || c == VTK_POLY_VERTEX)
            continue;
        input->GetCellPoints(i, ptIds);
        output2->InsertNextCell(c, ptIds);
