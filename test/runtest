@@ -1121,6 +1121,12 @@ while test $testIndex -lt $testCount; do
         if test "$quiet" = "0"; then
             echo -e ">> Acceptable with partial skips in test file: $t"
         fi
+    elif test $testAttempt -eq 1 -a $error -eq 121; then
+        echo -e "    $name:\tnot applicable" >> summary
+        echo -e "  <td align=center bgcolor=\"#008000\"><b><i>Not Applicable</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Not applicable in this mode for test file: $t"
+        fi
     elif test $testAttempt -eq 1 -a $error -eq 0; then
         echo -e "    $name:\tfailed, exit(0) unknown" >> summary
         anyerror=1
