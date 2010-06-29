@@ -42,7 +42,6 @@
 
 #include <Utility.h>
 
-#include <visitstream.h>
 #include <visit-config.h>
 #include <stdio.h>
 #include <string.h>
@@ -61,6 +60,11 @@ using std::vector;
 #include <dirent.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#endif
+
+#if !defined(_WIN32) && !defined(__APPLE__)
+#include <execinfo.h>
+#include <cxxabi.h>
 #endif
 
 // ****************************************************************************
@@ -244,6 +248,63 @@ GetMemorySize(unsigned int &size, unsigned int &rss)
     size *= getpagesize();
     rss  *= getpagesize();
     fclose(file);
+#endif
+}
+
+// ****************************************************************************
+//  Function: PrintCallStack
+//
+//  Purpose:
+//      Prints the call stack.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Tue Jun 29 15:58:52 EDT 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+PrintCallStack(ostream &out, const char *file, int line)
+{
+#if !defined(_WIN32) && !defined(__APPLE__)
+    const int N = 100;
+    void *stackAddrs[N];
+ 
+    size_t stackDepth = backtrace(stackAddrs, N);
+    int nfuncs = backtrace(stackAddrs, N);
+    char **stackStrings = backtrace_symbols(stackAddrs, nfuncs);
+    
+    out<<"Call stack from "<<file<<" "<<line<<endl;
+    for (int i = 1; i < nfuncs; i++)
+    {
+        std::string symbol = stackStrings[i];
+        size_t i0 = symbol.find("(");
+        size_t i1 = symbol.rfind("+");
+
+        std::string outStr;
+        if (i0 == std::string::npos || i1 == std::string::npos)
+            outStr = symbol;
+        else
+        {
+            i0 = i0+1;
+            std::string funcSymbol = symbol.substr(i0, i1-i0);
+
+            int stat = 0;
+            char *demangle = abi::__cxa_demangle(funcSymbol.c_str(), 0,0, &stat);
+            if (demangle)
+            {
+                outStr = demangle;
+                free(demangle);
+            }
+            else
+                outStr = funcSymbol;
+        }
+        
+        out<<i<<":  "<<outStr<<endl;
+    }
+    
+    free(stackStrings);
 #endif
 }
 

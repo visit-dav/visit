@@ -43,6 +43,7 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 #include <utility_exports.h>
+#include <visitstream.h>
 #include <visit-config.h>
 #include <vectortypes.h>
 #include <map>
@@ -59,6 +60,7 @@ int  UTILITY_API  LongestCommonSuffixLength(const char * const *, int);
 
 // LINUX ONLY
 void UTILITY_API  GetMemorySize(unsigned int &, unsigned int &);
+void UTILITY_API  PrintCallStack(ostream &out, const char *file, int line);
 
 void UTILITY_API  WaitUntilFile(const char *);
 bool UTILITY_API  WildcardStringMatch(const char *p, const char *s);
