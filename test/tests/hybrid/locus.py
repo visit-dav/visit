@@ -22,6 +22,10 @@
 #
 #    Mark C. Miller, Mon Apr 12 15:40:16 PDT 2010
 #    Gracefully skip if we're in scalable mode.
+#
+#    Mark C. Miller, Tue Jun 29 16:51:46 PDT 2010
+#    Changed exit code if we're in scalable mode from 116 (skip) to
+#    121 (not applicable)
 # ----------------------------------------------------------------------------
 
 import sys
@@ -32,9 +36,9 @@ import visit_writer
 
 # We can't run this test while in SR mode
 # So, exit and indicate the test was skipped.
-# 'scalble' is defined in Testing.py
+# 'scalable' is defined in Testing.py
 if scalable != 0:
-    Exit(116)
+    Exit(121)
 
 # BEGIN USER MODIFIABLE SECTION
 
