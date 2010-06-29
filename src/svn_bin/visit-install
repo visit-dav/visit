@@ -449,7 +449,7 @@ if ($bank == prompt) then
     # Determine whether the user needs a bank in order to install.
     set yn = ""
     while ("$yn" == "")
-        echo "Do you need to use a bank when submitting parallel jobs to a"
+        echo "Do you need to use a bank when submitting jobs to a"
         echo "batch system? (y/n):"
         set yn = `echo $< | tr "[A-Z]" "[a-z]"`
         if ("$yn" != "y" && "$yn" != "n") then
@@ -462,7 +462,7 @@ if ($bank == prompt) then
         while ($bank == prompt)
            echo ""
            echo "Type the name of a bank for VisIt to use when launching its"
-           echo "parallel compute engine in a batch system:"
+           echo "compute engine in a batch system:"
 
            set bank = $<
            if ("$bank" == "") then
@@ -492,10 +492,18 @@ endif
 #
 # Set up the distribution directory
 #
-rm -rf distribution
-mkdir distribution
-cp $fname1 distribution
-cd distribution
+(mkdir testdir && rmdir testdir) >& /dev/null
+if ($status == 0) then
+    echo "Local directory is writable."
+    set dist = "distribution"
+else
+    echo "Local directory is NOT writable.  Using /tmp."
+    set dist = "/tmp/distribution"
+endif
+rm -rf $dist
+mkdir $dist
+cp $fname1 $dist
+cd "$dist"
 if ($Compress == "COMPRESS") then
    uncompress $fname1
 else
@@ -538,15 +546,15 @@ if (-e "$dir"/$version) then
 endif
 if (! -e "$dir"/$version+)                 mkdir "$dir"/$version+
 
-cd $distributiondir/$version
+cd "$distributiondir/$version"
 
 # Determine the platform
 set findbin = `find . -name engine_ser`
 set platformBin = `echo "$findbin" | sed -e "s/engine_ser//"`
 set savepwd = `pwd`
-cd $platformBin/..
+cd "$platformBin/.."
 set platformPath = `pwd`
-cd $savepwd
+cd "$savepwd"
 set platformDir = ""
 foreach f (`echo $platformPath | tr "/" " "`)
    set platformDir = $f
