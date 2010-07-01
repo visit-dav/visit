@@ -80,7 +80,8 @@ class GUI_API QvisPointControl : public QWidget
     Q_OBJECT
 
 public:
-    QvisPointControl(QWidget * parent=0);
+    QvisPointControl(QWidget * parent=0,
+                     bool enableScaleByVar=true);
     ~QvisPointControl();
 
     void SetPointSize(double);
