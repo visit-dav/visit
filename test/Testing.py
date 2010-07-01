@@ -1501,7 +1501,20 @@ def FindAndOpenDatabase(dbname, extraPaths=()):
             return OpenDatabase(abs_dbname), abs_dbname
     print "Unable to OpenDatabase \"%s\" at any of the specified paths.\n"%dbname
     return 0, ""
-    
+
+# ----------------------------------------------------------------------------
+# Helper that provides the full path to the current script file
+#
+#  Programmer: Cyrus Harrison
+#  Date:      Fri May 21 10:05:58 PDT 2010
+#
+# ----------------------------------------------------------------------------
+def TestScriptPath():
+    script_file =  os.environ['VISIT_TEST_NAME']
+    script_category = os.environ['VISIT_TEST_CATEGORY']
+    script_dir = os.path.abspath(pjoin("tests",script_category,script_file))
+    return script_dir
+
 # ----------------------------------------------------------------------------
 #       Code to help in the VisIt test suite
 #
