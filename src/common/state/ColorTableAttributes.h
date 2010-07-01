@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 class ColorControlPointList;
 
 // ****************************************************************************
@@ -61,13 +62,23 @@ class ColorControlPointList;
 class STATE_API ColorTableAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ColorTableAttributes();
     ColorTableAttributes(const ColorTableAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ColorTableAttributes(private_tmfs_t tmfs);
+    ColorTableAttributes(const ColorTableAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ColorTableAttributes();
 
     virtual ColorTableAttributes& operator = (const ColorTableAttributes &obj);
     virtual bool operator == (const ColorTableAttributes &obj) const;
     virtual bool operator != (const ColorTableAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ColorTableAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -132,7 +143,8 @@ public:
         ID_names = 0,
         ID_colorTables,
         ID_activeContinuous,
-        ID_activeDiscrete
+        ID_activeDiscrete,
+        ID__LAST
     };
 
 protected:
@@ -145,6 +157,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define COLORTABLEATTRIBUTES_TMFS "s*a*ss"
 
 #endif

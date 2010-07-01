@@ -320,6 +320,9 @@ Definition:
 //   Brad Whitlock, Fri Dec 14 16:07:50 PST 2007
 //   Made it use ids.
 //
+//   Hank Childs, Thu Jul  1 14:20:26 PDT 2010
+//   Write out opacities.
+//
 // ****************************************************************************
 
 bool
@@ -355,6 +358,7 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 
             // Add the control points to the vector that we'll save out.
             floatVector fvec;
+            ctNode->AddNode(new DataNode("colorsHaveOpacity", true));
             for(int j = 0; j < ccpl.GetNumControlPoints(); ++j)
             {
                 const ColorControlPoint &cp = ccpl.operator[](j);
@@ -362,6 +366,7 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
                 fvec.push_back(float(cp.GetColors()[0]));
                 fvec.push_back(float(cp.GetColors()[1]));
                 fvec.push_back(float(cp.GetColors()[2]));
+                fvec.push_back(float(cp.GetColors()[3]));
             }
             ctNode->AddNode(new DataNode("controlPts", fvec));
             node->AddNode(ctNode);
@@ -399,6 +404,9 @@ Definition:
 //   Brad Whitlock, Wed Nov 20 12:26:24 PDT 2002
 //   I made it work with discrete color tables.
 //
+//   Hank Childs, Thu Jul  1 14:20:26 PDT 2010
+//   Add support for opacities.
+//
 // ****************************************************************************
 
 void
@@ -426,6 +434,10 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
             {
                 DataNode *nameNode = node->GetNode("ctName");
                 DataNode *pointNode = node->GetNode("controlPts");
+                DataNode *colorsHaveOpacity = node->GetNode("colorsHaveOpacity");
+                bool readAlpha = false;
+                if (colorsHaveOpacity != NULL)
+                    readAlpha = true;
 
                 // If we have the name node and the pointNode, we can add a
                 // color table.
@@ -445,16 +457,21 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
 
                     // Set the color control points.
                     floatVector fvec = pointNode->AsFloatVector();
-                    for(size_t j = 0; j < fvec.size() / 4; ++j)
+                    int nvalsPerColor = 4;
+                    if (readAlpha)
+                        nvalsPerColor = 5;
+                    for(size_t j = 0; j < fvec.size() / nvalsPerColor; ++j)
                     {
                         // Create a control point based on the values
                         // in the float vector.
-                        int index = j * 4;
+                        int index = j * nvalsPerColor;
                         ColorControlPoint cpt(fvec[index],
                                               (unsigned char)(fvec[index+1]),
                                               (unsigned char)(fvec[index+2]),
                                               (unsigned char)(fvec[index+3]),
-                                              255);
+                                              (readAlpha
+                                                  ? (unsigned char)(fvec[index+4])
+                                                  : 255));
                         ccpl.AddControlPoints(cpt);
                     }
 
