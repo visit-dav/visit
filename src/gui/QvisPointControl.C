@@ -79,7 +79,8 @@
 //
 // ****************************************************************************
 
-QvisPointControl::QvisPointControl(QWidget *parent) :
+QvisPointControl::QvisPointControl(QWidget *parent,
+                                   bool enableScaleByVar) :
     QWidget(parent)
 {
     // Set some default values.
@@ -122,11 +123,19 @@ QvisPointControl::QvisPointControl(QWidget *parent) :
             this, SLOT(sizeVarToggled(bool)));
     topLayout->addWidget(sizeVarToggle, 1, 0, 1, 2);
     sizeVarButton = new QvisVariableButton(true, true, true,
-        QvisVariableButton::Scalars, this);
+                                           QvisVariableButton::Scalars, this);
     sizeVarButton->setEnabled(false);
     connect(sizeVarButton, SIGNAL(activated(const QString &)),
             this, SLOT(sizeVarChanged(const QString &)));
     topLayout->addWidget(sizeVarButton, 1, 2);
+
+    if (!enableScaleByVar)
+    {
+        sizeVarToggle->hide();
+        sizeVarButton->hide();
+        sizeVarToggle->setEnabled(false);
+        sizeVarButton->setEnabled(false);
+    }
 
     SetPointSize(lastGoodSize);
     SetPointSizeVar(lastGoodVar);
@@ -404,9 +413,12 @@ QvisPointControl::typeComboBoxChanged(int type)
 void
 QvisPointControl::sizeVarToggled(bool val)
 {
-    sizeVarButton->setEnabled(val);
-    if (!signalsBlocked())
-        emit pointSizeVarToggled(val);
+    if (sizeVarButton && sizeVarToggle)
+    {
+        sizeVarButton->setEnabled(val);
+        if (!signalsBlocked())
+            emit pointSizeVarToggled(val);
+    }
 }
 
 
@@ -506,10 +518,13 @@ QvisPointControl::UpdateSizeText()
 
 void QvisPointControl::SetPointSizeVarChecked(bool checked)
 {
-    sizeVarToggle->blockSignals(true);
-    sizeVarToggle->setChecked(checked);
-    sizeVarToggle->blockSignals(false);
-    sizeVarButton->setEnabled(checked);
+    if (sizeVarToggle && sizeVarButton)
+    {
+        sizeVarToggle->blockSignals(true);
+        sizeVarToggle->setChecked(checked);
+        sizeVarToggle->blockSignals(false);
+        sizeVarButton->setEnabled(checked);
+    }
 }
 
 
@@ -529,7 +544,7 @@ void QvisPointControl::SetPointSizeVarChecked(bool checked)
 bool
 QvisPointControl::GetPointSizeVarChecked() const
 {
-    return sizeVarToggle->isChecked();
+    return sizeVarToggle && sizeVarToggle->isChecked();
 }
 
 
@@ -644,8 +659,11 @@ QvisPointControl::UpdatePointType()
     else
         sizeLabel->setText(tr("Point size (pixels)"));
 
-    sizeVarToggle->setEnabled(e);
-    sizeVarButton->setEnabled(e && sizeVarToggle->isChecked());
+    if (sizeVarToggle && sizeVarButton)
+    {
+        sizeVarToggle->setEnabled(e);
+        sizeVarButton->setEnabled(e && sizeVarToggle->isChecked());
+    }
 }
 
 // ****************************************************************************
