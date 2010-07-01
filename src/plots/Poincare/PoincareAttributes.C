@@ -408,6 +408,8 @@ void PoincareAttributes::Init()
     lineWidth = 0;
     showPoints = false;
     pointSize = 1;
+    pointSizePixels = 1;
+    pointType = 0;
     legendFlag = true;
     lightingFlag = true;
     streamlineAlgorithmType = LoadOnDemand;
@@ -484,8 +486,11 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     showRidgelines = obj.showRidgelines;
     showLines = obj.showLines;
     lineWidth = obj.lineWidth;
+    lineStyle = obj.lineStyle;
     showPoints = obj.showPoints;
     pointSize = obj.pointSize;
+    pointSizePixels = obj.pointSizePixels;
+    pointType = obj.pointType;
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     streamlineAlgorithmType = obj.streamlineAlgorithmType;
@@ -706,8 +711,11 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (showRidgelines == obj.showRidgelines) &&
             (showLines == obj.showLines) &&
             (lineWidth == obj.lineWidth) &&
+            (lineStyle == obj.lineStyle) &&
             (showPoints == obj.showPoints) &&
             (pointSize == obj.pointSize) &&
+            (pointSizePixels == obj.pointSizePixels) &&
+            (pointType == obj.pointType) &&
             (legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag) &&
             (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
@@ -922,8 +930,11 @@ PoincareAttributes::SelectAll()
     Select(ID_showRidgelines,            (void *)&showRidgelines);
     Select(ID_showLines,                 (void *)&showLines);
     Select(ID_lineWidth,                 (void *)&lineWidth);
+    Select(ID_lineStyle,                 (void *)&lineStyle);
     Select(ID_showPoints,                (void *)&showPoints);
     Select(ID_pointSize,                 (void *)&pointSize);
+    Select(ID_pointSizePixels,           (void *)&pointSizePixels);
+    Select(ID_pointType,                 (void *)&pointType);
     Select(ID_legendFlag,                (void *)&legendFlag);
     Select(ID_lightingFlag,              (void *)&lightingFlag);
     Select(ID_streamlineAlgorithmType,   (void *)&streamlineAlgorithmType);
@@ -1204,6 +1215,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("lineWidth", lineWidth));
     }
 
+    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineStyle", lineStyle));
+    }
+
     if(completeSave || !FieldsEqual(ID_showPoints, &defaultObject))
     {
         addToParent = true;
@@ -1214,6 +1231,18 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("pointSize", pointSize));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pointSizePixels, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointSizePixels", pointSizePixels));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pointType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointType", pointType));
     }
 
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
@@ -1466,10 +1495,16 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetShowLines(node->AsBool());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
+    if((node = searchNode->GetNode("lineStyle")) != 0)
+        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("showPoints")) != 0)
         SetShowPoints(node->AsBool());
     if((node = searchNode->GetNode("pointSize")) != 0)
-        SetPointSize(node->AsInt());
+        SetPointSize(node->AsDouble());
+    if((node = searchNode->GetNode("pointSizePixels")) != 0)
+        SetPointSizePixels(node->AsInt());
+    if((node = searchNode->GetNode("pointType")) != 0)
+        SetPointType(node->AsInt());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lightingFlag")) != 0)
@@ -1789,6 +1824,13 @@ PoincareAttributes::SetLineWidth(int lineWidth_)
 }
 
 void
+PoincareAttributes::SetLineStyle(int lineStyle_)
+{
+    lineStyle = lineStyle_;
+    Select(ID_lineStyle, (void *)&lineStyle);
+}
+
+void
 PoincareAttributes::SetShowPoints(bool showPoints_)
 {
     showPoints = showPoints_;
@@ -1796,10 +1838,24 @@ PoincareAttributes::SetShowPoints(bool showPoints_)
 }
 
 void
-PoincareAttributes::SetPointSize(int pointSize_)
+PoincareAttributes::SetPointSize(double pointSize_)
 {
     pointSize = pointSize_;
     Select(ID_pointSize, (void *)&pointSize);
+}
+
+void
+PoincareAttributes::SetPointSizePixels(int pointSizePixels_)
+{
+    pointSizePixels = pointSizePixels_;
+    Select(ID_pointSizePixels, (void *)&pointSizePixels);
+}
+
+void
+PoincareAttributes::SetPointType(int pointType_)
+{
+    pointType = pointType_;
+    Select(ID_pointType, (void *)&pointType);
 }
 
 void
@@ -2118,16 +2174,34 @@ PoincareAttributes::GetLineWidth() const
     return lineWidth;
 }
 
+int
+PoincareAttributes::GetLineStyle() const
+{
+    return lineStyle;
+}
+
 bool
 PoincareAttributes::GetShowPoints() const
 {
     return showPoints;
 }
 
-int
+double
 PoincareAttributes::GetPointSize() const
 {
     return pointSize;
+}
+
+int
+PoincareAttributes::GetPointSizePixels() const
+{
+    return pointSizePixels;
+}
+
+int
+PoincareAttributes::GetPointType() const
+{
+    return pointType;
 }
 
 bool
@@ -2264,8 +2338,11 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_showRidgelines:            return "showRidgelines";
     case ID_showLines:                 return "showLines";
     case ID_lineWidth:                 return "lineWidth";
+    case ID_lineStyle:                 return "lineStyle";
     case ID_showPoints:                return "showPoints";
     case ID_pointSize:                 return "pointSize";
+    case ID_pointSizePixels:           return "pointSizePixels";
+    case ID_pointType:                 return "pointType";
     case ID_legendFlag:                return "legendFlag";
     case ID_lightingFlag:              return "lightingFlag";
     case ID_streamlineAlgorithmType:   return "streamlineAlgorithmType";
@@ -2336,8 +2413,11 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_showRidgelines:            return FieldType_bool;
     case ID_showLines:                 return FieldType_bool;
     case ID_lineWidth:                 return FieldType_linewidth;
+    case ID_lineStyle:                 return FieldType_linestyle;
     case ID_showPoints:                return FieldType_bool;
-    case ID_pointSize:                 return FieldType_int;
+    case ID_pointSize:                 return FieldType_double;
+    case ID_pointSizePixels:           return FieldType_int;
+    case ID_pointType:                 return FieldType_int;
     case ID_legendFlag:                return FieldType_bool;
     case ID_lightingFlag:              return FieldType_bool;
     case ID_streamlineAlgorithmType:   return FieldType_enum;
@@ -2408,8 +2488,11 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_showRidgelines:            return "bool";
     case ID_showLines:                 return "bool";
     case ID_lineWidth:                 return "linewidth";
+    case ID_lineStyle:                 return "linestyle";
     case ID_showPoints:                return "bool";
-    case ID_pointSize:                 return "int";
+    case ID_pointSize:                 return "double";
+    case ID_pointSizePixels:           return "int";
+    case ID_pointType:                 return "int";
     case ID_legendFlag:                return "bool";
     case ID_lightingFlag:              return "bool";
     case ID_streamlineAlgorithmType:   return "enum";
@@ -2657,6 +2740,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (lineWidth == obj.lineWidth);
         }
         break;
+    case ID_lineStyle:
+        {  // new scope
+        retval = (lineStyle == obj.lineStyle);
+        }
+        break;
     case ID_showPoints:
         {  // new scope
         retval = (showPoints == obj.showPoints);
@@ -2665,6 +2753,16 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_pointSize:
         {  // new scope
         retval = (pointSize == obj.pointSize);
+        }
+        break;
+    case ID_pointSizePixels:
+        {  // new scope
+        retval = (pointSizePixels == obj.pointSizePixels);
+        }
+        break;
+    case ID_pointType:
+        {  // new scope
+        retval = (pointType == obj.pointType);
         }
         break;
     case ID_legendFlag:
@@ -2814,7 +2912,6 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            singlePlane != obj.singlePlane ||
 
            showLines != obj.showLines ||
-           showPoints != obj.showPoints ||
-           pointSize != obj.pointSize;
+           showPoints != obj.showPoints;
 }
 

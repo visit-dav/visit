@@ -189,8 +189,11 @@ public:
     void SetShowRidgelines(bool showRidgelines_);
     void SetShowLines(bool showLines_);
     void SetLineWidth(int lineWidth_);
+    void SetLineStyle(int lineStyle_);
     void SetShowPoints(bool showPoints_);
-    void SetPointSize(int pointSize_);
+    void SetPointSize(double pointSize_);
+    void SetPointSizePixels(int pointSizePixels_);
+    void SetPointType(int pointType_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
@@ -244,8 +247,11 @@ public:
     bool                 GetShowRidgelines() const;
     bool                 GetShowLines() const;
     int                  GetLineWidth() const;
+    int                  GetLineStyle() const;
     bool                 GetShowPoints() const;
-    int                  GetPointSize() const;
+    double               GetPointSize() const;
+    int                  GetPointSizePixels() const;
+    int                  GetPointType() const;
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
     StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
@@ -352,8 +358,11 @@ public:
         ID_showRidgelines,
         ID_showLines,
         ID_lineWidth,
+        ID_lineStyle,
         ID_showPoints,
         ID_pointSize,
+        ID_pointSizePixels,
+        ID_pointType,
         ID_legendFlag,
         ID_lightingFlag,
         ID_streamlineAlgorithmType,
@@ -404,8 +413,11 @@ private:
     bool           showRidgelines;
     bool           showLines;
     int            lineWidth;
+    int            lineStyle;
     bool           showPoints;
-    int            pointSize;
+    double         pointSize;
+    int            pointSizePixels;
+    int            pointType;
     bool           legendFlag;
     bool           lightingFlag;
     int            streamlineAlgorithmType;
@@ -417,6 +429,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiDDDiidddiiddiiiidddbbiasibibibbbbbibibbiiii"
+#define POINCAREATTRIBUTES_TMFS "idiiiDDDiidddiiddiiiidddbbiasibibibbbbbiibdiibbiiii"
 
 #endif
