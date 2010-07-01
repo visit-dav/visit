@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int PoincareAttributes_numAdditionalAtts = 48;
+    private static int PoincareAttributes_numAdditionalAtts = 51;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -156,8 +156,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showRidgelines = false;
         showLines = true;
         lineWidth = 0;
+        lineStyle = 0;
         showPoints = false;
         pointSize = 1;
+        pointSizePixels = 1;
+        pointType = 0;
         legendFlag = true;
         lightingFlag = true;
         streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_LOADONDEMAND;
@@ -219,8 +222,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showRidgelines = false;
         showLines = true;
         lineWidth = 0;
+        lineStyle = 0;
         showPoints = false;
         pointSize = 1;
+        pointSizePixels = 1;
+        pointType = 0;
         legendFlag = true;
         lightingFlag = true;
         streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_LOADONDEMAND;
@@ -287,8 +293,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showRidgelines = obj.showRidgelines;
         showLines = obj.showLines;
         lineWidth = obj.lineWidth;
+        lineStyle = obj.lineStyle;
         showPoints = obj.showPoints;
         pointSize = obj.pointSize;
+        pointSizePixels = obj.pointSizePixels;
+        pointType = obj.pointType;
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
         streamlineAlgorithmType = obj.streamlineAlgorithmType;
@@ -369,8 +378,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (showRidgelines == obj.showRidgelines) &&
                 (showLines == obj.showLines) &&
                 (lineWidth == obj.lineWidth) &&
+                (lineStyle == obj.lineStyle) &&
                 (showPoints == obj.showPoints) &&
                 (pointSize == obj.pointSize) &&
+                (pointSizePixels == obj.pointSizePixels) &&
+                (pointType == obj.pointType) &&
                 (legendFlag == obj.legendFlag) &&
                 (lightingFlag == obj.lightingFlag) &&
                 (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
@@ -653,52 +665,70 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(39);
     }
 
-    public void SetShowPoints(boolean showPoints_)
+    public void SetLineStyle(int lineStyle_)
     {
-        showPoints = showPoints_;
+        lineStyle = lineStyle_;
         Select(40);
     }
 
-    public void SetPointSize(int pointSize_)
+    public void SetShowPoints(boolean showPoints_)
+    {
+        showPoints = showPoints_;
+        Select(41);
+    }
+
+    public void SetPointSize(double pointSize_)
     {
         pointSize = pointSize_;
-        Select(41);
+        Select(42);
+    }
+
+    public void SetPointSizePixels(int pointSizePixels_)
+    {
+        pointSizePixels = pointSizePixels_;
+        Select(43);
+    }
+
+    public void SetPointType(int pointType_)
+    {
+        pointType = pointType_;
+        Select(44);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(42);
+        Select(45);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(43);
+        Select(46);
     }
 
     public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
     {
         streamlineAlgorithmType = streamlineAlgorithmType_;
-        Select(44);
+        Select(47);
     }
 
     public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
     {
         maxStreamlineProcessCount = maxStreamlineProcessCount_;
-        Select(45);
+        Select(48);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(46);
+        Select(49);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(47);
+        Select(50);
     }
 
     // Property getting methods
@@ -742,8 +772,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public boolean        GetShowRidgelines() { return showRidgelines; }
     public boolean        GetShowLines() { return showLines; }
     public int            GetLineWidth() { return lineWidth; }
+    public int            GetLineStyle() { return lineStyle; }
     public boolean        GetShowPoints() { return showPoints; }
-    public int            GetPointSize() { return pointSize; }
+    public double         GetPointSize() { return pointSize; }
+    public int            GetPointSizePixels() { return pointSizePixels; }
+    public int            GetPointType() { return pointType; }
     public boolean        GetLegendFlag() { return legendFlag; }
     public boolean        GetLightingFlag() { return lightingFlag; }
     public int            GetStreamlineAlgorithmType() { return streamlineAlgorithmType; }
@@ -835,20 +868,26 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(39, buf))
             buf.WriteInt(lineWidth);
         if(WriteSelect(40, buf))
-            buf.WriteBool(showPoints);
+            buf.WriteInt(lineStyle);
         if(WriteSelect(41, buf))
-            buf.WriteInt(pointSize);
+            buf.WriteBool(showPoints);
         if(WriteSelect(42, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteDouble(pointSize);
         if(WriteSelect(43, buf))
-            buf.WriteBool(lightingFlag);
+            buf.WriteInt(pointSizePixels);
         if(WriteSelect(44, buf))
-            buf.WriteInt(streamlineAlgorithmType);
+            buf.WriteInt(pointType);
         if(WriteSelect(45, buf))
-            buf.WriteInt(maxStreamlineProcessCount);
+            buf.WriteBool(legendFlag);
         if(WriteSelect(46, buf))
-            buf.WriteInt(maxDomainCacheSize);
+            buf.WriteBool(lightingFlag);
         if(WriteSelect(47, buf))
+            buf.WriteInt(streamlineAlgorithmType);
+        if(WriteSelect(48, buf))
+            buf.WriteInt(maxStreamlineProcessCount);
+        if(WriteSelect(49, buf))
+            buf.WriteInt(maxDomainCacheSize);
+        if(WriteSelect(50, buf))
             buf.WriteInt(workGroupSize);
     }
 
@@ -978,27 +1017,36 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetLineWidth(buf.ReadInt());
             break;
         case 40:
-            SetShowPoints(buf.ReadBool());
+            SetLineStyle(buf.ReadInt());
             break;
         case 41:
-            SetPointSize(buf.ReadInt());
+            SetShowPoints(buf.ReadBool());
             break;
         case 42:
-            SetLegendFlag(buf.ReadBool());
+            SetPointSize(buf.ReadDouble());
             break;
         case 43:
-            SetLightingFlag(buf.ReadBool());
+            SetPointSizePixels(buf.ReadInt());
             break;
         case 44:
-            SetStreamlineAlgorithmType(buf.ReadInt());
+            SetPointType(buf.ReadInt());
             break;
         case 45:
-            SetMaxStreamlineProcessCount(buf.ReadInt());
+            SetLegendFlag(buf.ReadBool());
             break;
         case 46:
-            SetMaxDomainCacheSize(buf.ReadInt());
+            SetLightingFlag(buf.ReadBool());
             break;
         case 47:
+            SetStreamlineAlgorithmType(buf.ReadInt());
+            break;
+        case 48:
+            SetMaxStreamlineProcessCount(buf.ReadInt());
+            break;
+        case 49:
+            SetMaxDomainCacheSize(buf.ReadInt());
+            break;
+        case 50:
             SetWorkGroupSize(buf.ReadInt());
             break;
         }
@@ -1110,8 +1158,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("showRidgelines", showRidgelines, indent) + "\n";
         str = str + boolToString("showLines", showLines, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
+        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + boolToString("showPoints", showPoints, indent) + "\n";
-        str = str + intToString("pointSize", pointSize, indent) + "\n";
+        str = str + doubleToString("pointSize", pointSize, indent) + "\n";
+        str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
+        str = str + intToString("pointType", pointType, indent) + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
         str = str + indent + "streamlineAlgorithmType = ";
@@ -1170,8 +1221,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private boolean        showRidgelines;
     private boolean        showLines;
     private int            lineWidth;
+    private int            lineStyle;
     private boolean        showPoints;
-    private int            pointSize;
+    private double         pointSize;
+    private int            pointSizePixels;
+    private int            pointType;
     private boolean        legendFlag;
     private boolean        lightingFlag;
     private int            streamlineAlgorithmType;

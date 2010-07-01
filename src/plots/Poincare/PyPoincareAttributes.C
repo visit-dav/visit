@@ -376,12 +376,19 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
+    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
+    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
+    str += tmpStr;
     if(atts->GetShowPoints())
         SNPRINTF(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSize = %d\n", prefix, atts->GetPointSize());
+    SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spointType = %d\n", prefix, atts->GetPointType());
     str += tmpStr;
     if(atts->GetLegendFlag())
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
@@ -1600,6 +1607,39 @@ PoincareAttributes_GetLineWidth(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetLineStyle(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the lineStyle in the object.
+    if(ival >= 0 && ival <= 3)
+        obj->data->SetLineStyle(ival);
+    else
+    {
+        fprintf(stderr, "An invalid  value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetLineStyle(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStyle()));
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetShowPoints(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -1628,12 +1668,12 @@ PoincareAttributes_SetPointSize(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the pointSize in the object.
-    obj->data->SetPointSize((int)ival);
+    obj->data->SetPointSize(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1643,7 +1683,55 @@ PoincareAttributes_SetPointSize(PyObject *self, PyObject *args)
 PoincareAttributes_GetPointSize(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetPointSize()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPointSize());
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the pointSizePixels in the object.
+    obj->data->SetPointSizePixels((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetPointSizePixels()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetPointType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the pointType in the object.
+    obj->data->SetPointType((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetPointType(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetPointType()));
     return retval;
 }
 
@@ -1884,10 +1972,16 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetShowLines", PoincareAttributes_GetShowLines, METH_VARARGS},
     {"SetLineWidth", PoincareAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", PoincareAttributes_GetLineWidth, METH_VARARGS},
+    {"SetLineStyle", PoincareAttributes_SetLineStyle, METH_VARARGS},
+    {"GetLineStyle", PoincareAttributes_GetLineStyle, METH_VARARGS},
     {"SetShowPoints", PoincareAttributes_SetShowPoints, METH_VARARGS},
     {"GetShowPoints", PoincareAttributes_GetShowPoints, METH_VARARGS},
     {"SetPointSize", PoincareAttributes_SetPointSize, METH_VARARGS},
     {"GetPointSize", PoincareAttributes_GetPointSize, METH_VARARGS},
+    {"SetPointSizePixels", PoincareAttributes_SetPointSizePixels, METH_VARARGS},
+    {"GetPointSizePixels", PoincareAttributes_GetPointSizePixels, METH_VARARGS},
+    {"SetPointType", PoincareAttributes_SetPointType, METH_VARARGS},
+    {"GetPointType", PoincareAttributes_GetPointType, METH_VARARGS},
     {"SetLegendFlag", PoincareAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", PoincareAttributes_GetLegendFlag, METH_VARARGS},
     {"SetLightingFlag", PoincareAttributes_SetLightingFlag, METH_VARARGS},
@@ -2071,10 +2165,25 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetShowLines(self, NULL);
     if(strcmp(name, "lineWidth") == 0)
         return PoincareAttributes_GetLineWidth(self, NULL);
+    if(strcmp(name, "lineStyle") == 0)
+        return PoincareAttributes_GetLineStyle(self, NULL);
+    if(strcmp(name, "SOLID") == 0)
+        return PyInt_FromLong(long(0));
+    else if(strcmp(name, "DASH") == 0)
+        return PyInt_FromLong(long(1));
+    else if(strcmp(name, "DOT") == 0)
+        return PyInt_FromLong(long(2));
+    else if(strcmp(name, "DOTDASH") == 0)
+        return PyInt_FromLong(long(3));
+
     if(strcmp(name, "showPoints") == 0)
         return PoincareAttributes_GetShowPoints(self, NULL);
     if(strcmp(name, "pointSize") == 0)
         return PoincareAttributes_GetPointSize(self, NULL);
+    if(strcmp(name, "pointSizePixels") == 0)
+        return PoincareAttributes_GetPointSizePixels(self, NULL);
+    if(strcmp(name, "pointType") == 0)
+        return PoincareAttributes_GetPointType(self, NULL);
     if(strcmp(name, "legendFlag") == 0)
         return PoincareAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "lightingFlag") == 0)
@@ -2188,10 +2297,16 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetShowLines(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
         obj = PoincareAttributes_SetLineWidth(self, tuple);
+    else if(strcmp(name, "lineStyle") == 0)
+        obj = PoincareAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "showPoints") == 0)
         obj = PoincareAttributes_SetShowPoints(self, tuple);
     else if(strcmp(name, "pointSize") == 0)
         obj = PoincareAttributes_SetPointSize(self, tuple);
+    else if(strcmp(name, "pointSizePixels") == 0)
+        obj = PoincareAttributes_SetPointSizePixels(self, tuple);
+    else if(strcmp(name, "pointType") == 0)
+        obj = PoincareAttributes_SetPointType(self, tuple);
     else if(strcmp(name, "legendFlag") == 0)
         obj = PoincareAttributes_SetLegendFlag(self, tuple);
     else if(strcmp(name, "lightingFlag") == 0)

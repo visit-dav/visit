@@ -60,12 +60,12 @@
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtStateRecorderIntegralCurve.h>
-
 #include <utility>
 
 #ifdef STRAIGHTLINE_SKELETON
 #include "skelet.h"
 #endif
+
 
 using namespace std;
 
@@ -96,35 +96,34 @@ static const int DATA_RidgelineVariance = 12;
 //
 //  Modifications:
 //
+//   Dave Pugmire, Thu Jul  1 13:55:28 EDT 2010
+//   Create a vertex instead of a sphere.
+//
 // ****************************************************************************
 
 static vtkPolyData *
-CreateSphere(float val, double rad, double pt[3])
+CreateSphere(float val, double rad, double p[3])
 {
-    // Create the sphere polydata.
-    vtkSphereSource *sphere = vtkSphereSource::New();
-    sphere->SetCenter(pt[0], pt[1], pt[2]);
-    sphere->SetRadius(rad);
-    sphere->SetLatLongTessellation(1);
-    sphere->SetPhiResolution(8);
-    sphere->SetThetaResolution(8);
-    vtkPolyData *sphereData = sphere->GetOutput();
-    sphereData->Update();
+    vtkPoints *pt = vtkPoints::New();
+    pt->SetNumberOfPoints(1);
+    pt->SetPoint(0, p[0], p[1], p[2]);
+    
+    vtkPolyData *point = vtkPolyData::New();
+    point->SetPoints(pt);
+    pt->Delete();
 
-    // Set the sphere's scalar to val.
+    vtkIdType ids[1] = {0};
+    point->Allocate(1);
+    point->InsertNextCell(VTK_VERTEX, 1, ids);
+
     vtkFloatArray *arr = vtkFloatArray::New();
-    int npts = sphereData->GetNumberOfPoints();
-    arr->SetNumberOfTuples(npts);
-    for (int i = 0; i < npts; ++i)
-        arr->SetTuple1(i, val);
     arr->SetName("colorVar");
-    sphereData->GetPointData()->SetScalars(arr);
+    arr->SetNumberOfTuples(1);
+    arr->SetTuple1(0, val);
+    point->GetPointData()->SetScalars(arr);
     arr->Delete();
 
-    sphereData->Register(NULL);
-    sphere->Delete();
-
-    return sphereData;
+    return point;
 }
 
 
@@ -332,7 +331,6 @@ avtPoincareFilter::Execute()
     avtStreamlineFilter::Execute();
 
     avtDataTree *dt = CreatePoincareOutput();
-
     SetOutputDataTree(dt);
 }
 
@@ -1470,7 +1468,6 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
         pd->SetLines(cells);
         scalars->SetName("colorVar");
         pd->GetPointData()->SetScalars(scalars);
-        
         append->AddInput(pd);
         
         points->Delete();
@@ -1598,7 +1595,6 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                 pd->SetVerts(cells);
                 scalars->SetName("colorVar");
                 pd->GetPointData()->SetScalars(scalars);
-    
                 append->AddInput(pd);
     
                 points->Delete();
@@ -1703,7 +1699,6 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
               pd->SetLines(cells);
               scalars->SetName("colorVar");
               pd->GetPointData()->SetScalars(scalars);
-            
               append->AddInput(pd);
             
               points->Delete();
@@ -1762,7 +1757,6 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
               pd->SetLines(cells);
               scalars->SetName("colorVar");
               pd->GetPointData()->SetScalars(scalars);
-            
               append->AddInput(pd);
             
               points->Delete();
@@ -1855,7 +1849,6 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                 pd->SetVerts(cells);
                 scalars->SetName("colorVar");
                 pd->GetPointData()->SetScalars(scalars);
-    
                 append->AddInput(pd);
     
                 points->Delete();
@@ -1870,6 +1863,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
     outPD->Register(NULL);
     outPD->SetSource(NULL);
     append->Delete();
+
     
     dt->Merge( new avtDataTree(outPD, 0) );
 }
@@ -2253,7 +2247,6 @@ avtPoincareFilter::findIslandCenter( avtDataTree *dt,
                 pd->SetLines(cells);
                 scalars->SetName("colorVar");
                 pd->GetPointData()->SetScalars(scalars);
-        
                 append->AddInput(pd);
             }
 
@@ -2549,7 +2542,6 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
     grid->SetPoints(points);
     scalars->SetName("colorVar");
     grid->GetPointData()->SetScalars(scalars);
-    
     dt->Merge( new avtDataTree(grid, 0) );
     
     quad->Delete();
@@ -2638,7 +2630,6 @@ avtPoincareFilter::loadPoints( avtDataTree *dt,
         pd->SetLines(cells);
         scalars->SetName("colorVar");
         pd->GetPointData()->SetScalars(scalars);
-        
         append->AddInput(pd);
         
         points->Delete();
@@ -2676,7 +2667,6 @@ avtPoincareFilter::loadPoints( avtDataTree *dt,
         colorMax = color_value;
       
       vtkPolyData *ball = CreateSphere(color_value, rad, pt);
-      
       append->AddInput(ball);
       ball->Delete();
     }
@@ -2725,7 +2715,6 @@ avtPoincareFilter::loadPoints( avtDataTree *dt,
     pd->SetVerts(cells);
     scalars->SetName("colorVar");
     pd->GetPointData()->SetScalars(scalars);
-    
     append->AddInput(pd);
     
     points->Delete();
@@ -2789,7 +2778,6 @@ avtPoincareFilter::drawPoints( avtDataTree *dt,
     pd->SetVerts(cells);
     scalars->SetName("colorVar");
     pd->GetPointData()->SetScalars(scalars);
-    
     append->AddInput(pd);
     
     points->Delete();

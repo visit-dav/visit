@@ -58,6 +58,8 @@ class QvisOpacitySlider;
 class QvisColorButton;
 class QvisLineWidthWidget;
 class QvisVariableButton;
+class QvisPointControl;
+class QvisLineStyleWidget;
 
 // ****************************************************************************
 // Class: QvisPoincarePlotWindow
@@ -136,8 +138,11 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void showChaoticChanged(bool val);
     void showLinesChanged(bool val);
     void lineWidthChanged(int val);
+    void lineStyleChanged(int val);
     void showPointsChanged(bool val);
-    void pointSizeChanged(int val);
+    void pointSizeChanged(double val);
+    void pointSizePixelsChanged(int val);
+    void pointTypeChanged(int val);
     void verboseFlagChanged(bool val);
     void showRidgelinesChanged(bool val);
     void legendToggled(bool val);
@@ -195,12 +200,13 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QSpinBox *OPointMaxIterations;
     QCheckBox *showChaotic;
     QCheckBox *showIslands;
-    QCheckBox *showLines;
-    QLabel *lineWidthLabel;
-    QvisLineWidthWidget *lineWidth;
+    QLabel *lineWidthLabel, *lineStyleLabel;
     QCheckBox *showPoints;
-    QLabel *pointSizeLabel;
-    QSpinBox  *pointSize;
+    QvisPointControl *pointControl;
+    QCheckBox *showLines;
+    QvisLineWidthWidget *lineWidth;
+    QvisLineStyleWidget *lineStyle;
+
     QCheckBox *showRidgelines;
     QCheckBox *verboseFlag;
     QCheckBox *legendToggle;
