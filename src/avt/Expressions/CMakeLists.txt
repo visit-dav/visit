@@ -146,6 +146,7 @@ General/avtRandomExpression.C
 General/avtRecenterExpression.C
 General/avtRectilinearLaplacianExpression.C
 General/avtRelativeDifferenceExpression.C
+General/avtResampleExpression.C
 General/avtResradExpression.C
 General/avtSpecMFExpression.C
 General/avtSurfaceNormalExpression.C

@@ -83,6 +83,7 @@
 #include <avtRecenterExpression.h>
 #include <avtRectilinearLaplacianExpression.h>
 #include <avtRelativeDifferenceExpression.h>
+#include <avtResampleExpression.h>
 #include <avtResradExpression.h>
 #include <avtTimeExpression.h>
 #include <avtUnaryMinusExpression.h>
@@ -459,6 +460,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Cyrus Harrison, Tue Feb  2 14:54:25 PST 2010
 //    Added the "python" expression.
 //
+//    Dave Pugmire, Fri Jul  2 14:22:34 EDT 2010
+//    Added the "resample" expression.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -498,6 +502,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtLocalizedCompactnessExpression();
     if (functionName == "recenter")
         return new avtRecenterExpression();
+    if (functionName == "resample")
+        return new avtResampleExpression();
     if (functionName == "displacement")
         return new avtDisplacementExpression();
     if (functionName == "degree")
