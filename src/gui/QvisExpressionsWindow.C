@@ -159,6 +159,9 @@
 //    Hank Childs, Mon Jun 28 06:49:16 PDT 2010
 //    Add [min|max][x|y|z]_coord.
 //
+//    Dave Pugmire, Fri Jul  2 14:22:34 EDT 2010
+//    Add resample expression.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -348,6 +351,7 @@ const char *expr_misc[] = {
     "mean_curvature",
     "point_constant",
     "recenter",
+    "resample",
     "resrad",
     "surface_normal",
     "   point_surface_normal",
@@ -1546,6 +1550,9 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //
 //  Modifications:
 //
+//    Dave Pugmire, Fri Jul  2 14:22:34 EDT 2010
+//    Add resample expression.
+//
 // ****************************************************************************
 
 QString
@@ -1641,6 +1648,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "recenter")
     {
         res += QString("(<var>, [\"nodal\", \"zonal\", \"toggle\"])");
+        doParens = false;
+    }
+    else if (func_name == "resample")
+    {
+        res += QString("(<var>, sX, sY, sZ)");
         doParens = false;
     }
     else if(func_name == "value_for_material")
