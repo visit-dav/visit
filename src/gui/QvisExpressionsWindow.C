@@ -425,13 +425,18 @@ ExprNameList exprlist[NUM_EXPRESSION_CATEGORIES];
 //   Hank Childs, Sun Feb 22 09:01:29 PST 2009
 //   Add time iteration category.
 //
+//   Hank Childs, Mon Jul  5 11:20:47 PDT 2010
+//   Enable Load and Save buttons.
+//
 // ****************************************************************************
 
 QvisExpressionsWindow::QvisExpressionsWindow(
     ExpressionList *exprList_, const QString &caption,
     const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(exprList_, caption, shortName, notepad,
-                               QvisPostableWindowObserver::ApplyButton,
+                               QvisPostableWindowObserver::ApplyButton |
+                               QvisPostableWindowObserver::LoadButton |
+                               QvisPostableWindowObserver::SaveButton,
                                false)
 {
     // Populate the expression categories. If you add a new one, increment
