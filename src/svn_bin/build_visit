@@ -921,6 +921,9 @@
 #     Eric Brugger, Mon Jun 21 09:11:33 PDT 2010
 #     I set the VisIt version number to 2.0.1.
 #
+#     Eric Brugger, Tue Jul  6 12:51:35 PDT 2010
+#     I modified the script to use mesa 7.8.2.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1230,10 +1233,10 @@ export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.0.tar.gz"}
 export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.0"}
 export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.0"}
 
-export MESA_FILE=${MESA_FILE:-"MesaLib-7.5.tar.gz"}
-export MESA_VERSION=${MESA_VERSION:-"7.5"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.5"}
-export MESA_URL="http://downloads.sourceforge.net/project/mesa3d/MesaLib/7.5"
+export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
+export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
+export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
+export MESA_URL="http://downloads.sourceforge.net/project/mesa3d/MesaLib/7.8.2"
 
 export PYTHON_FILE_SUFFIX="tgz"
 export PYTHON_VERSION="2.6.4"
@@ -2817,10 +2820,30 @@ EOF
 }
 
 
+function apply_mesa_782_patch_1
+{
+   patch -p0 <<\EOF
+diff -c a/src/mesa/drivers/osmesa/osmesa.c Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c
+*** a/src/mesa/drivers/osmesa/osmesa.c
+--- Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c
+***************
+*** 1329,1334 ****
+--- 1329,1335 ----
+      * size.
+      */
+     osmesa->rb = new_osmesa_renderbuffer(&osmesa->mesa, osmesa->format, type);
++    _mesa_remove_renderbuffer(osmesa->gl_buffer, BUFFER_FRONT_LEFT);
+     _mesa_add_renderbuffer(osmesa->gl_buffer, BUFFER_FRONT_LEFT, osmesa->rb);
+     assert(osmesa->rb->RefCount == 2);
+
+EOF
+}
+
+
 function apply_mesa_patch
 {
    info "Patching Mesa . . ."
-   if [[ ${MESA_VERSION} == 7.5 ]] ; then
+   if [[ ${MESA_VERSION} == "7.5" ]] ; then
       apply_mesa_75_patch_1
       if [[ $? != 0 ]] ; then
         return 1
@@ -2837,9 +2860,14 @@ function apply_mesa_patch
       if [[ $? != 0 ]] ; then
         return 1
       fi
+   elif [[ ${MESA_VERSION} == "7.8.2" ]] ; then
+      apply_mesa_782_patch_1
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
    else
-       warn "Unsupported Mesa Version ${MESA_VERSION}"
-       return 1
+      warn "Unsupported Mesa Version ${MESA_VERSION}"
+      return 1
    fi
 
    return 0
