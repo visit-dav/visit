@@ -42,7 +42,7 @@
 #       try to download them.
 #       You must have:
 #          Qt       qt-everywhere-opensource-src-4.6.1.tar.gz
-#          Mesa     MesaLib-7.5.tar.gz
+#          Mesa     MesaLib-7.8.2.tar.gz
 #          Python   Python-2.6.4tgz
 #          VTK      vtk-5.0.0f.tar.gz
 #          CMake    cmake-2.8.0.tar.gz
@@ -207,7 +207,7 @@
 #
 #     Kathleen Bonnell, Mon Aug 27 08:42:06 PDT 2007
 #     Changed -DMANGLED_OSMESA_INCLUDE to -DMANGLED_OSMESA_INCLUDE_DIR
-#     in build_vtk.
+#     in build_vtk. 
 #
 #     Gunther H. Weber, Wed Aug 29 12:34:58 PDT 2007
 #     - Added rv=0 to beginning of check_parallel to fix error when trying
@@ -921,9 +921,6 @@
 #     Eric Brugger, Mon Jun 21 09:11:33 PDT 2010
 #     I set the VisIt version number to 2.0.1.
 #
-#     Eric Brugger, Tue Jul  6 12:51:35 PDT 2010
-#     I modified the script to use mesa 7.8.2.
-#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1236,7 +1233,7 @@ export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.0"}
 export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
 export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
 export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
-export MESA_URL="http://downloads.sourceforge.net/project/mesa3d/MesaLib/7.8.2"
+export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2"
 
 export PYTHON_FILE_SUFFIX="tgz"
 export PYTHON_VERSION="2.6.4"
