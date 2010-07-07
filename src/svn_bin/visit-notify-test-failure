@@ -7,21 +7,63 @@ testEmail=""
 #
 logRecipients="miller86@llnl.gov hankchilds@gmail.com jsmeredith@ornl.gov"
 logRecipients="${logRecipients} ahern@ornl.gov brugger1@llnl.gov"
+logRecipients="${logRecipients} harrison37@llnl.gov"
 
 #
 # Parse the command line to determine the host to run on.
 #
 host="alastor"
+status="fail"
 
 for abc
 do
    case $1 in
+      -fail)
+         status="fail"
+         shift
+         ;;
       -host)
          host=$2
          shift 2
          ;;
+      -pass)
+         status="pass"
+         shift
+         ;;
    esac
 done
+
+#
+# If we have a pass, send out the pass e-mail and exit.
+#
+if test "$status" = "pass" ; then
+   #
+   # Create the list to send the e-mail to.
+   #
+   emailList=`echo $logRecipients | tr ' ' '\n' | sort | uniq`
+
+   #
+   # Create the email.
+   #
+   rm -rf mailmsg
+   cat > mailmsg << EOF
+From: visit-developers@ornl.gov
+Subject: The test suite run on $host passed
+The test suite run on $host passed.
+EOF
+
+   #
+   # Send the email.
+   #
+   if test -n "$testEmail"; then
+      cat mailmsg | /usr/sbin/sendmail $testEmail
+   else
+      cat mailmsg | /usr/sbin/sendmail $emailList
+   fi
+   rm -f mailmsg
+
+   exit 0
+fi
 
 #
 # Check that we have a checkout of src data and test sitting in our directory.
