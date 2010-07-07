@@ -5,6 +5,11 @@
 #  Generates issue report pdfs from VisIt redmine queries.
 #  See http://www.visitusers.org/index.php?title=Redmine_Reports for more info.
 #
+# modifications:
+#  Cyrus Harrison, Wed Jul  7 09:55:05 PDT 2010
+#  Added 'target_version' field to generated report.
+#
+#
 
 import pyrmine,sys,os,datetime,logging
 import ho.pisa as pisa
@@ -23,7 +28,7 @@ class VisItIssue(pyrmine.Issue):
         i = self.data._asdict()
         res = "<h1># %s (%s) %s</h1>\n" % (i["id"],i["tracker"],i["subject"])
         res += "<table><tr><td>\n"
-        for key in ["status","author","created","updated","priority","assigned_to"]:
+        for key in ["status","author","created","updated","priority","assigned_to","target_version"]:
             res += "<b>%s</b>: %s<br>\n" % (key,self.__format_blank(i[key]))
         res+="</td><td>\n"
         if i["tracker"] == "Feature":
