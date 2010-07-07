@@ -162,6 +162,9 @@
 //    Dave Pugmire, Fri Jul  2 14:22:34 EDT 2010
 //    Add resample expression.
 //
+//    Cyrus Harrison, Wed Jul  7 09:34:00 PDT 2010
+//    Added 'zonal_constant' and 'nodal_constant'
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -349,6 +352,7 @@ const char *expr_misc[] = {
     "ijk_gradient",
     "Laplacian",
     "mean_curvature",
+    "nodal_constant",
     "point_constant",
     "recenter",
     "resample",
@@ -358,6 +362,7 @@ const char *expr_misc[] = {
     "   cell_surface_normal",
     "time",
     "timestep",
+    "zonal_constant",
     NULL
 };
 
@@ -1558,6 +1563,9 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Dave Pugmire, Fri Jul  2 14:22:34 EDT 2010
 //    Add resample expression.
 //
+//    Dave Pugmire, Fri Jul  2 14:22:34 EDT 2010
+//    Added 'zonal_constant' & 'nodal_constant'.
+//
 // ****************************************************************************
 
 QString
@@ -1670,7 +1678,10 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
         res += QString("(<var>, [<val-if-0>, <val-if-1>, ...])");
         doParens = false;
     }
-    else if (func_name == "cell_constant" || func_name == "point_constant")
+    else if (func_name == "cell_constant"  ||
+             func_name == "zonal_constant" ||
+             func_name == "point_constant" ||
+             func_name == "nodal_constant" )
     {
         res += QString("(<meshvar>, <constantvalue>)");
         doParens = false;

@@ -463,6 +463,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Dave Pugmire, Fri Jul  2 14:22:34 EDT 2010
 //    Added the "resample" expression.
 //
+//    Cyrus Harrison, Wed Jul  7 09:13:09 PDT 2010
+//    Added 'zonal_constant' & 'nodal_constant' as aliases for the
+//    existing 'cell_constant' & 'point_constant' expressions.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -588,9 +592,13 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtHSVColorComposeExpression;
     if (functionName == "colorlookup")
         return new avtPerformColorTableLookupExpression;
-    if (functionName == "cell_constant")
+    if (functionName == "cell_constant"  ||
+        functionName == "zonal_constant" ||
+        functionName == "zone_constant")
         return new avtConstantFunctionExpression(false);
-    if (functionName == "point_constant")
+    if (functionName == "point_constant" ||
+        functionName == "nodal_constant" ||
+        functionName == "node_constant" )
         return new avtConstantFunctionExpression(true);
     if (functionName == "curve_domain")
         return new avtCurveDomainExpression();
