@@ -1266,33 +1266,64 @@ static std::string log_DatabaseQueryRPC(ViewerRPC *rpc)
     std::string s, qName;
     char str[SLEN];
 
-    if(rpc->GetIntArg3() > 0)
+    // Cyrus Harrison, Wed Jul  7 11:32:09 PDT 2010
+    //
+    // Fix (/hack) logging for chord/ray length dist.
+    // This really points to another weakness with our argument
+    // passing scheme for queries in general.
+    //
+    // IntArg3() isn't always used to mark "Global" queries,
+    // in some cases it is just a general param, or 'unset'.
+    //
+    // The fact that this was 1 for calls to the chord/ray len
+    // distribution queries caused "global" to be prepended
+    // to the recored query name, and broke recording.
+    //
+    // I am pretty sure most queries are recorded incorrectly,
+    // this should be addressed with a query infrastructured overhaul...
+    //
+
+    qName = rpc->GetQueryName();
+    if( (qName.find("Chord Length Dist") != string::npos) ||
+        (qName.find("Ray Length Dist") != string::npos)
+    )
     {
-        qName = "Global";
-        qName += rpc->GetQueryName();
+        SNPRINTF(str, SLEN,"Query(\"%s\", %d, %d, %g, %g)\n",
+                    qName.c_str(),
+                    rpc->GetIntArg1(),rpc->GetIntArg2(),
+                    rpc->GetDoubleArg1()[0],rpc->GetDoubleArg2()[0]);
+        s+=str;
     }
     else
-        qName = rpc->GetQueryName();
-
-    SNPRINTF(str, SLEN, "%s(\"%s\", %d, %d, ", 
-             rpc->GetBoolFlag() ? "QueryOverTime" : "Query",
-             qName.c_str(),
-             rpc->GetIntArg1(), rpc->GetIntArg2());
-    s += str;
-    const stringVector &vars = rpc->GetQueryVariables();
-    if(vars.size() > 1)
-        s += "(";
-    for(unsigned int i = 0; i < vars.size(); ++i)
     {
-        s += "\"";
-        s += vars[i];
-        s += "\"";
-        if(i < vars.size()-1)
-            s += ", ";
+        if(rpc->GetIntArg3() > 0)
+        {
+            qName = "Global";
+            qName += rpc->GetQueryName();
+        }
+        else
+            qName = rpc->GetQueryName();
+
+        SNPRINTF(str, SLEN, "%s(\"%s\", %d, %d, ", 
+                rpc->GetBoolFlag() ? "QueryOverTime" : "Query",
+                qName.c_str(),
+                rpc->GetIntArg1(), rpc->GetIntArg2());
+        s += str;
+        const stringVector &vars = rpc->GetQueryVariables();
+        if(vars.size() > 1)
+            s += "(";
+        for(unsigned int i = 0; i < vars.size(); ++i)
+        {
+            s += "\"";
+            s += vars[i];
+            s += "\"";
+            if(i < vars.size()-1)
+                s += ", ";
+        }
+        if(vars.size() > 1)
+            s += ")";
+        s += ")\n";
     }
-    if(vars.size() > 1)
-        s += ")";
-    s += ")\n";
     return s;
 }
 
