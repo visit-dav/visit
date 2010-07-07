@@ -223,9 +223,11 @@ for m in \$modes; do
     fi
 done
 
-# If the test suite failed send out an e-mail notifying the users.
+# Send out an e-mail notifying the users of the test suite status.
 cd ..
-if test "\$hasFailed" != ""; then
+if test "\$hasFailed" = ""; then
+   ./visit-notify-test-failure -pass -host alastor
+else
    ./visit-notify-test-failure -host alastor
 fi
 
