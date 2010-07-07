@@ -90,70 +90,18 @@ ExodusCommonPluginInfo::GetDatabaseType()
 //    I changed the code so when nBlocks==-1 it will treat the list of files
 //    as domains so multiblock files work again.
 //
+//    Hank Childs, Wed Jul  7 15:54:21 PDT 2010
+//    Simplified the logic in this code.  It is no longer possible to append
+//    Exodus files in time.  (This was mostly broken anyway.)
+//
 // ****************************************************************************
 
 avtDatabase *
 ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
-    string file1 = list[0];
-
-    bool containsManyFiles = false;
-    if (nList == 1 &&
-        file1.length() > 7 && file1.substr(file1.length()-7,7)==".exodus")
-        containsManyFiles = true;
-    if (nList == 1 &&
-        file1.length() > 7 && file1.substr(file1.length()-7,7)==".EXODUS")
-        containsManyFiles = true;
-    if (nList == 1 &&
-        file1.length() > 8 && file1.substr(file1.length()-8,8)==".nemesis")
-        containsManyFiles = true;
-    if (nList == 1 &&
-        file1.length() > 8 && file1.substr(file1.length()-8,8)==".NEMESIS")
-        containsManyFiles = true;
-
-    if (containsManyFiles)
-    {
-        const char *filename = list[0];
-        char  **reallist  = NULL;
-        int     listcount = 0;
-        avtDatabase::GetFileListFromTextFile(filename, reallist, listcount);
-
-        avtDatabase *rv = ExodusCommonPluginInfo::SetupDatabase(reallist,
-                                                                listcount,-1);
-
-        //
-        // Clean up memory
-        //
-        for (int i = 0 ; i < listcount ; i++)
-        {
-            delete [] reallist[i];
-        }
-        delete [] reallist;
-
-        return rv;
-    }
-
-    //
-    // We don't want to register the file list with every Exodus file format,
-    // because that list can get big.  Instead, register a list statically
-    // with the format.  It will return an index and then tell each new
-    // instance that it should use this index.
-    //
-    int fileListId = -1;
-    if (!containsManyFiles)
-    {
-        fileListId = avtExodusFileFormat::RegisterFileList(list, nList);
-    }
-
     int nTimestepGroups = 1;
-    if(nBlock == -1)
-    {
-        // If nBlock == -1 then we're in here recursively and we're dealing
-        // with a list of domains.
-        nBlock = nList;
-    }
-    nTimestepGroups = nList / nBlock;
+    nBlock = nList;
 
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
     for (int i = 0 ; i < nTimestepGroups ; i++)
@@ -162,8 +110,6 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
         for (int j = 0 ; j < nBlock ; j++)
         {
             avtExodusFileFormat *exo = new avtExodusFileFormat(list[i*nBlock+j]);
-            if (!containsManyFiles)
-                exo->SetFileList(fileListId);
             ffl[i][j] = exo; 
         }
     }
