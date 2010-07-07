@@ -66,10 +66,15 @@
 #    Handled python filters on windows differently, as the VTK directory 
 #    structure is different.
 #
+#    Cyrus Harrison, Wed Jul  7 10:09:07 PDT 2010
+#    Remove any existing symlinks before attempting to create new ones.
+#
 #----------------------------------------------------------------------------
 
 FOREACH(LIB ${MESA_LIB})
     IF (NOT WIN32)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
+                                ${CMAKE_CURRENT_BINARY_DIR}/${LIB})
         EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
                                 ${MESA_LIBRARY_DIR}/${LIB}
                                 ${CMAKE_CURRENT_BINARY_DIR}/${LIB})
@@ -80,6 +85,8 @@ FOREACH(LIB ${MESA_LIB})
 ENDFOREACH(LIB in ${MESA_LIB})
 
 IF (NOT WIN32)
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
+                            ${CMAKE_CURRENT_BINARY_DIR}/python)
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
                             ${VISIT_PYTHON_DIR}
                             ${CMAKE_CURRENT_BINARY_DIR}/python)
@@ -101,6 +108,8 @@ IF(VISIT_PYTHON_FILTERS)
         GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
         GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
         IF (NOT WIN32)
+            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
+                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE})
             EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
                                     ${ITM_ABS}
                                     ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE})
