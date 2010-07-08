@@ -86,9 +86,12 @@ class QvisInverseGhostZoneWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
+    void requestGhostZonesChanged(bool val);
     void showTypeChanged(int val);
   private:
-    QButtonGroup *showType;
+    QCheckBox *requestGhostZones;
+    QWidget      *showType;
+    QButtonGroup *showTypeButtonGroup;
     QLabel *showTypeLabel;
 
     InverseGhostZoneAttributes *atts;

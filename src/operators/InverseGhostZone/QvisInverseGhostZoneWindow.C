@@ -118,9 +118,7 @@ QvisInverseGhostZoneWindow::~QvisInverseGhostZoneWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   Cyrus Harrison, Mon Aug 18 20:03:17 PDT 2008
-//   Qt4 Port - Autogen and changed radio button labels.
-//
+//   
 // ****************************************************************************
 
 void
@@ -129,22 +127,27 @@ QvisInverseGhostZoneWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
+    requestGhostZones = new QCheckBox(tr("Request Ghost Zones"), central);
+    connect(requestGhostZones, SIGNAL(toggled(bool)),
+            this, SLOT(requestGhostZonesChanged(bool)));
+    mainLayout->addWidget(requestGhostZones, 0,0);
+
     showTypeLabel = new QLabel(tr("Zones to Display:"), central);
-    mainLayout->addWidget(showTypeLabel,0,0);
-    showType = new QButtonGroup(central);
-    QWidget *showTypeWidget = new QWidget(central);
-    QHBoxLayout *showTypeLayout = new QHBoxLayout(showTypeWidget);
+    mainLayout->addWidget(showTypeLabel,1,0);
+    showType = new QWidget(central);
+    showTypeButtonGroup= new QButtonGroup(showType);
+    QHBoxLayout *showTypeLayout = new QHBoxLayout(showType);
     showTypeLayout->setMargin(0);
     showTypeLayout->setSpacing(10);
-    QRadioButton *showTypeShowTypeGhostZonesOnly = new QRadioButton(tr("Ghost zones only"), showTypeWidget);
-    showType->addButton(showTypeShowTypeGhostZonesOnly,0);
+    QRadioButton *showTypeShowTypeGhostZonesOnly = new QRadioButton(tr("GhostZonesOnly"), showType);
+    showTypeButtonGroup->addButton(showTypeShowTypeGhostZonesOnly,0);
     showTypeLayout->addWidget(showTypeShowTypeGhostZonesOnly);
-    QRadioButton *showTypeShowTypeGhostZonesAndRealZones = new QRadioButton(tr("Ghost zones and real zones"), showTypeWidget);
-    showType->addButton(showTypeShowTypeGhostZonesAndRealZones,1);
+    QRadioButton *showTypeShowTypeGhostZonesAndRealZones = new QRadioButton(tr("GhostZonesAndRealZones"), showType);
+    showTypeButtonGroup->addButton(showTypeShowTypeGhostZonesAndRealZones,1);
     showTypeLayout->addWidget(showTypeShowTypeGhostZonesAndRealZones);
-    connect(showType, SIGNAL(buttonClicked(int)),
+    connect(showTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(showTypeChanged(int)));
-    mainLayout->addWidget(showTypeWidget, 0,1);
+    mainLayout->addWidget(showType, 1,1);
 
 }
 
@@ -180,11 +183,16 @@ QvisInverseGhostZoneWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
+          case InverseGhostZoneAttributes::ID_requestGhostZones:
+            requestGhostZones->blockSignals(true);
+            requestGhostZones->setChecked(atts->GetRequestGhostZones());
+            requestGhostZones->blockSignals(false);
+            break;
           case InverseGhostZoneAttributes::ID_showType:
-            showType->blockSignals(true);
-            if(showType->button((int)atts->GetShowType()) != 0)
-                showType->button((int)atts->GetShowType())->setChecked(true);
-            showType->blockSignals(false);
+            showTypeButtonGroup->blockSignals(true);
+            if(showTypeButtonGroup->button((int)atts->GetShowType()) != 0)
+                showTypeButtonGroup->button((int)atts->GetShowType())->setChecked(true);
+            showTypeButtonGroup->blockSignals(false);
             break;
         }
     }
@@ -215,6 +223,15 @@ QvisInverseGhostZoneWindow::GetCurrentValues(int which_widget)
 //
 // Qt Slot functions
 //
+
+
+void
+QvisInverseGhostZoneWindow::requestGhostZonesChanged(bool val)
+{
+    atts->SetRequestGhostZones(val);
+    SetUpdate(false);
+    Apply();
+}
 
 
 void
