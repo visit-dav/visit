@@ -174,6 +174,9 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
+//    Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
+//    Added PLY writer.
+//
 // ****************************************************************************
 
 void
@@ -241,6 +244,7 @@ QvisSaveWindow::CreateWindowContents()
     fileFormatComboBox->addItem("tiff");
     fileFormatComboBox->addItem("ultra");
     fileFormatComboBox->addItem("vtk");
+    fileFormatComboBox->addItem("ply");
     connect(fileFormatComboBox, SIGNAL(activated(int)),
            this, SLOT(fileFormatChanged(int)));
     QLabel *formatLabel = new QLabel(tr("File type"),infoBox);
@@ -437,6 +441,9 @@ QvisSaveWindow::CreateWindowContents()
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
+//    Added PLY writer.
+//
 // ****************************************************************************
 
 void
@@ -492,7 +499,9 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             if (saveWindowAtts->GetFormat() 
                      == SaveWindowAttributes::VTK
                 || saveWindowAtts->GetFormat() 
-                     == SaveWindowAttributes::STL)
+                     == SaveWindowAttributes::STL
+                || saveWindowAtts->GetFormat() 
+                     == SaveWindowAttributes::PLY)
             {
                 binaryCheckBox->setEnabled(true);
             }
