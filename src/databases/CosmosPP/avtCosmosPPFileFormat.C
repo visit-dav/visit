@@ -745,6 +745,10 @@ avtCosmosPPFileFormat::GetNTimesteps()
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState arg to satisfy new interface
+//
+//    Hank Childs, Wed Jul  7 17:01:23 PDT 2010
+//    Add better support for time.
+//
 // ****************************************************************************
 
 void
@@ -775,6 +779,10 @@ avtCosmosPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         md->Add(new avtVectorMetaData(vectorVarNames[i], "mesh", 
                                       AVT_ZONECENT, rank));
     }
+    md->SetTimes(times);
+    md->SetTimesAreAccurate(true);
+    md->SetCycles(cycles);
+    md->SetCyclesAreAccurate(true);
 }
 
 
