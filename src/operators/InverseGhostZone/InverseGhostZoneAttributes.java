@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class InverseGhostZoneAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 1;
+    private static int InverseGhostZoneAttributes_numAdditionalAtts = 2;
 
     // Enum values
     public final static int SHOWTYPE_GHOSTZONESONLY = 0;
@@ -68,22 +68,25 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
 
     public InverseGhostZoneAttributes()
     {
-        super(numAdditionalAttributes);
+        super(InverseGhostZoneAttributes_numAdditionalAtts);
 
+        requestGhostZones = true;
         showType = SHOWTYPE_GHOSTZONESONLY;
     }
 
     public InverseGhostZoneAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(InverseGhostZoneAttributes_numAdditionalAtts + nMoreFields);
 
+        requestGhostZones = true;
         showType = SHOWTYPE_GHOSTZONESONLY;
     }
 
     public InverseGhostZoneAttributes(InverseGhostZoneAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(InverseGhostZoneAttributes_numAdditionalAtts);
 
+        requestGhostZones = obj.requestGhostZones;
         showType = obj.showType;
 
         SelectAll();
@@ -96,43 +99,62 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return InverseGhostZoneAttributes_numAdditionalAtts;
     }
 
     public boolean equals(InverseGhostZoneAttributes obj)
     {
         // Create the return value
-        return ((showType == obj.showType));
+        return ((requestGhostZones == obj.requestGhostZones) &&
+                (showType == obj.showType));
     }
 
     public String GetName() { return "InverseGhostZone"; }
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
-    public void SetShowType(int showType_)
+    public void SetRequestGhostZones(boolean requestGhostZones_)
     {
-        showType = showType_;
+        requestGhostZones = requestGhostZones_;
         Select(0);
     }
 
+    public void SetShowType(int showType_)
+    {
+        showType = showType_;
+        Select(1);
+    }
+
     // Property getting methods
-    public int GetShowType() { return showType; }
+    public boolean GetRequestGhostZones() { return requestGhostZones; }
+    public int     GetShowType() { return showType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
+            buf.WriteBool(requestGhostZones);
+        if(WriteSelect(1, buf))
             buf.WriteInt(showType);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        SetShowType(buf.ReadInt());
+        switch(index)
+        {
+        case 0:
+            SetRequestGhostZones(buf.ReadBool());
+            break;
+        case 1:
+            SetShowType(buf.ReadInt());
+            break;
+        }
     }
 
     public String toString(String indent)
     {
         String str = new String();
+        str = str + boolToString("requestGhostZones", requestGhostZones, indent) + "\n";
         str = str + indent + "showType = ";
         if(showType == SHOWTYPE_GHOSTZONESONLY)
             str = str + "SHOWTYPE_GHOSTZONESONLY";
@@ -144,6 +166,7 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
 
 
     // Attributes
-    private int showType;
+    private boolean requestGhostZones;
+    private int     showType;
 }
 

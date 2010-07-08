@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: InverseGhostZoneAttributes
 //
@@ -65,13 +66,23 @@ public:
         GhostZonesAndRealZones
     };
 
+    // These constructors are for objects of this class
     InverseGhostZoneAttributes();
     InverseGhostZoneAttributes(const InverseGhostZoneAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    InverseGhostZoneAttributes(private_tmfs_t tmfs);
+    InverseGhostZoneAttributes(const InverseGhostZoneAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~InverseGhostZoneAttributes();
 
     virtual InverseGhostZoneAttributes& operator = (const InverseGhostZoneAttributes &obj);
     virtual bool operator == (const InverseGhostZoneAttributes &obj) const;
     virtual bool operator != (const InverseGhostZoneAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const InverseGhostZoneAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -82,9 +93,11 @@ public:
     virtual void SelectAll();
 
     // Property setting methods
+    void SetRequestGhostZones(bool requestGhostZones_);
     void SetShowType(ShowType showType_);
 
     // Property getting methods
+    bool GetRequestGhostZones() const;
     ShowType GetShowType() const;
 
     // Persistence methods
@@ -107,14 +120,19 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_showType = 0
+        ID_requestGhostZones = 0,
+        ID_showType,
+        ID__LAST
     };
 
 private:
-    int showType;
+    bool requestGhostZones;
+    int  showType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define INVERSEGHOSTZONEATTRIBUTES_TMFS "bi"
 
 #endif

@@ -226,3 +226,28 @@ avtInverseGhostZoneFilter::UpdateDataObjectInfo(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtInverseGhostZoneFilter::ModifyContract
+//
+//  Purpose:
+//      Request ghost zones if desired.
+//
+//  Programmer: Cyrus Harrison.
+//  Creation:   Thu Jul  8 13:01:33 PDT 2010
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+avtContract_p
+avtInverseGhostZoneFilter::ModifyContract(avtContract_p in_spec)
+{
+    avtContract_p contract = new avtContract(in_spec);
+
+    if(atts.GetRequestGhostZones())
+        contract->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+
+    return contract;
+}
+
