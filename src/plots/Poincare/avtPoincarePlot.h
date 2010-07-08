@@ -71,6 +71,9 @@ class     avtPoincareFilter;
 //   Dave Pugmire, Thu Jul  1 13:55:28 EDT 2010
 //   Switch to variablePointGlyphMapper
 //
+//   Dave Pugmire, Thu Jul  8 09:03:20 EDT 2010
+//   Add force node centering option.
+//
 // ****************************************************************************
 
 class avtPoincarePlot : public avtLineDataPlot

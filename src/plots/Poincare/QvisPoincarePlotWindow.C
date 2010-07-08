@@ -239,6 +239,12 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(absTolProcessText()));
     integrationLayout->addWidget(absTol, 3,1);
 
+    forceNodalLabel = new QLabel(tr("Force node centering"), integrationGroup);
+    forceNodal = new QCheckBox(integrationGroup);
+    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
+    integrationLayout->addWidget(forceNodalLabel, 4,0);
+    integrationLayout->addWidget(forceNodal, 4, 1);
+
     // Create the punctures group box.
     QGroupBox *puncturesGroup = new QGroupBox(firstTab);
     puncturesGroup->setTitle(tr("Punctures"));
@@ -1055,6 +1061,12 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             workGroupSize->blockSignals(true);
             workGroupSize->setValue(atts->GetWorkGroupSize());
             workGroupSize->blockSignals(false);
+            break;
+
+        case PoincareAttributes::ID_forceNodeCenteredData:
+            forceNodal->blockSignals(true);
+            forceNodal->setChecked(atts->GetForceNodeCenteredData());
+            forceNodal->blockSignals(false);
             break;
         }
     }
@@ -1888,3 +1900,9 @@ QvisPoincarePlotWindow::lineStyleChanged(int val)
     Apply();
 }
 
+void
+QvisPoincarePlotWindow::forceNodalChanged(bool val)
+{
+    atts->SetForceNodeCenteredData(val);
+    Apply();
+}

@@ -416,6 +416,7 @@ void PoincareAttributes::Init()
     maxStreamlineProcessCount = 10;
     maxDomainCacheSize = 3;
     workGroupSize = 32;
+    forceNodeCenteredData = false;
 
     PoincareAttributes::SelectAll();
 }
@@ -497,6 +498,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
     workGroupSize = obj.workGroupSize;
+    forceNodeCenteredData = obj.forceNodeCenteredData;
 
     PoincareAttributes::SelectAll();
 }
@@ -721,7 +723,8 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
             (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
             (maxDomainCacheSize == obj.maxDomainCacheSize) &&
-            (workGroupSize == obj.workGroupSize));
+            (workGroupSize == obj.workGroupSize) &&
+            (forceNodeCenteredData == obj.forceNodeCenteredData));
 }
 
 // ****************************************************************************
@@ -941,6 +944,7 @@ PoincareAttributes::SelectAll()
     Select(ID_maxStreamlineProcessCount, (void *)&maxStreamlineProcessCount);
     Select(ID_maxDomainCacheSize,        (void *)&maxDomainCacheSize);
     Select(ID_workGroupSize,             (void *)&workGroupSize);
+    Select(ID_forceNodeCenteredData,     (void *)&forceNodeCenteredData);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1281,6 +1285,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("workGroupSize", workGroupSize));
     }
 
+    if(completeSave || !FieldsEqual(ID_forceNodeCenteredData, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("forceNodeCenteredData", forceNodeCenteredData));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1531,6 +1541,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetMaxDomainCacheSize(node->AsInt());
     if((node = searchNode->GetNode("workGroupSize")) != 0)
         SetWorkGroupSize(node->AsInt());
+    if((node = searchNode->GetNode("forceNodeCenteredData")) != 0)
+        SetForceNodeCenteredData(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1900,6 +1912,13 @@ PoincareAttributes::SetWorkGroupSize(int workGroupSize_)
     Select(ID_workGroupSize, (void *)&workGroupSize);
 }
 
+void
+PoincareAttributes::SetForceNodeCenteredData(bool forceNodeCenteredData_)
+{
+    forceNodeCenteredData = forceNodeCenteredData_;
+    Select(ID_forceNodeCenteredData, (void *)&forceNodeCenteredData);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2240,6 +2259,12 @@ PoincareAttributes::GetWorkGroupSize() const
     return workGroupSize;
 }
 
+bool
+PoincareAttributes::GetForceNodeCenteredData() const
+{
+    return forceNodeCenteredData;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2349,6 +2374,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_maxStreamlineProcessCount: return "maxStreamlineProcessCount";
     case ID_maxDomainCacheSize:        return "maxDomainCacheSize";
     case ID_workGroupSize:             return "workGroupSize";
+    case ID_forceNodeCenteredData:     return "forceNodeCenteredData";
     default:  return "invalid index";
     }
 }
@@ -2424,6 +2450,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_maxStreamlineProcessCount: return FieldType_int;
     case ID_maxDomainCacheSize:        return FieldType_int;
     case ID_workGroupSize:             return FieldType_int;
+    case ID_forceNodeCenteredData:     return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -2499,6 +2526,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_maxStreamlineProcessCount: return "int";
     case ID_maxDomainCacheSize:        return "int";
     case ID_workGroupSize:             return "int";
+    case ID_forceNodeCenteredData:     return "bool";
     default:  return "invalid index";
     }
 }
@@ -2793,6 +2821,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_workGroupSize:
         {  // new scope
         retval = (workGroupSize == obj.workGroupSize);
+        }
+        break;
+    case ID_forceNodeCenteredData:
+        {  // new scope
+        retval = (forceNodeCenteredData == obj.forceNodeCenteredData);
         }
         break;
     default: retval = false;
