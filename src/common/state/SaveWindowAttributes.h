@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SaveWindowAttributes
 //
@@ -74,7 +75,8 @@ public:
         STL,
         TIFF,
         ULTRA,
-        VTK
+        VTK,
+        PLY
     };
     enum CompressionType
     {
@@ -90,13 +92,23 @@ public:
         ScreenProportions
     };
 
+    // These constructors are for objects of this class
     SaveWindowAttributes();
     SaveWindowAttributes(const SaveWindowAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SaveWindowAttributes(private_tmfs_t tmfs);
+    SaveWindowAttributes(const SaveWindowAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SaveWindowAttributes();
 
     virtual SaveWindowAttributes& operator = (const SaveWindowAttributes &obj);
     virtual bool operator == (const SaveWindowAttributes &obj) const;
     virtual bool operator != (const SaveWindowAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SaveWindowAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -198,7 +210,8 @@ public:
         ID_stereo,
         ID_compression,
         ID_forceMerge,
-        ID_resConstraint
+        ID_resConstraint,
+        ID__LAST
     };
 
 private:
@@ -222,6 +235,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SAVEWINDOWATTRIBUTES_TMFS "bssbiiibbibbsbibi"
 
 #endif

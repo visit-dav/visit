@@ -60,7 +60,8 @@ typedef enum
     STL,                  /* 2 */
     VTK,                  /* 3 */
     ULTRA,                /* 4 */
-    POVRAY                /* 5 */
+    POVRAY,               /* 5 */
+    PLY                   /* 6 */
 } DatasetFileFormat;
 
 
@@ -94,6 +95,9 @@ typedef enum
 //    Jeremy Meredith, Thu May 31 11:06:48 EDT 2007
 //    Added support for POVRay .df3 density files for volume rendering.
 //
+//    Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
+//    Added PLY writer.
+//
 // ****************************************************************************
 
 class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
@@ -113,6 +117,8 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
     char              *oldFileBase;
 
     void               WriteSTLFile(const char *, bool);
+
+    void               WritePLYFile(const char *, bool);
 
     void               WriteCurveFile(const char *);
 

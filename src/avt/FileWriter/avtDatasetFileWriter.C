@@ -56,6 +56,7 @@
 #include <vtkOBJWriter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkPLYWriter.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItSTLWriter.h>
 #include <vtkTriangleFilter.h>
@@ -67,7 +68,6 @@
 #include <ColorControlPoint.h>
 #include <AtomicProperties.h>
 #include <StringHelpers.h>
-
 #include <avtCommonDataFunctions.h>
 
 #include <DebugStream.h>
@@ -83,7 +83,7 @@
 // enumerated in the DatasetFileFormat enum.
 const char *avtDatasetFileWriter::extensions[] = { ".curve", ".obj",
                                                    ".stl", ".vtk", ".ultra",
-                                                   ".pov"};
+                                                   ".pov", ".ply"};
 
 static void SortLineSegments(vtkPolyData *, std::vector< std::vector<int> > &);
 static void TakeOffPolyLine(int *, int, std::vector< std::vector<int> > &);
@@ -164,6 +164,9 @@ avtDatasetFileWriter::~avtDatasetFileWriter()
 //    Jeremy Meredith, Thu Apr  5 17:23:37 EDT 2007
 //    Added POVRay file type.
 //
+//    Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
+//    Added PLY writer.
+//
 // ****************************************************************************
 
 void
@@ -189,6 +192,9 @@ avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
         break;
       case VTK:
         WriteVTKFamily(filename, binary);
+        break;
+      case PLY:
+        WritePLYFile(filename, binary);
         break;
 
       default:
@@ -628,6 +634,49 @@ avtDatasetFileWriter::WriteSTLFile(const char *filename, bool binary)
     }
     writer->SetFileName(filename);
     writer->SetInput(tris->GetOutput());
+    writer->Write();
+    writer->Delete();
+    ds->Delete();
+}
+
+// ****************************************************************************
+//  Method: avtDatasetFileWriter::WritePLYFile
+//
+//  Purpose:
+//      Writes out the input as a PLY file.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   July 8, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDatasetFileWriter::WritePLYFile(const char *filename, bool binary)
+{
+    vtkDataSet *ds = GetSingleDataset();
+    WriteVTKFile(ds, "VTK.vtk", false);
+
+    if (ds->GetDataObjectType() != VTK_POLY_DATA)
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    vtkPLYWriter *writer = vtkPLYWriter::New();
+    if (binary)
+        writer->SetFileTypeToBinary();
+    else
+        writer->SetFileTypeToASCII();
+
+    vtkDataArray *arr = ds->GetPointData()->GetScalars();
+    if (arr == NULL)
+        arr = ds->GetCellData()->GetScalars();
+    if (arr)
+        writer->SetArrayName(arr->GetName());
+    
+    writer->SetInput(ds);
+    writer->SetFileName(filename);
     writer->Write();
     writer->Delete();
     ds->Delete();

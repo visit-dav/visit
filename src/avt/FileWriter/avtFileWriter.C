@@ -115,6 +115,9 @@ avtFileWriter::~avtFileWriter()
 //    Jeremy Meredith, Thu Apr  5 17:23:37 EDT 2007
 //    Added POVRay data file format.
 //
+//    Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
+//    Added PLY writer.
+//
 // ****************************************************************************
 
 void
@@ -168,6 +171,11 @@ avtFileWriter::SetFormat(int f)
     else if (f == SaveWindowAttributes::STL)
     {
         dsFormat = STL;
+        isImage = false;
+    }
+    else if (f == SaveWindowAttributes::PLY)
+    {
+        dsFormat = PLY;
         isImage = false;
     }
     else if (f == SaveWindowAttributes::TIFF)
