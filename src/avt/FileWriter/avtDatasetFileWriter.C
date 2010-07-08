@@ -656,7 +656,6 @@ void
 avtDatasetFileWriter::WritePLYFile(const char *filename, bool binary)
 {
     vtkDataSet *ds = GetSingleDataset();
-    WriteVTKFile(ds, "VTK.vtk", false);
 
     if (ds->GetDataObjectType() != VTK_POLY_DATA)
     {
