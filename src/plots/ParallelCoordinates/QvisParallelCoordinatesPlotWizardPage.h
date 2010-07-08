@@ -36,66 +36,91 @@
 *
 *****************************************************************************/
 
-#ifndef QVIS_PARALLEL_COORDINATES_PLOT_WIZARD_H
-#define QVIS_PARALLEL_COORDINATES_PLOT_WIZARD_H
+#ifndef QVIS_PARALLEL_COORDINATES_PLOT_WIZARD_PAGE_H
+#define QVIS_PARALLEL_COORDINATES_PLOT_WIZARD_PAGE_H
 #include <QvisWizard.h>
 
 #include <vectortypes.h>
 #include <QMap>
 
+class QListWidget;
+class QPushButton;
+class QButtonGroup;
+class QFrame;
+class QLabel;
+class QvisParallelCoordinatesWidget;
 class avtDatabaseMetaData;
 class ExpressionList;
-class QvisParallelCoordinatesPlotWizardPage;
+
 
 // ****************************************************************************
-// Class: QvisParallelCoordinatesPlotWizard
+// Class: QvisParallelCoordinatesPlotWizardPage
 //
 // Purpose:
-//   This class is a wizard that helps the user choose variables for initial
-//   axes of a ParallelCoordinates plot.
+//   Wizard page that provides the interface for selecting axis variables.
 //
-// Notes: initial implementation taken from Mark Blair's ParallelAxis plot.
+// Notes: Refactored from QvisParallelCoordinatesPlotWizard.
 //
-// Programmer: Jeremy Meredith
-// Creation:   January 31, 2008
+// Programmer: Cyrus Harrison
+// Creation:   Thu Jul  8 09:02:28 PDT 2010
 //
 // Modifications:
-//    Jeremy Meredith, Thu Feb  7 12:58:15 EST 2008
-//    A wizard is needed because you can't reset the default plot attributes
-//    without a wizard's accept action having been called.  If you don't, then
-//    you'll have the wrong number of axes defined in the plot attributes.
-//    As such, I extended the wizard to support a "no-op" mode.
-//
-//    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port.
-//
-//    Cyrus Harrison, Wed May 13 08:28:27 PDT 2009
-//    Changed from sequential wizard style to a quicker list widget based gui.
-//
-//    Cyrus Harrison, Wed May 13 08:28:27 PDT 2009
-//    Refactored to remove the "done page & transported guts of main page
-//    into the QvisParallelCoordinatesPage class for better control of wizard
-//    interaction. This wizard is no longer used when the user creates a plot
-//    using an array variable.
 //
 // ****************************************************************************
 
-class QvisParallelCoordinatesPlotWizard : public QvisWizard
+class QvisParallelCoordinatesPlotWizardPage : public QWizardPage
 {
     Q_OBJECT
 public:
-    QvisParallelCoordinatesPlotWizard(AttributeSubject *s,
-                                      QWidget *parent,
-                                      const std::string &varName,
-                                      const avtDatabaseMetaData *md,
-                                      const ExpressionList *exprList);
-    ~QvisParallelCoordinatesPlotWizard();
+    QvisParallelCoordinatesPlotWizardPage(AttributeSubject *s,
+                                QWidget *parent,
+                                const std::string &varName,
+                                const avtDatabaseMetaData *md,
+                                const ExpressionList *exprList);
+
+    virtual ~QvisParallelCoordinatesPlotWizardPage();
+    void GetAxisNames(stringVector &res);
+
+
+protected slots:
+    void OnScalarVarSelectionChanged();
+    void OnAxisVarSelectionChanged();
+    void OnAddButtonPressed();
+    void OnUpButtonPressed();
+    void OnDownButtonPressed();
+    void OnRemoveButtonPressed();
 
 protected:
-    bool validateCurrentPage();
-    void SetParallelCoordinatesAttributes();
 
-    QvisParallelCoordinatesPlotWizardPage *mainPage;
+    virtual bool isComplete() const;
+
+    void  InitScalarVarNames(const avtDatabaseMetaData *md,
+                             const ExpressionList *expList);
+
+    void SetupAxisVariableSelectionPage();
+
+    void UpdateVarsList();
+    void UpdateAxisVarsList();
+    void UpdatePreview(QvisParallelCoordinatesWidget *preview);
+
+
+    bool                                  ready;
+    std::string                           varName;
+
+    QLabel                               *infoLbl;
+    QListWidget                          *varsList;
+    QListWidget                          *axisVarsList;
+    QPushButton                          *addButton;
+    QPushButton                          *upButton;
+    QPushButton                          *downButton;
+    QPushButton                          *removeButton;
+
+    QvisParallelCoordinatesWidget        *selectionPreview;
+
+    QStringList                           scalarVarNames;
+    QStringList                           scalarExprNames;
+    QStringList                           scalarDBExprNames;
+    QMap<QString,bool>                    usedVars;
 
 };
 

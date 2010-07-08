@@ -143,7 +143,7 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject 
 //
 // Returns:    A pointer to the new wizard
 //
-// Note:       
+// Note:
 //
 // Programmer: Mark Blair
 // Creation:   Wed Jun 21 19:02:00 PDT 2006
@@ -154,12 +154,15 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject 
 //    without a wizard's accept action having been called.  If you don't, then
 //    you'll have the wrong number of axes defined in the plot attributes.
 //    As such, I extended the wizard to support a "no-op" mode.
-//   
+//
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
-//    Initial Qt4 Port. 
+//    Initial Qt4 Port.
 //
 //    Cyrus Harrison, Mon Jul 21 08:33:47 PDT 2008
 //    Pass metadata & expression list to the QWizard constructor.
+//
+//    Cyrus Harrison, Thu Jul  8 08:59:35 PDT 2010
+//    Do not use wizard if the user selected an array variable.
 //
 // ****************************************************************************
 #include <QvisParallelCoordinatesPlotWizard.h>
@@ -172,12 +175,12 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
     QWidget *parent, const std::string &varName, const avtDatabaseMetaData *md,
     const ExpressionList *expList)
 {
-    bool doNothing = false;
+    bool showWizard  = true;
     if (md->GetScalar(varName) == NULL)
     {
         int expressionCount = expList->GetNumExpressions();
         int expNum;
-        
+
         for (expNum = 0; expNum < expressionCount; expNum++)
         {
             if (expList->GetExpressions(expNum).GetName() == varName)
@@ -187,14 +190,33 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
                     break;
             }
         }
-        
         if (expNum >= expressionCount)
-            doNothing = true;
+            showWizard = false;
     }
 
-    return (new QvisParallelCoordinatesPlotWizard(attr, parent, varName,
-                                                  md,expList,
-                                                  doNothing));
+    // use wizard if we are starting with a scalar.
+    if(showWizard)
+        return (new QvisParallelCoordinatesPlotWizard(attr, parent, varName,md,expList));
+    else
+    {
+        // setup para coords plot of array var without wizard
+        stringVector saxisNames;
+        stringVector vaxisNames;
+        doubleVector extMins;
+        doubleVector extMaxs;
+        saxisNames.push_back(varName);
+        vaxisNames.push_back(varName);
+        extMins.push_back(-1e+37);
+        extMaxs.push_back(+1e+37);
+        ParallelCoordinatesAttributes *pcoord_atts =(ParallelCoordinatesAttributes *)attr;
+
+        pcoord_atts->SetScalarAxisNames(saxisNames);
+        pcoord_atts->SetVisualAxisNames(vaxisNames);
+        pcoord_atts->SetExtentMinima(extMins);
+        pcoord_atts->SetExtentMaxima(extMaxs);
+        return NULL;
+    }
+
 }
 
 

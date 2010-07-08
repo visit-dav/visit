@@ -17,11 +17,13 @@ QvisParallelCoordinatesPlotWindow.C
 ${COMMON_SOURCES}
 QvisParallelCoordinatesWidget.C
 QvisParallelCoordinatesPlotWizard.C
+QvisParallelCoordinatesPlotWizardPage.C
 )
 SET(LIBG_MOC_SOURCES
 QvisParallelCoordinatesPlotWindow.h
 QvisParallelCoordinatesWidget.h
 QvisParallelCoordinatesPlotWizard.h
+QvisParallelCoordinatesPlotWizardPage.h
 )
 QT_WRAP_CPP(GParallelCoordinatesPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
@@ -122,5 +124,5 @@ IF(VISIT_PARALLEL)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
+
