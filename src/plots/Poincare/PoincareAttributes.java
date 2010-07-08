@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int PoincareAttributes_numAdditionalAtts = 51;
+    private static int PoincareAttributes_numAdditionalAtts = 52;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -167,6 +167,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         maxStreamlineProcessCount = 10;
         maxDomainCacheSize = 3;
         workGroupSize = 32;
+        forceNodeCenteredData = false;
     }
 
     public PoincareAttributes(int nMoreFields)
@@ -233,6 +234,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         maxStreamlineProcessCount = 10;
         maxDomainCacheSize = 3;
         workGroupSize = 32;
+        forceNodeCenteredData = false;
     }
 
     public PoincareAttributes(PoincareAttributes obj)
@@ -304,6 +306,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
         maxDomainCacheSize = obj.maxDomainCacheSize;
         workGroupSize = obj.workGroupSize;
+        forceNodeCenteredData = obj.forceNodeCenteredData;
 
         SelectAll();
     }
@@ -388,7 +391,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
                 (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
                 (maxDomainCacheSize == obj.maxDomainCacheSize) &&
-                (workGroupSize == obj.workGroupSize));
+                (workGroupSize == obj.workGroupSize) &&
+                (forceNodeCenteredData == obj.forceNodeCenteredData));
     }
 
     public String GetName() { return "Poincare"; }
@@ -731,6 +735,12 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(50);
     }
 
+    public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
+    {
+        forceNodeCenteredData = forceNodeCenteredData_;
+        Select(51);
+    }
+
     // Property getting methods
     public int            GetOpacityType() { return opacityType; }
     public double         GetOpacity() { return opacity; }
@@ -783,6 +793,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetMaxStreamlineProcessCount() { return maxStreamlineProcessCount; }
     public int            GetMaxDomainCacheSize() { return maxDomainCacheSize; }
     public int            GetWorkGroupSize() { return workGroupSize; }
+    public boolean        GetForceNodeCenteredData() { return forceNodeCenteredData; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -889,6 +900,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(maxDomainCacheSize);
         if(WriteSelect(50, buf))
             buf.WriteInt(workGroupSize);
+        if(WriteSelect(51, buf))
+            buf.WriteBool(forceNodeCenteredData);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1049,6 +1062,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         case 50:
             SetWorkGroupSize(buf.ReadInt());
             break;
+        case 51:
+            SetForceNodeCenteredData(buf.ReadBool());
+            break;
         }
     }
 
@@ -1176,6 +1192,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + intToString("maxStreamlineProcessCount", maxStreamlineProcessCount, indent) + "\n";
         str = str + intToString("maxDomainCacheSize", maxDomainCacheSize, indent) + "\n";
         str = str + intToString("workGroupSize", workGroupSize, indent) + "\n";
+        str = str + boolToString("forceNodeCenteredData", forceNodeCenteredData, indent) + "\n";
         return str;
     }
 
@@ -1232,5 +1249,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            maxStreamlineProcessCount;
     private int            maxDomainCacheSize;
     private int            workGroupSize;
+    private boolean        forceNodeCenteredData;
 }
 

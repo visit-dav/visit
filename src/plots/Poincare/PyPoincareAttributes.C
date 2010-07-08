@@ -425,6 +425,11 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sworkGroupSize = %d\n", prefix, atts->GetWorkGroupSize());
     str += tmpStr;
+    if(atts->GetForceNodeCenteredData())
+        SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -1888,6 +1893,30 @@ PoincareAttributes_GetWorkGroupSize(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+PoincareAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the forceNodeCenteredData in the object.
+    obj->data->SetForceNodeCenteredData(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetForceNodeCenteredData(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetForceNodeCenteredData()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
@@ -1994,6 +2023,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetMaxDomainCacheSize", PoincareAttributes_GetMaxDomainCacheSize, METH_VARARGS},
     {"SetWorkGroupSize", PoincareAttributes_SetWorkGroupSize, METH_VARARGS},
     {"GetWorkGroupSize", PoincareAttributes_GetWorkGroupSize, METH_VARARGS},
+    {"SetForceNodeCenteredData", PoincareAttributes_SetForceNodeCenteredData, METH_VARARGS},
+    {"GetForceNodeCenteredData", PoincareAttributes_GetForceNodeCenteredData, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -2203,6 +2234,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetMaxDomainCacheSize(self, NULL);
     if(strcmp(name, "workGroupSize") == 0)
         return PoincareAttributes_GetWorkGroupSize(self, NULL);
+    if(strcmp(name, "forceNodeCenteredData") == 0)
+        return PoincareAttributes_GetForceNodeCenteredData(self, NULL);
 
     return Py_FindMethod(PyPoincareAttributes_methods, self, name);
 }
@@ -2319,6 +2352,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetMaxDomainCacheSize(self, tuple);
     else if(strcmp(name, "workGroupSize") == 0)
         obj = PoincareAttributes_SetWorkGroupSize(self, tuple);
+    else if(strcmp(name, "forceNodeCenteredData") == 0)
+        obj = PoincareAttributes_SetForceNodeCenteredData(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

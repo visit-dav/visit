@@ -200,6 +200,7 @@ public:
     void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
     void SetMaxDomainCacheSize(int maxDomainCacheSize_);
     void SetWorkGroupSize(int workGroupSize_);
+    void SetForceNodeCenteredData(bool forceNodeCenteredData_);
 
     // Property getting methods
     Opacity              GetOpacityType() const;
@@ -258,6 +259,7 @@ public:
     int                  GetMaxStreamlineProcessCount() const;
     int                  GetMaxDomainCacheSize() const;
     int                  GetWorkGroupSize() const;
+    bool                 GetForceNodeCenteredData() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -369,6 +371,7 @@ public:
         ID_maxStreamlineProcessCount,
         ID_maxDomainCacheSize,
         ID_workGroupSize,
+        ID_forceNodeCenteredData,
         ID__LAST
     };
 
@@ -424,11 +427,12 @@ private:
     int            maxStreamlineProcessCount;
     int            maxDomainCacheSize;
     int            workGroupSize;
+    bool           forceNodeCenteredData;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiDDDiidddiiddiiiidddbbiasibibibbbbbiibdiibbiiii"
+#define POINCAREATTRIBUTES_TMFS "idiiiDDDiidddiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
 
 #endif
