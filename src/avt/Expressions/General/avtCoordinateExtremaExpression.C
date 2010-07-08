@@ -42,9 +42,15 @@
 
 #include <avtCoordinateExtremaExpression.h>
 
+#include <math.h>
+
+#include <avtExprNode.h>
+
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
-#include <vtkRectilinearGrid.h>
+#include <vtkIdList.h>
+
+#include <ExpressionException.h>
 
 
 // ****************************************************************************
@@ -57,12 +63,17 @@
 //  Programmer: Hank Childs
 //  Creation:   June 28, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jul  8 06:48:38 PDT 2010
+//    Add support for polar coordinates.
+//
 // ****************************************************************************
 
 avtCoordinateExtremaExpression::avtCoordinateExtremaExpression()
 {
     getMinimum = true;
-    dim = 0;
+    coordinateType = CT_X;
 }
 
 
@@ -109,15 +120,154 @@ avtCoordinateExtremaExpression::DeriveVariable(vtkDataSet *in_ds)
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfComponents(1);
     rv->SetNumberOfTuples(ncells);
-    for (int i = 0 ; i < ncells ; i++)
+    if (coordinateType == CT_X || 
+        coordinateType == CT_Y || 
+        coordinateType == CT_Z)
     {
-        double bbox[6];
-        in_ds->GetCellBounds(i, bbox);
-        int idx = 2*dim + (getMinimum ? 0 : 1);
-        rv->SetTuple1(i, bbox[idx]);
+        int dim = 0;
+        if (coordinateType == CT_X)
+            dim = 0;
+        else if (coordinateType == CT_Y)
+            dim = 1;
+        else if (coordinateType == CT_Z)
+            dim = 2;
+        for (int i = 0 ; i < ncells ; i++)
+        {
+            double bbox[6];
+            in_ds->GetCellBounds(i, bbox);
+            int idx = 2*dim + (getMinimum ? 0 : 1);
+            rv->SetTuple1(i, bbox[idx]);
+        }
+    }
+    if (coordinateType == CT_Radius ||
+        coordinateType == CT_Theta ||
+        coordinateType == CT_Phi)
+    {
+        vtkIdList *ptIds = vtkIdList::New();
+        for (int i = 0 ; i < ncells ; i++)
+        {
+            double mostExtreme;
+            if (coordinateType == CT_Radius)
+                mostExtreme = (getMinimum ? 1e+40 : 0.);
+            else if (coordinateType == CT_Theta)
+                mostExtreme = (getMinimum ? 10 : 0.);
+            else if (coordinateType == CT_Phi)
+                mostExtreme = (getMinimum ? 10 : 0.);
+
+            in_ds->GetCellPoints(i, ptIds);
+            int nIds = ptIds->GetNumberOfIds();
+            for (int j = 0 ; j < nIds ; j++)
+            {
+                double pt[3];
+                in_ds->GetPoint(ptIds->GetId(j), pt);
+                double thisPointsValue;
+                if (coordinateType == CT_Radius)
+                    thisPointsValue = sqrt(pt[0]*pt[0]+pt[1]*pt[1]+pt[2]*pt[2]);
+                else if (coordinateType == CT_Theta)
+                    thisPointsValue = atan2(pt[1], pt[0]);
+                else if (coordinateType == CT_Phi)
+                {
+                    double r = sqrt(pt[0]*pt[0]+pt[1]*pt[1]+pt[2]*pt[2]);
+                    thisPointsValue = acos(pt[2]/r);
+                }
+
+                if (getMinimum)
+                    mostExtreme = (thisPointsValue < mostExtreme ? thisPointsValue : mostExtreme);
+                else
+                    mostExtreme = (thisPointsValue > mostExtreme ? thisPointsValue : mostExtreme);
+            }
+            rv->SetTuple1(i, mostExtreme);
+        }
+        ptIds->Delete();
     }
 
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGradientExpression::ProcessArguments
+//
+//  Purpose:
+//      Parses optional algorithm argument.
+//
+//  Arguments:
+//      args      Expression arguments
+//      state     Expression pipeline state
+//
+//  Programmer:   Hank Childs
+//  Creation:     July 8, 2010
+//
+// ****************************************************************************
+
+void
+avtCoordinateExtremaExpression::ProcessArguments(ArgsExpr *args,
+                                        ExprPipelineState *state)
+{
+    // get the argument list and # of arguments
+    std::vector<ArgExpr*> *arguments = args->GetArgs();
+    int nargs = arguments->size();
+
+    // check for call with no args
+    if (nargs != 2)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "min_coords() Incorrect syntax.\n"
+                   " usage: min_coords(meshname, axis)\n"
+                   " The axis parameter "
+                   "specifies which axis to find the minimum over.\n"
+                   "Valid Options:\n"
+                   " \"X\", "
+                   " \"Y\", "
+                   " \"Z\", "
+                   " \"Radius\", "
+                   " \"Theta\", "
+                   " \"Phi\"\n");
+    }
+
+    // first argument is the var name, let it do its own magic
+    ArgExpr *first_arg = (*arguments)[0];
+    avtExprNode *first_tree = dynamic_cast<avtExprNode*>(first_arg->GetExpr());
+    first_tree->CreateFilters(state);
+
+    ArgExpr *second_arg= (*arguments)[1];
+    ExprParseTreeNode *second_tree= second_arg->GetExpr();
+    string second_type = second_tree->GetTypeName();
+
+    if ((second_type == "StringConst"))
+    {
+        string sval =
+                    dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
+
+        if (sval == "X")
+            coordinateType = CT_X;
+        else if (sval == "Y")
+            coordinateType = CT_Y;
+        else if (sval == "Z")
+            coordinateType = CT_Z;
+        else if (sval == "Radius")
+            coordinateType = CT_Radius;
+        else if (sval == "Theta")
+            coordinateType = CT_Theta;
+        else if (sval == "Phi")
+            coordinateType = CT_Phi;
+        else
+        {
+            EXCEPTION2(ExpressionException, outputVariableName,
+            "avtCoordinateExtremaExpression: Invalid second argument.\n"
+               " Valid options are: \"X\", \"Y\", \"Z\", \"Radius\", \"Theta\", "
+               " \"Phi\".");
+        }
+    }
+    else // invalid arg type
+    {
+
+        EXCEPTION2(ExpressionException, outputVariableName,
+        "avtCoordinateExtremaExpression: Expects a string second "
+        "argument.\n"
+        " Valid options are: \"X\", \"Y\", \"Z\", \"Radius\", \"Theta\", "
+           "\"Phi\".");
+    }
 }
 
 

@@ -66,6 +66,9 @@
 //   Hank Childs, Mon Jun 28 06:43:20 PDT 2010
 //   Add avtCoordinateExtrema.
 //
+//   Hank Childs, Thu Jul  8 08:11:06 PDT 2010
+//   Change coordinate extrema to include polar coordinates.
+//   
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -162,46 +165,16 @@ avtFunctionExpr::CreateMeshFilters(const string &functionName) const
     {
         return new avtZoneTypeExpression();
     }
-    else if (functionName == "minx_coord")
+    else if (functionName == "min_coord")
     {
         avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
         ce->SetGetMinimum(true);
-        ce->SetDimension(0);
         return ce;
     }
-    else if (functionName == "maxx_coord")
+    else if (functionName == "max_coord")
     {
         avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
         ce->SetGetMinimum(false);
-        ce->SetDimension(0);
-        return ce;
-    }
-    else if (functionName == "miny_coord")
-    {
-        avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
-        ce->SetGetMinimum(true);
-        ce->SetDimension(1);
-        return ce;
-    }
-    else if (functionName == "maxy_coord")
-    {
-        avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
-        ce->SetGetMinimum(false);
-        ce->SetDimension(1);
-        return ce;
-    }
-    else if (functionName == "minz_coord")
-    {
-        avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
-        ce->SetGetMinimum(true);
-        ce->SetDimension(2);
-        return ce;
-    }
-    else if (functionName == "maxz_coord")
-    {
-        avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
-        ce->SetGetMinimum(false);
-        ce->SetDimension(1);
         return ce;
     }
 

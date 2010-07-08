@@ -165,6 +165,11 @@
 //    Cyrus Harrison, Wed Jul  7 09:34:00 PDT 2010
 //    Added 'zonal_constant' and 'nodal_constant'
 //
+//    Hank Childs, Thu Jul  8 08:12:26 PDT 2010
+//    Retire [min|max][x|y|z] coord, replaced with min_coord and max_coord.
+//    Adding polar coordinates and I really didn't think there should be
+//    12 expressions for this minor functionality.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -320,12 +325,8 @@ const char *expr_mesh[] = {
     "external_node",
     "global_nodeid",
     "global_zoneid",
-    "maxx_coord",
-    "maxy_coord",
-    "maxz_coord",
-    "minx_coord",
-    "miny_coord",
-    "minz_coord",
+    "max_coord",
+    "min_coord",
     "nodeid",
     "polar",
     "polar_radius",
@@ -1566,6 +1567,9 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Dave Pugmire, Fri Jul  2 14:22:34 EDT 2010
 //    Added 'zonal_constant' & 'nodal_constant'.
 //
+//    Hank Childs, Thu Jul  8 08:14:23 PDT 2010
+//    Added min_coord and max_coord.
+//    
 // ****************************************************************************
 
 QString
@@ -1666,6 +1670,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "resample")
     {
         res += QString("(<var>, sX, sY, sZ)");
+        doParens = false;
+    }
+    else if (func_name == "min_coord" || func_name == "max_coord")
+    {
+        res += QString("(<mesh>, [\"X\", \"Y\", \"Z\", \"Radius\", \"Theta\", \"Phi\"])");
         doParens = false;
     }
     else if(func_name == "value_for_material")

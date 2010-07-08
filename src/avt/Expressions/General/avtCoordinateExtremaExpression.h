@@ -46,6 +46,17 @@
 #include <avtSingleInputExpressionFilter.h>
 
 
+typedef enum
+{
+    CT_X = 0,
+    CT_Y,
+    CT_Z,
+    CT_Radius,
+    CT_Theta,
+    CT_Phi,
+} CoordinateType;
+
+
 // ****************************************************************************
 //  Class: avtCoordinateExtremaExpression
 //
@@ -55,6 +66,11 @@
 //
 //  Programmer: Hank Childs
 //  Creation:   June 28, 2010
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Jul  8 06:46:53 PDT 2010
+//    Add support for polar coordinates; add parsing of arguments.
 //
 // ****************************************************************************
 
@@ -70,12 +86,13 @@ class EXPRESSION_API avtCoordinateExtremaExpression
     virtual const char       *GetDescription(void)
                                     { return "Calculating coordinate extrema"; };
 
+    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
+
     void                      SetGetMinimum(bool gm) { getMinimum = gm; };
-    void                      SetDimension(int d) { dim = d; };
 
   protected:
     bool                      getMinimum;
-    int                       dim;
+    CoordinateType            coordinateType;
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual int               GetVariableDimension() { return 1; }
