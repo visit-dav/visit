@@ -227,7 +227,7 @@ Buffer::Init(int buffer_size)
 /*****************************************************************************
  * Function: Buffer::Init
  *
- * Purpose: 
+ * Purpose:
  *   Inits buffer to given type and size.
  *
  * Programmer: Cyrus Harrison
@@ -268,6 +268,9 @@ Buffer::Init(int type_id, int data_size)
  * Creation:   Wed Jan  7 10:05:02 PST 2009
  *
  * Modifications:
+ *   Cyrus Harrison, Fri Jul  9 10:31:03 PDT 2010
+ *   Use pickle to encode empty python sequences & use faster
+ *   PyObject_CallFunctionObjArgs() instead of PyObject_CallFunction().
  *
  * ***************************************************************************/
 void
@@ -301,6 +304,10 @@ Buffer::Init(PyObject *py_obj)
         PyObject *py_seq  = PySequence_Fast(py_obj,"Expected Sequence");
         int length = PySequence_Size(py_seq);
 
+        // if we have an empty sequence let pickle take care of it.
+        if(length == 0)
+            pickle=true;
+
         // check for list type all numeric entries 
         for(int i=0; i < length && !pickle; i++)
         {
@@ -315,7 +322,6 @@ Buffer::Init(PyObject *py_obj)
             double *ptr = DataAsDoublePtr();
             for(int i=0; i < length; i++)
             {
-                // TODO
                 PyObject *py_itm = PySequence_Fast_GET_ITEM(py_seq,i); // borrowed
                 PyObject *py_val = PyNumber_Float(py_itm);
                 ptr[i] = PyFloat_AS_DOUBLE(py_val);
@@ -329,8 +335,11 @@ Buffer::Init(PyObject *py_obj)
 
     if(pickle)
     {
-        PyObject *res=PyObject_CallFunction(pickleDumps, (char*)"O", py_obj);
-        // TODO
+        PyObject *res = PyObject_CallFunctionObjArgs(pickleDumps,py_obj,NULL);
+        // This case should't occur, but print an error msg just in case.
+        if(res == NULL || PyErr_Occurred())
+            PyErr_Print();
+
         Init(res);
         // Init will set the type to string - override it to identify as
         // and object.
@@ -410,6 +419,9 @@ Buffer::MPIType()
  * Creation:   Wed Jan  7 10:05:02 PST 2009
  *
  * Modifications:
+ *   Cyrus Harrison, Fri Jul  9 10:31:03 PDT 2010
+ *   Use faster PyObject_CallFunctionObjArgs() instead of
+ *   PyObject_CallFunction().
  *
  * ***************************************************************************/
 PyObject *
@@ -450,7 +462,10 @@ Buffer::ToPyObject()
         PyObject *py_str = PyString_FromStringAndSize(ptr,data_size-1);
         if(type_id == STRING)
             return py_str;
-        PyObject *res=PyObject_CallFunction(pickleLoads, (char*)"O", py_str);
+        PyObject *res=PyObject_CallFunctionObjArgs(pickleLoads,py_str,NULL);
+        // This case should't occur, but print an error msg just in case.
+        if(res == NULL || PyErr_Occurred())
+            PyErr_Print();
         Py_DECREF(py_str);
         return res;
     }
