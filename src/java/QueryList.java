@@ -78,6 +78,7 @@ public class QueryList extends AttributeSubject
     public final static int WINDOWTYPE_HOHLRAUMFLUX = 10;
     public final static int WINDOWTYPE_CONNCOMPSUMMARY = 11;
     public final static int WINDOWTYPE_SHAPELETSDECOMP = 12;
+    public final static int WINDOWTYPE_XRAYIMAGE = 13;
 
     public final static int GROUPS_CURVERELATED = 0;
     public final static int GROUPS_MESHRELATED = 1;
