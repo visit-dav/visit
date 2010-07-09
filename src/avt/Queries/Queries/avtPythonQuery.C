@@ -364,7 +364,7 @@ avtPythonQuery::UpdateContract()
     if(py_exe == NULL)
         PYQUERY_ERROR("avtPythonQuery::UpdateContract Error - "
                       "Error preparing for call of 'modify_contract' method.");
-    
+
     // call with py_dsets, py_domids
     PyObject *py_exe_res = PyObject_CallMethodObjArgs(py_filter,
                                                       py_exe,
@@ -408,6 +408,17 @@ avtPythonQuery::UpdateContract()
             PYQUERY_ERROR("avtPythonQuery::UpdateContract Error - "
                       "Unable to add secondary variable name to Python filter "
                       "'input_var_names' list.");
+    }
+
+    // get any other args
+    std::string args_str = varNames[varNames.size()-1];
+    if(args_str != "")
+    {
+        PyObject *py_args = pyEnv->Unpickle(args_str);
+        if(!pyEnv->Filter()->SetAttribute("arguments",py_args))
+            PYQUERY_ERROR("avtPythonQuery::UpdateContract Error - "
+                      "Unable to set Python Query 'arguments' attribute.");
+        Py_DECREF(py_args);
     }
 
     // set "float_format"

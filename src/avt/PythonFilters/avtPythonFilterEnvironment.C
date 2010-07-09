@@ -49,7 +49,14 @@
 
 using namespace std;
 
+// static vars
 PythonInterpreter *avtPythonFilterEnvironment::pyi=NULL;
+
+// (pickle related)
+bool      avtPythonFilterEnvironment::pickleReady=false;
+PyObject *avtPythonFilterEnvironment::pickleDumps=NULL;
+PyObject *avtPythonFilterEnvironment::pickleLoads=NULL;
+
 
 // ****************************************************************************
 //  Method:  avtPythonFilterEnvironment constructor
@@ -316,4 +323,96 @@ avtPythonFilterEnvironment::FetchPythonError(string &msg_out)
         pyi->ClearError();
     }
     return res;
+}
+
+
+// ****************************************************************************
+//  Method: avtPythonScriptExpression::Pickle
+//
+//  Purpose:
+//      Pickles a python object to a string.
+//
+//  Programmer:   Cyrus Harrison
+//  Creation:     Fri Jul  9 13:54:40 PDT 2010
+//
+// ****************************************************************************
+
+std::string
+avtPythonFilterEnvironment::Pickle(PyObject *py_obj)
+{
+    if(!pickleReady)
+        PickleInit();
+
+    PyObject *res_obj = PyObject_CallFunctionObjArgs(pickleDumps,py_obj,NULL);
+    if(res_obj == NULL)
+    {
+        debug5 << "avtPythonFilterEnvironment::Pickle Error - "
+               << "could not pickle object." << endl;
+        return std::string("");
+    }
+
+    char *res_cstr = PyString_AS_STRING(res_obj);
+    std::string res(res_cstr);
+    Py_DECREF(res_obj);
+    return res;
+}
+
+// ****************************************************************************
+//  Method: avtPythonScriptExpression::Unpickle
+//
+//  Purpose:
+//      Unpickles a python object from a string.
+//
+//  Programmer:   Cyrus Harrison
+//  Creation:     Fri Jul  9 13:54:40 PDT 2010
+//
+// ****************************************************************************
+
+PyObject *
+avtPythonFilterEnvironment::Unpickle(const std::string &s)
+{
+    PyObject *res = NULL;
+    if(!pickleReady)
+        PickleInit();
+
+    PyObject *py_str_obj = PyString_FromString(s.c_str());
+    res = PyObject_CallFunctionObjArgs(pickleLoads,py_str_obj,NULL);
+
+    if(res == NULL)
+    {
+        debug5 << "avtPythonFilterEnvironment::Pickle Error - "
+               << "could not unpickle given string." << endl;
+    }
+
+    Py_DECREF(py_str_obj);
+    return res;
+}
+
+// ****************************************************************************
+//  Method: avtPythonScriptExpression::PickleInit
+//
+//  Purpose:
+//      Loads the pickle module for use with Pickle() & Unpickle()
+//
+//  Programmer:   Cyrus Harrison
+//  Creation:     Fri Jul  9 13:54:40 PDT 2010
+//
+// ****************************************************************************
+
+void
+avtPythonFilterEnvironment::PickleInit()
+{
+    if(!pickleReady)
+    {
+        PyObject *pickleModule = PyImport_ImportModule("pickle"); // new ref
+        PyObject *pickleDict   = PyModule_GetDict(pickleModule);  // borrowed
+
+        pickleDumps  = PyDict_GetItemString(pickleDict, "dumps"); // borrowed
+        pickleLoads  = PyDict_GetItemString(pickleDict, "loads"); // borrowed
+        Py_INCREF(pickleDumps); 
+        Py_INCREF(pickleLoads);
+
+        Py_DECREF(pickleModule);
+        pickleReady = true;
+    }
 }
