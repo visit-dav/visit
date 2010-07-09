@@ -55,6 +55,11 @@
 //  Programmer:  Cyrus Harrison
 //  Creation:    Tue Feb  2 13:14:44 PST 2010
 //
+//  Modifications:
+//   Cyrus Harrison, Fri Jul  9 10:31:03 PDT 2010
+//   Use a singleton instance of the interpreter b/c python setup & teardown
+//   does not work reliably w/ c modules that use static vars.
+//
 // ****************************************************************************
 class AVTPYTHON_FILTERS_API avtPythonFilterEnvironment
 {
@@ -65,7 +70,6 @@ public:
     bool         Initialize();
     bool         LoadFilter(const std::string &py_script);
     bool         FetchPythonError(std::string &msg_out);
-    void         Shutdown();
 
     PyObject    *WrapVTKObject(void *obj,
                                const std::string &obj_type);
@@ -77,8 +81,8 @@ public:
     avtPythonFilter    *Filter() { return pyFilter;}
 
 private:
-    PythonInterpreter  *pyi;
-    avtPythonFilter    *pyFilter;
+    static PythonInterpreter  *pyi;
+    avtPythonFilter           *pyFilter;
 
 };
 
