@@ -49,18 +49,25 @@
 
 using namespace std;
 
+PythonInterpreter *avtPythonFilterEnvironment::pyi=NULL;
+
 // ****************************************************************************
 //  Method:  avtPythonFilterEnvironment constructor
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    Tue Feb  2 13:14:44 PST 2010
 //
+//  Modifications:
+//   Cyrus Harrison, Fri Jul  9 10:31:03 PDT 2010
+//   Init singleton instance of the python interpreter.
+//
 // ****************************************************************************
 
 avtPythonFilterEnvironment::avtPythonFilterEnvironment()
-: pyi(NULL), pyFilter(NULL)
+: pyFilter(NULL)
 {
-    pyi = new PythonInterpreter();
+    if(pyi == NULL)
+        pyi = new PythonInterpreter();
 }
 
 // ****************************************************************************
@@ -69,12 +76,18 @@ avtPythonFilterEnvironment::avtPythonFilterEnvironment()
 //  Programmer:  Cyrus Harrison
 //  Creation:    Tue Feb  2 13:14:44 PST 2010
 //
+//  Modifications:
+//   Cyrus Harrison, Fri Jul  9 10:31:03 PDT 2010
+//   Handle filter cleanup. This was previously done in the 'Shutdown'
+//   method, which was removed due to the singleton use of the python
+//   interpreter.
+//
 // ****************************************************************************
 
 avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 {
-    Shutdown();
-    delete pyi;
+    if(pyFilter)
+        delete pyFilter; // calls decref
 }
 
 
@@ -90,7 +103,7 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //  Programmer:   Cyrus Harrison
 //  Creation:     Tue Feb  2 13:14:44 PST 2010
 //
-//  Modifications: 
+//  Modifications:
 //    Kathleen Bonnell, Wed Mar 24 16:17:23 MST 2010
 //    Retrieve VISITARCHHOME via GetVisItArchitectureDirectory.
 //    Remove slash from end of paths passed to AddSystemPath.
@@ -203,25 +216,6 @@ avtPythonFilterEnvironment::LoadFilter(const string &py_script)
 
 
 // ****************************************************************************
-//  Method: avtPythonFilterEnvironment::Shutdown
-//
-//  Purpose:
-//      Cleanup python filter environment.
-//
-//  Programmer:   Cyrus Harrison
-//  Creation:     Tue Feb  2 13:14:44 PST 2010
-//
-// ****************************************************************************
-void
-avtPythonFilterEnvironment::Shutdown()
-{
-    if(pyFilter)
-        delete pyFilter; // calls decref
-    pyi->Shutdown();
-}
-
-
-// ****************************************************************************
 //  Method: avtPythonFilterEnvironment::WrapVTKObject
 //
 //  Purpose:
@@ -245,7 +239,7 @@ avtPythonFilterEnvironment::WrapVTKObject(void *obj,
     // vtk constructor needs a string of the objects address.
     oss << (void *) obj;
     // remove 0x from front of string
-    
+
     if (oss.str().substr(0, 2) == "0x")   
         addy_str = oss.str().substr(2);
     else 
