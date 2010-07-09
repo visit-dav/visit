@@ -378,8 +378,12 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetMaxPunctures(atts.GetMaxPunctures());
     
     vtkPlane *intPlane = vtkPlane::New();
-    intPlane->SetOrigin( 0,0,0 ); 
-    intPlane->SetNormal( 0,1,0 ); 
+    intPlane->SetOrigin( 0,0,0 );
+
+    if ( atts.GetPuncturePlane() == PoincareAttributes::Toroidal )
+      intPlane->SetNormal( 0,0,1 );
+    else if ( atts.GetPuncturePlane() == PoincareAttributes::Poloidal )
+      intPlane->SetNormal( 0,1,0 );
     poincareFilter->SetIntersectionObject(intPlane);    
     intPlane->Delete();
     

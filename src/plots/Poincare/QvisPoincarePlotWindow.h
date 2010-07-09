@@ -112,6 +112,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void pointDensityChanged(int val);
     void minPuncturesChanged(int val);
     void maxPuncturesChanged(int val);
+    void puncturePlaneChanged(int val);
     void integrationTypeChanged(int val);
     void maxStepLengthProcessText();
     void relTolProcessText();
@@ -161,6 +162,9 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     int plotType;
     QSpinBox  *minPunctures;
     QSpinBox  *maxPunctures;
+    QLabel       *puncturePlaneLabel;
+    QWidget      *puncturePlane;
+    QButtonGroup *puncturePlaneButtonGroup;
     QWidget   *sourceType;
     QComboBox *sourceTypeCombo;
     QLineEdit *pointSource;

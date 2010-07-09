@@ -193,6 +193,43 @@ PoincareAttributes::ShowMeshType_FromString(const std::string &s, PoincareAttrib
 }
 
 //
+// Enum conversion methods for PoincareAttributes::PuncturePlaneType
+//
+
+static const char *PuncturePlaneType_strings[] = {
+"Poloidal", "Toroidal"};
+
+std::string
+PoincareAttributes::PuncturePlaneType_ToString(PoincareAttributes::PuncturePlaneType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return PuncturePlaneType_strings[index];
+}
+
+std::string
+PoincareAttributes::PuncturePlaneType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return PuncturePlaneType_strings[index];
+}
+
+bool
+PoincareAttributes::PuncturePlaneType_FromString(const std::string &s, PoincareAttributes::PuncturePlaneType &val)
+{
+    val = PoincareAttributes::Poloidal;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == PuncturePlaneType_strings[i])
+        {
+            val = (PuncturePlaneType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for PoincareAttributes::ColoringMethod
 //
 
@@ -366,6 +403,7 @@ void PoincareAttributes::Init()
     opacity = 1;
     minPunctures = 10;
     maxPunctures = 100;
+    puncturePlane = Poloidal;
     sourceType = SpecifiedPoint;
     pointSource[0] = 0;
     pointSource[1] = 0;
@@ -442,6 +480,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     opacity = obj.opacity;
     minPunctures = obj.minPunctures;
     maxPunctures = obj.maxPunctures;
+    puncturePlane = obj.puncturePlane;
     sourceType = obj.sourceType;
     pointSource[0] = obj.pointSource[0];
     pointSource[1] = obj.pointSource[1];
@@ -677,6 +716,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (opacity == obj.opacity) &&
             (minPunctures == obj.minPunctures) &&
             (maxPunctures == obj.maxPunctures) &&
+            (puncturePlane == obj.puncturePlane) &&
             (sourceType == obj.sourceType) &&
             pointSource_equal &&
             lineStart_equal &&
@@ -897,6 +937,7 @@ PoincareAttributes::SelectAll()
     Select(ID_opacity,                   (void *)&opacity);
     Select(ID_minPunctures,              (void *)&minPunctures);
     Select(ID_maxPunctures,              (void *)&maxPunctures);
+    Select(ID_puncturePlane,             (void *)&puncturePlane);
     Select(ID_sourceType,                (void *)&sourceType);
     Select(ID_pointSource,               (void *)pointSource, 3);
     Select(ID_lineStart,                 (void *)lineStart, 3);
@@ -999,6 +1040,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("maxPunctures", maxPunctures));
+    }
+
+    if(completeSave || !FieldsEqual(ID_puncturePlane, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("puncturePlane", PuncturePlaneType_ToString(puncturePlane)));
     }
 
     if(completeSave || !FieldsEqual(ID_sourceType, &defaultObject))
@@ -1349,6 +1396,22 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetMinPunctures(node->AsInt());
     if((node = searchNode->GetNode("maxPunctures")) != 0)
         SetMaxPunctures(node->AsInt());
+    if((node = searchNode->GetNode("puncturePlane")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetPuncturePlane(PuncturePlaneType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            PuncturePlaneType value;
+            if(PuncturePlaneType_FromString(node->AsString(), value))
+                SetPuncturePlane(value);
+        }
+    }
     if((node = searchNode->GetNode("sourceType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1575,6 +1638,13 @@ PoincareAttributes::SetMaxPunctures(int maxPunctures_)
 {
     maxPunctures = maxPunctures_;
     Select(ID_maxPunctures, (void *)&maxPunctures);
+}
+
+void
+PoincareAttributes::SetPuncturePlane(PoincareAttributes::PuncturePlaneType puncturePlane_)
+{
+    puncturePlane = puncturePlane_;
+    Select(ID_puncturePlane, (void *)&puncturePlane);
 }
 
 void
@@ -1945,6 +2015,12 @@ int
 PoincareAttributes::GetMaxPunctures() const
 {
     return maxPunctures;
+}
+
+PoincareAttributes::PuncturePlaneType
+PoincareAttributes::GetPuncturePlane() const
+{
+    return PuncturePlaneType(puncturePlane);
 }
 
 PoincareAttributes::SourceType
@@ -2327,6 +2403,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_opacity:                   return "opacity";
     case ID_minPunctures:              return "minPunctures";
     case ID_maxPunctures:              return "maxPunctures";
+    case ID_puncturePlane:             return "puncturePlane";
     case ID_sourceType:                return "sourceType";
     case ID_pointSource:               return "pointSource";
     case ID_lineStart:                 return "lineStart";
@@ -2403,6 +2480,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_opacity:                   return FieldType_opacity;
     case ID_minPunctures:              return FieldType_int;
     case ID_maxPunctures:              return FieldType_int;
+    case ID_puncturePlane:             return FieldType_enum;
     case ID_sourceType:                return FieldType_enum;
     case ID_pointSource:               return FieldType_doubleArray;
     case ID_lineStart:                 return FieldType_doubleArray;
@@ -2479,6 +2557,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_opacity:                   return "opacity";
     case ID_minPunctures:              return "int";
     case ID_maxPunctures:              return "int";
+    case ID_puncturePlane:             return "enum";
     case ID_sourceType:                return "enum";
     case ID_pointSource:               return "doubleArray";
     case ID_lineStart:                 return "doubleArray";
@@ -2571,6 +2650,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_maxPunctures:
         {  // new scope
         retval = (maxPunctures == obj.maxPunctures);
+        }
+        break;
+    case ID_puncturePlane:
+        {  // new scope
+        retval = (puncturePlane == obj.puncturePlane);
         }
         break;
     case ID_sourceType:
@@ -2900,6 +2984,8 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
 
             minPunctures != obj.minPunctures ||
             maxPunctures != obj.maxPunctures ||
+
+            puncturePlane != obj.puncturePlane ||
 
             integrationType != obj.integrationType ||
             maxStepLength != obj.maxStepLength ||
