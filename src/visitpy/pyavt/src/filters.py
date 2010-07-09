@@ -2,12 +2,14 @@
 # Python Module: filters
 #
 # Purpose: Base classes for embedded python filters.
-# 
+#
 # Programmer: Cyrus Harrison
 # Creation: Thu Mar  5 09:25:47 PST 2009
 #
 #
 # Modifications:
+#  Cyrus Harrison, Fri Jul  9 14:25:32 PDT 2010
+#  Added 'arguments' member to python query base class.
 #
 ###############################################################################
 
@@ -126,6 +128,7 @@ class PythonQuery(PythonFilter):
         self.result_obj  = None
         self.float_format = "%g"
         self.input_var_names = []
+        self.arguments       = []
     def pre_execute(self):
         """
         Called before streamining execute of all chunks.

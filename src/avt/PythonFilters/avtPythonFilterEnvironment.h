@@ -60,6 +60,9 @@
 //   Use a singleton instance of the interpreter b/c python setup & teardown
 //   does not work reliably w/ c modules that use static vars.
 //
+//   Cyrus Harrison,
+//   Added pickle support.
+//
 // ****************************************************************************
 class AVTPYTHON_FILTERS_API avtPythonFilterEnvironment
 {
@@ -71,6 +74,9 @@ public:
     bool         LoadFilter(const std::string &py_script);
     bool         FetchPythonError(std::string &msg_out);
 
+    std::string  Pickle(PyObject *py_obj);
+    PyObject    *Unpickle(const std::string &s);
+
     PyObject    *WrapVTKObject(void *obj,
                                const std::string &obj_type);
 
@@ -81,8 +87,16 @@ public:
     avtPythonFilter    *Filter() { return pyFilter;}
 
 private:
+    static void                PickleInit();
+
     static PythonInterpreter  *pyi;
+
+    static bool                pickleReady;
+    static PyObject           *pickleLoads;
+    static PyObject           *pickleDumps;
+
     avtPythonFilter           *pyFilter;
+
 
 };
 

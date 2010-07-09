@@ -450,6 +450,11 @@ typedef struct
 
 static std::map<std::string, AnnotationObjectRef> localObjectMap;
 
+// pickle related
+bool      pickleReady=false;
+PyObject *pickleDumps=NULL;
+PyObject *pickleLoads=NULL;
+
 #ifdef THREADS
 #if defined(_WIN32)
 static CRITICAL_SECTION      mutex;
@@ -895,6 +900,35 @@ GetDoubleArrayFromPyObject(PyObject *obj, double *array, int maxLen)
     return retval;
 }
 
+// ****************************************************************************
+//  Method:  PickleInit
+//
+//  Purpose:
+//    Sets up pointer to pickle.dumps & pickle.loads methods.
+//
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Fri Jul  9 14:27:52 PDT 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void PickleInit()
+{
+    if(!pickleReady)
+    {
+        PyObject *pickleModule = PyImport_ImportModule("pickle"); // new ref
+        PyObject *pickleDict   = PyModule_GetDict(pickleModule);  // borrowed
+
+        pickleDumps  = PyDict_GetItemString(pickleDict, "dumps"); // borrowed
+        pickleLoads  = PyDict_GetItemString(pickleDict, "loads"); // borrowed
+        Py_INCREF(pickleDumps);
+        Py_INCREF(pickleLoads  );
+
+        Py_DECREF(pickleModule);
+        pickleReady = true;
+    }
+}
 
 // ****************************************************************************
 //  Method:  FillDBOptionsFromDictionary
@@ -10642,6 +10676,8 @@ visit_Query(PyObject *self, PyObject *args)
 // Creation:   Wed Mar 17 11:07:35 PDT 2010
 //
 // Modifications:
+//  Cyrus Harrison, Fri Jul  9 11:49:44 PDT 2010
+//  Support passing of arbitary arguments via "args" keyword.
 //
 // ****************************************************************************
 
@@ -10653,16 +10689,19 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
     char     *source_text   = NULL;
     char     *source_file   = NULL;
     PyObject *py_vars_tuple = NULL;
+    PyObject *py_args       = NULL;
 
-    static char *kwlist[] = {"source", "file", "vars",NULL};
+    static char *kwlist[] = {"source", "file", "vars","args",NULL};
 
     // keyword arguments
     // source: string containg the python filter source
     // file: string containing the location of a script file
     // vars: tuple containing variable names
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ssO", kwlist,
-                                     &source_text, &source_file, &py_vars_tuple))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ssOO", kwlist,
+                                     &source_text, &source_file,
+                                     &py_vars_tuple,
+                                     &py_args))
         return NULL;
 
     stringVector vars;
@@ -10670,6 +10709,27 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
     if(py_vars_tuple != NULL)
     {
         GetStringVectorFromPyObject(py_vars_tuple, vars);
+    }
+
+    if(py_args != NULL)
+    {
+        debug5 << "Using passed 'args' as Python Query arguments" << endl;
+        if(!pickleReady)
+            PickleInit();
+        PyObject *res = PyObject_CallFunctionObjArgs(pickleDumps,py_args,NULL);
+        if(res == NULL)
+        {
+            PyErr_SetString(VisItError,
+                            "PythonQuery: Failed to pickle passed 'args' value.");
+            return NULL;
+        }
+        char *res_str = PyString_AS_STRING(res);
+        vars.push_back(res_str);
+    }
+    else
+    {
+        // if there were no args, use blank string as a place holder.
+        vars.push_back("");
     }
 
     if(source_text != NULL)
