@@ -83,10 +83,9 @@ int globalNDims;
 // Static prototypes
 //
 
-static double    EquationsValueAtPoint(const double *, int, int, int, 
+static double   EquationsValueAtPoint(const double *, int, int, int, 
                                       const double *);
 static bool     Intersects(const double *, double, int, int, const double *);
-static bool     Intersects(double [3], double[3], int, int, const double *);
 static bool     AxiallySymmetricLineIntersection(const double *, const double*,
                                                  int, const double *);
 static int      QsortBoundsSorter(const void *arg1, const void *arg2);
@@ -94,6 +93,8 @@ static bool     IntersectsWithRay(double [3], double[3], int, int,
                                   const double *, double[3]);
 static bool     IntersectsWithLine(double [3], double[3], int, int, 
                                    const double *, double[3]);
+static bool     PlaneTest(const double, const double, const double,
+                          const double, double &, double &);
 
 
 // ****************************************************************************
@@ -1340,48 +1341,6 @@ avtIntervalTree::GetElementExtents(int elementIndex, double *extents) const
 
 
 // ****************************************************************************
-//  Function: Intersects
-//
-//  Purpose:
-//      Determine if the range of values for the current node is intersected 
-//      by the line designated by origin and rayDir. 
-//
-//  Arguments:
-//      origin       The origin of the ray. 
-//      rayDir       The xyz components of the ray direction.
-//      block        The block in the nodeExtents that should be checked for an
-//                   intersection.
-//      nDims        The number of dimensions of the var.
-//      nodeExtents  The extents at each node.
-//
-//  Returns:    true if there is an intersection, false otherwise.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   December 19, 2003 
-//
-// ****************************************************************************
-
-bool
-Intersects(double origin[3], double rayDir[3], int block, int nDims,
-           const double *nodeExtents)
-{
-    double bnds[6] = { 0., 0., 0., 0., 0., 0.};
-    double coord[3] = { 0., 0., 0.};
-
-    for (int i = 0; i < nDims; i++)
-    {
-        bnds[2*i] = nodeExtents[block*nDims*2 + 2*i];
-        bnds[2*i+1] = nodeExtents[block*nDims*2 + 2*i + 1];
-    }
-
-    if (vtkCellIntersections::IntersectBox(bnds, origin, rayDir, coord))
-        return true;
-    else 
-        return false;
-}
-
-
-// ****************************************************************************
 //  Method: avtIntervalTree::GetElementsList
 //
 //  Purpose:
@@ -1431,7 +1390,12 @@ avtIntervalTree::GetElementsList(double origin[3], double rayDir[3],
     {
         nodeStackSize--;
         int stackIndex = nodeStack[nodeStackSize];
-        if ( Intersects(origin, rayDir, stackIndex, nDims, nodeExtents) )
+        double *bounds = nodeExtents + (stackIndex*nDims*2);
+        double Tnear = -DBL_MAX;
+        double Tfar = DBL_MAX;
+        if (PlaneTest(rayDir[0], origin[0], bounds[0], bounds[1], Tnear, Tfar) &&
+            PlaneTest(rayDir[1], origin[1], bounds[2], bounds[3], Tnear, Tfar) &&
+            PlaneTest(rayDir[2], origin[2], bounds[4], bounds[5], Tnear, Tfar))
         {
             //
             // The equation has a solution contained by the current extents.
@@ -1729,4 +1693,57 @@ IntersectsWithLine(double pt1[3], double pt2[3], int block,  int nDims,
     }
     else 
         return false;
+}
+
+
+// ****************************************************************************
+//  Function: PlaneTest
+//
+//  Purpose:
+//      Used to determine if the range of values for the current node is
+//      intersected by the line designated by origin and rayDir. It is
+//      intended to be called 3 times for each of the three planes.
+//
+//  Returns:    true if there is an intersection, false otherwise.
+//
+//  Programmer: Eric Brugger
+//  Creation:   July 2, 2010 
+//
+// ****************************************************************************
+
+bool
+PlaneTest(const double d, const double o, const double lo,
+          const double hi, double &tnear, double &tfar)
+{
+    if (d == 0)
+    {
+        if (o < lo || o > hi)
+            return false;
+    }
+    else
+    {
+        double T1 = (lo - o) / d;
+        double T2 = (hi - o) / d;
+        if (T1 > T2)
+        {
+            double temp = T1;
+            T1 = T2;
+            T2 = temp;
+        }
+        if (T1 > tnear)
+        {
+            tnear = T1;
+        }
+        if (T2 < tfar)
+        {
+            tfar = T2;
+        }
+        if (tnear > tfar)
+            return false;
+        if (tfar < 0)
+            return false;
+        if (tnear == tfar)
+            return false;
+    }
+    return true;
 }

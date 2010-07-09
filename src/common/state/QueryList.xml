@@ -19,6 +19,7 @@
       HohlraumFlux
       ConnCompSummary
       ShapeletsDecomp
+      XRayImage
     </Enum>
     <Enum name="Groups">
       CurveRelated

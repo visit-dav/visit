@@ -98,6 +98,7 @@
 #include <avtVariableSummationQuery.h>
 #include <avtWatertightQuery.h>
 #include <avtWeightedVariableSummationQuery.h>
+#include <avtXRayImageQuery.h>
 #include <avtZoneCenterQuery.h>
 
 #include <visit-python-config.h>
@@ -290,6 +291,9 @@ avtQueryFactory::Instance()
 //    Renamed the individual/aggregate "Chord Length Distribution" and
 //    individual/aggregate "Ray Length Distribution" queries so that they do
 //    not use special characters.
+//
+//    Eric Brugger, Wed Jun 30 14:03:06 PDT 2010
+//    Added the xray image query.
 //
 // ****************************************************************************
 
@@ -651,6 +655,20 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Population Statistics")
     {
         query = new avtSampleStatisticsQuery(true);
+    }
+    else if (qname == "XRay Image")
+    {
+        avtXRayImageQuery *mdq = new avtXRayImageQuery();
+        mdq->SetVariableNames(qa->GetVariables());
+        mdq->SetOutputType(qa->GetElement()); // Element == intarg1
+        mdq->SetDivideEmisByAbsorb((qa->GetDomain() == 0) ? false : true); // Domain == intarg2
+        mdq->SetOrigin(qa->GetDarg1()[0],
+                       qa->GetDarg1()[1],
+                       qa->GetDarg1()[2]);
+        mdq->SetThetaPhi(qa->GetDarg2()[0], qa->GetDarg2()[1]);
+        mdq->SetWidthHeight(qa->GetDarg2()[2], qa->GetDarg2()[3]);
+        mdq->SetImageSize((int)qa->GetDarg2()[4], (int)qa->GetDarg2()[5]);
+        query = mdq;
     }
     else if (qname == "Python")
     {
