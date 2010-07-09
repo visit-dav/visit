@@ -253,6 +253,8 @@ QvisQueryWindow::CreateWindowContents()
 // Notes: Refactored from CreateWindowContents()
 //
 // Modifications:
+//   Eric Brugger, Fri Jul  2 15:54:23 PDT 2010
+//   I increased the number of text fields to support the x ray image query.
 //
 // ****************************************************************************
 
@@ -304,7 +306,7 @@ QvisQueryWindow::CreateStandardQueryWidget()
     sLayout->setMargin(0);
     gLayout->addLayout(sLayout);
 
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         QString name1, name2;
         name1.sprintf("queryArgLabel%02d", i);
@@ -325,30 +327,30 @@ QvisQueryWindow::CreateStandardQueryWidget()
     varsButton->hide();
     connect(varsButton, SIGNAL(activated(const QString &)),
             this, SLOT(addVariable(const QString &)));
-    sLayout->addWidget(varsButton, 5, 0);
+    sLayout->addWidget(varsButton, 7, 0);
 
     varsLineEdit = new QLineEdit(argPanel);
     varsLineEdit->setText("default"); 
     varsLineEdit->hide();
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(handleText()));
-    sLayout->addWidget(varsLineEdit, 5, 1);
+    sLayout->addWidget(varsLineEdit, 7, 1);
 
     useGlobal = new QCheckBox(tr("Use Global Id"), argPanel);
     connect(useGlobal, SIGNAL(toggled(bool)), this, 
             SLOT(useGlobalToggled(bool)));
     useGlobal->hide();
-    sLayout->addWidget(useGlobal, 6, 0, 1, 2);
+    sLayout->addWidget(useGlobal, 8, 0, 1, 2);
 
     // Add the data options radio button group to the argument panel.
     dataOpts = new QButtonGroup(argPanel);
     QRadioButton *origData = new QRadioButton(tr("Original Data"), argPanel);
     dataOpts->addButton(origData,0);
-    sLayout->addWidget(origData, 7, 0);
+    sLayout->addWidget(origData, 9, 0);
     QRadioButton *actualData = new QRadioButton(tr("Actual Data"), argPanel);
     dataOpts->addButton(actualData,1);
     dataOpts->button(0)->setChecked(true);
-    sLayout->addWidget(actualData, 8, 0);
+    sLayout->addWidget(actualData, 10, 0);
 
     // Add the time button to the argument panel.
     gLayout->addStretch(10);
@@ -858,6 +860,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   emissivity divided by the absorbtivity should be used in place of the
 //   emissivity.
 //
+//   Eric Brugger, Fri Jul  2 15:54:23 PDT 2010
+//   I added the x ray image query.
+//
 // ****************************************************************************
 
 void
@@ -884,7 +889,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
 
     if(index >= 0 && index < winType.size())
     {
-        bool showWidgets[4] = {false, false, false, false};
+        bool showWidgets[6] = {false, false, false, false, false, false};
         bool showDataOptions = false;
         bool showGlobal = false;
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
@@ -1023,9 +1028,40 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[2]->setText(tr("[skip]"));
             showWidgets[2] = true;
         }
+        else if (winT == QueryList::XRayImage)
+        {
+            varsLineEdit->setText("absorbtivity emissivity");
+            varsButton->setVarTypes(QvisVariableButton::Scalars |
+                                    QvisVariableButton::Arrays);
+            showVars = true;
+
+            labels[0]->setText(tr("Output Image Format"));
+            textFields[0]->setText("png");
+            showWidgets[0] = true;
+
+            labels[1]->setText(tr("Divide Emis by Absorb"));
+            textFields[1]->setText("0");
+            showWidgets[1] = true;
+
+            labels[2]->setText(tr("Origin"));
+            textFields[2]->setText("0 0 0");
+            showWidgets[2] = true;
+
+            labels[3]->setText(tr("Theta, Phi"));
+            textFields[3]->setText("0 0");
+            showWidgets[3] = true;
+
+            labels[4]->setText(tr("Image Width, Height"));
+            textFields[4]->setText("1 1");
+            showWidgets[4] = true;
+
+            labels[5]->setText(tr("Image Pixel Size"));
+            textFields[5]->setText("200 200");
+            showWidgets[5] = true;
+        }
 
         // hide and show the right text widgets.
-        for(int i = 0; i < 4; ++i)
+        for(int i = 0; i < 6; ++i)
         {
             if(showWidgets[i])
             {
@@ -1273,6 +1309,8 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
 // Note: Refactored from Apply()
 //
 // Modifications:
+//   Eric Brugger, Fri Jul  2 15:54:23 PDT 2010
+//   I added the x ray image query.
 //
 // ****************************************************************************
 
@@ -1543,6 +1581,73 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
                                                     false, nmax,0,false,
                                                     dvec);
         }
+        else if (winT == QueryList::XRayImage)
+        {
+            stringVector v;
+
+            if (!GetVars(vars))
+                noErrors = false;
+
+            if (vars.size() != 2)
+                noErrors = false;
+
+            int outputType = 2;
+            if (textFields[0]->text().simplified().toStdString() ==  "bmp")
+                outputType = 0;
+            else if (textFields[0]->text().simplified().toStdString() ==  "jpeg")
+                outputType = 1;
+            else if (textFields[0]->text().simplified().toStdString() ==  "png")
+                outputType = 2;
+            else if (textFields[0]->text().simplified().toStdString() ==  "tiff")
+                outputType = 3;
+            else if (textFields[0]->text().simplified().toStdString() ==  "rawfloats")
+                outputType = 4;
+            else
+                noErrors = false;
+
+            int divideEmisByAbsorb=0;
+            if(!GetNumber(1, &divideEmisByAbsorb))
+                noErrors = false;
+
+            doubleVector pos(3);
+            if(!GetPoint(2, tr("Origin"), p0))
+                noErrors = false;
+            if (noErrors)
+            {
+                pos[0] = p0[0];
+                pos[1] = p0[1];
+                pos[2] = p0[2];
+            }
+
+            doubleVector darg2(6);
+            if(!GetPoint(3, tr("Theta, Phi"), p0))
+                noErrors = false;
+            if (noErrors)
+            {
+                darg2[0] = p0[0];
+                darg2[1] = p0[1];
+            }
+
+            if(!GetPoint(4, tr("Image Width, Height"), p0))
+                noErrors = false;
+            if (noErrors)
+            {
+                darg2[2] = p0[0];
+                darg2[3] = p0[1];
+            }
+
+            if(!GetPoint(5, tr("Image Pixel Size"), p0))
+                noErrors = false;
+            if (noErrors)
+            {
+                darg2[4] = p0[0];
+                darg2[5] = p0[1];
+            }
+            if (noErrors)
+                GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                    doTime, outputType, divideEmisByAbsorb, true, pos,
+                    darg2);
+        }
 
         // Display a status message.
         if(noErrors)
@@ -1620,6 +1725,9 @@ QvisQueryWindow::ExecutePythonQuery()
 //   Cyrus Harrison, Tue Jun 24 16:21:00 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Eric Brugger, Fri Jul  2 15:54:23 PDT 2010
+//   I increased the number of text fields to support the x ray image query.
+//
 // ****************************************************************************
 
 bool
@@ -1627,7 +1735,7 @@ QvisQueryWindow::GetPoint(int index, const QString &pname, double pt[3])
 {
     bool okay = false;
 
-    if(index >= 0 && index < 4)
+    if(index >= 0 && index < 6)
     {
         QString temp(textFields[index]->displayText().simplified());
         okay = !temp.isEmpty();

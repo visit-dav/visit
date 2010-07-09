@@ -10451,6 +10451,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   optional second integer value that would control if it used the emissivity
 //   divided by the absortivity in place of the emissivity.
 //
+//   Eric Brugger, Wed Jun 30 14:17:49 PDT 2010
+//   I added support for parsing the x ray image query.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -10470,6 +10473,35 @@ visit_Query(PyObject *self, PyObject *args)
                                      &(darg1[0]), &(darg1[1]), &(darg1[2]),
                                      &(darg2[0]), &(darg2[1]), &(darg2[2]),
                                      &tuple);
+    if(!parse_success)
+    {
+        // Handle the x ray image query.
+        char *imageType = NULL;
+        PyErr_Clear();
+        darg1.resize(3);
+        darg2.resize(6);
+        parse_success = PyArg_ParseTuple(args, "ssiddddddddd|O", &queryName,
+                                         &imageType, &arg2,
+                                         &(darg1[0]), &(darg1[1]), &(darg1[2]),
+                                         &(darg2[0]), &(darg2[1]), &(darg2[2]),
+                                         &(darg2[3]), &(darg2[4]), &(darg2[5]),
+                                         &tuple);
+        if (parse_success)
+        {
+            arg1 = 2;
+            if (strcmp(imageType, "bmp") == 0)
+                arg1 = 0;
+            else if (strcmp(imageType, "jpeg") == 0)
+                arg1 = 1;
+            else if (strcmp(imageType, "png") == 0)
+                arg1 = 2;
+            else if (strcmp(imageType, "tiff") == 0)
+                arg1 = 3;
+            else if (strcmp(imageType, "rawfloats") == 0)
+                arg1 = 4;
+        }
+    }
+
     if(!parse_success)
     {
         PyErr_Clear();

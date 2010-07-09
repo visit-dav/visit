@@ -121,6 +121,9 @@ class QvisPythonFilterEditor;
 //   Cyrus Harrison, Wed Feb 17 12:31:16 PST 2010
 //   Added new widgets for python query intergration.
 //
+//   Eric Brugger, Fri Jul  2 15:52:13 PDT 2010
+//   Increased the number of text fields to support the x ray image query.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -190,8 +193,8 @@ private:
     QPushButton         *timeQueryButton;
 
     QGroupBox           *argPanel;
-    QLabel              *labels[4];
-    QLineEdit           *textFields[4];
+    QLabel              *labels[6];
+    QLineEdit           *textFields[6];
     QCheckBox           *useGlobal;
     QvisVariableButton  *varsButton;
     QLineEdit           *varsLineEdit;

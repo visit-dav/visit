@@ -42,6 +42,9 @@
 #    Use proper python include path ${PYTHON_INCLUDE_PATH}, instead of 
 #    ${PYTHON_INCLUDE_DIRS}
 #
+#    Eric Brugger, Wed Jun 30 13:37:54 PDT 2010
+#    Added avtXRayQuery.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -138,6 +141,7 @@ Queries/avtVariableByZoneQuery.C
 Queries/avtVariableSummationQuery.C
 Queries/avtWatertightQuery.C
 Queries/avtWeightedVariableSummationQuery.C
+Queries/avtXRayImageQuery.C
 Queries/avtZoneCenterQuery.C
 Queries/MinMaxInfo.C
 )

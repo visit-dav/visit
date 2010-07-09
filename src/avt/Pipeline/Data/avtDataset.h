@@ -129,6 +129,9 @@ class   avtWebpage;
 //    Hank Childs, Sun Feb 15 10:12:22 PST 2009
 //    Add friend status for avtTimeIteratorExpression.
 //
+//    Eric Brugger, Wed Jun 30 13:43:30 PDT 2010
+//    Add friend status for avtXRayImageQuery.
+//
 //    Dave Pugmire, Fri Jul  2 14:22:34 EDT 2010
 //    Add friend status for avtResampleExpression.
 //
@@ -148,6 +151,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtExecuteThenTimeLoopFilter;
     friend                   class avtNamedSelectionManager;
     friend                   class avtTimeIteratorExpression;
+    friend                   class avtXRayImageQuery;
     friend                   class avtResampleExpression;
 
   public:

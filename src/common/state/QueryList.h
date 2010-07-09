@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: QueryList
 //
@@ -80,7 +81,8 @@ public:
         LineDistribution,
         HohlraumFlux,
         ConnCompSummary,
-        ShapeletsDecomp
+        ShapeletsDecomp,
+        XRayImage
     };
     enum Groups
     {
@@ -101,13 +103,23 @@ public:
         TimeOnly
     };
 
+    // These constructors are for objects of this class
     QueryList();
     QueryList(const QueryList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    QueryList(private_tmfs_t tmfs);
+    QueryList(const QueryList &obj, private_tmfs_t tmfs);
+public:
     virtual ~QueryList();
 
     virtual QueryList& operator = (const QueryList &obj);
     virtual bool operator == (const QueryList &obj) const;
     virtual bool operator != (const QueryList &obj) const;
+private:
+    void Init();
+    void Copy(const QueryList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -209,7 +221,8 @@ public:
         ID_winType,
         ID_queryMode,
         ID_numVars,
-        ID_canBePublic
+        ID_canBePublic,
+        ID__LAST
     };
 
 private:
@@ -225,6 +238,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define QUERYLIST_TMFS "s*i*i*i*i*i*i*i*i*"
 
 #endif

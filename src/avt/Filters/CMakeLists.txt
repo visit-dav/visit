@@ -45,6 +45,9 @@
 #   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
 #   Renamed avt*SLAlgorithm to avt*ICAlgorithm.
 #
+#   Eric Brugger, Wed Jun 30 12:59:41 PDT 2010
+#   I added avtXRayFilter.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -95,6 +98,7 @@ avtWarpFilter.C
 avtWholeImageCompositerNoZ.C
 avtWholeImageCompositerWithZ.C
 avtWorldSpaceToImageSpaceTransform.C
+avtXRayFilter.C
 )
 
 INCLUDE_DIRECTORIES(
