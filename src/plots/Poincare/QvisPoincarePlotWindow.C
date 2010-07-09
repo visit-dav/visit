@@ -273,6 +273,26 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(maxPuncturesChanged(int)));
     puncturesLayout->addWidget(maxPunctures, 0, 3);
 
+
+    puncturePlaneLabel = new QLabel(tr("Puncture Plane"), firstTab);
+    puncturesLayout->addWidget(puncturePlaneLabel, 1, 0);
+    puncturePlane = new QWidget(firstTab);
+    puncturePlaneButtonGroup= new QButtonGroup(puncturePlane);
+    QHBoxLayout *puncturePlaneLayout = new QHBoxLayout(puncturePlane);
+    puncturePlaneLayout->setMargin(0);
+    puncturePlaneLayout->setSpacing(10);
+    QRadioButton *puncturePlaneTypePoloidal =
+      new QRadioButton(tr("Poloidal"), puncturePlane);
+    puncturePlaneButtonGroup->addButton(puncturePlaneTypePoloidal,0);
+    puncturePlaneLayout->addWidget(puncturePlaneTypePoloidal);
+    QRadioButton *puncturePlaneTypeTorodial =
+      new QRadioButton(tr("Toroidal"), puncturePlane);
+    puncturePlaneButtonGroup->addButton(puncturePlaneTypeTorodial,1);
+    puncturePlaneLayout->addWidget(puncturePlaneTypeTorodial);
+    connect(puncturePlaneButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(puncturePlaneChanged(int)));
+    puncturesLayout->addWidget(puncturePlane, 1, 1, 1, 2);
+
     // ----------------------------------------------------------------------
     // Second tab
     // ----------------------------------------------------------------------
@@ -733,6 +753,12 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             maxPunctures->blockSignals(true);
             maxPunctures->setValue(atts->GetMaxPunctures());
             maxPunctures->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_puncturePlane:
+            puncturePlaneButtonGroup->blockSignals(true);
+            if(puncturePlaneButtonGroup->button((int)atts->GetPuncturePlane()) != 0)
+                puncturePlaneButtonGroup->button((int)atts->GetPuncturePlane())->setChecked(true);
+            puncturePlaneButtonGroup->blockSignals(false);
             break;
           case PoincareAttributes::ID_sourceType:
             if (atts->GetSourceType() == PoincareAttributes::SpecifiedPoint)
@@ -1539,6 +1565,17 @@ QvisPoincarePlotWindow::maxPuncturesChanged(int val)
 {
     atts->SetMaxPunctures(val);
     Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::puncturePlaneChanged(int val)
+{
+    if(val != atts->GetPuncturePlane())
+    {
+        atts->SetPuncturePlane(PoincareAttributes::PuncturePlaneType(val));
+        Apply();
+    }
 }
 
 

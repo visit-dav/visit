@@ -84,6 +84,11 @@ public:
         Curves,
         Surfaces
     };
+    enum PuncturePlaneType
+    {
+        Poloidal,
+        Toroidal
+    };
     enum ColoringMethod
     {
         ColorBySingleColor,
@@ -153,6 +158,7 @@ public:
     void SetOpacity(double opacity_);
     void SetMinPunctures(int minPunctures_);
     void SetMaxPunctures(int maxPunctures_);
+    void SetPuncturePlane(PuncturePlaneType puncturePlane_);
     void SetSourceType(SourceType sourceType_);
     void SetPointSource(const double *pointSource_);
     void SetLineStart(const double *lineStart_);
@@ -207,6 +213,7 @@ public:
     double               GetOpacity() const;
     int                  GetMinPunctures() const;
     int                  GetMaxPunctures() const;
+    PuncturePlaneType    GetPuncturePlane() const;
     SourceType           GetSourceType() const;
     const double         *GetPointSource() const;
           double         *GetPointSource();
@@ -286,6 +293,11 @@ public:
 protected:
     static std::string ShowMeshType_ToString(int);
 public:
+    static std::string PuncturePlaneType_ToString(PuncturePlaneType);
+    static bool PuncturePlaneType_FromString(const std::string &, PuncturePlaneType &);
+protected:
+    static std::string PuncturePlaneType_ToString(int);
+public:
     static std::string ColoringMethod_ToString(ColoringMethod);
     static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
 protected:
@@ -324,6 +336,7 @@ public:
         ID_opacity,
         ID_minPunctures,
         ID_maxPunctures,
+        ID_puncturePlane,
         ID_sourceType,
         ID_pointSource,
         ID_lineStart,
@@ -380,6 +393,7 @@ private:
     double         opacity;
     int            minPunctures;
     int            maxPunctures;
+    int            puncturePlane;
     int            sourceType;
     double         pointSource[3];
     double         lineStart[3];
@@ -433,6 +447,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiDDDiidddiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidddiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
 
 #endif

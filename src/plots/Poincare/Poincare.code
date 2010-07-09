@@ -152,6 +152,8 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
             minPunctures != obj.minPunctures ||
             maxPunctures != obj.maxPunctures ||
 
+            puncturePlane != obj.puncturePlane ||
+
             integrationType != obj.integrationType ||
             maxStepLength != obj.maxStepLength ||
             relTol != obj.relTol ||

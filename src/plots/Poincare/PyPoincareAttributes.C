@@ -98,6 +98,21 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxPunctures = %d\n", prefix, atts->GetMaxPunctures());
     str += tmpStr;
+    const char *puncturePlane_names = "Poloidal, Toroidal";
+    switch (atts->GetPuncturePlane())
+    {
+      case PoincareAttributes::Poloidal:
+          SNPRINTF(tmpStr, 1000, "%spuncturePlane = %sPoloidal  # %s\n", prefix, prefix, puncturePlane_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Toroidal:
+          SNPRINTF(tmpStr, 1000, "%spuncturePlane = %sToroidal  # %s\n", prefix, prefix, puncturePlane_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *sourceType_names = "SpecifiedPoint, SpecifiedLine";
     switch (atts->GetSourceType())
     {
@@ -544,6 +559,39 @@ PoincareAttributes_GetMaxPunctures(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxPunctures()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetPuncturePlane(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the puncturePlane in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetPuncturePlane(PoincareAttributes::PuncturePlaneType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid puncturePlane value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Poloidal, Toroidal.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetPuncturePlane(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetPuncturePlane()));
     return retval;
 }
 
@@ -1929,6 +1977,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetMinPunctures", PoincareAttributes_GetMinPunctures, METH_VARARGS},
     {"SetMaxPunctures", PoincareAttributes_SetMaxPunctures, METH_VARARGS},
     {"GetMaxPunctures", PoincareAttributes_GetMaxPunctures, METH_VARARGS},
+    {"SetPuncturePlane", PoincareAttributes_SetPuncturePlane, METH_VARARGS},
+    {"GetPuncturePlane", PoincareAttributes_GetPuncturePlane, METH_VARARGS},
     {"SetSourceType", PoincareAttributes_SetSourceType, METH_VARARGS},
     {"GetSourceType", PoincareAttributes_GetSourceType, METH_VARARGS},
     {"SetPointSource", PoincareAttributes_SetPointSource, METH_VARARGS},
@@ -2066,6 +2116,13 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetMinPunctures(self, NULL);
     if(strcmp(name, "maxPunctures") == 0)
         return PoincareAttributes_GetMaxPunctures(self, NULL);
+    if(strcmp(name, "puncturePlane") == 0)
+        return PoincareAttributes_GetPuncturePlane(self, NULL);
+    if(strcmp(name, "Poloidal") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Poloidal));
+    if(strcmp(name, "Toroidal") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Toroidal));
+
     if(strcmp(name, "sourceType") == 0)
         return PoincareAttributes_GetSourceType(self, NULL);
     if(strcmp(name, "SpecifiedPoint") == 0)
@@ -2258,6 +2315,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetMinPunctures(self, tuple);
     else if(strcmp(name, "maxPunctures") == 0)
         obj = PoincareAttributes_SetMaxPunctures(self, tuple);
+    else if(strcmp(name, "puncturePlane") == 0)
+        obj = PoincareAttributes_SetPuncturePlane(self, tuple);
     else if(strcmp(name, "sourceType") == 0)
         obj = PoincareAttributes_SetSourceType(self, tuple);
     else if(strcmp(name, "pointSource") == 0)
