@@ -53,7 +53,7 @@ int VisIt_ExpressionMetaData_setType(visit_handle h, int);
 int VisIt_ExpressionMetaData_getType(visit_handle h, int*);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif

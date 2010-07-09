@@ -57,7 +57,7 @@ int VisIt_CurveMetaData_setYLabel(visit_handle h, const char *);
 int VisIt_CurveMetaData_getYLabel(visit_handle h, char **);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif
