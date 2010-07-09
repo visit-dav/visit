@@ -85,7 +85,7 @@ int VisIt_MeshMetaData_setZLabel(visit_handle h, const char *);
 int VisIt_MeshMetaData_getZLabel(visit_handle h, char **);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif

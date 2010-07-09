@@ -56,7 +56,7 @@ int VisIt_SpeciesMetaData_getNumSpeciesName(visit_handle h, visit_handle *);
 int VisIt_SpeciesMetaData_getSpeciesName(visit_handle h, int, visit_handle*);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif

@@ -49,7 +49,7 @@ int VisIt_CommandMetaData_setName(visit_handle h, const char *);
 int VisIt_CommandMetaData_getName(visit_handle h, char **);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif
