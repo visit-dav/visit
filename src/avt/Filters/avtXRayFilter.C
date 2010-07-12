@@ -565,6 +565,8 @@ avtXRayFilter::PostExecute(void)
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Mon Jul 12 13:37:46 PDT 2010
+//    I added more timing calls to get finer grained timing information.
 //  
 // ****************************************************************************
 
@@ -604,6 +606,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
     tree.Calculate(true);
     visitTimer->StopTimer(t1, "avtXRayFilter::CreateIntervalTree");
 
+    t1 = visitTimer->StartTimer();
     //
     // Loop over the lines.
     //
@@ -850,9 +853,11 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
             }
         }
     }
+    visitTimer->StopTimer(t1, "avtXRayFilter::LoopOverLines");
 
     nLinesPerDataset = cells_matched.size();
 
+    t1 = visitTimer->StartTimer();
     //
     // Copy the cell data.
     //
@@ -878,6 +883,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
             cellData[iCellData++] = outVals;
         }
     }
+    visitTimer->StopTimer(t1, "avtXRayFilter::CopyCellData");
 
     UpdateProgress(extraMsg*(currentNode+1), extraMsg*totalNodes);
 }
