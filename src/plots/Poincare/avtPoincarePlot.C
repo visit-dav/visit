@@ -431,7 +431,9 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
                                            atts.GetWorkGroupSize());
 
     // Poincare specific attributes.
-    poincareFilter->SetMaxToroidalWinding( atts.GetMaxToroidalWinding() );
+    poincareFilter->SetAnalysis( atts.GetAnalysis() );
+
+    poincareFilter->SetMaximumToroidalWinding( atts.GetMaximumToroidalWinding() );
     poincareFilter->SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
     poincareFilter->SetWindingPairConfidence( atts.GetWindingPairConfidence() );
     poincareFilter->SetPeriodicityConsistency( atts.GetPeriodicityConsistency() );

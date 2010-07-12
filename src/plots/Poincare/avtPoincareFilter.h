@@ -92,11 +92,14 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual const char       *GetDescription(void) {
       return "Performing Poincare"; };
 
+    void SetAnalysis( unsigned int val ) { analysis = val; }
+
     void SetMaxPunctures( double punctures ) { maxPunctures = punctures; }
 
-    void SetMaxToroidalWinding( unsigned int value ) {
-      maxToroidalWinding = value; };
-    void SetOverrideToroidalWinding( unsigned int value) { override = value; }
+    void SetMaximumToroidalWinding( unsigned int value ) {
+      maximumToroidalWinding = value; };
+    void SetOverrideToroidalWinding( unsigned int value) {
+      overrideToroidalWinding = value; }
 
     void SetWindingPairConfidence( double val ) { windingPairConfidence = val; }
     void SetPeriodicityConsistency( double val ) { periodicityConsistency = val; }
@@ -180,17 +183,21 @@ class avtPoincareFilter : public avtStreamlineFilter
 
     FusionPSE::FieldlineLib FLlib;         
 
+    unsigned int analysis;
+
     double maxPunctures;
-    unsigned int maxToroidalWinding;
-    unsigned int override;
+
+    unsigned int maximumToroidalWinding;
+    unsigned int overrideToroidalWinding;
 
     double windingPairConfidence;
     double periodicityConsistency;
-    int adjust_plane;
+
     unsigned int overlaps;
 
     bool is_curvemesh;
     std::vector< double > planes;
+    int adjust_plane;
 
     unsigned int dataValue;
   
@@ -198,17 +205,18 @@ class avtPoincareFilter : public avtStreamlineFilter
     bool showLines, showPoints, showRidgelines, verboseFlag;
     int  pointScale;
 
-    class SLHelper
+    class ICHelper
     {
       public:
-        SLHelper() {}
-        ~SLHelper() {}
+        ICHelper() {}
+        ~ICHelper() {}
         avtStateRecorderIntegralCurve *ic;
-        std::vector<avtVector> streamlinePts;
+        std::vector<avtVector> points;
         FieldlineProperties properties;
+        long int id;
     };
 
-    std::vector<SLHelper> streamlines;
+    std::map< long int, ICHelper > fieldlines;
 };
 
 

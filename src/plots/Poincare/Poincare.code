@@ -179,15 +179,17 @@ Definition:
 bool
 PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const
 {
-    return maxToroidalWinding != obj.maxToroidalWinding ||
+    return analysis != obj.analysis ||
+
+           maximumToroidalWinding != obj.maximumToroidalWinding ||
            overrideToroidalWinding != obj.overrideToroidalWinding ||
            windingPairConfidence != obj.windingPairConfidence ||
            periodicityConsistency != obj.periodicityConsistency ||
-           adjustPlane != obj.adjustPlane ||
-           overlaps != obj.overlaps ||
 
            showOPoints != obj.showOPoints ||
            OPointMaxInterations != obj.OPointMaxInterations ||
+
+           overlaps != obj.overlaps ||
 
            showIslands != obj.showIslands ||
            showRidgelines != obj.showRidgelines ||
@@ -199,6 +201,8 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            meshType != obj.meshType ||
            numberPlanes != obj.numberPlanes ||
            singlePlane != obj.singlePlane ||
+
+           adjustPlane != obj.adjustPlane ||
 
            showLines != obj.showLines ||
            showPoints != obj.showPoints;

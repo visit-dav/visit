@@ -117,7 +117,8 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void maxStepLengthProcessText();
     void relTolProcessText();
     void absTolProcessText();
-    void maxToroidalWindingChanged(int val);
+    void analysisChanged(int val);
+    void maximumToroidalWindingChanged(int val);
     void overrideToroidalWindingChanged(int val);
     void windingPairConfidenceProcessText();
     void periodicityConsistencyProcessText();
@@ -176,7 +177,9 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLineEdit *maxStepLength;
     QLineEdit *relTol;
     QLineEdit *absTol;
-    QSpinBox *maxToroidalWinding;
+    QWidget      *analysis;
+    QButtonGroup *analysisButtonGroup;
+    QSpinBox *maximumToroidalWinding;
     QSpinBox *overrideToroidalWinding;
     QLineEdit *windingPairConfidence;
     QLineEdit *periodicityConsistency;
@@ -232,7 +235,8 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *absTolLabel;
     QLabel    *forceNodalLabel;
     QCheckBox *forceNodal;
-    QLabel *maxToroidalWindingLabel;
+    QLabel *analysisLabel;
+    QLabel *maximumToroidalWindingLabel;
     QLabel *overrideToroidalWindingLabel;
     QLabel *windingPairConfidenceLabel;
     QLabel *periodicityConsistencyLabel;
