@@ -87,7 +87,13 @@ public:
     enum PuncturePlaneType
     {
         Poloidal,
-        Toroidal
+        Toroidal,
+        Arbitrary
+    };
+    enum AnalysisType
+    {
+        None,
+        Normal
     };
     enum ColoringMethod
     {
@@ -168,7 +174,8 @@ public:
     void SetMaxStepLength(double maxStepLength_);
     void SetRelTol(double relTol_);
     void SetAbsTol(double absTol_);
-    void SetMaxToroidalWinding(int maxToroidalWinding_);
+    void SetAnalysis(AnalysisType analysis_);
+    void SetMaximumToroidalWinding(int maximumToroidalWinding_);
     void SetOverrideToroidalWinding(int overrideToroidalWinding_);
     void SetWindingPairConfidence(double windingPairConfidence_);
     void SetPeriodicityConsistency(double periodicityConsistency_);
@@ -226,7 +233,8 @@ public:
     double               GetMaxStepLength() const;
     double               GetRelTol() const;
     double               GetAbsTol() const;
-    int                  GetMaxToroidalWinding() const;
+    AnalysisType         GetAnalysis() const;
+    int                  GetMaximumToroidalWinding() const;
     int                  GetOverrideToroidalWinding() const;
     double               GetWindingPairConfidence() const;
     double               GetPeriodicityConsistency() const;
@@ -298,6 +306,11 @@ public:
 protected:
     static std::string PuncturePlaneType_ToString(int);
 public:
+    static std::string AnalysisType_ToString(AnalysisType);
+    static bool AnalysisType_FromString(const std::string &, AnalysisType &);
+protected:
+    static std::string AnalysisType_ToString(int);
+public:
     static std::string ColoringMethod_ToString(ColoringMethod);
     static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
 protected:
@@ -346,7 +359,8 @@ public:
         ID_maxStepLength,
         ID_relTol,
         ID_absTol,
-        ID_maxToroidalWinding,
+        ID_analysis,
+        ID_maximumToroidalWinding,
         ID_overrideToroidalWinding,
         ID_windingPairConfidence,
         ID_periodicityConsistency,
@@ -403,7 +417,8 @@ private:
     double         maxStepLength;
     double         relTol;
     double         absTol;
-    int            maxToroidalWinding;
+    int            analysis;
+    int            maximumToroidalWinding;
     int            overrideToroidalWinding;
     double         windingPairConfidence;
     double         periodicityConsistency;
@@ -447,6 +462,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidddiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidddiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
 
 #endif

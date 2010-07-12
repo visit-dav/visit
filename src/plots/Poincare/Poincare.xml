@@ -29,6 +29,11 @@
       <Enum name="PuncturePlaneType">
         Poloidal
         Toroidal
+        Arbitrary
+      </Enum>
+      <Enum name="AnalysisType">
+        None
+        Normal
       </Enum>
       <Enum name="ColoringMethod">
         ColorBySingleColor
@@ -106,7 +111,10 @@
       <Field name="absTol" label="abs. tolerance" type="double">
         0.000010
       </Field>
-      <Field name="maxToroidalWinding" label="Max Toroidal Winding" type="int">
+      <Field name="analysis" label="Analysis" type="enum" subtype="AnalysisType">
+        Normal
+      </Field>
+      <Field name="maximumToroidalWinding" label="Maximum Toroidal Winding" type="int">
         0
       </Field>
       <Field name="overrideToroidalWinding" label="Override Toroidal Winding" type="int">

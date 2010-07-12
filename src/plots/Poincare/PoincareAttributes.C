@@ -197,20 +197,21 @@ PoincareAttributes::ShowMeshType_FromString(const std::string &s, PoincareAttrib
 //
 
 static const char *PuncturePlaneType_strings[] = {
-"Poloidal", "Toroidal"};
+"Poloidal", "Toroidal", "Arbitrary"
+};
 
 std::string
 PoincareAttributes::PuncturePlaneType_ToString(PoincareAttributes::PuncturePlaneType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return PuncturePlaneType_strings[index];
 }
 
 std::string
 PoincareAttributes::PuncturePlaneType_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return PuncturePlaneType_strings[index];
 }
 
@@ -218,11 +219,48 @@ bool
 PoincareAttributes::PuncturePlaneType_FromString(const std::string &s, PoincareAttributes::PuncturePlaneType &val)
 {
     val = PoincareAttributes::Poloidal;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(s == PuncturePlaneType_strings[i])
         {
             val = (PuncturePlaneType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for PoincareAttributes::AnalysisType
+//
+
+static const char *AnalysisType_strings[] = {
+"None", "Normal"};
+
+std::string
+PoincareAttributes::AnalysisType_ToString(PoincareAttributes::AnalysisType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return AnalysisType_strings[index];
+}
+
+std::string
+PoincareAttributes::AnalysisType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return AnalysisType_strings[index];
+}
+
+bool
+PoincareAttributes::AnalysisType_FromString(const std::string &s, PoincareAttributes::AnalysisType &val)
+{
+    val = PoincareAttributes::None;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == AnalysisType_strings[i])
+        {
+            val = (AnalysisType)i;
             return true;
         }
     }
@@ -419,7 +457,8 @@ void PoincareAttributes::Init()
     maxStepLength = 0.1;
     relTol = 0.0001;
     absTol = 1e-05;
-    maxToroidalWinding = 0;
+    analysis = Normal;
+    maximumToroidalWinding = 0;
     overrideToroidalWinding = 0;
     windingPairConfidence = 0.9;
     periodicityConsistency = 0.8;
@@ -499,7 +538,8 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     maxStepLength = obj.maxStepLength;
     relTol = obj.relTol;
     absTol = obj.absTol;
-    maxToroidalWinding = obj.maxToroidalWinding;
+    analysis = obj.analysis;
+    maximumToroidalWinding = obj.maximumToroidalWinding;
     overrideToroidalWinding = obj.overrideToroidalWinding;
     windingPairConfidence = obj.windingPairConfidence;
     periodicityConsistency = obj.periodicityConsistency;
@@ -726,7 +766,8 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (maxStepLength == obj.maxStepLength) &&
             (relTol == obj.relTol) &&
             (absTol == obj.absTol) &&
-            (maxToroidalWinding == obj.maxToroidalWinding) &&
+            (analysis == obj.analysis) &&
+            (maximumToroidalWinding == obj.maximumToroidalWinding) &&
             (overrideToroidalWinding == obj.overrideToroidalWinding) &&
             (windingPairConfidence == obj.windingPairConfidence) &&
             (periodicityConsistency == obj.periodicityConsistency) &&
@@ -947,7 +988,8 @@ PoincareAttributes::SelectAll()
     Select(ID_maxStepLength,             (void *)&maxStepLength);
     Select(ID_relTol,                    (void *)&relTol);
     Select(ID_absTol,                    (void *)&absTol);
-    Select(ID_maxToroidalWinding,        (void *)&maxToroidalWinding);
+    Select(ID_analysis,                  (void *)&analysis);
+    Select(ID_maximumToroidalWinding,    (void *)&maximumToroidalWinding);
     Select(ID_overrideToroidalWinding,   (void *)&overrideToroidalWinding);
     Select(ID_windingPairConfidence,     (void *)&windingPairConfidence);
     Select(ID_periodicityConsistency,    (void *)&periodicityConsistency);
@@ -1102,10 +1144,16 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("absTol", absTol));
     }
 
-    if(completeSave || !FieldsEqual(ID_maxToroidalWinding, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_analysis, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("maxToroidalWinding", maxToroidalWinding));
+        node->AddNode(new DataNode("analysis", AnalysisType_ToString(analysis)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maximumToroidalWinding, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maximumToroidalWinding", maximumToroidalWinding));
     }
 
     if(completeSave || !FieldsEqual(ID_overrideToroidalWinding, &defaultObject))
@@ -1402,7 +1450,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetPuncturePlane(PuncturePlaneType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1458,8 +1506,24 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetRelTol(node->AsDouble());
     if((node = searchNode->GetNode("absTol")) != 0)
         SetAbsTol(node->AsDouble());
-    if((node = searchNode->GetNode("maxToroidalWinding")) != 0)
-        SetMaxToroidalWinding(node->AsInt());
+    if((node = searchNode->GetNode("analysis")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetAnalysis(AnalysisType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            AnalysisType value;
+            if(AnalysisType_FromString(node->AsString(), value))
+                SetAnalysis(value);
+        }
+    }
+    if((node = searchNode->GetNode("maximumToroidalWinding")) != 0)
+        SetMaximumToroidalWinding(node->AsInt());
     if((node = searchNode->GetNode("overrideToroidalWinding")) != 0)
         SetOverrideToroidalWinding(node->AsInt());
     if((node = searchNode->GetNode("windingPairConfidence")) != 0)
@@ -1717,10 +1781,17 @@ PoincareAttributes::SetAbsTol(double absTol_)
 }
 
 void
-PoincareAttributes::SetMaxToroidalWinding(int maxToroidalWinding_)
+PoincareAttributes::SetAnalysis(PoincareAttributes::AnalysisType analysis_)
 {
-    maxToroidalWinding = maxToroidalWinding_;
-    Select(ID_maxToroidalWinding, (void *)&maxToroidalWinding);
+    analysis = analysis_;
+    Select(ID_analysis, (void *)&analysis);
+}
+
+void
+PoincareAttributes::SetMaximumToroidalWinding(int maximumToroidalWinding_)
+{
+    maximumToroidalWinding = maximumToroidalWinding_;
+    Select(ID_maximumToroidalWinding, (void *)&maximumToroidalWinding);
 }
 
 void
@@ -2095,10 +2166,16 @@ PoincareAttributes::GetAbsTol() const
     return absTol;
 }
 
-int
-PoincareAttributes::GetMaxToroidalWinding() const
+PoincareAttributes::AnalysisType
+PoincareAttributes::GetAnalysis() const
 {
-    return maxToroidalWinding;
+    return AnalysisType(analysis);
+}
+
+int
+PoincareAttributes::GetMaximumToroidalWinding() const
+{
+    return maximumToroidalWinding;
 }
 
 int
@@ -2413,7 +2490,8 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_maxStepLength:             return "maxStepLength";
     case ID_relTol:                    return "relTol";
     case ID_absTol:                    return "absTol";
-    case ID_maxToroidalWinding:        return "maxToroidalWinding";
+    case ID_analysis:                  return "analysis";
+    case ID_maximumToroidalWinding:    return "maximumToroidalWinding";
     case ID_overrideToroidalWinding:   return "overrideToroidalWinding";
     case ID_windingPairConfidence:     return "windingPairConfidence";
     case ID_periodicityConsistency:    return "periodicityConsistency";
@@ -2490,7 +2568,8 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_maxStepLength:             return FieldType_double;
     case ID_relTol:                    return FieldType_double;
     case ID_absTol:                    return FieldType_double;
-    case ID_maxToroidalWinding:        return FieldType_int;
+    case ID_analysis:                  return FieldType_enum;
+    case ID_maximumToroidalWinding:    return FieldType_int;
     case ID_overrideToroidalWinding:   return FieldType_int;
     case ID_windingPairConfidence:     return FieldType_double;
     case ID_periodicityConsistency:    return FieldType_double;
@@ -2567,7 +2646,8 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_maxStepLength:             return "double";
     case ID_relTol:                    return "double";
     case ID_absTol:                    return "double";
-    case ID_maxToroidalWinding:        return "int";
+    case ID_analysis:                  return "enum";
+    case ID_maximumToroidalWinding:    return "int";
     case ID_overrideToroidalWinding:   return "int";
     case ID_windingPairConfidence:     return "double";
     case ID_periodicityConsistency:    return "double";
@@ -2717,9 +2797,14 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (absTol == obj.absTol);
         }
         break;
-    case ID_maxToroidalWinding:
+    case ID_analysis:
         {  // new scope
-        retval = (maxToroidalWinding == obj.maxToroidalWinding);
+        retval = (analysis == obj.analysis);
+        }
+        break;
+    case ID_maximumToroidalWinding:
+        {  // new scope
+        retval = (maximumToroidalWinding == obj.maximumToroidalWinding);
         }
         break;
     case ID_overrideToroidalWinding:
@@ -3009,15 +3094,17 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
 bool
 PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const
 {
-    return maxToroidalWinding != obj.maxToroidalWinding ||
+    return analysis != obj.analysis ||
+
+           maximumToroidalWinding != obj.maximumToroidalWinding ||
            overrideToroidalWinding != obj.overrideToroidalWinding ||
            windingPairConfidence != obj.windingPairConfidence ||
            periodicityConsistency != obj.periodicityConsistency ||
-           adjustPlane != obj.adjustPlane ||
-           overlaps != obj.overlaps ||
 
            showOPoints != obj.showOPoints ||
            OPointMaxInterations != obj.OPointMaxInterations ||
+
+           overlaps != obj.overlaps ||
 
            showIslands != obj.showIslands ||
            showRidgelines != obj.showRidgelines ||
@@ -3029,6 +3116,8 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            meshType != obj.meshType ||
            numberPlanes != obj.numberPlanes ||
            singlePlane != obj.singlePlane ||
+
+           adjustPlane != obj.adjustPlane ||
 
            showLines != obj.showLines ||
            showPoints != obj.showPoints;

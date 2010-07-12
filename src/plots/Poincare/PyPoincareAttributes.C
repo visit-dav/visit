@@ -98,7 +98,7 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxPunctures = %d\n", prefix, atts->GetMaxPunctures());
     str += tmpStr;
-    const char *puncturePlane_names = "Poloidal, Toroidal";
+    const char *puncturePlane_names = "Poloidal, Toroidal, Arbitrary";
     switch (atts->GetPuncturePlane())
     {
       case PoincareAttributes::Poloidal:
@@ -107,6 +107,10 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           break;
       case PoincareAttributes::Toroidal:
           SNPRINTF(tmpStr, 1000, "%spuncturePlane = %sToroidal  # %s\n", prefix, prefix, puncturePlane_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Arbitrary:
+          SNPRINTF(tmpStr, 1000, "%spuncturePlane = %sArbitrary  # %s\n", prefix, prefix, puncturePlane_names);
           str += tmpStr;
           break;
       default:
@@ -203,7 +207,22 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sabsTol = %g\n", prefix, atts->GetAbsTol());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%smaxToroidalWinding = %d\n", prefix, atts->GetMaxToroidalWinding());
+    const char *analysis_names = "None, Normal";
+    switch (atts->GetAnalysis())
+    {
+      case PoincareAttributes::None:
+          SNPRINTF(tmpStr, 1000, "%sanalysis = %sNone  # %s\n", prefix, prefix, analysis_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Normal:
+          SNPRINTF(tmpStr, 1000, "%sanalysis = %sNormal  # %s\n", prefix, prefix, analysis_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%smaximumToroidalWinding = %d\n", prefix, atts->GetMaximumToroidalWinding());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%soverrideToroidalWinding = %d\n", prefix, atts->GetOverrideToroidalWinding());
     str += tmpStr;
@@ -572,14 +591,14 @@ PoincareAttributes_SetPuncturePlane(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the puncturePlane in the object.
-    if(ival >= 0 && ival < 2)
+    if(ival >= 0 && ival < 3)
         obj->data->SetPuncturePlane(PoincareAttributes::PuncturePlaneType(ival));
     else
     {
         fprintf(stderr, "An invalid puncturePlane value was given. "
-                        "Valid values are in the range of [0,1]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "Poloidal, Toroidal.");
+                        "Poloidal, Toroidal, Arbitrary.");
         return NULL;
     }
 
@@ -920,7 +939,7 @@ PoincareAttributes_GetAbsTol(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetMaxToroidalWinding(PyObject *self, PyObject *args)
+PoincareAttributes_SetAnalysis(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
@@ -928,18 +947,51 @@ PoincareAttributes_SetMaxToroidalWinding(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the maxToroidalWinding in the object.
-    obj->data->SetMaxToroidalWinding((int)ival);
+    // Set the analysis in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetAnalysis(PoincareAttributes::AnalysisType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid analysis value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "None, Normal.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetMaxToroidalWinding(PyObject *self, PyObject *args)
+PoincareAttributes_GetAnalysis(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxToroidalWinding()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAnalysis()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetMaximumToroidalWinding(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maximumToroidalWinding in the object.
+    obj->data->SetMaximumToroidalWinding((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetMaximumToroidalWinding(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaximumToroidalWinding()));
     return retval;
 }
 
@@ -1997,8 +2049,10 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetRelTol", PoincareAttributes_GetRelTol, METH_VARARGS},
     {"SetAbsTol", PoincareAttributes_SetAbsTol, METH_VARARGS},
     {"GetAbsTol", PoincareAttributes_GetAbsTol, METH_VARARGS},
-    {"SetMaxToroidalWinding", PoincareAttributes_SetMaxToroidalWinding, METH_VARARGS},
-    {"GetMaxToroidalWinding", PoincareAttributes_GetMaxToroidalWinding, METH_VARARGS},
+    {"SetAnalysis", PoincareAttributes_SetAnalysis, METH_VARARGS},
+    {"GetAnalysis", PoincareAttributes_GetAnalysis, METH_VARARGS},
+    {"SetMaximumToroidalWinding", PoincareAttributes_SetMaximumToroidalWinding, METH_VARARGS},
+    {"GetMaximumToroidalWinding", PoincareAttributes_GetMaximumToroidalWinding, METH_VARARGS},
     {"SetOverrideToroidalWinding", PoincareAttributes_SetOverrideToroidalWinding, METH_VARARGS},
     {"GetOverrideToroidalWinding", PoincareAttributes_GetOverrideToroidalWinding, METH_VARARGS},
     {"SetWindingPairConfidence", PoincareAttributes_SetWindingPairConfidence, METH_VARARGS},
@@ -2122,6 +2176,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PoincareAttributes::Poloidal));
     if(strcmp(name, "Toroidal") == 0)
         return PyInt_FromLong(long(PoincareAttributes::Toroidal));
+    if(strcmp(name, "Arbitrary") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Arbitrary));
 
     if(strcmp(name, "sourceType") == 0)
         return PoincareAttributes_GetSourceType(self, NULL);
@@ -2153,8 +2209,15 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetRelTol(self, NULL);
     if(strcmp(name, "absTol") == 0)
         return PoincareAttributes_GetAbsTol(self, NULL);
-    if(strcmp(name, "maxToroidalWinding") == 0)
-        return PoincareAttributes_GetMaxToroidalWinding(self, NULL);
+    if(strcmp(name, "analysis") == 0)
+        return PoincareAttributes_GetAnalysis(self, NULL);
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::None));
+    if(strcmp(name, "Normal") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Normal));
+
+    if(strcmp(name, "maximumToroidalWinding") == 0)
+        return PoincareAttributes_GetMaximumToroidalWinding(self, NULL);
     if(strcmp(name, "overrideToroidalWinding") == 0)
         return PoincareAttributes_GetOverrideToroidalWinding(self, NULL);
     if(strcmp(name, "windingPairConfidence") == 0)
@@ -2335,8 +2398,10 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetRelTol(self, tuple);
     else if(strcmp(name, "absTol") == 0)
         obj = PoincareAttributes_SetAbsTol(self, tuple);
-    else if(strcmp(name, "maxToroidalWinding") == 0)
-        obj = PoincareAttributes_SetMaxToroidalWinding(self, tuple);
+    else if(strcmp(name, "analysis") == 0)
+        obj = PoincareAttributes_SetAnalysis(self, tuple);
+    else if(strcmp(name, "maximumToroidalWinding") == 0)
+        obj = PoincareAttributes_SetMaximumToroidalWinding(self, tuple);
     else if(strcmp(name, "overrideToroidalWinding") == 0)
         obj = PoincareAttributes_SetOverrideToroidalWinding(self, tuple);
     else if(strcmp(name, "windingPairConfidence") == 0)

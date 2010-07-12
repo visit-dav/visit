@@ -146,7 +146,7 @@ CreateSphere(float val, double p[3])
 //    Changed color to dataValue
 //
 //    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
-//    Initialize streamlinePts.
+//    Initialize points.
 //
 //    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //    Add ability to restart streamline integration.
@@ -154,8 +154,8 @@ CreateSphere(float val, double p[3])
 // ****************************************************************************
 
 avtPoincareFilter::avtPoincareFilter() :
-    maxToroidalWinding( 0 ),
-    override( 0 ),
+    maximumToroidalWinding( 0 ),
+    overrideToroidalWinding( 0 ),
     windingPairConfidence( 0.90 ),
     periodicityConsistency( 0.80 ),
     adjust_plane(-1),
@@ -173,7 +173,7 @@ avtPoincareFilter::avtPoincareFilter() :
 {
     planes.resize(1);
     planes[0] = 0;
-    streamlines.resize(0);
+    fieldlines.erase( fieldlines.begin(), fieldlines.end() );
 }
 
 
@@ -192,7 +192,7 @@ avtPoincareFilter::avtPoincareFilter() :
 
 avtPoincareFilter::~avtPoincareFilter()
 {
-    streamlines.resize(0);
+    fieldlines.erase( fieldlines.begin(), fieldlines.end() );
 }
 
 // ****************************************************************************
@@ -263,39 +263,47 @@ avtPoincareFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic2)
+avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic)
 {
-    vector<avtStateRecorderIntegralCurve *> ic;
-
-    for (int k = 0 ; k < ic2.size() ; k++)
-        ic.push_back((avtStateRecorderIntegralCurve *) ic2[k]);
-
-    streamlines.resize(ic.size());
-    
     for ( int i=0; i<ic.size(); ++i )
     {
-        // Use the streamline id so that the streamlines are in the
-        // order that the seeds were generated.
-        unsigned int j = ic[i]->id;
+        avtStateRecorderIntegralCurve * sric =
+          (avtStateRecorderIntegralCurve *) ic[i];
+
+        // Use the curve id because the number of curves will change
+        // over time.
+        map< long int, ICHelper >::iterator iter =
+          fieldlines.find( sric->id );
+
+        if( iter == fieldlines.end() )
+        {
+          ICHelper ichelper;
+
+          ichelper.id = sric->id;
+
+          fieldlines[ sric->id ] = ichelper;
+
+          iter = fieldlines.find( sric->id );
+        }
 
         // Save off the streamline wrapper
-        streamlines[j].ic = ic[i];
+        (*iter).second.ic = sric;
 
         // Get all of the points from the streamline which are stored
         // as an array and move them into a vector for easier
         // manipulation by the analsysi code.
-        streamlines[j].streamlinePts.resize(0);
+        (*iter).second.points.resize(0);
 
-        avtStateRecorderIntegralCurve::iterator siter = ic[i]->begin();
+        avtStateRecorderIntegralCurve::iterator siter = sric->begin();
         
-        while (siter != ic[i]->end())
+        while (siter != sric->end())
         {
             avtVector pt;
             pt.x = (*siter)->front()[0];
             pt.y = (*siter)->front()[1];
             pt.z = (*siter)->front()[2];
             
-            streamlines[j].streamlinePts.push_back(pt);
+            (*iter).second.points.push_back(pt);
             
             ++siter;
         }
@@ -346,7 +354,7 @@ avtPoincareFilter::Execute()
 //  Modifications:
 //
 //    Hank Childs, Sun Jun  6 11:53:33 CDT 2010
-//    Use new names that have integral curves instead of streamlines.
+//    Use new names that have integral curves instead of fieldlines.
 //
 // ****************************************************************************
 
@@ -360,30 +368,35 @@ avtPoincareFilter::ContinueExecute()
     GetTerminatedIntegralCurves(ic);
     GetIntegralCurvePoints(ic);
 
-    if (! ClassifyStreamlines())
+    if (analysis && ! ClassifyStreamlines())
     {
-      for ( int i=0; i<streamlines.size(); ++i )
+      map< long int, ICHelper >::iterator iter = fieldlines.begin();
+
+      while( iter != fieldlines.end() )
       {
         // For Island Chains add in the O Points.
-        if( 0 && streamlines[i].properties.type ==
+        if( 0 && iter->second.properties.type ==
             FieldlineProperties::ISLAND_CHAIN &&
-            streamlines[i].properties.analysisState ==
+            iter->second.properties.analysisState ==
             FieldlineProperties::ADD_O_POINTS)
         {
-          streamlines[i].properties.analysisState =
+          iter->second.properties.analysisState =
             FieldlineProperties::TERMINATED;
 
           std::vector<std::vector<int> > ids;
           
-          AddSeedpoints( streamlines[i].properties.OPoints, ids);
+          AddSeedpoints( iter->second.properties.OPoints, ids);
         }
+
+        ++iter;
       }
 
       return true;
     }
-    
-    //Analysis complete, no need to continue.
-    return false;
+    // No analysis requested or analysis complete, no need to
+    // continue.
+    else 
+      return false;
 }
 
 
@@ -458,28 +471,36 @@ avtPoincareFilter::UpdateDataObjectInfo(void)
 bool
 avtPoincareFilter::ClassifyStreamlines()
 {
-    debug5 << "Classifying Streaming " << endl;
+    debug5 << "Classifying Fieldlines " << endl;
 
     bool analysisComplete = true;
 
-    for ( unsigned int i=0; i<streamlines.size(); ++i )
+    map< long int, ICHelper >::iterator iter = fieldlines.begin();
+
+    while( iter != fieldlines.end() )
     {
-        FieldlineProperties fp = streamlines[i].properties;
+        FieldlineProperties fp = iter->second.properties;
 
         // If the analysis is completed then skip it.
         if( fp.analysisState == FieldlineProperties::COMPLETED ||
             fp.analysisState == FieldlineProperties::TERMINATED )
-          continue;
+        {
+          cerr <<"Skipping Classified Streamline: id = "
+               << iter->second.id << endl;
 
-        FLlib.fieldlineProperties( streamlines[i].streamlinePts,
-                                   streamlines[i].properties,
-                                   override,
-                                   maxToroidalWinding,
+          ++iter;
+          continue;
+        }
+
+        FLlib.fieldlineProperties( iter->second.points,
+                                   iter->second.properties,
+                                   overrideToroidalWinding,
+                                   maximumToroidalWinding,
                                    windingPairConfidence,
                                    periodicityConsistency,
                                    showOPoints );
 
-        fp = streamlines[i].properties;
+        fp = iter->second.properties;
 
         // Make the number of punctures 2x because the Poincare analysis
         // uses only the punctures in the same direction as the plane normal
@@ -490,17 +511,17 @@ avtPoincareFilter::ClassifyStreamlines()
 
         // Check to see if there are enough points for the analysis.
         if( fp.nPuncturesNeeded != 0 &&
-            fp.nPuncturesNeeded != streamlines[i].ic->termination/2 )
+            fp.nPuncturesNeeded != iter->second.ic->termination/2 )
         {
           analysisComplete = false;
 
-          streamlines[i].ic->termination = 2 * fp.nPuncturesNeeded;
-          streamlines[i].ic->terminated = false;
+          iter->second.ic->termination = 2 * fp.nPuncturesNeeded;
+          iter->second.ic->terminated = false;
         }
         else
         {
-          streamlines[i].ic->terminated = true;
-          streamlines[i].properties.analysisState =
+          iter->second.ic->terminated = true;
+          iter->second.properties.analysisState =
             FieldlineProperties::TERMINATED;
         }
 
@@ -517,8 +538,8 @@ avtPoincareFilter::ClassifyStreamlines()
             safetyFactor = 0;
 
         if(verboseFlag )
-          cerr <<"Classify Streamline: "<<i<<" id= "<<streamlines[i].ic->id
-               << "  ptCnt = " << streamlines[i].streamlinePts.size()
+          cerr <<"Classify Streamline: id = "<< iter->second.id
+               << "  ptCnt = " << iter->second.points.size()
                << "  type = " << fp.type
                << "  toroidal/poloidal windings = " <<  fp.toroidalWinding
                << "/" << fp.poloidalWinding
@@ -530,8 +551,10 @@ avtPoincareFilter::ClassifyStreamlines()
                << "  toroidalPeriod = " << fp.toroidalPeriod
                << "  poloidalPeriod = " << fp.poloidalPeriod
                << "  complete " << (fp.analysisState == FieldlineProperties::COMPLETED ? "Yes " : "No ")
-               << (streamlines[i].ic->terminated ? 0 : streamlines[i].ic->termination )
+               << (iter->second.ic->terminated ? 0 : iter->second.ic->termination )
                << endl << endl;
+
+        ++iter;
     }
 
     debug5 << "Classifying Streaming "
@@ -630,9 +653,11 @@ avtPoincareFilter::CreatePoincareOutput()
 
     avtDataTree *dt = new avtDataTree();
     
-    for ( int i=0; i<streamlines.size(); ++i )
+    map< long int, ICHelper >::iterator iter = fieldlines.begin();
+
+    while( iter != fieldlines.end() )
     {
-        FieldlineProperties properties = streamlines[i].properties;
+        FieldlineProperties properties = iter->second.properties;
 
         FieldlineProperties::FieldlineType type = properties.type;
         bool complete =
@@ -653,38 +678,82 @@ avtPoincareFilter::CreatePoincareOutput()
 
         bool completeIslands = true;
 
+        if( verboseFlag ) 
+        {
+          cerr << "Surface id = " << iter->second.id << "  "
+               << toroidalWinding << ":" << poloidalWinding << " ("
+               << (double) toroidalWinding / (double) poloidalWinding << ")  ";
+
+          if( type == FieldlineProperties::RATIONAL )
+            cerr << "rational surface  ";
+
+          else if( type == FieldlineProperties::FLUX_SURFACE )
+            cerr << "flux surface  ";
+
+          else if( type == FieldlineProperties::ISLAND_CHAIN )
+            cerr << islands << " island chain  ";
+
+          else if( type == FieldlineProperties::CHAOTIC )
+            cerr << "chaotic  ";
+
+          else if( type == FieldlineProperties::UNKNOWN_TYPE )
+            cerr << "unknown  ";
+
+          cerr << "with " << nnodes << " nodes"
+               << (complete ? " (Complete)  " : "  ")
+               << "confidence " << confidence
+               << endl;
+
+          if( type == FieldlineProperties::ISLAND_CHAIN && islands != toroidalWinding ) 
+            cerr << "WARNING - The island count does not match the toroidalWinding count" << endl;
+        }
+    
         // If toroidal winding is zero, skip it.
         if( type == FieldlineProperties::CHAOTIC )
         {
           if( showChaotic )
             toroidalWinding = 1;
           else
+          {
+            ++iter;
             continue;
+          }
         }
         else if( type == FieldlineProperties::UNKNOWN_TYPE ) 
         {
+          if( analysis == 0 )
+          {
+            toroidalWinding = 1;
+          }
+          else
+          {
             if( verboseFlag ) 
-              cerr << i << " SKIPPING UNKNOWN TYPE " << endl;
+              cerr << " id = " << iter->second.id
+                   << " SKIPPING UNKNOWN TYPE " << endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
             //      topology.push_back(topo);
             
+            ++iter;
             continue;
+          }
         }
         else if( toroidalWinding == 0 ) 
         {
             if( verboseFlag ) 
-              cerr << i << " SKIPPING TOROIDALWINDING OF 0" << endl;
+              cerr << " id = " << iter->second.id
+                   << " SKIPPING TOROIDALWINDING OF 0" << endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
             //      topology.push_back(topo);
             
+            ++iter;
             continue;
         }
         
         // Get the direction of the streamline toroidalWinding.
-        Point lastPt = streamlines[i].streamlinePts[0];
-        Point currPt = streamlines[i].streamlinePts[1];
+        Point lastPt = iter->second.points[0];
+        Point currPt = iter->second.points[1];
         
         bool CCWstreamline = (atan2( lastPt.y, lastPt.x ) <
                               atan2( currPt.y, currPt.x ));
@@ -734,13 +803,13 @@ avtPoincareFilter::CreatePoincareOutput()
             
             // So to get the winding groups consistant start examining
             // the streamline in the same place for each plane.
-            currPt = streamlines[i].streamlinePts[startIndex];
+            currPt = iter->second.points[startIndex];
             currDist = planeN.dot( currPt ) - plane[3];
             
-            for( unsigned int j=startIndex+1; j<streamlines[i].streamlinePts.size(); ++j )
+            for( unsigned int j=startIndex+1; j<iter->second.points.size(); ++j )
             {
                 lastPt = currPt;
-                currPt = Vector(streamlines[i].streamlinePts[j]);
+                currPt = Vector(iter->second.points[j]);
                 
                 lastDist = currDist;
                 currDist = Dot( planeN, currPt ) - plane[3];
@@ -837,15 +906,15 @@ avtPoincareFilter::CreatePoincareOutput()
 
         // To get the winding groups consistant start examining the
         // streamline in the same place for each plane.
-        currPt = streamlines[i].streamlinePts[0];
+        currPt = iter->second.points[0];
         currDist = planeN.dot( currPt ) - plane[3];
             
         for( unsigned int j=startIndex+1;
-             j<streamlines[i].streamlinePts.size();
+             j<iter->second.points.size();
              ++j )
         {
           lastPt = currPt;
-          currPt = Vector(streamlines[i].streamlinePts[j]);
+          currPt = Vector(iter->second.points[j]);
           
           lastDist = currDist;
           currDist = Dot( planeN, currPt ) - plane[3];
@@ -877,7 +946,7 @@ avtPoincareFilter::CreatePoincareOutput()
           if( maxZ < currPt.z )
             maxZ = currPt.z;
         }
-        
+   
 //      // Get the rest of the info only from the phi = zero plane.
 //         unsigned int p;
         
@@ -1043,10 +1112,11 @@ avtPoincareFilter::CreatePoincareOutput()
                 
 //             }
 //         }  // if( type == ISLAND_CHAIN )
-        
+
         for( unsigned int p=0; p<planes.size(); p++ ) 
         {
-            if( type == FieldlineProperties::CHAOTIC )
+            if( type == FieldlineProperties::UNKNOWN_TYPE ||
+                type == FieldlineProperties::CHAOTIC )
               nnodes = puncturePts[p][0].size();
 
             else if( type != FieldlineProperties::RATIONAL )
@@ -1094,34 +1164,8 @@ avtPoincareFilter::CreatePoincareOutput()
                 //           << endl;
             }
         }
-        
-        if( verboseFlag ) 
-        {
-          cerr << "Surface " << i << " is a "
-               << toroidalWinding << ":" << poloidalWinding << " ("
-               << (double) toroidalWinding / (double) poloidalWinding << ")  ";
 
-          if( type == FieldlineProperties::RATIONAL )
-            cerr << "rational surface  ";
 
-          else if( type == FieldlineProperties::FLUX_SURFACE )
-            cerr << "flux surface  ";
-
-          else if( type == FieldlineProperties::ISLAND_CHAIN )
-            cerr << islands << " island chain  ";
-
-          else if( type == FieldlineProperties::CHAOTIC )
-            cerr << "chaotic  ";
-
-          cerr << "with " << nnodes << " nodes"
-               << (complete ? " (Complete)  " : "  ")
-               << "confidence " << confidence
-               << endl;
-
-          if( type == FieldlineProperties::ISLAND_CHAIN && islands != toroidalWinding ) 
-            cerr << "WARNING - The island count does not match the toroidalWinding count" << endl;
-        }
-        
         // Record the topology.
         //std::pair< unsigned int, unsigned int >
         //  topo( toroidalWinding, poloidalWinding );
@@ -1135,7 +1179,7 @@ avtPoincareFilter::CreatePoincareOutput()
             
             if( dataValue == DATA_OriginalValue ||
                 dataValue == DATA_InputOrder )
-                color_value = i;
+                color_value = iter->second.id;
             else if( dataValue == DATA_ToroidalWindings )
                 color_value = toroidalWinding;
             else if( dataValue == DATA_PoloidalWindings )
@@ -1157,7 +1201,9 @@ avtPoincareFilter::CreatePoincareOutput()
               if( type == FieldlineProperties::RATIONAL ) 
                 loadCurve( dt, puncturePts, nnodes, islands, windingGroupOffset,
                            dataValue, color_value );
-              else if( type == FieldlineProperties::CHAOTIC )
+
+              else if( type == FieldlineProperties::UNKNOWN_TYPE ||
+                       type == FieldlineProperties::CHAOTIC )
               {
                 bool tmpLines  = showLines;
                 bool tmpPoints = showPoints;
@@ -1368,13 +1414,13 @@ avtPoincareFilter::CreatePoincareOutput()
 //     loadPoints( dt, ridgelinePts, ridgelinePts.size(),
 //              nnodes, islands, poloidalWinding,
 //              dataValue, color_value, true );
-
-
         }
+    
+        ++iter;
     }
     
     if( verboseFlag ) 
-        cerr << endl << endl << "count " << streamlines.size() << endl << endl;
+        cerr << endl << endl << "count " << fieldlines.size() << endl << endl;
 
     debug5 << "Finished creating output " << endl;
     

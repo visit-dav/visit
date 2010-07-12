@@ -301,74 +301,75 @@ QvisPoincarePlotWindow::CreateWindowContents()
     
     mainLayout = new QGridLayout(secondTab);
 
-    maxToroidalWindingLabel =
-      new QLabel(tr("Max Toroidal Winding"), secondTab);
-    mainLayout->addWidget(maxToroidalWindingLabel, 0, 0);
-    maxToroidalWinding = new QSpinBox(secondTab);
-    maxToroidalWinding->setMinimum(0);
-    maxToroidalWinding->setMaximum(1000);
-    connect(maxToroidalWinding, SIGNAL(valueChanged(int)),
-            this, SLOT(maxToroidalWindingChanged(int)));
-    mainLayout->addWidget(maxToroidalWinding, 0, 1);
+    analysisLabel = new QLabel(tr("Analysis"), secondTab);
+    mainLayout->addWidget(analysisLabel, 0, 0, Qt::AlignTop);
+    analysis = new QWidget(secondTab);
+    analysisButtonGroup= new QButtonGroup(analysis);
+    QHBoxLayout *analysisTypeLayout = new QHBoxLayout(analysis);
+    analysisTypeLayout->setMargin(0);
+    analysisTypeLayout->setSpacing(10);
+    QRadioButton *analysisTypeNone =
+      new QRadioButton(tr("Punctures only"), analysis);
+    analysisButtonGroup->addButton(analysisTypeNone,0);
+    analysisTypeLayout->addWidget(analysisTypeNone);
+    QRadioButton *analysisTypeNormal =
+      new QRadioButton(tr("Normal"), analysis);
+    analysisButtonGroup->addButton(analysisTypeNormal,1);
+    analysisTypeLayout->addWidget(analysisTypeNormal);
+    connect(analysisButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(analysisChanged(int)));
+    mainLayout->addWidget(analysis, 0, 1, Qt::AlignTop);
+
+
+   // Create the analysis group box.
+    QGroupBox *analysisGroup = new QGroupBox(secondTab);
+    analysisGroup->setTitle(tr("Analysis"));
+    mainLayout->addWidget(analysisGroup, 1, 0, 5, 3, Qt::AlignTop);
+
+    QGridLayout *analysisLayout = new QGridLayout(analysisGroup);
+    analysisLayout->setMargin(5);
+    analysisLayout->setSpacing(10);
+
+    maximumToroidalWindingLabel =
+      new QLabel(tr("Maximum toroidal winding"), secondTab);
+    analysisLayout->addWidget(maximumToroidalWindingLabel, 0, 0);
+    maximumToroidalWinding = new QSpinBox(secondTab);
+    maximumToroidalWinding->setMinimum(0);
+    maximumToroidalWinding->setMaximum(1000);
+    connect(maximumToroidalWinding, SIGNAL(valueChanged(int)),
+            this, SLOT(maximumToroidalWindingChanged(int)));
+    analysisLayout->addWidget(maximumToroidalWinding, 0, 1);
 
     overrideToroidalWindingLabel =
-      new QLabel(tr("Override Toroidal Winding"), secondTab);
-    mainLayout->addWidget(overrideToroidalWindingLabel, 1, 0);
+      new QLabel(tr("Override toroidal winding"), secondTab);
+    analysisLayout->addWidget(overrideToroidalWindingLabel, 1, 0);
     overrideToroidalWinding = new QSpinBox(secondTab);
     overrideToroidalWinding->setMinimum(0);
     overrideToroidalWinding->setMaximum(1000);
     connect(overrideToroidalWinding, SIGNAL(valueChanged(int)),
             this, SLOT(overrideToroidalWindingChanged(int)));
-    mainLayout->addWidget(overrideToroidalWinding, 1, 1);
+    analysisLayout->addWidget(overrideToroidalWinding, 1, 1);
 
     windingPairConfidenceLabel =
-      new QLabel(tr("Winding Pair Confidence"), secondTab);
-    mainLayout->addWidget(windingPairConfidenceLabel, 2, 0);
+      new QLabel(tr("Winding pair confidence"), secondTab);
+    analysisLayout->addWidget(windingPairConfidenceLabel, 2, 0);
     windingPairConfidence = new QLineEdit(secondTab);
     connect(windingPairConfidence, SIGNAL(returnPressed()),
             this, SLOT(windingPairConfidenceProcessText()));
-    mainLayout->addWidget(windingPairConfidence, 2, 1);
+    analysisLayout->addWidget(windingPairConfidence, 2, 1);
 
     periodicityConsistencyLabel =
-      new QLabel(tr("Periodicity Consistency"), secondTab);
-    mainLayout->addWidget(periodicityConsistencyLabel, 3, 0);
+      new QLabel(tr("Periodicity consistency"), secondTab);
+    analysisLayout->addWidget(periodicityConsistencyLabel, 3, 0);
     periodicityConsistency = new QLineEdit(secondTab);
     connect(periodicityConsistency, SIGNAL(returnPressed()),
             this, SLOT(periodicityConsistencyProcessText()));
-    mainLayout->addWidget(periodicityConsistency, 3, 1);
+    analysisLayout->addWidget(periodicityConsistency, 3, 1);
 
-    overlapsLabel = new QLabel(tr("Overlaps"), secondTab);
-    mainLayout->addWidget(overlapsLabel, 4, 0, Qt::AlignTop);
-    overlaps = new QWidget(secondTab);
-    overlapsButtonGroup= new QButtonGroup(overlaps);
-    QHBoxLayout *overlapsLayout = new QHBoxLayout(overlaps);
-    overlapsLayout->setMargin(0);
-    overlapsLayout->setSpacing(10);
-    QRadioButton *overlapsOverlapTypeRaw =
-      new QRadioButton(tr("Raw"), overlaps);
-    overlapsButtonGroup->addButton(overlapsOverlapTypeRaw,0);
-    overlapsLayout->addWidget(overlapsOverlapTypeRaw);
-    QRadioButton *overlapsOverlapTypeRemove =
-      new QRadioButton(tr("Remove"), overlaps);
-    overlapsButtonGroup->addButton(overlapsOverlapTypeRemove,1);
-    overlapsLayout->addWidget(overlapsOverlapTypeRemove);
-    QRadioButton *overlapsOverlapTypeMerge =
-      new QRadioButton(tr("Merge"), overlaps);
-    overlapsButtonGroup->addButton(overlapsOverlapTypeMerge,2);
-    overlapsLayout->addWidget(overlapsOverlapTypeMerge);
-    QRadioButton *overlapsOverlapTypeSmooth =
-      new QRadioButton(tr("Smooth"), overlaps);
-    overlapsButtonGroup->addButton(overlapsOverlapTypeSmooth,3);
-    overlapsLayout->addWidget(overlapsOverlapTypeSmooth);
-    connect(overlapsButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(overlapsChanged(int)));
-    mainLayout->addWidget(overlaps, 4, 1, Qt::AlignTop);
-
-
-   // Create the O/X Point  group box.
+   // Create the O/X Point group box.
     QGroupBox *criticalPointGroup = new QGroupBox(secondTab);
     criticalPointGroup->setTitle(tr("Critical Points"));
-    mainLayout->addWidget(criticalPointGroup, 5, 0, 1, 2, Qt::AlignTop);
+    mainLayout->addWidget(criticalPointGroup, 5, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *criticalPointLayout = new QGridLayout(criticalPointGroup);
     criticalPointLayout->setMargin(5);
@@ -391,27 +392,65 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
 //    criticalPointGroup->hide();
 
-   // Create the options group box.
+
+    // Create the overlaps group box.
+    QGroupBox *overlapsGroup = new QGroupBox(secondTab);
+    overlapsGroup->setTitle(tr("Overlaps"));
+    mainLayout->addWidget(overlapsGroup, 6, 0, 1, 3, Qt::AlignTop);
+
+    QGridLayout *overlapsLayout = new QGridLayout(overlapsGroup);
+    overlapsLayout->setMargin(5);
+    overlapsLayout->setSpacing(10);
+
+    overlapsLabel = new QLabel(tr("Overlaping curve sections"), secondTab);
+    overlapsLayout->addWidget(overlapsLabel, 0, 0, Qt::AlignTop);
+    overlaps = new QWidget(secondTab);
+    overlapsButtonGroup= new QButtonGroup(overlaps);
+    QHBoxLayout *overlapTypeLayout = new QHBoxLayout(overlaps);
+    overlapTypeLayout->setMargin(0);
+    overlapTypeLayout->setSpacing(10);
+    QRadioButton *overlapTypeRaw =
+      new QRadioButton(tr("Raw"), overlaps);
+    overlapsButtonGroup->addButton(overlapTypeRaw,0);
+    overlapTypeLayout->addWidget(overlapTypeRaw);
+    QRadioButton *overlapTypeRemove =
+      new QRadioButton(tr("Remove"), overlaps);
+    overlapsButtonGroup->addButton(overlapTypeRemove,1);
+    overlapTypeLayout->addWidget(overlapTypeRemove);
+    QRadioButton *overlapTypeMerge =
+      new QRadioButton(tr("Merge"), overlaps);
+    overlapsButtonGroup->addButton(overlapTypeMerge,2);
+    overlapTypeLayout->addWidget(overlapTypeMerge);
+    QRadioButton *overlapTypeSmooth =
+      new QRadioButton(tr("Smooth"), overlaps);
+    overlapsButtonGroup->addButton(overlapTypeSmooth,3);
+    overlapTypeLayout->addWidget(overlapTypeSmooth);
+    connect(overlapsButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(overlapsChanged(int)));
+    overlapsLayout->addWidget(overlaps, 0, 1, Qt::AlignTop);
+
+
+    // Create the options group box.
     QGroupBox *analysisOptionsGroup = new QGroupBox(secondTab);
     analysisOptionsGroup->setTitle(tr("Options"));
-    mainLayout->addWidget(analysisOptionsGroup, 6, 0, 1, 2, Qt::AlignTop);
+    mainLayout->addWidget(analysisOptionsGroup, 7, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *analysisOptionsLayout = new QGridLayout(analysisOptionsGroup);
     analysisOptionsLayout->setMargin(5);
     analysisOptionsLayout->setSpacing(10);
 
-    showIslands = new QCheckBox(tr("Show Islands Only"), analysisOptionsGroup);
+    showIslands = new QCheckBox(tr("Show islands only"), analysisOptionsGroup);
     connect(showIslands, SIGNAL(toggled(bool)),
             this, SLOT(showIslandsChanged(bool)));
     analysisOptionsLayout->addWidget(showIslands, 0, 0);
 
     showChaotic =
-      new QCheckBox(tr("Show Chaotic Fieldlines (as points)"), analysisOptionsGroup);
+      new QCheckBox(tr("Show chaotic fieldlines (as points)"), analysisOptionsGroup);
     connect(showChaotic, SIGNAL(toggled(bool)),
             this, SLOT(showChaoticChanged(bool)));
     analysisOptionsLayout->addWidget(showChaotic, 0, 1);
 
-    showRidgelines = new QCheckBox(tr("Show Rdigelines"), analysisOptionsGroup);
+    showRidgelines = new QCheckBox(tr("Show ridgelines"), analysisOptionsGroup);
     connect(showRidgelines, SIGNAL(toggled(bool)),
             this, SLOT(showRidgelinesChanged(bool)));
     analysisOptionsLayout->addWidget(showRidgelines, 1, 0);
@@ -853,10 +892,19 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
           case PoincareAttributes::ID_absTol:
             absTol->setText(DoubleToQString(atts->GetAbsTol()));
             break;
-          case PoincareAttributes::ID_maxToroidalWinding:
-            maxToroidalWinding->blockSignals(true);
-            maxToroidalWinding->setValue(atts->GetMaxToroidalWinding());
-            maxToroidalWinding->blockSignals(false);
+          case PoincareAttributes::ID_analysis:
+            analysisButtonGroup->blockSignals(true);
+            if(analysisButtonGroup->button((int)atts->GetAnalysis()) != 0)
+                analysisButtonGroup->button((int)atts->GetAnalysis())->setChecked(true);
+            showLines->setChecked(atts->GetAnalysis());
+            showPoints->setChecked(!atts->GetAnalysis());
+
+            analysisButtonGroup->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_maximumToroidalWinding:
+            maximumToroidalWinding->blockSignals(true);
+            maximumToroidalWinding->setValue(atts->GetMaximumToroidalWinding());
+            maximumToroidalWinding->blockSignals(false);
             break;
           case PoincareAttributes::ID_overrideToroidalWinding:
             overrideToroidalWinding->blockSignals(true);
@@ -1615,9 +1663,20 @@ QvisPoincarePlotWindow::absTolProcessText()
 
 
 void
-QvisPoincarePlotWindow::maxToroidalWindingChanged(int val)
+QvisPoincarePlotWindow::analysisChanged(int val)
 {
-    atts->SetMaxToroidalWinding(val);
+    if(val != atts->GetAnalysis())
+    {
+        atts->SetAnalysis(PoincareAttributes::AnalysisType(val));
+        Apply();
+    }
+}
+
+
+void
+QvisPoincarePlotWindow::maximumToroidalWindingChanged(int val)
+{
+    atts->SetMaximumToroidalWinding(val);
     Apply();
 }
 
