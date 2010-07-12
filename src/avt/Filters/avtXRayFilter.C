@@ -60,10 +60,6 @@
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkIdList.h>
-#if 0
-// An attempt to speed up the ray cell intersection using marching cubes.
-#include <vtkMarchingCubesCases.h>
-#endif
 #include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -92,6 +88,96 @@ using     std::string;
 static int IntersectLineWithRevolvedSegment(const double *line_pt,
                                             const double *, const double *, 
                                             const double *, double *);
+
+
+inline double Dot(const double v1[3], const double v2[3])
+{
+    return (v1[0] * v2[0]) + (v1[1] * v2[1]) +  (v1[2] * v2[2]);
+}
+
+inline void Cross(double result[3], const double v1[3], const double v2[3])
+{
+    result[0] = (v1[1] * v2[2]) - (v1[2] * v2[1]);
+    result[1] = (v1[2] * v2[0]) - (v1[0] * v2[2]);
+    result[2] = (v1[0] * v2[1]) - (v1[1] * v2[0]);
+}
+
+static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
+    const double v_11[3], const double v_01[3], const double origin[3],
+    const double direction[3], double& t)
+{
+    static const double eps = 10e-6;
+
+    //
+    // Reject rays that are parallel to Q, and rays that intersect the
+    // plane of Q either on the left of the line V00V01 or on the right
+    // of the line V00V10.
+    //
+
+    double E_01[3], E_03[3];
+    E_01[0] = v_10[0] - v_00[0];
+    E_01[1] = v_10[1] - v_00[1];
+    E_01[2] = v_10[2] - v_00[2];
+    E_03[0] = v_01[0] - v_00[0];
+    E_03[1] = v_01[1] - v_00[1];
+    E_03[2] = v_01[2] - v_00[2];
+    double P[3];
+    Cross(P, direction, E_03);
+    double det = Dot(E_01, P);
+    if (fabs(det) < eps) return false;
+    double inv_det = 1.0 / det;
+    double T[3];
+    T[0] = origin[0] - v_00[0];
+    T[1] = origin[1] - v_00[1];
+    T[2] = origin[2] - v_00[2];
+    double alpha = Dot(T, P) * inv_det;
+    if (alpha < 0.0) return false;
+    double Q[3];
+    Cross(Q, T, E_01);
+    double beta = Dot(direction, Q) * inv_det;
+    if (beta < 0.0) return false; 
+
+    if ((alpha + beta) > 1.0)
+    {
+        //
+        // Rejects rays that intersect the plane of Q either on the
+        // left of the line V11V10 or on the right of the line V11V01.
+        //
+
+        double E_23[3], E_21[3];
+        E_23[0] = v_01[0] - v_11[0];
+        E_23[1] = v_01[1] - v_11[1];
+        E_23[2] = v_01[2] - v_11[2];
+        E_21[0] = v_10[0] - v_11[0];
+        E_21[1] = v_10[1] - v_11[1];
+        E_21[2] = v_10[2] - v_11[2];
+        double P_prime[3];
+        Cross(P_prime, direction, E_21);
+        double det_prime = Dot(E_23, P_prime);
+        if (fabs(det_prime) < eps) return false;
+        double inv_det_prime = double(1.0) / det_prime;
+        double T_prime[3];
+        T_prime[0] = origin[0] - v_11[0];
+        T_prime[1] = origin[1] - v_11[1];
+        T_prime[2] = origin[2] - v_11[2];
+        double alpha_prime = Dot(T_prime, P_prime) * inv_det_prime;
+        if (alpha_prime < double(0.0)) return false;
+        double Q_prime[3];
+        Cross(Q_prime, T_prime, E_23);
+        double beta_prime = Dot(direction, Q_prime) * inv_det_prime;
+        if (beta_prime < double(0.0)) return false;
+    }
+
+    //
+    // Compute the ray parameter of the intersection point, and
+    // reject the ray if it does not hit Q.
+    //
+
+    t = Dot(E_03, Q) * inv_det;
+    if (t < 0.0) return false; 
+
+    return true;
+}
 
 
 // ****************************************************************************
@@ -529,38 +615,8 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
     vector<int> cells_matched;
 
-#if 0
-    ///////////////////////////////////////////////////////////////////////
-    // THIS WAS COMMENTED OUT SINCE THE HEADER FILE NECESSARY IS
-    // A PRIVATE HEADER FILE. THIS CODE SHOULD BE FASTER THAN
-    // THE EXISTING CODE BELOW. NEED TO TIME IT.
-    ///////////////////////////////////////////////////////////////////////
-    static int edges[12][2] = {{0,1}, {1,2}, {3,2}, {0,3},
-                               {4,5}, {5,6}, {7,6}, {4,7},
-                               {0,4}, {1,5}, {3,7}, {2,6}};
-
-    typedef int EDGE_LIST;
-    typedef struct {
-       EDGE_LIST edges[3];
-    } LINE_CASES;
-
-    static LINE_CASES lineCases[] = {
-      {{-1, -1, -1}},
-      {{0, 2, -1}},
-      {{1, 0, -1}},
-      {{1, 2, -1}},
-      {{2, 1, -1}},
-      {{0, 1, -1}},
-      {{2, 0, -1}},
-      {{-1, -1, -1}}
-    };
-
-    static int edges2[3][2] = {{0,1}, {1,2}, {0,2}};
-
-    t1 = visitTimer->StartTimer();
     if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
-        debug1 << "We have a structured grid." << endl;
         vtkStructuredGrid *sgrid = (vtkStructuredGrid *) ds;
         vtkPoints *points = sgrid->GetPoints();
 
@@ -584,61 +640,30 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         int nz2 = zdims[2];
         int nxy2 = nx2 * ny2;
 
-        vtkMarchingCubesTriangleCases *triCase;
-        EDGE_LIST *edge;
-        LINE_CASES *lineCase;
-        EDGE_LIST *edge2;
-
-        //
-        // Determine the planes to use to intersect the cells.
-        //
-        double dir[3];
-        dir[0] = lines[1] - lines[0];
-        dir[1] = lines[3] - lines[2];
-        dir[2] = lines[5] - lines[4];
-
-        double a, b, c, d;
-        double a2, b2, c2, d2;
-
-        if (dir[0] != 0. || dir[1] != 0.)
-        {
-            // Use (0., 0., 1.) vector.
-            a = -dir[1];
-            b =  dir[0];
-            c =  0.;
-        }
-        else
-        {
-            // Use (0., 1., 0.) vector.
-            a =  dir[2];
-            b =  0.;
-            c = -dir[0];
-        }
-        a2 = c * dir[1] - b * dir[2];
-        b2 = c * dir[0] + a * dir[2];
-        c2 = b * dir[0] - a * dir[1];
-
-        int nCellsTotal = 0;
-        int nTrisTotal = 0;
         for (i = 0 ; i < nLines ; i++)
         {
             double pt1[3];
             pt1[0] = lines[6*i];
             pt1[1] = lines[6*i+2];
             pt1[2] = lines[6*i+4];
+            double pt2[3];
+            pt2[0] = lines[6*i+1];
+            pt2[1] = lines[6*i+3];
+            pt2[2] = lines[6*i+5];
+            double dir[3];
+            dir[0] = pt2[0] - pt1[0];
+            dir[1] = pt2[1] - pt1[1];
+            dir[2] = pt2[2] - pt1[2];
 
-            d = - a * pt1[0] - b * pt1[1] - c * pt1[2];
-            d2 = - a2 * pt1[0] - b2 * pt1[1] - c2 * pt1[2];
-
-            //
-            // Determine which cells intersect the line.
-            //
             vector<int> list;
             tree.GetElementsList(pt1, dir, list);
             int nCells = list.size();
-            nCellsTotal += nCells;
             if (nCells == 0)
                 continue;  // No intersection
+
+            double lineLength = sqrt((pt2[0]-pt1[0]) * (pt2[0]-pt1[0]) +
+                                     (pt2[1]-pt1[1]) * (pt2[1]-pt1[1]) +
+                                     (pt2[2]-pt1[2]) * (pt2[2]-pt1[2]));
 
             for (j = 0 ; j < nCells ; j++)
             {
@@ -664,224 +689,167 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 ids[6] = idx + 1 + nx;
                 ids[7] = idx + nx;
         
-                int index = 0;
-                float s[8];
-                for (int k = 0; k < 8; k++)
+                double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};
+                double p1[3]={pts[ids[1]*3],pts[ids[1]*3+1],pts[ids[1]*3+2]};
+                double p2[3]={pts[ids[2]*3],pts[ids[2]*3+1],pts[ids[2]*3+2]};
+                double p3[3]={pts[ids[3]*3],pts[ids[3]*3+1],pts[ids[3]*3+2]};
+                double p4[3]={pts[ids[4]*3],pts[ids[4]*3+1],pts[ids[4]*3+2]};
+                double p5[3]={pts[ids[5]*3],pts[ids[5]*3+1],pts[ids[5]*3+2]};
+                double p6[3]={pts[ids[6]*3],pts[ids[6]*3+1],pts[ids[6]*3+2]};
+                double p7[3]={pts[ids[7]*3],pts[ids[7]*3+1],pts[ids[7]*3+2]};
+
+                double t;
+                int nInter = 0;
+                double inter[6];
+
+                if (IntersectLineWithQuad(p0, p1, p2, p3, pt1, dir, t))
+                    inter[nInter++] = t;
+                if (IntersectLineWithQuad(p4, p7, p6, p5, pt1, dir, t))
+                    inter[nInter++] = t;
+                if (IntersectLineWithQuad(p0, p4, p5, p1, pt1, dir, t))
+                    inter[nInter++] = t;
+                if (IntersectLineWithQuad(p1, p5, p6, p2, pt1, dir, t))
+                    inter[nInter++] = t;
+                if (IntersectLineWithQuad(p2, p6, p7, p3, pt1, dir, t))
+                    inter[nInter++] = t;
+                if (IntersectLineWithQuad(p0, p3, p7, p4, pt1, dir, t))
+                    inter[nInter++] = t;
+
+                if (nInter == 2)
                 {
-                    s[k] = a*pts[ids[k]*3] + b*pts[ids[k]*3+1] +
-                           c*pts[ids[k]*3+2] + d;
-                    index |= (s[k] >= 0. ? 1 : 0) << k;
+                    cells_matched.push_back(iCell);
+                    dist.push_back(inter[0]*lineLength);
+                    dist.push_back(inter[1]*lineLength);
+                    line_id.push_back(i);
                 }
 
-                triCase = vtkMarchingCubesTriangleCases::GetCases() + index;
-                edge = triCase->edges;
-
-                //
-                // Loop over triangles.
-                //
-                for ( ; edge[0] > -1; edge += 3)
+                int currentMilestone = (int)(((float) i) / amtPerMsg);
+                if (currentMilestone > lastMilestone)
                 {
-                    nTrisTotal++;
-                    //
-                    // Calculate the triangle.
-                    //
-                    float triPts[9];
-                    for (int k = 0; k < 3; k++)
-                    {
-                        int *vert = edges[edge[k]];
-                        int v0 = ids[vert[0]], v1 = ids[vert[1]];
-                        float deltas = (s[vert[1]] - s[vert[0]]);
-                        float t = (deltas == 0.) ?
-                            0. : ((0. - s[vert[0]]) / deltas);
-                        triPts[k*3]   = pts[v0*3] +
-                            t * (pts[v1*3]   - pts[v0*3]);
-                        triPts[k*3+1] = pts[v0*3+1] +
-                            t * (pts[v1*3+1] - pts[v0*3+1]);
-                        triPts[k*3+2] = pts[v0*3+2] +
-                            t * (pts[v1*3+2] - pts[v0*3+2]);
-                    }
-
-                    //
-                    // Intersect the triangle with the 2nd plane.
-                    //
-                    int index2 = 0;
-                    float s2[3];
-                    for (int k = 0; k < 3; k++)
-                    {
-                        s2[k] = a2*triPts[k*3] + b2*triPts[k*3+1] +
-                                c2*triPts[k*3+2] + d2;
-                        index2 |= (s2[k] > 0. ? 0 : 1) << k;
-                    }
-
-                    lineCase = lineCases + index2;
-                    edge2 = lineCase->edges;
-
-                    //
-                    // Loop over triangles.
-                    //
-                    for ( ; edge2[0] > -1; edge2 += 2)
-                    {
-                        //
-                        // Calculate the line.
-                        //
-                        cells_matched.push_back(iCell);
-                        line_id.push_back(i);
-                        for (int k = 0; k < 2; k++)
-                        {
-                            float x, y, z;
-                            int *vert = edges2[edge2[k]];
-                            int v0 = vert[0], v1 = vert[1];
-                            float deltas = (s2[vert[1]] - s2[vert[0]]);
-                            float t = (deltas == 0.) ?
-                                0. : ((0. - s2[vert[0]]) / deltas);
-                            x = triPts[v0*3] +
-                                t * (triPts[v1*3]   - triPts[v0*3]);
-                            y = triPts[v0*3+1] +
-                                t * (triPts[v1*3+1] - triPts[v0*3+1]);
-                            z = triPts[v0*3+2] +
-                                t * (triPts[v1*3+2] - triPts[v0*3+2]);
-                            float inter = sqrt((x-pt1[0])*(x-pt1[0])+
-                                               (y-pt1[1])*(y-pt1[1])+
-                                               (z-pt1[2])*(z-pt1[2]));
-                            dist.push_back(inter);
-                        }
-                    }
+                    UpdateProgress(extraMsg*currentNode+currentMilestone, 
+                                   extraMsg*totalNodes);
+                    lastMilestone = currentMilestone;
                 }
             }
         }
-        cerr << "nCellsTotal=" << nCellsTotal << ",nTrisTotal=" << nTrisTotal << endl;
     }
     else
     {
-    }
-    visitTimer->StopTimer(t1, "avtXRayFilter::IntersectLines");
-#endif
-
-#if 1
-    for (i = 0 ; i < nLines ; i++)
-    {
-        //
-        // Determine which cells intersect the line.
-        //
-        double pt1[3];
-        pt1[0] = lines[6*i];
-        pt1[1] = lines[6*i+2];
-        pt1[2] = lines[6*i+4];
-        double pt2[3];
-        pt2[0] = lines[6*i+1];
-        pt2[1] = lines[6*i+3];
-        pt2[2] = lines[6*i+5];
-        double dir[3];
-        dir[0] = pt2[0] - pt1[0];
-        dir[1] = pt2[1] - pt1[1];
-        dir[2] = pt2[2] - pt1[2];
-
-        vector<int> list;
-        tree.GetElementsList(pt1, dir, list);
-        int nCells = list.size();
-        if (nCells == 0)
-            continue;  // No intersection
-
-        double lineLength = sqrt((pt2[0]-pt1[0]) * (pt2[0]-pt1[0]) +
-                                 (pt2[1]-pt1[1]) * (pt2[1]-pt1[1]) +
-                                 (pt2[2]-pt1[2]) * (pt2[2]-pt1[2]));
-        for (j = 0 ; j < nCells ; j++)
+        for (i = 0 ; i < nLines ; i++)
         {
-            int id = list[j];
-            if (hasGhost && ghosts->GetTuple1(id) != 0.)
-                continue;
-            vtkCell *cell = ds->GetCell(id);
+            //
+            // Determine which cells intersect the line.
+            //
+            double pt1[3];
+            pt1[0] = lines[6*i];
+            pt1[1] = lines[6*i+2];
+            pt1[2] = lines[6*i+4];
+            double pt2[3];
+            pt2[0] = lines[6*i+1];
+            pt2[1] = lines[6*i+3];
+            pt2[2] = lines[6*i+5];
+            double dir[3];
+            dir[0] = pt2[0] - pt1[0];
+            dir[1] = pt2[1] - pt1[1];
+            dir[2] = pt2[2] - pt1[2];
 
-            int nInter = 0;
-            double inter[100];
-            if (cell->GetCellDimension() == 3)
+            vector<int> list;
+            tree.GetElementsList(pt1, dir, list);
+            int nCells = list.size();
+            if (nCells == 0)
+                continue;  // No intersection
+
+            double lineLength = sqrt((pt2[0]-pt1[0]) * (pt2[0]-pt1[0]) +
+                                     (pt2[1]-pt1[1]) * (pt2[1]-pt1[1]) +
+                                     (pt2[2]-pt1[2]) * (pt2[2]-pt1[2]));
+            for (j = 0 ; j < nCells ; j++)
             {
-                int nFaces = cell->GetNumberOfFaces();
-                for (int k = 0 ; k < nFaces ; k++)
+                int id = list[j];
+                if (hasGhost && ghosts->GetTuple1(id) != 0.)
+                    continue;
+                vtkCell *cell = ds->GetCell(id);
+
+                int nInter = 0;
+                double inter[100];
+                if (cell->GetCellDimension() == 3)
                 {
-                    vtkCell *face = cell->GetFace(k);
-                    double x[3];
-                    double pcoords[3];
-                    double t;
-                    int subId;
-                    if (face->IntersectWithLine(pt1, pt2, 1e-10, t, x, pcoords, 
-                                                subId))
-                        inter[nInter++] = t;
-                }
-            }
-            else if (cell->GetCellDimension() == 2)
-            {
-                int nEdges = cell->GetNumberOfEdges();
-                for (int k = 0 ; k < nEdges ; k++)
-                {
-                    vtkCell *edge = cell->GetEdge(k);
-                    double x[3];
-                    double pcoords[3];
-                    double t;
-                    int subId;
-                    if (edge->IntersectWithLine(pt1, pt2, 1e-10, t, x, pcoords, 
-                                                subId))
-                        inter[nInter++] = t;
-                }
-            }
-            if (nInter == 0 || nInter == 1)
-                continue;
-            // See if we have any near duplicates.
-            if (nInter > 2)
-            {
-                for (int ii = 0 ; ii < nInter-1 ; ii++)
-                {
-                    for (int jj = ii+1 ; jj < nInter ; jj++)
+                    int nFaces = cell->GetNumberOfFaces();
+                    for (int k = 0 ; k < nFaces ; k++)
                     {
-                        if (fabs(inter[ii]-inter[jj]) < 1e-10)
+                        vtkCell *face = cell->GetFace(k);
+                        double x[3];
+                        double pcoords[3];
+                        double t;
+                        int subId;
+                        if (face->IntersectWithLine(pt1, pt2, 1e-10, t, x, pcoords, 
+                                                    subId))
+                            inter[nInter++] = t;
+                    }
+                }
+                else if (cell->GetCellDimension() == 2)
+                {
+                    int nEdges = cell->GetNumberOfEdges();
+                    for (int k = 0 ; k < nEdges ; k++)
+                    {
+                        vtkCell *edge = cell->GetEdge(k);
+                        double x[3];
+                        double pcoords[3];
+                        double t;
+                        int subId;
+                        if (edge->IntersectWithLine(pt1, pt2, 1e-10, t, x, pcoords, 
+                                                    subId))
+                            inter[nInter++] = t;
+                    }
+                }
+                if (nInter == 0 || nInter == 1)
+                    continue;
+                // See if we have any near duplicates.
+                if (nInter > 2)
+                {
+                    for (int ii = 0 ; ii < nInter-1 ; ii++)
+                    {
+                        for (int jj = ii+1 ; jj < nInter ; jj++)
                         {
-                            inter[ii] = inter[nInter-1];
-                            nInter--;
+                            if (fabs(inter[ii]-inter[jj]) < 1e-10)
+                            {
+                                inter[ii] = inter[nInter-1];
+                                nInter--;
+                            }
                         }
                     }
                 }
-            }
-            if (nInter == 2)
-            {
-                cells_matched.push_back(id);
-                dist.push_back(inter[0]*lineLength);
-                dist.push_back(inter[1]*lineLength);
-                line_id.push_back(i);
-            }
-            else
-            {
-                // So this is technically an error state.  We have
-                // intersected the shape an odd number of times, which
-                // should mean that we are inside the shape.  We constructed
-                // our lines so that is not possible.  In reality, this occurs
-                // because of floating point precision issues.  In addition,
-                // every time it occurs, it is because we have a *very*
-                // small cell.  The queries that use this filter need to
-                // call "CleanPolyData" on it anyway, so cells this small
-                // will be "cleaned out".  So, rather than throwing an 
-                // exception, we can just continue.
-                continue;
-            }
+                if (nInter == 2)
+                {
+                    cells_matched.push_back(id);
+                    dist.push_back(inter[0]*lineLength);
+                    dist.push_back(inter[1]*lineLength);
+                    line_id.push_back(i);
+                }
+                else
+                {
+                    // So this is technically an error state.  We have
+                    // intersected the shape an odd number of times, which
+                    // should mean that we are inside the shape.  We constructed
+                    // our lines so that is not possible.  In reality, this occurs
+                    // because of floating point precision issues.  In addition,
+                    // every time it occurs, it is because we have a *very*
+                    // small cell.  The queries that use this filter need to
+                    // call "CleanPolyData" on it anyway, so cells this small
+                    // will be "cleaned out".  So, rather than throwing an 
+                    // exception, we can just continue.
+                    continue;
+                }
 
-            int currentMilestone = (int)(((float) i) / amtPerMsg);
-            if (currentMilestone > lastMilestone)
-            {
-                UpdateProgress(extraMsg*currentNode+currentMilestone, 
-                               extraMsg*totalNodes);
-                lastMilestone = currentMilestone;
+                int currentMilestone = (int)(((float) i) / amtPerMsg);
+                if (currentMilestone > lastMilestone)
+                {
+                    UpdateProgress(extraMsg*currentNode+currentMilestone, 
+                                   extraMsg*totalNodes);
+                    lastMilestone = currentMilestone;
+                }
             }
         }
     }
-#endif
-#if 0
-    for (int i = 0; i < cells_matched.size(); i++)
-    {
-        debug1 << i << ":cells_matched=" << cells_matched[i]
-               << ",line_id=" << line_id[i]
-               << ",dist=" << dist[2*i] << "," << dist[2*i+1] << endl;
-    }
-    debug1 << "cell_matched.size()=" << cells_matched.size() << endl;
-#endif
 
     nLinesPerDataset = cells_matched.size();
 
