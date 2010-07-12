@@ -110,6 +110,10 @@ InitTimeHeader(TimeHeader_t *hdr)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 13, 2007 
 //
+//  Modifications
+//    Mark C. Miller, Mon Jul 12 16:03:24 PDT 2010
+//    Replaced use of StringHelpers::FindRE with ExtractRESubstring. Using
+//    the former was simply a bug.
 // ****************************************************************************
 
 static int
@@ -184,8 +188,7 @@ GetFilenames(string scanfStr, string regexStr, string rootDir,
         }
         else if (regexStr != "")
         {
-            if (StringHelpers::FindRE(theDirEnt->d_name, regexStr.c_str()) !=
-                StringHelpers::FindNone)
+            if (StringHelpers::ExtractRESubstr(theDirEnt->d_name, regexStr.c_str()) != "")
             {
                 fnames.push_back(theDirEnt->d_name);
                 debug5 << "   Added \"" << theDirEnt->d_name << "\"" << endl;
@@ -201,17 +204,22 @@ GetFilenames(string scanfStr, string regexStr, string rootDir,
 }
 
 // ****************************************************************************
-//  Struct: FileNameAndRant_t
+//  Struct: FileNameAndRank_t
 //
 //  Purpose: Container to pair filename with its sort rank 
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   September 13, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Mon Jul 12 16:04:23 PDT 2010
+//    Replaced C++ string object fname with int origIndex as use of C++ object
+//    in the context of qsort where bit-for-bit copy is used is shady at best.
+//
 // ****************************************************************************
 typedef struct
 {
-    string fname;
+    int origIndex;
     double rank;
 } FileNameAndRank_t;
 
@@ -222,6 +230,10 @@ typedef struct
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   September 13, 2007 
+//
+//  Modifications:
+//    Mark C. Miller, Mon Jul 12 16:05:44 PDT 2010
+//    Replaced clear and re-build of fnames with build of copy and assign.
 //
 // ****************************************************************************
 static int
@@ -281,7 +293,7 @@ SortFilenames(vector<string> &fnames, string cycleRegex, string rootDir)
                                                       cycleRegex.c_str());
         }
 
-        fnrs[i].fname = fnames[i];
+        fnrs[i].origIndex = i;
         fnrs[i].rank = rank; 
     }
 
@@ -289,13 +301,14 @@ SortFilenames(vector<string> &fnames, string cycleRegex, string rootDir)
     qsort(fnrs, n, sizeof(FileNameAndRank_t), CompareFNR);
 
     // now, clear fnames and re-populate in new order
-    fnames.clear();
+    vector<string> newfnames;
     debug5 << "Sorted list..." << endl;
     for (i = 0; i < n; i++)
     {
-        fnames.push_back(fnrs[i].fname);
-        debug5 << "   \"" << fnrs[i].fname << "\"" << endl;
+        newfnames.push_back(fnames[fnrs[i].origIndex]);
+        debug5 << "   \"" << newfnames[i] << "\"" << endl;
     }
+    fnames = newfnames;
 
     delete [] fnrs;
 
@@ -542,6 +555,9 @@ ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
     }
 }
 
+#define STRMATCH(s)     (!strncmp(s,tmpStr,sizeof(s)-1))
+#define STRSTRIP(s)     (&tmpStr[sizeof(s)-1])
+
 // ****************************************************************************
 //  Method: avtClawFileFormat constructor
 //
@@ -553,6 +569,10 @@ ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
 //    Mark C. Miller, Wed Aug  6 09:53:08 PDT 2008
 //    Construct roorDir so that it does NOT contain a trailing "/."
 //
+//    Mark C. Miller, Mon Jul 12 16:06:22 PDT 2010
+//    Replaced use of scanf with fgets as former would fail on inputs
+//    containing spaces such as in a regex specification. Also, replaced
+//    explicit ordering of tests for file keywords with loop over fgets.
 // ****************************************************************************
 
 avtClawFileFormat::avtClawFileFormat(const char *filename)
@@ -560,82 +580,35 @@ avtClawFileFormat::avtClawFileFormat(const char *filename)
 {
     // open and read the claw bootstrap file
     char tmpStr[1024];
-    int nmatches;
     FILE *bootFile = fopen(filename, "r");
 
     string bootFileDir = StringHelpers::Dirname(filename);
-
-    // get the directory name where the files are (default is ".")
-    rootDir = bootFileDir;
-    tmpStr[0] = '\0';
-    nmatches = fscanf(bootFile, "DIR=%s\n", tmpStr);
-    if (nmatches == 1 && tmpStr[0] != '\0' && string(tmpStr) != ".")
-        rootDir = bootFileDir + "/" + string(tmpStr);
-
+    rootDir = ".";
     timeScanf = "";
     timeRegex = "";
     gridScanf = "";
     gridRegex = "";
+    optMode = "i/o";
 
-    // get the scanf or regex pattern for time files
-    tmpStr[0] = '\0';
-    nmatches = fscanf(bootFile, "TIME_FILES_SCANF=%s\n", tmpStr);
-    if (nmatches != 1 || tmpStr[0] == '\0')
+    while (fgets(tmpStr, sizeof(tmpStr), bootFile))
     {
-        tmpStr[0] = '\0';
-        nmatches = fscanf(bootFile, "TIME_FILES_REGEX=%s\n", tmpStr);
-        if (nmatches != 1 || tmpStr[0] == '\0')
-        {
-            EXCEPTION1(ImproperUseException, "Unable to find time files scanf|regex pattern");
-        }
-        else
-        {
-            timeRegex = string(tmpStr);
-        }
+        int n = strlen(tmpStr);
+        tmpStr[n-1] = '\0'; // get rid of newline char at end
+        if      (STRMATCH("DIR="))
+            rootDir = bootFileDir + "/" + string(STRSTRIP("DIR="));
+        else if (STRMATCH("TIME_FILES_SCANF="))
+            timeScanf = string(STRSTRIP("TIME_FILES_SCANF="));
+        else if (STRMATCH("TIME_FILES_REGEX="))
+            timeRegex = string(STRSTRIP("TIME_FILES_REGEX="));
+        else if (STRMATCH("GRID_FILES_SCANF="))
+            gridScanf = string(STRSTRIP("GRID_FILES_SCANF="));
+        else if (STRMATCH("GRID_FILES_REGEX="))
+            gridRegex = string(STRSTRIP("GRID_FILES_REGEX="));
+        else if (STRMATCH("CYCLE_REGEX="))
+            cycleRegex = string(STRSTRIP("CYCLE_REGEX="));
+        else if (STRMATCH("OPTIMIZE_MODE="))
+            optMode = string(STRSTRIP("OPTIMIZE_MODE="));
     }
-    else
-    {
-        timeScanf = string(tmpStr);
-    }
-
-    // get the scanf or regex pattern for grid files
-    tmpStr[0] = '\0';
-    nmatches = fscanf(bootFile, "GRID_FILES_SCANF=%s\n", tmpStr);
-    if (nmatches != 1 || tmpStr[0] == '\0')
-    {
-        tmpStr[0] = '\0';
-        nmatches = fscanf(bootFile, "GRID_FILES_REGEX=%s\n", tmpStr);
-        if (nmatches != 1 || tmpStr[0] == '\0')
-        {
-            EXCEPTION1(ImproperUseException, "Unable to find grid files scanf|regex pattern");
-        }
-        else
-        {
-            gridRegex = string(tmpStr);
-        }
-    }
-    else
-    {
-        gridScanf = string(tmpStr);
-    }
-
-    // get the optional cycle regex used to extract cycle numbers of filenames
-    tmpStr[0] = '\0';
-    nmatches = fscanf(bootFile, "CYCLE_REGEX=%s\n", tmpStr);
-    if (nmatches != 1 || tmpStr[0] == '\0')
-        cycleRegex = "";
-    else
-        cycleRegex = string(tmpStr);
-
-    // get the optional optimization mode ('mem' or 'i/o') 
-    // note: this is currently ignored.
-    tmpStr[0] = '\0';
-    nmatches = fscanf(bootFile, "OPTIMIZE_MODE=%s\n", tmpStr);
-    if (nmatches != 1 || tmpStr[0] == '\0')
-        optMode = "i/o";
-    else
-        optMode = string(tmpStr);
-
     fclose(bootFile);
 
     debug1 << "DIR=" << rootDir << endl;
@@ -665,6 +638,9 @@ avtClawFileFormat::avtClawFileFormat(const char *filename)
 //    Jeremy Meredith, Thu Aug  7 15:54:10 EDT 2008
 //    Use %ld format for longs.
 //
+//    Mark C. Miller, Mon Jul 12 16:07:51 PDT 2010
+//    Pass timeRegex to SortFilenames for timeFilenames and gridRegex to
+//    SortFilenames for gridFilenames.
 // ****************************************************************************
 void
 avtClawFileFormat::GetFilenames()
@@ -700,12 +676,12 @@ avtClawFileFormat::GetFilenames()
     {
         TimeHeader_t thdr;
         InitTimeHeader(&thdr);
-        SortFilenames(timeFilenames, cycleRegex, rootDir);
+        SortFilenames(timeFilenames, timeRegex, rootDir);
         timeHeaders.resize(timeFilenames.size(), thdr);
     }
     if (sortGrid)
     {
-        SortFilenames(gridFilenames, cycleRegex, rootDir);
+        SortFilenames(gridFilenames, gridRegex, rootDir);
         gridHeaders.resize(gridFilenames.size());
         gridHeaderMaps.resize(gridFilenames.size());
     }
