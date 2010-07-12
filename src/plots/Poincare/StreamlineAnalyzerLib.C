@@ -1582,12 +1582,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   Point lastPt, currPt = ptList[0];
   Vector planePt( 0, 0, 0 );
 
-  cerr << "-----------------------------------------------------------------" << endl;
-
   if( verboseFlag )
+  {
+    cerr << "-----------------------------------------------------------------" << endl;
     cerr << "Analyzing  " << ptList[0] << "  "
          << "with  " << ptList.size() << " fieldline points"
          << endl;
+  }
 
   // Set up the Y plane equation as the base analysis takes place in
   // the X-Z plane.

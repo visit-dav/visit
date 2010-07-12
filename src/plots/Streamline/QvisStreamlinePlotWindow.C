@@ -182,6 +182,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources.
 //
+//   Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
+//   Rename Exterior to Boundary.
+//
 // ****************************************************************************
 
 void
@@ -379,7 +382,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     fillLabel = new QLabel(tr("Sampling along:"), samplingGroup);
     samplingLayout->addWidget(fillLabel, sRow, 0);
     fillButtonGroup = new QButtonGroup(samplingGroup);
-    fillButtons[0] = new QRadioButton(tr("Exterior"), samplingGroup);
+    fillButtons[0] = new QRadioButton(tr("Boundary"), samplingGroup);
     fillButtons[1] = new QRadioButton(tr("Interior"), samplingGroup);
     fillButtons[0]->setChecked(true);
     fillButtonGroup->addButton(fillButtons[0], 0);

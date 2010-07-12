@@ -71,9 +71,6 @@ using namespace std;
 
 #define SIGN(x) ((x) < 0.0 ? -1 : 1)
 
-//#define RADIUS 0.0075
-#define RADIUS 0.0010
-
 static const int DATA_None = 0;
 static const int DATA_OriginalValue = 1;
 static const int DATA_InputOrder = 2;
@@ -98,11 +95,14 @@ static const int DATA_RidgelineVariance = 12;
 //
 //   Dave Pugmire, Thu Jul  1 13:55:28 EDT 2010
 //   Create a vertex instead of a sphere.
-//
+//   
+//    Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
+//    Remove rad argument.
+//    
 // ****************************************************************************
 
 static vtkPolyData *
-CreateSphere(float val, double rad, double p[3])
+CreateSphere(float val, double p[3])
 {
     vtkPoints *pt = vtkPoints::New();
     pt->SetNumberOfPoints(1);
@@ -1495,8 +1495,6 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     double pt[3] =
                       { nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z };
                     
-                    double rad = RADIUS*pointScale;
-                    
                     if( color == DATA_PointIndex )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
                     else if( color == DATA_WindingPointOrder )
@@ -1504,7 +1502,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     else if( color == DATA_WindingPointOrderModulo )
                       color_value =  i % nnodes;
                     
-                    vtkPolyData *ball = CreateSphere(color_value, rad, pt);
+                    vtkPolyData *ball = CreateSphere(color_value, pt);
                     
                     append->AddInput(ball);
                     ball->Delete();
@@ -1532,8 +1530,6 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     double pt[3] =
                       { nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z };
                     
-                    double rad = RADIUS*pointScale;
-                    
                     if( color == DATA_PointIndex )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
                     else if( color == DATA_WindingPointOrder )
@@ -1541,7 +1537,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     else if( color == DATA_WindingPointOrderModulo )
                       color_value = i % nnodes;
                     
-                    vtkPolyData *ball = CreateSphere(color_value, rad, pt);
+                    vtkPolyData *ball = CreateSphere(color_value, pt);
                     
                     append->AddInput(ball);
                     ball->Delete();
@@ -1786,8 +1782,6 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     double pt[3] =
                       { nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z };
                     
-                    double rad = RADIUS*pointScale;
-                    
                     if( color == DATA_PointIndex )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
                     else if( color == DATA_WindingPointOrder )
@@ -1795,7 +1789,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     else if( color == DATA_WindingPointOrderModulo )
                       color_value = i % nnodes;
                     
-                    vtkPolyData *ball = CreateSphere(color_value, rad, pt);
+                    vtkPolyData *ball = CreateSphere(color_value, pt);
 
                     append->AddInput(ball);
                     ball->Delete();
@@ -2207,9 +2201,7 @@ avtPoincareFilter::findIslandCenter( avtDataTree *dt,
                                  0,
                                  (*SL).lower.vertex->point.y };
 
-                double rad = RADIUS*pointScale;
-                      
-                vtkPolyData *ball = CreateSphere(nlines, rad, pt);
+                vtkPolyData *ball = CreateSphere(nlines, pt);
                       
                 append->AddInput(ball);
                 ball->Delete();
@@ -2273,9 +2265,7 @@ avtPoincareFilter::findIslandCenter( avtDataTree *dt,
              << lastpt[0] << "  " << lastpt[1] << "  " << lastpt[2]
              << endl;
         
-        double rad = 0.005;
-        
-        vtkPolyData *ball = CreateSphere(nlines, rad, lastpt);
+        vtkPolyData *ball = CreateSphere(nlines, lastpt);
         
         append->AddInput(ball);
         ball->Delete();
@@ -2652,8 +2642,6 @@ avtPoincareFilter::loadPoints( avtDataTree *dt,
       else
         pt[0] = nodes[i].x;
           
-      double rad = RADIUS*pointScale;
-
       if( color == DATA_PointIndex )
         color_value = i;
       else if( color == DATA_WindingOrder )
@@ -2666,7 +2654,7 @@ avtPoincareFilter::loadPoints( avtDataTree *dt,
       if( colorMax < color_value )
         colorMax = color_value;
       
-      vtkPolyData *ball = CreateSphere(color_value, rad, pt);
+      vtkPolyData *ball = CreateSphere(color_value, pt);
       append->AddInput(ball);
       ball->Delete();
     }

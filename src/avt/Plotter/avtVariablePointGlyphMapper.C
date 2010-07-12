@@ -101,6 +101,9 @@ avtVariablePointGlyphMapper::~avtVariablePointGlyphMapper()
 //    Brad Whitlock, Thu Aug 25 15:18:17 PST 2005
 //    Added support for point texturing.
 //
+//    Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
+//    Glyph if topological dimension is <= 1.
+//
 // ****************************************************************************
 
 void
@@ -137,7 +140,7 @@ avtVariablePointGlyphMapper::CustomizeMappers(void)
             }
         }
     }
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
     {
         CustomizeGlyphs(GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
 
@@ -189,12 +192,15 @@ avtVariablePointGlyphMapper::CustomizeMappers(void)
 //
 //  Modifications:
 //
+//    Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
+//    Glyph if topological dimension is <= 1.
+//
 // ****************************************************************************
 
 void
 avtVariablePointGlyphMapper::SetUpFilters(int nDoms)
 {
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
     {
         SetUpGlyphs(nDoms);
     }
@@ -218,17 +224,19 @@ avtVariablePointGlyphMapper::SetUpFilters(int nDoms)
 //
 //  Modifications:
 //
+//    Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
+//    Glyph if topological dimension is <= 1.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtVariablePointGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 {
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
+        return InsertGlyphs(ds, dom, 
+                            GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
+    else
         return ds;
-
-    return InsertGlyphs(ds, dom, 
-                 GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
-
 }
 
 
