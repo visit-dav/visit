@@ -846,6 +846,11 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //
 //    Mark C. Miller, Tue Jan 12 17:36:23 PST 2010
 //    Added logic to parse SOLUTIONTIME and set solTime.
+//
+//    Jeremy Meredith, Tue Jul 13 15:51:24 EDT 2010
+//    Allow the "$" which seems to appear alone on the last line of some
+//    ASCII tecplot files.
+//
 // ****************************************************************************
 
 void
@@ -892,6 +897,20 @@ avtTecplotFileFormat::ReadFile()
         else if (tok == "TEXT")
         {
             // unsupported
+            tok = GetNextToken();
+            while (READING_UNTIL_END_OF_LINE)
+            {
+                // Skipping token
+                tok = GetNextToken();
+            }
+            got_next_token_already = true;
+        }
+        else if (tok == "$")
+        {
+            // this seems to have appeared at the end
+            // of some files; may simply be an eof
+            // pre-indicator, but it seems to be safe
+            // to skip it.....
             tok = GetNextToken();
             while (READING_UNTIL_END_OF_LINE)
             {
