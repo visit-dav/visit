@@ -3462,6 +3462,10 @@ ViewerEngineManager::CloneNetwork(const EngineKey &ek, int nid,
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile.
 //
+//   Jeremy Meredith, Tue Jul 13 12:52:14 EDT 2010
+//   Make sure the "RunningEngines" machine profile as written only has a
+//   single launch profile (the active one) -- this simplifies later parsing.
+//
 // ****************************************************************************
 
 void
@@ -3492,8 +3496,11 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
                 temp.SetHost(it->first.HostName());
                 if(temp.GetActiveLaunchProfile() != 0)
                 {
-                    temp.GetActiveLaunchProfile()->SetNumProcessors(it->second.proxy->NumProcessors());
-                    temp.GetActiveLaunchProfile()->SetNumNodes(it->second.proxy->NumNodes());
+                    LaunchProfile launch(*temp.GetActiveLaunchProfile());
+                    launch.SetNumProcessors(it->second.proxy->NumProcessors());
+                    launch.SetNumNodes(it->second.proxy->NumNodes());
+                    temp.ClearLaunchProfiles();
+                    temp.AddLaunchProfiles(launch);
                 }
                 temp.CreateNode(runningEnginesNode, true, true);
             }
