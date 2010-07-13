@@ -108,6 +108,12 @@ ViewerHostProfileSelector::ClearCache(const std::string &hostName)
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Jeremy Meredith, Tue Jul 13 16:16:45 EDT 2010
+//    Sometimes we just cache a dummy machine profile.  In these cases, we
+//    still need to be able to save off command line args.  (These coincide
+//    when someone adds -np 4 to the command line, for instance.)  So we
+//    create an empty launch profile to use for this case.
+//
 // ****************************************************************************
 void
 ViewerHostProfileSelector::AddRestartArgsToCachedProfile(
@@ -116,6 +122,14 @@ ViewerHostProfileSelector::AddRestartArgsToCachedProfile(
 {
     if (cachedProfile.count(hostName))
     {
+        // If we don't have any launch profiles, add one!
+        if (cachedProfile[hostName].GetNumLaunchProfiles() == 0)
+        {
+            cachedProfile[hostName].AddLaunchProfiles(LaunchProfile());
+            cachedProfile[hostName].SetActiveProfile(0);
+        }
+
+        // This had better be true now......
         if (cachedProfile[hostName].GetActiveLaunchProfile())
         {
             std::vector<std::string> &a =
