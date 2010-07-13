@@ -702,9 +702,13 @@ def GenFileNames(file, ext):
 #   I enhanced the routine so that the text next to the large baseline image
 #   indicates if it is a mode specific image or not.
 #
+#   Eric Brugger, Tue Jul 13 15:03:54 PDT 2010
+#   I added the optional argument alreadySaved that indicates if the image
+#   has already been saved.
+#
 # ----------------------------------------------------------------------------
 
-def Test(file, altSWA=0):
+def Test(file, altSWA=0, alreadySaved=0):
     global pixdifftol
     global avgdifftol
     global maxds
@@ -731,17 +735,18 @@ def Test(file, altSWA=0):
     (cur, diff, base, altbase, modeSpecific) = GenFileNames(file, ".png")
 
     # save the window in visit
-    if altSWA != 0:
-        sa=altSWA
-    else:
-        sa=SaveWindowAttributes()
-        sa.screenCapture=1
-    sa.family   = 0
-    sa.fileName = cur
-    sa.format   = sa.PNG
-    sa
-    SetSaveWindowAttributes(sa)
-    SaveWindow()
+    if alreadySaved == 0:
+        if altSWA != 0:
+            sa=altSWA
+        else:
+            sa=SaveWindowAttributes()
+            sa.screenCapture=1
+        sa.family   = 0
+        sa.fileName = cur
+        sa.format   = sa.PNG
+        sa
+        SetSaveWindowAttributes(sa)
+        SaveWindow()
 
     # do a leak check if requested
     if leakcheck:
