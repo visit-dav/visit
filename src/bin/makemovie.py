@@ -405,7 +405,7 @@ def MovieClassSaveWindow():
 ###############################################################################
 # Class: EngineAttributesParser
 #
-# Purpose:    This class parses session files for HostProfiles in the
+# Purpose:    This class parses session files for MachineProfiles in the
 #             "RunningEngines" node so we can extract information about the
 #             compute engines that were running when the session file was
 #             saved.
@@ -414,6 +414,12 @@ def MovieClassSaveWindow():
 # Date:       Tue Aug 3 16:11:01 PST 2004
 #
 # Modifications:
+#    Jeremy Meredith, Tue Jul 13 13:22:47 EDT 2010
+#    I changed host profiles to be a machine profile + nested launch profile.
+#    During this change I noticed the endtag parsing was making use of the
+#    latest "open tag", which is incorrect since self.dataName wasn't a stack.
+#    I changed it to instead use the explocit booleans we set during starttag,
+#    though a viable alternative would be to make dataName a stack of strings.
 #
 ###############################################################################
 
@@ -424,7 +430,8 @@ class EngineAttributesParser(XMLParser):
         self.attributes = {"name" : "", "type" : None, "length" : 0}
 
         self.readingEngineProperties = 0
-        self.readingHostProfile = 0
+        self.readingMachineProfile = 0
+        self.readingLaunchProfile = 0
         self.readingField = 0
         self.engineProperties = {}
         self.allEngineProperties = {}
@@ -438,9 +445,12 @@ class EngineAttributesParser(XMLParser):
                 self.dataName = attributes["name"]
                 if self.dataName == "RunningEngines":
                     self.readingEngineProperties = 1
-                elif self.dataName == "HostProfile":
+                elif self.dataName == "MachineProfile":
                     if self.readingEngineProperties == 1:
-                        self.readingHostProfile = 1
+                        self.readingMachineProfile = 1
+                elif self.dataName == "LaunchProfile":
+                    if self.readingMachineProfile == 1:
+                        self.readingLaunchProfile = 1
         else:
             self.readingField = 1
             self.dataAtts = attributes
@@ -448,17 +458,16 @@ class EngineAttributesParser(XMLParser):
 
     def handle_endtag(self, tag, method):
         if tag == "Object":
-            if self.dataName == "RunningEngines":
+            if self.readingLaunchProfile == 1:
+                self.readingLaunchProfile = 0
+            elif self.readingMachineProfile == 1:
+                self.readingMachineProfile = 0
+                if "host" in self.engineProperties.keys():
+                    host = self.engineProperties["host"]
+                    self.allEngineProperties[host] = self.engineProperties
+                    #self.engineProperties = {}
+            elif self.readingEngineProperties == 1:
                 self.readingEngineProperties = 0
-                self.dataName = None
-            elif self.dataName == "HostProfile":
-                if self.readingEngineProperties == 1:
-                    self.readingHostProfile = 0
-                    self.dataName = None
-                    if "host" in self.engineProperties.keys():
-                        host = self.engineProperties["host"]
-                        self.allEngineProperties[host] = self.engineProperties
-                        #self.engineProperties = {}
         elif tag == "Field":
             self.readingField = 0
 
@@ -469,7 +478,7 @@ class EngineAttributesParser(XMLParser):
             for i in range(len(s)):
                 space = space + " "
             return s != space
-        if (self.readingEngineProperties == 1 or self.readingHostProfile)\
+        if (self.readingEngineProperties == 1 or self.readingMachineProfile)\
             and self.readingField == 1 and len(data) > 0:
             name = self.dataAtts["name"]
             type = self.dataAtts["type"]
@@ -1503,6 +1512,10 @@ class MakeMovie:
                     self.engineCommandLineProperties["arguments"] = self.engineCommandLineProperties["arguments"] + ["-expedite"]
                 else:
                     self.engineCommandLineProperties["arguments"] = ["-expedite"]
+            elif(commandLine[i] == "-help" or commandLine[i] == "-h" or commandLine[i] == "--help"):
+                self.PrintUsage()
+                sys.exit(0)
+                
 
             # On to the next argument.
             i = i + 1
@@ -1897,10 +1910,17 @@ class MakeMovie:
             f.close()
 
             # Parse the file
-            p = EngineAttributesParser()
-            for line in lines:
-                p.feed(line)
-            p.close()
+            try:
+                p = EngineAttributesParser()
+                for line in lines:
+                    p.feed(line)
+                p.close()
+            except:
+                print
+                print "ERROR: We could not parse the session file for engine "
+                print "launch parameters.  This will cause problems getting "
+                print "the right type of engine launched.  Please report this."
+                print
 
             if len(p.allEngineProperties.keys()) == 0:
                 # There were no hosts in the engine attributes so add the command
