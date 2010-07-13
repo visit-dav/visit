@@ -763,7 +763,11 @@ avtPICSFilter::CheckOnDemandViability(void)
 //
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
-//
+//   
+//  Dave Pugmire, Tue Jul 13 09:24:57 EDT 2010
+//  Move icAlgo cleanup from Execute() to PostExecute(). The poincare plot
+//  analysis was using IC data after Execute() had been called.
+//  
 // ****************************************************************************
 
 void
@@ -803,14 +807,6 @@ avtPICSFilter::Execute(void)
         icAlgo->ResetIntegralCurvesForContinueExecute();
         icAlgo->Execute();
     }
-    
-    icAlgo->PostExecute();
-
-    delete icAlgo;
-    icAlgo = NULL;
-    
-    delete intervalTree;
-    intervalTree = NULL;
 }
 
 // ****************************************************************************
@@ -1819,6 +1815,12 @@ avtPICSFilter::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2010
 //
+//  Modifications:
+//
+//  Dave Pugmire, Tue Jul 13 09:24:57 EDT 2010
+//  Move icAlgo cleanup from Execute() to PostExecute(). The poincare plot
+//  analysis was using IC data after Execute() had been called.
+//
 // ****************************************************************************
 
 void
@@ -1829,6 +1831,13 @@ avtPICSFilter::PostExecute(void)
     if (solver)
         delete solver;
     solver = NULL;
+
+    delete intervalTree;
+    intervalTree = NULL;
+
+    icAlgo->PostExecute();
+    delete icAlgo;
+    icAlgo = NULL;
 }
 
 
