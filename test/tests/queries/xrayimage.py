@@ -16,7 +16,7 @@ import os
 #
 # Test a single block structured grid with scalars.
 #
-OpenDatabase("/usr/gapps/visit/data/curv3d.silo")
+OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
@@ -43,7 +43,7 @@ DefineArrayExpression("pa", "array_compose(p1,p1)")
 
 DeleteAllPlots()
 
-OpenDatabase("/usr/gapps/visit/data/multi_curv3d.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_curv3d.silo"%SILO_MODE)
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
@@ -56,5 +56,22 @@ Test("xrayimage03", 0, 1)
 
 s = GetQueryOutputString()
 TestText("xrayimage04", s)
+
+#
+# Test a 2d structured grid with scalars.
+#
+DeleteAllPlots()
+
+OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+Query("XRay Image", "png", 1, 0., 0., 0., 0, 0, 10., 10., 300, 300, ("d", "p"))
+
+os.rename("output00.png", "current/queries/xrayimage/xrayimage05.png")
+Test("xrayimage05", 0, 1)
+
+s = GetQueryOutputString()
+TestText("xrayimage06", s)
 
 Exit()
