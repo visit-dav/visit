@@ -328,6 +328,11 @@ avtTimeIteratorExpression::Execute(void)
 //  Programmer:   Hank Childs
 //  Creation:     February 14, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jul 14 06:38:42 PDT 2010
+//    Fix problem with meshnames like category/meshname.
+//
 // ****************************************************************************
 
 void
@@ -350,13 +355,13 @@ avtTimeIteratorExpression::UpdateExpressions(int ts)
         char expr_defn[1024];
         if (cmfeType == CONN_CMFE)
         {
-            SNPRINTF(expr_defn, 1024, "conn_cmfe(<[%d]i:%s>, %s)", ts,
+            SNPRINTF(expr_defn, 1024, "conn_cmfe(<[%d]i:%s>, <%s>)", ts,
                                         varnames[i].c_str(), meshname.c_str());
         }
         else
         {
             int defVarIndex = varnames.size()-1;
-            SNPRINTF(expr_defn, 1024, "pos_cmfe(<[%d]i:%s>, %s, %s)", ts,
+            SNPRINTF(expr_defn, 1024, "pos_cmfe(<[%d]i:%s>, <%s>, %s)", ts,
                                         varnames[i].c_str(), meshname.c_str(),
                                         varnames[defVarIndex].c_str());
         }
