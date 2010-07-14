@@ -1,7 +1,7 @@
 
 A:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <-0.253497, 4.09227>
+Point (Z,R): <-0.253497, 4.09227>
 Zone:  855
 Incident Nodes:  883  884  915  914  
 mat1:  3 
@@ -9,7 +9,7 @@ mat1:  3
 
 B:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <3.1229, 0.836778>
+Point (Z,R): <3.1229, 0.836778>
 Zone:  482
 Incident Nodes:  498  499  530  529  
 mat1:  2 
@@ -17,7 +17,7 @@ mat1:  2
 
 C:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <-0.428567, 4.07754>
+Point (Z,R): <-0.428567, 4.07754>
 Node:  884
 Incident Zones:  855  825  856  826  
 mat1:  
@@ -29,7 +29,7 @@ mat1:
 
 D:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <3.25706, 0.342331>
+Point (Z,R): <3.25706, 0.342331>
 Node:  528
 Incident Zones:  511  481  
 mat1:  
@@ -39,7 +39,7 @@ mat1:
 
 E:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <-2.41668, 1.87777>
+Point (Z,R): <-2.41668, 1.87777>
 Zone:  443
 Incident Nodes:  457  458  489  488  
 mat1:  2 
@@ -47,7 +47,7 @@ mat1:  2
 
 F:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <-1.39372, 2.14615>
+Point (Z,R): <-1.39372, 2.14615>
 Zone:  230
 Incident Nodes:  237  238  269  268  
 mat1:  1 
@@ -55,7 +55,7 @@ mat1:  1
 
 G:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <-2.4675, 1.79275>
+Point (Z,R): <-2.4675, 1.79275>
 Node:  458
 Incident Zones:  443  413  444  414  
 mat1:  
@@ -67,7 +67,7 @@ mat1:
 
 H:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <-1.68955, 1.87644>
+Point (Z,R): <-1.68955, 1.87644>
 Node:  239
 Incident Zones:  231  201  232  202  
 mat1:  
@@ -79,7 +79,7 @@ mat1:
 
 I:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <2.03693, 1.06863>
+Point (Z,R): <2.03693, 1.06863>
 Zone:  124
 Incident Nodes:  128  129  160  159  
 mat1:  1 
@@ -87,7 +87,7 @@ mat1:  1
 
 J:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <2.52748, 0.400314>
+Point (Z,R): <2.52748, 0.400314>
 Zone:  211
 Incident Nodes:  218  219  250  249  
 mat1:  1 
@@ -95,7 +95,7 @@ mat1:  1
 
 K:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <1.99186, 1.15>
+Point (Z,R): <1.99186, 1.15>
 Node:  129
 Incident Zones:  124  94  125  95  
 mat1:  
@@ -107,7 +107,7 @@ mat1:
 
 L:  curv2d.silo  timestep 0
 curvmesh2d 
-Point: <2.40142, 0.780268>
+Point (Z,R): <2.40142, 0.780268>
 Node:  220
 Incident Zones:  212  182  213  183  
 mat1:  
