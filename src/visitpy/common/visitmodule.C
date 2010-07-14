@@ -3287,7 +3287,10 @@ visit_OpenMDServer(PyObject *self, PyObject *args)
 // Modifications:
 //   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
 //   Change string literals to const char*'s.
-//   
+//
+//   Cyrus Harrison, Wed Jul 14 11:17:21 PDT 2010
+//   Added case for OpenCLI() method.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3306,6 +3309,22 @@ OpenClientHelper(PyObject *self, PyObject *args, int componentNumber)
         clientName = "GUI";
         program = "visit";
         argv.push_back("-gui");
+
+        // Make sure it's a tuple.
+        if(!GetStringVectorFromPyObject(args, argv))
+        {
+            VisItErrorFunc(OCEError);
+            return NULL;
+        }
+
+        PyErr_Clear();
+    }
+    if(componentNumber == 2)
+    {
+        clientName = "CLI";
+        program = "visit";
+        argv.push_back("-cli");
+        argv.push_back("-newconsole");
 
         // Make sure it's a tuple.
         if(!GetStringVectorFromPyObject(args, argv))
@@ -3359,6 +3378,12 @@ STATIC PyObject *
 visit_OpenGUI(PyObject *self, PyObject *args)
 {
     return OpenClientHelper(self, args, 1);
+}
+
+STATIC PyObject *
+visit_OpenCLI(PyObject *self, PyObject *args)
+{
+    return OpenClientHelper(self, args, 2);
 }
 
 // ****************************************************************************
@@ -14477,6 +14502,9 @@ AddMethod(const char *methodName,
 //   Cyrus Harrison, Wed Mar 17 16:25:04 PDT 2010
 //   Added 'PythonQuery' and 'DefinePythonExpression'.
 //
+//   Cyrus Harrison, Wed Jul 14 11:21:39 PDT 2010
+//   Added 'OpenCLI'.
+//
 // ****************************************************************************
 
 static void
@@ -14641,7 +14669,6 @@ AddDefaultMethods()
                                                      visit_GetQueryOutput_doc);
     AddMethod("GetQueryOutputObject", visit_GetQueryOutputObject,
                                                      visit_GetQueryOutput_doc);
-    
     AddMethod("GetPlotInformation", visit_GetPlotInformation,
                                                      visit_GetPlotInformation_doc);
     AddMethod("GetPreferredFileFormats", visit_GetPreferredFileFormats,
@@ -14683,6 +14710,7 @@ AddDefaultMethods()
                                                   visit_OpenComputeEngine_doc);
     AddMethod("OpenGUI", visit_OpenGUI);
     AddMethod("OpenMDServer", visit_OpenMDServer, visit_OpenMDServer_doc);
+    AddMethod("OpenCLI", visit_OpenCLI);
     AddMethod("OverlayDatabase", visit_OverlayDatabase, 
                                                     visit_OverlayDatabase_doc);
     AddMethod("Pick", visit_Pick, visit_Pick_doc);
