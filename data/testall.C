@@ -856,12 +856,12 @@ build_curv2d(DBfile * dbfile, int size, int major_order)
     i = strlen(defvars) + 1;
     DBWrite (dbfile, "_meshtv_defvars", defvars, &i, 1, DB_CHAR);
 
-    optlist = DBMakeOptlist(10);
+    optlist = DBMakeOptlist(15);
     DBAddOption(optlist, DBOPT_CYCLE, &cycle);
     DBAddOption(optlist, DBOPT_TIME, &time);
     DBAddOption(optlist, DBOPT_DTIME, &dtime);
-    char *xaxis="X Axis";
-    char *yaxis="Y Axis";
+    char *xaxis="Z";
+    char *yaxis="R";
     DBAddOption(optlist, DBOPT_XLABEL, xaxis);
     DBAddOption(optlist, DBOPT_YLABEL, yaxis);
     char *units="cm";
@@ -870,6 +870,8 @@ build_curv2d(DBfile * dbfile, int size, int major_order)
     DBAddOption(optlist, DBOPT_LO_OFFSET, &lo_off);
     DBAddOption(optlist, DBOPT_HI_OFFSET, &hi_off);
     DBAddOption(optlist, DBOPT_MAJORORDER, &major_order);
+    int coordsys = DB_CYLINDRICAL;
+    DBAddOption(optlist, DBOPT_COORDSYS, &coordsys);
 
     DBPutQuadmesh(dbfile, meshname, NULL, coords, dims, ndims, DB_FLOAT,
                   DB_NONCOLLINEAR, optlist);
