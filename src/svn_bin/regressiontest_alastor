@@ -221,6 +221,9 @@ for m in \$modes; do
     if test "\$hasFailed" = ""; then
         hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 Unacceptable 2>/dev/null\`
     fi
+    if test "\$hasFailed" = ""; then
+        hasFailed=\`cat "\$dateTag/\$theMode/index.html" | grep -m 1 OS-Killed 2>/dev/null\`
+    fi
 done
 
 # Send out an e-mail notifying the users of the test suite status.
