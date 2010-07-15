@@ -159,7 +159,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     mainLayout->addWidget(stopIndex, 2,1);
 
     stopPathTypeLabel = new QLabel(tr("Type of path"), central);
-    mainLayout->addWidget(stopPathTypeLabel,1,0);
+    mainLayout->addWidget(stopPathTypeLabel,3,0);
     stopPathType = new QWidget(central);
     stopPathTypeButtonGroup= new QButtonGroup(stopPathType);
     QHBoxLayout *stopPathTypeLayout = new QHBoxLayout(stopPathType);
