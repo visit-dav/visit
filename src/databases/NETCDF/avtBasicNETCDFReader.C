@@ -229,6 +229,9 @@ avtBasicNETCDFReader::CreateGlobalAttributesString(int nGlobalAtts, std::string 
 //    Hank Childs, Fri Feb 23 09:20:38 PST 2007
 //    Fix memory leak.
 //
+//    Brad Whitlock, Thu Jul 15 12:15:56 PDT 2010
+//    I added support for curves over time.
+//
 // ****************************************************************************
 
 void
@@ -308,6 +311,8 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
             int nGt1Dims = 0;
             int maxDim = dimSizes[vardims[0]];
             int maxDimIndex = 0;
+            int maxNonTimeDim = 0;
+            int maxNonTimeDimIndex = -1;
             bool hasTimeDimension = false;
             for(int dim = 0; dim < varndims; ++dim)
             {
@@ -322,9 +327,14 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
 
                 if(vardims[dim] == timedim)
                     hasTimeDimension = true;
+                else if(d > 1 && (maxNonTimeDimIndex == -1 || d > maxNonTimeDim))
+                {
+                    maxNonTimeDim = d;
+                    maxNonTimeDimIndex = dim;
+                }
             }
 
-            if(nGt1Dims == 1)
+            if(nGt1Dims == 1 || (nGt1Dims == 2 && hasTimeDimension))
             {
                 if(maxDim > 1 && 
                    (vartype == NC_INT ||
@@ -333,6 +343,33 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
                     vartype == NC_DOUBLE)
                   )
                 {
+                    int xdim = maxDimIndex;
+                    int xdimSize = maxDim;
+
+                    // Time varying curve.
+                    if(nGt1Dims == 2 && hasTimeDimension)
+                    {
+                        xdim = maxNonTimeDimIndex;
+                        xdimSize = maxNonTimeDim;
+
+                        // We only save the xdim for time varying curves so we can
+                        // tell them apart from normal curves.
+                        intVector meshDims; meshDims.push_back(xdim);
+                        meshNameToNCDimensions[varname] = meshDims;
+
+                        intVector vDims;
+                        for(int dim = varndims-1; dim >= 0; --dim)
+                        {
+                            int d;
+                            if(vardims[dim] != timedim)
+                                d = dimSizes[vardims[dim]];
+                            else
+                                d = TIME_DIMENSION;
+                            vDims.push_back(d);
+                        }
+                        varToDimensionsSizes[varname] = vDims;
+                    }
+
                     if(md != 0)
                     {
                         avtCurveMetaData *cmd = new avtCurveMetaData;
@@ -343,7 +380,7 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
                        
                         char dimName[NC_MAX_NAME+1];
                         status = nc_inq_dimname(fileObject->GetFileHandle(),
-                                                vardims[maxDimIndex], dimName);
+                                                vardims[xdim], dimName);
                         if(status == NC_NOERR)
                         {
                             cmd->xLabel = dimName;
@@ -353,8 +390,8 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
                         md->Add(cmd);
                     }
 
-                    intVector meshDims; meshDims.push_back(maxDim);
-                    meshNameToDimensionsSizes[varname] = meshDims;
+                    intVector meshDimsSizes; meshDimsSizes.push_back(xdimSize);
+                    meshNameToDimensionsSizes[varname] = meshDimsSizes;
                 }
             }
             else
@@ -669,6 +706,9 @@ avtBasicNETCDFReader::ReturnDimStartsAndCounts(int timeState, const intVector &d
 //   Brad Whitlock, Thu Oct 29 15:38:29 PDT 2009
 //   I rewrote it with support for time.
 //
+//   Brad Whitlock, Thu Jul 15 12:13:30 PDT 2010
+//   I added support for curves over time.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -687,25 +727,74 @@ avtBasicNETCDFReader::GetMesh(int timeState, const char *var)
     {
         if(mesh->second.size() == 1)
         {
-            // Try and read the variable making up the curve.
-            int nPts = mesh->second[0];
-            vtkFloatArray *yv = vtkFloatArray::New();
-            yv->SetNumberOfTuples(nPts); 
-            if(fileObject->ReadVariableIntoAsFloat(var, (float*)yv->GetVoidPointer(0)))
+            StringIntVectorMap::const_iterator meshDims = meshNameToNCDimensions.find(var);
+            if(meshDims != meshNameToNCDimensions.end())
             {
-                vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(
-                                         nPts, VTK_FLOAT);
-                vtkFloatArray *xc = vtkFloatArray::SafeDownCast(
-                                        rg->GetXCoordinates());
+                // Time varying curves
+
+                // Try and get values for the x-axis from a dimension. If we can't 
+                // get it then we just use indices.
+                float *coordvals = 0;                
+                int status;
+                size_t sz;
+                char dimName[NC_MAX_NAME+1];
+                debug4 << mName << "Looking for X coordinate dimension name" << endl;
+                if((status = nc_inq_dim(fileObject->GetFileHandle(), 
+                    meshDims->second[meshDims->second[0]], dimName, &sz)) == NC_NOERR)
+                {
+                    TypeEnum dvart = NO_TYPE;
+                    int dvarndims = 0;
+                    int *dvardims = 0;
+                    debug4 << mName << "Looking for " << dimName << " array as X coordinate" << endl;
+                    if(fileObject->InqVariable(dimName, &dvart, &dvarndims, &dvardims))
+                    {
+                        if(dvarndims == 1 && dvardims[0] == sz)
+                            coordvals = ReadArray(dimName);
+                        delete [] dvardims;
+                    }
+                }
+ 
+                // Read the y value using GetVar
+                vtkDataArray *yv = GetVar(timeState, var);
                 yv->SetName(var);
+
+                // Assemble the curve.
+                int nPts = mesh->second[0];
+                vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
+                vtkFloatArray *xc = vtkFloatArray::SafeDownCast(
+                    rg->GetXCoordinates());
                 for (int j = 0 ; j < nPts ; j++)
-                    xc->SetValue(j, (float)j); 
+                    xc->SetValue(j, (coordvals != 0) ? coordvals[j] : (float)j); 
 
                 rg->GetPointData()->SetScalars(yv);
                 retval = rg;
-            }
 
-            yv->Delete();
+                delete [] coordvals;
+                yv->Delete();
+            }
+            else
+            {
+                // Static curves
+
+                int nPts = mesh->second[0];
+                vtkFloatArray *yv = vtkFloatArray::New();
+                yv->SetNumberOfTuples(nPts); 
+                if(fileObject->ReadVariableIntoAsFloat(var, (float*)yv->GetVoidPointer(0)))
+                {
+                    vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(
+                                             nPts, VTK_FLOAT);
+                    vtkFloatArray *xc = vtkFloatArray::SafeDownCast(
+                                            rg->GetXCoordinates());
+                    yv->SetName(var);
+                    for (int j = 0 ; j < nPts ; j++)
+                        xc->SetValue(j, (float)j); 
+
+                    rg->GetPointData()->SetScalars(yv);
+                    retval = rg;
+                }
+
+                yv->Delete();
+            }
         }
         else
         {
