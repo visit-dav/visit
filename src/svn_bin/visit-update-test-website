@@ -36,6 +36,9 @@ ls -1t /project/projectdirs/visit/www/*/*/index.html | while read testLine; do
     if test "$hasFailed" = ""; then
         hasFailed=`grep -m 1 Unacceptable $testLine 2>/dev/null`
     fi
+    if test "$hasFailed" = ""; then
+        hasFailed=`grep -m 1 OS-Killed $testLine 2>/dev/null`
+    fi
     hasSkips=`grep -m 1 Skipped $testLine 2>/dev/null`
     if test "$hasFailed" = ""; then
         if test "$hasSkips" = ""; then
