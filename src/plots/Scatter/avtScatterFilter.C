@@ -253,6 +253,10 @@ avtScatterFilter::PreExecute(void)
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
+//
+//    Brad Whitlock, Fri Jul 16 14:24:25 PDT 2010
+//    Work around curve variable centering being unknown.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -287,8 +291,20 @@ debug4 << "avtScatterFilter::ExecuteData" << endl;
     avtCentering var1Centering = datts.GetCentering(var1Name.c_str());
     if(var1Centering == AVT_NODECENT)
         arr[0] = inDS->GetPointData()->GetArray(var1Name.c_str());
-    else
+    else if(var1Centering == AVT_ZONECENT)
         arr[0] = inDS->GetCellData()->GetArray(var1Name.c_str());
+    else
+    {
+        // Assume unknown centering.
+        arr[0] = inDS->GetPointData()->GetArray(var1Name.c_str());
+        if(arr[0] != 0)
+            var1Centering = AVT_NODECENT;
+        else
+        {
+            arr[0] = inDS->GetCellData()->GetArray(var1Name.c_str());
+            var1Centering = AVT_ZONECENT;
+        }
+    }
 
     //
     // Get the data arrays for the secondary variables.
@@ -946,6 +962,10 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
 //    Moved retrieval of cenering out of TRY-CATCH block, and test for
 //    ValidVariable before retrieving centering.
 //
+//    Brad Whitlock, Fri Jul 16 14:25:22 PDT 2010
+//    I added code to work around the centering coming back as UNKNOWN as it
+//    now seems to be with curves.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -961,12 +981,41 @@ avtScatterFilter::GetDataArray(vtkDataSet *inDS, const std::string &name,
         centering = GetInput()->GetInfo().GetAttributes().
             GetCentering(name.c_str());
 
+        debug4 << name << " is a valid variable with";
+
         // Get a pointer to the array out of the dataset.
         if(centering == AVT_NODECENT)
+        {
+            debug4 << " node centering" << endl;
             retval = inDS->GetPointData()->GetArray(name.c_str());
+        }
         else if (centering == AVT_ZONECENT)
+        {
+            debug4 << " zone centering" << endl;
             retval = inDS->GetCellData()->GetArray(name.c_str());
+        }
+        else
+        {
+            debug4 << " unknown centering";
+            retval = inDS->GetPointData()->GetArray(name.c_str());
+            if(retval != 0)
+            {
+                debug4 << "  -- wait, it's node centered" << endl;
+                centering = AVT_NODECENT;
+            }
+            else
+            {
+                retval = inDS->GetCellData()->GetArray(name.c_str());
+                centering = AVT_ZONECENT;
+                debug4 << "  -- wait, it's zone centered" << endl;
+            }
+        }
     }
+    else
+    {
+        debug4 << name << " is not a valid variable." << endl;
+    }
+
     TRY
     {
         //

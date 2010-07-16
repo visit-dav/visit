@@ -155,6 +155,9 @@ QvisScatterPlotWindow::~QvisScatterPlotWindow()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Brad Whitlock, Fri Jul 16 14:34:23 PDT 2010
+//   Make curves an allowable variable type.
+//
 // ****************************************************************************
 
 void
@@ -274,7 +277,8 @@ QvisScatterPlotWindow::CreateWindowContents()
     var2TopLayout->addWidget(var2Label,0,0);
 
     // Create a variable button
-    var2 = new QvisVariableButton(true, true, true, QvisVariableButton::Scalars,
+    var2 = new QvisVariableButton(true, true, true, 
+        QvisVariableButton::Scalars | QvisVariableButton::Curves,
         var2Top);
     connect(var2, SIGNAL(activated(const QString &)),
             this, SLOT(var2Selected(const QString &)));
@@ -353,7 +357,8 @@ QvisScatterPlotWindow::CreateWindowContents()
     var3TopLayout->addWidget(var3Label,0,0);
 
     // Create a variable button.
-    var3 = new QvisVariableButton(true, true, true, QvisVariableButton::Scalars,
+    var3 = new QvisVariableButton(true, true, true, 
+        QvisVariableButton::Scalars | QvisVariableButton::Curves,
         var3Top);
     connect(var3, SIGNAL(activated(const QString &)),
             this, SLOT(var3Selected(const QString &)));
@@ -432,7 +437,8 @@ QvisScatterPlotWindow::CreateWindowContents()
     var4TopLayout->addWidget(var4Label,0,0);
 
     // Create a variable button.
-    var4 = new QvisVariableButton(true, true, true, QvisVariableButton::Scalars,
+    var4 = new QvisVariableButton(true, true, true, 
+        QvisVariableButton::Scalars | QvisVariableButton::Curves,
         var4Top);
     connect(var4, SIGNAL(activated(const QString &)),
             this, SLOT(var4Selected(const QString &)));
