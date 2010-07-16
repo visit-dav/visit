@@ -1,4 +1,8 @@
 #/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake
+#
+# Modifications:
+#     Mark C. Miller, Fri Jul 16 08:57:10 PDT 2010
+#     Updated to silo-4.8-pre3 for testing.
 
 ##
 ## Set the VISITHOME environment variable.
@@ -136,7 +140,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/3.6.0/${VISITARCH})
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.8-pre3/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 ##
