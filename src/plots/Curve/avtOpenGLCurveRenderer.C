@@ -140,6 +140,9 @@ avtOpenGLCurveRenderer::SetupGraphicsLibrary()
 //
 // Modifications:
 //
+//   Hank Childs, Thu Jul 15 18:20:26 PDT 2010
+//   Add support for plotting cues for the current location.
+//
 // ****************************************************************************
 
 void
@@ -178,6 +181,15 @@ avtOpenGLCurveRenderer::RenderCurves()
         DrawCurveAsLines();
     }
 
+    if (atts.GetDoLineTimeCue())
+    {
+        RenderLine();
+    }
+    if (atts.GetDoBallTimeCue())
+    {
+        RenderBall();
+    }
+
     // Enable depth testing if it was on.
     if(enableDepthTest)
         glEnable(GL_DEPTH_TEST);
@@ -186,6 +198,110 @@ avtOpenGLCurveRenderer::RenderCurves()
     if(enableLighting)
         glEnable(GL_LIGHTING);
 }
+
+
+// ****************************************************************************
+//  Method: avtOpenGLCurveRenderer::RenderBall
+//
+//  Purpose:
+//      Render a ball to show the current location.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 15, 2010
+//
+// ****************************************************************************
+
+void
+avtOpenGLCurveRenderer::RenderBall(void)
+{
+    double ix = 0.;
+    double iy = 0.;
+    const float *ptr = (const float *)input->GetPoints()->GetVoidPointer(0);
+    int npts = input->GetPoints()->GetNumberOfPoints();
+    for(int i = 0; i < npts-1 ; i++)
+    {
+        if (ptr[0] <= atts.GetTimeForTimeCue() && atts.GetTimeForTimeCue() <= ptr[3])
+        {
+            double lastX = ptr[0];
+            double curX = ptr[3];
+            double lastY = ptr[1];
+            double curY = ptr[4];
+            ix = atts.GetTimeForTimeCue();
+            iy = (ix-lastX)/(curX-lastX)*(curY-lastY) + lastY;
+        }
+        ptr += 3;
+    }
+
+    int bin_x_n,        bin_y_n;
+    float bin_x_size,   bin_y_size;
+    float bin_x_offset, bin_y_offset;
+    GetAspect(bin_x_n, bin_x_size, bin_x_offset,
+              bin_y_n, bin_y_size, bin_y_offset);
+
+    // Set the curve color.
+    ColorAttribute curveColor(atts.GetBallTimeCueColor());
+    curveColor.SetAlpha(255);
+    glColor4ubv(curveColor.GetColor());
+
+    int symbolNVerts = 100;
+    glBegin(GL_TRIANGLE_FAN);
+    float pt[3];
+    pt[0] = ix;
+    pt[1] = iy;
+    pt[2] = 0.;
+    glVertex3fv(pt);
+    double REDUCE_SCALE = atts.GetTimeCueBallSize();
+    for(int i = 0; i < symbolNVerts-1; ++i)
+    {
+        double t = double(i) / double(symbolNVerts-1-1);
+        double angle = 2. * M_PI * t;
+        pt[0] = ix + cos(angle) * REDUCE_SCALE * bin_x_size / 2.;
+        pt[1] = iy + sin(angle) * REDUCE_SCALE * bin_y_size / 2.;
+        pt[2] = 0.;                
+        glVertex3fv(pt);
+    }
+    glEnd();
+}
+
+
+// ****************************************************************************
+//  Method: avtOpenGLCurveRenderer::RenderLine
+//
+//  Purpose:
+//      Render a vertical line to show the current location.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 15, 2010
+//
+// ****************************************************************************
+
+void
+avtOpenGLCurveRenderer::RenderLine(void)
+{
+    float max = -1e+30;
+    float min = +1e+30;
+    const float *ptr = (const float *)input->GetPoints()->GetVoidPointer(0);
+    int npts = input->GetPoints()->GetNumberOfPoints();
+    for(int i = 0; i < npts ; i++)
+    {
+         max = (max > ptr[3*i+1] ? max : ptr[3*i+1]);
+         min = (min < ptr[3*i+1] ? min : ptr[3*i+1]);
+    }
+    float diff = max-min;
+    max += diff;
+    min -= diff;
+    glLineWidth(LineWidth2Int(Int2LineWidth(atts.GetLineTimeCueWidth())));
+    ColorAttribute curveColor(atts.GetLineTimeCueColor());
+    curveColor.SetAlpha(255);
+    glColor4ubv(curveColor.GetColor());
+    glBegin(GL_LINES);
+    float pt[3] = { atts.GetTimeForTimeCue(), min, 0 };
+    glVertex3fv(pt);
+    float pt2[3] = { atts.GetTimeForTimeCue(), max, 0 };
+    glVertex3fv(pt2);
+    glEnd();
+}
+
 
 // ****************************************************************************
 // Method: avtOpenGLCurveRenderer::DrawCurveAsLines
@@ -232,8 +348,29 @@ avtOpenGLCurveRenderer::DrawCurveAsLines()
     // Draw the curve.
     glBegin(GL_LINE_STRIP);
     const float *pt = (const float *)input->GetPoints()->GetVoidPointer(0);
-    for(int i = 0; i < input->GetPoints()->GetNumberOfPoints(); ++i)
+    bool lastWasGood = false;
+    int npts = input->GetPoints()->GetNumberOfPoints();
+    for(int i = 0; i < npts ; i++)
     {
+        if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < pt[0])
+        {
+            if (lastWasGood)
+            {
+                float p2[3];
+                double lastX = pt[-3];
+                double curX = pt[0];
+                double lastY = pt[-2];
+                double curY = pt[1];
+                p2[0] = atts.GetTimeForTimeCue();
+                p2[1] = (p2[0]-lastX)/(curX-lastX)*(curY-lastY) + lastY;
+                p2[2] = 0.;
+                glVertex3fv(p2);
+            }
+            pt += 3;
+            lastWasGood = false;
+            continue;
+        }
+        lastWasGood = true;
         glVertex3fv(pt);
         pt += 3;
     }
@@ -247,6 +384,8 @@ avtOpenGLCurveRenderer::DrawCurveAsLines()
         const float *pt = (const float *)input->GetPoints()->GetVoidPointer(0);
         for(int i = 0; i < input->GetPoints()->GetNumberOfPoints(); ++i)
         {
+            if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < pt[0])
+                continue;
             glVertex3fv(pt);
             pt += 3;
         }
@@ -257,26 +396,22 @@ avtOpenGLCurveRenderer::DrawCurveAsLines()
         glDisable(GL_LINE_STIPPLE);
 }
 
+
 // ****************************************************************************
-// Method: avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols
+//  Method: avtOpenGLCurveRenderer::GetAspect
 //
-// Purpose: 
-//   Bins up 2D world space to make sure that only a subset of the 2D Curves
-//   are drawn.
+//  Purpose:
+//      Gets the aspect ratio of the view.
 //
-// Arguments:
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 25 09:20:29 PDT 2004
-//
-// Modifications:
+//  Programmer: Hank Childs
+//  Creation:   July 15, 2010
 //
 // ****************************************************************************
 
-void
-avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols()
+void 
+avtOpenGLCurveRenderer::GetAspect(int &bin_x_n, float &bin_x_size, float &bin_x_offset,
+                                  int &bin_y_n, float &bin_y_size, float &bin_y_offset)
 {
-
     //
     // Figure out the world coordinates of the window that is being displayed.
     //
@@ -307,13 +442,43 @@ avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols()
     else
         bin_size = win_dx / n_bins;
 
-    int bin_x_n = int(win_dx / (bin_size / m[0])) + 1;
-    float bin_x_size = bin_size / m[0];
-    float bin_x_offset = lowerleft[0];
+    bin_x_n = int(win_dx / (bin_size / m[0])) + 1;
+    bin_x_size = bin_size / m[0];
+    bin_x_offset = lowerleft[0];
 
-    int bin_y_n = int(win_dy / (bin_size / m[5])) + 1;
-    float bin_y_size = bin_size / m[5];
-    float bin_y_offset = lowerleft[1];
+    bin_y_n = int(win_dy / (bin_size / m[5])) + 1;
+    bin_y_size = bin_size / m[5];
+    bin_y_offset = lowerleft[1];
+}
+
+// ****************************************************************************
+// Method: avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols
+//
+// Purpose: 
+//   Bins up 2D world space to make sure that only a subset of the 2D Curves
+//   are drawn.
+//
+// Arguments:
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 25 09:20:29 PDT 2004
+//
+// Modifications:
+//
+//    Hank Childs, Thu Jul 15 18:20:26 PDT 2010
+//    Moved some code to another method so that it could be reused in the
+//    RenderBall method.
+//
+// ****************************************************************************
+
+void
+avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols()
+{
+    int bin_x_n,        bin_y_n;
+    float bin_x_size,   bin_y_size;
+    float bin_x_offset, bin_y_offset;
+    GetAspect(bin_x_n, bin_x_size, bin_x_offset,
+              bin_y_n, bin_y_size, bin_y_offset);
 
 #ifdef VISUALIZE_DYNAMIC_BINS
     //
@@ -451,11 +616,11 @@ avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols()
         const float *A = pt + (i-1) * 3;
         const float *B = pt + i * 3;
         // Determine the grid cells that contain the points.
-        int x0 = int((A[0] - lowerleft[0]) / bin_x_size);
-        int y0 = int((A[1] - lowerleft[1]) / bin_y_size);
+        int x0 = int((A[0] - bin_x_offset) / bin_x_size);
+        int y0 = int((A[1] - bin_y_offset) / bin_y_size);
 
-        int x1 = int((B[0] - lowerleft[0]) / bin_x_size);
-        int y1 = int((B[1] - lowerleft[1]) / bin_y_size);
+        int x1 = int((B[0] - bin_x_offset) / bin_x_size);
+        int y1 = int((B[1] - bin_y_offset) / bin_y_size);
 
         // Use Bresenham's line algorithm to produce a number of
         // cells encountered along the line segment.
@@ -496,7 +661,9 @@ avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols()
         {
             float t = (cells_in_line == 1) ? 0. : (float(pindex) / float(cells_in_line-1));
 
-                        float ix = (1.-t)*A[0] + t*B[0];
+            float ix = (1.-t)*A[0] + t*B[0];
+            if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < ix)
+                continue;
             float iy = (1.-t)*A[1] + t*B[1];
 
             if(atts.GetSymbol() == CurveAttributes::Circle)

@@ -180,6 +180,12 @@ void CurveAttributes::Init()
     renderMode = RenderAsLines;
     symbol = TriangleUp;
     symbolDensity = 50;
+    doBallTimeCue = false;
+    timeCueBallSize = 0.01;
+    doLineTimeCue = false;
+    lineTimeCueWidth = 0;
+    doCropTimeCue = false;
+    timeForTimeCue = 0;
 
     CurveAttributes::SelectAll();
 }
@@ -213,6 +219,14 @@ void CurveAttributes::Copy(const CurveAttributes &obj)
     renderMode = obj.renderMode;
     symbol = obj.symbol;
     symbolDensity = obj.symbolDensity;
+    doBallTimeCue = obj.doBallTimeCue;
+    ballTimeCueColor = obj.ballTimeCueColor;
+    timeCueBallSize = obj.timeCueBallSize;
+    doLineTimeCue = obj.doLineTimeCue;
+    lineTimeCueColor = obj.lineTimeCueColor;
+    lineTimeCueWidth = obj.lineTimeCueWidth;
+    doCropTimeCue = obj.doCropTimeCue;
+    timeForTimeCue = obj.timeForTimeCue;
 
     CurveAttributes::SelectAll();
 }
@@ -239,7 +253,8 @@ const AttributeGroup::private_tmfs_t CurveAttributes::TmfsStruct = {CURVEATTRIBU
 
 CurveAttributes::CurveAttributes() : 
     AttributeSubject(CurveAttributes::TypeMapFormatString),
-    curveColor(0, 0, 0)
+    curveColor(0, 0, 0), ballTimeCueColor(0, 0, 0), 
+    lineTimeCueColor(0, 0, 0)
 {
     CurveAttributes::Init();
 }
@@ -261,7 +276,8 @@ CurveAttributes::CurveAttributes() :
 
 CurveAttributes::CurveAttributes(private_tmfs_t tmfs) : 
     AttributeSubject(tmfs.tmfs),
-    curveColor(0, 0, 0)
+    curveColor(0, 0, 0), ballTimeCueColor(0, 0, 0), 
+    lineTimeCueColor(0, 0, 0)
 {
     CurveAttributes::Init();
 }
@@ -383,7 +399,15 @@ CurveAttributes::operator == (const CurveAttributes &obj) const
             (curveColorSource == obj.curveColorSource) &&
             (renderMode == obj.renderMode) &&
             (symbol == obj.symbol) &&
-            (symbolDensity == obj.symbolDensity));
+            (symbolDensity == obj.symbolDensity) &&
+            (doBallTimeCue == obj.doBallTimeCue) &&
+            (ballTimeCueColor == obj.ballTimeCueColor) &&
+            (timeCueBallSize == obj.timeCueBallSize) &&
+            (doLineTimeCue == obj.doLineTimeCue) &&
+            (lineTimeCueColor == obj.lineTimeCueColor) &&
+            (lineTimeCueWidth == obj.lineTimeCueWidth) &&
+            (doCropTimeCue == obj.doCropTimeCue) &&
+            (timeForTimeCue == obj.timeForTimeCue));
 }
 
 // ****************************************************************************
@@ -530,6 +554,14 @@ CurveAttributes::SelectAll()
     Select(ID_renderMode,       (void *)&renderMode);
     Select(ID_symbol,           (void *)&symbol);
     Select(ID_symbolDensity,    (void *)&symbolDensity);
+    Select(ID_doBallTimeCue,    (void *)&doBallTimeCue);
+    Select(ID_ballTimeCueColor, (void *)&ballTimeCueColor);
+    Select(ID_timeCueBallSize,  (void *)&timeCueBallSize);
+    Select(ID_doLineTimeCue,    (void *)&doLineTimeCue);
+    Select(ID_lineTimeCueColor, (void *)&lineTimeCueColor);
+    Select(ID_lineTimeCueWidth, (void *)&lineTimeCueWidth);
+    Select(ID_doCropTimeCue,    (void *)&doCropTimeCue);
+    Select(ID_timeForTimeCue,   (void *)&timeForTimeCue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -636,6 +668,58 @@ CurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("symbolDensity", symbolDensity));
     }
 
+    if(completeSave || !FieldsEqual(ID_doBallTimeCue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("doBallTimeCue", doBallTimeCue));
+    }
+
+        DataNode *ballTimeCueColorNode = new DataNode("ballTimeCueColor");
+        if(ballTimeCueColor.CreateNode(ballTimeCueColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(ballTimeCueColorNode);
+        }
+        else
+            delete ballTimeCueColorNode;
+    if(completeSave || !FieldsEqual(ID_timeCueBallSize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timeCueBallSize", timeCueBallSize));
+    }
+
+    if(completeSave || !FieldsEqual(ID_doLineTimeCue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("doLineTimeCue", doLineTimeCue));
+    }
+
+        DataNode *lineTimeCueColorNode = new DataNode("lineTimeCueColor");
+        if(lineTimeCueColor.CreateNode(lineTimeCueColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(lineTimeCueColorNode);
+        }
+        else
+            delete lineTimeCueColorNode;
+    if(completeSave || !FieldsEqual(ID_lineTimeCueWidth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineTimeCueWidth", lineTimeCueWidth));
+    }
+
+    if(completeSave || !FieldsEqual(ID_doCropTimeCue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("doCropTimeCue", doCropTimeCue));
+    }
+
+    if(completeSave || !FieldsEqual(ID_timeForTimeCue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timeForTimeCue", timeForTimeCue));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -738,6 +822,22 @@ CurveAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("symbolDensity")) != 0)
         SetSymbolDensity(node->AsInt());
+    if((node = searchNode->GetNode("doBallTimeCue")) != 0)
+        SetDoBallTimeCue(node->AsBool());
+    if((node = searchNode->GetNode("ballTimeCueColor")) != 0)
+        ballTimeCueColor.SetFromNode(node);
+    if((node = searchNode->GetNode("timeCueBallSize")) != 0)
+        SetTimeCueBallSize(node->AsDouble());
+    if((node = searchNode->GetNode("doLineTimeCue")) != 0)
+        SetDoLineTimeCue(node->AsBool());
+    if((node = searchNode->GetNode("lineTimeCueColor")) != 0)
+        lineTimeCueColor.SetFromNode(node);
+    if((node = searchNode->GetNode("lineTimeCueWidth")) != 0)
+        SetLineTimeCueWidth(node->AsInt());
+    if((node = searchNode->GetNode("doCropTimeCue")) != 0)
+        SetDoCropTimeCue(node->AsBool());
+    if((node = searchNode->GetNode("timeForTimeCue")) != 0)
+        SetTimeForTimeCue(node->AsDouble());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -828,6 +928,62 @@ CurveAttributes::SetSymbolDensity(int symbolDensity_)
     Select(ID_symbolDensity, (void *)&symbolDensity);
 }
 
+void
+CurveAttributes::SetDoBallTimeCue(bool doBallTimeCue_)
+{
+    doBallTimeCue = doBallTimeCue_;
+    Select(ID_doBallTimeCue, (void *)&doBallTimeCue);
+}
+
+void
+CurveAttributes::SetBallTimeCueColor(const ColorAttribute &ballTimeCueColor_)
+{
+    ballTimeCueColor = ballTimeCueColor_;
+    Select(ID_ballTimeCueColor, (void *)&ballTimeCueColor);
+}
+
+void
+CurveAttributes::SetTimeCueBallSize(double timeCueBallSize_)
+{
+    timeCueBallSize = timeCueBallSize_;
+    Select(ID_timeCueBallSize, (void *)&timeCueBallSize);
+}
+
+void
+CurveAttributes::SetDoLineTimeCue(bool doLineTimeCue_)
+{
+    doLineTimeCue = doLineTimeCue_;
+    Select(ID_doLineTimeCue, (void *)&doLineTimeCue);
+}
+
+void
+CurveAttributes::SetLineTimeCueColor(const ColorAttribute &lineTimeCueColor_)
+{
+    lineTimeCueColor = lineTimeCueColor_;
+    Select(ID_lineTimeCueColor, (void *)&lineTimeCueColor);
+}
+
+void
+CurveAttributes::SetLineTimeCueWidth(int lineTimeCueWidth_)
+{
+    lineTimeCueWidth = lineTimeCueWidth_;
+    Select(ID_lineTimeCueWidth, (void *)&lineTimeCueWidth);
+}
+
+void
+CurveAttributes::SetDoCropTimeCue(bool doCropTimeCue_)
+{
+    doCropTimeCue = doCropTimeCue_;
+    Select(ID_doCropTimeCue, (void *)&doCropTimeCue);
+}
+
+void
+CurveAttributes::SetTimeForTimeCue(double timeForTimeCue_)
+{
+    timeForTimeCue = timeForTimeCue_;
+    Select(ID_timeForTimeCue, (void *)&timeForTimeCue);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -916,6 +1072,66 @@ CurveAttributes::GetSymbolDensity() const
     return symbolDensity;
 }
 
+bool
+CurveAttributes::GetDoBallTimeCue() const
+{
+    return doBallTimeCue;
+}
+
+const ColorAttribute &
+CurveAttributes::GetBallTimeCueColor() const
+{
+    return ballTimeCueColor;
+}
+
+ColorAttribute &
+CurveAttributes::GetBallTimeCueColor()
+{
+    return ballTimeCueColor;
+}
+
+double
+CurveAttributes::GetTimeCueBallSize() const
+{
+    return timeCueBallSize;
+}
+
+bool
+CurveAttributes::GetDoLineTimeCue() const
+{
+    return doLineTimeCue;
+}
+
+const ColorAttribute &
+CurveAttributes::GetLineTimeCueColor() const
+{
+    return lineTimeCueColor;
+}
+
+ColorAttribute &
+CurveAttributes::GetLineTimeCueColor()
+{
+    return lineTimeCueColor;
+}
+
+int
+CurveAttributes::GetLineTimeCueWidth() const
+{
+    return lineTimeCueWidth;
+}
+
+bool
+CurveAttributes::GetDoCropTimeCue() const
+{
+    return doCropTimeCue;
+}
+
+double
+CurveAttributes::GetTimeForTimeCue() const
+{
+    return timeForTimeCue;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -930,6 +1146,18 @@ void
 CurveAttributes::SelectDesignator()
 {
     Select(ID_designator, (void *)&designator);
+}
+
+void
+CurveAttributes::SelectBallTimeCueColor()
+{
+    Select(ID_ballTimeCueColor, (void *)&ballTimeCueColor);
+}
+
+void
+CurveAttributes::SelectLineTimeCueColor()
+{
+    Select(ID_lineTimeCueColor, (void *)&lineTimeCueColor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -968,6 +1196,14 @@ CurveAttributes::GetFieldName(int index) const
     case ID_renderMode:       return "renderMode";
     case ID_symbol:           return "symbol";
     case ID_symbolDensity:    return "symbolDensity";
+    case ID_doBallTimeCue:    return "doBallTimeCue";
+    case ID_ballTimeCueColor: return "ballTimeCueColor";
+    case ID_timeCueBallSize:  return "timeCueBallSize";
+    case ID_doLineTimeCue:    return "doLineTimeCue";
+    case ID_lineTimeCueColor: return "lineTimeCueColor";
+    case ID_lineTimeCueWidth: return "lineTimeCueWidth";
+    case ID_doCropTimeCue:    return "doCropTimeCue";
+    case ID_timeForTimeCue:   return "timeForTimeCue";
     default:  return "invalid index";
     }
 }
@@ -1004,6 +1240,14 @@ CurveAttributes::GetFieldType(int index) const
     case ID_renderMode:       return FieldType_enum;
     case ID_symbol:           return FieldType_enum;
     case ID_symbolDensity:    return FieldType_int;
+    case ID_doBallTimeCue:    return FieldType_bool;
+    case ID_ballTimeCueColor: return FieldType_color;
+    case ID_timeCueBallSize:  return FieldType_double;
+    case ID_doLineTimeCue:    return FieldType_bool;
+    case ID_lineTimeCueColor: return FieldType_color;
+    case ID_lineTimeCueWidth: return FieldType_int;
+    case ID_doCropTimeCue:    return FieldType_bool;
+    case ID_timeForTimeCue:   return FieldType_double;
     default:  return FieldType_unknown;
     }
 }
@@ -1040,6 +1284,14 @@ CurveAttributes::GetFieldTypeName(int index) const
     case ID_renderMode:       return "enum";
     case ID_symbol:           return "enum";
     case ID_symbolDensity:    return "int";
+    case ID_doBallTimeCue:    return "bool";
+    case ID_ballTimeCueColor: return "color";
+    case ID_timeCueBallSize:  return "double";
+    case ID_doLineTimeCue:    return "bool";
+    case ID_lineTimeCueColor: return "color";
+    case ID_lineTimeCueWidth: return "int";
+    case ID_doCropTimeCue:    return "bool";
+    case ID_timeForTimeCue:   return "double";
     default:  return "invalid index";
     }
 }
@@ -1124,6 +1376,46 @@ CurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_symbolDensity:
         {  // new scope
         retval = (symbolDensity == obj.symbolDensity);
+        }
+        break;
+    case ID_doBallTimeCue:
+        {  // new scope
+        retval = (doBallTimeCue == obj.doBallTimeCue);
+        }
+        break;
+    case ID_ballTimeCueColor:
+        {  // new scope
+        retval = (ballTimeCueColor == obj.ballTimeCueColor);
+        }
+        break;
+    case ID_timeCueBallSize:
+        {  // new scope
+        retval = (timeCueBallSize == obj.timeCueBallSize);
+        }
+        break;
+    case ID_doLineTimeCue:
+        {  // new scope
+        retval = (doLineTimeCue == obj.doLineTimeCue);
+        }
+        break;
+    case ID_lineTimeCueColor:
+        {  // new scope
+        retval = (lineTimeCueColor == obj.lineTimeCueColor);
+        }
+        break;
+    case ID_lineTimeCueWidth:
+        {  // new scope
+        retval = (lineTimeCueWidth == obj.lineTimeCueWidth);
+        }
+        break;
+    case ID_doCropTimeCue:
+        {  // new scope
+        retval = (doCropTimeCue == obj.doCropTimeCue);
+        }
+        break;
+    case ID_timeForTimeCue:
+        {  // new scope
+        retval = (timeForTimeCue == obj.timeForTimeCue);
         }
         break;
     default: retval = false;

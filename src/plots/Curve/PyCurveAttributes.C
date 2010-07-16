@@ -41,6 +41,8 @@
 #include <stdio.h>
 #include <snprintf.h>
 #include <ColorAttribute.h>
+#include <ColorAttribute.h>
+#include <ColorAttribute.h>
 
 // ****************************************************************************
 // Module: PyCurveAttributes
@@ -167,6 +169,33 @@ PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
     }
 
     SNPRINTF(tmpStr, 1000, "%ssymbolDensity = %d\n", prefix, atts->GetSymbolDensity());
+    str += tmpStr;
+    if(atts->GetDoBallTimeCue())
+        SNPRINTF(tmpStr, 1000, "%sdoBallTimeCue = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdoBallTimeCue = 0\n", prefix);
+    str += tmpStr;
+    const unsigned char *ballTimeCueColor = atts->GetBallTimeCueColor().GetColor();
+    SNPRINTF(tmpStr, 1000, "%sballTimeCueColor = (%d, %d, %d, %d)\n", prefix, int(ballTimeCueColor[0]), int(ballTimeCueColor[1]), int(ballTimeCueColor[2]), int(ballTimeCueColor[3]));
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stimeCueBallSize = %g\n", prefix, atts->GetTimeCueBallSize());
+    str += tmpStr;
+    if(atts->GetDoLineTimeCue())
+        SNPRINTF(tmpStr, 1000, "%sdoLineTimeCue = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdoLineTimeCue = 0\n", prefix);
+    str += tmpStr;
+    const unsigned char *lineTimeCueColor = atts->GetLineTimeCueColor().GetColor();
+    SNPRINTF(tmpStr, 1000, "%slineTimeCueColor = (%d, %d, %d, %d)\n", prefix, int(lineTimeCueColor[0]), int(lineTimeCueColor[1]), int(lineTimeCueColor[2]), int(lineTimeCueColor[3]));
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%slineTimeCueWidth = %d\n", prefix, atts->GetLineTimeCueWidth());
+    str += tmpStr;
+    if(atts->GetDoCropTimeCue())
+        SNPRINTF(tmpStr, 1000, "%sdoCropTimeCue = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdoCropTimeCue = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stimeForTimeCue = %g\n", prefix, atts->GetTimeForTimeCue());
     str += tmpStr;
     return str;
 }
@@ -558,6 +587,304 @@ CurveAttributes_GetSymbolDensity(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+CurveAttributes_SetDoBallTimeCue(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the doBallTimeCue in the object.
+    obj->data->SetDoBallTimeCue(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetDoBallTimeCue(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDoBallTimeCue()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetBallTimeCueColor(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int c[4];
+    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    {
+        c[3] = 255;
+        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
+        {
+            double dr, dg, db, da;
+            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = int(da);
+            }
+            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = 255;
+            }
+            else
+            {
+                PyObject *tuple = NULL;
+                if(!PyArg_ParseTuple(args, "O", &tuple))
+                    return NULL;
+
+                if(!PyTuple_Check(tuple))
+                    return NULL;
+
+                // Make sure that the tuple is the right size.
+                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
+                    return NULL;
+
+                // Make sure that all elements in the tuple are ints.
+                for(int i = 0; i < PyTuple_Size(tuple); ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyInt_Check(item))
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
+                    else if(PyFloat_Check(item))
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
+                    else
+                        return NULL;
+                }
+            }
+        }
+        PyErr_Clear();
+    }
+
+    // Set the ballTimeCueColor in the object.
+    ColorAttribute ca(c[0], c[1], c[2], c[3]);
+    obj->data->SetBallTimeCueColor(ca);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetBallTimeCueColor(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the ballTimeCueColor.
+    PyObject *retval = PyTuple_New(4);
+    const unsigned char *ballTimeCueColor = obj->data->GetBallTimeCueColor().GetColor();
+    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(ballTimeCueColor[0])));
+    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(ballTimeCueColor[1])));
+    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(ballTimeCueColor[2])));
+    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(ballTimeCueColor[3])));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetTimeCueBallSize(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the timeCueBallSize in the object.
+    obj->data->SetTimeCueBallSize(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetTimeCueBallSize(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTimeCueBallSize());
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetDoLineTimeCue(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the doLineTimeCue in the object.
+    obj->data->SetDoLineTimeCue(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetDoLineTimeCue(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDoLineTimeCue()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetLineTimeCueColor(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int c[4];
+    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    {
+        c[3] = 255;
+        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
+        {
+            double dr, dg, db, da;
+            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = int(da);
+            }
+            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = 255;
+            }
+            else
+            {
+                PyObject *tuple = NULL;
+                if(!PyArg_ParseTuple(args, "O", &tuple))
+                    return NULL;
+
+                if(!PyTuple_Check(tuple))
+                    return NULL;
+
+                // Make sure that the tuple is the right size.
+                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
+                    return NULL;
+
+                // Make sure that all elements in the tuple are ints.
+                for(int i = 0; i < PyTuple_Size(tuple); ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyInt_Check(item))
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
+                    else if(PyFloat_Check(item))
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
+                    else
+                        return NULL;
+                }
+            }
+        }
+        PyErr_Clear();
+    }
+
+    // Set the lineTimeCueColor in the object.
+    ColorAttribute ca(c[0], c[1], c[2], c[3]);
+    obj->data->SetLineTimeCueColor(ca);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetLineTimeCueColor(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the lineTimeCueColor.
+    PyObject *retval = PyTuple_New(4);
+    const unsigned char *lineTimeCueColor = obj->data->GetLineTimeCueColor().GetColor();
+    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(lineTimeCueColor[0])));
+    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(lineTimeCueColor[1])));
+    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(lineTimeCueColor[2])));
+    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(lineTimeCueColor[3])));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetLineTimeCueWidth(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the lineTimeCueWidth in the object.
+    obj->data->SetLineTimeCueWidth((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetLineTimeCueWidth(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineTimeCueWidth()));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetDoCropTimeCue(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the doCropTimeCue in the object.
+    obj->data->SetDoCropTimeCue(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetDoCropTimeCue(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDoCropTimeCue()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetTimeForTimeCue(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the timeForTimeCue in the object.
+    obj->data->SetTimeForTimeCue(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetTimeForTimeCue(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTimeForTimeCue());
+    return retval;
+}
+
 
 
 PyMethodDef PyCurveAttributes_methods[CURVEATTRIBUTES_NMETH] = {
@@ -586,6 +913,22 @@ PyMethodDef PyCurveAttributes_methods[CURVEATTRIBUTES_NMETH] = {
     {"GetSymbol", CurveAttributes_GetSymbol, METH_VARARGS},
     {"SetSymbolDensity", CurveAttributes_SetSymbolDensity, METH_VARARGS},
     {"GetSymbolDensity", CurveAttributes_GetSymbolDensity, METH_VARARGS},
+    {"SetDoBallTimeCue", CurveAttributes_SetDoBallTimeCue, METH_VARARGS},
+    {"GetDoBallTimeCue", CurveAttributes_GetDoBallTimeCue, METH_VARARGS},
+    {"SetBallTimeCueColor", CurveAttributes_SetBallTimeCueColor, METH_VARARGS},
+    {"GetBallTimeCueColor", CurveAttributes_GetBallTimeCueColor, METH_VARARGS},
+    {"SetTimeCueBallSize", CurveAttributes_SetTimeCueBallSize, METH_VARARGS},
+    {"GetTimeCueBallSize", CurveAttributes_GetTimeCueBallSize, METH_VARARGS},
+    {"SetDoLineTimeCue", CurveAttributes_SetDoLineTimeCue, METH_VARARGS},
+    {"GetDoLineTimeCue", CurveAttributes_GetDoLineTimeCue, METH_VARARGS},
+    {"SetLineTimeCueColor", CurveAttributes_SetLineTimeCueColor, METH_VARARGS},
+    {"GetLineTimeCueColor", CurveAttributes_GetLineTimeCueColor, METH_VARARGS},
+    {"SetLineTimeCueWidth", CurveAttributes_SetLineTimeCueWidth, METH_VARARGS},
+    {"GetLineTimeCueWidth", CurveAttributes_GetLineTimeCueWidth, METH_VARARGS},
+    {"SetDoCropTimeCue", CurveAttributes_SetDoCropTimeCue, METH_VARARGS},
+    {"GetDoCropTimeCue", CurveAttributes_GetDoCropTimeCue, METH_VARARGS},
+    {"SetTimeForTimeCue", CurveAttributes_SetTimeForTimeCue, METH_VARARGS},
+    {"GetTimeForTimeCue", CurveAttributes_GetTimeForTimeCue, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -670,6 +1013,22 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "symbolDensity") == 0)
         return CurveAttributes_GetSymbolDensity(self, NULL);
+    if(strcmp(name, "doBallTimeCue") == 0)
+        return CurveAttributes_GetDoBallTimeCue(self, NULL);
+    if(strcmp(name, "ballTimeCueColor") == 0)
+        return CurveAttributes_GetBallTimeCueColor(self, NULL);
+    if(strcmp(name, "timeCueBallSize") == 0)
+        return CurveAttributes_GetTimeCueBallSize(self, NULL);
+    if(strcmp(name, "doLineTimeCue") == 0)
+        return CurveAttributes_GetDoLineTimeCue(self, NULL);
+    if(strcmp(name, "lineTimeCueColor") == 0)
+        return CurveAttributes_GetLineTimeCueColor(self, NULL);
+    if(strcmp(name, "lineTimeCueWidth") == 0)
+        return CurveAttributes_GetLineTimeCueWidth(self, NULL);
+    if(strcmp(name, "doCropTimeCue") == 0)
+        return CurveAttributes_GetDoCropTimeCue(self, NULL);
+    if(strcmp(name, "timeForTimeCue") == 0)
+        return CurveAttributes_GetTimeForTimeCue(self, NULL);
 
     // Try and handle legacy fields in CurveAttributes
     if(strcmp(name, "cycleColors") == 0)
@@ -720,6 +1079,22 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CurveAttributes_SetSymbol(self, tuple);
     else if(strcmp(name, "symbolDensity") == 0)
         obj = CurveAttributes_SetSymbolDensity(self, tuple);
+    else if(strcmp(name, "doBallTimeCue") == 0)
+        obj = CurveAttributes_SetDoBallTimeCue(self, tuple);
+    else if(strcmp(name, "ballTimeCueColor") == 0)
+        obj = CurveAttributes_SetBallTimeCueColor(self, tuple);
+    else if(strcmp(name, "timeCueBallSize") == 0)
+        obj = CurveAttributes_SetTimeCueBallSize(self, tuple);
+    else if(strcmp(name, "doLineTimeCue") == 0)
+        obj = CurveAttributes_SetDoLineTimeCue(self, tuple);
+    else if(strcmp(name, "lineTimeCueColor") == 0)
+        obj = CurveAttributes_SetLineTimeCueColor(self, tuple);
+    else if(strcmp(name, "lineTimeCueWidth") == 0)
+        obj = CurveAttributes_SetLineTimeCueWidth(self, tuple);
+    else if(strcmp(name, "doCropTimeCue") == 0)
+        obj = CurveAttributes_SetDoCropTimeCue(self, tuple);
+    else if(strcmp(name, "timeForTimeCue") == 0)
+        obj = CurveAttributes_SetTimeForTimeCue(self, tuple);
 
    // Try and handle legacy fields in CurveAttributes
     if(obj == NULL)

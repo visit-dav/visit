@@ -57,6 +57,9 @@
 //
 // Modifications:
 //
+//   Hank Childs, Thu Jul 15 18:20:26 PDT 2010
+//   Add support for cues to show the current location.
+//
 // ****************************************************************************
 
 class avtOpenGLCurveRenderer : public avtCurveRenderer
@@ -72,6 +75,11 @@ protected:
 
     void DrawCurveAsDynamicSymbols();
     void DrawCurveAsLines();
+
+    void GetAspect(int &bin_x_n, float &bin_x_size, float &bin_x_offset,
+                   int &bin_y_n, float &bin_y_size, float &bin_y_offset);
+    void RenderBall(void);
+    void RenderLine(void);
 };
 
 #endif

@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class CurveAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 12;
+    private static int CurveAttributes_numAdditionalAtts = 20;
 
     // Enum values
     public final static int RENDERMODE_RENDERASLINES = 0;
@@ -79,7 +79,7 @@ public class CurveAttributes extends AttributeSubject implements Plugin
 
     public CurveAttributes()
     {
-        super(numAdditionalAttributes);
+        super(CurveAttributes_numAdditionalAtts);
 
         lineStyle = 0;
         lineWidth = 0;
@@ -93,11 +93,19 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         renderMode = RENDERMODE_RENDERASLINES;
         symbol = SYMBOLTYPES_TRIANGLEUP;
         symbolDensity = 50;
+        doBallTimeCue = false;
+        ballTimeCueColor = new ColorAttribute(0, 0, 0);
+        timeCueBallSize = 0.01;
+        doLineTimeCue = false;
+        lineTimeCueColor = new ColorAttribute(0, 0, 0);
+        lineTimeCueWidth = 0;
+        doCropTimeCue = false;
+        timeForTimeCue = 0;
     }
 
     public CurveAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(CurveAttributes_numAdditionalAtts + nMoreFields);
 
         lineStyle = 0;
         lineWidth = 0;
@@ -111,11 +119,19 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         renderMode = RENDERMODE_RENDERASLINES;
         symbol = SYMBOLTYPES_TRIANGLEUP;
         symbolDensity = 50;
+        doBallTimeCue = false;
+        ballTimeCueColor = new ColorAttribute(0, 0, 0);
+        timeCueBallSize = 0.01;
+        doLineTimeCue = false;
+        lineTimeCueColor = new ColorAttribute(0, 0, 0);
+        lineTimeCueWidth = 0;
+        doCropTimeCue = false;
+        timeForTimeCue = 0;
     }
 
     public CurveAttributes(CurveAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(CurveAttributes_numAdditionalAtts);
 
         lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
@@ -129,6 +145,14 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         renderMode = obj.renderMode;
         symbol = obj.symbol;
         symbolDensity = obj.symbolDensity;
+        doBallTimeCue = obj.doBallTimeCue;
+        ballTimeCueColor = new ColorAttribute(obj.ballTimeCueColor);
+        timeCueBallSize = obj.timeCueBallSize;
+        doLineTimeCue = obj.doLineTimeCue;
+        lineTimeCueColor = new ColorAttribute(obj.lineTimeCueColor);
+        lineTimeCueWidth = obj.lineTimeCueWidth;
+        doCropTimeCue = obj.doCropTimeCue;
+        timeForTimeCue = obj.timeForTimeCue;
 
         SelectAll();
     }
@@ -140,7 +164,7 @@ public class CurveAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return CurveAttributes_numAdditionalAtts;
     }
 
     public boolean equals(CurveAttributes obj)
@@ -157,7 +181,15 @@ public class CurveAttributes extends AttributeSubject implements Plugin
                 (curveColorSource == obj.curveColorSource) &&
                 (renderMode == obj.renderMode) &&
                 (symbol == obj.symbol) &&
-                (symbolDensity == obj.symbolDensity));
+                (symbolDensity == obj.symbolDensity) &&
+                (doBallTimeCue == obj.doBallTimeCue) &&
+                (ballTimeCueColor == obj.ballTimeCueColor) &&
+                (timeCueBallSize == obj.timeCueBallSize) &&
+                (doLineTimeCue == obj.doLineTimeCue) &&
+                (lineTimeCueColor == obj.lineTimeCueColor) &&
+                (lineTimeCueWidth == obj.lineTimeCueWidth) &&
+                (doCropTimeCue == obj.doCropTimeCue) &&
+                (timeForTimeCue == obj.timeForTimeCue));
     }
 
     public String GetName() { return "Curve"; }
@@ -236,6 +268,54 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         Select(11);
     }
 
+    public void SetDoBallTimeCue(boolean doBallTimeCue_)
+    {
+        doBallTimeCue = doBallTimeCue_;
+        Select(12);
+    }
+
+    public void SetBallTimeCueColor(ColorAttribute ballTimeCueColor_)
+    {
+        ballTimeCueColor = ballTimeCueColor_;
+        Select(13);
+    }
+
+    public void SetTimeCueBallSize(double timeCueBallSize_)
+    {
+        timeCueBallSize = timeCueBallSize_;
+        Select(14);
+    }
+
+    public void SetDoLineTimeCue(boolean doLineTimeCue_)
+    {
+        doLineTimeCue = doLineTimeCue_;
+        Select(15);
+    }
+
+    public void SetLineTimeCueColor(ColorAttribute lineTimeCueColor_)
+    {
+        lineTimeCueColor = lineTimeCueColor_;
+        Select(16);
+    }
+
+    public void SetLineTimeCueWidth(int lineTimeCueWidth_)
+    {
+        lineTimeCueWidth = lineTimeCueWidth_;
+        Select(17);
+    }
+
+    public void SetDoCropTimeCue(boolean doCropTimeCue_)
+    {
+        doCropTimeCue = doCropTimeCue_;
+        Select(18);
+    }
+
+    public void SetTimeForTimeCue(double timeForTimeCue_)
+    {
+        timeForTimeCue = timeForTimeCue_;
+        Select(19);
+    }
+
     // Property getting methods
     public int            GetLineStyle() { return lineStyle; }
     public int            GetLineWidth() { return lineWidth; }
@@ -249,6 +329,14 @@ public class CurveAttributes extends AttributeSubject implements Plugin
     public int            GetRenderMode() { return renderMode; }
     public int            GetSymbol() { return symbol; }
     public int            GetSymbolDensity() { return symbolDensity; }
+    public boolean        GetDoBallTimeCue() { return doBallTimeCue; }
+    public ColorAttribute GetBallTimeCueColor() { return ballTimeCueColor; }
+    public double         GetTimeCueBallSize() { return timeCueBallSize; }
+    public boolean        GetDoLineTimeCue() { return doLineTimeCue; }
+    public ColorAttribute GetLineTimeCueColor() { return lineTimeCueColor; }
+    public int            GetLineTimeCueWidth() { return lineTimeCueWidth; }
+    public boolean        GetDoCropTimeCue() { return doCropTimeCue; }
+    public double         GetTimeForTimeCue() { return timeForTimeCue; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -277,6 +365,22 @@ public class CurveAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(symbol);
         if(WriteSelect(11, buf))
             buf.WriteInt(symbolDensity);
+        if(WriteSelect(12, buf))
+            buf.WriteBool(doBallTimeCue);
+        if(WriteSelect(13, buf))
+            ballTimeCueColor.Write(buf);
+        if(WriteSelect(14, buf))
+            buf.WriteDouble(timeCueBallSize);
+        if(WriteSelect(15, buf))
+            buf.WriteBool(doLineTimeCue);
+        if(WriteSelect(16, buf))
+            lineTimeCueColor.Write(buf);
+        if(WriteSelect(17, buf))
+            buf.WriteInt(lineTimeCueWidth);
+        if(WriteSelect(18, buf))
+            buf.WriteBool(doCropTimeCue);
+        if(WriteSelect(19, buf))
+            buf.WriteDouble(timeForTimeCue);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -320,6 +424,32 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         case 11:
             SetSymbolDensity(buf.ReadInt());
             break;
+        case 12:
+            SetDoBallTimeCue(buf.ReadBool());
+            break;
+        case 13:
+            ballTimeCueColor.Read(buf);
+            Select(13);
+            break;
+        case 14:
+            SetTimeCueBallSize(buf.ReadDouble());
+            break;
+        case 15:
+            SetDoLineTimeCue(buf.ReadBool());
+            break;
+        case 16:
+            lineTimeCueColor.Read(buf);
+            Select(16);
+            break;
+        case 17:
+            SetLineTimeCueWidth(buf.ReadInt());
+            break;
+        case 18:
+            SetDoCropTimeCue(buf.ReadBool());
+            break;
+        case 19:
+            SetTimeForTimeCue(buf.ReadDouble());
+            break;
         }
     }
 
@@ -361,6 +491,14 @@ public class CurveAttributes extends AttributeSubject implements Plugin
             str = str + "SYMBOLTYPES_X";
         str = str + "\n";
         str = str + intToString("symbolDensity", symbolDensity, indent) + "\n";
+        str = str + boolToString("doBallTimeCue", doBallTimeCue, indent) + "\n";
+        str = str + indent + "ballTimeCueColor = {" + ballTimeCueColor.Red() + ", " + ballTimeCueColor.Green() + ", " + ballTimeCueColor.Blue() + ", " + ballTimeCueColor.Alpha() + "}\n";
+        str = str + doubleToString("timeCueBallSize", timeCueBallSize, indent) + "\n";
+        str = str + boolToString("doLineTimeCue", doLineTimeCue, indent) + "\n";
+        str = str + indent + "lineTimeCueColor = {" + lineTimeCueColor.Red() + ", " + lineTimeCueColor.Green() + ", " + lineTimeCueColor.Blue() + ", " + lineTimeCueColor.Alpha() + "}\n";
+        str = str + intToString("lineTimeCueWidth", lineTimeCueWidth, indent) + "\n";
+        str = str + boolToString("doCropTimeCue", doCropTimeCue, indent) + "\n";
+        str = str + doubleToString("timeForTimeCue", timeForTimeCue, indent) + "\n";
         return str;
     }
 
@@ -378,5 +516,13 @@ public class CurveAttributes extends AttributeSubject implements Plugin
     private int            renderMode;
     private int            symbol;
     private int            symbolDensity;
+    private boolean        doBallTimeCue;
+    private ColorAttribute ballTimeCueColor;
+    private double         timeCueBallSize;
+    private boolean        doLineTimeCue;
+    private ColorAttribute lineTimeCueColor;
+    private int            lineTimeCueWidth;
+    private boolean        doCropTimeCue;
+    private double         timeForTimeCue;
 }
 
