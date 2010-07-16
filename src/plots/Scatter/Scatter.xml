@@ -1,10 +1,8 @@
 <?xml version="1.0"?>
-  <Plugin name="Scatter" type="plot" label="Scatter" version="1.0" enabled="true" vartype="scalar" iconFile="Scatter.xpm">
+  <Plugin name="Scatter" type="plot" label="Scatter" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,curve" iconFile="Scatter.xpm">
     <Files components="G">
-      QvisScatterWidget.C QvisScatterPlotWizard.C
-    </Files>
-    <Files components="W">
-      QvisScatterWidget.h QvisScatterPlotWizard.h
+      QvisScatterWidget.C
+      QvisScatterPlotWizard.C
     </Files>
     <Files components="V">
       avtScatterFilter.C
@@ -12,7 +10,11 @@
     <Files components="E">
       avtScatterFilter.C
     </Files>
-    <Attribute name="ScatterAttributes" purpose="Attributes for the scatter plot" persistent="true" codefile="Scatter.code">
+    <Files components="W">
+      QvisScatterWidget.h
+      QvisScatterPlotWizard.h
+    </Files>
+    <Attribute name="ScatterAttributes" purpose="Attributes for the scatter plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Scatter.code">
       <Enum name="Scaling">
         Linear
         Log
@@ -34,7 +36,7 @@
       </Enum>
       <Field name="var1Role" label="Variable 1 role" type="enum" subtype="VariableRole">
         Coordinate0
-      </Field>      
+      </Field>
       <Field name="var1MinFlag" label="Use variable 1 min" type="bool">
         false
       </Field>
@@ -55,7 +57,7 @@
       </Field>
       <Field name="var2Role" label="Variable 2 role" type="enum" subtype="VariableRole">
         Coordinate1
-      </Field>      
+      </Field>
       <Field name="var2" label="Variable 2" type="string">
         default
       </Field>
@@ -79,7 +81,7 @@
       </Field>
       <Field name="var3Role" label="Variable 3 role" type="enum" subtype="VariableRole">
         None
-      </Field>      
+      </Field>
       <Field name="var3" label="Variable 3" type="string">
         default
       </Field>
@@ -103,7 +105,7 @@
       </Field>
       <Field name="var4Role" label="Variable 4 role" type="enum" subtype="VariableRole">
         None
-      </Field>      
+      </Field>
       <Field name="var4" label="Variable 4" type="string">
         default
       </Field>
@@ -140,7 +142,7 @@
       <Field name="colorTableName" label="Color table" type="colortable">
         hot
       </Field>
-      <Field name="singleColor" label="Single color" type="color">
+      <Field name="singleColor" label="Single color" type="color" length="4">
         255
         0
         0

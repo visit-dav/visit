@@ -198,6 +198,9 @@ QvisScatterPlotWizard::~QvisScatterPlotWizard()
 //   Brad Whitlock, Fri Aug  8 14:03:29 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Fri Jul 16 14:32:31 PDT 2010
+//   Make curves allowable variable types.
+//
 // ****************************************************************************
 
 void
@@ -235,7 +238,7 @@ QvisScatterPlotWizard::CreateVariablePage(QWizardPage **f, QvisScatterWidget **s
     pageVLayout->addStretch(5);
     QLabel *varlabel = new QLabel(tr("Variable"));
     QvisVariableButton *var = new QvisVariableButton(true, false, true,
-        QvisVariableButton::Scalars, frame);
+        QvisVariableButton::Scalars | QvisVariableButton::Curves, frame);
     var->setMinimumWidth(fontMetrics().boundingRect("really_really_long_var_name").width());
     connect(var, SIGNAL(activated(const QString &)),
             this, slot);

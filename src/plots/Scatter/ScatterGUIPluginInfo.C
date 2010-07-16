@@ -100,7 +100,7 @@ ScatterGUIPluginInfo::GetMenuName() const
 int
 ScatterGUIPluginInfo::GetVariableTypes() const
 {
-    return VAR_CATEGORY_SCALAR;
+    return VAR_CATEGORY_SCALAR | VAR_CATEGORY_CURVE;
 }
 
 // ****************************************************************************
