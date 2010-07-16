@@ -25,6 +25,7 @@ std::string VsSchema::indexOrderAtt = "vsIndexOrder";
 std::string VsSchema::numSpatialDimsAtt = "vsNumSpatialDims";
 std::string VsSchema::spatialIndicesAtt = "vsSpatialIndices";
 std::string VsSchema::labelsAtt = "vsLabels";
+std::string VsSchema::axisLabelsAtt = "vsAxisLabels";
 
 std::string VsSchema::varKey = "variable";
 std::string VsSchema::varWithMeshKey = "variableWithMesh";
@@ -49,6 +50,7 @@ std::string VsSchema::Rectilinear::axis1Key = "vsAxis1";
 std::string VsSchema::Rectilinear::axis1DefaultName = "axis1";
 std::string VsSchema::Rectilinear::axis2Key = "vsAxis2";
 std::string VsSchema::Rectilinear::axis2DefaultName = "axis2";
+std::string VsSchema::Rectilinear::transformKey = "vsTransform";
 
 std::string VsSchema::Uniform::key = "uniform";
 std::string VsSchema::Uniform::deprecated_key = "uniformCartesian";
@@ -88,4 +90,10 @@ std::string VsSchema::Unstructured::vsHexahedrals = "vsHexahedrals";
 std::string VsSchema::Unstructured::vsPoints0 = "vsPoints0";
 std::string VsSchema::Unstructured::vsPoints1 = "vsPoints1";
 std::string VsSchema::Unstructured::vsPoints2 = "vsPoints2";
+
+//Time
+std::string VsSchema::timeKey = "time";
+std::string VsSchema::timeAtt = "vsTime";
+std::string VsSchema::stepAtt = "vsStep";
+std::string VsSchema::timeGroupAtt = "vsTimeGroup";
 #endif

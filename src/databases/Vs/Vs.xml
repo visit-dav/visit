@@ -1,20 +1,55 @@
 <?xml version="@VERSION@"?>
-  <Plugin name="Vs" type="database" label="Vs Files" version="@VERSION@" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+  <Plugin name="Vs" type="database" label="Vs Files" version="@VERSION@" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false">
     <Files components="M">
       avtVsFileFormat.C
       VsFilter.C
+      VsH5Attribute.C
+      VsH5Dataset.C
+      VsH5File.C
+      VsH5Group.C
+      VsH5Object.C
       VsH5Reader.C
+      VsLog.C
+      VsMDMesh.C
+      VsMDVariable.C
+      VsMesh.C
+      VsRectilinearMesh.C
       VsSchema.C
+      VsStructuredMesh.C
+      VsUniformMesh.C
+      VsUnstructuredMesh.C
       VsUtils.C
+      VsVariable.C
+      VsVariableWithMesh.C
+      VsRegistry.C
+      VsRegistryObject.C
     </Files>
 
     <Files components="E">
       avtVsFileFormat.C
       VsFilter.C
+      VsH5Attribute.C
+      VsH5Dataset.C
+      VsH5File.C
+      VsH5Group.C
+      VsH5Object.C
       VsH5Reader.C
+      VsLog.C
+      VsMDMesh.C
+      VsMDVariable.C
+      VsMesh.C
+      VsRectilinearMesh.C
       VsSchema.C
+      VsStructuredMesh.C
+      VsUniformMesh.C
+      VsUnstructuredMesh.C
       VsUtils.C
+      VsVariable.C
+      VsVariableWithMesh.C
+      VsRegistry.C
+      VsRegistryObject.C
     </Files>
+
     <CXXFLAGS>
       ${HDF5_INCLUDE_DIR}
     </CXXFLAGS>
