@@ -1,16 +1,14 @@
-#include <hdf5.h>
-#include <visit-hdf5.h>
-#if HDF5_VERSION_GE(1, 8, 1)
 /**
  * @file  VsSchema.h
  *
  * @class VsSchema
- *
- * @brief Describes how instant datasets and meshes are found in the
- * file compliant with the schema.
+ * @brief Contains all VizSchema key words.
  *
  * Copyright &copy; 2008 by Tech-X Corporation
  */
+#include <hdf5.h>
+#include <visit-hdf5.h>
+#if HDF5_VERSION_GE(1, 8, 1)
 
 #ifndef VS_SCHEMA
 #define VS_SCHEMA
@@ -32,6 +30,7 @@ struct VsSchema {
   static std::string numSpatialDimsAtt;
   static std::string spatialIndicesAtt;
   static std::string labelsAtt;
+  static std::string axisLabelsAtt;
   static std::string varKey;
   static std::string vsVarsKey;
   static std::string varWithMeshKey;
@@ -65,6 +64,8 @@ struct VsSchema {
     
     static std::string axis2Key;
     static std::string axis2DefaultName;
+
+    static std::string transformKey;
   };
 
   struct Unstructured {
@@ -95,6 +96,11 @@ struct VsSchema {
     static std::string vsPoints2; //points
   };
 
+  //time
+  static std::string timeKey;
+  static std::string timeAtt;
+  static std::string stepAtt;
+  static std::string timeGroupAtt;
 };
 
 #endif

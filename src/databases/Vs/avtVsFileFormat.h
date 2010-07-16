@@ -18,7 +18,7 @@
 #ifndef VS_FILE_FORMAT_H
 #define VS_FILE_FORMAT_H
 
-#include <VsH5Reader.h>
+//#include <VsH5Reader.h>
 #include <avtSTMDFileFormat.h>
 #include <hdf5.h>
 #include <visit-hdf5.h>
@@ -28,6 +28,13 @@ class vtkDataSet;
 class vtkDataArray;
 class avtDatabaseMetaData;
 class avtMeshMetaData;
+class VsVariableWithMesh;
+class VsUnstructuredMesh;
+class VsUniformMesh;
+class VsStructuredMesh;
+class VsRectilinearMesh;
+class VsRegistry;
+class VsH5Reader;
 
 /**
  * avtSTMDFileFormat is a base class for multi-domain, single-time
@@ -88,15 +95,21 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    */
   virtual void FreeUpResources(void);
 
+  /**
+   * Called to alert the database reader that VisIt is about to ask for data
+   * at this timestep.  Since this reader is single-time, this is 
+   * only provided for reference and does nothing.
+   */
+  virtual void ActivateTimestep(void);
+  
+  virtual void UpdateCyclesAndTimes();
+  
   protected:
   /** Populate the meta data */
   virtual void PopulateDatabaseMetaData(avtDatabaseMetaData* md);
 
   /** The file containing the data */
   std::string dataFileName;
-
-  /** Reference to our stream for debugging information */
-  std::ostream& debugStrmRef;
 
   /** Pointer to the reader */
   VsH5Reader* reader;
@@ -111,6 +124,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    */
   std::vector<int> stride;
 
+  VsRegistry* registry;
 
   /**
    * Set the axis labels for a mesh.
@@ -122,14 +136,12 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   /**
    * Create various meshes.
    */
-  vtkDataSet* getUniformMesh(const std::string& nm, const VsMeshMeta&);
-  vtkDataSet* getUnstructuredMesh(const std::string& nm, const VsMeshMeta&);
-  vtkDataSet* getRectilinearMesh(const std::string& name, const VsMeshMeta&);
-  vtkDataSet* getStructuredMesh(const std::string& nm, const VsMeshMeta&);
-  vtkDataSet* getPointMesh(const std::string& name,
-      const VsVariableWithMeshMeta& meta);
-  vtkDataSet* getSplitPointMesh(const std::string& name,
-      const VsUnstructuredMesh& meta);
+  vtkDataSet* getUniformMesh(VsUniformMesh*);
+  vtkDataSet* getUnstructuredMesh(VsUnstructuredMesh*);
+  vtkDataSet* getRectilinearMesh(VsRectilinearMesh*);
+  vtkDataSet* getStructuredMesh(VsStructuredMesh*);
+  vtkDataSet* getPointMesh(VsVariableWithMesh*);
+  vtkDataSet* getSplitPointMesh(VsUnstructuredMesh*);
   vtkDataSet* getCurve(int domain, const std::string& name);
 
   /**
