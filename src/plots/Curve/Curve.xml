@@ -68,6 +68,36 @@
       <Field name="symbolDensity" label="Symbol density" type="int">
         50
       </Field>
+      <Field name="doBallTimeCue" label="Do Ball Time Cue" type="bool">
+        false
+      </Field>
+      <Field name="ballTimeCueColor" label="Ball Time Cue Color" type="color" length="4" enabler="doBallTimeCue:true">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="timeCueBallSize" label="Time Cue Ball Size" type="double" enabler="doBallTimeCue:true">
+        0.010000
+      </Field>
+      <Field name="doLineTimeCue" label="Do Line Time Curve" type="bool">
+        false
+      </Field>
+      <Field name="lineTimeCueColor" label="Line Time Cue Color" type="color" length="4" enabler="doLineTimeCue:true">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="lineTimeCueWidth" label="Line Time Cue Width" type="int" enabler="doLineTimeCue:true">
+        0
+      </Field>
+      <Field name="doCropTimeCue" label="Crop For Time Cue" type="bool">
+        false
+      </Field>
+      <Field name="timeForTimeCue" label="timeForTimeCue" type="double">
+        0.000000
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">

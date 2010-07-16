@@ -81,6 +81,9 @@ class QvisLineWidthWidget;
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Hank Childs, Thu Jul 15 18:20:26 PDT 2010
+//   Add cue for the current location.
+//
 // ****************************************************************************
 
 class QvisCurvePlotWindow : public QvisPostableWindowObserver
@@ -116,6 +119,16 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     void renderModeChanged(int);
     void symbolTypeChanged(int);
     void symbolDensityChanged(int);
+
+    void doBallTimeCueChanged(bool val);
+    void ballTimeCueColorChanged(const QColor &color);
+    void timeCueBallSizeProcessText();
+    void doLineTimeCueChanged(bool val);
+    void lineTimeCueColorChanged(const QColor &color);
+    void lineTimeCueWidthChanged(int);
+    void doCropTimeCueChanged(bool val);
+    void timeForTimeCueProcessText();
+
   private:
     int plotType;
     QvisLineStyleWidget *lineStyle;
@@ -137,6 +150,18 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     QLabel              *symbolTypeLabel;
     QSpinBox            *symbolDensity;
     QLabel              *symbolDensityLabel;
+
+    QCheckBox           *doBallTimeCue;
+    QvisColorButton     *ballTimeCueColor;
+    QLineEdit           *timeCueBallSize;
+    QCheckBox           *doLineTimeCue;
+    QvisColorButton     *lineTimeCueColor;
+    QvisLineWidthWidget *lineTimeCueWidth;
+    QCheckBox           *doCropTimeCue;
+    QLineEdit           *timeForTimeCue;
+    QLabel              *timeCueBallSizeLabel;
+    QLabel              *lineTimeCueWidthLabel;
+    QLabel              *timeForTimeCueLabel;
 
     CurveAttributes *atts;
 };

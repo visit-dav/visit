@@ -147,6 +147,9 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Hank Childs, Thu Jul 15 18:20:26 PDT 2010
+//   Add cues for the current location.
+//
 // ****************************************************************************
 
 void
@@ -298,6 +301,64 @@ QvisCurvePlotWindow::CreateWindowContents()
             this, SLOT(curveColorChanged(const QColor &)));
     colorLayout->addWidget(curveColor, 0, 3);
 
+    //
+    // Create the time cue stuff
+    //
+    QGroupBox * timeCueGroup = new QGroupBox(central);
+    timeCueGroup->setTitle(tr("Create Cue For Current Location"));
+    topLayout->addWidget(timeCueGroup);
+
+    QGridLayout *timeCueLayout = new QGridLayout(timeCueGroup);
+    timeCueLayout->setMargin(5);
+    timeCueLayout->setSpacing(10);
+ 
+    doBallTimeCue = new QCheckBox(tr("Add Ball"), central);
+    connect(doBallTimeCue, SIGNAL(toggled(bool)),
+            this, SLOT(doBallTimeCueChanged(bool)));
+    timeCueLayout->addWidget(doBallTimeCue, 0,0);
+
+    ballTimeCueColor = new QvisColorButton(central);
+    connect(ballTimeCueColor, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(ballTimeCueColorChanged(const QColor&)));
+    timeCueLayout->addWidget(ballTimeCueColor, 0,1);
+
+    timeCueBallSizeLabel = new QLabel(tr("Ball size"), central);
+    timeCueLayout->addWidget(timeCueBallSizeLabel,0,2);
+    timeCueBallSize = new QLineEdit(central);
+    connect(timeCueBallSize, SIGNAL(returnPressed()),
+            this, SLOT(timeCueBallSizeProcessText()));
+    timeCueLayout->addWidget(timeCueBallSize, 0,3);
+
+    doLineTimeCue = new QCheckBox(tr("Add Line"), central);
+    connect(doLineTimeCue, SIGNAL(toggled(bool)),
+            this, SLOT(doLineTimeCueChanged(bool)));
+    timeCueLayout->addWidget(doLineTimeCue, 1,0);
+
+    lineTimeCueColor = new QvisColorButton(central);
+    connect(lineTimeCueColor, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(lineTimeCueColorChanged(const QColor&)));
+    timeCueLayout->addWidget(lineTimeCueColor, 1,1);
+
+    lineTimeCueWidthLabel = new QLabel(tr("Line width"), central);
+    lineTimeCueWidthLabel->setBuddy(lineTimeCueWidth);
+    timeCueLayout->addWidget(lineTimeCueWidthLabel,1,2);
+    lineTimeCueWidth = new QvisLineWidthWidget(0, central);
+    connect(lineTimeCueWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineTimeCueWidthChanged(int)));
+
+    timeCueLayout->addWidget(lineTimeCueWidth, 1,3);
+
+    doCropTimeCue = new QCheckBox(tr("Crop"), central);
+    connect(doCropTimeCue, SIGNAL(toggled(bool)),
+            this, SLOT(doCropTimeCueChanged(bool)));
+    timeCueLayout->addWidget(doCropTimeCue, 2,0);
+
+    timeForTimeCueLabel = new QLabel(tr("Position of cue"), central);
+    timeCueLayout->addWidget(timeForTimeCueLabel,3,0);
+    timeForTimeCue = new QLineEdit(central);
+    connect(timeForTimeCue, SIGNAL(returnPressed()),
+            this, SLOT(timeForTimeCueProcessText()));
+    timeCueLayout->addWidget(timeForTimeCue, 3,1);
 
     //
     // Create the misc stuff
@@ -353,6 +414,9 @@ QvisCurvePlotWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Fri Jul 18 10:45:33 PDT 2008
 //   Qt 4.
+//
+//   Hank Childs, Thu Jul 15 18:20:26 PDT 2010
+//   Add cue for the current location.
 //
 // ****************************************************************************
 
@@ -453,8 +517,101 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             symbolDensity->setValue(atts->GetSymbolDensity());
             symbolDensity->blockSignals(false);
             break;
+         case CurveAttributes::ID_doBallTimeCue:
+            if (atts->GetDoBallTimeCue() == true)
+            {
+                ballTimeCueColor->setEnabled(true);
+            }
+            else
+            {
+                ballTimeCueColor->setEnabled(false);
+            }
+            if (atts->GetDoBallTimeCue() == true)
+            {
+                timeCueBallSize->setEnabled(true);
+                if(timeCueBallSizeLabel)
+                    timeCueBallSizeLabel->setEnabled(true);
+            }
+            else
+            {
+                timeCueBallSize->setEnabled(false);
+                if(timeCueBallSizeLabel)
+                    timeCueBallSizeLabel->setEnabled(false);
+            }
+            doBallTimeCue->blockSignals(true);
+            doBallTimeCue->setChecked(atts->GetDoBallTimeCue());
+            doBallTimeCue->blockSignals(false);
+            break;
+          case CurveAttributes::ID_ballTimeCueColor:
+            { // new scope
+                QColor tempcolor = QColor(atts->GetBallTimeCueColor().Red(),
+                                   atts->GetBallTimeCueColor().Green(),
+                                   atts->GetBallTimeCueColor().Blue());
+                ballTimeCueColor->blockSignals(true);
+                ballTimeCueColor->setButtonColor(tempcolor);
+                ballTimeCueColor->blockSignals(false);
+            }
+            break;
+          case CurveAttributes::ID_timeCueBallSize:
+            timeCueBallSize->setText(DoubleToQString(atts->GetTimeCueBallSize()));
+            break;
+          case CurveAttributes::ID_doLineTimeCue:
+            if (atts->GetDoLineTimeCue() == true)
+            {
+                lineTimeCueColor->setEnabled(true);
+            }
+            else
+            {
+                lineTimeCueColor->setEnabled(false);
+            }
+            if (atts->GetDoLineTimeCue() == true)
+            {
+                lineTimeCueWidth->setEnabled(true);
+                if(lineTimeCueWidthLabel)
+                    lineTimeCueWidthLabel->setEnabled(true);
+            }
+            else
+            {
+                lineTimeCueWidth->setEnabled(false);
+                if(lineTimeCueWidthLabel)
+                    lineTimeCueWidthLabel->setEnabled(false);
+            }
+            doLineTimeCue->blockSignals(true);
+            doLineTimeCue->setChecked(atts->GetDoLineTimeCue());
+            doLineTimeCue->blockSignals(false);
+            break;
+          case CurveAttributes::ID_lineTimeCueColor:
+            { // new scope
+                QColor tempcolor = QColor(atts->GetLineTimeCueColor().Red(),
+                                   atts->GetLineTimeCueColor().Green(),
+                                   atts->GetLineTimeCueColor().Blue());
+                lineTimeCueColor->blockSignals(true);
+                lineTimeCueColor->setButtonColor(tempcolor);
+                lineTimeCueColor->blockSignals(false);
+            }
+            break;
+          case CurveAttributes::ID_lineTimeCueWidth:
+            lineTimeCueWidth->blockSignals(true);
+            lineTimeCueWidth->SetLineWidth(atts->GetLineTimeCueWidth());
+            lineTimeCueWidth->blockSignals(false);
+            break;
+          case CurveAttributes::ID_doCropTimeCue:
+            doCropTimeCue->blockSignals(true);
+            doCropTimeCue->setChecked(atts->GetDoCropTimeCue());
+            doCropTimeCue->blockSignals(false);
+            break;
+          case CurveAttributes::ID_timeForTimeCue:
+            timeForTimeCue->setText(DoubleToQString(atts->GetTimeForTimeCue()));
+            break;
         }
     }
+
+    bool shouldEnableWidget = atts->GetDoBallTimeCue() ||
+                               atts->GetDoLineTimeCue() ||
+                               atts->GetDoCropTimeCue();
+    
+    timeForTimeCueLabel->setEnabled(shouldEnableWidget);
+    timeForTimeCue->setEnabled(shouldEnableWidget);
 }
 
 
@@ -481,6 +638,9 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Fri Jul 18 10:48:24 PDT 2008
 //   Qt 4.
 //
+//   Hank Childs, Thu Jul 15 18:20:26 PDT 2010
+//   Add cue for the current location.
+//
 // ****************************************************************************
 
 void
@@ -504,6 +664,35 @@ QvisCurvePlotWindow::GetCurrentValues(int which_widget)
     if (which_widget == CurveAttributes::ID_symbolDensity || doAll)
         if (symbolDensity->value() != atts->GetSymbolDensity())
             atts->SetSymbolDensity(symbolDensity->value());
+
+
+    // Do timeCueBallSize
+    if(which_widget == CurveAttributes::ID_timeCueBallSize || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(timeCueBallSize, val))
+            atts->SetTimeCueBallSize(val);
+        else
+        {
+            ResettingError(tr("Time Cue Ball Size"),
+                DoubleToQString(atts->GetTimeCueBallSize()));
+            atts->SetTimeCueBallSize(atts->GetTimeCueBallSize());
+        }
+    }
+
+    // Do timeForTimeCue
+    if(which_widget == CurveAttributes::ID_timeForTimeCue || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(timeForTimeCue, val))
+            atts->SetTimeForTimeCue(val);
+        else
+        {
+            ResettingError(tr("timeForTimeCue"),
+                DoubleToQString(atts->GetTimeForTimeCue()));
+            atts->SetTimeForTimeCue(atts->GetTimeForTimeCue());
+        }
+    }
 }
 
 
@@ -686,6 +875,75 @@ QvisCurvePlotWindow::symbolDensityChanged(int val)
 {
     atts->SetSymbolDensity(val);
     SetUpdate(false);
+    Apply();
+}
+
+
+
+void
+QvisCurvePlotWindow::doBallTimeCueChanged(bool val)
+{
+    atts->SetDoBallTimeCue(val);
+    Apply();
+}
+
+
+void
+QvisCurvePlotWindow::ballTimeCueColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    atts->SetBallTimeCueColor(temp);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisCurvePlotWindow::timeCueBallSizeProcessText()
+{
+    GetCurrentValues(CurveAttributes::ID_timeCueBallSize);
+    Apply();
+}
+
+
+void
+QvisCurvePlotWindow::doLineTimeCueChanged(bool val)
+{
+    atts->SetDoLineTimeCue(val);
+    Apply();
+}
+
+
+void
+QvisCurvePlotWindow::lineTimeCueColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    atts->SetLineTimeCueColor(temp);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisCurvePlotWindow::lineTimeCueWidthChanged(int val)
+{
+    atts->SetLineTimeCueWidth(val);
+    Apply();
+}
+
+
+void
+QvisCurvePlotWindow::doCropTimeCueChanged(bool val)
+{
+    atts->SetDoCropTimeCue(val);
+    Apply();
+}
+
+
+void
+QvisCurvePlotWindow::timeForTimeCueProcessText()
+{
+    GetCurrentValues(CurveAttributes::ID_timeForTimeCue);
     Apply();
 }
 

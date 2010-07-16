@@ -109,6 +109,8 @@ public:
     virtual void SelectAll();
     void SelectCurveColor();
     void SelectDesignator();
+    void SelectBallTimeCueColor();
+    void SelectLineTimeCueColor();
 
     // Property setting methods
     void SetLineStyle(int lineStyle_);
@@ -123,6 +125,14 @@ public:
     void SetRenderMode(RenderMode renderMode_);
     void SetSymbol(SymbolTypes symbol_);
     void SetSymbolDensity(int symbolDensity_);
+    void SetDoBallTimeCue(bool doBallTimeCue_);
+    void SetBallTimeCueColor(const ColorAttribute &ballTimeCueColor_);
+    void SetTimeCueBallSize(double timeCueBallSize_);
+    void SetDoLineTimeCue(bool doLineTimeCue_);
+    void SetLineTimeCueColor(const ColorAttribute &lineTimeCueColor_);
+    void SetLineTimeCueWidth(int lineTimeCueWidth_);
+    void SetDoCropTimeCue(bool doCropTimeCue_);
+    void SetTimeForTimeCue(double timeForTimeCue_);
 
     // Property getting methods
     int                  GetLineStyle() const;
@@ -139,6 +149,16 @@ public:
     RenderMode           GetRenderMode() const;
     SymbolTypes          GetSymbol() const;
     int                  GetSymbolDensity() const;
+    bool                 GetDoBallTimeCue() const;
+    const ColorAttribute &GetBallTimeCueColor() const;
+          ColorAttribute &GetBallTimeCueColor();
+    double               GetTimeCueBallSize() const;
+    bool                 GetDoLineTimeCue() const;
+    const ColorAttribute &GetLineTimeCueColor() const;
+          ColorAttribute &GetLineTimeCueColor();
+    int                  GetLineTimeCueWidth() const;
+    bool                 GetDoCropTimeCue() const;
+    double               GetTimeForTimeCue() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -185,6 +205,14 @@ public:
         ID_renderMode,
         ID_symbol,
         ID_symbolDensity,
+        ID_doBallTimeCue,
+        ID_ballTimeCueColor,
+        ID_timeCueBallSize,
+        ID_doLineTimeCue,
+        ID_lineTimeCueColor,
+        ID_lineTimeCueWidth,
+        ID_doCropTimeCue,
+        ID_timeForTimeCue,
         ID__LAST
     };
 
@@ -201,11 +229,19 @@ private:
     int            renderMode;
     int            symbol;
     int            symbolDensity;
+    bool           doBallTimeCue;
+    ColorAttribute ballTimeCueColor;
+    double         timeCueBallSize;
+    bool           doLineTimeCue;
+    ColorAttribute lineTimeCueColor;
+    int            lineTimeCueWidth;
+    bool           doCropTimeCue;
+    double         timeForTimeCue;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define CURVEATTRIBUTES_TMFS "iiabsbdbiiii"
+#define CURVEATTRIBUTES_TMFS "iiabsbdbiiiibadbaibd"
 
 #endif
