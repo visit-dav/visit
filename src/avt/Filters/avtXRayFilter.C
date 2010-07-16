@@ -308,6 +308,9 @@ avtXRayFilter::SetImageProperties(float *pos_, float  theta_, float  phi_,
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Fri Jul 16 15:42:20 PDT 2010
+//    I modified the filter to handle the case where some of the processors
+//    didn't have any data sets when executing in parallel.
 //
 // ****************************************************************************
 
@@ -350,60 +353,19 @@ avtXRayFilter::Execute(void)
     }
     visitTimer->StopTimer(t1, "avtXRayFilter::CartesianExecute");
 
-    //
-    // Calculate the number of cell arrays, the number of components per
-    // cell array and the names of the cell arrays.  Note that any array
-    // that is not of type VTK_FLOAT is stripped out.  We only need the
-    // data arrays at this point and they should all be VTK_FLOAT.
-    //
-    int     nCellArrays = 0;
-    int    *nComponentsPerCellArray = NULL;
-    string *cellArrayNames = NULL;
-    if (totalNodes > 0)
-    {
-        nCellArrays = dataSets[0]->GetCellData()->GetNumberOfArrays();
-        nComponentsPerCellArray = new int[nCellArrays];
-        cellArrayNames = new string[nCellArrays];
-        int j = 0;
-        for (int i = 0; i < nCellArrays; i++)
-        {
-            vtkDataArray *da=dataSets[0]->GetCellData()->GetArray(i);
-            if (da->GetDataType() == VTK_FLOAT)
-            {
-                nComponentsPerCellArray[j] = da->GetNumberOfComponents();
-                cellArrayNames[j] = da->GetName();
-                j++;
-            }
-        }
-        nCellArrays = j;
-    }
-
-#if 0
-    //
-    // Unify the number of cell arrays across all the processors.
-    //
-    int maxNCellArrays;
-#ifdef PARALLEL
-    MPI_AllReduce(&nCellArrays, &maxNCellArrays, 1, MPI_INT, MPI_MAX,
-        VISIT_MPI_COMM);
-#else
-    maxNCellArray = nCellArrays;
-#endif
-    if (nCellArrays != maxNCellArray
-    
-    if (totalNodes == 0)
-    {
-        nComponentsPerCellArray = new int[nCellArrays];
-        cellArrayNames = new string[nCellArrays];
-        for (int i = 0; i < nCellArrays; i++)
-            nComponentsPerCellArray[i] = 1;
-    }
-#endif
 
     //
     // Redistribute the line segments to processors that own them.
     //
     t1 = visitTimer->StartTimer();
+    int     nCellArrays = 2;
+    int     nComponentsPerCellArray = 0;
+    if (totalNodes > 0)
+    {
+        nComponentsPerCellArray = dataSets[0]->GetCellData()->
+            GetArray(absVarName.c_str())->GetNumberOfComponents();
+    }
+    string cellArrayNames[2] = {absVarName, emisVarName};
     RedistributeLines(totalNodes, nLinesPerDataset, dists, line_ids,
         nCellArrays, cellArrayNames, nComponentsPerCellArray, cellData);
     visitTimer->StopTimer(t1, "avtXRayFilter::RedistributeLines");
@@ -414,8 +376,6 @@ avtXRayFilter::Execute(void)
     delete [] nLinesPerDataset;
     delete [] dists;
     delete [] line_ids;
-    delete [] nComponentsPerCellArray;
-    delete [] cellArrayNames;
     for (int i = 0; i < totalNodes; i++)
     {
         float **cellDataI = cellData[i];
@@ -568,6 +528,10 @@ avtXRayFilter::PostExecute(void)
 //    Eric Brugger, Mon Jul 12 13:37:46 PDT 2010
 //    I added more timing calls to get finer grained timing information.
 //  
+//    Eric Brugger, Fri Jul 16 15:42:20 PDT 2010
+//    I modified the filter to handle the case where some of the processors
+//    didn't have any data sets when executing in parallel.
+//
 // ****************************************************************************
 
 void
@@ -861,13 +825,15 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
     //
     // Copy the cell data.
     //
-    vtkCellData *inCD1 = ds->GetCellData();
-    int nCellArrays = inCD1->GetNumberOfArrays();
-    cellData = new float*[nCellArrays];
-    int iCellData = 0;
-    for (int i = 0; i < nCellArrays; i++)
+    vtkDataArray *dataArrays[2];
+    vtkDataArray *da1=ds->GetCellData()->GetArray(absVarName.c_str());
+    vtkDataArray *da2=ds->GetCellData()->GetArray(emisVarName.c_str());
+    dataArrays[0] = da1;
+    dataArrays[1] = da2;
+    cellData = new float*[2];
+    for (int i = 0; i < 2; i++)
     {
-        vtkDataArray *da=inCD1->GetArray(i);
+        vtkDataArray *da=dataArrays[i];
         int nComponents = da->GetNumberOfComponents();
         int nTuples = da->GetNumberOfTuples();
 
@@ -880,7 +846,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 for (int k = 0; k < nComponents; k++)
                     outVals[ndx++] = inVals[cells_matched[j]*nComponents+k];
 
-            cellData[iCellData++] = outVals;
+            cellData[i] = outVals;
         }
     }
     visitTimer->StopTimer(t1, "avtXRayFilter::CopyCellData");
@@ -1083,13 +1049,16 @@ AssignToProc(int val, int nlines)
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Fri Jul 16 15:42:20 PDT 2010
+//    I modified the filter to handle the case where some of the processors
+//    didn't have any data sets when executing in parallel.
 //
 // ****************************************************************************
 
 void
 avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     vector<double> *dists, vector<int> *line_ids, int nCellArrays,
-    string *cellArrayNames, int *nComponentsPerCellArray, float ***cellData)
+    string *cellArrayNames, int nComponentsPerCellArray, float ***cellData)
 {
 #ifdef PARALLEL
     //
@@ -1120,7 +1089,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     double *sendDists = new double[2*nLinesSend];
     float **sendCellData = new float*[nCellArrays];
     for (int i = 0; i < nCellArrays; i++)
-        sendCellData[i] = new float[nComponentsPerCellArray[i]*nLinesSend];
+        sendCellData[i] = new float[nComponentsPerCellArray*nLinesSend];
     
     //
     // Fill the send buffers.
@@ -1146,7 +1115,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
             {
                 float *inVar = inCellData[k];
                 float *sendVar = sendCellData[k];
-                int nComps = nComponentsPerCellArray[k];
+                int nComps = nComponentsPerCellArray;
                 for (int l = 0; l < nComps; l++)
                     sendVar[iOffset*nComps+l] = inVar[j*nComps+l];
             }
@@ -1169,6 +1138,13 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
         nLinesRecv += recvCounts[i];
 
     //
+    // Determine the receiving nComponentsPerCellArray.
+    //
+    int nComponentsPerCellArrayRecv;
+    MPI_Allreduce(&nComponentsPerCellArray, &nComponentsPerCellArrayRecv,
+        1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+
+    //
     // Create the output arrays.
     //
     vtkIntArray *outLineIdsArray = vtkIntArray::New();
@@ -1189,7 +1165,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     {
         outCellDataArrays[i] = vtkFloatArray::New();
         outCellDataArrays[i]->SetName(cellArrayNames[i].c_str());
-        outCellDataArrays[i]->SetNumberOfComponents(nComponentsPerCellArray[i]);
+        outCellDataArrays[i]->SetNumberOfComponents(nComponentsPerCellArrayRecv);
         outCellDataArrays[i]->SetNumberOfTuples(nLinesRecv);
         outCellData[i] = outCellDataArrays[i]->GetPointer(0);
     }
@@ -1251,13 +1227,13 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
         // Calculate the send and receive offsets for the data.
         //
         for (int j = 0; j < nProcs; j++)
-            sendCounts[j] *= nComponentsPerCellArray[i];
+            sendCounts[j] *= nComponentsPerCellArrayRecv;
         sendOffsets[0] = 0;
         for (int j = 1; j < nProcs; j++)
             sendOffsets[j] = sendOffsets[j-1] + sendCounts[j-1];
 
         for (int j = 0; j < nProcs; j++)
-            recvCounts[j] *= nComponentsPerCellArray[i];
+            recvCounts[j] *= nComponentsPerCellArrayRecv;
         recvOffsets[0] = 0;
         for (int j = 1; j < nProcs; j++)
             recvOffsets[j] = recvOffsets[j-1] + recvCounts[j-1];
@@ -1274,9 +1250,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
         // Restore the send and receive counts.
         //
         for (int j = 0; j < nProcs; j++)
-            sendCounts[j] /= nComponentsPerCellArray[i];
+            sendCounts[j] /= nComponentsPerCellArrayRecv;
         for (int j = 0; j < nProcs; j++)
-            recvCounts[j] /= nComponentsPerCellArray[i];
+            recvCounts[j] /= nComponentsPerCellArrayRecv;
     }
 
     //
@@ -1316,7 +1292,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     {
         outCellDataArrays[i] = vtkFloatArray::New();
         outCellDataArrays[i]->SetName(cellArrayNames[i].c_str());
-        outCellDataArrays[i]->SetNumberOfComponents(nComponentsPerCellArray[i]);
+        outCellDataArrays[i]->SetNumberOfComponents(nComponentsPerCellArray);
         outCellDataArrays[i]->SetNumberOfTuples(nLinesTotal);
         outCellData[i] = outCellDataArrays[i]->GetPointer(0);
     }
@@ -1343,7 +1319,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
             int iCell = iCellStart[j];
             float *inVar = inCellData[j];
             float *outVar = outCellData[j];
-            for (int k = 0; k < nLinesPerDataset[i]*nComponentsPerCellArray[j]; k++)
+            for (int k = 0; k < nLinesPerDataset[i]*nComponentsPerCellArray; k++)
                 outVar[iCell++] = inVar[k];
             iCellStart[j] = iCell;
         }

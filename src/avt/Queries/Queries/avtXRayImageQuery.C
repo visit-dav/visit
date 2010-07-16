@@ -427,6 +427,11 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
 //
+//  Modifications:
+//    Eric Brugger, Fri Jul 16 15:43:35 PDT 2010
+//    I modified the query to handle the case where some of the processors
+//    didn't have any data sets when executing in parallel.
+//
 // ****************************************************************************
 
 void
@@ -491,6 +496,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
         avtXRayFilter *filt = new avtXRayFilter;
         filt->SetImageProperties(origin, theta, phi, width, height, nx, ny);
+        filt->SetVariableNames(absVarName, emisVarName);
         filt->SetNumberOfLines(pixelsForThisPass);
         filt->SetInitialLine(iLine);
         filt->SetInput(dob);
