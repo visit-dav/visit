@@ -412,6 +412,9 @@ XMLEditEnums::enumlistNew()
 //   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
 //   Ported to Qt 4.4
 //
+//   Jeremy Meredith, Fri Jul 16 10:32:05 EDT 2010
+//   Catch dangling pointers to invalidated fields which were enablers.
+//
 // ****************************************************************************
 void
 XMLEditEnums::enumlistDel()
@@ -431,17 +434,32 @@ XMLEditEnums::enumlistDel()
     EnumType::enums = newlist;
 
     // Make sure anyone with a reference to the old one
-    // points to the new one instead
+    // points to the new one instead, and for anything which
+    // used to point to these fields as enablers, just
+    // get rid of the enabler (since the enabler values
+    // would be unusable anyway).
     Attribute *a = xmldoc->attribute;
+    std::set<Field*> invalidatedFields;
     for (size_t i=0; i<a->fields.size(); i++)
     {
         Field *f = a->fields[i];
         if (f->type == "enum" && f->GetSubtype() == e->type)
         {
+            invalidatedFields.insert(f);
             Field *n = new Int(f->name, f->label);
             n->CopyValues(f);
             a->fields[i] = n;
             delete f;
+        }
+    }
+    // Clear out any dangling enablers
+    for (size_t i=0; i<a->fields.size(); i++)
+    {
+        Field *f = a->fields[i];
+        if (invalidatedFields.count(f->enabler) != 0)
+        {
+            f->enabler = NULL;
+            f->enableval.clear();
         }
     }
 
