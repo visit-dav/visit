@@ -1,0 +1,374 @@
+/*
+ * VsUnstructuredMesh.C
+ *
+ *  Created on: Apr 29, 2010
+ *      Author: mdurant
+ */
+
+#include "VsUnstructuredMesh.h"
+#include "VsSchema.h"
+#include "VsH5Dataset.h"
+#include "VsUtils.h"
+#include "VsH5Group.h"
+#include "VsLog.h"
+
+VsUnstructuredMesh::VsUnstructuredMesh(VsH5Group* group):VsMesh(group) {
+  numPoints = 0;
+  splitPoints = false;
+}
+
+VsUnstructuredMesh::~VsUnstructuredMesh() {
+}
+
+unsigned int VsUnstructuredMesh::getNumPoints() {
+  return numPoints;
+}
+
+bool VsUnstructuredMesh::usesSplitPoints()  {
+  return splitPoints;
+}
+
+std::string VsUnstructuredMesh::getPointsDatasetName()  {
+  //First see if the user has specified a name for the dataset
+  std::string pointsName;
+  getStringAttribute(VsSchema::Unstructured::vsPoints, &pointsName);
+  if (!pointsName.empty()) {
+    return makeCanonicalName(getFullName(), pointsName);
+  }
+
+  //if we didn't find vsPoints, try the default name
+  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultPointsName);
+}
+
+std::string VsUnstructuredMesh::getPointsDatasetName(int i)  {
+  
+  std::string attributeName;
+  switch (i) {
+    case 0: attributeName = VsSchema::Unstructured::vsPoints0;
+      break;
+    case 1: attributeName = VsSchema::Unstructured::vsPoints1;
+      break;
+    case 2: attributeName = VsSchema::Unstructured::vsPoints2;
+      break;
+    default:
+      VsLog::debugLog() <<"VsUnstructuredMesh::getPointsDatasetName(" <<i <<") - requested index is out of range." <<std::endl;
+      return "";
+      break;
+  }
+  
+  std::string fullName;
+  getStringAttribute(attributeName, &fullName); //might be empty
+  //if the name was found, make sure it's fully qualified
+  if (!fullName.empty()) {
+    fullName = makeCanonicalName(getFullName(), fullName);
+  }
+
+  return fullName;
+}
+
+hid_t VsUnstructuredMesh::getDataType() {
+  VsH5Dataset* pointsDataset = getPointsDataset();
+  if (pointsDataset != NULL) {
+    return pointsDataset->getType();
+  }
+
+  VsH5Dataset* points0Dataset = getPointsDataset(0);
+  if (points0Dataset != NULL) {
+    return points0Dataset->getType();
+  }
+  
+  return H5T_NATIVE_FLOAT;
+}
+
+VsH5Dataset* VsUnstructuredMesh::getPointsDataset(int i)  {
+  std::string pointsName = getPointsDatasetName(i);
+  if (pointsName.empty()) {
+    return NULL;
+  }
+
+  VsH5Dataset* answer = registry->getDataset(pointsName);
+
+  return answer; //could be NULL
+}
+
+VsH5Dataset* VsUnstructuredMesh::getPointsDataset()  {
+  std::string pointsName = getPointsDatasetName();
+  if (pointsName.empty()) {
+    return NULL;
+  }
+
+  VsH5Dataset* answer = registry->getDataset(pointsName);
+
+  return answer; //could be NULL
+}
+
+std::string VsUnstructuredMesh::getPolygonsDatasetName()  {
+  //First see if the user has specified a name for the dataset
+  std::string polygonsName;
+  getStringAttribute(VsSchema::Unstructured::vsPolygons, &polygonsName);
+  if (!polygonsName.empty()) {
+    return polygonsName;
+  }
+
+  return VsSchema::Unstructured::defaultPolygonsName;
+}
+
+VsH5Dataset* VsUnstructuredMesh::getPolygonsDataset()  {
+  std::string polygonsName = getPolygonsDatasetName();
+  if (polygonsName.empty()) {
+    return NULL;
+  }
+
+  return registry->getDataset(polygonsName);
+}
+
+std::string VsUnstructuredMesh::getPolyhedraDatasetName()  {
+  //First see if the user has specified a name for the dataset
+  std::string polyhedraName;
+  getStringAttribute(VsSchema::Unstructured::vsPolyhedra, &polyhedraName);
+  if (!polyhedraName.empty()) {
+    return polyhedraName;
+  }
+
+  return VsSchema::Unstructured::defaultPolyhedraName;
+}
+
+VsH5Dataset* VsUnstructuredMesh::getPolyhedraDataset()  {
+  std::string polyhedraName = getPolyhedraDatasetName();
+  if (polyhedraName.empty()) {
+    return NULL;
+  }
+
+  return registry->getDataset(polyhedraName);
+}
+
+std::string VsUnstructuredMesh::getLinesDatasetName()   {
+  //First see if the user has specified a name for the dataset
+  std::string linesName;
+  getStringAttribute(VsSchema::Unstructured::vsLines, &linesName);
+  if (!linesName.empty()) {
+    return makeCanonicalName(getFullName(), linesName);
+  }
+  
+  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultLinesName);
+}
+
+VsH5Dataset* VsUnstructuredMesh::getLinesDataset()   {
+  std::string linesName = getLinesDatasetName();
+  if (linesName.empty()) {
+    return NULL;
+  }
+
+  return registry->getDataset(linesName);
+}
+
+std::string VsUnstructuredMesh::getTrianglesDatasetName()   {
+  //First see if the user has specified a name for the dataset
+  std::string trianglesName;
+  getStringAttribute(VsSchema::Unstructured::vsTriangles, &trianglesName);
+  if (!trianglesName.empty()) {
+    return makeCanonicalName(getFullName(), trianglesName);
+  }
+
+  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultTrianglesName);
+}
+
+VsH5Dataset* VsUnstructuredMesh::getTrianglesDataset()   {
+  std::string trianglesName = getTrianglesDatasetName();
+  if (trianglesName.empty()) {
+    return NULL;
+  }
+
+  return registry->getDataset(trianglesName);
+}
+
+std::string VsUnstructuredMesh::getQuadrilateralsDatasetName()   {
+  //First see if the user has specified a name for the dataset
+  std::string quadrilateralsName;
+  getStringAttribute(VsSchema::Unstructured::vsQuadrilaterals, &quadrilateralsName);
+  if (!quadrilateralsName.empty()) {
+    return makeCanonicalName(getFullName(), quadrilateralsName);
+  }
+
+  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultQuadrilateralsName);
+}
+
+VsH5Dataset* VsUnstructuredMesh::getQuadrilateralsDataset()   {
+  std::string quadrilateralsName = getQuadrilateralsDatasetName();
+  if (quadrilateralsName.empty()) {
+    return NULL;
+  }
+
+  return registry->getDataset(quadrilateralsName);
+}
+
+std::string VsUnstructuredMesh::getTetrahedralsDatasetName()   {
+  //First see if the user has specified a name for the dataset
+  std::string tetrahedralsName;
+  getStringAttribute(VsSchema::Unstructured::vsTetrahedrals, &tetrahedralsName);
+  if (!tetrahedralsName.empty()) {
+    return makeCanonicalName(getFullName(), tetrahedralsName);
+  }
+
+  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultTetrahedralsName);
+}
+
+VsH5Dataset* VsUnstructuredMesh::getTetrahedralsDataset()   {
+  std::string tetrahedralsName = getTetrahedralsDatasetName();
+  if (tetrahedralsName.empty()) {
+    return NULL;
+  }
+
+  return registry->getDataset(tetrahedralsName);
+}
+
+std::string VsUnstructuredMesh::getPyramidsDatasetName()   {
+  //First see if the user has specified a name for the dataset
+  std::string pyramidsName;
+  getStringAttribute(VsSchema::Unstructured::vsPyramids, &pyramidsName);
+  if (!pyramidsName.empty()) {
+    return makeCanonicalName(getFullName(), pyramidsName);
+  }
+
+  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultPyramidsName);
+}
+
+VsH5Dataset* VsUnstructuredMesh::getPyramidsDataset()   {
+  std::string pyramidsName = getPyramidsDatasetName();
+  if (pyramidsName.empty()) {
+    return NULL;
+  }
+
+  return registry->getDataset(pyramidsName);
+}
+
+std::string VsUnstructuredMesh::getPrismsDatasetName()   {
+  //First see if the user has specified a name for the dataset
+  std::string prismsName;
+  getStringAttribute(VsSchema::Unstructured::vsPrisms, &prismsName);
+  if (!prismsName.empty()) {
+    return makeCanonicalName(getFullName(), prismsName);
+  }
+
+  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultPrismsName);
+}
+
+VsH5Dataset* VsUnstructuredMesh::getPrismsDataset()   {
+  std::string prismsName = getPrismsDatasetName();
+  if (prismsName.empty()) {
+    return NULL;
+  }
+
+  return registry->getDataset(prismsName);
+}
+
+std::string VsUnstructuredMesh::getHexahedralsDatasetName()   {
+  //First see if the user has specified a name for the dataset
+  std::string hexahedralsName;
+  getStringAttribute(VsSchema::Unstructured::vsHexahedrals, &hexahedralsName);
+  if (!hexahedralsName.empty()) {
+    return makeCanonicalName(getFullName(), hexahedralsName);
+  }
+
+  return makeCanonicalName(getFullName(), VsSchema::Unstructured::defaultHexahedralsName);
+}
+
+VsH5Dataset* VsUnstructuredMesh::getHexahedralsDataset()   {
+  std::string hexahedralsName = getHexahedralsDatasetName();
+  if (hexahedralsName.empty()) {
+    return NULL;
+  }
+
+  return registry->getDataset(hexahedralsName);
+}
+
+VsUnstructuredMesh* VsUnstructuredMesh::buildUnstructuredMesh(VsH5Group* group) {
+  VsUnstructuredMesh* newMesh = new VsUnstructuredMesh(group);
+  bool success = newMesh->initialize();
+  
+  if (success) {
+    VsLog::debugLog() <<"VsUnstructuredMesh::buildUnstructuredMesh() - returning success." <<std::endl;
+    return newMesh;
+  }
+
+  delete (newMesh);
+  newMesh = NULL;
+  VsLog::debugLog() <<"VsUnstructuredMesh::buildUnstructuredMesh() - returning failure." <<std::endl;
+  return NULL;
+}
+
+
+bool VsUnstructuredMesh::initialize() {
+  //For an unstructured mesh, spatial dimensionality is... complicated
+  VsH5Dataset* pointsDataset = getPointsDataset();
+  if (pointsDataset != NULL) {
+    splitPoints = false;
+    numSpatialDims = pointsDataset->getDims()[1];
+    numPoints = pointsDataset->getDims()[0];
+  }
+  else {
+    splitPoints = true;
+    //it's possible that we have multiple points datasets
+    VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - path = " <<getPath() <<std::endl;
+    VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - vsPoints0 = " <<getPointsDatasetName(0) <<std::endl;
+    VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - vsPoints1 = " <<getPointsDatasetName(1) <<std::endl;
+    VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - vsPoints2 = " <<getPointsDatasetName(2) <<std::endl;
+    
+    VsH5Dataset* points0 = getPointsDataset(0);
+    VsH5Dataset* points1 = getPointsDataset(1);
+    VsH5Dataset* points2 = getPointsDataset(2);
+ 
+    if (!points0) {
+      VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - Unable to load points data." << std::endl;
+      VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - Returning false." <<std::endl;
+      return false;
+    }
+    
+    //spatial dimensionality = number of vspoints datasets
+    numSpatialDims = 1;
+    if (points1) {
+      if (points2) {
+        numSpatialDims = 3;
+      } else {
+        numSpatialDims = 2;
+      }
+    }
+
+    numPoints = points0->getDims()[0];
+  }
+  
+  return initializeRoot();
+}
+
+bool VsUnstructuredMesh::isPointMesh() {
+  return ((getPolygonsDataset() == NULL) &&
+        (getPolyhedraDataset() == NULL) &&
+    
+        (getLinesDataset() == NULL) &&
+        (getTrianglesDataset() == NULL) &&
+        (getQuadrilateralsDataset() == NULL) &&
+    
+        (getTetrahedralsDataset() == NULL) &&
+        (getPyramidsDataset() == NULL) &&
+        (getPrismsDataset() == NULL) &&
+        (getHexahedralsDataset() == NULL));
+}
+
+std::string VsUnstructuredMesh::getKind() {
+  return VsSchema::Unstructured::key;
+}
+
+size_t VsUnstructuredMesh::getMeshDims(std::vector<int>* dims, bool useStride, std::vector<int> stride) {
+  VsLog::debugLog() << "VsUnstructuredMesh::getMeshDims(): Entering." << std::endl;
+  
+  //Unstructured mesh is funny, because meshDims is:
+  // [#points][#dims]
+  dims->resize(2);
+  (*dims)[0] = numPoints;
+  (*dims)[1] = numSpatialDims;
+
+  size_t len = numPoints * numSpatialDims;
+  
+  VsLog::debugLog() << "VsUnstructuredMesh::getMeshDims(): Returning " <<len <<"." << std::endl;
+  return len;
+}

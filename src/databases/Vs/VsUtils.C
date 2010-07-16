@@ -2,120 +2,22 @@
 #include <visit-hdf5.h>
 #if HDF5_VERSION_GE(1,8,1)
 #include <VsUtils.h>
-
-// JRC: This fat interface may not scale?  What about
-// scalar attributes?
-herr_t getAttributeHelper(const hid_t id, std::string* sval, std::vector<int>* ivals,
-    std::vector<float>* fvals) {
-
-  herr_t err = 0;
-  size_t npoints;
-  hid_t atype = H5Aget_type(id);
-  H5T_class_t type = H5Tget_class(atype);
-  hid_t aspace = H5Aget_space(id);
-  size_t rank = H5Sget_simple_extent_ndims(aspace);
-
-  /*
-   hsize_t sdim[rank];
-   ret = H5Sget_simple_extent_dims(aspace, sdim, NULL);
-   dims->resize(rank);
-   for (size_t i = 0; i < rank; ++i)
-   (*dims)[i] = sdim[i];
-   */
-
-  if (type == H5T_INTEGER) {
-    if (rank == 0) {
-      ivals->resize(1);
-      int v;
-      // err = H5Aread(id, atype, &v);
-      err = H5Aread(id, H5T_NATIVE_INT, &v);
-      (*ivals)[0] = v;
-      return err;
-    }
-    // rank>0
-    npoints = H5Sget_simple_extent_npoints(aspace);
-    int* v = new int[npoints];
-    err = H5Aread(id, H5T_NATIVE_INT, v);
-    ivals->resize(npoints);
-    for (size_t i = 0; i<npoints; ++i) {
-      (*ivals)[i] = v[i];
-    }
-    delete v;
-    return err;
-  }
-
-  if (type == H5T_FLOAT) {
-    if (rank == 0) {
-      fvals->resize(1);
-      float v;
-      err = H5Aread(id, H5T_NATIVE_FLOAT, &v);
-      (*fvals)[0] = v;
-      return err;
-    }
-    // rank>0
-    npoints = H5Sget_simple_extent_npoints(aspace);
-    float* v = new float[npoints];
-    err = H5Aread(id, H5T_NATIVE_FLOAT, v);
-    fvals->resize(npoints);
-    for (size_t i = 0; i<npoints; ++i) {
-      (*fvals)[i] = v[i];
-    }
-    delete v;
-    return err;
-  }
-
-  if (type == H5T_STRING) {
-    if (rank != 0) {
-      return -1;
-    }
-    size_t len = H5Aget_storage_size(id);
-    sval->resize(len);
-    char* v = new char[len];
-    err = H5Aread(id, atype, v);
-    // JRC: is this right?
-    // err = H5Aread(id, H5T_NATIVE_CHAR, v);
-    for (size_t i = 0; i < len; ++i) {
-      (*sval)[i] = v[i];
-    }
-    delete [] v;
-    return err;
-  }
-  return err;
-
-}
+#include <VsLog.h>
 
 /*
- void parseVars(const string& vsVars, vector<string>& vars) {
- size_t i1;
- size_t i2;   // JRC: This needs to be initialized!
- char del = '\"';
- i1 = 0;
- int inc = -1;
- while (i2 != string::npos) {
- // inc alternates so that every other word between " is included
- i2 = vsVars.find(del, i1);
- if (inc>0) vars.push_back(vsVars.substr(i1, i2-i1));
- i1 = i2+1;
- inc *= -1;
- }
- }
- */
-
 void getDims(hid_t id, bool isDataset, std::vector<int>& dims) {
   hid_t space;
   if (!isDataset) space = H5Aget_space(id);
   else space = H5Dget_space(id);
   size_t rank = H5Sget_simple_extent_ndims(space);
   std::vector<hsize_t> sdim(rank);
-  if (rank > 0) {
-    H5Sget_simple_extent_dims(space, &sdim[0], NULL);
-  }
+  H5Sget_simple_extent_dims(space, &sdim[0], NULL);
   dims.resize(rank);
   for (size_t i = 0; i < rank; ++i) {
     dims[i] = sdim[i];
   }
 }
-
+*/
 std::string makeCanonicalName(std::string name) {
   std::string answer = name;
   if ((name.length() > 0) && (name[0] == '/')) {
@@ -139,12 +41,72 @@ std::string makeCanonicalName(std::string path, std::string name) {
   return answer;
 }
 
+bool isDoubleType(hid_t dataType) {
+    if (H5Tequal(dataType, H5T_NATIVE_DOUBLE)) {
+      return true;
+    }
+    
+    hid_t nativeType = H5Tget_native_type(dataType, H5T_DIR_ASCEND);
+    bool answer = H5Tequal(nativeType, H5T_NATIVE_DOUBLE);
+    
+    H5Tclose(nativeType);
+    return answer;
+}
+
+bool isFloatType(hid_t dataType) {
+  if (H5Tequal(dataType, H5T_NATIVE_FLOAT)) {
+        return true;
+      }
+      
+  hid_t nativeType = H5Tget_native_type(dataType, H5T_DIR_ASCEND);
+  bool answer = H5Tequal(nativeType, H5T_NATIVE_FLOAT);
+  
+  H5Tclose(nativeType);
+  return answer;
+}
+
+bool isIntegerType(hid_t dataType) {
+  if (H5Tequal(dataType, H5T_NATIVE_INT)) {
+    return true;
+  }
+      
+  hid_t nativeType = H5Tget_native_type(dataType, H5T_DIR_ASCEND);
+  bool answer = H5Tequal(nativeType, H5T_NATIVE_INT);
+  
+  H5Tclose(nativeType);
+  return answer;
+}
+
+void printType(hid_t dataType) {
+  if (H5Tequal(dataType, H5T_IEEE_F64BE)) VsLog::debugLog() <<"H5T_IEEE_F64BE";
+  else if (H5Tequal(dataType, H5T_NATIVE_CHAR)) VsLog::debugLog() <<"H5T_NATIVE_CHAR";
+  else if (H5Tequal(dataType, H5T_NATIVE_SCHAR)) VsLog::debugLog() <<"H5T_NATIVE_SCHAR";
+  else if (H5Tequal(dataType, H5T_NATIVE_UCHAR)) VsLog::debugLog() <<"H5T_NATIVE_UCHAR";
+  else if (H5Tequal(dataType, H5T_NATIVE_SHORT)) VsLog::debugLog() <<"H5T_NATIVE_SHORT";
+  else if (H5Tequal(dataType, H5T_NATIVE_USHORT)) VsLog::debugLog() <<"H5T_NATIVE_USHORT";
+  else if (H5Tequal(dataType, H5T_NATIVE_INT)) VsLog::debugLog() <<"H5T_NATIVE_INT";
+  else if (H5Tequal(dataType, H5T_NATIVE_UINT)) VsLog::debugLog() <<"H5T_NATIVE_UINT";
+  else if (H5Tequal(dataType, H5T_NATIVE_LONG)) VsLog::debugLog() <<"H5T_NATIVE_LONG";
+  else if (H5Tequal(dataType, H5T_NATIVE_ULONG)) VsLog::debugLog() <<"H5T_NATIVE_ULONG";
+  else if (H5Tequal(dataType,H5T_NATIVE_LLONG)) VsLog::debugLog() <<"H5T_NATIVE_LLONG";
+  else if (H5Tequal(dataType, H5T_NATIVE_ULLONG)) VsLog::debugLog() <<"H5T_NATIVE_ULLONG";
+  else if (H5Tequal(dataType, H5T_NATIVE_FLOAT)) VsLog::debugLog() <<"H5T_NATIVE_FLOAT";
+  else if (H5Tequal(dataType, H5T_NATIVE_DOUBLE)) VsLog::debugLog() <<"H5T_NATIVE_DOUBLE";
+  else if (H5Tequal(dataType, H5T_NATIVE_LDOUBLE)) VsLog::debugLog() <<"H5T_NATIVE_LDOUBLE";
+  else if (H5Tequal(dataType, H5T_NATIVE_HSIZE)) VsLog::debugLog() <<"H5T_NATIVE_HSIZE";
+  else if (H5Tequal(dataType, H5T_NATIVE_HSSIZE)) VsLog::debugLog() <<"H5T_NATIVE_HSSIZE";
+  else if (H5Tequal(dataType, H5T_NATIVE_HERR)) VsLog::debugLog() <<"H5T_NATIVE_HERR";
+  else if (H5Tequal(dataType, H5T_NATIVE_HBOOL)) VsLog::debugLog() <<"H5T_NATIVE_HBOOL";
+  else if (dataType == -1) VsLog::debugLog() <<"Negative 1";
+  else VsLog::debugLog() <<"Unknown type";
+}
+
 // Compare two object names to a target name
 // Return the name that is "closest" to the target
 // If the two object names are identical, returns the first (but doesn't matter)
 // If the two object names are equally distant from the target, returns the first
 //  i.e. getClosestName("abcX", "abcY", "name") == "abcX"
-std::string getClosestName(std::string name1, std::string name2, std::string target) {
+/*std::string getClosestName(std::string name1, std::string name2, std::string target) {
   //go through the two candidate names
   //find the first disagreement,
   //and see switch matches the target
@@ -194,6 +156,36 @@ std::string getClosestName(std::string name1, std::string name2, std::string tar
 
   //default behavior
   return name1;
+}*/
+
+// Break a string into pieces
+void tokenize(std::string text, char separator, std::vector<std::string>& tokens) {
+  //start with a clean list of tokens
+  tokens.clear();
+  
+  std::string nameBuffer;
+  nameBuffer.clear();
+  
+  for (unsigned int i = 0; i < text.length(); i++) {
+    char currentChar = text[i];
+    if (currentChar == separator) {
+      //we have finished the current token
+      //so save it and start a new token
+      tokens.push_back(nameBuffer);
+      nameBuffer.clear();
+    } else if (currentChar != ' ') {
+      //ignore leading spaces
+      //all other characters get appended to the token
+      nameBuffer.push_back(currentChar);
+    }
+  }
+  
+  //is the last name still in the buffer?
+  if (!nameBuffer.empty()) {
+    tokens.push_back(nameBuffer);
+    nameBuffer.clear();
+  }
+  
 }
 
 //Adjusts var dimensions stored in an array of hsize_t
