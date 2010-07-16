@@ -47,6 +47,8 @@
  *
  * Modifications:
  *
+ *   Mark C. Miller, Mon Feb  1 17:08:45 PST 2010
+ *   Added stuff to output all silo data types.
  *-----------------------------------------------------------------------*/
 #include <math.h>
 #include <silo.h>
@@ -442,7 +444,16 @@ void writemesh_curv2d(DBfile *db) {
   float *coord[2];
   int dims[2];
 
+  char *cnvar, *czvar;
+  short *snvar, *szvar;
+  int *invar, *izvar;
+  long *lnvar, *lzvar;
+  long long *Lnvar, *Lzvar;
+  float *fnvar, *fzvar;
+  double *dnvar, *dzvar;
 
+  int nnodes=mesh.nx*mesh.ny;
+  int nzones=mesh.zx*mesh.zy;
   
   /* do mesh */
   c=0;
@@ -471,34 +482,90 @@ void writemesh_curv2d(DBfile *db) {
 
   /* do Node vars */
 
+  cnvar = (char *)        new char[nnodes]; 
+  snvar = (short *)       new short[nnodes]; 
+  invar = (int *)         new int[nnodes]; 
+  lnvar = (long *)        new long[nnodes]; 
+  Lnvar = (long long *)   new long long[nnodes]; 
+  fnvar = (float *)       new float[nnodes]; 
+  dnvar = (double *)      new double[nnodes]; 
   c=0;
   for (x=0;x<mesh.nx;x++) {
     for (y=0;y<mesh.ny;y++) {
       f1[c]=mesh.node[x][y].vars[NV_U];
       f2[c]=mesh.node[x][y].vars[NV_V];
+      cnvar[c] = (char)        (x<y?x:y);
+      snvar[c] = (short)       (x<y?x:y);
+      invar[c] = (int)         (x<y?x:y);
+      lnvar[c] = (long)        (x<y?x:y);
+      Lnvar[c] = (long long)   (x<y?x:y);
+      fnvar[c] = (float)       (x<y?x:y);
+      dnvar[c] = (double)      (x<y?x:y);
       c++;
     }
   }
 
   DBPutQuadvar1(db, "u", "Mesh", f1, dims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
   DBPutQuadvar1(db, "v", "Mesh", f2, dims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "cnvar", "Mesh", cnvar, dims, 2, NULL, 0, DB_CHAR, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "snvar", "Mesh", snvar, dims, 2, NULL, 0, DB_SHORT, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "invar", "Mesh", invar, dims, 2, NULL, 0, DB_INT, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "lnvar", "Mesh", lnvar, dims, 2, NULL, 0, DB_LONG, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "Lnvar", "Mesh", Lnvar, dims, 2, NULL, 0, DB_LONG_LONG, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "fnvar", "Mesh", fnvar, dims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "dnvar", "Mesh", dnvar, dims, 2, NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
+  free(cnvar);
+  free(snvar);
+  free(invar);
+  free(lnvar);
+  free(Lnvar);
+  free(fnvar);
+  free(dnvar);
 
   /* do Zone vars */
 
   dims[0]--;
   dims[1]--;
 
+  czvar = (char *)        new char[nzones]; 
+  szvar = (short *)       new short[nzones]; 
+  izvar = (int *)         new int[nzones]; 
+  lzvar = (long *)        new long[nzones]; 
+  Lzvar = (long long *)   new long long[nzones]; 
+  fzvar = (float *)       new float[nzones]; 
+  dzvar = (double *)      new double[nzones]; 
   c=0;
   for (x=0;x<mesh.zx;x++) {
     for (y=0;y<mesh.zy;y++) {
       f1[c]=mesh.zone[x][y].vars[ZV_P];
       f2[c]=mesh.zone[x][y].vars[ZV_D];
+      czvar[c] = (char)        (x<y?x:y);
+      szvar[c] = (short)       (x<y?x:y);
+      izvar[c] = (int)         (x<y?x:y);
+      lzvar[c] = (long)        (x<y?x:y);
+      Lzvar[c] = (long long)   (x<y?x:y);
+      fzvar[c] = (float)       (x<y?x:y);
+      dzvar[c] = (double)      (x<y?x:y);
       c++;
     }
   }
 
   DBPutQuadvar1(db, "p", "Mesh", f1, dims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
   DBPutQuadvar1(db, "d", "Mesh", f2, dims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "czvar", "Mesh", czvar, dims, 2, NULL, 0, DB_CHAR, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "szvar", "Mesh", szvar, dims, 2, NULL, 0, DB_SHORT, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "izvar", "Mesh", izvar, dims, 2, NULL, 0, DB_INT, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "lzvar", "Mesh", lzvar, dims, 2, NULL, 0, DB_LONG, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "Lzvar", "Mesh", Lzvar, dims, 2, NULL, 0, DB_LONG_LONG, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "fzvar", "Mesh", fzvar, dims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "dzvar", "Mesh", dzvar, dims, 2, NULL, 0, DB_DOUBLE, DB_ZONECENT, NULL);
+  free(czvar);
+  free(szvar);
+  free(izvar);
+  free(lzvar);
+  free(Lzvar);
+  free(fzvar);
+  free(dzvar);
 }
 
 /*----------------------------------------------------------------------------
@@ -521,6 +588,13 @@ void writemesh_ucd2d(DBfile *db) {
   char  *coordnames[2];
   float *coord[2];
   int dims[2];
+  char *cnvar, *czvar;
+  short *snvar, *szvar;
+  int *invar, *izvar;
+  long *lnvar, *lzvar;
+  long long *Lnvar, *Lzvar;
+  float *fnvar, *fzvar;
+  double *dnvar, *dzvar;
 
   int lnodelist;
   int nnodes;
@@ -575,11 +649,25 @@ void writemesh_ucd2d(DBfile *db) {
 
   /* do Node vars */
 
+  cnvar = (char *)        new char[nnodes]; 
+  snvar = (short *)       new short[nnodes]; 
+  invar = (int *)         new int[nnodes]; 
+  lnvar = (long *)        new long[nnodes]; 
+  Lnvar = (long long *)   new long long[nnodes]; 
+  fnvar = (float *)       new float[nnodes]; 
+  dnvar = (double *)      new double[nnodes]; 
   c=0;
   for (x=0;x<mesh.nx;x++) {
     for (y=0;y<mesh.ny;y++) {
       f1[c]=mesh.node[x][y].vars[NV_U];
       f2[c]=mesh.node[x][y].vars[NV_V];
+      cnvar[c] = (char)        (x<y?x:y);
+      snvar[c] = (short)       (x<y?x:y);
+      invar[c] = (int)         (x<y?x:y);
+      lnvar[c] = (long)        (x<y?x:y);
+      Lnvar[c] = (long long)   (x<y?x:y);
+      fnvar[c] = (float)       (x<y?x:y);
+      dnvar[c] = (double)      (x<y?x:y);
       c++;
     }
   }
@@ -590,29 +678,69 @@ void writemesh_ucd2d(DBfile *db) {
     int val = DB_ON;
 
     DBAddOption(opt,DBOPT_USESPECMF,&val);
-    DBPutUcdvar1(db, "u", "Mesh", f1, nnodes, NULL, 0, DB_FLOAT,
-        DB_NODECENT, opt);
-    DBPutUcdvar1(db, "v", "Mesh", f2, nnodes, NULL, 0, DB_FLOAT,
-        DB_NODECENT, opt);
+    DBPutUcdvar1(db, "u", "Mesh", f1, nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "v", "Mesh", f2, nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "cnvar", "Mesh", cnvar, nnodes, NULL, 0, DB_CHAR, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "snvar", "Mesh", snvar, nnodes, NULL, 0, DB_SHORT, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "invar", "Mesh", invar, nnodes, NULL, 0, DB_INT, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "lnvar", "Mesh", lnvar, nnodes, NULL, 0, DB_LONG, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "Lnvar", "Mesh", Lnvar, nnodes, NULL, 0, DB_LONG_LONG, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "fnvar", "Mesh", fnvar, nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "dnvar", "Mesh", dnvar, nnodes, NULL, 0, DB_DOUBLE, DB_NODECENT, opt);
     DBFreeOptlist(opt);
   }
+  free(cnvar);
+  free(snvar);
+  free(invar);
+  free(lnvar);
+  free(Lnvar);
+  free(fnvar);
+  free(dnvar);
 
   /* do Zone vars */
 
   dims[0]--;
   dims[1]--;
 
+  czvar = (char *)        new char[nzones]; 
+  szvar = (short *)       new short[nzones]; 
+  izvar = (int *)         new int[nzones]; 
+  lzvar = (long *)        new long[nzones]; 
+  Lzvar = (long long *)   new long long[nzones]; 
+  fzvar = (float *)       new float[nzones]; 
+  dzvar = (double *)      new double[nzones]; 
   c=0;
   for (x=0;x<mesh.zx;x++) {
     for (y=0;y<mesh.zy;y++) {
       f1[c]=mesh.zone[x][y].vars[ZV_P];
       f2[c]=mesh.zone[x][y].vars[ZV_D];
+      czvar[c] = (char)        (x<y?x:y);
+      szvar[c] = (short)       (x<y?x:y);
+      izvar[c] = (int)         (x<y?x:y);
+      lzvar[c] = (long)        (x<y?x:y);
+      Lzvar[c] = (long long)   (x<y?x:y);
+      fzvar[c] = (float)       (x<y?x:y);
+      dzvar[c] = (double)      (x<y?x:y);
       c++;
     }
   }
 
   DBPutUcdvar1(db, "p", "Mesh", f1, nzones, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
   DBPutUcdvar1(db, "d", "Mesh", f2, nzones, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "czvar", "Mesh", czvar, nzones, NULL, 0, DB_CHAR, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "szvar", "Mesh", szvar, nzones, NULL, 0, DB_SHORT, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "izvar", "Mesh", izvar, nzones, NULL, 0, DB_INT, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "lzvar", "Mesh", lzvar, nzones, NULL, 0, DB_LONG, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "Lzvar", "Mesh", Lzvar, nzones, NULL, 0, DB_LONG_LONG, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "fzvar", "Mesh", fzvar, nzones, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "dzvar", "Mesh", dzvar, nzones, NULL, 0, DB_DOUBLE, DB_ZONECENT, NULL);
+  free(czvar);
+  free(szvar);
+  free(izvar);
+  free(lzvar);
+  free(Lzvar);
+  free(fzvar);
+  free(dzvar);
 }
 
 
