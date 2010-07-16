@@ -297,6 +297,9 @@
 #    Mark C. Miller, Wed May  5 08:28:46 PDT 2010
 #    Removed some bash-specific coding I introduced in Mar 29, 2010 update.
 #    Removed use of an array shell variable and 'let' statements.
+#
+#    Mark C. Miller, Fri Jul 16 10:18:12 PDT 2010
+#    Allow just scalable or parallel to be parsed from VISIT_TEST_MODES
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -811,12 +814,12 @@ while test $testIndex -lt $testCount; do
     if test "$serial_found" != ""; then
         VISIT_TEST_MODES=serial
     else
-        if test "$parallel_found" != ""; then
-            if test "$scalable_found" != ""; then
-                VISIT_TEST_MODES="scalable,parallel"
-            else
-                VISIT_TEST_MODES="parallel"
-            fi
+        if test "$parallel_found" != "" -a "$scalable_found" != ""; then
+            VISIT_TEST_MODES="scalable,parallel"
+        elif test "$scalable_found" != ""; then
+            VISIT_TEST_MODES="scalable"
+        elif test "$parallel_found" != ""; then
+            VISIT_TEST_MODES="parallel"
         fi
     fi
 
