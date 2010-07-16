@@ -61,6 +61,9 @@
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Fri Jul 16 12:22:55 PDT 2010
+//    I modified the filter to handle the case where some of the processors
+//    didn't have any data sets when executing in parallel.
 //
 // ****************************************************************************
 
@@ -76,6 +79,11 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                        { return "Performing x ray filter"; };
     virtual void                    UpdateDataObjectInfo(void);
 
+    void                            SetVariableNames(std::string abs,
+                                                     std::string emis)
+                                       { absVarName = abs;
+                                         emisVarName = emis; };
+
     void                            SetNumberOfLines(int);
 
     virtual void                    SetInitialLine(int iLine)
@@ -90,6 +98,9 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                                        int    ny_);
 
   protected:
+    std::string                     absVarName;
+    std::string                     emisVarName;
+
     int                             nLines;
     int                             initialLine;
     double                         *lines;
@@ -116,7 +127,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
 
     void                            RedistributeLines(int, int *,
                                         vector<double> *, vector<int> *,
-                                        int, string *, int *,  float ***);
+                                        int, string *, int,  float ***);
 
 };
 
