@@ -243,6 +243,10 @@ avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
 //  Programmer:   Hank Childs
 //  Creation:     February 15, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Mon Jul 19 14:23:18 PDT 2010
+//    Clear the vars vector here too.
+//
 // ****************************************************************************
 
 void
@@ -252,6 +256,7 @@ avtTimeIteratorDataTreeIteratorExpression::InitializeOutput(void)
     std::vector<avtDataTree_p> treesToProcess;
     treesToProcess.push_back(topTree);
     int curIndex = 0;
+    vars.clear();
     while (curIndex < treesToProcess.size())
     {
         avtDataTree_p tree = treesToProcess[curIndex];
