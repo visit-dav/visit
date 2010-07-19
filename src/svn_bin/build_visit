@@ -921,6 +921,9 @@
 #     Eric Brugger, Mon Jun 21 09:11:33 PDT 2010
 #     I set the VisIt version number to 2.0.1.
 #
+#     Eric Brugger, Mon Jul 19 12:57:52 PDT 2010
+#     I set the VisIt version number to 2.0.2.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1219,7 +1222,7 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION:-"2.0.1"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.0.2"}
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE:-"vtk-5.0.0f.tar.gz"}
