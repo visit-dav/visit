@@ -334,7 +334,7 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
                 }
             }
 
-            if(nGt1Dims == 1 || (nGt1Dims == 2 && hasTimeDimension))
+            if(nGt1Dims == 1 || (varndims == 2 && nGt1Dims == 2 && hasTimeDimension))
             {
                 if(maxDim > 1 && 
                    (vartype == NC_INT ||
