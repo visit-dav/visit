@@ -244,9 +244,15 @@ if test "\$hasFailed" = ""; then
     svn commit -m "Update the revision number of the last test suite pass." src/svn_bin/lastpass_alastor
 fi
 
-# Send the results to euclid
+# Tar up the results
 cd test
 tar cf - \$dateTag | gzip > html.tar.gz
+
+# Set the permissions so that others may access the test directory.
+cd ../..
+chgrp -R visit $workingDir
+chmod -R g+rwX,o+rX $workingDir
+
 EOF
 
 chmod 750 alastor
