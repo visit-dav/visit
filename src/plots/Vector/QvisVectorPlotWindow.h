@@ -96,6 +96,9 @@ class VectorAttributes;
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//    Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
+//    Add ellipsoid glyphing.   
+//
 // ****************************************************************************
 
 class QvisVectorPlotWindow : public QvisPostableWindowObserver
@@ -132,6 +135,7 @@ private slots:
     void colorModeChanged(int);
     void colorTableClicked(bool useDefault, const QString &ctName);
     void originTypeChanged(int);
+    void glyphTypeChanged(int newType);
 
     void minToggled(bool on);
     void maxToggled(bool on);
@@ -169,6 +173,8 @@ private:
     QButtonGroup         *lineStemButtonGroup; 
     QvisLineStyleWidget  *lineStyle;
     QvisLineWidthWidget  *lineWidth;
+    QLabel               *glyphTypeLabel;
+    QComboBox            *glyphType;
     QLabel               *lineStyleLabel;
     QLabel               *lineWidthLabel;
     QLineEdit            *stemWidthEdit;

@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class VectorAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 24;
+    private static int VectorAttributes_numAdditionalAtts = 25;
 
     // Enum values
     public final static int QUALITY_FAST = 0;
@@ -73,10 +73,13 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public final static int LIMITSMODE_ORIGINALDATA = 0;
     public final static int LIMITSMODE_CURRENTPLOT = 1;
 
+    public final static int GLYPHTYPE_ARROW = 0;
+    public final static int GLYPHTYPE_ELLIPSOID = 1;
+
 
     public VectorAttributes()
     {
-        super(numAdditionalAttributes);
+        super(VectorAttributes_numAdditionalAtts);
 
         useStride = false;
         stride = 1;
@@ -102,11 +105,12 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         geometryQuality = QUALITY_FAST;
         stemWidth = 0.08;
         origOnly = true;
+        glyphType = GLYPHTYPE_ARROW;
     }
 
     public VectorAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(VectorAttributes_numAdditionalAtts + nMoreFields);
 
         useStride = false;
         stride = 1;
@@ -132,11 +136,12 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         geometryQuality = QUALITY_FAST;
         stemWidth = 0.08;
         origOnly = true;
+        glyphType = GLYPHTYPE_ARROW;
     }
 
     public VectorAttributes(VectorAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(VectorAttributes_numAdditionalAtts);
 
         useStride = obj.useStride;
         stride = obj.stride;
@@ -162,6 +167,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         geometryQuality = obj.geometryQuality;
         stemWidth = obj.stemWidth;
         origOnly = obj.origOnly;
+        glyphType = obj.glyphType;
 
         SelectAll();
     }
@@ -173,7 +179,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return VectorAttributes_numAdditionalAtts;
     }
 
     public boolean equals(VectorAttributes obj)
@@ -202,7 +208,8 @@ public class VectorAttributes extends AttributeSubject implements Plugin
                 (lineStem == obj.lineStem) &&
                 (geometryQuality == obj.geometryQuality) &&
                 (stemWidth == obj.stemWidth) &&
-                (origOnly == obj.origOnly));
+                (origOnly == obj.origOnly) &&
+                (glyphType == obj.glyphType));
     }
 
     public String GetName() { return "Vector"; }
@@ -353,6 +360,12 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         Select(23);
     }
 
+    public void SetGlyphType(int glyphType_)
+    {
+        glyphType = glyphType_;
+        Select(24);
+    }
+
     // Property getting methods
     public boolean        GetUseStride() { return useStride; }
     public int            GetStride() { return stride; }
@@ -378,6 +391,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public int            GetGeometryQuality() { return geometryQuality; }
     public double         GetStemWidth() { return stemWidth; }
     public boolean        GetOrigOnly() { return origOnly; }
+    public int            GetGlyphType() { return glyphType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -430,6 +444,8 @@ public class VectorAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(stemWidth);
         if(WriteSelect(23, buf))
             buf.WriteBool(origOnly);
+        if(WriteSelect(24, buf))
+            buf.WriteInt(glyphType);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -509,6 +525,9 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         case 23:
             SetOrigOnly(buf.ReadBool());
             break;
+        case 24:
+            SetGlyphType(buf.ReadInt());
+            break;
         }
     }
 
@@ -556,6 +575,12 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + doubleToString("stemWidth", stemWidth, indent) + "\n";
         str = str + boolToString("origOnly", origOnly, indent) + "\n";
+        str = str + indent + "glyphType = ";
+        if(glyphType == GLYPHTYPE_ARROW)
+            str = str + "GLYPHTYPE_ARROW";
+        if(glyphType == GLYPHTYPE_ELLIPSOID)
+            str = str + "GLYPHTYPE_ELLIPSOID";
+        str = str + "\n";
         return str;
     }
 
@@ -585,5 +610,6 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     private int            geometryQuality;
     private double         stemWidth;
     private boolean        origOnly;
+    private int            glyphType;
 }
 

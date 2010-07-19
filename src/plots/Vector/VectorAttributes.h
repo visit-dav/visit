@@ -77,6 +77,11 @@ public:
         OriginalData,
         CurrentPlot
     };
+    enum GlyphType
+    {
+        Arrow,
+        Ellipsoid
+    };
 
     // These constructors are for objects of this class
     VectorAttributes();
@@ -131,6 +136,7 @@ public:
     void SetGeometryQuality(Quality geometryQuality_);
     void SetStemWidth(double stemWidth_);
     void SetOrigOnly(bool origOnly_);
+    void SetGlyphType(GlyphType glyphType_);
 
     // Property getting methods
     bool                 GetUseStride() const;
@@ -159,6 +165,7 @@ public:
     Quality              GetGeometryQuality() const;
     double               GetStemWidth() const;
     bool                 GetOrigOnly() const;
+    GlyphType            GetGlyphType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -179,6 +186,11 @@ public:
     static bool LimitsMode_FromString(const std::string &, LimitsMode &);
 protected:
     static std::string LimitsMode_ToString(int);
+public:
+    static std::string GlyphType_ToString(GlyphType);
+    static bool GlyphType_FromString(const std::string &, GlyphType &);
+protected:
+    static std::string GlyphType_ToString(int);
 public:
 
     // Keyframing methods
@@ -216,6 +228,7 @@ public:
         ID_geometryQuality,
         ID_stemWidth,
         ID_origOnly,
+        ID_glyphType,
         ID__LAST
     };
 
@@ -244,11 +257,12 @@ private:
     int            geometryQuality;
     double         stemWidth;
     bool           origOnly;
+    int            glyphType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VECTORATTRIBUTES_TMFS "biiiidbbdbbbasibbiddbidb"
+#define VECTORATTRIBUTES_TMFS "biiiidbbdbbbasibbiddbidbi"
 
 #endif
