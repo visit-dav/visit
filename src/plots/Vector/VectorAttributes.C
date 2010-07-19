@@ -151,6 +151,43 @@ VectorAttributes::LimitsMode_FromString(const std::string &s, VectorAttributes::
     return false;
 }
 
+//
+// Enum conversion methods for VectorAttributes::GlyphType
+//
+
+static const char *GlyphType_strings[] = {
+"Arrow", "Ellipsoid"};
+
+std::string
+VectorAttributes::GlyphType_ToString(VectorAttributes::GlyphType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return GlyphType_strings[index];
+}
+
+std::string
+VectorAttributes::GlyphType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return GlyphType_strings[index];
+}
+
+bool
+VectorAttributes::GlyphType_FromString(const std::string &s, VectorAttributes::GlyphType &val)
+{
+    val = VectorAttributes::Arrow;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == GlyphType_strings[i])
+        {
+            val = (GlyphType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: VectorAttributes::VectorAttributes
 //
@@ -190,6 +227,7 @@ void VectorAttributes::Init()
     geometryQuality = Fast;
     stemWidth = 0.08;
     origOnly = true;
+    glyphType = Arrow;
 
     VectorAttributes::SelectAll();
 }
@@ -235,6 +273,7 @@ void VectorAttributes::Copy(const VectorAttributes &obj)
     geometryQuality = obj.geometryQuality;
     stemWidth = obj.stemWidth;
     origOnly = obj.origOnly;
+    glyphType = obj.glyphType;
 
     VectorAttributes::SelectAll();
 }
@@ -417,7 +456,8 @@ VectorAttributes::operator == (const VectorAttributes &obj) const
             (lineStem == obj.lineStem) &&
             (geometryQuality == obj.geometryQuality) &&
             (stemWidth == obj.stemWidth) &&
-            (origOnly == obj.origOnly));
+            (origOnly == obj.origOnly) &&
+            (glyphType == obj.glyphType));
 }
 
 // ****************************************************************************
@@ -585,6 +625,7 @@ VectorAttributes::SelectAll()
     Select(ID_geometryQuality,  (void *)&geometryQuality);
     Select(ID_stemWidth,        (void *)&stemWidth);
     Select(ID_origOnly,         (void *)&origOnly);
+    Select(ID_glyphType,        (void *)&glyphType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -763,6 +804,12 @@ VectorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("origOnly", origOnly));
     }
 
+    if(completeSave || !FieldsEqual(ID_glyphType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("glyphType", GlyphType_ToString(glyphType)));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -889,6 +936,22 @@ VectorAttributes::SetFromNode(DataNode *parentNode)
         SetStemWidth(node->AsDouble());
     if((node = searchNode->GetNode("origOnly")) != 0)
         SetOrigOnly(node->AsBool());
+    if((node = searchNode->GetNode("glyphType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetGlyphType(GlyphType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            GlyphType value;
+            if(GlyphType_FromString(node->AsString(), value))
+                SetGlyphType(value);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1063,6 +1126,13 @@ VectorAttributes::SetOrigOnly(bool origOnly_)
     Select(ID_origOnly, (void *)&origOnly);
 }
 
+void
+VectorAttributes::SetGlyphType(VectorAttributes::GlyphType glyphType_)
+{
+    glyphType = glyphType_;
+    Select(ID_glyphType, (void *)&glyphType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1223,6 +1293,12 @@ VectorAttributes::GetOrigOnly() const
     return origOnly;
 }
 
+VectorAttributes::GlyphType
+VectorAttributes::GetGlyphType() const
+{
+    return GlyphType(glyphType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1287,6 +1363,7 @@ VectorAttributes::GetFieldName(int index) const
     case ID_geometryQuality:  return "geometryQuality";
     case ID_stemWidth:        return "stemWidth";
     case ID_origOnly:         return "origOnly";
+    case ID_glyphType:        return "glyphType";
     default:  return "invalid index";
     }
 }
@@ -1335,6 +1412,7 @@ VectorAttributes::GetFieldType(int index) const
     case ID_geometryQuality:  return FieldType_enum;
     case ID_stemWidth:        return FieldType_double;
     case ID_origOnly:         return FieldType_bool;
+    case ID_glyphType:        return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -1383,6 +1461,7 @@ VectorAttributes::GetFieldTypeName(int index) const
     case ID_geometryQuality:  return "enum";
     case ID_stemWidth:        return "double";
     case ID_origOnly:         return "bool";
+    case ID_glyphType:        return "enum";
     default:  return "invalid index";
     }
 }
@@ -1527,6 +1606,11 @@ VectorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_origOnly:
         {  // new scope
         retval = (origOnly == obj.origOnly);
+        }
+        break;
+    case ID_glyphType:
+        {  // new scope
+        retval = (glyphType == obj.glyphType);
         }
         break;
     default: retval = false;

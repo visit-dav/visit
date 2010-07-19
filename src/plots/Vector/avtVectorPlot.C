@@ -452,6 +452,8 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
     }
     vectorFilter->SetLimitToOriginal(atts.GetOrigOnly());
 
+    glyph->SetArrow(atts.GetGlyphType() == VectorAttributes::Arrow);
+    
     glyph->SetMakeHead(atts.GetHeadOn());
     glyph->SetHeadSize(atts.GetHeadSize());
     glyph->SetLineStem(atts.GetLineStem());

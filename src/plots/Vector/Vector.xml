@@ -14,6 +14,10 @@
         OriginalData
         CurrentPlot
       </Enum>
+      <Enum name="GlyphType">
+        Arrow
+        Ellipsoid
+      </Enum>
       <Field name="useStride" label="Use stride" type="bool">
         false
       </Field>
@@ -88,6 +92,9 @@
       </Field>
       <Field name="origOnly" label="Limit to original node/cell" type="bool">
         true
+      </Field>
+      <Field name="glyphType" label="glyphType" type="enum" subtype="GlyphType">
+        Arrow
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

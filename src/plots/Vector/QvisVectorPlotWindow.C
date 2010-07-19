@@ -173,6 +173,9 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//    Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
+//    Add ellipsoid glyphing.
+//    
 // ****************************************************************************
 
 void
@@ -365,60 +368,72 @@ QvisVectorPlotWindow::CreateWindowContents()
     styleLayout->setMargin(5);
     styleLayout->setSpacing(10);
     styleLayout->setColumnStretch(1, 10);
-
+    
+    int row = 0;
+    glyphTypeLabel = new QLabel(tr("Glyph type"), styleGroupBox);
+    styleLayout->addWidget(glyphTypeLabel, row, 0);
+    glyphType = new QComboBox(styleGroupBox);
+    glyphType->addItem(tr("Arrow"));
+    glyphType->addItem(tr("Ellipsoid"));
+    connect(glyphType, SIGNAL(activated(int)), this, SLOT(glyphTypeChanged(int)));
+    styleLayout->addWidget(glyphType, row, 1);
+    row++;
+    
     // Create the line stem method radio buttons
     lineStemButtonGroup = new QButtonGroup(styleGroupBox);
     connect(lineStemButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(lineStemMethodChanged(int)));
     rb = new QRadioButton(tr("Line"), styleGroupBox);
     lineStemButtonGroup->addButton(rb, 0);
-    styleLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Cylinder"), styleGroupBox);
-    lineStemButtonGroup->addButton(rb, 1);
-    styleLayout->addWidget(rb, 1, 0);
+    styleLayout->addWidget(rb, row, 0);
 
     // Create the lineStyle widget.
+    lineStyleLabel = new QLabel(tr("Style"), styleGroupBox);
+    styleLayout->addWidget(lineStyleLabel, row, 1);
     lineStyle = new QvisLineStyleWidget(0, styleGroupBox);
-    styleLayout->addWidget(lineStyle, 0, 2);
+    styleLayout->addWidget(lineStyle, row, 2);
+    lineStyleLabel->setBuddy(lineStyle);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(tr("Style"), styleGroupBox);
-    lineStyleLabel->setBuddy(lineStyle);
-    styleLayout->addWidget(lineStyleLabel, 0, 1);
-
     // Create the lineWidth widget.
+    lineWidthLabel = new QLabel(tr("Width"), styleGroupBox);
+    styleLayout->addWidget(lineWidthLabel, row, 3);
     lineWidth = new QvisLineWidthWidget(0, styleGroupBox);
-    styleLayout->addWidget(lineWidth, 0, 4);
+    styleLayout->addWidget(lineWidth, row, 4);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(tr("Width"), styleGroupBox);
     lineWidthLabel->setBuddy(lineWidth);
-    styleLayout->addWidget(lineWidthLabel, 0, 3);
-
+    row++;
+    
+    rb = new QRadioButton(tr("Cylinder"), styleGroupBox);
+    lineStemButtonGroup->addButton(rb, 1);
+    styleLayout->addWidget(rb, row, 0);
 
     // Add the stem width edit.
     stemWidthEdit = new QLineEdit(styleGroupBox);
     connect(stemWidthEdit, SIGNAL(returnPressed()),
             this, SLOT(processStemWidthText()));
-    styleLayout->addWidget(stemWidthEdit, 1, 2);
+    styleLayout->addWidget(stemWidthEdit, row, 2);
     stemWidthLabel = new QLabel(tr("Width"), styleGroupBox);
     stemWidthLabel->setBuddy(stemWidthEdit);
-    styleLayout->addWidget(stemWidthLabel, 1, 1);
+    styleLayout->addWidget(stemWidthLabel, row, 1);
+    row++;
 
     // Add the "draw head" toggle button.
     drawHeadToggle = new QCheckBox(tr("Draw head"), styleGroupBox);
     connect(drawHeadToggle, SIGNAL(clicked(bool)),
             this, SLOT(drawHeadToggled(bool)));
-    styleLayout->addWidget(drawHeadToggle, 4, 0);
+    styleLayout->addWidget(drawHeadToggle, row, 0);
 
     // Add the head size edit.
     headSizeLineEdit = new QLineEdit(styleGroupBox);
     connect(headSizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processHeadSizeText()));
-    styleLayout->addWidget(headSizeLineEdit, 4, 2);
+    styleLayout->addWidget(headSizeLineEdit, row, 2);
     QLabel *headSizeLabel = new QLabel(tr("Size"), styleGroupBox);
     headSizeLabel->setBuddy(headSizeLineEdit);
-    styleLayout->addWidget(headSizeLabel, 4, 1);
+    styleLayout->addWidget(headSizeLabel, row, 1);
+    row++;
 
     //
     // Create the radio buttons to choose the glyph origin
@@ -442,8 +457,8 @@ QvisVectorPlotWindow::CreateWindowContents()
     rb = new QRadioButton(tr("Tail"), originBox);
     originButtonGroup->addButton(rb,2);
     originLayout->addWidget(rb);
-    styleLayout->addWidget(originBox, 3, 0, 1, 3);
-
+    styleLayout->addWidget(originBox, row, 0, 1, 3);
+    row++;
 
     //
     // Create the geometry group
@@ -545,6 +560,9 @@ QvisVectorPlotWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Jul 29 11:07:34 PDT 2008
 //   Qt 4.
 //
+//    Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
+//    Add ellipsoid glyphing.   
+//
 // ****************************************************************************
 
 void
@@ -562,7 +580,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             if(!vectorAtts->IsSelected(i))
                 continue;
         }
-
+        
         switch(i)
         {
           case VectorAttributes::ID_useStride:
@@ -710,6 +728,37 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             limitToOrigToggle->blockSignals(true);
             limitToOrigToggle->setChecked(vectorAtts->GetOrigOnly());
             limitToOrigToggle->blockSignals(false);
+            break;
+
+          case VectorAttributes::ID_glyphType:
+              glyphType->blockSignals(true);
+              if (vectorAtts->GetGlyphType() == VectorAttributes::Arrow)
+              {
+                  lineStemButtonGroup->button(0)->setEnabled(true);
+                  lineStemButtonGroup->button(1)->setEnabled(true);               
+                  drawHeadToggle->setEnabled(true);
+                  headSizeLineEdit->setEnabled(true);
+                  lineWidth->setEnabled(vectorAtts->GetLineStem());
+                  lineStyle->setEnabled(vectorAtts->GetLineStem());
+                  lineWidthLabel->setEnabled(vectorAtts->GetLineStem());
+                  lineStyleLabel->setEnabled(vectorAtts->GetLineStem());
+                  stemWidthEdit->setEnabled(!vectorAtts->GetLineStem());
+                  stemWidthLabel->setEnabled(!vectorAtts->GetLineStem());
+              }
+              else if (vectorAtts->GetGlyphType() == VectorAttributes::Ellipsoid)
+              {
+                  lineStemButtonGroup->button(0)->setEnabled(false);
+                  lineStemButtonGroup->button(1)->setEnabled(false);
+                  drawHeadToggle->setEnabled(false);
+                  headSizeLineEdit->setEnabled(false);
+                  lineWidth->setEnabled(false);
+                  lineStyle->setEnabled(false);
+                  lineWidthLabel->setEnabled(false);
+                  lineStyleLabel->setEnabled(false);
+                  stemWidthEdit->setEnabled(false);
+                  stemWidthLabel->setEnabled(false);
+              }
+              glyphType->blockSignals(false);
             break;
         }
     } // end for
@@ -1271,6 +1320,16 @@ QvisVectorPlotWindow::originTypeChanged(int index)
         vectorAtts->SetVectorOrigin(VectorAttributes::Tail);
     }
     Apply();
+}
+
+void
+QvisVectorPlotWindow::glyphTypeChanged(int newType)
+{
+    if (newType == 0)
+        vectorAtts->SetGlyphType(VectorAttributes::Arrow);
+    else if (newType == 1)
+        vectorAtts->SetGlyphType(VectorAttributes::Ellipsoid);
+    Apply();    
 }
 
 // ****************************************************************************
