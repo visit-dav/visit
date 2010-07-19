@@ -66,7 +66,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    we're in 3D, i.e. if ConeHead is true), and the "StemWidth" which
 //    defines the width of the stem if we're drawing is as a cyl/rect.
 //
-
+//    Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
+//    Add ellipsoid glyphing.        
 
 class VISIT_VTK_API vtkVectorGlyph : public vtkPolyDataSource
 {
@@ -81,6 +82,10 @@ public:
   vtkSetMacro(CapEnds,int);
   vtkBooleanMacro(CapEnds,int);
   vtkGetMacro(CapEnds,int);
+
+  vtkSetMacro(Arrow,int);
+  vtkBooleanMacro(Arrow,int);
+  vtkGetMacro(Arrow,int);
 
   vtkSetMacro(LineStem,int);
   vtkBooleanMacro(LineStem,int);
@@ -115,6 +120,7 @@ protected:
   int HighQuality;
   int CapEnds;
   int LineStem;
+  int Arrow;
   float StemWidth;
   int ConeHead;
   int MakeHead;
