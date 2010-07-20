@@ -85,7 +85,14 @@ void simulate_one_timestep(simulation_data *sim);
 void read_input_deck(void) { }
 
 /*************************** CSG Mesh variables *****************************/
-int csg_bound_typeflags[] = {
+#define PLANE1_COEFF 8
+#define PLANE2_COEFF (PLANE1_COEFF+6)
+#define PLANE3_COEFF (PLANE2_COEFF+6)
+#define PLANE4_COEFF (PLANE3_COEFF+6)
+double csg_extents[] = {-11., -11., -11., 11., 11., 11.};
+
+/* CSG Boundaries */
+int csg_bound_types[] = {
     VISIT_CSG_SPHERE_PR,
     VISIT_CSG_SPHERE_PR,
     VISIT_CSG_PLANE_PN,
@@ -95,42 +102,41 @@ int csg_bound_typeflags[] = {
 };
 
 float csg_bound_coeffs[] = {
-    0.,  0., 0., 8.,         /* sphere 1*/
-    0.,  0., 0., 10.,        /* sphere 2*/
-    0.,  2., 0., 0., 1., 0., /* plane 1 point, normal*/
-    0., -2., 0., 0., 1., 0., /* plane 2 point, normal*/
-    2.,  0., 0., 1., 0., 0., /* plane 3 point, normal*/
-   -2.,  0., 0., 1., 0., 0.  /* plane 4 point, normal*/
+    0.,  0., 0.,  8.,          /* sphere 1*/
+    0.,  0., 0., 10.,          /* sphere 2*/
+    0.,  2., 0.,  0., -1., 0., /* plane 1 point, normal*/
+    0., -2., 0.,  0.,  1., 0., /* plane 2 point, normal*/
+    2.,  0., 0., -1.,  0., 0., /* plane 3 point, normal*/
+   -2.,  0., 0.,  1.,  0., 0.  /* plane 4 point, normal*/
 };
-int csg_lcoeffs = sizeof(csg_bound_coeffs) / sizeof(csg_bound_coeffs[0]);
-int csg_nbounds = sizeof(csg_bound_typeflags) / sizeof(csg_bound_typeflags[0]);
-double csg_extents[] = {-11., -11., -11., 11., 11., 11.};
+int csg_num_bound_coeffs = sizeof(csg_bound_coeffs) / sizeof(float);
+int csg_num_bound_types = sizeof(csg_bound_types) / sizeof(int);
 
-#define PLANE1_COEFF 8
-#define PLANE2_COEFF (PLANE1_COEFF+6)
-#define PLANE3_COEFF (PLANE2_COEFF+6)
-#define PLANE4_COEFF (PLANE3_COEFF+6)
-
-int csg_reg_typeflags[] =
+/* CSG Regions */
+int csg_region_operations[] =
 {
     VISIT_CSG_OUTER,          /* 0: outside of inner sphere */
     VISIT_CSG_INNER,          /* 1: inside of outer sphere  */
-    VISIT_CSG_INTERSECT,      /* 2: intersection between them  */
-    VISIT_CSG_INNER,          /* 3: plane 1 */
-    VISIT_CSG_OUTER,          /* 4: plane 2 */
-    VISIT_CSG_INTERSECT,      /* 5: intersection between plane 1,2 half spaces*/
-    VISIT_CSG_INNER,          /* 6: plane 3 */
-    VISIT_CSG_OUTER,          /* 7: plane 4 */
+    VISIT_CSG_OUTER,          /* 2: plane 1 */
+    VISIT_CSG_OUTER,          /* 3: plane 2 */
+    VISIT_CSG_OUTER,          /* 4: plane 3 */
+    VISIT_CSG_OUTER,          /* 5: plane 4 */
+    VISIT_CSG_INTERSECT,      /* 6: intersection between sphere 0,1  */
+    VISIT_CSG_INTERSECT,      /* 7: intersection between plane 1,2 half spaces*/
     VISIT_CSG_INTERSECT,      /* 8: intersection between plane 3,4 half spaces*/
     VISIT_CSG_UNION,          /* 9  add the 2 blocks together */
     VISIT_CSG_INTERSECT       /* 10: intersect the spherical shell with the blocks. */
 };
-/*                 0   1   2   3   4   5   6   7   8   9  10*/
-int csg_leftids[] =  { 0,  1,  0,  2,  3,  3,  4,  5,  6,  5,  2};
-int csg_rightids[] = {-1, -1,  1, -1, -1,  4, -1, -1,  7,  8,  9};
+
+/* index               0   1   2   3   4   5   6   7   8   9  10*/
+int csg_leftids[] =  { 0,  1,  2,  3,  4,  5,  0,  2,  4,  7,  6};
+int csg_rightids[] = {-1, -1, -1, -1, -1, -1,  1,  3,  5,  8,  9};
+int csg_num_region_operations = sizeof(csg_region_operations) / sizeof(int);
+
+/* CSG Zones */
 int csg_zonelist[] = {10};
-int csg_nregs = sizeof(csg_reg_typeflags) / sizeof(csg_reg_typeflags[0]);
 int csg_nzones = sizeof(csg_zonelist) / sizeof(csg_zonelist[0]);
+
 /*************************** CSG Mesh variables *****************************/
 
 /******************************************************************************
@@ -239,9 +245,9 @@ void simulate_one_timestep(simulation_data *sim)
     csg_bound_coeffs[PLANE3_COEFF] = 2.* cosA;
     csg_bound_coeffs[PLANE3_COEFF+1] = 0.;
     csg_bound_coeffs[PLANE3_COEFF+2] = 2.* sinA;
-    csg_bound_coeffs[PLANE3_COEFF+3] = cosA;
+    csg_bound_coeffs[PLANE3_COEFF+3] = -cosA;
     csg_bound_coeffs[PLANE3_COEFF+4] = 0.;
-    csg_bound_coeffs[PLANE3_COEFF+5] = sinA;
+    csg_bound_coeffs[PLANE3_COEFF+5] = -sinA;
 
     csg_bound_coeffs[PLANE4_COEFF] = 2.* cosB;
     csg_bound_coeffs[PLANE4_COEFF+1] = 0.;
@@ -469,12 +475,12 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             /* Fill in the CSG mesh's data values. */
             VisIt_VariableData_alloc(&boundaryTypes);
             VisIt_VariableData_setDataI(boundaryTypes, VISIT_OWNER_SIM, 
-                1, sizeof(csg_bound_typeflags)/sizeof(int), csg_bound_typeflags);
+                1, csg_num_bound_types, csg_bound_types);
             VisIt_CSGMesh_setBoundaryTypes(h, boundaryTypes);
 
             VisIt_VariableData_alloc(&boundaryCoeffs);
             VisIt_VariableData_setDataF(boundaryCoeffs, VISIT_OWNER_SIM, 
-                1, csg_lcoeffs, csg_bound_coeffs);
+                1, csg_num_bound_coeffs, csg_bound_coeffs);
             VisIt_CSGMesh_setBoundaryCoeffs(h, boundaryCoeffs);
 
             /* Set the extents */
@@ -483,15 +489,15 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             /* Set the regions */
             VisIt_VariableData_alloc(&typeflags);
             VisIt_VariableData_setDataI(typeflags, VISIT_OWNER_SIM, 
-                1, csg_nregs, csg_reg_typeflags);
+                1, csg_num_region_operations, csg_region_operations);
 
             VisIt_VariableData_alloc(&leftids);
             VisIt_VariableData_setDataI(leftids, VISIT_OWNER_SIM, 
-                1, csg_nregs, csg_leftids);
+                1, csg_num_region_operations, csg_leftids);
 
             VisIt_VariableData_alloc(&rightids);
             VisIt_VariableData_setDataI(rightids, VISIT_OWNER_SIM, 
-                1, csg_nregs, csg_rightids);
+                1, csg_num_region_operations, csg_rightids);
 
             VisIt_CSGMesh_setRegions(h, typeflags, leftids, rightids);
 
