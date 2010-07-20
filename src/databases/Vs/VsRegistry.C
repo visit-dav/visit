@@ -309,7 +309,7 @@ void VsRegistry::buildDatasetObjects() {
     VsLog::debugLog() <<"VsRegistry::buildDatasetObjects() - looking at var dataset " <<dataset->getFullName() <<std::endl;
     
     VsVariable* var = VsVariable::buildObject(dataset);
-    if (var->getTimeGroup() != NULL) {
+    if (var && (var->getTimeGroup() != NULL)) {
       loadTime(var->getTimeGroup());
     }
   }
@@ -321,7 +321,7 @@ void VsRegistry::buildDatasetObjects() {
     VsLog::debugLog() <<"VsRegistry::buildDatasetObjects() - looking at varWithMesh dataset " <<dataset->getFullName() <<std::endl;
     
     VsVariableWithMesh* var = VsVariableWithMesh::buildObject(dataset);
-    if (var->getTimeGroup() != NULL) {
+    if (var && (var->getTimeGroup() != NULL)) {
       loadTime(var->getTimeGroup());
     }
   }
