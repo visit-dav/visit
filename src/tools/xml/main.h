@@ -32,7 +32,7 @@ const char *copyright_str =
 "*\n"
 "* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC\n"
 "* Produced at the Lawrence Livermore National Laboratory\n"
-"* LLNL-CODE-400124\n"
+"* LLNL-CODE-442911\n"
 "* All rights reserved.\n"
 "*\n"
 "* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The\n"
