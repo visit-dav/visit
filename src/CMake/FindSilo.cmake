@@ -44,6 +44,11 @@
 #    Mark C. Miller, Mon Jun 21 16:55:51 PDT 2010
 #    Replaced logic to TRY_RUN a tiny PDB Lite test to simply query the
 #    Silo version number.
+#
+#    Mark C. Miller, Tue Jul 20 10:09:44 PDT 2010
+#    Fixed query for Silo version number to use MAJ/MIN/PAT symbols in 
+#    silo.h header file instead of Silo_version_... thingy. This allows
+#    it to correctly interpret '4.8-pre3' for example.
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file 
@@ -70,13 +75,15 @@ IF(SILO_FOUND)
 
     # Inspect Silo version number to infer whether or not PDB Lite (in Silo)
     # has support for long long type. Failure to either find silo.h header file
-    # or find a matching line in that file with Silo_version will result in
-    # executing the block where VERSION_LESS is true. That is appropriate as
+    # or find a matching line in that file with SILO_VERS_MAJ/MIN/PAT will result
+    # in executing the block where VERSION_LESS is true. That is appropriate as
     # older versions of Silo do not have a PDB Lite with long long support.
-    FILE(STRINGS ${SILO_INCLUDE_DIR}/silo.h SILO_VERSION_LINE REGEX Silo_version_[0-9]_[0-9]_[0-9])
-    STRING(REGEX REPLACE "(.*) Silo_version_([0-9])_[0-9]_[0-9]" \\2 SILO_MAJ_NO "${SILO_VERSION_LINE}")
-    STRING(REGEX REPLACE "(.*) Silo_version_[0-9]_([0-9])_[0-9]" \\2 SILO_MIN_NO "${SILO_VERSION_LINE}")
-    STRING(REGEX REPLACE "(.*) Silo_version_[0-9]_[0-9]_([0-9])" \\2 SILO_PAT_NO "${SILO_VERSION_LINE}")
+    FILE(STRINGS ${SILO_INCLUDE_DIR}/silo.h SILO_VERS_LINE REGEX "#define[ \t]*SILO_VERS_MAJ")
+    STRING(REGEX REPLACE "#define[ \t]*SILO_VERS_MAJ[ \t]*(0x0)?([0-9]*)" \\2 SILO_MAJ_NO "${SILO_VERS_LINE}")
+    FILE(STRINGS ${SILO_INCLUDE_DIR}/silo.h SILO_VERS_LINE REGEX "#define[ \t]*SILO_VERS_MIN")
+    STRING(REGEX REPLACE "#define[ \t]*SILO_VERS_MIN[ \t]*(0x0)?([0-9]*)" \\2 SILO_MIN_NO "${SILO_VERS_LINE}")
+    FILE(STRINGS ${SILO_INCLUDE_DIR}/silo.h SILO_VERS_LINE REGEX "#define[ \t]*SILO_VERS_PAT")
+    STRING(REGEX REPLACE "#define[ \t]*SILO_VERS_PAT[ \t]*(0x0)?([0-9]*)" \\2 SILO_PAT_NO "${SILO_VERS_LINE}")
     IF("${SILO_MAJ_NO}.${SILO_MIN_NO}.${SILO_PAT_NO}" VERSION_LESS 4.7.2)
         SET(PDB_LITE_HAS_LONG_LONG 0 CACHE INTERNAL "Support for longlong type in PDB Lite")
         MESSAGE(STATUS "    PDB Lite does not have long long support")
