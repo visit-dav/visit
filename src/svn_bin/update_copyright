@@ -4,9 +4,9 @@
 # just do a find over all file names when you are finished for "2000 - 2009"
 # to check if you missed any files.
 #
-find -name "*.C" -exec sed -i "s/Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/" {} \; -print
-find -name "*.h" -exec sed -i "s/Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/" {} \; -print
-find -name "*.java" -exec sed -i "s/Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/" {} \; -print
-find -name "*.cmake" -exec sed -i "s/Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/" {} \; -print
-find -name "*.txt" -exec sed -i "s/Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/" {} \; -print
-find -name "*.in" -exec sed -i "s/Copyright (c) 2000 - 2009, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/" {} \; -print
+find -name "*.C" -exec sed -i "s/LLNL-CODE-400124/LLNL-CODE-442911/" {} \; -print
+find -name "*.h" -exec sed -i "s/LLNL-CODE-400124/LLNL-CODE-442911/" {} \; -print
+find -name "*.java" -exec sed -i "s/LLNL-CODE-400124/LLNL-CODE-442911/" {} \; -print
+find -name "*.cmake" -exec sed -i "s/LLNL-CODE-400124/LLNL-CODE-442911/" {} \; -print
+find -name "*.txt" -exec sed -i "s/LLNL-CODE-400124/LLNL-CODE-442911/" {} \; -print
+find -name "*.in" -exec sed -i "s/LLNL-CODE-400124/LLNL-CODE-442911/" {} \; -print
