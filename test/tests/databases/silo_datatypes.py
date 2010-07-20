@@ -74,7 +74,7 @@ for smode in ("hdf5", "pdb"):
                     swa.outputDirectory = "silo_datatypes/current"
                     swa.screenCapture=1
                     swa.family   = 0
-                    swa.fileName = "%s_%s"%(mt,varname)
+                    swa.fileName = "%s_%s_%s"%(smode,mt,varname)
                     swa.format   = swa.PNG
                     SetSaveWindowAttributes(swa)
                     SaveWindow()
@@ -83,11 +83,14 @@ for smode in ("hdf5", "pdb"):
                     davg = 0.0
                     if usePIL:
                          file="silo_datatypes_%s_%s"%(mt,varname)
-                         cur="silo_datatypes/current/%s_%s.png"%(mt,varname)
-                         diff="silo_datatypes/diff/%s_%s.png"%(mt,varname)
+                         cur="silo_datatypes/current/%s_%s_%s.png"%(smode,mt,varname)
+                         diff="silo_datatypes/diff/%s_%s_%s.png"%(smode,mt,varname)
                          base="baseline/databases/silo_datatypes/silo_datatypes_%s_%s.png"%(mt,fvarname)
                          (tPixs, pPixs, dPixs, davg) = DiffUsingPIL(file, cur, diff, base, "")
-                         diffResults += "%s_%s:\t%f,\t%f\n"%(mt,varname,dPixs, davg)
+                         result = "PASSED"
+                         if (dPixs > 0 and davg > 1):
+                             result = "FAILED, %f %f"%(dPixs,davg)
+                         diffResults += "%s_%s:\t%s\n"%(mt,varname,result)
             CloseDatabase(dbname)
         TestText("silo_datatypes_diffs_%s_fs%s"%(smode,fsmodes[fsmode]),diffResults)
 os.system("rm -rf silo_datatypes")
