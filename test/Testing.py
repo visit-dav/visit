@@ -1045,6 +1045,7 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 
     # create the difference image
     diffimg = ImageChops.difference(oldimg, newimg)
+    dstatColor   = ImageStat.Stat(diffimg)
     diffimg = diffimg.convert("L", (0.3333333, 0.3333333, 0.3333333, 0))
 
     # get some statistics
