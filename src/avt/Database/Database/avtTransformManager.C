@@ -48,7 +48,9 @@
 #include <vtkIntArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkLongArray.h>
+#include <vtkLongLongArray.h>
 #include <vtkUnsignedLongArray.h>
+#include <vtkUnsignedLongLongArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkDataArray.h>
@@ -104,6 +106,8 @@ using std::map;
 //    Mark C. Miller, Wed Sep 13 09:06:07 PDT 2006
 //    Moved here from avtGenericDatabase.C
 //
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 static const char *DataArrayTypeName(vtkDataArray *arr)
@@ -119,7 +123,9 @@ static const char *DataArrayTypeName(vtkDataArray *arr)
         case VTK_INT:            return "int";
         case VTK_UNSIGNED_INT:   return "unsigned int";
         case VTK_LONG:           return "long";
+        case VTK_LONG_LONG:      return "long long";
         case VTK_UNSIGNED_LONG:  return "unsigned long";
+        case VTK_UNSIGNED_LONG_LONG:  return "unsigned long long";
         case VTK_FLOAT:          return "float";
         case VTK_DOUBLE:         return "double";
         case VTK_ID_TYPE:        return "vtkIdType";
@@ -146,6 +152,8 @@ static const char *DataArrayTypeName(vtkDataArray *arr)
 //    Mark C. Miller, Wed Sep 13 09:06:07 PDT 2006
 //    Moved here from avtGenericDatabase.C
 //
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 static int
@@ -162,7 +170,8 @@ PrecisionInBytes(int dataType)
         case VTK_INT:            return sizeof(int);
         case VTK_UNSIGNED_INT:   return sizeof(unsigned int);
         case VTK_LONG:           return sizeof(long);
-        case VTK_UNSIGNED_LONG:  return sizeof(unsigned long);
+        case VTK_LONG_LONG:      return sizeof(long long);
+        case VTK_UNSIGNED_LONG_LONG:  return sizeof(unsigned long long);
         case VTK_FLOAT:          return sizeof(float);
         case VTK_DOUBLE:         return sizeof(double);
         case VTK_ID_TYPE:        return sizeof(vtkIdType);
@@ -265,6 +274,8 @@ static void ConvertToType(oT *obuf, const iT* ibuf, int n)
 //    Only print array's name if it is not null, the data arrays for vtkPoints
 //    generally don't have names.
 //
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 static vtkDataArray * 
@@ -316,8 +327,14 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
             case VTK_LONG:
                 ConvertToType(newBuf, (long*) oldBuf, numValues);
                 break;
+            case VTK_LONG_LONG:
+                ConvertToType(newBuf, (long long*) oldBuf, numValues);
+                break;
             case VTK_UNSIGNED_LONG:
                 ConvertToType(newBuf, (unsigned long*) oldBuf, numValues);
+                break;
+            case VTK_UNSIGNED_LONG_LONG:
+                ConvertToType(newBuf, (unsigned long long*) oldBuf, numValues);
                 break;
             case VTK_DOUBLE:
                 ConvertToType(newBuf, (double*) oldBuf, numValues);
@@ -515,6 +532,10 @@ BuildMappedArray(const iT *const ibuf, int ncomps, const vector<int> &valsToMap)
 //  Programmer: Mark C. Miller 
 //  Creation:   December 4, 2006 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 static vtkDataArray *
 BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
@@ -554,9 +575,17 @@ BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
             rv = vtkLongArray::New();
             rbuf = BuildMappedArray((long*) buf, ncomps, valsToMap);
             break;
+        case VTK_LONG_LONG:
+            rv = vtkLongLongArray::New();
+            rbuf = BuildMappedArray((long long*) buf, ncomps, valsToMap);
+            break;
         case VTK_UNSIGNED_LONG:
             rv = vtkUnsignedLongArray::New();
             rbuf = BuildMappedArray((unsigned long*) buf, ncomps, valsToMap);
+            break;
+        case VTK_UNSIGNED_LONG_LONG:
+            rv = vtkUnsignedLongLongArray::New();
+            rbuf = BuildMappedArray((unsigned long long*) buf, ncomps, valsToMap);
             break;
         case VTK_FLOAT:
             rv = vtkFloatArray::New();
@@ -1482,7 +1511,9 @@ CopyDataArrayVals(vtkDataArray *inda, vtkDataArray *outda, int npts, int skip)
         case VTK_INT: { SET_VALS(vtkIntArray, int); break; }
         case VTK_UNSIGNED_INT: { SET_VALS(vtkUnsignedIntArray, unsigned int); break; }
         case VTK_LONG: { SET_VALS(vtkLongArray, long); break; }
+        case VTK_LONG_LONG: { SET_VALS(vtkLongLongArray, long long); break; }
         case VTK_UNSIGNED_LONG: { SET_VALS(vtkUnsignedLongArray, unsigned long); break; }
+        case VTK_UNSIGNED_LONG_LONG: { SET_VALS(vtkUnsignedLongLongArray, unsigned long long); break; }
         case VTK_FLOAT: { SET_VALS(vtkFloatArray, float); break; }
         case VTK_DOUBLE: { SET_VALS(vtkDoubleArray, double); break; }
         case VTK_ID_TYPE: { SET_VALS(vtkIdTypeArray, vtkIdType); break; }
