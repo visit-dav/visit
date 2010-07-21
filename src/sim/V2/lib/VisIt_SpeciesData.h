@@ -51,7 +51,7 @@ int VisIt_SpeciesData_setSpeciesMF(visit_handle h, visit_handle);
 int VisIt_SpeciesData_setMixedSpecies(visit_handle h, visit_handle);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif

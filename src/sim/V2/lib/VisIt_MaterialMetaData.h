@@ -54,7 +54,7 @@ int VisIt_MaterialMetaData_getNumMaterialName(visit_handle h, int *);
 int VisIt_MaterialMetaData_getMaterialName(visit_handle h, int, char **);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif

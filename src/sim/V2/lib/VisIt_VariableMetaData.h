@@ -59,7 +59,7 @@ int VisIt_VariableMetaData_setTreatAsASCII(visit_handle h, int);
 int VisIt_VariableMetaData_getTreatAsASCII(visit_handle h, int*);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif

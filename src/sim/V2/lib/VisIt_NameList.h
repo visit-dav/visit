@@ -50,7 +50,7 @@ int VisIt_NameList_getNumName(visit_handle h, int *);
 int VisIt_NameList_getName(visit_handle h, int, char **);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif
