@@ -158,6 +158,8 @@ static void BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm
     int dontForceSingle);
 
 static int MultiMatHasAllMatInfo(const DBmultimat *const mm);
+static vtkDataArray *CreateDataArray(int silotype, void *data, int numvals);
+
 
 // the maximum number of nodelists any given single node can be in
 static const int maxCoincidentNodelists = 12;
@@ -251,6 +253,8 @@ static const int maxCoincidentNodelists = 12;
 //    Reverted previous change to init of 'metadataIsTimeVarying' & added
 //    init of 'metadataIsTimeVaryingCheck'.
 //
+//    Mark C. Miller, Wed Jul 21 12:18:17 PDT 2010
+//    Added logic to ignore force single behavior for older versions of Silo.
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -298,6 +302,32 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
             ignoreDataExtentsAAN = (AANTriState) rdatts->GetEnum(SILO_RDOPT_IGNORE_DEXTS);
         else
             debug1 << "Ignoring unknown option \"" << rdatts->GetName(i) << "\"" << endl;
+    }
+
+    // This block of logic does the following. Sets default ignore of force single
+    // to false. But, for older versions of Silo which either do not define
+    // SILO_VERSION_GE macro (e.g. really, really old) or which do define it but
+    // are older than version 4.8, we set ignore of force single to true. In
+    // addition, if the user had set read options to NOT dontForceSingle, then
+    // we'll also put a message in the debug logs about it.
+    bool ignoreForceSingle = false;
+#ifndef SILO_VERSION_GE
+    ignoreForceSingle = true;
+#else
+#if !SILO_VERSION_GE(4,8,0)
+    ignoreForceSingle = true;
+#endif
+#endif
+    if (ignoreForceSingle)
+    {
+        if (!dontForceSingle)
+        {
+            debug1 << "Ignoring Don't Force Single setting of 0 (false) which would have...\n"
+                   << "...otherwise caused the Silo library to try to force all datatype'd\n"
+                   << "...arrays to float because the old version of the Silo library being\n"
+                   << "...used here does NOT correctly honor the force single setting." << endl;
+        }
+        dontForceSingle = 1;
     }
 
     //
@@ -6608,19 +6638,29 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
     }
     else
     {
-        //
-        // Populate the variable as we normally would.
-        //
-        vtkvar->SetNumberOfTuples(uv->nels);
-        ptr = (T *) vtkvar->GetVoidPointer(0);
-        for (i = 0; i < uv->nels; i++)
+        if (uv->nvals == 1)
         {
-            for (j = 0; j < nvtkcomps; j++)
+            vtkvar->Delete();
+            vtkDataArray *retval = CreateDataArray(uv->datatype, (void*) uv->vals[0], uv->nels);
+            uv->vals[0] = 0; // the vtkDataArray now owns the data.
+            return retval;
+        }
+        else
+        {
+            //
+            // Populate the variable as we normally would.
+            //
+            vtkvar->SetNumberOfTuples(uv->nels);
+            ptr = (T *) vtkvar->GetVoidPointer(0);
+            for (i = 0; i < uv->nels; i++)
             {
-                if (j < uv->nvals)
-                    ptr[i*nvtkcomps+j] = ((T**)(uv->vals))[j][i];
-                else
-                    ptr[i*nvtkcomps+j] = ((T)0);
+                for (j = 0; j < nvtkcomps; j++)
+                {
+                    if (j < uv->nvals)
+                        ptr[i*nvtkcomps+j] = ((T**)(uv->vals))[j][i];
+                    else
+                        ptr[i*nvtkcomps+j] = ((T)0);
+                }
             }
         }
     }
@@ -7283,7 +7323,7 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
 }
 
 // ****************************************************************************
-// Method: CreateDataArray
+// Function: CreateDataArray
 //
 // Purpose: 
 //   Creates a vtkDataArray suitable for the given Silo type. Also return the

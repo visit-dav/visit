@@ -61,6 +61,8 @@ class avtDatabaseWriter;
 //
 //  Modifications:
 //
+//    Mark C. Miller, Wed Jul 21 16:11:12 PDT 2010
+//    Resurrected SetReadOptions after clobbered in r8950
 // ****************************************************************************
 
 class SiloGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
@@ -84,6 +86,7 @@ class SiloCommonPluginInfo : public virtual CommonDatabasePluginInfo, public vir
                                                     int nList, int nBlock);
     virtual DBOptionsAttributes *GetReadOptions() const;
     virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual void SetReadOptions(DBOptionsAttributes *);
 };
 
 class SiloMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual SiloCommonPluginInfo
