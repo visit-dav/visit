@@ -19,16 +19,20 @@
 <li>Time is now properly reported for all Cosmos++ files.</li>
 <li>Time iterating expressions now work on files that have meshnames that contain the '/' character.</li>
 <li>Tools now cause an extra render to ensure their actors get removed from the vis window.</li>
-<li>The Transform operator attributes window would reset its values incorrectly when using auto update and multiple plots. This caused the wrong values to be applied to the plot with the Transform operator, resulting in unwanted transforms.</li>
+<li>The Transform operator attributes window no longer resets its values incorrectly when using auto update and multiple plots. This was causing the wrong values to be applied to the plot with the Transform operator, resulting in unwanted transforms.</li>
 <li>The Lines reader was fixed so objects it creates have the proper reference count.</li>
-<li>Using an average_over_time expression in another expression caused the compute engine to crash.</li>
+<li>Using an average_over_time expression in another expression no longer causes the compute engine to crash.</li>
 <li>The VizSchema reader now properly handles variable components when the user steps through time with the time slider.</li>
+<li>Generating movies using a session file will correctly reuse the saved settings for an engine launch, such as number of processors and job launcher.</li>
+<li>Automatic engine re-launches once again use the previous settings when running with only offscreen rendering, instead of reverting to a serial engine.</li>
+<li>The XMLEdit plugin creartion tool no longer crashes when deleting Enums still referenced by some Field properties.</li>
 </ul>
 <p><b><font size="4">Enhancements in version 2.0.2</font></b></p>
 <ul>
 <li>The Basic NETCDF reader was enhanced to expose 2D arrays where one dimension is time as curves that vary over time.</li>
 <li>The Scatter plot was enhanced so it can use data from Curve variables.</li>
 <li>The Tecplot binary reader can now read Tecplot 2009 format.</li>
+<li>The Tecplot ASCII reader allows a trailing dollar sign symbol at the end of the file.</li>
 <li>The VizSchema reader was restructured and simplified for more reliability and ease of development.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version of VisIt: <a href="relnotes2.0.0.html">VisIt 2.0 Release Notes</a>.</p>
