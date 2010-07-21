@@ -125,7 +125,6 @@ skipList_for_Alastor="\
     alastor,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
     alastor,parallel:tests/rendering/compositing.py \
     alastor,scalable,parallel,icet:tests/rendering/compositing.py \
-    alastor,scalable,parallel,icet:tests/databases/boxlib.py \
     alastor,scalable,parallel,icet:tests/session/legendproperties.py:legendproperties00"
 
 skipList="\$skipList_for_Alastor"
