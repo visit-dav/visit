@@ -648,6 +648,9 @@ $0 = shift @ARGV;
 #    Added information/error messages when trying to start gui or serial
 #    engine on Franklin.
 #
+#    Eric Brugger, Tue Jul 20 17:21:16 PDT 2010
+#    I updated the help text for the "-v" option.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -759,7 +762,10 @@ $usage = "
         -svn_revision        Do NOT run VisIt. Just print the Subversion 
                              revision it was built from.
         -beta                Run the current beta version.
-        -v <version>         Run a specified version (e.g. '1.3.3').
+        -v <version>         Run a specified version. Specifying 2 digits,
+                             such as X.Y, will run the latest patch release
+                             for that version. Specifying 3 digits, such as
+                             X.Y.Z, will run that specific version.
 
     Other resources for help
     ---------------------------------------------------------------------------
