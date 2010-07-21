@@ -6700,6 +6700,9 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
 //    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
 //    Added extra level of indirection to arbMeshXXXRemap objects to handle
 //    multi-block case.
+//
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 vtkDataArray *
@@ -6743,6 +6746,14 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
         vectors = CopyUcdVar<double,vtkDoubleArray>(uv, *remap);
     else if(uv->datatype == DB_FLOAT)
         vectors = CopyUcdVar<float,vtkFloatArray>(uv, *remap);
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,8,0)
+    else if(uv->datatype == DB_LONG_LONG)
+        vectors = CopyUcdVar<long long,vtkLongLongArray>(uv, *remap);
+#endif
+#endif
+    else if(uv->datatype == DB_LONG)
+        vectors = CopyUcdVar<long,vtkLongArray>(uv, *remap);
     else if(uv->datatype == DB_INT)
         vectors = CopyUcdVar<int,vtkIntArray>(uv, *remap);
     else if(uv->datatype == DB_SHORT)
@@ -6829,6 +6840,9 @@ CopyQuadVectorVar(const DBquadvar *qv)
 //    Mark C. Miller, Tue Dec 16 09:36:56 PST 2008
 //    Added casts to deal with new Silo API where datatype'd pointers
 //    have been changed from float* to void*.
+//
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 vtkDataArray *
@@ -6858,6 +6872,14 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
         vectors = CopyQuadVectorVar<double,vtkDoubleArray>(qv);
     else if(qv->datatype == DB_FLOAT)
         vectors = CopyQuadVectorVar<float,vtkFloatArray>(qv);
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,8,0)
+    else if(qv->datatype == DB_LONG_LONG)
+        vectors = CopyQuadVectorVar<long long,vtkLongLongArray>(qv);
+#endif
+#endif
+    else if(qv->datatype == DB_LONG)
+        vectors = CopyQuadVectorVar<long,vtkLongArray>(qv);
     else if(qv->datatype == DB_INT)
         vectors = CopyQuadVectorVar<int,vtkIntArray>(qv);
     else if(qv->datatype == DB_SHORT)
@@ -6947,6 +6969,8 @@ CopyPointVectorVar(const DBmeshvar *mv)
 //    Brad Whitlock, Thu Aug  6 14:55:49 PDT 2009
 //    I added support for non-float data types.
 //
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 vtkDataArray *
@@ -6972,6 +6996,14 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
         vectors = CopyPointVectorVar<double,vtkDoubleArray>(mv);
     else if(mv->datatype == DB_FLOAT)
         vectors = CopyPointVectorVar<float,vtkFloatArray>(mv);
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,8,0)
+    else if(mv->datatype == DB_LONG_LONG)
+        vectors = CopyPointVectorVar<long long,vtkLongLongArray>(mv);
+#endif
+#endif
+    else if(mv->datatype == DB_LONG)
+        vectors = CopyPointVectorVar<long,vtkLongArray>(mv);
     else if(mv->datatype == DB_INT)
         vectors = CopyPointVectorVar<int,vtkIntArray>(mv);
     else if(mv->datatype == DB_SHORT)
@@ -7351,7 +7383,7 @@ CreateDataArray(int silotype, void *data, int numvals)
         break;
     }
 #ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,7,1)
+#if SILO_VERSION_GE(4,8,0)
     case DB_LONG_LONG:
     {
         vtkLongLongArray *d = vtkLongLongArray::New();
@@ -7397,6 +7429,8 @@ CreateDataArray(int silotype, void *data, int numvals)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 static float *
@@ -7420,6 +7454,17 @@ ConvertToFloat(int silotype, void *data, int nels)
             retval[i] = (float)ptr[i];
         }
         break;
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,8,0)
+    case DB_LONG_LONG:
+        { const long long *ptr = (const long long *)data;
+        retval = new float[nels];
+        for(int i = 0; i < nels; ++i)
+            retval[i] = (float)ptr[i];
+        }
+        break;
+#endif
+#endif
     case DB_LONG:
         { const long *ptr = (const long *)data;
         retval = new float[nels];
@@ -7503,6 +7548,9 @@ ConvertToFloat(int silotype, void *data, int nels)
 //
 //    Mark C. Miller, Mon Oct 19 20:25:08 PDT 2009
 //    Replaced skipping logic with remapping logic.
+//
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 vtkDataArray *
@@ -7546,6 +7594,14 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
         scalars = CopyUcdVar<double,vtkDoubleArray>(uv, *remap);
     else if(uv->datatype == DB_FLOAT)
         scalars = CopyUcdVar<float,vtkFloatArray>(uv, *remap);
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,8,0)
+    else if(uv->datatype == DB_LONG_LONG)
+        scalars = CopyUcdVar<long long,vtkLongLongArray>(uv, *remap);
+#endif
+#endif
+    else if(uv->datatype == DB_LONG)
+        scalars = CopyUcdVar<long,vtkLongArray>(uv, *remap);
     else if(uv->datatype == DB_INT)
         scalars = CopyUcdVar<int,vtkIntArray>(uv, *remap);
     else if(uv->datatype == DB_SHORT)
@@ -7630,6 +7686,9 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
 //
 //    Mark C. Miller, Tue Jan 12 17:50:52 PST 2010
 //    Use CreateDataArray.
+//
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 template <class T>
@@ -7691,6 +7750,14 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
         int nz = qv->ndims == 3 ? qv->dims[2] : 1;
         if (qv->datatype == DB_DOUBLE)
             CopyAndReorderQuadVar((double *) var2, nx, ny, nz, var);
+        else if (qv->datatype == DB_LONG)
+            CopyAndReorderQuadVar((long *) var2, nx, ny, nz, var);
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,8,0)
+        else if (qv->datatype == DB_LONG_LONG)
+            CopyAndReorderQuadVar((long long *) var2, nx, ny, nz, var);
+#endif
+#endif
         else if (qv->datatype == DB_LONG)
             CopyAndReorderQuadVar((long *) var2, nx, ny, nz, var);
         else if (qv->datatype == DB_INT)
@@ -7919,6 +7986,9 @@ CopyUnstructuredMeshCoordinates(T *pts, const DBucdmesh *um)
 //    Mark C. Miller, Wed Jan 27 13:14:03 PST 2010
 //    Added extra level of indirection to arbMeshXXXRemap objects to handle
 //    multi-block case.
+//
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 #ifdef SILO_VERSION_GE
@@ -7977,7 +8047,7 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
     else if (tmp.datatype == DB_LONG)
         arr = CopyUcdVar<long,vtkLongArray>(&tmp, *remap);
 #ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,7,1)
+#if SILO_VERSION_GE(4,8,0)
     else if (tmp.datatype == DB_LONG_LONG)
         arr = CopyUcdVar<long long,vtkLongLongArray>(&tmp, *remap);
 #endif
@@ -10085,6 +10155,8 @@ CreateCurve(DBcurve *cur, const char *curvename, int vtkType)
 //    Brad Whitlock, Thu Aug  6 12:15:50 PDT 2009
 //    Use templates.
 //
+//    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
+//    Added support for LONG LONG types.
 // ****************************************************************************
 
 vtkDataSet *
@@ -10112,6 +10184,14 @@ avtSiloFileFormat::GetCurve(DBfile *dbfile, const char *cn)
         rg = CreateCurve<float,vtkFloatArray>(cur, curvename, VTK_FLOAT);
     else if (cur->datatype == DB_DOUBLE)
         rg = CreateCurve<double,vtkDoubleArray>(cur, curvename, VTK_DOUBLE);
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,8,0)
+    else if (cur->datatype == DB_LONG_LONG)
+        rg = CreateCurve<long long,vtkLongLongArray>(cur, curvename, VTK_LONG_LONG);
+#endif
+#endif
+    else if (cur->datatype == DB_LONG)
+        rg = CreateCurve<long,vtkLongArray>(cur, curvename, VTK_LONG);
     else if (cur->datatype == DB_INT)
         rg = CreateCurve<int,vtkIntArray>(cur, curvename, VTK_INT);
     else if (cur->datatype == DB_SHORT)
