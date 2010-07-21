@@ -1013,6 +1013,9 @@ def GetBackgroundImage(file):
 #   opposite. That is always generate thumb of baseline (old) image and
 #   current and diffs when there are diffs.
 #
+#   Mark C. Miller, Tue Jul 20 19:27:09 PDT 2010
+#   Left in (commented out) line for color image stats. Will use in a later
+#   update to compute max channel difference.
 # ----------------------------------------------------------------------------
 
 def DiffUsingPIL(file, cur, diff, baseline, altbase):
@@ -1045,7 +1048,7 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 
     # create the difference image
     diffimg = ImageChops.difference(oldimg, newimg)
-    dstatColor   = ImageStat.Stat(diffimg)
+    #dstatc = ImageStat.Stat(diffimg) # stats of color image
     diffimg = diffimg.convert("L", (0.3333333, 0.3333333, 0.3333333, 0))
 
     # get some statistics
