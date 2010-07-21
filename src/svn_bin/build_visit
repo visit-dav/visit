@@ -924,6 +924,12 @@
 #     Eric Brugger, Mon Jul 19 12:57:52 PDT 2010
 #     I set the VisIt version number to 2.0.2.
 #
+#     Eric Brugger, Tue Jul 20 14:38:54 PDT 2010
+#     I added zlib to the list of dependent libraries for hdf5 in the config
+#     site file.  I also removed zlib from the list of dependent libraries
+#     for silo in the case of using hdf5 since it will now get it from the
+#     hdf5 dependent libraries.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -8836,7 +8842,11 @@ function build_hostconf
         >> $HOSTCONF 
         if [[ "$DO_SZIP" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz)" \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib z)" \
+            >> $HOSTCONF
+        else
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP /usr/lib z)" \
             >> $HOSTCONF
         fi
     fi
@@ -8895,7 +8905,7 @@ function build_hostconf
         >> $HOSTCONF
         if [[ "$DO_HDF5" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 /usr/lib z \${VISIT_HDF5_LIBDEP})" \
+            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
             >> $HOSTCONF
         else
             echo \
