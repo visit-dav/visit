@@ -12,6 +12,22 @@
 #    Mark C. Miller, Tue Jul 20 19:26:04 PDT 2010
 #    Adjusted names of temporary output files so they don't stomp on each
 #    other.
+#
+#    Mark C. Miller, Wed Jul 21 08:51:30 PDT 2010
+#    I side-stepped around a subtle problem with long long data from PDB.
+#    Turns out on alastor where tests are being run as of July, 2010, sizeof
+#    long is 8 and that is the same as size of long long. On the HDF5 driver,
+#    if it reads integer data of N bytes, it will put it into the smallest
+#    native type that fits. So, when it reads long long data of 8 bytes
+#    but discovers a native long on the machine where the data is being read
+#    is 8 bytes, it returns long instead. So, HDF5 driver never returns
+#    a type of vtkLongLongArray. But, PDB driver does. And, for some reason
+#    that one single case is getting handled subtly wrong. Its data extents
+#    wind up getting set to [0,1] (which I assume is some sort of default).
+#    So, the plot looks bad. So, here, in that case, I manually set the
+#    extents and get around this problem. I am thinking there is a VTK
+#    bug in computing the data extents for vtkLongLongArray type. But, thats
+#    just a guess.
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -59,6 +75,14 @@ for mt in mtypes:
         DeleteAllPlots()
     CloseDatabase(dbname)
 
+# Build PC plot attributes to be used to set min/max
+# Only necessary for long long case from PDB. Why?
+pa = PseudocolorAttributes()
+pa.minFlag = 1
+pa.maxFlag = 1
+pa.min = 0
+pa.max = 20 
+
 os.system("mkdir silo_datatypes")
 os.system("mkdir silo_datatypes/current")
 os.system("mkdir silo_datatypes/diff")
@@ -75,6 +99,12 @@ for smode in ("hdf5", "pdb"):
                     fvarname="%s%svar"%("f",v)
                     filename="silo_datatypes_%s_fs%s_%s_%s"%(smode,fsmode,mt,varname)
                     AddPlot("Pseudocolor",varname)
+                    if (smode == "pdb" and d == "L"):
+                        if (v == "n"):
+                            pa.max = 20
+                        else:
+                            pa.max = 19
+                        SetPlotOptions(pa)
                     DrawPlots()
                     ResetView()
                     swa=SaveWindowAttributes()
