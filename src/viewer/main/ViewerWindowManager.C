@@ -99,6 +99,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtImage.h>
 #include <avtImageTiler.h>
+#include <avtMultiWindowSaver.h>
 #include <avtFileWriter.h>
 #include <avtToolInterface.h>
 #include <ImproperUseException.h>
@@ -1630,6 +1631,9 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Jeremy Meredith, Tue Jun 24 12:27:54 EDT 2008
 //    Use the actual OSMesa size limit for the window limit.
 //
+//    Hank Childs, Thu Jul 22 09:55:03 PDT 2010
+//    Added support for advanced multi-window saves.
+//
 // ****************************************************************************
 
 void
@@ -1843,7 +1847,18 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                     image2 = CreateTiledImage(w, h, false);
                 }
             }
-            else 
+            else if (saveWindowClientAtts->GetAdvancedMultiWindowSave())
+            {
+                // Do an advanced multi-window save for the left eye.
+                image = AdvancedMultiWindowSave(w, h, true);
+
+                // Do an advanced multi-window save for the right eye.
+                if (saveWindowClientAtts->GetStereo())
+                {
+                    image2 = AdvancedMultiWindowSave(w, h, false);
+                }
+            }
+            else
             {
                 // Create the left eye.
                 image = CreateSingleImage(windowIndex, w, h,
@@ -2202,6 +2217,101 @@ ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye)
     // Return the tiled image returned by the tiler.
     //
     return tiler.CreateTiledImage();
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::AdvancedMultiWindowSave
+//
+//  Purpose: 
+//    This method does an advanced multi-window save.
+//
+//  Arguments:
+//    width     The desired width of the tiled image.
+//    height    The desired height of the tiled image.
+//    leftEye   True if this is for the left eye.
+//
+//  Returns:    An image containing results from multiple windows.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 16, 2010
+//
+// ****************************************************************************
+
+avtImage_p
+ViewerWindowManager::AdvancedMultiWindowSave(int width, int height, 
+                                             bool leftEye)
+{
+    //
+    // Determine which windows actually have plots to save.
+    // Also sort the windows into the sortedWindows array.
+    // We need to do this because if any windows have ever been deleted,
+    // new windows can appear in the first unused slot in the windows array.
+    // Thus the windows array does not contain windows in any given order.
+    // Since we want to always tile the image so that windows are in order
+    // (1, 2, 3, ...) we sort.
+    //
+    int windowIndex, windowWithPlot = -1, windowsWithPlots = 0;
+    ViewerWindow **sortedWindows = new ViewerWindow*[maxWindows];
+    for(windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
+        sortedWindows[windowIndex] = 0;
+    for(windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
+    {
+        ViewerWindow *win = windows[windowIndex];
+        if(win != 0 && win->GetPlotList()->GetNumPlots() > 0)
+        {
+            sortedWindows[win->GetWindowId()] = win;
+            if(windowWithPlot == -1)
+                windowWithPlot = windowIndex;
+            ++windowsWithPlots;
+        }
+    }
+
+    // 
+    // Return early if none of the windows have plots.
+    //
+    if(windowsWithPlots == 0)
+    {
+        delete [] sortedWindows;
+        Warning(tr("VisIt did not do an advanced window save because none of "
+                   "the windows had any plots."));
+        return NULL;
+    }
+
+    //
+    // If we're not in screen capture mode then divide up the prescribed
+    // image size among the tiles that we have.
+    //
+    avtMultiWindowSaver mws(saveWindowClientAtts->GetSubWindowAtts());
+    mws.SetImageSize(width, height);
+
+    //
+    // Get an image for each window that has plots and add the images to the
+    // multi-window-saver (mws) object.
+    //
+    for(int index = 0; index < maxWindows; ++index)
+    {
+        if(sortedWindows[index] != 0)
+        {
+            bool doScreenCapture = false;
+            int  winId = sortedWindows[index]->GetWindowId();
+            SaveSubWindowsAttributes &atts = 
+                                      saveWindowClientAtts->GetSubWindowAtts();
+            SaveSubWindowAttributes winAtts = atts.GetAttsForWindow(winId+1);
+            if (winAtts.GetOmitWindow())
+                continue;
+            const int *size = winAtts.GetSize();
+            mws.AddImage(CreateSingleImage(winId,
+                size[0], size[1],
+                doScreenCapture, leftEye), winId+1);
+            Message(tr("Saving tiled image..."));
+        }
+    }
+    delete [] sortedWindows;
+
+    //
+    // Return the tiled image returned by the tiler.
+    //
+    return mws.CreateImage();
 }
 
 // ****************************************************************************

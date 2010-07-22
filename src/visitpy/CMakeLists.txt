@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#  Hank Childs, Thu Jul 22 09:55:03 PDT 2010
+#  Add attributes for multi-window saves.
+#
 #****************************************************************************/
 
 SET(COMMON_SOURCES
@@ -128,6 +131,8 @@ visitpy/PyQueryAttributes.C
 visitpy/PyQueryOverTimeAttributes.C 
 visitpy/PyRenderingAttributes.C 
 visitpy/PySaveWindowAttributes.C 
+visitpy/PySaveSubWindowAttributes.C 
+visitpy/PySaveSubWindowsAttributes.C 
 visitpy/PyView2DAttributes.C 
 visitpy/PyView3DAttributes.C 
 visitpy/PyViewAttributes.C 

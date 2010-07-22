@@ -52,6 +52,7 @@
 #include <QRadioButton>
 
 #include <QvisSaveWindow.h>
+#include <QvisOpacitySlider.h>
 #include <SaveWindowAttributes.h>
 #include <ViewerProxy.h>
 
@@ -92,6 +93,7 @@ QvisSaveWindow::QvisSaveWindow(
                                QvisPostableWindowObserver::ApplyButton)
 {
     saveWindowAtts = subj;
+    currentWindow = 0;
 }
 
 // ****************************************************************************
@@ -174,121 +176,31 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
-//    Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
-//    Added PLY writer.
+//   Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
+//   Added PLY writer.
+//
+//   Hank Childs, Thu Jul 22 09:55:03 PDT 2010
+//   Added widgets for advanced multi-window saves.
 //
 // ****************************************************************************
 
 void
 QvisSaveWindow::CreateWindowContents()
 {
-    // Create a group box for the file information.
-    QGroupBox *infoBox = new QGroupBox(central);
-    infoBox->setTitle(tr("File information"));
-    topLayout->addWidget(infoBox);
+    QTabWidget *propertyTabs = new QTabWidget(central);
+    topLayout->addWidget(propertyTabs);
 
-    QGridLayout *infoLayout = new QGridLayout(infoBox);
+    // ------------------------------------------------------------------------
+    // First tab
+    // ------------------------------------------------------------------------
+    QWidget *firstTab = new QWidget(central);
+    propertyTabs->addTab(firstTab, tr("Standard Save"));
 
-    outputToCurrentDirectoryCheckBox = new QCheckBox(tr("Output files to current directory"),
-                                                     infoBox);
-    connect(outputToCurrentDirectoryCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(outputToCurrentDirectoryToggled(bool)));
-    infoLayout->addWidget(outputToCurrentDirectoryCheckBox, 1, 0, 1, 2);
-
-    outputDirectoryLabel    = new QLabel(tr("Output directory"), infoBox);
-    infoLayout->addWidget(outputDirectoryLabel, 2, 0, 1, 2);
-    
-    QHBoxLayout *outputDirectoryLayout = new QHBoxLayout();
-    outputDirectoryLineEdit     = new QLineEdit(infoBox);
-    outputDirectorySelectButton = new QPushButton("...", infoBox);
-    
-    outputDirectoryLayout->addWidget(outputDirectoryLineEdit);
-    outputDirectoryLayout->addWidget(outputDirectorySelectButton);
-    
-    connect(outputDirectoryLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processOutputDirectoryText()));
-
-
-#ifndef Q_WS_MACX
-    outputDirectorySelectButton->setMaximumWidth(
-         fontMetrics().boundingRect("...").width() + 6);
-#endif
-    outputDirectorySelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
-                                               QSizePolicy::Minimum));
-
-    connect(outputDirectorySelectButton, SIGNAL(clicked()),
-            this, SLOT(selectOutputDirectory()));
-    
-    outputDirectoryLayout->setSpacing(0);
-    
-
-    infoLayout->addLayout(outputDirectoryLayout, 3, 0, 1, 2);
-    
-    filenameLineEdit = new QLineEdit(infoBox);
-    connect(filenameLineEdit, SIGNAL(returnPressed()), this, SLOT(processFilenameText()));
-    QLabel *filenameLabel = new QLabel(tr("Filename"), infoBox);
-    infoLayout->addWidget(filenameLabel, 4, 0);
-    infoLayout->addWidget(filenameLineEdit, 4, 1);
-
-    fileFormatComboBox = new QComboBox(infoBox);
-    fileFormatComboBox->addItem("bmp");
-    fileFormatComboBox->addItem("curve");
-    fileFormatComboBox->addItem("jpeg");
-    fileFormatComboBox->addItem("obj");
-    fileFormatComboBox->addItem("png");
-    fileFormatComboBox->addItem("postscript");
-    fileFormatComboBox->addItem("pov");
-    fileFormatComboBox->addItem("ppm");
-    fileFormatComboBox->addItem("rgb");
-    fileFormatComboBox->addItem("stl");
-    fileFormatComboBox->addItem("tiff");
-    fileFormatComboBox->addItem("ultra");
-    fileFormatComboBox->addItem("vtk");
-    fileFormatComboBox->addItem("ply");
-    connect(fileFormatComboBox, SIGNAL(activated(int)),
-           this, SLOT(fileFormatChanged(int)));
-    QLabel *formatLabel = new QLabel(tr("File type"),infoBox);
-    infoLayout->addWidget(formatLabel, 5, 0);
-    infoLayout->addWidget(fileFormatComboBox, 5, 1);
-
-    // The quality slider.
-    qualitySlider = new QSlider(Qt::Horizontal, infoBox);
-    qualitySlider->setMinimum(0);
-    qualitySlider->setMaximum(100);
-    
-    connect(qualitySlider, SIGNAL(valueChanged(int)),
-            this, SLOT(qualityChanged(int)));
-    infoLayout->addWidget(qualitySlider, 6, 1);
-    qualityLabel = new QLabel(tr("Quality"),infoBox);
-    infoLayout->addWidget(qualityLabel, 6, 0);
-
-    // The progressive toggle.
-    progressiveCheckBox = new QCheckBox(tr("Progressive"), infoBox);
-    connect(progressiveCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(progressiveToggled(bool)));
-    infoLayout->addWidget(progressiveCheckBox, 7, 1, Qt::AlignRight);
-
-    QHBoxLayout *compressionLayout = new QHBoxLayout();
-    
-    compressionTypeLabel = new QLabel(tr("Compression type"),infoBox);
-    compressionTypeComboBox = new QComboBox(infoBox);
-    compressionTypeComboBox->addItem(tr("None"));
-    compressionTypeComboBox->addItem(tr("PackBits"));
-    compressionTypeComboBox->addItem(tr("JPEG"));
-    compressionTypeComboBox->addItem(tr("Deflate"));
-    //compressionTypeComboBox->addItem("LZW");
-    compressionLayout->addWidget(compressionTypeLabel);
-    compressionLayout->addWidget(compressionTypeComboBox);
-    
-    connect(compressionTypeComboBox, SIGNAL(activated(int)),
-            this, SLOT(compressionTypeChanged(int)));
-    compressionTypeLabel->setBuddy(compressionTypeComboBox);
-    infoLayout->addLayout(compressionLayout, 8,0, 1,2);
+    QGridLayout *mainLayout = new QGridLayout(firstTab);
 
     // Create a group box for the image resolution.
     resolutionBox = new QGroupBox(central);
-    resolutionBox->setTitle(tr("Resolution"));
-    topLayout->addWidget(resolutionBox);
+    mainLayout->addWidget(resolutionBox);
 
     QGridLayout *resolutionLayout = new QGridLayout(resolutionBox);
 
@@ -332,45 +244,299 @@ QvisSaveWindow::CreateWindowContents()
     resolutionLayout->addWidget(heightLabel, 4, 2);
     resolutionLayout->addWidget(heightLineEdit, 4, 3);
 
-    // The family toggle.
-    QGridLayout *toggleLayout = new QGridLayout();
-    topLayout->addLayout(toggleLayout);
-    //toggleLayout->setSpacing(5);
-    
-    familyCheckBox = new QCheckBox(tr("Family"), central);
-    connect(familyCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(familyToggled(bool)));
-    toggleLayout->addWidget(familyCheckBox, 0, 0);
+    // The stereo toggle.
+    stereoCheckBox = new QCheckBox(tr("Stereo"), central);
+    connect(stereoCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(stereoToggled(bool)));
+    resolutionLayout->addWidget(stereoCheckBox, 5, 0);
 
     // The screen capture toggle.
     screenCaptureCheckBox = new QCheckBox(tr("Screen capture"), central);
     connect(screenCaptureCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(screenCaptureToggled(bool)));
-    toggleLayout->addWidget(screenCaptureCheckBox, 0, 1);
+    resolutionLayout->addWidget(screenCaptureCheckBox, 5, 1);
 
     // The tiled toggle.
     saveTiledCheckBox = new QCheckBox(tr("Save tiled"), central);
     connect(saveTiledCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(saveTiledToggled(bool)));
-    toggleLayout->addWidget(saveTiledCheckBox, 0, 2);
+    resolutionLayout->addWidget(saveTiledCheckBox, 5, 2);
+
+    // ------------------------------------------------------------------------
+    // Second tab
+    // ------------------------------------------------------------------------
+    QWidget *secondTab = new QWidget(central);
+    propertyTabs->addTab(secondTab, tr("Advanced Multi-Window Save"));
+
+    QGridLayout *mainLayout2 = new QGridLayout(secondTab);
+
+    // Create a group box for the resolution
+    QGroupBox *mwsTopBox = new QGroupBox(central);
+    mainLayout2->addWidget(mwsTopBox);
+    QGridLayout *mwsTopLayout = new QGridLayout(mwsTopBox);
+
+    // Create the width lineedit and label.
+    // Create a group box for the file information.
+    // The stereo toggle.
+    advancedMultiWinSaveCheckBox = new QCheckBox(
+                          tr("Do Advanced Multi-Window Save"), central);
+    connect(advancedMultiWinSaveCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(advancedMultiWinSaveToggled(bool)));
+    mwsTopLayout->addWidget(advancedMultiWinSaveCheckBox, 0, 0);
+
+    // The stereo toggle.
+    stereoCheckBox2 = new QCheckBox(tr("Stereo"), central);
+    connect(stereoCheckBox2, SIGNAL(toggled(bool)),
+            this, SLOT(stereoToggled(bool)));
+    mwsTopLayout->addWidget(stereoCheckBox2, 0, 1);
+
+    // Create a group box for the resolution
+    QGroupBox *mwsSizeBox = new QGroupBox(central);
+    mwsSizeBox->setTitle(tr("Total Window Size"));
+    mainLayout2->addWidget(mwsSizeBox);
+    QGridLayout *mwsResolutionLayout = new QGridLayout(mwsSizeBox);
+
+    // Create the width lineedit and label.
+    mwsWidthLineEdit = new QLineEdit(mwsSizeBox);
+    connect(mwsWidthLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processmwsWidthText()));
+    QLabel *mwsWidthLabel = new QLabel(tr("Width"), resolutionBox);
+    mwsResolutionLayout->addWidget(mwsWidthLabel, 0, 0);
+    mwsResolutionLayout->addWidget(mwsWidthLineEdit, 0, 1);
+
+    // Create the height lineedit and label.
+    mwsHeightLineEdit = new QLineEdit(mwsSizeBox);
+    connect(mwsHeightLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processHeightText()));
+    QLabel *mwsHeightLabel = new QLabel(tr("Height"), resolutionBox);
+    mwsResolutionLayout->addWidget(mwsHeightLabel, 0, 2);
+    mwsResolutionLayout->addWidget(mwsHeightLineEdit, 0, 3);
+
+    // Create a group box for the individual window controls
+    QGroupBox *mwsControlsBox = new QGroupBox(central);
+    mwsControlsBox->setTitle(tr("Individual Window Controls"));
+    mainLayout2->addWidget(mwsControlsBox);
+    QGridLayout *mwsControlsLayout = new QGridLayout(mwsControlsBox);
+
+    mwsWindowComboBox = new QComboBox(central);
+    mwsWindowComboBox->addItem("1");
+    mwsWindowComboBox->addItem("2");
+    mwsWindowComboBox->addItem("3");
+    mwsWindowComboBox->addItem("4");
+    mwsWindowComboBox->addItem("5");
+    mwsWindowComboBox->addItem("6");
+    mwsWindowComboBox->addItem("7");
+    mwsWindowComboBox->addItem("8");
+    mwsWindowComboBox->addItem("9");
+    mwsWindowComboBox->addItem("10");
+    mwsWindowComboBox->addItem("11");
+    mwsWindowComboBox->addItem("12");
+    mwsWindowComboBox->addItem("13");
+    mwsWindowComboBox->addItem("14");
+    mwsWindowComboBox->addItem("15");
+    mwsWindowComboBox->addItem("16");
+    connect(mwsWindowComboBox, SIGNAL(activated(int)),
+            this, SLOT(mwsWindowComboBoxChanged(int)));
+    QLabel *mwsWindowLabel = new QLabel(tr("Window"),central);
+    mwsControlsLayout->addWidget(mwsWindowLabel, 0, 0, Qt::AlignRight);
+    mwsControlsLayout->addWidget(mwsWindowComboBox, 0, 1, Qt::AlignLeft);
+
+    omitWindowCheckBox = new QCheckBox(
+                          tr("Omit Window"), central);
+    connect(omitWindowCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(omitWindowCheckBoxToggled(bool)));
+    mwsControlsLayout->addWidget(omitWindowCheckBox, 0, 3);
+
+    // Create the width lineedit and label.
+    mwsIndWidthLineEdit = new QLineEdit(mwsControlsBox);
+    connect(mwsIndWidthLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processmwsIndWidthText()));
+    QLabel *mwsIndWidthLabel = new QLabel(tr("Width"), mwsControlsBox);
+    mwsControlsLayout->addWidget(mwsIndWidthLabel, 1, 0, Qt::AlignRight);
+    mwsControlsLayout->addWidget(mwsIndWidthLineEdit, 1, 1, Qt::AlignLeft);
+
+    // Create the height lineedit and label.
+    mwsIndHeightLineEdit = new QLineEdit(mwsControlsBox);
+    connect(mwsIndHeightLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processmwsIndHeightText()));
+    QLabel *mwsIndHeightLabel = new QLabel(tr("Height"), mwsControlsBox);
+    mwsControlsLayout->addWidget(mwsIndHeightLabel, 1, 2, Qt::AlignRight);
+    mwsControlsLayout->addWidget(mwsIndHeightLineEdit, 1, 3, Qt::AlignLeft);
+
+    // Create the positionX lineedit and label.
+    mwsPosXLineEdit = new QLineEdit(mwsControlsBox);
+    connect(mwsPosXLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processmwsPosXText()));
+    QLabel *mwsPosXLabel = new QLabel(tr("Position (X)"), mwsControlsBox);
+    mwsControlsLayout->addWidget(mwsPosXLabel, 2, 0, Qt::AlignRight);
+    mwsControlsLayout->addWidget(mwsPosXLineEdit, 2, 1, Qt::AlignLeft);
+
+    // Create the height lineedit and label.
+    mwsPosYLineEdit = new QLineEdit(mwsControlsBox);
+    connect(mwsPosYLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processmwsPosYText()));
+    QLabel *mwsPosYLabel = new QLabel(tr("Position (Y)"), mwsControlsBox);
+    mwsControlsLayout->addWidget(mwsPosYLabel, 2, 2, Qt::AlignRight);
+    mwsControlsLayout->addWidget(mwsPosYLineEdit, 2, 3, Qt::AlignLeft);
+
+    mwsLayerComboBox = new QComboBox(central);
+    mwsLayerComboBox->addItem("1");
+    mwsLayerComboBox->addItem("2");
+    mwsLayerComboBox->addItem("3");
+    mwsLayerComboBox->addItem("4");
+    mwsLayerComboBox->addItem("5");
+    mwsLayerComboBox->addItem("6");
+    mwsLayerComboBox->addItem("7");
+    mwsLayerComboBox->addItem("8");
+    mwsLayerComboBox->addItem("9");
+    mwsLayerComboBox->addItem("10");
+    mwsLayerComboBox->addItem("11");
+    mwsLayerComboBox->addItem("12");
+    mwsLayerComboBox->addItem("13");
+    mwsLayerComboBox->addItem("14");
+    mwsLayerComboBox->addItem("15");
+    mwsLayerComboBox->addItem("16");
+    connect(mwsLayerComboBox, SIGNAL(activated(int)),
+            this, SLOT(mwsLayerComboBoxChanged(int)));
+    QLabel *mwsLayerLabel = new QLabel(tr("Layer"),central);
+    mwsControlsLayout->addWidget(mwsLayerLabel, 3, 0, Qt::AlignRight);
+    mwsControlsLayout->addWidget(mwsLayerComboBox, 3, 1, Qt::AlignLeft);
+
+    imageTransparency = new QvisOpacitySlider(mwsControlsBox);
+    imageTransparency->setMinimum(0);
+    imageTransparency->setMaximum(100);
+    connect(imageTransparency, SIGNAL(valueChanged(int)),
+            this, SLOT(imageTransparencyChanged(int)));
+    QLabel *imageTransparencyLabel = new QLabel(tr("Transparency"),mwsControlsBox);
+    mwsControlsLayout->addWidget(imageTransparencyLabel, 3, 2, Qt::AlignRight);
+    mwsControlsLayout->addWidget(imageTransparency, 3, 3);
+
+    // Create a group box for the file information.
+    QGroupBox *nameBox = new QGroupBox(central);
+    nameBox->setTitle(tr("File name"));
+    topLayout->addWidget(nameBox);
+
+    QGridLayout *nameLayout = new QGridLayout(nameBox);
+
+    filenameLineEdit = new QLineEdit(nameBox);
+    connect(filenameLineEdit, SIGNAL(returnPressed()), this, SLOT(processFilenameText()));
+    QLabel *filenameLabel = new QLabel(tr("Filename"), nameBox);
+    nameLayout->addWidget(filenameLabel, 0, 0);
+    nameLayout->addWidget(filenameLineEdit, 0, 1);
+
+    familyCheckBox = new QCheckBox(tr("Family"), central);
+    connect(familyCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(familyToggled(bool)));
+    nameLayout->addWidget(familyCheckBox, 0, 3);
 
     // The binary toggle.
+    outputToCurrentDirectoryCheckBox = new QCheckBox(tr("Output files to current directory"),
+                                                     nameBox);
+    connect(outputToCurrentDirectoryCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(outputToCurrentDirectoryToggled(bool)));
+    nameLayout->addWidget(outputToCurrentDirectoryCheckBox, 1, 0, 1, 2);
+
+    outputDirectoryLabel    = new QLabel(tr("Output directory"), nameBox);
+    nameLayout->addWidget(outputDirectoryLabel, 2, 0, 1, 2);
+    
+    QHBoxLayout *outputDirectoryLayout = new QHBoxLayout();
+    outputDirectoryLineEdit     = new QLineEdit(nameBox);
+    outputDirectorySelectButton = new QPushButton("...", nameBox);
+    
+    outputDirectoryLayout->addWidget(outputDirectoryLineEdit);
+    outputDirectoryLayout->addWidget(outputDirectorySelectButton);
+    
+    connect(outputDirectoryLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processOutputDirectoryText()));
+
+
+#ifndef Q_WS_MACX
+    outputDirectorySelectButton->setMaximumWidth(
+         fontMetrics().boundingRect("...").width() + 6);
+#endif
+    outputDirectorySelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
+                                               QSizePolicy::Minimum));
+
+    connect(outputDirectorySelectButton, SIGNAL(clicked()),
+            this, SLOT(selectOutputDirectory()));
+    
+    outputDirectoryLayout->setSpacing(0);
+    
+
+    nameLayout->addLayout(outputDirectoryLayout, 3, 0, 1, 2);
+    
+    // Create a group box for the file format.
+    QGroupBox *formatBox = new QGroupBox(central);
+    formatBox->setTitle(tr("Format Options"));
+    topLayout->addWidget(formatBox);
+
+    QGridLayout *formatLayout = new QGridLayout(formatBox);
+
+    fileFormatComboBox = new QComboBox(formatBox);
+    fileFormatComboBox->addItem("bmp");
+    fileFormatComboBox->addItem("curve");
+    fileFormatComboBox->addItem("jpeg");
+    fileFormatComboBox->addItem("obj");
+    fileFormatComboBox->addItem("png");
+    fileFormatComboBox->addItem("postscript");
+    fileFormatComboBox->addItem("pov");
+    fileFormatComboBox->addItem("ppm");
+    fileFormatComboBox->addItem("rgb");
+    fileFormatComboBox->addItem("stl");
+    fileFormatComboBox->addItem("tiff");
+    fileFormatComboBox->addItem("ultra");
+    fileFormatComboBox->addItem("vtk");
+    fileFormatComboBox->addItem("ply");
+    connect(fileFormatComboBox, SIGNAL(activated(int)),
+           this, SLOT(fileFormatChanged(int)));
+    QLabel *formatLabel = new QLabel(tr("File type"),formatBox);
+    formatLayout->addWidget(formatLabel, 5, 0);
+    formatLayout->addWidget(fileFormatComboBox, 5, 1);
+
+    // The quality slider.
+    qualitySlider = new QSlider(Qt::Horizontal, formatBox);
+    qualitySlider->setMinimum(0);
+    qualitySlider->setMaximum(100);
+    
+    connect(qualitySlider, SIGNAL(valueChanged(int)),
+            this, SLOT(qualityChanged(int)));
+    formatLayout->addWidget(qualitySlider, 6, 1);
+    qualityLabel = new QLabel(tr("Quality"),formatBox);
+    formatLayout->addWidget(qualityLabel, 6, 0);
+
+    // The progressive toggle.
+    progressiveCheckBox = new QCheckBox(tr("Progressive"), formatBox);
+    connect(progressiveCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(progressiveToggled(bool)));
+    formatLayout->addWidget(progressiveCheckBox, 7, 1, Qt::AlignRight);
+
+    QHBoxLayout *compressionLayout = new QHBoxLayout();
+    
+    compressionTypeLabel = new QLabel(tr("Compression type"),formatBox);
+    compressionTypeComboBox = new QComboBox(formatBox);
+    compressionTypeComboBox->addItem(tr("None"));
+    compressionTypeComboBox->addItem(tr("PackBits"));
+    compressionTypeComboBox->addItem(tr("JPEG"));
+    compressionTypeComboBox->addItem(tr("Deflate"));
+    //compressionTypeComboBox->addItem("LZW");
+    compressionLayout->addWidget(compressionTypeLabel);
+    compressionLayout->addWidget(compressionTypeComboBox);
+    
+    connect(compressionTypeComboBox, SIGNAL(activated(int)),
+            this, SLOT(compressionTypeChanged(int)));
+    compressionTypeLabel->setBuddy(compressionTypeComboBox);
+    formatLayout->addLayout(compressionLayout, 8,0, 1,2);
+
     binaryCheckBox = new QCheckBox(tr("Binary"), central);
     connect(binaryCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(binaryToggled(bool)));
-    toggleLayout->addWidget(binaryCheckBox, 1, 0);
-
-    // The stereo toggle.
-    stereoCheckBox = new QCheckBox(tr("Stereo"), central);
-    connect(stereoCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(stereoToggled(bool)));
-    toggleLayout->addWidget(stereoCheckBox, 1, 1);
+    formatLayout->addWidget(binaryCheckBox, 9, 0);
 
     // The stereo toggle.
     forceMergeCheckBox = new QCheckBox(tr("Force parallel merge"), central);
     connect(forceMergeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(forceMergeToggled(bool)));
-    toggleLayout->addWidget(forceMergeCheckBox, 1, 2);
+    formatLayout->addWidget(forceMergeCheckBox, 9, 1, Qt::AlignRight);
 
     // The save button.
     QHBoxLayout *saveButtonLayout = new QHBoxLayout();
@@ -438,11 +604,14 @@ QvisSaveWindow::CreateWindowContents()
 //   Brad Whitlock, Mon Dec 17 10:38:20 PST 2007
 //   Made it use ids.
 //
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
+//   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
+//   Initial Qt4 Port.
 //
-//    Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
-//    Added PLY writer.
+//   Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
+//   Added PLY writer.
+//
+//   Hank Childs, Thu Jul 22 09:55:03 PDT 2010
+//   Added support for advanced multi-window saves.
 //
 // ****************************************************************************
 
@@ -454,6 +623,7 @@ QvisSaveWindow::UpdateWindow(bool doAll)
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
     // for displaying the state values and setting widget sensitivity.
+    SaveSubWindowAttributes &atts = saveWindowAtts->GetSubWindowAtts().GetAttsForWindow(currentWindow+1);
     for(int i = 0; i < saveWindowAtts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -512,14 +682,20 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             if (saveWindowAtts->CurrentFormatIsImageFormat())
             {
                 stereoCheckBox->setEnabled(true);
+                stereoCheckBox2->setEnabled(true);
+                advancedMultiWinSaveCheckBox->setEnabled(true);
                 screenCaptureCheckBox->setEnabled(true);
                 forceMergeCheckBox->setEnabled(false);
+                saveTiledCheckBox->setEnabled(true);
             }
             else
             {
                 stereoCheckBox->setEnabled(false);
+                stereoCheckBox2->setEnabled(false);
+                advancedMultiWinSaveCheckBox->setEnabled(false);
                 screenCaptureCheckBox->setEnabled(false);
                 forceMergeCheckBox->setEnabled(true);
+                saveTiledCheckBox->setEnabled(false);
             }
             break;
         case SaveWindowAttributes::ID_width:
@@ -604,6 +780,49 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             screenResButton->blockSignals(false);
             heightLineEdit->blockSignals(false);
             break;
+        case SaveWindowAttributes::ID_advancedMultiWindowSave:
+            advancedMultiWinSaveCheckBox->blockSignals(true);
+            advancedMultiWinSaveCheckBox->setChecked(saveWindowAtts->GetAdvancedMultiWindowSave());
+            advancedMultiWinSaveCheckBox->blockSignals(false);
+            break;
+        case SaveWindowAttributes::ID_subWindowAtts:
+            mwsWindowComboBox->blockSignals(true);
+            mwsWindowComboBox->setCurrentIndex(currentWindow);
+            mwsWindowComboBox->blockSignals(false);
+            mwsWidthLineEdit->blockSignals(true);
+            temp.sprintf("%d", saveWindowAtts->GetWidth());
+            mwsWidthLineEdit->setText(temp);
+            mwsWidthLineEdit->blockSignals(false);
+            mwsHeightLineEdit->blockSignals(true);
+            temp.sprintf("%d", saveWindowAtts->GetHeight());
+            mwsHeightLineEdit->setText(temp);
+            mwsHeightLineEdit->blockSignals(false);
+            mwsIndWidthLineEdit->blockSignals(true);
+            temp.sprintf("%d", atts.GetSize()[0]);
+            mwsIndWidthLineEdit->setText(temp);
+            mwsIndWidthLineEdit->blockSignals(false);
+            mwsIndHeightLineEdit->blockSignals(true);
+            temp.sprintf("%d", atts.GetSize()[1]);
+            mwsIndHeightLineEdit->setText(temp);
+            mwsIndHeightLineEdit->blockSignals(false);
+            mwsPosXLineEdit->blockSignals(true);
+            temp.sprintf("%d", atts.GetPosition()[0]);
+            mwsPosXLineEdit->setText(temp);
+            mwsPosXLineEdit->blockSignals(false);
+            mwsPosYLineEdit->blockSignals(true);
+            temp.sprintf("%d", atts.GetPosition()[1]);
+            mwsPosYLineEdit->setText(temp);
+            mwsPosYLineEdit->blockSignals(false);
+            mwsLayerComboBox->blockSignals(true);
+            mwsLayerComboBox->setCurrentIndex((atts.GetLayer() < 1 ? 0 : (atts.GetLayer() > 16 ? 15 : atts.GetLayer()-1)));
+            mwsLayerComboBox->blockSignals(false);
+            omitWindowCheckBox->blockSignals(true);
+            omitWindowCheckBox->setChecked(atts.GetOmitWindow());
+            omitWindowCheckBox->blockSignals(false);
+            imageTransparency->blockSignals(true);
+            imageTransparency->setValue( (atts.GetTransparency() < 0 ? 0 : (atts.GetTransparency() > 1 ? 100 : 100*atts.GetTransparency())));
+            imageTransparency->blockSignals(false);
+            break;
         }
     } // end for
 
@@ -671,6 +890,9 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 //
 //   Jeremy Meredith, Tue Jun 24 12:27:54 EDT 2008
 //   Use the actual OSMesa size limit for the window limit.
+//
+//   Hank Childs, Thu Jul 22 09:55:03 PDT 2010
+//   Added support for advanced multi-window saves.
 //
 // ****************************************************************************
 
@@ -795,6 +1017,139 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             saveWindowAtts->SetHeight(saveWindowAtts->GetWidth());
         else if(setHeight)
             saveWindowAtts->SetWidth(saveWindowAtts->GetHeight());
+    }
+
+    if (which_widget == SaveWindowAttributes::ID_subWindowAtts || doAll)
+    {
+        if (saveWindowAtts->GetAdvancedMultiWindowSave())
+        {
+            SaveSubWindowAttributes &atts = saveWindowAtts->GetSubWindowAtts().GetAttsForWindow(currentWindow+1);
+
+            // width & height.  Note this is a bit tricky, since it shares with widgets in the other tab.
+            temp = mwsWidthLineEdit->displayText().simplified();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                int w;
+                okay = (sscanf(temp.toStdString().c_str(), "%d", &w) == 1);
+                if(okay)
+                    saveWindowAtts->SetWidth(w);
+            }
+            if(!okay)
+            {
+                msg = tr("The width was invalid. "
+                         "Resetting to the last good value %1.").
+                      arg(saveWindowAtts->GetWidth());
+                Message(msg);
+                saveWindowAtts->SetWidth(saveWindowAtts->GetWidth());
+            }
+            temp = mwsHeightLineEdit->displayText().simplified();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                int h;
+                okay = (sscanf(temp.toStdString().c_str(), "%d", &h) == 1);
+                if(okay)
+                    saveWindowAtts->SetHeight(h);
+            }
+            if(!okay)
+            {
+                msg = tr("The height was invalid. "
+                         "Resetting to the last good value %1.").
+                      arg(saveWindowAtts->GetHeight());
+                Message(msg);
+                saveWindowAtts->SetHeight(saveWindowAtts->GetHeight());
+            }
+
+            // position in X & Y (for a given window).
+            temp = mwsPosXLineEdit->displayText().simplified();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                int x;
+                okay = (sscanf(temp.toStdString().c_str(), "%d", &x) == 1);
+                if(okay)
+                {
+                    int pos[2] = { x, atts.GetPosition()[1] };
+                    atts.SetPosition(pos);
+                }
+            }
+            if(!okay)
+            {
+                msg = tr("The x position was invalid. "
+                         "Resetting to the last good value %1.").
+                      arg(atts.GetPosition()[0]);
+                Message(msg);
+            }
+            temp = mwsPosYLineEdit->displayText().simplified();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                int y;
+                okay = (sscanf(temp.toStdString().c_str(), "%d", &y) == 1);
+                if(okay)
+                {
+                    int pos[2] = { atts.GetPosition()[0], y };
+                    atts.SetPosition(pos);
+                }
+            }
+            if(!okay)
+            {
+                msg = tr("The y position was invalid. "
+                         "Resetting to the last good value %1.").
+                      arg(atts.GetPosition()[1]);
+                Message(msg);
+            }
+
+            // size (for a given window).
+            temp = mwsIndWidthLineEdit->displayText().simplified();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                int w;
+                okay = (sscanf(temp.toStdString().c_str(), "%d", &w) == 1);
+                if(okay)
+                {
+                    okay = (w <= VISIT_RENDERING_SIZE_LIMIT);
+                    if (okay)
+                    {
+                        int s[2] = { w, atts.GetSize()[1] };
+                        atts.SetSize(s);
+                    }
+                }
+            }
+            if(!okay)
+            {
+                msg = tr("The width was invalid. "
+                         "Resetting to the last good value %1.").
+                      arg(atts.GetSize()[0]);
+                Message(msg);
+            }
+            temp = mwsIndHeightLineEdit->displayText().simplified();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                int h;
+                okay = (sscanf(temp.toStdString().c_str(), "%d", &h) == 1);
+                if(okay)
+                {
+                    okay = (h <= VISIT_RENDERING_SIZE_LIMIT);
+                
+                    if(okay)
+                    {
+                        int s[2] = { atts.GetSize()[0], h };
+                        atts.SetSize(s);
+                    }
+                }
+            }
+            if(!okay)
+            {
+                msg = tr("The height was invalid. "
+                         "Resetting to the last good value %1.").
+                      arg(atts.GetSize()[1]);
+                Message(msg);
+            }
+        }
     }
 }
 
@@ -1280,6 +1635,231 @@ QvisSaveWindow::forceMergeToggled(bool val)
 }
 
 // ****************************************************************************
+//  Method: QvisSaveWindow::advancedMultiWinSaveToggled
+//
+//  Purpose:
+//    This is a Qt slot function that is called when the advanced multi-window
+//    save button is clicked.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void 
+QvisSaveWindow::advancedMultiWinSaveToggled(bool val)
+{
+    saveWindowAtts->SetAdvancedMultiWindowSave(val);
+    saveWindowAtts->SetResConstraint(SaveWindowAttributes::NoConstraint);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisSaveWindow::processmwsWidthText
+//
+//  Purpose:
+//    This is a Qt slot function that is called when the width field for
+//    advanced multi-window saves should be processed.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::processmwsWidthText()
+{
+    GetCurrentValues(SaveWindowAttributes::ID_subWindowAtts);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisSaveWindow::processmwsHeightText
+//
+//  Purpose:
+//    This is a Qt slot function that is called when the height field for
+//    advanced multi-window saves should be processed.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::processmwsHeightText()
+{
+    GetCurrentValues(SaveWindowAttributes::ID_subWindowAtts);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisSaveWindow::mwsWindowComboBoxChanged
+//
+//  Purpose:
+//    This is a Qt slot function that is called when the combo box that selects
+//    the current window changes.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void 
+QvisSaveWindow::mwsWindowComboBoxChanged(int v)
+{
+    // process any changes in the line edits
+    GetCurrentValues(SaveWindowAttributes::ID_subWindowAtts);
+   
+    currentWindow = v;
+    UpdateWindow(true);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisSaveWindow::processmwsIndWidthText
+//
+//  Purpose:
+//    This is a Qt slot function that is called when the width field for
+//    an individual window in an advanced multi-window saves should be processed.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::processmwsIndWidthText()
+{
+    GetCurrentValues(SaveWindowAttributes::ID_subWindowAtts);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisSaveWindow::processmwsIndHeightText
+//
+//  Purpose:
+//    This is a Qt slot function that is called when the height field for
+//    an individual window in an advanced multi-window saves should be processed.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::processmwsIndHeightText()
+{
+    GetCurrentValues(SaveWindowAttributes::ID_subWindowAtts);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisSaveWindow::processmwsPosXText
+//
+//  Purpose:
+//    This is a Qt slot function that is called when the x-position for
+//    an individual window in an advanced multi-window saves should be processed.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::processmwsPosXText()
+{
+    GetCurrentValues(SaveWindowAttributes::ID_subWindowAtts);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisSaveWindow::processmwsPosYText
+//
+//  Purpose:
+//    This is a Qt slot function that is called when the y-position for
+//    an individual window in an advanced multi-window saves should be processed.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::processmwsPosYText()
+{
+    GetCurrentValues(SaveWindowAttributes::ID_subWindowAtts);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisSaveWindow::mwsLayerComboBoxChanged
+//
+//  Purpose:
+//    This is a Qt slot function that is called when the layer for
+//    an individual window in an advanced multi-window saves has changed.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void QvisSaveWindow::mwsLayerComboBoxChanged(int val)
+{
+    // read line edits 
+    GetCurrentValues(SaveWindowAttributes::ID_subWindowAtts);
+
+    SaveSubWindowAttributes &atts = saveWindowAtts->GetSubWindowAtts().GetAttsForWindow(currentWindow+1);
+    atts.SetLayer(val+1);
+    Apply();
+}
+
+
+// ****************************************************************************
+//  Method: QvisSaveWindow::omitWindowCheckBoxToggled
+//
+//  Purpose:
+//    This is a Qt slot function that is called when omit status for
+//    an individual window in an advanced multi-window saves has changed.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void QvisSaveWindow::omitWindowCheckBoxToggled(bool val)
+{
+    // read line edits 
+    GetCurrentValues(SaveWindowAttributes::ID_subWindowAtts);
+
+    SaveSubWindowAttributes &atts = saveWindowAtts->GetSubWindowAtts().GetAttsForWindow(currentWindow+1);
+    atts.SetOmitWindow(val);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisSaveWindow::imageTransparencyChanged
+//
+//  Purpose:
+//    This is a Qt slot function that is called when the transparency for
+//    an individual window in an advanced multi-window saves has changed.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2010
+//
+// ****************************************************************************
+
+void QvisSaveWindow::imageTransparencyChanged(int val)
+{
+    // read line edits 
+    GetCurrentValues(SaveWindowAttributes::ID_subWindowAtts);
+
+    SaveSubWindowAttributes &atts = saveWindowAtts->GetSubWindowAtts().GetAttsForWindow(currentWindow+1);
+    atts.SetTransparency(val/100.0);
+    Apply();
+}
+
+
+// ****************************************************************************
 // Method: QvisSaveWindow::saveWindow
 //
 // Purpose: 
@@ -1366,3 +1946,5 @@ QvisSaveWindow::saveButtonClicked()
     apply();
     saveWindow();
 }
+
+

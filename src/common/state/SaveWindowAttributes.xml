@@ -77,6 +77,11 @@
     <Field name="resConstraint" label="resConstraint" type="enum" subtype="ResConstraint">
       ScreenProportions
     </Field>
+    <Field name="advancedMultiWindowSave" label="Do Advanced Multi-Window Save?" type="bool">
+      false
+    </Field>
+    <Field name="subWindowAtts" label="Attributes for sub-windows" type="att" subtype="SaveSubWindowsAttributes" enabler="advancedMultiWindowSave:true">
+    </Field>
     <Function name="CurrentFormatIsImageFormat" user="true" member="true">
     </Function>
   </Attribute>

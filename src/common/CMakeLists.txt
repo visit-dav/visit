@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Hank Childs, Thu Jul 22 09:55:03 PDT 2010
+#   Add attributes for multi-window saves.
+#
 #****************************************************************************/
 
 SET(COMM_SOURCES
@@ -238,6 +241,8 @@ state/QueryOverTimeAttributes.C
 state/QuitRPC.C
 state/RenderingAttributes.C
 state/SaveWindowAttributes.C
+state/SaveSubWindowAttributes.C
+state/SaveSubWindowsAttributes.C
 state/SILArrayAttributes.C
 state/SILAttributes.C
 state/SILMatrixAttributes.C

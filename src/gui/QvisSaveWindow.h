@@ -52,6 +52,7 @@ class QSlider;
 class SaveWindowAttributes;
 class QRadioButton;
 class QButtonGroup;
+class QvisOpacitySlider;
 
 // ****************************************************************************
 // Class: QvisSaveWindow
@@ -89,6 +90,10 @@ class QButtonGroup;
 //
 //   Brad Whitlock, Wed Apr  9 10:56:15 PDT 2008
 //   QString for caption, shortName.
+//
+//   Hank Childs, Thu Jul 22 09:55:03 PDT 2010
+//   Added support for multi-window saves.  Also re-orged window some to
+//   put check boxes close to the functionality they go with.
 //
 // ****************************************************************************
 
@@ -128,7 +133,21 @@ protected slots:
     void selectOutputDirectory();
     void saveButtonClicked();
     void forceMergeToggled(bool);
+    void advancedMultiWinSaveToggled(bool);
+    void processmwsWidthText();
+    void processmwsHeightText();
+    void mwsWindowComboBoxChanged(int);
+    void processmwsIndWidthText();
+    void processmwsIndHeightText();
+    void processmwsPosXText();
+    void processmwsPosYText();
+    void mwsLayerComboBoxChanged(int);
+    void omitWindowCheckBoxToggled(bool);
+    void imageTransparencyChanged(int);
+
 private:
+    int currentWindow;
+
     QCheckBox           *outputToCurrentDirectoryCheckBox;
     QLabel              *outputDirectoryLabel;
     QLineEdit           *outputDirectoryLineEdit;
@@ -136,6 +155,7 @@ private:
     QLineEdit           *filenameLineEdit;
     QCheckBox           *familyCheckBox;
     QCheckBox           *stereoCheckBox;
+    QCheckBox           *stereoCheckBox2;
     QComboBox           *fileFormatComboBox;
     QLabel              *qualityLabel;
     QSlider             *qualitySlider;
@@ -153,6 +173,18 @@ private:
     QCheckBox           *screenCaptureCheckBox;
     QCheckBox           *saveTiledCheckBox;
     QCheckBox           *forceMergeCheckBox;
+    QCheckBox           *advancedMultiWinSaveCheckBox;
+    QLineEdit           *mwsWidthLineEdit;
+    QLineEdit           *mwsHeightLineEdit;
+    QComboBox           *mwsWindowComboBox;
+    QLineEdit           *mwsIndWidthLineEdit;
+    QLineEdit           *mwsIndHeightLineEdit;
+    QLineEdit           *mwsPosXLineEdit;
+    QLineEdit           *mwsPosYLineEdit;
+    QComboBox           *mwsLayerComboBox;
+    QCheckBox           *omitWindowCheckBox;
+    QvisOpacitySlider   *imageTransparency;
+
     SaveWindowAttributes  *saveWindowAtts;
 };
 
