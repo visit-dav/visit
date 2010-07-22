@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Hank Childs, Thu Jul 22 09:55:03 PDT 2010
+#   Added avtMultiWindowSaver.
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -118,6 +121,7 @@ Pipeline/avtDebugDumpOptions.C
 Pipeline/avtImageReader.C
 Pipeline/avtImageTiler.C
 Pipeline/avtImageWriter.C
+Pipeline/avtMultiWindowSaver.C
 Pipeline/avtNamedSelection.C
 Pipeline/avtNamedSelectionManager.C
 Pipeline/avtNullDataReader.C

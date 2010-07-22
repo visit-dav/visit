@@ -420,6 +420,9 @@ typedef struct {
 //    Remove reference to bounding box mode.  Now handled through interactor
 //    attributes.
 //
+//    Hank Childs, Thu Jul 22 09:55:03 PDT 2010
+//    Added a method for AdvancedMultiWindowSaves.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -644,6 +647,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     avtImage_p CreateSingleImage(int windowIndex, int width, int height,
                                  bool screenCapture, bool leftEye);
     avtImage_p CreateTiledImage(int width, int height, bool leftEye);
+    avtImage_p AdvancedMultiWindowSave(int width, int height, bool leftEye);
     avtDataset_p GetDataset(int windowIndex, bool&);
     bool AskForCorrelationPermission(const QString &, const QString &,
                                      const stringVector &dbs) const;

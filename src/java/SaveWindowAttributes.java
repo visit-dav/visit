@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class SaveWindowAttributes extends AttributeSubject
 {
-    private static int SaveWindowAttributes_numAdditionalAtts = 17;
+    private static int SaveWindowAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int FILEFORMAT_BMP = 0;
@@ -72,6 +72,7 @@ public class SaveWindowAttributes extends AttributeSubject
     public final static int FILEFORMAT_TIFF = 10;
     public final static int FILEFORMAT_ULTRA = 11;
     public final static int FILEFORMAT_VTK = 12;
+    public final static int FILEFORMAT_PLY = 13;
 
     public final static int COMPRESSIONTYPE_NONE = 0;
     public final static int COMPRESSIONTYPE_PACKBITS = 1;
@@ -104,6 +105,8 @@ public class SaveWindowAttributes extends AttributeSubject
         compression = COMPRESSIONTYPE_PACKBITS;
         forceMerge = false;
         resConstraint = RESCONSTRAINT_SCREENPROPORTIONS;
+        advancedMultiWindowSave = false;
+        subWindowAtts = new SaveSubWindowsAttributes();
     }
 
     public SaveWindowAttributes(int nMoreFields)
@@ -127,6 +130,8 @@ public class SaveWindowAttributes extends AttributeSubject
         compression = COMPRESSIONTYPE_PACKBITS;
         forceMerge = false;
         resConstraint = RESCONSTRAINT_SCREENPROPORTIONS;
+        advancedMultiWindowSave = false;
+        subWindowAtts = new SaveSubWindowsAttributes();
     }
 
     public SaveWindowAttributes(SaveWindowAttributes obj)
@@ -150,6 +155,8 @@ public class SaveWindowAttributes extends AttributeSubject
         compression = obj.compression;
         forceMerge = obj.forceMerge;
         resConstraint = obj.resConstraint;
+        advancedMultiWindowSave = obj.advancedMultiWindowSave;
+        subWindowAtts = new SaveSubWindowsAttributes(obj.subWindowAtts);
 
         SelectAll();
     }
@@ -183,7 +190,9 @@ public class SaveWindowAttributes extends AttributeSubject
                 (stereo == obj.stereo) &&
                 (compression == obj.compression) &&
                 (forceMerge == obj.forceMerge) &&
-                (resConstraint == obj.resConstraint));
+                (resConstraint == obj.resConstraint) &&
+                (advancedMultiWindowSave == obj.advancedMultiWindowSave) &&
+                (subWindowAtts.equals(obj.subWindowAtts)));
     }
 
     // Property setting methods
@@ -289,24 +298,38 @@ public class SaveWindowAttributes extends AttributeSubject
         Select(16);
     }
 
+    public void SetAdvancedMultiWindowSave(boolean advancedMultiWindowSave_)
+    {
+        advancedMultiWindowSave = advancedMultiWindowSave_;
+        Select(17);
+    }
+
+    public void SetSubWindowAtts(SaveSubWindowsAttributes subWindowAtts_)
+    {
+        subWindowAtts = subWindowAtts_;
+        Select(18);
+    }
+
     // Property getting methods
-    public boolean GetOutputToCurrentDirectory() { return outputToCurrentDirectory; }
-    public String  GetOutputDirectory() { return outputDirectory; }
-    public String  GetFileName() { return fileName; }
-    public boolean GetFamily() { return family; }
-    public int     GetFormat() { return format; }
-    public int     GetWidth() { return width; }
-    public int     GetHeight() { return height; }
-    public boolean GetScreenCapture() { return screenCapture; }
-    public boolean GetSaveTiled() { return saveTiled; }
-    public int     GetQuality() { return quality; }
-    public boolean GetProgressive() { return progressive; }
-    public boolean GetBinary() { return binary; }
-    public String  GetLastRealFilename() { return lastRealFilename; }
-    public boolean GetStereo() { return stereo; }
-    public int     GetCompression() { return compression; }
-    public boolean GetForceMerge() { return forceMerge; }
-    public int     GetResConstraint() { return resConstraint; }
+    public boolean                  GetOutputToCurrentDirectory() { return outputToCurrentDirectory; }
+    public String                   GetOutputDirectory() { return outputDirectory; }
+    public String                   GetFileName() { return fileName; }
+    public boolean                  GetFamily() { return family; }
+    public int                      GetFormat() { return format; }
+    public int                      GetWidth() { return width; }
+    public int                      GetHeight() { return height; }
+    public boolean                  GetScreenCapture() { return screenCapture; }
+    public boolean                  GetSaveTiled() { return saveTiled; }
+    public int                      GetQuality() { return quality; }
+    public boolean                  GetProgressive() { return progressive; }
+    public boolean                  GetBinary() { return binary; }
+    public String                   GetLastRealFilename() { return lastRealFilename; }
+    public boolean                  GetStereo() { return stereo; }
+    public int                      GetCompression() { return compression; }
+    public boolean                  GetForceMerge() { return forceMerge; }
+    public int                      GetResConstraint() { return resConstraint; }
+    public boolean                  GetAdvancedMultiWindowSave() { return advancedMultiWindowSave; }
+    public SaveSubWindowsAttributes GetSubWindowAtts() { return subWindowAtts; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -345,6 +368,10 @@ public class SaveWindowAttributes extends AttributeSubject
             buf.WriteBool(forceMerge);
         if(WriteSelect(16, buf))
             buf.WriteInt(resConstraint);
+        if(WriteSelect(17, buf))
+            buf.WriteBool(advancedMultiWindowSave);
+        if(WriteSelect(18, buf))
+            subWindowAtts.Write(buf);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -402,6 +429,13 @@ public class SaveWindowAttributes extends AttributeSubject
         case 16:
             SetResConstraint(buf.ReadInt());
             break;
+        case 17:
+            SetAdvancedMultiWindowSave(buf.ReadBool());
+            break;
+        case 18:
+            subWindowAtts.Read(buf);
+            Select(18);
+            break;
         }
     }
 
@@ -439,6 +473,8 @@ public class SaveWindowAttributes extends AttributeSubject
             str = str + "FILEFORMAT_ULTRA";
         if(format == FILEFORMAT_VTK)
             str = str + "FILEFORMAT_VTK";
+        if(format == FILEFORMAT_PLY)
+            str = str + "FILEFORMAT_PLY";
         str = str + "\n";
         str = str + intToString("width", width, indent) + "\n";
         str = str + intToString("height", height, indent) + "\n";
@@ -468,27 +504,31 @@ public class SaveWindowAttributes extends AttributeSubject
         if(resConstraint == RESCONSTRAINT_SCREENPROPORTIONS)
             str = str + "RESCONSTRAINT_SCREENPROPORTIONS";
         str = str + "\n";
+        str = str + boolToString("advancedMultiWindowSave", advancedMultiWindowSave, indent) + "\n";
+        str = str + indent + "subWindowAtts = {\n" + subWindowAtts.toString(indent + "    ") + indent + "}\n";
         return str;
     }
 
 
     // Attributes
-    private boolean outputToCurrentDirectory;
-    private String  outputDirectory;
-    private String  fileName;
-    private boolean family;
-    private int     format;
-    private int     width;
-    private int     height;
-    private boolean screenCapture;
-    private boolean saveTiled;
-    private int     quality;
-    private boolean progressive;
-    private boolean binary;
-    private String  lastRealFilename;
-    private boolean stereo;
-    private int     compression;
-    private boolean forceMerge;
-    private int     resConstraint;
+    private boolean                  outputToCurrentDirectory;
+    private String                   outputDirectory;
+    private String                   fileName;
+    private boolean                  family;
+    private int                      format;
+    private int                      width;
+    private int                      height;
+    private boolean                  screenCapture;
+    private boolean                  saveTiled;
+    private int                      quality;
+    private boolean                  progressive;
+    private boolean                  binary;
+    private String                   lastRealFilename;
+    private boolean                  stereo;
+    private int                      compression;
+    private boolean                  forceMerge;
+    private int                      resConstraint;
+    private boolean                  advancedMultiWindowSave;
+    private SaveSubWindowsAttributes subWindowAtts;
 }
 

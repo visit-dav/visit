@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+  <Attribute name="SaveSubWindowsAttributes" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="SaveSubWindowsAttributes.code">
+    <Field name="win1" label="win1" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win2" label="win2" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win3" label="win3" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win4" label="win4" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win5" label="win5" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win6" label="win6" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win7" label="win7" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win8" label="win8" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win9" label="win9" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win10" label="win10" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win11" label="win11" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win12" label="win12" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win13" label="win13" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win14" label="win14" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win15" label="win15" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Field name="win16" label="win16" type="att" subtype="SaveSubWindowAttributes">
+    </Field>
+    <Function name="GetAttsForWindow" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false">
+      VisItException.h
+    </Include>
+  </Attribute>

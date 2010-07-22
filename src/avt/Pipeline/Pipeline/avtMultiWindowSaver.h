@@ -2,7 +2,7 @@
 *
 * Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
+* LLNL-CODE-400124
 * All rights reserved.
 *
 * This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -36,30 +36,51 @@
 *
 *****************************************************************************/
 
-#ifndef PY_SAVEWINDOWATTRIBUTES_H
-#define PY_SAVEWINDOWATTRIBUTES_H
-#include <Python.h>
-#include <SaveWindowAttributes.h>
-#include <visitpy_exports.h>
+#ifndef AVT_MULTI_WINDOW_SAVER_H
+#define AVT_MULTI_WINDOW_SAVER_H
 
+#include <avtImage.h>
+
+#include <SaveSubWindowsAttributes.h>
+
+
+// ****************************************************************************
+// Class: avtMultiWindowSaver
 //
-// Functions exposed to the VisIt module.
+// Purpose:
+//   Creates a new image out of several avtImage objects and destroys
+//   the input images.
 //
-#define SAVEWINDOWATTRIBUTES_NMETH 38
-void VISITPY_API           PySaveWindowAttributes_StartUp(SaveWindowAttributes *subj, void *data);
-void VISITPY_API           PySaveWindowAttributes_CloseDown();
-VISITPY_API PyMethodDef *  PySaveWindowAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API           PySaveWindowAttributes_Check(PyObject *obj);
-VISITPY_API SaveWindowAttributes *  PySaveWindowAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *     PySaveWindowAttributes_New();
-VISITPY_API PyObject *     PySaveWindowAttributes_Wrap(const SaveWindowAttributes *attr);
-void VISITPY_API           PySaveWindowAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PySaveWindowAttributes_SetDefaults(const SaveWindowAttributes *atts);
-std::string VISITPY_API    PySaveWindowAttributes_GetLogString();
-std::string VISITPY_API    PySaveWindowAttributes_ToString(const SaveWindowAttributes *, const char *);
-VISITPY_API PyObject *     PySaveWindowAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args);
-VISITPY_API extern PyMethodDef PySaveWindowAttributes_methods[SAVEWINDOWATTRIBUTES_NMETH];
+// Notes:      
+//
+// Programmer: Hank Childs
+// Creation:   July 16, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class PIPELINE_API avtMultiWindowSaver
+{
+  public:
+    avtMultiWindowSaver(const SaveSubWindowsAttributes &);
+    virtual ~avtMultiWindowSaver();
+
+    void AddImage(avtImage_p img, int id);
+    void SetImageSize(int w, int h) { width = w; height = h; };
+
+    avtImage_p CreateImage();
+
+  private:
+    avtImage_p images[16];
+    int        width, height;
+    SaveSubWindowsAttributes atts;
+
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtMultiWindowSaver(const avtMultiWindowSaver &) {;};
+    avtMultiWindowSaver       &operator=(const avtMultiWindowSaver &) { return *this; };
+};
 
 #endif
-

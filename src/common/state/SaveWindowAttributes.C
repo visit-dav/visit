@@ -213,6 +213,7 @@ void SaveWindowAttributes::Init()
     compression = PackBits;
     forceMerge = false;
     resConstraint = ScreenProportions;
+    advancedMultiWindowSave = false;
 
     SaveWindowAttributes::SelectAll();
 }
@@ -251,6 +252,8 @@ void SaveWindowAttributes::Copy(const SaveWindowAttributes &obj)
     compression = obj.compression;
     forceMerge = obj.forceMerge;
     resConstraint = obj.resConstraint;
+    advancedMultiWindowSave = obj.advancedMultiWindowSave;
+    subWindowAtts = obj.subWindowAtts;
 
     SaveWindowAttributes::SelectAll();
 }
@@ -424,7 +427,9 @@ SaveWindowAttributes::operator == (const SaveWindowAttributes &obj) const
             (stereo == obj.stereo) &&
             (compression == obj.compression) &&
             (forceMerge == obj.forceMerge) &&
-            (resConstraint == obj.resConstraint));
+            (resConstraint == obj.resConstraint) &&
+            (advancedMultiWindowSave == obj.advancedMultiWindowSave) &&
+            (subWindowAtts == obj.subWindowAtts));
 }
 
 // ****************************************************************************
@@ -585,6 +590,8 @@ SaveWindowAttributes::SelectAll()
     Select(ID_compression,              (void *)&compression);
     Select(ID_forceMerge,               (void *)&forceMerge);
     Select(ID_resConstraint,            (void *)&resConstraint);
+    Select(ID_advancedMultiWindowSave,  (void *)&advancedMultiWindowSave);
+    Select(ID_subWindowAtts,            (void *)&subWindowAtts);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -719,6 +726,24 @@ SaveWindowAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("resConstraint", ResConstraint_ToString(resConstraint)));
     }
 
+    if(completeSave || !FieldsEqual(ID_advancedMultiWindowSave, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("advancedMultiWindowSave", advancedMultiWindowSave));
+    }
+
+    if(completeSave || !FieldsEqual(ID_subWindowAtts, &defaultObject))
+    {
+        DataNode *subWindowAttsNode = new DataNode("subWindowAtts");
+        if(subWindowAtts.CreateNode(subWindowAttsNode, completeSave, false))
+        {
+            addToParent = true;
+            node->AddNode(subWindowAttsNode);
+        }
+        else
+            delete subWindowAttsNode;
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -831,6 +856,10 @@ SaveWindowAttributes::SetFromNode(DataNode *parentNode)
                 SetResConstraint(value);
         }
     }
+    if((node = searchNode->GetNode("advancedMultiWindowSave")) != 0)
+        SetAdvancedMultiWindowSave(node->AsBool());
+    if((node = searchNode->GetNode("subWindowAtts")) != 0)
+        subWindowAtts.SetFromNode(node);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -954,6 +983,20 @@ SaveWindowAttributes::SetResConstraint(SaveWindowAttributes::ResConstraint resCo
 {
     resConstraint = resConstraint_;
     Select(ID_resConstraint, (void *)&resConstraint);
+}
+
+void
+SaveWindowAttributes::SetAdvancedMultiWindowSave(bool advancedMultiWindowSave_)
+{
+    advancedMultiWindowSave = advancedMultiWindowSave_;
+    Select(ID_advancedMultiWindowSave, (void *)&advancedMultiWindowSave);
+}
+
+void
+SaveWindowAttributes::SetSubWindowAtts(const SaveSubWindowsAttributes &subWindowAtts_)
+{
+    subWindowAtts = subWindowAtts_;
+    Select(ID_subWindowAtts, (void *)&subWindowAtts);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1080,6 +1123,24 @@ SaveWindowAttributes::GetResConstraint() const
     return ResConstraint(resConstraint);
 }
 
+bool
+SaveWindowAttributes::GetAdvancedMultiWindowSave() const
+{
+    return advancedMultiWindowSave;
+}
+
+const SaveSubWindowsAttributes &
+SaveWindowAttributes::GetSubWindowAtts() const
+{
+    return subWindowAtts;
+}
+
+SaveSubWindowsAttributes &
+SaveWindowAttributes::GetSubWindowAtts()
+{
+    return subWindowAtts;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1100,6 +1161,12 @@ void
 SaveWindowAttributes::SelectLastRealFilename()
 {
     Select(ID_lastRealFilename, (void *)&lastRealFilename);
+}
+
+void
+SaveWindowAttributes::SelectSubWindowAtts()
+{
+    Select(ID_subWindowAtts, (void *)&subWindowAtts);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1143,6 +1210,8 @@ SaveWindowAttributes::GetFieldName(int index) const
     case ID_compression:              return "compression";
     case ID_forceMerge:               return "forceMerge";
     case ID_resConstraint:            return "resConstraint";
+    case ID_advancedMultiWindowSave:  return "advancedMultiWindowSave";
+    case ID_subWindowAtts:            return "subWindowAtts";
     default:  return "invalid index";
     }
 }
@@ -1184,6 +1253,8 @@ SaveWindowAttributes::GetFieldType(int index) const
     case ID_compression:              return FieldType_enum;
     case ID_forceMerge:               return FieldType_bool;
     case ID_resConstraint:            return FieldType_enum;
+    case ID_advancedMultiWindowSave:  return FieldType_bool;
+    case ID_subWindowAtts:            return FieldType_att;
     default:  return FieldType_unknown;
     }
 }
@@ -1225,6 +1296,8 @@ SaveWindowAttributes::GetFieldTypeName(int index) const
     case ID_compression:              return "enum";
     case ID_forceMerge:               return "bool";
     case ID_resConstraint:            return "enum";
+    case ID_advancedMultiWindowSave:  return "bool";
+    case ID_subWindowAtts:            return "att";
     default:  return "invalid index";
     }
 }
@@ -1334,6 +1407,16 @@ SaveWindowAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_resConstraint:
         {  // new scope
         retval = (resConstraint == obj.resConstraint);
+        }
+        break;
+    case ID_advancedMultiWindowSave:
+        {  // new scope
+        retval = (advancedMultiWindowSave == obj.advancedMultiWindowSave);
+        }
+        break;
+    case ID_subWindowAtts:
+        {  // new scope
+        retval = (subWindowAtts == obj.subWindowAtts);
         }
         break;
     default: retval = false;
