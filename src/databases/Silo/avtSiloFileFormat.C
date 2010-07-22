@@ -6638,6 +6638,11 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
     }
     else
     {
+#if 0
+        // This is an appropriate optimization as it saves a data copy.
+        // However, all the context in which CopyUcdVar is used are not
+        // necessarily designed in anticipation that the ucdvar object's
+        // data could be inherited by the data array.
         if (uv->nvals == 1)
         {
             vtkvar->Delete();
@@ -6646,6 +6651,7 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
             return retval;
         }
         else
+#endif
         {
             //
             // Populate the variable as we normally would.
