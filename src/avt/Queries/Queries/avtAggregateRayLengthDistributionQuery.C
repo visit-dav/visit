@@ -224,6 +224,14 @@ avtAggregateRayLengthDistributionQuery::PostExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 28, 2006
 //
+//  Modifications:
+//    Cyrus Harrison, Thu Mar 25 09:47:13 PDT 2010
+//    Reset the values of usedPoints between first & second loops.
+//    Added a map between points and which segment they belong to.
+//    You cannot reconstruct the segment ids based on the # of successful
+//    completions of the second loop b/c it has a different number of
+//    early breakout (continue statments) than the first loop.
+//
 // ****************************************************************************
 
 void
@@ -237,10 +245,10 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
                                   pd->GetCellData()->GetArray("avtLineID");
     if (lineids == NULL)
         EXCEPTION0(ImproperUseException);
-        
+
     int npts = pd->GetNumberOfPoints();
     vector<bool> usedPoint(npts, false);
-    
+
     // This may be NULL, but, if so, we will just treat it as uniform density.
     vtkDataArray *arr = pd->GetCellData()->GetArray(varname.c_str());
 
@@ -254,6 +262,12 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
     vector<double> pts;
     vector<double> mass;
     vector<int>    seg_lineid;
+
+    // create a mapping of pts to their segment id
+    // this avoids reconstructing the segment id in the second loop
+    // where there are a different number of 'continues' that can
+    // undermine the indexing.
+    vector<int>    pts_segid(npts,-1);
 
     // When we determine which line segments are on one side of another,
     // we need to examine the other segments.  But we only want to consider
@@ -306,7 +320,7 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
             // statistics.
             continue;
         }
-        
+
         double pt1[3];
         double pt2[3];
         pd->GetPoint(oneSide, pt1);
@@ -322,11 +336,14 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         mass.push_back(m);
         int seg_id = seg_lineid.size();
         seg_lineid.push_back(lineid);
+        pts_segid[i] = seg_id;
         hashed_lineid_lookup[lineid % 1000].push_back(seg_id);
     }
 
-    usedPoint.resize(npts, false);
-    int segId = 0;
+
+    // usedPoint.resize(npts,false) doesn't reset the vector values.
+    usedPoint = vector<bool>(npts,false);
+
     for (int i = 0 ; i < npts ; i++)
     {
         // glue segments into one long line
@@ -393,7 +410,7 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
             int candidate = hashed_lineid_lookup[entry][j];
             if (seg_lineid[candidate] != lineid)
                 continue;
-            if (candidate == segId)
+            if (candidate == pts_segid[i])
                 continue;
 
             // Determine which side the segment is on
@@ -422,7 +439,6 @@ avtAggregateRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         WalkLine(otherSide, oneSide, pd, lineids, lineid, arr,
                  massFromOtherToOne);
 
-        segId++;
 
         int currentMilestone = (int)(((float) i) / amtPerMsg);
         if (currentMilestone > lastMilestone)
