@@ -12,12 +12,23 @@
 #  Date:       Mon Mar 26 10:48:25 PDT 2007
 #
 #  Modifications:
-#
+#    Brad Whitlock, Thu Jul 22 11:03:42 PDT 2010
+#    Force some save window settings so testing routines don't mess up in
+#    the scalable,parallel,icet mode. VisIt itself, outside of testing doesn't
+#    have problems as far as I can tell so we're working around "issues" with
+#    our testing routines.
+#    
 # ----------------------------------------------------------------------------
 
+# Get the save window atts and force a few settings.
+sa = GetSaveWindowAttributes()
+sa.screenCapture = 0
+sa.width,sa.height = 300,300
+
 TurnOnAllAnnotations()
+
 RestoreSession("tests/session/legendproperties.session", 0)
-Test("legendproperties00")
+Test("legendproperties00", altSWA=sa)
 
 # Now that we've restored the session, see if we can get the legend objects
 # and change them.
@@ -26,7 +37,7 @@ pcLegend = GetAnnotationObject(GetPlotList().GetPlots(1).plotName)
 
 subsetLegend.drawBoundingBox = 0
 pcLegend.drawBoundingBox = 0
-Test("legendproperties01")
+Test("legendproperties01", altSWA=sa)
 
 # Make sure that the plots are deleted
 DeleteAllPlots()
