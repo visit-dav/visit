@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="SaveSubWindowAttributes" purpose="The attributes for saving a sub window" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+  <Attribute name="SaveSubWindowAttributes" purpose="The attributes for saving a sub window" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Field name="position" label="position" type="intArray" length="2">
       0
       0

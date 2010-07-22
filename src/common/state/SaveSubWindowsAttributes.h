@@ -38,6 +38,7 @@
 
 #ifndef SAVESUBWINDOWSATTRIBUTES_H
 #define SAVESUBWINDOWSATTRIBUTES_H
+#include <state_exports.h>
 #include <AttributeSubject.h>
 
 #include <SaveSubWindowAttributes.h>
@@ -58,7 +59,7 @@
 //   
 // ****************************************************************************
 
-class SaveSubWindowsAttributes : public AttributeSubject
+class STATE_API SaveSubWindowsAttributes : public AttributeSubject
 {
 public:
     // These constructors are for objects of this class
@@ -154,6 +155,10 @@ public:
           SaveSubWindowAttributes &GetWin15();
     const SaveSubWindowAttributes &GetWin16() const;
           SaveSubWindowAttributes &GetWin16();
+
+    // Persistence methods
+    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+    virtual void SetFromNode(DataNode *node);
 
 
     // Keyframing methods
