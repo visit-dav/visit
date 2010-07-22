@@ -38,6 +38,7 @@
 
 #ifndef SAVESUBWINDOWATTRIBUTES_H
 #define SAVESUBWINDOWATTRIBUTES_H
+#include <state_exports.h>
 #include <AttributeSubject.h>
 
 
@@ -56,7 +57,7 @@
 //   
 // ****************************************************************************
 
-class SaveSubWindowAttributes : public AttributeSubject
+class STATE_API SaveSubWindowAttributes : public AttributeSubject
 {
 public:
     // These constructors are for objects of this class
@@ -102,6 +103,10 @@ public:
     int       GetLayer() const;
     double    GetTransparency() const;
     bool      GetOmitWindow() const;
+
+    // Persistence methods
+    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+    virtual void SetFromNode(DataNode *node);
 
 
     // Keyframing methods

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="SaveSubWindowsAttributes" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="SaveSubWindowsAttributes.code">
+  <Attribute name="SaveSubWindowsAttributes" purpose="" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="SaveSubWindowsAttributes.code">
     <Field name="win1" label="win1" type="att" subtype="SaveSubWindowAttributes">
     </Field>
     <Field name="win2" label="win2" type="att" subtype="SaveSubWindowAttributes">
