@@ -219,6 +219,9 @@ using std::vector;
 //   Brad Whitlock, Fri May  7 14:10:57 PDT 2010
 //   I transplanted some check boxes. Add a minimum width.
 //
+//   Brad Whitlock, Thu Jul 22 14:56:19 PST 2010
+//   I fixed the menu.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
@@ -360,12 +363,6 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
             this, SLOT(applySelectionToggled(bool)));
     cbLayout->addWidget(applySelectionCheckBox);
     cbLayout->addStretch();
-
-    // Create the plot and operator menus. Note that they will be empty until
-    // they are populated by the main application.
-    operatorRemoveLastAct = 0;
-    operatorRemoveAllAct = 0;
-    CreateMenus(menuBar);
 
     // Let's size the widget a little based on its toolbar button text
     int minWidth = fontMetrics().boundingRect(plotAddMenuAction->text()).width() + 
