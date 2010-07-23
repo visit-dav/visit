@@ -651,6 +651,9 @@ $0 = shift @ARGV;
 #    Eric Brugger, Tue Jul 20 17:21:16 PDT 2010
 #    I updated the help text for the "-v" option.
 #
+#    Larry Pezzaglia, Thu Jul 15 13:58:08 PDT 2010
+#    Add support for nautilus.nics.utk.edu.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1659,6 +1662,20 @@ if ( ($parallel) and $exe_name eq "engine" and ($host =~ /jaguarpf/ or $host =~ 
         {
             $remotehost =~ s/jaguar/login/;
         }
+    }
+}
+
+# ----
+# HACK for nautilus.nics.utk.edu
+#
+# ----
+$IsRunningOnNautilus_UTK = 0;
+if ( $host =~ /^nautilus/ )
+{
+    chomp($domain = `hostname -d`);
+    if ( $domain eq "nics.utk.edu" )
+    {
+        $IsRunningOnNautilus_UTK = 1;
     }
 }
 
@@ -2966,7 +2983,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
                     push @parcmd, "-l", "mppnppn=$nodes";
                 }
             }
-            elsif ($IsRunningOnJaguar_ORNL)
+            elsif ($IsRunningOnJaguar_ORNL || $IsRunningOnNautilus_UTK)
             {
                 $qsubNumNodeStr = "size";
                 $asubPPNStr = "";
