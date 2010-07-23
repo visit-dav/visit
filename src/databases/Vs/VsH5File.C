@@ -58,8 +58,8 @@ VsH5File::~VsH5File() {
   //So only output the error message if there is MORE than 1 open id
   if (cnt > 1) {
     VsLog::debugLog() << "File still has " << cnt << " open objects:" <<std::endl;
-    hid_t objIds[cnt];
-    int numObjs = H5Fget_obj_ids(getId(), H5F_OBJ_ALL, cnt, objIds);
+    std::vector<hid_t> objIds(cnt);
+    int numObjs = H5Fget_obj_ids(getId(), H5F_OBJ_ALL, cnt, &objIds[0]);
     char objName[1024];
     for (int i = 0; i < numObjs; ++i) {
       hid_t anobj = objIds[i];
