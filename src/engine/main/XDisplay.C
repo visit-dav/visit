@@ -131,6 +131,9 @@ XDisplay::~XDisplay()
 //    Prevent memory leaks in the event of failure.  Force "-ac" in X server
 //    command line options, as usage is unreliable otherwise.
 //
+//    Tom Fogal, Thu Jul 22 18:40:40 MDT 2010
+//    Get rid of X_LISTEN_TCP; just disable TCP altogether, not needed.
+//
 // ****************************************************************************
 
 bool
@@ -193,10 +196,8 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
     args.push_back("-auth");
     args.push_back(xAuthorityFilename);
 #endif
-#ifndef X_LISTEN_TCP
     args.push_back("-nolisten");
     args.push_back("tcp");
-#endif
     args.push_back("-sharevts");
     args.push_back("-once");
     args.push_back("-terminate");
