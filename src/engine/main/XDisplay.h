@@ -68,5 +68,12 @@ class ENGINE_MAIN_API XDisplay : public VisItDisplay
   private:
     pid_t   xserver;
     size_t  display;
+
+#ifndef X_DISABLE_ACCESS_CONTROL
+    static const int maxXAuthorityFilenameLen = 1024;
+
+    char             xAuthorityFilename[maxXAuthorityFilenameLen];
+#endif
+
 };
 #endif /* VISIT_X_DISPLAY_H */

@@ -113,6 +113,10 @@ XDisplay::~XDisplay()
 //
 //  Modifications:
 //
+//    Gunther Weber; Larry Pezzaglia, Fri Jul 2 14:54:49 PDT 2010
+//    Disable X TCP connections unless X_LISTEN_TCP is set.
+//    Only disable X access control if X_DISABLE_ACCESS_CONTROL is set.
+//
 //    Tom Fogal, Tue Aug  5 16:33:49 EDT 2008
 //    Add argument string-vector, and code to convert that into an argv-style
 //    array.  Finally, use execvp to start xinit.  All of this allows the user
@@ -137,11 +141,62 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
 
     this->display = display;
 
+#ifndef X_DISABLE_ACCESS_CONTROL
+    const int buffsize = 1024; // Must be larger than cookieSize!!!
+
+    // Generate cookie
+    FILE *cookiePipe = popen("mcookie", "r");
+    char myCookie[buffsize];
+    fscanf(cookiePipe, "%s", myCookie);
+    pclose(cookiePipe);
+    debug3 << "Generated X cookie is "<< myCookie << std::endl;
+
+
+    // Add cookie to the authority file
+
+    // ... get hostname
+    char myHostname[buffsize];
+    if (gethostname(myHostname, buffsize) != 0)
+    {
+        std::strcpy(myHostname, "unknown_hostname");
+    }
+
+    // ... generate filename for authority file
+    SNPRINTF(xAuthorityFilename, maxXAuthorityFilenameLen,
+            "%s/.Xauthority-visit-%s-%zu", getenv("HOME"), myHostname, display);
+    debug3 << "Using authority file: " << xAuthorityFilename << std::endl;
+
+    // ... set XAUTHORITY environment variable
+    static char envXauthority[buffsize];
+    SNPRINTF(envXauthority, buffsize, "XAUTHORITY=%s", xAuthorityFilename);
+
+    if(putenv(envXauthority) != 0)
+    {
+        perror("putenv");
+        debug1 << "putenv(\"" << envXauthority << "\") failed." << std::endl;
+    }
+
+    // ... add cookie to authority file
+    FILE *xauthPipe = popen("xauth", "w");
+    fprintf(xauthPipe, "add :%zu . %s\n", display, myCookie);
+    pclose(xauthPipe);
+
+#endif
+
     std::vector<std::string> args;
     args.push_back("xinit");
     args.push_back("--");
     args.push_back(format(":%l", /* unused */0, display));
+#ifdef X_DISABLE_ACCESS_CONTROL
     args.push_back("-ac");
+#else
+    args.push_back("-auth");
+    args.push_back(xAuthorityFilename);
+#endif
+#ifndef X_LISTEN_TCP
+    args.push_back("-nolisten");
+    args.push_back("tcp");
+#endif
     args.push_back("-sharevts");
     args.push_back("-once");
     args.push_back("-terminate");
@@ -171,8 +226,8 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
     )
 
     vec_convert_free(argv, v_elems);
-    debug4 << "Giving a sec for the X server to start ...";
-    sleep(display);
+    debug4 << "Giving ten seconds for the X server to start ...";
+    sleep(10);
     debug4 << " done!" << std::endl;
 
     debug3 << "Saved X server PID " << (int)this->xserver << std::endl;
@@ -189,6 +244,9 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
 //  Creation:    August 29, 2008 (from a July 27th method)
 //
 //  Modifications:
+//
+//    Gunther Weber; Larry Pezzaglia, Fri Jul 2 14:54:49 PDT 2010
+//    Only run "xhost +" if X_DISABLE_ACCESS_CONTROL is set
 //
 //    Tom Fogal, Tue Aug  5 16:36:20 EDT 2008
 //    Dropped the array size down a notch; why was it so huge before?
@@ -213,7 +271,9 @@ XDisplay::Connect()
     }
     InitVTKRendering::UnforceMesa();
 
+#ifdef X_DISABLE_ACCESS_CONTROL
     system("xhost +");
+#endif
 }
 
 // ****************************************************************************
@@ -228,6 +288,10 @@ XDisplay::Connect()
 //
 //  Modifications:
 //
+//    Gunther Weber; Larry Pezzaglia, Fri Jul 2 14:54:49 PDT 2010
+//    Unset $XAUTHORITY on teardown
+//    Unlink Xauthority file if X_DISABLE_ACCESS_CONTROL is not set
+//
 //    Eric Brugger, Tue Oct 21 16:58:25 PDT 2008
 //    I made use of unsetenv dependent on HAVE_SETENV (only gcc 3.2 on
 //    Solaris).  I Replaced strerror_r with strerror.
@@ -239,6 +303,7 @@ XDisplay::Teardown()
 {
 #ifdef HAVE_SETENV
     unsetenv("DISPLAY");
+    unsetenv("XAUTHORITY");
 #endif
 
     debug3 << "Tearing down display " << this->xserver << std::endl;
@@ -275,6 +340,11 @@ XDisplay::Teardown()
     }
 
     set_uninitialized(&this->xserver);
+
+    // Delete Xauthority file
+#ifndef X_DISABLE_ACCESS_CONTROL
+    unlink(xAuthorityFilename);
+#endif
 }
 
 // ****************************************************************************
