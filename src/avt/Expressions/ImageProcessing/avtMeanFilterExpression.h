@@ -58,6 +58,12 @@ class     vtkDataArray;
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2005
 //
+//  Modifications:
+//    Gunther H. Weber, Thu Mar  5 13:13:49 PST 2009
+//    Added ability to specify filter width as argument (adding private
+//    variable width[3] and the method ProcessArguments())
+//    
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMeanFilterExpression : public avtUnaryMathExpression
@@ -70,6 +76,7 @@ class EXPRESSION_API avtMeanFilterExpression : public avtUnaryMathExpression
                                  { return "avtMeanFilterExpression"; };
     virtual const char       *GetDescription(void)
                                  { return "Taking mean filter"; };
+    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
 
   protected:
     bool             haveIssuedWarning;
@@ -77,6 +84,9 @@ class EXPRESSION_API avtMeanFilterExpression : public avtUnaryMathExpression
     virtual void     PreExecute(void);
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *out, 
                                  int ncomps, int ntuples);
+
+  private:
+    int              width[3];
 };
 
 

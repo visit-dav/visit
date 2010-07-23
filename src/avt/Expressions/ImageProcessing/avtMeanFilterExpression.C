@@ -47,6 +47,7 @@
 #include <vtkStructuredGrid.h>
 
 #include <avtCallback.h>
+#include <avtExprNode.h>
 
 #include <ExpressionException.h>
 
@@ -61,11 +62,18 @@
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2005
 //
+//  Modifications:
+//    Gunther H. Weber, Thu Jul 22 16:14:00 PDT 2010
+//    Added initializaition for width.
+//
 // ****************************************************************************
 
 avtMeanFilterExpression::avtMeanFilterExpression()
 {
     haveIssuedWarning = false;
+    width[0] = 1;
+    width[1] = 1;
+    width[2] = 1;
 }
 
 
@@ -98,13 +106,87 @@ avtMeanFilterExpression::~avtMeanFilterExpression()
 //
 // ****************************************************************************
 
-void
+    void
 avtMeanFilterExpression::PreExecute(void)
 {
     avtUnaryMathExpression::PreExecute();
     haveIssuedWarning = false;
 }
 
+// ****************************************************************************
+//  Method: avtMeanFilterExpression::ProcessArguments
+//
+//  Purpose:
+//      Parses optional algorithm argument.
+//
+//  Arguments:
+//      args      Expression arguments
+//      state     Expression pipeline state
+//
+//  Programmer:   Gunther H. Weber
+//  Creation:     Wed Mar  4 17:35:08 PST 2009
+//
+// ****************************************************************************
+    void
+avtMeanFilterExpression::ProcessArguments(ArgsExpr *args,
+        ExprPipelineState *state)
+{
+    // Get the argument list and # of arguments
+    std::vector<ArgExpr*> *arguments = args->GetArgs();
+    int nargs = arguments->size();
+
+    // Check number of args
+    if (nargs < 1 || nargs > 4)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName,
+                "mean_filter() Incorrect syntax.\n"
+                "Usage: mean_filter(varname[, width[, width[, width]]).");
+    }
+
+    // First argument is the var name, let it do its own magic
+    ArgExpr *first_arg = (*arguments)[0];
+    avtExprNode *first_tree = dynamic_cast<avtExprNode*>(first_arg->GetExpr());
+    first_tree->CreateFilters(state);
+
+    for (int i=1; i<nargs; ++i)
+    {
+        // Parse the color table argument
+        ArgExpr *add_arg = (*arguments)[i];
+        ExprParseTreeNode *add_tree= add_arg->GetExpr();
+        string add_type = add_tree->GetTypeName();
+        if ((add_type == "IntegerConst"))
+        {
+            width[i-1] =  dynamic_cast<IntegerConstExpr*>(add_tree)->GetValue();
+        }
+        else
+        {    EXCEPTION2(ExpressionException, outputVariableName,
+                "mean_filter: Invalid width argument. Expected integer.\n");
+        }
+    }
+
+    if (nargs == 1)
+    {
+        // If no argument was specified, use 1 as default (previous behavior)
+        width[0] = 1;
+        width[1] = 1;
+        width[2] = 1;
+    }
+    else if (nargs == 2)
+    {
+        // If only one width is specified, use it along all directions
+        width[1] = width[0];
+        width[2] = width[0];
+    }
+    else if (nargs == 3)
+    {
+        // If no third width is specified, set the argument to 1. This is
+        // somewhat arbitrary, but most likely users will use this only when
+        // filtering two dimensional data where this value does not matter.
+        // In the three dimensional case this choice is a bit strange but
+        // saves additional consitency checks.
+        width[2] = 1;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtMeanFilterExpression::DoOperation
@@ -130,19 +212,22 @@ avtMeanFilterExpression::PreExecute(void)
 //    Hank Childs, Fri Jun  9 14:34:50 PDT 2006
 //    Remove unused variable.
 //
+//    Gunther H. Weber, Thu Mar  5 13:18:47 PST 2009
+//    Use user specified width instead of fixed width of one.    
+//
 // ****************************************************************************
 
-void
+    void
 avtMeanFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out, 
-                           int ncomponents,int ntuples)
+        int ncomponents,int ntuples)
 {
     if (cur_mesh->GetDataObjectType() != VTK_RECTILINEAR_GRID &&
-        cur_mesh->GetDataObjectType() != VTK_STRUCTURED_GRID)
+            cur_mesh->GetDataObjectType() != VTK_STRUCTURED_GRID)
     {
         if (!haveIssuedWarning)
         {
             avtCallback::IssueWarning("The mean filter expression only "
-                                      "operates on structured grids.");
+                    "operates on structured grids.");
             haveIssuedWarning = true;
         }
         return;
@@ -180,11 +265,11 @@ avtMeanFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
                 int idx = j*dims[0]+i;
                 double sum = 0.;
                 int numSamps = 0;
-                for (int ii = i-1 ; ii <= i+1 ; ii++)
+                for (int ii = i-width[0] ; ii <= i+width[0] ; ii++)
                 {
                     if (ii < 0 || ii >= dims[0])
                         continue;
-                    for (int jj = j-1 ; jj <= j+1 ; jj++)
+                    for (int jj = j-width[1] ; jj <= j+width[1] ; jj++)
                     {
                         if (jj < 0 || jj >= dims[1])
                             continue;
@@ -208,15 +293,15 @@ avtMeanFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
                     int idx = k*dims[0]*dims[1] + j*dims[0]+i;
                     double sum = 0.;
                     int numSamps = 0;
-                    for (int ii = i-1 ; ii <= i+1 ; ii++)
+                    for (int ii = i-width[0] ; ii <= i+width[0] ; ii++)
                     {
                         if (ii < 0 || ii >= dims[0])
                             continue;
-                        for (int jj = j-1 ; jj <= j+1 ; jj++)
+                        for (int jj = j-width[1] ; jj <= j+width[1] ; jj++)
                         {
                             if (jj < 0 || jj >= dims[1])
                                 continue;
-                            for (int kk = k-1 ; kk <= k+1 ; kk++)
+                            for (int kk = k-width[2] ; kk <= k+width[2] ; kk++)
                             {
                                 if (kk < 0 || kk >= dims[2])
                                     continue;
@@ -232,5 +317,3 @@ avtMeanFilterExpression::DoOperation(vtkDataArray *in1, vtkDataArray *out,
         }
     }
 }
-
-
