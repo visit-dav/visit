@@ -419,6 +419,10 @@ avtMTSDFileFormatInterface::GetFilename(int ts)
 //    Hank Childs, Sun May  9 17:53:17 CDT 2010
 //    Register metadata object with all of the chunks.
 //
+//    Hank Childs, Fri Jul 23 22:38:54 PDT 2010
+//    Add check for degenerate case where file format reader gets times array
+//    really wrong, which was then causing crash.
+//
 // ****************************************************************************
 
 void
@@ -571,7 +575,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         //
         // Ok, now put times into the metadata
         //
-        if (timesLookGood)
+        if (timesLookGood && times.size() > 0)
         {
             md->SetTimes(times);
             md->SetTimesAreAccurate(true);
