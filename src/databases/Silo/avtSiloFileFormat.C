@@ -9030,21 +9030,33 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     }
 }
 
+// ****************************************************************************
+//  Function: QuadFaceIsTwisted
+//
+//  Purpose: Use goemetric shape to determine if a Quadrilateral is twisted.
+//
+//  Programmer: Mark C. Miller, Mon Jul 26 23:11:56 PDT 2010
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jul 26 23:13:06 PDT 2010
+//    Replaced assumption of float data with GetTuple, converting all to
+//    double for purposes of the computation performed here. This is necessary
+//    as newer versions of the Silo plugin can serve up arbitrary type.
+// ****************************************************************************
+
 static bool
 QuadFaceIsTwisted(vtkUnstructuredGrid *ugrid, int *nids)
 {
     int i, j;
 
     //
-    // initialize set of 4 points of quad
+    // initialize set of 4 points of tet
     //
-    float *pts = (float *) ugrid->GetPoints()->GetVoidPointer(0); 
-    float p[4][3];
-    for (i = 0; i < 4; i++)
-    {
-        for (j = 0; j < 3; j++)
-            p[i][j] = pts[3*nids[i] + j];
-    }
+    vtkDataArray *pda = ugrid->GetPoints()->GetData();
+    double p[4][3];
+    for (int i = 0; i < 4; i++)
+        pda->GetTuple(nids[i], p[i]);
 
     // Walk around quad, computing inner product of two edge vectors.
     // You can have at most 2 negative inner products. If it is twisted,
@@ -9053,8 +9065,8 @@ QuadFaceIsTwisted(vtkUnstructuredGrid *ugrid, int *nids)
     // each inner product will be near zero but randomly to either
     // side of it. So, we compare the inner product magnitude to
     // an average of the two vector magnitudes and consider the
-    // inner product sign only when it is sufficiently. There is
-    // somewhat an assumption of planarity here. However, for near
+    // inner product sign only when it is sufficiently large. There is
+    // somewhat of an assumption of planarity here. However, for near
     // planar quads, the algorithm is expected to still work as the
     // off-plane components that can skew the inner product are
     // expected to be small. For very much non planar quads, this
@@ -9062,13 +9074,13 @@ QuadFaceIsTwisted(vtkUnstructuredGrid *ugrid, int *nids)
     int numNegiProds = 0;
     for (i = 0; i < 4; i++)
     {
-        float dotsum = 0.0;
-        float mag1sum = 0.0;
-        float mag2sum = 0.0;
+        double dotsum = 0.0;
+        double mag1sum = 0.0;
+        double mag2sum = 0.0;
         for (j = 0; j < 3; j++)
         {
-            float v1j = p[(i+1)%4][j] - p[(i+0)%4][j];
-            float v2j = p[(i+2)%4][j] - p[(i+1)%4][j];
+            double v1j = p[(i+1)%4][j] - p[(i+0)%4][j];
+            double v2j = p[(i+2)%4][j] - p[(i+1)%4][j];
             mag1sum += v1j*v1j;
             mag2sum += v2j*v2j;
             dotsum += v1j * v2j;
@@ -13654,6 +13666,12 @@ TranslateSiloTetrahedronToVTKTetrahedron(const int *siloTetrahedron,
 //  Programmer:  Mark C. Miller 
 //  Creation:    March 21, 2007 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jul 26 23:13:06 PDT 2010
+//    Replaced assumption of float data with GetTuple, converting all to
+//    double for purposes of the computation performed here. This is necessary
+//    as newer versions of the Silo plugin can serve up arbitrary type.
 // ****************************************************************************
 
 bool
@@ -13662,20 +13680,17 @@ TetIsInverted(const int *siloTetrahedron, vtkUnstructuredGrid *ugrid)
     //
     // initialize set of 4 points of tet
     //
-    float *pts = (float *) ugrid->GetPoints()->GetVoidPointer(0); 
-    float p[4][3];
+    vtkDataArray *pda = ugrid->GetPoints()->GetData();
+    double p[4][3];
     for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 3; j++)
-            p[i][j] = pts[3*siloTetrahedron[i] + j];
-    }
+        pda->GetTuple(siloTetrahedron[i], p[i]);
 
     //
     // Compute a vector normal to plane of first 3 points
     //
-    float n1[3] = {p[1][0] - p[0][0], p[1][1] - p[0][1], p[1][2] - p[0][2]};
-    float n2[3] = {p[2][0] - p[0][0], p[2][1] - p[0][1], p[2][2] - p[0][2]};
-    float n1Xn2[3] = {  n1[1]*n2[2] - n1[2]*n2[1],
+    double n1[3] = {p[1][0] - p[0][0], p[1][1] - p[0][1], p[1][2] - p[0][2]};
+    double n2[3] = {p[2][0] - p[0][0], p[2][1] - p[0][1], p[2][2] - p[0][2]};
+    double n1Xn2[3] = {  n1[1]*n2[2] - n1[2]*n2[1],
                       -(n1[0]*n2[2] - n1[2]*n2[0]),
                         n1[0]*n2[1] - n1[1]*n2[0]};
     
@@ -13685,8 +13700,8 @@ TetIsInverted(const int *siloTetrahedron, vtkUnstructuredGrid *ugrid)
     // product should be negative. If it is not negative, then tets
     // are inverted
     //
-    float n3[3] = {p[3][0] - p[0][0], p[3][1] - p[0][1], p[3][2] - p[0][2]};
-    float n3Dotn1Xn2 = n3[0]*n1Xn2[0] + n3[1]*n1Xn2[1] + n3[2]*n1Xn2[2];
+    double n3[3] = {p[3][0] - p[0][0], p[3][1] - p[0][1], p[3][2] - p[0][2]};
+    double n3Dotn1Xn2 = n3[0]*n1Xn2[0] + n3[1]*n1Xn2[1] + n3[2]*n1Xn2[2];
 
     if (n3Dotn1Xn2 > 0)
         return true;
