@@ -85,6 +85,8 @@
 //    Jeremy Meredith, Tue May 18 13:12:06 EDT 2010
 //    Removed unused CornerOffset.
 //
+//    Mark C. Miller, Mon Jul 26 21:24:12 PDT 2010
+//    Added initialization of currentScaleFactors to fix UMR.
 // ****************************************************************************
 
 VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p),
@@ -111,6 +113,9 @@ VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p),
         currentBounds[i] = -1;
     }
     addedAxes3D = false;
+
+    for (int i = 0; i < 3; i++)
+        currentScaleFactors[i] = 1.0;
 
     userXUnitsFlag = false;
     userYUnitsFlag = false;
