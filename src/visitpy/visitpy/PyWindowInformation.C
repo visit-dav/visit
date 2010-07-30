@@ -138,6 +138,11 @@ PyWindowInformation_ToString(const WindowInformation *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%sperspective = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetMaintainView())
+        SNPRINTF(tmpStr, 1000, "%smaintainView = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%smaintainView = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetLockView())
         SNPRINTF(tmpStr, 1000, "%slockView = 1\n", prefix);
     else
@@ -562,6 +567,30 @@ WindowInformation_GetPerspective(PyObject *self, PyObject *args)
 {
     WindowInformationObject *obj = (WindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPerspective()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+WindowInformation_SetMaintainView(PyObject *self, PyObject *args)
+{
+    WindowInformationObject *obj = (WindowInformationObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maintainView in the object.
+    obj->data->SetMaintainView(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+WindowInformation_GetMaintainView(PyObject *self, PyObject *args)
+{
+    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetMaintainView()?1L:0L);
     return retval;
 }
 
@@ -1050,6 +1079,8 @@ PyMethodDef PyWindowInformation_methods[WINDOWINFORMATION_NMETH] = {
     {"GetFullFrame", WindowInformation_GetFullFrame, METH_VARARGS},
     {"SetPerspective", WindowInformation_SetPerspective, METH_VARARGS},
     {"GetPerspective", WindowInformation_GetPerspective, METH_VARARGS},
+    {"SetMaintainView", WindowInformation_SetMaintainView, METH_VARARGS},
+    {"GetMaintainView", WindowInformation_GetMaintainView, METH_VARARGS},
     {"SetLockView", WindowInformation_SetLockView, METH_VARARGS},
     {"GetLockView", WindowInformation_GetLockView, METH_VARARGS},
     {"SetLockTools", WindowInformation_SetLockTools, METH_VARARGS},
@@ -1130,6 +1161,8 @@ PyWindowInformation_getattr(PyObject *self, char *name)
         return WindowInformation_GetFullFrame(self, NULL);
     if(strcmp(name, "perspective") == 0)
         return WindowInformation_GetPerspective(self, NULL);
+    if(strcmp(name, "maintainView") == 0)
+        return WindowInformation_GetMaintainView(self, NULL);
     if(strcmp(name, "lockView") == 0)
         return WindowInformation_GetLockView(self, NULL);
     if(strcmp(name, "lockTools") == 0)
@@ -1196,6 +1229,8 @@ PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args)
         obj = WindowInformation_SetFullFrame(self, tuple);
     else if(strcmp(name, "perspective") == 0)
         obj = WindowInformation_SetPerspective(self, tuple);
+    else if(strcmp(name, "maintainView") == 0)
+        obj = WindowInformation_SetMaintainView(self, tuple);
     else if(strcmp(name, "lockView") == 0)
         obj = WindowInformation_SetLockView(self, tuple);
     else if(strcmp(name, "lockTools") == 0)
@@ -1231,6 +1266,8 @@ PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 
