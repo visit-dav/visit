@@ -57,6 +57,7 @@
 #include <avtParallel.h>
 
 #include <InvalidDBTypeException.h>
+#include <InvalidFilesException.h>
 #include <ImproperUseException.h>
 
 using     std::string;
@@ -342,6 +343,9 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Hank Childs, Thu May 21 18:57:31 PDT 2009
 //    Add a cast to make AIX happy.
 //
+//    Tom Fogal, Tue Jul 27 15:26:54 MDT 2010
+//    Don't crash if we don't have a stem filename.
+//
 // ****************************************************************************
 
 void
@@ -535,7 +539,18 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         // No resampling necessary.  Also, don't gzip, so we can stay 
         // compatible with the "standard" BOV format.
         //
+        if(stem.empty())
+        {
+            EXCEPTION1(InvalidFilesException,
+                       "Could not figure out stem filename.");
+        }
         FILE *file_handle = fopen(stem.c_str(), "w");
+        if(file_handle == NULL)
+        {
+            EXCEPTION1(InvalidFilesException,
+                       "Could not open stem file.  Do you lack write access "
+                       "on the destination filesystem?");
+        }
         fwrite(ptr, sizeof(float), nvals, file_handle);
         fclose(file_handle);
     }
