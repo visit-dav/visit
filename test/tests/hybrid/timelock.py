@@ -25,6 +25,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Eric Brugger, Fri Jul 30 13:53:48 PDT 2010
+#    I increased the number of lines of information it prints to 18.
+#
 # ----------------------------------------------------------------------------
 
 import os
@@ -36,10 +40,10 @@ import os
 def TestWindowInformation(testname):
     # Get the window information and convert it to a string.
     s = str(GetWindowInformation())
-    # Only use the first 17 or so lines from the string.
+    # Only use the first 18 or so lines from the string.
     lines = string.split(s, "\n")
     s = ""
-    for i in range(17):
+    for i in range(18):
         if(i < len(lines)):
             s = s + lines[i]
             s = s + "\n"
