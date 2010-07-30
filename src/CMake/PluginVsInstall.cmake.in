@@ -42,6 +42,8 @@
 #   Brad Whitlock, Thu May 27 09:30:00 PDT 2010
 #   Wrap setting the compiler in an if-exists test.
 #
+#   Mark C. Miller, Thu Jul 29 17:37:32 PDT 2010
+#   Added block for compiler version comments.
 #****************************************************************************/
 
 ##
@@ -60,6 +62,15 @@ ENDIF(EXISTS @CMAKE_C_COMPILER@)
 IF(EXISTS @CMAKE_CXX_COMPILER@)
     SET(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@)
 ENDIF(EXISTS @CMAKE_CXX_COMPILER@)
+
+# The comment below is intended to capture version information
+# of the compiler in use at the time CMake was invoked to build
+# VisIt. If there is no comment in the intervening lines, then
+# compiler version information was not successfully obtained.
+# -------------------------------------------------------------
+# @CMAKE_C_COMPILER_VERSION_MESSAGE@
+# @CMAKE_CXX_COMPILER_VERSION_MESSAGE@
+# -------------------------------------------------------------
 
 # Commonly used VisIt include directories
 SET(VISIT_COMMON_INCLUDES
