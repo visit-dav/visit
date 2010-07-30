@@ -141,6 +141,7 @@ QvisTransformWindow::~QvisTransformWindow()
 //
 //    Tom Fogal, Tue Jul 27 11:15:25 MDT 2010
 //    Initialize elements for 4x4 matrix modification.
+//    Pull second checkbox up to horizontally align them.
 //
 // ****************************************************************************
 
@@ -390,13 +391,13 @@ QvisTransformWindow::CreateWindowContents()
     connect(m33, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     linearInvert = new QCheckBox(tr("Invert linear transform"),
                                  thirdPage);
-    thirdPageLayout->addWidget(linearInvert, 5, 0, 1, 3);
+    thirdPageLayout->addWidget(linearInvert, 5, 0, 1, 2);
     connect(linearInvert, SIGNAL(toggled(bool)),
             this, SLOT(linearInvertChanged(bool)));
 
     transformVectors3 = new QCheckBox(tr("Transform vectors"),
                                  thirdPage);
-    thirdPageLayout->addWidget(transformVectors3, 6, 0, 1, 3);
+    thirdPageLayout->addWidget(transformVectors3, 5, 2, 1, 2);
     connect(transformVectors3, SIGNAL(toggled(bool)),
             this, SLOT(transformVectorsChanged(bool)));
 
