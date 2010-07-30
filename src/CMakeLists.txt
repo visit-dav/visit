@@ -134,6 +134,9 @@
 #    I modified the file to add -DMPICH_IGNORE_CXX_SEEK wherever -DPARALLEL
 #    is specified to eliminate a compile failure with some versions of mpi.
 #
+#    Mark C. Miller, Thu Jul 29 17:36:48 PDT 2010
+#    Added logic to include compiler version information as a comment int
+#    The PluginVsInstall.cmake file.
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1370,6 +1373,44 @@ IF(NOT WIN32)
     SET(VISIT_PLUGIN_DIR  ${VISIT_BINARY_DIR}/plugins CACHE INTERNAL "Path to VisIt's plugins")
 ELSE(NOT WIN32)
     SET(VISIT_PLUGIN_DIR  ${VISIT_EXECUTABLE_DIR} CACHE INTERNAL "Path to VisIt's plugins")
+ENDIF(NOT WIN32)
+
+# Obtain compiler version information for inclusion in PluginVsInstall.cmake
+# Note: This code block makes use of indirect variable reference (${${...}})
+IF(NOT WIN32)
+
+    # known different ways to get a compiler to spit out its version
+    SET(CMAKE_COMPILER_VERSION_FLAGS "--version" "-V" "-v")
+
+    FOREACH(CMAKE_COMPILER_NAME CMAKE_C_COMPILER CMAKE_CXX_COMPILER)
+        FOREACH(CMAKE_COMPILER_VERSION_FLAG ${CMAKE_COMPILER_VERSION_FLAGS})
+
+            EXECUTE_PROCESS(COMMAND ${${CMAKE_COMPILER_NAME}}
+                ${CMAKE_COMPILER_VERSION_FLAG} TIMEOUT 3 
+                RESULT_VARIABLE COMPILER_VERSION_RETURN
+                OUTPUT_VARIABLE COMPILER_VERSION_STDOUT
+                ERROR_VARIABLE COMPILER_VERSION_STDERR)
+
+            # If stderr=="" AND $?==0 AND stdout!=""...
+            IF("${COMPILER_VERSION_STDERR}" STREQUAL "" AND
+                ${COMPILER_VERSION_RETURN} EQUAL 0 AND
+                NOT ("${COMPILER_VERSION_STDOUT}" STREQUAL ""))
+
+                # Looks like we got something useful from the compiler.
+                # Reformat it so it looks like a cmake comment and break
+                # out of the loop over version flags.
+                STRING(REGEX REPLACE "\n" "\n# "
+                    ${CMAKE_COMPILER_NAME}_VERSION_MESSAGE
+                    "${COMPILER_VERSION_STDOUT}")
+                BREAK()
+
+            ENDIF("${COMPILER_VERSION_STDERR}" STREQUAL "" AND
+                ${COMPILER_VERSION_RETURN} EQUAL 0 AND
+                NOT ("${COMPILER_VERSION_STDOUT}" STREQUAL ""))
+
+        ENDFOREACH(CMAKE_COMPILER_VERSION_FLAG ${CMAKE_COMPILER_VERSION_FLAGS})
+    ENDFOREACH(CMAKE_COMPILER_NAME CMAKE_C_COMPILER CMAKE_CXX_COMPILER)
+
 ENDIF(NOT WIN32)
 
 # Store some configure information into a C file (like version, SVN version
