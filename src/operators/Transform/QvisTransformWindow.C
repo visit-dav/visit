@@ -139,6 +139,9 @@ QvisTransformWindow::~QvisTransformWindow()
 //    Jeremy Meredith, Fri Jun 18 11:29:03 EDT 2010
 //    Fixed a widget parent bug (1st page widget pointing to 3rd page parent).
 //
+//    Tom Fogal, Tue Jul 27 11:15:25 MDT 2010
+//    Initialize elements for 4x4 matrix modification.
+//
 // ****************************************************************************
 
 void
@@ -340,43 +343,64 @@ QvisTransformWindow::CreateWindowContents()
     m00 = new QNarrowLineEdit(thirdPage);
     m01 = new QNarrowLineEdit(thirdPage);
     m02 = new QNarrowLineEdit(thirdPage);
+    m03 = new QNarrowLineEdit(thirdPage);
     m10 = new QNarrowLineEdit(thirdPage);
     m11 = new QNarrowLineEdit(thirdPage);
     m12 = new QNarrowLineEdit(thirdPage);
+    m13 = new QNarrowLineEdit(thirdPage);
     m20 = new QNarrowLineEdit(thirdPage);
     m21 = new QNarrowLineEdit(thirdPage);
     m22 = new QNarrowLineEdit(thirdPage);
+    m23 = new QNarrowLineEdit(thirdPage);
+    m30 = new QNarrowLineEdit(thirdPage);
+    m31 = new QNarrowLineEdit(thirdPage);
+    m32 = new QNarrowLineEdit(thirdPage);
+    m33 = new QNarrowLineEdit(thirdPage);
     thirdPageLayout->addWidget(m00, 1, 0);
     thirdPageLayout->addWidget(m01, 1, 1);
     thirdPageLayout->addWidget(m02, 1, 2);
+    thirdPageLayout->addWidget(m03, 1, 3);
     thirdPageLayout->addWidget(m10, 2, 0);
     thirdPageLayout->addWidget(m11, 2, 1);
     thirdPageLayout->addWidget(m12, 2, 2);
+    thirdPageLayout->addWidget(m13, 2, 3);
     thirdPageLayout->addWidget(m20, 3, 0);
     thirdPageLayout->addWidget(m21, 3, 1);
     thirdPageLayout->addWidget(m22, 3, 2);
+    thirdPageLayout->addWidget(m23, 3, 3);
+    thirdPageLayout->addWidget(m30, 4, 0);
+    thirdPageLayout->addWidget(m31, 4, 1);
+    thirdPageLayout->addWidget(m32, 4, 2);
+    thirdPageLayout->addWidget(m33, 4, 3);
     connect(m00, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     connect(m01, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     connect(m02, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m03, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     connect(m10, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     connect(m11, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     connect(m12, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m13, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     connect(m20, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     connect(m21, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     connect(m22, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m23, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m30, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m31, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m32, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m33, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     linearInvert = new QCheckBox(tr("Invert linear transform"),
                                  thirdPage);
-    thirdPageLayout->addWidget(linearInvert, 4, 0, 1, 3);
+    thirdPageLayout->addWidget(linearInvert, 5, 0, 1, 3);
     connect(linearInvert, SIGNAL(toggled(bool)),
             this, SLOT(linearInvertChanged(bool)));
 
     transformVectors3 = new QCheckBox(tr("Transform vectors"),
                                  thirdPage);
-    thirdPageLayout->addWidget(transformVectors3, 5, 0, 1, 3);
+    thirdPageLayout->addWidget(transformVectors3, 6, 0, 1, 3);
     connect(transformVectors3, SIGNAL(toggled(bool)),
             this, SLOT(transformVectorsChanged(bool)));
 
-    thirdPageLayout->setRowStretch(5, 100);
+    thirdPageLayout->setRowStretch(6, 100);
 
     connect(transformTypeTabs, SIGNAL(currentChanged(int)),
             this, SLOT(pageTurned(int)));
@@ -411,6 +435,9 @@ QvisTransformWindow::CreateWindowContents()
 //    Brad Whitlock, Wed Jul 14 15:18:44 PDT 2010
 //    I added some more blockSignals calls to prevent slots from being called
 //    as a result of setting widget values.
+//
+//    Tom Fogal, Tue Jul 27 11:06:46 MDT 2010
+//    Add cases for 4x4 matrix elements.
 //
 // ****************************************************************************
 
@@ -585,6 +612,10 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             temp.setNum(atts->GetM02());
             m02->setText(temp);
             break;
+          case TransformAttributes::ID_m03:
+            temp.setNum(atts->GetM03());
+            m03->setText(temp);
+            break;
 
           case TransformAttributes::ID_m10:
             temp.setNum(atts->GetM10());
@@ -598,6 +629,10 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             temp.setNum(atts->GetM12());
             m12->setText(temp);
             break;
+          case TransformAttributes::ID_m13:
+            temp.setNum(atts->GetM13());
+            m13->setText(temp);
+            break;
 
           case TransformAttributes::ID_m20:
             temp.setNum(atts->GetM20());
@@ -610,6 +645,27 @@ QvisTransformWindow::UpdateWindow(bool doAll)
           case TransformAttributes::ID_m22:
             temp.setNum(atts->GetM22());
             m22->setText(temp);
+            break;
+          case TransformAttributes::ID_m23:
+            temp.setNum(atts->GetM23());
+            m23->setText(temp);
+            break;
+
+          case TransformAttributes::ID_m30:
+            temp.setNum(atts->GetM30());
+            m30->setText(temp);
+            break;
+          case TransformAttributes::ID_m31:
+            temp.setNum(atts->GetM31());
+            m31->setText(temp);
+            break;
+          case TransformAttributes::ID_m32:
+            temp.setNum(atts->GetM32());
+            m32->setText(temp);
+            break;
+          case TransformAttributes::ID_m33:
+            temp.setNum(atts->GetM33());
+            m33->setText(temp);
             break;
 
           case TransformAttributes::ID_invertLinearTransform:
@@ -1000,4 +1056,3 @@ void QvisTransformWindow::vectorMethodChanged(int v)
     atts->SetVectorTransformMethod(
                                 TransformAttributes::VectorTransformMethod(v));
 }
-
