@@ -137,6 +137,10 @@
 #    Mark C. Miller, Thu Jul 29 17:36:48 PDT 2010
 #    Added logic to include compiler version information as a comment int
 #    The PluginVsInstall.cmake file.
+#
+#    Mark C. Miller, Thu Jul 29 23:43:52 PDT 2010
+#    Added option to ignore problems finding third party libs. It is OFF
+#    by default.
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -270,6 +274,8 @@ OPTION(VISIT_CREATE_SOCKET_RELAY "Create a separate executable that forwards Vis
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
 OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
+
+OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 
 
 MACRO(VISIT_3RDPARTY_VAR vvar comment libvar)
