@@ -234,12 +234,19 @@ void TransformAttributes::Init()
     m00 = 1;
     m01 = 0;
     m02 = 0;
+    m03 = 0;
     m10 = 0;
     m11 = 1;
     m12 = 0;
+    m13 = 0;
     m20 = 0;
     m21 = 0;
     m22 = 1;
+    m23 = 0;
+    m30 = 0;
+    m31 = 0;
+    m32 = 0;
+    m33 = 1;
     invertLinearTransform = false;
     vectorTransformMethod = AsDirection;
     transformVectors = true;
@@ -293,12 +300,19 @@ void TransformAttributes::Copy(const TransformAttributes &obj)
     m00 = obj.m00;
     m01 = obj.m01;
     m02 = obj.m02;
+    m03 = obj.m03;
     m10 = obj.m10;
     m11 = obj.m11;
     m12 = obj.m12;
+    m13 = obj.m13;
     m20 = obj.m20;
     m21 = obj.m21;
     m22 = obj.m22;
+    m23 = obj.m23;
+    m30 = obj.m30;
+    m31 = obj.m31;
+    m32 = obj.m32;
+    m33 = obj.m33;
     invertLinearTransform = obj.invertLinearTransform;
     vectorTransformMethod = obj.vectorTransformMethod;
     transformVectors = obj.transformVectors;
@@ -494,12 +508,19 @@ TransformAttributes::operator == (const TransformAttributes &obj) const
             (m00 == obj.m00) &&
             (m01 == obj.m01) &&
             (m02 == obj.m02) &&
+            (m03 == obj.m03) &&
             (m10 == obj.m10) &&
             (m11 == obj.m11) &&
             (m12 == obj.m12) &&
+            (m13 == obj.m13) &&
             (m20 == obj.m20) &&
             (m21 == obj.m21) &&
             (m22 == obj.m22) &&
+            (m23 == obj.m23) &&
+            (m30 == obj.m30) &&
+            (m31 == obj.m31) &&
+            (m32 == obj.m32) &&
+            (m33 == obj.m33) &&
             (invertLinearTransform == obj.invertLinearTransform) &&
             (vectorTransformMethod == obj.vectorTransformMethod) &&
             (transformVectors == obj.transformVectors));
@@ -701,12 +722,19 @@ TransformAttributes::SelectAll()
     Select(ID_m00,                   (void *)&m00);
     Select(ID_m01,                   (void *)&m01);
     Select(ID_m02,                   (void *)&m02);
+    Select(ID_m03,                   (void *)&m03);
     Select(ID_m10,                   (void *)&m10);
     Select(ID_m11,                   (void *)&m11);
     Select(ID_m12,                   (void *)&m12);
+    Select(ID_m13,                   (void *)&m13);
     Select(ID_m20,                   (void *)&m20);
     Select(ID_m21,                   (void *)&m21);
     Select(ID_m22,                   (void *)&m22);
+    Select(ID_m23,                   (void *)&m23);
+    Select(ID_m30,                   (void *)&m30);
+    Select(ID_m31,                   (void *)&m31);
+    Select(ID_m32,                   (void *)&m32);
+    Select(ID_m33,                   (void *)&m33);
     Select(ID_invertLinearTransform, (void *)&invertLinearTransform);
     Select(ID_vectorTransformMethod, (void *)&vectorTransformMethod);
     Select(ID_transformVectors,      (void *)&transformVectors);
@@ -862,6 +890,12 @@ TransformAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("m02", m02));
     }
 
+    if(completeSave || !FieldsEqual(ID_m03, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("m03", m03));
+    }
+
     if(completeSave || !FieldsEqual(ID_m10, &defaultObject))
     {
         addToParent = true;
@@ -880,6 +914,12 @@ TransformAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("m12", m12));
     }
 
+    if(completeSave || !FieldsEqual(ID_m13, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("m13", m13));
+    }
+
     if(completeSave || !FieldsEqual(ID_m20, &defaultObject))
     {
         addToParent = true;
@@ -896,6 +936,36 @@ TransformAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("m22", m22));
+    }
+
+    if(completeSave || !FieldsEqual(ID_m23, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("m23", m23));
+    }
+
+    if(completeSave || !FieldsEqual(ID_m30, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("m30", m30));
+    }
+
+    if(completeSave || !FieldsEqual(ID_m31, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("m31", m31));
+    }
+
+    if(completeSave || !FieldsEqual(ID_m32, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("m32", m32));
+    }
+
+    if(completeSave || !FieldsEqual(ID_m33, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("m33", m33));
     }
 
     if(completeSave || !FieldsEqual(ID_invertLinearTransform, &defaultObject))
@@ -1048,18 +1118,32 @@ TransformAttributes::SetFromNode(DataNode *parentNode)
         SetM01(node->AsDouble());
     if((node = searchNode->GetNode("m02")) != 0)
         SetM02(node->AsDouble());
+    if((node = searchNode->GetNode("m03")) != 0)
+        SetM03(node->AsDouble());
     if((node = searchNode->GetNode("m10")) != 0)
         SetM10(node->AsDouble());
     if((node = searchNode->GetNode("m11")) != 0)
         SetM11(node->AsDouble());
     if((node = searchNode->GetNode("m12")) != 0)
         SetM12(node->AsDouble());
+    if((node = searchNode->GetNode("m13")) != 0)
+        SetM13(node->AsDouble());
     if((node = searchNode->GetNode("m20")) != 0)
         SetM20(node->AsDouble());
     if((node = searchNode->GetNode("m21")) != 0)
         SetM21(node->AsDouble());
     if((node = searchNode->GetNode("m22")) != 0)
         SetM22(node->AsDouble());
+    if((node = searchNode->GetNode("m23")) != 0)
+        SetM23(node->AsDouble());
+    if((node = searchNode->GetNode("m30")) != 0)
+        SetM30(node->AsDouble());
+    if((node = searchNode->GetNode("m31")) != 0)
+        SetM31(node->AsDouble());
+    if((node = searchNode->GetNode("m32")) != 0)
+        SetM32(node->AsDouble());
+    if((node = searchNode->GetNode("m33")) != 0)
+        SetM33(node->AsDouble());
     if((node = searchNode->GetNode("invertLinearTransform")) != 0)
         SetInvertLinearTransform(node->AsBool());
     if((node = searchNode->GetNode("vectorTransformMethod")) != 0)
@@ -1233,6 +1317,13 @@ TransformAttributes::SetM02(double m02_)
 }
 
 void
+TransformAttributes::SetM03(double m03_)
+{
+    m03 = m03_;
+    Select(ID_m03, (void *)&m03);
+}
+
+void
 TransformAttributes::SetM10(double m10_)
 {
     m10 = m10_;
@@ -1254,6 +1345,13 @@ TransformAttributes::SetM12(double m12_)
 }
 
 void
+TransformAttributes::SetM13(double m13_)
+{
+    m13 = m13_;
+    Select(ID_m13, (void *)&m13);
+}
+
+void
 TransformAttributes::SetM20(double m20_)
 {
     m20 = m20_;
@@ -1272,6 +1370,41 @@ TransformAttributes::SetM22(double m22_)
 {
     m22 = m22_;
     Select(ID_m22, (void *)&m22);
+}
+
+void
+TransformAttributes::SetM23(double m23_)
+{
+    m23 = m23_;
+    Select(ID_m23, (void *)&m23);
+}
+
+void
+TransformAttributes::SetM30(double m30_)
+{
+    m30 = m30_;
+    Select(ID_m30, (void *)&m30);
+}
+
+void
+TransformAttributes::SetM31(double m31_)
+{
+    m31 = m31_;
+    Select(ID_m31, (void *)&m31);
+}
+
+void
+TransformAttributes::SetM32(double m32_)
+{
+    m32 = m32_;
+    Select(ID_m32, (void *)&m32);
+}
+
+void
+TransformAttributes::SetM33(double m33_)
+{
+    m33 = m33_;
+    Select(ID_m33, (void *)&m33);
 }
 
 void
@@ -1438,6 +1571,12 @@ TransformAttributes::GetM02() const
 }
 
 double
+TransformAttributes::GetM03() const
+{
+    return m03;
+}
+
+double
 TransformAttributes::GetM10() const
 {
     return m10;
@@ -1456,6 +1595,12 @@ TransformAttributes::GetM12() const
 }
 
 double
+TransformAttributes::GetM13() const
+{
+    return m13;
+}
+
+double
 TransformAttributes::GetM20() const
 {
     return m20;
@@ -1471,6 +1616,36 @@ double
 TransformAttributes::GetM22() const
 {
     return m22;
+}
+
+double
+TransformAttributes::GetM23() const
+{
+    return m23;
+}
+
+double
+TransformAttributes::GetM30() const
+{
+    return m30;
+}
+
+double
+TransformAttributes::GetM31() const
+{
+    return m31;
+}
+
+double
+TransformAttributes::GetM32() const
+{
+    return m32;
+}
+
+double
+TransformAttributes::GetM33() const
+{
+    return m33;
 }
 
 bool
@@ -1557,12 +1732,19 @@ TransformAttributes::GetFieldName(int index) const
     case ID_m00:                   return "m00";
     case ID_m01:                   return "m01";
     case ID_m02:                   return "m02";
+    case ID_m03:                   return "m03";
     case ID_m10:                   return "m10";
     case ID_m11:                   return "m11";
     case ID_m12:                   return "m12";
+    case ID_m13:                   return "m13";
     case ID_m20:                   return "m20";
     case ID_m21:                   return "m21";
     case ID_m22:                   return "m22";
+    case ID_m23:                   return "m23";
+    case ID_m30:                   return "m30";
+    case ID_m31:                   return "m31";
+    case ID_m32:                   return "m32";
+    case ID_m33:                   return "m33";
     case ID_invertLinearTransform: return "invertLinearTransform";
     case ID_vectorTransformMethod: return "vectorTransformMethod";
     case ID_transformVectors:      return "transformVectors";
@@ -1610,12 +1792,19 @@ TransformAttributes::GetFieldType(int index) const
     case ID_m00:                   return FieldType_double;
     case ID_m01:                   return FieldType_double;
     case ID_m02:                   return FieldType_double;
+    case ID_m03:                   return FieldType_double;
     case ID_m10:                   return FieldType_double;
     case ID_m11:                   return FieldType_double;
     case ID_m12:                   return FieldType_double;
+    case ID_m13:                   return FieldType_double;
     case ID_m20:                   return FieldType_double;
     case ID_m21:                   return FieldType_double;
     case ID_m22:                   return FieldType_double;
+    case ID_m23:                   return FieldType_double;
+    case ID_m30:                   return FieldType_double;
+    case ID_m31:                   return FieldType_double;
+    case ID_m32:                   return FieldType_double;
+    case ID_m33:                   return FieldType_double;
     case ID_invertLinearTransform: return FieldType_bool;
     case ID_vectorTransformMethod: return FieldType_enum;
     case ID_transformVectors:      return FieldType_bool;
@@ -1663,12 +1852,19 @@ TransformAttributes::GetFieldTypeName(int index) const
     case ID_m00:                   return "double";
     case ID_m01:                   return "double";
     case ID_m02:                   return "double";
+    case ID_m03:                   return "double";
     case ID_m10:                   return "double";
     case ID_m11:                   return "double";
     case ID_m12:                   return "double";
+    case ID_m13:                   return "double";
     case ID_m20:                   return "double";
     case ID_m21:                   return "double";
     case ID_m22:                   return "double";
+    case ID_m23:                   return "double";
+    case ID_m30:                   return "double";
+    case ID_m31:                   return "double";
+    case ID_m32:                   return "double";
+    case ID_m33:                   return "double";
     case ID_invertLinearTransform: return "bool";
     case ID_vectorTransformMethod: return "enum";
     case ID_transformVectors:      return "bool";
@@ -1813,6 +2009,11 @@ TransformAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (m02 == obj.m02);
         }
         break;
+    case ID_m03:
+        {  // new scope
+        retval = (m03 == obj.m03);
+        }
+        break;
     case ID_m10:
         {  // new scope
         retval = (m10 == obj.m10);
@@ -1828,6 +2029,11 @@ TransformAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (m12 == obj.m12);
         }
         break;
+    case ID_m13:
+        {  // new scope
+        retval = (m13 == obj.m13);
+        }
+        break;
     case ID_m20:
         {  // new scope
         retval = (m20 == obj.m20);
@@ -1841,6 +2047,31 @@ TransformAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_m22:
         {  // new scope
         retval = (m22 == obj.m22);
+        }
+        break;
+    case ID_m23:
+        {  // new scope
+        retval = (m23 == obj.m23);
+        }
+        break;
+    case ID_m30:
+        {  // new scope
+        retval = (m30 == obj.m30);
+        }
+        break;
+    case ID_m31:
+        {  // new scope
+        retval = (m31 == obj.m31);
+        }
+        break;
+    case ID_m32:
+        {  // new scope
+        retval = (m32 == obj.m32);
+        }
+        break;
+    case ID_m33:
+        {  // new scope
+        retval = (m33 == obj.m33);
         }
         break;
     case ID_invertLinearTransform:

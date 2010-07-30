@@ -231,17 +231,31 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sm02 = %g\n", prefix, atts->GetM02());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sm03 = %g\n", prefix, atts->GetM03());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sm10 = %g\n", prefix, atts->GetM10());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sm11 = %g\n", prefix, atts->GetM11());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sm12 = %g\n", prefix, atts->GetM12());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sm13 = %g\n", prefix, atts->GetM13());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sm20 = %g\n", prefix, atts->GetM20());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sm21 = %g\n", prefix, atts->GetM21());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sm22 = %g\n", prefix, atts->GetM22());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sm23 = %g\n", prefix, atts->GetM23());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sm30 = %g\n", prefix, atts->GetM30());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sm31 = %g\n", prefix, atts->GetM31());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sm32 = %g\n", prefix, atts->GetM32());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sm33 = %g\n", prefix, atts->GetM33());
     str += tmpStr;
     if(atts->GetInvertLinearTransform())
         SNPRINTF(tmpStr, 1000, "%sinvertLinearTransform = 1\n", prefix);
@@ -895,6 +909,30 @@ TransformAttributes_GetM02(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+TransformAttributes_SetM03(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the m03 in the object.
+    obj->data->SetM03(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TransformAttributes_GetM03(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetM03());
+    return retval;
+}
+
+/*static*/ PyObject *
 TransformAttributes_SetM10(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
@@ -967,6 +1005,30 @@ TransformAttributes_GetM12(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+TransformAttributes_SetM13(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the m13 in the object.
+    obj->data->SetM13(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TransformAttributes_GetM13(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetM13());
+    return retval;
+}
+
+/*static*/ PyObject *
 TransformAttributes_SetM20(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
@@ -1035,6 +1097,126 @@ TransformAttributes_GetM22(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM22());
+    return retval;
+}
+
+/*static*/ PyObject *
+TransformAttributes_SetM23(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the m23 in the object.
+    obj->data->SetM23(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TransformAttributes_GetM23(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetM23());
+    return retval;
+}
+
+/*static*/ PyObject *
+TransformAttributes_SetM30(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the m30 in the object.
+    obj->data->SetM30(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TransformAttributes_GetM30(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetM30());
+    return retval;
+}
+
+/*static*/ PyObject *
+TransformAttributes_SetM31(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the m31 in the object.
+    obj->data->SetM31(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TransformAttributes_GetM31(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetM31());
+    return retval;
+}
+
+/*static*/ PyObject *
+TransformAttributes_SetM32(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the m32 in the object.
+    obj->data->SetM32(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TransformAttributes_GetM32(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetM32());
+    return retval;
+}
+
+/*static*/ PyObject *
+TransformAttributes_SetM33(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the m33 in the object.
+    obj->data->SetM33(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+TransformAttributes_GetM33(PyObject *self, PyObject *args)
+{
+    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetM33());
     return retval;
 }
 
@@ -1163,18 +1345,32 @@ PyMethodDef PyTransformAttributes_methods[TRANSFORMATTRIBUTES_NMETH] = {
     {"GetM01", TransformAttributes_GetM01, METH_VARARGS},
     {"SetM02", TransformAttributes_SetM02, METH_VARARGS},
     {"GetM02", TransformAttributes_GetM02, METH_VARARGS},
+    {"SetM03", TransformAttributes_SetM03, METH_VARARGS},
+    {"GetM03", TransformAttributes_GetM03, METH_VARARGS},
     {"SetM10", TransformAttributes_SetM10, METH_VARARGS},
     {"GetM10", TransformAttributes_GetM10, METH_VARARGS},
     {"SetM11", TransformAttributes_SetM11, METH_VARARGS},
     {"GetM11", TransformAttributes_GetM11, METH_VARARGS},
     {"SetM12", TransformAttributes_SetM12, METH_VARARGS},
     {"GetM12", TransformAttributes_GetM12, METH_VARARGS},
+    {"SetM13", TransformAttributes_SetM13, METH_VARARGS},
+    {"GetM13", TransformAttributes_GetM13, METH_VARARGS},
     {"SetM20", TransformAttributes_SetM20, METH_VARARGS},
     {"GetM20", TransformAttributes_GetM20, METH_VARARGS},
     {"SetM21", TransformAttributes_SetM21, METH_VARARGS},
     {"GetM21", TransformAttributes_GetM21, METH_VARARGS},
     {"SetM22", TransformAttributes_SetM22, METH_VARARGS},
     {"GetM22", TransformAttributes_GetM22, METH_VARARGS},
+    {"SetM23", TransformAttributes_SetM23, METH_VARARGS},
+    {"GetM23", TransformAttributes_GetM23, METH_VARARGS},
+    {"SetM30", TransformAttributes_SetM30, METH_VARARGS},
+    {"GetM30", TransformAttributes_GetM30, METH_VARARGS},
+    {"SetM31", TransformAttributes_SetM31, METH_VARARGS},
+    {"GetM31", TransformAttributes_GetM31, METH_VARARGS},
+    {"SetM32", TransformAttributes_SetM32, METH_VARARGS},
+    {"GetM32", TransformAttributes_GetM32, METH_VARARGS},
+    {"SetM33", TransformAttributes_SetM33, METH_VARARGS},
+    {"GetM33", TransformAttributes_GetM33, METH_VARARGS},
     {"SetInvertLinearTransform", TransformAttributes_SetInvertLinearTransform, METH_VARARGS},
     {"GetInvertLinearTransform", TransformAttributes_GetInvertLinearTransform, METH_VARARGS},
     {"SetVectorTransformMethod", TransformAttributes_SetVectorTransformMethod, METH_VARARGS},
@@ -1275,18 +1471,32 @@ PyTransformAttributes_getattr(PyObject *self, char *name)
         return TransformAttributes_GetM01(self, NULL);
     if(strcmp(name, "m02") == 0)
         return TransformAttributes_GetM02(self, NULL);
+    if(strcmp(name, "m03") == 0)
+        return TransformAttributes_GetM03(self, NULL);
     if(strcmp(name, "m10") == 0)
         return TransformAttributes_GetM10(self, NULL);
     if(strcmp(name, "m11") == 0)
         return TransformAttributes_GetM11(self, NULL);
     if(strcmp(name, "m12") == 0)
         return TransformAttributes_GetM12(self, NULL);
+    if(strcmp(name, "m13") == 0)
+        return TransformAttributes_GetM13(self, NULL);
     if(strcmp(name, "m20") == 0)
         return TransformAttributes_GetM20(self, NULL);
     if(strcmp(name, "m21") == 0)
         return TransformAttributes_GetM21(self, NULL);
     if(strcmp(name, "m22") == 0)
         return TransformAttributes_GetM22(self, NULL);
+    if(strcmp(name, "m23") == 0)
+        return TransformAttributes_GetM23(self, NULL);
+    if(strcmp(name, "m30") == 0)
+        return TransformAttributes_GetM30(self, NULL);
+    if(strcmp(name, "m31") == 0)
+        return TransformAttributes_GetM31(self, NULL);
+    if(strcmp(name, "m32") == 0)
+        return TransformAttributes_GetM32(self, NULL);
+    if(strcmp(name, "m33") == 0)
+        return TransformAttributes_GetM33(self, NULL);
     if(strcmp(name, "invertLinearTransform") == 0)
         return TransformAttributes_GetInvertLinearTransform(self, NULL);
     if(strcmp(name, "vectorTransformMethod") == 0)
@@ -1356,18 +1566,32 @@ PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = TransformAttributes_SetM01(self, tuple);
     else if(strcmp(name, "m02") == 0)
         obj = TransformAttributes_SetM02(self, tuple);
+    else if(strcmp(name, "m03") == 0)
+        obj = TransformAttributes_SetM03(self, tuple);
     else if(strcmp(name, "m10") == 0)
         obj = TransformAttributes_SetM10(self, tuple);
     else if(strcmp(name, "m11") == 0)
         obj = TransformAttributes_SetM11(self, tuple);
     else if(strcmp(name, "m12") == 0)
         obj = TransformAttributes_SetM12(self, tuple);
+    else if(strcmp(name, "m13") == 0)
+        obj = TransformAttributes_SetM13(self, tuple);
     else if(strcmp(name, "m20") == 0)
         obj = TransformAttributes_SetM20(self, tuple);
     else if(strcmp(name, "m21") == 0)
         obj = TransformAttributes_SetM21(self, tuple);
     else if(strcmp(name, "m22") == 0)
         obj = TransformAttributes_SetM22(self, tuple);
+    else if(strcmp(name, "m23") == 0)
+        obj = TransformAttributes_SetM23(self, tuple);
+    else if(strcmp(name, "m30") == 0)
+        obj = TransformAttributes_SetM30(self, tuple);
+    else if(strcmp(name, "m31") == 0)
+        obj = TransformAttributes_SetM31(self, tuple);
+    else if(strcmp(name, "m32") == 0)
+        obj = TransformAttributes_SetM32(self, tuple);
+    else if(strcmp(name, "m33") == 0)
+        obj = TransformAttributes_SetM33(self, tuple);
     else if(strcmp(name, "invertLinearTransform") == 0)
         obj = TransformAttributes_SetInvertLinearTransform(self, tuple);
     else if(strcmp(name, "vectorTransformMethod") == 0)

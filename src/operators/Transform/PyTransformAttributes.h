@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TRANSFORMATTRIBUTES_NMETH 60
+#define TRANSFORMATTRIBUTES_NMETH 74
 void           PyTransformAttributes_StartUp(TransformAttributes *subj, void *data);
 void           PyTransformAttributes_CloseDown();
 PyMethodDef *  PyTransformAttributes_GetMethodTable(int *nMethods);
