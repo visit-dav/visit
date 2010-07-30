@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class TransformAttributes extends AttributeSubject implements Plugin
 {
-    private static int TransformAttributes_numAdditionalAtts = 29;
+    private static int TransformAttributes_numAdditionalAtts = 36;
 
     // Enum values
     public final static int ANGLETYPE_DEG = 0;
@@ -112,12 +112,19 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         m00 = 1;
         m01 = 0;
         m02 = 0;
+        m03 = 0;
         m10 = 0;
         m11 = 1;
         m12 = 0;
+        m13 = 0;
         m20 = 0;
         m21 = 0;
         m22 = 1;
+        m23 = 0;
+        m30 = 0;
+        m31 = 0;
+        m32 = 0;
+        m33 = 1;
         invertLinearTransform = false;
         vectorTransformMethod = VECTORTRANSFORMMETHOD_ASDIRECTION;
         transformVectors = true;
@@ -156,12 +163,19 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         m00 = 1;
         m01 = 0;
         m02 = 0;
+        m03 = 0;
         m10 = 0;
         m11 = 1;
         m12 = 0;
+        m13 = 0;
         m20 = 0;
         m21 = 0;
         m22 = 1;
+        m23 = 0;
+        m30 = 0;
+        m31 = 0;
+        m32 = 0;
+        m33 = 1;
         invertLinearTransform = false;
         vectorTransformMethod = VECTORTRANSFORMMETHOD_ASDIRECTION;
         transformVectors = true;
@@ -205,12 +219,19 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         m00 = obj.m00;
         m01 = obj.m01;
         m02 = obj.m02;
+        m03 = obj.m03;
         m10 = obj.m10;
         m11 = obj.m11;
         m12 = obj.m12;
+        m13 = obj.m13;
         m20 = obj.m20;
         m21 = obj.m21;
         m22 = obj.m22;
+        m23 = obj.m23;
+        m30 = obj.m30;
+        m31 = obj.m31;
+        m32 = obj.m32;
+        m33 = obj.m33;
         invertLinearTransform = obj.invertLinearTransform;
         vectorTransformMethod = obj.vectorTransformMethod;
         transformVectors = obj.transformVectors;
@@ -268,12 +289,19 @@ public class TransformAttributes extends AttributeSubject implements Plugin
                 (m00 == obj.m00) &&
                 (m01 == obj.m01) &&
                 (m02 == obj.m02) &&
+                (m03 == obj.m03) &&
                 (m10 == obj.m10) &&
                 (m11 == obj.m11) &&
                 (m12 == obj.m12) &&
+                (m13 == obj.m13) &&
                 (m20 == obj.m20) &&
                 (m21 == obj.m21) &&
                 (m22 == obj.m22) &&
+                (m23 == obj.m23) &&
+                (m30 == obj.m30) &&
+                (m31 == obj.m31) &&
+                (m32 == obj.m32) &&
+                (m33 == obj.m33) &&
                 (invertLinearTransform == obj.invertLinearTransform) &&
                 (vectorTransformMethod == obj.vectorTransformMethod) &&
                 (transformVectors == obj.transformVectors));
@@ -433,58 +461,100 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(19);
     }
 
+    public void SetM03(double m03_)
+    {
+        m03 = m03_;
+        Select(20);
+    }
+
     public void SetM10(double m10_)
     {
         m10 = m10_;
-        Select(20);
+        Select(21);
     }
 
     public void SetM11(double m11_)
     {
         m11 = m11_;
-        Select(21);
+        Select(22);
     }
 
     public void SetM12(double m12_)
     {
         m12 = m12_;
-        Select(22);
+        Select(23);
+    }
+
+    public void SetM13(double m13_)
+    {
+        m13 = m13_;
+        Select(24);
     }
 
     public void SetM20(double m20_)
     {
         m20 = m20_;
-        Select(23);
+        Select(25);
     }
 
     public void SetM21(double m21_)
     {
         m21 = m21_;
-        Select(24);
+        Select(26);
     }
 
     public void SetM22(double m22_)
     {
         m22 = m22_;
-        Select(25);
+        Select(27);
+    }
+
+    public void SetM23(double m23_)
+    {
+        m23 = m23_;
+        Select(28);
+    }
+
+    public void SetM30(double m30_)
+    {
+        m30 = m30_;
+        Select(29);
+    }
+
+    public void SetM31(double m31_)
+    {
+        m31 = m31_;
+        Select(30);
+    }
+
+    public void SetM32(double m32_)
+    {
+        m32 = m32_;
+        Select(31);
+    }
+
+    public void SetM33(double m33_)
+    {
+        m33 = m33_;
+        Select(32);
     }
 
     public void SetInvertLinearTransform(boolean invertLinearTransform_)
     {
         invertLinearTransform = invertLinearTransform_;
-        Select(26);
+        Select(33);
     }
 
     public void SetVectorTransformMethod(int vectorTransformMethod_)
     {
         vectorTransformMethod = vectorTransformMethod_;
-        Select(27);
+        Select(34);
     }
 
     public void SetTransformVectors(boolean transformVectors_)
     {
         transformVectors = transformVectors_;
-        Select(28);
+        Select(35);
     }
 
     // Property getting methods
@@ -508,12 +578,19 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     public double  GetM00() { return m00; }
     public double  GetM01() { return m01; }
     public double  GetM02() { return m02; }
+    public double  GetM03() { return m03; }
     public double  GetM10() { return m10; }
     public double  GetM11() { return m11; }
     public double  GetM12() { return m12; }
+    public double  GetM13() { return m13; }
     public double  GetM20() { return m20; }
     public double  GetM21() { return m21; }
     public double  GetM22() { return m22; }
+    public double  GetM23() { return m23; }
+    public double  GetM30() { return m30; }
+    public double  GetM31() { return m31; }
+    public double  GetM32() { return m32; }
+    public double  GetM33() { return m33; }
     public boolean GetInvertLinearTransform() { return invertLinearTransform; }
     public int     GetVectorTransformMethod() { return vectorTransformMethod; }
     public boolean GetTransformVectors() { return transformVectors; }
@@ -562,22 +639,36 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(19, buf))
             buf.WriteDouble(m02);
         if(WriteSelect(20, buf))
-            buf.WriteDouble(m10);
+            buf.WriteDouble(m03);
         if(WriteSelect(21, buf))
-            buf.WriteDouble(m11);
+            buf.WriteDouble(m10);
         if(WriteSelect(22, buf))
-            buf.WriteDouble(m12);
+            buf.WriteDouble(m11);
         if(WriteSelect(23, buf))
-            buf.WriteDouble(m20);
+            buf.WriteDouble(m12);
         if(WriteSelect(24, buf))
-            buf.WriteDouble(m21);
+            buf.WriteDouble(m13);
         if(WriteSelect(25, buf))
-            buf.WriteDouble(m22);
+            buf.WriteDouble(m20);
         if(WriteSelect(26, buf))
-            buf.WriteBool(invertLinearTransform);
+            buf.WriteDouble(m21);
         if(WriteSelect(27, buf))
-            buf.WriteInt(vectorTransformMethod);
+            buf.WriteDouble(m22);
         if(WriteSelect(28, buf))
+            buf.WriteDouble(m23);
+        if(WriteSelect(29, buf))
+            buf.WriteDouble(m30);
+        if(WriteSelect(30, buf))
+            buf.WriteDouble(m31);
+        if(WriteSelect(31, buf))
+            buf.WriteDouble(m32);
+        if(WriteSelect(32, buf))
+            buf.WriteDouble(m33);
+        if(WriteSelect(33, buf))
+            buf.WriteBool(invertLinearTransform);
+        if(WriteSelect(34, buf))
+            buf.WriteInt(vectorTransformMethod);
+        if(WriteSelect(35, buf))
             buf.WriteBool(transformVectors);
     }
 
@@ -646,30 +737,51 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             SetM02(buf.ReadDouble());
             break;
         case 20:
-            SetM10(buf.ReadDouble());
+            SetM03(buf.ReadDouble());
             break;
         case 21:
-            SetM11(buf.ReadDouble());
+            SetM10(buf.ReadDouble());
             break;
         case 22:
-            SetM12(buf.ReadDouble());
+            SetM11(buf.ReadDouble());
             break;
         case 23:
-            SetM20(buf.ReadDouble());
+            SetM12(buf.ReadDouble());
             break;
         case 24:
-            SetM21(buf.ReadDouble());
+            SetM13(buf.ReadDouble());
             break;
         case 25:
-            SetM22(buf.ReadDouble());
+            SetM20(buf.ReadDouble());
             break;
         case 26:
-            SetInvertLinearTransform(buf.ReadBool());
+            SetM21(buf.ReadDouble());
             break;
         case 27:
-            SetVectorTransformMethod(buf.ReadInt());
+            SetM22(buf.ReadDouble());
             break;
         case 28:
+            SetM23(buf.ReadDouble());
+            break;
+        case 29:
+            SetM30(buf.ReadDouble());
+            break;
+        case 30:
+            SetM31(buf.ReadDouble());
+            break;
+        case 31:
+            SetM32(buf.ReadDouble());
+            break;
+        case 32:
+            SetM33(buf.ReadDouble());
+            break;
+        case 33:
+            SetInvertLinearTransform(buf.ReadBool());
+            break;
+        case 34:
+            SetVectorTransformMethod(buf.ReadInt());
+            break;
+        case 35:
             SetTransformVectors(buf.ReadBool());
             break;
         }
@@ -724,12 +836,19 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("m00", m00, indent) + "\n";
         str = str + doubleToString("m01", m01, indent) + "\n";
         str = str + doubleToString("m02", m02, indent) + "\n";
+        str = str + doubleToString("m03", m03, indent) + "\n";
         str = str + doubleToString("m10", m10, indent) + "\n";
         str = str + doubleToString("m11", m11, indent) + "\n";
         str = str + doubleToString("m12", m12, indent) + "\n";
+        str = str + doubleToString("m13", m13, indent) + "\n";
         str = str + doubleToString("m20", m20, indent) + "\n";
         str = str + doubleToString("m21", m21, indent) + "\n";
         str = str + doubleToString("m22", m22, indent) + "\n";
+        str = str + doubleToString("m23", m23, indent) + "\n";
+        str = str + doubleToString("m30", m30, indent) + "\n";
+        str = str + doubleToString("m31", m31, indent) + "\n";
+        str = str + doubleToString("m32", m32, indent) + "\n";
+        str = str + doubleToString("m33", m33, indent) + "\n";
         str = str + boolToString("invertLinearTransform", invertLinearTransform, indent) + "\n";
         str = str + indent + "vectorTransformMethod = ";
         if(vectorTransformMethod == VECTORTRANSFORMMETHOD_NONE)
@@ -767,12 +886,19 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     private double  m00;
     private double  m01;
     private double  m02;
+    private double  m03;
     private double  m10;
     private double  m11;
     private double  m12;
+    private double  m13;
     private double  m20;
     private double  m21;
     private double  m22;
+    private double  m23;
+    private double  m30;
+    private double  m31;
+    private double  m32;
+    private double  m33;
     private boolean invertLinearTransform;
     private int     vectorTransformMethod;
     private boolean transformVectors;

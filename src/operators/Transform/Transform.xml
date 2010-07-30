@@ -87,6 +87,10 @@
       <Field name="m02" label="m02" type="double">
         0.000000
       </Field>
+      <Field name="m03" label="m03" type="double">
+        0.000000
+      </Field>
+
       <Field name="m10" label="m10" type="double">
         0.000000
       </Field>
@@ -96,6 +100,10 @@
       <Field name="m12" label="m12" type="double">
         0.000000
       </Field>
+      <Field name="m13" label="m13" type="double">
+        0.000000
+      </Field>
+
       <Field name="m20" label="m20" type="double">
         0.000000
       </Field>
@@ -105,6 +113,23 @@
       <Field name="m22" label="m22" type="double">
         1.000000
       </Field>
+      <Field name="m23" label="m23" type="double">
+        0.000000
+      </Field>
+
+      <Field name="m30" label="m30" type="double">
+        0.000000
+      </Field>
+      <Field name="m31" label="m31" type="double">
+        0.000000
+      </Field>
+      <Field name="m32" label="m32" type="double">
+        0.000000
+      </Field>
+      <Field name="m33" label="m33" type="double">
+        1.000000
+      </Field>
+
       <Field name="invertLinearTransform" label="invertLinearTransform" type="bool">
         false
       </Field>
