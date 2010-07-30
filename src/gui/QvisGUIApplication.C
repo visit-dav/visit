@@ -5477,6 +5477,10 @@ QvisGUIApplication::GetVirtualDatabaseDefinitions(
 //   Brad Whitlock, Fri Feb 15 14:53:27 PST 2008
 //   Fixed the comparison of the stringVectors.
 //
+//   Kathleen Bonnell, Wed Jul 28 09:54:27 PDT 2010
+//   Return early if there are no old virtual defintions. Prevents a crash
+//   on Windows platforms.
+//
 // ****************************************************************************
 
 void
@@ -5489,6 +5493,9 @@ QvisGUIApplication::RefreshFileList()
     // Save the definitions for the virtual databases.
     StringStringVectorMap oldVirtualDefinitions;
     GetVirtualDatabaseDefinitions(oldVirtualDefinitions);
+
+    if (oldVirtualDefinitions.empty())
+        return;
 
     //
     // Create a list of hosts,paths for which we must get a new list of files.
