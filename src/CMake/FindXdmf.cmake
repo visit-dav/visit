@@ -38,6 +38,9 @@
 #   Kathleen Bonnell, Thu May 27 17:01:22 MST 2010
 #   Windows builds can be handled the same as non-windows for XDMF.
 #
+#   Mark C. Miller, Fri Jul 30 22:06:06 PDT 2010
+#   Removed logic setting XDMF_DIR (that is done to SET_UP_THIRD_PARTY)
+#   as well as FIND_PACKAGE (also done by SET_UP_THIRD_PARTY).
 #****************************************************************************/
 
 # Use the XDMF_DIR hint from the config-site .cmake file 
@@ -46,6 +49,3 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 SET_UP_THIRD_PARTY(XDMF lib include Xdmf vtklibxml2)
-
-SET(XDMF_DIR ${XDMF_LIBRARY_DIR}/XdmfCMake)
-FIND_PACKAGE(XDMF QUIET)

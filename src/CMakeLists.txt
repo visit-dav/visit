@@ -312,6 +312,11 @@ VISIT_3RDPARTY_VAR(VISIT_TCMALLOC_DIR   "Path containing the tcmalloc library's 
 # Define the options that let us pick I/O library installation locations. When 
 # the library option is defined then we also define the variable name passed as
 # the 3rd argument. That variable is what is used in our various Find routines.
+#
+# Note: Define LIBDEP ONLY for libs a plugin is INdirectly dependent on (e.g.
+#       needs to link but not to compile). Use the plugin's .xml file for
+#       libs a plugin is DIRECTLY dependent on (e.g. needs to both compile
+#       and link).
 VISIT_3RDPARTY_VAR(VISIT_ADIOS_DIR     "Path containing the ADIOS library's include and lib" ADIOS_DIR)
 VISIT_3RDPARTY_VAR(VISIT_ADVIO_DIR     "Path containing the AdvIO library's include and lib" ADVIO_DIR)
 VISIT_3RDPARTY_VAR(VISIT_BOXLIB2D_DIR  "Path containing the Boxlib 2D library's include and lib" BOXLIB2D_DIR)
@@ -327,7 +332,6 @@ VISIT_3RDPARTY_DEP(VISIT_HDF4_LIBDEP   "HDF4 library dependencies" HDF4_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_HDF5_DIR      "Path containing the HDF5 library's include and lib" HDF5_DIR)
 VISIT_3RDPARTY_DEP(VISIT_HDF5_LIBDEP   "HDF5 library dependencies" HDF5_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_H5PART_DIR    "Path containing the H5Part library's include and lib" H5PART_DIR)
-VISIT_3RDPARTY_DEP(VISIT_H5PART_LIBDEP "H5Part library dependencies" H5PART_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_MILI_DIR      "Path containing the Mili library's include and lib" MILI_DIR)
 VISIT_3RDPARTY_VAR(VISIT_NETCDF_DIR    "Path containing the NETCDF library's include and lib" NETCDF_DIR)
 VISIT_3RDPARTY_VAR(VISIT_SILO_DIR      "Path containing the Silo library's include and lib" SILO_DIR)
