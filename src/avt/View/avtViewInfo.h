@@ -74,6 +74,9 @@ class vtkCamera;
 //   Hank Childs, Wed Oct 15 13:09:03 PDT 2003
 //   Added eye angle.
 //
+//   Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//   Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtViewInfo
@@ -90,6 +93,7 @@ struct AVTVIEW_API avtViewInfo
     double   imagePan[2];
     double   imageZoom;
     bool     orthographic;
+    double   shear[3];
 
   public:
                     avtViewInfo();

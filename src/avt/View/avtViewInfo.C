@@ -75,6 +75,9 @@ avtViewInfo::avtViewInfo()
 //    Hank Childs, Wed Oct 15 13:09:03 PDT 2003
 //    Added eye angle.
 //
+//    Jeremy Meredith, Mon Aug  2 13:47:52 EDT 2010
+//    Added shear.
+//
 // ****************************************************************************
 
 avtViewInfo &
@@ -99,6 +102,9 @@ avtViewInfo::operator=(const avtViewInfo &vi)
     imagePan[0]  = vi.imagePan[0];
     imagePan[1]  = vi.imagePan[1];
     imageZoom    = vi.imageZoom;
+    shear[0]     = vi.shear[0];
+    shear[1]     = vi.shear[1];
+    shear[2]     = vi.shear[2];
 
     return *this;
 }
@@ -119,6 +125,9 @@ avtViewInfo::operator=(const avtViewInfo &vi)
 //
 //    Hank Childs, Wed Oct 15 13:09:03 PDT 2003
 //    Added eye angle.
+//
+//    Jeremy Meredith, Mon Aug  2 13:47:52 EDT 2010
+//    Added shear.
 //
 // ****************************************************************************
 
@@ -174,6 +183,13 @@ avtViewInfo::operator==(const avtViewInfo &vi)
         return false;
     }
 
+    if (shear[0] != vi.shear[0] || shear[1] != vi.shear[1]
+        || shear[2] != vi.shear[2])
+    {
+        return false;
+    }
+
+
     return true;
 }
 
@@ -193,6 +209,9 @@ avtViewInfo::operator==(const avtViewInfo &vi)
 //
 //    Hank Childs, Wed Oct 15 13:09:03 PDT 2003
 //    Added eye angle.
+//
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
 //
 // ****************************************************************************
 
@@ -218,6 +237,9 @@ avtViewInfo::SetToDefault()
     imagePan[0]  = 0.;
     imagePan[1]  = 0.;
     imageZoom    = 1.;
+    shear[0]     =  0.;
+    shear[1]     =  0.;
+    shear[2]     =  1.;
 }
 
 // ****************************************************************************
@@ -233,6 +255,9 @@ avtViewInfo::SetToDefault()
 //
 //    Hank Childs, Wed Oct 15 13:09:03 PDT 2003
 //    Added eye angle.
+//
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
 //
 // ****************************************************************************
 
@@ -252,6 +277,7 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
     eyeAngle  = vtkcam->GetEyeAngle();
     parallelScale = vtkcam->GetParallelScale();
     orthographic = (vtkcam->GetParallelProjection() != 0 ? true : false);
+    vtkcam->GetViewShear(shear);
 }
 
 
@@ -275,6 +301,9 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //    Hank Childs, Wed Oct 15 13:09:03 PDT 2003
 //    Added eye angle.
 //
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 void
@@ -288,6 +317,7 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     }
     vtkcam->SetParallelProjection(orthographic ? 1 : 0);
     vtkcam->SetClippingRange(nearPlane, farPlane);
+    vtkcam->SetViewShear(shear[0],shear[1],shear[2]);
     vtkcam->SetFocalPoint(focus);
     vtkcam->SetPosition(camera);
     vtkcam->SetViewUp(viewUp);

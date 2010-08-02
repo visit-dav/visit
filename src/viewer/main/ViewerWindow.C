@@ -1389,6 +1389,9 @@ ViewerWindow::MoveViewKeyframe(int oldIndex, int newIndex)
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 void
@@ -1440,6 +1443,7 @@ ViewerWindow::SetViewKeyframe()
         curView3D->SetEyeAngle(view3d.eyeAngle);
         curView3D->SetAxis3DScaleFlag(view3d.axis3DScaleFlag);
         curView3D->SetAxis3DScales(view3d.axis3DScales);
+        curView3D->SetShear(view3d.shear);
         view3DAtts->SetAtts(curIndex, curView3D);
 
         //
@@ -4708,6 +4712,9 @@ ViewerWindow::ResetView2d()
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 void
@@ -4838,6 +4845,14 @@ ViewerWindow::ResetView3d()
     view3D.axis3DScales[0] = 1.0;
     view3D.axis3DScales[1] = 1.0;
     view3D.axis3DScales[2] = 1.0;
+
+    //
+    // Reset the view shear.
+    //
+    view3D.shear[0] = 0.;
+    view3D.shear[1] = 0.;
+    view3D.shear[2] = 1.;
+
 
     //
     // Update the view.

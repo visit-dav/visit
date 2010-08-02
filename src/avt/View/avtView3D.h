@@ -76,6 +76,9 @@ class View3DAttributes;
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtView3D
@@ -95,6 +98,7 @@ struct AVTVIEW_API avtView3D
     double   centerOfRotation[3];
     bool     axis3DScaleFlag;
     double   axis3DScales[3];
+    double   shear[3];
 
   public:
                     avtView3D();

@@ -319,6 +319,8 @@ Definition:
 // Creation:   Tue Mar  3 16:21:14 PST 2009
 //
 // Modifications:
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
 //   
 // ****************************************************************************
 void
@@ -385,6 +387,13 @@ View3DAttributes::ResetView(const double *bbox)
     view3D.centerOfRotation[0] = view3D.focus[0];
     view3D.centerOfRotation[1] = view3D.focus[1];
     view3D.centerOfRotation[2] = view3D.focus[2];
+
+    //
+    // Reset the shear
+    //
+    view3D.shear[0] = 0.;
+    view3D.shear[1] = 0.;
+    view3D.shear[2] = 1.;
 
     // Copy the object into this.
     *this = view3D;

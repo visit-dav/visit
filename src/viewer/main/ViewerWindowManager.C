@@ -2980,6 +2980,9 @@ ViewerWindowManager::SetView2DFromClient()
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 void
@@ -3013,6 +3016,9 @@ ViewerWindowManager::SetView3DFromClient()
     view3d.axis3DScales[0] = view3DClientAtts->GetAxis3DScales()[0];
     view3d.axis3DScales[1] = view3DClientAtts->GetAxis3DScales()[1];
     view3d.axis3DScales[2] = view3DClientAtts->GetAxis3DScales()[2];
+    view3d.shear[0] = view3DClientAtts->GetShear()[0];
+    view3d.shear[1] = view3DClientAtts->GetShear()[1];
+    view3d.shear[2] = view3DClientAtts->GetShear()[2];
 
     //
     // Set the 3D view for the active viewer window.

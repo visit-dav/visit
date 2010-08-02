@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VIEW3DATTRIBUTES_NMETH 33
+#define VIEW3DATTRIBUTES_NMETH 35
 void VISITPY_API           PyView3DAttributes_StartUp(View3DAttributes *subj, void *data);
 void VISITPY_API           PyView3DAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyView3DAttributes_GetMethodTable(int *nMethods);

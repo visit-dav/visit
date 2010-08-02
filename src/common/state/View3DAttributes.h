@@ -91,6 +91,7 @@ public:
     void SelectImagePan();
     void SelectCenterOfRotation();
     void SelectAxis3DScales();
+    void SelectShear();
 
     // Property setting methods
     void SetViewNormal(const double *viewNormal_);
@@ -108,6 +109,7 @@ public:
     void SetCenterOfRotation(const double *centerOfRotation_);
     void SetAxis3DScaleFlag(bool axis3DScaleFlag_);
     void SetAxis3DScales(const double *axis3DScales_);
+    void SetShear(const double *shear_);
 
     // Property getting methods
     const double *GetViewNormal() const;
@@ -131,6 +133,8 @@ public:
     bool         GetAxis3DScaleFlag() const;
     const double *GetAxis3DScales() const;
           double *GetAxis3DScales();
+    const double *GetShear() const;
+          double *GetShear();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -164,6 +168,7 @@ public:
         ID_centerOfRotation,
         ID_axis3DScaleFlag,
         ID_axis3DScales,
+        ID_shear,
         ID__LAST
     };
 
@@ -183,11 +188,12 @@ private:
     double centerOfRotation[3];
     bool   axis3DScaleFlag;
     double axis3DScales[3];
+    double shear[3];
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEW3DATTRIBUTES_TMFS "DDDddddDdbdbDbD"
+#define VIEW3DATTRIBUTES_TMFS "DDDddddDdbdbDbDD"
 
 #endif
