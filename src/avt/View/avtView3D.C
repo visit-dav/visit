@@ -88,6 +88,9 @@ avtView3D::avtView3D()
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 avtView3D &
@@ -119,6 +122,9 @@ avtView3D::operator=(const avtView3D &vi)
     axis3DScales[0]     = vi.axis3DScales[0];
     axis3DScales[1]     = vi.axis3DScales[1];
     axis3DScales[2]     = vi.axis3DScales[2];
+    shear[0]            = vi.shear[0];
+    shear[1]            = vi.shear[1];
+    shear[2]            = vi.shear[2];
 
     return *this;
 }
@@ -144,6 +150,9 @@ avtView3D::operator=(const avtView3D &vi)
 //
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
+//
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
 //
 // ****************************************************************************
 
@@ -178,6 +187,12 @@ avtView3D::operator==(const avtView3D &vi)
     if (axis3DScales[0] != vi.axis3DScales[0] ||
         axis3DScales[1] != vi.axis3DScales[1] ||
         axis3DScales[2] != vi.axis3DScales[2])
+    {
+        return false;
+    }
+
+    if (shear[0] != vi.shear[0] || shear[1] != vi.shear[1] ||
+        shear[2] != vi.shear[2])
     {
         return false;
     }
@@ -223,6 +238,9 @@ avtView3D::operator==(const avtView3D &vi)
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 void
@@ -254,6 +272,9 @@ avtView3D::SetToDefault()
     axis3DScales[0]     = 1.0;
     axis3DScales[1]     = 1.0;
     axis3DScales[2]     = 1.0;
+    shear[0]            = 0.;
+    shear[1]            = 0.;
+    shear[2]            = 1.;
 }
 
 // ****************************************************************************
@@ -299,6 +320,9 @@ avtView3D::SetToDefault()
 //
 //    Mark C. Miller, Thu Nov 18 21:25:36 PST 2004
 //    Undid previous change. It could result in negative nearPlane values
+//
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
 //
 // ****************************************************************************
 
@@ -365,6 +389,13 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     viewInfo.imagePan[0] = imagePan[0];
     viewInfo.imagePan[1] = imagePan[1];
     viewInfo.imageZoom   = imageZoom;
+
+    //
+    // Set the vew shear.
+    //
+    viewInfo.shear[0] = shear[0];
+    viewInfo.shear[1] = shear[1];
+    viewInfo.shear[2] = shear[2];
 }
 
 // ****************************************************************************
@@ -392,6 +423,9 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 void
@@ -404,6 +438,7 @@ avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
         viewUp[i] = view3DAtts->GetViewUp()[i];
         centerOfRotation[i] = view3DAtts->GetCenterOfRotation()[i];
         axis3DScales[i] = view3DAtts->GetAxis3DScales()[i];
+        shear[i] = view3DAtts->GetShear()[i];
     }
 
     viewAngle = view3DAtts->GetViewAngle();
@@ -444,6 +479,9 @@ avtView3D::SetFromView3DAttributes(const View3DAttributes *view3DAtts)
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//    Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 void
@@ -464,4 +502,5 @@ avtView3D::SetToView3DAttributes(View3DAttributes *view3DAtts) const
     view3DAtts->SetCenterOfRotation(centerOfRotation);
     view3DAtts->SetAxis3DScaleFlag(axis3DScaleFlag);
     view3DAtts->SetAxis3DScales(axis3DScales);
+    view3DAtts->SetShear(shear);
 }

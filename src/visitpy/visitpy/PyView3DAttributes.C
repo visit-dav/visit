@@ -199,6 +199,22 @@ PyView3DAttributes_ToString(const View3DAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const double *shear = atts->GetShear();
+        SNPRINTF(tmpStr, 1000, "%sshear = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", shear[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -751,6 +767,60 @@ View3DAttributes_GetAxis3DScales(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+View3DAttributes_SetShear(PyObject *self, PyObject *args)
+{
+    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+
+    double *dvals = obj->data->GetShear();
+    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 3)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the shear in the object as modified.
+    obj->data->SelectShear();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+View3DAttributes_GetShear(PyObject *self, PyObject *args)
+{
+    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the shear.
+    PyObject *retval = PyTuple_New(3);
+    const double *shear = obj->data->GetShear();
+    for(int i = 0; i < 3; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(shear[i]));
+    return retval;
+}
+
 
 // ****************************************************************************
 // Method: RotateAxis
@@ -819,6 +889,8 @@ PyMethodDef PyView3DAttributes_methods[VIEW3DATTRIBUTES_NMETH] = {
     {"GetAxis3DScaleFlag", View3DAttributes_GetAxis3DScaleFlag, METH_VARARGS},
     {"SetAxis3DScales", View3DAttributes_SetAxis3DScales, METH_VARARGS},
     {"GetAxis3DScales", View3DAttributes_GetAxis3DScales, METH_VARARGS},
+    {"SetShear", View3DAttributes_SetShear, METH_VARARGS},
+    {"GetShear", View3DAttributes_GetShear, METH_VARARGS},
     {"RotateAxis", View3DAttributes_RotateAxis, METH_VARARGS},
     {NULL, NULL}
 };
@@ -878,6 +950,8 @@ PyView3DAttributes_getattr(PyObject *self, char *name)
         return View3DAttributes_GetAxis3DScaleFlag(self, NULL);
     if(strcmp(name, "axis3DScales") == 0)
         return View3DAttributes_GetAxis3DScales(self, NULL);
+    if(strcmp(name, "shear") == 0)
+        return View3DAttributes_GetShear(self, NULL);
 
     return Py_FindMethod(PyView3DAttributes_methods, self, name);
 }
@@ -922,6 +996,8 @@ PyView3DAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = View3DAttributes_SetAxis3DScaleFlag(self, tuple);
     else if(strcmp(name, "axis3DScales") == 0)
         obj = View3DAttributes_SetAxis3DScales(self, tuple);
+    else if(strcmp(name, "shear") == 0)
+        obj = View3DAttributes_SetShear(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
@@ -946,171 +1022,6 @@ View3DAttributes_str(PyObject *v)
     View3DAttributesObject *obj = (View3DAttributesObject *)v;
     return PyString_FromString(PyView3DAttributes_ToString(obj->data,"").c_str());
 }
-
-static PyObject *
-View3DAttributes_add(PyObject *v, PyObject *w)
-{
-    bool arg1isObject = PyView3DAttributes_Check(v);
-    bool arg2isObject = PyView3DAttributes_Check(w);
-    if(!arg1isObject || !arg2isObject)
-    {
-        cerr << "View3DAttributes_add: One or more arguments are not View3DAttributes!" << endl;
-        return NULL;
-    }
-
-    PyObject *retval = NewView3DAttributes(0);
-    View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
-    View3DAttributes *a = ((View3DAttributesObject *)v)->data;
-    View3DAttributes *b = ((View3DAttributesObject *)w)->data;
-
-    c->GetViewNormal()[0] = a->GetViewNormal()[0] + b->GetViewNormal()[0];
-    c->GetViewNormal()[1] = a->GetViewNormal()[1] + b->GetViewNormal()[1];
-    c->GetViewNormal()[2] = a->GetViewNormal()[2] + b->GetViewNormal()[2];
-
-    c->GetFocus()[0] = a->GetFocus()[0] + b->GetFocus()[0];
-    c->GetFocus()[1] = a->GetFocus()[1] + b->GetFocus()[1];
-    c->GetFocus()[2] = a->GetFocus()[2] + b->GetFocus()[2];
-
-    c->GetViewUp()[0] = a->GetViewUp()[0] + b->GetViewUp()[0];
-    c->GetViewUp()[1] = a->GetViewUp()[1] + b->GetViewUp()[1];
-    c->GetViewUp()[2] = a->GetViewUp()[2] + b->GetViewUp()[2];
-
-    c->SetViewAngle(a->GetViewAngle() + b->GetViewAngle());
-    c->SetParallelScale(a->GetParallelScale() + b->GetParallelScale());
-    c->SetNearPlane(a->GetNearPlane() + b->GetNearPlane());
-    c->SetFarPlane(a->GetFarPlane() + b->GetFarPlane());
-    c->SetPerspective(a->GetPerspective() + b->GetPerspective());
-
-    c->GetImagePan()[0] = a->GetImagePan()[0] + b->GetImagePan()[0];
-    c->GetImagePan()[1] = a->GetImagePan()[1] + b->GetImagePan()[1];
-    c->SetImageZoom(a->GetImageZoom() + b->GetImageZoom());
-
-    c->SetEyeAngle(a->GetEyeAngle() + b->GetEyeAngle());
-
-    c->SetCenterOfRotationSet(a->GetCenterOfRotationSet() +
-                              b->GetCenterOfRotationSet());
-    c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] +
-                                  b->GetCenterOfRotation()[0];
-    c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] +
-                                  b->GetCenterOfRotation()[1];
-    c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] +
-                                  b->GetCenterOfRotation()[2];
-    return retval;
-}
-
-static PyObject *
-View3DAttributes_mul(PyObject *v, PyObject *w)
-{
-    PyObject *retval = NewView3DAttributes(0);
-    View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
-
-    View3DAttributes *a;
-    double val = 1.;
-    bool arg1isObject = PyView3DAttributes_Check(v);
-    bool arg2isObject = PyView3DAttributes_Check(w);
-
-    if(arg1isObject && arg2isObject)
-    {
-        return NULL;
-    }
-    else
-    {
-        PyObject *num;
-
-        if(arg1isObject)
-        {
-            a = ((View3DAttributesObject *)v)->data;
-            num = w;
-        }
-        else
-        {
-            a = ((View3DAttributesObject *)w)->data;
-            num = v;
-        }
-
-        if(PyFloat_Check(num))
-            val = PyFloat_AS_DOUBLE(num);
-        else if(PyInt_Check(num))
-            val = double(PyInt_AS_LONG(num));
-        else if(PyLong_Check(num))
-            val = PyLong_AsDouble(num);
-        else
-        {
-            cerr << "MUL: Expected numeric argument is not a number!" << endl;
-        }
-
-        c->GetViewNormal()[0] = a->GetViewNormal()[0] * val;
-        c->GetViewNormal()[1] = a->GetViewNormal()[1] * val;
-        c->GetViewNormal()[2] = a->GetViewNormal()[2] * val;
-
-        c->GetFocus()[0] = a->GetFocus()[0] * val;
-        c->GetFocus()[1] = a->GetFocus()[1] * val;
-        c->GetFocus()[2] = a->GetFocus()[2] * val;
-
-        c->GetViewUp()[0] = a->GetViewUp()[0] * val;
-        c->GetViewUp()[1] = a->GetViewUp()[1] * val;
-        c->GetViewUp()[2] = a->GetViewUp()[2] * val;
-
-        c->SetViewAngle(a->GetViewAngle() * val);
-        c->SetParallelScale(a->GetParallelScale() * val);
-        c->SetNearPlane(a->GetNearPlane() * val);
-        c->SetFarPlane(a->GetFarPlane() * val);
-        c->SetPerspective(a->GetPerspective() * val);
-
-        c->GetImagePan()[0] = a->GetImagePan()[0] * val;
-        c->GetImagePan()[1] = a->GetImagePan()[1] * val;
-        c->SetImageZoom(a->GetImageZoom() * val);
-
-        c->SetEyeAngle(a->GetEyeAngle() * val);
-
-        c->SetCenterOfRotationSet(a->GetCenterOfRotationSet() * val);
-        c->GetCenterOfRotation()[0] = a->GetCenterOfRotation()[0] * val;
-        c->GetCenterOfRotation()[1] = a->GetCenterOfRotation()[1] * val;
-        c->GetCenterOfRotation()[2] = a->GetCenterOfRotation()[2] * val;
-    }
-
-    return retval;
-}
-
-//
-// The type description structure
-//
-static PyNumberMethods View3DAttributes_as_number = {
-    (binaryfunc)View3DAttributes_add, /*nb_add*/
-    (binaryfunc)0, /*nb_subtract*/
-    (binaryfunc)View3DAttributes_mul, /*nb_multiply*/
-    (binaryfunc)0, /*nb_divide*/
-    (binaryfunc)0,    /*nb_remainder*/
-    (binaryfunc)0,    /*nb_divmod*/
-    (ternaryfunc)0,    /*nb_power*/
-    (unaryfunc)0,    /*nb_negative*/
-    (unaryfunc)0,    /*nb_positive*/
-    (unaryfunc)0,    /*nb_absolute*/
-    (inquiry)0,    /*nb_nonzero*/
-    (unaryfunc)0,    /*nb_invert*/
-    (binaryfunc)0,    /*nb_lshift*/
-    (binaryfunc)0,    /*nb_rshift*/
-    (binaryfunc)0,    /*nb_and*/
-    (binaryfunc)0,    /*nb_xor*/
-    (binaryfunc)0,    /*nb_or*/
-    0,            /*nb_coerce*/
-    (unaryfunc)0,    /*nb_int*/
-    (unaryfunc)0,    /*nb_long*/
-    (unaryfunc)0,    /*nb_float*/
-    (unaryfunc)0,    /*nb_oct*/
-    (unaryfunc)0,     /*nb_hex*/
-    0,            /*nb_inplace_add*/
-    0,            /*nb_inplace_subtract*/
-    0,            /*nb_inplace_multiply*/
-    0,            /*nb_inplace_divide*/
-    0,            /*nb_inplace_remainder*/
-    0,            /*nb_inplace_power*/
-    0,            /*nb_inplace_lshift*/
-    0,            /*nb_inplace_rshift*/
-    0,            /*nb_inplace_and*/
-    0,            /*nb_inplace_xor*/
-    0,            /*nb_inplace_or*/
-};
 
 //
 // The doc string for the class.
@@ -1146,7 +1057,7 @@ static PyTypeObject View3DAttributesType =
     //
     // Type categories
     //
-    &View3DAttributes_as_number,         // tp_as_number
+    0,                                   // tp_as_number
     0,                                   // tp_as_sequence
     0,                                   // tp_as_mapping
     //

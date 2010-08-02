@@ -226,6 +226,9 @@ QvisViewWindow::~QvisViewWindow()
 //   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //   Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//   Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//   Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 void
@@ -463,6 +466,15 @@ QvisViewWindow::CreateWindowContents()
     imageZoomLabel->setBuddy(imageZoomLineEdit);
     layout3D->addWidget(imageZoomLabel, 8, 0);
 
+    shearLineEdit = new QLineEdit(page3D);
+    shearLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
+    connect(shearLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processShearText()));
+    layout3D->addWidget(shearLineEdit, 9, 1, 1, 2);
+    QLabel *shearLabel = new QLabel(tr("Shear"), page3D);
+    shearLabel->setBuddy(shearLineEdit);
+    layout3D->addWidget(shearLabel, 9, 0);
+
     // portion for modifying the eye angle.
     eyeAngleLineEdit = new QNarrowLineEdit(page3D);
     connect(eyeAngleLineEdit, SIGNAL(returnPressed()), this,
@@ -477,15 +489,15 @@ QvisViewWindow::CreateWindowContents()
     eyeAngleSlider->setValue(40);
     connect(eyeAngleSlider, SIGNAL(valueChanged(int)), this,
             SLOT(eyeAngleSliderChanged(int)));
-    layout3D->addWidget(eyeAngleLabel, 9, 0);
-    layout3D->addWidget(eyeAngleLineEdit, 9, 1);
-    layout3D->addWidget(eyeAngleSlider, 9, 2);
+    layout3D->addWidget(eyeAngleLabel, 10, 0);
+    layout3D->addWidget(eyeAngleLineEdit, 10, 1);
+    layout3D->addWidget(eyeAngleSlider, 10, 2);
 
     // Create the check boxes
     perspectiveToggle = new QCheckBox(tr("Perspective"), page3D);
     connect(perspectiveToggle, SIGNAL(toggled(bool)),
             this, SLOT(perspectiveToggled(bool)));
-    layout3D->addWidget(perspectiveToggle, 10, 1);
+    layout3D->addWidget(perspectiveToggle, 11, 1);
 
     // Add alignment options
     alignComboBox = new QComboBox(page3D);
@@ -498,22 +510,22 @@ QvisViewWindow::CreateWindowContents()
     alignComboBox->addItem("+Z");
     connect(alignComboBox, SIGNAL(activated(int)),
             this, SLOT(viewButtonClicked(int)));
-    layout3D->addWidget(alignComboBox, 11, 1);
+    layout3D->addWidget(alignComboBox, 12, 1);
     QLabel *alignLabel = new QLabel(tr("Align to axis"), page3D);
     alignLabel->setBuddy(alignComboBox);
-    layout3D->addWidget(alignLabel, 11, 0);
+    layout3D->addWidget(alignLabel, 12, 0);
 
     // Create the 3D axis scale check box
     axis3DScaleFlagToggle = new QCheckBox(tr("Scale 3D axes"), page3D);
     connect(axis3DScaleFlagToggle, SIGNAL(toggled(bool)),
             this, SLOT(axis3DScaleFlagToggled(bool)));
-    layout3D->addWidget(axis3DScaleFlagToggle, 12, 0);
+    layout3D->addWidget(axis3DScaleFlagToggle, 13, 0);
 
     axis3DScalesLineEdit = new QLineEdit(page3D);
     axis3DScalesLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
     connect(axis3DScalesLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processAxis3DScalesText()));
-    layout3D->addWidget(axis3DScalesLineEdit, 12, 1, 1, 2);
+    layout3D->addWidget(axis3DScalesLineEdit, 13, 1, 1, 2);
 
     //
     // Add the controls for the axis array view.
@@ -985,6 +997,9 @@ QvisViewWindow::Update2D(bool doAll)
 //   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //   Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//   Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//   Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 void
@@ -1066,6 +1081,10 @@ QvisViewWindow::Update3D(bool doAll)
         case View3DAttributes::ID_axis3DScales:
             temp = DoublesToQString(view3d->GetAxis3DScales(), 3);
             axis3DScalesLineEdit->setText(temp);
+            break;
+        case View3DAttributes::ID_shear:
+            temp = DoublesToQString(view3d->GetShear(), 3);
+            shearLineEdit->setText(temp);
             break;
         }
     }
@@ -1605,6 +1624,9 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 //   Make sure axis scales are positive.  (Negative and zero have some
 //   bad consequences.)
 //
+//   Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
+//   Add shear for oblique projection support.
+//
 // ****************************************************************************
 
 void
@@ -1791,6 +1813,20 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
             ResettingError(tr("axis3DScales"),
                            DoublesToQString(view3d->GetAxis3DScales(), 3));
             view3d->SetAxis3DScales(view3d->GetAxis3DScales());
+        }
+    }
+
+    // Do the shear values.
+    if(which_widget == View3DAttributes::ID_shear || doAll)
+    {
+        double v[3];
+        if(LineEditGetDoubles(shearLineEdit, v, 3))
+            view3d->SetShear(v);
+        else
+        {
+            ResettingError(tr("shear"),
+                           DoublesToQString(view3d->GetShear(), 3));
+            view3d->SetShear(view3d->GetShear());
         }
     }
 
@@ -2471,6 +2507,13 @@ void
 QvisViewWindow::processImageZoomText()
 {
     GetCurrentValues3d(View3DAttributes::ID_imageZoom);
+    Apply();    
+}
+
+void
+QvisViewWindow::processShearText()
+{
+    GetCurrentValues3d(View3DAttributes::ID_shear);
     Apply();    
 }
 

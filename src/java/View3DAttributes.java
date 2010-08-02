@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class View3DAttributes extends AttributeSubject
 {
-    private static int View3DAttributes_numAdditionalAtts = 15;
+    private static int View3DAttributes_numAdditionalAtts = 16;
 
     public View3DAttributes()
     {
@@ -94,6 +94,10 @@ public class View3DAttributes extends AttributeSubject
         axis3DScales[0] = 1;
         axis3DScales[1] = 1;
         axis3DScales[2] = 1;
+        shear = new double[3];
+        shear[0] = 0;
+        shear[1] = 0;
+        shear[2] = 1;
     }
 
     public View3DAttributes(int nMoreFields)
@@ -132,6 +136,10 @@ public class View3DAttributes extends AttributeSubject
         axis3DScales[0] = 1;
         axis3DScales[1] = 1;
         axis3DScales[2] = 1;
+        shear = new double[3];
+        shear[0] = 0;
+        shear[1] = 0;
+        shear[2] = 1;
     }
 
     public View3DAttributes(View3DAttributes obj)
@@ -177,6 +185,11 @@ public class View3DAttributes extends AttributeSubject
         axis3DScales[0] = obj.axis3DScales[0];
         axis3DScales[1] = obj.axis3DScales[1];
         axis3DScales[2] = obj.axis3DScales[2];
+
+        shear = new double[3];
+        shear[0] = obj.shear[0];
+        shear[1] = obj.shear[1];
+        shear[2] = obj.shear[2];
 
 
         SelectAll();
@@ -226,6 +239,11 @@ public class View3DAttributes extends AttributeSubject
         for(i = 0; i < 3 && axis3DScales_equal; ++i)
             axis3DScales_equal = (axis3DScales[i] == obj.axis3DScales[i]);
 
+        // Compare the shear arrays.
+        boolean shear_equal = true;
+        for(i = 0; i < 3 && shear_equal; ++i)
+            shear_equal = (shear[i] == obj.shear[i]);
+
         // Create the return value
         return (viewNormal_equal &&
                 focus_equal &&
@@ -241,7 +259,8 @@ public class View3DAttributes extends AttributeSubject
                 (centerOfRotationSet == obj.centerOfRotationSet) &&
                 centerOfRotation_equal &&
                 (axis3DScaleFlag == obj.axis3DScaleFlag) &&
-                axis3DScales_equal);
+                axis3DScales_equal &&
+                shear_equal);
     }
 
     // Property setting methods
@@ -393,6 +412,22 @@ public class View3DAttributes extends AttributeSubject
         Select(14);
     }
 
+    public void SetShear(double[] shear_)
+    {
+        shear[0] = shear_[0];
+        shear[1] = shear_[1];
+        shear[2] = shear_[2];
+        Select(15);
+    }
+
+    public void SetShear(double e0, double e1, double e2)
+    {
+        shear[0] = e0;
+        shear[1] = e1;
+        shear[2] = e2;
+        Select(15);
+    }
+
     // Property getting methods
     public double[] GetViewNormal() { return viewNormal; }
     public double[] GetFocus() { return focus; }
@@ -409,6 +444,7 @@ public class View3DAttributes extends AttributeSubject
     public double[] GetCenterOfRotation() { return centerOfRotation; }
     public boolean  GetAxis3DScaleFlag() { return axis3DScaleFlag; }
     public double[] GetAxis3DScales() { return axis3DScales; }
+    public double[] GetShear() { return shear; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -443,6 +479,8 @@ public class View3DAttributes extends AttributeSubject
             buf.WriteBool(axis3DScaleFlag);
         if(WriteSelect(14, buf))
             buf.WriteDoubleArray(axis3DScales);
+        if(WriteSelect(15, buf))
+            buf.WriteDoubleArray(shear);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -494,6 +532,9 @@ public class View3DAttributes extends AttributeSubject
         case 14:
             SetAxis3DScales(buf.ReadDoubleArray());
             break;
+        case 15:
+            SetShear(buf.ReadDoubleArray());
+            break;
         }
     }
 
@@ -515,6 +556,7 @@ public class View3DAttributes extends AttributeSubject
         str = str + doubleArrayToString("centerOfRotation", centerOfRotation, indent) + "\n";
         str = str + boolToString("axis3DScaleFlag", axis3DScaleFlag, indent) + "\n";
         str = str + doubleArrayToString("axis3DScales", axis3DScales, indent) + "\n";
+        str = str + doubleArrayToString("shear", shear, indent) + "\n";
         return str;
     }
 
@@ -535,5 +577,6 @@ public class View3DAttributes extends AttributeSubject
     private double[] centerOfRotation;
     private boolean  axis3DScaleFlag;
     private double[] axis3DScales;
+    private double[] shear;
 }
 
