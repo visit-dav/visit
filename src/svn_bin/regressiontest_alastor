@@ -120,8 +120,6 @@ skipList_for_Alastor="\
     alastor,serial:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
     alastor,parallel:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
     alastor,scalable,parallel,icet:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
-    alastor,parallel:tests/queries/line_scan.py:ls_1_16,ls_1_18 \
-    alastor,scalable,parallel,icet:tests/queries/line_scan.py:ls_1_16,ls_1_18 \
     alastor,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
     alastor,parallel:tests/rendering/compositing.py \
     alastor,scalable,parallel,icet:tests/rendering/compositing.py \
