@@ -971,6 +971,8 @@ avtXRayImageQuery::CollectImages(int root, int nImageFragments,
     delete [] recvBuf;
 
     return image;
+#else
+    return 0;
 #endif
 }
 

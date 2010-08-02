@@ -47,6 +47,9 @@ vtkStandardNewMacro(vtkVisItStreamLine);
 #define VTK_START_FROM_LOCATION 1
 
 #ifdef WIN32
+// JRC 21Jul2010: this hack no longer needed, as vtk patch
+// now export StreamArray
+#ifndef VTK_STREAM_ARRAY_EXPORTED
 //
 // VTK does not export these symbols from their Graphics DLL and it causes
 // link problems for us on Windows, so define the functions here and hope it
@@ -89,6 +92,7 @@ vtkStreamer::StreamArray::StreamArray()
   this->Extend = 5000;
   this->Direction = VTK_INTEGRATE_FORWARD;
 }
+#endif
 #endif
 
 // Construct object with step size set to 1.0.

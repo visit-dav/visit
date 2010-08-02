@@ -58,7 +58,7 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 #
 #  pkg is the name used to specify the x_DIR (generally upper case name 
 #  of pkg)
-#  libdirextension is the path beyond x_DIR where the libs may be found.
+#  libdirextensions are the paths beyond x_DIR where the libs may be found.
 #  incdirextension is the path beyond x_DIR where the includes may be found.
 #  libs is the list of library names for this package 
 #
@@ -74,7 +74,7 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 #    to make status message for failure to find distinguishable in
 #    cmake output from other messages.
 #
-FUNCTION(SET_UP_THIRD_PARTY pkg libdirextension incdirextension libs)
+FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
   MESSAGE(STATUS "Looking for ${pkg}")
   SET(base_dir "${pkg}_DIR")
   SET(base_dir_val "${${base_dir}}")
@@ -108,7 +108,6 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextension incdirextension libs)
   SET("${lib_var}" "")
 
   SET("${inc_dir_var}" "${base_dir_val}/${incdirextension}")
-  SET("${lib_dir_var}" "${base_dir_val}/${libdirextension}")
 
   IF(NOT EXISTS ${${inc_dir_var}})
       IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
@@ -118,15 +117,30 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextension incdirextension libs)
       ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
       RETURN()
   ENDIF(NOT EXISTS ${${inc_dir_var}})
+##
+# Set lib dir to fitst existing of base_dir/extensions
+# Minimal intrusion on existing logic, but one might wnat
+# to allow libs to exist in multiple directories, as
+# they do for Qt.
+##
+  SET(${lib_dir_var} "")
+  FOREACH(X ${libdirextensions})
+    IF(EXISTS ${base_dir_val}/${X} AND "${${lib_dir_var}}" STREQUAL "")
+      SET(${lib_dir_var} ${base_dir_val}/${X})
+    ENDIF()
+  ENDFOREACH(X)
 
-  IF(NOT EXISTS ${${lib_dir_var}})
+#
+# If non empty string, lib_dir was found
+#
+  IF("${${lib_dir_var}}" STREQUAL "")
       IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-          MESSAGE(STATUS "\n** \n** \n** Library Directory for ${pkg} (${${lib_dir_var}}) does not exist.\n**\n**")
+          MESSAGE(STATUS "\n** \n** \n** None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
       ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-          MESSAGE(FATAL_ERROR "  Library Directory for ${pkg} (${${lib_dir_var}}) does not exist.")
+          MESSAGE(FATAL_ERROR "   None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
       ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
       RETURN()
-  ENDIF(NOT EXISTS ${${lib_dir_var}})
+  ENDIF()
 
   # If the inc and lib directories are different then attempt to
   # install the include directory.

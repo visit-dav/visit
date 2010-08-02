@@ -2,7 +2,7 @@
 IF (MSVC_VERSION)
   SET(ERRMSG "You have chosen a compiler version not currently supported.  You will need to build all dependent 3rd party libraries with this compiler, and provide the correct locations for them.")
   IF (NOT MSVC_VERSION LESS 1600)
-      MESSAGE(SEND_ERROR "${ERRMSG}")
+      MESSAGE(WARNING "${ERRMSG}")
   ELSEIF (NOT MSVC_VERSION LESS 1500)
       SET(VISIT_MSVC_VERSION "MSVC90")
   ELSEIF (NOT MSVC_VERSION LESS 1400)
