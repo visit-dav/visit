@@ -38,9 +38,11 @@
 #
 #****************************************************************************/
 
+IF(NOT WIN32)
 SET(AVTPLOTTER_MESA_SOURCES
 vtk/vtkOSMesaRenderWindow.C 
 )
+ENDIF(NOT WIN32)
 
 SET_SOURCE_FILES_PROPERTIES(
     ${AVTPLOTTER_MESA_SOURCES}

@@ -44,7 +44,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(HDF5 lib/${VISIT_MSVC_VERSION} include hdf5dll)
+  SET_UP_THIRD_PARTY(HDF5 "lib/${VISIT_MSVC_VERSION};lib" include hdf5dll)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(HDF5 lib include hdf5)
 ENDIF (WIN32)

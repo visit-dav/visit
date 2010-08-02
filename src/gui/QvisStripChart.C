@@ -37,7 +37,9 @@
 *****************************************************************************/
 
 #include "QvisStripChart.h"
-#include <math.h>
+// #include <math.h>
+#include <cmath>
+#include <limits>
 
 #include <QFont>
 #include <QPainter>
@@ -91,15 +93,15 @@ VisItSimStripChart::VisItSimStripChart(QWidget *parent, int winX, int winY )
     winYSize = winY;
     maxPoint = 1.0;
     minPoint =-1.0;
-    minData = HUGE_VAL;
-    maxData = -HUGE_VAL;
+    minData = std::numeric_limits<double>::max();
+    maxData = -std::numeric_limits<double>::max();
     resize(winX,winY);
     enableLogScale = FALSE;
      
     // set the timeshift offset to start at the right side of the 
     // window.
     timeShift = width();
-    setOutOfBandLimits( -HUGE_VAL,HUGE_VAL);
+    setOutOfBandLimits( -std::numeric_limits<double>::max(),std::numeric_limits<double>::max());
     // create in disabled mode
     enabled = false;
     outOfBandLimitsEnabled = 0;
@@ -762,8 +764,8 @@ void VisItSimStripChart::reset()
     vdelta = 0;
     maxPoint = 1.0;
     minPoint =-1.0;
-    minData = HUGE_VAL;
-    maxData = -HUGE_VAL;
+    minData = std::numeric_limits<double>::max();
+    maxData = -std::numeric_limits<double>::max();
     currentData = 0.0;
     currentCycle = 0;
     currentScaledY=0;
@@ -774,7 +776,7 @@ void VisItSimStripChart::reset()
     // window.
     timeShift = width();
     
-    setOutOfBandLimits( -HUGE_VAL,HUGE_VAL);
+    setOutOfBandLimits( -std::numeric_limits<double>::max(),std::numeric_limits<double>::max());
     points.clear();
     // create in disabled mode
     enabled = false;

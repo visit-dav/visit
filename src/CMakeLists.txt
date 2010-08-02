@@ -166,10 +166,28 @@ SET(BUILD_SHARED_LIBS 1)
 SITE_NAME(HOSTNAME)
 
 #-----------------------------------------------------------------------------
+# Add an option to not force cache for 3rd party
+#----------------------------------------------------------------------------
+
+OPTION(VISIT_OPTION_DEFAULT_NOFORCE
+  "Do not force replacement in cache." OFF)
+
+#-----------------------------------------------------------------------------
 # Include this computer's config-site if one exists
 #-----------------------------------------------------------------------------
 FUNCTION(VISIT_OPTION_DEFAULT var)
+  IF(VISIT_OPTION_DEFAULT_NOFORCE)
+    # MESSAGE(STATUS "VISIT_OPTION_DEFAULT_NOFORCE is on.")
+    IF(NOT ${var})
+      MESSAGE(STATUS "Setting ${var}.")
+      SET(${var} ${ARGN} CACHE PATH "${var} default value")
+    ELSE()
+      MESSAGE(STATUS "Not setting ${var}.")
+    ENDIF()
+  ELSE()
+    # MESSAGE(STATUS "VISIT_OPTION_DEFAULT_NOFORCE is off.")
     SET(${var} ${ARGN} CACHE PATH "${var} default value" FORCE)
+  ENDIF()
 ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetupITAPS.cmake)
 
@@ -353,9 +371,11 @@ SET(VISIT_VERSION ${VERSION})
 
 IF(WIN32)
     IF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
+      IF(NOT CMAKE_INSTALL_PREFIX)
         SET(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt ${VISIT_VERSION}" 
             CACHE PATH "Install path prefix, prepended onto install directories" FORCE)
         SET(APPENDED_VISIT_VERSION_TO_INSTALL_PATH TRUE CACHE INTERNAL "")
+      ENDIF()
     ENDIF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
     SET(VISIT_INSTALLED_VERSION ${CMAKE_INSTALL_PREFIX}
         CACHE PATH "VisIt install directory" FORCE)
@@ -512,7 +532,9 @@ MACRO(VISIT_INSTALL_PLUGINS type)
             # not configure, so the dollar sign must be escaped in the string
             # below.  Then during install, ${BUILD_TYPE} will be expanded.
             FOREACH(target ${ARGN})
-                SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/lib${target}.dll")
+                # SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/lib${target}.dll")
+# JRC 21Jul2010: The files are built directly under exe
+                SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/lib${target}.dll")
                 INSTALL(FILES ${filename}
                     DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
                     COMPONENT RUNTIME
@@ -802,7 +824,8 @@ IF(CMAKE_HOST_UNIX)
   ADD_DEFINITIONS(-D_LARGEFILE64_SOURCE)
 ELSE(CMAKE_HOST_UNIX)
   IF(WIN32)
-      SET(ZLIB_LIBRARY_DIR ${VISIT_WINDOWS_DIR}/ThirdParty/zlib/lib/${VISIT_MSVC_VERSION})
+    SET(ZLIB_LIBRARY_DIR ${VISIT_WINDOWS_DIR}/ThirdParty/zlib/lib/${VISIT_MSVC_VERSION})
+    IF(EXISTS ${ZLIB_LIBRARY_DIR}/zlib1.dll)
       SET(ZLIB_LIB ${ZLIB_LIBRARY_DIR}/zlib1.lib)
       EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy 
                       ${ZLIB_LIBRARY_DIR}/zlib1.dll
@@ -815,6 +838,7 @@ ELSE(CMAKE_HOST_UNIX)
           CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
           )
 
+    ENDIF()
   ELSE(WIN32)
       SET(ZLIB_LIB vtkzlib)
   ENDIF(WIN32)
