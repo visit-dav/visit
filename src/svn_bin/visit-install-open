@@ -57,9 +57,9 @@ esac
 hoth=true
 up=true
 yana=true
-xchem=true
+xchem=false
 euclid=true
-ellipse=true
+ellipse=false
 
 ver=undefined
 
