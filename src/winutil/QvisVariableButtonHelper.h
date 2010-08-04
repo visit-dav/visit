@@ -41,7 +41,7 @@
 #include <QObject>
 #include <winutil_exports.h>
 
-class QvisVariableButton;
+class QvisBaseVariableButton;
 
 // ****************************************************************************
 // Class: QvisVariableButtonHelper
@@ -67,12 +67,12 @@ public:
     QvisVariableButtonHelper(QObject *parent);
     virtual ~QvisVariableButtonHelper();
 
-    void setButton(QvisVariableButton *);
+    void setButton(QvisBaseVariableButton *);
 
 public slots:
     void activated(int, const QString &);
 private:
-    QvisVariableButton *btn;
+    QvisBaseVariableButton *btn;
 };
 
 #endif
