@@ -99,9 +99,12 @@ class VariableMenuPopulator;
 //   Added onDefaultVar & onCreateExpr slots to reenable actions for the
 //   'default var' & 'create new expr' top level menu items.
 //
+//   Hank Childs, Mon Aug  2 11:21:49 PDT 2010
+//   Refactor class so that the menu can be explicitly set.
+//
 // ****************************************************************************
 
-class WINUTIL_API QvisVariableButton : public QPushButton
+class WINUTIL_API QvisBaseVariableButton : public QPushButton
 {
     Q_OBJECT
     Q_PROPERTY(int varTypes READ getVarTypes WRITE setVarTypes )
@@ -110,10 +113,10 @@ class WINUTIL_API QvisVariableButton : public QPushButton
     Q_PROPERTY(bool addExpr READ getAddExpr WRITE setAddExpr )
     Q_PROPERTY(bool addDefault READ getAddDefault WRITE setAddDefault )
 public:
-    QvisVariableButton(QWidget *parent);
-    QvisVariableButton(bool addDefault_, bool addExpr_, bool usePlot,
+    QvisBaseVariableButton(QWidget *parent);
+    QvisBaseVariableButton(bool addDefault_, bool addExpr_, 
         int mask, QWidget *parent);
-    virtual ~QvisVariableButton();
+    virtual ~QvisBaseVariableButton();
 
     virtual void setText(const QString &);
 
@@ -137,10 +140,12 @@ public:
     //
     // Static methods that are used in connection with all variable menus.
     //
-    static void UpdateActiveSourceButtons(VariableMenuPopulator *pop);
-    static void UpdatePlotSourceButtons(VariableMenuPopulator *pop);
     static void ConnectExpressionCreation(QObject *, const char *);
 #endif
+
+    // Needed to deal with some inheritance issues.  Internal use only.
+    virtual bool               DowncastToNormalButton(void) { return false; };
+
     //
     // Const values for which menus to show. Or them together to get
     // multiple variable menus in the button.
@@ -167,7 +172,7 @@ private slots:
     void onDefaultVar();
     void onCreateExpr();
 
-private:
+protected:
     void UpdateMenu();
     void InitializeCategoryNames();
 #ifdef DESIGNER_PLUGIN
@@ -182,7 +187,7 @@ private:
         void UpdateMenus(VariableMenuPopulator *pop);
         void CreateMenu(int);
         void DeleteMenu(int);
-        void connect(QvisVariableButton *);
+        void connect(QvisBaseVariableButton *);
         void disconnect();
 
         QvisVariableButtonHelper  *helper;
@@ -190,10 +195,10 @@ private:
     };
 
     static QList<QObject*>    instances;
-    static VariablePopupInfo *activeSourceInfo;
-    static VariablePopupInfo *plotSourceInfo;
     static QObject           *expressionCreator;
     static const char        *expressionSlot;
+
+    virtual QvisBaseVariableButton::VariablePopupInfo *GetSourceInfo() = 0;
 
     QvisVariablePopupMenu    *menu;
 #endif
@@ -201,11 +206,60 @@ private:
 
     bool                      addDefault;
     bool                      addExpr;
-    bool                      usePlotSource;
     bool                      changeTextOnVarChange;
     int                       varTypes;
     QString                   variable;
     QString                   defaultVariable;
 };
 
+class WINUTIL_API QvisVariableButton : public QvisBaseVariableButton
+{
+  public:
+    QvisVariableButton(QWidget *parent);
+    QvisVariableButton(bool addDefault_, bool addExpr_, bool usePlot,
+        int mask, QWidget *parent);
+    virtual ~QvisVariableButton();
+
+#ifndef DESIGNER_PLUGIN
+    //
+    // Static methods that are used in connection with all variable menus.
+    //
+    static void UpdateActiveSourceButtons(VariableMenuPopulator *pop);
+    static void UpdatePlotSourceButtons(VariableMenuPopulator *pop);
 #endif
+
+  protected:
+    bool                      usePlotSource;
+
+    virtual bool              DowncastToNormalButton(void) { return true; };
+
+#ifndef DESIGNER_PLUGIN
+    static VariablePopupInfo  *activeSourceInfo;
+    static VariablePopupInfo  *plotSourceInfo;
+    virtual QvisBaseVariableButton::VariablePopupInfo *GetSourceInfo()
+                 {return (usePlotSource ? plotSourceInfo : activeSourceInfo);};
+#endif
+};
+
+
+class WINUTIL_API QvisCustomSourceVariableButton : public QvisBaseVariableButton
+{
+  public:
+    QvisCustomSourceVariableButton(QWidget *parent);
+    QvisCustomSourceVariableButton(bool addDefault_, bool addExpr_, 
+                                   VariableMenuPopulator *pop, int mask, 
+                                   QWidget *parent);
+    virtual ~QvisCustomSourceVariableButton();
+
+    void ResetPopulator(VariableMenuPopulator *);
+
+  protected:
+    VariablePopupInfo        *customSourceInfo;
+
+    virtual QvisBaseVariableButton::VariablePopupInfo *GetSourceInfo()
+                            { return customSourceInfo; };
+};
+
+#endif
+
+

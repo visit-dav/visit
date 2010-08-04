@@ -44,6 +44,9 @@
 #   Cyrus Harrison, Mon Mar 15 13:27:16 PDT 2010
 #   Added  QvisTimeSliderControlWidget & QvisSourceManagerWidget.
 #
+#   Hank Childs, Sun Aug  1 14:41:50 PDT 2010
+#   Add QvisCMFEWizard.
+#
 #****************************************************************************/
 
 SET(GUILIB_SOURCES
@@ -73,6 +76,7 @@ QvisAnnotationWindow.C
 QvisAppearanceWindow.C
 QvisApplication.C
 QvisAxisAttributesWidget.C
+QvisCMFEWizard.C
 QvisColorButton.C
 QvisColorGridWidget.C
 QvisColorManagerWidget.C
@@ -293,6 +297,7 @@ SimCommandSlots.h
 QvisSimulationMessageWindow.h
 QvisSimulationCommandWindow.h
 QvisFileOpenDialog.h
+QvisCMFEWizard.h
 QvisColorManagerWidget.h
 QvisColorSwatchListWidget.h
 QvisSILSetSelector.h

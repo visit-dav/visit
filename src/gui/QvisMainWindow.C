@@ -358,6 +358,9 @@
 //    For displays with low vertical resolution: don't use scroll bars when
 //    posting the main window.
 //
+//    Hank Childs, Wed Aug  4 13:27:57 PDT 2010
+//    Add Data-Level Comparisons.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -534,6 +537,9 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     ctrls->addAction(commandIcon, tr("Command . . ."),
                      this, SIGNAL(activateCommandWindow()), 
                      QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
+    ctrls->addAction(tr("&Data-Level Comparisons . . ."),
+                     this, SIGNAL(setupCMFE()), 
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D));
     ctrls->addAction(correlationIcon, tr("&Database correlations . . ."),
                       this, SIGNAL(activateCorrelationListWindow()), 
                       QKeySequence(Qt::CTRL + Qt::Key_D));

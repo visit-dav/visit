@@ -225,6 +225,9 @@ class WindowInformation;
 //   Cyrus Harrison, Fri Mar 12 10:50:26 PST 2010
 //   More shuffling to provide better layouts. 
 //
+//   Hank Childs, Sun Aug  1 12:02:45 PDT 2010
+//   Add signal for setting up CMFEs.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -301,6 +304,7 @@ signals:
     void saveSettings();
     void saveWindow();
     void saveMovie();
+    void setupCMFE();
     void printWindow();
 
     void refreshFileList();

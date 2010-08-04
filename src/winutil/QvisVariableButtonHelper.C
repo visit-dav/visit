@@ -93,7 +93,7 @@ QvisVariableButtonHelper::~QvisVariableButtonHelper()
 // ****************************************************************************
 
 void
-QvisVariableButtonHelper::setButton(QvisVariableButton *b)
+QvisVariableButtonHelper::setButton(QvisBaseVariableButton *b)
 {
     btn = b;
 }

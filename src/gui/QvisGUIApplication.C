@@ -109,6 +109,7 @@
 #include <QvisAnimationWindow.h>
 #include <QvisAnnotationWindow.h>
 #include <QvisAppearanceWindow.h>
+#include <QvisCMFEWizard.h>
 #include <QvisColorTableWindow.h>
 #include <QvisCommandWindow.h>
 #include <QvisDatabaseCorrelationListWindow.h>
@@ -675,6 +676,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     allowFileSelectionChange = true;
     visitUpdate = 0;
     saveMovieWizard = 0;    
+    setupCMFEWizard = 0;
     interpreter = 0;
     movieProgress = 0;
     sessionFileHelper = 0;
@@ -2908,6 +2910,7 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(activateAboutWindow()), this, SLOT(AboutVisIt()));
     connect(mainWin, SIGNAL(saveWindow()), this, SLOT(SaveWindow()));
     connect(mainWin, SIGNAL(saveMovie()), this, SLOT(SaveMovie()));
+    connect(mainWin, SIGNAL(setupCMFE()), this, SLOT(SetupCMFE()));
     connect(mainWin, SIGNAL(printWindow()), this, SLOT(PrintWindow()));
     connect(mainWin, SIGNAL(activatePrintWindow()), this, SLOT(SetPrinterOptions()));
     
@@ -7810,6 +7813,33 @@ MakeCodeSlashes(const QString &s)
     return s;
 #endif
 }
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SetupCMFE
+//
+// Purpose:
+//   This is a Qt slot function that initiates the Data-Level comparison
+//   wizard.
+//
+// Programmer: Hank Childs
+// Creation:   August 1, 2010
+//
+// ****************************************************************************
+
+void
+QvisGUIApplication::SetupCMFE()
+{
+    if (setupCMFEWizard == NULL);
+        setupCMFEWizard = new QvisCMFEWizard(GetViewerState()->GetExpressionList(), 
+                                             mainWin);
+    setupCMFEWizard->SetGlobalAttributes(GetViewerState()->GetGlobalAttributes());
+    setupCMFEWizard->SetWindowInformation(GetViewerState()->GetWindowInformation());
+    setupCMFEWizard->SetExpressionList(GetViewerState()->GetExpressionList());
+
+    if (setupCMFEWizard->Exec() == QDialog::Accepted)
+        setupCMFEWizard->AddCMFEExpression();
+}
+
 
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveMovie
