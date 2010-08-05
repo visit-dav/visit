@@ -141,6 +141,11 @@
 #    Mark C. Miller, Thu Jul 29 23:43:52 PDT 2010
 #    Added option to ignore problems finding third party libs. It is OFF
 #    by default.
+#
+#    Kathleen Bonnell, Thu Aug 5 9:34:52 PDT 2010 
+#    For winodws, only override cmake's default CMAKE_INSTALL_PREFIX if it
+#    wasn't specified on the command line.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -370,13 +375,17 @@ SET(VISIT_VERSION ${VERSION})
 #-----------------------------------------------------------------------------
 
 IF(WIN32)
-    IF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
-      IF(NOT CMAKE_INSTALL_PREFIX)
+    # override cmake's default of %Program Files% for CMAKE_INSTALL_PREFIX
+    # if it wasn't specified via command line, 
+    IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+      IF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
         SET(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt ${VISIT_VERSION}" 
             CACHE PATH "Install path prefix, prepended onto install directories" FORCE)
         SET(APPENDED_VISIT_VERSION_TO_INSTALL_PATH TRUE CACHE INTERNAL "")
-      ENDIF()
-    ENDIF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
+      ENDIF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
+    ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
+    # set up directories
     SET(VISIT_INSTALLED_VERSION ${CMAKE_INSTALL_PREFIX}
         CACHE PATH "VisIt install directory" FORCE)
     SET(VISIT_INSTALLED_VERSION_BIN ${CMAKE_INSTALL_PREFIX} 

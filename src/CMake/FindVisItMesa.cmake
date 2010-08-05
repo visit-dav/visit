@@ -78,39 +78,39 @@ IF(NOT WIN32)
     MESSAGE(FATAL_ERROR "MESA is required to build VisIt")
   ENDIF(NOT MESA_FOUND)
 # Need to have the mesa libs.
-  SET(MY_LIBS ${MESA_LIB})
 ELSE(NOT WIN32)
   IF(NOT MESA_FOUND)
     MESSAGE(WARNING "MESA not found.  Proceeding without.")
   ENDIF()
 ENDIF(NOT WIN32)
 
+SET(MY_LIBS ${MESA_LIB})
+
 # Unix needs X_LIBS and THREAD_LIBS.
 IF (NOT WIN32)
   IF (CMAKE_X_LIBS)
     SET(MY_LIBS ${MY_LIBS} ${CMAKE_X_LIBS})
   ENDIF (CMAKE_X_LIBS)
+  MESSAGE(STATUS "Added unix libs.")
 ENDIF (NOT WIN32)
 IF (CMAKE_THREAD_LIBS)
     SET(MY_LIBS ${MY_LIBS} ${CMAKE_THREAD_LIBS})
 ENDIF (CMAKE_THREAD_LIBS)
-MESSAGE(STATUS "Added unix libs.")
 
-IF (WIN32) 
-  IF(MESA_FOUND)
-   IF(EXISTS ${MESA_LIBRARY_DIR}/MesaGL32.dll)
-    # Need these dlls to run the program
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy  ${MESA_LIBRARY_DIR}/MesaGL32.dll ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/MesaGL32.dll)
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy  ${MESA_LIBRARY_DIR}/osmesa32.dll  ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/osmesa32.dll)
-   ENDIF()
-  ENDIF()
-ENDIF (WIN32) 
-MESSAGE(STATUS "Copied Windows Mesa libs.")
 
 IF(MESA_FOUND)
   SET(MSG "Check for osmesa size limit")
   MESSAGE(STATUS ${MSG})
   SET(TRY_RUN_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/CMakeTmp)
+
+  IF (WIN32) 
+    # Need these dlls to run the program
+    IF(EXISTS ${MESA_LIBRARY_DIR}/MesaGL32.dll)
+      EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy  ${MESA_LIBRARY_DIR}/MesaGL32.dll ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/MesaGL32.dll)
+      EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy  ${MESA_LIBRARY_DIR}/osmesa32.dll  ${TRY_RUN_DIR}/CMakeFiles/CMakeTmp/debug/osmesa32.dll)
+    ENDIF(EXISTS ${MESA_LIBRARY_DIR}/MesaGL32.dll)
+  ENDIF (WIN32) 
+ 
   TRY_RUN(TRY_RUN_RESULT HAVE_OSMESA_SIZE
     ${TRY_RUN_DIR}
     ${VISIT_SOURCE_DIR}/CMake/FindOSMesaSize.C
@@ -119,7 +119,7 @@ IF(MESA_FOUND)
                 "-DLINK_LIBRARIES:STRING=${MY_LIBS}"
     OUTPUT_VARIABLE OUTPUT
   )
-  MESSAGE(STATUS "${MSG} - OUTPUT_VARIABLE: ${OUTPUT}")
+  #MESSAGE(STATUS "${MSG} - OUTPUT_VARIABLE: ${OUTPUT}")
 
   IF (HAVE_OSMESA_SIZE)
     IF ("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
