@@ -964,13 +964,18 @@ QvisCommandWindow::macroClearClicked()
 //   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Bonnell, Thu Aug 5 14:12:10 PDT 2010
+//   On windows, escape the rcFileName's backslashes before adding it as an
+//   arg for the command.
+//
 // ****************************************************************************
 
 void
 QvisCommandWindow::macroUpdateClicked()
 {
     // Save the updated visitrc file based on the contents in the Macros tab.
-    QFile file(RCFileName());
+    QString rcFileName = RCFileName();
+    QFile file(rcFileName);
     QString txt(macroEdit->toPlainText());
     if(txt.length() > 0)
     {
@@ -979,25 +984,34 @@ QvisCommandWindow::macroUpdateClicked()
             QTextStream stream(&file);
             stream << txt;
             file.close();
-            debug1 << "Saved updated " << RCFileName().toStdString()
+            debug1 << "Saved updated " << rcFileName.toStdString()
                    << " file." << endl;
 
            // Tell the CLI to source the file so we get our macros back with
            // the changes that have been put into place.
            QString command("ClearMacros()\nSource(\"%1\")\n");
-           command = command.arg(RCFileName());
+#ifdef WIN32
+           // On windows, the string passed to the python commands needs to 
+           // have it's back-slash's escaped.
+           QString tmp(rcFileName);
+           tmp.replace("\\", "\\\\");
+           command = command.arg(tmp);
+           
+#else
+           command = command.arg(rcFileName);
+#endif
            emit runCommand(command);
         }
         else
         {
             QString msg;
-            msg = tr("VisIt could not update the file: ") + RCFileName();
+            msg = tr("VisIt could not update the file: ") + rcFileName;
             Message(msg);
         }
     }
     else
     {
-        debug1 << "Removing empty " << RCFileName().toStdString()
+        debug1 << "Removing empty " << rcFileName.toStdString()
                << " file. " << endl;
         file.remove();
         emit runCommand("ClearMacros()");
