@@ -146,9 +146,8 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     bool                   disableDomainDecomposition;
     // ... File information
     H5PartFile            *file;
-    typedef enum { cartesianCoordSystem, cylindricalCoordSystem, sphericalCoordSystem }
-                           coordSystemT; 
-    coordSystemT           coordType;
+    enum { cartesianCoordSystem, cylindricalCoordSystem, sphericalCoordSystem }
+                           coordType;
     int                    particleNSpatialDims;
     typedef std::map<std::string, h5part_int64_t>
                            VarNameToInt64Map_t;
@@ -156,6 +155,7 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     VarNameToInt64Map_t    fieldScalarVarNameToTypeMap;
     VarNameToInt64Map_t    fieldVectorVarNameToTypeMap;
     VarNameToInt64Map_t    fieldVectorVarNameToFieldRankMap;
+    h5part_int64_t         numTimestepsInFile;
     h5part_int64_t         activeTimeStep;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
@@ -167,18 +167,40 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     vtkDataArray          *GetFieldVar(int, const char*);
     void                   GetSubBlock(h5part_int64_t gridDims[3], h5part_int64_t subBlockDims[6]);
 #ifdef HAVE_LIBFASTBIT
-    std::string            stringify(double x);
+    std::string            DoubleToString(double x);
     void                   ConstructHistogram(avtHistogramSpecification *spec);
 
-    avtIdentifierSelection *ConstructIdentifiersFromDataRangeSelection(
-                                       std::vector<avtDataSelection *> &);
-    int                    get_string_from_identifiers(const std::vector<double>& Identifiers, std::string& id_string);
+    avtIdentifierSelection
+                          *ConstructIdentifiersFromDataRangeSelection(
+                                  std::vector<avtDataSelection *> &);
+    void                   ConstructIdQueryString(const std::vector<double>&,
+                                  std::string& );
+    void                   PerformQuery();
     
-    bool                   querySpecified;
+    // Is there an active query? If value is stringQuery, "queryString" contains
+    // the current query that needs to be run to get the data selection (queryResults).
+    // If value is idListQuery, "queryIdList" contains a list of particle ids (likely
+    // from a named selection).
+    enum { noQuery = 0, stringQuery, idListQuery }
+                           querySpecified;
+    // Are the query results (queryResults) valid? This variable is set to false
+    // by RegisterDataSelection to indicate that there is a new queryString or
+    // queryIdList and that PerformQuery needs to be called to update queryResults
+    bool                   queryResultsValid;
+    // Is there an active data selection, i.e., does queryResults contain a valid
+    // list of particles indices to load for an active query?
     bool                   dataSelectionActive;
+    // The name of the variable which contains the particle id
+    std::string            idVariableName;
+    // String of a possible active stringQuery
     std::string            queryString;
+    // List of ids (values if "idVariableName") for a named selection query
+    std::vector<double>    queryIdList;
+    // Result from a current query
     std::vector<hsize_t>   queryResults;
+    // The HDF5_FastQuery reader. Used mainly to read index information from file.
     HDF5_FQ                reader;
+    // Histogram cache for already computed histograms
     HistogramCache         histoCache;
 #endif
 };
