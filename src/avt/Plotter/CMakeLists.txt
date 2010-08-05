@@ -39,16 +39,16 @@
 #****************************************************************************/
 
 IF(NOT WIN32)
-SET(AVTPLOTTER_MESA_SOURCES
-vtk/vtkOSMesaRenderWindow.C 
-)
-ENDIF(NOT WIN32)
+  SET(AVTPLOTTER_MESA_SOURCES
+    vtk/vtkOSMesaRenderWindow.C 
+  )
 
-SET_SOURCE_FILES_PROPERTIES(
+  SET_SOURCE_FILES_PROPERTIES(
     ${AVTPLOTTER_MESA_SOURCES}
     PROPERTIES
     COMPILE_FLAGS "-I${MESA_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
-)
+  )
+ENDIF(NOT WIN32)
 
 SET(AVTPLOTTER_OPENGL_SOURCES
 avtGLEWInitializer.C 
