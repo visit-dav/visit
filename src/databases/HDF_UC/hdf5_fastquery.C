@@ -56,6 +56,7 @@ void HDF5_FQ::openFile(const char* name, const bool useH5PartFile) {
 void HDF5_FQ::closeFile() {
     deleteSlices();
     dataFile->closeHDF5File();
+    dataFile = 0;
 }
 
 void HDF5_FQ::addNewTimeStep(double timeValue){

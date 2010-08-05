@@ -36,7 +36,7 @@ bool H5F::open(const char *filename){
         }H5E_END_TRY;
 
         if(temp > 0){   
-                classID = H5Fopen(filename,H5F_ACC_RDWR,H5P_DEFAULT);
+                classID = H5Fopen(filename,H5F_ACC_RDONLY,H5P_DEFAULT); // FIXME: open read or read/write as necessary
                 if(classID >=0) valid = true;
         }
 
