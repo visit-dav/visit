@@ -58,6 +58,7 @@ void HDF5_FQ::openFile(const char* name, const bool useH5PartFile) {
 void HDF5_FQ::closeFile() {
     deleteSlices();
     dataFile->closeHDF5File();
+    dataFile = 0;
 }
 
 void HDF5_FQ::addNewTimeStep(double timeValue){
@@ -463,8 +464,6 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
     stride2 = (end2 - begin2)/num_bins2;
     stride2 = ibis::util::incrDouble(stride2);
 
-    // there's only 1 timestep active at a time..
-    timestep = 0;
     err = timeSlices[timestep]->get2DDistribution(condition, 
                                                   variableName1,
                                                   begin1, end1, stride1,
