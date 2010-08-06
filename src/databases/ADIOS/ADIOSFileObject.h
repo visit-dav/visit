@@ -42,6 +42,8 @@
 #include <vector>
 #include <map>
 #include <visitstream.h>
+#include <stdlib.h>
+#include <string.h>
 
 //NOTE: #include <mpi.h> *MUST* become before the adios includes.
 #ifdef PARALLEL
