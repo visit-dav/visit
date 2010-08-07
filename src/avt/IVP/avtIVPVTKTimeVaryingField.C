@@ -210,7 +210,8 @@ avtIVPVTKTimeVaryingField::operator()(const double &t, const avtVector &pt) cons
 double
 avtIVPVTKTimeVaryingField::ComputeVorticity( const double &t, const avtVector &pt ) const
 {
-EXCEPTION0(ImproperUseException); // didn't do this.
+    return( 0.0 );
+//EXCEPTION0(ImproperUseException); // didn't do this.
 /*
     avtVec y( x.dim() );
     avtVec param = pad(x,t);
@@ -287,7 +288,8 @@ avtIVPVTKTimeVaryingField::ComputeScalarVariable(const std::string &var,
                                                  const double &t,
                                                  const avtVector &pt) const
 {
-    EXCEPTION0(ImproperUseException); // didn't do this.
+    return( 0.0 );
+    //EXCEPTION0(ImproperUseException); // didn't do this.
 }
 
 // ****************************************************************************

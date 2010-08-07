@@ -44,11 +44,11 @@
 #define AVT_IVPVTKFIELD_H
 
 #include <avtIVPField.h>
-
-#include <vtkVisItInterpolatedVelocityField.h>
-
+#include <avtCellLocator.h>
 #include <ivp_exports.h>
 
+class vtkDataSet;
+class vtkDataArray;
 
 // ****************************************************************************
 //  Class:  avtIVPVTKField
@@ -78,34 +78,56 @@
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Generalize the compute scalar variable.
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
+//
+//   Christoph Garth, July 13 16:49:12 PDT 2010
+//   Compute scalars by index instead of by name.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPVTKField: public avtIVPField
 {
   public:
-                   avtIVPVTKField( vtkVisItInterpolatedVelocityField* velocity ); 
-                   avtIVPVTKField();
-                   ~avtIVPVTKField();
+    avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator );
+    ~avtIVPVTKField();
 
     // avtIVPField interface
-    avtVector      operator()(const double& t, const avtVector &pt) const;
-    double         ComputeVorticity(const double& t, const avtVector &pt) const;
-    double         ComputeScalarVariable(const std::string &var,
-                                         const double& t, 
-                                         const avtVector &pt) const;
+    virtual avtVector operator()(const double& t, const avtVector &pt) const;
+    virtual double    ComputeVorticity(const double& t, const avtVector &pt) const;
 
-    
+    virtual double    ComputeScalarVariable(unsigned char index,
+                                            const double& t,
+                                            const avtVector& x) const;
+
+    virtual void      SetScalarVariable( unsigned char index, 
+                                         const std::string& name );
+
     bool           IsInside( const double& t, const avtVector &pt ) const;
     unsigned int   GetDimension() const;
     void           SetNormalized( bool v );
-    virtual bool   GetValidTimeRange(double range[]) const {return false;}
+
     virtual bool   HasGhostZones() const;
-    virtual void   GetExtents(double *extents) const;
+    virtual void   GetExtents( double extents[6] ) const;
+    virtual void   GetTimeRange( double range[2] ) const;
 
   protected:
-    vtkVisItInterpolatedVelocityField   *iv;
-    bool           normalized;
-    
+
+    bool FindCell( const double& t, const avtVector& p ) const;
+
+    bool                   normalized;
+    vtkDataSet*            ds;
+    avtCellLocator*        loc;
+
+    vtkDataArray*          velData;
+    bool                   velCellBased;
+    vtkDataArray*          sclData[256];
+    bool                   sclCellBased[256];
+    unsigned char*         ghostPtr;
+
+    mutable avtVector               lastPos;
+    mutable vtkIdType               lastCell;
+    mutable avtInterpolationWeights lastWeights;
 };
 
 #endif

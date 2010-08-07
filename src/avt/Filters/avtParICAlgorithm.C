@@ -293,9 +293,17 @@ avtParICAlgorithm::RestoreIntegralCurveSequence()
     
     int minId = 0;
     int maxId = N-1;
-    int nLoops = numSeedPoints/N;
-    if (numSeedPoints % N != 0)
-        nLoops++;
+
+    int nLoops = 0 ; 
+
+    if( N > 0 )
+    {
+        nLoops = numSeedPoints/N;
+
+        if (numSeedPoints % N != 0)
+            nLoops++;
+    }
+
     for (int l = 0; l < nLoops; l++)
     {
         //Initialize arrays for this round.

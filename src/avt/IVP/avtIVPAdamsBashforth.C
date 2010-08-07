@@ -463,112 +463,51 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
 // ****************************************************************************
 
 avtIVPSolver::Result 
-avtIVPAdamsBashforth::Step(const avtIVPField* field,
-                           const TerminateType &termType,
-                           const double &end,   
+avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
                            avtIVPStep* ivpstep)
 {
-    double t_max;
-
-    if (termType == TIME)
-        t_max = end;
-    else if (termType == DISTANCE || termType == STEPS || termType == INTERSECTIONS)
-    {
-        t_max = std::numeric_limits<double>::max();
-        if (end < 0)
-            t_max = -t_max;
-    }
-
     const double direction = sign( 1.0, t_max - t );
     
     h = sign( h, direction );
     
+    bool last = false;
+
     // do not run past integration end
     if( (t + 1.01*h - t_max) * direction > 0.0 ) 
     {
+        last = true;
         h = t_max - t;
     }
 
     // stepsize underflow?
     if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
-    {
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
-    }
 
     avtIVPSolver::Result res;
     avtVector yNew = yCur;
-    // Use a forth order Runga Kutta integration to seed the Adams-Bashforth.
-    if ( initialized < NSTEPS )
+
+    // Use a fourth-order Runga Kutta integration to seed the Adams-Bashforth.
+    if( initialized < NSTEPS )
     {
         // Save the first vector values in the history. 
         if( initialized == 0 )
-        {
             history[0] = (*field)(t,yCur);
-        }
+
         res = RK4Step( field, yNew );
         
         ++initialized;
     }
     else
-    {
         res = ABStep( field, yNew );
-    }
 
-    if ( res == avtIVPSolver::OK )
+    if( res == avtIVPSolver::OK )
     {
         ivpstep->resize(2);
-        
         (*ivpstep)[0] = yCur;
         (*ivpstep)[1] = yNew;
-        ivpstep->tStart = t;
-        ivpstep->tEnd = t + h;
+        ivpstep->t0 = t;
+        ivpstep->t1 = t + h;
         numStep++;
-
-        // Handle distanced based termination.
-        if (termType == TIME)
-        {
-            if ((end > 0 && t >= end) ||
-                (end < 0 && t <= end))
-                return TERMINATE;
-        }
-        else if (termType == DISTANCE)
-        {
-            double len = ivpstep->length();
-            
-            //debug1<<"ABStep: "<<t<<" d: "<<d<<" => "<<(d+len)<<" h= "<<h<<" len= "<<len<<" sEps= "<<stiffness_eps<<endl;
-            if (len < stiffness_eps)
-            {
-                degenerate_iterations++;
-                if (degenerate_iterations > 15)
-                {
-                    //debug1<<"********** STIFFNESS ***************************\n";
-                    return STIFFNESS_DETECTED;
-                }
-            }
-            else
-                degenerate_iterations = 0;
-
-            if (d+len > fabs(end))
-                throw avtIVPField::Undefined();
-            else if (d+len >= fabs(end))
-                return TERMINATE;
-
-            d = d+len;
-        }
-        else if (termType == STEPS &&
-                 numStep >= (int)fabs(end))
-            return TERMINATE;
-
-        if (end < 0.0)
-        {
-            ivpstep->velStart = -(*field)(t,yCur);
-            ivpstep->velEnd = -(*field)((t+h),yNew);
-        }
-        else
-        {
-            ivpstep->velStart = (*field)(t,yCur);
-            ivpstep->velEnd = (*field)((t+h),yNew);
-        }
 
         // Update the history to save the last 5 vector values.
         history[4] = history[3];
@@ -579,6 +518,9 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
 
         yCur = yNew;
         t = t+h;
+
+        if( last )
+            res = TERMINATE;
     }
 
     // Reset the step size on sucessful step.

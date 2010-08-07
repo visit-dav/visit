@@ -235,6 +235,9 @@ avtSerialICAlgorithm::RunAlgorithm()
         // Integrate all loaded domains.
         while (! activeICs.empty())
         {
+            std::cout << '\r' << activeICs.size() + oobICs.size() 
+                      << " integral curves remain      " << std::flush;
+
             avtIntegralCurve *s = activeICs.front();
             activeICs.pop_front();
 
@@ -250,10 +253,15 @@ avtSerialICAlgorithm::RunAlgorithm()
                 GetDomain(s);
 #endif
                 AdvectParticle(s);
-                if (s->status == avtIntegralCurve::STATUS_TERMINATE)
+
+                if( s->status != avtIntegralCurve::STATUS_OK )
+                {
                     terminatedICs.push_back(s);
+                }
                 else
+                {
                     oobICs.push_back(s);
+                }
             }
             else
                 oobICs.push_back(s);
@@ -271,6 +279,8 @@ avtSerialICAlgorithm::RunAlgorithm()
         avtIntegralCurve *s = activeICs.front();
         GetDomain(s);
     }
+
+    std::cout << "\ndone\n";
 
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }

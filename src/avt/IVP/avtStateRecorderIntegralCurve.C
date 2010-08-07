@@ -43,6 +43,8 @@
 #include <avtStateRecorderIntegralCurve.h>
 
 #include <list>
+#include <cmath>
+#include <cassert>
 #include <iostream>
 #include <limits>
 #include <ImproperUseException.h>
@@ -60,15 +62,22 @@
 //
 // ****************************************************************************
 
-avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(const avtIVPSolver* model, const double& t_start,
-                             const avtVector &p_start, int ID) :
-    avtIntegralCurve(model, t_start, p_start, ID), scalarValueType(NONE)
+avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(
+    unsigned char mask,
+    const avtIVPSolver* model, 
+    Direction dir,
+    const double& t_start,
+    const avtVector &p_start, int ID) :
+    avtIntegralCurve(model, dir, t_start, p_start, ID), historyMask(mask)
 {
     intersectionsSet = false;
     numIntersections = 0;
 
     sequenceCnt = 0;
     serializeFlags = 0;
+
+    distance = 0;
+    numSteps = 0;
 }
 
 
@@ -80,13 +89,16 @@ avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(const avtIVPSolver*
 //
 // ****************************************************************************
 
-avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve() :
-    scalarValueType(NONE)
+avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve()
 {
     intersectionsSet = false;
     numIntersections = 0;
     sequenceCnt = 0;
     serializeFlags = 0;
+    historyMask = 0;
+
+    distance = 0;
+    numSteps = 0;
 }
 
 
@@ -100,33 +112,55 @@ avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve() :
 
 avtStateRecorderIntegralCurve::~avtStateRecorderIntegralCurve()
 {
-    for(iterator si = begin(); si != end(); si++)
-         delete *si;
 }
 
 // ****************************************************************************
-//  Method: avtStateRecorderIntegralCurve::GetVariableIdx
+//  Method: avtStateRecorderIntegralCurve::RecordStep
 //
 //  Purpose:
-//      Lookup the index of a variable.
+//      Records a sample from the current step at the specified time.
 //
-//  Programmer: Dave Pugmire
-//  Creation:   December 29, 2009
-//
-//  Modifications:
+//  Programmer: Christoph Garth
+//  Creation:   July 22, 2010
 //
 // ****************************************************************************
 
-int
-avtStateRecorderIntegralCurve::GetVariableIdx(const std::string &var) const
+void avtStateRecorderIntegralCurve::RecordStep( const avtIVPField* field,
+                                                const avtIVPStep& step,
+                                                double t )
 {
-    for (int i = 0; i < scalars.size(); i++)
-        if (scalars[i] == var)
-            return i;
+    avtVector p = step.GetP( t );
 
-    return -1;
+    if( historyMask & SAMPLE_TIME )
+        history.push_back( t );
+
+    if( historyMask & SAMPLE_POSITION )
+    {
+        history.push_back( p.x );
+        history.push_back( p.y );
+        history.push_back( p.z );
+    }
+        
+    if( historyMask & SAMPLE_VELOCITY )
+    {
+        avtVector v = step.GetV( t );
+        history.push_back( v.x );
+        history.push_back( v.y );
+        history.push_back( v.z );
+    }
+        
+    if( historyMask & SAMPLE_VORTICITY )
+        history.push_back( field->ComputeVorticity( t, p ) );
+        
+    if( historyMask & SAMPLE_ARCLENGTH )
+        history.push_back( distance );
+        
+    if( historyMask & SAMPLE_SCALAR0 )
+        history.push_back( field->ComputeScalarVariable( 0, t, p ) );
+        
+    if( historyMask & SAMPLE_SCALAR1 )
+        history.push_back( field->ComputeScalarVariable( 1, t, p ) );
 }
-
 
 // ****************************************************************************
 //  Method: avtStateRecorderIntegralCurve::AnalyzeStep
@@ -140,85 +174,158 @@ avtStateRecorderIntegralCurve::GetVariableIdx(const std::string &var) const
 // ****************************************************************************
 
 void
-avtStateRecorderIntegralCurve::AnalyzeStep(avtIVPStep *step,
-                         const avtIVPField* field,
-                         avtIVPSolver::TerminateType termType,
-                         double end, avtIVPSolver::Result *result)
+avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step, 
+                                            avtIVPField* field )
 {
-    if (intersectionsSet)
-        HandleIntersections(step, termType, end, result);
+    if( intersectionsSet )
+        HandleIntersections( step );
 
-    // record step if it was successful
-    if (*result == avtIVPSolver::OK ||
-        *result == avtIVPSolver::TERMINATE)
+    // Record the first position of the step.
+    RecordStep( field, step, step.GetT0() );
+
+    // Check for termination.
+    if( terminationType == TERMINATE_TIME )
     {
-        //Set scalar value, if any...
-        if (scalarValueType & VORTICITY)
-            step->ComputeVorticity(field);
-        if (scalarValueType & SPEED)
-            step->ComputeSpeed(field);
-        if (!scalars.empty())
-            step->ComputeScalarVariables(scalars, field);
-
-        avtIVPStep *s2 = new avtIVPStep(*step);
-        _steps.push_back(s2);
+        if( (direction == DIRECTION_FORWARD  && step.GetT1() >= termination) ||
+            (direction == DIRECTION_BACKWARD && step.GetT1() <= termination) )
+            status = STATUS_FINISHED;
     }
+    else if( terminationType == TERMINATE_DISTANCE )
+    {
+        double Lstep = step.GetLength();
+        double Ltogo = std::abs(termination) - distance;
+
+        if( Lstep > Ltogo )
+        {
+            step.ClampToLength( Ltogo );
+            status = STATUS_FINISHED;
+        }
+        else if( Lstep / std::abs(step.t1 - step.t0) < 1e-8 )
+        {
+            // Above condition ensures that the curve makes progress 
+            // w.r.t. distance to avoid infinite integration into a 
+            // critical point.
+            //
+            // FIXME: I don't like the above hardcoded threshold -
+            // this should probably be something like 
+            // Lstep / Lmax < 1e-6 ?
+            //
+            // FIXME: Also, this should only be tested in the stationary 
+            // case, since in a time-varying scenario, the critical point
+            // might move.
+            status = STATUS_FINISHED;
+        }
+    }
+    else if( terminationType == TERMINATE_STEPS )
+    {
+        if( numSteps >= std::abs(termination) )
+            status = STATUS_FINISHED;
+    }
+
+    // Update other termination criteria.
+    distance += step.GetLength();
+    numSteps += 1;
+
+    if( status == STATUS_FINISHED )
+        RecordStep( field, step, step.GetT1() );
 }
 
-
 // ****************************************************************************
-//  Method: avtStateRecorderIntegralCurve::begin
+//  Method: avtStateRecorderIntegralCurve::GetSampleStride()
 //
 //  Purpose:
-//      Returns the first iterator.
+//      Returns the stride between consecutive samples.
 //
 //  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
+//  Creation:   July 14, 2010
 //
 // ****************************************************************************
 
-avtStateRecorderIntegralCurve::iterator
-avtStateRecorderIntegralCurve::begin() const
+size_t avtStateRecorderIntegralCurve::GetSampleStride() const
 {
-    return _steps.begin();
-}
+    size_t stride = 0;
 
+#define TEST_AND_INCREMENT( f, n ) \
+    if( historyMask & f )          \
+        stride += n;
+
+    TEST_AND_INCREMENT( SAMPLE_TIME, 1 );
+    TEST_AND_INCREMENT( SAMPLE_POSITION, 3 );
+    TEST_AND_INCREMENT( SAMPLE_VELOCITY, 3 );
+    TEST_AND_INCREMENT( SAMPLE_VORTICITY, 1 );
+    TEST_AND_INCREMENT( SAMPLE_ARCLENGTH, 1 );
+    TEST_AND_INCREMENT( SAMPLE_SCALAR0, 1 );
+    TEST_AND_INCREMENT( SAMPLE_SCALAR1, 1 );
+
+#undef TEST_AND_INCREMENT
+
+    return stride;
+};
 
 // ****************************************************************************
-//  Method: avtStateRecorderIntegralCurve::end
+//  Method: avtStateRecorderIntegralCurve::GetSample()
 //
 //  Purpose:
-//      Returns the last iterator.
+//      Returns a sample from the streamline.
 //
 //  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
+//  Creation:   July 14, 2010
 //
 // ****************************************************************************
 
-avtStateRecorderIntegralCurve::iterator
-avtStateRecorderIntegralCurve::end() const
+avtStateRecorderIntegralCurve::Sample 
+avtStateRecorderIntegralCurve::GetSample( size_t n ) const
 {
-    return _steps.end();
+    std::vector<float>::const_iterator m = history.begin() + n*GetSampleStride();
+    Sample s;
+
+    if( historyMask & SAMPLE_TIME )
+        s.time = *(m++);
+
+    if( historyMask & SAMPLE_POSITION )
+    {
+        s.position.x = *(m++);
+        s.position.y = *(m++);
+        s.position.z = *(m++);
+    }
+    
+    if( historyMask & SAMPLE_VELOCITY )
+    {
+        s.velocity.x = *(m++);
+        s.velocity.y = *(m++);
+        s.velocity.z = *(m++);
+    }
+
+    if( historyMask & SAMPLE_VORTICITY )
+        s.vorticity = *(m++);
+
+    if( historyMask & SAMPLE_ARCLENGTH )
+        s.arclength = *(m++);
+
+    if( historyMask & SAMPLE_SCALAR0 ) 
+        s.scalar0 = *(m++);
+
+    if( historyMask & SAMPLE_SCALAR1 )
+        s.scalar1 = *(m++);
+
+    return s;
 }
 
-
 // ****************************************************************************
-//  Method: avtStateRecorderIntegralCurve::size
+//  Method: avtStateRecorderIntegralCurve::GetNumberOfSamples()
 //
 //  Purpose:
-//      Returns the number of iterations to do.
+//      Returns the number of history samples.
 //
 //  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
+//  Creation:   July 14, 2010
 //
 // ****************************************************************************
 
-size_t
-avtStateRecorderIntegralCurve::size() const
+size_t avtStateRecorderIntegralCurve::GetNumberOfSamples() const
 {
-    return _steps.size();
+    return history.size() / GetSampleStride();
 }
-
 
 // ****************************************************************************
 //  Method: avtStateRecorderIntegralCurve::SetIntersectionObject
@@ -274,24 +381,15 @@ avtStateRecorderIntegralCurve::SetIntersectionObject(vtkObject *obj)
 // ****************************************************************************
 
 void
-avtStateRecorderIntegralCurve::HandleIntersections(avtIVPStep *step,
-                                   avtIVPSolver::TerminateType termType,
-                                   double end,
-                                   avtIVPSolver::Result *result)
+avtStateRecorderIntegralCurve::HandleIntersections(const avtIVPStep& step)
 {
-    if (step == NULL || _steps.empty())
-        return;
-    
-    avtIVPStep *step0 = _steps.back();
-
-    if (IntersectPlane(step0->front(), step->front()))
+    if( IntersectPlane( step.GetP0(), step.GetP1() ) )
     {
         numIntersections++;
-        if (termType == avtIVPSolver::INTERSECTIONS &&
-            numIntersections >= (int)end)
-        {
-            *result = avtIVPSolver::TERMINATE;
-        }
+
+        if( terminationType == TERMINATE_INTERSECTIONS &&
+            numIntersections >= (int)termination )
+            status = STATUS_FINISHED;
     }
 }
 
@@ -365,42 +463,20 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     // Have the base class serialize its part
     avtIntegralCurve::Serialize(mode, buff, solver);
 
+    buff.io(mode, historyMask);
+    buff.io(mode, numIntersections);
+    buff.io(mode, serializeFlags);
+
     bool serializeSteps = serializeFlags&SERIALIZE_STEPS;
+
     if (DebugStream::Level5())
         debug5<<"  avtStateRecorderIntegralCurve::Serialize "<<(mode==MemStream::READ?"READ":"WRITE")<<" serSteps= "<<serializeSteps<<endl;
     
-    buff.io(mode, scalarValueType);
     buff.io(mode, numIntersections);
 
     // R/W the steps.
-    if (mode == MemStream::WRITE)
-    {
-        size_t sz = _steps.size();
-        if (serializeSteps)
-        {
-            buff.io(mode, sz);
-            for (iterator si = _steps.begin(); si != _steps.end(); si++)
-                (*si)->Serialize(mode, buff);
-        }
-        else
-        {
-            sz = 0;
-            buff.io(mode, sz);
-        }
-    }
-    else
-    {
-        _steps.clear();
-        size_t sz = 0;
-        buff.io( mode, sz );
-        debug5<<"Read step cnt= "<<sz<<endl;
-        for ( size_t i = 0; i < sz; i++ )
-        {
-            avtIVPStep *s = new avtIVPStep;
-            s->Serialize( mode, buff );
-            _steps.push_back( s );
-        }
-    }
+    if( serializeSteps )
+        buff.io(mode, history);
 
     if ((serializeFlags & SERIALIZE_INC_SEQ) && mode == MemStream::WRITE)
     {
@@ -411,6 +487,7 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
         buff.io(mode, sequenceCnt);
 
     serializeFlags = 0;
+
     if (DebugStream::Level5())
         debug5 << "DONE: avtStateRecorderIntegralCurve::Serialize. sz= "<<buff.buffLen() << endl;
 }
@@ -440,44 +517,48 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
 avtIntegralCurve *
 avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v2)
 {
-    std::vector<avtStateRecorderIntegralCurve *> v;
-    for (int j = 0 ; j < v2.size() ; j++)
-        v.push_back((avtStateRecorderIntegralCurve *) v2[j]);
-
-    if (v.size() == 0)
+    if( v2.empty() )
         return NULL;
-    else if (v.size() == 1)
-        return v[0];
+    if( v2.size() == 1 )
+        return v2[0];
 
-    //Sort the streamlines by Id,seq.
-    std::sort(v.begin(), v.end(), 
-              avtStateRecorderIntegralCurve::IdRevSeqCompare);
-
-    //Make sure all ids are the same.
-    if (v.front()->id != v.back()->id)
-        return NULL;
-
-    //We want to merge others into the "last" sequence, since it has the right
-    //sover state, sequenceCnt, etc. The vector is reverse sorted, so we can
-    //merge them in order.
-
-    avtStateRecorderIntegralCurve *s = v.front();
-
-    for (int i = 1; i < v.size(); i++)
+    std::vector<avtStateRecorderIntegralCurve *> v( v2.size() );
+    
+    for( size_t i=0 ; i<v2.size(); ++i )
     {
-        std::vector<avtIVPStep*>::reverse_iterator si;
-        for (si = v[i]->_steps.rbegin(); si != v[i]->_steps.rend(); si++)
-        {
-            avtIVPStep *step = new avtIVPStep(*(*si));
-            s->_steps.insert(s->_steps.begin(), step);
-        }
+        v[i] = dynamic_cast<avtStateRecorderIntegralCurve*>( v2[i] );
+        assert( v[i] != NULL );
+    }
+
+    // sort the streamlines by id and sequence number, in ascending order
+    std::sort( v.begin(), v.end(), 
+               avtStateRecorderIntegralCurve::IdSeqCompare );
+
+    // find the combined history size
+    size_t combinedHistorySize = 0;
+
+    for( size_t i=0; i<v.size(); ++i )
+    {
+        combinedHistorySize += v[i]->history.size();
+
+        // sanity check: make sure all ids are the same
+        assert( v[i]->id == v[0]->id );
+    }
+        
+    // now curve pieces are in sorted order and we can simply merge the histories
+    // in sequence order; we merge by appending to the first (v[0]'s) history
+    v[0]->history.reserve( combinedHistorySize );
+
+    for( size_t i=1; i<v.size(); i++ )
+    {
+        v[0]->history.insert( v[0]->history.end(), 
+                              v[i]->history.begin(), v[i]->history.end() );
 
         delete v[i];
     }
 
-
-    v.resize(0);
-    return s;
+    v2.clear();
+    return v[0];
 }
 
 // ****************************************************************************

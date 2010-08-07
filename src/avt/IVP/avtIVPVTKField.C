@@ -42,12 +42,13 @@
 
 #include <avtIVPVTKField.h>
 #include <iostream>
-#include <vtkCell.h>
+#include <limits>
+
+#include <vtkUnsignedCharArray.h>
 #include <vtkDataSet.h>
-#include <vtkVisItInterpolatedVelocityField.h>
-#include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkGenericCell.h>
 #include <DebugStream.h>
 
 // ****************************************************************************
@@ -61,22 +62,40 @@
 //    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
 //    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
+//
 // ****************************************************************************
 
-avtIVPVTKField::avtIVPVTKField( vtkVisItInterpolatedVelocityField* velocity ) 
-    : iv(velocity)
+avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator ) 
+    : ds(dataset), loc(locator), normalized(false)
 {
-    iv->Register( NULL );
-    normalized = false;
+    if( ds )
+        ds->Register( NULL );
+
+    if( velData = ds->GetPointData()->GetVectors() )
+        velCellBased = false;
+    else if( velData = ds->GetCellData()->GetVectors() )
+        velCellBased = true;
+    else 
+    {
+        velData = 0;
+        EXCEPTION1( ImproperUseException, "avtIVPVTKField: Can't locate vectors to interpolate." );
+    }
+
+    // Cache a raw pointer to the ghost zone flags
+    vtkUnsignedCharArray* ghostData = 
+        vtkUnsignedCharArray::SafeDownCast( ds->GetCellData()->GetArray( "avtGhostZones" ) );
+
+    ghostPtr = ghostData ? ghostData->GetPointer(0) : NULL;
+
+    lastCell = -1;
+    lastPos.x = lastPos.y = lastPos.z =
+        std::numeric_limits<double>::quiet_NaN();
+
+    std::fill( sclData, sclData+256, (vtkDataArray*)NULL );
+    std::fill( sclCellBased, sclCellBased+256, false );
 }
-
-
-avtIVPVTKField::avtIVPVTKField() 
-    : iv(0)
-{
-    normalized = false;
-}
-
 
 // ****************************************************************************
 //  Method: avtIVPVTKField destructor
@@ -84,12 +103,15 @@ avtIVPVTKField::avtIVPVTKField()
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
+//
 // ****************************************************************************
 
 avtIVPVTKField::~avtIVPVTKField()
 {
-    if( iv )
-      iv->Delete();
+    if( ds )
+        ds->Delete();
 }
 
 // ****************************************************************************
@@ -103,12 +125,15 @@ avtIVPVTKField::~avtIVPVTKField()
 //
 //  Modifications:
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
+//
 // ****************************************************************************
 
 bool
 avtIVPVTKField::HasGhostZones() const
 {
-    return (iv->GetDataSet()->GetCellData()->GetArray("avtGhostZones") != NULL);
+    return ghostPtr != NULL; 
 }
 
 // ****************************************************************************
@@ -122,14 +147,49 @@ avtIVPVTKField::HasGhostZones() const
 //
 //  Modifications:
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
+//
 // ****************************************************************************
 
 void
-avtIVPVTKField::GetExtents(double *extents) const
+avtIVPVTKField::GetExtents( double extents[6] ) const
 {
-    iv->GetDataSet()->GetBounds(extents);
+    ds->GetBounds(extents);
 }
 
+// ****************************************************************************
+//  Method: avtIVPVTKField::FindCell
+//
+//  Purpose:
+//      Find the cell containing a given position. Does nothing
+//      if this coincides with the position of the last lookup.
+//      Returns true if a cell was found, false otherwise.
+//
+//  Programmer: Christoph Garth
+//  Creation:   July 12, 2010
+//
+// ****************************************************************************
+
+bool
+avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
+{
+    if( pos != lastPos )
+    {
+        lastPos  = pos;
+        
+        if( -1 == (lastCell = loc->FindCell( &pos.x, &lastWeights )) )
+            return false;
+
+        if( ghostPtr && ghostPtr[lastCell] & 0xfc )
+        {
+            lastCell = -1;
+            return false;
+        }
+    }       
+
+    return lastCell != -1;
+}
 
 // ****************************************************************************
 //  Method: avtIVPVTKField::operator
@@ -148,27 +208,46 @@ avtIVPVTKField::GetExtents(double *extents) const
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
+//
 // ****************************************************************************
 
 avtVector
-avtIVPVTKField::operator()(const double &t, const avtVector &pt) const
+avtIVPVTKField::operator()( const double &t, const avtVector &p ) const
 {
-    double vec[3], param[4] = {pt.x, pt.y, pt.z, t};
-    int result = iv->Evaluate(param, vec);
-    
-    if( !result )
+    if( !FindCell( t, p ) )
         throw Undefined();
-    
-    avtVector v(vec[0], vec[1], vec[2]);
-    if ( normalized )
-    {
-        double len = v.length();
-        if ( len > 0.0 )
-            v /= len;
-    }
-    return v;
-}
 
+    avtVector vel( 0.0, 0.0, 0.0 );
+
+    if( velCellBased )
+        velData->GetTuple( lastCell, &vel.x );
+    else
+    {
+        double tmp[3];
+
+        for( avtInterpolationWeights::const_iterator wi=lastWeights.begin();
+             wi!=lastWeights.end(); ++wi )
+        {
+            velData->GetTuple( wi->i, tmp );
+
+            vel.x += wi->w * tmp[0];
+            vel.y += wi->w * tmp[1];
+            vel.z += wi->w * tmp[2];
+        }
+    }
+
+    if( normalized )
+    {
+        double len = vel.length();
+
+        if( len )
+            vel /= len;
+    }
+
+    return vel;
+}
 
 // ****************************************************************************
 //  Method: avtIVPVTKField::ComputeVorticity
@@ -191,53 +270,50 @@ avtIVPVTKField::operator()(const double &t, const avtVector &pt) const
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//    Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//    Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField, and
+//    use vtkGenericCell for thread safety.
+//
 // ****************************************************************************
 
 double
 avtIVPVTKField::ComputeVorticity( const double& t, const avtVector &pt ) const
 {
-    avtVector y = (*this)(t, pt);
+    if( velCellBased )
+        return 0.0;
 
-    vtkDataSet *ds = iv->GetDataSet();
-    vtkIdType cellID = iv->GetLastCell();
-    vtkCell *cell = ds->GetCell( cellID );
-    
-    vtkDoubleArray *cellVectors;
-    cellVectors = vtkDoubleArray::New();
-    cellVectors->SetNumberOfComponents(3);
-    cellVectors->Allocate(3*VTK_CELL_SIZE);
-        
-    vtkPointData *pd = ds->GetPointData();
-    vtkDataArray *inVectors = pd->GetVectors();
+    avtVector y = this->operator()( t, pt );
 
-    double derivs[9];
-    inVectors->GetTuples( cell->PointIds, cellVectors );
+    double ylen = y.length();
 
-    double *cellVel = cellVectors->GetPointer(0);
-    double *w = iv->GetLastWeights();
-    double *pcoords = iv->GetLastPCoords();
-    cell->Derivatives( 0, pcoords, cellVel, 3, derivs);
-    //cout<<"pcoords= "<<pcoords[0]<<" "<<pcoords[1]<<" "<<pcoords[2]<<endl;
+    if( ylen == 0.0 )
+        return 0.0;
 
-    cellVectors->Delete();
-    double vort[3];
-    vort[0] = derivs[7] - derivs[5];
-    vort[1] = derivs[2] - derivs[6];
-    vort[2] = derivs[3] - derivs[1];
-    //cout<<"id= "<<cellID<<" p= "<<x<<" ";
-    //cout<<"y= "<<y<<" ";
-    //cout<<" vort["<<vort[0]<<" "<<vort[1]<<" "<<vort[2]<<"] ";
-    double omega = 0.0;
-    
-    double len = y.length();
-    if ( len > 0.0 )
-        omega = (
-                 vort[0] * y.x + vort[1] * y.y 
-                 + vort[2] * y.z
-                 ) / len;
-    //cout<<"omega= "<<omega<<endl;
+    double derivs[9], *vel = new double[3*lastWeights.size()];
 
-    return omega;
+    for( unsigned int i=0; i<lastWeights.size(); ++i )
+        velData->GetTuple( lastWeights[i].i, vel + 3*i );
+         
+    vtkGenericCell *cell = vtkGenericCell::New();
+    ds->GetCell( lastCell, cell );
+
+
+    {
+        double tmp1[2], pcoord[3], dist2, w[1024];
+        int subid;
+
+        cell->EvaluatePosition( (double*)&pt.x, tmp1, subid, pcoord, dist2, w );
+        cell->Derivatives( 0, pcoord, vel, 3, derivs );
+    }
+
+    delete[] vel;
+    cell->Delete();
+
+    avtVector vort( derivs[7]-derivs[5],
+                    derivs[2]-derivs[6],
+                    derivs[3]-derivs[1] );
+
+    return (vort * y) / ylen;
 }
 
 // ****************************************************************************
@@ -257,47 +333,77 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVector &pt ) const
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Generalize the compute scalar variable.
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
+//
 // ****************************************************************************
 
 double
-avtIVPVTKField::ComputeScalarVariable(const std::string &var,
+avtIVPVTKField::ComputeScalarVariable(unsigned char index,
                                       const double& t,
                                       const avtVector &pt) const
 {
-    vtkDataSet *ds = iv->GetDataSet();
-    vtkCell *cell = ds->GetCell(iv->GetLastCell());
-    int numPts = cell->GetNumberOfPoints();
-    
-    int subId;
-    double pcoords[3], dist2, v;
-    double *weights = new double[numPts];
+    vtkDataArray* data = sclData[index];
 
-    double xvals[3] = {pt.x, pt.y, pt.z};
-    cell->EvaluatePosition(xvals, NULL, subId, pcoords, dist2, weights);
-    
-    double value = 0.0;
-    //See if we have node centered data...
-    if (ds->GetPointData()->GetScalars(var.c_str()) != NULL)
+    if( data == NULL )
+        return 0.0;
+
+    if( !FindCell( t, pt ) )
+        throw Undefined();
+
+    double result = 0.0, tmp;
+
+    if( !sclCellBased[index] )
     {
-        vtkDataArray *data = ds->GetPointData()->GetScalars(var.c_str());
-        for (int i = 0; i < numPts; i++)
+        for( avtInterpolationWeights::const_iterator wi=lastWeights.begin();
+             wi!=lastWeights.end(); ++wi )
         {
-            int id = cell->PointIds->GetId(i);
-            data->GetTuple(id, &v);
-            value += v*weights[i];
+            data->GetTuple( wi->i, &tmp );
+            result += wi->w * tmp;
         }
     }
-    else if (ds->GetCellData()->GetScalars(var.c_str()) != NULL)
+    else
     {
-        vtkDataArray *data = ds->GetCellData()->GetScalars(var.c_str());
-        int id = cell->PointIds->GetId(0);
-        data->GetTuple(id,&value);
+        sclData[index]->GetTuple( lastCell, &result );
     }
 
-    delete [] weights;
-    return value;
+    return result;
 }
 
+// ****************************************************************************
+//  Method: avtIVPVTKField::SetScalarVariable
+//
+//  Purpose:
+//      Set up a scalar variable for query through ComputeScalarVariable().
+//
+//  Programmer: Christoph Garth
+//  Creation:   July 13, 2010
+//
+// ****************************************************************************
+
+void
+avtIVPVTKField::SetScalarVariable(unsigned char index, const std::string& name)
+{
+    vtkDataArray* data;
+    bool cellBased;
+
+    if( data = ds->GetPointData()->GetScalars( name.c_str() ) )
+        cellBased = false;
+    else if( data = ds->GetCellData()->GetScalars( name.c_str() ) )
+        cellBased = true;
+    else 
+        EXCEPTION1( ImproperUseException, 
+                    "avtIVPVTKField: Can't locate scalar \"" + name + 
+                    "\" to interpolate." );
+
+    if( data->GetNumberOfComponents() != 1 )
+        EXCEPTION1( ImproperUseException,
+                    "avtIVPVTKField: Given variable \"" + name +
+                    "\" is not scalar." );
+        
+    sclData[index] = data;
+    sclCellBased[index] = cellBased;
+}
 
 // ****************************************************************************
 //  Method: avtIVPVTKField::IsInside
@@ -316,15 +422,16 @@ avtIVPVTKField::ComputeScalarVariable(const std::string &var,
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//    Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//    Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKField.
+//
 // ****************************************************************************
 
 bool
 avtIVPVTKField::IsInside( const double& t, const avtVector &pt ) const
 {
-    double vec[3], param[4] = {pt.x, pt.y, pt.z, t};
-    return iv->Evaluate(param, vec);
+    return FindCell( t, pt );
 }
-
 
 // ****************************************************************************
 //  Method: avtIVPVTKField::GetDimension
@@ -364,5 +471,23 @@ void
 avtIVPVTKField::SetNormalized( bool v )
 {
     normalized = v;
+}
+
+// ****************************************************************************
+//  Method: avtIVPVTKField::GetTimeRange
+//
+//  Purpose:
+//      Returns temporal extent of the field.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 6, 2008
+//
+// ****************************************************************************
+
+void
+avtIVPVTKField::GetTimeRange( double range[2] ) const
+{
+    range[0] = -std::numeric_limits<double>::infinity();
+    range[1] =  std::numeric_limits<double>::infinity();
 }
 

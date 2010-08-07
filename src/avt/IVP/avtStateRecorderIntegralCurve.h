@@ -45,7 +45,6 @@
 
 #include <avtIntegralCurve.h>
 
-
 // ****************************************************************************
 //  Class: avtStateRecorderIntegralCurve
 //
@@ -63,76 +62,106 @@
 //    Hank Childs, Tue Jun  8 09:30:45 CDT 2010
 //    Place sequence tracking code from base class into this class.
 //
+//    Christoph Garth, Tue July 10 17:34:33 PDT 2010
+//    Major rewrite around removing avtIVPStep storage.
+//
 // ****************************************************************************
 
 class IVP_API avtStateRecorderIntegralCurve : public avtIntegralCurve
 {
-  public:
-    enum ScalarValueType {NONE=0, SPEED=1, VORTICITY=2, SCALAR_VARIABLE=4};
+public:
 
-    typedef std::vector<avtIVPStep*>::const_iterator iterator;
-    avtStateRecorderIntegralCurve(const avtIVPSolver* model, 
-                                  const double& t_start, 
-                                  const avtVector &p_start, int ID);
+    // Caution: If you modify these flags, also check 
+    // historyMask and the *Sample* member functions.
+    enum Attribute
+    {
+        SAMPLE_TIME       = 1,
+        SAMPLE_POSITION   = 2,
+        SAMPLE_VELOCITY   = 4,
+        SAMPLE_VORTICITY  = 8,
+        SAMPLE_ARCLENGTH  = 16,
+        SAMPLE_SCALAR0    = 32,
+        SAMPLE_SCALAR1    = 64,
+        SAMPLE_UNUSED     = 128,
+    };
+
+    struct Sample
+    {
+        double    time;
+        avtVector position;
+        avtVector velocity;
+        double    vorticity;
+        double    arclength;
+        double    scalar0;
+        double    scalar1;
+    };
+
+    // ----
+
+    avtStateRecorderIntegralCurve( unsigned char mask,
+                                   const avtIVPSolver* model, 
+                                   Direction dir,
+                                   const double& t_start, 
+                                   const avtVector &p_start, int ID );
+
     avtStateRecorderIntegralCurve();
     virtual ~avtStateRecorderIntegralCurve();
 
-    void      SetScalarValueType(ScalarValueType t) {scalarValueType = t;}
-    void      SetIntersectionObject(vtkObject *obj);
-    
-    // Integration steps.
-    size_t    size()  const;
-    iterator  begin() const;
-    iterator  end()   const;
+    void          SetIntersectionObject(vtkObject *obj);
 
-    virtual void      Serialize(MemStream::Mode mode, MemStream &buff, 
+    virtual void  Serialize(MemStream::Mode mode, MemStream &buff, 
                                 avtIVPSolver *solver);
-    virtual void      PrepareForSend(void)
+    virtual void  PrepareForSend(void)
                            { serializeFlags |= SERIALIZE_INC_SEQ; };
-    virtual bool      SameCurve(avtIntegralCurve *ic);
+    virtual bool  SameCurve(avtIntegralCurve *ic);
 
-    int       GetVariableIdx(const std::string &var) const;
-
-    static avtIntegralCurve*
-                      MergeIntegralCurveSequence(
+    static avtIntegralCurve* MergeIntegralCurveSequence(
                               std::vector<avtIntegralCurve *> &v);
     static bool IdSeqCompare(const avtIntegralCurve *slA,
                              const avtIntegralCurve *slB);
     static bool IdRevSeqCompare(const avtIntegralCurve *slA,
                                 const avtIntegralCurve *slB);
 
+    typedef std::vector<float>::const_iterator iterator;
+
+    size_t  GetNumberOfSamples() const;
+    Sample  GetSample( size_t n ) const;
+    
+
   protected:
     avtStateRecorderIntegralCurve( const avtStateRecorderIntegralCurve& );
     avtStateRecorderIntegralCurve& operator=( const avtStateRecorderIntegralCurve& );
     
-    void      HandleIntersections(avtIVPStep *step,
-                                  avtIVPSolver::TerminateType termType,
-                                  double end,
-                                  avtIVPSolver::Result *result);
+    size_t    GetSampleStride() const;
+
+    void      HandleIntersections(const avtIVPStep& step);
     bool      IntersectPlane(const avtVector &p0, const avtVector &p1);
 
   public:
-    // Integration steps.
-    std::vector<avtIVPStep*> _steps;
 
     unsigned long serializeFlags;
-    long sequenceCnt;
+    long          sequenceCnt;
+
 
   protected:
-    virtual void AnalyzeStep(avtIVPStep *step,
-                         const avtIVPField* field,
-                         avtIVPSolver::TerminateType termType,
-                         double end, avtIVPSolver::Result *result);
+
+    unsigned char      historyMask;
+    std::vector<float> history;
+
+    void RecordStep( const avtIVPField* field, 
+                     const avtIVPStep& step, 
+                     double t );
+
+    virtual void AnalyzeStep( avtIVPStep& step,
+                              avtIVPField* field );
 
     // Intersection points.
-    bool intersectionsSet;
-    int numIntersections;
-    double     intersectPlaneEq[4];
+    bool   intersectionsSet;
+    int    numIntersections;
+    double intersectPlaneEq[4];
 
-    ScalarValueType    scalarValueType;
-
-  public:
-    std::vector<std::string> scalars;
+    double       distance;
+    unsigned int numSteps;
 };
 
 

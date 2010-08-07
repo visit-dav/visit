@@ -247,6 +247,35 @@ avtPoincareFilter::PostExecute(void)
 }
 
 // ****************************************************************************
+//  Method: avtPoincareFilter::CreateIntegralCurve
+//
+//  Purpose:
+//      Create an integral curve and set its properties.
+//
+//  Programmer: Christoph Garth
+//  Creation:   Thu July 15, 2010
+// ****************************************************************************
+
+avtIntegralCurve *
+avtPoincareFilter::CreateIntegralCurve( const avtIVPSolver* model,
+                                        avtIntegralCurve::Direction dir,
+                                        const double& t_start,
+                                        const avtVector &p_start, long ID ) 
+{
+    // need at least these three attributes
+    unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
+
+    avtStateRecorderIntegralCurve *rv = 
+        new avtStateRecorderIntegralCurve( attr, model, dir, 
+                                           t_start, p_start, ID );
+
+    if (intersectObj)
+        rv->SetIntersectionObject(intersectObj);
+
+    return rv;
+}
+
+// ****************************************************************************
 //  Method: avtPoincareFilter::GetStreamlinePoints
 //
 //  Purpose:
@@ -292,21 +321,10 @@ avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic)
         // Get all of the points from the streamline which are stored
         // as an array and move them into a vector for easier
         // manipulation by the analsysi code.
-        (*iter).second.points.resize(0);
+        (*iter).second.points.resize( sric->GetNumberOfSamples() );
 
-        avtStateRecorderIntegralCurve::iterator siter = sric->begin();
-        
-        while (siter != sric->end())
-        {
-            avtVector pt;
-            pt.x = (*siter)->front()[0];
-            pt.y = (*siter)->front()[1];
-            pt.z = (*siter)->front()[2];
-            
-            (*iter).second.points.push_back(pt);
-            
-            ++siter;
-        }
+        for( size_t p=0; p<(*iter).second.points.size(); ++p )
+            (*iter).second.points[p] = sric->GetSample( p ).position;
     }
 }
 
@@ -516,11 +534,11 @@ avtPoincareFilter::ClassifyStreamlines()
           analysisComplete = false;
 
           iter->second.ic->termination = 2 * fp.nPuncturesNeeded;
-          iter->second.ic->terminated = false;
+          iter->second.ic->status = avtIntegralCurve::STATUS_OK;
         }
         else
         {
-          iter->second.ic->terminated = true;
+          iter->second.ic->status = avtIntegralCurve::STATUS_FINISHED;
           iter->second.properties.analysisState =
             FieldlineProperties::TERMINATED;
         }
@@ -551,7 +569,8 @@ avtPoincareFilter::ClassifyStreamlines()
                << "  toroidalPeriod = " << fp.toroidalPeriod
                << "  poloidalPeriod = " << fp.poloidalPeriod
                << "  complete " << (fp.analysisState == FieldlineProperties::COMPLETED ? "Yes " : "No ")
-               << (iter->second.ic->terminated ? 0 : iter->second.ic->termination )
+               << (iter->second.ic->status == avtIntegralCurve::STATUS_FINISHED ? 
+                   0 : iter->second.ic->termination )
                << endl << endl;
 
         ++iter;

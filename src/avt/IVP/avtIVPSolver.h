@@ -47,11 +47,11 @@
 #include <avtIVPField.h>
 #include <avtBezierSegment.h>
 #include <MemStream.h>
+#include <cmath>
 #include <string>
 #include <vector>
 
 struct avtIVPStateHelper;
-
 
 // ****************************************************************************
 //  Class: avtIVPStep
@@ -109,70 +109,182 @@ struct avtIVPStateHelper;
 //   Dave Pugmire, Tue May  4 16:09:58 EDT 2010
 //   Gathering scalar values was not working properly in parallel.
 //
+//   Christoph Garth, Thu July 15 11:05:23 PDT 2010
+//   Rewrite avtIVPStep to reduce its size drastically, and add better 
+//   length estimation and clamping abilities.
+//
 // ****************************************************************************
 
-class IVP_API avtIVPStep: public avtBezierSegment
+class avtIVPStep: public std::vector<avtVector>
 {
 public:
-    avtIVPStep() : avtBezierSegment()
-    { tStart = tEnd = 0.0; speed = 0.0; vorticity = 0.0;
-      velStart = avtVector(0.,0.,0.); velEnd = avtVector(0.,0.,0.); }
 
-    avtIVPStep(const avtIVPStep &s) : avtBezierSegment(s),
-                                      tStart(s.tStart),tEnd(s.tEnd),
-                                      speed(s.speed), vorticity(s.vorticity),
-                                      velStart(s.velStart), velEnd(s.velEnd)
-    {
-        for (int i=0; i<s.scalarValues.size(); i++)
-            scalarValues.push_back(s.scalarValues[i]);
+    unsigned int GetDegree() const 
+    { 
+        return size()-1; 
     }
-    
-    void   ComputeSpeed(const avtIVPField *field)
+
+    const double& GetT0() const
     {
-        speed = velEnd.length();
+        return t0;
     }
-    void   ComputeScalarVariables(const std::vector<std::string> &s, const avtIVPField *field)
+
+    const double& GetT1() const
     {
-        for (int i = 0; i < s.size(); i++)
-            scalarValues.push_back(field->ComputeScalarVariable(s[i], tEnd, lastV()));
+        return t1;
     }
-                
-    void   ComputeVorticity(const avtIVPField *field)
+
+    const avtVector& GetP0() const
     {
-        double tMid = tStart + (tEnd-tStart)/2.0;
+        return front();
+    }
+
+    const avtVector& GetP1() const
+    {
+        return back();
+    }
+
+    avtVector GetV0() const
+    {
+        const unsigned int d = size()-1;
+        return d / (t1 - t0) * ((*this)[d] - (*this)[d-1]);
+    }
+
+    avtVector GetV1() const
+    {
+        const unsigned int d = size()-1;
+        return d / (t1 - t0) * ((*this)[1]-(*this)[0]);
+    }
+
+    avtVector GetP( double param ) const
+    {
+        if( param == t0 )
+            return front();
+        if( param == t1 )
+            return back();
+
+        param -= t0;
+        param /= (t1 - t0);
+
+        // BezierSegment evaluation using deCasteljau's scheme
+        std::vector<avtVector> tmp(*this);
         
-        avtVector pt = evaluate( tMid );
-        if ( field->IsInside( tMid, pt ) )
-            vorticity = field->ComputeVorticity( tMid, pt );
+        for( size_t l=1; l<size(); ++l )
+            for( size_t i=size()-1; i>=l; --i )
+                tmp[i] = (1.0-param)*tmp[i-1] + param*tmp[i];
+         
+        return tmp[size()-1];
     }
-    
+
+    avtVector GetV( double param ) const
+    {
+        if( param == t0 )
+            return (size()-1) / (t1 - t0) * ((*this)[1] - (*this)[0]);
+        if( param == t1 )
+            return (size()-1) / (t1 - t0) * ((*this)[size()-1] - (*this)[size()-2]);
+
+        param -= t0;
+        param /= (t1 - t0);
+
+        avtVector tmp[size()-1];
+
+        for( size_t i=0; i<size()-1; ++i )
+            tmp[i] = (*this)[i+1] - (*this)[i];
+
+        for( size_t l=1; l<size()-1; ++l )
+            for( size_t i=size()-2; i>=l; --i )
+                tmp[i] = (1.0-param)*tmp[i-1] + param*tmp[i];
+                
+        return (size() - 1) / (t1 - t0) * tmp[size()-2];
+    }
+
+    void ClampToLength( double L )
+    {
+        avtVector tmp[size()-1];
+
+        double t = 0.5;
+
+        double lower = 0.0;
+        double upper = 1.0;
+
+        for( int iter=0; iter<15; ++iter )
+        {
+            std::copy( this->begin(), this->end(), tmp );
+
+            for( size_t j=1; j<size()-1; ++j )
+                for( size_t i=size()-1; i>=j; --i )
+                    tmp[i] = (1.0-t)*tmp[i-1] + t*tmp[i];
+
+            // estimate arclength dervative
+            double dL = (size()-1) * (tmp[size()-1] - tmp[size()-2]).length();
+
+            // final step
+            tmp[size()-1] = (1.0-t) * tmp[size()-2] + t * tmp[size()-1];
+
+            // estimate length from deCasteljau points
+            double Lchrd = (tmp[0] - tmp[size()-1]).length();
+            double Lpoly = 0.0;
+
+            for( size_t i=1; i<size(); ++i )
+                Lpoly += (tmp[i] - tmp[i-1]).length();
+
+            // estimate length at t
+            double Lt = (2.0*Lchrd + (size()-2)*Lpoly) / size();
+
+            if( std::abs(Lt - L) < 1e-7 )
+                break;
+
+            // generate a candidate using Newton's method
+            double tn = t - (Lt - L) / dL;
+
+            // update the bounding interval and check if candidate inside
+            if( Lt > 0 ) 
+            {
+                upper = t; 
+
+                // if inside root-bounding interval, use Newton guess, else bisection
+                if( tn <= lower )
+                    t = 0.5*(upper + lower);
+                else 
+                    t = tn;
+            }
+            else
+            {
+                lower = t;
+                
+                if( tn >= upper )
+                    t = 0.5*(upper + lower);
+                else 
+                    t = tn;
+            }
+        }
+
+        // Conveniently, the truncated step Bezier points are the deCasteljau
+        // points from the last iteration above, hence we can simply copy them.
+
+        std::copy( tmp, tmp+size(), begin() );
+        t1 = t0 + t*(t1 + t0);
+    }
+
+    double GetLength() const
+    {
+        double Lchrd = (back() - front()).length();
+        double Lpoly = 0.0;
+
+        for( size_t i=1; i<size(); ++i )
+            Lpoly += ((*this)[i] - (*this)[i-1]).length();
+
+        return (2.0*Lchrd + (size()-2)*Lpoly) / size();
+    }
+
     virtual void Serialize(MemStream::Mode mode, MemStream &buff)
     {
-        //debug1 << "avtIVPStep::Serialize()\n";
-        buff.io( mode, tStart );
-        buff.io( mode, tEnd );
-        buff.io( mode, speed );
-        buff.io( mode, vorticity );
-        buff.io( mode, scalarValues );
-        buff.io( mode, velStart );
-        buff.io( mode, velEnd );
-        
-        avtBezierSegment::Serialize(mode, buff);
-        //buff.io( mode, _dim );
-        //buff.io( mode, _data );
+        std::vector<avtVector> *vec = this;
+        buff.io(mode, *vec);
     }
 
-    double   Length(double eps=1e-6)
-    {
-        return avtBezierSegment::length( 0.0, 1.0, eps );
-    }
-    
-    double tStart, tEnd;
-    avtVector velStart, velEnd;
-    double speed, vorticity;
-    std::vector<double> scalarValues;
+    double t0, t1;
 };
-
 
 // ****************************************************************************
 //  Class: avtIVPState
@@ -301,19 +413,10 @@ class avtIVPSolver
         STIFFNESS_DETECTED,
         UNSPECIFIED_ERROR,
     };
-    enum TerminateType
-    {
-        TIME,
-        DISTANCE,
-        STEPS,
-        INTERSECTIONS
-    };
     
     virtual void    Reset(const double& t_start, const avtVector& y_start) = 0;
 
-    virtual Result  Step(const avtIVPField* field,
-                         const TerminateType &termType,
-                         const double &end,
+    virtual Result  Step(avtIVPField* field, double t_max,
                          avtIVPStep* ivpstep = 0 ) = 0;
 
     virtual void    OnExitDomain() {}
@@ -341,34 +444,26 @@ protected:
 };
 
 
-inline std::ostream& operator<<( std::ostream& out, const avtIVPSolver::Result &res )
+inline std::ostream& operator<<( std::ostream& out, 
+                                 const avtIVPSolver::Result &res )
 {
     switch (res)
     {
-      case avtIVPSolver::OK:  out<<"OK"; break;
-      case avtIVPSolver::TERMINATE: out<<"TERMINATE"; break;
-      case avtIVPSolver::OUTSIDE_DOMAIN: out<<"OUTSIDE_DOMAIN"; break;
-      case avtIVPSolver::STEPSIZE_UNDERFLOW: out<<"STEPSIZE_UNDERFLOW"; break;
-      case avtIVPSolver::STIFFNESS_DETECTED: out<<"STIFFNESS_DETECTED"; break;
-      case avtIVPSolver::UNSPECIFIED_ERROR: out<<"UNSPECIFIED_ERROR"; break;
-      default:
-        out<<"UNKNOWN_RESULT"; break;
+    case avtIVPSolver::OK:  
+        return out <<"OK";
+    case avtIVPSolver::TERMINATE:
+        return out << "TERMINATE";
+    case avtIVPSolver::OUTSIDE_DOMAIN:
+        return out <<"OUTSIDE_DOMAIN";
+    case avtIVPSolver::STEPSIZE_UNDERFLOW: 
+        return out << "STEPSIZE_UNDERFLOW";
+    case avtIVPSolver::STIFFNESS_DETECTED: 
+        return out << "STIFFNESS_DETECTED";
+    case avtIVPSolver::UNSPECIFIED_ERROR:  
+        return out << "UNSPECIFIED_ERROR";
+    default:                             
+        return out<<"UNKNOWN";
     }
-    return out;
-}
-
-inline std::ostream& operator<<( std::ostream& out, const avtIVPSolver::TerminateType &term )
-{
-    switch (term)
-    {
-      case avtIVPSolver::TIME:  out<<"TIME"; break;
-      case avtIVPSolver::DISTANCE: out<<"DISTANCE"; break;
-      case avtIVPSolver::STEPS: out<<"STEPS"; break;
-      case avtIVPSolver::INTERSECTIONS: out<<"INTERSECTIONS"; break;
-      default:
-        out<<"UNKNOWN_TERMINATION"; break;
-    }
-    return out;
 }
 
 #endif

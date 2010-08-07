@@ -179,44 +179,52 @@ class IVP_API DomainType
 class IVP_API avtIntegralCurve
 {
   public:
-    enum Result
+
+    enum Direction
     {
-        RESULT_TERMINATE,
-        RESULT_POINT_OUTSIDE_DOMAIN,
-        RESULT_EXIT_DOMAIN,
-        RESULT_ERROR,
+        DIRECTION_FORWARD  = 0,
+        DIRECTION_BACKWARD = 1,
     };
 
     enum Status
     {
-        STATUS_UNSET=-1,
-        STATUS_TERMINATE,
-        STATUS_OUTOFBOUNDS
+        STATUS_OK       = 0,
+        STATUS_FINISHED = 1,
+    };
+
+    enum TerminationType
+    {
+        TERMINATE_TIME          = 0,
+        TERMINATE_DISTANCE      = 1,
+        TERMINATE_STEPS         = 2,
+        TERMINATE_INTERSECTIONS = 3
     };
 
     enum SerializeFlags
     {
-        SERIALIZE_STEPS = 1,
+        SERIALIZE_STEPS   = 1,
         SERIALIZE_INC_SEQ = 2,
     };
 
-    avtIntegralCurve(const avtIVPSolver* model, const double& t_start, 
-                  const avtVector &p_start, int ID);
-    avtIntegralCurve();
-    ~avtIntegralCurve();
+    avtIntegralCurve( const avtIVPSolver* model, 
+                      Direction dir, 
+                      const double& t_start, 
+                      const avtVector &p_start, 
+                      long ID );
 
-    avtIntegralCurve::Result Advance(const avtIVPField* field,
-                                  avtIVPSolver::TerminateType termType,
-                                  double end);
+    avtIntegralCurve();
+    virtual ~avtIntegralCurve();
+
+    void Advance(avtIVPField* field);
 
     double    CurrentTime() const;
     void      CurrentLocation(avtVector &end);
 
-    void      Debug() const;
-    
     virtual void      Serialize(MemStream::Mode mode, MemStream &buff, 
                                 avtIVPSolver *solver);
+
     virtual void      PrepareForSend(void) { ; };
+
     virtual bool      SameCurve(avtIntegralCurve *ic)
                                { return id == ic->id; };
 
@@ -227,54 +235,77 @@ class IVP_API avtIntegralCurve
     avtIntegralCurve( const avtIntegralCurve& );
     avtIntegralCurve& operator=( const avtIntegralCurve& );
     
-    avtIntegralCurve::Result DoAdvance(avtIVPSolver* ivp,
-                                    const avtIVPField* field,
-                                    avtIVPSolver::TerminateType termType,
-                                    double end);
-    virtual void AnalyzeStep(avtIVPStep *step,
-                         const avtIVPField* field,
-                         avtIVPSolver::TerminateType termType,
-                         double end, avtIVPSolver::Result *result) = 0;
-
-    void      HandleGhostZones(bool forward, double *extents);
+    virtual void AnalyzeStep( avtIVPStep& step,
+                              avtIVPField* field ) = 0;
 
   public:
-    double termination;
-    avtIVPSolver::TerminateType terminationType;
-    bool terminated;
 
-    // needed for ghost cells
-    avtIVPStep lastStep;
-    bool lastStepValid;
+    Status    status;
+    Direction direction;
+
+    double          termination;
+    TerminationType terminationType;
 
     // Helpers needed for figuring out which domain to use next
     std::vector<DomainType> seedPtDomainList;
     DomainType domain;
     long long sortKey;
 
-    Status status;
-
     long id;
 
   protected:
 
-    // Solver.
-    avtIVPSolver*       _ivpSolver;
+    avtIVPSolver*       ivp;
+
     static const double minH;
 };
 
-inline std::ostream& operator<<( std::ostream& out, const avtIntegralCurve::Result &res )
+
+// ostream operators for avtIntegralCurve's enum types
+inline std::ostream& operator<<( std::ostream& out, 
+                                 avtIntegralCurve::Status status )
 {
-    switch (res)
+    switch( status )
     {
-      case avtIntegralCurve::RESULT_TERMINATE: out<<"TERMINATE"; break;
-      case avtIntegralCurve::RESULT_POINT_OUTSIDE_DOMAIN: out<<"POINTOUTSIDE_DOMAIN"; break;
-      case avtIntegralCurve::RESULT_EXIT_DOMAIN: out<<"EXIT_DOMAIN"; break;
-      case avtIntegralCurve::RESULT_ERROR: out<<"ERROR"; break;
-      default:
-        out<<"UNKNOWN_RESULT"; break;
+    case avtIntegralCurve::STATUS_OK:
+        return out << "OK";
+    case avtIntegralCurve::STATUS_FINISHED:
+        return out << "FINISHED";
+    default:
+        return out << "UNKNOWN";
     }
-    return out;
+}
+
+inline std::ostream& operator<<( std::ostream& out, 
+                                 avtIntegralCurve::TerminationType term )
+{
+    switch( term )
+    {
+    case avtIntegralCurve::TERMINATE_TIME:
+        return out << "TIME";
+    case avtIntegralCurve::TERMINATE_STEPS:
+        return out << "STEPS";
+    case avtIntegralCurve::TERMINATE_DISTANCE:
+        return out << "DISTANCE";
+    case avtIntegralCurve::TERMINATE_INTERSECTIONS:
+        return out << "INTERSECTIONS";
+    default:
+        return out << "UNKNOWN";
+    }
+}
+
+inline std::ostream& operator<<( std::ostream& out, 
+                                 avtIntegralCurve::Direction dir )
+{
+    switch( dir )
+    {
+    case avtIntegralCurve::DIRECTION_FORWARD: 
+        return out << "FORWARD";
+    case avtIntegralCurve::DIRECTION_BACKWARD:
+        return out << "BACKWARD";
+    default:
+        return out << "UNKNOWN";
+    }
 }
 
 

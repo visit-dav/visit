@@ -340,7 +340,7 @@ avtParDomICAlgorithm::RunAlgorithm()
             activeICs.pop_front();
             
             AdvectParticle(s);
-            if (s->status == avtIntegralCurve::STATUS_TERMINATE)
+            if (s->status == avtIntegralCurve::STATUS_FINISHED)
             {
                 debug5<<"TerminatedIC: "<<s->id<<endl;
                 terminatedICs.push_back(s);

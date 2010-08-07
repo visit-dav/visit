@@ -225,8 +225,9 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     virtual avtIntegralCurve    *CreateIntegralCurve();
     virtual avtIntegralCurve    *CreateIntegralCurve(
                                         const avtIVPSolver* model,
+                                        avtIntegralCurve::Direction dir,
                                         const double& t_start,
-                                        const avtVector &p_start, int ID);
+                                        const avtVector &p_start, long ID);
 
     // Methods to set the filter's attributes.
     void                      SetIntersectionObject(vtkObject *obj);
@@ -252,6 +253,8 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     void                      SetDisplayMethod(int d);
     void                      SetColoringMethod(int, const std::string &var="");
     void                      SetOpacityVariable(const std::string &var);
+
+    virtual avtIVPField      *GetFieldForDomain(const DomainType&, vtkDataSet*);
 
     virtual void              PostExecute(void);
     virtual void              UpdateDataObjectInfo(void);
@@ -290,6 +293,7 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     virtual std::vector<avtVector> GetInitialLocations(void);
     virtual CommunicationPattern   GetCommunicationPattern(void)
                                       { return RestoreSequence; };
+
 };
 
 
