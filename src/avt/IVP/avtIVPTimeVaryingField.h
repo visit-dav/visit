@@ -2,7 +2,7 @@
 *
 * Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-442911
+* LLNL-CODE-400124
 * All rights reserved.
 *
 * This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -37,83 +37,115 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                avtIVPField.h                              //
+//                         avtIVPTimeVaryingField.h                        //
 // ************************************************************************* //
 
-#ifndef AVT_IVPFIELD_H
-#define AVT_IVPFIELD_H
+#ifndef AVT_IVPTIMEVARYINGFIELD_H
+#define AVT_IVPTIMEVARYINGFIELD_H
 
 #include <stdexcept>
-#include <avtVector.h>
+#include <avtIVPField.h>
 #include <ivp_exports.h>
 
 // ****************************************************************************
-//  Class: avtIVPField
+//  Class: avtIVPTimeVaryingField
 //
 //  Purpose:
-//      avtIVPField is a base class for all manners of vector fields. 
-//      Deriving from it should allow an adaptation of many different vector 
-//      field types for the use of streamlines/IVP solutions by wrapping 
-//      existing interpolation facilities. If the queried point is invalid, 
-//      avtIVPField can throw an exception that will pass through avtIVPSolver.
-//
-//      The IVP right-hand side is made accessible to an IVP solver by means of 
-//      the avtIVPField class, allowing the IVP solver to query points of the 
-//      given vector field. 
+//      avtIVPTimeVaryingField combines two avtIVPFieldInstances,
+//      corresponding to two different time steps, and performs
+//      linear interpolation between them over the specified time interval.
 //
 //  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Add GetValidTimeRange.
-//
-//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
-//   Added ComputeScalarVariable, HasGhostZones and GetExtents methods.
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
-//   Generalize the compute scalar variable.
-//
-//   Christoph Garth, July 13 16:49:12 PDT 2010
-//   Compute scalars by index instead of by name.
+//  Creation:   July 22, 2010
 //
 // ****************************************************************************
 
-class IVP_API avtIVPField
+class IVP_API avtIVPTimeVaryingField: public avtIVPField
 {
-  public:
-    class Undefined: public std::exception
+public:
+
+    avtIVPTimeVaryingField( double t0, avtIVPField* f0,
+                              double t1, avtIVPField* f1 ) :
+        time0(t0), time1(t1), field0(f0), field1(f1)
     {
-      public:
-        const char* what() const throw()
-        {
-            return "field undefined";
-        }
-    };
+    }
 
-                         avtIVPField() {};
+    ~avtIVPTimeVaryingField()
+    {
+        delete field0;
+        delete field1;
+    }
 
-    virtual avtVector    operator()(const double& t, 
-                                    const avtVector& x) const = 0;
+    virtual avtVector    operator()( const double& t, 
+                                     const avtVector& x ) const 
+    {
+        if( t < time0 || t > time1 )
+            throw Undefined();
+
+        double s = (t - time0) / (time1 - time0);
+
+        return (1.0-s)*(*field0)(t,x) + s*(*field1)(t,x);
+    }
+
     virtual double       ComputeVorticity(const double& t, 
-                                          const avtVector& x ) const = 0;
+                                          const avtVector& x ) const
+    {
+        return 0.0;
+    }
+
     virtual double       ComputeScalarVariable(unsigned char index,
                                                const double& t,
-                                               const avtVector& x) const = 0;
+                                               const avtVector& x)
+    {
+        return 0.0;
+    }
 
     virtual void         SetScalarVariable( unsigned char index, 
-                                            const std::string& name ) = 0;
+                                            const std::string& name )
+    {
+        field0->SetScalarVariable( index, name );
+        field1->SetScalarVariable( index, name );
+    }
 
-    virtual bool         IsInside( const double& t, 
-                                   const avtVector& x ) const = 0;
+    virtual bool         IsInside(const double& t, 
+                                  const avtVector& x) const
+    {
+        return 
+            t >= time0 && 
+            t <= time1 && 
+            field0->IsInside(t,x) && 
+            field1->IsInside(t,x);
+    }
 
-    virtual void         GetTimeRange( double range[2] ) const = 0;
-    virtual void         GetExtents( double  extents[6] ) const = 0;
-    virtual bool         HasGhostZones() const = 0;
+    virtual unsigned int GetDimension() const 
+    {
+        return 3;
+    }
+
+    virtual bool         GetValidTimeRange(double range[]) const
+    {
+        range[0] = time0;
+        range[1] = time1;
+        return true;
+    }
+
+    virtual bool         HasGhostZones() const
+    {
+        return field0->HasGhostZones() && field1->HasGhostZones();
+    }
+
+    virtual void         GetExtents(double *extents) const
+    {
+        abort();
+    }
+
+protected:
+
+    avtIVPField* field0;
+    avtIVPField* field1;
+
+    double time0;
+    double time1;
 };
 
 #endif

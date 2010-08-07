@@ -92,9 +92,7 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
-    virtual Result   Step(const avtIVPField* field,
-                          const TerminateType &type,
-                          const double &end,                      
+    virtual Result   Step(avtIVPField* field, double t_max,
                           avtIVPStep* ivpstep = NULL);
 
     virtual avtVector   GetCurrentY() const;
@@ -129,7 +127,7 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
     double h_max;
     double h_init;
 
-    double t, t_max;
+    double t;
     double d;
 
     unsigned int n_accepted;

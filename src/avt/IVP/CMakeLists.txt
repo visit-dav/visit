@@ -45,6 +45,10 @@
 #****************************************************************************/
 
 SET(AVTIVP_SOURCES
+avtCellLocator.C
+avtCellLocatorClassic.C
+avtCellLocatorBIH.C
+avtCellLocatorRect.C
 avtIntegralCurve.C
 avtIVPAdamsBashforth.C
 avtIVPDopri5.C
@@ -61,7 +65,7 @@ INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/visit_vtk/full
+${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 )
 

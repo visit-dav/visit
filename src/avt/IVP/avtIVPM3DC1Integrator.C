@@ -339,37 +339,20 @@ avtIVPM3DC1Integrator::OnExitDomain()
 // ****************************************************************************
 
 avtIVPSolver::Result 
-avtIVPM3DC1Integrator::Step(const avtIVPField* field,
-                            const TerminateType &termType,
-                            const double &end,
+avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
                             avtIVPStep* ivpstep)
 {
-    double t_max;
-
-    if (termType == TIME)
-        t_max = end;
-    else if (termType == DISTANCE || termType == STEPS || termType == INTERSECTIONS)
-    {
-        t_max = std::numeric_limits<double>::max();
-        if (end < 0)
-            t_max = -t_max;
-    }
-
     const double direction = sign( 1.0, t_max - t );
-    
+
     h = sign( h, direction );
     
     // do not run past integration end
     if( (t + 1.01*h - t_max) * direction > 0.0 ) 
-    {
         h = t_max - t;
-    }
 
     // stepsize underflow?
     if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
-    {
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
-    }
 
     avtIVPSolver::Result res;
     avtVector yNew = yCur;
@@ -377,9 +360,9 @@ avtIVPM3DC1Integrator::Step(const avtIVPField* field,
     // This call begins the M3D code.
     res = vpstep(field, yCur, h, yNew);
 
-    if ( res == avtIVPSolver::OK )
+    if( res == avtIVPSolver::OK )
     {
-        ivpstep->resize( 2 );
+        ivpstep->resize( 4 );
 
         avtVector yCurCart,  yNewCart;
 
@@ -392,56 +375,13 @@ avtIVPM3DC1Integrator::Step(const avtIVPField* field,
         yNewCart[2] = yNew[2];
         
         (*ivpstep)[0] = yCurCart;
-        (*ivpstep)[1] = yNewCart;
-        ivpstep->tStart = t;
-        ivpstep->tEnd = t + h;
+        (*ivpstep)[1] = (*ivpstep)[0] + getBfield(field,yCur) * h/3.0;
+        (*ivpstep)[2] = (*ivpstep)[3] - getBfield(field,yNew) * h/3.0;
+        (*ivpstep)[3] = yNewCart;
+
+        ivpstep->t0 = t;
+        ivpstep->t1 = t + h;
         numStep++;
-
-        // Handle distanced based termination.
-        if (termType == TIME)
-        {
-            if ((end > 0 && t >= end) ||
-                (end < 0 && t <= end))
-                return TERMINATE;
-        }
-        else if (termType == DISTANCE)
-        {
-            double len = ivpstep->length();
-            
-            //debug1<<"ABStep: "<<t<<" d: "<<d<<" => "<<(d+len)<<" h= "<<h<<" len= "<<len<<" sEps= "<<stiffness_eps<<endl;
-            if (len < stiffness_eps)
-            {
-                degenerate_iterations++;
-                if (degenerate_iterations > 15)
-                {
-                    //debug1<<"********** STIFFNESS ***************************\n";
-                    return STIFFNESS_DETECTED;
-                }
-            }
-            else
-                degenerate_iterations = 0;
-
-            if (d+len > fabs(end))
-                throw avtIVPField::Undefined();
-            else if (d+len >= fabs(end))
-                return TERMINATE;
-
-            d = d+len;
-        }
-        else if (termType == STEPS &&
-                 numStep >= (int)fabs(end))
-            return TERMINATE;
-
-        if (end > 0.0)
-        {
-            ivpstep->velStart = getBfield(field, yCur);
-            ivpstep->velEnd   = getBfield(field, yNew);
-        }
-        else
-        {
-            ivpstep->velStart = -getBfield(field, yCur);
-            ivpstep->velEnd   = -getBfield(field, yNew);
-        }
 
         yCur = yNew;
         t = t+h;

@@ -93,9 +93,7 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
-    virtual Result   Step(const avtIVPField* field,
-                          const TerminateType &termType,
-                          const double &end,
+    virtual Result   Step(avtIVPField* field, double t_max,
                           avtIVPStep* ivpstep = NULL);
     virtual void    OnExitDomain();
 

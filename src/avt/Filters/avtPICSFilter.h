@@ -56,7 +56,7 @@
 #include <mpi.h>
 #endif
 
-class vtkVisItCellLocator;
+class avtCellLocator;
 class DomainType;
 class avtICAlgorithm;
 
@@ -95,6 +95,9 @@ class avtICAlgorithm;
 //   Hank Childs, Tue Jun  8 09:11:36 CDT 2010
 //   Added communication pattern enum and virtual method.
 //
+//   Christoph Garth, Fri Jul 9 12:53:11 PDF 2010
+//   Replace vtkVisItCellLocator by avtCellLocator
+// 
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -102,13 +105,14 @@ class AVTFILTERS_API avtPICSFilter :
     virtual public avtDatasetToDatasetFilter
 {
   public:
-    typedef enum
+    enum CommunicationPattern
     {
         RestoreSequence = 0,
         ReturnToOriginatingProcessor,
         LeaveOnCurrentProcessor,
         UndefinedCommunicationPattern
-    } CommunicationPattern;
+    };
+
                               avtPICSFilter();
     virtual                  ~avtPICSFilter();
 
@@ -118,9 +122,11 @@ class AVTFILTERS_API avtPICSFilter :
 
     virtual avtIntegralCurve          *CreateIntegralCurve() = 0;
     virtual avtIntegralCurve          *CreateIntegralCurve(
-                                        const avtIVPSolver* model, 
+                                        const avtIVPSolver* model,
+                                        avtIntegralCurve::Direction dir,
                                         const double& t_start,
-                                        const avtVector &p_start, int ID) = 0;
+                                        const avtVector &p_start, long ID) = 0;
+
     virtual std::vector<avtVector>  GetInitialLocations() = 0;
     virtual CommunicationPattern    GetCommunicationPattern() = 0;
 
@@ -142,7 +148,7 @@ class AVTFILTERS_API avtPICSFilter :
     double maxStepLength;
     double relTol;
     double absTol;
-    avtIVPSolver::TerminateType terminationType;
+    avtIntegralCurve::TerminationType terminationType;
     int integrationType;
     double termination;
     int    integrationDirection;
@@ -164,7 +170,7 @@ class AVTFILTERS_API avtPICSFilter :
     int numDomains, numTimeSteps, cacheQLen;
     std::vector<int> domainToRank;
     std::vector<vtkDataSet*>dataSets;
-    std::map<DomainType, vtkVisItCellLocator*> domainToCellLocatorMap;
+    std::map<DomainType, avtCellLocator*> domainToCellLocatorMap;
 
     std::vector<double> pointList;
 
@@ -216,11 +222,13 @@ class AVTFILTERS_API avtPICSFilter :
     bool                      OwnDomain(DomainType &domain);
     void                      SetDomain(avtIntegralCurve *ic);
     void                      Initialize();
-    void                      ComputeRankList(const std::vector<int> &domList, 
-                                              std::vector<int> &ranks, 
+    void                      ComputeRankList(const std::vector<int> &domList,
+                                              std::vector<int> &ranks,
                                               std::vector<int> &doms );
-    vtkVisItCellLocator      *SetupLocator(const DomainType &, vtkDataSet *);
-    
+
+    avtCellLocator           *SetupLocator(const DomainType &, vtkDataSet *);
+    virtual avtIVPField      *GetFieldForDomain(const DomainType&, vtkDataSet*);
+
     friend class avtICAlgorithm;
 };
 

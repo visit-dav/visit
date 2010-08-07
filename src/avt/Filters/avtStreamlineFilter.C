@@ -238,7 +238,6 @@ avtStreamlineFilter::~avtStreamlineFilter()
         intersectObj->Delete();
 }
 
-
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CreateIntegralCurve
 //
@@ -252,21 +251,11 @@ avtStreamlineFilter::~avtStreamlineFilter()
 // ****************************************************************************
 
 avtIntegralCurve *
-avtStreamlineFilter::CreateIntegralCurve(void)
+avtStreamlineFilter::CreateIntegralCurve() 
 {
-    avtStateRecorderIntegralCurve *rv = new avtStateRecorderIntegralCurve();
-    if (intersectObj)
-        rv->SetIntersectionObject(intersectObj);
-
-    if (coloringVariable != "")
-        rv->scalars.push_back(coloringVariable);
-    if (opacityVariable != "")
-        rv->scalars.push_back(opacityVariable);
-
-    return rv;
+    return new avtStateRecorderIntegralCurve();
 }
 
-
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CreateIntegralCurve
 //
@@ -280,32 +269,45 @@ avtStreamlineFilter::CreateIntegralCurve(void)
 // ****************************************************************************
 
 avtIntegralCurve *
-avtStreamlineFilter::CreateIntegralCurve(const avtIVPSolver* model,
-                                         const double& t_start,
-                                         const avtVector &p_start, int ID) 
+avtStreamlineFilter::CreateIntegralCurve( const avtIVPSolver* model,
+                                          const avtIntegralCurve::Direction dir,
+                                          const double& t_start,
+                                          const avtVector &p_start, long ID ) 
 {
-    avtStateRecorderIntegralCurve *rv = new avtStateRecorderIntegralCurve(
-                                           model, t_start, p_start, ID);
-   
-    avtStateRecorderIntegralCurve::ScalarValueType scalarVal =  
-                                         avtStateRecorderIntegralCurve::NONE;
-    if (coloringMethod == STREAMLINE_COLOR_SPEED)
-        scalarVal = avtStateRecorderIntegralCurve::SPEED;
-    else if (coloringMethod == STREAMLINE_COLOR_VORTICITY)
-        scalarVal = avtStateRecorderIntegralCurve::VORTICITY;
-    else if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
-        scalarVal = avtStateRecorderIntegralCurve::SCALAR_VARIABLE;
+    // need at least these three attributes
+    unsigned char attr = 
+        avtStateRecorderIntegralCurve::SAMPLE_TIME |
+        avtStateRecorderIntegralCurve::SAMPLE_POSITION |
+        avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
 
-    if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
-        scalarVal = (avtStateRecorderIntegralCurve::ScalarValueType)
-                        (scalarVal | avtStateRecorderIntegralCurve::VORTICITY);
+    // color scalars
+    switch( coloringMethod )
+    {
+    case STREAMLINE_COLOR_VORTICITY:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_VORTICITY;
+        break;
+    case STREAMLINE_COLOR_ARCLENGTH:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
+        break;
+    case STREAMLINE_COLOR_VARIABLE:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR0;
+        break;
+    }
 
-    rv->SetScalarValueType(scalarVal);
+    // parameter scalars
+    switch( terminationType )
+    {
+    case avtIntegralCurve::TERMINATE_DISTANCE:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
+        break;
+    }
 
-    if (coloringVariable != "")
-        rv->scalars.push_back(coloringVariable);
-    if (opacityVariable != "")
-        rv->scalars.push_back(opacityVariable);
+    // opacity scalar
+    if( !opacityVariable.empty() )
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR1;
+
+    avtStateRecorderIntegralCurve *rv = 
+        new avtStateRecorderIntegralCurve( attr, model, dir, t_start, p_start, ID );
 
     if (intersectObj)
         rv->SetIntersectionObject(intersectObj);
@@ -1471,13 +1473,13 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract0)
         // The avtStreamlinePlot requested "colorVar", so remove that from the
         // contract now.
         out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
+
+        if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
+            out_dr->AddSecondaryVariable(coloringVariable.c_str());
+
+        if (opacityVariable != "")
+            out_dr->AddSecondaryVariable(opacityVariable.c_str());
     }
-
-    if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
-        out_dr->AddSecondaryVariable(coloringVariable.c_str());
-
-    if (opacityVariable != "")
-        out_dr->AddSecondaryVariable(opacityVariable.c_str());
 
     avtContract_p out_contract;
     if ( *out_dr )
@@ -1489,3 +1491,29 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract0)
 }
 
 
+// ****************************************************************************
+//  Method: avtStreamlineFilter::GetFieldForDomain
+//
+//  Purpose:
+//      Calls avtPICSFilter::GetFieldForDomain and enables scalar 
+//      variables according to coloringVariable and opacityVariable.
+//
+//  Programmer: Christoph Garth
+//  Creation:   July 14, 2010
+//
+// ****************************************************************************
+
+avtIVPField* 
+avtStreamlineFilter::GetFieldForDomain(const DomainType& dom, vtkDataSet* ds)
+{
+    avtIVPField* field = avtPICSFilter::GetFieldForDomain( dom, ds );
+
+    if( coloringMethod == STREAMLINE_COLOR_VARIABLE && 
+        !coloringVariable.empty() )
+        field->SetScalarVariable( 0, coloringVariable );
+
+    if( !opacityVariable.empty() )
+        field->SetScalarVariable( 1, opacityVariable );
+
+    return field;
+}

@@ -101,7 +101,7 @@ class MATH_API avtVector
     avtVector(const float*);
 
     // assignment operator
-    void       operator=(const avtVector&);
+    avtVector& operator=(const avtVector&);
 
     // vector addition/subtraction
     avtVector  operator+(const avtVector&) const;
@@ -194,12 +194,14 @@ avtVector::avtVector(const avtVector &r)
     z=r.z;
 }
 
-inline void
+inline avtVector&
 avtVector::operator=(const avtVector &r)
 {
     x=r.x;
     y=r.y;
     z=r.z;
+
+    return *this;
 }
 
 // vector addition/subtraction

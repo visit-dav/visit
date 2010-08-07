@@ -65,12 +65,11 @@
 //
 // ****************************************************************************
 
-avtIVPM3DC1Field::avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity ) 
- : avtIVPVTKField(velocity)
+avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset, 
+                                    avtCellLocator* locator ) : 
+    avtIVPVTKField( dataset, locator )
 {
   // Pick off all of the data stored with the vtk field.
-  vtkDataSet *ds = velocity->GetDataSet();
-
   // Get the numver of elements for checking the validity of the data.
 
   // Because the triangluar mesh is defined by using non unique points
@@ -124,7 +123,6 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity 
   findElementNeighbors();
 }
 
-
 // ****************************************************************************
 //  Method: avtIVPM3DC1Field constructor
 //
@@ -134,7 +132,7 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity 
 // ****************************************************************************
 
 avtIVPM3DC1Field::avtIVPM3DC1Field( float *elementsPtr, int nelements ) 
-  : elements( elementsPtr), neighbors(0),
+    : avtIVPVTKField(NULL, NULL), elements( elementsPtr), neighbors(0),
     psi0(0), f0(0), psinr(0), psini(0), fnr(0), fni(0), nelms(nelements)
 {
   findElementNeighbors();

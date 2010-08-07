@@ -45,7 +45,6 @@
 
 #include "avtIVPVTKField.h"
 
-#include <vtkVisItInterpolatedVelocityField.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
@@ -83,14 +82,12 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   } edge;
   
   public:
-    avtIVPM3DC1Field( vtkVisItInterpolatedVelocityField* velocity ); 
+  avtIVPM3DC1Field( vtkDataSet* ds, avtCellLocator* loc ); 
     avtIVPM3DC1Field( float *elementsPtr, int nelements );
 
     ~avtIVPM3DC1Field();
 
     virtual bool IsInside(const double& t, const avtVector& x) const;
-
-    vtkVisItInterpolatedVelocityField* GetBaseField() { return iv; }    
 
     void findElementNeighbors();
     void register_vert(v_entry *vlist, int *len,

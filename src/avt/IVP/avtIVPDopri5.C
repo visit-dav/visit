@@ -508,28 +508,11 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 // ****************************************************************************
 
 avtIVPSolver::Result 
-avtIVPDopri5::Step(const avtIVPField* field,
-                   const TerminateType &termType,
-                   const double &end,
+avtIVPDopri5::Step(avtIVPField* field, double t_max,
                    avtIVPStep* ivpstep) 
 {
-    if (termType == TIME)
-        t_max = end;
-    else if (termType == DISTANCE || termType == STEPS || termType == INTERSECTIONS)
-    {
-        t_max = std::numeric_limits<double>::max();
-        if (end < 0)
-            t_max = -t_max;
-    }
-
-    if (DebugStream::Level5())
-        debug5<<"End= "<<end<<" t_max= "<<t_max<<endl;
-    
     const double direction = sign( 1.0, t_max - t );
 
-    avtVector k2, k3, k4, k5, k6, k7;
-    bool reject = false;
-    
     // compute maximum stepsize
     double local_h_max = h_max;
 
@@ -556,6 +539,8 @@ avtIVPDopri5::Step(const avtIVPField* field,
         h = sign( h, direction );
     }
 
+    bool reject = false;
+   
     // integration step loop, will exit after successful step
     while( true )
     {
@@ -570,6 +555,9 @@ avtIVPDopri5::Step(const avtIVPField* field,
                        << t << ", step size too small (h = " << h << ")\n";
             return STEPSIZE_UNDERFLOW;
         }
+
+        if( h_max != 0.0 && std::abs(h) > std::abs(h_max) )
+            h = sign( h_max, h );
 
         // do not run past integration end
         if( (t + 1.01*h - t_max) * direction > 0.0 ) 
@@ -592,23 +580,22 @@ avtIVPDopri5::Step(const avtIVPField* field,
 
         // perform stages
         y_new = y + h*a21*k1;
-        k2 = (*field)( t+c2*h, y_new );
+        avtVector k2 = (*field)( t+c2*h, y_new );
 
         y_new = y + h * ( a31*k1 + a32*k2 );
-        k3 = (*field)( t+c3*h, y_new );
+        avtVector k3 = (*field)( t+c3*h, y_new );
         
         y_new = y + h * ( a41*k1 + a42*k2 + a43*k3 );
-        k4 = (*field)( t+c4*h, y_new );
+        avtVector k4 = (*field)( t+c4*h, y_new );
         
         y_new = y + h * ( a51*k1 + a52*k2 + a53*k3 + a54*k4 );
-        k5 = (*field)( t+c5*h, y_new );
+        avtVector k5 = (*field)( t+c5*h, y_new );
 
-        y_new = y + h * (a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5);
-        y_stiff = y_new; //???? Needed?
-        k6 = (*field)( t+h, y_new );
+        y_stiff = y_new = y + h * (a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5);
+        avtVector k6 = (*field)( t+h, y_new );
         
         y_new = y + h * (a71*k1 + a73*k3 + a74*k4 + a75*k5 + a76*k6 );
-        k7 = (*field)( t+h, y_new );
+        avtVector k7 = (*field)( t+h, y_new );
 
         n_eval += 6;
 
@@ -691,6 +678,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
             if( ivpstep )
             {
                 ivpstep->resize(5);
+
                 (*ivpstep)[0] = y;
                 (*ivpstep)[1] = y + (h*k1/4.);
                 (*ivpstep)[2] = (y + y_new)/2 + h*( (d1+1)*k1 + d3*k3 + d4*k4 
@@ -698,18 +686,8 @@ avtIVPDopri5::Step(const avtIVPField* field,
                 (*ivpstep)[3] = y_new - h*k7/4;
                 (*ivpstep)[4] = y_new;
         
-                ivpstep->tStart = t;
-                ivpstep->tEnd   = t + h;
-                if (end < 0.0)
-                {
-                    ivpstep->velStart = -k1;
-                    ivpstep->velEnd = -k7;
-                }
-                else
-                {
-                    ivpstep->velStart = k1;
-                    ivpstep->velEnd = k7;
-                }
+                ivpstep->t0 = t;
+                ivpstep->t1 = t + h;
             }
             
             // update internal state
@@ -721,28 +699,13 @@ avtIVPDopri5::Step(const avtIVPField* field,
             h = h_new;
             numStep++;
 
-            if (termType == TIME)
-            {
-                if ((end > 0 && t >= end) ||
-                    (end < 0 && t <= end))
-                    return TERMINATE;
-            }
-            else if (termType == DISTANCE)
-            {
-                double len = ivpstep->Length();
-                if (d+len > fabs(end))
-                    throw avtIVPField::Undefined();
-                d = d + len;
-            }
-            else if (termType == STEPS &&
-                     numStep >= (int)fabs(end))
-                return TERMINATE;
-                
-            
+            return last ? TERMINATE : OK;
+
             // normal exit
             if (DebugStream::Level5())
                 debug5 << "\tavtIVPDopri5::step(): normal exit, now at t = " 
                        << t << ", y = " << y << ", h = " << h << '\n';
+
             return OK;
         }
         else 
@@ -785,7 +748,6 @@ avtIVPDopri5::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h_max)
         .Accept(h_init)
         .Accept(t)
-        .Accept(t_max)
         .Accept(d)
         .Accept(facold)
         .Accept(hlamb)
