@@ -66,6 +66,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/avt/Math
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
+${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VTK_INCLUDE_DIRS}
 )
 
