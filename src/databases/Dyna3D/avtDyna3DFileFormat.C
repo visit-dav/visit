@@ -573,6 +573,11 @@ avtDyna3DFileFormat::ReadOneMaterialCard(ifstream &ifile,
 //   Brad Whitlock, Mon Mar  9 16:31:41 PDT 2009
 //   I rewrote the routine so it can handle variable line material cards.
 //
+//   Brad Whitlock, Mon Aug  9 14:22:41 PDT 2010
+//   I added a little code to try and get us to the material cards section
+//   if we're not already there by the time this routine gets called. This
+//   makes the code a little more tolerant of funky control cards.
+//
 // ****************************************************************************
 
 void
@@ -580,11 +585,22 @@ avtDyna3DFileFormat::ReadMaterialCards(ifstream &ifile)
 {
     // Skip the comments at the start of the section
     bool matCards, currentlyInMatCards;
-    SkipComments(ifile, "MATERIAL CARDS", matCards, currentlyInMatCards);
+    const char *matCardHeader = "MATERIAL CARDS";
+    SkipComments(ifile, matCardHeader, matCards, currentlyInMatCards);
     if(!currentlyInMatCards)
     {
-        debug5 << "Returning without reading any materials." << endl;
-        return;
+        debug5 << "Trying to skip ahead to " << matCardHeader << endl;
+        if(!SkipToSection(ifile, matCardHeader))
+        {
+            debug5 << "We must have been past " << matCardHeader
+                   << ". Reset and try again" << endl;
+            ifile.seekg(0, ios::beg);
+            if(!SkipToSection(ifile, matCardHeader))
+            {
+                debug5 << "Returning without reading any materials." << endl;
+                return;
+            }
+        }
     }
     debug5 << "Reading materials..." << endl;
 
@@ -714,6 +730,10 @@ avtDyna3DFileFormat::ReadMaterialCards(ifstream &ifile)
 //   I changed the reader so it reopens the file after reading materials
 //   just in case there was an error.
 //
+//   Brad Whitlock, Mon Aug  9 14:27:22 PDT 2010
+//   I changed the code so it seeks to the start of the file instead of
+//   reopening the file.
+//
 // ****************************************************************************
 
 bool
@@ -750,11 +770,10 @@ avtDyna3DFileFormat::ReadFile(const char *name, int nLines)
         ReadMaterialCards(ifile);
         visitTimer->StopTimer(readCards, "Reading material cards.");
 
-        // Close and reopen the file and skip to the NODE DEFINITIONS section. This
+        // Rewind the file and skip to the NODE DEFINITIONS section. This
         // prevents us from messing up the nodes if we happened to mess up the 
         // materials.
-        ifile.close();
-        ifile.open(name);
+        ifile.seekg(0, ios::beg);
         SkipToSection(ifile, "NODE DEFINITIONS");
 
         if(nLines == ALL_LINES)
