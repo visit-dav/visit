@@ -203,7 +203,7 @@ for m in \$modes; do
 
     # Move the results to the consolidation directory
     theMode=\`echo \$m | tr ',' '_'\`
-    mv html \$dateTag/\$theMode_\$branch
+    mv html \$dateTag/\$theMode
     if test "$debug" = "true" ; then
         echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
     fi
