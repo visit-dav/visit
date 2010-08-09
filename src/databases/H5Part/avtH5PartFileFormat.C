@@ -1582,6 +1582,12 @@ avtH5PartFileFormat::GetVectorVar(int timestate, const char *varname)
 //  Programmer: ghweber
 //  Creation:   Thu Feb 11 15:38:49 PST 2010
 //
+//  Modifications:
+//    Gunther H. Weber, Mon Aug  9 14:58:58 PDT 2010
+//    Fixed bug identified by regression tests that sometimes (it seems
+//    mainly for field data) H5PartSetStep is not called when a new file
+//    is opened.
+//
 // ****************************************************************************
 
 void
@@ -1592,7 +1598,12 @@ avtH5PartFileFormat::ActivateTimestep(int ts)
     // Open file if necessary
     if (!file)
     {
+        debug5 << "avtH5PartFileFormat::ActivateTimestep(): Opening file and ";
+        debug5 << "activating time step " << ts << std::endl;
+
         file = H5PartOpenFile(filenames[0], H5PART_READ);
+        H5PartSetStep(file, ts);
+
 #ifdef HAVE_LIBFASTBIT
         reader.openFile(filenames[0], true);
 
@@ -1600,12 +1611,10 @@ avtH5PartFileFormat::ActivateTimestep(int ts)
         queryResultsValid = false;
 #endif
     } 
-    if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
-
-    if (ts != activeTimeStep)
+    else if (ts != activeTimeStep)
     {
-        debug5 << "H5Part: Activating time step " << ts << std::endl;
-        activeTimeStep = ts;
+        debug5 << "avtH5PartFileFormat::ActivateTimestep(): Activating time ";
+        debug5 << "step " << ts << std::endl;
 
         H5PartSetStep(file, ts);
 
@@ -1614,6 +1623,11 @@ avtH5PartFileFormat::ActivateTimestep(int ts)
         queryResultsValid = false;
 #endif
     }
+    // Check if the open file branch was successful
+    if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
+
+    // Update global time step information
+    activeTimeStep = ts;
 
     visitTimer->StopTimer(t1, "H5PartFileFormat::ActivateTiumestep()");
 }
