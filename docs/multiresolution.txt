@@ -1,0 +1,178 @@
+Multiresolution in VisIt
+========================
+The VisIt team <visit-developers@ornl.gov>
+
+Visualizing extremely large data is a difficult problem on multiple
+levels.  One of the growing problems experienced in the visualization
+community is the growth of data beyond what can be effectively
+processed on a single workstation.  Fortunately VisIt is commonly used
+and scales effectively to large data sets.  However, this is only
+feasible if one has a large cluster available for visualization, and
+inevitably data sets grow in size to be larger than the cluster sizes
+we have available to visualize that data.
+
+One solution to this problem is to utilize multiresolution data.  The
+concept is simple: write out your data at multiple resolutions, and
+process low resolutions first.  This gives more immediate feedback on
+how informative a visualization might be, with the caveat that things
+might change when we load the higher resolution data.
+
+Many know that VisIt supports adaptive mesh refinement (AMR) data well,
+but VisIt also supports more traditional multiresolution data.  This
+document explains how to serve up such data from your database.
+
+Database Types
+--------------
+
+See the https://wci.llnl.gov/codes/visit/manuals.html[Getting Data
+Into VisIt] manual for information on database types.  Generally you
+would want your data to be multiple-domain (i.e. "MD" database) to
+take the best advantage of multiresolution; this is also good for
+parallelization.
+
+Mesh Meta Data
+--------------
+
+VisIt needs to be told how many resolution levels exist in
+your data.  You initialize this by modifying a specific field
+in the `avtMeshMetaData` object, as you create it in your
+`PopulateDatabaseMetadata` method.
+
+One of the arguments to that method is of type `avtDatabaseMetaData`;
+you should already be modifying this argument to fill in other
+metadata, as explained in the 'Getting Data Into VisIt' manual.  To
+tell VisIt how many resolutions you have, you need to pull the mesh out
+of that object and set the `LODs` member variable.
+
+[c++]
+source~~~~
+void avtYourFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, ...)
+{
+  ...
+  avtMeshMetaData& mmd = md->GetMeshes(0);
+  mmd.LODs = ReadNumberOfResolutionsFromFile();
+  ...
+}
+source~~~~
+
+NOTE: By convention, VisIt assumes the first (zeroth) mesh contains the
+correct number of LODs ("levels of detail").
+
+You can also dynamically create a mesh and then `Add` it to the `md`
+object; see the Chombo database for an example of this.
+
+Contract
+--------
+
+VisIt contains a special contract to inform your database which
+resolution the user has selected.  Before we get into that, we'll need
+to take a little detour to explain a quirk of domain identifiers.
+
+Domain Identifiers
+~~~~~~~~~~~~~~~~~~
+
+VisIt has a two-dimensional namespace for domains.  All domains consist
+of a timestep identifier, or index, and a domain identifier.  Both
+identifiers have a valid range of the unsigned integers.  For single
+timestep data ("ST" databases), the timestep identifier is hidden from
+the database developer, and only the flat one-dimensional index is
+presented.
+
+This presents a problem for multiresolution data; we need a third index
+to represent the resolution a domain exists at.  The VisIt solution to
+this for AMR data has been to construct additional pipeline metadata
+which describes the additional information.  At the database level, the
+flat domain index is used, and the database translates that index into
+a two-level multiresolution level + domain index.
+
+Multiresolution data has a choice on how to index the data.  For most
+data, we would want to follow the AMR approach; for a dataset with
+1 domains in the coarsest level and 4 in a finer level, we could
+translate VisIt-domain 0 to resolution 0, index 0, and VisIt-domain 3
+to resolution 1, index 2.  Explicitly:
+
+.Hypothetical Domain to Index Mapping
+[cols="1,2", options="header"]
+|====================================================================
+| VisIt Domain Index | Translated Database Index <Resolution, Domain>
+| 0                  | <0, 0>
+| 1                  | <1, 0>
+| 2                  | <1, 1>
+| 3                  | <1, 2>
+| 4                  | <1, 3>
+|====================================================================
+
+If you choose to utilize this approach, implementing the contract is
+unnecessary.  However, VisIt can tell your database which resolution it
+is looking for.  This can be useful for some kinds of multiresolution
+data, which is organized such that the number of domains is constant
+among resolutions: there is simply fewer grid points at coarser
+resolutions.  These types of formats will want to tell VisIt there is
+that constant number of domains (in `PopulateDatabaseMetadata`), and
+utilize the contract to figure out which resolution it should give out.
+Other formats might not be organized in this manner, but could optimize
+disk IO by utilizing information about which resolution VisIt currently
+needs.
+
+`RegisterDataSelections`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `RegisterDataSelections` method is used
+to implement VisIt's "contracts" system (see
+http://www.idav.ucdavis.edu/publications/print_pub?pub_id=890[A
+Contract-Based System for Large Data Visualization]).  Many contracts
+come through here, but VisIt will create a special contract,
+`avtResolutionSelection`, to detail the resolution.  Its type will be
+exactly "avtResolutionSelection", and the only interesting thing about
+it is the `resolution` method.  You should use `resolution` to set some
+internal state in your file format, which you might then utilize in a
+`GetVar` call, for example.
+
+[c++]
+source~~~~
+void avtYourFileFormat::RegisterDataSelections(
+  const std::vector<avtDataSelection_p>& sels,
+  const std::vector<bool>*               applied
+) {
+  for(size_t i=0; i < sels.size(); ++i) {
+    if(strcmp(sels[i]->GetType(), "avtResolutionSelection") == 0) {
+      // upcast to the resolution selection object we now know is there.
+      const avtResolutionSelection* res =
+        static_cast<const avtResolutionSelection*>(*sels[i]);
+      this->current_resolution = res->resolution();
+      (*applied)[i] = true; // indicate we're honoring this contract
+    } else if(...) { // test for other contracts
+    }
+    ...
+  }
+}
+source~~~~~
+
+You can also use this as a sanity check.
+
+NOTE: VisIt might never create a resolution selection for your database
+to consume.  In the absence of any specification, you should serve up
+your highest resolution data.
+
+Testing
+~~~~~~~
+
+Currently VisIt will obey the resolution specification given by the
+`MultiresControl` operator.  Add it to a plot and play with the slider,
+and you should see `RegisterDataSelections` being called each time,
+as well as `GetVar` (or `GetVectorVar`, as applicable) calls being
+repeated.
+
+There is an existing Python test in the source tree, under
+`test/tests/operators/multires.py`.
+
+Examples
+--------
+
+At present, the `STAR` database and the `Chombo` database properly
+implement VisIt's multiresolution support.  `STAR` is an example of
+a multiresolution format with a constant number of domains between
+levels; as such, it takes advantage of the `avtResolutionSelection`
+contract to figure out which resolution should be served up.  `Chombo`
+is an AMR file format; it will read the resolution given by the
+contract and use it for error checking, but otherwise ignores it.
