@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+  <Plugin name="STAR" type="database" label="STAR" version="1.0" enabled="true" mdspecificcode="true" enginespecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      -DSTAR_VISIT
+    </CXXFLAGS>
+    <FilePatterns>
+      *.mrd
+      *.mrm
+    </FilePatterns>
+    <Files components="M">
+      avtSTARFileFormat.C
+      ConfigFileReader.C
+      MultiresFileReader.C
+      MultiresGrid.C
+      MultiresMultifileReader.C
+      ResolutionMap.C
+    </Files>
+    <Files components="E">
+      avtSTARFileFormat.C
+      ConfigFileReader.C
+      MultiresFileReader.C
+      MultiresGrid.C
+      MultiresMultifileReader.C
+      ResolutionMap.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
