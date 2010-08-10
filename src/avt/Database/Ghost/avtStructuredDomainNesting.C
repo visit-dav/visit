@@ -560,7 +560,6 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
     }
 
     return didGhost;
-
 }
 
 
@@ -789,4 +788,356 @@ avtStructuredDomainNesting::GetNestingForDomain(int domain,
         childExts[6*i+2] = rawExts[2] / ratios[2];
         childExts[6*i+5] = rawExts[5] / ratios[2];
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::GetChildrenForLogicalIndex
+//
+//  Purpose:
+//      Returns the children domains for given indeces.
+//
+//  Arguments:
+//      domain      The domain we should get children information for.
+//      ijk         The indeces range.
+//      children    The domain IDs of its children.
+//      childExts   The [min|max][IJK] extents of each child domain (6 per)
+//
+//  Programmer: Eduard Deines
+//  Creation:   Nov, 2008
+//
+// ****************************************************************************
+void
+avtStructuredDomainNesting::GetChildrenForLogicalIndex(int domain, int ijk[3],
+                                                       vector<int> &children,
+                                                       vector<int> &chExts)
+{
+    if (domain < 0 || domain >= domainNesting.size())
+    {
+        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+    }
+
+    if ((domainNesting[domain].logicalExtents[0] > ijk[0]) ||
+        (domainNesting[domain].logicalExtents[3] < ijk[0]))
+    {
+        EXCEPTION2(BadIndexException, domainNesting[domain].logicalExtents[0],
+                   domainNesting[domain].logicalExtents[3]);
+    }
+
+    if ((domainNesting[domain].logicalExtents[1] > ijk[1]) ||
+        (domainNesting[domain].logicalExtents[4] < ijk[1]))
+    {
+        EXCEPTION2(BadIndexException, domainNesting[domain].logicalExtents[1],
+                   domainNesting[domain].logicalExtents[4]);
+    }
+
+    if ((domainNesting[domain].logicalExtents[2] > ijk[2]) ||
+        (domainNesting[domain].logicalExtents[5] < ijk[2]))
+    {
+        EXCEPTION2(BadIndexException, domainNesting[domain].logicalExtents[2],
+                   domainNesting[domain].logicalExtents[5]);
+    }
+
+    bool inside_i, inside_j, inside_k;
+    int child_ext[6];
+    vector<int> ratios;
+
+    for(unsigned int i=0; i<domainNesting[domain].childDomains.size(); i++)
+    {
+        ratios = GetRatiosForLevel(domainNesting[domain].level,
+                                   domainNesting[domain].childDomains[i]);
+        const std::vector<int>& logiExts =
+          domainNesting[domainNesting[domain].childDomains[i]].logicalExtents;
+
+        child_ext[0] = logiExts[0] / ratios[0];
+        child_ext[3] = logiExts[3] / ratios[0];
+        if((ijk[0] < child_ext[0]) || (ijk[0] > child_ext[3]))
+            continue;
+
+        child_ext[1] = logiExts[1] / ratios[1];
+        child_ext[4] = logiExts[4] / ratios[1];
+        if((ijk[1] < child_ext[1]) || (ijk[1] > child_ext[4]))
+            continue;
+
+        child_ext[2] = logiExts[2] / ratios[2];
+        child_ext[5] = logiExts[5] / ratios[2];
+        if((ijk[2] < child_ext[2]) || (ijk[2] > child_ext[5]))
+            continue;
+
+        children.push_back(domainNesting[domain].childDomains[i]);
+        for(int j=0; j<6; j++)
+            chExts.push_back(child_ext[j]);
+    }
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::GetChildrenForLogicalRange
+//
+//  Purpose:
+//      Returns the children domains for given range of indeces (min, max).
+//
+//  Arguments:
+//      domain      The domain we should get children information for.
+//      ijk         The indeces range (xmin, xmax, ymin, ymax, zmin, zmax).
+//      children    The domain IDs of its children (return).
+//      childExts   The [min|max][IJK] extents of each child domain (6 per) (return)
+//
+//  Programmer: Eduard Deines
+//  Creation:   March, 2009
+//
+// ****************************************************************************
+void
+avtStructuredDomainNesting::GetChildrenForLogicalRange(int domain, int ijk[6],
+                                                       vector<int> &children,
+                                                       vector<int> &chExts)
+{
+    if (domain < 0 || domain >= domainNesting.size())
+    {
+      EXCEPTION2(BadIndexException, domain, domainNesting.size());
+    }
+
+    if(domainNesting[domain].childDomains.size() == 0)
+        return;
+
+    int child_ext[6];
+    vector<int> ratios;
+
+    for(unsigned int i=0; i<domainNesting[domain].childDomains.size(); i++)
+    {
+        ratios = GetRatiosForLevel(domainNesting[domain].level,
+                                   domainNesting[domain].childDomains[i]);
+        const std::vector<int>& logiExts =
+          domainNesting[domainNesting[domain].childDomains[i]].logicalExtents;
+
+        child_ext[0] = logiExts[0] / ratios[0];
+        child_ext[3] = logiExts[3] / ratios[0];
+        if((child_ext[3]) < ijk[0] || (child_ext[0] > ijk[1]))
+            continue;
+
+        child_ext[1] = logiExts[1] / ratios[1];
+        child_ext[4] = logiExts[4] / ratios[1];
+        if((child_ext[4] < ijk[2]) || (child_ext[1] > ijk[3]))
+            continue;
+
+        child_ext[2] = logiExts[2] / ratios[2];
+        child_ext[5] = logiExts[5] / ratios[2];
+        if((child_ext[5] < ijk[4]) || (child_ext[2] > ijk[5]))
+            continue;
+
+        children.push_back(domainNesting[domain].childDomains[i]);
+        for(int j=0; j<6; j++)
+            chExts.push_back(child_ext[j]);
+    }
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::GetDomainLevel
+//
+//  Purpose:
+//      Returns the level of the domain.
+//
+//  Arguments:
+//      domain      The domain we should get level information for.
+//
+//  Programmer: Eduard Deines
+//  Creation:   Novemeber, 2008
+//
+// ****************************************************************************
+int avtStructuredDomainNesting::GetDomainLevel(int domain)
+{
+    if (domain < 0 || domain >= domainNesting.size())
+    {
+        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+    }
+
+    return domainNesting[domain].level;
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::GetDomainLogicalExtents
+//
+//  Purpose:
+//      Returns the logical extents of the domain.
+//
+//  Arguments:
+//      domain      The domain we should get logical extents for.
+//
+//  Programmer: Eduard Deines
+//  Creation:   November, 2008
+//
+// ****************************************************************************
+vector<int> avtStructuredDomainNesting::GetDomainLogicalExtents(int domain)
+{
+    if (domain < 0 || domain >= domainNesting.size())
+    {
+        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+    }
+
+    return domainNesting[domain].logicalExtents;
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::GetDomainChildren
+//
+//  Purpose:
+//      Returns the logical extents of the domain.
+//
+//  Arguments:
+//      domain      The domain we should get children for.
+//
+//  Programmer: Eduard Deines
+//  Creation:   March, 2009
+//
+// ****************************************************************************
+vector<int> avtStructuredDomainNesting::GetDomainChildren(int domain)
+{
+    if (domain < 0 || domain >= domainNesting.size())
+    {
+        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+    }
+
+    return domainNesting[domain].childDomains;
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::GetNumberOfChildren
+//
+//  Purpose:
+//      Returns the number of children for domain.
+//
+//  Arguments:
+//      domain      The domain we should get the number of children for.
+//
+//  Programmer: Eduard Deines
+//  Creation:   March, 2009
+//
+// ****************************************************************************
+int avtStructuredDomainNesting::GetNumberOfChildren(int domain)
+{
+    if (domain < 0 || domain >= domainNesting.size())
+    {
+        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+    }
+
+    return domainNesting[domain].childDomains.size();
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::ComputeChildBondingBox
+//
+//  Purpose:
+//      Compute the boundign box consisting of all child domains.
+//
+//  Arguments:
+//      domain      The domain we should get the number of children for.
+//
+//  Programmer: Eduard Deines
+//  Creation:   March, 2009
+//
+// ****************************************************************************
+void avtStructuredDomainNesting::ComputeChildBoundingBox(int domain)
+{
+    if (domain < 0 || domain >= domainNesting.size())
+    {
+        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+    }
+
+    domainNesting[domain].childBoundingBox[0] = -1;
+    domainNesting[domain].childBoundingBox[1] = -1;
+    domainNesting[domain].childBoundingBox[2] = -1;
+    domainNesting[domain].childBoundingBox[3] = -1;
+    domainNesting[domain].childBoundingBox[4] = -1;
+    domainNesting[domain].childBoundingBox[5] = -1;
+
+    if(domainNesting[domain].childDomains.size() != 0)
+    {
+        int imin = domainNesting[domain].logicalExtents[3];
+        int jmin = domainNesting[domain].logicalExtents[4];
+        int kmin = domainNesting[domain].logicalExtents[5];
+        int imax = domainNesting[domain].logicalExtents[0];
+        int jmax = domainNesting[domain].logicalExtents[1];
+        int kmax = domainNesting[domain].logicalExtents[2];
+
+        vector<int> ratios;
+        int ext;
+
+        for(int i=0; i<domainNesting[domain].childDomains.size(); i++)
+        {
+            ratios = GetRatiosForLevel(domainNesting[domain].level,
+                                       domainNesting[domain].childDomains[i]);
+            const std::vector<int>& logiExts =
+              domainNesting[domainNesting[domain].childDomains[i]].logicalExtents;
+
+            ext = logiExts[0] / ratios[0];
+            if(ext < imin)
+                imin = ext;
+
+            ext = logiExts[3] / ratios[0];
+            if(ext > imax)
+                imax = ext;
+
+            ext = logiExts[1] / ratios[1];
+            if(ext < jmin)
+                jmin = ext;
+
+            ext = logiExts[4] / ratios[1];
+            if(ext > jmax)
+                jmax = ext;
+
+            ext = logiExts[2] / ratios[2];
+            if(ext < kmin)
+                kmin = ext;
+
+            ext = logiExts[5] / ratios[2];
+            if(ext > kmax)
+                kmax = ext;
+        }
+
+        domainNesting[domain].childBoundingBox[0] = imin;
+        domainNesting[domain].childBoundingBox[1] = jmin;
+        domainNesting[domain].childBoundingBox[2] = kmin;
+        domainNesting[domain].childBoundingBox[3] = imax;
+        domainNesting[domain].childBoundingBox[4] = jmax;
+        domainNesting[domain].childBoundingBox[5] = kmax;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::InsideChildBoundingBox
+//
+//  Purpose:
+//      Test if the given range of indices is inside (partially) the
+//      bounding box of the children domains.
+//
+//  Arguments:
+//      domain      The domain we should get children information for.
+//      ijk         The indices range (xmin, xmax, ymin, ymax, zmin, zmax).
+//
+//  Programmer: Eduard Deines
+//  Creation:   March, 2009
+//
+// ****************************************************************************
+bool avtStructuredDomainNesting::InsideChildBoundingBox(int domain, int ijk[6])
+{
+    if (domain < 0 || domain >= domainNesting.size())
+    {
+      EXCEPTION2(BadIndexException, domain, domainNesting.size());
+    }
+
+    if(domainNesting[domain].childDomains.size() == 0)
+      return false;
+
+    if((domainNesting[domain].childBoundingBox[3]) < ijk[0] ||
+       (domainNesting[domain].childBoundingBox[0] > ijk[1]))
+      return false;
+
+    if((domainNesting[domain].childBoundingBox[4] < ijk[2]) ||
+       (domainNesting[domain].childBoundingBox[1] > ijk[3]))
+      return false;
+
+    if((domainNesting[domain].childBoundingBox[5] < ijk[4]) ||
+       (domainNesting[domain].childBoundingBox[2] > ijk[5]))
+      return false;
+
+    return true;
 }
