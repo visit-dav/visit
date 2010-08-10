@@ -1214,6 +1214,9 @@ avtChomboFileFormat::InitializeReader(void)
 //    Improve the test for whether or not to create the domain boundaries
 //    object.
 //
+//    Tom Fogal, Thu Aug  5 16:45:30 MDT 2010
+//    Fix incorrect destructor function.
+//
 // ****************************************************************************
 
 void
@@ -1303,7 +1306,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
         }
         rdb->CalculateBoundaries();
         void_ref_ptr vrdb = void_ref_ptr(rdb,
-                                       avtStructuredDomainBoundaries::Destruct);
+                                       avtRectilinearDomainBoundaries::Destruct);
         cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                             timestep, -1, vrdb);
         visitTimer->StopTimer(t2, "Chombo reader doing rect domain boundaries");
