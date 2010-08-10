@@ -56,6 +56,8 @@ class     avtMaterial;
 class     avtMixedVariable;
 class     avtSpecies;
 class     avtOriginatingSource;
+class     avtDomainBoundaries;
+class     avtDomainNesting;
 
 // ****************************************************************************
 //  Class: avtMetaData
@@ -115,6 +117,9 @@ class     avtOriginatingSource;
 //    Hank Childs, Tue Jan 27 11:11:30 PST 2009
 //    Added code to get histogram specifications and identifiers.
 //
+//    Eduard Deines / Hank Childs, Thu Aug  5 18:18:39 MDT 2010
+//    Add calls to grab domain nesting and boundary information.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMetaData
@@ -134,6 +139,9 @@ class PIPELINE_API avtMetaData
     avtMixedVariable            *GetMixedVar(const char *,int, 
                                              int = -1,
                                              bool = false);
+
+    avtDomainNesting            *GetDomainNesting(void);
+    avtDomainBoundaries         *GetDomainBoundaries(void);
 
   protected:
     avtOriginatingSource        *source;
