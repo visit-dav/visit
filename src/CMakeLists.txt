@@ -146,6 +146,9 @@
 #    For winodws, only override cmake's default CMAKE_INSTALL_PREFIX if it
 #    wasn't specified on the command line.
 #
+#    Tom Fogal, Thu Aug  5 18:28:17 MDT 2010
+#    Add missing include/visit directory to default include path.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1119,6 +1122,7 @@ ENDFUNCTION(ADD_PARALLEL_LIBRARY)
 # Set up easy to use includes for the common directory
 SET(VISIT_COMMON_INCLUDES
     ${VISIT_BINARY_DIR}/include
+    ${VISIT_BINARY_DIR}/include/visit
     ${VISIT_SOURCE_DIR}/include
     ${VISIT_SOURCE_DIR}/common/Exceptions/Database
     ${VISIT_SOURCE_DIR}/common/Exceptions/Pipeline
