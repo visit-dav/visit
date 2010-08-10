@@ -1023,6 +1023,21 @@ int avtStructuredDomainNesting::GetNumberOfChildren(int domain)
 }
 
 // ****************************************************************************
+//  Method: avtStructuredDomainNesting::GetNumberOfDomains
+//
+//  Purpose:
+//      Returns the total number of domains available.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 6, 2010
+//
+// ****************************************************************************
+size_t avtStructuredDomainNesting::GetNumberOfDomains() const
+{
+    return this->domainNesting.size();
+}
+
+// ****************************************************************************
 //  Method: avtStructuredDomainNesting::ComputeChildBondingBox
 //
 //  Purpose:
