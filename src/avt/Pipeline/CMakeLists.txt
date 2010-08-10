@@ -39,6 +39,9 @@
 #   Hank Childs, Thu Jul 22 09:55:03 PDT 2010
 #   Added avtMultiWindowSaver.
 #
+#   Tom Fogal,  Tue Aug 10 12:55:19 MDT 2010
+#   Added include directory.
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -210,6 +213,7 @@ ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
 ${VISIT_SOURCE_DIR}/avt/Database/Database
+${VISIT_SOURCE_DIR}/avt/Database/Ghost
 ${VISIT_SOURCE_DIR}/avt/Math
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
