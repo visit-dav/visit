@@ -48,6 +48,8 @@
 #include <vtkDataSet.h>
 
 #include <avtCommonDataFunctions.h>
+#include <avtDomainBoundaries.h>
+#include <avtDomainNesting.h>
 #include <avtFacelist.h>
 #include <avtHistogramSpecification.h>
 #include <avtIdentifierSelection.h>
@@ -57,7 +59,6 @@
 #include <avtTypes.h>
 
 #include <ImproperUseException.h>
-
 
 // ****************************************************************************
 //  Method: avtMetaData constructor
@@ -90,7 +91,6 @@ avtMetaData::avtMetaData(avtOriginatingSource *s)
 
 avtMetaData::~avtMetaData()
 {
-    ;
 }
 
 
@@ -102,7 +102,7 @@ avtMetaData::~avtMetaData()
 //      returned, even if it has to be calculated.
 //
 //  Returns:    An interval tree of the data extents.
-//     
+//
 //  Programmer: Hank Childs
 //  Creation:   August 7, 2000
 //
@@ -522,3 +522,74 @@ avtMetaData::GetMixedVar(const char *varname,
     return (avtMixedVariable *) *(list.list[0]);
 }
 
+// ****************************************************************************
+//  Method: avtMetaData::GetDomainNesting
+//
+//  Purpose:
+//      Gets the domain nesting information.  This is used for AMR patches.
+//
+//  Returns:    The domain nesting object
+//
+//  Programmer: Hank Childs
+//  Creation:   August 5, 2010
+//
+// ****************************************************************************
+
+avtDomainNesting *
+avtMetaData::GetDomainNesting(void)
+{
+    VoidRefList list;
+    avtContract_p spec = GetContract();
+    source->GetMeshAuxiliaryData(AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                 (void*) "any_mesh", spec, list);
+
+    if (list.nList == 0)
+    {
+        return NULL;
+    }
+    if (list.nList != 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    avtDomainNesting *dni = (avtDomainNesting *) (*(list.list[0]));
+
+    return dni;
+}
+
+
+// ****************************************************************************
+//  Method: avtMetaData::GetDomainBoundaries
+//
+//  Purpose:
+//      Gets the domain boundary information.
+//
+//  Returns:    The domain boundary object
+//
+//  Programmer: Hank Childs
+//  Creation:   August 5, 2010
+//
+// ****************************************************************************
+
+avtDomainBoundaries *
+avtMetaData::GetDomainBoundaries(void)
+{
+    VoidRefList list;
+    avtContract_p spec = GetContract();
+
+    source->GetMeshAuxiliaryData(AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                                 (void*) "any_mesh", spec, list);
+
+    if (list.nList == 0)
+    {
+        return NULL;
+    }
+    if (list.nList != 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    avtDomainBoundaries *dbi = (avtDomainBoundaries *) *(list.list[0]);
+
+    return dbi;
+}
