@@ -531,6 +531,11 @@ class PIPELINE_API avtDataAttributes
 
     void                     DebugDump(avtWebpage *);
 
+    void                     SetLevelsOfDetail(size_t n)
+                               { levelsOfDetail = n; }
+    size_t                   GetLevelsOfDetail() const
+                               { return levelsOfDetail; }
+
   protected:
     int                      spatialDimension;
     int                      topologicalDimension;
@@ -566,6 +571,7 @@ class PIPELINE_API avtDataAttributes
     float                    unitCellOrigin[3];
     bool                     rectilinearGridHasTransform;
     double                   rectilinearGridTransform[16];
+    size_t                   levelsOfDetail;
 
     avtExtents              *trueSpatial;
     avtExtents              *cumulativeTrueSpatial;
@@ -654,8 +660,4 @@ class PIPELINE_API avtDataAttributes
                                                             { return *this; };
 
 };
-
-
 #endif
-
-
