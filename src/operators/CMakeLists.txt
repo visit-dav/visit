@@ -36,6 +36,10 @@
 #
 # Modifications:
 #
+#   Tom Fogal, Wed Aug  4 18:54:25 MDT 2010
+#   Add multires operator.
+#
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
@@ -66,6 +70,7 @@ Isosurface
 Isovolume
 Lineout
 Merge
+MultiresControl
 OnionPeel
 PDF
 PersistentParticles
