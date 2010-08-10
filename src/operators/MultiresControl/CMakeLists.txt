@@ -78,7 +78,7 @@ ${QT_QTCORE_INCLUDE_DIR}
 ${QT_QTGUI_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS} 
 ${PYTHON_INCLUDE_PATH} 
-${VISIT_INCLUDE_DIR}/visitpy/visitpy 
+${VISIT_INCLUDE_DIR}/visitpy/visitpy ${VISIT_SOURCE_DIR}/avt/Database/Ghost 
 )
 
 
