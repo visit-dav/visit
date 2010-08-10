@@ -75,6 +75,7 @@ public class ConstructDDFAttributes extends AttributeSubject
     public final static int STATISTICALOPERATOR_INTERQUARTILERANGE = 7;
     public final static int STATISTICALOPERATOR_SUM = 8;
     public final static int STATISTICALOPERATOR_COUNT = 9;
+    public final static int STATISTICALOPERATOR_RMS = 10;
 
 
     public ConstructDDFAttributes()
@@ -408,6 +409,8 @@ public class ConstructDDFAttributes extends AttributeSubject
             str = str + "STATISTICALOPERATOR_SUM";
         if(statisticalOperator == STATISTICALOPERATOR_COUNT)
             str = str + "STATISTICALOPERATOR_COUNT";
+        if(statisticalOperator == STATISTICALOPERATOR_RMS)
+            str = str + "STATISTICALOPERATOR_RMS";
         str = str + "\n";
         str = str + doubleToString("percentile", percentile, indent) + "\n";
         str = str + doubleToString("undefinedValue", undefinedValue, indent) + "\n";

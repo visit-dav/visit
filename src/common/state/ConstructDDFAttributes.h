@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ConstructDDFAttributes
 //
@@ -76,16 +77,27 @@ public:
         Median,
         InterquartileRange,
         Sum,
-        Count
+        Count,
+        RMS
     };
 
+    // These constructors are for objects of this class
     ConstructDDFAttributes();
     ConstructDDFAttributes(const ConstructDDFAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ConstructDDFAttributes(private_tmfs_t tmfs);
+    ConstructDDFAttributes(const ConstructDDFAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ConstructDDFAttributes();
 
     virtual ConstructDDFAttributes& operator = (const ConstructDDFAttributes &obj);
     virtual bool operator == (const ConstructDDFAttributes &obj) const;
     virtual bool operator != (const ConstructDDFAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ConstructDDFAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -172,7 +184,8 @@ public:
         ID_overTime,
         ID_timeStart,
         ID_timeEnd,
-        ID_timeStride
+        ID_timeStride,
+        ID__LAST
     };
 
 private:
@@ -192,6 +205,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CONSTRUCTDDFATTRIBUTES_TMFS "ss*d*siddii*biii"
 
 #endif
