@@ -44,7 +44,9 @@ using std::string;
 // visit includes
 #include <avtSTARFileFormat.h>
 #include <avtDatabaseMetaData.h>
+#include <avtMeshMetaData.h>
 #include <DBOptionsAttributes.h>
+#include <DebugStream.h>
 #include <Expression.h>
 #include <InvalidVariableException.h>
 
@@ -271,6 +273,11 @@ PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
                       blockOrigin,
                       numDims,
                       topologyDimension);
+
+    // assuming there is only one mesh...
+    avtMeshMetaData& mmd = md->GetMeshes(0);
+    mmd.LODs = mDataManager->numResolutions() - 1;
+    debug4 << "Telling VisIt we have " << mmd.LODs << " levels of detail.\n";
 
     for(int i=0; i<mDataManager->numVariables(); i++) {
         string varname = mDataManager->variableNameAt(i);
