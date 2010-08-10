@@ -95,6 +95,9 @@ class vtkDataArray;
 //    Hank Childs, Mon May 12 08:15:13 PDT 2008
 //    Changed signature for GetSelectedDescdendants.
 //
+//    Tom Fogal, Fri Aug  6 16:15:11 MDT 2010
+//    Add method to get the total number of domains we know about.
+//
 // ****************************************************************************
 
 typedef struct {
@@ -151,7 +154,7 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
         int           GetDomainLevel(int domain);
         vector<int>   GetDomainLogicalExtents(int domain);
         int           GetNumberOfChildren(int domain);
-
+        size_t        GetNumberOfDomains() const;
 
     protected:
 
