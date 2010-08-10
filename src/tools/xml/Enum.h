@@ -95,7 +95,7 @@ class EnumType
     }
     const QString& GetValue(size_t index)
     {
-        if (index < 0  ||  index >= values.size())
+        if (index >= values.size())
             throw QString("tried to access out-of-bounds enum type %1").arg(index);
         return values[index];
     }
