@@ -47,6 +47,7 @@
 #include <cstring>
 #include <limits>
 #include <algorithm>
+#include <sstream>
 
 #include <vtkFieldData.h>
 #include <vtkCellData.h>
@@ -65,6 +66,7 @@
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
+#include <avtResolutionSelection.h>
 #include <avtStructuredDomainBoundaries.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
@@ -75,6 +77,7 @@
 #include <FileFunctions.h>
 
 #include <BadDomainException.h>
+#include <ImproperUseException.h>
 #include <DebugStream.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
@@ -1480,6 +1483,9 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Gunther H. Weber, Tue Sep 15 11:26:12 PDT 2009
 //    Added support for 3D mappings for 2D files.
 //
+//    Tom Fogal, Thu Aug  5 20:11:04 MDT 2010
+//    Add support for resolution selection contract.
+//
 // ****************************************************************************
 
 void
@@ -1533,6 +1539,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->containsExteriorBoundaryGhosts = allowedToUseGhosts && fileContainsGhosts;
     std::vector<int> groupIds(totalPatches);
     std::vector<string> blockPieceNames(totalPatches);
+    int levels_of_detail = 0;
     for (i = 0 ; i < totalPatches ; i++)
     {
         char tmpName[128];
@@ -1541,8 +1548,11 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         groupIds[i] = level;
         sprintf(tmpName, "level%d,patch%d", level, local_patch);
         blockPieceNames[i] = tmpName;
+        levels_of_detail = std::max(levels_of_detail, level);
     }
     mesh->blockNames = blockPieceNames;
+    mesh->LODs = levels_of_detail;
+    this->resolution = levels_of_detail; // current acceptable res = max res.
     md->Add(mesh);
     md->AddGroupInformation(num_levels, totalPatches, groupIds);
 
@@ -2551,6 +2561,9 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Gunther H. Weber, Wed Jun 10 18:28:24 PDT 2009
 //    Added ability to handle particle data in Chombo files.
 //
+//    Tom Fogal, Fri Aug  6 16:29:16 MDT 2010
+//    Add support for resolution selection contract.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2579,6 +2592,13 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         if (level >= num_levels)
         {
             EXCEPTION1(InvalidVariableException, varname);
+        }
+        if (level > this->resolution)
+        {
+            std::ostringstream err;
+            err << "Level '" << level << "' exceeds current resolution, '"
+                << this->resolution << "'.";
+            EXCEPTION1(ImproperUseException, err.str());
         }
 
         if (local_patch >= patchesPerLevel[level])
@@ -3056,5 +3076,30 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
     return (void*) mat;
 }
 
-
-
+// ****************************************************************************
+//  Method: avtChomboFileFormat::RegisterDataSelections
+//
+//  Purpose:
+//      Tries to read requests for specific resolutions.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 5, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void avtChomboFileFormat::RegisterDataSelections(
+       const std::vector<avtDataSelection_p>& sels,
+       std::vector<bool>* applied)
+{
+    for(size_t i=0; i < sels.size(); ++i)
+    {
+        if(strcmp(sels[i]->GetType(), "avtResolutionSelection") == 0)
+        {
+            const avtResolutionSelection* sel =
+                static_cast<const avtResolutionSelection*>(*sels[i]);
+            this->resolution = sel->resolution();
+            (*applied)[i] = true;
+        }
+    }
+}
