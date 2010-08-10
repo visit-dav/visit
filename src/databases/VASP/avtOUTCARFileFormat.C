@@ -585,6 +585,9 @@ avtOUTCARFileFormat::GetNTimesteps(void)
 //    Jeremy Meredith, Mon May 10 18:01:23 EDT 2010
 //    Don't assume short line lengths.
 //
+//    Jeremy Meredith, Tue Aug 10 12:09:19 EDT 2010
+//    Check string length so we don't compare garbage.  Avoid UMR.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAllMetaData()
@@ -748,7 +751,8 @@ avtOUTCARFileFormat::ReadAllMetaData()
             element_names.push_back(element);
             element_types.push_back(number);
         }
-        else if (!strncmp(line+58,"NIONS =",7))
+        else if (strlen(line) > 65 &&
+                 !strncmp(line+58,"NIONS =",7))
         {
             istringstream sin(line+65);
             string arg1;

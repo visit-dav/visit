@@ -447,12 +447,11 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
     }
     
     //
-    // 
+    // ni,nj,nk are the number of bins in the i,j,k directions
     //
-
-    // Why the 3+ here?
+    // Why the "3 + ..." here?
     // (a) if we weren't doing periodic atom checks, we could
-    //     make do with 1+ -- that one we need because there
+    //     make do with 1+ -- that "1" we always need because there
     //     will be one atom at maxx,maxy,maxz which will go in
     //     the final cube.  easier than clamping or fuzz factors.
     // (b) for periodic checks, we know they must be within
@@ -493,8 +492,8 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
     // probably wait until I see evidence of problems before changing.
     //
     typedef pair<int,int> atomimage;
-    typedef vector<atomimage> intvec;
-    intvec *atomgrid = new intvec[ni*nj*nk];
+    typedef vector<atomimage> atomvec;
+    atomvec *atomgrid = new atomvec[ni*nj*nk];
 
     map<atomimage, int> imageMap;
 
@@ -545,7 +544,8 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
                         // from all 26 non-native images.  However, we
                         // don't store any which lie any significant
                         // distance outside the original bounding box,
-                        // so the only 
+                        // so the max cost should be one extra bin's
+                        // worth of atoms.
                         int outpt = outPts->InsertNextPoint(pt);
                         outPD->CopyData(inPD, a, outpt);
                         imageMap[atomimage(image,a)] = outpt;
