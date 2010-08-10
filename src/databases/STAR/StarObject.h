@@ -52,7 +52,9 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include <execinfo.h>  // for backtrace and backtrace_symbols
+#ifdef _GNU_SOURCE
+# include <execinfo.h>  // for backtrace and backtrace_symbols
+#endif
 
 // C++ includes
 #include <typeinfo>
@@ -681,6 +683,7 @@ static bool fileExists(const char* filename)
 
 static void printStackTrace()
 {
+#ifdef _GNU_SOURCE
     size_t sz;
     void *bt[20];
     char **strings;
@@ -723,6 +726,7 @@ static void printStackTrace()
     fflush(fp);
     fclose(fp);
     remove(tmpfilename);
+#endif
 }
 
 /* ========================================================================= */
