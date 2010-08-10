@@ -53,6 +53,9 @@
 #   Tom Fogal, Mon Jul 20 21:10:02 MDT 2009
 #   Allow PNGs to have tabs.
 #
+#   Tom Fogal, Tue Aug 10 11:34:35 MDT 2010
+#   Allow XPMs to have tabs, they might be autogenned.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -90,6 +93,9 @@ while read fline; do
             continue
             ;;
         *png)
+            continue
+            ;;
+        *xpm)
             continue
             ;;
     esac
