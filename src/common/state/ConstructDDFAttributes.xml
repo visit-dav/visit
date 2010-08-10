@@ -15,6 +15,7 @@
       InterquartileRange
       Sum
       Count
+      RMS
     </Enum>
     <Field name="ddfName" label="ddfName" type="string">
     </Field>

@@ -61,6 +61,7 @@
 #include <avtR2Fstddev.h>
 #include <avtR2Fsum.h>
 #include <avtR2Fvariance.h>
+#include <avtR2Frms.h>
 #include <avtUniformBinningScheme.h>
 
 #include <snprintf.h>
@@ -141,6 +142,9 @@ avtDDFConstructor::~avtDDFConstructor()
 //
 //    Sean Ahern, Thu Jan 10 16:01:06 EST 2008
 //    Added a "count" statistical operator.
+//
+//    Cyrus Harrison, Tue Aug 10 10:48:17 PDT 2010
+//    Added a "rms" operator.
 //
 // ****************************************************************************
 
@@ -260,6 +264,9 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
         break;
       case ConstructDDFAttributes::Variance:
         R2Foperator = new avtR2Fvariance(nBins, atts->GetUndefinedValue());
+        break;
+      case ConstructDDFAttributes::RMS:
+        R2Foperator = new avtR2Frms(nBins, atts->GetUndefinedValue());
         break;
       default:
         // Caught in logic below

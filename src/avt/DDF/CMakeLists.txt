@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#  Cyrus Harrison, Tue Aug 10 10:39:08 PDT 2010
+#   Added rms operator.
 #
 #****************************************************************************/
 
@@ -48,6 +50,7 @@ avtR2Fcount.C
 avtR2Fmaximum.C
 avtR2Fminimum.C
 avtR2Foperator.C
+avtR2Frms.C
 avtR2Fstddev.C
 avtR2Fsum.C
 avtR2Fvariance.C

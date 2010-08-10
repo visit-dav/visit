@@ -36,30 +36,52 @@
 *
 *****************************************************************************/
 
-#ifndef PY_CONSTRUCTDDFATTRIBUTES_H
-#define PY_CONSTRUCTDDFATTRIBUTES_H
-#include <Python.h>
-#include <ConstructDDFAttributes.h>
-#include <visitpy_exports.h>
+// ************************************************************************* //
+//                                 avtR2Frms.h                               //
+// ************************************************************************* //
 
+#ifndef AVT_R2F_RMS_H
+#define AVT_R2F_RMS_H
+
+#include <ddf_exports.h>
+#include <avtR2Foperator.h>
+
+#include <vector>
+#include <string>
+
+
+// ****************************************************************************
+//  Class: avtR2Frms
 //
-// Functions exposed to the VisIt module.
+//  Purpose:
+//      Turns a derived data relation into a derived data function via
+//      an "rms" calculation.
 //
-#define CONSTRUCTDDFATTRIBUTES_NMETH 28
-void VISITPY_API           PyConstructDDFAttributes_StartUp(ConstructDDFAttributes *subj, void *data);
-void VISITPY_API           PyConstructDDFAttributes_CloseDown();
-VISITPY_API PyMethodDef *  PyConstructDDFAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyConstructDDFAttributes_Check(PyObject *obj);
-VISITPY_API ConstructDDFAttributes *  PyConstructDDFAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *     PyConstructDDFAttributes_New();
-VISITPY_API PyObject *     PyConstructDDFAttributes_Wrap(const ConstructDDFAttributes *attr);
-void VISITPY_API           PyConstructDDFAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyConstructDDFAttributes_SetDefaults(const ConstructDDFAttributes *atts);
-std::string VISITPY_API    PyConstructDDFAttributes_GetLogString();
-std::string VISITPY_API    PyConstructDDFAttributes_ToString(const ConstructDDFAttributes *, const char *);
-VISITPY_API PyObject *     PyConstructDDFAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyConstructDDFAttributes_setattr(PyObject *self, char *name, PyObject *args);
-VISITPY_API extern PyMethodDef PyConstructDDFAttributes_methods[CONSTRUCTDDFATTRIBUTES_NMETH];
+//      rms = sqrt((x0^2 + x1^2 + x2^2 + ... + xN^2)/N)
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Tue Aug 10 10:34:46 PDT 2010
+//
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class AVTDDF_API avtR2Frms : public avtR2Foperator
+{
+  public:
+                           avtR2Frms(int, double);
+    virtual               ~avtR2Frms();
+
+    virtual float         *FinalizePass(int);
+    virtual void           AddData(int, float);
+
+  protected:
+    double                *running_total;
+    int                   *count;
+};
+
 
 #endif
+
 
