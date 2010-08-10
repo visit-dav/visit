@@ -778,6 +778,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Jeremy Meredith, Tue Jun  2 16:25:01 EDT 2009
 //    Added support for unit cell origin (previously assumed to be 0,0,0);
 //
+//    Tom Fogal, Fri Aug  6 16:53:50 MDT 2010
+//    Set level of detail info from the mesh meta data.
+//
 // ****************************************************************************
 
 void
@@ -826,6 +829,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         vector<bool> tmp = selectionsApplied;
         atts.SetSelectionsApplied(tmp);
         validity.SetDisjointElements(mmd->disjointElements);
+        atts.SetLevelsOfDetail(mmd->LODs);
 
         //
         // Note that we are using the spatial extents as both the spatial 
