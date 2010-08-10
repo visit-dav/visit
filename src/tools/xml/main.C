@@ -45,8 +45,14 @@
 //    Brad Whitlock, Thu May  8 12:05:45 PDT 2008
 //    Qt 4. Use QTextStream.
 //
+//    Tom Fogal, Wed Aug  4 10:50:37 MDT 2010
+//    Fix argument parsing.
+//
 // ****************************************************************************
 
+#include <iterator>
+#include <string>
+#include <vector>
 #include "XMLParser.h"
 
 // Prototypes
@@ -471,19 +477,26 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    std::vector<std::string> files;
+    std::back_insert_iterator<std::vector<std::string> > fi(files);
     for (int f = 1 ; f < argc ; f++)
     {
-        if (!QFile(argv[f]).exists())
+        if(QFile(argv[f]).exists())
         {
-            cErr << "File '"<<argv[1]<<"' doesn't exist!\n";
-            exit(1);
+            *fi = std::string(argv[f]);
+        }
+        else if(argv[f][0] != '-') // don't warn for arguments.
+        {
+            cErr << "File '" << argv[1] << "' doesn't exist!\n";
         }
     }
 
-    for (int f = 1 ; f < argc ; f++)
+    for(std::vector<std::string>::const_iterator f = files.begin();
+        f != files.end(); ++f)
     {
-        ProcessFile(argv[f]);
+        ProcessFile(QString::fromStdString(*f));
     }
+    files.clear();
 
     return 0;
 }
