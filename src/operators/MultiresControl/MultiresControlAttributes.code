@@ -1,0 +1,30 @@
+Target: xml2window
+Function: resolutionLevelChanged
+Declaration: void QvisMultiresControlWindow::resolutionLevelChanged(int val);
+Definition:
+void QvisMultiresControlWindow::resolutionLevelChanged(int val)
+{
+    if(val != atts->GetResolutionLevel())
+    {
+        atts->SetResolution(val);
+        QString sval;
+        resolution->setText(sval.setNum(val));
+
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+Function: resolutionProcessText
+Declaration: void QvisMultiresControlWindow::resolutionProcessText();
+Definition:
+void QvisMultiresControlWindow::resolutionProcessText()
+{
+    GetCurrentValues(MultiresControlAttributes::ID_resolution);
+
+    int val = resolution->text().toInt();
+    atts->SetResolution(val);
+
+    Apply();
+}
