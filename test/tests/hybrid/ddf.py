@@ -56,4 +56,18 @@ DefineScalarExpression("e3", "u - apply_ddf(curvmesh2d, ddf3)")
 ChangeActivePlotsVar("e3")
 Test("ddf_03")
 
+
+ChangeActivePlotsVar("u")
+t.ddfName = "ddf4"
+t.varnames = ("u", "v")
+t.ranges = (-1, 1, -1, 1)
+t.numSamples = (25, 25)
+t.codomainName = "u"
+t.statisticalOperator = t.RMS
+ConstructDDF(t)
+
+DefineScalarExpression("e4", "apply_ddf(curvmesh2d, ddf4)")
+ChangeActivePlotsVar("e4")
+Test("ddf_04")
+
 Exit()
