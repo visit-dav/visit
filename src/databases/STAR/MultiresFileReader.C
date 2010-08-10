@@ -81,7 +81,7 @@ MultiresFileReader::MultiresFileReader(const char* filename)
     DEBUG("file version=%f", mFileVersion);
     DEBUG("numResolutions=%d", mNumResolutions);
     DEBUG("numErrorDataSets=%d", mNumErrorDataSets);
-    DEBUG("gridFilename=%s", mGridFilename.c_str());
+    DEBUG("gridFilename=%s", gridFilename().c_str());
     DEBUG("dataFilename=%s", mDataFilename.c_str());
     DEBUG("variablename=%s", mVariableName.c_str());
     DEBUG("headersize=%d", mHeaderSize);
@@ -105,7 +105,7 @@ void MultiresFileReader::parseFile(const char* filename)
     FILE* infile = fopen(filename, "rb");
 
     if(infile == NULL) {
-        error("Unable to open file '%s' for reading", filename);
+        ERROR("Unable to open file '%s' for reading", filename);
         return;
     }
 
@@ -168,14 +168,44 @@ void MultiresFileReader::parseFile(const char* filename)
         }
 
         for(int i=0; i<mNumErrorDataSets; i++) {
-            error("Error data not supported yet");
+            ERROR("Error data not supported yet");
         }
 
         fclose(infile);
     }
     catch(IOerror& e) {
-        error("I/O Error.  Something bad will probably happen.\n");
+        ERROR("I/O Error.  Something bad will probably happen.\n");
     }
+}
+
+/* ========================================================================= */
+/**
+ *      Returns the full path to the grid filename.  If the filename
+ *      in the metadata is a relative name, prepend the directory
+ *      path of this .mrd file.  If the gridfilename is absolute,
+ *      simply return it.
+ **/
+
+string MultiresFileReader::gridFilename() const 
+{
+    string gridfile = "error in MultiresFileReader::gridFilename()";
+
+    if(mGridFilename[0] == '/') {           // absolute path name
+        gridfile = mGridFilename;
+    }
+    else {
+        vector<string> pathAndFile = splitPathName(mFilename);
+        REQUIRE(pathAndFile.size()>=2, "internal error, fullpath '%s' "
+                "doesn't split into separate path and filename, i'm confused",
+                mFilename.c_str());
+
+        string path = pathAndFile[0];
+        string file = pathAndFile[1];
+
+        gridfile = path + "/" + mGridFilename;
+    }
+
+    return gridfile;
 }
 
 /* ========================================================================= */
@@ -522,7 +552,7 @@ void MultiresFileReader::loadDataFromFile()
     FILE* infile = fopen(mDataFilename.c_str(), "rb");
 
     if(infile == NULL) {
-        error("Unable to open file '%s' for reading", mDataFilename.c_str());
+        ERROR("Unable to open file '%s' for reading", mDataFilename.c_str());
         return;
     }
 
@@ -569,7 +599,7 @@ float MultiresFileReader::parseVersionNumber(const char* line)
         version = toFloat(tokens[3]);
     }
     else {
-        error("Unable to get version from line '%s'\n", line);
+        ERROR("Unable to get version from line '%s'\n", line);
     }
 
     return version;
@@ -597,7 +627,7 @@ int MultiresFileReader::parseHeaderSize(const char* line)
         headersize = toInt(tokens[5]);
     }
     else {
-        error("Unable to get headersize from line '%s'\n", line);
+        ERROR("Unable to get headersize from line '%s'\n", line);
     }
 
     return headersize;
@@ -624,7 +654,7 @@ int MultiresFileReader::parseNumResolutions(const char* line)
         numResolutions = toInt(tokens[1]);
     }
     else {
-        error("Unable to get numResolutions from line '%s'\n", line);
+        ERROR("Unable to get numResolutions from line '%s'\n", line);
     }
 
     return numResolutions;
@@ -651,7 +681,7 @@ int MultiresFileReader::parseNumErrorDataSets(const char* line)
         numErrorDataSets = toInt(tokens[1]);
     }
     else {
-        error("Unable to get numResolutions from line '%s'\n", line);
+        ERROR("Unable to get numResolutions from line '%s'\n", line);
     }
 
     return numErrorDataSets;
@@ -688,7 +718,7 @@ string MultiresFileReader::parseDataFilename(const char* line)
         filename = tokens[1];
     }
     else {
-        error("Unable to get data filename from line '%s'\n", line);
+        ERROR("Unable to get data filename from line '%s'\n", line);
     }
 
     return filename;
@@ -720,7 +750,7 @@ string MultiresFileReader::parseGridFilename(const char* line)
         filename = tokens[1];
     }
     else {
-        error("Unable to get grid filename from line '%s'\n", line);
+        ERROR("Unable to get grid filename from line '%s'\n", line);
     }
 
     return filename;
@@ -749,13 +779,13 @@ string MultiresFileReader::parseDataType(const char* line)
         datatype = tokens[1];
 
         if(datatype != "float") {
-            error("Invalid datatype on line '%s'\n", line);
+            ERROR("Invalid datatype on line '%s'\n", line);
 
             datatype = "float";
         }
     }
     else {
-        error("Unable to get datatype from line'%s'\n", line);
+        ERROR("Unable to get datatype from line'%s'\n", line);
     }
 
     return datatype;
@@ -783,7 +813,7 @@ string MultiresFileReader::parseDataRank(const char* line)
         dataRank = tokens[1];
     }
     else {
-        error("Unable to get datarank from line'%s'\n", line);
+        ERROR("Unable to get datarank from line'%s'\n", line);
     }
 
     return dataRank;
@@ -809,7 +839,7 @@ string MultiresFileReader::parseVariableName(const char* line)
         varName = tokens[1];
     }
     else {
-        error("Unable to get datarank from line'%s'\n", line);
+        ERROR("Unable to get datarank from line'%s'\n", line);
     }
 
     return varName;
@@ -840,7 +870,7 @@ float MultiresFileReader::parseMinVal(const char* line)
         mHasMinVal = true;
     }
     else {
-        error("Unable to get min value from line '%s'\n", line);
+        ERROR("Unable to get min value from line '%s'\n", line);
     }
 
     return min;
@@ -871,7 +901,7 @@ float MultiresFileReader::parseMaxVal(const char* line)
         mHasMaxVal = true;
     }
     else {
-        error("Unable to get max value from line '%s'\n", line);
+        ERROR("Unable to get max value from line '%s'\n", line);
     }
 
     return max;
@@ -907,7 +937,7 @@ vector<int> MultiresFileReader::parseNumXchunks(const char* line)
             for(int i=0; i<numResolutions(); i++) 
                 numXchunks[i] = toInt(tokens[0]);
         else 
-            error("Unable to get chunk info from line '%s'\n", line);
+            ERROR("Unable to get chunk info from line '%s'\n", line);
     }
 
     // if each resolution gets its own chunking scheme
@@ -922,7 +952,7 @@ vector<int> MultiresFileReader::parseNumXchunks(const char* line)
         }
     }
     else {
-        error("In line '%s', number of chunking specifications, '%d', "
+        ERROR("In line '%s', number of chunking specifications, '%d', "
               "must match number of resolutions, '%d'\n", line,
               (int)chunkSpecs.size()-1, numResolutions());
     }
@@ -951,7 +981,7 @@ vector<int> MultiresFileReader::parseNumYchunks(const char* line)
             for(int i=0; i<numResolutions(); i++) 
                 numYchunks[i] = toInt(tokens[1]);
         else 
-            error("Unable to get chunk info from line '%s'\n", line);
+            ERROR("Unable to get chunk info from line '%s'\n", line);
     }
 
     // if each resolution gets its own chunking scheme
@@ -966,7 +996,7 @@ vector<int> MultiresFileReader::parseNumYchunks(const char* line)
         }
     }
     else {
-        error("In line '%s', number of chunking specifications, '%d', "
+        ERROR("In line '%s', number of chunking specifications, '%d', "
               "must match number of resolutions, '%d'\n", line,
               (int)chunkSpecs.size()-1, numResolutions());
     }
@@ -995,7 +1025,7 @@ vector<int> MultiresFileReader::parseNumZchunks(const char* line)
             for(int i=0; i<numResolutions(); i++) 
                 numZchunks[i] = toInt(tokens[2]);
         else 
-            error("Unable to get chunk info from line '%s'\n", line);
+            ERROR("Unable to get chunk info from line '%s'\n", line);
     }
 
     // if each resolution gets its own chunking scheme
@@ -1010,7 +1040,7 @@ vector<int> MultiresFileReader::parseNumZchunks(const char* line)
         }
     }
     else {
-        error("In line '%s', number of chunking specifications, '%d', "
+        ERROR("In line '%s', number of chunking specifications, '%d', "
               "must match number of resolutions, '%d'\n", line,
               (int)chunkSpecs.size()-1, numResolutions());
     }
@@ -1057,7 +1087,7 @@ void MultiresFileReader::parseResolutionMetadata(const char* line,
         offset      = toLong(tokens[4]);
     }
     else {
-       error("Unable to get resolution from line '%s'\n", line);
+       ERROR("Unable to get resolution from line '%s'\n", line);
     }
 }
 
@@ -1068,12 +1098,12 @@ void MultiresFileReader::checkFilePtr(FILE* ptr)
     TRACE(ptr);
 
     if(feof(ptr)) {
-        error("Unexpected EOF\n");
+        ERROR("Unexpected EOF\n");
         throw IOerror();
     }
 
     if(ferror(ptr)) {
-        error("Unexpected I/O error");
+        ERROR("Unexpected I/O error");
         throw IOerror();
     }
 }

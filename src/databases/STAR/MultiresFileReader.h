@@ -96,7 +96,7 @@ public:  // api implemented from MetadataAPI
     virtual float           fileVersion     () const {return mFileVersion;}
     virtual int             numFiles        () const {return 1;}
     virtual int             numResolutions  () const {return mNumResolutions;}
-    virtual string          gridFilename    () const {return mGridFilename;}
+    virtual string          gridFilename    () const;
     virtual vector<int>     timeStepList    () const;
 
     // data rank: scalars, vectors, or tensors

@@ -121,10 +121,16 @@ int MultiresMultifileReader::numResolutions() const
 
 /*=========================================================================*/
 /**
- *      Returns the grid filename as specified
- *      in the metadata file.  It is assumed that the
- *      grid filename is in the same directory as the
- *      metadata file.
+ *      Returns the canonical grid filename as specified
+ *      in the metadata file.  The path to this metadata file
+ *      is prepended to the front of the grid filename
+ *      so that the full path filename is returned.
+ *      Normally, the grid filename is specified as a 
+ *      relative name, in which we assume that it is located
+ *      in the same directory as this metadata file.  However
+ *      the grid filename can also be specified as an absolute 
+ *      path, in which case no prepending is done and the name
+ *      is returned directly.
  **/
 
 string MultiresMultifileReader::gridFilename() const
@@ -132,7 +138,25 @@ string MultiresMultifileReader::gridFilename() const
     TRACE();
     NOTNULL(mFileReader);
 
-    return mFileReader->findValue("gridfile");
+    string fullpath = "error in MultiresMultifileReader::gridFilename()";
+    string gridfilename = mFileReader->findValue("gridfile");
+    
+    if(gridfilename[0] == '/') {           // absolute path name
+        fullpath = gridfilename;
+    }
+    else {
+        vector<string> pathAndFile = splitPathName(mFilename);
+        REQUIRE(pathAndFile.size()>=2, "internal error, fullpath '%s' "
+                "doesn't split into separate path and filename, i'm confused",
+                mFilename.c_str());
+    
+        string path = pathAndFile[0];
+        string file = pathAndFile[1];
+            
+        fullpath = path + "/" + gridfilename;
+    }       
+        
+    return fullpath;
 }
 
 /*=========================================================================*/
@@ -563,7 +587,7 @@ void MultiresMultifileReader::freeRawDataMemory(const string& variableName,
 {
     TRACE(variableName, fileIndex);
 
-    error("DON'T CALL THIS FUNCTION RIGHT NOW");
+    ERROR("DON'T CALL THIS FUNCTION RIGHT NOW");
 
     MultiresFileReader* mf = findInCache(variableName, fileIndex);
 
@@ -592,13 +616,13 @@ void MultiresMultifileReader::parseFile(const char* filename)
         bool success = mFileReader->parseFile(filename);
 
         if(!success)
-            error("Unable to read metadata file!\n");
+            ERROR("Unable to read metadata file!\n");
     }
     catch(ConfigFileReader::ParseError& e) {
-        error("Parse Error.  Something bad will probably happen.\n");
+        ERROR("Parse Error.  Something bad will probably happen.\n");
     }
     catch(IOerror& e) {
-        error("I/O Error.  Something bad will probably happen.\n");
+        ERROR("I/O Error.  Something bad will probably happen.\n");
     }
 
     string scalars = mFileReader->findValue("scalars");
@@ -700,7 +724,7 @@ getFilename(const string& varName, int fileIndex)
                         validTensorNames;
 
     if(validNames.find(varName) == string::npos) {
-        error("Variable name '%s' is not valid, possible choices in '%s'",
+        ERROR("Variable name '%s' is not valid, possible choices in '%s'",
                varName.c_str(), validNames.c_str());
     }
 
@@ -816,15 +840,15 @@ float MultiresMultifileReader::parseFileVersion(const char* filename)
     infile = openFile(filename);
 
     if(infile == NULL) {
-        error("Unable to open file '%s'\n", filename);
+        ERROR("Unable to open file '%s'\n", filename);
         throw IOerror();
     }
     if(feof(infile)) {
-        error("Unexpected EOF\n");
+        ERROR("Unexpected EOF\n");
         throw IOerror();
     }
     if(ferror(infile)) {
-        error("Unexpected I/O error");
+        ERROR("Unexpected I/O error");
         throw IOerror();
     }
 
@@ -836,7 +860,7 @@ float MultiresMultifileReader::parseFileVersion(const char* filename)
         version = toFloat(tokens[4]);
     }
     else {
-        error("Unable to get version from line '%s'\n", line);
+        ERROR("Unable to get version from line '%s'\n", line);
     }
 
     fclose(infile);

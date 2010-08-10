@@ -79,7 +79,8 @@ avtSTARFileFormat::avtSTARFileFormat(const char *filename)
     : avtMTMDFileFormat(filename), mFilename(filename)
 {
     TRACE(filename);
-    DEBUG("entered plugin for STARFile: filename is '%s'", filename);
+    DEBUG("entered plugin for STAR: filename='%s'", filename);
+    INFO("STAR Database loading file '%s'",splitPathName(mFilename)[1].c_str());
 
     mDataManager = NULL;
     mMultiresGrid = NULL;
@@ -96,7 +97,7 @@ avtSTARFileFormat::avtSTARFileFormat(const char *filename)
         mNumFiles = mDataManager->numFiles();
     }
     else {
-        error("Unknown file extension in file '%s'", filename);
+        ERROR("Unknown file extension in file '%s'", filename);
         exit(-1);
     }
 
@@ -113,21 +114,6 @@ avtSTARFileFormat::avtSTARFileFormat(const char *filename)
 
     mResolutionMap = new ResolutionMap(numChunks, numResolutions);
     mResolutionMap->loadUniformResMap(mResolution);
-    
-    // this is a hack.  I cannot figure out how to send
-    // information to the gui widget from here, so I'm
-    // putting the size information into a small text file
-    FILE* resfile = fopen("resinfo.txt", "w");
-    if(resfile != NULL) {
-        for(int i=0; i<mDataManager->numResolutions(); i++) {
-            int width  = mDataManager->width(i);
-            int height = mDataManager->height(i);
-            int depth  = mDataManager->depth(i);
-            fprintf(resfile,"Resolution %d: [%d,%d,%d]\n",i,width,height,depth);
-        }
-        fflush(resfile);
-        fclose(resfile);
-    }
 }
 
 /* ========================================================================= */
@@ -156,11 +142,12 @@ int avtSTARFileFormat::GetNTimesteps(void)
 
 /* ========================================================================= */
 
-void avtSTARFileFormat::ActivateTimestep(void)
+void avtSTARFileFormat::ActivateTimestep(int ts)
 {
     TRACE();
-
-    fprintf(stderr,"ActivateTimestep was called but I don't know what to do\n");
+    // not sure what to do here
+    
+    DEBUG("ActivateTimestep called for '%d'", ts);
 }
 
 /* ========================================================================= */
@@ -318,7 +305,7 @@ PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
                                numDims);
         }
         else if(mDataManager->isTensor(varname)) {
-            error("Tensors not supported yet");
+            ERROR("Tensors not supported yet");
         }
     }
 
@@ -379,7 +366,7 @@ GetMesh(int timestate, int domain, const char *meshname)
 
         bool gridFileExists = fileExists(gridfile.c_str());
         if(!gridFileExists) {
-            error("Grid file '%s' does not exist.  Creating a default grid.",
+            ERROR("Grid file '%s' does not exist.  Creating a default grid.",
                     gridfile.c_str());
         }
 
@@ -589,7 +576,7 @@ RegisterDataSelections(const vector<avtDataSelection_p>& sels,
             }
         }
         //else {
-        //    warning("This DB ignores avtDataSelection of type '%s'", 
+        //    WARNING("This DB ignores avtDataSelection of type '%s'", 
         //            type.c_str());
         //}
     }
@@ -613,7 +600,7 @@ void avtSTARFileFormat::changeResolution(int resolution)
             mResolutionMap->loadUniformResMap(resolution);
         }
         else {
-            warning("Cannot change to resolution '%d', available "
+            WARNING("Cannot change to resolution '%d', available "
                     "resolutions are [0...%d]", resolution, maxResolution);
         }
     }
@@ -637,7 +624,7 @@ void avtSTARFileFormat::processCommand(string command)
 
         if(tokens.size() >= 1 ) {
             if(tokens[0] == "norender" && tokens.size() >= 2) {
-                warning("Command 'norender' not supported.... yet");
+                WARNING("Command 'norender' not supported.... yet");
             }
             if(tokens[0] == "useAR" && tokens.size() >= 2) {
                 if(tokens[1] == "true")
@@ -653,7 +640,7 @@ void avtSTARFileFormat::processCommand(string command)
                 fprintf(stderr,"    > help\n\n");
             }
             else {
-                warning("Unknown command '%s'", tokens[0].c_str());
+                WARNING("Unknown command '%s'", tokens[0].c_str());
             }
         }
     }
@@ -716,9 +703,6 @@ avtSTARFileFormat::~avtSTARFileFormat()
 
     mDataManager = NULL;
     mMultiresGrid = NULL;
-
-    // from the hack in the constructor, delete the temp res info file
-    remove("resinfo.txt");
 }
 
 /* ========================================================================= */

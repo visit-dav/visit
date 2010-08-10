@@ -103,7 +103,7 @@ bool ConfigFileReader::parseFile(const char* filename)
     FILE* infile = openFile(filename);  // searches for the file if not found
 
     if(infile != NULL) {
-        info("Reading config file '%s'...", filename);
+        INFO("Reading config file '%s'...", filename);
 
         readFile( infile );
 
@@ -113,8 +113,8 @@ bool ConfigFileReader::parseFile(const char* filename)
         mFilename = filename;
     }
     else {
-        error("Unable to open config file '%s' for read", filename);
-        error("(Try setting the environment variable STARPATH)");
+        ERROR("Unable to open config file '%s' for read", filename);
+        ERROR("(Try setting the environment variable STARPATH)");
         status = false;
 
         if(mErrorsThrowExceptions)
@@ -157,7 +157,7 @@ void ConfigFileReader::readFile(FILE* infile)
                 break;
 
             default:
-                warning("IGNORING token '%s' and others on line %d",
+                WARNING("IGNORING token '%s' and others on line %d",
                         tokens[2].c_str(), mCurrentLine);
 
                 if(mWarningsThrowExceptions)
@@ -274,7 +274,7 @@ const char* ConfigFileReader::findValue(const char* id, const char* section)
         value = mSections.at(sectionNumber).values.at(idNumber).c_str();
     }
     else {
-        warning("findValue: '%s' NOT FOUND in section '%s'",id,section);
+        WARNING("findValue: '%s' NOT FOUND in section '%s'",id,section);
 
         if(mWarningsThrowExceptions)
             throw ParseError();
@@ -299,7 +299,7 @@ int ConfigFileReader::findIntValue(const char* id, const char* section)
     value = strtol(findValue(id,section), &endptr, 10);
 
     if(endptr != NULL and endptr[0] != '\0') {
-        warning("Parse Error: Unable to convert string '%s' "
+        WARNING("Parse Error: Unable to convert string '%s' "
                 "to an integer\n", findValue(id,section));
 
         if(mWarningsThrowExceptions)
@@ -324,7 +324,7 @@ long long ConfigFileReader::findLongValue(const char* id, const char* section)
     value = strtoll(findValue(id,section), &endptr, 10);
 
     if(endptr != NULL and endptr[0] != '\0') {
-        warning("Parse Error: Unable to convert string '%s' "
+        WARNING("Parse Error: Unable to convert string '%s' "
                 "to a long long\n", findValue(id,section));
 
         if(mWarningsThrowExceptions)
@@ -349,7 +349,7 @@ float ConfigFileReader::findFloatValue(const char* id, const char* section)
     value = strtof(findValue(id,section), &endptr);
 
     if(endptr != NULL and endptr[0] != '\0') {
-        warning("Parse Error: Unable to convert string '%s' "
+        WARNING("Parse Error: Unable to convert string '%s' "
                 "to a float\n", findValue(id,section));
 
         if(mWarningsThrowExceptions)
@@ -374,7 +374,7 @@ double ConfigFileReader::findDoubleValue(const char* id, const char* section)
     value = strtod(findValue(id,section), &endptr);
 
     if(endptr != NULL and endptr[0] != '\0') {
-        warning("Parse Error: Unable to convert string '%s' "
+        WARNING("Parse Error: Unable to convert string '%s' "
                 "to a double\n", findValue(id,section));
 
         if(mWarningsThrowExceptions)
@@ -465,7 +465,7 @@ void ConfigFileReader::addSection(string sectionName)
                 mSections.push_back(s);
             }
             else {
-                warning("PARSE ERROR reading section on line %d", mCurrentLine);
+                WARNING("PARSE ERROR reading section on line %d", mCurrentLine);
 
                 if(mWarningsThrowExceptions)
                     throw ParseError();
@@ -476,7 +476,7 @@ void ConfigFileReader::addSection(string sectionName)
         }
     }
     else {
-        warning("PARSE ERROR: while adding new section '%s', "
+        WARNING("PARSE ERROR: while adding new section '%s', "
                 "in previous section='%s', id='%s' has no value\n",
                 sectionName.c_str(), mSections.back().name.c_str(),
                 mSections.back().identifiers.back().c_str());
@@ -508,7 +508,7 @@ void ConfigFileReader::addIdentifier(string identifier)
         mWaitingForValue = true;
     }
     else {
-        warning("PARSE ERROR: in section '%s': IGNORING "
+        WARNING("PARSE ERROR: in section '%s': IGNORING "
                 "identifier '%s', previous id='%s' has no value\n",
                 mSections.back().name.c_str(),identifier.c_str(),
                 mSections.back().identifiers.back().c_str());
@@ -544,7 +544,7 @@ void ConfigFileReader::addValue(string rhs)
         mSections.back().values.push_back(rhs);
     }
     else {
-        warning("PARSE ERROR: in section '%s': IGNORING value "
+        WARNING("PARSE ERROR: in section '%s': IGNORING value "
                 "'%s', which has no identifier\n",
                 mSections.back().name.c_str(), rhs.c_str());
 
@@ -622,7 +622,7 @@ void ConfigFileReader::readFile(FILE* infile)
             case COMMENT:    /* ignore */              break;
             case NEWLINE:    /* ignore */              break;
             case END:        /* ignore */              break;
-            default:         warning("IGNORING bad token '%s'",yytext);
+            default:         WARNING("IGNORING bad token '%s'",yytext);
         }
     }
 }
