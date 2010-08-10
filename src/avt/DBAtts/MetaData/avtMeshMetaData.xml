@@ -153,6 +153,9 @@
     <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
       false
     </Field>
+    <Field name="LODs" label="LODs" type="int" access="public">
+      1
+    </Field>
     <Function name="avtMeshMetaData2" user="true" member="true">
     </Function>
     <Function name="avtMeshMetaData3" user="true" member="true">

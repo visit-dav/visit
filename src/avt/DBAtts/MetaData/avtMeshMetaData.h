@@ -143,6 +143,7 @@ public:
         ID_nodeOrigin,
         ID_containsExteriorBoundaryGhosts,
         ID_hideFromGUI,
+        ID_LODs,
         ID__LAST
     };
 
@@ -191,12 +192,13 @@ public:
     int                  nodeOrigin;
     bool                 containsExteriorBoundaryGhosts;
     bool                 hideFromGUI;
+    int                  LODs;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTMESHMETADATA_TMFS "ssbiiiiissssssbDDiisss*aiissi*i*bibbbbibFFbDibb"
+#define AVTMESHMETADATA_TMFS "ssbiiiiissssssbDDiisss*aiissi*i*bibbbbibFFbDibbi"
 
 #endif

@@ -121,6 +121,7 @@ void avtMeshMetaData::Init()
     nodeOrigin = 0;
     containsExteriorBoundaryGhosts = false;
     hideFromGUI = false;
+    LODs = 1;
 
     avtMeshMetaData::SelectAll();
 }
@@ -200,6 +201,7 @@ void avtMeshMetaData::Copy(const avtMeshMetaData &obj)
     nodeOrigin = obj.nodeOrigin;
     containsExteriorBoundaryGhosts = obj.containsExteriorBoundaryGhosts;
     hideFromGUI = obj.hideFromGUI;
+    LODs = obj.LODs;
 
     avtMeshMetaData::SelectAll();
 }
@@ -425,7 +427,8 @@ avtMeshMetaData::operator == (const avtMeshMetaData &obj) const
             rectilinearGridTransform_equal &&
             (nodeOrigin == obj.nodeOrigin) &&
             (containsExteriorBoundaryGhosts == obj.containsExteriorBoundaryGhosts) &&
-            (hideFromGUI == obj.hideFromGUI));
+            (hideFromGUI == obj.hideFromGUI) &&
+            (LODs == obj.LODs));
 }
 
 // ****************************************************************************
@@ -613,6 +616,7 @@ avtMeshMetaData::SelectAll()
     Select(ID_nodeOrigin,                     (void *)&nodeOrigin);
     Select(ID_containsExteriorBoundaryGhosts, (void *)&containsExteriorBoundaryGhosts);
     Select(ID_hideFromGUI,                    (void *)&hideFromGUI);
+    Select(ID_LODs,                           (void *)&LODs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1294,7 +1298,7 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
     if (nlevels <= 1)
     {
         // logic above doesn't work for nlevels == 1, just override
-        sprintf(str, "@%s%d,%s%%d@n+%d:", levelName.c_str(), origin, 
+        sprintf(str, "@%s%d,%s%%d@n+%d:", levelName.c_str(), origin,
                                           patchName.c_str(), origin);
         base_string = str;
     }
