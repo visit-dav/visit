@@ -3027,6 +3027,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //    Hank Childs, Tue Jan 27 11:03:49 PST 2009
 //    Don't use cached meta data when it comes to identifiers.
 //
+//    Eduard Deines, Wed Apr 21 2010
+//    Add support for "any_mesh" (Hank Childs).
+//
 // ****************************************************************************
 
 void
@@ -3096,6 +3099,19 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
             vr = cache.GetVoidRef(var, type, -1, domains[i]);
         }
 
+        if (*vr == NULL)
+        {
+            if ((strcmp(type, AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION) == 0) ||
+                (strcmp(type, AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION) == 0))
+                vr = cache.GetVoidRef("any_mesh", type, ts, domains[i]);
+        }
+        if (*vr == NULL)
+        {
+            if ((strcmp(type, AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION) == 0) ||
+                (strcmp(type, AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION) == 0))
+                vr = cache.GetVoidRef("any_mesh", type, -1, domains[i]);
+        }
+
         if (*vr != NULL)
         {
             //
@@ -3124,7 +3140,6 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
         }
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::PopulateSIL
