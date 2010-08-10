@@ -74,6 +74,9 @@
 #    Kathleen Bonnell, Wed May 5 12:04:22 PST 2010 
 #    Enable VASP reader on windows. 
 #
+#    Tom Fogal, Wed Aug  4 15:14:56 MDT 2010
+#    Build STAR database.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -221,6 +224,7 @@ ProteinDataBank
 RAW
 SAR
 SAS
+STAR
 STL
 Shapefile
 Spheral
