@@ -77,6 +77,9 @@
 #    Tom Fogal, Wed Aug  4 15:14:56 MDT 2010
 #    Build STAR database.
 #
+#    Tom Fogal, Tue Aug 10 17:35:23 MDT 2010
+#    Don't build STAR on Windows.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -224,7 +227,6 @@ ProteinDataBank
 RAW
 SAR
 SAS
-STAR
 STL
 Shapefile
 Spheral
@@ -243,6 +245,7 @@ paraDIS_tecplot
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS 
         Claw
+        STAR
         Vis5D
         ZipWrapper
     )
