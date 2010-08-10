@@ -1074,6 +1074,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     for (int k=0; k<16; k++)
         rectilinearGridTransform[k] = di.rectilinearGridTransform[k];
     plotInfoAtts = di.plotInfoAtts;
+    levelsOfDetail = di.levelsOfDetail;
 }
 
 
