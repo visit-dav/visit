@@ -67,6 +67,7 @@ class MultiresControlGeneralPluginInfo : public virtual GeneralOperatorPluginInf
     virtual const char *GetVersion() const;
     virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
+    virtual const char *GetCategoryName() const;
 };
 
 class MultiresControlCommonPluginInfo : public virtual CommonOperatorPluginInfo, public virtual MultiresControlGeneralPluginInfo
@@ -83,7 +84,6 @@ class MultiresControlGUIPluginInfo : public virtual GUIOperatorPluginInfo, publi
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
-    virtual const char **XPMIconData() const;
 };
 
 class MultiresControlViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual MultiresControlCommonPluginInfo
@@ -98,7 +98,6 @@ class MultiresControlViewerPluginInfo : public virtual ViewerOperatorPluginInfo,
                                         const ViewerPlot *plot,
                                         const bool fromDefault);
     virtual QString *GetMenuName() const;
-    virtual const char **XPMIconData() const;
 
     static void InitializeGlobalObjects();
   private:
