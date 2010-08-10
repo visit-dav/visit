@@ -30,21 +30,26 @@
 *
 *****************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  File:        avtResolutionSelection.h                                    //
-//  Programmer:  Andrew Foulks <rafoulks@cs.unh.edu>                         //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
+// ************************************************************************* //
+//                          avtResolutionSelection.h                         //
+// ************************************************************************* //
 #ifndef _AVT_RESOLUTION_SELECTION_H_
 #define _AVT_RESOLUTION_SELECTION_H_
 
 #include "avtDataSelection.h"
 
-//    Separate class used to identify when the user has
-//    selected a new resolution in the gui.
-
+// ****************************************************************************
+//  Class: avtResolutionSelection
+//
+//  Purpose:
+//
+//    This class is used to communicate a selected resolution from the
+//    VisIt UI.
+//
+//  Programmer: Andrew Foulks <rafoulks@cs.unh.edu>
+//  Creation:   Winter 2009
+//
+// ****************************************************************************
 class avtResolutionSelection : public avtDataSelection {
 public:
                          avtResolutionSelection() {}
@@ -54,7 +59,7 @@ public:
 
     // added functionality
     virtual void         setResolution(int r) { mResolution = r; }
-    virtual int          resolution() { return mResolution; }
+    virtual int          resolution() const { return mResolution; }
 
 private:
     int mResolution;
