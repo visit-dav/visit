@@ -42,6 +42,7 @@
 
 //#define TRACE_ON
 //#define DEBUG_ON
+//#define DEBUG_TO_STDERR
 
 #define TRACE(...)
 #define ASSERTIONS
@@ -58,7 +59,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <vector>
-
+using std::cerr;
 using std::vector;
 using std::string;
 
@@ -68,9 +69,77 @@ using std::string;
 
 /* ===============================  MESSAGES  ============================== */
 
-#define info(fmt,...) fprintf(stderr,"[info] " fmt "\n",## __VA_ARGS__)
-#define warning(fmt,...) fprintf(stderr,"[WARNING] " fmt "\n",## __VA_ARGS__)
-#define error(fmt,...) fprintf(stderr,"[ERROR] " fmt "\n",## __VA_ARGS__)
+#ifdef STAR_VISIT
+#include "DebugStream.h"
+static char _msg_[2048];
+
+// if debug is on, tee the output to both the visit log and the console
+#if defined(DEBUG_ON) && defined(DEBUG_TO_STDERR)
+#define TEE_MSG(txt) cerr << txt << endl
+#else
+#define TEE_MSG(txt)
+#endif
+
+#define INFO(fmt,...) do{\
+    snprintf(_msg_, sizeof _msg_,"[INFO:%s] " fmt,__func__,## __VA_ARGS__);\
+    debug4 << _msg_ << endl;\
+    TEE_MSG(_msg_);\
+}while(0)
+
+#define WARNING(fmt,...) do{\
+    snprintf(_msg_,sizeof _msg_, "[WARNING:%s] " fmt,__func__,## __VA_ARGS__);\
+    debug2 << _msg_ << endl;\
+    TEE_MSG(_msg_);\
+}while(0)
+
+#define ERROR(fmt,...) do{\
+    snprintf(_msg_, sizeof _msg_,"[ERROR:%s] " fmt,__func__,## __VA_ARGS__);\
+    debug1 << _msg_ << endl;\
+    TEE_MSG(_msg_);\
+}while(0)
+
+#define FATAL(fmt,...) do{\
+    snprintf(_msg_, sizeof _msg_,"[FATAL ERROR:%s:%s:%d] " fmt,__func__,__FILE__, __LINE__,## __VA_ARGS__);\
+    debug1 << _msg_ << endl;\
+    TEE_MSG(_msg_);\
+    exit(-1);\
+}while(0)
+
+#else
+
+#define INFO(fmt,...) fprintf(stderr,"[INFO] " fmt "\n",## __VA_ARGS__)
+#define WARNING(fmt,...) fprintf(stderr,"[WARNING] " fmt "\n",## __VA_ARGS__)
+#define ERROR(fmt,...) fprintf(stderr,"[ERROR] " fmt "\n",## __VA_ARGS__)
+#define FATAL(fmt,...) exit(-!!fprintf(stderr,"[FATAL ERROR] " fmt "\n",## __VA_ARGS__))
+
+#endif // STAR_VISIT
+
+/* ================================  DEBUG  ================================ */
+
+#ifdef DEBUG_ON
+#ifdef DEBUG_TO_STDERR
+
+#define DEBUG(fmt,...) fprintf(stderr,"[%s] " fmt "\n",__func__,## __VA_ARGS__)
+
+#else
+static FILE* _dfp;  // debug file pointer
+#define dbgfile _dfp?_dfp:(_dfp=fopen("debug.log","wa"))?_dfp:stderr
+
+#define DEBUG(fmt, ...) fprintf(dbgfile, "[%s, %s:%d] " fmt "\n",\
+                                __func__, __FILE__, __LINE__,## __VA_ARGS__)
+
+#endif // DEBUG_TO_STDERR
+
+#define HERE(...) fprintf(stderr,"Here: %s: %d\n", __FILE__, __LINE__)
+
+#else
+
+#define DEBUG(format, ...)
+#define HERE(...)
+
+#endif // DEBUG_ON
+
+#define NOTIMPL fprintf(stderr,"%s NOT IMPLEMENTED YET\n",__PRETTY_FUNCTION__)
 
 /* ==============================  ASSERTIONS  ============================= */
 
@@ -108,8 +177,7 @@ using std::string;
 #define NOTNULL(ptr) REQUIRE((ptr!=NULL), #ptr " is null!")
 */
 
-#define BOUNDS_CHECK(i,min,max) OLDREQUIRE(\
-        (((unsigned)i>=(unsigned)min)&&((unsigned)i<(unsigned)max)),\
+#define BOUNDS_CHECK(i,min,max) OLDREQUIRE(((i>=min)&&(i<max)),\
             ("out of bounds: %s=%d, valid=[%d...%d]", #i,i,(int)min,(int)max-1))
 
 #define RANGE_CHECK(f,min,max) OLDREQUIRE( ((f>=(float)min)&&(f<=(float)max)),\
@@ -124,34 +192,6 @@ using std::string;
 #define RANGE_CHECK(f,min,max) /* nothing */
 
 #endif // ASSERTIONS
-
-/* ================================  DEBUG  ================================ */
-
-#ifdef DEBUG_ON
-
-#ifdef DEBUG_TO_STDERR
-
-#define DEBUG(fmt,...) fprintf(stderr,"[%s] " fmt "\n",__func__,## __VA_ARGS__)
-
-#else
-static FILE* _dfp;  // debug file pointer
-#define dbgfile _dfp?_dfp:(_dfp=fopen("debug.log","wa"))?_dfp:stderr
-
-#define DEBUG(fmt, ...) fprintf(dbgfile, "[%s, %s:%d] " fmt "\n",\
-                                __func__, __FILE__, __LINE__,## __VA_ARGS__)
-
-#endif // DEBUG_TO_STDERR
-
-#define HERE(...) fprintf(stderr,"Here: %s: %d\n", __FILE__, __LINE__)
-
-#else
-
-#define DEBUG(format, ...)
-#define HERE(...)
-
-#endif // DEBUG_ON
-
-#define NOTIMPL fprintf(stderr,"%s NOT IMPLEMENTED YET\n",__PRETTY_FUNCTION__)
 
 /* ==============================  BASE CLASS  ============================= */
 /**
@@ -426,7 +466,7 @@ static long long toLong(string str)
         value = strtoll(txt, &endptr, 10);
         
         if(endptr == NULL || endptr[0] != '\0' || txt[0] == '\0') {
-            warning( "Unable to convert '%s' to long long", txt );
+            WARNING("Unable to convert '%s' to long long", txt);
             value = 0;
         }
     }
@@ -461,7 +501,7 @@ static int toInt(string str)
         value = strtol(txt, &endptr, 10);
         
         if(endptr == NULL || endptr[0] != '\0' || txt[0] == '\0') {
-            warning("Unable to convert '%s' to int", txt);
+            WARNING("Unable to convert '%s' to int", txt);
             value = 0;
         }
     }
@@ -503,7 +543,7 @@ static float toFloat(string str)
         value = strtod( txt, &endptr );
         
         if(endptr == NULL || endptr[0] != '\0' || txt[0] == '\0') {
-            warning( "Unable to convert '%s' to float", txt );
+            WARNING( "Unable to convert '%s' to float", txt );
             value = 0.0;
         }
     }
@@ -590,7 +630,7 @@ static long long filesize(const char* filename)
     FILE* infile = fopen(filename, "rb");
 
     if(infile == NULL)
-        exit(error("Unable to open file '%s' for read (binary)",filename));
+        FATAL("Unable to open file '%s' for read (binary)",filename);
 
     long long size = filesize(infile);
 
@@ -601,8 +641,8 @@ static long long filesize(const char* filename)
 
 static long long filesize(FILE* infile)
 {
-    if(infile == NULL)
-        return -!!error("filesize: fatal error: infile is null");
+    if(infile == NULL) 
+        FATAL("filesize: fatal error: infile is null");
 
     long long currentOffset = ftell(infile);
 

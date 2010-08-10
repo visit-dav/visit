@@ -89,7 +89,7 @@ public: // inherited from base class
     virtual bool            HasInvariantMetaData(void) const;
 
     virtual int             GetNTimesteps(void);
-    virtual void            ActivateTimestep(void);
+    virtual void            ActivateTimestep(int ts);
 
     virtual const char*     GetType(void)   { return "STAR"; };
     virtual void            FreeUpResources(void); 

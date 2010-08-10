@@ -238,7 +238,7 @@ bool MultiresGrid::parseGridFile(const char* filename)
         DEBUG("xc[0]=%f, [%d]=%f",xc[0],mWidth-1,xc[mWidth-1]);
     }
     else {
-        error("unable to open grid file '%s'", filename);
+        ERROR("unable to open grid file '%s'", filename);
     }
 
     mXcoords = xc;
@@ -268,7 +268,7 @@ float MultiresGrid::xLocation(int col) const
         if(col >= 0 and col < mWidth)
             x = mXcoords[col];
         else
-            warning("xLocation: row=%d out of bounds=(0...%d)",col,mWidth-1);
+            WARNING("xLocation: row=%d out of bounds=(0...%d)",col,mWidth-1);
     }
 
     return x;
@@ -292,7 +292,7 @@ float MultiresGrid::yLocation(int row) const
         if(row >= 0 and row < mHeight)
             y = mYcoords[row];
         else
-            warning("yLocation: col=%d out of bounds=(0...%d)",row,mHeight-1);
+            WARNING("yLocation: col=%d out of bounds=(0...%d)",row,mHeight-1);
     }
 
     return y;
@@ -316,7 +316,7 @@ float MultiresGrid::zLocation(int slice) const
         if(slice >= 0 and slice < mDepth)
             z = mZcoords[slice];
         else
-            warning("geometryZ: slic=%d out of bounds=(0...%d)",slice,mDepth-1);
+            WARNING("geometryZ: slic=%d out of bounds=(0...%d)",slice,mDepth-1);
     }
 
     return z;
@@ -592,7 +592,7 @@ void MultiresGrid::outputToFile(const char* filename)
     FILE* outfile = fopen(filename, "w");
 
     if(outfile==NULL)
-        error("Unable to open file '%s' for writing", filename);
+        ERROR("Unable to open file '%s' for writing", filename);
     else
         outputToFile(outfile);
 }

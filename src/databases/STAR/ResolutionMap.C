@@ -50,10 +50,6 @@ ResolutionMap::ResolutionMap(int numchunks, int numresolutions)
 
     mResolutionMap.resize(numchunks, 0);  // initialize each entry with a 0
 
-    //HACK
-    //warning("hack: setting chunk 0 to resolution 3");
-    //mResolutionMap[0]=3;
-
     srand(time(NULL));
 }
 
@@ -78,7 +74,7 @@ void ResolutionMap::loadMapFromFile(const char* filename)
     int highestResolution = 0;
 
     if(infile==NULL) {
-        error("Unable to open file '%s' for read", filename);
+        ERROR("Unable to open file '%s' for read", filename);
     }
     else {
         while(true) {
