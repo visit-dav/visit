@@ -37,8 +37,15 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <iterator>
+#include <list>
+
 #include <avtMultiresControlFilter.h>
-#include "avtResolutionSelection.h"
+
+#include <avtDomainNesting.h>
+#include <avtMetaData.h>
+#include <avtResolutionSelection.h>
+#include <avtStructuredDomainNesting.h>
 #include <DebugStream.h>
 
 avtMultiresControlFilter::avtMultiresControlFilter()
@@ -60,8 +67,6 @@ bool avtMultiresControlFilter::Equivalent(const AttributeGroup *a)
     return (atts == *(MultiresControlAttributes*)a);
 }
 
-/* ========================================================================= */
-
 vtkDataSet* 
 avtMultiresControlFilter::ExecuteData(vtkDataSet *in_ds, int i, std::string s)
 {
@@ -71,9 +76,6 @@ avtMultiresControlFilter::ExecuteData(vtkDataSet *in_ds, int i, std::string s)
     atts.SetMaxResolution(lods);
     return in_ds;
 }
-
-/* ========================================================================= */
-
 
 avtContract_p avtMultiresControlFilter::ModifyContract(avtContract_p contract)
 {
@@ -88,13 +90,36 @@ avtContract_p avtMultiresControlFilter::ModifyContract(avtContract_p contract)
     res->setResolution(atts.GetResolution());
     contract->GetDataRequest()->AddDataSelection(res);
 
+    // Attempt to lookup the domain level information.  If it gives this
+    // information, we can turn off domains in the restriction and avoid
+    // reading/processing them at all.  Not all DBs supply this though, so we
+    // need to bail if we get some nulls.
+    avtDomainNesting* dni = GetMetaData()->GetDomainNesting();
+    if(dni == NULL)
+        return contract;
+
+    avtStructuredDomainNesting* sdn =
+      dynamic_cast<avtStructuredDomainNesting*>(dni);
+    if(sdn == NULL)
+        return contract;
+
+    std::vector<int> domain_list;
+    std::back_insert_iterator<std::vector<int> > doms(domain_list);
+    size_t max_domain = sdn->GetNumberOfDomains();
+    for(size_t dom=0; dom < max_domain; ++dom)
+    {
+        int level = sdn->GetDomainLevel(dom);
+        if(level <= atts.GetResolution())
+        {
+            *doms = dom;
+        }
+    }
+
+    contract->GetDataRequest()->GetRestriction()->RestrictDomains(domain_list);
+
     return contract;
 }
-
-/* ========================================================================= */
 
 avtMultiresControlFilter::~avtMultiresControlFilter()
 {
 }
-
-/* ========================================================================= */
