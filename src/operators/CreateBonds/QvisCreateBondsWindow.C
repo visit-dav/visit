@@ -357,6 +357,9 @@ QvisCreateBondsWindow::CreateWindowContents()
 //    Jeremy Meredith, Wed Jan 27 10:39:48 EST 2010
 //    Added periodic bond matching support.
 //
+//    Jeremy Meredith, Wed Aug 11 10:19:31 EDT 2010
+//    Disallow unknown element (atomic id==0); use "*" in that case.
+//
 // ****************************************************************************
 
 void
@@ -454,9 +457,9 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
         {
             QString el1 = "*";
             QString el2 = "*";
-            if (atts->GetAtomicNumber1()[i] >= 0)
+            if (atts->GetAtomicNumber1()[i] >= 1)
                 el1 = element_names[atts->GetAtomicNumber1()[i]];
-            if (atts->GetAtomicNumber2()[i] >= 0)
+            if (atts->GetAtomicNumber2()[i] >= 1)
                 el2 = element_names[atts->GetAtomicNumber2()[i]];
 
             QTreeWidgetItem *item = new QTreeWidgetItem(bondsTree);
