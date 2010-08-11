@@ -66,6 +66,7 @@
 #include <vtkPolyDataReader.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <vtkVisItCellLocator.h>
 #include <vtkVisItUtility.h>
@@ -101,6 +102,80 @@ inline void Cross(double result[3], const double v1[3], const double v2[3])
     result[1] = (v1[2] * v2[0]) - (v1[0] * v2[2]);
     result[2] = (v1[0] * v2[1]) - (v1[1] * v2[0]);
 }
+
+static bool IntersectLineWithTri(const double v0[3], const double v1[3],
+    const double v2[3], const double origin[3],
+    const double direction[3], double& t)
+{
+    static const double eps = 10e-6;
+
+    //
+    // Reject rays that are parallel to Q, and rays that intersect the
+    // plane of Q either on the left of the line V00V01 or on the right
+    // of the line V00V10.
+    //
+
+    double E_01[3], E_02[3];
+    E_01[0] = v1[0] - v0[0];
+    E_01[1] = v1[1] - v0[1];
+    E_01[2] = v1[2] - v0[2];
+    E_02[0] = v2[0] - v0[0];
+    E_02[1] = v2[1] - v0[1];
+    E_02[2] = v2[2] - v0[2];
+    double P[3];
+    Cross(P, direction, E_02);
+    double det = Dot(E_01, P);
+    if (fabs(det) < eps) return false;
+    double inv_det = 1.0 / det;
+    double T[3];
+    T[0] = origin[0] - v0[0];
+    T[1] = origin[1] - v0[1];
+    T[2] = origin[2] - v0[2];
+    double alpha = Dot(T, P) * inv_det;
+    if (alpha < 0.0) return false;
+    double Q[3];
+    Cross(Q, T, E_01);
+    double beta = Dot(direction, Q) * inv_det;
+    if (beta < 0.0) return false; 
+
+    if ((alpha + beta) > 1.0)
+    {
+        //
+        // Rejects rays that intersect the plane of Q either on the
+        // left of the line V11V10 or on the right of the line V11V01.
+        //
+
+        double E_20[3], E_21[3];
+        E_20[0] = v0[0] - v2[0];
+        E_20[1] = v0[1] - v2[1];
+        E_20[2] = v0[2] - v2[2];
+        E_21[0] = v1[0] - v2[0];
+        E_21[1] = v1[1] - v2[1];
+        E_21[2] = v1[2] - v2[2];
+        double P_prime[3];
+        Cross(P_prime, direction, E_21);
+        double det_prime = Dot(E_20, P_prime);
+        if (fabs(det_prime) < eps) return false;
+        double inv_det_prime = double(1.0) / det_prime;
+        double T_prime[3];
+        T_prime[0] = origin[0] - v2[0];
+        T_prime[1] = origin[1] - v2[1];
+        T_prime[2] = origin[2] - v2[2];
+        double alpha_prime = Dot(T_prime, P_prime) * inv_det_prime;
+        if (alpha_prime < double(0.0)) return false;
+    }
+
+    //
+    // Compute the ray parameter of the intersection point, and
+    // reject the ray if it does not hit Q.
+    //
+
+    t = Dot(E_02, Q) * inv_det;
+    if (t < 0.0) return false; 
+
+    return true;
+}
+
 
 static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
     const double v_11[3], const double v_01[3], const double origin[3],
@@ -532,6 +607,10 @@ avtXRayFilter::PostExecute(void)
 //    I modified the filter to handle the case where some of the processors
 //    didn't have any data sets when executing in parallel.
 //
+//    Eric Brugger, Thu Jul 29 14:21:50 PDT 2010
+//    I put in optimizations for tets, pyramids, wedges, and hexes in
+//    unstructured grids.
+//
 // ****************************************************************************
 
 void
@@ -700,6 +779,209 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
             }
         }
     }
+    else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
+        vtkPoints *points = ugrid->GetPoints();
+
+        float *pts = (float *) points->GetVoidPointer(0);
+
+        vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
+        vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
+        vtkCellArray *cells = ugrid->GetCells();
+
+        vtkIdType *nl = cells->GetPointer();
+        unsigned char *ct = cellTypes->GetPointer(0);
+        int *cl = cellLocations->GetPointer(0);
+
+        for (i = 0 ; i < nLines ; i++)
+        {
+            double pt1[3];
+            pt1[0] = lines[6*i];
+            pt1[1] = lines[6*i+2];
+            pt1[2] = lines[6*i+4];
+            double pt2[3];
+            pt2[0] = lines[6*i+1];
+            pt2[1] = lines[6*i+3];
+            pt2[2] = lines[6*i+5];
+            double dir[3];
+            dir[0] = pt2[0] - pt1[0];
+            dir[1] = pt2[1] - pt1[1];
+            dir[2] = pt2[2] - pt1[2];
+
+            vector<int> list;
+            tree.GetElementsList(pt1, dir, list);
+            int nCells = list.size();
+            if (nCells == 0)
+                continue;  // No intersection
+
+            double lineLength = sqrt((pt2[0]-pt1[0]) * (pt2[0]-pt1[0]) +
+                                     (pt2[1]-pt1[1]) * (pt2[1]-pt1[1]) +
+                                     (pt2[2]-pt1[2]) * (pt2[2]-pt1[2]));
+
+            for (j = 0 ; j < nCells ; j++)
+            {
+                //
+                // Determine the index into the look up table.
+                //
+                int iCell = list[j];
+                if (hasGhost && ghosts->GetTuple1(iCell) != 0.)
+                    continue;
+
+                double t;
+                int nInter = 0;
+                double inter[100];
+
+                int *ids = &(nl[cl[iCell]+1]);
+                if (ct[iCell] == VTK_HEXAHEDRON)
+                {
+                    double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};
+                    double p1[3]={pts[ids[1]*3],pts[ids[1]*3+1],pts[ids[1]*3+2]};
+                    double p2[3]={pts[ids[2]*3],pts[ids[2]*3+1],pts[ids[2]*3+2]};
+                    double p3[3]={pts[ids[3]*3],pts[ids[3]*3+1],pts[ids[3]*3+2]};
+                    double p4[3]={pts[ids[4]*3],pts[ids[4]*3+1],pts[ids[4]*3+2]};
+                    double p5[3]={pts[ids[5]*3],pts[ids[5]*3+1],pts[ids[5]*3+2]};
+                    double p6[3]={pts[ids[6]*3],pts[ids[6]*3+1],pts[ids[6]*3+2]};
+                    double p7[3]={pts[ids[7]*3],pts[ids[7]*3+1],pts[ids[7]*3+2]};
+
+                    if (IntersectLineWithQuad(p0, p1, p2, p3, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithQuad(p4, p7, p6, p5, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithQuad(p0, p4, p5, p1, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithQuad(p1, p5, p6, p2, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithQuad(p2, p6, p7, p3, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithQuad(p0, p3, p7, p4, pt1, dir, t))
+                        inter[nInter++] = t;
+                }
+                else if (ct[iCell] == VTK_WEDGE)
+                {
+                    double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};
+                    double p1[3]={pts[ids[1]*3],pts[ids[1]*3+1],pts[ids[1]*3+2]};
+                    double p2[3]={pts[ids[2]*3],pts[ids[2]*3+1],pts[ids[2]*3+2]};
+                    double p3[3]={pts[ids[3]*3],pts[ids[3]*3+1],pts[ids[3]*3+2]};
+                    double p4[3]={pts[ids[4]*3],pts[ids[4]*3+1],pts[ids[4]*3+2]};
+                    double p5[3]={pts[ids[5]*3],pts[ids[5]*3+1],pts[ids[5]*3+2]};
+
+                    if (IntersectLineWithTri(p0, p1, p2, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithTri(p3, p5, p4, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithQuad(p0, p3, p4, p1, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithQuad(p1, p4, p5, p2, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithQuad(p2, p5, p3, p0, pt1, dir, t))
+                        inter[nInter++] = t;
+                }
+                else if (ct[iCell] == VTK_PYRAMID)
+                {
+                    double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};
+                    double p1[3]={pts[ids[1]*3],pts[ids[1]*3+1],pts[ids[1]*3+2]};
+                    double p2[3]={pts[ids[2]*3],pts[ids[2]*3+1],pts[ids[2]*3+2]};
+                    double p3[3]={pts[ids[3]*3],pts[ids[3]*3+1],pts[ids[3]*3+2]};
+                    double p4[3]={pts[ids[4]*3],pts[ids[4]*3+1],pts[ids[4]*3+2]};
+
+                    if (IntersectLineWithQuad(p0, p1, p2, p3, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithTri(p0, p4, p1, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithTri(p1, p4, p2, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithTri(p2, p4, p3, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithTri(p3, p4, p0, pt1, dir, t))
+                        inter[nInter++] = t;
+                }
+                else if (ct[iCell] == VTK_TETRA)
+                {
+                    double p0[3]={pts[ids[0]*3],pts[ids[0]*3+1],pts[ids[0]*3+2]};
+                    double p1[3]={pts[ids[1]*3],pts[ids[1]*3+1],pts[ids[1]*3+2]};
+                    double p2[3]={pts[ids[2]*3],pts[ids[2]*3+1],pts[ids[2]*3+2]};
+                    double p3[3]={pts[ids[3]*3],pts[ids[3]*3+1],pts[ids[3]*3+2]};
+
+                    if (IntersectLineWithTri(p0, p1, p2, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithTri(p0, p3, p1, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithTri(p2, p3, p0, pt1, dir, t))
+                        inter[nInter++] = t;
+                    if (IntersectLineWithTri(p1, p3, p2, pt1, dir, t))
+                        inter[nInter++] = t;
+                }
+                else
+                {
+                    vtkCell *cell = ds->GetCell(iCell);
+
+                    if (cell->GetCellDimension() == 3)
+                    {
+                        int nFaces = cell->GetNumberOfFaces();
+                        for (int k = 0 ; k < nFaces ; k++)
+                        {
+                            vtkCell *face = cell->GetFace(k);
+                            double x[3];
+                            double pcoords[3];
+                            double t;
+                            int subId;
+                            if (face->IntersectWithLine(pt1, pt2, 1e-10, t,
+                                                        x, pcoords, subId))
+                                inter[nInter++] = t;
+                        }
+                    }
+                    else if (cell->GetCellDimension() == 2)
+                    {
+                        int nEdges = cell->GetNumberOfEdges();
+                        for (int k = 0 ; k < nEdges ; k++)
+                        {
+                            vtkCell *edge = cell->GetEdge(k);
+                            double x[3];
+                            double pcoords[3];
+                            double t;
+                            int subId;
+                            if (edge->IntersectWithLine(pt1, pt2, 1e-10, t,
+                                                        x, pcoords, subId))
+                                inter[nInter++] = t;
+                        }
+                    }
+
+                    // See if we have any near duplicates.
+                    if (nInter > 2)
+                    {
+                        for (int ii = 0 ; ii < nInter-1 ; ii++)
+                        {
+                            for (int jj = ii+1 ; jj < nInter ; jj++)
+                            {
+                                if (fabs(inter[ii]-inter[jj]) < 1e-10)
+                                {
+                                    inter[ii] = inter[nInter-1];
+                                    nInter--;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (nInter == 2)
+                {
+                    cells_matched.push_back(iCell);
+                    dist.push_back(inter[0]*lineLength);
+                    dist.push_back(inter[1]*lineLength);
+                    line_id.push_back(i);
+                }
+
+                int currentMilestone = (int)(((float) i) / amtPerMsg);
+                if (currentMilestone > lastMilestone)
+                {
+                    UpdateProgress(extraMsg*currentNode+currentMilestone, 
+                                   extraMsg*totalNodes);
+                    lastMilestone = currentMilestone;
+                }
+            }
+        }
+    }
     else
     {
         for (i = 0 ; i < nLines ; i++)
@@ -768,8 +1050,6 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                             inter[nInter++] = t;
                     }
                 }
-                if (nInter == 0 || nInter == 1)
-                    continue;
                 // See if we have any near duplicates.
                 if (nInter > 2)
                 {
