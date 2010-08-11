@@ -279,6 +279,26 @@ avtTimeIteratorExpression::Execute(void)
     if (*dbp == NULL)
         EXCEPTION1(InvalidFilesException, db.c_str());
 
+    avtDatabaseMetaData *md = dbp->GetMetaData(0, false, true);
+
+    if (md->GetCycles().size() == 0 || !md->AreAllCyclesAccurateAndValid())
+    {
+      avtCallback::IssueWarning("VisIt cannot choose a time state "
+                 "for comparing databases based on a cycle, because the "
+                 "cycles are not believed to be accurate.");
+      // ARS - Comment what should be done after the warning?
+      return;
+    }
+
+    if (md->GetTimes().size() == 0 || !md->AreAllTimesAccurateAndValid())
+    {
+      avtCallback::IssueWarning("VisIt cannot choose a time state "
+                 "for comparing databases based on a time, because the "
+                 "times are not believed to be accurate.");
+      // ARS - Comment what should be done after the warning?
+      return;
+    }
+
     // The first EEF already set up its expressions ... we need a new one
     // to set up filters for the CMFE expressions.
     avtExpressionEvaluatorFilter myeef;
@@ -303,6 +323,7 @@ avtTimeIteratorExpression::Execute(void)
                                                    false, false);
         currentCycle = md->GetCycles()[timeSlice];
         currentTime  = md->GetTimes()[timeSlice];
+
         ProcessDataTree(myeef.GetTypedOutput()->GetDataTree(), i);
         debug1 << "Time iterating expression done working on time slice " 
                << timeSlice << endl;
