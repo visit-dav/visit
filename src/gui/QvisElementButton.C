@@ -173,13 +173,13 @@ QvisElementButton::sizePolicy() const
 }
 
 // ****************************************************************************
-// Method: QvisElementButton::setButtonColor
+// Method: QvisElementButton::setElementNumber
 //
 // Purpose: 
-//   Sets the button's color.
+//   Sets the button's element number
 //
 // Arguments:
-//   c : The button's new color.
+//   e : The button's new element number
 //
 // Programmer: Jeremy Meredith
 // Creation:   August 29, 2006
@@ -193,6 +193,10 @@ QvisElementButton::sizePolicy() const
 //    total number of known elements in visit.  Added a fake "0" element
 //    which means "unknown", and hydrogen now starts at 1.
 //
+//    Jeremy Meredith, Wed Aug 11 10:24:14 EDT 2010
+//    Anything below "H" should use "*".  (Otherwise we might pick up
+//    the "?" from the unknown element, for example.)
+//
 // ****************************************************************************
 
 void
@@ -201,7 +205,7 @@ QvisElementButton::setElementNumber(int e)
     if (e >= -1 && e <= MAX_ELEMENT_NUMBER && number != e)
     {
         number = e;
-        if (e == -1)
+        if (e < 1)
             setText("*");
         else
             setText(element_names[e]);
@@ -322,6 +326,10 @@ QvisElementButton::popupPressed()
 //    total number of known elements in visit.  Added a fake "0" element
 //    which means "unknown", and hydrogen now starts at 1.
 //
+//    Jeremy Meredith, Wed Aug 11 10:24:14 EDT 2010
+//    Anything below "H" should use "*".  (Otherwise we might pick up
+//    the "?" from the unknown element, for example.)
+//
 // ****************************************************************************
 
 void
@@ -330,7 +338,7 @@ QvisElementButton::elementSelected(int element)
     if (element >= -1 && element <= MAX_ELEMENT_NUMBER)
     {
         number = element;
-        if (element == -1)
+        if (element < 1)
             setText("*");
         else
             setText(element_names[element]);
