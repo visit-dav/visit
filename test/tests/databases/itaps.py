@@ -35,6 +35,12 @@
 #    was failing to read bricks.cub (a version 9.1 Cubit file).
 #    Added threshold operator to mbtest1 because new version of MOAB is
 #    serving up 3D mesh with some 2D zones in it. Enabled ptest.cube test.
+#
+#    Mark C. Miller, Tue Aug 10 20:02:23 PDT 2010
+#    Added logic to skip some cases in parallel regardless of skip list
+#    setting. This is due to probably parallel hang and putting tests in
+#    skip list alone does not prevent execution of the tests. It prevents
+#    only having differeing outcome leading to failed test. 
 # ----------------------------------------------------------------------------
 
 def RestrictSetsInCategory(silr, className, setIds):
@@ -163,19 +169,29 @@ DeleteAllPlots()
 #
 # Loop to test all three implementations are built, co-existing and working
 #
-n=13
-for imp in (("MOAB","mixed-hex-pyr-tet"),("FMDB","human-1-fmdb.sms"),("GRUMMP","tire.vmesh")):
-    OpenDatabase("../data/iTaps_test_data/%s/%s"%imp, 0, "ITAPS_%s_1.0"%imp[0])
-    AddPlot("Mesh","mesh")
-    DrawPlots()
-    ResetView()
-    if imp[0] == "FMDB":
-        v = GetView3D()
-        v.RotateAxis(0,90.0)
-        SetView3D(v)
-    Test("itaps_%d"%n)
-    DeleteAllPlots()
-    CloseDatabase("../data/iTaps_test_data/%s/%s"%imp)
-    n = n + 1
-    
+if scalable or not parallel:
+    skippedSome = 0
+    n=13
+    for imp in (("MOAB","mixed-hex-pyr-tet"),("FMDB","human-1-fmdb.sms"),("GRUMMP","tire.vmesh")):
+        OpenDatabase("../data/iTaps_test_data/%s/%s"%imp, 0, "ITAPS_%s_1.0"%imp[0])
+        AddPlot("Mesh","mesh")
+        DrawPlots()
+        ResetView()
+        if imp[0] == "FMDB":
+            v = GetView3D()
+            v.RotateAxis(0,90.0)
+            SetView3D(v)
+        Test("itaps_%d"%n)
+        DeleteAllPlots()
+        CloseDatabase("../data/iTaps_test_data/%s/%s"%imp)
+        n = n + 1
+else:
+    global skipCases
+    oldSkipCases = skipCases
+    skipCases = ("itaps_13","itaps_14","itaps_15")
+    Test("itaps_13")
+    Test("itaps_14")
+    Test("itaps_15")
+    skipCases = oldSkipCases
+
 Exit()
