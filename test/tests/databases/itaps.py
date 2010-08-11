@@ -41,6 +41,10 @@
 #    setting. This is due to probably parallel hang and putting tests in
 #    skip list alone does not prevent execution of the tests. It prevents
 #    only having differeing outcome leading to failed test. 
+#
+#    Mark C. Miller, Wed Aug 11 09:10:52 PDT 2010
+#    Made skiping logic (above) trigger in any parallel mode, not just
+#    non-scalable, parallel.
 # ----------------------------------------------------------------------------
 
 def RestrictSetsInCategory(silr, className, setIds):
@@ -169,8 +173,7 @@ DeleteAllPlots()
 #
 # Loop to test all three implementations are built, co-existing and working
 #
-if scalable or not parallel:
-    skippedSome = 0
+if not parallel:
     n=13
     for imp in (("MOAB","mixed-hex-pyr-tet"),("FMDB","human-1-fmdb.sms"),("GRUMMP","tire.vmesh")):
         OpenDatabase("../data/iTaps_test_data/%s/%s"%imp, 0, "ITAPS_%s_1.0"%imp[0])
