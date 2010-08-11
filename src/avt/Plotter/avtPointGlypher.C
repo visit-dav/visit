@@ -67,15 +67,15 @@ using std::string;
 
 avtPointGlypher::avtPointGlypher()
 {
-    glyph2D = NULL;
-    glyph3D = NULL;
-    glyphType = 0;
+    glyph2D = 0;
+    glyph3D = 0;
+    glyphType = 3;
     colorByScalar = true;
     SetUpGlyph();
 
     scale             = 0.2;
     glyphFilter       = 0;
-    normalsFilter     = NULL;
+    normalsFilter     = 0;
     nGlyphFilters     = 0;
     scalingVarName = "";
     scalingVarDim = 1;
