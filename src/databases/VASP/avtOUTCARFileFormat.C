@@ -45,6 +45,9 @@ using std::vector;
 //    Jeremy Meredith, Tue Mar 10 17:42:52 EDT 2009
 //    Initialize potim.
 //
+//    Jeremy Meredith, Thu Aug 12 16:26:24 EDT 2010
+//    Allowed per-cycle changes in unit cell vectors.
+//
 // ****************************************************************************
 
 avtOUTCARFileFormat::avtOUTCARFileFormat(const char *fn)
@@ -59,9 +62,6 @@ avtOUTCARFileFormat::avtOUTCARFileFormat(const char *fn)
     natoms = 0;
     ntimesteps = 0;
     potim = 1.0; // delta-t per timestep
-    unitCell[0][0] = 1;    unitCell[0][1] = 0;    unitCell[0][2] = 0;
-    unitCell[1][0] = 0;    unitCell[1][1] = 1;    unitCell[1][2] = 0;
-    unitCell[2][0] = 0;    unitCell[2][1] = 0;    unitCell[2][2] = 1;
 }
 
 
@@ -149,6 +149,9 @@ avtOUTCARFileFormat::OpenFileAtBeginning()
 //    Only add the force vector if we're adding the force variables.
 //    Changed the way cycles and times were added.
 //
+//    Jeremy Meredith, Thu Aug 12 16:26:24 EDT 2010
+//    Allowed per-cycle changes in unit cell vectors.
+//
 // ****************************************************************************
 
 void
@@ -160,18 +163,24 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
                                                3, 0,
                                                AVT_POINT_MESH);
     mmd->nodesAreCritical = true;
-    for (int i=0; i<9; i++)
+    if (unitCell.size() > ts)
     {
-        mmd->unitCellVectors[i] = unitCell[i/3][i%3];
+        for (int i=0; i<9; i++)
+        {
+            mmd->unitCellVectors[i] = unitCell[ts][i/3][i%3];
+        }
     }
     md->Add(mmd);
 
     avtMeshMetaData *mmd_bbox = new avtMeshMetaData("unitCell", 1, 0,0,0,
                                                     3, 1,
                                                     AVT_UNSTRUCTURED_MESH);
-    for (int i=0; i<9; i++)
+    if (unitCell.size() > ts)
     {
-        mmd_bbox->unitCellVectors[i] = unitCell[i/3][i%3];
+        for (int i=0; i<9; i++)
+        {
+            mmd_bbox->unitCellVectors[i] = unitCell[ts][i/3][i%3];
+        }
     }
     md->Add(mmd_bbox);
 
@@ -229,8 +238,11 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
 //  Creation:   August 29, 2006
 //
 //  Modifications:
-//    Kathleen Bonnell, Mon Jul 14 16:01:32 PDT 2008
-//    Specify curves as 1D rectilinear grids with y values stored in point data.
+//   Kathleen Bonnell, Mon Jul 14 16:01:32 PDT 2008
+//   Specify curves as 1D rectilinear grids with y values stored in point data.
+//
+//   Jeremy Meredith, Thu Aug 12 16:26:24 EDT 2010
+//   Allowed per-cycle changes in unit cell vectors.
 //
 // ****************************************************************************
 
@@ -253,9 +265,9 @@ avtOUTCARFileFormat::GetMesh(int ts, const char *name)
             {
                 if (j & (1<<axis))
                 {
-                    x += unitCell[axis][0];
-                    y += unitCell[axis][1];
-                    z += unitCell[axis][2];
+                    x += unitCell[ts][axis][0];
+                    y += unitCell[ts][axis][1];
+                    z += unitCell[ts][axis][2];
                 }
             }
             pts->SetPoint(j, x,y,z);
@@ -588,6 +600,9 @@ avtOUTCARFileFormat::GetNTimesteps(void)
 //    Jeremy Meredith, Tue Aug 10 12:09:19 EDT 2010
 //    Check string length so we don't compare garbage.  Avoid UMR.
 //
+//    Jeremy Meredith, Thu Aug 12 16:26:24 EDT 2010
+//    Allowed per-cycle changes in unit cell vectors.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAllMetaData()
@@ -602,7 +617,6 @@ avtOUTCARFileFormat::ReadAllMetaData()
     char line[4096];
     in.getline(line, 4096);
 
-    bool read_lattice = false;
     bool all_ions_read = false;
     int nions_doublecheck = -1;
 
@@ -652,23 +666,30 @@ avtOUTCARFileFormat::ReadAllMetaData()
             unitCell[2][1] = atof(s.substr(23,15).c_str());
             unitCell[2][2] = atof(s.substr(39,15).c_str());
         }*/
-        else if (read_lattice == false &&
-                 !strncmp(line,"      direct lattice vectors",28))
+        else if (!strncmp(line,"      direct lattice vectors",28))
         {
+            UCV uctmp;
             float tmp;
-            in >> unitCell[0][0];
-            in >> unitCell[0][1];
-            in >> unitCell[0][2];
+            in >> uctmp[0][0];
+            in >> uctmp[0][1];
+            in >> uctmp[0][2];
             in >> tmp >> tmp >> tmp;
-            in >> unitCell[1][0];
-            in >> unitCell[1][1];
-            in >> unitCell[1][2];
+            in >> uctmp[1][0];
+            in >> uctmp[1][1];
+            in >> uctmp[1][2];
             in >> tmp >> tmp >> tmp;
-            in >> unitCell[2][0];
-            in >> unitCell[2][1];
-            in >> unitCell[2][2];
+            in >> uctmp[2][0];
+            in >> uctmp[2][1];
+            in >> uctmp[2][2];
             in >> tmp >> tmp >> tmp;
-            read_lattice = true;
+            if (unitCell.size() <= ntimesteps)
+            {
+                unitCell.push_back(uctmp);
+            }
+            else
+            {
+                unitCell[ntimesteps] = uctmp;
+            }
         }
         else if (!strncmp(line," magnetization (x)",18))
         {
