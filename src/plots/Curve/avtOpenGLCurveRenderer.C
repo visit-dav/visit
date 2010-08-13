@@ -169,17 +169,11 @@ avtOpenGLCurveRenderer::RenderCurves()
     if(enableDepthTest)
         glDisable(GL_DEPTH_TEST);
 
-    //
-    // Now render the Curves.
-    //
-    if(atts.GetRenderMode() == CurveAttributes::RenderAsSymbols)
-    {
-        DrawCurveAsDynamicSymbols();
-    }
-    else
-    {
+    if (atts.GetShowLines())
         DrawCurveAsLines();
-    }
+
+    if (atts.GetShowPoints())
+        DrawCurveAsSymbols();
 
     if (atts.GetDoLineTimeCue())
     {
@@ -309,14 +303,12 @@ avtOpenGLCurveRenderer::RenderLine(void)
 // Purpose: 
 //   Draws all of the 2D Curves using the Curve cache.
 //
-// Arguments:
-//   drawNodeCurves : Whether to draw node Curves.
-//   drawCellLables : Whether to draw cell Curves.
-//
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 25 09:19:43 PDT 2004
 //
 // Modifications:
+//    Kathleen Bonnell, Fri Aug 13 13:28:39 PDT 2010
+//    Moved drawing of points to DrawCurveAsSymbols.
 //
 // ****************************************************************************
 
@@ -375,22 +367,6 @@ avtOpenGLCurveRenderer::DrawCurveAsLines()
         pt += 3;
     }
     glEnd();
-
-    // Draw the points on the curve.
-    if(atts.GetShowPoints())
-    {
-        glPointSize(atts.GetPointSize());
-        glBegin(GL_POINTS);
-        const float *pt = (const float *)input->GetPoints()->GetVoidPointer(0);
-        for(int i = 0; i < input->GetPoints()->GetNumberOfPoints(); ++i)
-        {
-            if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < pt[0])
-                continue;
-            glVertex3fv(pt);
-            pt += 3;
-        }
-        glEnd();
-    }
 
     if (stipplePattern != 0xFFFF)
         glDisable(GL_LINE_STIPPLE);
@@ -452,7 +428,7 @@ avtOpenGLCurveRenderer::GetAspect(int &bin_x_n, float &bin_x_size, float &bin_x_
 }
 
 // ****************************************************************************
-// Method: avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols
+// Method: avtOpenGLCurveRenderer::DrawCurveAsSymbols
 //
 // Purpose: 
 //   Bins up 2D world space to make sure that only a subset of the 2D Curves
@@ -472,7 +448,7 @@ avtOpenGLCurveRenderer::GetAspect(int &bin_x_n, float &bin_x_size, float &bin_x_
 // ****************************************************************************
 
 void
-avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols()
+avtOpenGLCurveRenderer::DrawCurveAsSymbols()
 {
     int bin_x_n,        bin_y_n;
     float bin_x_size,   bin_y_size;
@@ -532,7 +508,15 @@ avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols()
 
     float symbolPoints[MAX_SYMBOL_VERTS][2];
     int symbolNVerts;
-    if(atts.GetSymbol() == CurveAttributes::TriangleUp)
+    if (atts.GetSymbol() == CurveAttributes::Point)
+    {
+        symbolNVerts = 1;
+        glPointSize(atts.GetPointSize());
+        symbolPoints[0][0] = 0.;
+        symbolPoints[0][1] = 0.;
+        glBegin(GL_POINTS);
+    }
+    else if(atts.GetSymbol() == CurveAttributes::TriangleUp)
     {
         symbolNVerts = 3;
         symbolPoints[0][0] = cos(M_PI/2.) * REDUCE_SCALE * bin_x_size / 2.;
@@ -609,62 +593,16 @@ avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols()
         glBegin(GL_LINES);
     }
 
-    // Now iterate over the line segments and draw the symbols on them.
-    for(int i = 1; i < input->GetPoints()->GetNumberOfPoints(); ++i)
+    // static case
+    if (atts.GetPointFillMode() == CurveAttributes::Static)
     {
-        const float *pt = (const float *)input->GetPoints()->GetVoidPointer(0);
-        const float *A = pt + (i-1) * 3;
-        const float *B = pt + i * 3;
-        // Determine the grid cells that contain the points.
-        int x0 = int((A[0] - bin_x_offset) / bin_x_size);
-        int y0 = int((A[1] - bin_y_offset) / bin_y_size);
-
-        int x1 = int((B[0] - bin_x_offset) / bin_x_size);
-        int y1 = int((B[1] - bin_y_offset) / bin_y_size);
-
-        // Use Bresenham's line algorithm to produce a number of
-        // cells encountered along the line segment.
-        bool steep = abs(y1 - y0) > abs(x1 - x0);
-        if(steep)
+        const float *pts = (const float *)input->GetPoints()->GetVoidPointer(0);
+        int stride = atts.GetPointStride();
+        int nPts = input->GetPoints()->GetNumberOfPoints();
+        for(int i = 0; i < nPts-1; i+=stride)
         {
-            SWAP(x0, y0);
-            SWAP(x1, y1);
-        }
-        if(x0 > x1)
-        {
-            SWAP(x0, x1);
-            SWAP(y0, y1);
-        }
-        int deltax = x1 - x0;
-        int deltay = y1 - y0;
-        if(deltay < 0)
-            deltay = -deltay;
-        int err = 0;
-        int y = y0;
-        int ystep = (y0 < y1) ? 1 : -1;
-        int cells_in_line = 0;
-        for(int x = x0; x <= x1; ++x)
-        {
-            cells_in_line++;
-            err = err + deltay;
-            if((err << 1) >= deltax)
-            {
-                y += ystep;
-                err -= deltax;
-            }
-        }
-
-        // Use the number of cells along the way between the line
-        // end points to calculate intermediate points at which to 
-        // put symbols.
-        for(int pindex = 0; pindex < cells_in_line; ++pindex)
-        {
-            float t = (cells_in_line == 1) ? 0. : (float(pindex) / float(cells_in_line-1));
-
-            float ix = (1.-t)*A[0] + t*B[0];
-            if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < ix)
+            if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < pts[0])
                 continue;
-            float iy = (1.-t)*A[1] + t*B[1];
 
             if(atts.GetSymbol() == CurveAttributes::Circle)
                 glBegin(GL_TRIANGLE_FAN);
@@ -672,14 +610,112 @@ avtOpenGLCurveRenderer::DrawCurveAsDynamicSymbols()
             for(int j = 0; j < symbolNVerts; ++j)
             {
                 float pt[3];
-                pt[0] = ix + symbolPoints[j][0];
-                pt[1] = iy + symbolPoints[j][1];
+                pt[0] = pts[0] + symbolPoints[j][0];
+                pt[1] = pts[1] + symbolPoints[j][1];
                 pt[2] = 0.;                
                 glVertex3fv(pt);
             }
 
             if(atts.GetSymbol() == CurveAttributes::Circle)
                 glEnd();
+
+            pts += 3*stride;
+        }
+        // add the last point.
+        pts = (const float*)input->GetPoints()->GetVoidPointer((nPts-1)*3);
+        if (!atts.GetDoCropTimeCue() || 
+           (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() >= pts[0]))
+        {
+            if(atts.GetSymbol() == CurveAttributes::Circle)
+                glBegin(GL_TRIANGLE_FAN);
+            for(int j = 0; j < symbolNVerts; ++j)
+            {
+                float pt[3];
+                pt[0] = pts[0] + symbolPoints[j][0];
+                pt[1] = pts[1] + symbolPoints[j][1];
+                pt[2] = 0.;                
+                glVertex3fv(pt);
+            }
+
+            if(atts.GetSymbol() == CurveAttributes::Circle)
+                glEnd();
+    
+        }
+    }
+    else
+    {
+        // Now iterate over the line segments and draw the symbols on them.
+        for(int i = 1; i < input->GetPoints()->GetNumberOfPoints(); ++i)
+        {
+            const float *pt = (const float *)input->GetPoints()->GetVoidPointer(0);
+            const float *A = pt + (i-1) * 3;
+            const float *B = pt + i * 3;
+            // Determine the grid cells that contain the points.
+            int x0 = int((A[0] - bin_x_offset) / bin_x_size);
+            int y0 = int((A[1] - bin_y_offset) / bin_y_size);
+
+            int x1 = int((B[0] - bin_x_offset) / bin_x_size);
+            int y1 = int((B[1] - bin_y_offset) / bin_y_size);
+
+            // Use Bresenham's line algorithm to produce a number of
+            // cells encountered along the line segment.
+            bool steep = abs(y1 - y0) > abs(x1 - x0);
+            if(steep)
+            {
+                SWAP(x0, y0);
+                SWAP(x1, y1);
+            }
+            if(x0 > x1)
+            {
+                SWAP(x0, x1);
+                SWAP(y0, y1);
+            }
+            int deltax = x1 - x0;
+            int deltay = y1 - y0;
+            if(deltay < 0)
+                deltay = -deltay;
+            int err = 0;
+            int y = y0;
+            int ystep = (y0 < y1) ? 1 : -1;
+            int cells_in_line = 0;
+            for(int x = x0; x <= x1; ++x)
+            {
+                cells_in_line++;
+                err = err + deltay;
+                if((err << 1) >= deltax)
+                {
+                    y += ystep;
+                    err -= deltax;
+                }
+            }
+
+            // Use the number of cells along the way between the line
+            // end points to calculate intermediate points at which to 
+            // put symbols.
+            for(int pindex = 0; pindex < cells_in_line; ++pindex)
+            {
+                float t = (cells_in_line == 1) ? 0. : (float(pindex) / float(cells_in_line-1));
+
+                float ix = (1.-t)*A[0] + t*B[0];
+                if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < ix)
+                    continue;
+                float iy = (1.-t)*A[1] + t*B[1];
+
+                if(atts.GetSymbol() == CurveAttributes::Circle)
+                    glBegin(GL_TRIANGLE_FAN);
+
+                for(int j = 0; j < symbolNVerts; ++j)
+                {
+                    float pt[3];
+                    pt[0] = ix + symbolPoints[j][0];
+                    pt[1] = iy + symbolPoints[j][1];
+                    pt[2] = 0.;                
+                    glVertex3fv(pt);
+                }
+
+                if(atts.GetSymbol() == CurveAttributes::Circle)
+                    glEnd();
+            }
         }
     }
 

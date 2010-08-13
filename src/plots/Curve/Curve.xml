@@ -14,15 +14,16 @@
       avtOpenGLCurveRenderer.C
     </Files>
     <Attribute name="CurveAttributes" purpose="Attributes for the xy plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="CurveAttributes.code">
-      <Enum name="RenderMode">
-        RenderAsLines
-        RenderAsSymbols
-      </Enum>
       <Enum name="CurveColor">
         Cycle
         Custom
       </Enum>
+      <Enum name="FillMode">
+        Static
+        Dynamic
+      </Enum>
       <Enum name="SymbolTypes">
+        Point
         TriangleUp
         TriangleDown
         Square
@@ -30,11 +31,35 @@
         Plus
         X
       </Enum>
-      <Field name="lineStyle" label="Line Style" type="linestyle">
+      <Field name="showLines" label="showLines" type="bool">
+        true
+      </Field>
+      <Field name="lineStyle" label="Line Style" type="linestyle" enabler="showLines:true">
         0
       </Field>
-      <Field name="lineWidth" label="Line Width" type="linewidth">
+      <Field name="lineWidth" label="Line Width" type="linewidth" enabler="showLines:true">
         0
+      </Field>
+      <Field name="showPoints" label="showPoints" type="bool">
+        false
+      </Field>
+      <Field name="symbol" label="Symbol" type="enum" subtype="SymbolTypes">
+        Point
+      </Field>
+      <Field name="pointSize" label="pointSize" type="double" enabler="showPoints:true">
+        5.000000
+      </Field>
+      <Field name="pointFillMode" label="pointFillMode" type="enum" subtype="FillMode" enabler="showPoints:true">
+        Static
+      </Field>
+      <Field name="pointStride" label="pointStride" type="int" enabler="pointFillMode:Static">
+        1
+      </Field>
+      <Field name="symbolDensity" label="Symbol density" type="int" enabler="pointFillMode:Dynamic">
+        50
+      </Field>
+      <Field name="curveColorSource" label="Curve color" type="enum" subtype="CurveColor">
+        Cycle
       </Field>
       <Field name="curveColor" label="Color" type="color" length="4">
         0
@@ -42,31 +67,13 @@
         0
         255
       </Field>
+      <Field name="showLegend" label="Legend" type="bool">
+        true
+      </Field>
       <Field name="showLabels" label="Labels" type="bool">
         true
       </Field>
       <Field name="designator" label="Designator" type="string">
-      </Field>
-      <Field name="showPoints" label="showPoints" type="bool">
-        false
-      </Field>
-      <Field name="pointSize" label="pointSize" type="double">
-        5.000000
-      </Field>
-      <Field name="showLegend" label="Legend" type="bool">
-        true
-      </Field>
-      <Field name="curveColorSource" label="Curve color" type="enum" subtype="CurveColor">
-        Cycle
-      </Field>
-      <Field name="renderMode" label="Render mode" type="enum" subtype="RenderMode">
-        RenderAsLines
-      </Field>
-      <Field name="symbol" label="Symbol" type="enum" subtype="SymbolTypes">
-        TriangleUp
-      </Field>
-      <Field name="symbolDensity" label="Symbol density" type="int">
-        50
       </Field>
       <Field name="doBallTimeCue" label="Do Ball Time Cue" type="bool">
         false
@@ -103,8 +110,6 @@
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
-      </Function>
-      <Function name="Print" user="true" member="true">
       </Function>
       <Function name="CurveViewerPluginInfo::InitializeGlobalObjects" user="false" member="true">
       </Function>
