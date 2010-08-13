@@ -476,6 +476,10 @@ avtXRayFilter::Execute(void)
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Fri Aug 13 10:16:33 PDT 2010
+//    I corrected a bug where the lines for the pixels were not defined
+//    properly for most cases.
+
 //
 // ****************************************************************************
 
@@ -529,12 +533,12 @@ avtXRayFilter::PreExecute(void)
 
         double m11 = cosT*cosP;
         double m12 = cosT*sinP;
-        double m13 = sinT;
+        double m13 = -sinT;
         double m21 = -sinP;
         double m22 = cosP;
         double m23 = 0;
-        double m31 = -sinT*cosP;
-        double m32 = -sinT*sinP;
+        double m31 = sinT*cosP;
+        double m32 = sinT*sinP;
         double m33 = cosT;
 
         // Assumes (nLines % nx) == 0.
