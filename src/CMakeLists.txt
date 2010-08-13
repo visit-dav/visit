@@ -153,6 +153,11 @@
 #    Allow host-specific config-site files for Windows build.  If there is no
 #    host-specific file, then windows.cmake is still used.
 #
+#    Kathleen Bonnell, Fri Aug 13 10:50:15 MST 2010 
+#    Allow config-site file to be specified on command-line.  Overrides
+#    host-specific (all platforms) or windows.cmake (on windows).
+#    usage:  -D VISIT_CONFIG_SITE="/path/to/config-site/file"
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -204,8 +209,13 @@ ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetupITAPS.cmake)
 
 IF (NOT WIN32)
-  MESSAGE(STATUS "Trying to include config-site/${HOSTNAME}.cmake")
-  INCLUDE(config-site/${HOSTNAME}.cmake OPTIONAL)
+  IF (VISIT_CONFIG_SITE)
+      MESSAGE(STATUS "Trying to include ${VISIT_CONFIG_SITE}")
+      INCLUDE(${VISIT_CONFIG_SITE} OPTIONAL)
+  ELSE(VISIT_CONFIG_SITE)
+      MESSAGE(STATUS "Trying to include config-site/${HOSTNAME}.cmake")
+      INCLUDE(config-site/${HOSTNAME}.cmake OPTIONAL)
+  ENDIF(VISIT_CONFIG_SITE)
 ENDIF (NOT WIN32)
 
 
@@ -243,13 +253,16 @@ ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 # the windows cmake file.
 #-----------------------------------------------------------------------------
 IF (WIN32)
-  IF (EXISTS ${VISIT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake)
+  IF (VISIT_CONFIG_SITE)
+      MESSAGE(STATUS "Trying to include ${VISIT_CONFIG_SITE}")
+      INCLUDE(${VISIT_CONFIG_SITE})
+  ELSEIF (EXISTS ${VISIT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake)
       MESSAGE(STATUS "Trying to include config-site/${HOSTNAME}.cmake")
       INCLUDE(config-site/${HOSTNAME}.cmake)
-  ELSE (EXISTS ${VISIT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake)
+  ELSE (VISIT_CONFIG_SITE)
       MESSAGE(STATUS "Trying to include config-site/windows.cmake")
       INCLUDE(config-site/windows.cmake)
-  ENDIF (EXISTS ${VISIT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake)
+  ENDIF (VISIT_CONFIG_SITE)
   SET(CMAKE_SKIP_RPATH ON CACHE INTERNAL "VisIt builds with rpath set." FORCE)
   SET(VISIT_WIN_ICON_RESOURCE ${VISIT_WINDOWS_DIR}/resources/visitresources.rc)
 ENDIF (WIN32)
