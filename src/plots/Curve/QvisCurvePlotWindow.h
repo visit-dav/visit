@@ -48,6 +48,7 @@ class QNarrowLineEdit;
 class QCheckBox;
 class QComboBox;
 class QButtonGroup;
+class QRadioButton;
 class QSpinBox;
 class QvisColorButton;
 class QvisLineStyleWidget;
@@ -106,19 +107,21 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
   private slots:
+    void showLinesChanged(bool val);
     void lineStyleChanged(int style);
     void lineWidthChanged(int style);
     void labelsToggled(bool val);
     void legendToggled(bool val);
     void showPointsChanged(bool val);
     void processPointSizeText();
+    void pointStrideChanged(int);
 
     void curveColorClicked(int val);
     void curveColorChanged(const QColor &color);
 
-    void renderModeChanged(int);
     void symbolTypeChanged(int);
     void symbolDensityChanged(int);
+    void fillModeChanged(int);
 
     void doBallTimeCueChanged(bool val);
     void ballTimeCueColorChanged(const QColor &color);
@@ -131,21 +134,31 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
 
   private:
     int plotType;
+    QCheckBox           *showLines;
     QvisLineStyleWidget *lineStyle;
     QLabel              *lineStyleLabel;
     QvisLineWidthWidget *lineWidth;
     QLabel              *lineWidthLabel;
-    QCheckBox           *cycleColors;
 
+    QCheckBox           *cycleColors;
     QButtonGroup        *curveColorButtons;
     QvisColorButton     *curveColor;
 
     QCheckBox           *labelsToggle;
     QCheckBox           *legendToggle;
+
     QCheckBox           *showPoints;
+
     QNarrowLineEdit     *pointSize;
     QLabel              *pointSizeLabel;
-    QButtonGroup        *renderMode;
+
+    QSpinBox            *pointStride;
+    QLabel              *pointStrideLabel;
+
+    QButtonGroup        *fillModeGroup;
+    QRadioButton        *staticButton;
+    QRadioButton        *dynamicButton;   
+
     QComboBox           *symbolType;
     QLabel              *symbolTypeLabel;
     QSpinBox            *symbolDensity;

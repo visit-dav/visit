@@ -60,6 +60,9 @@
 //   Hank Childs, Thu Jul 15 18:20:26 PDT 2010
 //   Add support for cues to show the current location.
 //
+//    Kathleen Bonnell, Wed Aug 11 09:15:26 PDT 2010
+//    Remove 'Dyanmic' from DrawCurveAsSymbols method.
+//
 // ****************************************************************************
 
 class avtOpenGLCurveRenderer : public avtCurveRenderer
@@ -73,7 +76,7 @@ protected:
     void SetupGraphicsLibrary();
     void RenderCurves();
 
-    void DrawCurveAsDynamicSymbols();
+    void DrawCurveAsSymbols();
     void DrawCurveAsLines();
 
     void GetAspect(int &bin_x_n, float &bin_x_size, float &bin_x_offset,

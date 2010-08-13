@@ -79,67 +79,29 @@ PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
     std::string str; 
     char tmpStr[1000]; 
 
+    if(atts->GetShowLines())
+        SNPRINTF(tmpStr, 1000, "%sshowLines = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowLines = 0\n", prefix);
+    str += tmpStr;
     const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
     SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
-    str += tmpStr;
-    const unsigned char *curveColor = atts->GetCurveColor().GetColor();
-    SNPRINTF(tmpStr, 1000, "%scurveColor = (%d, %d, %d, %d)\n", prefix, int(curveColor[0]), int(curveColor[1]), int(curveColor[2]), int(curveColor[3]));
-    str += tmpStr;
-    if(atts->GetShowLabels())
-        SNPRINTF(tmpStr, 1000, "%sshowLabels = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sshowLabels = 0\n", prefix);
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdesignator = \"%s\"\n", prefix, atts->GetDesignator().c_str());
     str += tmpStr;
     if(atts->GetShowPoints())
         SNPRINTF(tmpStr, 1000, "%sshowPoints = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%sshowPoints = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
-    str += tmpStr;
-    if(atts->GetShowLegend())
-        SNPRINTF(tmpStr, 1000, "%sshowLegend = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sshowLegend = 0\n", prefix);
-    str += tmpStr;
-    const char *curveColorSource_names = "Cycle, Custom";
-    switch (atts->GetCurveColorSource())
-    {
-      case CurveAttributes::Cycle:
-          SNPRINTF(tmpStr, 1000, "%scurveColorSource = %sCycle  # %s\n", prefix, prefix, curveColorSource_names);
-          str += tmpStr;
-          break;
-      case CurveAttributes::Custom:
-          SNPRINTF(tmpStr, 1000, "%scurveColorSource = %sCustom  # %s\n", prefix, prefix, curveColorSource_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    const char *renderMode_names = "RenderAsLines, RenderAsSymbols";
-    switch (atts->GetRenderMode())
-    {
-      case CurveAttributes::RenderAsLines:
-          SNPRINTF(tmpStr, 1000, "%srenderMode = %sRenderAsLines  # %s\n", prefix, prefix, renderMode_names);
-          str += tmpStr;
-          break;
-      case CurveAttributes::RenderAsSymbols:
-          SNPRINTF(tmpStr, 1000, "%srenderMode = %sRenderAsSymbols  # %s\n", prefix, prefix, renderMode_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    const char *symbol_names = "TriangleUp, TriangleDown, Square, Circle, Plus, "
-        "X";
+    const char *symbol_names = "Point, TriangleUp, TriangleDown, Square, Circle, "
+        "Plus, X";
     switch (atts->GetSymbol())
     {
+      case CurveAttributes::Point:
+          SNPRINTF(tmpStr, 1000, "%ssymbol = %sPoint  # %s\n", prefix, prefix, symbol_names);
+          str += tmpStr;
+          break;
       case CurveAttributes::TriangleUp:
           SNPRINTF(tmpStr, 1000, "%ssymbol = %sTriangleUp  # %s\n", prefix, prefix, symbol_names);
           str += tmpStr;
@@ -168,7 +130,56 @@ PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
+    str += tmpStr;
+    const char *pointFillMode_names = "Static, Dynamic";
+    switch (atts->GetPointFillMode())
+    {
+      case CurveAttributes::Static:
+          SNPRINTF(tmpStr, 1000, "%spointFillMode = %sStatic  # %s\n", prefix, prefix, pointFillMode_names);
+          str += tmpStr;
+          break;
+      case CurveAttributes::Dynamic:
+          SNPRINTF(tmpStr, 1000, "%spointFillMode = %sDynamic  # %s\n", prefix, prefix, pointFillMode_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%spointStride = %d\n", prefix, atts->GetPointStride());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssymbolDensity = %d\n", prefix, atts->GetSymbolDensity());
+    str += tmpStr;
+    const char *curveColorSource_names = "Cycle, Custom";
+    switch (atts->GetCurveColorSource())
+    {
+      case CurveAttributes::Cycle:
+          SNPRINTF(tmpStr, 1000, "%scurveColorSource = %sCycle  # %s\n", prefix, prefix, curveColorSource_names);
+          str += tmpStr;
+          break;
+      case CurveAttributes::Custom:
+          SNPRINTF(tmpStr, 1000, "%scurveColorSource = %sCustom  # %s\n", prefix, prefix, curveColorSource_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const unsigned char *curveColor = atts->GetCurveColor().GetColor();
+    SNPRINTF(tmpStr, 1000, "%scurveColor = (%d, %d, %d, %d)\n", prefix, int(curveColor[0]), int(curveColor[1]), int(curveColor[2]), int(curveColor[3]));
+    str += tmpStr;
+    if(atts->GetShowLegend())
+        SNPRINTF(tmpStr, 1000, "%sshowLegend = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowLegend = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetShowLabels())
+        SNPRINTF(tmpStr, 1000, "%sshowLabels = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowLabels = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdesignator = \"%s\"\n", prefix, atts->GetDesignator().c_str());
     str += tmpStr;
     if(atts->GetDoBallTimeCue())
         SNPRINTF(tmpStr, 1000, "%sdoBallTimeCue = 1\n", prefix);
@@ -207,6 +218,30 @@ CurveAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetShowLines(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showLines in the object.
+    obj->data->SetShowLines(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetShowLines(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowLines()?1L:0L);
+    return retval;
 }
 
 /*static*/ PyObject *
@@ -263,6 +298,202 @@ CurveAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetShowPoints(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showPoints in the object.
+    obj->data->SetShowPoints(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetShowPoints(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowPoints()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetSymbol(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the symbol in the object.
+    if(ival >= 0 && ival < 7)
+        obj->data->SetSymbol(CurveAttributes::SymbolTypes(ival));
+    else
+    {
+        fprintf(stderr, "An invalid symbol value was given. "
+                        "Valid values are in the range of [0,6]. "
+                        "You can also use the following names: "
+                        "Point, TriangleUp, TriangleDown, Square, Circle, "
+                        "Plus, X.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetSymbol(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetSymbol()));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetPointSize(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the pointSize in the object.
+    obj->data->SetPointSize(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetPointSize(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPointSize());
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetPointFillMode(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the pointFillMode in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetPointFillMode(CurveAttributes::FillMode(ival));
+    else
+    {
+        fprintf(stderr, "An invalid pointFillMode value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Static, Dynamic.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetPointFillMode(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetPointFillMode()));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetPointStride(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the pointStride in the object.
+    obj->data->SetPointStride((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetPointStride(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetPointStride()));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetSymbolDensity(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the symbolDensity in the object.
+    obj->data->SetSymbolDensity((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetSymbolDensity(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetSymbolDensity()));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetCurveColorSource(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the curveColorSource in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetCurveColorSource(CurveAttributes::CurveColor(ival));
+    else
+    {
+        fprintf(stderr, "An invalid curveColorSource value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Cycle, Custom.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetCurveColorSource(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCurveColorSource()));
     return retval;
 }
 
@@ -344,6 +575,30 @@ CurveAttributes_GetCurveColor(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+CurveAttributes_SetShowLegend(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showLegend in the object.
+    obj->data->SetShowLegend(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetShowLegend(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowLegend()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 CurveAttributes_SetShowLabels(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
@@ -388,202 +643,6 @@ CurveAttributes_GetDesignator(PyObject *self, PyObject *args)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDesignator().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-CurveAttributes_SetShowPoints(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showPoints in the object.
-    obj->data->SetShowPoints(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-CurveAttributes_GetShowPoints(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowPoints()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-CurveAttributes_SetPointSize(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the pointSize in the object.
-    obj->data->SetPointSize(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-CurveAttributes_GetPointSize(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetPointSize());
-    return retval;
-}
-
-/*static*/ PyObject *
-CurveAttributes_SetShowLegend(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showLegend in the object.
-    obj->data->SetShowLegend(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-CurveAttributes_GetShowLegend(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowLegend()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-CurveAttributes_SetCurveColorSource(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the curveColorSource in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetCurveColorSource(CurveAttributes::CurveColor(ival));
-    else
-    {
-        fprintf(stderr, "An invalid curveColorSource value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Cycle, Custom.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-CurveAttributes_GetCurveColorSource(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetCurveColorSource()));
-    return retval;
-}
-
-/*static*/ PyObject *
-CurveAttributes_SetRenderMode(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the renderMode in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetRenderMode(CurveAttributes::RenderMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid renderMode value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "RenderAsLines, RenderAsSymbols.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-CurveAttributes_GetRenderMode(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetRenderMode()));
-    return retval;
-}
-
-/*static*/ PyObject *
-CurveAttributes_SetSymbol(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the symbol in the object.
-    if(ival >= 0 && ival < 6)
-        obj->data->SetSymbol(CurveAttributes::SymbolTypes(ival));
-    else
-    {
-        fprintf(stderr, "An invalid symbol value was given. "
-                        "Valid values are in the range of [0,5]. "
-                        "You can also use the following names: "
-                        "TriangleUp, TriangleDown, Square, Circle, Plus, "
-                        "X.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-CurveAttributes_GetSymbol(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetSymbol()));
-    return retval;
-}
-
-/*static*/ PyObject *
-CurveAttributes_SetSymbolDensity(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the symbolDensity in the object.
-    obj->data->SetSymbolDensity((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-CurveAttributes_GetSymbolDensity(PyObject *self, PyObject *args)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetSymbolDensity()));
     return retval;
 }
 
@@ -889,30 +948,34 @@ CurveAttributes_GetTimeForTimeCue(PyObject *self, PyObject *args)
 
 PyMethodDef PyCurveAttributes_methods[CURVEATTRIBUTES_NMETH] = {
     {"Notify", CurveAttributes_Notify, METH_VARARGS},
+    {"SetShowLines", CurveAttributes_SetShowLines, METH_VARARGS},
+    {"GetShowLines", CurveAttributes_GetShowLines, METH_VARARGS},
     {"SetLineStyle", CurveAttributes_SetLineStyle, METH_VARARGS},
     {"GetLineStyle", CurveAttributes_GetLineStyle, METH_VARARGS},
     {"SetLineWidth", CurveAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", CurveAttributes_GetLineWidth, METH_VARARGS},
+    {"SetShowPoints", CurveAttributes_SetShowPoints, METH_VARARGS},
+    {"GetShowPoints", CurveAttributes_GetShowPoints, METH_VARARGS},
+    {"SetSymbol", CurveAttributes_SetSymbol, METH_VARARGS},
+    {"GetSymbol", CurveAttributes_GetSymbol, METH_VARARGS},
+    {"SetPointSize", CurveAttributes_SetPointSize, METH_VARARGS},
+    {"GetPointSize", CurveAttributes_GetPointSize, METH_VARARGS},
+    {"SetPointFillMode", CurveAttributes_SetPointFillMode, METH_VARARGS},
+    {"GetPointFillMode", CurveAttributes_GetPointFillMode, METH_VARARGS},
+    {"SetPointStride", CurveAttributes_SetPointStride, METH_VARARGS},
+    {"GetPointStride", CurveAttributes_GetPointStride, METH_VARARGS},
+    {"SetSymbolDensity", CurveAttributes_SetSymbolDensity, METH_VARARGS},
+    {"GetSymbolDensity", CurveAttributes_GetSymbolDensity, METH_VARARGS},
+    {"SetCurveColorSource", CurveAttributes_SetCurveColorSource, METH_VARARGS},
+    {"GetCurveColorSource", CurveAttributes_GetCurveColorSource, METH_VARARGS},
     {"SetCurveColor", CurveAttributes_SetCurveColor, METH_VARARGS},
     {"GetCurveColor", CurveAttributes_GetCurveColor, METH_VARARGS},
+    {"SetShowLegend", CurveAttributes_SetShowLegend, METH_VARARGS},
+    {"GetShowLegend", CurveAttributes_GetShowLegend, METH_VARARGS},
     {"SetShowLabels", CurveAttributes_SetShowLabels, METH_VARARGS},
     {"GetShowLabels", CurveAttributes_GetShowLabels, METH_VARARGS},
     {"SetDesignator", CurveAttributes_SetDesignator, METH_VARARGS},
     {"GetDesignator", CurveAttributes_GetDesignator, METH_VARARGS},
-    {"SetShowPoints", CurveAttributes_SetShowPoints, METH_VARARGS},
-    {"GetShowPoints", CurveAttributes_GetShowPoints, METH_VARARGS},
-    {"SetPointSize", CurveAttributes_SetPointSize, METH_VARARGS},
-    {"GetPointSize", CurveAttributes_GetPointSize, METH_VARARGS},
-    {"SetShowLegend", CurveAttributes_SetShowLegend, METH_VARARGS},
-    {"GetShowLegend", CurveAttributes_GetShowLegend, METH_VARARGS},
-    {"SetCurveColorSource", CurveAttributes_SetCurveColorSource, METH_VARARGS},
-    {"GetCurveColorSource", CurveAttributes_GetCurveColorSource, METH_VARARGS},
-    {"SetRenderMode", CurveAttributes_SetRenderMode, METH_VARARGS},
-    {"GetRenderMode", CurveAttributes_GetRenderMode, METH_VARARGS},
-    {"SetSymbol", CurveAttributes_SetSymbol, METH_VARARGS},
-    {"GetSymbol", CurveAttributes_GetSymbol, METH_VARARGS},
-    {"SetSymbolDensity", CurveAttributes_SetSymbolDensity, METH_VARARGS},
-    {"GetSymbolDensity", CurveAttributes_GetSymbolDensity, METH_VARARGS},
     {"SetDoBallTimeCue", CurveAttributes_SetDoBallTimeCue, METH_VARARGS},
     {"GetDoBallTimeCue", CurveAttributes_GetDoBallTimeCue, METH_VARARGS},
     {"SetBallTimeCueColor", CurveAttributes_SetBallTimeCueColor, METH_VARARGS},
@@ -957,6 +1020,8 @@ CurveAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyCurveAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "showLines") == 0)
+        return CurveAttributes_GetShowLines(self, NULL);
     if(strcmp(name, "lineStyle") == 0)
         return CurveAttributes_GetLineStyle(self, NULL);
     if(strcmp(name, "SOLID") == 0)
@@ -970,34 +1035,12 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "lineWidth") == 0)
         return CurveAttributes_GetLineWidth(self, NULL);
-    if(strcmp(name, "curveColor") == 0)
-        return CurveAttributes_GetCurveColor(self, NULL);
-    if(strcmp(name, "showLabels") == 0)
-        return CurveAttributes_GetShowLabels(self, NULL);
-    if(strcmp(name, "designator") == 0)
-        return CurveAttributes_GetDesignator(self, NULL);
     if(strcmp(name, "showPoints") == 0)
         return CurveAttributes_GetShowPoints(self, NULL);
-    if(strcmp(name, "pointSize") == 0)
-        return CurveAttributes_GetPointSize(self, NULL);
-    if(strcmp(name, "showLegend") == 0)
-        return CurveAttributes_GetShowLegend(self, NULL);
-    if(strcmp(name, "curveColorSource") == 0)
-        return CurveAttributes_GetCurveColorSource(self, NULL);
-    if(strcmp(name, "Cycle") == 0)
-        return PyInt_FromLong(long(CurveAttributes::Cycle));
-    if(strcmp(name, "Custom") == 0)
-        return PyInt_FromLong(long(CurveAttributes::Custom));
-
-    if(strcmp(name, "renderMode") == 0)
-        return CurveAttributes_GetRenderMode(self, NULL);
-    if(strcmp(name, "RenderAsLines") == 0)
-        return PyInt_FromLong(long(CurveAttributes::RenderAsLines));
-    if(strcmp(name, "RenderAsSymbols") == 0)
-        return PyInt_FromLong(long(CurveAttributes::RenderAsSymbols));
-
     if(strcmp(name, "symbol") == 0)
         return CurveAttributes_GetSymbol(self, NULL);
+    if(strcmp(name, "Point") == 0)
+        return PyInt_FromLong(long(CurveAttributes::Point));
     if(strcmp(name, "TriangleUp") == 0)
         return PyInt_FromLong(long(CurveAttributes::TriangleUp));
     if(strcmp(name, "TriangleDown") == 0)
@@ -1011,8 +1054,34 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "X") == 0)
         return PyInt_FromLong(long(CurveAttributes::X));
 
+    if(strcmp(name, "pointSize") == 0)
+        return CurveAttributes_GetPointSize(self, NULL);
+    if(strcmp(name, "pointFillMode") == 0)
+        return CurveAttributes_GetPointFillMode(self, NULL);
+    if(strcmp(name, "Static") == 0)
+        return PyInt_FromLong(long(CurveAttributes::Static));
+    if(strcmp(name, "Dynamic") == 0)
+        return PyInt_FromLong(long(CurveAttributes::Dynamic));
+
+    if(strcmp(name, "pointStride") == 0)
+        return CurveAttributes_GetPointStride(self, NULL);
     if(strcmp(name, "symbolDensity") == 0)
         return CurveAttributes_GetSymbolDensity(self, NULL);
+    if(strcmp(name, "curveColorSource") == 0)
+        return CurveAttributes_GetCurveColorSource(self, NULL);
+    if(strcmp(name, "Cycle") == 0)
+        return PyInt_FromLong(long(CurveAttributes::Cycle));
+    if(strcmp(name, "Custom") == 0)
+        return PyInt_FromLong(long(CurveAttributes::Custom));
+
+    if(strcmp(name, "curveColor") == 0)
+        return CurveAttributes_GetCurveColor(self, NULL);
+    if(strcmp(name, "showLegend") == 0)
+        return CurveAttributes_GetShowLegend(self, NULL);
+    if(strcmp(name, "showLabels") == 0)
+        return CurveAttributes_GetShowLabels(self, NULL);
+    if(strcmp(name, "designator") == 0)
+        return CurveAttributes_GetDesignator(self, NULL);
     if(strcmp(name, "doBallTimeCue") == 0)
         return CurveAttributes_GetDoBallTimeCue(self, NULL);
     if(strcmp(name, "ballTimeCueColor") == 0)
@@ -1055,30 +1124,34 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "lineStyle") == 0)
+    if(strcmp(name, "showLines") == 0)
+        obj = CurveAttributes_SetShowLines(self, tuple);
+    else if(strcmp(name, "lineStyle") == 0)
         obj = CurveAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
         obj = CurveAttributes_SetLineWidth(self, tuple);
+    else if(strcmp(name, "showPoints") == 0)
+        obj = CurveAttributes_SetShowPoints(self, tuple);
+    else if(strcmp(name, "symbol") == 0)
+        obj = CurveAttributes_SetSymbol(self, tuple);
+    else if(strcmp(name, "pointSize") == 0)
+        obj = CurveAttributes_SetPointSize(self, tuple);
+    else if(strcmp(name, "pointFillMode") == 0)
+        obj = CurveAttributes_SetPointFillMode(self, tuple);
+    else if(strcmp(name, "pointStride") == 0)
+        obj = CurveAttributes_SetPointStride(self, tuple);
+    else if(strcmp(name, "symbolDensity") == 0)
+        obj = CurveAttributes_SetSymbolDensity(self, tuple);
+    else if(strcmp(name, "curveColorSource") == 0)
+        obj = CurveAttributes_SetCurveColorSource(self, tuple);
     else if(strcmp(name, "curveColor") == 0)
         obj = CurveAttributes_SetCurveColor(self, tuple);
+    else if(strcmp(name, "showLegend") == 0)
+        obj = CurveAttributes_SetShowLegend(self, tuple);
     else if(strcmp(name, "showLabels") == 0)
         obj = CurveAttributes_SetShowLabels(self, tuple);
     else if(strcmp(name, "designator") == 0)
         obj = CurveAttributes_SetDesignator(self, tuple);
-    else if(strcmp(name, "showPoints") == 0)
-        obj = CurveAttributes_SetShowPoints(self, tuple);
-    else if(strcmp(name, "pointSize") == 0)
-        obj = CurveAttributes_SetPointSize(self, tuple);
-    else if(strcmp(name, "showLegend") == 0)
-        obj = CurveAttributes_SetShowLegend(self, tuple);
-    else if(strcmp(name, "curveColorSource") == 0)
-        obj = CurveAttributes_SetCurveColorSource(self, tuple);
-    else if(strcmp(name, "renderMode") == 0)
-        obj = CurveAttributes_SetRenderMode(self, tuple);
-    else if(strcmp(name, "symbol") == 0)
-        obj = CurveAttributes_SetSymbol(self, tuple);
-    else if(strcmp(name, "symbolDensity") == 0)
-        obj = CurveAttributes_SetSymbolDensity(self, tuple);
     else if(strcmp(name, "doBallTimeCue") == 0)
         obj = CurveAttributes_SetDoBallTimeCue(self, tuple);
     else if(strcmp(name, "ballTimeCueColor") == 0)
