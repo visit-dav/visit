@@ -18,6 +18,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Bonnell, Fri Aug 13 16:10:56 MST 2010 
+#    Added TestPointsAndSymbols to test various points/symbol settings.
+#    Added TestTimeCue to test time-cue functionality
+#
 # ----------------------------------------------------------------------------
 
 def Test1():
@@ -141,9 +146,180 @@ def TestOverlayCurves():
     CloseDatabase("../data/curve_test_data/ol_curveB.curve")
     CloseDatabase("../data/curve_test_data/ol_curveC.curve")
 
+def TestPointsAndSymbols():
+    TestSection("Points and Symbols")
+    OpenDatabase("../data/curve_test_data/ol_curveA.curve")
+    AddPlot("Curve","ol_curveA")  
+    #points and lines
+    curve = CurveAttributes()
+    curve.showLabels = 0
+    curve.showPoints = 1
+    SetPlotOptions(curve)
+    DrawPlots()
+    ResetView()
+    v = GetViewCurve()
+    v.domainCoords = (-0.5, 5.5)
+    v.rangeCoords = (-0.5, 3.5)
+    SetViewCurve(v)
+    Test("curve_3_01")
+
+    #stride the points
+    curve.pointStride = 3
+    SetPlotOptions(curve)
+    Test("curve_3_02")
+
+    #Dynamic fill 
+    curve.pointFillMode = curve.Dynamic
+    SetPlotOptions(curve)  
+    Test("curve_3_03")
+
+    #change density
+    curve.symbolDensity = 10
+    SetPlotOptions(curve)  
+    Test("curve_3_04")
+
+    #Symbol 
+    curve.symbol = curve.TriangleDown
+    SetPlotOptions(curve)
+    Test("curve_3_05")
+
+    #Zoom 
+    v.domainCoords = (2, 5)
+    v.rangeCoords = (2, 4)
+    SetViewCurve(v)  
+    Test("curve_3_06")
+
+    #Symbol 
+    v.domainCoords = (-0.5, 5.5)
+    v.rangeCoords = (-0.5, 3.5)
+    SetViewCurve(v)  
+    curve.symbol = curve.Plus
+    SetPlotOptions(curve)
+    Test("curve_3_07")
+
+    #Static with symbols
+    curve.pointFillMode = curve.Static
+    curve.pointStride = 1
+    curve.symbol = curve.Circle
+    SetPlotOptions(curve)
+    Test("curve_3_08")
+
+    #Remove lines
+    curve.showLines = 0 
+    curve.symbol = curve.X
+    SetPlotOptions(curve)
+    Test("curve_3_09")
+
+    #Remove lines
+    curve.pointFillMode = curve.Dynamic 
+    curve.symbolDensity = 30
+    curve.symbol = curve.TriangleUp
+    SetPlotOptions(curve)
+    Test("curve_3_10")
+
+    OpenDatabase("../data/curve_test_data/ol_curveB.curve")
+    AddPlot("Curve", "ol_curveB")
+    DrawPlots()
+    c2 = CurveAttributes()
+    c2.showLabels = 0
+    c2.curveColorSource = c2.Custom
+    c2.curveColor = (255, 0, 0, 255)
+    SetPlotOptions(c2)
+    AddOperator("Transform")
+    ta2=TransformAttributes()
+    ta2.doTranslate=1
+    ta2.translateX=-0.35
+    SetOperatorOptions(ta2)
+    DrawPlots()
+    DrawPlots()
+    Test("curve_3_11")
+
+    c2.showLines = 0
+    c2.showPoints = 1
+    c2.pointFillMode = c2.Dynamic
+    c2.symbol = c2.Circle
+    c2.symbolDensity = 30
+    SetPlotOptions(c2)
+    DrawPlots()
+    Test("curve_3_12")
+
+
+    OpenDatabase("../data/curve_test_data/ol_curveC.curve")
+    AddPlot("Curve", "ol_curveC")
+    DrawPlots()
+    c3 = CurveAttributes()
+    c3.showLabels = 0
+    c3.showPoints = 1
+    c3.curveColorSource = c2.Custom
+    c3.curveColor = (0, 255, 0, 255)
+    SetPlotOptions(c3)
+    AddOperator("Transform")
+    ta3=TransformAttributes()
+    ta3.doTranslate=1
+    ta3.translateX=0.25
+    SetOperatorOptions(ta3)
+    DrawPlots()
+    Test("curve_3_13")
+
+
+    DeleteAllPlots()
+    CloseDatabase("../data/curve_test_data/ol_curveA.curve")
+    CloseDatabase("../data/curve_test_data/ol_curveB.curve")
+    CloseDatabase("../data/curve_test_data/ol_curveB.curve")
+
+def TestTimeCue():
+    TestSection("Time Cue")
+    OpenDatabase("../data/curve_test_data/ol_curveC.curve")
+    AddPlot("Curve", "ol_curveC")
+    c = CurveAttributes()
+    c.showLabels = 0
+    c.showPoints = 1
+    c.doBallTimeCue = 1
+    c.timeCueBallSize = 1
+    c.ballTimeCueColor = (0, 255, 0, 255)
+    SetPlotOptions(c)
+    DrawPlots()
+
+    v = GetViewCurve()
+    v.domainCoords = (-0.25, 10.25)
+    v.rangeCoords = (-0.25, 15.25)
+    SetViewCurve(v)
+
+    SuppressQueryOutputOn()
+    Query("NumNodes")
+    n = GetQueryOutputValue()
+    for i in range(n-1):
+        c.timeForTimeCue = i
+        SetPlotOptions(c)
+        s = "curve_4_%02d" % i
+        Test(s)
+
+    c.doLineTimeCue = 1
+    c.lineTimeCueColor = c.ballTimeCueColor
+    SetPlotOptions(c)
+    s = "curve_4_%02d" % (n-1)
+    Test(s)
+   
+    c.lineTimeCueWidth = 3
+    SetPlotOptions(c)
+    s = "curve_4_%02d" % n
+    Test(s)
+    n = n+ 1
+    
+    c.doCropTimeCue = 1
+    SetPlotOptions(c)
+    s = "curve_4_%02d" % n
+    Test(s)
+  
+
+    DeleteAllPlots()
+    CloseDatabase("../data/curve_test_data/ol_curveC.curve")
+
 def Main():
     Test1()
     TestOverlayCurves()
+    TestPointsAndSymbols()
+    TestTimeCue()
 
 Main()
 Exit()
