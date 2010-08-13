@@ -149,6 +149,10 @@
 #    Tom Fogal, Thu Aug  5 18:28:17 MDT 2010
 #    Add missing include/visit directory to default include path.
 #
+#    Kathleen Bonnell, Fri Aug 13 9:59:37 MST 2010 
+#    Allow host-specific config-site files for Windows build.  If there is no
+#    host-specific file, then windows.cmake is still used.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -239,8 +243,13 @@ ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 # the windows cmake file.
 #-----------------------------------------------------------------------------
 IF (WIN32)
-  MESSAGE(STATUS "Trying to include config-site/windows.cmake")
-  INCLUDE(config-site/windows.cmake)
+  IF (EXISTS ${VISIT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake)
+      MESSAGE(STATUS "Trying to include config-site/${HOSTNAME}.cmake")
+      INCLUDE(config-site/${HOSTNAME}.cmake)
+  ELSE (EXISTS ${VISIT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake)
+      MESSAGE(STATUS "Trying to include config-site/windows.cmake")
+      INCLUDE(config-site/windows.cmake)
+  ENDIF (EXISTS ${VISIT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake)
   SET(CMAKE_SKIP_RPATH ON CACHE INTERNAL "VisIt builds with rpath set." FORCE)
   SET(VISIT_WIN_ICON_RESOURCE ${VISIT_WINDOWS_DIR}/resources/visitresources.rc)
 ENDIF (WIN32)
