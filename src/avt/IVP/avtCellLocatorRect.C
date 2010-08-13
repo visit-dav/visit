@@ -45,6 +45,9 @@
 #include <DebugStream.h>
 #include <cassert>
 #include <algorithm>
+#ifdef _WIN32
+#include <functional> // for 'less'
+#endif
 
 // -------------------------------------------------------------------------
 
@@ -114,7 +117,7 @@ vtkIdType avtCellLocatorRect::FindCell( const double pos[3],
 #else
 
     int    i[3];
-    double l[3], h[3];
+    double l[3];
 
     for( unsigned int d=0; d<3; d++ )
     {

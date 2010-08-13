@@ -113,6 +113,11 @@ struct avtIVPStateHelper;
 //   Rewrite avtIVPStep to reduce its size drastically, and add better 
 //   length estimation and clamping abilities.
 //
+//   Kathleen Bonnell, Fri Aug 13 08:20:15 MST 2010
+//   Fix compile error on windows. When creating an array like: a[npts], npts
+//   must be a constant whose value can be determined at compile time, or
+//   VisualStudio complains.
+//
 // ****************************************************************************
 
 class avtIVPStep: public std::vector<avtVector>
@@ -186,7 +191,7 @@ public:
         param -= t0;
         param /= (t1 - t0);
 
-        avtVector tmp[size()-1];
+        std::vector<avtVector> tmp(size()-1);
 
         for( size_t i=0; i<size()-1; ++i )
             tmp[i] = (*this)[i+1] - (*this)[i];
@@ -200,7 +205,7 @@ public:
 
     void ClampToLength( double L )
     {
-        avtVector tmp[size()-1];
+        avtVector *tmp = new avtVector[size()-1];
 
         double t = 0.5;
 
@@ -264,6 +269,7 @@ public:
 
         std::copy( tmp, tmp+size(), begin() );
         t1 = t0 + t*(t1 + t0);
+        delete [] tmp;
     }
 
     double GetLength() const
