@@ -103,6 +103,13 @@ avtCellLocator::~avtCellLocator()
 }
 
 //----------------------------------------------------------------------------
+// Modifications:
+//   Kathleen Bonnell, Fri Aug 13 08:20:15 MST 2010
+//   Fix compile error on windows. When creating an array like: a[npts], npts
+//   must be a constant whose value can be determined at compile time, or
+//   VisualStudio complains.
+//
+//----------------------------------------------------------------------------
 
 bool avtCellLocator::TestCell( vtkIdType cellid, const double pos[3],
                                avtInterpolationWeights* weights ) const
@@ -134,11 +141,12 @@ bool avtCellLocator::TestCell( vtkIdType cellid, const double pos[3],
     const unsigned int npts = cell->GetNumberOfPoints();
 
     // perform the cell inversion
-    double lcoord[3], tmp, w[npts];
+    double lcoord[3], tmp;
+    std::vector<double> w(npts);
     int subid;
 
     int result = cell->EvaluatePosition( const_cast<double*>(pos), 0, 
-                                         subid, lcoord, tmp, w );
+                                         subid, lcoord, tmp, &w[0]);
 
     // if this is the cell containing pos, compute indices and derivatives
     if( result == 1 && weights )
@@ -255,7 +263,7 @@ bool avtCellLocator::TestHex( vtkIdType cellid, const double pos[3],
     const int    maxiter = 8;
     const double epsilon = 1e-4;
 
-    double h[3], w[3], D[3][3], p[3], c[3];
+    double h[3], D[3][3], p[3], c[3];
 
     for( int i=0; i<3; ++i )
         c[i] = 0.5;

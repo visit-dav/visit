@@ -50,8 +50,9 @@
 
 // -------------------------------------------------------------------------
 
-struct celltree
+class celltree
 {
+public:
     struct node
     {
         unsigned int index;
@@ -137,6 +138,7 @@ struct celltree
 
     std::vector<node>         nodes;
     std::vector<unsigned int> leaves;
+
 
     struct point_traversal
     {
