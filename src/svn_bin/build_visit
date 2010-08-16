@@ -930,6 +930,9 @@
 #     for silo in the case of using hdf5 since it will now get it from the
 #     hdf5 dependent libraries.
 #
+#     Tom Fogal, Sun Aug 15 19:18:07 MDT 2010
+#     Added a recursive chmod in hopes of fixing Qt perm issues.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -3385,6 +3388,9 @@ function build_qt
 
     info "Installing Qt4 . . . "
     $MAKE install
+
+    # Qt screws up permissions in some cases.  Try to fix that.
+    chmod -R a+rX ${VISITDIR}/qt/${QT_VERSION}
 
     #
     # Visit expects .so suffix on qt libs but xlc uses .a suffixe even 
