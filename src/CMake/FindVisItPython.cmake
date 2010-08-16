@@ -55,6 +55,10 @@
 #   Kathleen Bonnell, Wed Mar 24 16:26:32 MST 2010
 #   Change install on windows due to different directory structure.
 #
+#   Cyrus Harrison, Mon Aug 16 11:41:22 PDT 2010
+#   Create a complete python install in ${VISIT_INSTALLED_VERSION_LIB}/python
+#   This allows us to install python modules directly to VisIt's python.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -291,21 +295,25 @@ IF(PYTHONLIBS_FOUND)
         # Only install Python support files if we are not using the system Python
         IF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
             # Install the python modules
-	    # Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
+            # Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
             # Exclude visit module files.
             IF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
                 INSTALL(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}
                     DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
-                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                     GROUP_READ GROUP_WRITE
+                                     WORLD_READ
+                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                          WORLD_READ WORLD_EXECUTE
                     PATTERN "*.pyc" EXCLUDE
                     PATTERN "*.pyo" EXCLUDE
-	            PATTERN "lib-tk" EXCLUDE
+                    PATTERN "lib-tk" EXCLUDE
                     PATTERN "visit*" EXCLUDE
                     PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE
                 )
             ENDIF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
-    
+
             # Install the Python headers
             IF (NOT WIN32)
                 INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
@@ -318,9 +326,46 @@ IF(PYTHONLIBS_FOUND)
                                         WORLD_READ             WORLD_EXECUTE
                   PATTERN ".svn" EXCLUDE
                 )
+                #
+                # CDH:
+                # We also need to install the headers into lib/python dir
+                # if we want to be able to install python modules into a visit
+                # install.
+                #
+                INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
+                  DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
+                  FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
+                                   GROUP_READ GROUP_WRITE 
+                                   WORLD_READ
+                  DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                                        GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                                        WORLD_READ             WORLD_EXECUTE
+                  PATTERN ".svn" EXCLUDE
+                )
             ELSE (NOT WIN32)
+                # CDH
+                # The WIN32 & NOT WIN32 cases seem almost the same here?
+                # The only diff I can see is the "*.h" glob is used?
+                # 
                 INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
                     DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python
+                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
+                                     GROUP_READ GROUP_WRITE 
+                                     WORLD_READ
+                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                                          WORLD_READ             WORLD_EXECUTE
+                    FILES_MATCHING PATTERN "*.h"
+                    PATTERN ".svn" EXCLUDE
+                )
+                #
+                # CDH:
+                # We also need to install the headers into lib/python dir
+                # if we want to be able to install python modules into a visit
+                # install.
+                #
+                INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
+                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
                     FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
                                      GROUP_READ GROUP_WRITE 
                                      WORLD_READ
