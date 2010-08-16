@@ -2705,7 +2705,7 @@ avtSiloFileFormat::ReadQuadvars(DBfile *dbfile,
             DBfile *correctFile = dbfile;
             bool valid_var = true;
             DetermineFileAndDirectory(qvar_names[i], correctFile, 0, realvar);
-            DBquadvar *qv = DBGetQuadvar(correctFile, realvar);
+            qv = DBGetQuadvar(correctFile, realvar);
             if (qv == NULL)
             {
                 valid_var = false;
