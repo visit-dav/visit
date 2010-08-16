@@ -1111,6 +1111,14 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
     {
         return CurveAttributes_GetCurveColor(self, NULL);
     }
+    if(strcmp(name, "RenderAsLines") == 0)
+    {
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RenderAsPoints") == 0)
+    {
+        return PyInt_FromLong(1L);
+    }
     return Py_FindMethod(PyCurveAttributes_methods, self, name);
 }
 
@@ -1189,6 +1197,28 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
                 CurveObj->data->SetCurveColorSource(CurveAttributes::Custom);
             else
                 CurveObj->data->SetCurveColorSource(CurveAttributes::Cycle);
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        if(strcmp(name, "renderMode") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+            {
+                CurveObj->data->SetShowLines(true);
+                CurveObj->data->SetShowPoints(false);
+            }
+            else
+            {
+                CurveObj->data->SetShowLines(false);
+                CurveObj->data->SetShowPoints(true);
+            }
     
             Py_INCREF(Py_None);
             obj = Py_None;

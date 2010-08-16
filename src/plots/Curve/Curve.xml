@@ -111,6 +111,8 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
+      <Function name="ProcessOldVersions" user="true" member="true" access="private">
+      </Function>
       <Function name="CurveViewerPluginInfo::InitializeGlobalObjects" user="false" member="true">
       </Function>
       <Function name="CurveViewerPluginInfo::InitializePlotAtts" user="false" member="true">
