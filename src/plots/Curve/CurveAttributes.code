@@ -14,6 +14,14 @@ Postfix:
     {
         return CurveAttributes_GetCurveColor(self, NULL);
     }
+    if(strcmp(name, "RenderAsLines") == 0)
+    {
+        return PyInt_FromLong(0L);
+    }
+    if(strcmp(name, "RenderAsPoints") == 0)
+    {
+        return PyInt_FromLong(1L);
+    }
 
 Code: PyCurveAttributes_setattr
 Prefix:
@@ -38,6 +46,28 @@ Postfix:
                 CurveObj->data->SetCurveColorSource(CurveAttributes::Custom);
             else
                 CurveObj->data->SetCurveColorSource(CurveAttributes::Cycle);
+    
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        if(strcmp(name, "renderMode") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            if(ival == 0)
+            {
+                CurveObj->data->SetShowLines(true);
+                CurveObj->data->SetShowPoints(false);
+            }
+            else
+            {
+                CurveObj->data->SetShowLines(false);
+                CurveObj->data->SetShowPoints(true);
+            }
     
             Py_INCREF(Py_None);
             obj = Py_None;
@@ -105,43 +135,54 @@ CurveAttributes::ChangesRequireRecalculation(const CurveAttributes &obj) const
     return false;
 }
 
-Function: Print
-Declaration: void Print(ostream &, bool) const;
+Function: ProcessOldVersions
+Declaration: virtual void  ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 Definition:
+// ****************************************************************************
+// Method: CurveAttributes::ProcessOldVersions
+//
+// Purpose: 
+//   This method creates modifies a DataNode representation of the object
+//   so it conforms to the newest representation of the object, which can
+//   can be read back in.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void
-CurveAttributes::Print(ostream &out, bool selected_only) const
+CurveAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
 {
-    out << "CurveAttributes" << "\n";
-    out << "{";
-    for(int i = 0; i < NumAttributes(); ++i)
+    if (parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("CurveAttributes");
+    if (searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "2.1.0"))
     {
-        if(selected_only && !IsSelected(i))
-            continue;
-
-        switch(i)
+        DataNode *k = 0;
+        if (( k = searchNode->GetNode("renderMode")) != 0)
         {
-          case  0: out << "lineStyle=  " << GetLineStyle();      break;
-          case  1: out << "lineWidth=  " << GetLineWidth();      break;
-          case  2: double color[4];
-                   GetCurveColor().GetRgba(color);
-                   out << "color=      " 
-                       << color[0] << " " << color[1] << " " 
-                       << color[2] << " " << color[3];
-                   GetDesignator();    break;
-          case  3: out << "showLabels= " << GetShowLabels();    break;
-          case  4: out << "designator= " << GetDesignator().c_str();    break;
-          case  5: out << "showPoints= " << GetShowPoints();    break;
-          case  6: out << "pointSize=  " << GetPointSize();    break;
-          case  7: out << "legend=  " << (GetShowLegend()?"true":"false");    break;
-//          case  8: out << "curveColor=" << (GetCurveColor()==CurveColor::Cycle?"cycle":"custom"); break;
-          case  9: out << "renderMode=" << RenderMode_ToString(GetRenderMode()).c_str(); break;
-          case  10: out << "symbol=" << SymbolTypes_ToString(GetSymbol()).c_str(); break;
-          case  11: out << "symbolDensity=" << GetSymbolDensity(); break;
+            int rm = k->AsInt();
+            searchNode->RemoveNode(k, true);
+            if (rm == 0) // asLines
+            {
+                searchNode->AddNode(new DataNode("showLines", true));
+                searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Static)));
+            }
+            else 
+            {
+                searchNode->AddNode(new DataNode("showLines", false));
+                searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Dynamic)));
+            }
         }
-        out << ",";
     }
-
-    out << "}";
 }
 
 Target: xml2info
@@ -261,4 +302,5 @@ CurveViewerPluginInfo::PermitsCurveViewScaling() const
 {
     return true;
 }
+
 

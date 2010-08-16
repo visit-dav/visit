@@ -1500,3 +1500,50 @@ CurveAttributes::ChangesRequireRecalculation(const CurveAttributes &obj) const
     return false;
 }
 
+// ****************************************************************************
+// Method: CurveAttributes::ProcessOldVersions
+//
+// Purpose: 
+//   This method creates modifies a DataNode representation of the object
+//   so it conforms to the newest representation of the object, which can
+//   can be read back in.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+CurveAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
+{
+    if (parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("CurveAttributes");
+    if (searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "2.1.0"))
+    {
+        DataNode *k = 0;
+        if (( k = searchNode->GetNode("renderMode")) != 0)
+        {
+            int rm = k->AsInt();
+            searchNode->RemoveNode(k, true);
+            if (rm == 0) // asLines
+            {
+                searchNode->AddNode(new DataNode("showLines", true));
+                searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Static)));
+            }
+            else 
+            {
+                searchNode->AddNode(new DataNode("showLines", false));
+                searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Dynamic)));
+            }
+        }
+    }
+}
+
