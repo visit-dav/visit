@@ -158,6 +158,11 @@
 #    host-specific (all platforms) or windows.cmake (on windows).
 #    usage:  -D VISIT_CONFIG_SITE="/path/to/config-site/file"
 #
+#    Cyrus Harrison, Mon Aug 16 13:12:17 PDT 2010
+#    1) Disable python filters if VISIT_NOLINK_MPI_WITH_LIBRARIES is true b/c
+#       the mpicom module (a shared lib) must link to mpi.
+#    2) (Non-windows) add extra info about success of config-site include.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -209,13 +214,20 @@ ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetupITAPS.cmake)
 
 IF (NOT WIN32)
-  IF (VISIT_CONFIG_SITE)
-      MESSAGE(STATUS "Trying to include ${VISIT_CONFIG_SITE}")
-      INCLUDE(${VISIT_CONFIG_SITE} OPTIONAL)
+  IF(VISIT_CONFIG_SITE)
+      SET(VISIT_CONFIG_SITE_FILE ${VISIT_CONFIG_SITE})
   ELSE(VISIT_CONFIG_SITE)
-      MESSAGE(STATUS "Trying to include config-site/${HOSTNAME}.cmake")
-      INCLUDE(config-site/${HOSTNAME}.cmake OPTIONAL)
+      SET(VISIT_CONFIG_SITE_FILE "config-site/${HOSTNAME}.cmake")
   ENDIF(VISIT_CONFIG_SITE)
+
+  MESSAGE(STATUS "Trying to include config-site file '${VISIT_CONFIG_SITE_FILE}'")
+  INCLUDE(${VISIT_CONFIG_SITE_FILE} OPTIONAL RESULT_VARIABLE VISIT_CONFIG_SITE_FILE_FOUND)
+  IF("${VISIT_CONFIG_SITE_FILE_FOUND}" STREQUAL  "NOTFOUND")
+        MESSAGE(STATUS "NOT FOUND: '${VISIT_CONFIG_SITE_FILE}'")
+  ELSE("${VISIT_CONFIG_SITE_FILE_FOUND}" STREQUAL  "NOTFOUND")
+        MESSAGE(STATUS "Included: '${VISIT_CONFIG_SITE_FILE}'")
+  ENDIF("${VISIT_CONFIG_SITE_FILE_FOUND}" STREQUAL  "NOTFOUND")
+
 ENDIF (NOT WIN32)
 
 
@@ -693,6 +705,13 @@ IF(VISIT_PYTHON_FILTERS AND NOT VTK_PYTHON_WRAPPERS_FOUND)
     SET(VISIT_PYTHON_FILTERS OFF)
     MESSAGE(STATUS "Python Engine Filters disabled because VTK python wrappers are not installed.")
 ENDIF(VISIT_PYTHON_FILTERS AND NOT VTK_PYTHON_WRAPPERS_FOUND)
+
+# Disable python filters if 'VISIT_NOLINK_MPI_WITH_LIBRARIES' is true.
+# The mpicom python module (a shared lib) must be linked to mpi.
+IF(VISIT_PYTHON_FILTERS AND VISIT_NOLINK_MPI_WITH_LIBRARIES)
+    SET(VISIT_PYTHON_FILTERS OFF)
+    MESSAGE(STATUS "Python Engine Filters disabled because VISIT_NOLINK_MPI_WITH_LIBRARIES was selected.")
+ENDIF(VISIT_PYTHON_FILTERS AND VISIT_NOLINK_MPI_WITH_LIBRARIES)
 
 # Configure Qt4 support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt4.cmake)
