@@ -80,6 +80,9 @@
 #    Tom Fogal, Tue Aug 10 17:35:23 MDT 2010
 #    Don't build STAR on Windows.
 #
+#    Jeremy Meredith, Thu Aug 12 13:54:57 EDT 2010
+#    Added PuReMD.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -219,6 +222,7 @@ Nek5000
 OVERFLOW
 OpenFOAM
 PATRAN
+PuReMD
 PLOT2D
 PLOT3D
 PlainText
