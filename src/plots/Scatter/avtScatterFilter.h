@@ -60,6 +60,13 @@
 //    Added overrides of PreExecute, ModifyContract, and added new 
 //    method PopulateDataInputs. Also added extents members.
 //
+//    Cyrus Harrison, Tue Aug 17 11:52:24 PDT 2010
+//    Added PostExecute method to:
+//      1) Set legend if a color var is selected.
+//      (This logic was moved out of ExecuteData to prevent a parallel hang
+//       when there are more procs than chunks to process.)
+//      2) Set proper spatial extents.
+//
 // ****************************************************************************
 
 class avtScatterFilter : public avtDataTreeIterator
@@ -96,8 +103,11 @@ protected:
     bool                       needZExtents;
     bool                       needColorExtents;
 
+    doubleVector               cumulativeSpatialExtents;
+
     virtual void               PreExecute(void);
     virtual vtkDataSet        *ExecuteData(vtkDataSet *, int, std::string);
+    virtual void               PostExecute(void);
     virtual void               UpdateDataObjectInfo(void);
     virtual avtContract_p     
                                ModifyContract(avtContract_p spec);
