@@ -76,6 +76,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state 
 #    behavior when an operator is added.
 #
+#    Cyrus Harrison, Mon Aug 16 15:51:46 PDT 2010
+#    Added test for var & wvar sum of an array variable.
+#
 # ----------------------------------------------------------------------------
 
 def QueryRect2d():
@@ -123,9 +126,20 @@ def QueryRect2d():
     Query("SpatialExtents", "original")
     s = s + GetQueryOutputString()
     s = s + "\n"
-  
+
+    DeleteAllPlots()  
+        
+    DefineArrayExpression("array_var","array_compose(d,p,d,p)")
+    AddPlot("Label","array_var")
+    DrawPlots()
+    Query("Variable Sum")
+    s += GetQueryOutputString() + "\n"
+    Query("Weighted Variable Sum")
+    s += GetQueryOutputString() + "\n"
+
     TestText("QueryRect2d", s)
-    DeleteAllPlots()
+    DeleteAllPlots()  
+
 
 def QueryMultiUcd3d():
     OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
