@@ -163,7 +163,7 @@ CartesianToCylindricalPoint(double *newpt, const double *pt)
     newpt[0] = sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
     newpt[1] = atan2(pt[1], pt[0]);
     if (newpt[1] < 0.)
-      newpt[1] = 2*vtkMath::Pi() + newpt[1];
+      newpt[1] += 2*vtkMath::Pi();
     newpt[2] = pt[2];
 }
 
@@ -185,6 +185,8 @@ CartesianToSphericalPoint(double *newpt, const double *pt)
     newpt[0] = sqrt(pt[0]*pt[0] + pt[1]*pt[1] + pt[2]*pt[2]);
     newpt[1] = acos ( pt[2]/newpt[0] );
     newpt[2] = atan2( pt[1], pt[0]);
+    if (newpt[2] < 0.)
+        newpt[2] += 2*vtkMath::Pi();
 }
 
 // ****************************************************************************
@@ -230,7 +232,7 @@ CylindricalToSphericalPoint(double *newpt, const double *pt)
     newpt[0] = sqrt(pt[0]*pt[0] + pt[2]*pt[2]);
     newpt[1] = atan2(pt[0], pt[2]);            
     if (newpt[1] < 0.)
-        newpt[1] = 2*vtkMath::Pi() + newpt[2];
+        newpt[1] += 2*vtkMath::Pi();
     newpt[2] = pt[1];                          
 }
 
