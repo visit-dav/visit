@@ -31,3 +31,5 @@ The original number of nodes is 1271.
 The original number of zones is 1200.
 The actual extents are (0, 10, 0, 1.33333)
 The original extents are (0, 1, 0, 1.33333)
+The total array_var is 561.858, 3544.81, 561.858, 3544.81 g/cm^2
+The total array_var is 0.624286, 3.93868, 0.624286, 3.93868 g/cm^2
