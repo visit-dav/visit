@@ -83,6 +83,9 @@ class vtkDataSet;
 //    Hank Childs, Tue May 16 09:14:41 PDT 2006
 //    Add support for averaging.
 //
+//    Cyrus Harrison, Mon Aug 16 15:34:12 PDT 2010
+//    Added support for the sum of each component of an array variable.
+//
 // ****************************************************************************
 
 class QUERY_API avtSummationQuery : public avtDatasetQuery
@@ -105,7 +108,7 @@ class QUERY_API avtSummationQuery : public avtDatasetQuery
     void                            SumFromOriginalElement(bool);
 
   protected:
-    double                          sum;
+    doubleVector                    sums;
     double                          denomSum;
     std::string                     variableName;
     std::string                     denomVariableName;

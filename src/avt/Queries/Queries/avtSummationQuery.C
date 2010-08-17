@@ -76,6 +76,9 @@ using     std::set;
 //    Hank Childs, Tue May 16 09:18:41 PDT 2006
 //    Initial variables for averaging.
 //
+//    Cyrus Harrison, Mon Aug 16 15:34:12 PDT 2010
+//    Added support for the sum of each component of an array variable.
+//
 // ****************************************************************************
 
 avtSummationQuery::avtSummationQuery()
@@ -83,7 +86,7 @@ avtSummationQuery::avtSummationQuery()
     sumGhostValues = false;
     sumOnlyPositiveValues = false;
     sumFromOriginalElement = false;
-    sum = 0.;
+    sums.clear();
     denomSum = 1.;
     sumType = "";
     strcpy(descriptionBuffer, "Summing up variable");
@@ -257,6 +260,9 @@ avtSummationQuery::SumFromOriginalElement(bool val)
 //    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
 //    Call inherited PreExecute before everything else.
 //
+//    Cyrus Harrison, Mon Aug 16 15:34:12 PDT 2010
+//    Added support for the sum of each component of an array variable.
+//
 // ****************************************************************************
 
 void
@@ -264,7 +270,7 @@ avtSummationQuery::PreExecute(void)
 {
     avtDatasetQuery::PreExecute();
 
-    sum = 0.;
+    sums.clear();
     denomSum = 0.;
 }
 
@@ -294,14 +300,18 @@ avtSummationQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Sep 18 09:41:09 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Cyrus Harrison, Mon Aug 16 15:34:12 PDT 2010
+//    Added support for the sum of each component of an array variable.
+//
 // ****************************************************************************
 
 void
 avtSummationQuery::PostExecute(void)
 {
-    double newSum;
-    SumDoubleArrayAcrossAllProcessors(&sum, &newSum, 1);
-    sum = newSum;
+    int ncomps = sums.size();
+    doubleVector final_sums(ncomps);
+    SumDoubleArrayAcrossAllProcessors(&sums[0], &final_sums[0], ncomps);
+    sums = final_sums;
 
     if (CalculateAverage())
     {
@@ -309,7 +319,10 @@ avtSummationQuery::PostExecute(void)
         SumDoubleArrayAcrossAllProcessors(&denomSum, &newDenomSum, 1);
         denomSum = newDenomSum;
         if (denomSum != 0.)
-            sum /= denomSum;
+        {
+            for(int i=0; i < ncomps; i++)
+                sums[i] /= denomSum;
+        }
     }
 
     // get floating point format string 
@@ -321,30 +334,35 @@ avtSummationQuery::PostExecute(void)
         str += "The average ";
     else
         str += "The total ";
-    
+
     str += sumType + " is " ;
-    
-    SNPRINTF(buf, 1024,  floatFormat.c_str(), sum);
-    str += buf; 
-    
+
+    for(int i=0; i < ncomps; i++)
+    {
+        if(i>0)
+            str+=", ";
+        SNPRINTF(buf, 1024,  floatFormat.c_str(), sums[i]);
+        str += buf;
+    }
+
     if (!units.empty())
     {
         SNPRINTF(buf, 1024, " %s%s", units.c_str(), unitsAppend.c_str());
-        str += buf; 
+        str += buf;
     }
     if (!qualifier.empty())
     {
         str += "\n";
         str += qualifier;
     }
-  
+
     //
     //  Parent class uses this message to set the Results message
     //  in the Query Attributes that is sent back to the viewer.
     //  That is all that is required of this query.
     //
     SetResultMessage(str);
-    SetResultValue(sum);
+    SetResultValues(sums);
 }
 
 
@@ -385,6 +403,9 @@ avtSummationQuery::PostExecute(void)
 //    Kathleen Bonnell, Tue Jul 29 10:08:41 PDT 2008
 //    If ghost-nodes unavailable, use ghost-zones to aid in determining if
 //    point data should be included in the sum.
+//
+//    Cyrus Harrison, Mon Aug 16 15:34:12 PDT 2010
+//    Added support for the sum of each component of an array variable.
 //
 // ****************************************************************************
 
@@ -446,7 +467,7 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
             {
                 comp = originalNodes->GetNumberOfComponents() - 1;
             }
-            else 
+            else
             {
                 debug3 << "Summation Query told to sum from original nodes but "
                    << "could not find avtOriginalNodeNumbers array." << endl;
@@ -460,7 +481,7 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
             {
                 comp = originalCells->GetNumberOfComponents() - 1;
             }
-            else 
+            else
             {
                 debug3 << "Summation Query told to sum from original cells but "
                    << "could not find avtOriginalCellNumbers array." << endl;
@@ -469,12 +490,23 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
     }
     set<int> summedElements;
 
-    int nValues = arr->GetNumberOfTuples();
+    int nvalues = arr->GetNumberOfTuples();
+    int ncomps  = arr->GetNumberOfComponents();
+
+    if(sums.size() == 0)
+    {
+        sums = vector<double>(ncomps,0.0);
+    }
+    else if(sums.size() != ncomps)
+    {
+         debug3 << "Summation Query ran into a multi-component variable with "
+                << "an inconsistent number of components across domains!" << endl;
+    }
+
     vtkIdList *list = vtkIdList::New();
 
-    for (int i = 0 ; i < nValues ; i++)
+    for (int i = 0 ; i < nvalues ; i++)
     {
-        float val = arr->GetTuple1(i);
         if (!pointData)
         {
             if (ghost_zones != NULL)
@@ -514,9 +546,18 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
                     continue;
             }
         }
-        if (sumOnlyPositiveValues && val < 0.)
-            continue;
-        
+
+        double *vals = arr->GetTuple(i);
+        if (sumOnlyPositiveValues)
+        {
+            bool all_pos = true;
+            for(int j = 0; j < ncomps && all_pos; j++)
+                all_pos = all_pos && (vals[j] > 0.0);
+            // skip if we only want positive vals
+            if(!all_pos)
+                continue;
+        }
+
         if (originalCells)
         {
             int origCell = (int)originalCells->GetComponent(i, comp); 
@@ -528,9 +569,10 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
             int origNode = (int)originalNodes->GetComponent(i, comp); 
             if (origNode == -1 || !(summedElements.insert(origNode)).second) 
                 continue;
-        } 
+        }
 
-        sum += val;
+        for(int j = 0; j < ncomps; j++)
+            sums[j] += vals[j];
         if (doAverage)
             denomSum += arr2->GetTuple1(i);
     }
