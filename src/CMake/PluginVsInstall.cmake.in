@@ -44,6 +44,10 @@
 #
 #   Mark C. Miller, Thu Jul 29 17:37:32 PDT 2010
 #   Added block for compiler version comments.
+#
+#   Brad Whitlock, Tue Aug 17 09:17:19 PDT 2010
+#   I added NETCDF_CXX_LIB.
+#
 #****************************************************************************/
 
 ##
@@ -206,6 +210,7 @@ SET(MILI_LIB @MILI_LIB@)
 SET(NETCDF_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/netcdf/include)
 SET(NETCDF_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 SET(NETCDF_LIB @NETCDF_LIB@)
+SET(NETCDF_CXX_LIB @NETCDF_CXX_LIB@)
 
 SET(PDB_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/silo/include)
 SET(PDB_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
