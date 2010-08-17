@@ -556,7 +556,7 @@ avtPoincareFilter::ClassifyStreamlines()
             safetyFactor = 0;
 
         if(verboseFlag )
-          cerr <<"Classify Streamline: id = "<< iter->second.id
+          cerr << "Classify Streamline: id = "<< iter->second.id
                << "  ptCnt = " << iter->second.points.size()
                << "  type = " << fp.type
                << "  toroidal/poloidal windings = " <<  fp.toroidalWinding
@@ -688,18 +688,21 @@ avtPoincareFilter::CreatePoincareOutput()
         unsigned int windingGroupOffset = properties.windingGroupOffset;
         unsigned int nnodes          = properties.nnodes;
 
-        double confidence            = properties.confidence;
+        double confidence           = properties.confidence;
         unsigned int toroidalPeriod = properties.toroidalPeriod;
         unsigned int poloidalPeriod = properties.poloidalPeriod;
-        double ridgelineVariance     = properties.ridgelineVariance;
+        double ridgelineVariance    = properties.ridgelineVariance;
 
-        vector< Point > OPoints      = properties.OPoints;
+        vector< Point > OPoints     = properties.OPoints;
 
         bool completeIslands = true;
 
         if( verboseFlag ) 
         {
           cerr << "Surface id = " << iter->second.id << "  "
+               << "< " << iter->second.points[0].x << " "
+               << iter->second.points[0].y << " "
+               << iter->second.points[0].z << " >  "
                << toroidalWinding << ":" << poloidalWinding << " ("
                << (double) toroidalWinding / (double) poloidalWinding << ")  ";
 
@@ -795,20 +798,28 @@ avtPoincareFilter::CreatePoincareOutput()
             Vector planeN;
             Vector planePt(0,0,0);
             
-            // Go through the planes in the same direction as the streamline.
-            if( CCWstreamline )
+            if( puncturePlane == 0 ) // Poloidal Plane
             {
+              // Go through the planes in the same direction as the streamline.
+              if( CCWstreamline )
+              {
                 planeN = Vector( cos(planes[p]),
                                  sin(planes[p]),
                                  0 );
-            }
-            else
-            {
+              }
+              else
+              {
                 planeN = Vector( cos(planes[planes.size()-1-p]),
                                  sin(planes[planes.size()-1-p]),
                                  0 );
+              }
             }
-            
+
+            else //if( puncturePlane == 1 ) // Toroidal Plane
+            {
+              planeN = Vector( 0, 0, -1 );
+            }
+
             // Set up the plane equation.
             double plane[4];
             

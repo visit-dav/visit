@@ -92,6 +92,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     virtual const char       *GetDescription(void) {
       return "Performing Poincare"; };
 
+    void SetPuncturePlane( unsigned int val ) { puncturePlane = val; }
     void SetAnalysis( unsigned int val ) { analysis = val; }
 
     void SetMaxPunctures( double punctures ) { maxPunctures = punctures; }
@@ -187,6 +188,7 @@ class avtPoincareFilter : public avtStreamlineFilter
 
     FusionPSE::FieldlineLib FLlib;         
 
+    unsigned int puncturePlane;
     unsigned int analysis;
 
     double maxPunctures;
@@ -214,6 +216,7 @@ class avtPoincareFilter : public avtStreamlineFilter
       public:
         ICHelper() {}
         ~ICHelper() {}
+
         avtStateRecorderIntegralCurve *ic;
         std::vector<avtVector> points;
         FieldlineProperties properties;
