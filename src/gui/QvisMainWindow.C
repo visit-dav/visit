@@ -474,9 +474,20 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->addAction(tr("File &information . . ."), 
                          this, SIGNAL(activateFileInformationWindow()),
                          QKeySequence(Qt::CTRL + Qt::Key_I));
-    filePopup->addAction(tr("Compute &engines . . ."), 
-                         this, SIGNAL(activateEngineWindow()),
-                         QKeySequence(Qt::CTRL + Qt::Key_E));
+
+    filePopup->addSeparator();
+
+    filePopup->addAction(tr("Save session"),
+                         this, SIGNAL(saveSession()));
+    filePopup->addAction(tr("Save session as . . ."),
+                         this, SIGNAL(saveSessionAs()));
+    filePopup->addAction(tr("Restore session . . ."),
+                         this, SIGNAL(restoreSession()));
+    filePopup->addAction(tr("Restore session with sources . . ."),
+                         this, SIGNAL(restoreSessionWithSources()));
+
+    filePopup->addSeparator();
+
     filePopup->addAction(tr("Simulations . . ."),
                          this, SIGNAL(activateSimulationWindow()),
                          QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
@@ -491,8 +502,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                          QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_O));
     filePopup->addAction(saveMovieIcon, tr("Save movie . . ."),
                          this, SIGNAL(saveMovie()));
-    filePopup->addAction(tr("Export database . . ."),
-                         this, SIGNAL(activateExportDBWindow()));
+
     filePopup->addAction(printIcon, tr("Print window"),
                          this, SIGNAL(printWindow()));
     filePopup->addAction(tr("Set Print options . . ."),
@@ -501,14 +511,14 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     filePopup->addSeparator();
 
-    filePopup->addAction(tr("Save session"),
-                         this, SIGNAL(saveSession()));
-    filePopup->addAction(tr("Save session as . . ."),
-                         this, SIGNAL(saveSessionAs()));
-    filePopup->addAction(tr("Restore session . . ."),
-                         this, SIGNAL(restoreSession()));
-    filePopup->addAction(tr("Restore session with sources . . ."),
-                         this, SIGNAL(restoreSessionWithSources()));
+    filePopup->addAction(tr("Export database . . ."),
+                         this, SIGNAL(activateExportDBWindow()));
+
+    filePopup->addSeparator();
+
+    filePopup->addAction(tr("Compute &engines . . ."), 
+                         this, SIGNAL(activateEngineWindow()),
+                         QKeySequence(Qt::CTRL + Qt::Key_E));
 
     filePopup->addSeparator();
 
