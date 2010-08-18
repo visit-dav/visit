@@ -47,6 +47,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QPushButton>
+#include <QRegExp>
 #include <QTabWidget>
 #include <QTextEdit>
 #include <QTextStream>
@@ -110,6 +111,7 @@ QvisCommandWindow::QvisCommandWindow(const QString &captionString,
 
     macroStorageMode = 0;
     macroAppend = false;
+    maxUserMacro = -1;
 }
 
 // ****************************************************************************
@@ -517,6 +519,9 @@ QvisCommandWindow::RCFileName() const
 //   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Wed Aug 18 10:57:20 PDT 2010
+//   Set maxUserMacro.
+//
 // ****************************************************************************
 
 void
@@ -546,12 +551,27 @@ QvisCommandWindow::LoadScripts()
     QFile file(RCFileName());
     if(file.open(QIODevice::ReadOnly))
     {
+        QRegExp rx("^def user_macro_([0-9]{1,})");
         QTextStream stream(&file);
         QString lines;
         while(!stream.atEnd())
         {
-            lines += stream.readLine();
+            QString s(stream.readLine());
+            lines += s;
             lines += "\n";
+
+            // See if the string contains the regex. If so, get the number.
+            if(s.contains(rx))
+            {
+                QStringList list(rx.capturedTexts());
+                if(list.size() == 2)
+                {
+                    bool ok = false;
+                    int tmp = list[1].toInt(&ok);
+                    if(ok)
+                        maxUserMacro = qMax(maxUserMacro, tmp);
+                }
+            }
         }
         file.close();
 
@@ -618,54 +638,53 @@ QvisCommandWindow::SaveScripts()
 //   Hank Childs, Wed May  7 11:47:25 PDT 2008
 //   Add checking for bad function names.
 //
+//   Brad Whitlock, Wed Aug 18 11:16:21 PDT 2010
+//   I rewrote the checks and made the function name get generated from the
+//   macro name.
+//
 // ****************************************************************************
 
 void
 QvisCommandWindow::CreateMacroFromText(const QString &s)
 {
-    QString func, funcName, macroName;
-    bool ok = true;
-
-    // Get the name of the function to create from the user.
-    funcName = QInputDialog::getText(this,"VisIt",
-        tr("Please enter the name of the Python function to be defined for the macro."),
-        QLineEdit::Normal, QString::null, &ok);
-    if(!ok || funcName.isEmpty())
-        return;
-    std::string str = funcName.toStdString();
-    if(str.size() < 1 || !isalpha(str[0]))
-    {
-        Error(tr("Function names must start with a letter. Please try to create "
-              "the macro again with a function name that starts with a letter."));
-        return;
-    }
-    for (int i = 0 ; i < str.size() ; i++)
-    {
-        if (!isalpha(str[i]) && !isdigit(str[i]) && str[i] != '_')
-        {
-            Error(tr("Function names may only contain letters, numbers, and underscores."
-                     "  Please try again with only those characters."));
-            return;
-        }
-    }
+    // Come up with an initial macro name.
+    QString initMacroName(QString("User macro %1").arg(++maxUserMacro));
 
     // Get the name of the macro from the user.
-    macroName = QInputDialog::getText(this,"VisIt",
-        tr("Please enter the name of the macro to be defined (as you want it to appear in a button)."),
-        QLineEdit::Normal, QString::null, &ok);
-    if(!ok || macroName.isEmpty())
-        return;
+    QString macroName;
+    do
+    {
+        bool ok = true;
+        macroName = QInputDialog::getText(this,"VisIt",
+            tr("Please enter the name of the macro to be defined (as you want it to appear in a button)."),
+            QLineEdit::Normal, initMacroName, &ok);
+        if(!ok)
+            return;
+    }
+    while(macroName.isEmpty());
+
+    // Now, make a func name from the macro name, replacing any non 
+    // alpha/digit/space with '_'. The user can always edit the function name
+    // before it gets applied.
+    std::string fname("user_macro_");
+    fname += macroName.toStdString();
+    for(int i = 0; i < fname.size(); ++i)
+    {
+        if(!isalpha(fname[i]) && !isdigit(fname[i]) && fname[i] != '_')
+            fname[i] = '_';
+    }
+    QString funcName(fname.c_str());
 
 #if 1
     // This function is assuming Python code.
 
     // Now, iterate over the lines of text and indent appropriately to
     // make a Python function.
-    func = QString("def ") + funcName + QString("():\n");
+    QString func(QString("def ") + funcName + QString("():\n"));
     QStringList lines = s.split("\n");
     for(int i = 0; i < lines.count(); ++i)
         func += QString("    ") + lines[i] + QString("\n");
-    func += QString("RegisterMacro(\"") + macroName + QString("\", ") +
+    func += QString("RegisterMacro(\"") + macroName.replace("\"", "\\\"") + QString("\", ") +
             funcName + QString(")\n");
 
     // Add the function definition to the Macros tab.
