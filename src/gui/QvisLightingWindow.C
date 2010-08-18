@@ -86,6 +86,9 @@
 //   Brad Whitlock, Wed Apr  9 11:08:16 PDT 2008
 //   QString for caption, shortName.
 //
+//   Hank Childs, Fri Aug  6 07:13:17 PDT 2010
+//   Initialize enableToggled.
+//
 // ****************************************************************************
 
 QvisLightingWindow::QvisLightingWindow(LightList *subj, const QString &caption,
@@ -100,6 +103,8 @@ QvisLightingWindow::QvisLightingWindow(LightList *subj, const QString &caption,
 
     // Initialize parentless widgets.
     modeButtons = 0;
+
+    enableToggledSinceApply = false;
 }
 
 // ****************************************************************************
@@ -523,10 +528,20 @@ QvisLightingWindow::Apply(bool ignore)
     {
         lights->Notify();
 
+        LightAttributes &light = lights->GetLight(activeLight);
+        if (light.GetEnabledFlag() == false && !enableToggledSinceApply)
+        {
+            // User modified a light, but the light is not enabled.  Let them
+            // know.
+            Error("You have modified the properties of a disabled light.  This "
+                  "will have no effect.");
+        }
         GetViewerMethods()->SetLightList();
     }
     else
         lights->Notify();
+
+    enableToggledSinceApply = false;
 }
 
 //
@@ -687,6 +702,9 @@ QvisLightingWindow::brightnessChanged2(int val)
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Aug  6 07:13:17 PDT 2010
+//   Store that the enable button has been toggled.
+//
 // ****************************************************************************
 
 void
@@ -695,6 +713,7 @@ QvisLightingWindow::enableToggled(bool val)
     LightAttributes &light = lights->GetLight(activeLight);
     light.SetEnabledFlag(val);
     lights->SelectLight(activeLight);
+    enableToggledSinceApply = true;
     Apply();
 }
 
