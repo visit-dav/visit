@@ -1149,6 +1149,8 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Wed Aug 18 14:58:47 PDT 2010
+//    I corrected a bug copying the cell data.
 //  
 // ****************************************************************************
 
@@ -1283,13 +1285,15 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
     //
     // Copy the cell data.
     //
-    vtkCellData *inCD1 = ds->GetCellData();
-    int nCellArrays = inCD1->GetNumberOfArrays();
-    cellData = new float*[nCellArrays];
-    int iCellData = 0;
-    for (int i = 0; i < nCellArrays; i++)
+    vtkDataArray *dataArrays[2];
+    vtkDataArray *da1=ds->GetCellData()->GetArray(absVarName.c_str());
+    vtkDataArray *da2=ds->GetCellData()->GetArray(emisVarName.c_str());
+    dataArrays[0] = da1;
+    dataArrays[1] = da2;
+    cellData = new float*[2];
+    for (int i = 0; i < 2; i++)
     {
-        vtkDataArray *da=inCD1->GetArray(i);
+        vtkDataArray *da=dataArrays[i];
         int nComponents = da->GetNumberOfComponents();
         int nTuples = da->GetNumberOfTuples();
 
@@ -1302,7 +1306,7 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 for (int k = 0; k < nComponents; k++)
                     outVals[ndx++] = inVals[cells_matched[j]*nComponents+k];
 
-            cellData[iCellData++] = outVals;
+            cellData[i] = outVals;
         }
     }
 
