@@ -303,12 +303,21 @@ avtSummationQuery::PreExecute(void)
 //    Cyrus Harrison, Mon Aug 16 15:34:12 PDT 2010
 //    Added support for the sum of each component of an array variable.
 //
+//    Cyrus Harrison, Wed Aug 18 14:41:26 PDT 2010
+//    Fix parallel problem when we have more procs than chunks to execute.
+//
 // ****************************************************************************
 
 void
 avtSummationQuery::PostExecute(void)
 {
     int ncomps = sums.size();
+    // for procs with no data, broadcast the # of comps so they can
+    // still particpate in the global sum.
+    ncomps = UnifyMaximumValue(ncomps);
+    if(sums.size() == 0)
+        sums = vector<double>(ncomps,0.0);
+
     doubleVector final_sums(ncomps);
     SumDoubleArrayAcrossAllProcessors(&sums[0], &final_sums[0], ncomps);
     sums = final_sums;
