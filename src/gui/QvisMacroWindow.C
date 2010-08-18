@@ -153,13 +153,16 @@ QvisMacroWindow::CreateWindowContents()
 //   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Wed Aug 18 11:30:40 PDT 2010
+//   Escape quotes in the macro name so they get sent to Python correctly.
+//
 // ****************************************************************************
 
 void
 QvisMacroWindow::invokeMacro(int index)
 {
     QString invoke("ExecuteMacro(\"%1\")\n");
-    invoke = invoke.arg(macroButtons->button(index)->text());
+    invoke = invoke.arg(macroButtons->button(index)->text().replace("\"", "\\\""));
     emit runCommand(invoke);
 }
 

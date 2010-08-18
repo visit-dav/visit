@@ -148,6 +148,7 @@ private:
 
     int              macroStorageMode;
     bool             macroAppend;
+    int              maxUserMacro;
 };
 
 #endif
