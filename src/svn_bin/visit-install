@@ -209,6 +209,14 @@
 #    second change was to change the default bank in one host file at a
 #    time in a loop instead of all at once.
 #
+#    Cyrus Harrison, Wed Aug 18 10:35:39 PDT 2010
+#    Changed from use of:
+#     sed -e [pattern] -i [file]
+#      to:
+#     sed -i -e [pattern] [file]
+#    B/c of different parsing of the '-i' argument for OSX's sed
+#    implementation.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -637,7 +645,7 @@ endif
 
 # Do the bank fixup
 foreach hostfile (`ls $dir/$version+/.visit/hosts/host_*`)
-    sed -e "s/bdivp/${bank}/" -i $hostfile
+    sed -i -e "s/bdivp/${bank}/" $hostfile
 end
 
 
