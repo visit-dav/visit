@@ -222,6 +222,12 @@ QvisPluginWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //    Brad Whitlock, Mon Feb  8 15:17:25 PST 2010
 //    I added operator categories.
 //
+//    Jeremy Meredith, Wed Aug 18 14:59:57 EDT 2010
+//    Updated the text for database plugins preferred format, now that
+//    we also try matching preferred plugins before matching non-preferred
+//    plugins.  (We still try preferred plugins before giving up even when
+//    they don't match the filename.)
+//
 // ****************************************************************************
 
 void
@@ -333,9 +339,10 @@ QvisPluginWindow::CreateWindowContents()
     QGridLayout *preferredLayout = new QGridLayout(preferredGroup);
 
     QLabel *preferredHintLabel = new QLabel(
-        "This is a list of plugins which are tried when no formats which "
-        "support the given file name pattern could successfully open the "
-        "file.  These fallback plugins are tried in order.", preferredGroup);
+        "This is an ordered list of plugins which take precedence when "
+        "opening files.  When they accept the given file name pattern, these "
+        "are tried frst.  And when all attempts to guess based on file "
+        "name fail, these are tried before giving up.", preferredGroup);
     preferredHintLabel->setWordWrap(true);
     preferredLayout->addWidget(preferredHintLabel, 0,0, 1,3);
 

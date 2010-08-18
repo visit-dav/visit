@@ -266,6 +266,12 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    you know that you have a file of a certain type, but that type is 
 //    a non-compliant file.
 //
+//    Jeremy Meredith, Wed Aug 18 14:32:11 EDT 2010
+//    Added another pass, where we try preferred plugins which match
+//    the target filename before any others which match the filename.
+//    We still try preferred plugins before giving up, even if they
+//    don't match the filename.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -387,17 +393,110 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     }
  
     //
-    // Check to see if there is an extension that matches.  For all that
-    // match, try them to see if they work.  If more than one works, use the
-    // first, but warn that it was ambiguous.
+    // Check to see if there is an extension that matches.
     //
     vector<string> fileMatchedIds =
         dbmgr->GetMatchingPluginIds(filelist[fileIndex]);
+
+    //
+    // First try any preferred plugins which match, in the order given,
+    // to see if they work.  If you encounter one that does, stop and
+    // succeed immediately.
+    //
+    vector<string> &preferred = defaultFileOpenOptions.GetPreferredIDs();
+    for (int i = 0 ; i < preferred.size() && rv == NULL ; i++)
+    {
+        string formatid = preferred[i];
+        if (!dbmgr->PluginAvailable(formatid))
+        {
+            debug3 << "avtDatabaseFactory: 'assumed' pass, skipping "
+                   << "unavailable preferred format " << formatid << endl;
+            continue;
+        }
+
+        // For some reason, disabling of db plugins at load time is
+        // apparently not working at the moment.  That's okay, we can
+        // double check here that the current ID is enabled with no harm.
+        if (!defaultFileOpenOptions.IsIDEnabled(formatid))
+        {
+            debug1 << "Warning: plugin "<<formatid<<" claims to be "
+                   << "disabled but wasn't.\n";
+            continue;
+        }
+
+        // don't try any which don't match the file pattern here
+        if (std::find(fileMatchedIds.begin(),fileMatchedIds.end(), formatid) ==
+                                                          fileMatchedIds.end())
+            continue;
+
+        debug3 << "avtDatabaseFactory: 'assumed' pass, trying "
+               << "filename-matched preferred format " << formatid << endl;
+        CommonDatabasePluginInfo *info = 
+            dbmgr->GetCommonPluginInfo(formatid);
+        if (info)
+        {
+            // if this is strict about filename matching, don't try it either
+            if (info->AreDefaultFilePatternsStrict())
+            {
+                debug3 << "avtDatabaseFactory: no, skip it, since it's "
+                       << "strict about file patterns.\n";
+                continue;
+            }
+
+            // Set the opening options
+            const DBOptionsAttributes *opts = 
+                defaultFileOpenOptions.GetOpenOptionsForID(formatid);
+            if (opts == 0 || (opts != 0 && opts->GetNames().size() == 0))
+            {
+                // The options aren't in the default options.  Maybe
+                // defaults have been added to the plugin since they saved 
+                // their settings. Try to get it from the plugin.
+                DBOptionsAttributes *opts = info->GetReadOptions();
+                if (opts)
+                    info->SetReadOptions(opts);
+            }
+            else
+            {
+                info->SetReadOptions(new DBOptionsAttributes(*opts));
+            }
+        }
+        TRY
+        {
+            plugins.push_back(info ? info->GetName(): "");
+            rv = SetupDatabase(info, filelist, filelistN,
+                               timestep, fileIndex,
+                               nBlocks, forceReadAllCyclesAndTimes,
+                               treatAllDBsAsTimeVarying, true);
+        }
+        CATCH(NonCompliantFileException)
+        {
+            rv = NULL;
+            RETHROW;
+        }
+        CATCHALL
+        {
+            rv = NULL;
+        }
+        ENDTRY
+    }
+
+    //
+    // If none of the preferred plugins which matched the filename worked,
+    // try any others which match the filename.  Try *all* of these, because
+    // since we're just guessing with no input from the user, we want to warn
+    // the user if more than one would have worked.
+    //
     if (rv == NULL)
     {
         vector<string> succeeded;
         for (int i = 0; i < fileMatchedIds.size(); i++)
         {
+            // Skip this one if it was preferred -- if we got here, it
+            // already failed on the previous pass
+            if (std::find(preferred.begin(),preferred.end(),fileMatchedIds[i])
+                                                            != preferred.end())
+                continue;
+
             // For some reason, disabling of db plugins at load time is
             // apparently not working at the moment.  That's okay, we can
             // double check here that the current ID is enabled with no harm.
@@ -473,11 +572,13 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             warning += "We will try the first successful one: "+used+".\n\n";
             warning += "If this is not a " + used + " file, you can "
                        "manually select the correct file format reader "
-                       "when opening the file, disable the " + used +
+                       "when opening the file, set the correct reader as "
+                       "a preferred plugin, disable the " + used +
                        " plugin, or request that the developers of the " +
                        used + " plugin add code to distinguish your file "
                        "from one of theirs.\n\n";
             warning += "If this *is* a "+used+" file, "
+                       "making the "+used+" reader a preferred plugin, or "
                        "ensuring the other file reader plugins listed above "
                        "do not successfully open this type of file will "
                        "prevent this warning in the future.\n";
@@ -490,7 +591,6 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     // fallbacks, unless they are strictly unable to open the given
     // file without a matching filename.
     //
-    vector<string> &preferred = defaultFileOpenOptions.GetPreferredIDs();
     for (int i = 0 ; i < preferred.size() && rv == NULL ; i++)
     {
         string formatid = preferred[i];
