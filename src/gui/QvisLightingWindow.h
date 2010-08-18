@@ -79,6 +79,9 @@ class QSpinBox;
 //   Brad Whitlock, Wed Apr  9 11:08:03 PDT 2008
 //   QString for caption, shortName.
 //
+//   Hank Childs, Fri Aug  6 07:13:17 PDT 2010
+//   Add data member for keeping tracking if the enabled toggle has changed.
+//
 // ****************************************************************************
 
 class GUI_API QvisLightingWindow : public QvisPostableWindowObserver
@@ -114,6 +117,7 @@ private:
     int                 activeLight;
     LightList          *lights;
     int                 mode;
+    bool                enableToggledSinceApply;
 
     QPixmap            *onLightIcon;
     QPixmap            *offLightIcon;
