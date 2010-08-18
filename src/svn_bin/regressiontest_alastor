@@ -199,7 +199,7 @@ for m in \$modes; do
     fi
 
     # Run the test
-    ./runtest -q -s "\$skipList_for_Alastor" -m "\$m" -l 1200 \$diffTols -notrackmem >> ../buildlog 2>&1
+    ./runtest -q -s "\$skipList_for_Alastor" -m "\$m" -l 600 \$diffTols -notrackmem >> ../buildlog 2>&1
 
     # Move the results to the consolidation directory
     theMode=\`echo \$m | tr ',' '_'\`
@@ -259,7 +259,7 @@ scp alastor alastor:alastor_testit
 scp visit-notify-test-failure alastor:
 
 # Run the test suite.
-ssh alastor "srun -n 1 -p pdebug -t 8:00:00 --exclusive ./alastor_testit"
+ssh alastor "srun -n 1 -p pdebug -t 12:00:00 --exclusive ./alastor_testit"
 
 # Copy the results to euclid
 ssh alastor "scp /nfs/tmp2/$user/$workingDir/test/html.tar.gz $userNersc@euclid.nersc.gov:"
