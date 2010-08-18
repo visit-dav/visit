@@ -129,6 +129,8 @@ SILArrayAttributes.java
 SILAttributes.java 
 SILMatrixAttributes.java 
 SILRestrictionAttributes.java 
+SaveSubWindowAttributes.java
+SaveSubWindowsAttributes.java
 SaveWindowAttributes.java 
 StatusAttributes.java 
 SyncAttributes.java 
