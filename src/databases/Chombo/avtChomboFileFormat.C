@@ -1286,7 +1286,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     // Now set up the data structure for patch boundaries.  The data 
     // does all the work ... it just needs to know the extents of each patch.
     //
-    //if (!allowedToUseGhosts || !fileContainsGhosts)
+    if (!allowedToUseGhosts || !fileContainsGhosts)
     {
         int t2 = visitTimer->StartTimer();
         avtRectilinearDomainBoundaries *rdb 
