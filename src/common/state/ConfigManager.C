@@ -243,6 +243,9 @@ ConfigManager::WriteEscapedString(const std::string &str)
 //   Jeremy Meredith, Tue Aug  2 16:11:36 PDT 2005
 //   I made single strings escape special characters.
 //
+//   Dave Pugmire, Wed Aug 18 09:54:43 EDT 2010
+//   Support variable names with leading and trailing spaces in sessionfiles.
+//
 // ****************************************************************************
 
 void
@@ -269,7 +272,9 @@ ConfigManager::WriteData(DataNode *node)
         fprintf(fp, "%g", node->AsDouble());
         break;
     case STRING_NODE:
+        fprintf(fp, "%s", "\"");
         WriteEscapedString(node->AsString());
+        fprintf(fp, "%s", "\"");
         break;
     case BOOL_NODE:
         if(node->AsBool())
@@ -740,6 +745,9 @@ ConfigManager::RemoveLeadAndTailQuotes(stringVector &sv)
 //   Brad Whitlock, Fri Oct 3 17:19:42 PST 2003
 //   Added code to strip leading and tailing quotes from string vectors.
 //
+//   Dave Pugmire, Wed Aug 18 09:54:43 EDT 2010
+//   Support variable names with leading and trailing spaces in sessionfiles.
+//
 // ****************************************************************************
 
 DataNode *
@@ -816,6 +824,7 @@ ConfigManager::ReadFieldData(const std::string &tagName, NodeTypeEnum type,
         break;
     case STRING_NODE:
         { // new scope
+            RemoveLeadAndTailQuotes(sv);
             std::string temp;
             for(i = 0; i < minSize; ++i)
             {
