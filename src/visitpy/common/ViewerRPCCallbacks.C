@@ -69,6 +69,8 @@ ViewerRPCCallbacks::ViewerRPCCallbacks()
 // Creation:   Tue Feb  5 11:46:12 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Thu Aug 19 15:52:59 PDT 2010
+//   Be careful about deleting a class instance from here.
 //   
 // ****************************************************************************
 
@@ -79,7 +81,18 @@ ViewerRPCCallbacks::~ViewerRPCCallbacks()
         if(pycb[r] != 0)
             Py_DECREF(pycb[r]);
         if(pycb_data[r] != 0)
-            Py_DECREF(pycb_data[r]);
+        {
+            // Hack! I found that decrementing the refcount of a class 
+            //       instance from here causes a crash if it's the last
+            //       reference and it will cause the object to be deleted.
+            //       Decrementing the refcount on other object types is fine,
+            //       even if it causes the object to get deleted. Other objects
+            //       work okay so our reference counting seems good.
+            bool lastInstance = Py_REFCNT(pycb_data[r]) == 1 &&
+                                PyInstance_Check(pycb_data[r]);
+            if(!lastInstance)
+                Py_DECREF(pycb_data[r]);
+        }
     }
 }
 

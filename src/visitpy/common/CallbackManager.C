@@ -149,6 +149,9 @@ CallbackManager::CallbackManager(ViewerProxy *p) : SimpleObserver(),
 //   Brad Whitlock, Wed Feb  6 10:28:58 PST 2008
 //   Added support for callback data.
 //
+//   Brad Whitlock, Thu Aug 19 15:52:59 PDT 2010
+//   Be careful about deleting a class instance from here.
+//
 // ****************************************************************************
 
 CallbackManager::~CallbackManager()
@@ -161,7 +164,18 @@ CallbackManager::~CallbackManager()
         if(it->second.pycb != 0)
             Py_DECREF(it->second.pycb);
         if(it->second.pycb_data != 0)
-            Py_DECREF(it->second.pycb_data);
+        {
+            // Hack! I found that decrementing the refcount of a class 
+            //       instance from here causes a crash if it's the last
+            //       reference and it will cause the object to be deleted.
+            //       Decrementing the refcount on other object types is fine,
+            //       even if it causes the object to get deleted. Other objects
+            //       work okay so our reference counting seems good.
+            bool lastInstance = Py_REFCNT(it->second.pycb_data) == 1 &&
+                                PyInstance_Check(it->second.pycb_data);
+            if(!lastInstance)
+                Py_DECREF(it->second.pycb_data);
+        }
     }
     delete threading;
 }
