@@ -299,7 +299,9 @@ avtScatterPlot::SetLimitsMode()
 // Creation:   Tue Dec 14 13:57:39 PST 2004
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Thu Aug 19 13:12:00 PDT 2010
+//    Get var1 from scatter atts.
+//
 // ****************************************************************************
 
 void
@@ -309,10 +311,9 @@ avtScatterPlot::GetColorInformation(std::string &colorString,
 {
     bool printIt = false;
 
-    if(atts.GetVar1Role() == ScatterAttributes::Color &&
-       varname != NULL)
+    if(atts.GetVar1Role() == ScatterAttributes::Color)
     {
-        colorString = varname;
+        colorString = atts.GetVar1();
         mode = atts.GetVar1Scaling();
         skew = atts.GetVar1SkewFactor();
         minFlag = atts.GetVar1MinFlag();
@@ -471,6 +472,9 @@ avtScatterPlot::SetAtts(const AttributeGroup *a)
 //    reading of freed memory.  I had it no-op the dangerous section in this
 //    case (which is the expected behavior).
 //
+//    Cyrus Harrison, Thu Aug 19 13:12:00 PDT 2010
+//    Get var1 from scatter atts.
+//
 // ****************************************************************************
 
 void
@@ -490,12 +494,14 @@ avtScatterPlot::SetVarName(const char *name)
         }
     }
 
-    std::string v, D("default");
+    std::string v;
+    std::string var1name = atts.GetVar1();
+    std::string default_var("default");
     const char *s[] = {0,0,0,0,0};
-    s[int(atts.GetVar1Role())] = name;
-    s[int(atts.GetVar2Role())] = (atts.GetVar2() == D) ? varname : atts.GetVar2().c_str();
-    s[int(atts.GetVar3Role())] = (atts.GetVar3() == D) ? varname : atts.GetVar3().c_str();
-    s[int(atts.GetVar4Role())] = (atts.GetVar4() == D) ? varname : atts.GetVar4().c_str();
+    s[int(atts.GetVar1Role())] = var1name.c_str();
+    s[int(atts.GetVar2Role())] = (atts.GetVar2() == default_var) ? var1name.c_str() : atts.GetVar2().c_str();
+    s[int(atts.GetVar3Role())] = (atts.GetVar3() == default_var) ? var1name.c_str() : atts.GetVar3().c_str();
+    s[int(atts.GetVar4Role())] = (atts.GetVar4() == default_var) ? var1name.c_str() : atts.GetVar4().c_str();
     for(int i = 0, count = 0; i < 4; ++i)
     {
         if(s[i] != 0)
@@ -560,13 +566,13 @@ avtScatterPlot::SetLegend(bool legendOn)
 //
 // Returns:    True if the specified color table was being used; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 14 13:55:32 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -616,6 +622,8 @@ avtScatterPlot::GetMapper(void)
 //  Creation:   March  21, 2001
 //
 //  Modifications:
+//    Cyrus Harrison, Thu Aug 19 13:12:00 PDT 2010
+//    Support var1 in scatter atts.
 //
 // ****************************************************************************
 
@@ -624,13 +632,16 @@ avtScatterPlot::ApplyOperators(avtDataObject_p input)
 {
 //    debug4 << "avtScatterPlot::ApplyOperators" << endl;
     avtDataObject_p dob = input;
-    
+
     //
     // Turn the variables into an unstructured point mesh.
     //
     if (filter != NULL)
         delete filter;
-    filter = new avtScatterFilter(varname, atts);
+    // if we haven't set the actual var name yet, do so
+    if(atts.GetVar1() == "default")
+        atts.SetVar1(varname);
+    filter = new avtScatterFilter(atts);
     filter->SetInput(dob);
     dob = filter->GetOutput();
 
@@ -840,50 +851,76 @@ avtScatterPlot::ReleaseData(void)
 // Creation:   Tue Dec 14 13:52:11 PST 2004
 //
 // Modifications:
-//   
+//   Cyrus Harrison,Thu Aug 19 08:58:26 PDT 2010
+//   Expliclity request var1 if necessary.
+//
 // ****************************************************************************
 
 avtContract_p
-avtScatterPlot::EnhanceSpecification(avtContract_p spec)
+avtScatterPlot::EnhanceSpecification(avtContract_p contract_in)
 {
-#ifdef THE_FILTER_KNOWS_HOW_TO_ADD_ITS_OWN_VARS
-    return spec;
-#else
-    avtContract_p rv = spec;
-    avtDataRequest_p dataRequest = spec->GetDataRequest();
+    avtContract_p rv = contract_in;
+    avtDataRequest_p datareq_in = contract_in->GetDataRequest();
 
+    string var1(atts.GetVar1());
     string var2(atts.GetVar2());
     string var3(atts.GetVar3());
     string var4(atts.GetVar4());
-    bool addVar2 = false, addVar3 = false, addVar4 = false;
+    bool addVar1 = false, addVar2 = false, addVar3 = false, addVar4 = false;
+
+    // if var1 isn't set, read from contract (supports cli use)
+    if(var1 == "default")
+    {
+        var1 = datareq_in->GetVariable();
+        atts.SetVar1(var1);
+    }
+
+    // if var1 one isn't the primary var in our contract
+    // we will need to create a new datarequest.
+    if ( var1 != datareq_in->GetVariable())
+    {
+        addVar1 = true;
+    }
 
     //
-    // Find out if we REALLY need to add the secondary variable.
+    // Find out if we REALLY need to add the secondary variables.
     //
+
     if (var2 != "default" &&
-        var2 != dataRequest->GetVariable() &&
-        !dataRequest->HasSecondaryVariable(var2.c_str()))
+        var2 != var1 &&
+        !datareq_in->HasSecondaryVariable(var2.c_str()))
     {
         addVar2 = true;
     }
 
     if (var3 != "default" &&
-        var3 != dataRequest->GetVariable() &&
-        !dataRequest->HasSecondaryVariable(var3.c_str()))
+        var3 != var1 &&
+        !datareq_in->HasSecondaryVariable(var3.c_str()))
     {
         addVar3 = true;
     }
 
     if (var4 != "default" &&
-        var4 != dataRequest->GetVariable() &&
-        !dataRequest->HasSecondaryVariable(var4.c_str()))
+        var4 != var1 &&
+        !datareq_in->HasSecondaryVariable(var4.c_str()))
     {
         addVar4 = true;
     }
 
-    if(addVar2 || addVar3 || addVar4)
+    if(addVar1 || addVar2 || addVar3 || addVar4)
     {
-        rv = new avtContract(spec);
+        if(addVar1)
+        {
+            // to change the primary var we need to create a new data request
+            avtDataRequest_p datareq_out = new avtDataRequest(contract_in->GetDataRequest(),
+                                                              var1.c_str());
+            rv = new avtContract(contract_in, datareq_out);
+        }
+        else
+        {
+            rv = new avtContract(contract_in);
+        }
+
         if(addVar2)
             rv->GetDataRequest()->AddSecondaryVariable(var2.c_str());
         if(addVar3)
@@ -893,6 +930,5 @@ avtScatterPlot::EnhanceSpecification(avtContract_p spec)
     }
 
     return rv;
-#endif
 }
 

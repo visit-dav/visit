@@ -150,6 +150,9 @@ ScatterGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject *attr,
 //   Mark Blair, Mon Aug 21 18:29:00 PDT 2006
 //   Made argument sequence compatible with upgraded base class.
 //
+//   Cyrus Harrison, Wed Aug 18 14:55:58 PDT 2010
+//   Pass name of the first var selection to the gui.
+//
 // ****************************************************************************
 #include <QvisScatterPlotWizard.h>
 QvisWizard *
@@ -157,7 +160,7 @@ ScatterGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
     QWidget *parent, const std::string &varName, const avtDatabaseMetaData *md,
     const ExpressionList *expList)
 {
-    return new QvisScatterPlotWizard(attr, parent);
+    return new QvisScatterPlotWizard(attr, parent,varName);
 }
 
 

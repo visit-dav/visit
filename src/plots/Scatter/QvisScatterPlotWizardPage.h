@@ -36,29 +36,76 @@
 *
 *****************************************************************************/
 
-#ifndef PY_SCATTERATTRIBUTES_H
-#define PY_SCATTERATTRIBUTES_H
-#include <Python.h>
-#include <ScatterAttributes.h>
+#ifndef QVIS_SCATTER_PLOT_WIZARD_PAGE_H
+#define QVIS_SCATTER_PLOT_WIZARD_PAGE_H
+#include <QvisWizard.h>
 
+#include <vectortypes.h>
+#include <QMap>
+
+
+class QvisScatterWidget;
+class QCheckBox;
+class QvisVariableButton;
+
+
+// ****************************************************************************
+// Class: QvisScaterPlotWizardPage
 //
-// Functions exposed to the VisIt module.
+// Purpose:
+//   Wizard page that provides the interface setting up a scatter plot.
 //
-#define SCATTERATTRIBUTES_NMETH 82
-void           PyScatterAttributes_StartUp(ScatterAttributes *subj, void *data);
-void           PyScatterAttributes_CloseDown();
-PyMethodDef *  PyScatterAttributes_GetMethodTable(int *nMethods);
-bool           PyScatterAttributes_Check(PyObject *obj);
-ScatterAttributes *  PyScatterAttributes_FromPyObject(PyObject *obj);
-PyObject *     PyScatterAttributes_New();
-PyObject *     PyScatterAttributes_Wrap(const ScatterAttributes *attr);
-void           PyScatterAttributes_SetParent(PyObject *obj, PyObject *parent);
-void           PyScatterAttributes_SetDefaults(const ScatterAttributes *atts);
-std::string    PyScatterAttributes_GetLogString();
-std::string    PyScatterAttributes_ToString(const ScatterAttributes *, const char *);
-PyObject *     PyScatterAttributes_getattr(PyObject *self, char *name);
-int            PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args);
-extern PyMethodDef PyScatterAttributes_methods[SCATTERATTRIBUTES_NMETH];
+// Notes: Refactored from QvisScatterPlotWizard.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Jul  8 09:02:28 PDT 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+
+
+class QvisScatterPlotWizardPage : public QWizardPage
+{
+    Q_OBJECT
+public:
+    QvisScatterPlotWizardPage(AttributeSubject *s,
+                             QWidget *parent,
+                             const std::string &xvar_name);
+
+    virtual ~QvisScatterPlotWizardPage();
+
+    void GetSelectedVars(stringVector &res) const;
+    bool ZEnabled() const;
+    bool ColorEnabled() const;
+
+protected slots:
+    void choseXVariable(const QString &);
+    void choseYVariable(const QString &);
+    void choseZVariable(const QString &);
+    void choseColorVariable(const QString &);
+
+    void decideZ(int);
+    void decideColor(int);
+protected:
+    virtual bool        isComplete() const;
+    void                checkComplete();
+
+    bool                ready;
+    QvisScatterWidget  *preview;
+    QvisVariableButton *xVarButton;
+    QvisVariableButton *yVarButton;
+    QvisVariableButton *zVarButton;
+    QCheckBox          *zVarCheck;
+    QvisVariableButton *colorVarButton;
+    QCheckBox          *colorVarCheck;
+
+    std::string         xVarName;
+    std::string         yVarName;
+    std::string         zVarName;
+    std::string         colorVarName;
+
+};
 
 #endif
-
