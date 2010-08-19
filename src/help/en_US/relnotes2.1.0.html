@@ -34,6 +34,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
 <li>A new wizard was created for setting up comparison-based expressions.  It is available under Controls->Data Level Comparisons.</li>
 <li>The expressions window now has buttons for managing expressions via separate configuration files.</li>
+<li>Three dimensional plots can now be scaled visually without affecting their axis labels via the View dialog.  This is similar to the 2D "Full Frame" mode.</li>
+<li>Oblique projections are now supported via a new "Shear" setting in the 3D View dialog.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -50,9 +52,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.1</font></b></p>
 <ul>
+   <li>When they accept a given file name, preferred file format readers now take precedence over non-preferred file formats.  Preferred formats are still also tried before giving up, when all other attempts to guess files based on their name fail.</li>
    <li>Files formats that support time natively now can correctly report their time when concatenated inside a <i>.visit</i> file.</li>
    <li><i>BOV</i> files now properly support the <i>TIME</i> keyword.  They also support a new keyword, <i>CYCLE</i>.</li>
-    <li>The <TT>STAR</TT> database was added.</li>
+   <li>The <i>STAR</i> database was added.</li>
+   <li>A <i>GULP</i> trajectory file format reader was added.</li>
+   <li>A <i>PuReMD</i> trajectory file format reader was added.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -62,6 +67,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The <i>Volume</i> plot is now more efficient in memory and execution time
       when doing a ray casting with logarithmic scale with a minimum value set.</li>
   <li>The <i>Curve</i> plot now can add cues to show a location along the curve.  This is anticipated to be a useful feature when animating a curve within a movie.</li>
+  <li>The <i>Molecule</i> plot now supports 2D rendering primitives.</li>
 </ul>
 
 <a name="Operator_changes"></a>
