@@ -398,6 +398,7 @@ VISIT_3RDPARTY_VAR(VISIT_SILO_DIR      "Path containing the Silo library's inclu
 VISIT_3RDPARTY_DEP(VISIT_SILO_LIBDEP   "Silo library dependencies" SILO_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_VISUS_DIR     "Path containing the ViSUS library's include and lib" VISUS_DIR)
 VISIT_3RDPARTY_VAR(VISIT_XDMF_DIR      "Path containing the Xdmf library's include and lib" XDMF_DIR)
+VISIT_3RDPARTY_VAR(VISIT_MDSPLUS_DIR   "Path containing the MDSplus library's include and lib" MDSPLUS_DIR)
 #-----------------------------------------------------------------------------
 # Read the version
 #-----------------------------------------------------------------------------
@@ -869,6 +870,12 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
 IF(XDMF_FOUND)
     SET(HAVE_LIBXDMF 1)
 ENDIF(XDMF_FOUND)
+
+# Configure MDSplus support.
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMDSplus.cmake)
+IF(MDSPLUS_FOUND)
+    SET(HAVE_LIBMDSPLUS 1)
+ENDIF(MDSPLUS_FOUND)
 
 
 IF(CMAKE_HOST_UNIX)

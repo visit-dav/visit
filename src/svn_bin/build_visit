@@ -59,9 +59,10 @@
 #           ExodusII 4.46     exodusii-4.46.tar.gz   -e
 #           FastBit  0.9.9    fastbit-b0.9.9.tar.gz  -r
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g (no AIX)
-#           H5part   1.4.2    H5Part-1.6.0.tar.gz    -r
+#           H5part   1.6.0    H5Part-1.6.0.tar.gz    -r
 #           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
 #           HDF5     1.8.4    hdf5-1.8.4.tar.gz      -5
+#           MDSplus  2.2      mdsplus-2.2-4.tar.gz
 #           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
 #           AdvIO    1.2.0    AdvIO-1.2.tar.gz
@@ -106,6 +107,8 @@
 #     Function 8.16, build_itaps_fmdb: build FMDB impl. of ITAPS
 #     Function 8.17, build_itaps_grummp: build GRUMMP impl. of ITAPS
 #     Function 8.18, build_advio:   build AdvIO
+#     Function 8.19, build_xdmf  :  build XDMF
+#     Function 8.20, build_mdsplus: build MDSplus
 #     Function 8, build_silo:       build Silo
 #     Function 9, build_hostconf:   build the config-site/host.conf file
 #     Function 9.1, build_visit:    build the VisIt source code
@@ -1148,6 +1151,8 @@ export DO_H5PART="no"
 export ON_H5PART="off"
 export DO_FASTBIT="no"
 export ON_FASTBIT="off"
+export DO_MDSPLUS="no"
+export ON_MDSPLUS="off"
 export DO_SVN="no"
 export DO_SVN_ANON="no"
 export ON_SVN="off"
@@ -1327,11 +1332,16 @@ export H5PART_FILE=${H5PART_FILE:-"H5Part-${H5PART_VERSION}.tar.gz"}
 export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION:-"1.6"}
 export H5PART_BUILD_DIR=${H5PART_BUILD_DIR:-"H5Part-${H5PART_VERSION}"}
 
-export FASTBIT_VERSION=${FASTBIT_VERSION:-"1.0.9"}
+export FASTBIT_VERSION=${FASTBIT_VERSION:-"1.1.9"}
 export FASTBIT_FILE=${FASTBIT_FILE:-"fastbit-ibis${FASTBIT_VERSION}.tar.gz"}
 # Note: last 2-digit field in URL changes with version.
-export FASTBIT_URL=${FASTBIT_URL:-"https://codeforge.lbl.gov/frs/download.php/62"}
-export FASTBIT_BUILD_DIR=${FASTBIT_BUILD_DIR:-"fastbit-ibis1.0.9"}
+export FASTBIT_URL=${FASTBIT_URL:-"https://codeforge.lbl.gov/frs/download.php/186"}
+export FASTBIT_BUILD_DIR=${FASTBIT_BUILD_DIR:-"fastbit-ibis1.1.9"}
+
+export MDSPLUS_VERSION=${MDSPLUS_VERSION:-"2.2"}
+export MDSPLUS_FILE=${MDSPLUS_FILE:-"mdsplus-${MDSPLUS_VERSION}-4.tar.gz"}
+export MDSPLUS_COMPATIBILITY_VERSION=${MDSPLUS_COMPATIBILITY_VERSION:-"2.2"}
+export MDSPLUS_BUILD_DIR=${MDSPLUS_BUILD_DIR:-"mdsplus-${MDSPLUS_VERSION}"}
 
 export CCMIO_FILE=${CCMIO_FILE:-"libccmio-2.6.1.tar.gz"}
 export CCMIO_VERSION=${CCMIO_VERSION:-"2.6.1"}
@@ -2107,6 +2117,15 @@ function check_optional_3rdparty
             ANY_ERRORS="yes"
             DO_GDAL="no"
             error "Unable to build GDAL.  ${GDAL_FILE} not found."
+        fi
+    fi
+    
+    if [[ "$DO_MDSPLUS" == "yes" ]] ; then
+        ensure_built_or_ready "mdsplus" $MDSPLUS_VERSION $MDSPLUS_BUILD_DIR $MDSPLUS_FILE
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_MDSPLUS="no"
+            error "Unable to build MDSplus.  ${MDSPLUS_FILE} not found."
         fi
     fi
     
@@ -8644,6 +8663,69 @@ function build_xdmf
     return 0
 }
 
+# ***************************************************************************
+#                         Function 8.20, build_mdsplus
+#
+# Modifications:
+#
+#  Mark C. Miller, Tue Oct 28 11:10:36 PDT 2008
+#  Added -DH5_USE_16_API to CFLAGS for configuring MDSplus. This should be
+#  harmless when building MDSplus against versions of HDF5 before 1.8 and
+#  necessary when building against versions of HDF5 1.8 or later. It tells
+#  HDF5 which version of the HDF5 API MDSplus was implemented with.
+# ***************************************************************************
+
+function build_mdsplus
+{
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $MDSPLUS_BUILD_DIR $MDSPLUS_FILE
+    untarred_mdsplus=$?
+    if [[ $untarred_mdsplus == -1 ]] ; then
+       warn "Unable to prepare MDSplus Build Directory. Giving Up"
+       return 1
+    fi
+
+    #
+    info "Configuring MDSplus . . ."
+    cd $MDSPLUS_BUILD_DIR || error "Can't cd to mdsplus build dir."
+    info "Invoking command to configure MDSplus"
+    ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
+       CC="$C_COMPILER" CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       --prefix="$VISITDIR/mdsplus/$MDSPLUS_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       warn "MDSplus configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build MDSplus
+    #
+    info "Building MDSplus . . . (~1 minutes)"
+
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+       warn "MDSplus build failed.  Giving up"
+       return 1
+    fi
+    info "Installing MDSplus . . ."
+
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+       warn "MDSplus build (make install) failed.  Giving up"
+       return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/mdsplus"
+       chgrp -R ${GROUP} "$VISITDIR/mdsplus"
+    fi
+    cd "$START_DIR"
+    info "Done with MDSplus"
+    return 0
+}
+
 # *************************************************************************** #
 #                          Function 9, build_hostconf                         #
 # *************************************************************************** #
@@ -8892,6 +8974,20 @@ function build_hostconf
         >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
+        >> $HOSTCONF
+
+    fi
+
+    if [[ "$DO_MDSPLUS" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Mdsplus" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_MDSPLUS_DIR \${VISITHOME}/mdsplus/$MDSPLUS_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_MDSPLUS_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
         >> $HOSTCONF
 
     fi
@@ -9303,6 +9399,11 @@ printvariables () {
   printf "%s%s\n" "GDAL_COMPATIBILITY_VERSION=" "${GDAL_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "GDAL_BUILD_DIR=" "${GDAL_BUILD_DIR}"
 
+  printf "%s%s\n" "MDSPLUS_FILE=" "${MDSPLUS_FILE}"
+  printf "%s%s\n" "MDSPLUS_VERSION=" "${MDSPLUS_VERSION}"
+  printf "%s%s\n" "MDSPLUS_COMPATIBILITY_VERSION=" "${MDSPLUS_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "MDSPLUS_BUILD_DIR=" "${MDSPLUS_BUILD_DIR}"
+
   printf "%s%s\n" "H5PART_FILE=" "${H5PART_FILE}"
   printf "%s%s\n" "H5PART_VERSION=" "${H5PART_VERSION}"
   printf "%s%s\n" "H5PART_COMPATIBILITY_VERSION=" "${H5PART_COMPATIBILITY_VERSION}"
@@ -9384,6 +9485,7 @@ usage () {
   printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
   printf "%-15s %s [%s]\n" "--gdal" "Build GDAL" "$DO_GDAL"
   printf "%-15s %s [%s]\n" "--group" "Group name of installed libraries" "$GROUP"
+  printf "%-15s %s [%s]\n" "--mdsplus" "Build MDSplus" "$DO_MDSPLUS"
   printf "%-15s %s [%s]\n" "--h5part" "Build H5Part" "$DO_H5PART"
   printf "%-15s %s [%s]\n" "--hdf4" "Build HDF4" "${DO_HDF4}"
   printf "%-15s %s [%s]\n" "--hdf5" "Build HDF5" "${DO_HDF5}"
@@ -9641,6 +9743,7 @@ for arg in "${arguments[@]}" ; do
         --itaps) DO_ITAPS="yes"; ON_ITAPS="on";;
         --java) DO_JAVA="yes"; ON_JAVA="on";;
         --makeflags) next_arg="makeflags";;
+        --mdsplus) DO_MDSPLUS="yes"; ON_MDSPLUS="on";;
         --mesa) DO_MESA="yes"; ON_MESA="on";;
         --mili) DO_MILI="yes"; ON_MILI="on";;
         --netcdf) DO_NETCDF="yes"; ON_NETCDF="on";;
@@ -9749,6 +9852,8 @@ if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
     ON_NETCDF="on"
     DO_H5PART="yes"
     ON_H5PART="on"
+    DO_MDSPLUS="yes"
+    ON_MDSPLUS="on"
     DO_SZIP="yes"
     ON_SZIP="on"
     DO_CCMIO="yes"
@@ -9919,6 +10024,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "HDF5"     "$HDF5_VERSION  $HDF5_FILE"      $ON_HDF5 \
            "IceT"     "$ICET_VERSION  $ICET_FILE"      $ON_ICET \
            "ITAPS"    "Jun-2010 Versions of MOAB, FMDB, GRUMMP"    $ON_ITAPS \
+           "MDSplus"  "$MDSPLUS_VERSION  $MDSPLUS_FILE"    $ON_MDSPLUS \
            "Mili"     "$MILI_VERSION $MILI_FILE (not available from the web)"      $ON_MILI \
            "NetCDF"   "$NETCDF_VERSION  $NETCDF_FILE"    $ON_NETCDF \
            "TCMALLOC" "$TCMALLOC_VERSION   $TCMALLOC_FILE (not available from the web)"      $ON_TCMALLOC \
@@ -9943,6 +10049,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         DO_HDF4="no"
         DO_HDF5="no"
         DO_ICET="no"
+        DO_MDSPLUS="no"
         DO_MILI="no"
         DO_NETCDF="no"
         DO_SILO="no"
@@ -9981,6 +10088,8 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
                  DO_HDF5="yes";;
               IceT)
                  DO_ICET="yes";;
+              MDSplus)
+                 DO_MDSPLUS="yes";;
               Mili)
                  DO_MILI="yes";;
               NetCDF)
@@ -10441,6 +10550,21 @@ if [[ "$DO_CFITSIO" == "yes" ]] ; then
             error "Unable to build or install CFITSIO.  Bailing out."
         fi
         info "Done building CFITSIO"
+    fi
+fi
+
+cd "$START_DIR"
+if [[ "$DO_MDSPLUS" == "yes" ]] ; then
+    check_if_installed "mdsplus" $MDSPLUS_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping MDSplus build.  MDSplus is already installed."
+    else
+        info "Building MDSplus (~1 minutes)"
+        build_mdsplus
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install MDSplus.  Bailing out."
+        fi
+        info "Done building MDSplus"
     fi
 fi
 
