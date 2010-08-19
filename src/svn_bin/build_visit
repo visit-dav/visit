@@ -9494,6 +9494,7 @@ usage () {
   printf "%-15s %s [%s]\n" "--icet" "Build Ice-T (parallel rendering lib)" "$DO_ICET"
   printf "%-15s %s [%s]\n" "--itaps" "Build ITAPS" "${DO_ITAPS}"
   printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
+  printf "%-15s %s [%s]\n" "--mdsplus" "Build MDSplus" "${DO_MDSPLUS}"
   printf "%-15s %s [%s]\n" "--mesa" "Build Mesa" "built by default unless --no-thirdparty flag is used"
   printf "%-15s %s [%s]\n" "--mili" "Build Mili" "$DO_MILI"
   printf "\t\t%15s\n" "NOTE: not available for download from web"
