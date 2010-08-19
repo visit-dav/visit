@@ -158,6 +158,9 @@ QvisScatterPlotWindow::~QvisScatterPlotWindow()
 //   Brad Whitlock, Fri Jul 16 14:34:23 PDT 2010
 //   Make curves an allowable variable type.
 //
+//   Cyrus Harrison, Thu Aug 19 13:19:11 PDT 2010
+//   Widget changes to capture when var1 is changed.
+//
 // ****************************************************************************
 
 void
@@ -195,13 +198,14 @@ QvisScatterPlotWindow::CreateWindowContents()
     var1VeryTopLayout->addLayout(var1TopLayout);
 
     QLabel *var1Label = new QLabel(tr("Variable"), var1Top);
-    var1Label->setEnabled(false);
     var1TopLayout->addWidget(var1Label,0,0);
-    QLineEdit *var1 = new QLineEdit(var1Top);
-    var1->setText("default");
-    var1->setEnabled(false);
-//    connect(var1, SIGNAL(returnPressed()),
-//            this, SLOT(var1ProcessText()));
+    // Create a variable button
+    var1 = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars | QvisVariableButton::Curves,
+        var1Top);
+    connect(var1, SIGNAL(activated(const QString &)),
+            this, SLOT(var1Selected(const QString &)));
+
     var1TopLayout->addWidget(var1, 0,1);
 
     var1Role = new QComboBox(var1Top);
@@ -627,6 +631,9 @@ QvisScatterPlotWindow::CreateWindowContents()
 //   Brad Whitlock, Fri Aug  8 10:13:49 PDT 2008
 //   Qt 4.
 //
+//   Cyrus Harrison, Thu Aug 19 09:08:41 PDT 2010
+//   Capture update of var1.
+//
 // ****************************************************************************
 
 void
@@ -650,6 +657,11 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
         QColor tempcolor;
         switch(i)
         {
+        case ScatterAttributes::ID_var1:
+            temp = atts->GetVar1().c_str();
+            var1->setText(temp);
+            varsChanged = true;
+            break;
         case ScatterAttributes::ID_var1Role:
             var1Role->blockSignals(true);
             var1Role->setCurrentIndex(atts->GetVar1Role());
@@ -907,7 +919,7 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
 
             QString roleVar;
             if(role == int(atts->GetVar1Role()))
-                roleVar = "default";
+                roleVar = atts->GetVar1().c_str();
             else if(role == int(atts->GetVar2Role()))
                 roleVar = atts->GetVar2().c_str();
             else if(role == int(atts->GetVar3Role()))
@@ -1339,10 +1351,17 @@ QvisScatterPlotWindow::var1RoleChanged(int val)
 {
     if(val != atts->GetVar1Role())
     {
-        EnsureUniqueRole(14, val, "default");
+        EnsureUniqueRole(14, val, atts->GetVar1().c_str());
         atts->SetVar1Role(ScatterAttributes::VariableRole(val));
         Apply();
     }
+}
+
+void
+QvisScatterPlotWindow::var1Selected(const QString &var)
+{
+    atts->SetVar1(var.toStdString());
+    Apply();
 }
 
 

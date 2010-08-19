@@ -17,11 +17,13 @@ QvisScatterPlotWindow.C
 ${COMMON_SOURCES}
 QvisScatterWidget.C
 QvisScatterPlotWizard.C
+QvisScatterPlotWizardPage.C
 )
 SET(LIBG_MOC_SOURCES
 QvisScatterPlotWindow.h
 QvisScatterWidget.h
 QvisScatterPlotWizard.h
+QvisScatterPlotWizardPage.h
 )
 QT_WRAP_CPP(GScatterPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
 
@@ -122,5 +124,5 @@ IF(VISIT_PARALLEL)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
-
 VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})
+

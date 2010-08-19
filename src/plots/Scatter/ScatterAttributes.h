@@ -40,6 +40,7 @@
 #define SCATTERATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -83,13 +84,23 @@ public:
         None
     };
 
+    // These constructors are for objects of this class
     ScatterAttributes();
     ScatterAttributes(const ScatterAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ScatterAttributes(private_tmfs_t tmfs);
+    ScatterAttributes(const ScatterAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ScatterAttributes();
 
     virtual ScatterAttributes& operator = (const ScatterAttributes &obj);
     virtual bool operator == (const ScatterAttributes &obj) const;
     virtual bool operator != (const ScatterAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ScatterAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -98,6 +109,7 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectVar1();
     void SelectVar2();
     void SelectVar3();
     void SelectVar4();
@@ -105,6 +117,7 @@ public:
     void SelectSingleColor();
 
     // Property setting methods
+    void SetVar1(const std::string &var1_);
     void SetVar1Role(VariableRole var1Role_);
     void SetVar1MinFlag(bool var1MinFlag_);
     void SetVar1MaxFlag(bool var1MaxFlag_);
@@ -146,6 +159,8 @@ public:
     void SetLegendFlag(bool legendFlag_);
 
     // Property getting methods
+    const std::string    &GetVar1() const;
+          std::string    &GetVar1();
     VariableRole         GetVar1Role() const;
     bool                 GetVar1MinFlag() const;
     bool                 GetVar1MaxFlag() const;
@@ -223,7 +238,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_var1Role = 0,
+        ID_var1 = 0,
+        ID_var1Role,
         ID_var1MinFlag,
         ID_var1MaxFlag,
         ID_var1Min,
@@ -261,10 +277,12 @@ public:
         ID_colorTableName,
         ID_singleColor,
         ID_foregroundFlag,
-        ID_legendFlag
+        ID_legendFlag,
+        ID__LAST
     };
 
 private:
+    std::string    var1;
     int            var1Role;
     bool           var1MinFlag;
     bool           var1MaxFlag;
@@ -307,6 +325,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SCATTERATTRIBUTES_TMFS "sibbddidisbbddidisbbddidisbbddiddiibsabb"
 
 #endif

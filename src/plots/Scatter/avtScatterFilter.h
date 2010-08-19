@@ -67,17 +67,19 @@
 //       when there are more procs than chunks to process.)
 //      2) Set proper spatial extents.
 //
+//    Cyrus Harrison, Thu Aug 19 13:35:08 PDT 2010
+//    Changes to support using var1 from atts.
+//
 // ****************************************************************************
 
 class avtScatterFilter : public avtDataTreeIterator
 {
   public:
-                               avtScatterFilter(const std::string &v,
-                                                const ScatterAttributes &);
+                               avtScatterFilter(const ScatterAttributes &);
     virtual                   ~avtScatterFilter();
 
     virtual const char        *GetType(void)  { return "avtScatterFilter"; };
-    virtual const char        *GetDescription(void)  
+    virtual const char        *GetDescription(void)
                                    { return "Creating point mesh"; };
 
 protected:
@@ -92,7 +94,6 @@ protected:
         float         skew;
     };
 
-    std::string                variableName;
     ScatterAttributes          atts;
     double                     xExtents[2];
     double                     yExtents[2];

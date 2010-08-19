@@ -40,10 +40,7 @@
 #define QVIS_SCATTER_PLOT_WIZARD_H
 #include <QvisWizard.h>
 
-class QButtonGroup;
-class QvisScatterWidget;
-class QWizardPage;
-
+class QvisScatterPlotWizardPage;
 // ****************************************************************************
 // Class: QvisScatterPlotWizard
 //
@@ -51,7 +48,7 @@ class QWizardPage;
 //   This class is a wizard that helps the user choose initial parameters for
 //   the Scatter plot.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 14 09:53:27 PDT 2004
@@ -60,48 +57,26 @@ class QWizardPage;
 //   Brad Whitlock, Fri Aug  8 11:25:55 PDT 2008
 //   Qt 4.
 //
+//   Cyrus Harrison, Thu Aug 19 13:16:58 PDT 2010
+//   New single page wizard, majority of the functionality moved into
+//   QvisScatterPlotWizardPage.
+//
 // ****************************************************************************
 
 class QvisScatterPlotWizard : public QvisWizard
 {
     Q_OBJECT
 public:
-    QvisScatterPlotWizard(AttributeSubject *s, QWidget *parent);
+    QvisScatterPlotWizard(AttributeSubject *s,
+                          QWidget *parent,
+                          const std::string &var_name);
     virtual ~QvisScatterPlotWizard();
 
-    virtual int nextId() const;
-private slots:
-    void choseYVariable(const QString &);
-    void choseZVariable(const QString &);
-    void choseColorVariable(const QString &);
-    void decideZ(int);
-    void decideColor(int);
-    void updateAnimationFlags(int);
 protected:
-    void CreateVariablePage(QWizardPage **, QvisScatterWidget **,
-        const QString &prompt, const char *slot,
-        bool highlight, bool threeD, bool colorPoints);
-    void CreateYesNoPage(QWizardPage **, QvisScatterWidget **, QButtonGroup **,
-        const QString &prompt, const char *slot,
-        bool highlight, bool threeD, bool colorPoints);
-    void CreateFinishPage(QWizardPage **, QvisScatterWidget **,
-        const QString &prompt,
-        bool highlight, bool threeD, bool colorPoints);
+    bool validateCurrentPage();
+    void SetScatterAttributes();
+    QvisScatterPlotWizardPage *mainPage;
 
-    QWizardPage       *page0;
-    QWizardPage       *page1;
-    QWizardPage       *page2;
-    QWizardPage       *page3;
-    QWizardPage       *page4;
-    QWizardPage       *page5;
-
-    QvisScatterWidget *scatter[6];
-
-    QButtonGroup      *bg2;
-    QButtonGroup      *bg4;
-
-    bool selectZCoord;
-    bool selectColor;
 };
 
 #endif

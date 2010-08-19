@@ -105,10 +105,13 @@
 //    Brad Whitlock, Mon Jul 18 11:07:35 PDT 2005
 //    Added extents arrays and flags.
 //
+//    Cyrus Harrison, Thu Aug 19 13:33:53 PDT 2010
+//    Removed unused code.
+//
 // ****************************************************************************
 
-avtScatterFilter::avtScatterFilter(const std::string &v, const ScatterAttributes &a)
-    : avtDataTreeIterator(), variableName(v), atts(a)
+avtScatterFilter::avtScatterFilter(const ScatterAttributes &a)
+    : avtDataTreeIterator(),atts(a)
 {
     needXExtents = false;
     xExtents[0] = 0., xExtents[1] = 1.;
@@ -121,41 +124,6 @@ avtScatterFilter::avtScatterFilter(const std::string &v, const ScatterAttributes
 
     needColorExtents = false;
     colorExtents[0] = 0., colorExtents[1] = 0.;
-
-#ifdef THE_FILTER_KNOWS_HOW_TO_ADD_ITS_OWN_VARS
-    stringVector vars;
-
-    //
-    // Add the secondary variables.
-    //
-    if(atts.GetVar2Role() != ScatterAttributes::None &&
-       atts.GetVar2().size() > 0 &&
-       atts.GetVar2() != "default")
-    {
-        vars.push_back(atts.GetVar2());
-    }
-
-    if(atts.GetVar3Role() != ScatterAttributes::None &&
-       atts.GetVar3().size() > 0 &&
-       atts.GetVar3() != "default")
-    {
-        vars.push_back(atts.GetVar3());
-    }
-
-    if(atts.GetVar4Role() != ScatterAttributes::None &&
-       atts.GetVar4().size() > 0 &&
-       atts.GetVar4() != "default")
-    {
-        vars.push_back(atts.GetVar4());
-    }
-
-    if(vars.size() > 0)
-    {
-        SetActiveVariable(vars[0].c_str());
-        for(int i = 1; i < vars.size(); ++i)
-            AddSecondaryVariable(vars[i].c_str());
-    }
-#endif
 }
 
 
@@ -262,6 +230,9 @@ avtScatterFilter::PreExecute(void)
 //    Cyrus Harrison, Tue Aug 17 11:51:28 PDT 2010
 //    Moved logic that modifies the output data atts to PostExecute.
 //
+//    Cyrus Harrison, Thu Aug 19 13:34:28 PDT 2010
+//    Obtain var1 from atts.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -271,7 +242,7 @@ debug4 << "avtScatterFilter::ExecuteData" << endl;
     avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
 
     // Determine the name of the first variable.
-    std::string var1Name(variableName);
+    std::string var1Name(atts.GetVar1());
 
     // Determine the name of the second variable.
     std::string var2Name(atts.GetVar2());
@@ -443,7 +414,7 @@ avtScatterFilter::PostExecute(void)
 
     if(atts.GetVar4Role() != ScatterAttributes::None)
     {
-        string color_var = variableName;
+        string color_var = atts.GetVar1();
         // Determine the name of the 4th variable.
         std::string var4name(atts.GetVar4());
         if(var4name != "default")
@@ -1151,20 +1122,20 @@ avtScatterFilter::PopulateDataInputs(DataInput *orderedArrays, vtkDataArray **ar
 void
 avtScatterFilter::PopulateNames(const char **names) const
 {
-    names[int(atts.GetVar1Role())] = variableName.c_str();
+    names[int(atts.GetVar1Role())] = atts.GetVar1().c_str();
 
     if(atts.GetVar2() == "default")
-        names[int(atts.GetVar2Role())] = variableName.c_str();
+        names[int(atts.GetVar2Role())] = atts.GetVar1().c_str();
     else
         names[int(atts.GetVar2Role())] = atts.GetVar2().c_str();
 
     if(atts.GetVar3() == "default")
-        names[int(atts.GetVar3Role())] = variableName.c_str();
+        names[int(atts.GetVar3Role())] = atts.GetVar1().c_str();
     else
         names[int(atts.GetVar3Role())] = atts.GetVar3().c_str();
 
     if(atts.GetVar4() == "default")
-        names[int(atts.GetVar4Role())] = variableName.c_str();
+        names[int(atts.GetVar4Role())] = atts.GetVar1().c_str();
     else
         names[int(atts.GetVar4Role())] = atts.GetVar4().c_str();
 }
@@ -1192,10 +1163,10 @@ debug4 << "avtScatterFilter::UpdateDataObjectInfo" << endl;
     std::string v1Units(""), v2Units(""), v3Units(""), v4Units("");
 
     if(atts.GetVar1Role() != ScatterAttributes::None)
-    {    
-        if (dataAtts.ValidVariable(variableName.c_str()))
+    {
+        if (dataAtts.ValidVariable(atts.GetVar1().c_str()))
         {
-            v1Units = dataAtts.GetVariableUnits(variableName.c_str());
+            v1Units = dataAtts.GetVariableUnits(atts.GetVar1().c_str());
         }
     }
 
@@ -1229,7 +1200,7 @@ debug4 << "avtScatterFilter::UpdateDataObjectInfo" << endl;
     //
     const char *labels[5] = {0,0,0,0,0};
     const char *units[5] = {0,0,0,0,0};
-    labels[int(atts.GetVar1Role())] = variableName.c_str();
+    labels[int(atts.GetVar1Role())] = atts.GetVar1().c_str();
     units[int(atts.GetVar1Role())] = v1Units.c_str();
     labels[int(atts.GetVar2Role())] = atts.GetVar2().c_str();
     units[int(atts.GetVar2Role())] = v2Units.c_str();

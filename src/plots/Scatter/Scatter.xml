@@ -3,6 +3,7 @@
     <Files components="G">
       QvisScatterWidget.C
       QvisScatterPlotWizard.C
+      QvisScatterPlotWizardPage.C
     </Files>
     <Files components="V">
       avtScatterFilter.C
@@ -13,6 +14,7 @@
     <Files components="W">
       QvisScatterWidget.h
       QvisScatterPlotWizard.h
+      QvisScatterPlotWizardPage.h
     </Files>
     <Attribute name="ScatterAttributes" purpose="Attributes for the scatter plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Scatter.code">
       <Enum name="Scaling">
@@ -34,6 +36,9 @@
         Color
         None
       </Enum>
+      <Field name="var1" label="Variable 1" type="string">
+        default
+      </Field>
       <Field name="var1Role" label="Variable 1 role" type="enum" subtype="VariableRole">
         Coordinate0
       </Field>

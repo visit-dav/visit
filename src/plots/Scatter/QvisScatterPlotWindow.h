@@ -60,10 +60,10 @@ class QvisVariableButton;
 // ****************************************************************************
 // Class: QvisScatterPlotWindow
 //
-// Purpose: 
+// Purpose:
 //   Defines QvisScatterPlotWindow class.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Dec 1 16:16:10 PST 2004
@@ -74,6 +74,9 @@ class QvisVariableButton;
 //
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
+//
+//   Cyrus Harrison, Thu Aug 19 13:19:11 PDT 2010
+//   Added var1 button & slot to capture var1 changes.
 //
 // ****************************************************************************
 
@@ -99,6 +102,7 @@ protected:
     void EnsureUniqueRole(int mask, int val, const char *var);
 private slots:
     void var1RoleChanged(int val);
+    void var1Selected(const QString &var);
     void var1MinFlagChanged(bool val);
     void var1MaxFlagChanged(bool val);
     void var1MinProcessText();
@@ -141,6 +145,7 @@ private:
     static const char *roleNames[5];
 
     QComboBox *var1Role;
+    QvisVariableButton *var1;
     QCheckBox *var1MinFlag;
     QCheckBox *var1MaxFlag;
     QLineEdit *var1Min;

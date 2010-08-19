@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class ScatterAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 39;
+    private static int ScatterAttributes_numAdditionalAtts = 40;
 
     // Enum values
     public final static int SCALING_LINEAR = 0;
@@ -82,8 +82,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
 
     public ScatterAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ScatterAttributes_numAdditionalAtts);
 
+        var1 = new String("default");
         var1Role = VARIABLEROLE_COORDINATE0;
         var1MinFlag = false;
         var1MaxFlag = false;
@@ -127,8 +128,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
 
     public ScatterAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ScatterAttributes_numAdditionalAtts + nMoreFields);
 
+        var1 = new String("default");
         var1Role = VARIABLEROLE_COORDINATE0;
         var1MinFlag = false;
         var1MaxFlag = false;
@@ -172,8 +174,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
 
     public ScatterAttributes(ScatterAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ScatterAttributes_numAdditionalAtts);
 
+        var1 = new String(obj.var1);
         var1Role = obj.var1Role;
         var1MinFlag = obj.var1MinFlag;
         var1MaxFlag = obj.var1MaxFlag;
@@ -224,13 +227,14 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ScatterAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ScatterAttributes obj)
     {
         // Create the return value
-        return ((var1Role == obj.var1Role) &&
+        return ((var1.equals(obj.var1)) &&
+                (var1Role == obj.var1Role) &&
                 (var1MinFlag == obj.var1MinFlag) &&
                 (var1MaxFlag == obj.var1MaxFlag) &&
                 (var1Min == obj.var1Min) &&
@@ -275,241 +279,248 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
+    public void SetVar1(String var1_)
+    {
+        var1 = var1_;
+        Select(0);
+    }
+
     public void SetVar1Role(int var1Role_)
     {
         var1Role = var1Role_;
-        Select(0);
+        Select(1);
     }
 
     public void SetVar1MinFlag(boolean var1MinFlag_)
     {
         var1MinFlag = var1MinFlag_;
-        Select(1);
+        Select(2);
     }
 
     public void SetVar1MaxFlag(boolean var1MaxFlag_)
     {
         var1MaxFlag = var1MaxFlag_;
-        Select(2);
+        Select(3);
     }
 
     public void SetVar1Min(double var1Min_)
     {
         var1Min = var1Min_;
-        Select(3);
+        Select(4);
     }
 
     public void SetVar1Max(double var1Max_)
     {
         var1Max = var1Max_;
-        Select(4);
+        Select(5);
     }
 
     public void SetVar1Scaling(int var1Scaling_)
     {
         var1Scaling = var1Scaling_;
-        Select(5);
+        Select(6);
     }
 
     public void SetVar1SkewFactor(double var1SkewFactor_)
     {
         var1SkewFactor = var1SkewFactor_;
-        Select(6);
+        Select(7);
     }
 
     public void SetVar2Role(int var2Role_)
     {
         var2Role = var2Role_;
-        Select(7);
+        Select(8);
     }
 
     public void SetVar2(String var2_)
     {
         var2 = var2_;
-        Select(8);
+        Select(9);
     }
 
     public void SetVar2MinFlag(boolean var2MinFlag_)
     {
         var2MinFlag = var2MinFlag_;
-        Select(9);
+        Select(10);
     }
 
     public void SetVar2MaxFlag(boolean var2MaxFlag_)
     {
         var2MaxFlag = var2MaxFlag_;
-        Select(10);
+        Select(11);
     }
 
     public void SetVar2Min(double var2Min_)
     {
         var2Min = var2Min_;
-        Select(11);
+        Select(12);
     }
 
     public void SetVar2Max(double var2Max_)
     {
         var2Max = var2Max_;
-        Select(12);
+        Select(13);
     }
 
     public void SetVar2Scaling(int var2Scaling_)
     {
         var2Scaling = var2Scaling_;
-        Select(13);
+        Select(14);
     }
 
     public void SetVar2SkewFactor(double var2SkewFactor_)
     {
         var2SkewFactor = var2SkewFactor_;
-        Select(14);
+        Select(15);
     }
 
     public void SetVar3Role(int var3Role_)
     {
         var3Role = var3Role_;
-        Select(15);
+        Select(16);
     }
 
     public void SetVar3(String var3_)
     {
         var3 = var3_;
-        Select(16);
+        Select(17);
     }
 
     public void SetVar3MinFlag(boolean var3MinFlag_)
     {
         var3MinFlag = var3MinFlag_;
-        Select(17);
+        Select(18);
     }
 
     public void SetVar3MaxFlag(boolean var3MaxFlag_)
     {
         var3MaxFlag = var3MaxFlag_;
-        Select(18);
+        Select(19);
     }
 
     public void SetVar3Min(double var3Min_)
     {
         var3Min = var3Min_;
-        Select(19);
+        Select(20);
     }
 
     public void SetVar3Max(double var3Max_)
     {
         var3Max = var3Max_;
-        Select(20);
+        Select(21);
     }
 
     public void SetVar3Scaling(int var3Scaling_)
     {
         var3Scaling = var3Scaling_;
-        Select(21);
+        Select(22);
     }
 
     public void SetVar3SkewFactor(double var3SkewFactor_)
     {
         var3SkewFactor = var3SkewFactor_;
-        Select(22);
+        Select(23);
     }
 
     public void SetVar4Role(int var4Role_)
     {
         var4Role = var4Role_;
-        Select(23);
+        Select(24);
     }
 
     public void SetVar4(String var4_)
     {
         var4 = var4_;
-        Select(24);
+        Select(25);
     }
 
     public void SetVar4MinFlag(boolean var4MinFlag_)
     {
         var4MinFlag = var4MinFlag_;
-        Select(25);
+        Select(26);
     }
 
     public void SetVar4MaxFlag(boolean var4MaxFlag_)
     {
         var4MaxFlag = var4MaxFlag_;
-        Select(26);
+        Select(27);
     }
 
     public void SetVar4Min(double var4Min_)
     {
         var4Min = var4Min_;
-        Select(27);
+        Select(28);
     }
 
     public void SetVar4Max(double var4Max_)
     {
         var4Max = var4Max_;
-        Select(28);
+        Select(29);
     }
 
     public void SetVar4Scaling(int var4Scaling_)
     {
         var4Scaling = var4Scaling_;
-        Select(29);
+        Select(30);
     }
 
     public void SetVar4SkewFactor(double var4SkewFactor_)
     {
         var4SkewFactor = var4SkewFactor_;
-        Select(30);
+        Select(31);
     }
 
     public void SetPointSize(double pointSize_)
     {
         pointSize = pointSize_;
-        Select(31);
+        Select(32);
     }
 
     public void SetPointSizePixels(int pointSizePixels_)
     {
         pointSizePixels = pointSizePixels_;
-        Select(32);
+        Select(33);
     }
 
     public void SetPointType(int pointType_)
     {
         pointType = pointType_;
-        Select(33);
+        Select(34);
     }
 
     public void SetScaleCube(boolean scaleCube_)
     {
         scaleCube = scaleCube_;
-        Select(34);
+        Select(35);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(35);
+        Select(36);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(36);
+        Select(37);
     }
 
     public void SetForegroundFlag(boolean foregroundFlag_)
     {
         foregroundFlag = foregroundFlag_;
-        Select(37);
+        Select(38);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(38);
+        Select(39);
     }
 
     // Property getting methods
+    public String         GetVar1() { return var1; }
     public int            GetVar1Role() { return var1Role; }
     public boolean        GetVar1MinFlag() { return var1MinFlag; }
     public boolean        GetVar1MaxFlag() { return var1MaxFlag; }
@@ -554,82 +565,84 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(var1Role);
+            buf.WriteString(var1);
         if(WriteSelect(1, buf))
-            buf.WriteBool(var1MinFlag);
+            buf.WriteInt(var1Role);
         if(WriteSelect(2, buf))
-            buf.WriteBool(var1MaxFlag);
+            buf.WriteBool(var1MinFlag);
         if(WriteSelect(3, buf))
-            buf.WriteDouble(var1Min);
+            buf.WriteBool(var1MaxFlag);
         if(WriteSelect(4, buf))
-            buf.WriteDouble(var1Max);
+            buf.WriteDouble(var1Min);
         if(WriteSelect(5, buf))
-            buf.WriteInt(var1Scaling);
+            buf.WriteDouble(var1Max);
         if(WriteSelect(6, buf))
-            buf.WriteDouble(var1SkewFactor);
+            buf.WriteInt(var1Scaling);
         if(WriteSelect(7, buf))
-            buf.WriteInt(var2Role);
+            buf.WriteDouble(var1SkewFactor);
         if(WriteSelect(8, buf))
-            buf.WriteString(var2);
+            buf.WriteInt(var2Role);
         if(WriteSelect(9, buf))
-            buf.WriteBool(var2MinFlag);
+            buf.WriteString(var2);
         if(WriteSelect(10, buf))
-            buf.WriteBool(var2MaxFlag);
+            buf.WriteBool(var2MinFlag);
         if(WriteSelect(11, buf))
-            buf.WriteDouble(var2Min);
+            buf.WriteBool(var2MaxFlag);
         if(WriteSelect(12, buf))
-            buf.WriteDouble(var2Max);
+            buf.WriteDouble(var2Min);
         if(WriteSelect(13, buf))
-            buf.WriteInt(var2Scaling);
+            buf.WriteDouble(var2Max);
         if(WriteSelect(14, buf))
-            buf.WriteDouble(var2SkewFactor);
+            buf.WriteInt(var2Scaling);
         if(WriteSelect(15, buf))
-            buf.WriteInt(var3Role);
+            buf.WriteDouble(var2SkewFactor);
         if(WriteSelect(16, buf))
-            buf.WriteString(var3);
+            buf.WriteInt(var3Role);
         if(WriteSelect(17, buf))
-            buf.WriteBool(var3MinFlag);
+            buf.WriteString(var3);
         if(WriteSelect(18, buf))
-            buf.WriteBool(var3MaxFlag);
+            buf.WriteBool(var3MinFlag);
         if(WriteSelect(19, buf))
-            buf.WriteDouble(var3Min);
+            buf.WriteBool(var3MaxFlag);
         if(WriteSelect(20, buf))
-            buf.WriteDouble(var3Max);
+            buf.WriteDouble(var3Min);
         if(WriteSelect(21, buf))
-            buf.WriteInt(var3Scaling);
+            buf.WriteDouble(var3Max);
         if(WriteSelect(22, buf))
-            buf.WriteDouble(var3SkewFactor);
+            buf.WriteInt(var3Scaling);
         if(WriteSelect(23, buf))
-            buf.WriteInt(var4Role);
+            buf.WriteDouble(var3SkewFactor);
         if(WriteSelect(24, buf))
-            buf.WriteString(var4);
+            buf.WriteInt(var4Role);
         if(WriteSelect(25, buf))
-            buf.WriteBool(var4MinFlag);
+            buf.WriteString(var4);
         if(WriteSelect(26, buf))
-            buf.WriteBool(var4MaxFlag);
+            buf.WriteBool(var4MinFlag);
         if(WriteSelect(27, buf))
-            buf.WriteDouble(var4Min);
+            buf.WriteBool(var4MaxFlag);
         if(WriteSelect(28, buf))
-            buf.WriteDouble(var4Max);
+            buf.WriteDouble(var4Min);
         if(WriteSelect(29, buf))
-            buf.WriteInt(var4Scaling);
+            buf.WriteDouble(var4Max);
         if(WriteSelect(30, buf))
-            buf.WriteDouble(var4SkewFactor);
+            buf.WriteInt(var4Scaling);
         if(WriteSelect(31, buf))
-            buf.WriteDouble(pointSize);
+            buf.WriteDouble(var4SkewFactor);
         if(WriteSelect(32, buf))
-            buf.WriteInt(pointSizePixels);
+            buf.WriteDouble(pointSize);
         if(WriteSelect(33, buf))
-            buf.WriteInt(pointType);
+            buf.WriteInt(pointSizePixels);
         if(WriteSelect(34, buf))
-            buf.WriteBool(scaleCube);
+            buf.WriteInt(pointType);
         if(WriteSelect(35, buf))
-            buf.WriteString(colorTableName);
+            buf.WriteBool(scaleCube);
         if(WriteSelect(36, buf))
-            singleColor.Write(buf);
+            buf.WriteString(colorTableName);
         if(WriteSelect(37, buf))
-            buf.WriteBool(foregroundFlag);
+            singleColor.Write(buf);
         if(WriteSelect(38, buf))
+            buf.WriteBool(foregroundFlag);
+        if(WriteSelect(39, buf))
             buf.WriteBool(legendFlag);
     }
 
@@ -638,121 +651,124 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         switch(index)
         {
         case 0:
-            SetVar1Role(buf.ReadInt());
+            SetVar1(buf.ReadString());
             break;
         case 1:
-            SetVar1MinFlag(buf.ReadBool());
+            SetVar1Role(buf.ReadInt());
             break;
         case 2:
-            SetVar1MaxFlag(buf.ReadBool());
+            SetVar1MinFlag(buf.ReadBool());
             break;
         case 3:
-            SetVar1Min(buf.ReadDouble());
+            SetVar1MaxFlag(buf.ReadBool());
             break;
         case 4:
-            SetVar1Max(buf.ReadDouble());
+            SetVar1Min(buf.ReadDouble());
             break;
         case 5:
-            SetVar1Scaling(buf.ReadInt());
+            SetVar1Max(buf.ReadDouble());
             break;
         case 6:
-            SetVar1SkewFactor(buf.ReadDouble());
+            SetVar1Scaling(buf.ReadInt());
             break;
         case 7:
-            SetVar2Role(buf.ReadInt());
+            SetVar1SkewFactor(buf.ReadDouble());
             break;
         case 8:
-            SetVar2(buf.ReadString());
+            SetVar2Role(buf.ReadInt());
             break;
         case 9:
-            SetVar2MinFlag(buf.ReadBool());
+            SetVar2(buf.ReadString());
             break;
         case 10:
-            SetVar2MaxFlag(buf.ReadBool());
+            SetVar2MinFlag(buf.ReadBool());
             break;
         case 11:
-            SetVar2Min(buf.ReadDouble());
+            SetVar2MaxFlag(buf.ReadBool());
             break;
         case 12:
-            SetVar2Max(buf.ReadDouble());
+            SetVar2Min(buf.ReadDouble());
             break;
         case 13:
-            SetVar2Scaling(buf.ReadInt());
+            SetVar2Max(buf.ReadDouble());
             break;
         case 14:
-            SetVar2SkewFactor(buf.ReadDouble());
+            SetVar2Scaling(buf.ReadInt());
             break;
         case 15:
-            SetVar3Role(buf.ReadInt());
+            SetVar2SkewFactor(buf.ReadDouble());
             break;
         case 16:
-            SetVar3(buf.ReadString());
+            SetVar3Role(buf.ReadInt());
             break;
         case 17:
-            SetVar3MinFlag(buf.ReadBool());
+            SetVar3(buf.ReadString());
             break;
         case 18:
-            SetVar3MaxFlag(buf.ReadBool());
+            SetVar3MinFlag(buf.ReadBool());
             break;
         case 19:
-            SetVar3Min(buf.ReadDouble());
+            SetVar3MaxFlag(buf.ReadBool());
             break;
         case 20:
-            SetVar3Max(buf.ReadDouble());
+            SetVar3Min(buf.ReadDouble());
             break;
         case 21:
-            SetVar3Scaling(buf.ReadInt());
+            SetVar3Max(buf.ReadDouble());
             break;
         case 22:
-            SetVar3SkewFactor(buf.ReadDouble());
+            SetVar3Scaling(buf.ReadInt());
             break;
         case 23:
-            SetVar4Role(buf.ReadInt());
+            SetVar3SkewFactor(buf.ReadDouble());
             break;
         case 24:
-            SetVar4(buf.ReadString());
+            SetVar4Role(buf.ReadInt());
             break;
         case 25:
-            SetVar4MinFlag(buf.ReadBool());
+            SetVar4(buf.ReadString());
             break;
         case 26:
-            SetVar4MaxFlag(buf.ReadBool());
+            SetVar4MinFlag(buf.ReadBool());
             break;
         case 27:
-            SetVar4Min(buf.ReadDouble());
+            SetVar4MaxFlag(buf.ReadBool());
             break;
         case 28:
-            SetVar4Max(buf.ReadDouble());
+            SetVar4Min(buf.ReadDouble());
             break;
         case 29:
-            SetVar4Scaling(buf.ReadInt());
+            SetVar4Max(buf.ReadDouble());
             break;
         case 30:
-            SetVar4SkewFactor(buf.ReadDouble());
+            SetVar4Scaling(buf.ReadInt());
             break;
         case 31:
-            SetPointSize(buf.ReadDouble());
+            SetVar4SkewFactor(buf.ReadDouble());
             break;
         case 32:
-            SetPointSizePixels(buf.ReadInt());
+            SetPointSize(buf.ReadDouble());
             break;
         case 33:
-            SetPointType(buf.ReadInt());
+            SetPointSizePixels(buf.ReadInt());
             break;
         case 34:
-            SetScaleCube(buf.ReadBool());
+            SetPointType(buf.ReadInt());
             break;
         case 35:
-            SetColorTableName(buf.ReadString());
+            SetScaleCube(buf.ReadBool());
             break;
         case 36:
-            singleColor.Read(buf);
-            Select(36);
+            SetColorTableName(buf.ReadString());
             break;
         case 37:
-            SetForegroundFlag(buf.ReadBool());
+            singleColor.Read(buf);
+            Select(37);
             break;
         case 38:
+            SetForegroundFlag(buf.ReadBool());
+            break;
+        case 39:
             SetLegendFlag(buf.ReadBool());
             break;
         }
@@ -761,6 +777,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
+        str = str + stringToString("var1", var1, indent) + "\n";
         str = str + indent + "var1Role = ";
         if(var1Role == VARIABLEROLE_COORDINATE0)
             str = str + "VARIABLEROLE_COORDINATE0";
@@ -888,6 +905,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
+    private String         var1;
     private int            var1Role;
     private boolean        var1MinFlag;
     private boolean        var1MaxFlag;
