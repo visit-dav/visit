@@ -219,6 +219,7 @@ one_quad
 quad_disk
 sid97
 specmix
+specmix_double
 testall
 thinplane
 tire
