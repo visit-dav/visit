@@ -163,6 +163,9 @@
 #       the mpicom module (a shared lib) must link to mpi.
 #    2) (Non-windows) add extra info about success of config-site include.
 #
+#    Kathleen Bonnell, Thu Aug 19 18:05:27 MST 2010 
+#    Fix broken plugin install target on windows.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -579,9 +582,7 @@ MACRO(VISIT_INSTALL_PLUGINS type)
             # not configure, so the dollar sign must be escaped in the string
             # below.  Then during install, ${BUILD_TYPE} will be expanded.
             FOREACH(target ${ARGN})
-                # SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/lib${target}.dll")
-# JRC 21Jul2010: The files are built directly under exe
-                SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/lib${target}.dll")
+                SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/lib${target}.dll")
                 INSTALL(FILES ${filename}
                     DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
                     COMPONENT RUNTIME
