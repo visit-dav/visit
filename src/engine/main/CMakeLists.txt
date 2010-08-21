@@ -44,6 +44,9 @@
 #    will add the depencies of this dummy library, i.e., the MPI libraries, to
 #    the end of the link line.
 #
+#    Hank Childs, Sat Aug 21 11:56:26 PDT 2010
+#    Rename DDF as DataBinning.
+#
 #****************************************************************************/
 
 SET(LIBENGINE_SOURCES
@@ -77,7 +80,7 @@ ${VISIT_SOURCE_DIR}/engine/proxy
 ${VISIT_SOURCE_DIR}/engine/rpc
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/DDF
+${VISIT_SOURCE_DIR}/avt/DataBinning
 ${VISIT_SOURCE_DIR}/avt/Database/Database
 ${VISIT_SOURCE_DIR}/avt/Database/Ghost
 ${VISIT_SOURCE_DIR}/avt/Expressions/Abstract

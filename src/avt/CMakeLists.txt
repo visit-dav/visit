@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Hank Childs, Sat Aug 21 11:53:13 PDT 2010
+#   Rename directory DDF to DataBinning.
+#
 #****************************************************************************/
 
 IF(VISIT_DBIO_ONLY)
@@ -47,7 +50,7 @@ ELSE(VISIT_DBIO_ONLY)
     ADD_SUBDIRECTORY(Math)
     ADD_SUBDIRECTORY(IVP)
     ADD_SUBDIRECTORY(Pipeline)
-    ADD_SUBDIRECTORY(DDF)
+    ADD_SUBDIRECTORY(DataBinning)
     ADD_SUBDIRECTORY(MIR)
     ADD_SUBDIRECTORY(Shapelets)
     ADD_SUBDIRECTORY(View)
