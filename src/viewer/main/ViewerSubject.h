@@ -485,6 +485,9 @@ class avtDefaultPlotMetaData;
 //    Save a copy of the host profiles we loaded from the system
 //    installation directory, so we know if a user changed anything.
 //
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Rename ConstructDDF to ConstructDataBinning.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -580,7 +583,7 @@ private:
     void ClearCache();
     void ClearCacheForAllEngines();
     void ExportDatabase();
-    void ConstructDDF();
+    void ConstructDataBinning();
     void UpdateDBPluginInfo();
 
     void SendSimulationCommand();

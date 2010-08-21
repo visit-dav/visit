@@ -36,61 +36,30 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                                avtDDF.h                                   //
-// ************************************************************************* //
+#ifndef PY_CONSTRUCTDATABINNINGATTRIBUTES_H
+#define PY_CONSTRUCTDATABINNINGATTRIBUTES_H
+#include <Python.h>
+#include <ConstructDataBinningAttributes.h>
+#include <visitpy_exports.h>
 
-#ifndef AVT_DDF_H
-#define AVT_DDF_H
-
-#include <ddf_exports.h>
-
-#include <vector>
-#include <string>
-
-
-class     vtkDataArray;
-class     vtkDataSet;
-
-class     avtBinningScheme;
-class     avtDDFFunctionInfo;
-
-
-// ****************************************************************************
-//  Class: avtDDF
 //
-//  Purpose:
-//      This class represents a derived data function, which allows for data
-//      to be represented on new sampling spaces.  Further documentation about
-//      DDFs can be found in the document: ...
+// Functions exposed to the VisIt module.
 //
-//  Programmer: Hank Childs
-//  Creation:   February 12, 2006
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Mar 30 12:43:24 PST 2006
-//    Add method OutputDDF.
-//
-// ****************************************************************************
-
-class AVTDDF_API avtDDF
-{
-  public:
-                           avtDDF(avtDDFFunctionInfo *, float *);
-    virtual               ~avtDDF();
-
-    avtDDFFunctionInfo    *GetFunctionInfo(void) { return functionInfo; };
-    vtkDataArray          *ApplyFunction(vtkDataSet *);
-    vtkDataSet            *CreateGrid(void);
-    void                   OutputDDF(const std::string &);
-
-  protected: 
-    avtDDFFunctionInfo    *functionInfo;
-    float                 *vals;
-};
-
+#define CONSTRUCTDATABINNINGATTRIBUTES_NMETH 28
+void VISITPY_API           PyConstructDataBinningAttributes_StartUp(ConstructDataBinningAttributes *subj, void *data);
+void VISITPY_API           PyConstructDataBinningAttributes_CloseDown();
+VISITPY_API PyMethodDef *  PyConstructDataBinningAttributes_GetMethodTable(int *nMethods);
+bool VISITPY_API           PyConstructDataBinningAttributes_Check(PyObject *obj);
+VISITPY_API ConstructDataBinningAttributes *  PyConstructDataBinningAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *     PyConstructDataBinningAttributes_New();
+VISITPY_API PyObject *     PyConstructDataBinningAttributes_Wrap(const ConstructDataBinningAttributes *attr);
+void VISITPY_API           PyConstructDataBinningAttributes_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PyConstructDataBinningAttributes_SetDefaults(const ConstructDataBinningAttributes *atts);
+std::string VISITPY_API    PyConstructDataBinningAttributes_GetLogString();
+std::string VISITPY_API    PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *, const char *);
+VISITPY_API PyObject *     PyConstructDataBinningAttributes_getattr(PyObject *self, char *name);
+int VISITPY_API            PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyConstructDataBinningAttributes_methods[CONSTRUCTDATABINNINGATTRIBUTES_NMETH];
 
 #endif
-
 

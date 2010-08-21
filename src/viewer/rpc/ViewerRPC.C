@@ -101,7 +101,7 @@ static const char *ViewerRPCType_strings[] = {
 "OpenCLIClientRPC", "SuppressQueryOutputRPC", "SetQueryFloatFormatRPC", 
 "SetMeshManagementAttributesRPC", "SetDefaultMeshManagementAttributesRPC", "ResetMeshManagementAttributesRPC", 
 "ResizeWindowRPC", "MoveWindowRPC", "MoveAndResizeWindowRPC", 
-"SetStateLoggingRPC", "ConstructDDFRPC", "RequestMetaDataRPC", 
+"SetStateLoggingRPC", "ConstructDataBinningRPC", "RequestMetaDataRPC", 
 "SetTreatAllDBsAsTimeVaryingRPC", "SetCreateMeshQualityExpressionsRPC", "SetCreateTimeDerivativeExpressionsRPC", 
 "SetCreateVectorMagnitudeExpressionsRPC", "CopyActivePlotsRPC", "SetPlotFollowsTimeRPC", 
 "TurnOffAllLocksRPC", "SetDefaultFileOpenOptionsRPC", "SetSuppressMessagesRPC", 

@@ -48,6 +48,9 @@
 #    Hank Childs, Mon Jun 28 06:43:20 PDT 2010
 #    Add CoordinateExtrema.
 #
+#    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+#    Rename ApplyDDFExpression to ApplyDataBinningExpression.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -105,7 +108,7 @@ Derivations/avtTensorMaximumShearExpression.C
 )
 
 SET(GENERAL_SOURCES
-General/avtApplyDDFExpression.C
+General/avtApplyDataBinningExpression.C
 General/avtApplyEnumerationExpression.C
 General/avtApplyMapExpression.C 
 General/avtArrayComposeExpression.C
@@ -342,7 +345,7 @@ ENDIF(VISIT_PYTHON_FILTERS)
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtexpressions_ser ${AVTEXPRESSIONS_SOURCES})
-TARGET_LINK_LIBRARIES(avtexpressions_ser visitcommon avtdbatts avtdatabase_ser avtddf_ser avtplotter_ser avtfilters_ser avtpipeline_ser)
+TARGET_LINK_LIBRARIES(avtexpressions_ser visitcommon avtdbatts avtdatabase_ser avtdbin_ser avtplotter_ser avtfilters_ser avtpipeline_ser)
 IF(VISIT_PYTHON_FILTERS)
     TARGET_LINK_LIBRARIES(avtexpressions_ser avtpythonfilters_ser)
 ENDIF(VISIT_PYTHON_FILTERS)
@@ -351,7 +354,7 @@ VISIT_INSTALL_TARGETS(avtexpressions_ser)
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtexpressions_par ${AVTEXPRESSIONS_SOURCES})
-    TARGET_LINK_LIBRARIES(avtexpressions_par visitcommon avtdbatts avtdatabase_par avtddf_par avtplotter_par avtfilters_par avtpipeline_par)
+    TARGET_LINK_LIBRARIES(avtexpressions_par visitcommon avtdbatts avtdatabase_par avtdbin_par avtplotter_par avtfilters_par avtpipeline_par)
     IF(VISIT_PYTHON_FILTERS)
         TARGET_LINK_LIBRARIES(avtexpressions_par avtpythonfilters_par)
     ENDIF(VISIT_PYTHON_FILTERS)

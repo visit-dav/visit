@@ -65,7 +65,7 @@
 #include <ApplyOperatorRPC.h>
 #include <ClearCacheRPC.h>
 #include <CloneNetworkRPC.h>
-#include <ConstructDDFRPC.h>
+#include <ConstructDataBinningRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <ExecuteRPC.h>
 #include <ExportDatabaseRPC.h>
@@ -1609,23 +1609,28 @@ RPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method:  RPCExecutor<ConstructDDFRPC>::Execute
+//  Method:  RPCExecutor<ConstructDataBinningRPC>::Execute
 //
 //  Purpose:
-//      Constructs a DDF.
+//      Constructs a data binning.
 //
 //  Programmer:  Hank Childs
 //  Creation:    February 13, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
+//    Rename DDF to DataBinning.
+//
 // ****************************************************************************
 template<>
 void
-RPCExecutor<ConstructDDFRPC>::Execute(ConstructDDFRPC *rpc)
+RPCExecutor<ConstructDataBinningRPC>::Execute(ConstructDataBinningRPC *rpc)
 {
     Engine *engine = Engine::Instance();
     NetworkManager *netmgr = engine->GetNetMgr();
 
-    debug2 << "Executing ConstructDDFRPC." << endl;
+    debug2 << "Executing ConstructDataBinningRPC." << endl;
 
     avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
     LoadBalancer::RegisterProgressCallback(NULL, NULL);
@@ -1633,7 +1638,7 @@ RPCExecutor<ConstructDDFRPC>::Execute(ConstructDDFRPC *rpc)
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
     TRY
     {
-        netmgr->ConstructDDF(rpc->GetID(), rpc->GetConstructDDFAtts());
+        netmgr->ConstructDataBinning(rpc->GetID(), rpc->GetConstructDataBinningAtts());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

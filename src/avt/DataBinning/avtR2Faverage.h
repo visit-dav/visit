@@ -43,7 +43,7 @@
 #ifndef AVT_R2F_AVERAGE_H
 #define AVT_R2F_AVERAGE_H
 
-#include <ddf_exports.h>
+#include <dbin_exports.h>
 
 #include <avtR2Foperator.h>
 
@@ -68,7 +68,7 @@
 //
 // ****************************************************************************
 
-class AVTDDF_API avtR2Faverage : public avtR2Foperator
+class AVTDBIN_API avtR2Faverage : public avtR2Foperator
 {
   public:
                            avtR2Faverage(int, double);

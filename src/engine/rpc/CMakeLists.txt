@@ -36,13 +36,16 @@
 #
 # Modifications:
 #
+#   Hank Childs, Sat Aug 21 14:35:47 PDT 2010
+#   Rename DDF to DataBinning.
+#
 #****************************************************************************/
 
 SET(ENGINERPC_SOURCES
 ApplyOperatorRPC.C
 ClearCacheRPC.C
 CloneNetworkRPC.C
-ConstructDDFRPC.C
+ConstructDataBinningRPC.C
 DefineVirtualDatabaseRPC.C
 ExecuteRPC.C
 ExportDatabaseRPC.C

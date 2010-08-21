@@ -53,11 +53,16 @@
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Initialize oobb (out-of-bounds behavior).
+//
 // ****************************************************************************
 
 avtBinningScheme::avtBinningScheme()
 {
-    ;
+    oobb = ConstructDataBinningAttributes::Clamp;
 }
 
 // ****************************************************************************

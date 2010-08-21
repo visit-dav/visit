@@ -800,7 +800,7 @@ static PyObject *args_MoveAndResizeWindowRPC(ViewerRPC *rpc)
 }
 
 static PyObject *args_SetStateLoggingRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
-static PyObject *args_ConstructDDFRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
+static PyObject *args_ConstructDataBinningRPC(ViewerRPC *) { return ViewerRPC_no_args(); }
 
 static PyObject *args_RequestMetaDataRPC(ViewerRPC *rpc)
 {
@@ -1367,8 +1367,8 @@ args_ViewerRPC(ViewerRPC *rpc)
     case ViewerRPC::SetStateLoggingRPC:
         args = args_SetStateLoggingRPC(rpc);
         break;
-    case ViewerRPC::ConstructDDFRPC:
-        args = args_ConstructDDFRPC(rpc);
+    case ViewerRPC::ConstructDataBinningRPC:
+        args = args_ConstructDataBinningRPC(rpc);
         break;
     case ViewerRPC::RequestMetaDataRPC:
         args = args_RequestMetaDataRPC(rpc);

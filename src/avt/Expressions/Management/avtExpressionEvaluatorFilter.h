@@ -50,11 +50,11 @@
 
 #include <ExprPipelineState.h>
 
-class avtDDF;
+class avtDataBinning;
 class avtSourceFromAVTDataset;
 
 
-typedef avtDDF *   (*GetDDFCallback)(void *, const char *);
+typedef avtDataBinning *   (*GetDataBinningCallback)(void *, const char *);
 
 
 // ****************************************************************************
@@ -123,6 +123,9 @@ typedef avtDDF *   (*GetDDFCallback)(void *, const char *);
 //   Add data member for keeping track of whether we are doing on demand
 //   processing.
 //
+//   Hank Childs, Sat Aug 21 14:02:28 PDT 2010
+//   Renamed DDFs to DataBinnings.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -154,7 +157,7 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
     virtual void             GetDomainName(const std::string &, const int,
                                  const int , std::string &);
 
-    static void              RegisterGetDDFCallback(GetDDFCallback, void *);
+    static void              RegisterGetDataBinningCallback(GetDataBinningCallback, void *);
 
   protected:
     virtual void             PreExecute(void) {}
@@ -172,8 +175,8 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
     avtSourceFromAVTDataset     *termsrc;
     std::vector<std::string>     expr_list_fromLastTime;
 
-    static  GetDDFCallback       getDDFCallback;
-    static  void                *getDDFCallbackArgs;
+    static  GetDataBinningCallback  getDataBinningCallback;
+    static  void                   *getDataBinningCallbackArgs;
 
   private:
     int                          currentTimeState;

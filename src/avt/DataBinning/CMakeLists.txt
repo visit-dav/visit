@@ -40,16 +40,17 @@
 #
 #****************************************************************************/
 
-SET(AVTDDF_SOURCES
+SET(AVTDBIN_SOURCES
 avtBinningScheme.C
-avtDDF.C
-avtDDFConstructor.C
-avtDDFFunctionInfo.C
+avtDataBinning.C
+avtDataBinningConstructor.C
+avtDataBinningFunctionInfo.C
 avtR2Faverage.C
 avtR2Fcount.C
 avtR2Fmaximum.C
 avtR2Fminimum.C
 avtR2Foperator.C
+avtR2Fpdf.C
 avtR2Frms.C
 avtR2Fstddev.C
 avtR2Fsum.C
@@ -77,13 +78,13 @@ ${VTK_INCLUDE_DIRS}
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
 
 #********************************* SERIAL ************************************
-ADD_LIBRARY(avtddf_ser ${AVTDDF_SOURCES})
-TARGET_LINK_LIBRARIES(avtddf_ser visitcommon avtdbatts avtmath avtpipeline_ser)
-VISIT_INSTALL_TARGETS(avtddf_ser)
+ADD_LIBRARY(avtdbin_ser ${AVTDBIN_SOURCES})
+TARGET_LINK_LIBRARIES(avtdbin_ser visitcommon avtdbatts avtmath avtpipeline_ser)
+VISIT_INSTALL_TARGETS(avtdbin_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtddf_par ${AVTDDF_SOURCES})
-    TARGET_LINK_LIBRARIES(avtddf_par visitcommon avtdbatts avtmath avtpipeline_par)
-    VISIT_INSTALL_TARGETS(avtddf_par)
+    ADD_PARALLEL_LIBRARY(avtdbin_par ${AVTDBIN_SOURCES})
+    TARGET_LINK_LIBRARIES(avtdbin_par visitcommon avtdbatts avtmath avtpipeline_par)
+    VISIT_INSTALL_TARGETS(avtdbin_par)
 ENDIF(VISIT_PARALLEL)

@@ -94,8 +94,8 @@ public class ViewerState
             Register(attsDBPluginInfoAttributes);
         attsExportDBAttributes = new ExportDBAttributes();
             Register(attsExportDBAttributes);
-        attsConstructDDFAttributes = new ConstructDDFAttributes();
-            Register(attsConstructDDFAttributes);
+        attsConstructDataBinningAttributes = new ConstructDataBinningAttributes();
+            Register(attsConstructDataBinningAttributes);
         attsClientMethod = new ClientMethod();
             Register(attsClientMethod);
         attsClientInformation = new ClientInformation();
@@ -186,7 +186,7 @@ public class ViewerState
     public SILAttributes             GetSILAttributes() { return attsSILAttributes; }
     public DBPluginInfoAttributes    GetDBPluginInfoAttributes() { return attsDBPluginInfoAttributes; }
     public ExportDBAttributes        GetExportDBAttributes() { return attsExportDBAttributes; }
-    public ConstructDDFAttributes    GetConstructDDFAttributes() { return attsConstructDDFAttributes; }
+    public ConstructDataBinningAttributes    GetConstructDataBinningAttributes() { return attsConstructDataBinningAttributes; }
     public ClientMethod              GetClientMethod() { return attsClientMethod; }
     public ClientInformation         GetClientInformation() { return attsClientInformation; }
     public ClientInformationList     GetClientInformationList() { return attsClientInformationList; }
@@ -348,7 +348,7 @@ public class ViewerState
     private SILAttributes            attsSILAttributes;
     private DBPluginInfoAttributes   attsDBPluginInfoAttributes;
     private ExportDBAttributes       attsExportDBAttributes;
-    private ConstructDDFAttributes   attsConstructDDFAttributes;
+    private ConstructDataBinningAttributes   attsConstructDataBinningAttributes;
     private ClientMethod             attsClientMethod;
     private ClientInformation        attsClientInformation;
     private ClientInformationList    attsClientInformationList;

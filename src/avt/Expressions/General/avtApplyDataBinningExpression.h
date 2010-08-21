@@ -36,50 +36,71 @@
 *
 *****************************************************************************/
 
-#ifndef CONSTRUCT_DDF_RPC_H
-#define CONSTRUCT_DDF_RPC_H
+// ************************************************************************* //
+//                      avtApplyDataBinningExpression.h                      //
+// ************************************************************************* //
 
-#include <engine_rpc_exports.h>
+#ifndef AVT_APPLY_DATA_BINNING_EXPRESSION_H
+#define AVT_APPLY_DATA_BINNING_EXPRESSION_H
 
-#include <VisItRPC.h>
-#include <ConstructDDFAttributes.h>
+
+#include <avtSingleInputExpressionFilter.h>
+
+class     vtkDataArray;
+
+class     avtDataBinning;
+
+
+typedef avtDataBinning *   (*GetDataBinningCallback)(void *, const char *);
+
 
 // ****************************************************************************
-//  Class:  ConstructDDFRPC
+//  Class: avtApplyDataBinningExpression
 //
 //  Purpose:
-//    Implements an RPC to construct a derived data function.
+//      Will retrieve a data binning and make a new expression out of
+//      it.
+//          
+//  Programmer: Hank Childs
+//  Creation:   February 18, 2006
 //
-//  Programmer:  Hank Childs 
-//  Creation:    February 13, 2006
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Rename expressions (DDFs to DataBinnings).
 //
 // ****************************************************************************
-class ENGINE_RPC_API ConstructDDFRPC : public BlockingRPC
+
+class EXPRESSION_API avtApplyDataBinningExpression 
+    : public avtSingleInputExpressionFilter
 {
   public:
-    ConstructDDFRPC();
-    virtual ~ConstructDDFRPC();
+                              avtApplyDataBinningExpression();
+    virtual                  ~avtApplyDataBinningExpression();
 
-    virtual const std::string TypeName() const { return "ConstructDDFRPC"; }
+    virtual const char       *GetType(void) 
+                                 { return "avtApplyDataBinningExpression"; };
+    virtual const char       *GetDescription(void)
+                                 { return "Applying derived data function."; };
 
-    // Invocation method
-    void operator()(const int, const ConstructDDFAttributes *);
+    static void               RegisterGetDataBinningCallback(GetDataBinningCallback, void *);
+    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
 
-    // Property selection methods
-    virtual void SelectAll();
+    avtContract_p 
+                              ModifyContract(avtContract_p);
 
-    // Property setting methods
-    void SetID(const int);
-    void SetConstructDDFAtts(const ConstructDDFAttributes *);
+  protected:
+    avtDataBinning           *theDataBinning;
+    std::string               dbName;
 
-    // Property getting methods
-    int                     GetID() const;
-    ConstructDDFAttributes *GetConstructDDFAtts();
+    static  GetDataBinningCallback    getDataBinningCallback;
+    static  void                     *getDataBinningCallbackArgs;
 
-
-  private:
-    int                      id;
-    ConstructDDFAttributes   constructDDFAtts; 
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual int               GetVariableDimension(void) { return 1; };
 };
 
+
 #endif
+
+

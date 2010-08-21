@@ -48,7 +48,7 @@
 #include <DebugStream.h>
 #include <avtDatabaseFactory.h>
 #include <LoadBalancer.h>
-#include <ConstructDDFAttributes.h>
+#include <ConstructDataBinningAttributes.h>
 #include <DBOptionsAttributes.h>
 #include <ExportDBAttributes.h>
 #include <MaterialAttributes.h>
@@ -69,7 +69,7 @@
 #include <PickAttributes.h>
 #include <VisualCueInfo.h>
 #include <VisualCueList.h>
-#include <avtApplyDDFExpression.h>
+#include <avtApplyDataBinningExpression.h>
 #include <avtCallback.h>
 #include <avtColorTables.h>
 #include <avtDebugDumpOptions.h>
@@ -96,8 +96,8 @@
 #include <avtZonePickQuery.h>
 #include <avtCurvePickQuery.h>
 #include <avtSoftwareShader.h>
-#include <avtDDF.h>
-#include <avtDDFConstructor.h>
+#include <avtDataBinning.h>
+#include <avtDataBinningConstructor.h>
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
 #include <avtSourceFromNullData.h>
@@ -141,7 +141,7 @@ static void   DumpImage(avtDataObject_p, const char *fmt, bool allprocs=true);
 static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 static ref_ptr<avtDatabase> GetDatabase(void *, const std::string &,
                                         int, const char *);
-static avtDDF *GetDDFCallbackBridge(void *arg, const char *name);
+static avtDataBinning *GetDataBinningCallbackBridge(void *arg, const char *name);
 static bool OnlyRootNodeHasData(avtImage_p &);
 static void BroadcastImage(avtImage_p &, bool, int);
 #ifdef PARALLEL
@@ -210,6 +210,9 @@ void                      *NetworkManager::progressCallbackArgs = NULL;
 //    Tom Fogal, Wed Dec  9 14:10:01 MST 2009
 //    Remove creation of window 0; we'll do it dynamically when needed.
 //
+//    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
+//    Rename DDF to DataBinning.
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -221,9 +224,9 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     uniqueNetworkId = 0;
 
     avtCallback::RegisterGetDatabaseCallback(GetDatabase, this);
-    avtApplyDDFExpression::RegisterGetDDFCallback(GetDDFCallbackBridge, this);
-    avtExpressionEvaluatorFilter::RegisterGetDDFCallback(
-                                                  GetDDFCallbackBridge, this);
+    avtApplyDataBinningExpression::RegisterGetDataBinningCallback(GetDataBinningCallbackBridge, this);
+    avtExpressionEvaluatorFilter::RegisterGetDataBinningCallback(
+                                                  GetDataBinningCallbackBridge, this);
 
     databasePlugins = new DatabasePluginManager;
     operatorPlugins = new OperatorPluginManager;
@@ -253,6 +256,9 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 //    Brad Whitlock, Tue Jun 24 15:41:08 PDT 2008
 //    Added plugin managers.
 //
+//    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
+//    Rename DDF to DataBinning.
+//
 // ****************************************************************************
 
 NetworkManager::~NetworkManager(void)
@@ -265,8 +271,8 @@ NetworkManager::~NetworkManager(void)
     for (it = viswinMap.begin(); it != viswinMap.end(); it++)
         delete it->second.viswin;
 
-    for (size_t d = 0 ; d < ddf.size() ; d++)
-        delete ddf[d];
+    for (size_t d = 0 ; d < dataBinnings.size() ; d++)
+        delete dataBinnings[d];
 
     delete databasePlugins;
     delete operatorPlugins;
@@ -3819,14 +3825,14 @@ NetworkManager::SaveNamedSelection(const std::string &selName)
 
 
 // ****************************************************************************
-//  Method:  NetworkManager::ConstructDDF
+//  Method:  NetworkManager::ConstructDataBinning
 //
 //  Purpose:
 //      Constructs a derived data function.
 //
 //  Arguments:
 //    id         The network to use.
-//    atts       The ConstructDDF attributes.
+//    atts       The ConstructDataBinning attributes.
 //
 //  Programmer:  Hank Childs
 //  Creation:    February 13, 2006
@@ -3837,10 +3843,13 @@ NetworkManager::SaveNamedSelection(const std::string &selName)
 //    Have DDF class write out the data set.  Also make reference to DDF
 //    result in the first DDF, not the last.
 //
+//    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
+//    Rename DDF to DataBinning.
+//
 // ****************************************************************************
 
 void
-NetworkManager::ConstructDDF(int id, ConstructDDFAttributes *atts)
+NetworkManager::ConstructDataBinning(int id, ConstructDataBinningAttributes *atts)
 {
     if (id >= networkCache.size())
     {
@@ -3852,7 +3861,7 @@ NetworkManager::ConstructDDF(int id, ConstructDDFAttributes *atts)
  
     if (networkCache[id] == NULL)
     {
-        debug1 << "Asked to construct a DDF from a network that has already "
+        debug1 << "Asked to construct a DataBinning from a network that has already "
                << "been cleared." << endl;
         EXCEPTION0(ImproperUseException);
     }
@@ -3870,54 +3879,54 @@ NetworkManager::ConstructDDF(int id, ConstructDDFAttributes *atts)
 
     if (*dob == NULL)
     {
-        debug1 << "Could not find a valid data set to construct a DDF from"
+        debug1 << "Could not find a valid data set to construct a DataBinning from"
                << endl;
         EXCEPTION0(NoInputException);
     }
 
-    avtDDFConstructor ddfc;
+    avtDataBinningConstructor ddfc;
     ddfc.SetInput(dob);
     avtContract_p spec = networkCache[id]->GetContract();
     loadBalancer->ResetPipeline(spec->GetPipelineIndex());
-    avtDDF *d = ddfc.ConstructDDF(atts, spec);
+    avtDataBinning *d = ddfc.ConstructDataBinning(atts, spec);
     // This should be cleaned up at some point.
     if (d != NULL)
     {
-        d->OutputDDF(atts->GetDdfName());
+        d->OutputDataBinning(atts->GetName());
         bool foundMatch = false;
-        for (size_t i = 0 ; i < ddf_names.size() ; i++)
-            if (ddf_names[i] == atts->GetDdfName())
+        for (size_t i = 0 ; i < dataBinningNames.size() ; i++)
+            if (dataBinningNames[i] == atts->GetName())
             {
                 foundMatch = true;
-                ddf[i] = d;
+                dataBinnings[i] = d;
             }
         if (!foundMatch)
         {
-            ddf.push_back(d);
-            ddf_names.push_back(atts->GetDdfName());
+            dataBinnings.push_back(d);
+            dataBinningNames.push_back(atts->GetName());
         }
     }
 }
 
 
 // ****************************************************************************
-//  Method: NetworkManager::GetDDF
+//  Method: NetworkManager::GetDataBinning
 //
 //  Purpose:
-//      Gets a DDF.
+//      Gets a DataBinning.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 18, 2006
 //
 // ****************************************************************************
 
-avtDDF *
-NetworkManager::GetDDF(const char *name)
+avtDataBinning *
+NetworkManager::GetDataBinning(const char *name)
 {
-    for (size_t i = 0 ; i < ddf_names.size() ; i++)
+    for (size_t i = 0 ; i < dataBinningNames.size() ; i++)
     {
-        if (ddf_names[i] == name)
-            return ddf[i];
+        if (dataBinningNames[i] == name)
+            return dataBinnings[i];
     }
 
     return NULL;
@@ -4578,21 +4587,26 @@ GetDatabase(void *nm, const std::string &filename, int time,const char *format)
 
 
 // ****************************************************************************
-//  Function: GetDDFCallbackBridge
+//  Function: GetDataBinningCallbackBridge
 //
 //  Purpose:
-//      The bridge that can go to the network manager and ask for a DDF.
+//      The bridge that can go to the network manager and ask for a DataBinning.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 18, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
+//    Rename DDF to DataBinning.
+//
 // ****************************************************************************
 
-static avtDDF *
-GetDDFCallbackBridge(void *arg, const char *name)
+static avtDataBinning *
+GetDataBinningCallbackBridge(void *arg, const char *name)
 {
     NetworkManager *nm = (NetworkManager *) arg;
-    return nm->GetDDF(name);
+    return nm->GetDataBinning(name);
 }
 
 #ifdef PARALLEL

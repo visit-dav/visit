@@ -90,7 +90,7 @@
 #include <ClientInformation.h>
 #include <ClientInformationList.h>
 #include <ColorTableAttributes.h>
-#include <ConstructDDFAttributes.h>
+#include <ConstructDataBinningAttributes.h>
 #include <DatabaseCorrelationList.h>
 #include <DatabaseCorrelation.h>
 #include <DBPluginInfoAttributes.h>
@@ -140,7 +140,7 @@
 #include <PyColorAttributeList.h>
 #include <PyColorControlPoint.h>
 #include <PyColorControlPointList.h>
-#include <PyConstructDDFAttributes.h>
+#include <PyConstructDataBinningAttributes.h>
 #include <PyDatabaseCorrelation.h>
 #include <PyExportDBAttributes.h>
 #include <PyFileOpenOptions.h>
@@ -6014,10 +6014,10 @@ visit_SetPreferredFileFormats(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
-// Function: visit_ConstructDDF
+// Function: visit_ConstructDataBinning
 //
 // Purpose:
-//     Tells the viewer to construct a DDF.
+//     Tells the viewer to construct a DataBinning.
 //
 // Notes:      
 //
@@ -6026,33 +6026,36 @@ visit_SetPreferredFileFormats(PyObject *self, PyObject *args)
 //
 // Modifications:
 //   
+//   Hank Childs, Sat Aug 21 14:20:04 PDT 2010
+//   Rename method: DDF to DataBinning.
+//
 // ****************************************************************************
 
 STATIC PyObject *
-visit_ConstructDDF(PyObject *self, PyObject *args)
+visit_ConstructDataBinning(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    PyObject *ddf_info = NULL;
+    PyObject *db_info = NULL;
     // Try and get the view pointer.
-    if(!PyArg_ParseTuple(args,"O",&ddf_info))
+    if(!PyArg_ParseTuple(args,"O",&db_info))
     {
-        VisItErrorFunc("ConstructDDF: Cannot parse object!");
+        VisItErrorFunc("ConstructDataBinning: Cannot parse object!");
         return NULL;
     }
-    if(!PyConstructDDFAttributes_Check(ddf_info))
+    if(!PyConstructDataBinningAttributes_Check(db_info))
     {
-        VisItErrorFunc("Argument is not a ConstructDDFAttributes object");
+        VisItErrorFunc("Argument is not a ConstructDataBinningAttributes object");
         return NULL;
     }
 
     MUTEX_LOCK();
-        ConstructDDFAttributes *va = PyConstructDDFAttributes_FromPyObject(ddf_info);
+        ConstructDataBinningAttributes *va = PyConstructDataBinningAttributes_FromPyObject(db_info);
 
-        // Copy the object into the constructDDF attributes.
-        *(GetViewerState()->GetConstructDDFAttributes()) = *va;
-        GetViewerState()->GetConstructDDFAttributes()->Notify();
-        GetViewerMethods()->ConstructDDF();
+        // Copy the object into the constructDataBinning attributes.
+        *(GetViewerState()->GetConstructDataBinningAttributes()) = *va;
+        GetViewerState()->GetConstructDataBinningAttributes()->Notify();
+        GetViewerMethods()->ConstructDataBinning();
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -14505,6 +14508,9 @@ AddMethod(const char *methodName,
 //   Cyrus Harrison, Wed Jul 14 11:21:39 PDT 2010
 //   Added 'OpenCLI'.
 //
+//   Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//   Rename ddf to data binning.
+//
 // ****************************************************************************
 
 static void
@@ -14561,7 +14567,7 @@ AddDefaultMethods()
     AddMethod("CloseComputeEngine", visit_CloseComputeEngine, 
                                                  visit_CloseComputeEngine_doc);
     AddMethod("CloseDatabase", visit_CloseDatabase, visit_CloseDatabase_doc);
-    AddMethod("ConstructDDF", visit_ConstructDDF, visit_ConstructDDF_doc);
+    AddMethod("ConstructDataBinning", visit_ConstructDataBinning, visit_ConstructDataBinning_doc);
     AddMethod("CopyAnnotationsToWindow", visit_CopyAnnotationsToWindow,
                                                                visit_Copy_doc);
     AddMethod("CopyLightingToWindow", visit_CopyLightingToWindow,
@@ -15033,7 +15039,7 @@ AddExtensions()
     ADD_EXTENSION(PyColorAttributeList_GetMethodTable);
     ADD_EXTENSION(PyColorControlPoint_GetMethodTable);
     ADD_EXTENSION(PyColorControlPointList_GetMethodTable);
-    ADD_EXTENSION(PyConstructDDFAttributes_GetMethodTable);
+    ADD_EXTENSION(PyConstructDataBinningAttributes_GetMethodTable);
     ADD_EXTENSION(PyExportDBAttributes_GetMethodTable);
     ADD_EXTENSION(PyGaussianControlPoint_GetMethodTable);
     ADD_EXTENSION(PyGaussianControlPointList_GetMethodTable);
@@ -15127,7 +15133,7 @@ InitializeExtensions()
 {
     PyAnimationAttributes_StartUp(GetViewerState()->GetAnimationAttributes(), 0);
     PyAnnotationAttributes_StartUp(GetViewerState()->GetAnnotationAttributes(), 0);
-    PyConstructDDFAttributes_StartUp(GetViewerState()->GetConstructDDFAttributes(), 0);
+    PyConstructDataBinningAttributes_StartUp(GetViewerState()->GetConstructDataBinningAttributes(), 0);
     PyExportDBAttributes_StartUp(GetViewerState()->GetExportDBAttributes(), 0);
     PyGlobalAttributes_StartUp(GetViewerState()->GetGlobalAttributes(), 0);
     PyLaunchProfile_StartUp(0, 0);

@@ -69,7 +69,7 @@ class AnnotationAttributes;
 class AnnotationObjectList;
 class WindowAttributes;
 class ExportDBAttributes;
-class ConstructDDFAttributes;
+class ConstructDataBinningAttributes;
 class avtDatabaseMetaData;
 class FileOpenOptions;
 
@@ -292,6 +292,9 @@ class FileOpenOptions;
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Hank Childs, Sat Aug 21 14:20:04 PDT 2010
+//    Rename DDF to DataBinning.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -365,8 +368,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     static ExportDBAttributes *GetExportDBAtts();
     static void SetExportDBAtts(ExportDBAttributes *);
 
-    static ConstructDDFAttributes *GetConstructDDFAtts();
-    static void SetConstructDDFAtts(ConstructDDFAttributes *);
+    static ConstructDataBinningAttributes *GetConstructDataBinningAtts();
+    static void SetConstructDataBinningAtts(ConstructDataBinningAttributes *);
 
     void UpdateDefaultFileOpenOptions(FileOpenOptions*);
 
@@ -408,7 +411,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool CloneNetwork(const EngineKey &ek, int id, 
                       const QueryOverTimeAttributes *qatts);
     bool ExportDatabase(const EngineKey &ek, int id);
-    bool ConstructDDF(const EngineKey &ek, int id);
+    bool ConstructDataBinning(const EngineKey &ek, int id);
     bool ApplyNamedSelection(const EngineKey &ek, const std::vector<std::string> &ids, 
                              const std::string &);
     bool CreateNamedSelection(const EngineKey &ek, int, const std::string &);
@@ -451,7 +454,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     static MeshManagementAttributes *meshManagementClientAtts;
     static MeshManagementAttributes *meshManagementDefaultAtts;
     static ExportDBAttributes *exportDBAtts;
-    static ConstructDDFAttributes *constructDDFAtts;
+    static ConstructDataBinningAttributes *constructDataBinningAtts;
     static FileOpenOptions *defaultFileOpenOptions;
 };
 

@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class ViewerRPC extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 34;
+    private static int ViewerRPC_numAdditionalAtts = 34;
 
     // Enum values
     public final static int VIEWERRPCTYPE_CLOSERPC = 0;
@@ -231,7 +231,7 @@ public class ViewerRPC extends AttributeSubject
     public final static int VIEWERRPCTYPE_MOVEWINDOWRPC = 166;
     public final static int VIEWERRPCTYPE_MOVEANDRESIZEWINDOWRPC = 167;
     public final static int VIEWERRPCTYPE_SETSTATELOGGINGRPC = 168;
-    public final static int VIEWERRPCTYPE_CONSTRUCTDDFRPC = 169;
+    public final static int VIEWERRPCTYPE_CONSTRUCTDATABINNINGRPC = 169;
     public final static int VIEWERRPCTYPE_REQUESTMETADATARPC = 170;
     public final static int VIEWERRPCTYPE_SETTREATALLDBSASTIMEVARYINGRPC = 171;
     public final static int VIEWERRPCTYPE_SETCREATEMESHQUALITYEXPRESSIONSRPC = 172;
@@ -258,7 +258,7 @@ public class ViewerRPC extends AttributeSubject
 
     public ViewerRPC()
     {
-        super(numAdditionalAttributes);
+        super(ViewerRPC_numAdditionalAtts);
 
         RPCType = VIEWERRPCTYPE_CLOSERPC;
         windowLayout = 1;
@@ -308,7 +308,7 @@ public class ViewerRPC extends AttributeSubject
 
     public ViewerRPC(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ViewerRPC_numAdditionalAtts + nMoreFields);
 
         RPCType = VIEWERRPCTYPE_CLOSERPC;
         windowLayout = 1;
@@ -358,7 +358,7 @@ public class ViewerRPC extends AttributeSubject
 
     public ViewerRPC(ViewerRPC obj)
     {
-        super(numAdditionalAttributes);
+        super(ViewerRPC_numAdditionalAtts);
 
         int i;
 
@@ -451,7 +451,7 @@ public class ViewerRPC extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ViewerRPC_numAdditionalAtts;
     }
 
     public boolean equals(ViewerRPC obj)
@@ -1366,8 +1366,8 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_MOVEANDRESIZEWINDOWRPC";
         if(RPCType == VIEWERRPCTYPE_SETSTATELOGGINGRPC)
             str = str + "VIEWERRPCTYPE_SETSTATELOGGINGRPC";
-        if(RPCType == VIEWERRPCTYPE_CONSTRUCTDDFRPC)
-            str = str + "VIEWERRPCTYPE_CONSTRUCTDDFRPC";
+        if(RPCType == VIEWERRPCTYPE_CONSTRUCTDATABINNINGRPC)
+            str = str + "VIEWERRPCTYPE_CONSTRUCTDATABINNINGRPC";
         if(RPCType == VIEWERRPCTYPE_REQUESTMETADATARPC)
             str = str + "VIEWERRPCTYPE_REQUESTMETADATARPC";
         if(RPCType == VIEWERRPCTYPE_SETTREATALLDBSASTIMEVARYINGRPC)

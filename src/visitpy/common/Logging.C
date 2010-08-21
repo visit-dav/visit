@@ -49,7 +49,7 @@
 #include <visit-config.h>
 
 #include <PyAnnotationAttributes.h>
-#include <PyConstructDDFAttributes.h>
+#include <PyConstructDataBinningAttributes.h>
 #include <PyExportDBAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
 #include <PyInteractorAttributes.h>
@@ -1729,10 +1729,10 @@ static std::string log_UpdateDBPluginInfoRPC(ViewerRPC *rpc)
     return MESSAGE_COMMENT("UpdateDBPluginInfo", MSG_UNSUPPORTED);
 }
 
-static std::string log_ConstructDDFRPC(ViewerRPC *rpc)
+static std::string log_ConstructDataBinningRPC(ViewerRPC *rpc)
 {
-    std::string s(PyConstructDDFAttributes_GetLogString());
-    s += "ConstructDDFtabase(ConstructDDFAtts)\n";
+    std::string s(PyConstructDataBinningAttributes_GetLogString());
+    s += "ConstructDataBinningtabase(ConstructDataBinningAtts)\n";
     return s;
 }
 
@@ -1916,6 +1916,9 @@ static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 //   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
+//
+//   Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//   Rename ddf to data binning.
 //
 // ****************************************************************************
 
@@ -2419,8 +2422,8 @@ LogRPCs(Subject *subj, void *)
     case ViewerRPC::MoveAndResizeWindowRPC:
         str = log_MoveAndResizeWindowRPC(rpc);
         break;
-    case ViewerRPC::ConstructDDFRPC:
-        str = log_ConstructDDFRPC(rpc);
+    case ViewerRPC::ConstructDataBinningRPC:
+        str = log_ConstructDataBinningRPC(rpc);
         break;
     case ViewerRPC::RequestMetaDataRPC:
         str = log_RequestMetaDataRPC(rpc);

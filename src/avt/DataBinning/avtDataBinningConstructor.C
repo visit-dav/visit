@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtDDFConstructor.C                            //
+//                         avtDataBinningConstructor.C                       //
 // ************************************************************************* //
 
-#include <avtDDFConstructor.h>
+#include <avtDataBinningConstructor.h>
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
@@ -48,16 +48,17 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
-#include <ConstructDDFAttributes.h>
+#include <ConstructDataBinningAttributes.h>
 
 #include <avtCallback.h>
-#include <avtDDF.h>
-#include <avtDDFFunctionInfo.h>
+#include <avtDataBinning.h>
+#include <avtDataBinningFunctionInfo.h>
 #include <avtParallel.h>
 #include <avtR2Faverage.h>
 #include <avtR2Fminimum.h>
 #include <avtR2Fmaximum.h>
 #include <avtR2Fcount.h>
+#include <avtR2Fpdf.h>
 #include <avtR2Fstddev.h>
 #include <avtR2Fsum.h>
 #include <avtR2Fvariance.h>
@@ -77,7 +78,7 @@ using     std::vector;
 
 
 // ****************************************************************************
-//  Method: avtDDFConstructor constructor
+//  Method: avtDataBinningConstructor constructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -88,14 +89,14 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtDDFConstructor::avtDDFConstructor()
+avtDataBinningConstructor::avtDataBinningConstructor()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtDDFConstructor destructor
+//  Method: avtDataBinningConstructor destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -106,17 +107,17 @@ avtDDFConstructor::avtDDFConstructor()
 //
 // ****************************************************************************
 
-avtDDFConstructor::~avtDDFConstructor()
+avtDataBinningConstructor::~avtDataBinningConstructor()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtDDFConstructor::ConstructDDF
+//  Method: avtDataBinningConstructor::ConstructDataBinning
 //
 //  Purpose:
-//      Constructs the actual DDF.
+//      Constructs the actual data binning.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
@@ -146,27 +147,31 @@ avtDDFConstructor::~avtDDFConstructor()
 //    Cyrus Harrison, Tue Aug 10 10:48:17 PDT 2010
 //    Added a "rms" operator.
 //
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Better support for mixed centering, r2f's that don't require a variable.
+//
 // ****************************************************************************
 
-avtDDF *
-avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
-                                avtContract_p spec)
+avtDataBinning *
+avtDataBinningConstructor::ConstructDataBinning(
+                                         ConstructDataBinningAttributes *atts,
+                                         avtContract_p spec, bool mustReExecute)
 {
     int   i, j, k, l;
 
     //
     // Certify the attributes.
     //
-    if (atts->GetBinningScheme() != ConstructDDFAttributes::Uniform)
+    if (atts->GetBinningScheme() != ConstructDataBinningAttributes::Uniform)
     {
         debug1 << "Only uniform binning is supported" << endl;
         EXCEPTION1(ImproperUseException, "Only uniform binning is supported");
         return NULL;
     }
-    if (atts->GetCodomainName() == "")
+    if (atts->ReductionRequiresVariable() && atts->GetVarForReductionOperator() == "")
     {
-        debug1 << "The codomain name is not valid." << endl;
-        EXCEPTION1(ImproperUseException, "The codomain name is not valid.");
+        debug1 << "The reduction operator requires a variable." << endl;
+        EXCEPTION1(ImproperUseException, "The reduction operator requires a variable.");
         return NULL;
     }
     for (i = 0 ; i < atts->GetVarnames().size() ; i++)
@@ -179,7 +184,7 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
             return NULL;
         }
     }
-    if (atts->GetNumSamples().size() != atts->GetVarnames().size())
+    if (atts->GetNumBins().size() != atts->GetVarnames().size())
     {
         debug1 << "There must be the same number of samples "
                                   "as there are variable names." << endl;
@@ -188,7 +193,7 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
                    "as there are variable names.");
         return NULL;
     }
-    if (atts->GetRanges().size() != 2*atts->GetVarnames().size())
+    if (atts->GetBinBoundaries().size() != 2*atts->GetVarnames().size())
     {
         debug1 << "There must be a minimum and a maximum for "
                   "every variable.  The range is the wrong size." << endl;
@@ -199,7 +204,7 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     }
     for (i = 0 ; i < atts->GetVarnames().size() ; i++)
     {
-        if (atts->GetRanges()[2*i] >= atts->GetRanges()[2*i+1])
+        if (atts->GetBinBoundaries()[2*i] >= atts->GetBinBoundaries()[2*i+1])
         {
             debug1 << "The minimum for the range of a variable"
                                       "must be less than the maximum" << endl;
@@ -211,7 +216,7 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     }
     for (i = 0 ; i < atts->GetVarnames().size() ; i++)
     {
-        if (atts->GetNumSamples()[i] <= 0)
+        if (atts->GetNumBins()[i] <= 0)
         {
             debug1 << "Each variable must have at least one bin" << endl;
             EXCEPTION1(ImproperUseException,
@@ -228,44 +233,48 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     int nvars = atts->GetVarnames().size();
     float *minmax = new float[2*nvars];
     for (i = 0 ; i < 2*nvars ; i++)
-        minmax[i] = atts->GetRanges()[i];
+        minmax[i] = atts->GetBinBoundaries()[i];
     int *nvals = new int[nvars];
     for (i = 0 ; i < nvars ; i++)
-        nvals[i] = atts->GetNumSamples()[i];
+        nvals[i] = atts->GetNumBins()[i];
     avtBinningScheme *bs = new avtUniformBinningScheme(nvars, minmax, nvals);
     std::vector<std::string> varnames = atts->GetVarnames();
-    avtDDFFunctionInfo *info = new avtDDFFunctionInfo(bs, varnames,
-                                                      atts->GetCodomainName());
+    avtDataBinningFunctionInfo *info = new avtDataBinningFunctionInfo(bs, varnames,
+                                                      atts->GetVarForReductionOperator());
 
     //
     // Now create the "relation-to-function operator".
     //
     int nBins = bs->GetNumberOfBins();
+    bs->SetOutOfBoundsBehavior(atts->GetOutOfBoundsBehavior());
     avtR2Foperator *R2Foperator = NULL;
-    switch (atts->GetStatisticalOperator())
+    switch (atts->GetReductionOperator())
     {
-      case ConstructDDFAttributes::Average:
+      case ConstructDataBinningAttributes::Average:
         R2Foperator = new avtR2Faverage(nBins, atts->GetUndefinedValue());
         break;
-      case ConstructDDFAttributes::Minimum:
+      case ConstructDataBinningAttributes::Minimum:
         R2Foperator = new avtR2Fminimum(nBins, atts->GetUndefinedValue());
         break;
-      case ConstructDDFAttributes::Maximum:
+      case ConstructDataBinningAttributes::Maximum:
         R2Foperator = new avtR2Fmaximum(nBins, atts->GetUndefinedValue());
         break;
-      case ConstructDDFAttributes::Count:
+      case ConstructDataBinningAttributes::Count:
         R2Foperator = new avtR2Fcount(nBins);
         break;
-      case ConstructDDFAttributes::StandardDeviation:
+      case ConstructDataBinningAttributes::PDF:
+        R2Foperator = new avtR2Fpdf(nBins);
+        break;
+      case ConstructDataBinningAttributes::StandardDeviation:
         R2Foperator = new avtR2Fstddev(nBins, atts->GetUndefinedValue());
         break;
-      case ConstructDDFAttributes::Sum:
+      case ConstructDataBinningAttributes::Sum:
         R2Foperator = new avtR2Fsum(nBins);
         break;
-      case ConstructDDFAttributes::Variance:
+      case ConstructDataBinningAttributes::Variance:
         R2Foperator = new avtR2Fvariance(nBins, atts->GetUndefinedValue());
         break;
-      case ConstructDDFAttributes::RMS:
+      case ConstructDataBinningAttributes::RMS:
         R2Foperator = new avtR2Frms(nBins, atts->GetUndefinedValue());
         break;
       default:
@@ -274,7 +283,7 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     }
     if (R2Foperator == NULL)
     {
-        EXCEPTION2(ExpressionException, atts->GetDdfName(),
+        EXCEPTION2(ExpressionException, atts->GetName(),
                    "You have requested an operator that has not been implemented yet.");
     }
 
@@ -303,25 +312,25 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     {
         for (int time = timeStart ; time < timeEnd ; time += timeStride)
         {
-            avtContract_p spec2 = 
-                                            new avtContract(spec);
+            avtContract_p spec2 = new avtContract(spec);
             avtDataRequest_p dataRequest = spec2->GetDataRequest();
-            dataRequest->AddSecondaryVariable(atts->GetCodomainName().c_str());
+            if (atts->GetVarForReductionOperator() != "")
+                dataRequest->AddSecondaryVariable(atts->GetVarForReductionOperator().c_str());
             for (i = 0 ; i < atts->GetVarnames().size() ; i++)
                 dataRequest->AddSecondaryVariable(atts->GetVarnames()[i].c_str());
             dataRequest->SetTimestep(time);
-            GetInput()->Update(spec2);
+            if (mustReExecute)
+                GetInput()->Update(spec2);
             if (GetInput()->GetInfo().GetValidity().HasErrorOccurred())
             {
                 char msg[1024];
-                SNPRINTF(msg, 1024, "The DDF could not be calculated because "
+                SNPRINTF(msg, 1024, "The data binning could not be calculated because "
                                     "an error occurred when generating "
                                     "the data to construct it from.  The error"
                                     " was \"%s\".",
                 GetInput()->GetInfo().GetValidity().GetErrorMessage().c_str());
                 EXCEPTION1(ImproperUseException, msg);
             }
-            //Execute(spec2);
 
             //
             // Get all of the input data.
@@ -349,31 +358,34 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
                         hasError = true;
                 }
     
-                if (leaves[0]->GetPointData()->GetArray(codomain_varname)
+                if (atts->ReductionRequiresVariable())
+                {
+                    if (leaves[0]->GetPointData()->GetArray(codomain_varname)
                                                                        != NULL)
-                    coDomIsNodal = true;
-                else if (leaves[0]->GetCellData()->GetArray(codomain_varname) 
+                        coDomIsNodal = true;
+                    else if (leaves[0]->GetCellData()->GetArray(codomain_varname) 
                                                                        != NULL)
-                    coDomIsNodal = false;
-                else
-                    hasError = true;
+                        coDomIsNodal = false;
+                    else
+                        hasError = true;
 
-                for (k = 0 ; k < nvars ; k++)
-                    if (isNodal[k] != coDomIsNodal)
-                        mixedCentering = true;
+                    for (k = 0 ; k < nvars ; k++)
+                        if (isNodal[k] != coDomIsNodal)
+                            mixedCentering = true;
+                }
             }
 
             int val = UnifyMaximumValue((hasError ? 1 : 0));
             if (val > 0)
             {
-                debug1 << "Could not create DDF because either a "
+                debug1 << "Could not create data binning because either a "
                                   "variable could not be located, or because"
-                                  " the centering of the variables does not "
+                                  " the centering of the variables do not "
                                   "match." << endl;
                 EXCEPTION1(ImproperUseException, 
-                                  "Could not create DDF because either a "
+                                  "Could not create data binning because either a "
                                   "variable could not be located, or because"
-                                  " the centering of the variables does not "
+                                  " the centering of the variables do not "
                                   "match.");
                 return NULL;
             }
@@ -396,10 +408,20 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
                 bool doCells = true;
                 if (mixedCentering)
                     doCells = true;
-                else if (!coDomIsNodal)
-                    doCells = true;
+                else if (atts->ReductionRequiresVariable())
+                {
+                    if (!coDomIsNodal)
+                        doCells = true;
+                    else
+                        doCells = false;
+                }
                 else
-                    doCells = false;
+                {
+                    if (! isNodal[0])
+                        doCells = true;
+                    else
+                        doCells = false;
+                }
 
                 nvals = (doCells ? leaves[j]->GetNumberOfCells()
                                  : leaves[j]->GetNumberOfPoints());
@@ -435,7 +457,11 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
                         for (k = 0 ; k < nvars ; k++)
                             args[k] = arr[k]->GetTuple1(l);
                         int binId = bs->GetBinId(args);
-                        R2Foperator->AddData(binId, codomain->GetTuple1(l));
+                        float cval = 0.;
+                        if (atts->ReductionRequiresVariable())
+                            cval = codomain->GetTuple1(l);
+                        if (binId >= 0)
+                            R2Foperator->AddData(binId, cval);
                     }
                     else
                     {
@@ -449,10 +475,13 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
                                 else
                                     args[k] = arr[k]->GetTuple1(l);
                             int binId = bs->GetBinId(args);
-                            float cval = (coDomIsNodal
+                            float cval = 0;
+                            if (atts->ReductionRequiresVariable())
+                                 cval =  (coDomIsNodal
                                                  ? codomain->GetTuple1(ptId)
                                                  : codomain->GetTuple1(l));
-                            R2Foperator->AddData(binId,cval);
+                            if (binId >= 0)
+                                R2Foperator->AddData(binId,cval);
                         }
                     }
                 }
@@ -467,9 +496,9 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     }
 
     //
-    // We can now construct the actual DDF.
+    // We can now construct the actual data binning.
     //
-    avtDDF *rv = new avtDDF(info, vals);
+    avtDataBinning *rv = new avtDataBinning(info, vals);
 
     //
     // Clean up memory.
@@ -478,7 +507,7 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     delete [] minmax;
     delete [] nvals;
     // Don't delete binning scheme (bs) function info (info), or "vals"
-    // since the DDF now owns them.
+    // since the data binning now owns them.
 
     return rv;
 }

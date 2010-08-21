@@ -48,7 +48,7 @@
 #include <DebugStream.h>
 #include <snprintf.h>
 
-#include <avtApplyDDFExpression.h>
+#include <avtApplyDataBinningExpression.h>
 #include <avtApplyEnumerationExpression.h>
 #include <avtApplyMapExpression.h>
 #include <avtArrayComposeExpression.h>
@@ -467,6 +467,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Added 'zonal_constant' & 'nodal_constant' as aliases for the
 //    existing 'cell_constant' & 'point_constant' expressions.
 //
+//    Hank Childs, Sat Aug 21 13:59:11 PDT 2010
+//    Rename apply_ddf to apply_data_binning.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -563,8 +566,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtRelativeDifferenceExpression();
     if (functionName == "var_skew")
         return new avtVariableSkewExpression();
-    if (functionName == "apply_ddf")
-        return new avtApplyDDFExpression();
+    if (functionName == "apply_data_binning")
+        return new avtApplyDataBinningExpression();
 
     if (functionName == "distance_to_best_fit_line")
         return new avtDistanceToBestFitLineExpression(true);

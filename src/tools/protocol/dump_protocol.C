@@ -18,7 +18,7 @@
 #include <ColorControlPointList.h>
 #include <ColorTableAttributes.h>
 #include <CompactSILRestrictionAttributes.h>
-#include <ConstructDDFAttributes.h>
+#include <ConstructDataBinningAttributes.h>
 #include <ContourOpAttributes.h>
 #include <DBOptionsAttributes.h>
 #include <DBPluginInfoAttributes.h>
@@ -167,7 +167,7 @@ CreateCommonStateObjects(StateObjectMap &attributes)
     MAKE_OBJECT(ColorControlPointList);
     MAKE_OBJECT(ColorTableAttributes);
     MAKE_OBJECT(CompactSILRestrictionAttributes);
-    MAKE_OBJECT(ConstructDDFAttributes);
+    MAKE_OBJECT(ConstructDataBinningAttributes);
     MAKE_OBJECT(ContourOpAttributes);
     MAKE_OBJECT(DBOptionsAttributes);
     MAKE_OBJECT(DBPluginInfoAttributes);

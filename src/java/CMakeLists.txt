@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#   Hank Childs, Thu Aug 19 12:26:29 PDT 2010
+#   Rename DDF to DataBinning.
+#
 #****************************************************************************/
 
 PROJECT(JavaClient Java)
@@ -83,7 +86,7 @@ ColorAttributeList.java
 ColorControlPoint.java 
 ColorControlPointList.java 
 ColorTableAttributes.java 
-ConstructDDFAttributes.java 
+ConstructDataBinningAttributes.java 
 DBOptionsAttributes.java 
 DBPluginInfoAttributes.java 
 DatabaseCorrelation.java 

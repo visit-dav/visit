@@ -47,6 +47,9 @@
 #   will add the depencies of this dummy library, i.e., the MPI libraries, to
 #   the end of the link line.
 #
+#   Hank Childs, Sat Aug 21 14:20:04 PDT 2010
+#   Rename ddf to dbin/DDF to DataBinning.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -54,7 +57,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/DDF
+${VISIT_SOURCE_DIR}/avt/DataBinning
 ${VISIT_SOURCE_DIR}/avt/Database/Database
 ${VISIT_SOURCE_DIR}/avt/Database/Ghost
 ${VISIT_SOURCE_DIR}/avt/Expressions/Abstract
@@ -139,7 +142,7 @@ ELSE(VISIT_DBIO_ONLY)
         ${engine_ser_exe_EDatabase_ser}
         avtdatabase_ser
         avtdbatts
-        avtddf_ser 
+        avtdbin_ser 
         avtexpressions_ser
         avtfilters_ser 
         avtivp
@@ -200,7 +203,7 @@ IF(VISIT_PARALLEL)
             ${engine_par_exe_EDatabase_par}
             avtdatabase_par
             avtdbatts
-            avtddf_par 
+            avtdbin_par 
             avtexpressions_par
             avtfilters_par 
             avtivp

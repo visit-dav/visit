@@ -492,23 +492,23 @@ public class ViewerMethods
     }
 
     /**
-     * Tell VisIt to construct a DDF (derived data function), which is often a 
+     * Tell VisIt to construct a data binning, which is often a 
      * statistical variable derived from your data after binning.
-     * You should first set the options in the ConstructDDFAttributes in ViewerState
+     * You should first set the options in the ConstructDataBinningAttributes in ViewerState
      * before calling this method.
      *
      * Example:<br>
      *   <p class="example">
-     *    ConstructDDFAttributes atts = proxy.GetViewerState().GetConstructDDFAttributes();<br>
+     *    ConstructDataBinningAttributes atts = proxy.GetViewerState().GetConstructDataBinningAttributes();<br>
      *    // Modify the atts here... (not shown)<br>
      *    atts.Notify();<br>
-     *    proxy.GetViewerMethods().ConstructDDF();</p>
+     *    proxy.GetViewerMethods().ConstructDataBinning();</p>
      *
      * @return true on success; false otherwise.
      */
-    public boolean ConstructDDF()
+    public boolean ConstructDataBinning()
     {
-        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_CONSTRUCTDDFRPC);
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_CONSTRUCTDATABINNINGRPC);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }

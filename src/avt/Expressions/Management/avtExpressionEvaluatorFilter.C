@@ -46,8 +46,8 @@
 #include <vtkDataArray.h>
 
 #include <avtDatasetExaminer.h>
-#include <avtDDF.h>
-#include <avtDDFFunctionInfo.h>
+#include <avtDataBinning.h>
+#include <avtDataBinningFunctionInfo.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtExpressionFilter.h>
 #include <ExpressionException.h>
@@ -75,8 +75,8 @@ using std::string;
 using std::find;
 
 
-GetDDFCallback     avtExpressionEvaluatorFilter::getDDFCallback = NULL;
-void              *avtExpressionEvaluatorFilter::getDDFCallbackArgs = NULL;
+GetDataBinningCallback  avtExpressionEvaluatorFilter::getDataBinningCallback = NULL;
+void                  *avtExpressionEvaluatorFilter::getDataBinningCallbackArgs = NULL;
 
 
 // ****************************************************************************
@@ -388,6 +388,9 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    an improper use error.  (The engine will treat ImproperUseExceptions
 //    as fatal and exit.)
 //
+//    Hank Childs, Sat Aug 21 14:02:28 PDT 2010
+//    Rename DDFs to DataBinnings.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -475,22 +478,22 @@ avtExpressionEvaluatorFilter::ModifyContract(
             }
         }
 
-        // Check if this is an expression, a real variable, or a DDF.
+        // Check if this is an expression, a real variable, or a data binning.
         Expression *exp = ParsingExprList::GetExpression(var);
-        avtDDF *ddf = NULL;
-        if (getDDFCallback != NULL)
-            ddf = getDDFCallback(getDDFCallbackArgs, var.c_str());
+        avtDataBinning *db = NULL;
+        if (getDataBinningCallback != NULL)
+            db = getDataBinningCallback(getDataBinningCallbackArgs, var.c_str());
 
-        if (exp == NULL && ddf == NULL)
+        if (exp == NULL && db == NULL)
         {
             debug4 << "EEF::ModifyContract:     not an expression" << endl;
             // Not an expression.  Put the name on the real list.
             real_list.insert(var);
         } 
-        else if (ddf != NULL)
+        else if (db != NULL)
         {
-            debug4 << "EEF::ModifyContract:     DDF.  Roots:" << endl;
-            avtDDFFunctionInfo *info = ddf->GetFunctionInfo();
+            debug4 << "EEF::ModifyContract:     Data Binning.  Roots:" << endl;
+            avtDataBinningFunctionInfo *info = db->GetFunctionInfo();
             int nVars = info->GetDomainNumberOfTuples();
             for (int i = 0 ; i < nVars ; i++)
             {
@@ -703,22 +706,27 @@ avtExpressionEvaluatorFilter::ReleaseData(void)
 
 
 // ****************************************************************************
-//  Method: avtExpressionEvaluatorFilter::RegisterGetDDFCallback
+//  Method: avtExpressionEvaluatorFilter::RegisterGetDataBinningCallback
 //
 //  Purpose:
-//      Registers a callback that allows us to get DDFs.
+//      Registers a callback that allows us to get data binnings.
 //
 //  Programmer:  Hank Childs
 //  Creation:    February 19, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:02:28 PDT 2010
+//    Rename method (DDFs to DataBinnings).
+//
 // ****************************************************************************
 
 void
-avtExpressionEvaluatorFilter::RegisterGetDDFCallback(GetDDFCallback gdc,
+avtExpressionEvaluatorFilter::RegisterGetDataBinningCallback(GetDataBinningCallback gdc,
                                                      void *args)
 {
-    getDDFCallback     = gdc;
-    getDDFCallbackArgs = args;
+    getDataBinningCallback     = gdc;
+    getDataBinningCallbackArgs = args;
 }
 
 
