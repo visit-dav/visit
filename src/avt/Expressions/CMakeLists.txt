@@ -307,7 +307,7 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
 ${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/DDF
+${VISIT_SOURCE_DIR}/avt/DataBinning
 ${VISIT_SOURCE_DIR}/avt/Filters
 ${VISIT_SOURCE_DIR}/avt/MIR/Base
 ${VISIT_SOURCE_DIR}/avt/MIR/Tet
