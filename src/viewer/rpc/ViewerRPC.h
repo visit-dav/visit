@@ -232,7 +232,7 @@ public:
         MoveWindowRPC,
         MoveAndResizeWindowRPC,
         SetStateLoggingRPC,
-        ConstructDDFRPC,
+        ConstructDataBinningRPC,
         RequestMetaDataRPC,
         SetTreatAllDBsAsTimeVaryingRPC,
         SetCreateMeshQualityExpressionsRPC,

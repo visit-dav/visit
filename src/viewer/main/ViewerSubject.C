@@ -61,7 +61,7 @@
 #include <ClientInformation.h>
 #include <ClientInformationList.h>
 #include <ColorTableAttributes.h>
-#include <ConstructDDFAttributes.h>
+#include <ConstructDataBinningAttributes.h>
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
 #include <DBPluginInfoAttributes.h>
@@ -584,6 +584,9 @@ ViewerSubject::Initialize()
 //   Jeremy Meredith, Mon Feb  4 13:31:02 EST 2008
 //   Added remaining axis array view support.
 //
+//   Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//   Rename ddf to data binning.
+//
 // ****************************************************************************
 
 void
@@ -605,7 +608,7 @@ ViewerSubject::CreateState()
     s->SetDBPluginInfoAttributes(ViewerFileServer::Instance()->GetDBPluginInfoAtts(), false);
     s->SetFileOpenOptions(ViewerFileServer::Instance()->GetFileOpenOptions(), false);
     s->SetExportDBAttributes(ViewerEngineManager::Instance()->GetExportDBAtts(),  false);
-    s->SetConstructDDFAttributes(ViewerEngineManager::Instance()->GetConstructDDFAtts(),  false);
+    s->SetConstructDataBinningAttributes(ViewerEngineManager::Instance()->GetConstructDataBinningAtts(),  false);
     s->SetGlobalAttributes(ViewerWindowManager::GetClientAtts(), false);
     s->SetDatabaseCorrelationList(ViewerFileServer::Instance()->GetDatabaseCorrelationList(), false);
     s->SetPlotList(ViewerPlotList::GetClientAtts(), false);
@@ -5308,10 +5311,10 @@ ViewerSubject::UpdateDBPluginInfo()
 }
 
 // ****************************************************************************
-// Method: ViewerSubject::ConstructDDF
+// Method: ViewerSubject::ConstructDataBinning
 //
 // Purpose: 
-//     Construct a derived data function.
+//     Construct a data binning.
 //
 // Programmer: Hank Childs
 // Creation:   February 13, 2006
@@ -5320,10 +5323,13 @@ ViewerSubject::UpdateDBPluginInfo()
 //   Brad Whitlock, Wed Apr 30 09:20:14 PDT 2008
 //   Support for internationalization.
 //
+//   Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//   Rename method: ddf to data binning.
+//
 // ****************************************************************************
 
 void
-ViewerSubject::ConstructDDF()
+ViewerSubject::ConstructDataBinning()
 {
     //
     // Perform the RPC.
@@ -5334,12 +5340,12 @@ ViewerSubject::ConstructDDF()
     plist->GetActivePlotIDs(plotIDs);
     if (plotIDs.size() <= 0)
     {
-        Error(tr("To construct a derived data function, you must have an active"
-                 " plot.  No DDF was created."));
+        Error(tr("To construct a data binning, you must have an active"
+                 " plot.  No data binning was created."));
         return;
     }
     if (plotIDs.size() > 1)
-        Message(tr("Only one DDF can be created at a time.  VisIt is using the "
+        Message(tr("Only one data binning can be created at a time.  VisIt is using the "
                    "first active plot."));
 
     ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
@@ -5347,14 +5353,14 @@ ViewerSubject::ConstructDDF()
     int networkId = plot->GetNetworkID();
     TRY
     {
-        if (ViewerEngineManager::Instance()->ConstructDDF(engineKey, 
+        if (ViewerEngineManager::Instance()->ConstructDataBinning(engineKey, 
                                                           networkId))
         {
-            Message(tr("Created DDF"));
+            Message(tr("Created data binning"));
         }
         else
         {
-            Error(tr("Unable to create DDF"));
+            Error(tr("Unable to create data binning"));
         }
     }
     CATCH2(VisItException, e)
@@ -7997,6 +8003,9 @@ ViewerSubject::HandleViewerRPC()
 //    Removed maintain data; moved maintain view from Global settings
 //    (Main window) to per-window Window Information (View window).
 //
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Rename ddf to data binning.
+//
 // ****************************************************************************
 
 void
@@ -8342,8 +8351,8 @@ ViewerSubject::HandleViewerRPCEx()
     case ViewerRPC::ResizeWindowRPC:
         ResizeWindow();
         break;
-    case ViewerRPC::ConstructDDFRPC:
-        ConstructDDF();
+    case ViewerRPC::ConstructDataBinningRPC:
+        ConstructDataBinning();
         break;
     case ViewerRPC::RequestMetaDataRPC:
         HandleRequestMetaData();

@@ -1,0 +1,55 @@
+Function: CreateConstructionAtts
+Declaration: ConstructDataBinningAttributes CreateConstructionAtts(void);
+Definition:
+// **************************************************************
+//  Method: DataBinningAttributes::CreateConstructionAtts
+//
+//  Purpose:
+//      Creates attributes of type ConstructDataBinningAtts.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 19, 2010
+//
+// **************************************************************
+
+ConstructDataBinningAttributes
+DataBinningAttributes::CreateConstructionAtts(void)
+{
+    ConstructDataBinningAttributes dba;
+    static int times = 0;
+    char name[1024];
+    sprintf(name, "_db_op_%d", times++);
+    dba.SetName(name);
+    stringVector varnames;
+    doubleVector range;
+    intVector    numBins;
+    varnames.push_back(dim1Var);
+    range.push_back(dim1MinRange);
+    range.push_back(dim1MaxRange);
+    numBins.push_back(dim1NumBins);
+    if (numDimensions == Two || numDimensions == Three)
+    {
+        varnames.push_back(dim2Var);
+        range.push_back(dim2MinRange);
+        range.push_back(dim2MaxRange);
+        numBins.push_back(dim2NumBins);
+    }
+    if (numDimensions == Three)
+    {
+        varnames.push_back(dim3Var);
+        range.push_back(dim3MinRange);
+        range.push_back(dim3MaxRange);
+        numBins.push_back(dim3NumBins);
+    }
+    dba.SetVarnames(varnames);
+    dba.SetBinBoundaries(range);
+    dba.SetNumBins(numBins);
+    dba.SetReductionOperator((ConstructDataBinningAttributes::ReductionOperator) reductionOperator);
+    dba.SetVarForReductionOperator(varForReduction);
+    dba.SetUndefinedValue(emptyVal);
+    dba.SetOverTime(false);
+    dba.SetOutOfBoundsBehavior((ConstructDataBinningAttributes::OutOfBoundsBehavior) outOfBoundsBehavior);
+    
+    return dba;
+}
+

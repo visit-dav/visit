@@ -297,7 +297,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&procInfoRPC);
     xfer.Add(&simulationCommandRPC);
     xfer.Add(&exportDatabaseRPC);
-    xfer.Add(&constructDDFRPC);
+    xfer.Add(&constructDataBinningRPC);
     xfer.Add(&namedSelectionRPC);
     xfer.Add(&setEFileOpenOptionsRPC);
 
@@ -1659,28 +1659,33 @@ EngineProxy::SaveNamedSelection(const std::string selName)
 
 
 // ****************************************************************************
-//  Method:  EngineProxy::ConstructDDF
+//  Method:  EngineProxy::ConstructDataBinning
 //
 //  Purpose:
 //      Have the engine construct a derived data function.
 //
 //  Arguments:
 //    id         the id of the network to be cloned.
-//    atts       the attributes to construct the DDF
+//    atts       the attributes to construct the data binning
 //
 //  Programmer:  Hank Childs
 //  Creation:    February 13, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
+//    Rename DDF to DataBinning.
+//
 // ****************************************************************************
 
 void
-EngineProxy::ConstructDDF(const int id, const ConstructDDFAttributes *atts)
+EngineProxy::ConstructDataBinning(const int id, const ConstructDataBinningAttributes *atts)
 {
-    constructDDFRPC(id, atts);
-    if (constructDDFRPC.GetStatus() == VisItRPC::error)
+    constructDataBinningRPC(id, atts);
+    if (constructDataBinningRPC.GetStatus() == VisItRPC::error)
     {
-        RECONSTITUTE_EXCEPTION(constructDDFRPC.GetExceptionType(),
-                               constructDDFRPC.Message());
+        RECONSTITUTE_EXCEPTION(constructDataBinningRPC.GetExceptionType(),
+                               constructDataBinningRPC.Message());
     }
 }
 

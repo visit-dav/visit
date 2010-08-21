@@ -926,23 +926,28 @@ ViewerMethods::ExportDatabase()
 }
 
 // ****************************************************************************
-// Method: ViewerMethods::ConstructDDF
+// Method: ViewerMethods::ConstructDataBinning
 //
 // Purpose: 
-//     Construct a DDF.
+//     Construct a data binning.
 //
 // Programmer: Hank Childs
 // Creation:   February 13, 2006
 //
+// Modifications:
+//
+//   Hank Childs, Sat Aug 21 14:20:04 PDT 2010
+//   Rename method: DDF to DataBinning.
+//
 // ****************************************************************************
 
 void
-ViewerMethods::ConstructDDF()
+ViewerMethods::ConstructDataBinning()
 {
     //
     // Set the rpc type and arguments.
     //
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::ConstructDDFRPC);
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ConstructDataBinningRPC);
 
     //
     // Issue the RPC.

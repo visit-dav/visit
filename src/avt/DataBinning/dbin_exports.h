@@ -36,30 +36,29 @@
 *
 *****************************************************************************/
 
-#ifndef PY_CONSTRUCTDDFATTRIBUTES_H
-#define PY_CONSTRUCTDDFATTRIBUTES_H
-#include <Python.h>
-#include <ConstructDDFAttributes.h>
-#include <visitpy_exports.h>
+#ifndef AVTDBIN_EXPORTS_H
+#define AVTDBIN_EXPORTS_H
 
-//
-// Functions exposed to the VisIt module.
-//
-#define CONSTRUCTDDFATTRIBUTES_NMETH 28
-void VISITPY_API           PyConstructDDFAttributes_StartUp(ConstructDDFAttributes *subj, void *data);
-void VISITPY_API           PyConstructDDFAttributes_CloseDown();
-VISITPY_API PyMethodDef *  PyConstructDDFAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyConstructDDFAttributes_Check(PyObject *obj);
-VISITPY_API ConstructDDFAttributes *  PyConstructDDFAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *     PyConstructDDFAttributes_New();
-VISITPY_API PyObject *     PyConstructDDFAttributes_Wrap(const ConstructDDFAttributes *attr);
-void VISITPY_API           PyConstructDDFAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyConstructDDFAttributes_SetDefaults(const ConstructDDFAttributes *atts);
-std::string VISITPY_API    PyConstructDDFAttributes_GetLogString();
-std::string VISITPY_API    PyConstructDDFAttributes_ToString(const ConstructDDFAttributes *, const char *);
-VISITPY_API PyObject *     PyConstructDDFAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyConstructDDFAttributes_setattr(PyObject *self, char *name, PyObject *args);
-VISITPY_API extern PyMethodDef PyConstructDDFAttributes_methods[CONSTRUCTDDFATTRIBUTES_NMETH];
-
+#if defined(_WIN32)
+#if defined(AVTDBIN_EXPORTS) || defined(avtdbin_ser_EXPORTS) || defined(avtdbin_par_EXPORTS) 
+#define AVTDBIN_API __declspec(dllexport)
+#else
+#define AVTDBIN_API __declspec(dllimport)
+#endif
+#if defined(_MSC_VER)
+// Turn off warning about lack of DLL interface
+#pragma warning(disable:4251)
+// Turn off warning non-dll class is base for dll-interface class.
+#pragma warning(disable:4275)
+// Turn off warning about identifier truncation
+#pragma warning(disable:4786)
+#endif
+#else
+# if __GNUC__ >= 4 && (defined(AVTDBIN_EXPORTS) || defined(avtdbin_ser_EXPORTS) || defined(avtdbin_par_EXPORTS))
+#   define AVTDBIN_API __attribute__ ((visibility("default")))
+# else
+#   define AVTDBIN_API /* hidden by default */
+# endif
 #endif
 
+#endif

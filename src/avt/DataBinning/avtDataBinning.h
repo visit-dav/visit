@@ -37,44 +37,59 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtDDFConstructor.h                           //
+//                             avtDataBinning.h                              //
 // ************************************************************************* //
 
-#ifndef AVT_DDF_CONSTRUCTOR_H
-#define AVT_DDF_CONSTRUCTOR_H
+#ifndef AVT_DATA_BINNING_H
+#define AVT_DATA_BINNING_H
 
-#include <ddf_exports.h>
-
-#include <avtTerminatingDatasetSink.h>
+#include <dbin_exports.h>
 
 #include <vector>
 #include <string>
 
 
-class     ConstructDDFAttributes;
+class     vtkDataArray;
+class     vtkDataSet;
 
-class     avtDDF;
+class     avtBinningScheme;
+class     avtDataBinningFunctionInfo;
 
 
 // ****************************************************************************
-//  Class: avtDDFConstructor
+//  Class: avtDataBinning
 //
 //  Purpose:
-//      This is a data set sink that will generate a DDF.
+//      This class represents a data binning, which allows for data
+//      to be represented on new sampling spaces.  
 //
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 30 12:43:24 PST 2006
+//    Add method OutputDDF.
+//
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Renamed from DDF to DataBinning.
+//
 // ****************************************************************************
 
-class AVTDDF_API avtDDFConstructor : public virtual avtTerminatingDatasetSink
+class AVTDBIN_API avtDataBinning
 {
   public:
-                           avtDDFConstructor();
-    virtual               ~avtDDFConstructor();
-  
-    avtDDF                *ConstructDDF(ConstructDDFAttributes *,
-                                        avtContract_p);
+                                   avtDataBinning(avtDataBinningFunctionInfo *, float *);
+    virtual                       ~avtDataBinning();
+
+    avtDataBinningFunctionInfo    *GetFunctionInfo(void) { return functionInfo; };
+    vtkDataArray                  *ApplyFunction(vtkDataSet *);
+    vtkDataSet                    *CreateGrid(void);
+    void                           OutputDataBinning(const std::string &);
+
+  protected: 
+    avtDataBinningFunctionInfo    *functionInfo;
+    float                         *vals;
 };
 
 

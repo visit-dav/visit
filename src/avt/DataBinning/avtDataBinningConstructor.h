@@ -37,60 +37,50 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtDDFFunctionInfo.h                           //
+//                         avtDataBinningConstructor.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_DDF_FUNCTION_INFO_H
-#define AVT_DDF_FUNCTION_INFO_H
+#ifndef AVT_DATA_BINNING_CONSTRUCTOR_H
+#define AVT_DATA_BINNING_CONSTRUCTOR_H
 
-#include <ddf_exports.h>
+#include <dbin_exports.h>
+
+#include <avtTerminatingDatasetSink.h>
 
 #include <vector>
 #include <string>
 
 
-class     avtBinningScheme;
+class     ConstructDataBinningAttributes;
+
+class     avtDataBinning;
 
 
 // ****************************************************************************
-//  Class: avtDDFFunctionInfo
+//  Class: avtDataBinningConstructor
 //
 //  Purpose:
-//      This contains the information about the domain, the codomain, and the
-//      binning scheme.  It is the information needed to set up a mapping.
-//
-//  Note:       The codomain is a mathematical term that can be loosely 
-//              interpreted as the range.  The distinction is a little subtle.
-//              The "range" of a function is the values that function can 
-//              possible create.  The "codomain" is the set of numbers that
-//              the function maps onto.  For example, the function "absval"
-//              has a range of 0->infinity, but a codomain of the real numbers.
+//      This is a data set sink that will generate a data binning.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Renamed from DDF to DataBinning.
+//
 // ****************************************************************************
 
-class AVTDDF_API avtDDFFunctionInfo
+class AVTDBIN_API avtDataBinningConstructor : public virtual avtTerminatingDatasetSink
 {
   public:
-                           avtDDFFunctionInfo(avtBinningScheme *,
-                                              const std::vector<std::string> &, 
-                                              const std::string &);
-    virtual               ~avtDDFFunctionInfo();
+                           avtDataBinningConstructor();
+    virtual               ~avtDataBinningConstructor();
   
-    int                    GetDomainNumberOfTuples(void) const
-                                { return tupleNames.size(); };
-    const std::string     &GetDomainTupleName(int) const;
-    const std::string     &GetCodomainName(void) const
-                                { return codomainVariable; };
-    avtBinningScheme      *GetBinningScheme(void)
-                                { return binningScheme; };
-
-  private:
-    avtBinningScheme         *binningScheme;
-    std::vector<std::string>  tupleNames;
-    std::string               codomainVariable;
+    avtDataBinning        *ConstructDataBinning(ConstructDataBinningAttributes *,
+                                                avtContract_p,
+                                                bool mustReExecute = true);
 };
 
 

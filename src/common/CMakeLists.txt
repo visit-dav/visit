@@ -39,6 +39,9 @@
 #   Hank Childs, Thu Jul 22 09:55:03 PDT 2010
 #   Add attributes for multi-window saves.
 #
+#   Hank Childs, Thu Aug 19 12:26:29 PDT 2010
+#   Move DDF to DataBinning.
+#
 #****************************************************************************/
 
 SET(COMM_SOURCES
@@ -185,7 +188,7 @@ state/ColorTableAttributes.C
 state/ColorTableManager.C
 state/CompactSILRestrictionAttributes.C
 state/ConfigManager.C
-state/ConstructDDFAttributes.C
+state/ConstructDataBinningAttributes.C
 state/ContourOpAttributes.C
 state/DatabaseAttributes.C
 state/DatabaseCorrelation.C

@@ -43,7 +43,9 @@
 #ifndef AVT_BINNING_SCHEME_H
 #define AVT_BINNING_SCHEME_H
 
-#include <ddf_exports.h>
+#include <dbin_exports.h>
+
+#include <ConstructDataBinningAttributes.h>
 
 class     vtkDataSet;
 
@@ -53,14 +55,19 @@ class     vtkDataSet;
 //
 //  Purpose:
 //      This module creates a binning that can be used for neighborhood
-//      information when constructing a DDR or a DDF.
+//      information when constructing a data binning.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Added the concept of out-of-bounds behavior.
+//
 // ****************************************************************************
 
-class AVTDDF_API avtBinningScheme
+class AVTDBIN_API avtBinningScheme
 {
   public:
                            avtBinningScheme();
@@ -68,8 +75,15 @@ class AVTDDF_API avtBinningScheme
   
     virtual int            GetBinId(const float *) const = 0;
     virtual int            GetNumberOfBins(void) const = 0;
+    virtual int            GetNumberOfDimensions(void) const = 0;
+
+    void                   SetOutOfBoundsBehavior(ConstructDataBinningAttributes::OutOfBoundsBehavior o)  
+                                 { oobb = o; };
 
     virtual vtkDataSet    *CreateGrid(void) const = 0;
+
+  protected:
+    ConstructDataBinningAttributes::OutOfBoundsBehavior   oobb;
 };
 
 

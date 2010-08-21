@@ -60,7 +60,7 @@ extern const char *visit_CloneWindow_doc;
 extern const char *visit_CloseComputeEngine_doc;
 extern const char *visit_CloseDatabase_doc;
 extern const char *visit_ColorTableNames_doc;
-extern const char *visit_ConstructDDF_doc;
+extern const char *visit_ConstructDataBinning_doc;
 extern const char *visit_Copy_doc;
 extern const char *visit_CreateAnnotationObject_doc;
 extern const char *visit_CreateDatabaseCorrelation_doc;

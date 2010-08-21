@@ -43,7 +43,7 @@
 #ifndef AVT_R2F_SUM_H
 #define AVT_R2F_SUM_H
 
-#include <ddf_exports.h>
+#include <dbin_exports.h>
 
 #include <avtR2Foperator.h>
 
@@ -63,7 +63,7 @@
 //
 // ****************************************************************************
 
-class AVTDDF_API avtR2Fsum : public avtR2Foperator
+class AVTDBIN_API avtR2Fsum : public avtR2Foperator
 {
   public:
                            avtR2Fsum(int);

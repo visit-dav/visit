@@ -39,6 +39,8 @@
 #   Tom Fogal, Wed Aug  4 18:54:25 MDT 2010
 #   Add multires operator.
 #
+#   Hank Childs, Sat Aug  7 03:39:33 PDT 2010
+#   Add DataBinning operator.
 #
 #****************************************************************************/
 IF(NOT WIN32)
@@ -56,6 +58,7 @@ CoordSwap
 CracksClipper
 CreateBonds
 Cylinder
+DataBinning
 Decimate
 Delaunay
 DeferExpression

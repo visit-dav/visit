@@ -43,7 +43,7 @@
 #ifndef AVT_R2F_RMS_H
 #define AVT_R2F_RMS_H
 
-#include <ddf_exports.h>
+#include <dbin_exports.h>
 #include <avtR2Foperator.h>
 
 #include <vector>
@@ -67,7 +67,7 @@
 //
 // ****************************************************************************
 
-class AVTDDF_API avtR2Frms : public avtR2Foperator
+class AVTDBIN_API avtR2Frms : public avtR2Foperator
 {
   public:
                            avtR2Frms(int, double);

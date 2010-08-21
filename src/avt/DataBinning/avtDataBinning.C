@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                avtDDF.C                                   //
+//                             avtDataBinning.C                              //
 // ************************************************************************* //
 
-#include <avtDDF.h>
+#include <avtDataBinning.h>
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
@@ -51,7 +51,7 @@
 #include <vtkDataSetWriter.h>
 
 #include <avtBinningScheme.h>
-#include <avtDDFFunctionInfo.h>
+#include <avtDataBinningFunctionInfo.h>
 #include <avtParallel.h>
 
 #include <BadIndexException.h>
@@ -63,14 +63,14 @@ using     std::vector;
 
 
 // ****************************************************************************
-//  Method: avtDDF constructor
+//  Method: avtDataBinning constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
 // ****************************************************************************
 
-avtDDF::avtDDF(avtDDFFunctionInfo *info, float *v)
+avtDataBinning::avtDataBinning(avtDataBinningFunctionInfo *info, float *v)
 {
     functionInfo = info;
     vals         = v;
@@ -78,14 +78,14 @@ avtDDF::avtDDF(avtDDFFunctionInfo *info, float *v)
 
 
 // ****************************************************************************
-//  Method: avtDDF destructor
+//  Method: avtDataBinning destructor
 //
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
 // ****************************************************************************
 
-avtDDF::~avtDDF()
+avtDataBinning::~avtDataBinning()
 {
     delete [] vals;
     delete functionInfo;
@@ -93,44 +93,73 @@ avtDDF::~avtDDF()
 
 
 // ****************************************************************************
-//  Method: avtDDF::CreateGrid
+//  Method: avtDataBinning::CreateGrid
 //
 //  Purpose:
-//      Creates a grid so the DDF can be visualized.
+//      Creates a grid so the DataBinning can be visualized.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Changes to setup 1D curves and also to work well inside an operator.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtDDF::CreateGrid(void)
+avtDataBinning::CreateGrid(void)
 {
     avtBinningScheme *bs = functionInfo->GetBinningScheme();
     vtkDataSet *rv = bs->CreateGrid();
     int nCells = rv->GetNumberOfCells();
+    int nPts   = rv->GetNumberOfPoints();
+    int nvals = (bs->GetNumberOfDimensions() == 1 ? nPts : nCells);
 
     vtkFloatArray *arr = vtkFloatArray::New();
     arr->SetName(functionInfo->GetCodomainName().c_str());
-    arr->SetNumberOfTuples(nCells);
-    for (int i = 0 ; i < nCells ; i++)
+    arr->SetNumberOfTuples(nvals);
+    for (int i = 0 ; i < nvals ; i++)
     {
-        vtkCell *cell = rv->GetCell(i);
-        double bbox[6];
-        cell->GetBounds(bbox);
+        float loc[3];
+        if (bs->GetNumberOfDimensions() == 1)
+        {
+            double *pt = rv->GetPoint(i);
+            loc[0] = pt[0];
+            loc[1] = pt[1];
+            loc[2] = pt[2];
+        }
+        else
+        {
+            vtkCell *cell = rv->GetCell(i);
+            double bbox[6];
+            cell->GetBounds(bbox);
+    
+            // Note the assumption here that the X-axis corresponds to tuple 0,
+            // the Y-axis to tuple 1, etc.
+            float center[3];
+            loc[0] = (bbox[0] + bbox[1]) / 2.;
+            loc[1] = (bbox[2] + bbox[3]) / 2.;
+            loc[2] = (bbox[4] + bbox[5]) / 2.;
+        }
 
-        // Note the assumption here that the X-axis corresponds to tuple 0,
-        // the Y-axis to tuple 1, etc.
-        float center[3];
-        center[0] = (bbox[0] + bbox[1]) / 2.;
-        center[1] = (bbox[2] + bbox[3]) / 2.;
-        center[2] = (bbox[4] + bbox[5]) / 2.;
-
-        int binId = bs->GetBinId(center);
+        int binId = bs->GetBinId(loc);
         arr->SetValue(i, vals[binId]);
     }
 
-    rv->GetCellData()->AddArray(arr);
+    // We set up curve data as point data, 2D and 3D as cell data.
+    if (bs->GetNumberOfDimensions() == 1)
+    {
+        rv->GetPointData()->AddArray(arr);
+        rv->GetPointData()->SetActiveScalars(functionInfo->GetCodomainName().c_str());
+    }
+    else
+    {
+        rv->GetCellData()->AddArray(arr);
+        rv->GetCellData()->SetActiveScalars(functionInfo->GetCodomainName().c_str());
+    }
+
     arr->Delete();
 
     return rv;
@@ -138,10 +167,10 @@ avtDDF::CreateGrid(void)
 
 
 // ****************************************************************************
-//  Method: avtDDF::ApplyFunction
+//  Method: avtDataBinning::ApplyFunction
 //
 //  Purpose:
-//      Applies the DDF to a data set.
+//      Applies the DataBinning to a data set.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
@@ -154,7 +183,7 @@ avtDDF::CreateGrid(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtDDF::ApplyFunction(vtkDataSet *ds)
+avtDataBinning::ApplyFunction(vtkDataSet *ds)
 {
     int   i, j, k;
     int   nvars = functionInfo->GetDomainNumberOfTuples();
@@ -215,10 +244,10 @@ avtDDF::ApplyFunction(vtkDataSet *ds)
 
 
 // ****************************************************************************
-//  Method: avtDDF::OutputDDF
+//  Method: avtDataBinning::OutputDataBinning
 //
 //  Purpose:
-//      Outputs a DDF.
+//      Outputs a DataBinning.
 //
 //  Programmer: Hank Childs
 //  Creation:   March 30, 2006
@@ -229,15 +258,18 @@ avtDDF::ApplyFunction(vtkDataSet *ds)
 //    Only have the root processor write out the file (wowsa! -- how did this
 //    not get noticed for 3 years!).
 //
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Set up curve with point data.
+//
 // ****************************************************************************
 
 void
-avtDDF::OutputDDF(const std::string &ddfname)
+avtDataBinning::OutputDataBinning(const std::string &ddfname)
 {
     if (PAR_Rank() != 0)
         return;
 
-    avtDDFFunctionInfo *i = GetFunctionInfo();
+    avtDataBinningFunctionInfo *i = GetFunctionInfo();
     int numDims = i->GetDomainNumberOfTuples();
     vtkDataSet *g = CreateGrid();
     if (numDims > 1)
@@ -255,12 +287,12 @@ avtDDF::OutputDDF(const std::string &ddfname)
         vtkRectilinearGrid *r = (vtkRectilinearGrid *) g;
         int dims[3];
         r->GetDimensions(dims);
-        vtkDataArray *s = r->GetCellData()->GetArray(0);
+        vtkDataArray *s = r->GetPointData()->GetArray(0);
         vtkDataArray *x = r->GetXCoordinates();
         char str[1024];
         sprintf(str, "%s.ultra", ddfname.c_str());
         ofstream ofile(str);
-        ofile << "# DDF " << ddfname << endl;
+        ofile << "# DataBinning " << ddfname << endl;
         for (int j = 0 ; j < dims[0]-1 ; j++)
         {
             ofile << (x->GetTuple1(j) + x->GetTuple1(j+1)) / 2. << " "

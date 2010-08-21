@@ -122,6 +122,9 @@ avtUniformBinningScheme::~avtUniformBinningScheme()
 //    Hank Childs, Thu Mar 30 12:38:14 PST 2006
 //    Fix precision issue.
 //
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Add support for clamping vs discarding (always clamped previously).
+//
 // ****************************************************************************
 
 int
@@ -134,8 +137,20 @@ avtUniformBinningScheme::GetBinId(const float *f) const
         double span = ranges[2*i+1] - ranges[2*i];
         double dist = f[i] - ranges[2*i];
         int tup_bin = (int)((dist / span)*nvals[i]);
-        tup_bin = (tup_bin < 0 ? 0 : tup_bin);
-        tup_bin = (tup_bin >= nvals[i] ? nvals[i]-1 : tup_bin);
+        if (tup_bin < 0)
+        {
+            if (oobb == ConstructDataBinningAttributes::Discard)
+                return -1;
+            else
+                tup_bin = 0;
+        }
+        if (tup_bin >= nvals[i])
+        {
+            if (oobb == ConstructDataBinningAttributes::Discard)
+                return -1;
+            else
+                tup_bin = nvals[i]-1;
+        }
          
         rv += tup_bin*mult;
         mult *= nvals[i];
@@ -157,6 +172,11 @@ avtUniformBinningScheme::GetBinId(const float *f) const
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Set up curves for point-centering.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -177,13 +197,27 @@ avtUniformBinningScheme::CreateGrid(void) const
         vtkFloatArray *arr = vtkFloatArray::New();
         if (i < ntuples)
         {
-            arr->SetNumberOfTuples(nvals[i]+1);
-            float start = ranges[2*i];
-            float stop  = ranges[2*i+1];
-            float step  = (stop - start) / (nvals[i]);
-            for (j = 0 ; j < nvals[i]+1 ; j++)
+            if (ntuples == 1) // curve ... set up for point data
             {
-                arr->SetValue(j, start + j*step);
+                arr->SetNumberOfTuples(nvals[i]);
+                float start = ranges[2*i];
+                float stop  = ranges[2*i+1];
+                float step  = (stop - start) / (nvals[i]);
+                for (j = 0 ; j < nvals[i] ; j++)
+                {
+                    arr->SetValue(j, start + j*step + step/2.0);
+                }
+            }
+            else // 2D or 3D ... set up for cell data
+            {
+                arr->SetNumberOfTuples(nvals[i]+1);
+                float start = ranges[2*i];
+                float stop  = ranges[2*i+1];
+                float step  = (stop - start) / (nvals[i]);
+                for (j = 0 ; j < nvals[i]+1 ; j++)
+                {
+                    arr->SetValue(j, start + j*step);
+                }
             }
         }
         else

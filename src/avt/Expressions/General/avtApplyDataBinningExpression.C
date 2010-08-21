@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtApplyDDFExpression.C                         //
+//                       avtApplyDataBinningExpression.C                     //
 // ************************************************************************* //
 
-#include <avtApplyDDFExpression.h>
+#include <avtApplyDataBinningExpression.h>
 
 #include <math.h>
 
@@ -52,18 +52,18 @@
 #include <avtExprNode.h>
 #include <ExprToken.h>
 
-#include <avtDDF.h>
-#include <avtDDFFunctionInfo.h>
+#include <avtDataBinning.h>
+#include <avtDataBinningFunctionInfo.h>
 
 #include <ExpressionException.h>
 
 
-GetDDFCallback     avtApplyDDFExpression::getDDFCallback = NULL;
-void              *avtApplyDDFExpression::getDDFCallbackArgs = NULL;
+GetDataBinningCallback avtApplyDataBinningExpression::getDataBinningCallback = NULL;
+void                  *avtApplyDataBinningExpression::getDataBinningCallbackArgs = NULL;
 
 
 // ****************************************************************************
-//  Method: avtApplyDDFExpression constructor
+//  Method: avtApplyDataBinningExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -74,14 +74,14 @@ void              *avtApplyDDFExpression::getDDFCallbackArgs = NULL;
 //
 // ****************************************************************************
 
-avtApplyDDFExpression::avtApplyDDFExpression()
+avtApplyDataBinningExpression::avtApplyDataBinningExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtApplyDDFExpression destructor
+//  Method: avtApplyDataBinningExpression destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -92,17 +92,17 @@ avtApplyDDFExpression::avtApplyDDFExpression()
 //
 // ****************************************************************************
 
-avtApplyDDFExpression::~avtApplyDDFExpression()
+avtApplyDataBinningExpression::~avtApplyDataBinningExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtApplyDDFExpression::RegisterGetDDFCallback
+//  Method: avtApplyDataBinningExpression::RegisterGetDataBinningCallback
 //
 //  Purpose:
-//      Registers a callback that allows us to get DDFs.
+//      Registers a callback that allows us to get DataBinnings.
 //
 //  Programmer:  Hank Childs
 //  Creation:    February 18, 2006
@@ -110,18 +110,18 @@ avtApplyDDFExpression::~avtApplyDDFExpression()
 // ****************************************************************************
 
 void
-avtApplyDDFExpression::RegisterGetDDFCallback(GetDDFCallback gdc, void *args)
+avtApplyDataBinningExpression::RegisterGetDataBinningCallback(GetDataBinningCallback gdc, void *args)
 {
-    getDDFCallback     = gdc;
-    getDDFCallbackArgs = args;
+    getDataBinningCallback     = gdc;
+    getDataBinningCallbackArgs = args;
 }
 
 
 // ****************************************************************************
-//  Method: avtApplyDDFExpression::ProcessArguments
+//  Method: avtApplyDataBinningExpression::ProcessArguments
 //
 //  Purpose:
-//      Gets the DDF to use.
+//      Gets the data binning to use.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 18, 2006
@@ -129,7 +129,7 @@ avtApplyDDFExpression::RegisterGetDDFCallback(GetDDFCallback gdc, void *args)
 // ****************************************************************************
 
 void
-avtApplyDDFExpression::ProcessArguments(ArgsExpr *args, 
+avtApplyDataBinningExpression::ProcessArguments(ArgsExpr *args, 
                                         ExprPipelineState *state)
 {
     // Check the number of arguments
@@ -138,9 +138,9 @@ avtApplyDDFExpression::ProcessArguments(ArgsExpr *args,
     if (nargs != 2)
     {
         EXCEPTION2(ExpressionException, outputVariableName,
-                   "the syntax for the apply_ddf "
+                   "the syntax for the apply_data_binning "
                     "expression were incorrect.  Arguments should be: "
-                    "<meshname>, \"ddf_name\"");
+                    "<meshname>, \"databinning_name\"");
     }
 
     // Tell the first argument to create its filters.
@@ -154,40 +154,40 @@ avtApplyDDFExpression::ProcessArguments(ArgsExpr *args,
     if (type != "Var")
     {
         EXCEPTION2(ExpressionException, outputVariableName,
-                   "the syntax for the apply_ddf "
+                   "the syntax for the apply_data_binning "
                     "expression were incorrect.  Arguments should be: "
-                    "<meshname>, \"ddf_name\"");
+                    "<meshname>, \"databinning_name\"");
     }
 
-    ddfName = dynamic_cast<VarExpr*>(secondTree)->GetVar()->GetFullpath();
-    if (getDDFCallback == NULL)
+    dbName = dynamic_cast<VarExpr*>(secondTree)->GetVar()->GetFullpath();
+    if (getDataBinningCallback == NULL)
     {
         // No one ever registered the callback.  The NetworkManager should
         // do this.
         EXCEPTION2(ExpressionException, outputVariableName,
                    "An internal error occurred when "
-                        "trying to locate the DDF.");
+                        "trying to locate the data binning.");
     }
 
-    theDDF = getDDFCallback(getDDFCallbackArgs, ddfName.c_str());
-    if (theDDF == NULL)
+    theDataBinning = getDataBinningCallback(getDataBinningCallbackArgs, dbName.c_str());
+    if (theDataBinning == NULL)
     {
         EXCEPTION2(ExpressionException, outputVariableName,
-                   "The DDF name you have specified is "
-                        "not recognized.  VisIt is only aware of the DDFs that"
+                   "The data binning name you have specified is "
+                        "not recognized.  VisIt is only aware of the data binning that"
                         " have been calculated this session.  In addition, if "
                         "the engine crashes, you must have VisIt regenerate "
-                        "the DDFs again.");
+                        "the data binnings again.");
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtApplyDDFExpression::ModifyContract
+//  Method: avtApplyDataBinningExpression::ModifyContract
 //
 //  Purpose:
 //      Tells the pipeline contract that we need additional variables so that
-//      we can evaluate the DDF.
+//      we can evaluate the data binning.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 18, 2006
@@ -195,17 +195,17 @@ avtApplyDDFExpression::ProcessArguments(ArgsExpr *args,
 // ****************************************************************************
 
 avtContract_p
-avtApplyDDFExpression::ModifyContract(avtContract_p spec)
+avtApplyDataBinningExpression::ModifyContract(avtContract_p spec)
 {
-    if (theDDF == NULL)
+    if (theDataBinning == NULL)
     {
         // We should have failed before getting to this point...
-        EXCEPTION2(ExpressionException, outputVariableName, "Could not locate the DDF.");
+        EXCEPTION2(ExpressionException, outputVariableName, "Could not locate the data binning.");
     }
 
     avtDataRequest_p ds = spec->GetDataRequest();
     avtDataRequest_p new_ds = new avtDataRequest(ds);
-    avtDDFFunctionInfo *info = theDDF->GetFunctionInfo();
+    avtDataBinningFunctionInfo *info = theDataBinning->GetFunctionInfo();
     int nVars = info->GetDomainNumberOfTuples();
     for (int i = 0 ; i < nVars ; i++)
         new_ds->AddSecondaryVariable(info->GetDomainTupleName(i).c_str());
@@ -218,7 +218,7 @@ avtApplyDDFExpression::ModifyContract(avtContract_p spec)
 
 
 // ****************************************************************************
-//  Method: avtApplyDDFExpression::DeriveVariable
+//  Method: avtApplyDataBinningExpression::DeriveVariable
 //
 //  Purpose:
 //      Derives a variable based on the input dataset.
@@ -239,21 +239,21 @@ avtApplyDDFExpression::ModifyContract(avtContract_p spec)
 // ****************************************************************************
 
 vtkDataArray *
-avtApplyDDFExpression::DeriveVariable(vtkDataSet *in_ds)
+avtApplyDataBinningExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    if (theDDF == NULL)
+    if (theDataBinning == NULL)
     {
         // We should have failed before getting to this point...
-        EXCEPTION2(ExpressionException, outputVariableName, "Could not locate the DDF.");
+        EXCEPTION2(ExpressionException, outputVariableName, "Could not locate the data binning.");
     }
 
-    vtkDataArray *res = theDDF->ApplyFunction(in_ds);
+    vtkDataArray *res = theDataBinning->ApplyFunction(in_ds);
 
     if ( res == NULL)
     {
-        // ddf was unsuccessful, this is probably due to a centering problem
+        // data binning was unsuccessful, this is probably due to a centering problem
         EXCEPTION2(ExpressionException, outputVariableName,
-                   "Could not apply the ddf. Please check that all variables "
+                   "Could not apply the data binning. Please check that all variables "
                    " are valid and have the same centering.");
     }
 

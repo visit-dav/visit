@@ -43,7 +43,7 @@
 class ApplyOperatorRPC;
 class ClearCacheRPC;
 class CloneNetworkRPC;
-class ConstructDDFRPC;
+class ConstructDataBinningRPC;
 class DefineVirtualDatabaseRPC;
 class ExecuteRPC;
 class ExportDatabaseRPC;
@@ -207,6 +207,9 @@ class Xfer;
 //    Tom Fogal, Tue Jun 30 21:00:37 MDT 2009
 //    Adapted for symbol visibility.
 //
+//    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
+//    Rename DDF to DataBinning.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API Engine
@@ -361,7 +364,7 @@ class ENGINE_MAIN_API Engine
     ProcInfoRPC              *procInfoRPC;
     SimulationCommandRPC     *simulationCommandRPC;
     ExportDatabaseRPC        *exportDatabaseRPC;
-    ConstructDDFRPC          *constructDDFRPC;
+    ConstructDataBinningRPC  *constructDataBinningRPC;
     NamedSelectionRPC        *namedSelectionRPC;
     SetEFileOpenOptionsRPC   *setEFileOpenOptionsRPC;
 

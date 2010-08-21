@@ -36,12 +36,12 @@
 *
 *****************************************************************************/
 
-#include "ConstructDDFRPC.h"
+#include "ConstructDataBinningRPC.h"
 #include <DebugStream.h>
 
 
 // ****************************************************************************
-//  Constructor: ConstructDDFRPC::ConstructDDFRPC
+//  Constructor: ConstructDataBinningRPC::ConstructDataBinningRPC
 //
 //  Purpose: 
 //    This is the constructor.
@@ -53,12 +53,12 @@
 //
 // ****************************************************************************
 
-ConstructDDFRPC::ConstructDDFRPC() : BlockingRPC("ia")
+ConstructDataBinningRPC::ConstructDataBinningRPC() : BlockingRPC("ia")
 {
 }
 
 // ****************************************************************************
-//  Destructor: ConstructDDFRPC::~ConstructDDFRPC
+//  Destructor: ConstructDataBinningRPC::~ConstructDataBinningRPC
 //
 //  Purpose: 
 //    This is the destructor.
@@ -70,12 +70,12 @@ ConstructDDFRPC::ConstructDDFRPC() : BlockingRPC("ia")
 //
 // ****************************************************************************
 
-ConstructDDFRPC::~ConstructDDFRPC()
+ConstructDataBinningRPC::~ConstructDataBinningRPC()
 {
 }
 
 // ****************************************************************************
-//  Method: ConstructDDFRPC::operator()
+//  Method: ConstructDataBinningRPC::operator()
 //
 //  Purpose: 
 //    This is the RPC's invocation method.
@@ -91,16 +91,16 @@ ConstructDDFRPC::~ConstructDDFRPC()
 // ****************************************************************************
 
 void
-ConstructDDFRPC::operator()(const int id_, const ConstructDDFAttributes *atts)
+ConstructDataBinningRPC::operator()(const int id_, const ConstructDataBinningAttributes *atts)
 {
     SetID(id_);
-    SetConstructDDFAtts(atts);
+    SetConstructDataBinningAtts(atts);
 
     Execute();
 }
 
 // ****************************************************************************
-//  Method: ConstructDDFRPC::SelectAll
+//  Method: ConstructDataBinningRPC::SelectAll
 //
 //  Purpose: 
 //    This selects all variables for sending.
@@ -113,15 +113,15 @@ ConstructDDFRPC::operator()(const int id_, const ConstructDDFAttributes *atts)
 // ****************************************************************************
 
 void
-ConstructDDFRPC::SelectAll()
+ConstructDataBinningRPC::SelectAll()
 {
     Select(0, (void*)&id);
-    Select(1, (void*)&constructDDFAtts);
+    Select(1, (void*)&constructDataBinningAtts);
 }
 
 
 // ****************************************************************************
-//  Method: ConstructDDFRPC::SetID
+//  Method: ConstructDataBinningRPC::SetID
 //
 //  Purpose: 
 //    This sets the id parameter.
@@ -135,7 +135,7 @@ ConstructDDFRPC::SelectAll()
 // ****************************************************************************
 
 void
-ConstructDDFRPC::SetID(const int id_)
+ConstructDataBinningRPC::SetID(const int id_)
 {
     id = id_;
     Select(0, (void*)&id);
@@ -143,7 +143,7 @@ ConstructDDFRPC::SetID(const int id_)
 
 
 // ****************************************************************************
-//  Method: ConstructDDFRPC::GetID
+//  Method: ConstructDataBinningRPC::GetID
 //
 //  Purpose: 
 //    This returns network id.
@@ -156,19 +156,19 @@ ConstructDDFRPC::SetID(const int id_)
 // ****************************************************************************
 
 int
-ConstructDDFRPC::GetID() const
+ConstructDataBinningRPC::GetID() const
 {
     return id;
 }
 
 // ****************************************************************************
-//  Method: ConstructDDFRPC::SetConstructDDFAtts 
+//  Method: ConstructDataBinningRPC::SetConstructDataBinningAtts 
 //
 //  Purpose:
-//    This sets the constructDDF atts.
+//    This sets the constructDataBinning atts.
 //
 //  Arguments:
-//    atts      the constructDDF atts
+//    atts      the constructDataBinning atts
 //
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2006 
@@ -176,26 +176,26 @@ ConstructDDFRPC::GetID() const
 // ****************************************************************************
  
 void
-ConstructDDFRPC::SetConstructDDFAtts(const ConstructDDFAttributes *atts)
+ConstructDataBinningRPC::SetConstructDataBinningAtts(const ConstructDataBinningAttributes *atts)
 {
-    constructDDFAtts = *atts;
-    Select(1, (void*)&constructDDFAtts);
+    constructDataBinningAtts = *atts;
+    Select(1, (void*)&constructDataBinningAtts);
 }
 
 
 // ****************************************************************************
-//  Method: ConstructDDFRPC::GetConstructDDFAtts 
+//  Method: ConstructDataBinningRPC::GetConstructDataBinningAtts 
 //
 //  Purpose:
-//    This returns the constructDDF atts.
+//    This returns the constructDataBinning atts.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2006 
 //
 // ****************************************************************************
  
-ConstructDDFAttributes *
-ConstructDDFRPC::GetConstructDDFAtts()
+ConstructDataBinningAttributes *
+ConstructDataBinningRPC::GetConstructDataBinningAtts()
 {
-    return &constructDDFAtts;
+    return &constructDataBinningAtts;
 }

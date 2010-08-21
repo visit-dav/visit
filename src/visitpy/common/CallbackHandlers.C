@@ -54,7 +54,7 @@ extern PyObject *args_ViewerRPC(ViewerRPC *rpc);
 CALLBACK_ACTION(AnimationAttributes,      AnimationAttributes,      PyAnimationAttributes_Wrap) \
 CALLBACK_ACTION(AnnotationAttributes,     AnnotationAttributes,     PyAnnotationAttributes_Wrap) \
 CALLBACK_ACTION(ColorTableAttributes,     ColorTableAttributes,     PyColorTableAttributes_Wrap) \
-CALLBACK_ACTION(ConstructDDFAttributes,   ConstructDDFAttributes,   PyConstructDDFAttributes_Wrap) \
+CALLBACK_ACTION(ConstructDataBinningAttributes,   ConstructDataBinningAttributes,   PyConstructDataBinningAttributes_Wrap) \
 CALLBACK_ACTION(ExportDBAttributes,       ExportDBAttributes,       PyExportDBAttributes_Wrap) \
 CALLBACK_ACTION(ExpressionList,           ExpressionList,           PyExpressionList_Wrap) \
 CALLBACK_ACTION(FileOpenOptions,          FileOpenOptions,          PyFileOpenOptions_Wrap) \
@@ -82,7 +82,7 @@ CALLBACK_ACTION(DatabaseMetaData,         avtDatabaseMetaData,      PyavtDatabas
 #include <PyAnimationAttributes.h>
 #include <PyAnnotationAttributes.h>
 #include <PyColorTableAttributes.h>
-#include <PyConstructDDFAttributes.h>
+#include <PyConstructDataBinningAttributes.h>
 #include <PyExportDBAttributes.h>
 #include <PyExpressionList.h>
 #include <PyFileOpenOptions.h>

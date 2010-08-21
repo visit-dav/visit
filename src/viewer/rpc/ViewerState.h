@@ -62,7 +62,7 @@ class PlotInfoAttributes;
     VIEWER_REGISTER_OBJECT(SILAttributes,            SILAttributes, false)\
     VIEWER_REGISTER_OBJECT(DBPluginInfoAttributes,   DBPluginInfoAttributes, false)\
     VIEWER_REGISTER_OBJECT(ExportDBAttributes,       ExportDBAttributes, false)\
-    VIEWER_REGISTER_OBJECT(ConstructDDFAttributes,   ConstructDDFAttributes, false)\
+    VIEWER_REGISTER_OBJECT(ConstructDataBinningAttributes,   ConstructDataBinningAttributes, false)\
     VIEWER_REGISTER_OBJECT(ClientMethod,             ClientMethod, false)\
     VIEWER_REGISTER_OBJECT(ClientInformation,        ClientInformation, false)\
     VIEWER_REGISTER_OBJECT(ClientInformationList,    ClientInformationList, false)\

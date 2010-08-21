@@ -55,7 +55,7 @@
 #include <CancelledConnectException.h>
 #include <CouldNotConnectException.h>
 #include <AnnotationAttributes.h>
-#include <ConstructDDFAttributes.h>
+#include <ConstructDataBinningAttributes.h>
 #include <ExportDBAttributes.h>
 #include <GlobalAttributes.h>
 #include <PickAttributes.h>
@@ -115,7 +115,7 @@ MaterialAttributes *ViewerEngineManager::materialDefaultAtts=0;
 MeshManagementAttributes *ViewerEngineManager::meshManagementClientAtts=0;
 MeshManagementAttributes *ViewerEngineManager::meshManagementDefaultAtts=0;
 ExportDBAttributes *ViewerEngineManager::exportDBAtts=0;
-ConstructDDFAttributes *ViewerEngineManager::constructDDFAtts=0;
+ConstructDataBinningAttributes *ViewerEngineManager::constructDataBinningAtts=0;
 FileOpenOptions *ViewerEngineManager::defaultFileOpenOptions=0;
 
 //
@@ -3239,49 +3239,59 @@ ViewerEngineManager::ExportDatabase(const EngineKey &ek, int id)
 
 
 // ****************************************************************************
-//  Method: ViewerEngineManager::GetConstructDDFAtts
+//  Method: ViewerEngineManager::GetConstructDataBinningAtts
 //
 //  Purpose:
-//      Gets the construct ddf atts.
+//      Gets the construct data binning atts.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Rename method from DDF to data binning.
+//
 // ****************************************************************************
 
-ConstructDDFAttributes *
-ViewerEngineManager::GetConstructDDFAtts(void)
+ConstructDataBinningAttributes *
+ViewerEngineManager::GetConstructDataBinningAtts(void)
 {
-    if (constructDDFAtts == 0)
+    if (constructDataBinningAtts == 0)
     {
-        constructDDFAtts = new ConstructDDFAttributes();
+        constructDataBinningAtts = new ConstructDataBinningAttributes();
     }
 
-    return constructDDFAtts;
+    return constructDataBinningAtts;
 }
 
 
 // ****************************************************************************
-//  Method: ViewerEngineManager::SetConstructDDFAtts
+//  Method: ViewerEngineManager::SetConstructDataBinningAtts
 //
 //  Purpose:
-//      Sets the construct ddf atts.
+//      Sets the construct data binning atts.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Rename method from DDF to data binning.
+//
 // ****************************************************************************
 
 void
-ViewerEngineManager::SetConstructDDFAtts(ConstructDDFAttributes *e)
+ViewerEngineManager::SetConstructDataBinningAtts(ConstructDataBinningAttributes *e)
 {
-    if (constructDDFAtts == 0)
+    if (constructDataBinningAtts == 0)
     {
-        constructDDFAtts = new ConstructDDFAttributes();
+        constructDataBinningAtts = new ConstructDataBinningAttributes();
     }
 
-    *constructDDFAtts = *e;
-    constructDDFAtts->Notify();
+    *constructDataBinningAtts = *e;
+    constructDataBinningAtts->Notify();
 }
 
 
@@ -3392,21 +3402,26 @@ ViewerEngineManager::SaveNamedSelection(const EngineKey &ek,
 
 
 // ****************************************************************************
-//  Method: ViewerEngineManager::ConstructDDF
+//  Method: ViewerEngineManager::ConstructDataBinning
 //
 //  Purpose:
-//      Constructs a derived data function.
+//      Constructs a data binning.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
+//    Rename method from DDF to data binning.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::ConstructDDF(const EngineKey &ek, int id)
+ViewerEngineManager::ConstructDataBinning(const EngineKey &ek, int id)
 {
-    ENGINE_PROXY_RPC_BEGIN("ConstructDDF");
-    engine->ConstructDDF(id, constructDDFAtts);
+    ENGINE_PROXY_RPC_BEGIN("ConstructDataBinning");
+    engine->ConstructDataBinning(id, constructDataBinningAtts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 

@@ -43,7 +43,7 @@
 #ifndef AVT_R2F_OPERATOR_H
 #define AVT_R2F_OPERATOR_H
 
-#include <ddf_exports.h>
+#include <dbin_exports.h>
 
 #include <vector>
 #include <string>
@@ -67,7 +67,7 @@
 //
 // ****************************************************************************
 
-class AVTDDF_API avtR2Foperator
+class AVTDBIN_API avtR2Foperator
 {
   public:
                            avtR2Foperator(int, double);

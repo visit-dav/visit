@@ -118,7 +118,7 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
         "OpenClientRPC, OpenGUIClientRPC, OpenCLIClientRPC, SuppressQueryOutputRPC, "
         "SetQueryFloatFormatRPC, SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, ResetMeshManagementAttributesRPC, "
         "ResizeWindowRPC, MoveWindowRPC, MoveAndResizeWindowRPC, SetStateLoggingRPC, "
-        "ConstructDDFRPC, RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, "
+        "ConstructDataBinningRPC, RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, "
         "SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, "
         "TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, "
         "CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, "
@@ -802,8 +802,8 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetStateLoggingRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
-      case ViewerRPC::ConstructDDFRPC:
-          SNPRINTF(tmpStr, 1000, "%sRPCType = %sConstructDDFRPC  # %s\n", prefix, prefix, RPCType_names);
+      case ViewerRPC::ConstructDataBinningRPC:
+          SNPRINTF(tmpStr, 1000, "%sRPCType = %sConstructDataBinningRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::RequestMetaDataRPC:
@@ -1178,7 +1178,7 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
                         "OpenClientRPC, OpenGUIClientRPC, OpenCLIClientRPC, SuppressQueryOutputRPC, "
                         "SetQueryFloatFormatRPC, SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, ResetMeshManagementAttributesRPC, "
                         "ResizeWindowRPC, MoveWindowRPC, MoveAndResizeWindowRPC, SetStateLoggingRPC, "
-                        "ConstructDDFRPC, RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, "
+                        "ConstructDataBinningRPC, RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, "
                         "SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, "
                         "TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, "
                         "CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, "
@@ -2766,8 +2766,8 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ViewerRPC::MoveAndResizeWindowRPC));
     if(strcmp(name, "SetStateLoggingRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::SetStateLoggingRPC));
-    if(strcmp(name, "ConstructDDFRPC") == 0)
-        return PyInt_FromLong(long(ViewerRPC::ConstructDDFRPC));
+    if(strcmp(name, "ConstructDataBinningRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::ConstructDataBinningRPC));
     if(strcmp(name, "RequestMetaDataRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::RequestMetaDataRPC));
     if(strcmp(name, "SetTreatAllDBsAsTimeVaryingRPC") == 0)
@@ -2966,6 +2966,8 @@ PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

@@ -101,7 +101,7 @@ visitpy/PyColorAttributeList.C
 visitpy/PyColorControlPoint.C 
 visitpy/PyColorControlPointList.C 
 visitpy/PyColorTableAttributes.C 
-visitpy/PyConstructDDFAttributes.C 
+visitpy/PyConstructDataBinningAttributes.C 
 visitpy/PyDatabaseCorrelation.C 
 visitpy/PyDBOptionsAttributes.C 
 visitpy/PyExportDBAttributes.C 

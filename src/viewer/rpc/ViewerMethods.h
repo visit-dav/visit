@@ -127,6 +127,9 @@ class ViewerState;
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Hank Childs, Sat Aug 21 14:20:04 PDT 2010
+//   Rename method: DDF to DataBinning.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -177,7 +180,7 @@ public:
     void ClearCacheForAllEngines();
     void UpdateDBPluginInfo(const std::string &hostName);
     void ExportDatabase(void);
-    void ConstructDDF(void);
+    void ConstructDataBinning(void);
 
     void CreateDatabaseCorrelation(const std::string &name,
                                    const stringVector &dbs, int method,

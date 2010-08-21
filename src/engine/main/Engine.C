@@ -781,6 +781,9 @@ public:
 //    other processors over MPI. I also added timing information for loading
 //    plugins in parallel.
 //
+//    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
+//    Rename DDF to DataBinning.
+//
 // ****************************************************************************
 
 void
@@ -911,7 +914,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     procInfoRPC                     = new ProcInfoRPC;
     simulationCommandRPC            = new SimulationCommandRPC;
     exportDatabaseRPC               = new ExportDatabaseRPC;
-    constructDDFRPC                 = new ConstructDDFRPC;
+    constructDataBinningRPC         = new ConstructDataBinningRPC;
     namedSelectionRPC               = new NamedSelectionRPC;
     setEFileOpenOptionsRPC          = new SetEFileOpenOptionsRPC;
 
@@ -937,7 +940,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(procInfoRPC);
     xfer->Add(simulationCommandRPC);
     xfer->Add(exportDatabaseRPC);
-    xfer->Add(constructDDFRPC);
+    xfer->Add(constructDataBinningRPC);
     xfer->Add(namedSelectionRPC);
     xfer->Add(setEFileOpenOptionsRPC);
 
@@ -967,7 +970,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<ProcInfoRPC>(procInfoRPC));
     rpcExecutors.push_back(new RPCExecutor<SimulationCommandRPC>(simulationCommandRPC));
     rpcExecutors.push_back(new RPCExecutor<ExportDatabaseRPC>(exportDatabaseRPC));
-    rpcExecutors.push_back(new RPCExecutor<ConstructDDFRPC>(constructDDFRPC));
+    rpcExecutors.push_back(new RPCExecutor<ConstructDataBinningRPC>(constructDataBinningRPC));
     rpcExecutors.push_back(new RPCExecutor<NamedSelectionRPC>(namedSelectionRPC));
     rpcExecutors.push_back(new RPCExecutor<SetEFileOpenOptionsRPC>(setEFileOpenOptionsRPC));
 

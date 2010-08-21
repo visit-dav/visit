@@ -51,7 +51,7 @@
 #include <ApplyOperatorRPC.h>
 #include <ClearCacheRPC.h>
 #include <CloneNetworkRPC.h>
-#include <ConstructDDFRPC.h>
+#include <ConstructDataBinningRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <ExportDatabaseRPC.h>
 #include <MakePlotRPC.h>
@@ -81,7 +81,7 @@
 #include <vector>
 
 class StatusAttributes;
-class ConstructDDFAttributes;
+class ConstructDataBinningAttributes;
 class ExportDBAttributes;
 class ParentProcess;
 
@@ -312,6 +312,9 @@ class ParentProcess;
 //    Brad Whitlock, Thu Apr  9 15:02:51 PDT 2009
 //    I added reverse launch support.
 //
+//    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
+//    Rename DDF to DataBinning.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -407,7 +410,7 @@ public:
                                    const QueryAttributes *, 
                                    QueryAttributes &);
     void                     ExportDatabase(int, const ExportDBAttributes *);
-    void                     ConstructDDF(int, const ConstructDDFAttributes *);
+    void                     ConstructDataBinning(int, const ConstructDataBinningAttributes *);
 
     void                     ApplyNamedSelection(const std::vector<std::string> &ids, 
                                                  const std::string selName);
@@ -461,7 +464,7 @@ private:
     ProcInfoRPC              procInfoRPC;
     SimulationCommandRPC     simulationCommandRPC;
     ExportDatabaseRPC        exportDatabaseRPC;
-    ConstructDDFRPC          constructDDFRPC;
+    ConstructDataBinningRPC  constructDataBinningRPC;
     NamedSelectionRPC        namedSelectionRPC;
     SetEFileOpenOptionsRPC   setEFileOpenOptionsRPC;
 
