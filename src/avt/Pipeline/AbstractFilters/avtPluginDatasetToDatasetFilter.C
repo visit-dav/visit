@@ -36,36 +36,14 @@
 *
 *****************************************************************************/
 
-#ifndef AVT_PLUGIN_DATATREESTREAMER_H
-#define AVT_PLUGIN_DATATREESTREAMER_H
+#include <avtPluginDatasetToDatasetFilter.h>
 
-#include <pipeline_exports.h>
-
-#include <avtDatasetToDatasetFilter.h>
-#include <avtPluginFilter.h>
-
-// ****************************************************************************
-//  Class:  avtPluginDatasetToDatasetFilter
-//
-//  Purpose:
-//    A base class for plugin-style operators that are avtDatasetToDatasetFilters.
-//
-//  Programmer:  Hank Childs
-//  Creation:    January 24, 2008
-//
-//  Modifications:
-//    Kathleen Bonnell, Mon Aug 23 15:22:34 MST 2010
-//    Added constructor/destructor.
-//
-// ****************************************************************************
-
-class PIPELINE_API avtPluginDatasetToDatasetFilter : 
-    public virtual avtDatasetToDatasetFilter, 
-    public virtual avtPluginFilter
+avtPluginDatasetToDatasetFilter::avtPluginDatasetToDatasetFilter() : avtDatasetToDatasetFilter(), avtPluginFilter()
 {
-public:
-    avtPluginDatasetToDatasetFilter();
-    virtual ~avtPluginDatasetToDatasetFilter();
-};
+    // Implementation needed for windows.
+}
 
-#endif
+avtPluginDatasetToDatasetFilter::~avtPluginDatasetToDatasetFilter()
+{
+    // Implementation needed for windows.
+}
