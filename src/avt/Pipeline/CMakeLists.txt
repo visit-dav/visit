@@ -151,6 +151,7 @@ AbstractFilters/avtImageToImageFilter.C
 AbstractFilters/avtMultiResolutionPartitionStrategy.C
 AbstractFilters/avtMultipleInputToDataObjectFilter.C
 AbstractFilters/avtMultipleInputToDatasetFilter.C
+AbstractFilters/avtPluginDatasetToDatasetFilter.C
 AbstractFilters/avtPluginDataTreeIterator.C
 AbstractFilters/avtPluginStructuredChunkDataTreeIterator.C
 AbstractFilters/avtSIMODataTreeIterator.C
