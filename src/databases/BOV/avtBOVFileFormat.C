@@ -245,6 +245,10 @@ avtBOVFileFormat::ActivateTimestep(void)
 //    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
 //    Change most int's and long's to long longs to support >4GB files.
 //
+//    Cyrus Harrison, Mon Aug 23 13:44:07 PDT 2010
+//    Make sure coords on the edges of domains actually abut (avoid
+//    fp errors setting them explicty).
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -320,6 +324,7 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
 
     for (i = 0 ; i < dx ; i++)
         x->SetTuple1(i, x_start + i * (x_stop-x_start) / (dx-1));
+    x->SetTuple1(dx-1, x_stop);
 
     vtkFloatArray *y = vtkFloatArray::New();
     long long dy = bricklet_size[1];
@@ -341,6 +346,7 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     y->SetNumberOfTuples(dy);
     for (i = 0 ; i < dy ; i++)
         y->SetTuple1(i, y_start + i * (y_stop-y_start) / (dy-1));
+    y->SetTuple1(dy-1, y_stop);
 
     vtkFloatArray *z = vtkFloatArray::New();
     long long dz = bricklet_size[2];
@@ -369,6 +375,7 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         z->SetNumberOfTuples(dz);
         for (i = 0 ; i < dz ; i++)
             z->SetTuple1(i, z_start + i * (z_stop-z_start) / (dz-1));
+        z->SetTuple1(dz-1, z_stop);
     }
 
     int dims[3] = { dx, dy, dz };
