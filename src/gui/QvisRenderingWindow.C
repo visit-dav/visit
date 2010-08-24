@@ -87,6 +87,9 @@
 //   Jeremy Meredith, Fri Apr 30 15:04:34 EDT 2010
 //   Added an automatic start/end setting capability for depth cueing.
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
@@ -101,6 +104,7 @@ QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
     stereoType = 0;
     scalrenActivationMode = 0;
     scalrenCompressMode = 0;
+    compactDomainsActivationMode = 0;
 }
 
 // ****************************************************************************
@@ -342,6 +346,38 @@ QvisRenderingWindow::CreateAdvancedPage()
     QRadioButton *cmp_never = new QRadioButton(tr("Never"), advancedOptions);
     scalrenCompressMode->addButton(cmp_never, 2);
     advLayout->addWidget(cmp_never, row, 3);
+    row++;
+
+    // Create the compact domains widgets.
+    QLabel *compactDomainsLabel = new QLabel(tr("Compact domains on engine"), advancedOptions);
+    advLayout->addWidget(compactDomainsLabel, row, 0, 1, 3);
+    compactDomainsActivationMode = new QButtonGroup(advancedOptions);
+    connect(compactDomainsActivationMode, SIGNAL(buttonClicked(int)),
+            this, SLOT(compactDomainsActivationModeChanged(int)));
+    row++;
+
+    compactDomainsAuto = new QRadioButton(tr("Auto"), advancedOptions);
+    compactDomainsActivationMode->addButton(compactDomainsAuto, 0);
+    advLayout->addWidget(compactDomainsAuto, row, 1);
+    compactDomainsAlways = new QRadioButton(tr("Always"), advancedOptions);
+    compactDomainsActivationMode->addButton(compactDomainsAlways, 1);
+    advLayout->addWidget(compactDomainsAlways, row, 2);
+    compactDomainsNever = new QRadioButton(tr("Never"), advancedOptions);
+    compactDomainsActivationMode->addButton(compactDomainsNever, 2);
+    advLayout->addWidget(compactDomainsNever, row, 3);
+    row++;
+
+    // Create the polygon count spin box for scalable rendering threshold
+    compactDomainsGeometryLabel =  new QLabel(tr("When domains per process exceeds"), advancedOptions);
+    advLayout->addWidget(compactDomainsGeometryLabel, row, 1, 1, 2);
+    compactDomainsAutoThreshold = new QSpinBox(advancedOptions);
+    compactDomainsAutoThreshold->setMinimum(0);
+    compactDomainsAutoThreshold->setMaximum(100000);
+    compactDomainsAutoThreshold->setValue(RenderingAttributes::DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD);
+    compactDomainsAutoThresholdChanged(RenderingAttributes::DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD);
+    connect(compactDomainsAutoThreshold, SIGNAL(valueChanged(int)),
+            this, SLOT(compactDomainsAutoThresholdChanged(int)));
+    advLayout->addWidget(compactDomainsAutoThreshold, row, 3);
     row++;
 
     // Create the shadow lighting options
@@ -695,6 +731,29 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             scalrenAutoThreshold->blockSignals(false);
             break;
             }
+        case RenderingAttributes::ID_compactDomainsActivationMode:
+            {
+            RenderingAttributes::TriStateMode rtmp;
+            rtmp = renderAtts->GetCompactDomainsActivationMode();
+            compactDomainsActivationMode->blockSignals(true);
+            if (rtmp == RenderingAttributes::Always)
+                compactDomainsActivationMode->button(1)->setChecked(true);
+            else if (rtmp == RenderingAttributes::Never)
+                compactDomainsActivationMode->button(2)->setChecked(true);
+            else
+                compactDomainsActivationMode->button(0)->setChecked(true);
+            compactDomainsActivationMode->blockSignals(false);
+            }
+          break;
+        case RenderingAttributes::ID_compactDomainsAutoThreshold:
+            { // new scope
+            compactDomainsAutoThreshold->blockSignals(true);
+            int val = renderAtts->GetCompactDomainsAutoThreshold();
+            compactDomainsAutoThreshold->setValue(val);
+            compactDomainsAutoThreshold->blockSignals(false);
+            break;
+            }
+
         case RenderingAttributes::ID_specularFlag:
             specularToggle->blockSignals(true);
             specularToggle->setChecked(renderAtts->GetSpecularFlag());
@@ -793,6 +852,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //    Jeremy Meredith, Fri Apr 30 15:04:34 EDT 2010
 //    Added an automatic start/end setting capability for depth cueing.
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 void
@@ -802,6 +864,8 @@ QvisRenderingWindow::UpdateWindowSensitivity()
         renderAtts->GetScalableActivationMode() == RenderingAttributes::Always;
     bool scalableAuto =
         renderAtts->GetScalableActivationMode() == RenderingAttributes::Auto;
+    bool compactAuto =
+        renderAtts->GetCompactDomainsActivationMode() == RenderingAttributes::Auto;
     bool shadowOn = renderAtts->GetDoShadowing();
     bool depthCueingOn = renderAtts->GetDoDepthCueing();
     bool depthCueingAuto = renderAtts->GetDepthCueingAutomatic();
@@ -809,6 +873,7 @@ QvisRenderingWindow::UpdateWindowSensitivity()
     bool specularOn = renderAtts->GetSpecularFlag();
 
     scalrenAutoThreshold->setEnabled(scalableAuto);
+    compactDomainsAutoThreshold->setEnabled(compactAuto);
     shadowToggle->setEnabled(scalableAlways);
     shadowStrengthSlider->setEnabled(scalableAlways && shadowOn);
     shadowStrengthLabel->setEnabled(scalableAlways && shadowOn);
@@ -1410,6 +1475,51 @@ QvisRenderingWindow::scalrenAutoThresholdChanged(int val)
     Apply();
 }
 
+
+
+// ****************************************************************************
+// Method:  QvisRenderingWindow::compactDomainsAutoThresholdChanged
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::compactDomainsAutoThresholdChanged(int val)
+{
+    renderAtts->SetCompactDomainsAutoThreshold(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::compactDomainsActivationModeChanged
+//
+// Programmer: Dave Pugmire
+// Creation:   August 24, 2010
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::compactDomainsActivationModeChanged(int mode)
+{
+    if (mode == 0)
+    {
+        renderAtts->SetCompactDomainsActivationMode(RenderingAttributes::Auto);
+        compactDomainsAutoThresholdChanged(compactDomainsAutoThreshold->value());
+    }
+    else if (mode == 1)
+        renderAtts->SetCompactDomainsActivationMode(RenderingAttributes::Always);
+    else
+        renderAtts->SetCompactDomainsActivationMode(RenderingAttributes::Never);
+    
+    SetUpdate(false);
+    Apply();
+    UpdateWindowSensitivity();
+}
+
 // ****************************************************************************
 // Method: QvisRenderingWindow::scalrenCompressModeChanged
 //
@@ -1433,6 +1543,7 @@ QvisRenderingWindow::scalrenCompressModeChanged(int mode)
     SetUpdate(false);
     Apply();
 }
+
 // ****************************************************************************
 //  Method:  QvisRenderingWindow::shadowToggled
 //

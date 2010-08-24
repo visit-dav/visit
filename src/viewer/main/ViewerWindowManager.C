@@ -3269,6 +3269,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //   Added automatic depth cueing mode.
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 void
@@ -3308,6 +3311,13 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         if (windows[index]->GetScalableActivationMode() !=
             renderAtts->GetScalableActivationMode())
             windows[index]->SetScalableActivationMode(renderAtts->GetScalableActivationMode());
+        
+        if (windows[index]->GetCompactDomainsActivationMode() !=
+            renderAtts->GetCompactDomainsActivationMode())
+            windows[index]->SetCompactDomainsActivationMode(renderAtts->GetCompactDomainsActivationMode());
+        if (windows[index]->GetCompactDomainsAutoThreshold() !=
+            renderAtts->GetCompactDomainsAutoThreshold())
+            windows[index]->SetCompactDomainsAutoThreshold(renderAtts->GetCompactDomainsAutoThreshold());
 
         if (windows[index]->GetCompressionActivationMode() !=
             renderAtts->GetCompressionActivationMode())

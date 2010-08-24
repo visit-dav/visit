@@ -636,6 +636,9 @@ CUpdateData(avtDataRepresentation &data, void *, bool &modified)
 //    Remove call to SetSource(NULL) as it now removes information necessary
 //    to the dataset. 
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add option to include appending all meshes.
+//
 // ****************************************************************************
 
 void
@@ -660,6 +663,7 @@ CAddInputToAppendFilter(avtDataRepresentation & data, void *arg, bool &)
     {
         vtkAppendFilter *af;
         vtkAppendPolyData *pf;
+        bool compactAllGrids;
     } *pmap;
 
     pmap = (struct map *) arg;
@@ -671,11 +675,12 @@ CAddInputToAppendFilter(avtDataRepresentation & data, void *arg, bool &)
     //  We only want to use the append filters on poly data or
     //  unstructured grid data.
     //
+    
     if (ds->GetDataObjectType() == VTK_POLY_DATA)
     {
         pmap->pf->AddInput((vtkPolyData*)ds);
     }
-    else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID) 
+    else if (pmap->compactAllGrids || ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
         pmap->af->AddInput(ds);
     }

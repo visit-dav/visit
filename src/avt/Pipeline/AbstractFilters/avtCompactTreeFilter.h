@@ -82,11 +82,21 @@
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
 {
   public:
+    enum CompactDomainsMode
+        {
+            Never  = 0,
+            Always = 1,
+            Auto   = 2
+        };
+
                           avtCompactTreeFilter();
     virtual              ~avtCompactTreeFilter(){}; 
 
@@ -105,12 +115,17 @@ class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
                               { tolerance = d; };
     void                  SetParallelMerge(bool p) { parallelMerge = p; };
 
+    void                  SetCompactDomainsMode(CompactDomainsMode mode, int threshold=-1)
+                              { compactDomainMode = mode; compactDomainThreshold = threshold; }
+
   protected:
     virtual void          Execute(void);
     bool                  executionDependsOnDLB;
     bool                  parallelMerge;
     bool                  createCleanPolyData;
     double                tolerance;
+    CompactDomainsMode    compactDomainMode;
+    int                   compactDomainThreshold;
 
     virtual bool          FilterUnderstandsTransformedRectMesh();
 };

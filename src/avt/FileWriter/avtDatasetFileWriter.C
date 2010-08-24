@@ -850,6 +850,9 @@ avtDatasetFileWriter::CreateFilename(const char *base, bool family,
 //    no longer call 'GetInputs' on vtkAppendFillter, must get individual port
 //    info, then the dataset from the info. 
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -861,10 +864,12 @@ avtDatasetFileWriter::GetSingleDataset(void)
     {
         vtkAppendFilter *af;
         vtkAppendPolyData *pf;
+        bool compactAllGrids;
     } pmap;
 
     pmap.af = vtkAppendFilter::New(); // Just in case...
     pmap.pf = vtkAppendPolyData::New();
+    pmap.compactAllGrids = false;
 
     if (*dt != NULL)
     {

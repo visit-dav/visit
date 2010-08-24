@@ -60,6 +60,7 @@
 #include <avtOriginatingSource.h>
 #include <avtVertexNormalsFilter.h>
 #include <avtSmoothPolyDataFilter.h>
+#include <RenderingAttributes.h>
 
 #include <vtkPolyData.h>
 #include <vtkDataSet.h>
@@ -129,6 +130,9 @@
 //    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007 
 //    Added logMeshFilter, xScaleMode, yScaleMode, havePerformedLogX, 
 //    havePerformedLogY.
+//
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domains options.
 //
 // ****************************************************************************
 
@@ -485,6 +489,9 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
 //    Calculate the current extents, even for plots that don't
 //    "UtilizeRenderingFilters".
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domains options.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -513,8 +520,9 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
     if (UtilizeRenderingFilters() && 
         strcmp(dob->GetType(), "avtDataset") == 0)
     {
+        RenderingAttributes renderAtts = atts->GetRenderAtts();
         dob = ReduceGeometry(dob);
-        dob = CompactTree(dob);
+        dob = CompactTree(dob, renderAtts);
     }
     dob = SetCurrentExtents(dob);
 
@@ -1038,11 +1046,22 @@ avtPlot::ReduceGeometry(avtDataObject_p curDS)
 //    Kathleen Bonnell, Fri Oct 12 11:38:41 PDT 2001
 //    Set flag specifiying that execution depends on DLB. 
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domains options.
+//
 // ****************************************************************************
 
 avtDataObject_p
-avtPlot::CompactTree(avtDataObject_p curDS)
+avtPlot::CompactTree(avtDataObject_p curDS, const RenderingAttributes &renderAtts)
 {
+    if (renderAtts.GetCompactDomainsActivationMode() == RenderingAttributes::Auto)
+        compactTreeFilter->SetCompactDomainsMode(avtCompactTreeFilter::Auto,
+                                                 renderAtts.GetCompactDomainsAutoThreshold());
+    else if (renderAtts.GetCompactDomainsActivationMode() == RenderingAttributes::Never)
+        compactTreeFilter->SetCompactDomainsMode(avtCompactTreeFilter::Never);
+    else if (renderAtts.GetCompactDomainsActivationMode() == RenderingAttributes::Always)
+        compactTreeFilter->SetCompactDomainsMode(avtCompactTreeFilter::Always);
+        
     avtDataObject_p rv = curDS;
     compactTreeFilter->SetInput(rv);
     ((avtCompactTreeFilter*)compactTreeFilter)->DLBDependentExecutionON();
