@@ -84,6 +84,8 @@ public:
     };
     static const int DEFAULT_SCALABLE_AUTO_THRESHOLD;
     static const int DEFAULT_SCALABLE_ACTIVATION_MODE;
+    static const int DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE;
+    static const int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD;
 
     // These constructors are for objects of this class
     RenderingAttributes();
@@ -135,6 +137,8 @@ public:
     void SetEndCuePoint(const double *endCuePoint_);
     void SetCompressionActivationMode(TriStateMode compressionActivationMode_);
     void SetColorTexturingFlag(bool colorTexturingFlag_);
+    void SetCompactDomainsActivationMode(TriStateMode compactDomainsActivationMode_);
+    void SetCompactDomainsAutoThreshold(int compactDomainsAutoThreshold_);
 
     // Property getting methods
     bool                 GetAntialiasing() const;
@@ -160,6 +164,8 @@ public:
           double         *GetEndCuePoint();
     TriStateMode         GetCompressionActivationMode() const;
     bool                 GetColorTexturingFlag() const;
+    TriStateMode         GetCompactDomainsActivationMode() const;
+    int                  GetCompactDomainsAutoThreshold() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -190,6 +196,7 @@ public:
 
     // User-defined methods
     static int GetEffectiveScalableThreshold(TriStateMode mode, int autoThreshold);
+    static int GetEffectiveCompactDomainsThreshold(TriStateMode mode, int autoThreshold);
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -213,6 +220,8 @@ public:
         ID_endCuePoint,
         ID_compressionActivationMode,
         ID_colorTexturingFlag,
+        ID_compactDomainsActivationMode,
+        ID_compactDomainsAutoThreshold,
         ID__LAST
     };
 
@@ -237,11 +246,13 @@ private:
     double         endCuePoint[3];
     int            compressionActivationMode;
     bool           colorTexturingFlag;
+    int            compactDomainsActivationMode;
+    int            compactDomainsAutoThreshold;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "biibibiibffabdbbDDib"
+#define RENDERINGATTRIBUTES_TMFS "biibibiibffabdbbDDibii"
 
 #endif

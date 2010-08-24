@@ -63,6 +63,7 @@
 
 class     avtCondenseDatasetFilter;
 class     avtDatasetToDatasetFilter;
+class     avtCompactTreeFilter;
 class     avtSmoothPolyDataFilter;
 class     avtVertexNormalsFilter;
 class     avtMeshLogFilter;
@@ -70,6 +71,7 @@ class     AttributeGroup;
 class     AttributeSubject;
 class     PlotInfoAttributes;
 class     WindowAttributes;
+class     RenderingAttributes;
 
 // ****************************************************************************
 //  Class: avtPlot
@@ -345,7 +347,7 @@ class PLOTTER_API avtPlot
     avtDrawer                 *drawer;
     avtCondenseDatasetFilter  *condenseDatasetFilter;
     avtDatasetToDatasetFilter *ghostZoneAndFacelistFilter;
-    avtDatasetToDatasetFilter *compactTreeFilter;
+    avtCompactTreeFilter      *compactTreeFilter;
     avtDatasetToDatasetFilter *currentExtentFilter;
     avtMeshLogFilter          *logMeshFilter;
     avtVertexNormalsFilter    *vertexNormalsFilter;
@@ -372,7 +374,7 @@ class PLOTTER_API avtPlot
     virtual int                TargetTopologicalDimension(void) = 0;
 
     virtual avtDataObject_p    ReduceGeometry(avtDataObject_p);
-    virtual avtDataObject_p    CompactTree(avtDataObject_p);
+    virtual avtDataObject_p    CompactTree(avtDataObject_p, const RenderingAttributes &);
     virtual avtDataObject_p    SetCurrentExtents(avtDataObject_p);
     avtDataObject_p            SetScaleMode(avtDataObject_p,
                                             ScaleMode, ScaleMode,

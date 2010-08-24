@@ -83,14 +83,26 @@
     <Field name="colorTexturingFlag" label="colorTexturingFlag" type="bool">
       true
     </Field>
+    <Field name="compactDomainsActivationMode" label="compactDomainsActivationMode" type="enum" subtype="TriStateMode">
+      Never
+    </Field>
+    <Field name="compactDomainsAutoThreshold" label="compactDomainsAutoThreshold" type="int">
+      256
+    </Field>
     <Function name="GetEffectiveScalableThreshold" user="true" member="true">
+    </Function>
+    <Function name="GetEffectiveCompactDomainsThreshold" user="true" member="true">
     </Function>
     <Constant name="DEFAULT_SCALABLE_AUTO_THRESHOLD" member="true">
     </Constant>
     <Constant name="DEFAULT_SCALABLE_ACTIVATION_MODE" member="true">
     </Constant>
+    <Constant name="DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE" member="true">
+    </Constant>
+    <Constant name="DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD" member="true">
+    </Constant>
     <Include file="source" quoted="false">
-      climits 
+      climits
     </Include>
     <Include file="header" quoted="false">
       float.h

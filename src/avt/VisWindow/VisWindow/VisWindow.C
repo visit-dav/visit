@@ -5995,6 +5995,72 @@ VisWindow::GetScalableAutoThreshold() const
 }
 
 // ****************************************************************************
+// Method:  VisWindow::SetCompactDomainsActivationMode
+//
+// Purpose: Get/Set compact domains options.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+void
+VisWindow::SetCompactDomainsActivationMode(int mode)
+{
+    rendering->SetCompactDomainsActivationMode(mode);
+}
+
+// ****************************************************************************
+// Method:  VisWindow::GetCompactDomainsActivationMode
+//
+// Purpose: Get/Set compact domains options.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+int
+VisWindow::GetCompactDomainsActivationMode() const
+{
+    return rendering->GetCompactDomainsActivationMode();
+}
+
+// ****************************************************************************
+// Method:  VisWindow::SetCompactDomainsAutoThreshold
+//
+// Purpose: Get/Set compact domains options.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+void
+VisWindow::SetCompactDomainsAutoThreshold(int val)
+{
+    rendering->SetCompactDomainsAutoThreshold(val);
+}
+
+// ****************************************************************************
+// Method:  VisWindow::GetCompactDomainsAutoThreshold
+//
+// Purpose: Get/Set compact domains options.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+int
+VisWindow::GetCompactDomainsAutoThreshold() const
+{
+    return rendering->GetCompactDomainsAutoThreshold();
+}
+
+
+
+// ****************************************************************************
 // Method: VisWindow::CreateToolbar
 //
 // Purpose: 

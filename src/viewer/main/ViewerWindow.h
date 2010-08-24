@@ -460,6 +460,10 @@ class ViewerToolbar;
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -673,6 +677,11 @@ public:
     int  GetScalableActivationMode() const;
     int  SetScalableAutoThreshold(int threshold);
     int  GetScalableAutoThreshold() const;
+    int  SetCompactDomainsActivationMode(int mode);
+    int  GetCompactDomainsActivationMode() const;
+    int  SetCompactDomainsAutoThreshold(int val);
+    int  GetCompactDomainsAutoThreshold() const;
+
     void SetSpecularProperties(bool,double,double,const ColorAttribute&);
     bool  GetSpecularFlag() const;
     double GetSpecularCoeff() const;
@@ -683,6 +692,7 @@ public:
     double GetShadingStrength() const;
     void SetDepthCueingProperties(bool,bool,const double[3],const double[3]);
     bool GetDoDepthCueing() const;
+
     bool GetDepthCueingAutomatic() const;
     const double *GetStartCuePoint() const;
     const double *GetEndCuePoint() const;

@@ -2254,6 +2254,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //   Added automatic depth cueing mode.
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 void
@@ -2269,6 +2272,8 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetNotifyForEachRender(source->GetNotifyForEachRender());
     SetScalableAutoThreshold(source->GetScalableAutoThreshold());
     SetScalableActivationMode(source->GetScalableActivationMode());
+    SetCompactDomainsActivationMode(source->GetCompactDomainsActivationMode());
+    SetCompactDomainsAutoThreshold(source->GetCompactDomainsAutoThreshold());
     SetSpecularProperties(source->GetSpecularFlag(),
                           source->GetSpecularCoeff(),
                           source->GetSpecularPower(),
@@ -6214,6 +6219,9 @@ ViewerWindow::SetLargeIcons(bool val)
 //   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //   Added automatic depth cueing mode.
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -6284,6 +6292,8 @@ ViewerWindow::GetWindowAttributes() const
     renderAtts.SetScalableAutoThreshold(GetScalableThreshold());
     renderAtts.SetScalableActivationMode(
         (RenderingAttributes::TriStateMode) GetScalableActivationMode());
+    renderAtts.SetCompactDomainsAutoThreshold(GetCompactDomainsAutoThreshold());
+    renderAtts.SetCompactDomainsActivationMode((RenderingAttributes::TriStateMode) GetCompactDomainsActivationMode());
 
     renderAtts.SetDisplayListMode(
         (RenderingAttributes::TriStateMode) GetDisplayListMode());
@@ -7872,6 +7882,77 @@ ViewerWindow::GetIsCompressingScalableImage() const
 }
 
 // ****************************************************************************
+// Method:  ViewerWindow::SetCompactDomainsActivationMode
+//
+// Purpose: Set/Get compact domains activation mode
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+int
+ViewerWindow::SetCompactDomainsActivationMode(int mode)
+{
+    int oldMode = GetCompactDomainsActivationMode();
+    
+    if (mode != oldMode)
+        visWindow->SetCompactDomainsActivationMode(mode);
+    return oldMode;
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetCompactDomainsActivationMode
+//
+// Purpose: Set/Get compact domains activation mode
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetCompactDomainsActivationMode() const
+{
+    return visWindow->GetCompactDomainsActivationMode();
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetCompactDomainsAutoThreshold
+//
+// Purpose: Set/Get compact domains auto threshold
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+int
+ViewerWindow::SetCompactDomainsAutoThreshold(int val)
+{
+    int oldThreshold = GetCompactDomainsAutoThreshold();
+    if (val != oldThreshold)
+        visWindow->SetCompactDomainsAutoThreshold(val);
+    return oldThreshold;
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetCompactDomainsAutoThreshold
+//
+// Purpose: Set/Get compact domains auto threshold
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetCompactDomainsAutoThreshold() const
+{
+    return visWindow->GetCompactDomainsAutoThreshold();
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::CreateNode
 //
 // Purpose: 
@@ -8026,6 +8107,8 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         //
         windowNode->AddNode(new DataNode("scalableAutoThreshold", GetScalableAutoThreshold()));
         windowNode->AddNode(new DataNode("scalableActivationMode", GetScalableActivationMode()));
+        windowNode->AddNode(new DataNode("compactDomainsAutoThreshold", GetCompactDomainsAutoThreshold()));
+        windowNode->AddNode(new DataNode("compactDomainsActivationMode", GetCompactDomainsActivationMode()));
         windowNode->AddNode(new DataNode("notifyForEachRender", GetNotifyForEachRender()));
         windowNode->AddNode(new DataNode("surfaceRepresentation", GetSurfaceRepresentation()));
         windowNode->AddNode(new DataNode("displayListMode", GetDisplayListMode()));
@@ -8225,6 +8308,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //   Added automatic depth cueing mode.
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 void
@@ -8351,6 +8437,10 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetScalableAutoThreshold(node->AsInt());
     if((node = windowNode->GetNode("scalableActivationMode")) != 0)
         SetScalableActivationMode(node->AsInt());
+    if((node = windowNode->GetNode("compactDomainsActivationMode")) != 0)
+        SetCompactDomainsActivationMode(node->AsInt());
+    if((node = windowNode->GetNode("compactDomainsAutoThreshold")) != 0)
+        SetCompactDomainsAutoThreshold(node->AsInt());
     if((node = windowNode->GetNode("notifyForEachRender")) != 0)
         SetNotifyForEachRender(node->AsBool());
     if((node = windowNode->GetNode("surfaceRepresentation")) != 0)
@@ -9012,6 +9102,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //    Hank Childs, Tue Oct  2 17:16:45 PDT 2007
 //    Don't check to see if the annotation objects have changed.
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 bool
@@ -9031,11 +9124,17 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     int lastScalableAutoThreshold = lastRequest.winAtts.GetRenderAtts().GetScalableAutoThreshold();
     int lastScalableActivationMode = lastRequest.winAtts.GetRenderAtts().GetScalableActivationMode();
     int lastCompressionActivationMode = lastRequest.winAtts.GetRenderAtts().GetCompressionActivationMode();
+    int lastCompactDomainsActivationMode = lastRequest.winAtts.GetRenderAtts().GetCompactDomainsActivationMode();
+    int lastCompactDomainsAutoThreshold = lastRequest.winAtts.GetRenderAtts().GetCompactDomainsAutoThreshold();
     tmpWinAtts.GetRenderAtts().SetScalableAutoThreshold(lastScalableAutoThreshold);
     tmpWinAtts.GetRenderAtts().SetScalableActivationMode(
         (RenderingAttributes::TriStateMode) lastScalableActivationMode);
     tmpWinAtts.GetRenderAtts().SetCompressionActivationMode(
         (RenderingAttributes::TriStateMode) lastCompressionActivationMode);
+    tmpWinAtts.GetRenderAtts().SetCompactDomainsActivationMode(
+        (RenderingAttributes::TriStateMode) lastCompactDomainsActivationMode);
+    tmpWinAtts.GetRenderAtts().SetCompactDomainsAutoThreshold(lastCompactDomainsAutoThreshold);
+
     View3DAttributes lastView3D = lastRequest.winAtts.GetView3D();
     tmpWinAtts.GetView3D().SetCenterOfRotationSet(lastView3D.GetCenterOfRotationSet());
     tmpWinAtts.GetView3D().SetCenterOfRotation(lastView3D.GetCenterOfRotation());

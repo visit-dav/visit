@@ -419,6 +419,9 @@ class VisitInteractor;
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Dave Pugmire, Tue Aug 24 11:29:43 EDT 2010
+//    Add compact domains options.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -625,6 +628,11 @@ public:
     bool                 GetScalableRendering() const;
     void                 SetScalableRendering(bool mode);
     int                  GetScalableThreshold() const;
+    void                 SetCompactDomainsActivationMode(int mode);
+    int                  GetCompactDomainsActivationMode() const;
+    void                 SetCompactDomainsAutoThreshold(int val);
+    int                  GetCompactDomainsAutoThreshold() const;
+
     void                 SetSpecularProperties(bool,double,double,
                                                const ColorAttribute&);
     bool                 GetSpecularFlag();

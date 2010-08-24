@@ -1651,6 +1651,48 @@ NetworkManager::GetScalableThreshold(int windowID) const
     int t = RenderingAttributes::GetEffectiveScalableThreshold(
                                     scalableActivationMode,
                                     scalableAutoThreshold);
+
+    return t;
+}
+
+
+// ****************************************************************************
+// Method:  NetworkManager::GetCompactDomainsThreshold
+//
+// Purpose: Get/Set compact domains options.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+int
+NetworkManager::GetCompactDomainsThreshold(int windowId) const
+{
+    int compactDomainsAutoThreshold = RenderingAttributes::DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD;
+    RenderingAttributes::TriStateMode compactDomainsActivationMode = 
+       (RenderingAttributes::TriStateMode)RenderingAttributes::DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE;
+
+    // since we're in a const method, we can't use the [] operator to index
+    // into the map directly becuase that operator will modify the map if the
+    // key is new
+    std::map<int, EngineVisWinInfo>::const_iterator it;
+    it = viswinMap.find(windowId);
+    if(it != viswinMap.end())
+    {
+        const EngineVisWinInfo &viswinInfo = it->second;
+        const WindowAttributes &windowAttributes = viswinInfo.windowAttributes; 
+
+        compactDomainsAutoThreshold = 
+            windowAttributes.GetRenderAtts().GetCompactDomainsAutoThreshold();
+        compactDomainsActivationMode = 
+            windowAttributes.GetRenderAtts().GetCompactDomainsActivationMode();
+    }
+
+    
+    int t = RenderingAttributes::GetEffectiveCompactDomainsThreshold(compactDomainsActivationMode,
+                                                                     compactDomainsAutoThreshold);
     return t;
 }
 

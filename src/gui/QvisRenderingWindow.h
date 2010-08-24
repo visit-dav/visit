@@ -112,6 +112,9 @@ class QLineEdit;
 //   Jeremy Meredith, Fri Apr 30 14:25:11 EDT 2010
 //   Added depth cueing automatic mode.
 //
+//   Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//   Add compact domain options.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -146,6 +149,8 @@ private slots:
     void renderNotifyToggled(bool);
     void scalrenActivationModeChanged(int);
     void scalrenAutoThresholdChanged(int val);
+    void compactDomainsActivationModeChanged(int);
+    void compactDomainsAutoThresholdChanged(int val);
     void scalrenCompressModeChanged(int);
     void specularToggled(bool);
     void specularStrengthChanged(int, const void*);
@@ -191,6 +196,12 @@ private:
     QSpinBox          *scalrenAutoThreshold;
     QLabel            *scalrenCompressLabel;
     QButtonGroup      *scalrenCompressMode;
+    QButtonGroup      *compactDomainsActivationMode;
+    QRadioButton      *compactDomainsAuto;
+    QRadioButton      *compactDomainsAlways;
+    QRadioButton      *compactDomainsNever;
+    QLabel            *compactDomainsGeometryLabel;
+    QSpinBox          *compactDomainsAutoThreshold;
     QCheckBox         *shadowToggle;
     QLabel            *shadowStrengthLabel;
     QvisOpacitySlider *shadowStrengthSlider;
@@ -204,6 +215,7 @@ private:
 
     // Labels to display renderer information.
     QLabel            *scalrenUsingLabel;
+    QLabel            *compactDomainsUsingLabel;
     QLabel            *fpsLabel;
     QLabel            *fpsMinLabel;
     QLabel            *fpsAvgLabel;

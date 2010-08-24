@@ -201,6 +201,9 @@ class VisWindowColleagueProxy;
 //    Eric Brugger, Tue Dec  9 14:28:15 PST 2008
 //    Added the AxisParallel window mode.
 //
+//    Dave Pugmire, Tue Aug 24 11:29:43 EDT 2010
+//    Add compact domains options.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -323,6 +326,12 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                      SetScalableAutoThreshold(int threshold);
     int                      GetScalableAutoThreshold() const
                                  { return scalableAutoThreshold; };
+    int                      GetCompactDomainsActivationMode() const
+                                 { return compactDomainsActivationMode; }
+    int                      SetCompactDomainsActivationMode(int mode);
+    int                      GetCompactDomainsAutoThreshold() const
+                                 { return compactDomainsAutoThreshold; }
+    int                      SetCompactDomainsAutoThreshold(int val);
 
     virtual void            *CreateToolbar(const char *) { return 0; };
     virtual void             SetLargeIcons(bool) { };
@@ -363,6 +372,10 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          scalableRendering;
     int                           scalableActivationMode;
     int                           scalableAutoThreshold;
+
+    // Compact domains options.
+    int                           compactDomainsActivationMode;
+    int                           compactDomainsAutoThreshold;
 
     void                          InitializeRenderWindow(vtkRenderWindow *);
     void                          ResetCounters();

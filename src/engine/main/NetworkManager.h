@@ -409,6 +409,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
 //    Rename DDF to DataBinning.
 //
+//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//    Add compact domain options.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager
@@ -471,6 +474,7 @@ class ENGINE_MAIN_API NetworkManager
     int           GetTotalGlobalCellCounts(int winID) const;
     void          SetGlobalCellCount(int netId, int cellCount);
     int           GetScalableThreshold(int winId) const;
+    int           GetCompactDomainsThreshold(int winId) const;
     bool          GetShouldUseCompression(int winId) const;
     void          DoneWithNetwork(int);
 

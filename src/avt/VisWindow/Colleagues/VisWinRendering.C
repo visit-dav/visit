@@ -136,6 +136,9 @@ bool VisWinRendering::stereoEnabled = false;
 //    Brad Whitlock, Mon Sep 18 11:07:54 PDT 2006
 //    Added colorTexturingFlag.
 //
+//   Dave Pugmire, Tue Aug 24 11:28:02 EDT 2010
+//   Added compact domains mode.   
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) 
@@ -167,6 +170,9 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p)
     scalableRendering              = false;
     scalableAutoThreshold          = RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD;
     scalableActivationMode         = RenderingAttributes::DEFAULT_SCALABLE_ACTIVATION_MODE;
+    compactDomainsAutoThreshold = RenderingAttributes:: DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD;
+    compactDomainsActivationMode   = RenderingAttributes::DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE;
+
 
     canvas       = vtkRenderer::New();
     canvas->SetInteractive(1);
@@ -2062,5 +2068,43 @@ VisWinRendering::SetScalableActivationMode(int mode)
 {
     int oldVal = scalableActivationMode;
     scalableActivationMode = mode;
+    return oldVal;
+}
+
+// ****************************************************************************
+// Method:  VisWinRendering::SetCompactDomainsActivationMode
+//
+// Purpose: Set compact domains activation.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+int
+VisWinRendering::SetCompactDomainsActivationMode(int mode)
+{
+    int oldMode = compactDomainsActivationMode;
+    compactDomainsActivationMode = mode;
+    return oldMode;
+}
+
+// ****************************************************************************
+// Method:  VisWinRendering::SetCompactDomainsAutoThreshold
+//
+// Purpose: Set compact domains threshold.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 24, 2010
+//
+// ****************************************************************************
+
+int
+VisWinRendering::SetCompactDomainsAutoThreshold(int val)
+{
+    int oldVal = compactDomainsAutoThreshold;
+    compactDomainsAutoThreshold = val;
     return oldVal;
 }
