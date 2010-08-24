@@ -5586,10 +5586,6 @@ avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) const
 //    Brad Whitlock, Wed Mar 7 15:05:09 PST 2007
 //    Changed for automatic generation.
 //
-//    Cyrus Harrison, Tue Aug 24 13:23:27 PDT 2010
-//    Support selection of domains, even if we only have
-//    a single domain.
-//
 // ****************************************************************************
 
 std::string
@@ -5632,7 +5628,7 @@ avtDatabaseMetaData::MeshForVar(const std::string &invar) const
         }
         else if ((VariableNamesEqual(GetMeshes(i).blockTitle, var) ||
                   VariableNamesEqual(GetMeshes(i).groupTitle, var)) &&
-                 GetMeshes(i).numBlocks >= 1)
+                 GetMeshes(i).numBlocks > 1)
         {
             return GetMeshes(i).name;
         }
