@@ -114,10 +114,6 @@ static SILCategoryRole CategoryFromCollectionClassName(string classStr);
 //    Hank Childs, Tue Dec  8 08:34:22 PST 2009
 //    Added some data members that enable smaller SILs.
 //
-//    Cyrus Harrison, Tue Aug 24 13:23:27 PDT 2010
-//    Support selection of domains, even if we only have
-//    a single domain.
-//
 // ****************************************************************************
 
 void
@@ -142,10 +138,10 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
         // Create the mesh and add it to the SIL.
         //
         const avtMeshMetaData *mesh = md->GetMesh(i);
-        int id = -1;
+        int id = (mesh->numBlocks > 1 ? -1 : 0);
         avtSILSet_p set = new avtSILSet(mesh->name, id);
         int topIndex = sil->AddWhole(set);
-
+ 
         const avtMaterialMetaData *mat = md->GetMaterialOnMesh(mesh->name);
         bool useArrays = (mat == NULL);
 
@@ -154,7 +150,7 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
         // exist.
         //
         vector<int> domainList;
-        if (mesh->numBlocks >= 1)
+        if (mesh->numBlocks > 1)
         {
             vector<int> groupList;
             if (mesh->numGroups > 0)
@@ -183,10 +179,13 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
         if (mat != NULL)
         {
             int id = -1;
-
+            if (mesh->numBlocks == 1)
+            {
+                id = 0;
+            }
             AddMaterials(sil, topIndex, mat->name, mat->materialNames,
                          matList, id);
-
+ 
             //
             // Add the species if they exist
             //

@@ -9861,17 +9861,13 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
 //    Added showName argument. 
 //
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
-//    Removed use of 'std::'.
-//
+//    Removed use of 'std::'. 
+//    
 //    Jeremy Meredith, Wed Aug 24 12:51:09 PDT 2005
 //    Added group origin.
 //
 //    Dave Bremer, Tue Feb 13 11:40:45 PST 2007
 //    Add support for format strings.
-//
-//    Cyrus Harrison, Tue Aug 24 13:23:27 PDT 2010
-//    Support selection of domains, even if we only have
-//    a single domain.
 //
 // ****************************************************************************
 
@@ -9911,7 +9907,7 @@ avtGenericDatabase::QueryMesh(const string &varName, const int ts,
         meshInfo += temp;
         rv = true;
     }
-    if (mmd->numBlocks >= 1)
+    if (mmd->numBlocks > 1)
     {
         if ( mmd->blockNames.size() == 0)
         {
@@ -10717,13 +10713,9 @@ avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
 //
 //    Kathleen Bonnell, Mon Apr 19 15:49:05 PDT 2004 
 //    Ensure that the timestep being queried is the active one.
-//
+//    
 //    Dave Bremer, Tue Feb 13 11:40:45 PST 2007
 //    Add support for format strings.
-//
-//    Cyrus Harrison, Tue Aug 24 13:23:27 PDT 2010
-//    Support selection of domains, even if we only have
-//    a single domain.
 //
 // ****************************************************************************
 
@@ -10738,7 +10730,7 @@ avtGenericDatabase::GetDomainName(const string &varName, const int ts,
     char temp[256];
     if (mmd)
     {
-        if (mmd->numBlocks >= 1)
+        if (mmd->numBlocks > 1)
         {
             if ( mmd->blockNames.size() == 0)
             {
