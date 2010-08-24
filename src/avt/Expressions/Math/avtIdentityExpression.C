@@ -111,16 +111,10 @@ void
 avtIdentityExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
                                  int ncomponents, int ntuples)
 {
-    for (int i = 0 ; i < ntuples ; i++)
-    {
-        for (int j = 0 ; j < ncomponents ; j++)
-        {
-            float val = 0.;
-            if (in != NULL)
-                val = in->GetComponent(i, j);
-            out->SetComponent(i, j, val);
-        }
-    }
+    void *in_ptr = in->GetVoidPointer(0);
+    void *out_ptr = out->GetVoidPointer(0);
+    int numToCopy = in->GetDataTypeSize() * in->GetNumberOfComponents() * in->GetNumberOfTuples();
+    memcpy(out_ptr, in_ptr, numToCopy);
 }
 
 
