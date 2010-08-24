@@ -510,6 +510,9 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
 //   Cyrus Harrison, Fri Jul 18 14:44:51 PDT 2008
 //   Initial Qt4 Port. 
 //
+//   Eric Brugger, Tue Aug 24 10:42:22 PDT 2010
+//   I added code for formatTemplate. 
+//
 // ****************************************************************************
 
 void
@@ -589,6 +592,43 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("text height"),
                 IntToQString(int(labelAtts->GetTextHeight2() * 100.)));
             labelAtts->SetTextHeight2(labelAtts->GetTextHeight2());
+        }
+    }
+
+    // Do formatTemplate
+    if(which_widget == LabelAttributes::ID_formatTemplate || doAll)
+    {
+        okay = true;
+
+        std::string temp = formatTemplate->displayText().trimmed().toStdString();
+
+        // Test the new value and don't apply it if it's an invalid printf
+        // string. In practice snprintf never throws an error for wrong
+        // type or number of %f slots.
+        if (!StringHelpers::ValidatePrintfFormatString(temp.c_str(), "float"))
+        {
+            Message(tr("Must enter a printf-style template that would be valid for a single floating point number."));
+            okay = false;
+        }
+
+        if (okay)
+        {
+            char test[36];
+            int len = SNPRINTF(test, 36, temp.c_str(), 0.0f);
+            if (len >= 35)
+            {
+                Message(tr("The template produces values that are too long.  36 character limit."));
+                okay = false;
+            }
+        }
+
+        if(okay)
+            labelAtts->SetFormatTemplate(temp);
+        else
+        {
+            ResettingError(tr("Format template"),
+                QString(labelAtts->GetFormatTemplate().c_str()));
+            labelAtts->SetFormatTemplate(labelAtts->GetFormatTemplate());
         }
     }
 }
@@ -835,6 +875,8 @@ QvisLabelPlotWindow::depthTestButtonGroupChanged(int val)
 void 
 QvisLabelPlotWindow::formatTemplateChanged()
 {
+    bool okay = true;
+
     std::string newval = formatTemplate->displayText().trimmed().toStdString();
 
     //Test the new value and don't apply it if it's an invalid printf string.
@@ -843,20 +885,33 @@ QvisLabelPlotWindow::formatTemplateChanged()
     if (!StringHelpers::ValidatePrintfFormatString(newval.c_str(), "float"))
     {
         Message(tr("Must enter a printf-style template that would be valid for a single floating point number."));
-        return;
+        okay = false;
     }
     
-    char test[36];
-    int len = SNPRINTF(test, 36, newval.c_str(), 0.0f);
-    if (len >= 35)
+    if (okay)
     {
-        Message(tr("The template produces values that are too long.  36 character limit."));
-        return;
+        char test[36];
+        int len = SNPRINTF(test, 36, newval.c_str(), 0.0f);
+        if (len >= 35)
+        {
+            Message(tr("The template produces values that are too long.  36 character limit."));
+            okay = false;
+        }
     }
 
-    labelAtts->SetFormatTemplate(newval);
-    SetUpdate(false);
-    Apply();
+    if(okay)
+    {
+        labelAtts->SetFormatTemplate(newval);
+        SetUpdate(false);
+        Apply();
+    }
+    else
+    {
+        ResettingError(tr("Format template"),
+            QString(labelAtts->GetFormatTemplate().c_str()));
+        labelAtts->SetFormatTemplate(labelAtts->GetFormatTemplate());
+        labelAtts->Notify();
+    }
 }
 
 
