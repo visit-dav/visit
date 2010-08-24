@@ -6840,6 +6840,7 @@ CopyQuadVectorVar(const DBquadvar *qv)
     Tarr *vectors = Tarr::New();
     vectors->SetNumberOfComponents(3);
     vectors->SetNumberOfTuples(qv->nels);
+    T *ptr = vectors->GetPointer(0);
 
     const T *v1 = (const T *)qv->vals[0];
     const T *v2 = (const T *)qv->vals[1];
@@ -6847,12 +6848,20 @@ CopyQuadVectorVar(const DBquadvar *qv)
     {
         const T *v3 = (const T*)qv->vals[2];
         for (int i = 0 ; i < qv->nels ; i++)
-            vectors->SetTuple3(i, v1[i], v2[i], v3[i]);
+        {
+            *ptr++ = v1[i];
+            *ptr++ = v2[i];
+            *ptr++ = v3[i];
+        }
     }
     else
     {
         for (int i = 0 ; i < qv->nels ; i++)
-            vectors->SetTuple3(i, v1[i], v2[i], 0.);
+        {
+            *ptr++ = v1[i];
+            *ptr++ = v2[i];
+            *ptr++ = 0.0;
+        }
     }
 
     return vectors;
