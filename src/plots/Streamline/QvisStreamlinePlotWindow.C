@@ -200,6 +200,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     propertyTabs->addTab(streamlineTab, tr("Streamlines"));
     
     QGridLayout *mainLayout = new QGridLayout(streamlineTab);
+    mainLayout->setMargin(5);
 
     // Create the source group box.
     QGroupBox *sourceGroup = new QGroupBox(central);
