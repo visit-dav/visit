@@ -173,8 +173,11 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
-//    Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
-//    Add ellipsoid glyphing.
+//   Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
+//   Add ellipsoid glyphing.
+//
+//   Hank Childs, Tue Aug 24 07:42:05 PDT 2010
+//   Add location widgets.  Also reorgnized into three tabs.
 //    
 // ****************************************************************************
 
@@ -188,9 +191,83 @@ QvisVectorPlotWindow::CreateWindowContents()
     // First tab
     // ----------------------------------------------------------------------
     QWidget *firstTab = new QWidget(central);
-    propertyTabs->addTab(firstTab, tr("Data"));
+    propertyTabs->addTab(firstTab, tr("Location"));
     
     QGridLayout *mainLayout = new QGridLayout(firstTab);
+
+    //
+    // Create the reduce-related widgets.
+    //
+    QGroupBox * reduceGroupBox = new QGroupBox(central);
+    reduceGroupBox->setTitle(tr("Where to place the vectors and how many of them"));
+    mainLayout->addWidget(reduceGroupBox);
+    QGridLayout *rgLayout = new QGridLayout(reduceGroupBox);
+    rgLayout->setSpacing(10);
+//    rgLayout->setColumnStretch(1, 10);
+
+    // Create the data location button group.
+    QLabel *locationLabel = new QLabel(tr("Vector placement"), reduceGroupBox);
+    rgLayout->addWidget(locationLabel, 0, 0);
+    locationButtonGroup = new QButtonGroup(reduceGroupBox);
+    connect(locationButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(locationMethodChanged(int)));
+    QRadioButton *rb = new QRadioButton(tr("Adapted to resolution of mesh"), reduceGroupBox);
+    rb->setChecked(true);
+    locationButtonGroup->addButton(rb, 0);
+    rgLayout->addWidget(rb, 0, 1, 1, 3);
+    rb = new QRadioButton(tr("Uniformly located throughout mesh"), reduceGroupBox);
+    locationButtonGroup->addButton(rb, 1);
+    rgLayout->addWidget(rb, 2, 1, 1, 3);
+
+    QFrame *hline1 = new QFrame(reduceGroupBox);
+    hline1->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+    rgLayout->addWidget(hline1, 3, 0, 1, 4);
+
+    // Create the reduce button group.
+    QLabel *reduceLabel = new QLabel(tr("Vector amount"), reduceGroupBox);
+    rgLayout->addWidget(reduceLabel, 4, 0);
+    reduceButtonGroup = new QButtonGroup(reduceGroupBox);
+    connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(reduceMethodChanged(int)));
+    rb = new QRadioButton(tr("Fixed number"), reduceGroupBox);
+    rb->setChecked(true);
+    reduceButtonGroup->addButton(rb, 0);
+    rgLayout->addWidget(rb, 4, 1);
+    strideRB = new QRadioButton(tr("Stride"), reduceGroupBox);
+    reduceButtonGroup->addButton(strideRB, 1);
+    rgLayout->addWidget(strideRB, 5, 1);
+
+    // Add the N vectors line edit.
+    nVectorsLineEdit = new QLineEdit(reduceGroupBox);
+    connect(nVectorsLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processNVectorsText()));
+    rgLayout->addWidget(nVectorsLineEdit, 4, 2);
+
+    // Add the stride line edit.
+    strideLineEdit = new QLineEdit(reduceGroupBox);
+    connect(strideLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processStrideText()));
+    rgLayout->addWidget(strideLineEdit, 5, 2);
+
+    QFrame *hline2 = new QFrame(reduceGroupBox);
+    hline2->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+    rgLayout->addWidget(hline2, 6, 0, 1, 4);
+
+    // Add the toggle to limit to one vector per original cell/node
+    limitToOrigToggle =
+      new QCheckBox(tr("Only show vectors on original nodes/cells"),
+                    reduceGroupBox);
+    connect(limitToOrigToggle, SIGNAL(toggled(bool)),
+            this, SLOT(limitToOrigToggled(bool)));
+    rgLayout->addWidget(limitToOrigToggle, 7, 0, 1, 4);
+
+    // ----------------------------------------------------------------------
+    // Second tab
+    // ----------------------------------------------------------------------
+    QWidget *secondTab = new QWidget(central);
+    propertyTabs->addTab(secondTab, tr("Form"));
+    
+    mainLayout = new QGridLayout(secondTab);
 
 
     //
@@ -225,137 +302,6 @@ QvisVectorPlotWindow::CreateWindowContents()
     connect(autoScaleToggle, SIGNAL(clicked(bool)),
             this, SLOT(autoScaleToggled(bool)));
     sgLayout->addWidget(autoScaleToggle, 2, 0, 1, 2);
-
-
-    //
-    // Create the Limits stuff
-    //
-    limitsGroup = new QGroupBox(central);
-    limitsGroup->setTitle(tr("Limits"));
-    mainLayout->addWidget(limitsGroup);
-
-    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
-    limitsLayout->setSpacing(10);
-
-    limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
-
-    limitsSelect = new QComboBox(central);
-    limitsSelect->addItem(tr("Use Original Data"));
-    limitsSelect->addItem(tr("Use Current Plot"));
-    connect(limitsSelect, SIGNAL(activated(int)),
-            this, SLOT(limitsSelectChanged(int))); 
-    limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
-
-    // Create the min toggle and line edit
-    minToggle = new QCheckBox(tr("Minimum"), central);
-    limitsLayout->addWidget(minToggle, 1, 0);
-    connect(minToggle, SIGNAL(toggled(bool)),
-            this, SLOT(minToggled(bool)));
-    minLineEdit = new QLineEdit(central);
-    connect(minLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMinLimitText())); 
-    limitsLayout->addWidget(minLineEdit, 1, 1);
-
-    // Create the max toggle and line edit
-    maxToggle = new QCheckBox(tr("Maximum"), central);
-    limitsLayout->addWidget(maxToggle, 1, 2);
-    connect(maxToggle, SIGNAL(toggled(bool)),
-            this, SLOT(maxToggled(bool)));
-    maxLineEdit = new QLineEdit(central);
-    connect(maxLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 1, 3);
-
-    //
-    // Create the reduce-related widgets.
-    //
-    QGroupBox * reduceGroupBox = new QGroupBox(central);
-    reduceGroupBox->setTitle(tr("Reduce by"));
-    mainLayout->addWidget(reduceGroupBox);
-    QGridLayout *rgLayout = new QGridLayout(reduceGroupBox);
-    rgLayout->setSpacing(10);
-//    rgLayout->setColumnStretch(1, 10);
-
-    // Create the reduce button group.
-    reduceButtonGroup = new QButtonGroup(reduceGroupBox);
-    connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(reduceMethodChanged(int)));
-    QRadioButton *rb = new QRadioButton(tr("N vectors"), reduceGroupBox);
-    rb->setChecked(true);
-    reduceButtonGroup->addButton(rb, 0);
-    rgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Stride"), reduceGroupBox);
-    reduceButtonGroup->addButton(rb, 1);
-    rgLayout->addWidget(rb, 1, 0);
-
-    // Add the N vectors line edit.
-    nVectorsLineEdit = new QLineEdit(reduceGroupBox);
-    connect(scaleLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processNVectorsText()));
-    rgLayout->addWidget(nVectorsLineEdit, 0, 1);
-
-    // Add the stride line edit.
-    strideLineEdit = new QLineEdit(reduceGroupBox);
-    connect(strideLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processStrideText()));
-    rgLayout->addWidget(strideLineEdit, 1, 1);
-
-    // Add the toggle to limit to one vector per original cell/node
-    limitToOrigToggle =
-      new QCheckBox(tr("Only show vectors on original nodes/cells"),
-                    reduceGroupBox);
-    connect(limitToOrigToggle, SIGNAL(toggled(bool)),
-            this, SLOT(limitToOrigToggled(bool)));
-    rgLayout->addWidget(limitToOrigToggle, 2, 0, 1, 4);
-
-
-    // ----------------------------------------------------------------------
-    // Second tab
-    // ----------------------------------------------------------------------
-    QWidget *secondTab = new QWidget(central);
-    propertyTabs->addTab(secondTab, tr("Display"));
-    
-    mainLayout = new QGridLayout(secondTab);
-
-
-    //
-    // Create the color-related widgets.
-    //
-    QGroupBox * colorGroupBox = new QGroupBox(central);
-    colorGroupBox->setTitle(tr("Color"));
-    mainLayout->addWidget(colorGroupBox);
-
-    QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
-    cgLayout->setMargin(5);
-    cgLayout->setSpacing(10);
-    cgLayout->setColumnStretch(1, 10);
-
-    // Add the vector color label.
-    colorButtonGroup = new QButtonGroup(colorGroupBox);
-    connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorModeChanged(int)));
-    rb = new QRadioButton(tr("Magnitude"), colorGroupBox);
-    colorButtonGroup->addButton(rb, 0);
-    cgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Constant"), colorGroupBox);
-    rb->setChecked(true);
-    colorButtonGroup->addButton(rb, 1);
-    cgLayout->addWidget(rb, 1, 0);
-
-    // Create the color-by-eigenvalues button.
-    colorTableButton = new QvisColorTableButton(colorGroupBox);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
-            this, SLOT(colorTableClicked(bool, const QString &)));
-    cgLayout->addWidget(colorTableButton, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
-
-    // Create the vector color button.
-    vectorColor = new QvisColorButton(colorGroupBox);
-    vectorColor->setButtonColor(QColor(255, 0, 0));
-    connect(vectorColor, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(vectorColorChanged(const QColor &)));
-    cgLayout->addWidget(vectorColor, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
-
 
     //
     // Create the style-related widgets
@@ -486,6 +432,92 @@ QvisVectorPlotWindow::CreateWindowContents()
     geometryQualityButtons->addButton(rb, 1);
     geometryLayout->addWidget(rb, 0, 2);
 
+    // ----------------------------------------------------------------------
+    // Third tab
+    // ----------------------------------------------------------------------
+    QWidget *thirdTab = new QWidget(central);
+    propertyTabs->addTab(thirdTab, tr("Rendering"));
+    
+    mainLayout = new QGridLayout(thirdTab);
+
+    //
+    // Create the color-related widgets.
+    //
+    QGroupBox * colorGroupBox = new QGroupBox(central);
+    colorGroupBox->setTitle(tr("Color"));
+    mainLayout->addWidget(colorGroupBox);
+
+    QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
+    cgLayout->setMargin(5);
+    cgLayout->setSpacing(10);
+    cgLayout->setColumnStretch(1, 10);
+
+    // Add the vector color label.
+    colorButtonGroup = new QButtonGroup(colorGroupBox);
+    connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+    rb = new QRadioButton(tr("Magnitude"), colorGroupBox);
+    colorButtonGroup->addButton(rb, 0);
+    cgLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton(tr("Constant"), colorGroupBox);
+    rb->setChecked(true);
+    colorButtonGroup->addButton(rb, 1);
+    cgLayout->addWidget(rb, 1, 0);
+
+    // Create the color-by-eigenvalues button.
+    colorTableButton = new QvisColorTableButton(colorGroupBox);
+    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+            this, SLOT(colorTableClicked(bool, const QString &)));
+    cgLayout->addWidget(colorTableButton, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
+    // Create the vector color button.
+    vectorColor = new QvisColorButton(colorGroupBox);
+    vectorColor->setButtonColor(QColor(255, 0, 0));
+    connect(vectorColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(vectorColorChanged(const QColor &)));
+    cgLayout->addWidget(vectorColor, 1, 1, Qt::AlignLeft | Qt::AlignVCenter);
+
+
+    //
+    // Create the Limits stuff
+    //
+    limitsGroup = new QGroupBox(central);
+    limitsGroup->setTitle(tr("Limits"));
+    mainLayout->addWidget(limitsGroup);
+
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+    limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
+
+    limitsSelect = new QComboBox(central);
+    limitsSelect->addItem(tr("Use Original Data"));
+    limitsSelect->addItem(tr("Use Current Plot"));
+    connect(limitsSelect, SIGNAL(activated(int)),
+            this, SLOT(limitsSelectChanged(int))); 
+    limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
+
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(minToggle, 1, 0);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(central);
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText())); 
+    limitsLayout->addWidget(minLineEdit, 1, 1);
+
+    // Create the max toggle and line edit
+    maxToggle = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(maxToggle, 1, 2);
+    connect(maxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(maxToggled(bool)));
+    maxLineEdit = new QLineEdit(central);
+    connect(maxLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMaxLimitText())); 
+    limitsLayout->addWidget(maxLineEdit, 1, 3);
+
     //
     // Create the misc stuff
     //
@@ -560,8 +592,11 @@ QvisVectorPlotWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Jul 29 11:07:34 PDT 2008
 //   Qt 4.
 //
-//    Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
-//    Add ellipsoid glyphing.   
+//   Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
+//   Add ellipsoid glyphing.   
+//
+//   Hank Childs, Tue Aug 24 17:35:39 PDT 2010
+//   Add support for advanced vector placements.
 //
 // ****************************************************************************
 
@@ -583,6 +618,12 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
         
         switch(i)
         {
+          case VectorAttributes::ID_glyphLocation:
+            locationButtonGroup->blockSignals(true);
+            locationButtonGroup->button(vectorAtts->GetGlyphLocation() == VectorAttributes::AdaptsToMeshResolution ? 0 : 1);
+            strideRB->setEnabled(vectorAtts->GetGlyphLocation() == VectorAttributes::AdaptsToMeshResolution);
+            limitToOrigToggle->setEnabled(vectorAtts->GetGlyphLocation() == VectorAttributes::AdaptsToMeshResolution);
+            locationButtonGroup->blockSignals(false);
           case VectorAttributes::ID_useStride:
             reduceButtonGroup->blockSignals(true);
             reduceButtonGroup->button(vectorAtts->GetUseStride()?1:0)->setChecked(true);
@@ -900,8 +941,6 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
             vectorAtts->SetStemWidth(vectorAtts->GetStemWidth());
         }
     }
-
-
 }
 
 // ****************************************************************************
@@ -1148,6 +1187,34 @@ void
 QvisVectorPlotWindow::reduceMethodChanged(int index)
 {
     vectorAtts->SetUseStride(index != 0);
+    Apply();   
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::locationMethodChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   method used to place the vectors.
+//
+// Arguments:
+//   index : The location method.
+//
+// Programmer: Hank Childs
+// Creation:   August 24, 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::locationMethodChanged(int index)
+{
+    vectorAtts->SetGlyphLocation(index == 0 
+                                   ? VectorAttributes::AdaptsToMeshResolution
+                                   : VectorAttributes::UniformInSpace);
+    if (vectorAtts->GetGlyphLocation() == VectorAttributes::UniformInSpace)
+        vectorAtts->SetUseStride(false);
     Apply();   
 }
 
@@ -1516,4 +1583,5 @@ QvisVectorPlotWindow::limitToOrigToggled(bool val)
     vectorAtts->SetOrigOnly(val);
     Apply();
 }
+
 

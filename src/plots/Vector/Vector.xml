@@ -18,10 +18,17 @@
         Arrow
         Ellipsoid
       </Enum>
-      <Field name="useStride" label="Use stride" type="bool">
+      <Enum name="GlyphLocation">
+        AdaptsToMeshResolution
+        UniformInSpace
+      </Enum>
+      <Field name="glyphLocation" label="Glyph Location" type="enum" subtype="GlyphLocation">
+        AdaptsToMeshResolution
+      </Field>
+      <Field name="useStride" label="Use stride" type="bool" enabler="glyphLocation:AdaptsToMeshResolution">
         false
       </Field>
-      <Field name="stride" label="Stride" type="int">
+      <Field name="stride" label="Stride" type="int" enabler="glyphLocation:AdaptsToMeshResolution">
         1
       </Field>
       <Field name="nVectors" label="Num vectors" type="int">

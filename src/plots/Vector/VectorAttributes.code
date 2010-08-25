@@ -44,6 +44,7 @@ VectorAttributes::ChangesRequireRecalculation(const VectorAttributes &obj)
 {
     return ((useStride != obj.useStride) ||
             (stride != obj.stride) ||
+            (glyphLocation != obj.glyphLocation) ||
             (nVectors != obj.nVectors) ||
             (origOnly != obj.origOnly));
 }

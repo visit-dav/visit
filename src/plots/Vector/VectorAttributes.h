@@ -82,6 +82,11 @@ public:
         Arrow,
         Ellipsoid
     };
+    enum GlyphLocation
+    {
+        AdaptsToMeshResolution,
+        UniformInSpace
+    };
 
     // These constructors are for objects of this class
     VectorAttributes();
@@ -112,6 +117,7 @@ public:
     void SelectColorTableName();
 
     // Property setting methods
+    void SetGlyphLocation(GlyphLocation glyphLocation_);
     void SetUseStride(bool useStride_);
     void SetStride(int stride_);
     void SetNVectors(int nVectors_);
@@ -139,6 +145,7 @@ public:
     void SetGlyphType(GlyphType glyphType_);
 
     // Property getting methods
+    GlyphLocation        GetGlyphLocation() const;
     bool                 GetUseStride() const;
     int                  GetStride() const;
     int                  GetNVectors() const;
@@ -192,6 +199,11 @@ public:
 protected:
     static std::string GlyphType_ToString(int);
 public:
+    static std::string GlyphLocation_ToString(GlyphLocation);
+    static bool GlyphLocation_FromString(const std::string &, GlyphLocation &);
+protected:
+    static std::string GlyphLocation_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -204,7 +216,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_useStride = 0,
+        ID_glyphLocation = 0,
+        ID_useStride,
         ID_stride,
         ID_nVectors,
         ID_lineStyle,
@@ -233,6 +246,7 @@ public:
     };
 
 private:
+    int            glyphLocation;
     bool           useStride;
     int            stride;
     int            nVectors;
@@ -263,6 +277,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VECTORATTRIBUTES_TMFS "biiiidbbdbbbasibbiddbidbi"
+#define VECTORATTRIBUTES_TMFS "ibiiiidbbdbbbasibbiddbidbi"
 
 #endif
