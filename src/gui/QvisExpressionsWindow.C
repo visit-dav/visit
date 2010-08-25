@@ -575,8 +575,8 @@ QvisExpressionsWindow::CreateWindowContents()
 
     nameEditLabel = new QLabel(tr("Name"), f2);
     nameEdit = new QNarrowLineEdit(f2);
-    definitionLayout->addWidget(nameEditLabel, row,0, 1,1);
-    definitionLayout->addWidget(nameEdit, row,1, 1,3);
+    definitionLayout->addWidget(nameEditLabel, row,0);
+    definitionLayout->addWidget(nameEdit, row,1);
     row++;
 
     typeLabel = new QLabel(tr("Type"), f2);
@@ -589,12 +589,12 @@ QvisExpressionsWindow::CreateWindowContents()
     typeList->addItem(tr("Array Mesh Variable"));
     typeList->addItem(tr("Curve Mesh Variable"));
 
-    definitionLayout->addWidget(typeLabel, row,0, 1,1);
-    definitionLayout->addWidget(typeList, row,1, 1,3);
+    definitionLayout->addWidget(typeLabel, row,0);
+    definitionLayout->addWidget(typeList, row,1);
     row++;
 
     notHidden = new QCheckBox(tr("Show variable in plot menus"), f2);
-    definitionLayout->addWidget(notHidden, row,1, 1,3);
+    definitionLayout->addWidget(notHidden, row,1);
     row++;
 
     editorTabs = new QTabWidget(f2);
@@ -607,7 +607,8 @@ QvisExpressionsWindow::CreateWindowContents()
     editorTabs->addTab(pyEditorWidget, "Python Expression Editor");
 
 
-    definitionLayout->addWidget(editorTabs,row,0,1,4);
+    definitionLayout->addWidget(editorTabs,row,0,1,2);
+    definitionLayout->setColumnStretch(1, 10);
 
     mainSplitter->addWidget(f2);
 
@@ -652,6 +653,7 @@ QvisExpressionsWindow::CreateStandardEditor()
     stdEditorWidget = new QWidget();
 
     QGridLayout *layout = new QGridLayout(stdEditorWidget);
+    layout->setMargin(5);
     int row = 0;
 
     stdDefinitionEditLabel = new QLabel(tr("Definition"), stdEditorWidget);
@@ -715,6 +717,7 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
     pyEditorWidget = new QWidget();
 
     QGridLayout *layout = new QGridLayout(pyEditorWidget);
+    layout->setMargin(5);
     int row = 0;
 
     pyArgsEditLabel = new QLabel(tr("Arguments"), pyEditorWidget);

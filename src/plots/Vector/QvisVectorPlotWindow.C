@@ -194,6 +194,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     propertyTabs->addTab(firstTab, tr("Location"));
     
     QGridLayout *mainLayout = new QGridLayout(firstTab);
+    mainLayout->setMargin(5);
 
     //
     // Create the reduce-related widgets.
@@ -268,7 +269,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     propertyTabs->addTab(secondTab, tr("Form"));
     
     mainLayout = new QGridLayout(secondTab);
-
+    mainLayout->setMargin(5);
 
     //
     // Create the scale-related widgets.
@@ -439,6 +440,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     propertyTabs->addTab(thirdTab, tr("Rendering"));
     
     mainLayout = new QGridLayout(thirdTab);
+    mainLayout->setMargin(5);
 
     //
     // Create the color-related widgets.

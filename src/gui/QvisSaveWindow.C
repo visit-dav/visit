@@ -182,25 +182,169 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Hank Childs, Thu Jul 22 09:55:03 PDT 2010
 //   Added widgets for advanced multi-window saves.
 //
+//   Brad Whitlock, Wed Aug 25 13:33:08 PDT 2010
+//   I moved some code into helper methods.
+//
 // ****************************************************************************
 
 void
 QvisSaveWindow::CreateWindowContents()
 {
+    // Create a group box for the file information.
+    QGroupBox *nameBox = new QGroupBox(central);
+    nameBox->setTitle(tr("Filename"));
+    topLayout->addWidget(nameBox);
+
+    QGridLayout *nameLayout = new QGridLayout(nameBox);
+
+    filenameLineEdit = new QLineEdit(nameBox);
+    connect(filenameLineEdit, SIGNAL(returnPressed()), this, SLOT(processFilenameText()));
+    QLabel *filenameLabel = new QLabel(tr("Filename"), nameBox);
+    nameLayout->addWidget(filenameLabel, 0, 0);
+    nameLayout->addWidget(filenameLineEdit, 0, 1);
+
+    familyCheckBox = new QCheckBox(tr("Family"), central);
+    connect(familyCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(familyToggled(bool)));
+    nameLayout->addWidget(familyCheckBox, 0, 3);
+
+    // The binary toggle.
+    outputToCurrentDirectoryCheckBox = new QCheckBox(tr("Output files to current directory"),
+                                                     nameBox);
+    connect(outputToCurrentDirectoryCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(outputToCurrentDirectoryToggled(bool)));
+    nameLayout->addWidget(outputToCurrentDirectoryCheckBox, 1, 0, 1, 2);
+
+    outputDirectoryLabel    = new QLabel(tr("Output directory"), nameBox);
+    nameLayout->addWidget(outputDirectoryLabel, 2, 0, 1, 2);
+    
+    QHBoxLayout *outputDirectoryLayout = new QHBoxLayout();
+    outputDirectoryLayout->setMargin(0);
+    outputDirectoryLayout->setSpacing(0);
+    nameLayout->addLayout(outputDirectoryLayout, 3, 0, 1, 4);
+
+    outputDirectoryLineEdit     = new QLineEdit(nameBox);
+    outputDirectorySelectButton = new QPushButton("...", nameBox);
+    outputDirectoryLayout->addWidget(outputDirectoryLineEdit);
+    outputDirectoryLayout->addWidget(outputDirectorySelectButton);
+    
+    connect(outputDirectoryLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processOutputDirectoryText()));
+
+#ifndef Q_WS_MACX
+    outputDirectorySelectButton->setMaximumWidth(
+         fontMetrics().boundingRect("...").width() + 6);
+#endif
+    outputDirectorySelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
+                                               QSizePolicy::Minimum));
+    connect(outputDirectorySelectButton, SIGNAL(clicked()),
+            this, SLOT(selectOutputDirectory()));
+    
+    // Create a group box for the file format.
+    QGroupBox *formatBox = new QGroupBox(central);
+    formatBox->setTitle(tr("Format Options"));
+    topLayout->addWidget(formatBox);
+
+    QGridLayout *formatLayout = new QGridLayout(formatBox);
+
+    fileFormatComboBox = new QComboBox(formatBox);
+    fileFormatComboBox->addItem("bmp");
+    fileFormatComboBox->addItem("curve");
+    fileFormatComboBox->addItem("jpeg");
+    fileFormatComboBox->addItem("obj");
+    fileFormatComboBox->addItem("png");
+    fileFormatComboBox->addItem("postscript");
+    fileFormatComboBox->addItem("pov");
+    fileFormatComboBox->addItem("ppm");
+    fileFormatComboBox->addItem("rgb");
+    fileFormatComboBox->addItem("stl");
+    fileFormatComboBox->addItem("tiff");
+    fileFormatComboBox->addItem("ultra");
+    fileFormatComboBox->addItem("vtk");
+    fileFormatComboBox->addItem("ply");
+    connect(fileFormatComboBox, SIGNAL(activated(int)),
+           this, SLOT(fileFormatChanged(int)));
+    QLabel *formatLabel = new QLabel(tr("File type"),formatBox);
+    formatLayout->addWidget(formatLabel, 0, 0);
+    formatLayout->addWidget(fileFormatComboBox, 0, 1, 1, 2);
+
+    // The quality slider.
+    qualitySlider = new QSlider(Qt::Horizontal, formatBox);
+    qualitySlider->setMinimum(0);
+    qualitySlider->setMaximum(100);
+    
+    connect(qualitySlider, SIGNAL(valueChanged(int)),
+            this, SLOT(qualityChanged(int)));
+    formatLayout->addWidget(qualitySlider, 1, 1);
+    qualityLabel = new QLabel(tr("Quality"),formatBox);
+    formatLayout->addWidget(qualityLabel, 1, 0);
+
+    // The progressive toggle.
+    progressiveCheckBox = new QCheckBox(tr("Progressive"), formatBox);
+    connect(progressiveCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(progressiveToggled(bool)));
+    formatLayout->addWidget(progressiveCheckBox, 1, 2, Qt::AlignRight);
+   
+    compressionTypeLabel = new QLabel(tr("Compression type"),formatBox);
+    compressionTypeComboBox = new QComboBox(formatBox);
+    compressionTypeComboBox->addItem(tr("None"));
+    compressionTypeComboBox->addItem(tr("PackBits"));
+    compressionTypeComboBox->addItem(tr("JPEG"));
+    compressionTypeComboBox->addItem(tr("Deflate"));
+    //compressionTypeComboBox->addItem("LZW");
+    formatLayout->addWidget(compressionTypeLabel, 2, 0);
+    formatLayout->addWidget(compressionTypeComboBox, 2, 1, 1, 2);
+    
+    connect(compressionTypeComboBox, SIGNAL(activated(int)),
+            this, SLOT(compressionTypeChanged(int)));
+    compressionTypeLabel->setBuddy(compressionTypeComboBox);
+
+    binaryCheckBox = new QCheckBox(tr("Binary"), central);
+    connect(binaryCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(binaryToggled(bool)));
+    formatLayout->addWidget(binaryCheckBox, 3, 0);
+
+    // The stereo toggle.
+    forceMergeCheckBox = new QCheckBox(tr("Force parallel merge"), central);
+    connect(forceMergeCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(forceMergeToggled(bool)));
+    formatLayout->addWidget(forceMergeCheckBox, 3, 1, 1, 2, Qt::AlignRight);
+
+    // save option tabs.
     QTabWidget *propertyTabs = new QTabWidget(central);
     topLayout->addWidget(propertyTabs);
+    propertyTabs->addTab(StandardTab(central), tr("Standard Save"));
+    propertyTabs->addTab(AdvancedTab(central), tr("Advanced Multi-Window Save"));
 
+    // The save button.
+    QHBoxLayout *saveButtonLayout = new QHBoxLayout();
+    topLayout->addLayout(saveButtonLayout);
+    
+    //saveButtonLayout->setSpacing(5);
+    QPushButton *saveButton = new QPushButton(tr("Save"), central);
+    connect(saveButton, SIGNAL(clicked()),
+            this, SLOT(saveButtonClicked()));
+    saveButtonLayout->addWidget(saveButton);
+    saveButtonLayout->addStretch(50);
+}
+
+QWidget *
+QvisSaveWindow::StandardTab(QWidget *parent)
+{
     // ------------------------------------------------------------------------
     // First tab
     // ------------------------------------------------------------------------
-    QWidget *firstTab = new QWidget(central);
-    propertyTabs->addTab(firstTab, tr("Standard Save"));
+    QWidget *firstTab = new QWidget(parent);
 
-    QGridLayout *mainLayout = new QGridLayout(firstTab);
+    QVBoxLayout *ssLayout = new QVBoxLayout(firstTab);
+    ssLayout->setMargin(5);
+    QGridLayout *mainLayout = new QGridLayout();
+    ssLayout->addLayout(mainLayout);
+    mainLayout->setMargin(0);
 
     // Create a group box for the image resolution.
-    resolutionBox = new QGroupBox(central);
-    mainLayout->addWidget(resolutionBox);
+    resolutionBox = new QGroupBox(tr("Resolution"), central);
+    mainLayout->addWidget(resolutionBox, 0, 0, 1, 4);
 
     QGridLayout *resolutionLayout = new QGridLayout(resolutionBox);
 
@@ -248,27 +392,35 @@ QvisSaveWindow::CreateWindowContents()
     stereoCheckBox = new QCheckBox(tr("Stereo"), central);
     connect(stereoCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(stereoToggled(bool)));
-    resolutionLayout->addWidget(stereoCheckBox, 5, 0);
+    ssLayout->addWidget(stereoCheckBox);
 
     // The screen capture toggle.
     screenCaptureCheckBox = new QCheckBox(tr("Screen capture"), central);
     connect(screenCaptureCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(screenCaptureToggled(bool)));
-    resolutionLayout->addWidget(screenCaptureCheckBox, 5, 1);
+    ssLayout->addWidget(screenCaptureCheckBox);
 
     // The tiled toggle.
     saveTiledCheckBox = new QCheckBox(tr("Save tiled"), central);
     connect(saveTiledCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(saveTiledToggled(bool)));
-    resolutionLayout->addWidget(saveTiledCheckBox, 5, 2);
+    ssLayout->addWidget(saveTiledCheckBox);
 
+    ssLayout->addStretch(5);
+
+    return firstTab;
+}
+
+QWidget *
+QvisSaveWindow::AdvancedTab(QWidget *parent)
+{
     // ------------------------------------------------------------------------
     // Second tab
     // ------------------------------------------------------------------------
-    QWidget *secondTab = new QWidget(central);
-    propertyTabs->addTab(secondTab, tr("Advanced Multi-Window Save"));
+    QWidget *secondTab = new QWidget(parent);
 
     QGridLayout *mainLayout2 = new QGridLayout(secondTab);
+    mainLayout2->setMargin(5);
 
     // Create a group box for the resolution
     QGroupBox *mwsTopBox = new QGroupBox(central);
@@ -411,143 +563,7 @@ QvisSaveWindow::CreateWindowContents()
     mwsControlsLayout->addWidget(imageTransparencyLabel, 3, 2, Qt::AlignRight);
     mwsControlsLayout->addWidget(imageTransparency, 3, 3);
 
-    // Create a group box for the file information.
-    QGroupBox *nameBox = new QGroupBox(central);
-    nameBox->setTitle(tr("File name"));
-    topLayout->addWidget(nameBox);
-
-    QGridLayout *nameLayout = new QGridLayout(nameBox);
-
-    filenameLineEdit = new QLineEdit(nameBox);
-    connect(filenameLineEdit, SIGNAL(returnPressed()), this, SLOT(processFilenameText()));
-    QLabel *filenameLabel = new QLabel(tr("Filename"), nameBox);
-    nameLayout->addWidget(filenameLabel, 0, 0);
-    nameLayout->addWidget(filenameLineEdit, 0, 1);
-
-    familyCheckBox = new QCheckBox(tr("Family"), central);
-    connect(familyCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(familyToggled(bool)));
-    nameLayout->addWidget(familyCheckBox, 0, 3);
-
-    // The binary toggle.
-    outputToCurrentDirectoryCheckBox = new QCheckBox(tr("Output files to current directory"),
-                                                     nameBox);
-    connect(outputToCurrentDirectoryCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(outputToCurrentDirectoryToggled(bool)));
-    nameLayout->addWidget(outputToCurrentDirectoryCheckBox, 1, 0, 1, 2);
-
-    outputDirectoryLabel    = new QLabel(tr("Output directory"), nameBox);
-    nameLayout->addWidget(outputDirectoryLabel, 2, 0, 1, 2);
-    
-    QHBoxLayout *outputDirectoryLayout = new QHBoxLayout();
-    outputDirectoryLineEdit     = new QLineEdit(nameBox);
-    outputDirectorySelectButton = new QPushButton("...", nameBox);
-    
-    outputDirectoryLayout->addWidget(outputDirectoryLineEdit);
-    outputDirectoryLayout->addWidget(outputDirectorySelectButton);
-    
-    connect(outputDirectoryLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processOutputDirectoryText()));
-
-
-#ifndef Q_WS_MACX
-    outputDirectorySelectButton->setMaximumWidth(
-         fontMetrics().boundingRect("...").width() + 6);
-#endif
-    outputDirectorySelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
-                                               QSizePolicy::Minimum));
-
-    connect(outputDirectorySelectButton, SIGNAL(clicked()),
-            this, SLOT(selectOutputDirectory()));
-    
-    outputDirectoryLayout->setSpacing(0);
-    
-
-    nameLayout->addLayout(outputDirectoryLayout, 3, 0, 1, 2);
-    
-    // Create a group box for the file format.
-    QGroupBox *formatBox = new QGroupBox(central);
-    formatBox->setTitle(tr("Format Options"));
-    topLayout->addWidget(formatBox);
-
-    QGridLayout *formatLayout = new QGridLayout(formatBox);
-
-    fileFormatComboBox = new QComboBox(formatBox);
-    fileFormatComboBox->addItem("bmp");
-    fileFormatComboBox->addItem("curve");
-    fileFormatComboBox->addItem("jpeg");
-    fileFormatComboBox->addItem("obj");
-    fileFormatComboBox->addItem("png");
-    fileFormatComboBox->addItem("postscript");
-    fileFormatComboBox->addItem("pov");
-    fileFormatComboBox->addItem("ppm");
-    fileFormatComboBox->addItem("rgb");
-    fileFormatComboBox->addItem("stl");
-    fileFormatComboBox->addItem("tiff");
-    fileFormatComboBox->addItem("ultra");
-    fileFormatComboBox->addItem("vtk");
-    fileFormatComboBox->addItem("ply");
-    connect(fileFormatComboBox, SIGNAL(activated(int)),
-           this, SLOT(fileFormatChanged(int)));
-    QLabel *formatLabel = new QLabel(tr("File type"),formatBox);
-    formatLayout->addWidget(formatLabel, 5, 0);
-    formatLayout->addWidget(fileFormatComboBox, 5, 1);
-
-    // The quality slider.
-    qualitySlider = new QSlider(Qt::Horizontal, formatBox);
-    qualitySlider->setMinimum(0);
-    qualitySlider->setMaximum(100);
-    
-    connect(qualitySlider, SIGNAL(valueChanged(int)),
-            this, SLOT(qualityChanged(int)));
-    formatLayout->addWidget(qualitySlider, 6, 1);
-    qualityLabel = new QLabel(tr("Quality"),formatBox);
-    formatLayout->addWidget(qualityLabel, 6, 0);
-
-    // The progressive toggle.
-    progressiveCheckBox = new QCheckBox(tr("Progressive"), formatBox);
-    connect(progressiveCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(progressiveToggled(bool)));
-    formatLayout->addWidget(progressiveCheckBox, 7, 1, Qt::AlignRight);
-
-    QHBoxLayout *compressionLayout = new QHBoxLayout();
-    
-    compressionTypeLabel = new QLabel(tr("Compression type"),formatBox);
-    compressionTypeComboBox = new QComboBox(formatBox);
-    compressionTypeComboBox->addItem(tr("None"));
-    compressionTypeComboBox->addItem(tr("PackBits"));
-    compressionTypeComboBox->addItem(tr("JPEG"));
-    compressionTypeComboBox->addItem(tr("Deflate"));
-    //compressionTypeComboBox->addItem("LZW");
-    compressionLayout->addWidget(compressionTypeLabel);
-    compressionLayout->addWidget(compressionTypeComboBox);
-    
-    connect(compressionTypeComboBox, SIGNAL(activated(int)),
-            this, SLOT(compressionTypeChanged(int)));
-    compressionTypeLabel->setBuddy(compressionTypeComboBox);
-    formatLayout->addLayout(compressionLayout, 8,0, 1,2);
-
-    binaryCheckBox = new QCheckBox(tr("Binary"), central);
-    connect(binaryCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(binaryToggled(bool)));
-    formatLayout->addWidget(binaryCheckBox, 9, 0);
-
-    // The stereo toggle.
-    forceMergeCheckBox = new QCheckBox(tr("Force parallel merge"), central);
-    connect(forceMergeCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(forceMergeToggled(bool)));
-    formatLayout->addWidget(forceMergeCheckBox, 9, 1, Qt::AlignRight);
-
-    // The save button.
-    QHBoxLayout *saveButtonLayout = new QHBoxLayout();
-    topLayout->addLayout(saveButtonLayout);
-    
-    //saveButtonLayout->setSpacing(5);
-    QPushButton *saveButton = new QPushButton(tr("Save"), central);
-    connect(saveButton, SIGNAL(clicked()),
-            this, SLOT(saveButtonClicked()));
-    saveButtonLayout->addWidget(saveButton);
-    saveButtonLayout->addStretch(50);
+    return secondTab;
 }
 
 // ****************************************************************************

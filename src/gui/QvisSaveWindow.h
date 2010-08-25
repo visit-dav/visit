@@ -95,6 +95,9 @@ class QvisOpacitySlider;
 //   Added support for multi-window saves.  Also re-orged window some to
 //   put check boxes close to the functionality they go with.
 //
+//   Brad Whitlock, Wed Aug 25 13:32:46 PDT 2010
+//   I moved some code into helper methods.
+//
 // ****************************************************************************
 
 class GUI_API QvisSaveWindow : public QvisPostableWindowObserver
@@ -113,6 +116,9 @@ protected:
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
+
+    QWidget *StandardTab(QWidget *);
+    QWidget *AdvancedTab(QWidget *);
 protected slots:
     void outputToCurrentDirectoryToggled(bool);
     void processOutputDirectoryText();
