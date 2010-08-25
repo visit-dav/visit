@@ -1142,6 +1142,29 @@ avtPICSFilter::InitializeLocators(void)
     visitTimer->StopTimer(t1, "Initializing locators");
 }
 
+// ****************************************************************************
+//  Method: avtPICSFilter::ReleaseData
+//
+//  Purpose:
+//      Release data.
+//
+//  Programmer: David Camp
+//  Creation:   August 25, 2010
+//
+// ****************************************************************************
+
+void
+avtPICSFilter::ReleaseData(void)
+{
+    avtDatasetOnDemandFilter::ReleaseData();
+    avtDatasetToDatasetFilter::ReleaseData();
+
+    for (int i = 0; i < dataSets.size(); i++)
+    {
+        if(dataSets[i])
+            dataSets[i]->UnRegister(NULL);
+    }
+}
 
 // ****************************************************************************
 //  Method: avtPICSFilter::SetupLocator
