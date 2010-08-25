@@ -68,6 +68,10 @@ class QTextEdit;
 //   Brad Whitlock, Fri May 30 14:27:35 PDT 2008
 //   Qt 4.
 //
+//   Eric Brugger, Tue Aug 24 13:27:39 PDT 2010
+//   Added a control to enable/disable the popping up of warning
+//   messages.
+//
 // *******************************************************************
 
 class GUI_API QvisMessageWindow : public QvisWindowBase, public Observer
@@ -78,12 +82,17 @@ public:
                       const QString &captionString = QString::null);
     virtual ~QvisMessageWindow();
     virtual void Update(Subject *);
+
+    void SetEnableWarningPopups(bool val);
+public slots:
+    void EnableWarningPopups(bool);
 private slots:
     void doHide();
 private:
     QLabel    *severityLabel;
     QTextEdit *messageText;
     bool       preserveInformation;
+    bool       enableWarningPopups;
 };
 
 #endif

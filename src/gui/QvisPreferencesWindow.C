@@ -82,6 +82,9 @@
 //   Jeremy Meredith, Fri Nov  6 11:38:38 EST 2009
 //   File panel selected files list now starts out hidden.
 //
+//   Eric Brugger, Tue Aug 24 12:33:44 PDT 2010
+//   I added a toggle button to enable warning message popups.
+//
 // ****************************************************************************
 
 QvisPreferencesWindow::QvisPreferencesWindow(
@@ -99,6 +102,8 @@ QvisPreferencesWindow::QvisPreferencesWindow(
     selectedFilesToggle = 0;
     allowFileSelChange = true;
     allowFileSelectionChangeToggle = 0;
+    enableWarnPopups = true;
+    enableWarningPopupsToggle = 0;
 }
 
 
@@ -183,6 +188,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Brad Whitlock, Fri May  7 14:31:00 PDT 2010
 //   I transplanted replacePlotsToggle.
 //
+//   Eric Brugger, Tue Aug 24 12:33:44 PDT 2010
+//   I added a toggle button to enable warning message popups.
+//
 // ****************************************************************************
 
 void
@@ -228,6 +236,11 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(replacePlotsToggle, SIGNAL(toggled(bool)),
             this, SLOT(replacePlotsToggled(bool)));
     topLayout->addWidget(replacePlotsToggle);
+
+    enableWarningPopupsToggle = new QCheckBox(tr("Enable warning message popups"), central);
+    connect(enableWarningPopupsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(enableWarningPopupsToggled(bool)));
+    topLayout->addWidget(enableWarningPopupsToggle);
 
     //
     //
@@ -462,6 +475,9 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Fri May  7 14:34:37 PDT 2010
 //   I transplanted some replace plots code.
 //
+//   Eric Brugger, Tue Aug 24 12:33:44 PDT 2010
+//   I added a toggle button to enable warning message popups.
+//
 // ****************************************************************************
 
 void
@@ -611,6 +627,10 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         allowFileSelectionChangeToggle->blockSignals(true);
         allowFileSelectionChangeToggle->setChecked(allowFileSelChange);
         allowFileSelectionChangeToggle->blockSignals(false);
+
+        enableWarningPopupsToggle->blockSignals(true);
+        enableWarningPopupsToggle->setChecked(enableWarnPopups);
+        enableWarningPopupsToggle->blockSignals(false);
     }
 }
 
@@ -698,6 +718,51 @@ QvisPreferencesWindow::SetAllowFileSelectionChange(bool val)
         allowFileSelectionChangeToggle->setChecked(allowFileSelChange);
         allowFileSelectionChangeToggle->blockSignals(false);
     }
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::SetEnableWarningPopups
+//
+// Purpose: 
+//   This method sets the toggle for the enable warning popups.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Aug 24 12:33:44 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::SetEnableWarningPopups(bool val)
+{
+    enableWarnPopups = val;
+
+    if(enableWarningPopupsToggle != 0)
+    {
+        enableWarningPopupsToggle->blockSignals(true);
+        enableWarningPopupsToggle->setChecked(enableWarnPopups);
+        enableWarningPopupsToggle->blockSignals(false);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::GetEnableWarningPopups
+//
+// Purpose: 
+//   This method returns the value of enable warning popups.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Aug 24 12:33:44 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisPreferencesWindow::GetEnableWarningPopups()
+{
+    return enableWarnPopups;
 }
 
 //
@@ -1158,3 +1223,28 @@ QvisPreferencesWindow::replacePlotsToggled(bool val)
     atts->SetReplacePlots(val);
     atts->Notify();
 }
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::EnableWarningPopupsToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the enable warning
+//   popups checkbox is toggled.
+//
+// Arguments:
+//   val : The new toggle value.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Aug 24 12:33:44 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::enableWarningPopupsToggled(bool val)
+{
+    enableWarnPopups = val;
+    emit enableWarningPopups(val);
+}
+
