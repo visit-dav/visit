@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class VectorAttributes extends AttributeSubject implements Plugin
 {
-    private static int VectorAttributes_numAdditionalAtts = 25;
+    private static int VectorAttributes_numAdditionalAtts = 26;
 
     // Enum values
     public final static int QUALITY_FAST = 0;
@@ -76,11 +76,15 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public final static int GLYPHTYPE_ARROW = 0;
     public final static int GLYPHTYPE_ELLIPSOID = 1;
 
+    public final static int GLYPHLOCATION_ADAPTSTOMESHRESOLUTION = 0;
+    public final static int GLYPHLOCATION_UNIFORMINSPACE = 1;
+
 
     public VectorAttributes()
     {
         super(VectorAttributes_numAdditionalAtts);
 
+        glyphLocation = GLYPHLOCATION_ADAPTSTOMESHRESOLUTION;
         useStride = false;
         stride = 1;
         nVectors = 400;
@@ -112,6 +116,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     {
         super(VectorAttributes_numAdditionalAtts + nMoreFields);
 
+        glyphLocation = GLYPHLOCATION_ADAPTSTOMESHRESOLUTION;
         useStride = false;
         stride = 1;
         nVectors = 400;
@@ -143,6 +148,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     {
         super(VectorAttributes_numAdditionalAtts);
 
+        glyphLocation = obj.glyphLocation;
         useStride = obj.useStride;
         stride = obj.stride;
         nVectors = obj.nVectors;
@@ -185,7 +191,8 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public boolean equals(VectorAttributes obj)
     {
         // Create the return value
-        return ((useStride == obj.useStride) &&
+        return ((glyphLocation == obj.glyphLocation) &&
+                (useStride == obj.useStride) &&
                 (stride == obj.stride) &&
                 (nVectors == obj.nVectors) &&
                 (lineStyle == obj.lineStyle) &&
@@ -216,157 +223,164 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
+    public void SetGlyphLocation(int glyphLocation_)
+    {
+        glyphLocation = glyphLocation_;
+        Select(0);
+    }
+
     public void SetUseStride(boolean useStride_)
     {
         useStride = useStride_;
-        Select(0);
+        Select(1);
     }
 
     public void SetStride(int stride_)
     {
         stride = stride_;
-        Select(1);
+        Select(2);
     }
 
     public void SetNVectors(int nVectors_)
     {
         nVectors = nVectors_;
-        Select(2);
+        Select(3);
     }
 
     public void SetLineStyle(int lineStyle_)
     {
         lineStyle = lineStyle_;
-        Select(3);
+        Select(4);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(4);
+        Select(5);
     }
 
     public void SetScale(double scale_)
     {
         scale = scale_;
-        Select(5);
+        Select(6);
     }
 
     public void SetScaleByMagnitude(boolean scaleByMagnitude_)
     {
         scaleByMagnitude = scaleByMagnitude_;
-        Select(6);
+        Select(7);
     }
 
     public void SetAutoScale(boolean autoScale_)
     {
         autoScale = autoScale_;
-        Select(7);
+        Select(8);
     }
 
     public void SetHeadSize(double headSize_)
     {
         headSize = headSize_;
-        Select(8);
+        Select(9);
     }
 
     public void SetHeadOn(boolean headOn_)
     {
         headOn = headOn_;
-        Select(9);
+        Select(10);
     }
 
     public void SetColorByMag(boolean colorByMag_)
     {
         colorByMag = colorByMag_;
-        Select(10);
+        Select(11);
     }
 
     public void SetUseLegend(boolean useLegend_)
     {
         useLegend = useLegend_;
-        Select(11);
+        Select(12);
     }
 
     public void SetVectorColor(ColorAttribute vectorColor_)
     {
         vectorColor = vectorColor_;
-        Select(12);
+        Select(13);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(13);
+        Select(14);
     }
 
     public void SetVectorOrigin(int vectorOrigin_)
     {
         vectorOrigin = vectorOrigin_;
-        Select(14);
+        Select(15);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(15);
+        Select(16);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(16);
+        Select(17);
     }
 
     public void SetLimitsMode(int limitsMode_)
     {
         limitsMode = limitsMode_;
-        Select(17);
+        Select(18);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(18);
+        Select(19);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(19);
+        Select(20);
     }
 
     public void SetLineStem(boolean lineStem_)
     {
         lineStem = lineStem_;
-        Select(20);
+        Select(21);
     }
 
     public void SetGeometryQuality(int geometryQuality_)
     {
         geometryQuality = geometryQuality_;
-        Select(21);
+        Select(22);
     }
 
     public void SetStemWidth(double stemWidth_)
     {
         stemWidth = stemWidth_;
-        Select(22);
+        Select(23);
     }
 
     public void SetOrigOnly(boolean origOnly_)
     {
         origOnly = origOnly_;
-        Select(23);
+        Select(24);
     }
 
     public void SetGlyphType(int glyphType_)
     {
         glyphType = glyphType_;
-        Select(24);
+        Select(25);
     }
 
     // Property getting methods
+    public int            GetGlyphLocation() { return glyphLocation; }
     public boolean        GetUseStride() { return useStride; }
     public int            GetStride() { return stride; }
     public int            GetNVectors() { return nVectors; }
@@ -397,54 +411,56 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteBool(useStride);
+            buf.WriteInt(glyphLocation);
         if(WriteSelect(1, buf))
-            buf.WriteInt(stride);
+            buf.WriteBool(useStride);
         if(WriteSelect(2, buf))
-            buf.WriteInt(nVectors);
+            buf.WriteInt(stride);
         if(WriteSelect(3, buf))
-            buf.WriteInt(lineStyle);
+            buf.WriteInt(nVectors);
         if(WriteSelect(4, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteInt(lineStyle);
         if(WriteSelect(5, buf))
-            buf.WriteDouble(scale);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(6, buf))
-            buf.WriteBool(scaleByMagnitude);
+            buf.WriteDouble(scale);
         if(WriteSelect(7, buf))
-            buf.WriteBool(autoScale);
+            buf.WriteBool(scaleByMagnitude);
         if(WriteSelect(8, buf))
-            buf.WriteDouble(headSize);
+            buf.WriteBool(autoScale);
         if(WriteSelect(9, buf))
-            buf.WriteBool(headOn);
+            buf.WriteDouble(headSize);
         if(WriteSelect(10, buf))
-            buf.WriteBool(colorByMag);
+            buf.WriteBool(headOn);
         if(WriteSelect(11, buf))
-            buf.WriteBool(useLegend);
+            buf.WriteBool(colorByMag);
         if(WriteSelect(12, buf))
-            vectorColor.Write(buf);
+            buf.WriteBool(useLegend);
         if(WriteSelect(13, buf))
-            buf.WriteString(colorTableName);
+            vectorColor.Write(buf);
         if(WriteSelect(14, buf))
-            buf.WriteInt(vectorOrigin);
+            buf.WriteString(colorTableName);
         if(WriteSelect(15, buf))
-            buf.WriteBool(minFlag);
+            buf.WriteInt(vectorOrigin);
         if(WriteSelect(16, buf))
-            buf.WriteBool(maxFlag);
+            buf.WriteBool(minFlag);
         if(WriteSelect(17, buf))
-            buf.WriteInt(limitsMode);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(18, buf))
-            buf.WriteDouble(min);
+            buf.WriteInt(limitsMode);
         if(WriteSelect(19, buf))
-            buf.WriteDouble(max);
+            buf.WriteDouble(min);
         if(WriteSelect(20, buf))
-            buf.WriteBool(lineStem);
+            buf.WriteDouble(max);
         if(WriteSelect(21, buf))
-            buf.WriteInt(geometryQuality);
+            buf.WriteBool(lineStem);
         if(WriteSelect(22, buf))
-            buf.WriteDouble(stemWidth);
+            buf.WriteInt(geometryQuality);
         if(WriteSelect(23, buf))
-            buf.WriteBool(origOnly);
+            buf.WriteDouble(stemWidth);
         if(WriteSelect(24, buf))
+            buf.WriteBool(origOnly);
+        if(WriteSelect(25, buf))
             buf.WriteInt(glyphType);
     }
 
@@ -453,79 +469,82 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         switch(index)
         {
         case 0:
-            SetUseStride(buf.ReadBool());
+            SetGlyphLocation(buf.ReadInt());
             break;
         case 1:
-            SetStride(buf.ReadInt());
+            SetUseStride(buf.ReadBool());
             break;
         case 2:
-            SetNVectors(buf.ReadInt());
+            SetStride(buf.ReadInt());
             break;
         case 3:
-            SetLineStyle(buf.ReadInt());
+            SetNVectors(buf.ReadInt());
             break;
         case 4:
-            SetLineWidth(buf.ReadInt());
+            SetLineStyle(buf.ReadInt());
             break;
         case 5:
-            SetScale(buf.ReadDouble());
+            SetLineWidth(buf.ReadInt());
             break;
         case 6:
-            SetScaleByMagnitude(buf.ReadBool());
+            SetScale(buf.ReadDouble());
             break;
         case 7:
-            SetAutoScale(buf.ReadBool());
+            SetScaleByMagnitude(buf.ReadBool());
             break;
         case 8:
-            SetHeadSize(buf.ReadDouble());
+            SetAutoScale(buf.ReadBool());
             break;
         case 9:
-            SetHeadOn(buf.ReadBool());
+            SetHeadSize(buf.ReadDouble());
             break;
         case 10:
-            SetColorByMag(buf.ReadBool());
+            SetHeadOn(buf.ReadBool());
             break;
         case 11:
-            SetUseLegend(buf.ReadBool());
+            SetColorByMag(buf.ReadBool());
             break;
         case 12:
-            vectorColor.Read(buf);
-            Select(12);
+            SetUseLegend(buf.ReadBool());
             break;
         case 13:
-            SetColorTableName(buf.ReadString());
+            vectorColor.Read(buf);
+            Select(13);
             break;
         case 14:
-            SetVectorOrigin(buf.ReadInt());
+            SetColorTableName(buf.ReadString());
             break;
         case 15:
-            SetMinFlag(buf.ReadBool());
+            SetVectorOrigin(buf.ReadInt());
             break;
         case 16:
-            SetMaxFlag(buf.ReadBool());
+            SetMinFlag(buf.ReadBool());
             break;
         case 17:
-            SetLimitsMode(buf.ReadInt());
+            SetMaxFlag(buf.ReadBool());
             break;
         case 18:
-            SetMin(buf.ReadDouble());
+            SetLimitsMode(buf.ReadInt());
             break;
         case 19:
-            SetMax(buf.ReadDouble());
+            SetMin(buf.ReadDouble());
             break;
         case 20:
-            SetLineStem(buf.ReadBool());
+            SetMax(buf.ReadDouble());
             break;
         case 21:
-            SetGeometryQuality(buf.ReadInt());
+            SetLineStem(buf.ReadBool());
             break;
         case 22:
-            SetStemWidth(buf.ReadDouble());
+            SetGeometryQuality(buf.ReadInt());
             break;
         case 23:
-            SetOrigOnly(buf.ReadBool());
+            SetStemWidth(buf.ReadDouble());
             break;
         case 24:
+            SetOrigOnly(buf.ReadBool());
+            break;
+        case 25:
             SetGlyphType(buf.ReadInt());
             break;
         }
@@ -534,6 +553,12 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
+        str = str + indent + "glyphLocation = ";
+        if(glyphLocation == GLYPHLOCATION_ADAPTSTOMESHRESOLUTION)
+            str = str + "GLYPHLOCATION_ADAPTSTOMESHRESOLUTION";
+        if(glyphLocation == GLYPHLOCATION_UNIFORMINSPACE)
+            str = str + "GLYPHLOCATION_UNIFORMINSPACE";
+        str = str + "\n";
         str = str + boolToString("useStride", useStride, indent) + "\n";
         str = str + intToString("stride", stride, indent) + "\n";
         str = str + intToString("nVectors", nVectors, indent) + "\n";
@@ -586,6 +611,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
+    private int            glyphLocation;
     private boolean        useStride;
     private int            stride;
     private int            nVectors;

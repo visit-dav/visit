@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VECTORATTRIBUTES_NMETH 52
+#define VECTORATTRIBUTES_NMETH 54
 void           PyVectorAttributes_StartUp(VectorAttributes *subj, void *data);
 void           PyVectorAttributes_CloseDown();
 PyMethodDef *  PyVectorAttributes_GetMethodTable(int *nMethods);

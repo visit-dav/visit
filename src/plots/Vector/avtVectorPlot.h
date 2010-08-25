@@ -51,6 +51,7 @@
 class     vtkVectorGlyph;
 
 class     avtGhostZoneFilter;
+class     avtResampleFilter;
 class     avtVectorGlyphMapper;
 class     avtVariableLegend;
 class     avtVectorFilter;
@@ -98,6 +99,9 @@ class     avtLookupTable;
 //    Turn on NeedZBufferToCompositeEvenIn2D, as vector glyphs can bleed
 //    into other processor's portion of image space.
 //
+//    Hank Childs, Tue Aug 24 22:31:43 PDT 2010
+//    Add resample operator for uniform glyph placement.
+//
 // ****************************************************************************
 
 class avtVectorPlot : public avtPointDataPlot
@@ -126,6 +130,7 @@ class avtVectorPlot : public avtPointDataPlot
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
     avtVectorFilter            *vectorFilter;
+    avtResampleFilter          *resampleFilter;
     avtGhostZoneFilter         *ghostFilter;
     avtLookupTable             *avtLUT;
 

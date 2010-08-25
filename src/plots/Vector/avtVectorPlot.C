@@ -46,6 +46,7 @@
 
 #include <avtGhostZoneFilter.h>
 #include <avtLookupTable.h>
+#include <avtResampleFilter.h>
 #include <avtVariableLegend.h>
 #include <avtVectorFilter.h>
 #include <avtVectorGlyphMapper.h>
@@ -74,6 +75,9 @@
 //    Hank Childs, Wed Dec 27 13:49:15 PST 2006
 //    Tell ghost filter to always remove ghost data.
 //
+//    Hank Childs, Wed Aug 25 09:42:13 PDT 2010
+//    Initialize resample filter.
+//
 // ****************************************************************************
 
 avtVectorPlot::avtVectorPlot()
@@ -81,6 +85,7 @@ avtVectorPlot::avtVectorPlot()
     colorsInitialized = false;
     glyph        = vtkVectorGlyph::New();
     vectorFilter = new avtVectorFilter(true, 10);
+    resampleFilter = NULL;
     ghostFilter  = new avtGhostZoneFilter();
     ghostFilter->GhostDataMustBeRemoved();
     glyphMapper  = new avtVectorGlyphMapper(glyph->GetOutput());
@@ -110,6 +115,9 @@ avtVectorPlot::avtVectorPlot()
 //    Kathleen Bonnell, Thu Aug 30 10:47:07 PDT 2001
 //    Delete avtLUT.
 //
+//    Hank Childs, Wed Aug 25 09:42:13 PDT 2010
+//    Delete resample filter.
+//
 // ****************************************************************************
 
 avtVectorPlot::~avtVectorPlot()
@@ -123,6 +131,11 @@ avtVectorPlot::~avtVectorPlot()
     {
         delete vectorFilter;
         vectorFilter = NULL;
+    }
+    if (resampleFilter != NULL)
+    {
+        delete resampleFilter;
+        resampleFilter = NULL;
     }
     if (ghostFilter != NULL)
     {
@@ -235,6 +248,9 @@ avtVectorPlot::GetMapper(void)
 //    Added code to create a name for the magnitude scalar variable.
 //    Tell the vectorFilter to create that scalar var.
 //
+//    Hank Childs, Wed Aug 25 09:42:13 PDT 2010
+//    Insert resample filter when we are doing uniform locations.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -242,7 +258,13 @@ avtVectorPlot::ApplyOperators(avtDataObject_p input)
 {
     ghostFilter->SetInput(input);
     ComputeMagVarName(varname);
-    vectorFilter->SetInput(ghostFilter->GetOutput());
+    avtDataObject_p dob = ghostFilter->GetOutput();
+    if (atts.GetGlyphLocation() == VectorAttributes::UniformInSpace)
+    {
+        resampleFilter->SetInput(dob);
+        dob = resampleFilter->GetOutput();
+    }
+    vectorFilter->SetInput(dob);
     vectorFilter->SetMagVarName(magVarName); 
     return vectorFilter->GetOutput();
 }
@@ -423,6 +445,9 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Fix problem where color table wouldn't update when transitioning between
 //    color-by-magnitude settings.
 //
+//    Hank Childs, Wed Aug 25 09:42:13 PDT 2010
+//    Set attributes for resample filter.
+//
 // ****************************************************************************
 
 void
@@ -451,6 +476,14 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
         vectorFilter->SetNVectors(atts.GetNVectors());
     }
     vectorFilter->SetLimitToOriginal(atts.GetOrigOnly());
+
+    if (resampleFilter != NULL)
+        delete resampleFilter;
+    InternalResampleAttributes resatts;
+    resatts.SetUseTargetVal(true);
+    resatts.SetDistributedResample(true);
+    resatts.SetTargetVal(atts.GetNVectors());
+    resampleFilter = new avtResampleFilter(&resatts);
 
     glyph->SetArrow(atts.GetGlyphType() == VectorAttributes::Arrow);
     
@@ -645,6 +678,11 @@ avtVectorPlot::SetLegendRanges()
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Aug 25 09:42:13 PDT 2010
+//    Release data for resample filter.
+//
 // ****************************************************************************
  
 void
@@ -655,6 +693,10 @@ avtVectorPlot::ReleaseData(void)
     if (vectorFilter != NULL)
     {
         vectorFilter->ReleaseData();
+    }
+    if (resampleFilter != NULL)
+    {
+        resampleFilter->ReleaseData();
     }
     if (ghostFilter != NULL)
     {

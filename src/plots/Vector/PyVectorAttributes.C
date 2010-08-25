@@ -77,6 +77,21 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     std::string str; 
     char tmpStr[1000]; 
 
+    const char *glyphLocation_names = "AdaptsToMeshResolution, UniformInSpace";
+    switch (atts->GetGlyphLocation())
+    {
+      case VectorAttributes::AdaptsToMeshResolution:
+          SNPRINTF(tmpStr, 1000, "%sglyphLocation = %sAdaptsToMeshResolution  # %s\n", prefix, prefix, glyphLocation_names);
+          str += tmpStr;
+          break;
+      case VectorAttributes::UniformInSpace:
+          SNPRINTF(tmpStr, 1000, "%sglyphLocation = %sUniformInSpace  # %s\n", prefix, prefix, glyphLocation_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     if(atts->GetUseStride())
         SNPRINTF(tmpStr, 1000, "%suseStride = 1\n", prefix);
     else
@@ -225,6 +240,39 @@ VectorAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the glyphLocation in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetGlyphLocation(VectorAttributes::GlyphLocation(ival));
+    else
+    {
+        fprintf(stderr, "An invalid glyphLocation value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "AdaptsToMeshResolution, UniformInSpace.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetGlyphLocation(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetGlyphLocation()));
+    return retval;
 }
 
 /*static*/ PyObject *
@@ -929,6 +977,8 @@ VectorAttributes_GetGlyphType(PyObject *self, PyObject *args)
 
 PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH] = {
     {"Notify", VectorAttributes_Notify, METH_VARARGS},
+    {"SetGlyphLocation", VectorAttributes_SetGlyphLocation, METH_VARARGS},
+    {"GetGlyphLocation", VectorAttributes_GetGlyphLocation, METH_VARARGS},
     {"SetUseStride", VectorAttributes_SetUseStride, METH_VARARGS},
     {"GetUseStride", VectorAttributes_GetUseStride, METH_VARARGS},
     {"SetStride", VectorAttributes_SetStride, METH_VARARGS},
@@ -1007,6 +1057,13 @@ VectorAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyVectorAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "glyphLocation") == 0)
+        return VectorAttributes_GetGlyphLocation(self, NULL);
+    if(strcmp(name, "AdaptsToMeshResolution") == 0)
+        return PyInt_FromLong(long(VectorAttributes::AdaptsToMeshResolution));
+    if(strcmp(name, "UniformInSpace") == 0)
+        return PyInt_FromLong(long(VectorAttributes::UniformInSpace));
+
     if(strcmp(name, "useStride") == 0)
         return VectorAttributes_GetUseStride(self, NULL);
     if(strcmp(name, "stride") == 0)
@@ -1109,7 +1166,9 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "useStride") == 0)
+    if(strcmp(name, "glyphLocation") == 0)
+        obj = VectorAttributes_SetGlyphLocation(self, tuple);
+    else if(strcmp(name, "useStride") == 0)
         obj = VectorAttributes_SetUseStride(self, tuple);
     else if(strcmp(name, "stride") == 0)
         obj = VectorAttributes_SetStride(self, tuple);
