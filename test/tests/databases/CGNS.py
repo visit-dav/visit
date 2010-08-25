@@ -22,6 +22,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Cyrus Harrison, Wed Aug 25 14:28:14 PDT 2010
+#    Variable name change due to changes with SIL generation.
+#
 # ----------------------------------------------------------------------------
 
 def test0(datapath):
@@ -243,13 +246,13 @@ def test1(datapath):
     DrawPlots()
     Test("CGNS_1_07")
     DeleteAllPlots()
-    
+
 
 def test2(datapath):
     TestSection("Variables on only some of the domains")
 
     OpenDatabase(datapath + "HeatingCoil.cgns")
-    AddPlot("Subset", "zones")
+    AddPlot("Subset", "zones(Base)")
     DrawPlots()
     v0 = View3DAttributes()
     v0.viewNormal = (0.27344, 0.876709, 0.395743)

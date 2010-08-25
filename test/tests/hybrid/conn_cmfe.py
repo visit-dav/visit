@@ -23,6 +23,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Cyrus Harrison, Wed Aug 25 14:25:13 PDT 2010
+#    SIL id shift (from 1 to 2) due to changes in SIL generation.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -125,7 +128,7 @@ ChangeActivePlotsVar("cmfe")
 DrawPlots()
 s = SILRestriction()
 s.TurnOffAll()
-s.TurnOnSet(1)
+s.TurnOnSet(2)
 SetPlotSILRestriction(s)
 t = GetLastError()
 TestText("conn_cmfe_14", t)
