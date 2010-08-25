@@ -144,6 +144,8 @@ class AVTFILTERS_API avtPICSFilter :
 
     void                      InitializeLocators(void);
 
+    virtual void              ReleaseData(void);
+
   protected:
     double maxStepLength;
     double relTol;
