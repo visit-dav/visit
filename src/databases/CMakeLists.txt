@@ -242,8 +242,8 @@ VTK
 WavefrontOBJ
 XYZ
 Xmdv
-#paraDIS
-#paraDIS_tecplot
+paraDIS
+paraDIS_tecplot
 )
 
 IF (NOT WIN32)
