@@ -107,6 +107,9 @@ class QSpinBox;
 //   Brad Whitlock, Fri May  7 14:29:53 PDT 2010
 //   I transplanted some replace plots coding.
 //
+//   Eric Brugger, Tue Aug 24 12:18:44 PDT 2010
+//   I added a preference to enable warning message popups.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -124,10 +127,14 @@ public:
     void SetTimeStateFormat(const TimeFormat &fmt);
     void SetShowSelectedFiles(bool val);
     void SetAllowFileSelectionChange(bool val);
+    void SetEnableWarningPopups(bool val);
+
+    bool GetEnableWarningPopups();
 signals:
     void changeTimeFormat(const TimeFormat &);
     void showSelectedFiles(bool);
     void allowFileSelectionChange(bool);
+    void enableWarningPopups(bool);
 protected:
     void UpdateWindow(bool doAll);
 private slots:
@@ -150,6 +157,7 @@ private slots:
     void saveCrashRecoveryFileToggled(bool);
     void ignoreDbExtentsToggled(bool val);
     void replacePlotsToggled(bool);
+    void enableWarningPopupsToggled(bool);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
@@ -170,11 +178,13 @@ private:
     QCheckBox        *saveCrashRecoveryFileToggle;
     QCheckBox        *ignoreDbExtentsToggle;
     QCheckBox        *replacePlotsToggle;
+    QCheckBox        *enableWarningPopupsToggle;
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;
     bool              showSelFiles;
     bool              allowFileSelChange;
+    bool              enableWarnPopups;
 };
 
 #endif

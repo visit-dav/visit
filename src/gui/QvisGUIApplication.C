@@ -2997,6 +2997,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Gunther H. Weber, Fri Aug 15 10:46:55 PDT 2008
 //   Connect signals necessary for redoing a pick. 
 //
+//   Eric Brugger, Tue Aug 24 13:22:09 PDT 2010
+//   Added the ability to enable/disable the popping up of warning messages.
+//
 // ****************************************************************************
 
 void
@@ -3046,6 +3049,8 @@ QvisGUIApplication::SetupWindows()
              mainWin, SLOT(SetShowSelectedFiles(bool)));
      connect(preferencesWin, SIGNAL(allowFileSelectionChange(bool)),
              mainWin, SLOT(SetAllowFileSelectionChange(bool)));
+     connect(preferencesWin, SIGNAL(enableWarningPopups(bool)),
+             messageWin, SLOT(EnableWarningPopups(bool)));
 
      colorTableWin = (QvisColorTableWindow *)GetWindowPointer(WINDOW_COLORTABLE);
      connect(mainWin, SIGNAL(activateColorTableWindow()),
@@ -4019,6 +4024,9 @@ QvisGUIApplication::EnsureOperatorWindowIsCreated(int i)
 //    Brad Whitlock, Tue Jul 25 10:19:22 PDT 2006
 //    I added code to make the main window save its settings.
 //
+//    Eric Brugger, Tue Aug 24 13:22:09 PDT 2010
+//    Added the ability to enable/disable the popping up of warning messages.
+//
 // ****************************************************************************
 
 bool
@@ -4091,6 +4099,11 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     guiNode->AddNode(
         new DataNode("allowFileSelectionChange",
                      mainWin->GetAllowFileSelectionChange()));
+
+    // Save whether to enable warning message popups.
+    guiNode->AddNode(
+        new DataNode("enableWarningMessagePopups",
+                     preferencesWin->GetEnableWarningPopups()));
 
     // Try to open the output file.
     if((fp = fopen(filename, "wt")) == 0)
@@ -4959,6 +4972,9 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 //   passing the value from savedGUIGeometry, pass false so values stored in
 //   session file aren't overwritten.
 //
+//   Eric Brugger, Tue Aug 24 13:22:09 PDT 2010
+//   Added the ability to enable/disable the popping up of warning messages.
+//
 // ****************************************************************************
 
 void
@@ -5005,6 +5021,14 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
         allowFileSelectionChange = afscNode->AsBool();
         mainWin->SetAllowFileSelectionChange(afscNode->AsBool());
         preferencesWin->SetAllowFileSelectionChange(afscNode->AsBool());
+    }
+
+    // Get whether to enable warning popups.
+    DataNode *swpNode = 0; 
+    if((swpNode = guiNode->GetNode("enableWarningMessagePopups")) != 0)
+    {
+        messageWin->SetEnableWarningPopups(swpNode->AsBool());
+        preferencesWin->SetEnableWarningPopups(swpNode->AsBool());
     }
 
     // Read the config file stuff for the plugin windows.

@@ -85,6 +85,9 @@
 //   Tom Fogal, Sun Jan 24 17:05:48 MST 2010
 //   Patch from Andreas Kloeckner to set Qt window role.
 //
+//   Eric Brugger, Tue Aug 24 13:30:28 PDT 2010
+//   Added a control to enable/disable the popping up of warning messages.
+//
 // *************************************************************************************
 
 QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
@@ -94,6 +97,7 @@ QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     setWindowRole("message");
 
     preserveInformation = false;
+    enableWarningPopups = true;
 
     // Create the central widget and the top layout.
     QWidget *central = new QWidget( this );
@@ -147,6 +151,25 @@ QvisMessageWindow::~QvisMessageWindow()
 }
 
 // *************************************************************************************
+// Method: QvisMessageWindow::SetEnableWarningPopups
+//
+// Purpose: 
+//   Sets the enable warning popups flag.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Aug 24 13:30:28 PDT 2010
+//
+// Modifications:
+//   
+// *************************************************************************************
+
+void
+QvisMessageWindow::SetEnableWarningPopups(bool val)
+{
+    enableWarningPopups = val;
+}
+
+// *************************************************************************************
 // Method: QvisMessageWindow::Update
 //
 // Purpose: 
@@ -183,6 +206,9 @@ QvisMessageWindow::~QvisMessageWindow()
 //
 //   Brad Whitlock, Tue Apr 29 10:27:01 PDT 2008
 //   Support for internationalization.
+//
+//   Eric Brugger, Tue Aug 24 13:30:28 PDT 2010
+//   Added a control to enable/disable the popping up of warning messages.
 //
 // *************************************************************************************
 
@@ -272,7 +298,8 @@ QvisMessageWindow::Update(Subject *)
         }
         else if(severity == MessageAttributes::Warning)
         {
-            show();
+            if (enableWarningPopups)
+                show();
             severityLabel->setText(tr("Warning"));
             RestoreCursor();
         }
@@ -316,3 +343,25 @@ QvisMessageWindow::doHide()
     preserveInformation = false;
     hide();
 }
+
+// ****************************************************************************
+// Method: QvisMessageWindow::EnableWarningPopups
+//
+// Purpose: 
+//   Sets the enable warning popups flag.
+//
+// Arguments:
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Aug 24 13:30:28 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMessageWindow::EnableWarningPopups(bool val)
+{
+    enableWarningPopups = val;
+}
+

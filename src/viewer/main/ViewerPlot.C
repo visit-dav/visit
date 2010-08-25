@@ -2053,6 +2053,10 @@ ViewerPlot::SetErrorFlag(bool val)
 //    Brad Whitlock, Tue Apr 29 15:12:04 PDT 2008
 //    Support for internationalization.
 //
+//    Eric Brugger, Tue Aug 24 11:55:49 PDT 2010
+//    I modified the warning message that warns about applying the same
+//    operator multiple times to only apply to the slice operator.
+//
 // ****************************************************************************
 
 int
@@ -2071,12 +2075,11 @@ ViewerPlot::AddOperator(const int type, const bool fromDefault)
 
         for (int i = 0; i < nOperators; i++)
         {
-            if (type == operators[i]->GetType())
+            if (type == operators[i]->GetType() &&
+                strcmp(operators[i]->GetName(), "Slice") == 0)
             {
-                QString msg = tr("You have added the \"%1\" operator "
-                    "multiple times. For some operators, like \"Slice\", this "
-                    "can lead to an empty plot but is otherwise harmless.").
-                    arg(operators[i]->GetMenuName());
+                QString msg = tr("You have added the \"Slice\" operator "
+                    "multiple times. This can lead to an empty plot.");
                 Warning(msg);
                 break;
             }
