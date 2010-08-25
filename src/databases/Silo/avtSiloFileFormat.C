@@ -12492,12 +12492,24 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
 //    Convert other data types to float for now since avtSpecies can't 
 //    store them.
 //
+//    Cyrus Harrison, Wed Aug 25 12:21:54 PDT 2010
+//    Use force single for species reads.
+//
 // ****************************************************************************
 
 avtSpecies *
 avtSiloFileFormat::CalcSpecies(DBfile *dbfile, char *specname)
 {
+    // TODO: Fix when Silo issue is resolved.
+    // Currently if force single is *off* we get garbage mass fractions
+    // from Silo. This doesn't appear to be related to the prev
+    // datatype mismatch oissue. To work around this we turn force single on
+    // just for this read.
+
+    DBForceSingle(1);
     DBmatspecies *silospec = DBGetMatspecies(dbfile, specname);
+    DBForceSingle(!dontForceSingle);
+
     if (silospec == NULL)
     {
         EXCEPTION1(InvalidVariableException, specname);
