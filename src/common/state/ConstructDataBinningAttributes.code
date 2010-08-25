@@ -1,0 +1,22 @@
+Function: ReductionRequiresVariable
+Declaration: bool ReductionRequiresVariable(void);
+Definition:
+// *******************************************************************
+//  Method: ConstructDataBinningAttributes::ReductionRequiresVariable
+//
+//  Purpose:
+//      Determine if a variable is needed to perform the reduction.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 19th, 2010
+//
+// *******************************************************************
+
+bool
+ConstructDataBinningAttributes::ReductionRequiresVariable(void)
+{
+    if (reductionOperator == Count || reductionOperator == PDF)
+        return false;
+    return true;
+}
+
