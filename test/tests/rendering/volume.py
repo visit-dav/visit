@@ -27,6 +27,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Wed Aug 25 14:25:13 PDT 2010
+#    SIL id shift (from 4 to 5) due to changes in SIL generation.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -63,7 +67,7 @@ DeleteAllPlots()
 OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
 AddPlot("Volume", "t")
 silr=SILRestriction()
-silr.TurnOffSet(4)
+silr.TurnOffSet(5)
 SetPlotSILRestriction(silr)
 
 DrawPlots()
