@@ -165,6 +165,7 @@ CallbackManager::~CallbackManager()
             Py_DECREF(it->second.pycb);
         if(it->second.pycb_data != 0)
         {
+#ifdef Py_REFCNT
             // Hack! I found that decrementing the refcount of a class 
             //       instance from here causes a crash if it's the last
             //       reference and it will cause the object to be deleted.
@@ -174,6 +175,7 @@ CallbackManager::~CallbackManager()
             bool lastInstance = Py_REFCNT(it->second.pycb_data) == 1 &&
                                 PyInstance_Check(it->second.pycb_data);
             if(!lastInstance)
+#endif
                 Py_DECREF(it->second.pycb_data);
         }
     }
