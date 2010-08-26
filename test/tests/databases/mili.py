@@ -26,6 +26,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Cyrus Harrison, Thu Aug 26 14:47:36 PDT 2010
+#    Change set ids due to SIL generation change.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -128,9 +131,9 @@ SetPlotOptions(t)
 Test("mili_24")
 
 s = SILRestriction()
-s.TurnOffSet(2)
-s.TurnOffSet(4)
+s.TurnOffSet(3)
 s.TurnOffSet(5)
+s.TurnOffSet(6)
 SetPlotSILRestriction(s)
 Test("mili_25")
 
@@ -160,7 +163,7 @@ DrawPlots()
 Test("mili_29")
 sil = SILRestriction()
 sil.TurnOffAll()
-sil.TurnOnSet(9)
+sil.TurnOnSet(11)
 SetPlotSILRestriction(sil)
 Test("mili_30")
 
