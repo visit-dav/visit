@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class Plot extends AttributeSubject
 {
-    private static int Plot_numAdditionalAtts = 19;
+    private static int Plot_numAdditionalAtts = 20;
 
     // Enum values
     public final static int STATETYPE_NEWLYCREATED = 0;
@@ -90,6 +90,7 @@ public class Plot extends AttributeSubject
         isFromSimulation = false;
         followsTime = true;
         description = new String("");
+        selection = new String("");
     }
 
     public Plot(int nMoreFields)
@@ -115,6 +116,7 @@ public class Plot extends AttributeSubject
         isFromSimulation = false;
         followsTime = true;
         description = new String("");
+        selection = new String("");
     }
 
     public Plot(Plot obj)
@@ -160,6 +162,7 @@ public class Plot extends AttributeSubject
         isFromSimulation = obj.isFromSimulation;
         followsTime = obj.followsTime;
         description = new String(obj.description);
+        selection = new String(obj.selection);
 
         SelectAll();
     }
@@ -233,7 +236,8 @@ public class Plot extends AttributeSubject
                 databaseKeyframes_equal &&
                 (isFromSimulation == obj.isFromSimulation) &&
                 (followsTime == obj.followsTime) &&
-                (description.equals(obj.description)));
+                (description.equals(obj.description)) &&
+                (selection.equals(obj.selection)));
     }
 
     // Property setting methods
@@ -351,6 +355,12 @@ public class Plot extends AttributeSubject
         Select(18);
     }
 
+    public void SetSelection(String selection_)
+    {
+        selection = selection_;
+        Select(19);
+    }
+
     // Property getting methods
     public int     GetStateType() { return stateType; }
     public int     GetPlotType() { return plotType; }
@@ -371,6 +381,7 @@ public class Plot extends AttributeSubject
     public boolean GetIsFromSimulation() { return isFromSimulation; }
     public boolean GetFollowsTime() { return followsTime; }
     public String  GetDescription() { return description; }
+    public String  GetSelection() { return selection; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -413,6 +424,8 @@ public class Plot extends AttributeSubject
             buf.WriteBool(followsTime);
         if(WriteSelect(18, buf))
             buf.WriteString(description);
+        if(WriteSelect(19, buf))
+            buf.WriteString(selection);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -476,6 +489,9 @@ public class Plot extends AttributeSubject
         case 18:
             SetDescription(buf.ReadString());
             break;
+        case 19:
+            SetSelection(buf.ReadString());
+            break;
         }
     }
 
@@ -510,6 +526,7 @@ public class Plot extends AttributeSubject
         str = str + boolToString("isFromSimulation", isFromSimulation, indent) + "\n";
         str = str + boolToString("followsTime", followsTime, indent) + "\n";
         str = str + stringToString("description", description, indent) + "\n";
+        str = str + stringToString("selection", selection, indent) + "\n";
         return str;
     }
 
@@ -534,5 +551,6 @@ public class Plot extends AttributeSubject
     private boolean isFromSimulation;
     private boolean followsTime;
     private String  description;
+    private String  selection;
 }
 

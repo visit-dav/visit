@@ -60,6 +60,7 @@ class  ExpressionList;
 class  FileServerList;
 class  GlobalAttributes;
 class  PluginManagerAttributes;
+class  SelectionList;
 class  WindowInformation;
 
 class  QComboBox;
@@ -232,6 +233,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Fri May  7 14:05:19 PDT 2010
 //   I transplanted some methods.
 //
+//   Brad Whitlock, Fri Jul 23 15:23:49 PDT 2010
+//   I made the widget observe the selection list.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QGroupBox, public GUIBase,
@@ -249,6 +253,7 @@ public:
     void ConnectExpressionList(ExpressionList *);
     void ConnectWindowInformation(WindowInformation *);
     void ConnectPluginManagerAttributes(PluginManagerAttributes *);
+    void ConnectSelectionList(SelectionList *);
 
     void AddPlotType(const QString &id, const QString &plotName, const int varTypes,
                      const char **iconData = 0);
@@ -276,6 +281,7 @@ public slots:
     void UpdatePlotList();
 signals:
     void activateSubsetWindow();
+    void activateSelectionsWindow(const QString &);
     void activatePlotWindow(int);
     void activateOperatorWindow(int);
     void addPlot(int, const QString &);
@@ -359,6 +365,7 @@ private:
     GlobalAttributes        *globalAtts;
     ExpressionList          *exprList;
     WindowInformation       *windowInfo;
+    SelectionList           *selectionList;
 
     // Various Toolbar actions for the plot manager
     QToolBar    *plotActionsToolbar;

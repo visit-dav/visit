@@ -47,6 +47,7 @@
 #include <QPixmapCache>
 
 #include <icons/subset.xpm>
+#include <icons/selection.xpm>
 
 #define YICON_SPACING  3
 #define ITEM_ICON_SIZE 20
@@ -55,6 +56,7 @@
 // Statics
 //
 QPixmap *QvisPlotListBoxItem::subsetIcon = 0;
+QPixmap *QvisPlotListBoxItem::selectionIcon = 0;
 
 // ****************************************************************************
 // Method: QvisPlotListBoxItem::QvisPlotListBoxItem
@@ -63,7 +65,9 @@ QPixmap *QvisPlotListBoxItem::subsetIcon = 0;
 //   Constructor for QvisPlotListBoxItem.
 //
 // Arguments:
-//   plot    : The Plot object that this element displays.
+//   plot          : The Plot object that this element displays.
+//   prefix        : The plot prefix.
+//   selectionName : The name of the selection the plot creates (Most often empty).
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 11 11:39:33 PDT 2000
@@ -85,10 +89,15 @@ QPixmap *QvisPlotListBoxItem::subsetIcon = 0;
 //   Cyrus Harrison, Thu Dec  4 08:28:50 PST 2008
 //   Removed unnecessary todo comment. 
 //
+//   Brad Whitlock, Fri Jul 23 14:55:53 PDT 2010
+//   I added selectionName.
+//
 // ****************************************************************************
 
-QvisPlotListBoxItem::QvisPlotListBoxItem(const QString &prefix_, const Plot &p)
-    : QListWidgetItem(), plot(p), prefix(prefix_), clickable()
+QvisPlotListBoxItem::QvisPlotListBoxItem(const Plot &p, const QString &prefix_, 
+    const QString &selectionName_)
+    : QListWidgetItem(), plot(p), prefix(prefix_), selectionName(selectionName_),
+      clickable()
 {
     addClickableRects = true;
 
@@ -155,6 +164,10 @@ QvisPlotListBoxItem::QvisPlotListBoxItem(const QString &prefix_, const Plot &p)
     {
         subsetIcon = new QPixmap(subset_xpm);
     }
+    if(selectionIcon == 0)
+    {
+        selectionIcon = new QPixmap(selection_xpm);
+    }
 }
 
 // ****************************************************************************
@@ -199,6 +212,10 @@ QvisPlotListBoxItem::~QvisPlotListBoxItem()
 //   Cyrus Harrison, Mon Jul  7 13:39:58 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Fri Jul 23 13:44:54 PDT 2010
+//   I increased the size, depending on whether a selection is applied or 
+//   created by this plot.
+//
 // ****************************************************************************
 
 int
@@ -214,7 +231,9 @@ QvisPlotListBoxItem::height(const QListWidget *lb) const
     if(isExpanded())
     {
         int lineHeight = qMax(maxIconHeight, lb->fontMetrics().lineSpacing());
-        h += ((lineHeight + YICON_SPACING) * (plot.GetNumOperators() + 1) + YICON_SPACING);
+        int sel = plot.GetSelection().empty() ? 0 : 1;
+        sel += (selectionName.isEmpty() ? 0 : 1);
+        h += ((lineHeight + YICON_SPACING) * (plot.GetNumOperators() + 1 + sel) + YICON_SPACING);
     }
 
     return h;
@@ -307,6 +326,9 @@ QvisPlotListBoxItem::textX() const
 //   Cyrus Harrison, Mon Mar 15 15:43:20 PDT 2010
 //   Add ":"  between db name and varible if we have a numeric (selected files)
 //   prefix.
+//
+//   Brad Whitlock, Fri Jul 23 14:16:11 PDT 2010
+//   I added support for drawing selections.
 //
 // ****************************************************************************
 
@@ -450,14 +472,42 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
         int textY = fm.ascent() + fm.leading()/2;
         painter->drawText(x, textY + d, dbName);
 
-        //
-        // Draw the operators.
-        //
         int iconX = expandX + 10;
         int iconY = expandY + YICON_SPACING;
         int textX = iconX + maxIconWidth + 3;
         textY += fm.lineSpacing();
         int maxTextWidth = 0;
+
+        //
+        // Draw the selection
+        //
+        if(!plot.GetSelection().empty())
+        {
+            // Draw the Subset icon
+            int icondX = (maxIconWidth  - subsetIcon->width()) / 2;
+            int icondY = (maxIconHeight - subsetIcon->height()) / 2;
+            int thisIconY = iconY + icondY;
+            int thisIconX = iconX + icondX;
+            painter->drawPixmap(thisIconX, thisIconY, *selectionIcon);
+
+            // Draw the selection text.
+            QString s(QObject::tr("Use selection [%1]", "QvisPlotListBoxItem").
+                          arg(plot.GetSelection().c_str()));
+            QRect textSize(fm.boundingRect(s));
+            int textHeight = textSize.height();
+            maxTextWidth = qMax(maxTextWidth, textSize.width());
+            int textdY = (maxIconHeight - textHeight) / 2;
+            int thisTextY = iconY + textHeight + textdY;
+            setTextPen(painter, false);
+            painter->drawText(textX, thisTextY, s);
+
+            textY += fm.lineSpacing();
+            iconY += (maxIconHeight + YICON_SPACING);
+        }
+
+        //
+        // Draw the operators.
+        //
         int i;
         for(i = 0; i < plot.GetNumOperators(); ++i)
         {
@@ -525,6 +575,24 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
         AddClickableRectangle(plot.GetPlotType(), textRect, PlotAttributes);
 
         //
+        // Draw the selection that this plot creates.
+        //
+        if(!selectionName.isEmpty())
+        {
+            iconY += (maxIconHeight + YICON_SPACING);
+            thisTextY = iconY + textHeight + textdY;
+
+            QString s(QObject::tr("Create selection [%1]","").arg(selectionName));
+            setTextPen(painter, false);
+            painter->drawText(textX, thisTextY, s);
+
+            // Make the text and icon clickable.
+            QRect textRect(iconX, iconY,
+                           listWidget()->width(), maxIconHeight);
+            AddClickableRectangle(0, textRect, Selection);
+        }
+
+        //
         // Draw the tree lines.
         //
         painter->save();
@@ -535,12 +603,32 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
 
         // Reset iconY to its initial value.
         iconY = expandY + YICON_SPACING;
-        // Draw the vertical line down.
-        int bottomY = iconY - 1 + int((float(plot.GetNumOperators()) + 0.5f) *
-                      (maxIconHeight + YICON_SPACING));
-        painter->drawLine(expandX, expandY, expandX, bottomY);
-        // Draw the horizontal lines across.
         int lineY = iconY + maxIconHeight / 2;
+
+        if(!plot.GetSelection().empty())
+        {
+            // Draw the vertical line down with a break.
+            painter->drawLine(expandX, expandY, expandX, lineY-2);
+            painter->drawLine(expandX, lineY-2, iconX - 3, lineY-2);
+
+            iconY += (maxIconHeight + YICON_SPACING);
+
+            int bottomY = iconY - 1 + int((float(plot.GetNumOperators()) + 0.5f) *
+                          (maxIconHeight + YICON_SPACING));
+            painter->drawLine(expandX, lineY+2, expandX, bottomY);
+            painter->drawLine(expandX, lineY+2, iconX - 3, lineY+2);
+
+            lineY += (maxIconHeight + YICON_SPACING);
+        }
+        else
+        {
+            // Draw the vertical line down.
+            int bottomY = iconY - 1 + int((float(plot.GetNumOperators()) + 0.5f) *
+                          (maxIconHeight + YICON_SPACING));
+            painter->drawLine(expandX, expandY, expandX, bottomY);
+        }
+
+        // Draw the horizontal lines across.
         for(i = 0; i < plot.GetNumOperators(); ++i)
         {
             if(operatorIcons[i].isNull())
@@ -553,12 +641,21 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
             painter->drawLine(expandX, lineY, textX - 3, lineY);
         else
             painter->drawLine(expandX, lineY, iconX - 3, lineY);
+        // Draw lines for the selection that this plot creates.
+        if(!selectionName.isEmpty())
+        {
+            int dY = maxIconHeight + YICON_SPACING;
+            painter->drawLine(expandX + maxIconWidth, lineY + dY/2, expandX + maxIconWidth, lineY + dY);
+            painter->drawLine(expandX + maxIconWidth, lineY + dY, iconX - 3 + maxIconWidth, lineY + dY);
+        }
         painter->restore();
 
         //
         // Draw the up and down boxes.
         //
         iconY = expandY + YICON_SPACING;
+        if(!plot.GetSelection().empty())
+            iconY += (maxIconHeight + YICON_SPACING);
         int buttonX = textX + maxTextWidth + 10;
         int buttonY = iconY + maxIconHeight / 2;
         int buttonSize = maxIconHeight * 8 / 10; //textHeight * 7 / 5;
@@ -604,6 +701,15 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
         // add some more for clicking the active operator.
         //
         iconY = expandY + YICON_SPACING;
+        if(!plot.GetSelection().empty())
+        {
+            QRect selectionRect(iconX - YICON_SPACING,
+                                iconY - YICON_SPACING,
+                                listWidget()->width(),
+                                maxIconHeight + 2 * YICON_SPACING);
+            AddClickableRectangle(i, selectionRect, Subset);
+            iconY += (maxIconHeight + YICON_SPACING);
+        }
         for(i = 0; i < plot.GetNumOperators(); ++i)
         {
             QRect operatorRect(iconX - YICON_SPACING,
@@ -833,6 +939,9 @@ QvisPlotListBoxItem::drawDeleteButton(QPainter *painter, const QRect &r) const
 //   Cyrus Harrison, Mon Jul  7 13:39:58 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Fri Jul 23 14:14:50 PDT 2010
+//   I added support for clicking on a Selection.
+//
 // ****************************************************************************
 
 int
@@ -896,6 +1005,14 @@ QvisPlotListBoxItem::clicked(const QPoint &pos, bool doubleClicked, int &id)
                     }
                     else
                         return 0;
+                case Subset:
+                    if(doubleClicked)
+                        return 1;
+                    clickedSomething = true;
+                case Selection:
+                    if(doubleClicked)
+                        return 7;
+                    clickedSomething = true;
                 default:
                     break;
                 }

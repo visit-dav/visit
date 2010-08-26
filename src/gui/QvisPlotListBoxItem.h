@@ -70,6 +70,9 @@
 //   Brad Whitlock, Tue Jun 24 12:13:41 PDT 2008
 //   Added GUIBase as a private base class so we can access the plugin managers.
 //
+//   Brad Whitlock, Fri Jul 23 14:55:01 PDT 2010
+//   I added selectionName.
+//
 // ****************************************************************************
     
 class GUI_API QvisPlotListBoxItem : public QListWidgetItem, private GUIBase
@@ -83,7 +86,8 @@ public:
         Promote,
         Demote,
         Delete,
-        ActiveOperator
+        ActiveOperator,
+        Selection
     } ClickObjectType;
 
 protected:
@@ -103,7 +107,8 @@ protected:
 
     typedef std::vector<ClickableRectangle> ClickableRectangleVector;
 public:
-    QvisPlotListBoxItem(const QString &prefix, const Plot &plot);
+    QvisPlotListBoxItem(const Plot &plot, const QString &prefix,  
+                        const QString &selName);
    ~QvisPlotListBoxItem();
 
     int    height(const QListWidget *) const;
@@ -117,6 +122,7 @@ public:
     const Plot &GetPlot() const { return plot; };
     Plot &GetPlot() { return plot; };
     const QString &GetPrefix() const { return prefix; };
+    const QString &GetSelectionName() const { return selectionName; }
 
     void paint(QPainter *);
 private:
@@ -130,8 +136,9 @@ private:
     void setTextPen(QPainter *painter, bool highlightText) const;
 private:
     Plot                     plot;
-
     QString                  prefix;
+    QString                  selectionName;
+
     QPixmap                  plotIcon;
     QString                  plotName;
     QPixmap                 *operatorIcons;
@@ -140,7 +147,7 @@ private:
     ClickableRectangleVector clickable;
     bool                     addClickableRects;
 
-    static QPixmap          *subsetIcon;
+    static QPixmap          *subsetIcon, *selectionIcon;
 };
 
 #endif

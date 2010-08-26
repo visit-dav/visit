@@ -36,30 +36,30 @@
 *
 *****************************************************************************/
 
-#ifndef PY_PLOT_H
-#define PY_PLOT_H
+#ifndef PY_SELECTIONLIST_H
+#define PY_SELECTIONLIST_H
 #include <Python.h>
-#include <Plot.h>
+#include <SelectionList.h>
 #include <visitpy_exports.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-#define PLOT_NMETH 42
-void VISITPY_API           PyPlot_StartUp(Plot *subj, void *data);
-void VISITPY_API           PyPlot_CloseDown();
-VISITPY_API PyMethodDef *  PyPlot_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyPlot_Check(PyObject *obj);
-VISITPY_API Plot *  PyPlot_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *     PyPlot_New();
-VISITPY_API PyObject *     PyPlot_Wrap(const Plot *attr);
-void VISITPY_API           PyPlot_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyPlot_SetDefaults(const Plot *atts);
-std::string VISITPY_API    PyPlot_GetLogString();
-std::string VISITPY_API    PyPlot_ToString(const Plot *, const char *);
-VISITPY_API PyObject *     PyPlot_getattr(PyObject *self, char *name);
-int VISITPY_API            PyPlot_setattr(PyObject *self, char *name, PyObject *args);
-VISITPY_API extern PyMethodDef PyPlot_methods[PLOT_NMETH];
+#define SELECTIONLIST_NMETH 9
+void VISITPY_API           PySelectionList_StartUp(SelectionList *subj, void *data);
+void VISITPY_API           PySelectionList_CloseDown();
+VISITPY_API PyMethodDef *  PySelectionList_GetMethodTable(int *nMethods);
+bool VISITPY_API           PySelectionList_Check(PyObject *obj);
+VISITPY_API SelectionList *  PySelectionList_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *     PySelectionList_New();
+VISITPY_API PyObject *     PySelectionList_Wrap(const SelectionList *attr);
+void VISITPY_API           PySelectionList_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PySelectionList_SetDefaults(const SelectionList *atts);
+std::string VISITPY_API    PySelectionList_GetLogString();
+std::string VISITPY_API    PySelectionList_ToString(const SelectionList *, const char *);
+VISITPY_API PyObject *     PySelectionList_getattr(PyObject *self, char *name);
+int VISITPY_API            PySelectionList_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PySelectionList_methods[SELECTIONLIST_NMETH];
 
 #endif
 

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+  <Attribute name="SelectionList" purpose="Contains a lis of SelectionProperties objects." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="SelectionList.code">
+    <Field name="autoApplyUpdates" label="Automatically apply updates" type="bool">
+      false
+    </Field>
+    <Field name="selections" label="Selections" type="attVector" subtype="SelectionProperties">
+    </Field>
+    <Function name="GetSelection" user="true" member="true">
+    </Function>
+  </Attribute>

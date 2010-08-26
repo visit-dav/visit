@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: Plot
 //
@@ -68,13 +69,23 @@ public:
         Error
     };
 
+    // These constructors are for objects of this class
     Plot();
     Plot(const Plot &obj);
+protected:
+    // These constructors are for objects derived from this class
+    Plot(private_tmfs_t tmfs);
+    Plot(const Plot &obj, private_tmfs_t tmfs);
+public:
     virtual ~Plot();
 
     virtual Plot& operator = (const Plot &obj);
     virtual bool operator == (const Plot &obj) const;
     virtual bool operator != (const Plot &obj) const;
+private:
+    void Init();
+    void Copy(const Plot &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -91,6 +102,7 @@ public:
     void SelectKeyframes();
     void SelectDatabaseKeyframes();
     void SelectDescription();
+    void SelectSelection();
 
     // Property setting methods
     void SetStateType(StateType stateType_);
@@ -112,6 +124,7 @@ public:
     void SetIsFromSimulation(bool isFromSimulation_);
     void SetFollowsTime(bool followsTime_);
     void SetDescription(const std::string &description_);
+    void SetSelection(const std::string &selection_);
 
     // Property getting methods
     StateType          GetStateType() const;
@@ -141,6 +154,8 @@ public:
     bool               GetFollowsTime() const;
     const std::string  &GetDescription() const;
           std::string  &GetDescription();
+    const std::string  &GetSelection() const;
+          std::string  &GetSelection();
 
     // Enum conversion functions
     static std::string StateType_ToString(StateType);
@@ -183,7 +198,9 @@ public:
         ID_databaseKeyframes,
         ID_isFromSimulation,
         ID_followsTime,
-        ID_description
+        ID_description,
+        ID_selection,
+        ID__LAST
     };
 
 private:
@@ -206,9 +223,12 @@ private:
     bool         isFromSimulation;
     bool         followsTime;
     std::string  description;
+    std::string  selection;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PLOT_TMFS "iisbbbssi*s*iiiii*i*bbss"
 
 #endif

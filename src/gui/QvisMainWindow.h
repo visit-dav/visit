@@ -228,6 +228,9 @@ class WindowInformation;
 //   Hank Childs, Sun Aug  1 12:02:45 PDT 2010
 //   Add signal for setting up CMFEs.
 //
+//   Brad Whitlock, Fri Aug  6 16:59:07 PDT 2010
+//   Added signal to open Selections window.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -299,6 +302,7 @@ signals:
     void activateQueryOverTimeWindow();
     void activateInteractorWindow();
     void activateMeshManagementWindow();
+    void activateSelectionsWindow();
     void updateVisIt();
 
     void saveSettings();

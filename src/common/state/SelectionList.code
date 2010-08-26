@@ -1,0 +1,18 @@
+Function: GetSelection
+Declaration: int GetSelection(const std::string &name) const;
+Definition:
+int
+SelectionList::GetSelection(const std::string &name) const
+{
+    int retval = -1;
+    for(int i = 0; i < GetNumSelections(); ++i)
+    {
+        if(GetSelections(i).GetName() == name)
+        {
+            retval = i;
+            break;
+        }
+    }
+    return retval;
+}
+

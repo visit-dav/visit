@@ -1,34 +1,74 @@
 <?xml version="1.0"?>
-  <Attribute name="Plot" codefile="Plot.code" persistent="false" purpose="This class is a plot element in a plot list." exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="Plot" purpose="This class is a plot element in a plot list." persistent="false" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="Plot.code">
     <Enum name="StateType">
       NewlyCreated
       Pending
       Completed
       Error
     </Enum>
-    <Field name="stateType" type="enum" subtype="StateType">NewlyCreated</Field>
-    <Field name="plotType" type="int">0</Field>
-    <Field name="plotName" type="string"></Field>
-    <Field name="activeFlag" type="bool">false</Field>
-    <Field name="hiddenFlag" type="bool">false</Field>
-    <Field name="expandedFlag" type="bool">false</Field>
-    <Field name="plotVar" type="string">"notset"</Field>
-    <Field name="databaseName" type="string">"notset"</Field>
-    <Field name="operators" type="intVector"></Field>
-    <Field name="operatorNames" type="stringVector"></Field>
-    <Field name="activeOperator" type="int">-1</Field>
-    <Field name="id" type="int">-1</Field>
-    <Field name="beginFrame" type="int">-999</Field>
-    <Field name="endFrame" type="int">999</Field>
-    <Field name="keyframes" type="intVector"></Field>
-    <Field name="databaseKeyframes" type="intVector"></Field>
-    <Field name="isFromSimulation" type="bool">false</Field>
-    <Field name="followsTime" type="bool">true</Field>
-    <Field name="description" type="string"></Field>
-    <Function name="AddOperator"        user="true" member="true"></Function>
-    <Function name="ClearAllOperators"  user="true" member="true"></Function>
-    <Function name="GetNumOperators"    user="true" member="true"></Function>
-    <Function name="GetOperator"        user="true" member="true"></Function>
-    <Function name="GetOperatorName"    user="true" member="true"></Function>
-    <Function name="RemoveLastOperator" user="true" member="true"></Function>
+    <Field name="stateType" label="stateType" type="enum" subtype="StateType">
+      NewlyCreated
+    </Field>
+    <Field name="plotType" label="plotType" type="int">
+      0
+    </Field>
+    <Field name="plotName" label="plotName" type="string">
+    </Field>
+    <Field name="activeFlag" label="activeFlag" type="bool">
+      false
+    </Field>
+    <Field name="hiddenFlag" label="hiddenFlag" type="bool">
+      false
+    </Field>
+    <Field name="expandedFlag" label="expandedFlag" type="bool">
+      false
+    </Field>
+    <Field name="plotVar" label="plotVar" type="string">
+      notset
+    </Field>
+    <Field name="databaseName" label="databaseName" type="string">
+      notset
+    </Field>
+    <Field name="operators" label="operators" type="intVector">
+    </Field>
+    <Field name="operatorNames" label="operatorNames" type="stringVector">
+    </Field>
+    <Field name="activeOperator" label="activeOperator" type="int">
+      -1
+    </Field>
+    <Field name="id" label="id" type="int">
+      -1
+    </Field>
+    <Field name="beginFrame" label="beginFrame" type="int">
+      -999
+    </Field>
+    <Field name="endFrame" label="endFrame" type="int">
+      999
+    </Field>
+    <Field name="keyframes" label="keyframes" type="intVector">
+    </Field>
+    <Field name="databaseKeyframes" label="databaseKeyframes" type="intVector">
+    </Field>
+    <Field name="isFromSimulation" label="isFromSimulation" type="bool">
+      false
+    </Field>
+    <Field name="followsTime" label="followsTime" type="bool">
+      true
+    </Field>
+    <Field name="description" label="description" type="string">
+    </Field>
+    <Field name="selection" label="Selection" type="string">
+    </Field>
+    <Function name="AddOperator" user="true" member="true">
+    </Function>
+    <Function name="ClearAllOperators" user="true" member="true">
+    </Function>
+    <Function name="GetNumOperators" user="true" member="true">
+    </Function>
+    <Function name="GetOperator" user="true" member="true">
+    </Function>
+    <Function name="GetOperatorName" user="true" member="true">
+    </Function>
+    <Function name="RemoveLastOperator" user="true" member="true">
+    </Function>
   </Attribute>

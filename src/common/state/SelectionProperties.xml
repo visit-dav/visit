@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+  <Attribute name="SelectionProperties" purpose="Contains attributes for a selection" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="name" label="Name of the selection" type="string">
+    </Field>
+    <Field name="originatingPlot" label="The plotName of the plot that defines the selection" type="string">
+    </Field>
+    <Field name="rangeProperty" label="Dummy property for ranges -- more to come later" type="int">
+      0
+    </Field>
+    <Field name="histogramProperty" label="Dummy property for histograms -- more to come." type="int">
+      0
+    </Field>
+    <Field name="statisticsProperty" label="Dummy property for statistics -- more to come" type="int">
+      0
+    </Field>
+  </Attribute>

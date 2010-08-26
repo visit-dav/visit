@@ -71,6 +71,8 @@
 #include <QvisVariableButton.h>
 #include <QvisVariablePopupMenu.h>
 #include <PlotPluginInfo.h>
+#include <SelectionList.h>
+#include <SelectionProperties.h>
 #include <WindowInformation.h>
 #include <TimingsManager.h>
 
@@ -222,6 +224,9 @@ using std::vector;
 //   Brad Whitlock, Thu Jul 22 14:56:19 PST 2010
 //   I fixed the menu.
 //
+//   Brad Whitlock, Fri Jul 23 15:24:49 PDT 2010
+//   I added selection support.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
@@ -234,6 +239,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     windowInfo = 0;
     exprList = 0;
     pluginAtts = 0;
+    selectionList = 0;
 
     sourceVisible=true;
 
@@ -314,6 +320,8 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
     connect(plotListBox, SIGNAL(activateSubsetWindow()),
             this, SIGNAL(activateSubsetWindow()));
+    connect(plotListBox, SIGNAL(activateSelectionsWindow(const QString &)),
+            this, SIGNAL(activateSelectionsWindow(const QString &)));
     connect(plotListBox, SIGNAL(promoteOperator(int)),
             this, SLOT(promoteOperator(int)));
     connect(plotListBox, SIGNAL(demoteOperator(int)),
@@ -403,6 +411,9 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 //   Brad Whitlock, Mon Feb  8 13:35:02 PST 2010
 //   I added pluginAtts.
 //
+//   Brad Whitlock, Fri Jul 23 15:25:23 PDT 2010
+//   I added selectionList.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::~QvisPlotManagerWidget()
@@ -427,6 +438,9 @@ QvisPlotManagerWidget::~QvisPlotManagerWidget()
 
     if(pluginAtts)
         pluginAtts->Detach(this);
+
+    if(selectionList)
+        selectionList->Detach(this);
 }
 
 // ****************************************************************************
@@ -784,7 +798,8 @@ QvisPlotManagerWidget::DestroyVariableMenu()
 void
 QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 {
-    if(plotList == 0 || fileServer == 0 || globalAtts == 0 || windowInfo == 0)
+    if(plotList == 0 || fileServer == 0 || globalAtts == 0 || 
+       windowInfo == 0 || selectionList == 0)
     {
         return;
     }
@@ -928,10 +943,16 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
         UpdateOperatorCategories();
         this->updateOperatorMenuEnabledState = true;
     }
+    else if(TheChangedSubject == selectionList)
+    {
+        UpdatePlotList();
+
+        // If we have set the cursor in the past, then restore it now.
+        RestoreCursor();
+    }
 
     // Update the enabled state for plot/operator menus
     UpdatePlotAndOperatorMenuEnabledState();
-
 }
 
 // ****************************************************************************
@@ -985,6 +1006,9 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Fri Apr 23 14:34:41 PDT 2010
 //   If the plot list box is being selected, postpone the update.
 //
+//   Brad Whitlock, Fri Jul 23 16:06:08 PDT 2010
+//   I added support for selections.
+//
 // ****************************************************************************
 
 void
@@ -1019,7 +1043,29 @@ QvisPlotManagerWidget::UpdatePlotList()
         prefixes.push_back(prefix);
     }
 
-    if(plotListBox->NeedsToBeRegenerated(plotList, prefixes))
+    //
+    // Create a vector of selection names for the new plot list.
+    //
+    stringVector createdSelections;
+    for(i = 0; i < plotList->GetNumPlots(); ++i)
+    {
+        // Create a constant reference to the current plot.
+        const Plot &current = plotList->operator[](i);
+
+        std::string createSelection;
+        for(int j = 0; j < selectionList->GetNumSelections(); ++j)
+        {
+            const SelectionProperties &sel = selectionList->GetSelections(j);
+            if(current.GetPlotName() == sel.GetOriginatingPlot())
+            {
+                createSelection = sel.GetName();
+                break;
+            }
+        }
+        createdSelections.push_back(createSelection);
+    }
+
+    if(plotListBox->NeedsToBeRegenerated(plotList, prefixes, createdSelections))
     {
         // Update the plot list.
         plotListBox->blockSignals(true);
@@ -1031,10 +1077,14 @@ QvisPlotManagerWidget::UpdatePlotList()
 
             // Figure out the prefix that should be applied to the plot.
             QString prefix(prefixes[i].c_str());
+            QString createdSelection;
+            if(createdSelections[i].size() > 0)
+                createdSelection = QString(createdSelections[i].c_str());
 
             // Create a new plot item in the list.
-            QvisPlotListBoxItem *newPlot = new QvisPlotListBoxItem(prefix,
-                current);
+            QvisPlotListBoxItem *newPlot = new QvisPlotListBoxItem(current,
+                prefix, createdSelection);
+
             // Store "this" in the item's data so the delegate can callback into it.
             qulonglong addr = (qulonglong)(void*)newPlot;
             newPlot->setData(Qt::UserRole, QVariant(addr));
@@ -2087,6 +2137,16 @@ QvisPlotManagerWidget::ConnectPluginManagerAttributes(PluginManagerAttributes *p
     {
         pluginAtts = pa;
         pa->Attach(this);
+    }
+}
+
+void
+QvisPlotManagerWidget::ConnectSelectionList(SelectionList *sl)
+{
+    if(selectionList == 0)
+    {
+        selectionList = sl;
+        sl->Attach(this);
     }
 }
 

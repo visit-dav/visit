@@ -108,6 +108,7 @@ QvisSubsetPanelWidget::QvisSubsetPanelWidget(QWidget *parent,
     // create contents
 
     QGridLayout *layout = new QGridLayout(this);
+    layout->setMargin(4);
     tree = new QTreeWidget(this);
 
     tree->setSelectionMode(QAbstractItemView::ExtendedSelection);

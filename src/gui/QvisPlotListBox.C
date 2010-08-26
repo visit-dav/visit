@@ -336,6 +336,9 @@ QvisPlotListBox::mouseDoubleClickEvent(QMouseEvent *e)
 //   Brad Whitlock, Fri Apr 23 14:31:43 PDT 2010
 //   I changed the code to work better with extended selection.
 //
+//   Brad Whitlock, Fri Jul 23 16:03:13 PDT 2010
+//   I added a signal to activate the selection window.
+//
 // ****************************************************************************
 
 void
@@ -346,6 +349,7 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
     int action = -1, opId = -1;
     bool bs = signalsBlocked();
     bool emitted = true;
+    QvisPlotListBoxItem *actionItem = 0;
 
     // Walk through all of the items, checking if we've clicked in each one.
     for (size_t i = 0; i < count(); ++i)
@@ -372,15 +376,16 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
                 current->setSelected(true);
                 blockSignals(bs);
 
-                // Reduce the y location of the click location to be local             // item.
+                // Reduce the y location of the click location to be local
                 // to the item
                 itemClickLocation.setY(clickLocation.y() - y);
 
                 // Handle the click.
                 if (action == -1)
                 {
-                    action = item2->clicked(itemClickLocation, doubleClicked, 
-                                            opId);
+                    action = item2->clicked(itemClickLocation, doubleClicked, opId);
+                    if(action >= 0 && action <= 7)
+                        actionItem = item2;
                 }
             }
         }
@@ -415,6 +420,9 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
         break;
     case 6: // delete clicked
          emit removeOperator(opId);
+        break;
+    case 7: // selection clicked
+         emit activateSelectionsWindow(actionItem->GetSelectionName());
         break;
     default:
         if(rightClick)
@@ -518,11 +526,14 @@ QvisPlotListBox::activeOperatorIndex(int id) const
 //   Brad Whitlock, Tue Oct 20 15:13:07 PDT 2009
 //   Check plot descriptions.
 //
+//   Brad Whitlock, Fri Jul 23 15:37:30 PDT 2010
+//   Check selection and created selections.
+//
 // ****************************************************************************
 
 bool
 QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl,
-    const stringVector &prefixes) const
+    const stringVector &prefixes, const stringVector &createdSelections) const
 {
     bool retval = true;
 
@@ -538,6 +549,10 @@ QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl,
             if(prefixes[i] != std::string(lbi->GetPrefix().toStdString()))
                  return true;
 
+            // See if the createdSelections are different.
+            if(createdSelections[i] != std::string(lbi->GetSelectionName().toStdString()))
+                 return true;
+
             // See if the plots are different
             bool nu = newPlot.GetStateType() != currentPlot.GetStateType() ||
                    newPlot.GetPlotType() != currentPlot.GetPlotType() ||
@@ -547,7 +562,8 @@ QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl,
                    newPlot.GetPlotVar() != currentPlot.GetPlotVar() ||
                    newPlot.GetDatabaseName() != currentPlot.GetDatabaseName() ||
                    newPlot.GetOperators() != currentPlot.GetOperators() ||
-                   newPlot.GetDescription() != currentPlot.GetDescription();
+                   newPlot.GetDescription() != currentPlot.GetDescription() ||
+                   newPlot.GetSelection() != currentPlot.GetSelection();
 
             if(nu) return true;
         }

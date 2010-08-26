@@ -66,3 +66,4 @@ Plot::RemoveLastOperator()
         Select(ID_operatorNames, (void *)&operatorNames);
     }
 }
+

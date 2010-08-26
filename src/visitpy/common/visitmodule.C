@@ -13049,6 +13049,37 @@ visit_DeleteNamedSelection(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_UpdateNamedSelection
+//
+// Purpose: 
+//   Tells the viewer to update a named selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 13 14:39:21 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_UpdateNamedSelection(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *selName;
+    if (!PyArg_ParseTuple(args, "s", &selName))
+       return NULL;
+
+    // Activate the database.
+    MUTEX_LOCK();
+        GetViewerMethods()->UpdateNamedSelection(selName);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_LoadNamedSelection
 //
 // Purpose:
@@ -13141,6 +13172,10 @@ visit_LoadNamedSelection(PyObject *self, PyObject *args)
 //    Gunther H. Weber, Mon Apr  6 18:55:15 PDT 2009
 //    Pass engine and simulation name to SaveNamedSelection RPC.
 //
+//    Brad Whitlock, Wed Aug 11 15:22:47 PDT 2010
+//    Ignore the engine and sim name since they're implicitly associated with
+//    a plot which has an engine.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -13162,45 +13197,47 @@ visit_SaveNamedSelection(PyObject *self, PyObject *args)
                 return NULL;
 
             PyErr_Clear();
-            // Indicate that we want to close the first engine in the list.
-            useFirstEngine = true;
         }
         else
         {
             PyErr_Clear();
-            // Indicate that we want to close the first simulation on that host
-            useFirstSimulation = true;
         }
     }
 
     // Activate the database.
     MUTEX_LOCK();
-        if(useFirstEngine)
-        {
-            const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
-            const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
-            if(engines.size() > 0)
-            {
-                engineName = engines[0].c_str();
-                simulationName = sims[0].c_str();
-            }
-        }
-        else if (useFirstSimulation)
-        {
-            const stringVector &engines = GetViewerState()->GetEngineList()->GetEngines();
-            const stringVector &sims = GetViewerState()->GetEngineList()->GetSimulationName();
-            for (int i=0; i<engines.size(); i++)
-            {
-                if (engines[i] == engineName)
-                {
-                    simulationName = sims[i].c_str();
-                    break;
-                }
-            }
-        }
+        GetViewerMethods()->SaveNamedSelection(selName);
+    MUTEX_UNLOCK();
 
-        if (engineName != 0 && simulationName != 0)
-            GetViewerMethods()->SaveNamedSelection(selName, engineName, simulationName);
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SetNamedSelectionAutoApply
+//
+// Purpose: 
+//   Tells the viewer to set the named selection auto apply mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 11 16:05:26 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetNamedSelectionAutoApply(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int apply = 0;
+    if (!PyArg_ParseTuple(args, "i", &apply))
+       return NULL;
+
+    // Activate the database.
+    MUTEX_LOCK();
+        GetViewerMethods()->SetNamedSelectionAutoApply(apply != 0);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -14534,6 +14571,9 @@ AddMethod(const char *methodName,
 //   Cyrus Harrison, Wed Jul 14 11:21:39 PDT 2010
 //   Added 'OpenCLI'.
 //
+//   Brad Whitlock, Wed Aug 11 16:08:03 PDT 2010
+//   Added SetNamedSelectionAutoApply and UpdateNamedSelection.
+//
 //   Hank Childs, Sat Aug 21 14:05:14 PDT 2010
 //   Rename ddf to data binning.
 //
@@ -14847,6 +14887,7 @@ AddDefaultMethods()
                                             visit_SetMaterialAttributes_doc);
     AddMethod("SetMeshManagementAttributes", visit_SetMeshManagementAttributes,
                                         visit_SetMeshManagementAttributes_doc);
+    AddMethod("SetNamedSelectionAutoApply", visit_SetNamedSelectionAutoApply, NULL /*DOCUMENT ME*/);
     AddMethod("SetOperatorOptions", visit_SetOperatorOptions,
                                                  visit_SetOperatorOptions_doc);
     AddMethod("SetPickAttributes", visit_SetPickAttributes,
@@ -14919,6 +14960,8 @@ AddDefaultMethods()
                                                          visit_ToggleMode_doc);
     AddMethod("ToggleSpinMode", visit_ToggleSpinMode, visit_ToggleMode_doc);
     AddMethod("UndoView",  visit_UndoView, visit_UndoView_doc);
+    AddMethod("UpdateNamedSelection", visit_UpdateNamedSelection, NULL /*DOCUMENT ME*/);
+
     AddMethod("UserActionFinished",visit_UserActionFinished,NULL);
     AddMethod("RedoView",  visit_RedoView, visit_RedoView_doc);
     AddMethod("WriteConfigFile",  visit_WriteConfigFile,

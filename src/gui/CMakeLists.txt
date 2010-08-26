@@ -42,10 +42,13 @@
 #   Added QvisPythonFilterEditor
 #
 #   Cyrus Harrison, Mon Mar 15 13:27:16 PDT 2010
-#   Added  QvisTimeSliderControlWidget & QvisSourceManagerWidget.
+#   Added QvisTimeSliderControlWidget & QvisSourceManagerWidget.
 #
 #   Hank Childs, Sun Aug  1 14:41:50 PDT 2010
 #   Add QvisCMFEWizard.
+#
+#   Brad Whitlock, Fri Aug  6 16:34:54 PDT 2010
+#   Added QvisSelectionsWindow.
 #
 #****************************************************************************/
 
@@ -163,6 +166,7 @@ QvisSaveWindow.C
 QvisScreenPositionEdit.C
 QvisScreenPositioner.C
 QvisScribbleOpacityBar.C
+QvisSelectionsWindow.C
 QvisSequenceButton.C
 QvisSequenceMappingModel.C
 QvisSequenceTransition.C
@@ -278,6 +282,7 @@ QvisSaveWindow.h
 QvisScreenPositionEdit.h
 QvisScreenPositioner.h
 QvisScribbleOpacityBar.h
+QvisSelectionsWindow.h
 QvisSessionFileDatabaseLoader.h
 QvisSessionSourceChanger.h
 QvisSessionSourceChangerDialog.h

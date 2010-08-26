@@ -49,7 +49,7 @@
 #include <AnimationAttributes.h>
 #include <EngineKey.h>
 #include <string>
-#include <map>
+#include <maptypes.h>
 #include <vectortypes.h>
 #include <VisWindowTypes.h>
 #include <enumtypes.h>
@@ -358,6 +358,7 @@ public:
     void BackwardStep();
     void SetTimeSliderState(int state);
     void UpdateFrame(bool updatePlotStates = true);
+    bool UpdateFrameForPlots(const intVector &);
 
     void SetAnimationAttributes(const AnimationAttributes &);
     const AnimationAttributes &GetAnimationAttributes() const;
@@ -379,8 +380,8 @@ public:
     int  GetNumRealizedPlots() const;
     int  GetNumVisiblePlots() const;
     int  AddPlot(int type, const std::string &var, bool replacePlots = false,
-                 bool applyToAll = false, bool inheritSILRestriction = false,
-                 DataNode *attributesNode = 0);
+                 bool applyOperators = false, bool inheritSILRestriction = false,
+                 bool applySelections = false, DataNode *attributesNode = 0);
 
     int GetNumberOfCells(bool polysOnly = false) const;
 
@@ -400,7 +401,7 @@ public:
     bool GetNKeyframesWasUserSet() const;
 
 
-    void CopyFrom(const ViewerPlotList *pl, bool copyPlots);
+    StringStringMap CopyFrom(const ViewerPlotList *pl, bool copyPlots);
     void ClearPlots(bool clearAll = true);
     void ClearActors();
     void TransmutePlots(bool turningOffScalableRendering);
@@ -513,9 +514,9 @@ public:
     bool        UpdatePlotStates();
     bool        UpdateSinglePlotState(ViewerPlot *plot);
 
-    bool        ArePlotsUpToDate() const;
-    bool        UpdatePlots(bool animating = false);
-    void        UpdateWindow(bool immediateUpdate);
+    bool        ArePlotsUpToDate(const intVector &somePlots) const;
+    bool        UpdatePlots(const intVector &somePlots, bool animating = false);
+    void        UpdateWindow(const intVector &somePlots, bool immediateUpdate);
 
     static std::string SILRestrictionKey(const std::string &, const std::string &, int);
  

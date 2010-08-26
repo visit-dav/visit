@@ -593,6 +593,9 @@ private:
     void DeleteNamedSelection();
     void LoadNamedSelection();
     void SaveNamedSelection();
+    void SetNamedSelectionAutoApply();
+    void UpdateNamedSelection();
+    void UpdateNamedSelection(const std::string &);
 
     void SetDefaultPlotOptions();
     void ResetPlotOptions();

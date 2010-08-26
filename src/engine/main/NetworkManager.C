@@ -1325,38 +1325,39 @@ NetworkManager::MakePlot(const string &plotName, const string &pluginID,
 //    Hank Childs, Mon Apr  6 13:06:22 PDT 2009
 //    Add support for sending named selection info to all filters.
 //
+//    Brad Whitlock, Tue Aug 10 16:11:25 PDT 2010
+//    Use find() method.
+//
 // ****************************************************************************
+
 int
 NetworkManager::EndNetwork(int windowID)
 {
     std::map<std::string, std::string>::iterator it;
-    for (it = namedSelectionsToApply.begin() ; 
-         it != namedSelectionsToApply.end() ; it++)
+    it = namedSelectionsToApply.find(workingNet->GetPlotName());
+    if (it != namedSelectionsToApply.end())
     {
-        if ((it)->first == workingNet->GetPlotName())
+        avtNamedSelectionFilter *f = new avtNamedSelectionFilter();
+        f->SetSelectionName(it->second);
+        NetnodeFilter *filt = new NetnodeFilter(f, "NamedSelection");
+        Netnode *n = workingNetnodeList.back();
+        workingNetnodeList.pop_back();
+        filt->GetInputNodes().push_back(n);
+
+        // Push the ExpressionEvaluator onto the working list.
+        workingNetnodeList.push_back(filt);
+
+        workingNet->AddNode(filt);
+
+        std::vector<Netnode *> netnodes = workingNet->GetNodeList();
+        for (int i = 0 ; i < netnodes.size() ; i++)
         {
-            avtNamedSelectionFilter *f = new avtNamedSelectionFilter();
-            f->SetSelectionName(it->second);
-            NetnodeFilter *filt = new NetnodeFilter(f, "NamedSelection");
-            Netnode *n = workingNetnodeList.back();
-            workingNetnodeList.pop_back();
-            filt->GetInputNodes().push_back(n);
-
-            // Push the ExpressionEvaluator onto the working list.
-            workingNetnodeList.push_back(filt);
-
-            workingNet->AddNode(filt);
-
-            std::vector<Netnode *> netnodes = workingNet->GetNodeList();
-            for (int i = 0 ; i < netnodes.size() ; i++)
-            {
-                avtFilter *filt = netnodes[i]->GetFilter();
-                if (filt == NULL)
-                    continue;
-                filt->RegisterNamedSelection(it->second);
-            }
-            workingNet->GetPlot()->RegisterNamedSelection(it->second);
+            avtFilter *filt = netnodes[i]->GetFilter();
+            if (filt == NULL)
+                continue;
+            filt->RegisterNamedSelection(it->second);
         }
+        workingNet->GetPlot()->RegisterNamedSelection(it->second);
     }
 
     // Checking to see if the network has been built successfully.
@@ -3781,21 +3782,33 @@ NetworkManager::CreateNamedSelection(int id, const std::string &selName)
 //      Applies a named selection to a plot.
 //
 //  Arguments:
-//    ids        The networks to use.
+//    ids        The names of the plots to which the selection will apply.
 //    selName    The name of the selection.
 //
 //  Programmer:  Hank Childs
 //  Creation:    January 30, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Tue Aug 10 16:13:27 PDT 2010
+//    Remove a named selection from a plot if the selName is empty.
+//
 // ****************************************************************************
 
 void
 NetworkManager::ApplyNamedSelection(const std::vector<std::string> &ids, 
-                                     const std::string &selName)
+                                    const std::string &selName)
 {
     for (int i = 0 ; i < ids.size() ; i++)
     {
-        namedSelectionsToApply[ids[i]] = selName;
+        if(selName.size() > 0)
+            namedSelectionsToApply[ids[i]] = selName;
+        else
+        {
+            std::map<std::string,std::string>::iterator it;
+            it = namedSelectionsToApply.find(ids[i]);
+            if(it != namedSelectionsToApply.end())
+                namedSelectionsToApply.erase(it);
+        }
     }
 }
 

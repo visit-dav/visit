@@ -3310,11 +3310,26 @@ ViewerWindow::CopyAnnotationAttributes(const ViewerWindow *source)
 //   Brad Whitlock, Mon Mar 26 14:49:53 PST 2007
 //   Added copyLegends.
 //
+//   Brad Whitlock, Fri Aug 13 16:43:02 PDT 2010
+//   I added code to rename annotation objects if needed. This helps line up
+//   annotation objects with new plots when we copy plot lists.
+//
 // ****************************************************************************
+
+static void
+RenameAnnotationObjects(AnnotationObjectList &obj, const StringStringMap &names)
+{
+    for(int i = 0; i < obj.GetNumAnnotations(); ++i)
+    {
+         StringStringMap::const_iterator it;
+         if((it = names.find(obj[i].GetObjectName())) != names.end())
+             obj[i].SetObjectName(it->second);
+    }
+}
 
 void
 ViewerWindow::CopyAnnotationObjectList(const ViewerWindow *source, 
-    bool copyLegends)
+    const StringStringMap &nameMap, bool copyLegends)
 {
     // Get the properties of all of the source window's annotations.
     AnnotationObjectList annots;
@@ -3326,6 +3341,7 @@ ViewerWindow::CopyAnnotationObjectList(const ViewerWindow *source,
         // First delete all of the annotation objects.
         visWindow->DeleteAllAnnotationObjects();
 
+        RenameAnnotationObjects(annots, nameMap);
         visWindow->CreateAnnotationObjectsFromList(annots);
     }
     else
@@ -3351,6 +3367,7 @@ ViewerWindow::CopyAnnotationObjectList(const ViewerWindow *source,
         // First delete all of the annotation objects.
         visWindow->DeleteAllAnnotationObjects();
 
+        RenameAnnotationObjects(annots, nameMap);
         visWindow->CreateAnnotationObjectsFromList(allAnnots);
     }
 }
@@ -8308,24 +8325,28 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //   Added automatic depth cueing mode.
 //
-//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
-//    Add compact domain options.
+//   Brad Whitlock, Tue Aug 17 14:13:20 PDT 2010
+//   I made it return whether the window needs to be updated.
+//
+//   Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//   Add compact domain options.
 //
 // ****************************************************************************
 
-void
+bool
 ViewerWindow::SetFromNode(DataNode *parentNode, 
     const std::map<std::string, std::string> &sourceToDB, 
     const std::string &configVersion)
 {
     DataNode *node;
+    bool needsUpdate = false;
 
     if(parentNode == 0)
-        return;
+        return false;
 
     DataNode *windowNode = parentNode->GetNode("ViewerWindow");
     if(windowNode == 0)
-        return;
+        return false;
     //
     // Reset the view centering flags.
     //
@@ -8356,8 +8377,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     //
     // Read in the plot list.
     //
-    if(GetPlotList()->SetFromNode(windowNode, sourceToDB, configVersion))
-        SendUpdateFrameMessage();
+    needsUpdate = GetPlotList()->SetFromNode(windowNode, sourceToDB, configVersion);
 
     //
     // Read in the view and set the view.
@@ -8668,6 +8688,8 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
             }
         }
     }
+
+    return needsUpdate;
 }
 
 // ****************************************************************************

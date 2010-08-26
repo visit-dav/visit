@@ -3359,6 +3359,108 @@ public class ViewerMethods
         return Synchronize();
     }
 
+    /**
+     * Applies a named selection to the active plots.
+     *
+     * @param selName The name of the named selection to use.
+     * @return true on success; false otherwise.
+     */
+    public boolean ApplyNamedSelection(String selName)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_APPLYNAMEDSELECTIONRPC);
+        GetViewerState().GetViewerRPC().SetStringArg1(selName);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
+     * Creates a named selection based on the active plots.
+     *
+     * @param selName The name of the named selection to create.
+     * @return true on success; false otherwise.
+     */
+    public boolean CreateNamedSelection(String selName)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_CREATENAMEDSELECTIONRPC);
+        GetViewerState().GetViewerRPC().SetStringArg1(selName);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
+     * Deletes a named selection.
+     *
+     * @param selName The name of the named selection to delete.
+     * @return true on success; false otherwise.
+     */
+    public boolean DeleteNamedSelection(String selName)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_DELETENAMEDSELECTIONRPC);
+        GetViewerState().GetViewerRPC().SetStringArg1(selName);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
+     * Loads a named selection.
+     *
+     * @param selName The name of the named selection to load.
+     * @param hostName The host that has the named selection
+     * @param simName The name of the simulation.
+     * @return true on success; false otherwise.
+     */
+    public boolean LoadNamedSelection(String selName, String hostName, String simName)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_LOADNAMEDSELECTIONRPC);
+        GetViewerState().GetViewerRPC().SetStringArg1(selName);
+        GetViewerState().GetViewerRPC().SetProgramHost(hostName);
+        GetViewerState().GetViewerRPC().SetProgramSim(simName);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
+     * Saves a named selection.
+     *
+     * @param selName The name of the named selection to save.
+     * @return true on success; false otherwise.
+     */
+    public boolean SaveNamedSelection(String selName)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_SAVENAMEDSELECTIONRPC);
+        GetViewerState().GetViewerRPC().SetStringArg1(selName);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
+     * Set the auto apply mode for named selections.
+     *
+     * @param val True to make updating named selections automatically update plots; False otherwise.
+     * @return true on success; false otherwise.
+     */
+    public boolean SetNamedSelectionAutoApply(boolean val)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETNAMEDSELECTIONAUTOAPPLYRPC);
+        GetViewerState().GetViewerRPC().SetBoolFlag(val);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
+    /**
+     * Updates a named selection.
+     *
+     * @param selName The name of the named selection to update.
+     * @return true on success; false otherwise.
+     */
+    public boolean UpdateNamedSelection(String selName)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_UPDATENAMEDSELECTIONRPC);
+        GetViewerState().GetViewerRPC().SetStringArg1(selName);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
+
     //
     // Convenience methods
     //

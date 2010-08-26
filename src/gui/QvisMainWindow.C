@@ -72,6 +72,7 @@
 #include <MessageAttributes.h>
 #include <NameSimplifier.h>
 #include <PlotList.h>
+#include <SelectionList.h>
 #include <StatusAttributes.h>
 #include <TimeFormat.h>
 #include <UnicodeHelper.h>
@@ -96,6 +97,7 @@
 #include <icons/plugin.xpm>
 #include <icons/rainbow.xpm>
 #include <icons/savemovie.xpm>
+#include <icons/selection.xpm>
 #include <icons/subset.xpm>
 #include <icons/view.xpm>
 #include <icons/output_blue.xpm>
@@ -361,6 +363,9 @@
 //    Hank Childs, Wed Aug  4 13:27:57 PDT 2010
 //    Add Data-Level Comparisons.
 //
+//    Brad Whitlock, Fri Aug  6 16:58:31 PDT 2010
+//    Add Selections window.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -371,7 +376,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     setAttribute(Qt::WA_DeleteOnClose,true);
     int     id;
     QPixmap saveIcon, computerIcon, printIcon, rainbowIcon;
-    QPixmap annotIcon, lightIcon, subsetIcon, viewIcon;
+    QPixmap annotIcon, lightIcon, subsetIcon, selectionIcon, viewIcon;
     QPixmap exprIcon, animIcon, pluginIcon, pickIcon, copyIcon, lockIcon;
     QPixmap saveMovieIcon, commandIcon, keyframeIcon, materialIcon;
     QPixmap globalLineoutIcon, correlationIcon;
@@ -406,6 +411,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     annotIcon = QPixmap(annot_xpm);
     lightIcon = QPixmap(light_xpm);
     subsetIcon = QPixmap(subset_xpm);
+    selectionIcon = QPixmap(selection_xpm);
     viewIcon = QPixmap(view_xpm);
     exprIcon = QPixmap(expression_xpm);
     animIcon = QPixmap(animate_xpm);
@@ -489,8 +495,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->addSeparator();
 
     filePopup->addAction(tr("Simulations . . ."),
-                         this, SIGNAL(activateSimulationWindow()),
-                         QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
+                         this, SIGNAL(activateSimulationWindow()));
 
     filePopup->addSeparator();
 
@@ -592,6 +597,9 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                      this, SIGNAL(activateQueryWindow()), 
                      QKeySequence(Qt::CTRL + Qt::Key_Q));
 #endif
+    ctrls->addAction(selectionIcon, tr("Selections . . ."),
+                     this, SIGNAL(activateSelectionsWindow()),
+                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
     ctrls->addAction(subsetIcon, tr("S&ubset . . ."),
                      this, SIGNAL(activateSubsetWindow()), 
                      QKeySequence(Qt::CTRL + Qt::Key_U));
@@ -1006,6 +1014,9 @@ QvisMainWindow::AddHelpMenu(void)
 //   Brad Whitlock, Fri May  7 12:06:14 PDT 2010
 //   I removed the global area so I could create it elsewhere.
 //
+//   Brad Whitlock, Fri Jul 23 15:40:19 PDT 2010
+//   I added code to connect the selection list.
+//
 // ****************************************************************************
 
 void
@@ -1042,6 +1053,7 @@ QvisMainWindow::CreateMainContents(QSplitter *parent)
     plotManager->ConnectGlobalAttributes(GetViewerState()->GetGlobalAttributes());
     plotManager->ConnectExpressionList(GetViewerState()->GetExpressionList());
     plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
+    plotManager->ConnectSelectionList(GetViewerState()->GetSelectionList());
     layout->addWidget(plotManager, 10);
 
     parent->addWidget(mainControls);

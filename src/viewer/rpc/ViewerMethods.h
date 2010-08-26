@@ -127,6 +127,9 @@ class ViewerState;
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Brad Whitlock, Fri Aug 13 14:27:22 PDT 2010
+//   I added UpdateNamedSelection, SetNamedSelectionAutoApply
+//
 //   Hank Childs, Sat Aug 21 14:20:04 PDT 2010
 //   Rename method: DDF to DataBinning.
 //
@@ -200,9 +203,10 @@ public:
     void LoadNamedSelection(const std::string &selName,
                             const std::string &hostName,
                             const std::string &simName);
-    void SaveNamedSelection(const std::string &selName,
-                            const std::string &hostName,
-                            const std::string &simName);
+    void SaveNamedSelection(const std::string &selName);
+    void SetNamedSelectionAutoApply(bool);
+    void UpdateNamedSelection(const std::string &selName);
+
     void AnimationSetNFrames(int nFrames);
     void AnimationPlay();
     void AnimationReversePlay();

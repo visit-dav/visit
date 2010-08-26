@@ -852,15 +852,15 @@ ViewerMethods::DeleteNamedSelection(const std::string &selName)
 
 void
 ViewerMethods::LoadNamedSelection(const std::string &selName,
-        const std::string& hostName, const std::string& simName)
+    const std::string& hostName, const std::string& simName)
 {
     //
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::LoadNamedSelectionRPC);
     state->GetViewerRPC()->SetStringArg1(selName);
-    state->GetViewerRPC()->SetStringArg1(selName);
     state->GetViewerRPC()->SetProgramHost(hostName);
+    state->GetViewerRPC()->SetProgramSim(simName);
 
     //
     // Issue the RPC.
@@ -878,21 +878,71 @@ ViewerMethods::LoadNamedSelection(const std::string &selName,
 // Creation:   January 28, 2009
 //
 // Modifications:
-//    Gunther H. Weber, Mon Apr  6 19:04:24 PDT 2009
+//    Brad Whitlock, Wed Aug 11 15:18:48 PDT 2010
+//    I removed some arguments.
 //
 // ****************************************************************************
 
 void
-ViewerMethods::SaveNamedSelection(const std::string &selName,
-        const std::string& hostName, const std::string& simName)
+ViewerMethods::SaveNamedSelection(const std::string &selName)
 {
     //
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::SaveNamedSelectionRPC);
     state->GetViewerRPC()->SetStringArg1(selName);
-    state->GetViewerRPC()->SetProgramHost(hostName);
-    state->GetViewerRPC()->SetProgramSim(simName);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::SetNamedSelectionAutoApply
+//
+// Purpose: 
+//     Sets whether named selections are applied immediately when they change.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 11 16:09:26 PDT 2010
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetNamedSelectionAutoApply(bool val)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SetNamedSelectionAutoApplyRPC);
+    state->GetViewerRPC()->SetBoolFlag(val);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::UpdateNamedSelection
+//
+// Purpose: 
+//     Updates a named selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 13 14:28:09 PDT 2010
+//
+// ****************************************************************************
+
+void
+ViewerMethods::UpdateNamedSelection(const std::string &selName)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::UpdateNamedSelectionRPC);
+    state->GetViewerRPC()->SetStringArg1(selName);
 
     //
     // Issue the RPC.
