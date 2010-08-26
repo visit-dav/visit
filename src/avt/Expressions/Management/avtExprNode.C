@@ -470,6 +470,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Hank Childs, Sat Aug 21 13:59:11 PDT 2010
 //    Rename apply_ddf to apply_data_binning.
 //
+//    Cyrus Harrison, Wed Aug 25 16:45:25 PDT 2010
+//    Preserve 'apply_ddf' as alias for 'apply_data_binning'.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -566,7 +569,7 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtRelativeDifferenceExpression();
     if (functionName == "var_skew")
         return new avtVariableSkewExpression();
-    if (functionName == "apply_data_binning")
+    if (functionName == "apply_data_binning" || functionName == "apply_ddf")
         return new avtApplyDataBinningExpression();
 
     if (functionName == "distance_to_best_fit_line")
