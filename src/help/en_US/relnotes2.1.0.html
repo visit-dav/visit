@@ -41,13 +41,25 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.1</font></b></p>
 <ul>
-   <li>The visit_writer library now supports voxels and pixels.</li>
    <li>Support for multiresolution databases was added.  AMR databases can
        also take advantage of this support.  At present, the <TT>STAR</TT> and
        <TT>Chombo</TT> databases honor resolution requests; documentation on
        how to enable it in other databases is available in the source
        repository, under <TT>docs/multiresolution.txt</TT></li>
    <li>It is now possible to enable and disable warning message popups. The preference <i>Enable warning message popups</i> is located in the <i>Preferences</i> window and is enabled by default.</li>
+   <li>The Selection window was added so users can create selections. A selection is a set of 
+       cellids created by a plot. For example, if you create a ParallelCoordinates plot of several
+       variables, restrict the variable ranges, and create a selection from it then the selection
+       will contain the cellids that fall within the specified ranges. You can name
+       the selection and apply it to other plots, even ones in other windows. In this case, you
+       could use the ParallelCoordinates plot as an interactive thresholding mechanism, modifying 
+       a selection that erodes cells in a plot in another window. You apply a selection to a plot 
+       using new controls in the Subset window. Once a selection is applied to a plot, the set of 
+       cells used to make the plot is restricted to those contained in the selection. When a
+       plot that generates a selection is modified, plots that use the selection are recalculated so 
+       they too match the cells used in the originating plot's selection.
+   </li>
+   <li>The visit_writer library now supports voxels and pixels.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -106,6 +118,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Other bugs fixed in version 2.1</font></b></p>
 <ul>
 <li>Macro recording was changed so it generates a function name based on the name supplied for the macro. This eliminates a problem where giving a function name with invalid Python characters caused the macro to be discarded.</li>
+<li>2D axis annotations are now correctly initialized from default annotation attributes.</li>
 <li>The help text under <i>Working with databases->Supported File Types->File extensions</i>, which describes the order in which the database plugins are tried when attempting to open a file, is now current.</li>
 </ul>
 

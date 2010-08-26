@@ -422,6 +422,9 @@ class VisitInteractor;
 //    Dave Pugmire, Tue Aug 24 11:29:43 EDT 2010
 //    Add compact domains options.
 //
+//    Brad Whitlock, Thu Aug 26 15:36:31 PDT 2010
+//    I added  a force option to SetAnnotationAtts.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -546,7 +549,7 @@ public:
     void                 SetPickCB(VisCallback *cb, void *data);
     void                 SetLineoutCB(VisCallback *cb, void *data);
 
-    void                 SetAnnotationAtts(const AnnotationAttributes *);
+    void                 SetAnnotationAtts(const AnnotationAttributes *, bool force=false);
     const AnnotationAttributes *GetAnnotationAtts() const;
     bool                 AddAnnotationObject(int annotType, const std::string &annotName);
     void                 HideActiveAnnotationObjects();

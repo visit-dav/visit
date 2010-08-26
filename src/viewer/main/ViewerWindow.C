@@ -268,6 +268,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //    Added automatic depth cueing mode.
 //
+//    Brad Whitlock, Thu Aug 26 15:39:57 PDT 2010
+//    I added a force option to SetAnnotationAttributes.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
@@ -288,7 +291,7 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0),
     visWindow->SetExternalRenderCallback(ExternalRenderCallback, (void*)this);
     visWindow->CreateAnnotationObjectsFromList(
         *ViewerWindowManager::GetDefaultAnnotationObjectList());
-    SetAnnotationAttributes(ViewerWindowManager::GetAnnotationDefaultAtts());
+    SetAnnotationAttributes(ViewerWindowManager::GetAnnotationDefaultAtts(), true);
     SetLightList(ViewerWindowManager::GetLightListDefaultAtts());
     SetInteractorAtts(ViewerWindowManager::GetInteractorDefaultAtts());
 
@@ -3241,12 +3244,15 @@ ViewerWindow::RedoViewEnabled() const
 //    Eric Brugger, Fri Nov  2 14:59:33 PST 2001
 //    I added a const qualifier for atts.
 //
+//    Brad Whitlock, Thu Aug 26 15:39:24 PDT 2010
+//    I added a force option.
+//
 // ****************************************************************************
 
 void
-ViewerWindow::SetAnnotationAttributes(const AnnotationAttributes *atts)
+ViewerWindow::SetAnnotationAttributes(const AnnotationAttributes *atts, bool force)
 {
-    visWindow->SetAnnotationAtts(atts);
+    visWindow->SetAnnotationAtts(atts, force);
 }
 
 // ****************************************************************************
@@ -8331,6 +8337,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //   Add compact domain options.
 //
+//   Brad Whitlock, Thu Aug 26 15:40:31 PDT 2010
+//   I added a force option to SetAnnotationAttributes.
+//
 // ****************************************************************************
 
 bool
@@ -8578,7 +8587,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         AnnotationAttributes annot;
         annot.ProcessOldVersions(windowNode, configVersion.c_str());
         annot.SetFromNode(windowNode);
-        SetAnnotationAttributes(&annot);
+        SetAnnotationAttributes(&annot, true);
     }
 
     //
