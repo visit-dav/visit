@@ -109,6 +109,12 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
     public final static int STREAMLINEALGORITHMTYPE_MASTERSLAVE = 2;
 
+    public final static int POINTTYPE_BOX = 0;
+    public final static int POINTTYPE_AXIS = 1;
+    public final static int POINTTYPE_ICOSAHEDRON = 2;
+    public final static int POINTTYPE_POINT = 3;
+    public final static int POINTTYPE_SPHERE = 4;
+
 
     public PoincareAttributes()
     {
@@ -165,11 +171,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showRidgelines = false;
         showLines = true;
         lineWidth = 0;
-        lineStyle = 0;
+        lineStyle = 4784160;
         showPoints = false;
         pointSize = 1;
         pointSizePixels = 1;
-        pointType = 0;
+        pointType = POINTTYPE_POINT;
         legendFlag = true;
         lightingFlag = true;
         streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_LOADONDEMAND;
@@ -234,11 +240,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showRidgelines = false;
         showLines = true;
         lineWidth = 0;
-        lineStyle = 0;
+        lineStyle = 4784160;
         showPoints = false;
         pointSize = 1;
         pointSizePixels = 1;
-        pointType = 0;
+        pointType = POINTTYPE_POINT;
         legendFlag = true;
         lightingFlag = true;
         streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_LOADONDEMAND;
@@ -1231,7 +1237,18 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("showPoints", showPoints, indent) + "\n";
         str = str + doubleToString("pointSize", pointSize, indent) + "\n";
         str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
-        str = str + intToString("pointType", pointType, indent) + "\n";
+        str = str + indent + "pointType = ";
+        if(pointType == POINTTYPE_BOX)
+            str = str + "POINTTYPE_BOX";
+        if(pointType == POINTTYPE_AXIS)
+            str = str + "POINTTYPE_AXIS";
+        if(pointType == POINTTYPE_ICOSAHEDRON)
+            str = str + "POINTTYPE_ICOSAHEDRON";
+        if(pointType == POINTTYPE_POINT)
+            str = str + "POINTTYPE_POINT";
+        if(pointType == POINTTYPE_SPHERE)
+            str = str + "POINTTYPE_SPHERE";
+        str = str + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
         str = str + indent + "streamlineAlgorithmType = ";

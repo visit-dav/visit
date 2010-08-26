@@ -420,6 +420,44 @@ PoincareAttributes::StreamlineAlgorithmType_FromString(const std::string &s, Poi
     return false;
 }
 
+//
+// Enum conversion methods for PoincareAttributes::PointType
+//
+
+static const char *PointType_strings[] = {
+"Box", "Axis", "Icosahedron", 
+"Point", "Sphere"};
+
+std::string
+PoincareAttributes::PointType_ToString(PoincareAttributes::PointType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 5) index = 0;
+    return PointType_strings[index];
+}
+
+std::string
+PoincareAttributes::PointType_ToString(int t)
+{
+    int index = (t < 0 || t >= 5) ? 0 : t;
+    return PointType_strings[index];
+}
+
+bool
+PoincareAttributes::PointType_FromString(const std::string &s, PoincareAttributes::PointType &val)
+{
+    val = PoincareAttributes::Box;
+    for(int i = 0; i < 5; ++i)
+    {
+        if(s == PointType_strings[i])
+        {
+            val = (PointType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: PoincareAttributes::PoincareAttributes
 //
@@ -486,7 +524,7 @@ void PoincareAttributes::Init()
     showPoints = false;
     pointSize = 1;
     pointSizePixels = 1;
-    pointType = 0;
+    pointType = Point;
     legendFlag = true;
     lightingFlag = true;
     streamlineAlgorithmType = LoadOnDemand;
@@ -1341,7 +1379,7 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     if(completeSave || !FieldsEqual(ID_pointType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("pointType", pointType));
+        node->AddNode(new DataNode("pointType", PointType_ToString(pointType)));
     }
 
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
@@ -1641,7 +1679,21 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("pointSizePixels")) != 0)
         SetPointSizePixels(node->AsInt());
     if((node = searchNode->GetNode("pointType")) != 0)
-        SetPointType(node->AsInt());
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 5)
+                SetPointType(PointType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            PointType value;
+            if(PointType_FromString(node->AsString(), value))
+                SetPointType(value);
+        }
+    }
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lightingFlag")) != 0)
@@ -2005,7 +2057,7 @@ PoincareAttributes::SetPointSizePixels(int pointSizePixels_)
 }
 
 void
-PoincareAttributes::SetPointType(int pointType_)
+PoincareAttributes::SetPointType(PoincareAttributes::PointType pointType_)
 {
     pointType = pointType_;
     Select(ID_pointType, (void *)&pointType);
@@ -2370,10 +2422,10 @@ PoincareAttributes::GetPointSizePixels() const
     return pointSizePixels;
 }
 
-int
+PoincareAttributes::PointType
 PoincareAttributes::GetPointType() const
 {
-    return pointType;
+    return PointType(pointType);
 }
 
 bool
@@ -2600,7 +2652,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_showPoints:                return FieldType_bool;
     case ID_pointSize:                 return FieldType_double;
     case ID_pointSizePixels:           return FieldType_int;
-    case ID_pointType:                 return FieldType_int;
+    case ID_pointType:                 return FieldType_enum;
     case ID_legendFlag:                return FieldType_bool;
     case ID_lightingFlag:              return FieldType_bool;
     case ID_streamlineAlgorithmType:   return FieldType_enum;
@@ -2678,7 +2730,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_showPoints:                return "bool";
     case ID_pointSize:                 return "double";
     case ID_pointSizePixels:           return "int";
-    case ID_pointType:                 return "int";
+    case ID_pointType:                 return "enum";
     case ID_legendFlag:                return "bool";
     case ID_lightingFlag:              return "bool";
     case ID_streamlineAlgorithmType:   return "enum";

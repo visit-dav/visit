@@ -37,20 +37,17 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                 avtPoincarePlot.h                             //
+//                             avtPoincarePlot.h                          //
 // ************************************************************************* //
 
-#ifndef AVT_Poincare_PLOT_H
-#define AVT_Poincare_PLOT_H
+#ifndef AVT_POINCARE_PLOT_H
+#define AVT_POINCARE_PLOT_H
 
 
 #include <avtLegend.h>
 #include <avtPlot.h>
-
 #include <PoincareAttributes.h>
-#include <avtSurfaceAndWireframeRenderer.h>
 
-class     vtkProperty;
 class     avtShiftCenteringFilter;
 class     avtLookupTable;
 class     avtVariablePointGlyphMapper;
@@ -76,40 +73,55 @@ class     avtPoincareFilter;
 //
 // ****************************************************************************
 
-class avtPoincarePlot : public avtLineDataPlot
+class avtPoincarePlot : public avtSurfaceDataPlot
 {
   public:
                                 avtPoincarePlot();
     virtual                    ~avtPoincarePlot();
 
-    virtual const char         *GetName(void) { return "PoincarePlot"; };
-
     static avtPlot             *Create();
 
+    virtual const char         *GetName(void) { return "PoincarePlot"; };
+
     virtual void                SetAtts(const AttributeGroup*);
+    virtual void                GetDataExtents(std::vector<double> &);
+    virtual bool                SetColorTable(const char *ctName);
+    virtual void                ReleaseData(void);
+
+    void                        SetLegend(bool);
+    void                        SetLighting(bool);
+
+    void                        SetLimitsMode(int);
+    void                        SetOpacityFromAtts();
+    void                        SetScaling(int, double);
 
   protected:
-    PoincareAttributes          atts;
-
-    avtVariablePointGlyphMapper  *glyphMapper;
-    avtVariableLegend          *varLegend;
+    avtVariablePointGlyphMapper *glyphMapper;
+    avtVariableLegend           *varLegend;
     avtLegend_p                 varLegendRefPtr;
-    avtShiftCenteringFilter    *shiftCenteringFilter;
-    avtLookupTable             *avtLUT;
-    avtPoincareFilter          *poincareFilter;
+    PoincareAttributes          atts;
+    avtPoincareFilter           *poincareFilter;
+    avtShiftCenteringFilter     *shiftCenteringFilter;
+    bool                         colorsInitialized;
+    int                          topoDim;
+    avtLookupTable              *avtLUT;
+    bool                         colorTableIsFullyOpaque;
 
     virtual avtMapper          *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
+    virtual avtContract_p     
+                                EnhanceSpecification(avtContract_p);
     virtual void                CustomizeBehavior(void);
-    virtual avtContract_p       EnhanceSpecification(avtContract_p in_contract);
 
-    virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; }
-    void                        SetLighting(bool lightingOn);
-    void                        SetLegend(bool legendOn);
-    void                        SetLegendRanges();
+    virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
 
+private:
+    void                        SetLegendRanges(void);
+    void                        SetPointGlyphSize();
 };
 
 
 #endif
+
+

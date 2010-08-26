@@ -422,8 +422,33 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointType = %d\n", prefix, atts->GetPointType());
-    str += tmpStr;
+    const char *pointType_names = "Box, Axis, Icosahedron, Point, Sphere";
+    switch (atts->GetPointType())
+    {
+      case PoincareAttributes::Box:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Axis:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Icosahedron:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Point:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Sphere:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     if(atts->GetLegendFlag())
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
@@ -1826,7 +1851,17 @@ PoincareAttributes_SetPointType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the pointType in the object.
-    obj->data->SetPointType((int)ival);
+    if(ival >= 0 && ival < 5)
+        obj->data->SetPointType(PoincareAttributes::PointType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid pointType value was given. "
+                        "Valid values are in the range of [0,4]. "
+                        "You can also use the following names: "
+                        "Box, Axis, Icosahedron, Point, Sphere"
+                        ".");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2335,6 +2370,17 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetPointSizePixels(self, NULL);
     if(strcmp(name, "pointType") == 0)
         return PoincareAttributes_GetPointType(self, NULL);
+    if(strcmp(name, "Box") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Box));
+    if(strcmp(name, "Axis") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Axis));
+    if(strcmp(name, "Icosahedron") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Icosahedron));
+    if(strcmp(name, "Point") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Point));
+    if(strcmp(name, "Sphere") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Sphere));
+
     if(strcmp(name, "legendFlag") == 0)
         return PoincareAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "lightingFlag") == 0)

@@ -127,6 +127,14 @@ public:
         ParallelStaticDomains,
         MasterSlave
     };
+    enum PointType
+    {
+        Box,
+        Axis,
+        Icosahedron,
+        Point,
+        Sphere
+    };
 
     // These constructors are for objects of this class
     PoincareAttributes();
@@ -206,7 +214,7 @@ public:
     void SetShowPoints(bool showPoints_);
     void SetPointSize(double pointSize_);
     void SetPointSizePixels(int pointSizePixels_);
-    void SetPointType(int pointType_);
+    void SetPointType(PointType pointType_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
@@ -267,7 +275,7 @@ public:
     bool                 GetShowPoints() const;
     double               GetPointSize() const;
     int                  GetPointSizePixels() const;
-    int                  GetPointType() const;
+    PointType            GetPointType() const;
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
     StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
@@ -330,6 +338,11 @@ public:
     static bool StreamlineAlgorithmType_FromString(const std::string &, StreamlineAlgorithmType &);
 protected:
     static std::string StreamlineAlgorithmType_ToString(int);
+public:
+    static std::string PointType_ToString(PointType);
+    static bool PointType_FromString(const std::string &, PointType &);
+protected:
+    static std::string PointType_ToString(int);
 public:
 
     // Keyframing methods

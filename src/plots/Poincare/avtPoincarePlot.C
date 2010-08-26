@@ -42,19 +42,20 @@
 
 #include <avtPoincarePlot.h>
 
-#include <vtkProperty.h>
 #include <vtkPlane.h>
+#include <PoincareAttributes.h>
 
+#include <avtColorTables.h>
+#include <avtExtents.h>
+#include <avtLookupTable.h>
 #include <avtPoincareFilter.h>
 #include <avtShiftCenteringFilter.h>
-#include <avtLookupTable.h>
-#include <avtVariablePointGlyphMapper.h>
 #include <avtVariableLegend.h>
+#include <avtVariablePointGlyphMapper.h>
+
+#include <DebugStream.h>
 #include <InvalidLimitsException.h>
 
-#include <avtCallback.h>
-#include <LineAttributes.h>
-#include <Utility.h>
 
 // ****************************************************************************
 //  Method: avtPoincarePlot constructor
@@ -74,19 +75,24 @@
 
 avtPoincarePlot::avtPoincarePlot()
 {
+    varLegend = new avtVariableLegend;
+    varLegend->SetTitle("Poincare");
+    glyphMapper = new avtVariablePointGlyphMapper;
+
+    colorsInitialized = false;
+    topoDim = 3;
+
+    avtLUT  = new avtLookupTable;
+
+    shiftCenteringFilter = NULL;
+    poincareFilter = NULL;
+    colorTableIsFullyOpaque = true;
 #ifdef ENGINE
     poincareFilter = new avtPoincareFilter;
 #endif
-    shiftCenteringFilter = NULL;
-    avtLUT = new avtLookupTable;
 
-    glyphMapper = new avtVariablePointGlyphMapper;
-
-    varLegend = new avtVariableLegend;
-    varLegend->SetTitle("Poincare");
-    varLegend->SetLookupTable(avtLUT->GetLookupTable());
     //
-    // This is to allow the legend to be reference counted so the behavior can
+    // This is to allow the legend to reference counted so the behavior can
     // still access it after the plot is deleted.  The legend cannot be
     // reference counted all of the time since we need to know that it is a 
     // VariableLegend.
@@ -110,7 +116,12 @@ avtPoincarePlot::avtPoincarePlot()
 
 avtPoincarePlot::~avtPoincarePlot()
 {
-#ifdef ENGINE
+    if (shiftCenteringFilter != NULL)
+    {
+        delete shiftCenteringFilter;
+        shiftCenteringFilter = NULL;
+    }
+#if ENGINE
     if (poincareFilter != NULL)
     {
         delete poincareFilter;
@@ -123,12 +134,11 @@ avtPoincarePlot::~avtPoincarePlot()
         delete avtLUT;
         avtLUT = NULL;
     }
-
-     if (glyphMapper != NULL)
-     {
-         delete glyphMapper;
-         glyphMapper = NULL;
-     }
+    if (glyphMapper != NULL)
+    {
+        delete glyphMapper;
+        glyphMapper = NULL;
+    }
 
     //
     // Do not delete the varLegend since it is being held by varLegendRefPtr.
@@ -152,7 +162,6 @@ avtPoincarePlot::Create()
 {
     return new avtPoincarePlot;
 }
-
 
 // ****************************************************************************
 //  Method: avtPoincarePlot::GetMapper
@@ -218,7 +227,6 @@ avtPoincarePlot::ApplyOperators(avtDataObject_p input)
         dob = shiftCenteringFilter->GetOutput();
     }
 
-    // Add the Poincare filter.
     poincareFilter->SetInput(input);
     dob = poincareFilter->GetOutput();
     return dob;
@@ -226,7 +234,6 @@ avtPoincarePlot::ApplyOperators(avtDataObject_p input)
     return input;
 #endif
 }
-
 
 // ****************************************************************************
 //  Method: avtPoincarePlot::ApplyRenderingTransformation
@@ -250,7 +257,6 @@ avtPoincarePlot::ApplyRenderingTransformation(avtDataObject_p input)
     return input;
 }
 
-
 // ****************************************************************************
 //  Method: avtPoincarePlot::CustomizeBehavior
 //
@@ -269,39 +275,33 @@ avtPoincarePlot::ApplyRenderingTransformation(avtDataObject_p input)
 // ****************************************************************************
 
 void
-avtPoincarePlot::CustomizeBehavior(void)
+avtPoincarePlot::CustomizeBehavior()
 {
+    //SetLimitsMode(atts.GetLimitsMode());
+    SetLimitsMode(0);
+
+    SetPointGlyphSize();
+
+    bool fullyOpaque = atts.GetOpacityType() ?
+        colorTableIsFullyOpaque : (atts.GetOpacity() == 1.);
+    if (!fullyOpaque)
+    {
+       behavior->SetRenderOrder(MUST_GO_LAST);
+       behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
+    }
+    else
+    {
+       behavior->SetRenderOrder(DOES_NOT_MATTER);
+       behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+    }
+
     behavior->SetLegend(varLegendRefPtr);
-    behavior->SetShiftFactor(0.3);
+    if (behavior->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
+        behavior->SetShiftFactor(0.1);
+    else
+        behavior->SetShiftFactor(0.0);
 }
 
-
-// ****************************************************************************
-//  Method: avtPoincarePlot::EnhanceSpecification
-//
-//  Purpose:
-//      Modifies the contract to tell it we want the "colorVar" to be the 
-//      primary variable for the pipeline.  If we don't do that, the primary
-//      variable will be some vector variable and it will confuse our mapper.
-//      The only reason that this works is that the poincare filter 
-//      understands the colorVar trick and produces that variable.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Fri Nov  7 13:22:17 EST 2008
-//
-// ****************************************************************************
-
-avtContract_p
-avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
-{
-    avtDataRequest_p in_dr = in_contract->GetDataRequest();
-    const char *var = in_dr->GetVariable();
-    avtDataRequest_p out_dr = new avtDataRequest(in_dr, "colorVar");
-    out_dr->AddSecondaryVariable(var);
-    out_dr->SetOriginalVariable(var);
-    avtContract_p out_contract = new avtContract(in_contract, out_dr);
-    return out_contract;
-}
 
 // ****************************************************************************
 //  Method: avtPoincarePlot::SetAtts
@@ -353,17 +353,17 @@ void
 avtPoincarePlot::SetAtts(const AttributeGroup *a)
 {
     const PoincareAttributes *newAtts = (const PoincareAttributes *)a;
-    needsRecalculation =
-        atts.ChangesRequireRecalculation(*(const PoincareAttributes*)newAtts);
-    
+
+    // See if the colors will need to be updated.
+    bool updateColors = (!colorsInitialized) ||
+        (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
+        (atts.GetOpacityType() != newAtts->GetOpacityType());
+
+    // See if any attributes that require the plot to be regenerated were
+    // changed and copy the state object.
+    needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
     atts = *newAtts;
 
-    glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
-    glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
-    glyphMapper->SetScale(atts.GetPointSize());
-    glyphMapper->SetGlyphType((int)atts.GetPointType());
-    glyphMapper->SetPointSize(atts.GetPointSizePixels());
-    glyphMapper->DataScalingOff();
 
 #ifdef ENGINE
 
@@ -373,7 +373,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     // uses only the punctures in the same direction as the plane normal
     // while the streamline uses the plane regardless of the normal.
     poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS,
-                                   2*atts.GetMinPunctures());
+                             2*atts.GetMinPunctures());
 
     poincareFilter->SetMaxPunctures(atts.GetMaxPunctures());
     
@@ -381,9 +381,9 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     intPlane->SetOrigin( 0,0,0 );
 
     if ( atts.GetPuncturePlane() == PoincareAttributes::Toroidal )
-      intPlane->SetNormal( 0,0,1 );
+        intPlane->SetNormal( 0,0,1 );
     else if ( atts.GetPuncturePlane() == PoincareAttributes::Poloidal )
-      intPlane->SetNormal( 0,1,0 );
+        intPlane->SetNormal( 0,1,0 );
     poincareFilter->SetIntersectionObject(intPlane);    
     intPlane->Delete();
     
@@ -394,7 +394,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
       case PoincareAttributes::SpecifiedPoint:
         poincareFilter->SetPointSource(atts.GetPointSource());
         break;
-
+        
       case PoincareAttributes::SpecifiedLine:
         if( atts.GetPointDensity() > 1 )
         {
@@ -415,7 +415,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         
         break;
     }
-
+    
     // Set the streamline attributes.
     poincareFilter->SetIntegrationType(atts.GetIntegrationType());
 
@@ -424,7 +424,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetMaxStepLength(atts.GetMaxStepLength());
     poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
 
-
+    
     poincareFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
                                            atts.GetMaxStreamlineProcessCount(),
                                            atts.GetMaxDomainCacheSize(),
@@ -452,10 +452,10 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     // of the fieldline.
 
     if( nplanes == 1 )
-      planes.push_back( atts.GetSinglePlane() / 360.0 * 2.0 * M_PI + M_PI/2.0);
+        planes.push_back( atts.GetSinglePlane() / 360.0 * 2.0 * M_PI + M_PI/2.0);
     else
-      for( unsigned int i=0; i<nplanes; i++ )
-        planes.push_back(2.0 * M_PI * (double) i / (double) nplanes + M_PI/2.0);
+        for( unsigned int i=0; i<nplanes; i++ )
+            planes.push_back(2.0 * M_PI * (double) i / (double) nplanes + M_PI/2.0);
 
     poincareFilter->SetClipPlanes( planes );
 
@@ -474,55 +474,104 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetVerboseFlag( atts.GetVerboseFlag() );
 #endif
 
-    if(atts.GetColorType() == PoincareAttributes::ColorByColorTable)
+    // Update the plot's colors if needed.
+    if(updateColors || atts.GetColorTableName() == "Default")
     {
-        if (atts.GetColorTableName() == "Default")
-            avtLUT->SetColorTable(NULL, true);
-        else
-            avtLUT->SetColorTable(atts.GetColorTableName().c_str(), true);
-        varLegend->SetLookupTable(avtLUT->GetLookupTable());
-        glyphMapper->SetLookupTable(avtLUT->GetLookupTable());
+        colorsInitialized = true;
+        SetColorTable(atts.GetColorTableName().c_str());
     }
-    else
-    {
-        avtLUT->SetLUTColors(atts.GetSingleColor().GetColor(), 1);
-        glyphMapper->ColorBySingleColor(atts.GetSingleColor().GetColor());
-    }
-    
+
+    SetOpacityFromAtts();
     SetLighting(atts.GetLightingFlag());
     SetLegend(atts.GetLegendFlag());
-    SetLegendRanges();
+
+
+    glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
+    glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
+    glyphMapper->SetScale(atts.GetPointSize());
+    glyphMapper->DataScalingOff();
+    glyphMapper->SetGlyphType((int)atts.GetPointType());
+    SetPointGlyphSize();
+
+    if (varname != NULL)
+    {
+        glyphMapper->ColorByScalarOn(string(varname));
+    }
+
+    //SetScaling(atts.GetScaling(), atts.GetSkewFactor());
+    SetScaling(0, 1);
+    
+    //SetLimitsMode(atts.GetLimitsMode());
+    SetLimitsMode(0);
 }
 
+
 // ****************************************************************************
-//  Method: avtStreamlinePlot::SetLighting
+//  Method: avtPoincarePlot::GetDataExtents
 //
 //  Purpose:
-//      Turns the lighting on or off.
+//      Gets the data extents used by the plot.
 //
 //  Arguments:
-//      lightingOn   true if the lighting should be turned on, false otherwise.
+//      extents The extents used by the plot.
 //
-//  Programmer: Hank Childs
-//  Creation:   December 28, 2000
-//
-//  Modifications:
-//
+//  Programmer: Dave Pugmire
+//  Creation:   Thu Aug 26 12:46:33 EDT 2010
+//   
 //
 // ****************************************************************************
 
 void
-avtPoincarePlot::SetLighting(bool lightingOn)
+avtPoincarePlot::GetDataExtents(vector<double> &extents)
 {
-    if (lightingOn)
-    {
-        glyphMapper->GlobalLightingOff();
-    }
-    else
-    {
-        glyphMapper->GlobalLightingOn();
-    }
+    double min, max;
+
+    varLegend->GetRange(min, max);
+
+    extents.push_back(min);
+    extents.push_back(max);
 }
+
+
+// ****************************************************************************
+// Method: avtPoincarePlot::SetColorTable
+//
+// Purpose: 
+//   Sets the plot's color table if the color table is the same as that of
+//   the plot or we are using the default color table for the plot.
+//
+// Arguments:
+//   ctName : The name of the color table to use.
+//
+// Returns:    Returns true if the color table is updated.
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Aug 26 12:46:33 EDT 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtPoincarePlot::SetColorTable(const char *ctName)
+{
+    bool oldColorTableIsFullyOpaque = colorTableIsFullyOpaque;
+    colorTableIsFullyOpaque =
+        avtColorTables::Instance()->ColorTableIsFullyOpaque(ctName);
+    SetOpacityFromAtts();
+
+    bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
+    bool retval = (namesMatch &&
+                   (oldColorTableIsFullyOpaque != colorTableIsFullyOpaque));
+    if (atts.GetColorTableName() == "Default")
+        retval |= avtLUT->SetColorTable(NULL, namesMatch,
+                                     atts.GetOpacityType()); 
+    else
+        retval |= avtLUT->SetColorTable(ctName, namesMatch,
+                                     atts.GetOpacityType());
+    return retval;
+}
+
 
 // ****************************************************************************
 //  Method: avtPoincarePlot::SetLegend
@@ -548,6 +597,184 @@ avtPoincarePlot::SetLegend(bool legendOn)
 }
 
 // ****************************************************************************
+//  Method: avtPoincarePlot::SetScaling
+//
+//  Purpose:
+//    Set up mapper and legend to perform needed scaling 
+//
+//  Arguments:
+//    mode   Which scaling mode to use: 0 = Linear, 1 = Log, 2 = Skew
+//    skew   The skew factor to use in the case of skew mode.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Fri Nov  7 13:29:26 EST 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPoincarePlot::SetScaling(int mode, double skew)
+{
+    varLegend->SetLookupTable(avtLUT->GetLookupTable());
+    varLegend->SetScaling(mode, skew);
+
+    if (mode == 1)
+    {
+       glyphMapper->SetLookupTable(avtLUT->GetLogLookupTable());
+    }
+    else if (mode == 2)
+    {
+       avtLUT->SetSkewFactor(skew);
+       glyphMapper->SetLookupTable(avtLUT->GetSkewLookupTable());
+    }
+    else 
+    {
+       glyphMapper->SetLookupTable(avtLUT->GetLookupTable());
+    }
+}
+
+// ****************************************************************************
+//  Method: avtStreamlinePlot::SetLighting
+//
+//  Purpose:
+//      Turns the lighting on or off.
+//
+//  Arguments:
+//      lightingOn   true if the lighting should be turned on, false otherwise.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Fri Nov  7 13:29:26 EST 2008
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+void
+avtPoincarePlot::SetLighting(bool lightingOn)
+{
+    if (lightingOn)
+    {
+        glyphMapper->TurnLightingOn();
+        glyphMapper->SetSpecularIsInappropriate(false);
+    }
+    else
+    {
+        glyphMapper->TurnLightingOff();
+        glyphMapper->SetSpecularIsInappropriate(true);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtPoincarePlot::SetLimitsMode
+//
+//  Purpose:  To determine the proper limits the mapper should be using.
+//
+//  Arguments:
+//    limitsMode  Specifies which type of limits.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Fri Nov  7 13:29:26 EST 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPoincarePlot::SetLimitsMode(int limitsMode)
+{
+    double min, max;
+
+    // Retrieve the actual range of the data
+    glyphMapper->GetVarRange(min, max);
+
+    double userMin = atts.GetMinFlag() ? atts.GetMin() : min;
+    double userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
+
+    if (dataExtents.size() == 2)
+    {
+        glyphMapper->SetMin(dataExtents[0]);
+        glyphMapper->SetMax(dataExtents[1]);
+    }
+    else if (atts.GetMinFlag() && atts.GetMaxFlag())
+    {
+        if (userMin >= userMax)
+        {
+            EXCEPTION1(InvalidLimitsException, false); 
+        }
+        else
+        {
+            glyphMapper->SetMin(userMin);
+            glyphMapper->SetMax(userMax);
+        }
+    } 
+    else if (atts.GetMinFlag())
+    {
+        glyphMapper->SetMin(userMin);
+        if (userMin > userMax)
+            glyphMapper->SetMax(userMin);
+        else
+            glyphMapper->SetMaxOff();
+    }
+    else if (atts.GetMaxFlag())
+    {
+        glyphMapper->SetMax(userMax);
+        if (userMin > userMax)
+            glyphMapper->SetMin(userMax);
+        else
+            glyphMapper->SetMinOff();
+    }
+    else
+    {
+        glyphMapper->SetMinOff();
+        glyphMapper->SetMaxOff();
+    }
+    
+    glyphMapper->SetLimitsMode(limitsMode);
+    SetLegendRanges();
+}
+
+
+// ****************************************************************************
+//  Method: avtPoincarePlot::SetOpacity
+//
+//  Purpose:
+//      Allows for plots to be non-opaque.
+//
+//  Arguments:
+//      opacity     The new opacity.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Fri Nov  7 13:29:26 EST 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPoincarePlot::SetOpacityFromAtts()
+{
+    double origOpacity = atts.GetOpacity();
+    double realOpacity = atts.GetOpacityType() ?
+        (colorTableIsFullyOpaque ? 1.0 : 0.99) : origOpacity;
+    
+    glyphMapper->SetOpacity(realOpacity);
+    if (realOpacity < 1.0)
+    {
+        behavior->SetRenderOrder(MUST_GO_LAST);
+        behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
+    }
+    else
+    {
+        behavior->SetRenderOrder(DOES_NOT_MATTER);
+        behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+    }
+}
+
+
+// ****************************************************************************
 // Method: avtPoincarePlot::SetLegendRanges
 //
 // Purpose: 
@@ -569,36 +796,100 @@ avtPoincarePlot::SetLegend(bool legendOn)
 void
 avtPoincarePlot::SetLegendRanges()
 {
-    double min = 0.0, max = 1.0;
+    double min, max;
 
-    //Get actual data range.
-    glyphMapper->GetVarRange(min, max);
+    // set and get the range for the legend's color bar labels 
+    bool validRange = validRange = glyphMapper->GetRange(min, max);
 
-    double userMin = atts.GetMinFlag() ? atts.GetMin() : min;
-    double userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
+    varLegend->SetRange(min, max);
 
-    if (atts.GetMinFlag() && atts.GetMaxFlag())
+    /*
+    if (atts.GetScaling() == PoincareAttributes::Log &&
+       ( min <= 0. || max <= 0. ) && validRange == true)
     {
-        if (userMin > userMax)
-        {
-            EXCEPTION1(InvalidLimitsException, false);
-        }
+        EXCEPTION1(InvalidLimitsException, true); 
     }
-    else if (atts.GetMinFlag())
-    {
-        if (userMin > userMax)
-            userMax = userMin;
-    }
-    else if (atts.GetMaxFlag())
-    {
-        if (userMin > userMax)
-            userMin = userMax;
-    }
-
-    glyphMapper->SetMin(userMin);
-    glyphMapper->SetMax(userMax);
-
+    */
+ 
+    //varLegend->SetScaling(atts.GetScaling(), atts.GetSkewFactor());
     varLegend->SetScaling(0);
-    varLegend->SetRange(userMin, userMax);
+
+    // set and get the range for the legend's limits text
+    glyphMapper->GetVarRange(min, max);
     varLegend->SetVarRange(min, max);
 }
+
+// ****************************************************************************
+// Method: avtPoincarePlot::SetPointGlyphSize
+//
+// Purpose: 
+//   Sets the point glyph size into the mapper.
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Aug 26 12:43:22 EDT 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtPoincarePlot::SetPointGlyphSize()
+{
+    // Size used for points when using a point glyph.
+    if(atts.GetPointType() == PoincareAttributes::Point ||
+       atts.GetPointType() == PoincareAttributes::Sphere)
+        glyphMapper->SetPointSize(atts.GetPointSizePixels());
+}
+
+// ****************************************************************************
+//  Method: avtPoincarePlot::ReleaseData
+//
+//  Purpose:
+//      Release the problem sized data associated with this plot.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Thu Aug 26 12:43:22 EDT 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+ 
+void
+avtPoincarePlot::ReleaseData(void)
+{
+    avtSurfaceDataPlot::ReleaseData();
+ 
+    if (shiftCenteringFilter != NULL)
+        shiftCenteringFilter->ReleaseData();
+    if (poincareFilter != NULL)
+        poincareFilter->ReleaseData();
+}
+
+
+// ****************************************************************************
+//  Method: avtPoincarePlot::EnhanceSpecification
+//
+//  Purpose:
+//      Modifies the contract to tell it we want the "colorVar" to be the 
+//      primary variable for the pipeline.  If we don't do that, the primary
+//      variable will be some vector variable and it will confuse our mapper.
+//      The only reason that this works is that the poincare filter 
+//      understands the colorVar trick and produces that variable.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Fri Nov  7 13:22:17 EST 2008
+//
+// ****************************************************************************
+
+avtContract_p
+avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
+{
+    avtDataRequest_p in_dr = in_contract->GetDataRequest();
+    const char *var = in_dr->GetVariable();
+    avtDataRequest_p out_dr = new avtDataRequest(in_dr, "colorVar");
+    out_dr->AddSecondaryVariable(var);
+    out_dr->SetOriginalVariable(var);
+    avtContract_p out_contract = new avtContract(in_contract, out_dr);
+    return out_contract;
+}
+
