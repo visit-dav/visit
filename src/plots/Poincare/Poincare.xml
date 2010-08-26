@@ -63,6 +63,13 @@
         ParallelStaticDomains
         MasterSlave
       </Enum>
+      <Enum name="PointType">
+        Box
+        Axis
+        Icosahedron
+        Point
+        Sphere
+      </Enum>
       <Field name="opacityType" label="Opacity" type="enum" subtype="Opacity">
         Explicit
       </Field>
@@ -209,8 +216,8 @@
       <Field name="pointSizePixels" label="pointSizePixels" type="int">
         1
       </Field>
-      <Field name="pointType" label="pointType" type="int">
-        0
+      <Field name="pointType" label="pointType" type="enum" subtype="PointType">
+        Point
       </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true

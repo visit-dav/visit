@@ -1967,7 +1967,7 @@ QvisPoincarePlotWindow::pointSizePixelsChanged(int val)
 void
 QvisPoincarePlotWindow::pointTypeChanged(int val)
 {
-    atts->SetPointType(val);
+    atts->SetPointType((PoincareAttributes::PointType)val);
     SetUpdate(false);
     Apply();
 }
