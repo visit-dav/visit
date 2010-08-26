@@ -460,9 +460,11 @@ class ViewerToolbar;
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
-//
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
+//
+//    Brad Whitlock, Thu Aug 26 15:41:38 PDT 2010
+//    I added a force option to SetAnnotationAttributes.
 //
 // ****************************************************************************
 
@@ -578,7 +580,7 @@ public:
     void CopyViewAttributes(const ViewerWindow *);
     void UpdateCameraView();
 
-    void SetAnnotationAttributes(const AnnotationAttributes *);
+    void SetAnnotationAttributes(const AnnotationAttributes *, bool force=false);
     const AnnotationAttributes *GetAnnotationAttributes() const;
     void CopyAnnotationAttributes(const ViewerWindow *);
     void CopyAnnotationObjectList(const ViewerWindow *, 

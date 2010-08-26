@@ -3543,14 +3543,19 @@ VisWindow::SetShowCallback(VisCallback *cb, void *data)
 //   Eric Brugger, Tue Dec  9 14:33:57 PST 2008
 //   Added the AxisParallel window mode.
 //
+//   Brad Whitlock, Thu Aug 26 15:37:10 PDT 2010
+//   I added force so we don't have to have different annotation attributes
+//   in order to force the update. This is needed when we are constructing
+//   the axes for the first time with default atts.
+//
 // ****************************************************************************
 
 void
-VisWindow::SetAnnotationAtts(const AnnotationAttributes *atts)
+VisWindow::SetAnnotationAtts(const AnnotationAttributes *atts, bool force)
 {
     bool changed = (annotationAtts != *atts);
 
-    if (changed)
+    if (changed || force)
     {
         // Set the background and foreground colors.
         double bg[3], fg[3], gbg1[3], gbg2[3];
