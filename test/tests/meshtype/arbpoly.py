@@ -19,6 +19,9 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Thu Aug 26 08:55:04 PDT 2010
+#    Update set index after SIL generation changes.
 # ----------------------------------------------------------------------------
 
 
@@ -49,7 +52,7 @@ DeleteActivePlots()
 # Turn off alternate materials.
 AddPlot("FilledBoundary", "mat1")
 silr=SILRestriction()
-silr.TurnOffSet(1)
+silr.TurnOffSet(2)
 SetPlotSILRestriction(silr)
 DrawPlots()
 
