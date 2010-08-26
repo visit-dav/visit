@@ -58,6 +58,9 @@ import java.util.Vector;
 //   so we'll just skip over the plot info atts in xfer when they come from
 //   the client.
 //
+//   Brad Whitlock, Thu Aug 26 10:39:25 PDT 2010
+//   I added SelectionList.
+//
 // ****************************************************************************
 /**
  * ViewerState contains all of the state objects that make up the 
@@ -172,6 +175,8 @@ public class ViewerState
             Register(attsLogRPC);
         attsFileOpenOptions = new FileOpenOptions();
             Register(attsFileOpenOptions);
+        attsSelectionList = new SelectionList();
+            Register(attsSelectionList);
     }
 
     //
@@ -225,6 +230,7 @@ public class ViewerState
     public MeshManagementAttributes  GetMeshManagementAttributes() { return attsMeshManagementAttributes; }
     public ViewerRPC                 GetLogRPC() { return attsLogRPC; }
     public FileOpenOptions           GetFileOpenOptions() { return attsFileOpenOptions; }
+    public SelectionList             GetSelectionList() { return attsSelectionList; }
 
     /**
      * Returns the i'th state object.
@@ -387,6 +393,7 @@ public class ViewerState
     private MeshManagementAttributes attsMeshManagementAttributes;
     private ViewerRPC                attsLogRPC;
     private FileOpenOptions          attsFileOpenOptions;
+    private SelectionList            attsSelectionList;
 
     private Vector objVector;
     private int nPlots;

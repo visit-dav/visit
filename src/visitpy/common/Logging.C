@@ -1845,6 +1845,16 @@ static std::string log_ApplyNamedSelectionRPC(ViewerRPC *rpc)
     return std::string("ApplyNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
 }
 
+static std::string log_SetNamedSelectionAutoApplyRPC(ViewerRPC *rpc)
+{
+    return std::string("SetNamedSelectionAutoApply(\"") + std::string(rpc->GetBoolFlag()?"1":"0") + "\")\n"; 
+}
+
+static std::string log_UpdateNamedSelectionRPC(ViewerRPC *rpc)
+{
+    return std::string("UpdateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
+}
+
 static std::string log_SetPlotDescriptionRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
@@ -1916,6 +1926,9 @@ static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 //   Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
+//
+//   Brad Whitlock, Fri Aug 13 14:57:23 PDT 2010
+//   I added UpdateNamedSelection.
 //
 //   Hank Childs, Sat Aug 21 14:05:14 PDT 2010
 //   Rename ddf to data binning.
@@ -2445,6 +2458,12 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::ApplyNamedSelectionRPC:
         str = log_ApplyNamedSelectionRPC(rpc);
+        break;
+    case ViewerRPC::SetNamedSelectionAutoApplyRPC:
+        str = log_SetNamedSelectionAutoApplyRPC(rpc);
+        break;
+    case ViewerRPC::UpdateNamedSelectionRPC:
+        str = log_UpdateNamedSelectionRPC(rpc);
         break;
     case ViewerRPC::SetPlotDescriptionRPC:
         str = log_SetPlotDescriptionRPC(rpc);

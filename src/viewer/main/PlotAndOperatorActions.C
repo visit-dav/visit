@@ -976,6 +976,10 @@ AddPlotAction::Update()
 //   Brad Whitlock, Thu Jan 24 11:39:15 PDT 2008
 //   Made inheriting the SIL restriction optional.
 //
+//   Brad Whitlock, Thu Aug 12 14:36:18 PDT 2010
+//   Pass applySelection so it affects whether a plot is created with a 
+//   named selection.
+//
 // ****************************************************************************
 
 void
@@ -983,6 +987,7 @@ AddPlotAction::Execute(int)
 {
     bool replacePlots = windowMgr->GetClientAtts()->GetReplacePlots();
     bool applyOperator = windowMgr->GetClientAtts()->GetApplyOperator();
+    bool applySelection = windowMgr->GetClientAtts()->GetApplySelection();
     bool inheritSILRestriction = windowMgr->GetClientAtts()->
         GetNewPlotsInheritSILRestriction();
 
@@ -991,7 +996,7 @@ AddPlotAction::Execute(int)
     //
     window->GetPlotList()->AddPlot(args.GetPlotType(),
         args.GetVariable().c_str(), replacePlots, applyOperator,
-        inheritSILRestriction);
+        inheritSILRestriction, applySelection);
 }
 
 // ****************************************************************************

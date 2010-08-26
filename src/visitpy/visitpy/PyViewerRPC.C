@@ -122,8 +122,9 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
         "SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, "
         "TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, "
         "CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, "
-        "MenuQuitRPC, SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, "
-        "SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, MaxRPC";
+        "SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, MenuQuitRPC, SetPlotDescriptionRPC, "
+        "MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, "
+        "MaxRPC";
     switch (atts->GetRPCType())
     {
       case ViewerRPC::CloseRPC:
@@ -866,6 +867,14 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sSaveNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
+      case ViewerRPC::SetNamedSelectionAutoApplyRPC:
+          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetNamedSelectionAutoApplyRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
+      case ViewerRPC::UpdateNamedSelectionRPC:
+          SNPRINTF(tmpStr, 1000, "%sRPCType = %sUpdateNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
       case ViewerRPC::MenuQuitRPC:
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sMenuQuitRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
@@ -1129,12 +1138,12 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the RPCType in the object.
-    if(ival >= 0 && ival < 192)
+    if(ival >= 0 && ival < 194)
         obj->data->SetRPCType(ViewerRPC::ViewerRPCType(ival));
     else
     {
         fprintf(stderr, "An invalid RPCType value was given. "
-                        "Valid values are in the range of [0,191]. "
+                        "Valid values are in the range of [0,193]. "
                         "You can also use the following names: "
                         "CloseRPC, DetachRPC, AddWindowRPC, DeleteWindowRPC, SetWindowLayoutRPC, "
                         "SetActiveWindowRPC, ClearWindowRPC, ClearAllWindowsRPC, OpenDatabaseRPC, "
@@ -1182,8 +1191,9 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
                         "SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, "
                         "TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, "
                         "CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, "
-                        "MenuQuitRPC, SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, "
-                        "SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, MaxRPC.");
+                        "SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, MenuQuitRPC, SetPlotDescriptionRPC, "
+                        "MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, "
+                        "MaxRPC.");
         return NULL;
     }
 
@@ -2798,6 +2808,10 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ViewerRPC::LoadNamedSelectionRPC));
     if(strcmp(name, "SaveNamedSelectionRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::SaveNamedSelectionRPC));
+    if(strcmp(name, "SetNamedSelectionAutoApplyRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::SetNamedSelectionAutoApplyRPC));
+    if(strcmp(name, "UpdateNamedSelectionRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::UpdateNamedSelectionRPC));
     if(strcmp(name, "MenuQuitRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::MenuQuitRPC));
     if(strcmp(name, "SetPlotDescriptionRPC") == 0)

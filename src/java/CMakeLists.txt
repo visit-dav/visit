@@ -135,6 +135,8 @@ SILRestrictionAttributes.java
 SaveSubWindowAttributes.java
 SaveSubWindowsAttributes.java
 SaveWindowAttributes.java 
+SelectionList.java
+SelectionProperties.java
 StatusAttributes.java 
 SyncAttributes.java 
 View2DAttributes.java 

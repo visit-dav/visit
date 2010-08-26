@@ -64,6 +64,8 @@
 #include <PlotPluginInfo.h>
 #include <PlotPluginManager.h>
 #include <RecursiveExpressionException.h>
+#include <SelectionProperties.h>
+#include <SelectionList.h>
 #include <SILRestrictionAttributes.h>
 #include <GlobalAttributes.h>
 
@@ -1334,6 +1336,9 @@ ViewerPlotList::UpdateSinglePlotState(ViewerPlot *plot)
 //   Kathleen Bonnell, Thu Oct  1 14:40:20 PDT 2009
 //   Update annotation object lists when updating window.
 //
+//   Brad Whitlock, Tue Aug 17 14:28:41 PDT 2010
+//   I moved some code into UpdateFrameForPlots.
+//
 // ****************************************************************************
 
 void
@@ -1356,11 +1361,55 @@ ViewerPlotList::UpdateFrame(bool updatePlotStates)
         window->UpdateCameraView();
     }
 
+    intVector allPlots;
+    for(int i = 0; i < nPlots; ++i)
+        allPlots.push_back(i);
+
+    // Update the frame for all of the plots.
+    updateTheWindow |= UpdateFrameForPlots(allPlots);
+
+    if(updateTheWindow)
+    {
+        ViewerWindowManager::Instance()->UpdateAnnotationObjectList(true);
+
+        //
+        // Update the plot list so that the color changes on the plots.
+        //
+        UpdatePlotList();
+        UpdatePlotInformation();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerPlotList::UpdateFrameForPlots
+//
+// Purpose: 
+//   Update the frame using a subset of the plots.
+//
+// Arguments:
+//   somePlots : The indices of the plots to use.
+//
+// Returns:    True if the window was updated.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 17 14:29:08 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlotList::UpdateFrameForPlots(const intVector &somePlots)
+{
+    bool updateTheWindow = false;
+
     //
     // If we have actors for the current state for each plot then just
     // update the windows.
     //
-    if (ArePlotsUpToDate())
+    if (ArePlotsUpToDate(somePlots))
     {
         updateTheWindow = true;
     }
@@ -1373,21 +1422,14 @@ ViewerPlotList::UpdateFrame(bool updatePlotStates)
         //
         bool animating = ((animationAtts.GetAnimationMode() == AnimationAttributes::PlayMode) ||
                           (animationAtts.GetAnimationMode() == AnimationAttributes::ReversePlayMode));
-        if(UpdatePlots(animating))
+        if(UpdatePlots(somePlots, animating))
             updateTheWindow = true;
     }
 
     if(updateTheWindow)
-    {
-        UpdateWindow(true);
-        ViewerWindowManager::Instance()->UpdateAnnotationObjectList(true);
+        UpdateWindow(somePlots, true);
 
-        //
-        // Update the plot list so that the color changes on the plots.
-        //
-        UpdatePlotList();
-        UpdatePlotInformation();
-    }
+    return updateTheWindow;
 }
 
 // ****************************************************************************
@@ -2446,11 +2488,15 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Brad Whitlock, Tue Apr 29 15:57:25 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Thu Aug 12 10:15:23 PDT 2010
+//    Make the new plot get a compatible plot's named selection.
+//
 // ****************************************************************************
 
 int
 ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
-    bool applyOperators, bool inheritSILRestriction, DataNode *attributesNode)
+    bool applyOperators, bool inheritSILRestriction, bool applySelection, 
+    DataNode *attributesNode)
 {
     if (databaseName.size() < 1)
     {
@@ -2486,6 +2532,25 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     }
 
     //
+    // Apply the selection to the new plot
+    //
+    if(applySelection && nPlots > 0)
+    {
+        // If the active plot has the same engine key as the current plot,
+        // let's copy the selection to the new plot too.
+        intVector ids;
+        GetActivePlotIDs(ids, false);
+        for(size_t i = 0; i < ids.size(); ++i)
+        {
+            if(plots[ids[i]].plot->GetEngineKey() == engineKey)
+            {
+                newPlot->SetNamedSelection(plots[ids[i]].plot->GetNamedSelection());
+                break;
+            }
+        }
+    }
+
+    //
     // Apply the attributes to the new plot
     //
     if(attributesNode != 0) 
@@ -2497,12 +2562,6 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     // Add the new plot to the plot list.
     //
     int plotId = SimpleAddPlot(newPlot, replacePlots);
-
-    //
-    // Update the client attributes.
-    //
-    UpdatePlotList();
-    UpdatePlotAtts();
 
     //
     // Find a compatible plot to set the new plot's SIL restriction.
@@ -2521,6 +2580,12 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
             newPlot->SetSILRestriction(new_silr);
         }
     }
+
+    //
+    // Update the client attributes.
+    //
+    UpdatePlotList();
+    UpdatePlotAtts();
     UpdateSILRestrictionAtts();
     UpdateExpressionList(true);
 
@@ -2884,11 +2949,16 @@ ViewerPlotList::MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame)
 //    Brad Whitlock, Wed Dec 10 15:12:33 PST 2008
 //    Use AnimationAttributes.
 //
+//    Brad Whitlock, Fri Aug 13 16:34:06 PDT 2010
+//    Return a name map of old name to new name.
+//
 // ****************************************************************************
 
-void
+StringStringMap
 ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
 {
+    StringStringMap nameMap;
+
     //
     // Copy the database and the host database.
     //
@@ -2940,12 +3010,6 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
              TRY
              {
                  dest = new ViewerPlot(*src);
-
-                 // Since the plot lists are different, it's okay in this
-                 // case for the plots from each plot list to have the
-                 // same name. That fixes things with the legend annotation
-                 // objects as well.
-                 dest->SetPlotName(src->GetPlotName());
              }
              CATCH(VisItException)
              {
@@ -2959,6 +3023,8 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
 
              if(dest != 0)
              {
+                 nameMap[src->GetPlotName()] = dest->GetPlotName();
+
                  //
                  // Add the new plot to the plot list.
                  //
@@ -2968,7 +3034,7 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
              else
              {
                  Error(tr("VisIt could not copy plots."));
-                 return;
+                 return nameMap;
              }
         }
 
@@ -2982,6 +3048,8 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
             UpdateSILRestrictionAtts();
         }
     }
+
+    return nameMap;
 }
 
 // ****************************************************************************
@@ -3412,6 +3480,38 @@ ViewerPlotList::ClearActors()
 }
 
 // ****************************************************************************
+// Method: GetAffectedNamedSelections
+//
+// Purpose: 
+//   Adds the name of a plot's named selection to a vector if the plot creates
+//   the named selection.
+//
+// Arguments:
+//   plotName : The name of the plot.
+//   namedSelections : The list of named selections.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 13 15:09:17 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static std::string
+GetNamedSelection(const std::string &plotName)
+{
+    for(int i = 0; i < ViewerWindowManager::GetSelectionList()->GetNumSelections(); ++i)
+    {
+        if(plotName == 
+           ViewerWindowManager::GetSelectionList()->GetSelections(i).GetOriginatingPlot())
+        {
+            return ViewerWindowManager::GetSelectionList()->GetSelections(i).GetName();
+        }
+    }
+    return std::string();
+}
+
+// ****************************************************************************
 //  Method: ViewerPlotList::DeletePlot
 //
 //  Purpose:
@@ -3428,6 +3528,9 @@ ViewerPlotList::ClearActors()
 //  Modifications:
 //    Brad Whitlock, Tue Mar 20 12:13:26 PDT 2007
 //    Added code to remove the plot's annotation object.
+//
+//    Brad Whitlock, Fri Aug 13 15:13:31 PDT 2010
+//    Added code to modify named selections.
 //
 // ****************************************************************************
 
@@ -3455,6 +3558,11 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
             if(plots[i].plot->ProvidesLegend())
                 legendDeleted = window->DeleteAnnotationObject(plots[i].plot->GetPlotName());
 
+            // Delete named selection.
+            std::string ns = GetNamedSelection(plots[i].plot->GetPlotName());
+            if(!ns.empty())
+                GetViewerMethods()->DeleteNamedSelection(ns);
+
             delete plots[i].plot;
             plotDeleted = true;
         }
@@ -3466,21 +3574,24 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
     }
     nPlots = nPlotsNew;
 
-    if (plotDeleted && doUpdate)
+    if (plotDeleted)
     {
-        //
-        // Update the client attributes.
-        //
-        if(legendDeleted)
-            ViewerWindowManager::Instance()->UpdateAnnotationObjectList();
-        UpdatePlotList();
-        UpdatePlotAtts();
-        UpdateSILRestrictionAtts();
+        if(doUpdate)
+        {
+            //
+            // Update the client attributes.
+            //
+            if(legendDeleted)
+                ViewerWindowManager::Instance()->UpdateAnnotationObjectList();
+            UpdatePlotList();
+            UpdatePlotAtts();
+            UpdateSILRestrictionAtts();
  
-        //
-        // Update the frame.
-        //
-        UpdateFrame();
+            //
+            // Update the frame.
+            //
+            UpdateFrame();
+        }
     }
 }
 
@@ -3552,6 +3663,9 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    Brad Whitlock, Mon Oct 26 14:49:56 PDT 2009
 //    I made updates optional.
 //
+//    Brad Whitlock, Fri Aug 13 15:13:31 PDT 2010
+//    Added code to modify named selections.
+//
 // ****************************************************************************
 
 void
@@ -3580,6 +3694,11 @@ ViewerPlotList::DeleteActivePlots(bool doUpdates)
                 if(window->DeleteAnnotationObject(plots[i].plot->GetPlotName()))
                     ++nDeletedLegends;
             }
+
+            // Delete the named selection that the plot creates.
+            std::string ns = GetNamedSelection(plots[i].plot->GetPlotName());
+            if(!ns.empty())
+                GetViewerMethods()->DeleteNamedSelection(ns);
 
             // Tell the query that this plot is being deleted. 
             ViewerQueryManager::Instance()->Delete(plots[i].plot);
@@ -6050,7 +6169,7 @@ ViewerPlotList::RemoveAllOperators(bool applyToAll)
 //    Return a boolean indicating if the plots are up-to-date.
 //
 //  Arguments:
-//    frame     The frame to use to check if the plots are up-to-date.
+//    somePlots : The plots that we want to check.
 //
 //  Returns:    Boolean indicating if the plots are up-to-date.
 //
@@ -6073,13 +6192,20 @@ ViewerPlotList::RemoveAllOperators(bool applyToAll)
 //    Brad Whitlock, Sun Jan 25 22:57:02 PST 2004
 //    I added the concept of multiple time sliders.
 //
+//    Brad Whitlock, Tue Aug 17 14:35:47 PDT 2010
+//    I added the somePlots argument.
+//
 // ****************************************************************************
 
 bool
-ViewerPlotList::ArePlotsUpToDate() const
+ViewerPlotList::ArePlotsUpToDate(const intVector &somePlots) const
 {
-    for (int i = 0; i < nPlots; i++)
+    for (size_t id = 0; id < somePlots.size(); ++id)
     {
+        int i = somePlots[id];
+        if(i < 0 || i >= nPlots)
+            continue;
+
         ViewerPlot *p = plots[i].plot;
 
         //
@@ -6142,7 +6268,8 @@ ViewerPlotList::InterruptUpdatePlotList()
 //    Update the plots for the specified time slider time state.
 //
 //  Arguments:
-//    state     The state to use for updating the plots.
+//    somePlots : A vector containing the indices of the plots we want to update.
+//    animating : Whether the window is animating.
 //
 //  Returns:    False if the function executed with more than one thread.
 //              The function returns True otherwise.
@@ -6196,102 +6323,184 @@ ViewerPlotList::InterruptUpdatePlotList()
 //    Brad Whitlock, Tue Apr 29 16:07:34 PDT 2008
 //    Added tr().
 //
+//    Brad Whitlock, Fri Aug 13 14:07:26 PDT 2010
+//    I added code to make plots that generate named selections go first. If
+//    we do any plots that generate a named selection then we update the
+//    named selection, causing plots that use it to be regenerated.
+//
 // ****************************************************************************
 
 bool
-ViewerPlotList::UpdatePlots(bool animating)
+ViewerPlotList::UpdatePlots(const intVector &somePlots, bool animating)
 {
     interrupted = false;
 
-#ifndef VIEWER_MT
-    int attempts = animating ? nPlots : 1;
-    while(attempts > 0 && !interrupted)
+    //
+    // Create a different order for the plots, putting ones that create named 
+    // selections first if we're updating automatically.
+    //
+    int nOrder(2 * somePlots.size());
+    int *order = new int[nOrder];
+    for(size_t id = 0; id < nOrder; ++id)
+        order[id] = -1;
+    int id = 0, id2 = (int)somePlots.size();
+    for (size_t id = 0; id < somePlots.size(); ++id)
     {
-#endif
-        //
-        // Create any missing plots.
-        //
-        for (int i = 0; i < nPlots; i++)
+        int i = somePlots[id];
+        bool originatingPlot = false;
+        if(ViewerWindowManager::GetSelectionList()->GetAutoApplyUpdates())
         {
-            //
-            // Generate the plot actor for the current state if it does
-            // not already exist.
-            //
-            if (plots[i].realized &&
-                plots[i].plot->IsInRange() &&
-                !plots[i].hidden &&
-                !plots[i].plot->GetErrorFlag() &&
-                plots[i].plot->NoActorExists())
+            const SelectionList *sList = ViewerWindowManager::GetSelectionList();
+            for(int j = 0; j < sList->GetNumSelections(); ++j)
             {
-                debug3 << "\tRegenerating plot " << i
-                       << " source=" << plots[i].plot->GetSource().c_str()
-                       << endl;
-
-                if(interrupted)
+                if(sList->operator[](j).GetOriginatingPlot() == 
+                   plots[i].plot->GetPlotName())
                 {
-                    plots[i].plot->SetErrorFlag(true);
-                    continue;
-                }
-
-                PlotInfo  *info=0;
-    
-                info = new PlotInfo;
-                info->plot = plots[i].plot;
-                info->plotList = this;
-                info->window = window;
-
-#ifdef VIEWER_MT
-                pthread_t tid;
-
-                if (plotThreadAttrInit == 0)
-                {
-                    PthreadAttrInit(&plotThreadAttr);
-                    pthread_attr_setdetachstate(&plotThreadAttr,
-                        PTHREAD_CREATE_JOINABLE);
-                    pthread_attr_setscope(&plotThreadAttr, PTHREAD_SCOPE_PROCESS);
-                    plotThreadAttrInit = 1;
-                }
-                PthreadCreate(&tid, &plotThreadAttr, CreatePlot, (void *)info);
-#else
-                CreatePlot((void *)info);
-#endif
-
-                if(interrupted)
-                {
-                    plots[i].plot->SetErrorFlag(true);
-                    continue;
+                    originatingPlot = true;
+                    break;
                 }
             }
         }
 
-#ifndef VIEWER_MT
-        if(animating && attempts > 0 && !interrupted)
+        if(originatingPlot)
         {
-            bool plotsWithErrors = false;
-            for(int i = 0; i < nPlots; ++i)
-            {
-                // See if a plot has errors.
-                plotsWithErrors |= plots[i].plot->GetErrorFlag();
-
-                // Set the plot's error flag to false so if we have to
-                // go through the loop again we generate the plot.
-                plots[i].plot->SetErrorFlag(false);
-            }
-
-            // Determine the number of tries that we have left before we
-            // either have no errors or we give up.
-            attempts = (!plotsWithErrors) ? 0 : (attempts - 1);
-
-            if(attempts > 0)
-            {
-                Message(tr("Some plots had errors. VisIt will try to regenerate "
-                        "those plots"));
-            }
+            // This plot generates a named selection and we're auto applying changes.
+            order[id++] = i;
         }
         else
-            attempts = 0;
+        {
+            order[id2++] = i;
+        }
     }
+
+    TRY
+    {
+        intVector originatingPlots;    
+#ifndef VIEWER_MT
+        int attempts = animating ? nPlots : 1;
+        while(attempts > 0 && !interrupted)
+        {
 #endif
+            //
+            // Create any missing plots.
+            //
+            for (int idx = 0; idx < nOrder; idx++)
+            {
+                int i = order[idx];
+                if(i == -1)
+                    continue;
+
+                //
+                // Generate the plot actor for the current state if it does
+                // not already exist.
+                //
+                if (plots[i].realized &&
+                    plots[i].plot->IsInRange() &&
+                    !plots[i].hidden &&
+                    !plots[i].plot->GetErrorFlag() &&
+                    plots[i].plot->NoActorExists())
+                {
+                    debug3 << "\tRegenerating plot " << i
+                           << " source=" << plots[i].plot->GetSource().c_str()
+                           << endl;
+
+                    if(interrupted)
+                    {
+                        plots[i].plot->SetErrorFlag(true);
+                        continue;
+                    }
+
+                    PlotInfo  *info=0;
+    
+                    info = new PlotInfo;
+                    info->plot = plots[i].plot;
+                    info->plotList = this;
+                    info->window = window;
+
+#ifdef VIEWER_MT
+                    pthread_t tid;
+
+                    if (plotThreadAttrInit == 0)
+                    {
+                        PthreadAttrInit(&plotThreadAttr);
+                        pthread_attr_setdetachstate(&plotThreadAttr,
+                            PTHREAD_CREATE_JOINABLE);
+                        pthread_attr_setscope(&plotThreadAttr, PTHREAD_SCOPE_PROCESS);
+                        plotThreadAttrInit = 1;
+                    }
+                    PthreadCreate(&tid, &plotThreadAttr, CreatePlot, (void *)info);
+#else
+                    CreatePlot((void *)info);
+#endif
+
+                    if(interrupted)
+                    {
+                        plots[i].plot->SetErrorFlag(true);
+                        continue;
+                    }
+
+                    // Record whether we've just generated a plot that defines a
+                    // named selection.
+                    if(!plots[i].plot->GetErrorFlag() && idx < nPlots)
+                        originatingPlots.push_back(i);
+                }
+            }
+
+#ifndef VIEWER_MT
+            if(animating && attempts > 0 && !interrupted)
+            {
+                bool plotsWithErrors = false;
+                for(int i = 0; i < nPlots; ++i)
+                {
+                    // See if a plot has errors.
+                    plotsWithErrors |= plots[i].plot->GetErrorFlag();
+
+                    // Set the plot's error flag to false so if we have to
+                    // go through the loop again we generate the plot.
+                    plots[i].plot->SetErrorFlag(false);
+                }
+
+                // Determine the number of tries that we have left before we
+                // either have no errors or we give up.
+                attempts = (!plotsWithErrors) ? 0 : (attempts - 1);
+
+                if(attempts > 0)
+                {
+                    Message(tr("Some plots had errors. VisIt will try to regenerate "
+                            "those plots"));
+                }
+            }
+            else
+                attempts = 0;
+        }
+#endif
+
+        // If we had any originating plots that were generated, update other
+        // plots that depend on them.
+        for(int p = 0; p < originatingPlots.size(); ++p)
+        {
+            const SelectionList *sList = ViewerWindowManager::GetSelectionList();
+            for(int j = 0; j < sList->GetNumSelections(); ++j)
+            {
+                const SelectionProperties &sel = sList->operator[](j);
+                if(sel.GetOriginatingPlot() == 
+                   plots[originatingPlots[p]].plot->GetPlotName())
+                {
+                    char msg[512];
+                    SNPRINTF(msg, 512, "updateNamedSelection %s;", sel.GetName().c_str());
+                    viewerSubject->MessageRendererThread(msg);
+                    break;
+                }
+            }
+        }
+    }
+    CATCHALL
+    {
+        delete [] order;
+        RETHROW;
+    }
+    ENDTRY
+    delete [] order;
 
 #ifdef VIEWER_MT
     return false;
@@ -6573,10 +6782,13 @@ CreatePlot(void *info)
 //    Hank Childs, Fri Aug 31 16:44:34 PDT 2007
 //    Allow for plots that can be added to any window, regardless of dimension.
 //
+//    Brad Whitlock, Tue Aug 17 14:47:57 PDT 2010
+//    Pass a vector of plot indices that we want to consider.
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::UpdateWindow(bool immediateUpdate)
+ViewerPlotList::UpdateWindow(const intVector &somePlots, bool immediateUpdate)
 {
     //
     // Clear the window.  Disable updates so that the window isn't updated
@@ -6618,8 +6830,12 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
     //
     CanMeshPlotBeOpaque();
 
-    for (int i = 0; i < nPlots; i++)
+    for (size_t id = 0; id < somePlots.size(); id++)
     {
+        int i = somePlots[id];
+        if(i < 0 || i >= nPlots)
+            continue;
+
         if (plots[i].plot->GetErrorFlag())
         {
             // Don't draw bad plots.
@@ -7337,6 +7553,9 @@ ViewerPlotList::GetPlotAtts(
 //    Brad Whitlock, Tue Jan 22 14:06:08 PST 2008
 //    I made it use ViewerPlot::FollowsTime.
 //
+//    Brad Whitlock, Fri Jul 23 13:27:02 PDT 2010
+//    Pass back the selection name applied to the plot.
+//
 // ****************************************************************************
 
 void
@@ -7369,6 +7588,7 @@ ViewerPlotList::UpdatePlotList() const
         plot.SetActiveFlag(plots[i].active);
         plot.SetHiddenFlag(plots[i].hidden);
         plot.SetFollowsTime(plots[i].plot->FollowsTime());
+        plot.SetSelection(plots[i].plot->GetNamedSelection());
 
         // Figure out the stage of completion that the plot is at.
         if (plots[i].plot->GetErrorFlag())

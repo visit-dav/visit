@@ -59,7 +59,7 @@
 #include <WindowAttributes.h>
 #include <ViewStack.h>
 #include <vectortypes.h>
-#include <map>
+#include <maptypes.h>
 
 #include <ExternalRenderRequestInfo.h>
 
@@ -482,7 +482,7 @@ public:
     void CreateNode(DataNode *parentNode, 
                     const std::map<std::string, std::string> &, 
                     bool detailed);
-    void SetFromNode(DataNode *parentNode,
+    bool SetFromNode(DataNode *parentNode,
                      const std::map<std::string, std::string> &,
                      const std::string &configVersion);
     static bool SessionContainsErrors(DataNode *parentNode);
@@ -581,7 +581,9 @@ public:
     void SetAnnotationAttributes(const AnnotationAttributes *);
     const AnnotationAttributes *GetAnnotationAttributes() const;
     void CopyAnnotationAttributes(const ViewerWindow *);
-    void CopyAnnotationObjectList(const ViewerWindow *, bool copyLegends);
+    void CopyAnnotationObjectList(const ViewerWindow *, 
+                                  const StringStringMap &nameMap, 
+                                  bool copyLegends);
     bool AddAnnotationObject(int annotType, const std::string &annotName);
     void HideActiveAnnotationObjects();
     void DeleteActiveAnnotationObjects();

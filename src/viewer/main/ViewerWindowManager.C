@@ -69,6 +69,8 @@
 #include <PrinterAttributes.h>
 #include <RenderingAttributes.h>
 #include <SaveWindowAttributes.h>
+#include <SelectionList.h>
+#include <SelectionProperties.h>
 #include <ViewCurveAttributes.h>
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>
@@ -142,8 +144,7 @@ WindowInformation *ViewerWindowManager::windowInfo=0;
 RenderingAttributes *ViewerWindowManager::renderAtts=0;
 AnnotationObjectList *ViewerWindowManager::annotationObjectList = 0;
 AnnotationObjectList *ViewerWindowManager::defaultAnnotationObjectList = 0;
-
-
+SelectionList *ViewerWindowManager::selectionList = 0;
 
 //
 // Global variables.  These should be removed.
@@ -543,6 +544,9 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 //    Brad Whitlock, Wed Apr 30 09:44:17 PDT 2008
 //    Added tr().
 //
+//    Brad Whitlock, Fri Aug 13 16:36:28 PDT 2010
+//    Fix legend renaming.
+//
 // ****************************************************************************
 
 void
@@ -570,11 +574,15 @@ ViewerWindowManager::AddWindow(bool copyAtts)
         ViewerWindow *src = windows[activeWindow];
         dest->CopyGeneralAttributes(src);
         dest->CopyAnnotationAttributes(src);
-        dest->CopyAnnotationObjectList(src, true);
         dest->CopyLightList(src);
         dest->CopyViewAttributes(src);
-        dest->GetPlotList()->CopyFrom(src->GetPlotList(), true);
+        
+        StringStringMap nameMap = dest->GetPlotList()->CopyFrom(src->
+            GetPlotList(), true);
         dest->GetActionManager()->CopyFrom(src->GetActionManager());
+
+        dest->CopyAnnotationObjectList(src, nameMap, true);
+
     }
     referenced[windowIndex] = true;
 
@@ -711,7 +719,7 @@ ViewerWindowManager::CopyAnnotationsToWindow(int from, int to)
     if(windows[from] != 0 && windows[to] != 0)
     {
         windows[to]->CopyAnnotationAttributes(windows[from]);
-        windows[to]->CopyAnnotationObjectList(windows[from], false);
+        windows[to]->CopyAnnotationObjectList(windows[from], StringStringMap(), false);
         if(to == activeWindow)
         {
             UpdateAnnotationAtts();
@@ -818,7 +826,8 @@ ViewerWindowManager::CopyPlotListToWindow(int from, int to)
     // If the Window pointers are valid then perform the operation.
     if(windows[from] != 0 && windows[to] != 0)
     {
-        windows[to]->GetPlotList()->CopyFrom(windows[from]->GetPlotList(),true);
+        StringStringMap nameMap = windows[to]->GetPlotList()->CopyFrom(
+            windows[from]->GetPlotList(),true);
     }
 }
 
@@ -4434,6 +4443,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 //    Brad Whitlock, Wed Apr 30 09:58:30 PDT 2008
 //    Added tr().
 //
+//    Brad Whitlock, Fri Aug 13 16:38:06 PDT 2010
+//    Fix legend names.
+//
 // ****************************************************************************
 
 void
@@ -4474,10 +4486,10 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
             //
             dest->CopyGeneralAttributes(src);
             dest->CopyAnnotationAttributes(src);
-            dest->CopyAnnotationObjectList(src, true);
             dest->CopyLightList(src);
             dest->CopyViewAttributes(src);
-            dest->GetPlotList()->CopyFrom(src->GetPlotList(), true);
+            StringStringMap nameMap = dest->GetPlotList()->CopyFrom(src->GetPlotList(), true);
+            dest->CopyAnnotationObjectList(src, nameMap, true);
         }
     }
     else
@@ -8808,6 +8820,29 @@ ViewerWindowManager::SetDefaultAnnotationObjectListFromClient()
 }
 
 // ****************************************************************************
+// Method: ViewerWindowManager::GetSelectionList
+//
+// Purpose: 
+//   Return the selection list, creating it first if needed.
+//
+// Returns:    The selection list object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 23 11:27:10 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SelectionList *
+ViewerWindowManager::GetSelectionList()
+{
+    if(selectionList == 0)
+        selectionList = new SelectionList;
+    return selectionList;
+}
+
+// ****************************************************************************
 // Method: ViewerWindowManager::GetLineoutWindow
 //
 // Purpose:    
@@ -9304,6 +9339,9 @@ ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Brad Whitlock, Wed Aug 11 16:54:22 PDT 2010
+//   I added the selection list.
+//
 // ****************************************************************************
 
 void
@@ -9315,6 +9353,8 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 
     DataNode *mgrNode = new DataNode("ViewerWindowManager");
     parentNode->AddNode(mgrNode);
+
+    GetSelectionList()->CreateNode(mgrNode, true, true);    
 
     //
     // Add information about the ViewerWindowManager.
@@ -9408,6 +9448,10 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 //   Removed maintain data; moved maintain view from Global settings
 //   (Main window) to per-window Window Information (View window).
 //
+//   Brad Whitlock, Wed Aug 11 16:54:38 PDT 2010
+//   I added the selection node and code to regenerate named selections from
+//   the plots that generate them.
+//
 // ****************************************************************************
 
 void
@@ -9421,6 +9465,10 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
     DataNode *searchNode = parentNode->GetNode("ViewerWindowManager");
     if(searchNode == 0)
         return;
+
+    // Load the selection list
+    GetSelectionList()->SetFromNode(searchNode);
+    GetSelectionList()->Notify();
 
     //
     // Load information specific to ViewerWindowManager.  The following
@@ -9611,16 +9659,100 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
     //
     DataNode **wNodes = windowsNode->GetChildren();
     int childCount = 0;
+    bool *doUpdate = new bool[maxWindows];
     for(i = 0; i < maxWindows; ++i)
     {
+        doUpdate[i] = false;
         referenced[i] = false;
         if(windows[i] != 0 && childCount < newNWindows)
         {
-            windows[i]->SetFromNode(wNodes[childCount++], sourceToDB, configVersion);
+            doUpdate[i] = windows[i]->SetFromNode(wNodes[childCount++], sourceToDB, configVersion);
             if(windows[i]->GetPlotList()->GetNumPlots() > 0)
                 referenced[i] = true;
         }
     }
+
+    //
+    // If we have selections then iterate over all of them.
+    //
+    if(GetSelectionList()->GetNumSelections() > 0)
+    {
+        bool tmpApply = GetSelectionList()->GetAutoApplyUpdates();
+        GetSelectionList()->SetAutoApplyUpdates(false);
+
+        // Look over the plots in all windows and save the indices of the 
+        // originating plots for a selection. Save the name too.
+        intVector *originatingPlots = new intVector[maxWindows];
+        stringVector *selNames = new stringVector[maxWindows];
+        for(i = 0; i < maxWindows; ++i)
+        {
+            if(windows[i] == 0)
+                continue;
+            for(int j = 0; j < windows[i]->GetPlotList()->GetNumPlots(); ++j)
+            {
+                for(int k = 0; k < GetSelectionList()->GetNumSelections(); ++k)
+                {
+                    if(GetSelectionList()->GetSelections(k).GetOriginatingPlot() ==
+                       windows[i]->GetPlotList()->GetPlot(j)->GetPlotName())
+                    {
+                        selNames[i].push_back(GetSelectionList()->GetSelections(k).GetName());
+                        originatingPlots[i].push_back(j);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Update the originating plots in windows that contain them and use
+        // them to create the named selections they define.
+        for(i = 0; i < maxWindows; ++i)
+        {
+            const intVector &origPlots = originatingPlots[i];
+            if(!origPlots.empty())
+            {
+                // Cause this window's originating plots to be created.
+                windows[i]->DisableUpdates();
+                windows[i]->GetPlotList()->UpdateFrameForPlots(origPlots);
+
+                // Now create the selections that use those originating plots.
+                for(int j = 0; j < origPlots.size(); ++j)
+                {
+                    TRY
+                    {
+                        debug4 << "Creating named selection " << selNames[i][j]
+                               << " from plot " << origPlots[j] << " in window "
+                               << i << endl;
+                        ViewerEngineManager::Instance()->CreateNamedSelection(
+                            windows[i]->GetPlotList()->GetPlot(origPlots[j])->GetEngineKey(),
+                            windows[i]->GetPlotList()->GetPlot(origPlots[j])->GetNetworkID(),
+                            selNames[i][j]);
+                    }
+                    CATCH(VisItException)
+                    {
+                        Error(tr("Could not create named selection %1.").arg(selNames[i][j].c_str()));
+                    }
+                    ENDTRY
+                }
+
+                windows[i]->EnableUpdates();
+            }
+        }
+
+        GetSelectionList()->SetAutoApplyUpdates(tmpApply);
+        delete [] originatingPlots;
+        delete [] selNames;
+    }
+
+    //
+    // For windows that need it, send an update message so the window gets its 
+    // plots realized.
+    //
+    for(i = 0; i < maxWindows; ++i)
+    {
+        if(doUpdate[i])
+            windows[i]->SendUpdateFrameMessage();
+    }
+    delete [] doUpdate;
 
     //
     // Set the active window.

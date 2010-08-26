@@ -340,6 +340,9 @@ class SplashScreen;
 //    Hank Childs, Sun Aug  1 14:36:01 PDT 2010
 //    Added a CMFE wizard.
 //
+//    Brad Whitlock, Fri Aug  6 16:55:58 PDT 2010
+//    Added Selections window.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -499,6 +502,8 @@ private slots:
     void showSimulationWindow();
     void showExportDBWindow();
     void showMeshManagementWindow();
+    void showSelectionsWindow();
+    void showSelectionsWindow2(const QString &);
 
     void updateVisIt();
     void updateVisItCompleted(const QString &);

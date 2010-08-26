@@ -39,7 +39,7 @@
 #ifndef QVIS_SUBSET_WINDOW_H
 #define QVIS_SUBSET_WINDOW_H
 #include <gui_exports.h>
-#include <QvisPostableWindowObserver.h>
+#include <QvisPostableWindowSimpleObserver.h>
 #include <vector>
 
 // Forward declarations.
@@ -55,9 +55,11 @@ class QScrollArea;
 class QSplitter;
 class QvisSubsetPanelWidget;
 class QvisSubsetPanelItem;
-class FileServerList;
-class avtSIL;
 
+class avtSIL;
+class SILRestrictionAttributes;
+class SelectionList;
+class PlotList;
 
 // ****************************************************************************
 // Class: QvisSubsetWindow
@@ -95,19 +97,25 @@ class avtSIL;
 //   Cyrus Harrison, Fri Jul 18 09:02:29 PDT 2008
 //   Refactored for Qt4.
 //
+//   Brad Whitlock, Tue Aug 10 11:04:31 PDT 2010
+//   I made it inherit QvisPostableWindowSimpleObserver.
+//
 // ****************************************************************************
 
-class GUI_API QvisSubsetWindow : public QvisPostableWindowObserver
+class GUI_API QvisSubsetWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisSubsetWindow(Subject *subj,
-                     const QString &caption = QString::null,
+    QvisSubsetWindow(const QString &caption = QString::null,
                      const QString &shortName = QString::null,
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisSubsetWindow();
     virtual void CreateWindowContents();
 
+    void ConnectSILRestrictionAttributes(SILRestrictionAttributes *);
+    void ConnectSelectionList(SelectionList *);
+    void ConnectPlotList(PlotList *);
+    virtual void SubjectRemoved(Subject *);
 protected:
     virtual void UpdateWindow(bool doAll);
     
@@ -115,23 +123,38 @@ protected:
     int  AddPanel(bool visible = true);
     void UpdatePanels(int index = -1, bool panels_after = false);
     void ClearPanelsToTheRight(int index);
-        
+    void UpdateSILControls();
+    void UpdateSelectionControls();
 private slots:
     void apply();
     void onPanelItemSelected(int id,bool parent);
     void onPanelStateChanged();
-    
+    void selectionChanged(const QString &);
+
 private:
     int FindPanelIndex(QObject *obj);
+
+    SILRestrictionAttributes       *silrAtts;
+    SelectionList                  *selectionList;
+    PlotList                       *plotList;
+
     QScrollArea                    *scrollView;
     QSplitter                      *panelSplitter;
     QList<QvisSubsetPanelWidget *>  panels;
+
+    QLabel                         *selectionLabel;
+    QComboBox                      *selections;
 
     // A few attributes of the current SIL restriction that we use to
     // determine how the window must be redrawn.
     int                  sil_TopSet;
     int                  sil_NumSets;
     int                  sil_NumCollections;
+    int                  sil_dirty;
+
+    // We use this to help determine when we must apply a new selection.
+    QString              sel_selectionName;
+    bool                 sel_dirty;
 };
 
 #endif

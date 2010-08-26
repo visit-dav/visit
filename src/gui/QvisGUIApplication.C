@@ -96,6 +96,7 @@
 #include <PrinterAttributes.h>
 #include <RenderingAttributes.h>
 #include <SILRestrictionAttributes.h>
+#include <SelectionList.h>
 #include <SyncAttributes.h>
 #include <QueryOverTimeAttributes.h>
 #include <WindowInformation.h>
@@ -141,6 +142,7 @@
 #include <QvisRenderingWindow.h>
 #include <QvisSaveMovieWizard.h>
 #include <QvisSaveWindow.h>
+#include <QvisSelectionsWindow.h>
 #include <QvisSessionFileDatabaseLoader.h>
 #include <QvisSimulationWindow.h>
 #include <QvisSessionSourceChangerDialog.h>
@@ -224,6 +226,7 @@
 #define WINDOW_MESH_MANAGEMENT  30
 #define WINDOW_FILE_OPEN        31
 #define WINDOW_MACRO            32
+#define WINDOW_SELECTIONS       33
 
 #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
@@ -604,6 +607,9 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
 //   Use Queued signal/slot connection instead of QTimer::singleShot for
 //   init to work around a Qt/Glib init problem in linux.
 //
+//   Brad Whitlock, Fri Aug  6 16:54:29 PDT 2010
+//   Added Selections to windowNames.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -809,6 +815,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     windowNames += tr("Mesh Management Options");
     windowNames += tr("File open");
     windowNames += tr("Macros");
+    windowNames += tr("Selections");
 
     // If the geometry was not passed on the command line then the 
     // savedGUIGeometry flag will still be set to false. If we
@@ -2997,6 +3004,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Gunther H. Weber, Fri Aug 15 10:46:55 PDT 2008
 //   Connect signals necessary for redoing a pick. 
 //
+//   Brad Whitlock, Fri Aug  6 17:00:02 PDT 2010
+//   Add Selections window.
+//
 //   Eric Brugger, Tue Aug 24 13:22:09 PDT 2010
 //   Added the ability to enable/disable the popping up of warning messages.
 //
@@ -3125,6 +3135,10 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showMeshManagementWindow()));
      connect(mainWin, SIGNAL(activateMacroWindow()),
              this, SLOT(showMacroWindow()));
+     connect(mainWin, SIGNAL(activateSelectionsWindow()),
+             this, SLOT(showSelectionsWindow()));
+     connect(mainWin->GetPlotManager(), SIGNAL(activateSelectionsWindow(const QString &)),
+             this, SLOT(showSelectionsWindow2(const QString &)));
 }
 
 // ****************************************************************************
@@ -3190,6 +3204,10 @@ QvisGUIApplication::SetupWindows()
 //   Brad Whitlock, Mon Apr 21 15:29:03 PDT 2008
 //   Set the application locale into the Help window so we can look for other
 //   language help documents.
+//
+//   Brad Whitlock, Fri Aug  6 16:56:40 PDT 2010
+//   I added the Selections window and I changed how the Subset window gets
+//   set up.
 //
 // ****************************************************************************
 
@@ -3266,8 +3284,13 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_SUBSET:
         // Create the subset window.
-        win = new QvisSubsetWindow(GetViewerState()->GetSILRestrictionAttributes(),
-            windowNames[i], tr("Subset"), mainWin->GetNotepad());
+        { QvisSubsetWindow *sWin = new QvisSubsetWindow(windowNames[i], 
+            tr("Subset"), mainWin->GetNotepad());
+          sWin->ConnectSILRestrictionAttributes(GetViewerState()->GetSILRestrictionAttributes());
+          sWin->ConnectSelectionList(GetViewerState()->GetSelectionList());
+          sWin->ConnectPlotList(GetViewerState()->GetPlotList());
+          win = sWin;
+        }
         break;
     case WINDOW_PLUGINMANAGER:
         // Create the plugin manager window.
@@ -3427,6 +3450,15 @@ QvisGUIApplication::WindowFactory(int i)
                                   mainWin->GetNotepad());
         connect(win, SIGNAL(runCommand(const QString &)),
                 this, SLOT(Interpret(const QString &)));
+        break;
+    case WINDOW_SELECTIONS:
+        // Create the Selections window.
+        { QvisSelectionsWindow *sWin = new QvisSelectionsWindow(windowNames[i], 
+              tr("Selections"), mainWin->GetNotepad());
+          sWin->ConnectSelectionList(GetViewerState()->GetSelectionList());
+          sWin->ConnectPlotList(GetViewerState()->GetPlotList());
+          win = sWin;
+        }
         break;
     }
 
@@ -8459,3 +8491,13 @@ void QvisGUIApplication::showSimulationWindow()      { GetInitializedWindowPoint
 void QvisGUIApplication::showExportDBWindow()        { GetInitializedWindowPointer(WINDOW_EXPORT_DB)->show(); }
 void QvisGUIApplication::showMeshManagementWindow()  { GetInitializedWindowPointer(WINDOW_MESH_MANAGEMENT)->show(); }
 void QvisGUIApplication::showMacroWindow()           { GetInitializedWindowPointer(WINDOW_MACRO)->show(); }
+void QvisGUIApplication::showSelectionsWindow()      { GetInitializedWindowPointer(WINDOW_SELECTIONS)->show(); }
+
+void
+QvisGUIApplication::showSelectionsWindow2(const QString &selName)
+{
+    QvisSelectionsWindow *selWindow = (QvisSelectionsWindow *)GetInitializedWindowPointer(WINDOW_SELECTIONS);
+
+    selWindow->show();
+    selWindow->highlightSelection(selName);
+}

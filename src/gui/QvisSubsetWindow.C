@@ -40,6 +40,7 @@
 #include <QvisSubsetPanelWidget.h>
 #include <QvisSubsetPanelItem.h>
 #include <QWidget>
+#include <QComboBox>
 #include <QLabel>
 #include <QLayout>
 #include <QPushButton>
@@ -53,6 +54,12 @@
 #include <ViewerProxy.h>
 #include <avtSILNamespace.h>
 #include <avtSILRestrictionTraverser.h>
+
+#include <SILRestrictionAttributes.h>
+#include <Plot.h>
+#include <PlotList.h>
+#include <SelectionList.h>
+#include <SelectionProperties.h>
 
 // ****************************************************************************
 // Method: QvisSubsetWindow::QvisSubsetWindow
@@ -82,15 +89,23 @@
 //
 // ****************************************************************************
 
-QvisSubsetWindow::QvisSubsetWindow(Subject *subj, const QString &caption,
+QvisSubsetWindow::QvisSubsetWindow(const QString &caption,
     const QString &shortName, QvisNotepadArea *notepad) :
-    QvisPostableWindowObserver(subj, caption, shortName, notepad,
-                               QvisPostableWindowObserver::ApplyButton, false)
+    QvisPostableWindowSimpleObserver(caption, shortName, notepad,
+        QvisPostableWindowSimpleObserver::ApplyButton, false)
 {
+    silrAtts = 0;
+    selectionList = 0;
+    plotList = 0;
+
     // Set these to uninitialized.
     sil_TopSet = -1;
     sil_NumSets = -1;
     sil_NumCollections = -1;
+    sil_dirty = true;
+
+    sel_selectionName = QString();
+    sel_dirty = true;
 }
 
 // ****************************************************************************
@@ -109,10 +124,53 @@ QvisSubsetWindow::QvisSubsetWindow(Subject *subj, const QString &caption,
 //   Brad Whitlock, Fri Aug 6 13:56:19 PST 2004
 //   Removed the buttongroups.
 //
+//   Brad Whitlock, Tue Aug 10 13:42:24 PDT 2010
+//   Added code to detach subjects.
+//
 // ****************************************************************************
 
 QvisSubsetWindow::~QvisSubsetWindow()
 {
+    if(silrAtts != 0)
+        silrAtts->Detach(this);
+    if(selectionList != 0)
+        selectionList->Detach(this);
+    if(plotList != 0)
+        plotList->Detach(this);
+}
+
+void
+QvisSubsetWindow::ConnectSILRestrictionAttributes(SILRestrictionAttributes *s)
+{
+    silrAtts = s;
+    silrAtts->Attach(this);
+}
+
+void
+QvisSubsetWindow::ConnectSelectionList(SelectionList *s)
+{
+    selectionList = s;
+    selectionList->Attach(this);
+}
+
+void
+QvisSubsetWindow::ConnectPlotList(PlotList *s)
+{
+    plotList = s;
+    plotList->Attach(this);
+}
+
+void
+QvisSubsetWindow::SubjectRemoved(Subject *s)
+{
+    if(silrAtts == s)
+        silrAtts = 0;
+
+    if(selectionList == s)
+        selectionList = 0;
+
+    if(plotList == s)
+        plotList = 0;
 }
 
 // ****************************************************************************
@@ -149,23 +207,36 @@ QvisSubsetWindow::~QvisSubsetWindow()
 void
 QvisSubsetWindow::CreateWindowContents()
 {
+    //
+    // Subset controls
+    //
     scrollView = new QScrollArea(central);
     scrollView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scrollView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollView->setWidgetResizable(true);
     topLayout->addWidget(scrollView);
-    
-    
-    // Add a few list views.
+
     panelSplitter = new QSplitter(central);
     scrollView->setWidget(panelSplitter);
-    
     AddPanel();
     AddPanel();
     AddPanel();
     
     panels[0]->SetTitle("Whole");
 
+    //
+    // Selection controls
+    //
+    QWidget *selParent = new QWidget(central);
+    topLayout->addWidget(selParent);
+    QHBoxLayout *sLayout = new QHBoxLayout(selParent);
+    sLayout->setMargin(0);
+    selectionLabel = new QLabel(tr("Applied selection"), selParent);
+    selections = new QComboBox(selParent);
+    connect(selections, SIGNAL(activated(const QString &)),
+            this, SLOT(selectionChanged(const QString &)));
+    sLayout->addWidget(selectionLabel);
+    sLayout->addWidget(selections, 10);
 }
 
 // ****************************************************************************
@@ -179,22 +250,108 @@ QvisSubsetWindow::CreateWindowContents()
 // Creation:   Thu Jul 5 09:09:32 PDT 2001
 //
 // Modifications:
-//   Brad Whitlock, Thu Dec 20 15:50:32 PST 2001
-//   Modified to support new widget layout.
-//
-//   Hank Childs, Mon Dec  2 13:41:37 PST 2002
-//   Use a reference counted SIL restriction instead of a reference to one.
-//
-//   Brad Whitlock, Wed Apr 23 14:07:51 PST 2003
-//   I added code to set the enabled state of the buttons.
-//
-//   Cyrus Harrison, Fri Jul 18 09:03:03 PDT 2008
-//   Refactored for Qt4.
+//   Brad Whitlock, Tue Aug 10 11:40:31 PDT 2010
+//   I rewrote the code and moved some to UpdateSILControls.
 //
 // ****************************************************************************
 
 void
-QvisSubsetWindow::UpdateWindow(bool)
+QvisSubsetWindow::UpdateWindow(bool doAll)
+{
+    if(silrAtts == 0 || selectionList == 0 || plotList == 0)
+        return;
+
+    if(SelectedSubject() == silrAtts || doAll)
+        UpdateSILControls();
+
+    if(SelectedSubject() == selectionList ||
+       SelectedSubject() == plotList || doAll)
+        UpdateSelectionControls();
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::UpdateSelectionControls
+//
+// Purpose: 
+//   Update the selection controls.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 10 13:40:57 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetWindow::UpdateSelectionControls()
+{
+    // Get the name of the first selected plot
+    int selIndex = plotList->FirstSelectedIndex();
+
+    // Let's populate the available selections based on the selection list.
+    selections->blockSignals(true);
+    selections->clear();
+    selections->addItem(tr("None"));
+    sel_selectionName = QString();
+    int selectedSelection = 0, index = 1;
+    for(int i = 0; i < selectionList->GetNumSelections(); ++i)
+    {
+        const SelectionProperties &sel = selectionList->GetSelections(i);
+        bool addOkay = true;
+        if(selIndex >= 0)
+        {
+            const Plot &plot = plotList->GetPlots(selIndex);
+            // Get the active plot's selection name.
+            if(plot.GetSelection() == sel.GetName())
+            {
+                sel_selectionName = QString(plot.GetSelection().c_str());
+                selectedSelection = index;
+            }
+
+            // We can add the selection name if it is not created by the active plot.
+            addOkay = (plot.GetPlotName() != sel.GetOriginatingPlot());
+        }
+            
+        if(addOkay)
+        {
+            selections->addItem(selectionList->GetSelections(i).GetName().c_str());
+            index++;
+        }
+    }
+    selections->setCurrentIndex(selectedSelection);
+    selections->blockSignals(false);
+
+    bool seEnabled = selections->count() > 1 && plotList->GetNumPlots() > 0;
+    selectionLabel->setEnabled(seEnabled);
+    selections->setEnabled(seEnabled);
+
+    // Indicate that the user has not changed the selection controls.
+    sel_dirty = false;
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::UpdateSILControls
+//
+// Purpose: 
+//   Update the SIL part of the window.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       I moved this from UpdateWindow.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 10 11:40:10 PDT 2010
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 10 13:58:01 PDT 2010
+//   I set the sil_dirty flag.
+//
+// ****************************************************************************
+
+void
+QvisSubsetWindow::UpdateSILControls()
 {
     // Get a reference to the SIL restriction in the viewer proxy.
     avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
@@ -219,7 +376,6 @@ QvisSubsetWindow::UpdateWindow(bool)
         
         // Clear all but the first panel.
         ClearPanelsToTheRight(1);
-
     }
     else
     {
@@ -230,6 +386,9 @@ QvisSubsetWindow::UpdateWindow(bool)
         // only need to be updated.
         UpdatePanels();
     }
+
+    // Indicate that the user has not changed the SIL restriction controls.
+    sil_dirty = false;
 }
 
 // ****************************************************************************
@@ -265,8 +424,6 @@ QvisSubsetWindow::AddPanel(bool visible)
         connect(panel,SIGNAL(parentStateChanged(int)),
                 panels[npanels-1],SLOT(SetSelectedItemState(int)));
     }
-    
-    
     
     panelSplitter->addWidget(panel);
     panels.append(panel);
@@ -343,7 +500,6 @@ QvisSubsetWindow::UpdatePanels(int index, bool panels_after)
 
         panels[i]->UpdateView();
     }
-
 }
 
 
@@ -360,91 +516,28 @@ QvisSubsetWindow::UpdatePanels(int index, bool panels_after)
 // Creation:   Mon Mar 4 15:15:34 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 10 14:03:30 PDT 2010
+//   I added code to set the named selection.
+//
 // ****************************************************************************
 
 void
 QvisSubsetWindow::Apply(bool ignore)
 {
-    if(AutoUpdate() || ignore)
+    if(sil_dirty && (AutoUpdate() || ignore))
     {
         // Indicate that we do not want the window to update when we apply
         // the values.
         SetUpdate(false);
         GetViewerProxy()->SetPlotSILRestriction();
     }
-}
 
-//
-// Qt slots
-//
-
-// ****************************************************************************
-// Method: QvisSubsetWindow::onPanelItemSelected
-//
-// Purpose: 
-//   This is a Qt slot function that is called when a panel item is selected.
-//
-// Arguments:
-//   id: The SIL id
-//
-// Programmer: Cyrus Harrison
-// Creation:   Wed Jul 16 16:07:22 PDT 2008
-//
-// Modifications:
-//
-// ****************************************************************************
-void
-QvisSubsetWindow::onPanelItemSelected(int id, bool parent)
-{
-    int index = FindPanelIndex(sender());
-
-    if(index >= 0)
+    if(sel_dirty && (AutoUpdate() || ignore))
     {
-        if(parent)
-        {
-            ClearPanelsToTheRight(index+1);
-            Apply();
-            return;
-        }
-        
-        if(index + 1 == panels.count() )
-            AddPanel();
-
-        avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
-        panels[index+1]->ViewCollection(id);
-        if(panels[index+1]->isHidden())
-            panels[index+1]->show();
-        ClearPanelsToTheRight(index+2);
+        // Indicate that we do not want the window to update when we apply
+        // the values.
+        GetViewerMethods()->ApplyNamedSelection(sel_selectionName.toStdString());
     }
-        
-}
-
-// ****************************************************************************
-// Method: QvisSubsetWindow::onPanelItemSelected
-//
-// Purpose: 
-//   This is a Qt slot function that is called when a panel item is selected.
-//
-// Arguments:
-//   id: The SIL id
-//
-// Programmer: Cyrus Harrison
-// Creation:   Wed Jul 16 16:07:22 PDT 2008
-//
-// Modifications:
-//
-// ****************************************************************************
-void
-QvisSubsetWindow::onPanelStateChanged()
-{
-    int index = FindPanelIndex(sender());
-
-    if(index == -1)
-        return;
-    
-    UpdatePanels(index,true);
-        
 }
 
 // ****************************************************************************
@@ -477,6 +570,86 @@ QvisSubsetWindow::FindPanelIndex(QObject *obj)
     return -1;
 }
 
+//
+// Qt slots
+//
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::onPanelItemSelected
+//
+// Purpose: 
+//   This is a Qt slot function that is called when a panel item is selected.
+//
+// Arguments:
+//   id: The SIL id
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Jul 16 16:07:22 PDT 2008
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 10 14:00:03 PDT 2010
+//   I added sil_dirty.
+//
+// ****************************************************************************
+
+void
+QvisSubsetWindow::onPanelItemSelected(int id, bool parent)
+{
+    int index = FindPanelIndex(sender());
+
+    if(index >= 0)
+    {
+        // The user has changed the SIL controls.
+        sil_dirty = true;
+
+        if(parent)
+        {
+            ClearPanelsToTheRight(index+1);
+            Apply();
+            return;
+        }
+        
+        if(index + 1 == panels.count() )
+            AddPanel();
+
+        avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
+        panels[index+1]->ViewCollection(id);
+        if(panels[index+1]->isHidden())
+            panels[index+1]->show();
+        ClearPanelsToTheRight(index+2);
+    }       
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::onPanelItemSelected
+//
+// Purpose: 
+//   This is a Qt slot function that is called when a panel item is selected.
+//
+// Arguments:
+//   id: The SIL id
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Jul 16 16:07:22 PDT 2008
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 10 13:59:46 PDT 2010
+//   I added sil_dirty.
+//
+// ****************************************************************************
+
+void
+QvisSubsetWindow::onPanelStateChanged()
+{
+    int index = FindPanelIndex(sender());
+
+    if(index == -1)
+        return;
+
+    // The user has changed the SIL controls.
+    sil_dirty = true;
+    UpdatePanels(index,true);
+}
 
 // ****************************************************************************
 // Method: QvisSubsetWindow::apply
@@ -500,4 +673,32 @@ QvisSubsetWindow::apply()
     Apply(true);
 }
 
+// ****************************************************************************
+// Method: QvisSubsetWindow::selectionChanged
+//
+// Purpose: 
+//   This is a Qt slot function that gets called when the user selects a new
+//   selection name.
+//
+// Arguments:
+//   index : the index of the selection name. 0==no selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 10 14:01:27 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+void
+QvisSubsetWindow::selectionChanged(const QString &selName)
+{
+    QString sName;
+    if(selName != tr("None"))
+        sName = selName;
+
+    sel_dirty = sName != sel_selectionName;
+    sel_selectionName = sName;
+
+    Apply();
+}

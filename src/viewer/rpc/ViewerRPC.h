@@ -248,6 +248,8 @@ public:
         DeleteNamedSelectionRPC,
         LoadNamedSelectionRPC,
         SaveNamedSelectionRPC,
+        SetNamedSelectionAutoApplyRPC,
+        UpdateNamedSelectionRPC,
         MenuQuitRPC,
         SetPlotDescriptionRPC,
         MovePlotOrderTowardFirstRPC,
