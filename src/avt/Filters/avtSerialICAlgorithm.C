@@ -235,9 +235,6 @@ avtSerialICAlgorithm::RunAlgorithm()
         // Integrate all loaded domains.
         while (! activeICs.empty())
         {
-            std::cout << '\r' << activeICs.size() + oobICs.size() 
-                      << " integral curves remain      " << std::flush;
-
             avtIntegralCurve *s = activeICs.front();
             activeICs.pop_front();
 
