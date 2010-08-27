@@ -83,6 +83,11 @@ public:
         Log10,
         Skew
     };
+    enum LimitsMode
+    {
+        OriginalData,
+        CurrentPlot
+    };
     enum SamplingType
     {
         KernelBased,
@@ -162,6 +167,7 @@ public:
     void SetNum3DSlices(int num3DSlices_);
     void SetScaling(Scaling scaling_);
     void SetSkewFactor(double skewFactor_);
+    void SetLimitsMode(LimitsMode limitsMode_);
     void SetSampling(SamplingType sampling_);
     void SetRendererSamples(float rendererSamples_);
     void SetTransferFunctionDim(int transferFunctionDim_);
@@ -198,6 +204,7 @@ public:
     int                            GetNum3DSlices() const;
     Scaling                        GetScaling() const;
     double                         GetSkewFactor() const;
+    LimitsMode                     GetLimitsMode() const;
     SamplingType                   GetSampling() const;
     float                          GetRendererSamples() const;
     const AttributeGroupVector     &GetTransferFunction2DWidgets() const;
@@ -238,6 +245,11 @@ public:
     static bool Scaling_FromString(const std::string &, Scaling &);
 protected:
     static std::string Scaling_ToString(int);
+public:
+    static std::string LimitsMode_ToString(LimitsMode);
+    static bool LimitsMode_FromString(const std::string &, LimitsMode &);
+protected:
+    static std::string LimitsMode_ToString(int);
 public:
     static std::string SamplingType_ToString(SamplingType);
     static bool SamplingType_FromString(const std::string &, SamplingType &);
@@ -300,6 +312,7 @@ public:
         ID_num3DSlices,
         ID_scaling,
         ID_skewFactor,
+        ID_limitsMode,
         ID_sampling,
         ID_rendererSamples,
         ID_transferFunction2DWidgets,
@@ -337,6 +350,7 @@ private:
     int                      num3DSlices;
     int                      scaling;
     double                   skewFactor;
+    int                      limitsMode;
     int                      sampling;
     float                    rendererSamples;
     AttributeGroupVector     transferFunction2DWidgets;
@@ -349,6 +363,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bbafiaisUbfbfbfbfbiiiiidifa*iibd"
+#define VOLUMEATTRIBUTES_TMFS "bbafiaisUbfbfbfbfbiiiiidiifa*iibd"
 
 #endif

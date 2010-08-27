@@ -157,6 +157,43 @@ VolumeAttributes::Scaling_FromString(const std::string &s, VolumeAttributes::Sca
 }
 
 //
+// Enum conversion methods for VolumeAttributes::LimitsMode
+//
+
+static const char *LimitsMode_strings[] = {
+"OriginalData", "CurrentPlot"};
+
+std::string
+VolumeAttributes::LimitsMode_ToString(VolumeAttributes::LimitsMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return LimitsMode_strings[index];
+}
+
+std::string
+VolumeAttributes::LimitsMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return LimitsMode_strings[index];
+}
+
+bool
+VolumeAttributes::LimitsMode_FromString(const std::string &s, VolumeAttributes::LimitsMode &val)
+{
+    val = VolumeAttributes::OriginalData;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == LimitsMode_strings[i])
+        {
+            val = (LimitsMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for VolumeAttributes::SamplingType
 //
 
@@ -310,6 +347,7 @@ void VolumeAttributes::Init()
     num3DSlices = 200;
     scaling = Linear;
     skewFactor = 1;
+    limitsMode = OriginalData;
     sampling = Rasterization;
     rendererSamples = 3;
     transferFunctionDim = 1;
@@ -365,6 +403,7 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     num3DSlices = obj.num3DSlices;
     scaling = obj.scaling;
     skewFactor = obj.skewFactor;
+    limitsMode = obj.limitsMode;
     sampling = obj.sampling;
     rendererSamples = obj.rendererSamples;
     // *** Copy the transferFunction2DWidgets field ***
@@ -587,6 +626,7 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (num3DSlices == obj.num3DSlices) &&
             (scaling == obj.scaling) &&
             (skewFactor == obj.skewFactor) &&
+            (limitsMode == obj.limitsMode) &&
             (sampling == obj.sampling) &&
             (rendererSamples == obj.rendererSamples) &&
             transferFunction2DWidgets_equal &&
@@ -761,6 +801,7 @@ VolumeAttributes::SelectAll()
     Select(ID_num3DSlices,                   (void *)&num3DSlices);
     Select(ID_scaling,                       (void *)&scaling);
     Select(ID_skewFactor,                    (void *)&skewFactor);
+    Select(ID_limitsMode,                    (void *)&limitsMode);
     Select(ID_sampling,                      (void *)&sampling);
     Select(ID_rendererSamples,               (void *)&rendererSamples);
     Select(ID_transferFunction2DWidgets,     (void *)&transferFunction2DWidgets);
@@ -977,6 +1018,12 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("skewFactor", skewFactor));
     }
 
+    if(completeSave || !FieldsEqual(ID_limitsMode, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("limitsMode", LimitsMode_ToString(limitsMode)));
+    }
+
     if(completeSave || !FieldsEqual(ID_sampling, &defaultObject))
     {
         addToParent = true;
@@ -1161,6 +1208,22 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("skewFactor")) != 0)
         SetSkewFactor(node->AsDouble());
+    if((node = searchNode->GetNode("limitsMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetLimitsMode(LimitsMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            LimitsMode value;
+            if(LimitsMode_FromString(node->AsString(), value))
+                SetLimitsMode(value);
+        }
+    }
     if((node = searchNode->GetNode("sampling")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1179,9 +1242,9 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("rendererSamples")) != 0)
         SetRendererSamples(node->AsFloat());
-    // Clear all the TransferFunctionWidgets.
-    ClearTransferFunction2DWidgets();
 
+    // Clear all the TransferFunctionWidgets if we got any.
+    bool clearedTransferFunction2DWidgets = false;
     // Go through all of the children and construct a new
     // TransferFunctionWidget for each one of them.
     children = searchNode->GetChildren();
@@ -1191,6 +1254,11 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         {
             if(children[i]->GetKey() == std::string("TransferFunctionWidget"))
             {
+                if (!clearedTransferFunction2DWidgets)
+                {
+                    ClearTransferFunction2DWidgets();
+                    clearedTransferFunction2DWidgets = true;
+                }
                 TransferFunctionWidget temp;
                 temp.SetFromNode(children[i]);
                 AddTransferFunction2DWidgets(temp);
@@ -1398,6 +1466,13 @@ VolumeAttributes::SetSkewFactor(double skewFactor_)
 {
     skewFactor = skewFactor_;
     Select(ID_skewFactor, (void *)&skewFactor);
+}
+
+void
+VolumeAttributes::SetLimitsMode(VolumeAttributes::LimitsMode limitsMode_)
+{
+    limitsMode = limitsMode_;
+    Select(ID_limitsMode, (void *)&limitsMode);
 }
 
 void
@@ -1615,6 +1690,12 @@ double
 VolumeAttributes::GetSkewFactor() const
 {
     return skewFactor;
+}
+
+VolumeAttributes::LimitsMode
+VolumeAttributes::GetLimitsMode() const
+{
+    return LimitsMode(limitsMode);
 }
 
 VolumeAttributes::SamplingType
@@ -1944,6 +2025,7 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_num3DSlices:                   return "num3DSlices";
     case ID_scaling:                       return "scaling";
     case ID_skewFactor:                    return "skewFactor";
+    case ID_limitsMode:                    return "limitsMode";
     case ID_sampling:                      return "sampling";
     case ID_rendererSamples:               return "rendererSamples";
     case ID_transferFunction2DWidgets:     return "transferFunction2DWidgets";
@@ -1999,6 +2081,7 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_num3DSlices:                   return FieldType_int;
     case ID_scaling:                       return FieldType_enum;
     case ID_skewFactor:                    return FieldType_double;
+    case ID_limitsMode:                    return FieldType_enum;
     case ID_sampling:                      return FieldType_enum;
     case ID_rendererSamples:               return FieldType_float;
     case ID_transferFunction2DWidgets:     return FieldType_attVector;
@@ -2054,6 +2137,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_num3DSlices:                   return "int";
     case ID_scaling:                       return "enum";
     case ID_skewFactor:                    return "double";
+    case ID_limitsMode:                    return "enum";
     case ID_sampling:                      return "enum";
     case ID_rendererSamples:               return "float";
     case ID_transferFunction2DWidgets:     return "attVector";
@@ -2210,6 +2294,11 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_skewFactor:
         {  // new scope
         retval = (skewFactor == obj.skewFactor);
+        }
+        break;
+    case ID_limitsMode:
+        {  // new scope
+        retval = (limitsMode == obj.limitsMode);
         }
         break;
     case ID_sampling:

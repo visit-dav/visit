@@ -58,7 +58,8 @@ class QLineEdit;
 class QPushButton;
 class QvisColorTableButton;
 class QRadioButton;
-class QSlider;
+class QSpinBox;
+class QDoubleSpinBox;
 class QVBoxLayout;
 class QvisColorSelectionWidget;
 class QvisGaussianOpacityBar;
@@ -178,13 +179,11 @@ protected:
     void Apply(bool ignore = false);
     void GetCurrentValues(int which_widget);
     void CopyGaussianOpacitiesToFreeForm();
-    void SetResampleTargetSliderFromAtts();
-    void SetRendererSamplesSliderFromAtts();
     QWidget *Create1DTransferFunctionGroup(int);
     QWidget *Create2DTransferFunctionGroup();
+    QWidget *CreateRendererOptionsGroup(int);
     void CreateColorGroup(QWidget *, QVBoxLayout *, int);
     void CreateOpacityGroup(QWidget *, QVBoxLayout *, int);
-    void CreateOptions(int);
 private slots:
     void addControlPoint();
     void removeControlPoint();
@@ -200,6 +199,7 @@ private slots:
     void lowGradientLightingReductionChanged(int val);
     void lowGradientClampToggled(bool val);
     void lowGradientClampProcessText();
+    void limitsSelectChanged(int);
     void colorMinToggled(bool val);
     void colorMinProcessText();
     void colorMaxToggled(bool val);
@@ -213,20 +213,16 @@ private slots:
     void smoothDataToggled(bool val);
     void equalSpacingToggled(bool val);
     void alphaValuesChanged();
-    void resampleTargetProcessText();
-    void resampleTargetSliderChanged(int val);
-    void resampleTargetSliderReleased();
-    void samplesPerRayProcessText();
+    void resampleTargetChanged(int val);
+    void samplesPerRayChanged(int val);
     void rendererTypeChanged(int val);
     void gradientTypeChanged(int val);
     void samplingTypeChanged(int val);
-    void num3DSlicesProcessText();
+    void num3DSlicesChanged(int val);
     void processSkewText();
     void scaleClicked(int scale);
     void colorTableClicked(bool useDefault, const QString &ctName);
-    void rendererSamplesProcessText();
-    void rendererSamplesSliderChanged(int val);
-    void rendererSamplesSliderReleased();
+    void rendererSamplesChanged(double val);
     void transferDimChanged(int);
     void updateTransferFunc2D();
     void updateTransferFunc2D(WidgetID id);
@@ -243,12 +239,12 @@ private:
     QCheckBox                *equalCheckBox;
     QvisSpectrumBar          *spectrumBar;
     QvisColorSelectionWidget *colorSelect;
+    QComboBox                *limitsSelect;
     QCheckBox                *colorMinToggle;
     QLineEdit                *colorMin;
     QCheckBox                *colorMaxToggle;
     QLineEdit                *colorMax;
-    QComboBox                *scaling;
-    QLabel                   *skewLabel;
+    QButtonGroup             *scalingButtons;
     QLineEdit                *skewLineEdit;
     QvisVariableButton       *opacityVariable;
     QCheckBox                *opacityMinToggle;
@@ -275,6 +271,9 @@ private:
     QWidget                  *tfParent2D;
     QvisCMap2Widget          *transferFunc2D;
 
+    // 2D transfer function widgets
+    QWidget                  *tfRendererOptions;
+
     // General widgets
     QCheckBox                *legendToggle;
     QCheckBox                *lightingToggle;
@@ -295,14 +294,12 @@ private:
     QRadioButton             *centeredDiffButton;
     QRadioButton             *sobelButton;
     QLabel                   *resampleTargetLabel;
-    QLineEdit                *resampleTarget;
-    QSlider                  *resampleTargetSlider;
+    QSpinBox                 *resampleTarget;
     QLabel                   *num3DSlicesLabel;
-    QLineEdit                *num3DSlices;
+    QSpinBox                 *num3DSlices;
     QLabel                   *samplesPerRayLabel;
-    QLineEdit                *samplesPerRay;
+    QSpinBox                 *samplesPerRay;
     QLabel                   *rendererSamplesLabel;
-    QSlider                  *rendererSamplesSlider;
-    QLineEdit                *rendererSamples;
+    QDoubleSpinBox           *rendererSamples;
 };
 #endif
