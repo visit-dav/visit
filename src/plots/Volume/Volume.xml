@@ -99,7 +99,7 @@
       </Enum>
       <Enum name="Scaling">
         Linear
-        Log10
+        Log
         Skew
       </Enum>
       <Enum name="LimitsMode">

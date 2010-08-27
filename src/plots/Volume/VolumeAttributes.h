@@ -80,7 +80,7 @@ public:
     enum Scaling
     {
         Linear,
-        Log10,
+        Log,
         Skew
     };
     enum LimitsMode

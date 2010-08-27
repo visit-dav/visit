@@ -224,15 +224,15 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
 
     SNPRINTF(tmpStr, 1000, "%snum3DSlices = %d\n", prefix, atts->GetNum3DSlices());
     str += tmpStr;
-    const char *scaling_names = "Linear, Log10, Skew";
+    const char *scaling_names = "Linear, Log, Skew";
     switch (atts->GetScaling())
     {
       case VolumeAttributes::Linear:
           SNPRINTF(tmpStr, 1000, "%sscaling = %sLinear  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
-      case VolumeAttributes::Log10:
-          SNPRINTF(tmpStr, 1000, "%sscaling = %sLog10  # %s\n", prefix, prefix, scaling_names);
+      case VolumeAttributes::Log:
+          SNPRINTF(tmpStr, 1000, "%sscaling = %sLog  # %s\n", prefix, prefix, scaling_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Skew:
@@ -1007,7 +1007,7 @@ VolumeAttributes_SetScaling(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid scaling value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "Linear, Log10, Skew.");
+                        "Linear, Log, Skew.");
         return NULL;
     }
 
@@ -1530,8 +1530,8 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetScaling(self, NULL);
     if(strcmp(name, "Linear") == 0)
         return PyInt_FromLong(long(VolumeAttributes::Linear));
-    if(strcmp(name, "Log10") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::Log10));
+    if(strcmp(name, "Log") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Log));
     if(strcmp(name, "Skew") == 0)
         return PyInt_FromLong(long(VolumeAttributes::Skew));
 

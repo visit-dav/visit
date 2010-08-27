@@ -123,7 +123,7 @@ VolumeAttributes::GradientType_FromString(const std::string &s, VolumeAttributes
 //
 
 static const char *Scaling_strings[] = {
-"Linear", "Log10", "Skew"
+"Linear", "Log", "Skew"
 };
 
 std::string

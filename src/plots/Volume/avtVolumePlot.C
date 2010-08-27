@@ -290,7 +290,7 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
     varLegend->SetRange(min, max);
     if (atts.GetScaling() == VolumeAttributes::Linear)
         varLegend->SetScaling(0);
-    else if (atts.GetScaling() == VolumeAttributes::Log10)
+    else if (atts.GetScaling() == VolumeAttributes::Log)
         varLegend->SetScaling(1);
     else if (atts.GetScaling() == VolumeAttributes::Skew)
         varLegend->SetScaling(2, atts.GetSkewFactor());
