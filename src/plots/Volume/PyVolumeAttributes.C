@@ -245,6 +245,21 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
 
     SNPRINTF(tmpStr, 1000, "%sskewFactor = %g\n", prefix, atts->GetSkewFactor());
     str += tmpStr;
+    const char *limitsMode_names = "OriginalData, CurrentPlot";
+    switch (atts->GetLimitsMode())
+    {
+      case VolumeAttributes::OriginalData:
+          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::CurrentPlot:
+          SNPRINTF(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *sampling_names = "KernelBased, Rasterization";
     switch (atts->GetSampling())
     {
@@ -1033,6 +1048,39 @@ VolumeAttributes_GetSkewFactor(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+VolumeAttributes_SetLimitsMode(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the limitsMode in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetLimitsMode(VolumeAttributes::LimitsMode(ival));
+    else
+    {
+        fprintf(stderr, "An invalid limitsMode value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "OriginalData, CurrentPlot.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetLimitsMode(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLimitsMode()));
+    return retval;
+}
+
+/*static*/ PyObject *
 VolumeAttributes_SetSampling(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
@@ -1362,6 +1410,8 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetScaling", VolumeAttributes_GetScaling, METH_VARARGS},
     {"SetSkewFactor", VolumeAttributes_SetSkewFactor, METH_VARARGS},
     {"GetSkewFactor", VolumeAttributes_GetSkewFactor, METH_VARARGS},
+    {"SetLimitsMode", VolumeAttributes_SetLimitsMode, METH_VARARGS},
+    {"GetLimitsMode", VolumeAttributes_GetLimitsMode, METH_VARARGS},
     {"SetSampling", VolumeAttributes_SetSampling, METH_VARARGS},
     {"GetSampling", VolumeAttributes_GetSampling, METH_VARARGS},
     {"SetRendererSamples", VolumeAttributes_SetRendererSamples, METH_VARARGS},
@@ -1487,6 +1537,13 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "skewFactor") == 0)
         return VolumeAttributes_GetSkewFactor(self, NULL);
+    if(strcmp(name, "limitsMode") == 0)
+        return VolumeAttributes_GetLimitsMode(self, NULL);
+    if(strcmp(name, "OriginalData") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::OriginalData));
+    if(strcmp(name, "CurrentPlot") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::CurrentPlot));
+
     if(strcmp(name, "sampling") == 0)
         return VolumeAttributes_GetSampling(self, NULL);
     if(strcmp(name, "KernelBased") == 0)
@@ -1585,6 +1642,8 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetScaling(self, tuple);
     else if(strcmp(name, "skewFactor") == 0)
         obj = VolumeAttributes_SetSkewFactor(self, tuple);
+    else if(strcmp(name, "limitsMode") == 0)
+        obj = VolumeAttributes_SetLimitsMode(self, tuple);
     else if(strcmp(name, "sampling") == 0)
         obj = VolumeAttributes_SetSampling(self, tuple);
     else if(strcmp(name, "rendererSamples") == 0)
@@ -1602,6 +1661,8 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

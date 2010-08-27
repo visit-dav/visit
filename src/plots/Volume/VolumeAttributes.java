@@ -63,7 +63,7 @@ import llnl.visit.TransferFunctionWidget;
 
 public class VolumeAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 31;
+    private static int VolumeAttributes_numAdditionalAtts = 32;
 
     // Enum values
     public final static int RENDERER_SPLATTING = 0;
@@ -79,6 +79,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int SCALING_LINEAR = 0;
     public final static int SCALING_LOG10 = 1;
     public final static int SCALING_SKEW = 2;
+
+    public final static int LIMITSMODE_ORIGINALDATA = 0;
+    public final static int LIMITSMODE_CURRENTPLOT = 1;
 
     public final static int SAMPLINGTYPE_KERNELBASED = 0;
     public final static int SAMPLINGTYPE_RASTERIZATION = 1;
@@ -99,7 +102,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
 
     public VolumeAttributes()
     {
-        super(numAdditionalAttributes);
+        super(VolumeAttributes_numAdditionalAtts);
 
         legendFlag = true;
         lightingFlag = true;
@@ -127,18 +130,19 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         num3DSlices = 200;
         scaling = SCALING_LINEAR;
         skewFactor = 1;
+        limitsMode = LIMITSMODE_ORIGINALDATA;
         sampling = SAMPLINGTYPE_RASTERIZATION;
         rendererSamples = 3f;
         transferFunction2DWidgets = new Vector();
         transferFunctionDim = 1;
-        lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_OFF;
+        lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_LOWER;
         lowGradientLightingClampFlag = false;
         lowGradientLightingClampValue = 1;
     }
 
     public VolumeAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(VolumeAttributes_numAdditionalAtts + nMoreFields);
 
         legendFlag = true;
         lightingFlag = true;
@@ -166,18 +170,19 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         num3DSlices = 200;
         scaling = SCALING_LINEAR;
         skewFactor = 1;
+        limitsMode = LIMITSMODE_ORIGINALDATA;
         sampling = SAMPLINGTYPE_RASTERIZATION;
         rendererSamples = 3f;
         transferFunction2DWidgets = new Vector();
         transferFunctionDim = 1;
-        lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_OFF;
+        lowGradientLightingReduction = LOWGRADIENTLIGHTINGREDUCTION_LOWER;
         lowGradientLightingClampFlag = false;
         lowGradientLightingClampValue = 1;
     }
 
     public VolumeAttributes(VolumeAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(VolumeAttributes_numAdditionalAtts);
 
         int i;
 
@@ -208,14 +213,15 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         num3DSlices = obj.num3DSlices;
         scaling = obj.scaling;
         skewFactor = obj.skewFactor;
+        limitsMode = obj.limitsMode;
         sampling = obj.sampling;
         rendererSamples = obj.rendererSamples;
         // *** Copy the transferFunction2DWidgets field ***
         transferFunction2DWidgets = new Vector(obj.transferFunction2DWidgets.size());
         for(i = 0; i < obj.transferFunction2DWidgets.size(); ++i)
         {
-            TransferFunctionWidget newObj = (TransferFunctionWidget)transferFunction2DWidgets.elementAt(i);
-            transferFunction2DWidgets.addElement(new TransferFunctionWidget(newObj));
+            TransferFunctionWidget oldObj = (TransferFunctionWidget)obj.transferFunction2DWidgets.elementAt(i);
+            transferFunction2DWidgets.addElement(new TransferFunctionWidget(oldObj));
         }
 
         transferFunctionDim = obj.transferFunctionDim;
@@ -233,7 +239,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return VolumeAttributes_numAdditionalAtts;
     }
 
     public boolean equals(VolumeAttributes obj)
@@ -279,6 +285,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (num3DSlices == obj.num3DSlices) &&
                 (scaling == obj.scaling) &&
                 (skewFactor == obj.skewFactor) &&
+                (limitsMode == obj.limitsMode) &&
                 (sampling == obj.sampling) &&
                 (rendererSamples == obj.rendererSamples) &&
                 transferFunction2DWidgets_equal &&
@@ -437,40 +444,46 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(23);
     }
 
+    public void SetLimitsMode(int limitsMode_)
+    {
+        limitsMode = limitsMode_;
+        Select(24);
+    }
+
     public void SetSampling(int sampling_)
     {
         sampling = sampling_;
-        Select(24);
+        Select(25);
     }
 
     public void SetRendererSamples(float rendererSamples_)
     {
         rendererSamples = rendererSamples_;
-        Select(25);
+        Select(26);
     }
 
     public void SetTransferFunctionDim(int transferFunctionDim_)
     {
         transferFunctionDim = transferFunctionDim_;
-        Select(27);
+        Select(28);
     }
 
     public void SetLowGradientLightingReduction(int lowGradientLightingReduction_)
     {
         lowGradientLightingReduction = lowGradientLightingReduction_;
-        Select(28);
+        Select(29);
     }
 
     public void SetLowGradientLightingClampFlag(boolean lowGradientLightingClampFlag_)
     {
         lowGradientLightingClampFlag = lowGradientLightingClampFlag_;
-        Select(29);
+        Select(30);
     }
 
     public void SetLowGradientLightingClampValue(double lowGradientLightingClampValue_)
     {
         lowGradientLightingClampValue = lowGradientLightingClampValue_;
-        Select(30);
+        Select(31);
     }
 
     // Property getting methods
@@ -498,6 +511,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public int                      GetNum3DSlices() { return num3DSlices; }
     public int                      GetScaling() { return scaling; }
     public double                   GetSkewFactor() { return skewFactor; }
+    public int                      GetLimitsMode() { return limitsMode; }
     public int                      GetSampling() { return sampling; }
     public float                    GetRendererSamples() { return rendererSamples; }
     public Vector                   GetTransferFunction2DWidgets() { return transferFunction2DWidgets; }
@@ -558,10 +572,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(23, buf))
             buf.WriteDouble(skewFactor);
         if(WriteSelect(24, buf))
-            buf.WriteInt(sampling);
+            buf.WriteInt(limitsMode);
         if(WriteSelect(25, buf))
-            buf.WriteFloat(rendererSamples);
+            buf.WriteInt(sampling);
         if(WriteSelect(26, buf))
+            buf.WriteFloat(rendererSamples);
+        if(WriteSelect(27, buf))
         {
             buf.WriteInt(transferFunction2DWidgets.size());
             for(int i = 0; i < transferFunction2DWidgets.size(); ++i)
@@ -570,13 +586,13 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(27, buf))
-            buf.WriteInt(transferFunctionDim);
         if(WriteSelect(28, buf))
-            buf.WriteInt(lowGradientLightingReduction);
+            buf.WriteInt(transferFunctionDim);
         if(WriteSelect(29, buf))
-            buf.WriteBool(lowGradientLightingClampFlag);
+            buf.WriteInt(lowGradientLightingReduction);
         if(WriteSelect(30, buf))
+            buf.WriteBool(lowGradientLightingClampFlag);
+        if(WriteSelect(31, buf))
             buf.WriteDouble(lowGradientLightingClampValue);
     }
 
@@ -659,12 +675,15 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             SetSkewFactor(buf.ReadDouble());
             break;
         case 24:
-            SetSampling(buf.ReadInt());
+            SetLimitsMode(buf.ReadInt());
             break;
         case 25:
-            SetRendererSamples(buf.ReadFloat());
+            SetSampling(buf.ReadInt());
             break;
         case 26:
+            SetRendererSamples(buf.ReadFloat());
+            break;
+        case 27:
             {
                 int len = buf.ReadInt();
                 transferFunction2DWidgets.clear();
@@ -675,18 +694,18 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                     transferFunction2DWidgets.addElement(tmp);
                 }
             }
-            Select(26);
-            break;
-        case 27:
-            SetTransferFunctionDim(buf.ReadInt());
+            Select(27);
             break;
         case 28:
-            SetLowGradientLightingReduction(buf.ReadInt());
+            SetTransferFunctionDim(buf.ReadInt());
             break;
         case 29:
-            SetLowGradientLightingClampFlag(buf.ReadBool());
+            SetLowGradientLightingReduction(buf.ReadInt());
             break;
         case 30:
+            SetLowGradientLightingClampFlag(buf.ReadBool());
+            break;
+        case 31:
             SetLowGradientLightingClampValue(buf.ReadDouble());
             break;
         }
@@ -751,6 +770,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "SCALING_SKEW";
         str = str + "\n";
         str = str + doubleToString("skewFactor", skewFactor, indent) + "\n";
+        str = str + indent + "limitsMode = ";
+        if(limitsMode == LIMITSMODE_ORIGINALDATA)
+            str = str + "LIMITSMODE_ORIGINALDATA";
+        if(limitsMode == LIMITSMODE_CURRENTPLOT)
+            str = str + "LIMITSMODE_CURRENTPLOT";
+        str = str + "\n";
         str = str + indent + "sampling = ";
         if(sampling == SAMPLINGTYPE_KERNELBASED)
             str = str + "SAMPLINGTYPE_KERNELBASED";
@@ -796,13 +821,13 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public void AddTransferFunction2DWidgets(TransferFunctionWidget obj)
     {
         transferFunction2DWidgets.addElement(new TransferFunctionWidget(obj));
-        Select(26);
+        Select(27);
     }
 
     public void ClearTransferFunction2DWidgets()
     {
         transferFunction2DWidgets.clear();
-        Select(26);
+        Select(27);
     }
 
     public void RemoveTransferFunction2DWidgets(int index)
@@ -810,7 +835,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         if(index >= 0 && index < transferFunction2DWidgets.size())
         {
             transferFunction2DWidgets.remove(index);
-            Select(26);
+            Select(27);
         }
     }
 
@@ -851,6 +876,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private int                      num3DSlices;
     private int                      scaling;
     private double                   skewFactor;
+    private int                      limitsMode;
     private int                      sampling;
     private float                    rendererSamples;
     private Vector                   transferFunction2DWidgets; // vector of TransferFunctionWidget objects
