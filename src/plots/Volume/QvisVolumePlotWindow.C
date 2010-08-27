@@ -89,6 +89,9 @@ public:
 #include <ViewerProxy.h>
 #include <ImproperUseException.h>
 
+#include <DataNode.h>
+#include <InstallationFunctions.h>
+
 #include <ColorTableAttributes.h>
 
 #include <PlotInfoAttributes.h>
@@ -1308,7 +1311,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             UpdateGaussianControlPoints();
             break;
         case VolumeAttributes::ID_resampleTarget:
+            resampleTarget->blockSignals(true);
             resampleTarget->setValue(volumeAtts->GetResampleTarget());
+            resampleTarget->blockSignals(false);
             break;
         case VolumeAttributes::ID_opacityVariable:
             temp = volumeAtts->GetOpacityVariable().c_str();
@@ -1367,7 +1372,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             smoothDataToggle->setChecked(volumeAtts->GetSmoothData());
             smoothDataToggle->blockSignals(false);
         case VolumeAttributes::ID_samplesPerRay:
+            samplesPerRay->blockSignals(true);
             samplesPerRay->setValue(volumeAtts->GetSamplesPerRay());
+            samplesPerRay->blockSignals(false);
             break;
         case VolumeAttributes::ID_rendererType:
             rendererTypesComboBox->blockSignals(true);
@@ -1574,7 +1581,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             gradientButtonGroup->blockSignals(false);
             break;
         case VolumeAttributes::ID_num3DSlices:
+            num3DSlices->blockSignals(true);
             num3DSlices->setValue(volumeAtts->GetNum3DSlices());
+            num3DSlices->blockSignals(false);
             break;
         case VolumeAttributes::ID_scaling:
             scalingButtons->blockSignals(true);
@@ -1598,7 +1607,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             break;
         case VolumeAttributes::ID_rendererSamples:
 #ifdef HAVE_LIBSLIVR
+            rendererSamples->blockSignals(true);
             rendererSamples->setValue(volumeAtts->GetRendererSamples());
+            rendererSamples->blockSignals(false);
 #endif
             break;
         case VolumeAttributes::ID_transferFunction2DWidgets:
@@ -2121,7 +2132,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
     // Get the value of the resample target
     if(which_widget == VolumeAttributes::ID_resampleTarget || doAll)
     {
-      volumeAtts->SetResampleTarget(resampleTarget->value());
+        volumeAtts->SetResampleTarget(resampleTarget->value());
     }
 
     // Get the value of the minimum for the color variable.
@@ -2187,13 +2198,13 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
     // Get the number of samples per ray.
     if(which_widget == VolumeAttributes::ID_samplesPerRay || doAll)
     {
-      volumeAtts->SetSamplesPerRay(samplesPerRay->value());
+        volumeAtts->SetSamplesPerRay(samplesPerRay->value());
     }
 
     // Get the number of slices for 3D texturing.
     if(which_widget == VolumeAttributes::ID_num3DSlices || doAll)
     {
-      volumeAtts->SetNum3DSlices(num3DSlices->value());
+        volumeAtts->SetNum3DSlices(num3DSlices->value());
     }
         // Do the skew factor value
     if(which_widget == VolumeAttributes::ID_skewFactor || doAll)
@@ -2215,7 +2226,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
 #ifdef HAVE_LIBSLIVR
     if(which_widget == VolumeAttributes::ID_rendererSamples || doAll)
     {
-      volumeAtts->SetRendererSamples(rendererSamples->value());
+        volumeAtts->SetRendererSamples(rendererSamples->value());
     }
 #endif
     if(which_widget == VolumeAttributes::ID_lowGradientLightingClampValue
@@ -2282,6 +2293,45 @@ QvisVolumePlotWindow::Apply(bool ignore)
     }
     else
         volumeAtts->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisVolumePlotWindow::ProcessOldVersions
+//
+// Purpose: 
+//   Massage the data node before we use it to SetFromNode.
+//
+// Arguments:
+//   parentNode : The node that contains the window's node.
+//   configVersion : The version of the config file.
+//
+// Returns:    
+//
+// Note:       We're using this method to remove the width and height values
+//             from old config files so the windows don't get resized to the
+//             old tall values.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 27 16:31:43 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::ProcessOldVersions(DataNode *parentNode, const char *configVersion)
+{
+    DataNode *winNode = parentNode->GetNode(windowTitle().toStdString());
+    if(winNode != 0)
+    {
+        if(VersionGreaterThan("2.1.0", configVersion))
+        {
+            // If configVersion < 2.1.0 then remove the width and height since the
+            // window has changed a lot.
+            winNode->RemoveNode("width", true);
+            winNode->RemoveNode("height", true);
+        }
+    }
 }
 
 //
