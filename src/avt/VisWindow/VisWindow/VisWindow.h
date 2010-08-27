@@ -425,6 +425,9 @@ class VisitInteractor;
 //    Brad Whitlock, Thu Aug 26 15:36:31 PDT 2010
 //    I added  a force option to SetAnnotationAtts.
 //
+//    Hank Childs, Fri Aug 27 15:27:25 PDT 2010
+//    Add explicit data members for 3D axis scaling.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -714,6 +717,8 @@ protected:
     avtView3D                          view3D;
     avtViewCurve                       viewCurve;
     avtViewAxisArray                   viewAxisArray;
+    bool                               doAxisScaling;
+    double                             axisScaling[3];
 
     VisCallback                       *showMenuCallback;
     void                              *showMenuCallbackData;
