@@ -205,7 +205,7 @@ public:
 
     void ClampToLength( double L )
     {
-        avtVector *tmp = new avtVector[size()-1];
+        avtVector *tmp = new avtVector[size()];
 
         double t = 0.5;
 
