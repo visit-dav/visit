@@ -42,6 +42,8 @@
 
 #include <avtContract.h>
 
+#include <string.h>
+
 #include <avtWebpage.h>
 
 
