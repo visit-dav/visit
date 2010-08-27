@@ -33,6 +33,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 2.1</font></b></p>
 <ul>
 <li>A new wizard was created for setting up comparison-based expressions.  It is available under Controls->Data Level Comparisons.</li>
+<li>A new operator, <i>DataBinning</i>, was added.  This operator calculates statistics over arbitrary spaces.  One example is the calculation of probability density functions (PDFs).  This functionality basically replaces the poorly supported "derived data functions" (DDFs) from previous releases.</li>
 <li>The expressions window now has buttons for managing expressions via separate configuration files.</li>
 <li>Three dimensional plots can now be scaled visually without affecting their axis labels via the View dialog.  This is similar to the 2D "Full Frame" mode.</li>
 <li>Oblique projections are now supported via a new "Shear" setting in the 3D View dialog.</li>
@@ -67,7 +68,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
    <li>When they accept a given file name, preferred file format readers now take precedence over non-preferred file formats.  Preferred formats are still also tried before giving up, when all other attempts to guess files based on their name fail.</li>
    <li>Files formats that support time natively now can correctly report their time when concatenated inside a <i>.visit</i> file.</li>
-   <li><i>BOV</i> files now properly support the <i>TIME</i> keyword.  They also support a new keyword, <i>CYCLE</i>.</li>
+   <li>The PFLOTRAN reader now correctly produces material information. It also recognizes the components of a vector and produces a vector, rather than three scalars.  These changes are courtesy Daniel Schep, Savannah River.</li>
+   <li><i>BOV</i> files now properly supports the <i>TIME</i> keyword.  They also support a new keyword, <i>CYCLE</i>.</li>
    <li>The <i>STAR</i> database was added.</li>
    <li>A <i>GULP</i> trajectory file format reader was added.</li>
    <li>A <i>PuReMD</i> trajectory file format reader was added.</li>
@@ -76,9 +78,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.1</font></b></p>
 <ul>
+  <li>The window for the <i>Volume</i> plot was reorgnized so that it would be shorter.  This change should help for users running on small displays, like laptops.</li>
   <li>The <i>Volume</i> plot now displays a histogram in the transfer function editor when doing RayCasting, matching the behavior for the other rendering types.</li>
   <li>The <i>Volume</i> plot is now more efficient in memory and execution time
       when doing a ray casting with logarithmic scale with a minimum value set.</li>
+  <li>The <i>Vector</i> plot now has an option for placing its glyphs uniformly through the mesh, rather than adapting to the mesh's resolution.</li>
+  <li>The window for the <i>Vector</i> plot was reorganized.  The previous version had scaling controls on the wrong tab.</li>
   <li>The <i>Curve</i> plot now can add cues to show a location along the curve.  This is anticipated to be a useful feature when animating a curve within a movie.</li>
   <li>The <i>Molecule</i> plot now supports 2D rendering primitives.</li>
   <li>It is no longer necessary to press the <i>Enter</i> key before pressing the <i>Apply</i> button when changing the <i>Format template</i> text field in the <i>Label plot attributes</i> window for the change to take effect.</li>
@@ -130,6 +135,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.1</font></b></p>
 <ul>
+   <li>All of VisIt's extents objects were renamed to better reflect their purpose.  Also, extents calculations are performed less often.</li>
 <li>build_visit now builds VisIt using Mesa 7.8.2.</li>
 <li>build_visit now builds VisIt using VTK 5.0.0g. VTK 5.0.0g includes all the patches that were made by build_visit. Because of this it is possible to build VTK 5.0.0g on all our supported platforms without applying any patches.</li>
 </ul>
