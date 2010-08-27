@@ -185,10 +185,10 @@ class PIPELINE_API avtFilter
                                                        const char * = NULL);
     bool                                TrySpatialExtents(double *) const;
     void                                GetSpatialExtents(double *) const;
-    bool                                TryCurrentDataExtents(double *);
-    void                                GetCurrentDataExtents(double *);
-    bool                                TryCurrentSpatialExtents(double *);
-    void                                GetCurrentSpatialExtents(double *);
+    bool                                TryActualDataExtents(double *);
+    void                                GetActualDataExtents(double *);
+    bool                                TryActualSpatialExtents(double *);
+    void                                GetActualSpatialExtents(double *);
     virtual void                        SearchDataForDataExtents(double *,
                                                                  const char *);
 

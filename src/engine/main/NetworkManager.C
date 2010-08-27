@@ -2469,6 +2469,9 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
 //
 // Modifications:
 //   
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 bool
@@ -2517,7 +2520,7 @@ NetworkManager::SaveWindow(const std::string &filename, int imageWidth, int imag
                     if (*obj != NULL)
                     {
                         avtDataAttributes &atts = obj->GetInfo().GetAttributes();
-                        atts.GetCumulativeTrueSpatialExtents()->CopyTo(extents);
+                        atts.GetThisProcsOriginalSpatialExtents()->CopyTo(extents);
                         extentsInit = true;
                         // Override the view so it's set to something valid.
                         View3DAttributes newView3D; newView3D.ResetView(extents);

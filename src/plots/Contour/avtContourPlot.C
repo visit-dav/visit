@@ -715,10 +715,10 @@ avtContourPlot::ApplyRenderingTransformation(avtDataObject_p input)
 }
 
 // ****************************************************************************
-// Method: avtContourPlot::SetCurrentExtents
+// Method: avtContourPlot::SetActualExtents
 //
 // Purpose: 
-//   Apply the current extents filter.
+//   Apply the actual extents filter.
 //
 // Arguments:
 //   input : The input data object.
@@ -726,7 +726,7 @@ avtContourPlot::ApplyRenderingTransformation(avtDataObject_p input)
 // Returns:    The output of a filter; another data object.
 //
 // Note:       We also apply the line to polyline filter just before the
-//             current extents filter in some cases because it's a good place
+//             actual extents filter in some cases because it's a good place
 //             in the pipeline since the data from different domains has already
 //             been gathered.
 //
@@ -735,10 +735,13 @@ avtContourPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //
 // Modifications:
 //   
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Renamed current->actual
+//
 // ****************************************************************************
 
 avtDataObject_p
-avtContourPlot::SetCurrentExtents(avtDataObject_p input)
+avtContourPlot::SetActualExtents(avtDataObject_p input)
 {
     avtDataObject_p dob = input;
 
@@ -754,7 +757,7 @@ avtContourPlot::SetCurrentExtents(avtDataObject_p input)
     }
 
     // Let the base class apply its filters too.
-    dob = avtSurfaceDataPlot::SetCurrentExtents(dob);
+    dob = avtSurfaceDataPlot::SetActualExtents(dob);
 
     return dob;
 }

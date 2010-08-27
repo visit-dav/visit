@@ -42,8 +42,8 @@
 
 #ifndef AVT_PLOT_H
 #define AVT_PLOT_H
-#include <plotter_exports.h>
 
+#include <plotter_exports.h>
 
 #include <ref_ptr.h>
 
@@ -262,6 +262,9 @@ class     RenderingAttributes;
 //    Hank Childs, Sun Feb 21 10:03:53 CST 2010
 //    Add method ManagesOwnTransparency.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Rename SetCurrentExtents to SetActualExtents.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -348,7 +351,7 @@ class PLOTTER_API avtPlot
     avtCondenseDatasetFilter  *condenseDatasetFilter;
     avtDatasetToDatasetFilter *ghostZoneAndFacelistFilter;
     avtCompactTreeFilter      *compactTreeFilter;
-    avtDatasetToDatasetFilter *currentExtentFilter;
+    avtDatasetToDatasetFilter *actualExtentsFilter;
     avtMeshLogFilter          *logMeshFilter;
     avtVertexNormalsFilter    *vertexNormalsFilter;
     avtSmoothPolyDataFilter   *smooth;
@@ -375,7 +378,7 @@ class PLOTTER_API avtPlot
 
     virtual avtDataObject_p    ReduceGeometry(avtDataObject_p);
     virtual avtDataObject_p    CompactTree(avtDataObject_p, const RenderingAttributes &);
-    virtual avtDataObject_p    SetCurrentExtents(avtDataObject_p);
+    virtual avtDataObject_p    SetActualExtents(avtDataObject_p);
     avtDataObject_p            SetScaleMode(avtDataObject_p,
                                             ScaleMode, ScaleMode,
                                             bool &, bool &);

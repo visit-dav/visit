@@ -845,6 +845,9 @@ avtSurfaceFilter::ReleaseData(void)
 //    Hank Childs, Fri Jul 30 12:09:16 PDT 2004
 //    Moved from avtWireframe filter.  Also re-wrote logic for getting extents.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -856,26 +859,26 @@ avtSurfaceFilter::PostExecute(void)
     avtDataAttributes& outAtts = GetOutput()->GetInfo().GetAttributes();
 
     // over-write spatial extents
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetCumulativeTrueSpatialExtents()->Clear();
+    outAtts.GetOriginalSpatialExtents()->Clear();
+    outAtts.GetThisProcsOriginalSpatialExtents()->Clear();
 
     // get the outputs's spatial extents
     double se[6];
-    if (inAtts.GetTrueSpatialExtents()->HasExtents())
+    if (inAtts.GetOriginalSpatialExtents()->HasExtents())
     {
-        inAtts.GetTrueSpatialExtents()->CopyTo(se);
+        inAtts.GetOriginalSpatialExtents()->CopyTo(se);
         se[4] = zValMin;
         se[5] = zValMax;
         // We can only set as cumulative, since the zVals are for the
         // current processor only.
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(se);
+        outAtts.GetThisProcsOriginalSpatialExtents()->Set(se);
     }
-    else if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+    else if (inAtts.GetThisProcsOriginalSpatialExtents()->HasExtents())
     {
-        inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(se);
+        inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(se);
         se[4] = zValMin;
         se[5] = zValMax;
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(se);
+        outAtts.GetThisProcsOriginalSpatialExtents()->Set(se);
     }
 }
 

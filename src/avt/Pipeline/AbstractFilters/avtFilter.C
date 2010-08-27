@@ -720,9 +720,9 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
     }
 
     //
-    // Our first preference is for the effective extents.
+    // Our first preference is for the desired extents.
     //
-    avtExtents *eff = atts.GetEffectiveDataExtents(varname);
+    avtExtents *eff = atts.GetDesiredDataExtents(varname);
     if (eff->HasExtents())
     {
         eff->CopyTo(outexts);
@@ -733,7 +733,7 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
         //
         // If we had the extents in the meta-data, use that.
         //
-        avtExtents *tr = atts.GetTrueDataExtents(varname);
+        avtExtents *tr = atts.GetOriginalDataExtents(varname);
         if (tr->HasExtents())
         {
             tr->CopyTo(outexts);
@@ -782,6 +782,9 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
 //    Hank Childs, Sun Jan 30 14:25:00 PST 2005
 //    Be leery of case where there is no input variable.
 //
+//    Hank Childs, Thu Aug 26 13:02:28 PDT 2010
+//    Change named of extents object.
+//
 // ****************************************************************************
 
 void
@@ -800,10 +803,10 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
     if (varname == NULL || 
         (atts.ValidActiveVariable() && atts.GetVariableName() == varname))
     {
-        avtExtents *exts = atts.GetCumulativeTrueDataExtents();
+        avtExtents *exts = atts.GetThisProcsOriginalDataExtents();
         if (exts->HasExtents())
         {
-            atts.GetCumulativeTrueDataExtents()->CopyTo(outexts);
+            atts.GetThisProcsOriginalDataExtents()->CopyTo(outexts);
             hadThemAlready = true;
         }
     }
@@ -821,7 +824,7 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
         // We now have determined the true spatial extents, so we may as well 
         // set them back.
         //
-        GetOutput()->GetInfo().GetAttributes().GetTrueDataExtents()
+        GetOutput()->GetInfo().GetAttributes().GetOriginalDataExtents()
                                                                 ->Set(outexts);
     }
 }
@@ -850,9 +853,9 @@ avtFilter::TrySpatialExtents(double *outexts) const
     const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
 
     //
-    // Our first preference is for the effective extents.
+    // Our first preference is for the desired extents.
     //
-    avtExtents *eff = atts.GetEffectiveSpatialExtents();
+    avtExtents *eff = atts.GetDesiredSpatialExtents();
     if (eff->HasExtents())
     {
         eff->CopyTo(outexts);
@@ -863,7 +866,7 @@ avtFilter::TrySpatialExtents(double *outexts) const
         //
         // If we had the extents in the meta-spatial, use that.
         //
-        avtExtents *tr = atts.GetTrueSpatialExtents();
+        avtExtents *tr = atts.GetOriginalSpatialExtents();
         if (tr->HasExtents())
         {
             tr->CopyTo(outexts);
@@ -892,6 +895,10 @@ avtFilter::TrySpatialExtents(double *outexts) const
 //
 //    Mark C. Miller, Sat Jan 31 13:31:08 PST 2004
 //    Added altsize argument of 6 to UnifyMinMax call
+//
+//    Hank Childs, Thu Aug 26 13:02:28 PDT 2010
+//    Change named of extents object.
+//
 // ****************************************************************************
 
 void
@@ -906,23 +913,23 @@ avtFilter::GetSpatialExtents(double *newexts) const
     }
 
     const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    atts.GetCumulativeTrueSpatialExtents()->CopyTo(newexts);
+    atts.GetThisProcsOriginalSpatialExtents()->CopyTo(newexts);
 
     UnifyMinMax(newexts, atts.GetSpatialDimension()*2, 6);
 
     //
-    // We now have determined the true spatial extents, so we may as well set
+    // We now have determined the original spatial extents, so we may as well set
     // them back.
     //
-    atts.GetTrueSpatialExtents()->Set(newexts);
+    atts.GetOriginalSpatialExtents()->Set(newexts);
 }
 
 
 // ****************************************************************************
-//  Method: avtFilter::TryCurrentDataExtents
+//  Method: avtFilter::TryActualDataExtents
 //
 //  Purpose:
-//      Tries to get the current data extents, but only if they are available
+//      Tries to get the actual data extents, but only if they are available
 //      (does not resort to parallel unification).
 //
 //  Returns:    True if the extents were succesfully retrieved.
@@ -934,17 +941,22 @@ avtFilter::GetSpatialExtents(double *newexts) const
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 2, 2001
 //
+//  Modifications:
+//
+//     Hank Childs, Thu Aug 26 13:02:28 PDT 2010
+//     Change named of extents object.
+//
 // ****************************************************************************
 
 bool
-avtFilter::TryCurrentDataExtents(double *outexts)
+avtFilter::TryActualDataExtents(double *outexts)
 {
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
 
-    avtExtents *current = atts.GetCurrentDataExtents();
-    if (current->HasExtents())
+    avtExtents *actual = atts.GetActualDataExtents();
+    if (actual->HasExtents())
     {
-        current->CopyTo(outexts);
+        actual->CopyTo(outexts);
         return true;
     }
 
@@ -953,7 +965,7 @@ avtFilter::TryCurrentDataExtents(double *outexts)
 
 
 // ****************************************************************************
-//  Method: avtFilter::GetCurrentDataExtents
+//  Method: avtFilter::GetActualDataExtents
 //
 //  Purpose:
 //      Gets the data extents -- parallel unification or not.
@@ -977,12 +989,15 @@ avtFilter::TryCurrentDataExtents(double *outexts)
 //    DataExtents now restricted to only 2 components, regardless of variable
 //    dimension.
 // 
+//    Hank Childs, Thu Aug 26 13:02:28 PDT 2010
+//    Change named of extents object.
+//
 // ****************************************************************************
 
 void
-avtFilter::GetCurrentDataExtents(double *newexts)
+avtFilter::GetActualDataExtents(double *newexts)
 {
-    if (TryCurrentDataExtents(newexts))
+    if (TryActualDataExtents(newexts))
     {
          //
          // We had them lying around -- no parallel communication necessary.
@@ -991,23 +1006,23 @@ avtFilter::GetCurrentDataExtents(double *newexts)
     }
 
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    atts.GetCumulativeCurrentDataExtents()->CopyTo(newexts);
+    atts.GetThisProcsActualDataExtents()->CopyTo(newexts);
 
     UnifyMinMax(newexts, 2, 2);
 
     //
-    // We now have determined the current data extents, so we may as well set
+    // We now have determined the actual data extents, so we may as well set
     // them back.
     //
-    atts.GetCurrentDataExtents()->Set(newexts);
+    atts.GetActualDataExtents()->Set(newexts);
 }
 
 
 // ****************************************************************************
-//  Method: avtFilter::TryCurrentSpatialExtents
+//  Method: avtFilter::TryActualSpatialExtents
 //
 //  Purpose:
-//    Tries to get the currentspatial extents, but only if they are available
+//    Tries to get the actual spatial extents, but only if they are available
 //    (does not resort to parallel unification).
 //
 //  Returns:    True if the extents were succesfully retrieved.
@@ -1018,20 +1033,25 @@ avtFilter::GetCurrentDataExtents(double *newexts)
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 2, 2001
 //
+//  Modifications:
+//
+//     Hank Childs, Thu Aug 26 13:02:28 PDT 2010
+//     Change named of extents object.
+//
 // ****************************************************************************
 
 bool
-avtFilter::TryCurrentSpatialExtents(double *outexts)
+avtFilter::TryActualSpatialExtents(double *outexts)
 {
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
 
     //
-    // Our first preference is for the effective extents.
+    // Our first preference is for the desired extents.
     //
-    avtExtents *current = atts.GetCurrentSpatialExtents();
-    if (current->HasExtents())
+    avtExtents *actual = atts.GetActualSpatialExtents();
+    if (actual->HasExtents())
     {
-        current->CopyTo(outexts);
+        actual->CopyTo(outexts);
         return true;
     }
 
@@ -1040,10 +1060,10 @@ avtFilter::TryCurrentSpatialExtents(double *outexts)
 
 
 // ****************************************************************************
-//  Method: avtFilter::GetCurrentSpatialExtents
+//  Method: avtFilter::GetActualSpatialExtents
 //
 //  Purpose:
-//    Gets the current spatial extents -- parallel unification or not.
+//    Gets the actual spatial extents -- parallel unification or not.
 //
 //  Arguments:
 //    outexts   A place to hold the retrieved extents.
@@ -1056,12 +1076,15 @@ avtFilter::TryCurrentSpatialExtents(double *outexts)
 //    Mark C. Miller, Sat Jan 31 13:31:08 PST 2004
 //    Added altsize argument of 6 to UnifyMinMax call
 //
+//    Hank Childs, Thu Aug 26 13:02:28 PDT 2010
+//    Change named of extents object.
+//
 // ****************************************************************************
 
 void
-avtFilter::GetCurrentSpatialExtents(double *outexts)
+avtFilter::GetActualSpatialExtents(double *outexts)
 {
-    if (TryCurrentSpatialExtents(outexts))
+    if (TryActualSpatialExtents(outexts))
     {
          //
          // We had them lying around -- no parallel communication necessary.
@@ -1070,15 +1093,15 @@ avtFilter::GetCurrentSpatialExtents(double *outexts)
     }
 
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    atts.GetCumulativeCurrentSpatialExtents()->CopyTo(outexts);
+    atts.GetThisProcsActualSpatialExtents()->CopyTo(outexts);
 
     UnifyMinMax(outexts, atts.GetSpatialDimension()*2, 6);
 
     //
-    // We now have determined the true spatial extents, so we may as well set
+    // We now have determined the actual spatial extents, so we may as well set
     // them back.
     //
-    GetOutput()->GetInfo().GetAttributes().GetCurrentSpatialExtents()
+    GetOutput()->GetInfo().GetAttributes().GetActualSpatialExtents()
                                                                 ->Set(outexts);
 }
 

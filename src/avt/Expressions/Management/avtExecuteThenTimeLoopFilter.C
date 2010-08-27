@@ -178,6 +178,9 @@ avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
 //    Hank Childs, Wed Jan  6 16:13:00 PST 2010
 //    Only merge the extents if they have the same dimension.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -219,21 +222,21 @@ avtExecuteThenTimeLoopFilter::Execute(void)
         avtDataAttributes &inAtts = ds->GetInfo().GetAttributes();
         if (outAtts.GetSpatialDimension() == inAtts.GetSpatialDimension())
         {
-            outAtts.GetTrueSpatialExtents()->Merge(*(inAtts.GetTrueSpatialExtents()));
-            outAtts.GetCumulativeTrueSpatialExtents()->Merge(*(inAtts.GetCumulativeTrueSpatialExtents()));
-            outAtts.GetEffectiveSpatialExtents()->Merge(*(inAtts.GetEffectiveSpatialExtents()));
-            outAtts.GetCurrentSpatialExtents()->Merge(*(inAtts.GetCurrentSpatialExtents()));
-            outAtts.GetCumulativeCurrentSpatialExtents()->Merge(*(inAtts.GetCumulativeCurrentSpatialExtents()));
+            outAtts.GetOriginalSpatialExtents()->Merge(*(inAtts.GetOriginalSpatialExtents()));
+            outAtts.GetThisProcsOriginalSpatialExtents()->Merge(*(inAtts.GetThisProcsOriginalSpatialExtents()));
+            outAtts.GetDesiredSpatialExtents()->Merge(*(inAtts.GetDesiredSpatialExtents()));
+            outAtts.GetActualSpatialExtents()->Merge(*(inAtts.GetActualSpatialExtents()));
+            outAtts.GetThisProcsActualSpatialExtents()->Merge(*(inAtts.GetThisProcsActualSpatialExtents()));
         }
     
         for (int j = 0 ; j < outAtts.GetNumberOfVariables() ; j++)
         {
             const char *vname = outAtts.GetVariableName(j).c_str();
-            outAtts.GetTrueDataExtents(vname)->Merge(*(inAtts.GetTrueDataExtents(vname)));
-            outAtts.GetCumulativeTrueDataExtents(vname)->Merge(*(inAtts.GetCumulativeTrueDataExtents(vname)));
-            outAtts.GetEffectiveDataExtents(vname)->Merge(*(inAtts.GetEffectiveDataExtents(vname)));
-            outAtts.GetCurrentDataExtents(vname)->Merge(*(inAtts.GetCurrentDataExtents(vname)));
-            outAtts.GetCumulativeCurrentDataExtents(vname)->Merge(*(inAtts.GetCumulativeCurrentDataExtents(vname)));
+            outAtts.GetOriginalDataExtents(vname)->Merge(*(inAtts.GetOriginalDataExtents(vname)));
+            outAtts.GetThisProcsOriginalDataExtents(vname)->Merge(*(inAtts.GetThisProcsOriginalDataExtents(vname)));
+            outAtts.GetDesiredDataExtents(vname)->Merge(*(inAtts.GetDesiredDataExtents(vname)));
+            outAtts.GetActualDataExtents(vname)->Merge(*(inAtts.GetActualDataExtents(vname)));
+            outAtts.GetThisProcsActualDataExtents(vname)->Merge(*(inAtts.GetThisProcsActualDataExtents(vname)));
         }
 
         avtCallback::ResetTimeout(5*60);

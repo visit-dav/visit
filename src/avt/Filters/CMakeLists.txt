@@ -48,13 +48,16 @@
 #   Eric Brugger, Wed Jun 30 12:59:41 PDT 2010
 #   I added avtXRayFilter.
 #
+#   Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+#   Renamed avtCurrentExtentFilter to avtActualExtentsFilter.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
+avtActualExtentsFilter.C
 avtCondenseDatasetFilter.C
 avtContourFilter.C
 avtCoordSystemConvert.C
-avtCurrentExtentFilter.C
 avtCurveConstructorFilter.C
 avtCustomTransform.C
 avtDisplaceFilter.C

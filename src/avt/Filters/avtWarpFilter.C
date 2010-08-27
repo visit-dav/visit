@@ -254,18 +254,21 @@ avtWarpFilter::ModifyContract(avtContract_p contract)
 //
 //  Modifications:
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
 avtWarpFilter::PostExecute(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetEffectiveSpatialExtents()->Clear();
+    outAtts.GetOriginalSpatialExtents()->Clear();
+    outAtts.GetDesiredSpatialExtents()->Clear();
 
     double bounds[6];
     avtDataset_p ds = GetTypedOutput();
     avtDatasetExaminer::GetSpatialExtents(ds, bounds);
-    outAtts.GetCumulativeTrueSpatialExtents()->Set(bounds);
+    outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
 }
 

@@ -161,28 +161,28 @@ avtMultiCurveFilter::PostExecute(void)
     outAtts.GetLabels(labels);
     int nCurves = labels.size();
 
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetCumulativeTrueSpatialExtents()->Clear();
+    outAtts.GetOriginalSpatialExtents()->Clear();
+    outAtts.GetThisProcsOriginalSpatialExtents()->Clear();
 
     double spatialExtents[6];
 
-    if (inAtts.GetTrueSpatialExtents()->HasExtents())
+    if (inAtts.GetOriginalSpatialExtents()->HasExtents())
     {
-        inAtts.GetTrueSpatialExtents()->CopyTo(spatialExtents);
+        inAtts.GetOriginalSpatialExtents()->CopyTo(spatialExtents);
 
         spatialExtents[2] = 0.0;
         spatialExtents[3] = nCurves;
 
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
+        outAtts.GetThisProcsOriginalSpatialExtents()->Set(spatialExtents);
     }
-    else if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+    else if (inAtts.GetThisProcsOriginalSpatialExtents()->HasExtents())
     {
-        inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(spatialExtents);
+        inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(spatialExtents);
 
         spatialExtents[2] = 0.0;
         spatialExtents[3] = nCurves;
 
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
+        outAtts.GetThisProcsOriginalSpatialExtents()->Set(spatialExtents);
     }
 
     //

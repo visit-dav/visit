@@ -327,15 +327,18 @@ avtReflectFilter::PreExecute(void)
 //    Hank Childs, Wed Aug 11 15:09:07 PDT 2004
 //    Tell the output that it has ghost zones.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
 avtReflectFilter::PostExecute(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetEffectiveSpatialExtents()->Clear();
-    outAtts.GetCurrentSpatialExtents()->Clear();
+    outAtts.GetOriginalSpatialExtents()->Clear();
+    outAtts.GetDesiredSpatialExtents()->Clear();
+    outAtts.GetActualSpatialExtents()->Clear();
 
     if (GetInput()->GetInfo().GetAttributes().GetContainsGhostZones()
            != AVT_HAS_GHOSTS)
@@ -344,7 +347,7 @@ avtReflectFilter::PostExecute(void)
     double bounds[6];
     avtDataset_p ds = GetTypedOutput();
     avtDatasetExaminer::GetSpatialExtents(ds, bounds);
-    outAtts.GetCumulativeTrueSpatialExtents()->Set(bounds);
+    outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
 }
 
 

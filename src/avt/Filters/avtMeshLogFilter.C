@@ -137,6 +137,11 @@ avtMeshLogFilter::ExecuteData(vtkDataSet *ds, int, std::string)
 //  Programmer: Kathleen Bonnell
 //  Creation:   March 6, 2007 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -148,14 +153,14 @@ avtMeshLogFilter::PostExecute()
     avtDataAttributes& outAtts = GetOutput()->GetInfo().GetAttributes();
 
     // over-write spatial extents
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetCumulativeTrueSpatialExtents()->Clear();
+    outAtts.GetOriginalSpatialExtents()->Clear();
+    outAtts.GetThisProcsOriginalSpatialExtents()->Clear();
 
     // get the outputs's spatial extents
     double se[6];
-    if (inAtts.GetTrueSpatialExtents()->HasExtents())
+    if (inAtts.GetOriginalSpatialExtents()->HasExtents())
     {
-        inAtts.GetTrueSpatialExtents()->CopyTo(se);
+        inAtts.GetOriginalSpatialExtents()->CopyTo(se);
         if (xScaleMode == LOG)
         {
             ScaleVal(se[0], useInvLogX);
@@ -166,11 +171,11 @@ avtMeshLogFilter::PostExecute()
             ScaleVal(se[2], useInvLogY);
             ScaleVal(se[3], useInvLogY);
         }
-        outAtts.GetTrueSpatialExtents()->Set(se);
+        outAtts.GetOriginalSpatialExtents()->Set(se);
     }
-    else if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+    else if (inAtts.GetThisProcsOriginalSpatialExtents()->HasExtents())
     {
-        inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(se);
+        inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(se);
         if (xScaleMode == LOG)
         {
             ScaleVal(se[0], useInvLogX);
@@ -181,7 +186,7 @@ avtMeshLogFilter::PostExecute()
             ScaleVal(se[2], useInvLogY);
             ScaleVal(se[3], useInvLogY);
         }
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(se);
+        outAtts.GetThisProcsOriginalSpatialExtents()->Set(se);
     }
 }
 

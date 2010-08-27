@@ -158,6 +158,10 @@ avtReplicateFilter::Equivalent(const AttributeGroup *a)
 //  Creation:   August 29, 2006
 //
 //  Modifications:
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -166,14 +170,14 @@ avtReplicateFilter::PostExecute(void)
     avtSIMODataTreeIterator::PostExecute();
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetEffectiveSpatialExtents()->Clear();
-    outAtts.GetCurrentSpatialExtents()->Clear();
+    outAtts.GetOriginalSpatialExtents()->Clear();
+    outAtts.GetDesiredSpatialExtents()->Clear();
+    outAtts.GetActualSpatialExtents()->Clear();
 
     double bounds[6];
     avtDataset_p ds = GetTypedOutput();
     avtDatasetExaminer::GetSpatialExtents(ds, bounds);
-    outAtts.GetCumulativeTrueSpatialExtents()->Set(bounds);
+    outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
 }
 
 

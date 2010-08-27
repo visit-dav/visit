@@ -832,6 +832,9 @@ avtBoxFilter::RectilinearExecute(vtkRectilinearGrid *in_ds)
 //    Kathleen Bonnell,
 //    Ensure that Zones and Nodes are invalidated, regardless of dimension.
 // 
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -842,7 +845,7 @@ avtBoxFilter::UpdateDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateNodes();
 
     avtDataAttributes &a = GetOutput()->GetInfo().GetAttributes();
-    avtExtents *exts = a.GetEffectiveSpatialExtents();
+    avtExtents *exts = a.GetDesiredSpatialExtents();
     if (exts->GetDimension() != 3)
     {
         debug1 << "avtBoxFilter applied to data object with dimension "

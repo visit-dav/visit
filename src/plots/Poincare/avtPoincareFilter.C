@@ -227,6 +227,8 @@ avtPoincareFilter::PreExecute(void)
 //
 //  Modifications:
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
 //
 // ****************************************************************************
 
@@ -240,9 +242,9 @@ avtPoincareFilter::PostExecute(void)
     avtDatasetExaminer::GetDataExtents(ds, range, "colorVar");
 
     avtExtents *e;
-    e = GetOutput()->GetInfo().GetAttributes().GetCumulativeTrueDataExtents();
+    e = GetOutput()->GetInfo().GetAttributes().GetThisProcsOriginalDataExtents();
     e->Merge(range);
-    e = GetOutput()->GetInfo().GetAttributes().GetCumulativeCurrentDataExtents();
+    e = GetOutput()->GetInfo().GetAttributes().GetThisProcsActualDataExtents();
     e->Merge(range);
 }
 

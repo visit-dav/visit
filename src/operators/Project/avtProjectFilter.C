@@ -230,6 +230,11 @@ avtProjectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //  Programmer: Hank Childs
 //  Creation:   January 20, 2005
 //
+//   Modifications:
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -245,8 +250,8 @@ avtProjectFilter::PostExecute(void)
     avtDatasetExaminer::GetSpatialExtents(output, se);
 
     // over-write spatial extents
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetCumulativeTrueSpatialExtents()->Set(se);
+    outAtts.GetOriginalSpatialExtents()->Clear();
+    outAtts.GetThisProcsOriginalSpatialExtents()->Set(se);
 }
 
 

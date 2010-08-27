@@ -473,6 +473,9 @@ avtLabelPlot::CustomizeBehavior(void)
 //   Brad Whitlock, Thu Dec 13 14:57:09 PST 2007
 //   Set the cell and node origin into the renderer.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -515,7 +518,7 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
     // GetSpatialExtents
     // GetAnySpatialExtents
     double e[6] = {0.,1.,0.,1.,0.,1.};
-    doi.GetAttributes().GetTrueSpatialExtents()->CopyTo(e);
+    doi.GetAttributes().GetOriginalSpatialExtents()->CopyTo(e);
     float fe[6];
     int i;
     for(i = 0; i < 6; ++i)

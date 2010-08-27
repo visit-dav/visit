@@ -724,6 +724,9 @@ VisitAxisRestrictionTool::MoveCallback(VisitInteractiveTool *it, CB_ENUM e,
 //    Jeremy Meredith, Fri Apr 24 13:41:05 EDT 2009
 //    Fixed bugs when min/max are the same (i.e. single-valued variable).
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 void
 VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
@@ -754,7 +757,7 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
             }
             int axis = atts.GetUseForAxis(var);
             if (axis == -1 ||
-                atts.GetCumulativeTrueDataExtents(var) == NULL)
+                atts.GetThisProcsOriginalDataExtents(var) == NULL)
                 continue;
             naxes = (axis+1) > naxes ? (axis+1) : naxes;
         }
@@ -806,11 +809,11 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
                 if (axis == -1)
                     continue;
 
-                avtExtents *ext = atts.GetCumulativeTrueDataExtents(var);
+                avtExtents *ext = atts.GetThisProcsOriginalDataExtents(var);
                 // note: we already checked above that ext exists
 
                 double extents[2];
-                atts.GetCumulativeTrueDataExtents(var)->CopyTo(extents);
+                atts.GetThisProcsOriginalDataExtents(var)->CopyTo(extents);
                 axesXPos[axis] = axis;
                 axesMin[axis] = extents[0];
                 axesMax[axis] = extents[1];

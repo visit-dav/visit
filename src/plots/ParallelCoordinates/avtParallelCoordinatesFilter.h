@@ -93,6 +93,9 @@ class vtkPoints;
 //    Added ability to draw focus as color-graduated bins, merging
 //    context- and focus-as-histogram-drawing routines.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 class avtParallelCoordinatesFilter : public avtSIMODataTreeIterator
@@ -123,7 +126,7 @@ protected:
     void                        CreateLabels(void);
 
 private:
-    void                        ComputeCurrentDataExtentsOverAllDomains();
+    void                        ComputeActualDataExtentsOverAllDomains();
 
     void                        InitializeDataTupleInput();
     void                        CountDataTupleFocus(int ts,

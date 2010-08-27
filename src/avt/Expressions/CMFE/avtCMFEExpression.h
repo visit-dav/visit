@@ -86,6 +86,9 @@ class     avtDatabase;
 //    Hank Childs, Tue Mar 24 13:18:10 CDT 2009
 //    Add data member for data selections.
 //
+//    Hank Childs, Thu Aug 26 23:36:03 PDT 2010
+//    Add data members for extents calculations.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
@@ -122,6 +125,8 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     int                       varDim;
     bool                      isNodal;
     std::vector<std::string>  varnames;
+    std::vector<std::string>  varExtentsList;
+    bool                      calculateMeshExtents;
 
     virtual void              PreExecute(void);
     virtual void              Execute(void);

@@ -72,11 +72,14 @@
 //    Hank Childs, Fri May 18 16:01:06 PDT 2007
 //    Initialize factor, variable.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 avtDisplaceFilter::avtDisplaceFilter()
 {
-    OverrideTrueSpatialExtents();
+    OverrideOriginalSpatialExtents();
     factor   = 1.;
     variable = "default";
 }
@@ -346,6 +349,9 @@ avtDisplaceFilter::PreExecute(void)
 //    Call avtDataTreeIterator's PostExecute, not avtPluginDataTreeIterator, since the 
 //    inheritance changed.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -361,8 +367,8 @@ avtDisplaceFilter::PostExecute(void)
     avtDatasetExaminer::GetSpatialExtents(output, se);
 
     // over-write spatial extents
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetCumulativeTrueSpatialExtents()->Set(se);
+    outAtts.GetOriginalSpatialExtents()->Clear();
+    outAtts.GetThisProcsOriginalSpatialExtents()->Set(se);
 }
 
 

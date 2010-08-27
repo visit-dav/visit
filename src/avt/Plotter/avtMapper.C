@@ -728,6 +728,9 @@ avtMapper::GetRange(double &rmin, double &rmax)
 //    Kathleen Bonnell, Thu Mar 11 10:07:35 PST 2004 
 //    DataExtents now always have only 2 components.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -751,10 +754,10 @@ avtMapper::PrepareExtents(void)
                 exts[1] = 1.;
             }
         }
-        atts.GetTrueDataExtents(vname)->Set(exts);
+        atts.GetOriginalDataExtents(vname)->Set(exts);
 
-        bool gotCurrentDataExtents = atts.GetCurrentDataExtents(exts, vname);
-        if (!gotCurrentDataExtents)
+        bool gotActualDataExtents = atts.GetActualDataExtents(exts, vname);
+        if (!gotActualDataExtents)
         {
             if (!(avtDatasetExaminer::GetDataExtents(input, exts, vname)))
             {
@@ -762,7 +765,7 @@ avtMapper::PrepareExtents(void)
                 exts[1] = 1.;
             }
         }
-        atts.GetCurrentDataExtents(vname)->Set(exts);
+        atts.GetActualDataExtents(vname)->Set(exts);
     }
 
     double bounds[6];
@@ -781,7 +784,7 @@ avtMapper::PrepareExtents(void)
             }
         }
     }
-    atts.GetTrueSpatialExtents()->Set(bounds);
+    atts.GetOriginalSpatialExtents()->Set(bounds);
 }
 
 
@@ -811,7 +814,7 @@ avtMapper::SetLabels(vector<string> &, bool)
 //  Method: avtMapper::GetCurrentRange
 //
 //  Purpose:
-//      Gets the currentrange of the input.  This will look at the extents 
+//      Gets the current range of the input.  This will look at the extents 
 //      in the information if they are set and look at the dataset otherwise.
 //
 //  Arguments:
@@ -841,7 +844,7 @@ avtMapper::GetCurrentRange(double &rmin, double &rmax)
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
 
     double extents[2];
-    bool gotExtents = data.GetCurrentDataExtents(extents);
+    bool gotExtents = data.GetActualDataExtents(extents);
 
     if (!gotExtents)
     {

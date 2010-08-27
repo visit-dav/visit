@@ -201,6 +201,9 @@ avtExpressionEvaluatorFilter::Execute(void)
                 new avtDataRequest(lastUsedSpec->GetDataRequest());
         new_dataRequest->SetTimestep(currentTimeState);
         contract = new avtContract(contract, new_dataRequest);
+        contract->SetCalculateVariableExtentsList(
+                       lastUsedSpec->GetCalculateVariableExtentsList());
+        contract->SetCalculateMeshExtents(lastUsedSpec->ShouldCalculateMeshExtents());
         contract->SetOnDemandStreaming(onDemandProcessing);
         bottom->Update(contract);
         GetOutput()->Copy(*(bottom->GetOutput()));
@@ -394,8 +397,7 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 // ****************************************************************************
 
 avtContract_p
-avtExpressionEvaluatorFilter::ModifyContract(
-                                               avtContract_p spec)
+avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
 {
     pipelineState.Clear();
     int   i;

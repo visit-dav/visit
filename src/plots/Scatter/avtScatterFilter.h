@@ -70,6 +70,9 @@
 //    Cyrus Harrison, Thu Aug 19 13:35:08 PDT 2010
 //    Changes to support using var1 from atts.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents name.
+//
 // ****************************************************************************
 
 class avtScatterFilter : public avtDataTreeIterator
@@ -104,7 +107,7 @@ protected:
     bool                       needZExtents;
     bool                       needColorExtents;
 
-    doubleVector               cumulativeSpatialExtents;
+    doubleVector               thisProcsSpatialExtents;
 
     virtual void               PreExecute(void);
     virtual vtkDataSet        *ExecuteData(vtkDataSet *, int, std::string);

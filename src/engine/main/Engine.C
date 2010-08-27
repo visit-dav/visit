@@ -2572,6 +2572,9 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 //    Tom Fogal, Tue Jul 21 17:11:47 MDT 2009
 //    Debug statements.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
@@ -2661,7 +2664,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
         visitTimer->StopTimer(collectData, "Collecting data");
 
         // indicate that cumulative extents in data object now as good as true extents
-        ui_dob->GetInfo().GetAttributes().SetCanUseCumulativeAsTrueOrCurrent(true);
+        ui_dob->GetInfo().GetAttributes().SetCanUseThisProcsAsOriginalOrActual(true);
 
         //
         // See if there was an error on another processor.
@@ -2759,7 +2762,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
 #else // serial
     avtDataObject_p dob = writer->GetInput();
-    dob->GetInfo().GetAttributes().SetCanUseCumulativeAsTrueOrCurrent(true);
+    dob->GetInfo().GetAttributes().SetCanUseThisProcsAsOriginalOrActual(true);
     avtDataValidity &v = dob->GetInfo().GetValidity();
     if (!v.HasErrorOccurred())
     {

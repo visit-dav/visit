@@ -79,7 +79,7 @@ using     std::sort;
 //    Initialize more data members.
 //
 //    Kathleen Bonnell, Tue Oct  2 15:25:23 PDT 2001 
-//    Initialize current extents. 
+//    Initialize actual extents. 
 //
 //    Hank Childs, Fri Dec 21 07:18:33 PST 2001
 //    Initialize varname.
@@ -172,13 +172,13 @@ using     std::sort;
 
 avtDataAttributes::avtDataAttributes() : plotInfoAtts()
 {
-    trueSpatial               = NULL;
-    cumulativeTrueSpatial     = NULL;
-    currentSpatial            = NULL;
-    effectiveSpatial          = NULL;
-    cumulativeCurrentSpatial  = NULL;
+    originalSpatial              = NULL;
+    thisProcsOriginalSpatial     = NULL;
+    actualSpatial                = NULL;
+    desiredSpatial             = NULL;
+    thisProcsActualSpatial       = NULL;
 
-    canUseCumulativeAsTrueOrCurrent = false;
+    canUseThisProcsAsOriginalOrActual = false;
 
     activeVariable         = -1;
     cellOrigin             = 0;
@@ -280,7 +280,7 @@ avtDataAttributes::~avtDataAttributes()
 //    Reflected use of avtExtents.
 //
 //    Kathleen Bonnell, Tue Oct  2 15:25:23 PDT 2001 
-//    Delete current extents. 
+//    Delete actual extents. 
 //
 //    Kathleen Bonnell, Thu Apr 10 10:31:54 PDT 2003  
 //    Delete transform.
@@ -306,58 +306,58 @@ void
 avtDataAttributes::DestructSelf(void)
 {
     spatialDimension = -1;
-    if (trueSpatial != NULL)
+    if (originalSpatial != NULL)
     {
-        delete trueSpatial;
-        trueSpatial = NULL;
+        delete originalSpatial;
+        originalSpatial = NULL;
     }
-    if (cumulativeTrueSpatial != NULL)
+    if (thisProcsOriginalSpatial != NULL)
     {
-        delete cumulativeTrueSpatial;
-        cumulativeTrueSpatial = NULL;
+        delete thisProcsOriginalSpatial;
+        thisProcsOriginalSpatial = NULL;
     }
-    if (effectiveSpatial != NULL)
+    if (desiredSpatial != NULL)
     {
-        delete effectiveSpatial;
-        effectiveSpatial = NULL;
+        delete desiredSpatial;
+        desiredSpatial = NULL;
     }
-    if (currentSpatial != NULL)
+    if (actualSpatial != NULL)
     {
-        delete currentSpatial;
-        currentSpatial = NULL;
+        delete actualSpatial;
+        actualSpatial = NULL;
     }
-    if (cumulativeCurrentSpatial != NULL)
+    if (thisProcsActualSpatial != NULL)
     {
-        delete cumulativeCurrentSpatial;
-        cumulativeCurrentSpatial = NULL;
+        delete thisProcsActualSpatial;
+        thisProcsActualSpatial = NULL;
     }
 
     for (int i = 0 ; i < variables.size() ; i++)
     {
-        if (variables[i].trueData != NULL)
+        if (variables[i].originalData != NULL)
         {
-            delete variables[i].trueData;
-            variables[i].trueData = NULL;
+            delete variables[i].originalData;
+            variables[i].originalData = NULL;
         }
-        if (variables[i].cumulativeTrueData != NULL)
+        if (variables[i].thisProcsOriginalData != NULL)
         {
-            delete variables[i].cumulativeTrueData;
-            variables[i].cumulativeTrueData = NULL;
+            delete variables[i].thisProcsOriginalData;
+            variables[i].thisProcsOriginalData = NULL;
         }
-        if (variables[i].effectiveData != NULL)
+        if (variables[i].desiredData != NULL)
         {
-            delete variables[i].effectiveData;
-            variables[i].effectiveData = NULL;
+            delete variables[i].desiredData;
+            variables[i].desiredData = NULL;
         }
-        if (variables[i].currentData != NULL)
+        if (variables[i].actualData != NULL)
         {
-            delete variables[i].currentData;
-            variables[i].currentData = NULL;
+            delete variables[i].actualData;
+            variables[i].actualData = NULL;
         }
-        if (variables[i].cumulativeCurrentData != NULL)
+        if (variables[i].thisProcsActualData != NULL)
         {
-            delete variables[i].cumulativeCurrentData;
-            variables[i].cumulativeCurrentData = NULL;
+            delete variables[i].thisProcsActualData;
+            variables[i].thisProcsActualData = NULL;
         }
         if (variables[i].componentExtents != NULL)
         {
@@ -543,10 +543,10 @@ avtDataAttributes::Print(ostream &out)
     if (transform != NULL)
         out << transform << endl;
 
-    if (canUseCumulativeAsTrueOrCurrent)
-        out << "The cumulative extents can be used as true or current" << endl;
+    if (canUseThisProcsAsOriginalOrActual)
+        out << "The thisProcs extents can be used as original or actual" << endl;
     else
-        out << "The cumulative extents can not be used as true or current" 
+        out << "The thisProcs extents can not be used as original or actual" 
             << endl;
 
     switch (windowMode)
@@ -595,30 +595,30 @@ avtDataAttributes::Print(ostream &out)
     out << "The Y-labels are " << yLabel.c_str() << endl;
     out << "The Z-labels are " << zLabel.c_str() << endl;
 
-    if (trueSpatial != NULL)
+    if (originalSpatial != NULL)
     {
-        out << "True spatial = " << endl;
-        trueSpatial->Print(out);
+        out << "Original spatial = " << endl;
+        originalSpatial->Print(out);
     }
-    if (cumulativeTrueSpatial != NULL)
+    if (thisProcsOriginalSpatial != NULL)
     {
-        out << "Cumulative true spatial = " << endl;
-        cumulativeTrueSpatial->Print(out);
+        out << "ThisProcs original spatial = " << endl;
+        thisProcsOriginalSpatial->Print(out);
     }
-    if (effectiveSpatial != NULL)
+    if (desiredSpatial != NULL)
     {
-        out << "Effective spatial = " << endl;
-        effectiveSpatial->Print(out);
+        out << "Desired spatial = " << endl;
+        desiredSpatial->Print(out);
     }
-    if (currentSpatial != NULL)
+    if (actualSpatial != NULL)
     {
-        out << "Current spatial = " << endl;
-        currentSpatial->Print(out);
+        out << "Actual spatial = " << endl;
+        actualSpatial->Print(out);
     }
-    if (cumulativeCurrentSpatial != NULL)
+    if (thisProcsActualSpatial != NULL)
     {
-        out << "Cumulative current spatial = " << endl;
-        cumulativeCurrentSpatial->Print(out);
+        out << "ThisProcs actual spatial = " << endl;
+        thisProcsActualSpatial->Print(out);
     }
 
     int i;
@@ -710,30 +710,30 @@ avtDataAttributes::Print(ostream &out)
 
         out << "Used for axis " << variables[i].useForAxis << endl;
 
-        if (variables[i].trueData != NULL)
+        if (variables[i].originalData != NULL)
         {
-            out << "True data = " << endl;
-            variables[i].trueData->Print(out);
+            out << "Original data = " << endl;
+            variables[i].originalData->Print(out);
         }
-        if (variables[i].cumulativeTrueData != NULL)
+        if (variables[i].thisProcsOriginalData != NULL)
         {
-            out << "Cumulative true data = " << endl;
-            variables[i].cumulativeTrueData->Print(out);
+            out << "ThisProcs original data = " << endl;
+            variables[i].thisProcsOriginalData->Print(out);
         }
-        if (variables[i].effectiveData != NULL)
+        if (variables[i].desiredData != NULL)
         {
-            out << "Effective data = " << endl;
-            variables[i].effectiveData->Print(out);
+            out << "Desired data = " << endl;
+            variables[i].desiredData->Print(out);
         }
-        if (variables[i].currentData != NULL)
+        if (variables[i].actualData != NULL)
         {
-            out << "Current data = " << endl;
-            variables[i].currentData->Print(out);
+            out << "Actual data = " << endl;
+            variables[i].actualData->Print(out);
         }
-        if (variables[i].cumulativeCurrentData != NULL)
+        if (variables[i].thisProcsActualData != NULL)
         {
-            out << "Cumulative current data = " << endl;
-            variables[i].cumulativeCurrentData->Print(out);
+            out << "ThisProcs actual data = " << endl;
+            variables[i].thisProcsActualData->Print(out);
         }
         if (variables[i].componentExtents != NULL)
         {
@@ -859,7 +859,7 @@ avtDataAttributes::Print(ostream &out)
 //    Copy over labels. 
 //
 //    Kathleen Bonnell, Tue Oct  2 15:25:23 PDT 2001 
-//    Copy over current extents. 
+//    Copy over actual extents. 
 //
 //    Hank Childs, Fri Dec 21 07:18:33 PST 2001
 //    Copy over varname.
@@ -1014,13 +1014,13 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     SetYLabel(di.GetYLabel());
     SetZLabel(di.GetZLabel());
 
-    *(trueSpatial)               = *(di.trueSpatial);
-    *(cumulativeTrueSpatial)     = *(di.cumulativeTrueSpatial);
-    *(effectiveSpatial)          = *(di.effectiveSpatial);
-    *(currentSpatial)            = *(di.currentSpatial);
-    *(cumulativeCurrentSpatial)  = *(di.cumulativeCurrentSpatial);
+    *(originalSpatial)               = *(di.originalSpatial);
+    *(thisProcsOriginalSpatial)     = *(di.thisProcsOriginalSpatial);
+    *(desiredSpatial)          = *(di.desiredSpatial);
+    *(actualSpatial)            = *(di.actualSpatial);
+    *(thisProcsActualSpatial)  = *(di.thisProcsActualSpatial);
 
-    canUseCumulativeAsTrueOrCurrent = di.canUseCumulativeAsTrueOrCurrent;
+    canUseThisProcsAsOriginalOrActual = di.canUseThisProcsAsOriginalOrActual;
     for (int i = 0 ; i < di.variables.size() ; i++)
     {
         const char *vname = di.variables[i].varname.c_str();
@@ -1032,14 +1032,14 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
         SetCentering(di.variables[i].centering, vname);
         SetTreatAsASCII(di.variables[i].treatAsASCII, vname);
         SetUseForAxis(di.variables[i].useForAxis, vname);
-        *(variables[i].trueData)              = *(di.variables[i].trueData);
-        *(variables[i].cumulativeTrueData)    = 
-                                      *(di.variables[i].cumulativeTrueData);
-        *(variables[i].effectiveData)         =
-                                      *(di.variables[i].effectiveData);
-        *(variables[i].currentData)           = *(di.variables[i].currentData);
-        *(variables[i].cumulativeCurrentData) = 
-                                      *(di.variables[i].cumulativeCurrentData);
+        *(variables[i].originalData)              = *(di.variables[i].originalData);
+        *(variables[i].thisProcsOriginalData)    = 
+                                      *(di.variables[i].thisProcsOriginalData);
+        *(variables[i].desiredData)         =
+                                      *(di.variables[i].desiredData);
+        *(variables[i].actualData)           = *(di.variables[i].actualData);
+        *(variables[i].thisProcsActualData) = 
+                                      *(di.variables[i].thisProcsActualData);
         *(variables[i].componentExtents) = *(di.variables[i].componentExtents);
     }
     activeVariable = di.activeVariable;
@@ -1099,7 +1099,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Call MergeLabels method. 
 //
 //    Kathleen Bonnell, Tue Oct  2 15:25:23 PDT 2001 
-//    Merge current extents. 
+//    Merge actual extents. 
 //
 //    Hank Childs, Fri Mar  8 16:39:30 PST 2002
 //    Merge cycle and dtime.
@@ -1432,23 +1432,23 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     }
 
 
-    canUseCumulativeAsTrueOrCurrent &= da.canUseCumulativeAsTrueOrCurrent;
+    canUseThisProcsAsOriginalOrActual &= da.canUseThisProcsAsOriginalOrActual;
 
-    trueSpatial->Merge(*(da.trueSpatial));
-    cumulativeTrueSpatial->Merge(*(da.cumulativeTrueSpatial));
-    effectiveSpatial->Merge(*(da.effectiveSpatial));
-    currentSpatial->Merge(*(da.currentSpatial));
-    cumulativeCurrentSpatial->Merge(*(da.cumulativeCurrentSpatial));
+    originalSpatial->Merge(*(da.originalSpatial));
+    thisProcsOriginalSpatial->Merge(*(da.thisProcsOriginalSpatial));
+    desiredSpatial->Merge(*(da.desiredSpatial));
+    actualSpatial->Merge(*(da.actualSpatial));
+    thisProcsActualSpatial->Merge(*(da.thisProcsActualSpatial));
 
     for (i = 0 ; i < variables.size() ; i++)
     {
-        variables[i].trueData->Merge(*(da.variables[i].trueData));
-        variables[i].cumulativeTrueData->Merge(
-                                        *(da.variables[i].cumulativeTrueData));
-        variables[i].effectiveData->Merge(*(da.variables[i].effectiveData));
-        variables[i].currentData->Merge(*(da.variables[i].currentData));
-        variables[i].cumulativeCurrentData->Merge(
-                                     *(da.variables[i].cumulativeCurrentData));
+        variables[i].originalData->Merge(*(da.variables[i].originalData));
+        variables[i].thisProcsOriginalData->Merge(
+                                        *(da.variables[i].thisProcsOriginalData));
+        variables[i].desiredData->Merge(*(da.variables[i].desiredData));
+        variables[i].actualData->Merge(*(da.variables[i].actualData));
+        variables[i].thisProcsActualData->Merge(
+                                     *(da.variables[i].thisProcsActualData));
         variables[i].componentExtents->Merge(
                                         *(da.variables[i].componentExtents));
     }
@@ -1485,23 +1485,23 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
 //  Modifications:
 //
 //    Hank Childs, Tue Nov 13 12:18:16 PST 2001
-//    Don't use effective spatial extents.
+//    Don't use desired spatial extents.
 //
 // ****************************************************************************
 
 bool
 avtDataAttributes::GetSpatialExtents(double *buff)
 {
-    if (trueSpatial->HasExtents())
+    if (originalSpatial->HasExtents())
     {
-        trueSpatial->CopyTo(buff);
+        originalSpatial->CopyTo(buff);
         return true;
     }
 
-    if (canUseCumulativeAsTrueOrCurrent &&
-        cumulativeTrueSpatial->HasExtents())
+    if (canUseThisProcsAsOriginalOrActual &&
+        thisProcsOriginalSpatial->HasExtents())
     {
-        cumulativeTrueSpatial->CopyTo(buff);
+        thisProcsOriginalSpatial->CopyTo(buff);
         return true;
     }
 
@@ -1528,33 +1528,33 @@ avtDataAttributes::GetSpatialExtents(double *buff)
 bool
 avtDataAttributes::GetAnySpatialExtents(double *buff)
 {
-    if (trueSpatial->HasExtents())
+    if (originalSpatial->HasExtents())
     {
-        trueSpatial->CopyTo(buff);
+        originalSpatial->CopyTo(buff);
         return true;
     }
 
-    if (cumulativeTrueSpatial->HasExtents())
+    if (thisProcsOriginalSpatial->HasExtents())
     {
-        cumulativeTrueSpatial->CopyTo(buff);
+        thisProcsOriginalSpatial->CopyTo(buff);
         return true;
     }
 
-    if (currentSpatial->HasExtents())
+    if (actualSpatial->HasExtents())
     {
-        currentSpatial->CopyTo(buff);
+        actualSpatial->CopyTo(buff);
         return true;
     }
 
-    if (cumulativeCurrentSpatial->HasExtents())
+    if (thisProcsActualSpatial->HasExtents())
     {
-        cumulativeCurrentSpatial->CopyTo(buff);
+        thisProcsActualSpatial->CopyTo(buff);
         return true;
     }
 
-    if (effectiveSpatial->HasExtents())
+    if (desiredSpatial->HasExtents())
     {
-        effectiveSpatial->CopyTo(buff);
+        desiredSpatial->CopyTo(buff);
         return true;
     }
 
@@ -1579,7 +1579,7 @@ avtDataAttributes::GetAnySpatialExtents(double *buff)
 //  Modifications:
 //
 //    Hank Childs, Tue Nov 13 12:18:16 PST 2001
-//    Don't use effective data extents.
+//    Don't use desired data extents.
 //
 //    Hank Childs, Mon Feb 23 14:19:15 PST 2004
 //    Account for multiple variables.
@@ -1593,16 +1593,16 @@ avtDataAttributes::GetDataExtents(double *buff, const char *varname)
     if (index < 0)
         return false;
 
-    if (variables[index].trueData->HasExtents())
+    if (variables[index].originalData->HasExtents())
     {
-        variables[index].trueData->CopyTo(buff);
+        variables[index].originalData->CopyTo(buff);
         return true;
     }
 
-    if (canUseCumulativeAsTrueOrCurrent &&
-        variables[index].cumulativeTrueData->HasExtents())
+    if (canUseThisProcsAsOriginalOrActual &&
+        variables[index].thisProcsOriginalData->HasExtents())
     {
-        variables[index].cumulativeTrueData->CopyTo(buff);
+        variables[index].thisProcsOriginalData->CopyTo(buff);
         return true;
     }
 
@@ -1611,10 +1611,10 @@ avtDataAttributes::GetDataExtents(double *buff, const char *varname)
 
 
 // ****************************************************************************
-//  Method: avtDataAttributes::GetTrueDataExtents
+//  Method: avtDataAttributes::GetOriginalDataExtents
 //
 //  Purpose:
-//      Gets the true data extents for the data object.  Hides the logic 
+//      Gets the original data extents for the data object.  Hides the logic 
 //      regarding which set of extents should be used first, etc.
 //
 //  Arguments:
@@ -1637,7 +1637,7 @@ avtDataAttributes::GetDataExtents(double *buff, const char *varname)
 // ****************************************************************************
 
 avtExtents *
-avtDataAttributes::GetTrueDataExtents(const char *varname)
+avtDataAttributes::GetOriginalDataExtents(const char *varname)
 {
     int index = VariableNameToIndex(varname);
     if (index < 0)
@@ -1653,15 +1653,15 @@ avtDataAttributes::GetTrueDataExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].trueData;
+    return variables[index].originalData;
 }
 
 
 // ****************************************************************************
-//  Method: avtDataAttributes::GetCumulativeTrueDataExtents
+//  Method: avtDataAttributes::GetThisProcsOriginalDataExtents
 //
 //  Purpose:
-//      Gets the cumulative true data extents for the data object.
+//      Gets the thisProcs original data extents for the data object.
 //
 //  Arguments:
 //      varname  The variable to get the extents for.  If this argument is
@@ -1683,7 +1683,7 @@ avtDataAttributes::GetTrueDataExtents(const char *varname)
 // ****************************************************************************
 
 avtExtents *
-avtDataAttributes::GetCumulativeTrueDataExtents(const char *varname)
+avtDataAttributes::GetThisProcsOriginalDataExtents(const char *varname)
 {
     int index = VariableNameToIndex(varname);
     if (index < 0)
@@ -1699,7 +1699,7 @@ avtDataAttributes::GetCumulativeTrueDataExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].cumulativeTrueData;
+    return variables[index].thisProcsOriginalData;
 }
 
 
@@ -1745,10 +1745,10 @@ avtDataAttributes::GetVariableComponentExtents(const char *varname)
 
 
 // ****************************************************************************
-//  Method: avtDataAttributes::GetEffectiveDataExtents
+//  Method: avtDataAttributes::GetDesiredDataExtents
 //
 //  Purpose:
-//      Gets the effective data extents for the data object.
+//      Gets the desired data extents for the data object.
 //
 //  Arguments:
 //      varname  The variable to get the extents for.  If this argument is
@@ -1770,7 +1770,7 @@ avtDataAttributes::GetVariableComponentExtents(const char *varname)
 // ****************************************************************************
 
 avtExtents *
-avtDataAttributes::GetEffectiveDataExtents(const char *varname)
+avtDataAttributes::GetDesiredDataExtents(const char *varname)
 {
     int index = VariableNameToIndex(varname);
     if (index < 0)
@@ -1786,15 +1786,15 @@ avtDataAttributes::GetEffectiveDataExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].effectiveData;
+    return variables[index].desiredData;
 }
 
 
 // ****************************************************************************
-//  Method: avtDataAttributes::GetCurrentDataExtents
+//  Method: avtDataAttributes::GetActualDataExtents
 //
 //  Purpose:
-//      Gets the current data extents for the data object.
+//      Gets the actual data extents for the data object.
 //
 //  Arguments:
 //      varname  The variable to get the extents for.  If this argument is
@@ -1816,7 +1816,7 @@ avtDataAttributes::GetEffectiveDataExtents(const char *varname)
 // ****************************************************************************
 
 avtExtents *
-avtDataAttributes::GetCurrentDataExtents(const char *varname)
+avtDataAttributes::GetActualDataExtents(const char *varname)
 {
     int index = VariableNameToIndex(varname);
     if (index < 0)
@@ -1832,15 +1832,15 @@ avtDataAttributes::GetCurrentDataExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].currentData;
+    return variables[index].actualData;
 }
 
 
 // ****************************************************************************
-//  Method: avtDataAttributes::GetCumulativeCurrentDataExtents
+//  Method: avtDataAttributes::GetThisProcsActualDataExtents
 //
 //  Purpose:
-//      Gets the cumulative current data extents for the data object.
+//      Gets the thisProcs actual data extents for the data object.
 //
 //  Arguments:
 //      varname  The variable to get the extents for.  If this argument is
@@ -1862,7 +1862,7 @@ avtDataAttributes::GetCurrentDataExtents(const char *varname)
 // ****************************************************************************
 
 avtExtents *
-avtDataAttributes::GetCumulativeCurrentDataExtents(const char *varname)
+avtDataAttributes::GetThisProcsActualDataExtents(const char *varname)
 {
     int index = VariableNameToIndex(varname);
     if (index < 0)
@@ -1878,7 +1878,7 @@ avtDataAttributes::GetCumulativeCurrentDataExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].cumulativeCurrentData;
+    return variables[index].thisProcsActualData;
 }
 
 
@@ -1918,7 +1918,7 @@ avtDataAttributes::SetTopologicalDimension(int td)
 //  Modifications:
 //
 //    Kathleen Bonnell, Wed Oct  3 10:57:13 PDT 2001
-//    Add currentSpatial, cumulativeCurrentSpatial.
+//    Add actualSpatial, thisProcsActualSpatial.
 //
 // ****************************************************************************
 
@@ -1932,35 +1932,35 @@ avtDataAttributes::SetSpatialDimension(int td)
 
     spatialDimension = td;
 
-    if (trueSpatial != NULL)
+    if (originalSpatial != NULL)
     {
-        delete trueSpatial;
+        delete originalSpatial;
     }
-    trueSpatial = new avtExtents(spatialDimension);
+    originalSpatial = new avtExtents(spatialDimension);
 
-    if (cumulativeTrueSpatial != NULL)
+    if (thisProcsOriginalSpatial != NULL)
     {
-        delete cumulativeTrueSpatial;
+        delete thisProcsOriginalSpatial;
     }
-    cumulativeTrueSpatial = new avtExtents(spatialDimension);
+    thisProcsOriginalSpatial = new avtExtents(spatialDimension);
 
-    if (effectiveSpatial != NULL)
+    if (desiredSpatial != NULL)
     {
-        delete effectiveSpatial;
+        delete desiredSpatial;
     }
-    effectiveSpatial = new avtExtents(spatialDimension);
+    desiredSpatial = new avtExtents(spatialDimension);
 
-    if (currentSpatial != NULL)
+    if (actualSpatial != NULL)
     {
-        delete currentSpatial;
+        delete actualSpatial;
     }
-    currentSpatial = new avtExtents(spatialDimension);
+    actualSpatial = new avtExtents(spatialDimension);
 
-    if (cumulativeCurrentSpatial != NULL)
+    if (thisProcsActualSpatial != NULL)
     {
-        delete cumulativeCurrentSpatial;
+        delete thisProcsActualSpatial;
     }
-    cumulativeCurrentSpatial = new avtExtents(spatialDimension);
+    thisProcsActualSpatial = new avtExtents(spatialDimension);
 }
 
 
@@ -1979,7 +1979,7 @@ avtDataAttributes::SetSpatialDimension(int td)
 //  Modifications:
 //
 //    Kathleen Bonnell, Wed Oct  3 10:57:13 PDT 2001
-//    Add currentData, cumulativeCurrentData.
+//    Add actualData, thisProcsActualData.
 //
 //    Hank Childs, Mon Feb 23 14:19:15 PST 2004
 //    Account for multiple variables.
@@ -2022,35 +2022,35 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
 
     variables[index].dimension  = vd;
 
-    if (variables[index].trueData != NULL)
+    if (variables[index].originalData != NULL)
     {
-        delete variables[index].trueData;
+        delete variables[index].originalData;
     }
-    variables[index].trueData = new avtExtents(1);
+    variables[index].originalData = new avtExtents(1);
 
-    if (variables[index].cumulativeTrueData != NULL)
+    if (variables[index].thisProcsOriginalData != NULL)
     {
-        delete variables[index].cumulativeTrueData;
+        delete variables[index].thisProcsOriginalData;
     }
-    variables[index].cumulativeTrueData = new avtExtents(1);
+    variables[index].thisProcsOriginalData = new avtExtents(1);
 
-    if (variables[index].effectiveData != NULL)
+    if (variables[index].desiredData != NULL)
     {
-        delete variables[index].effectiveData;
+        delete variables[index].desiredData;
     }
-    variables[index].effectiveData =new avtExtents(1);
+    variables[index].desiredData =new avtExtents(1);
 
-    if (variables[index].currentData != NULL)
+    if (variables[index].actualData != NULL)
     {
-        delete variables[index].currentData;
+        delete variables[index].actualData;
     }
-    variables[index].currentData = new avtExtents(1);
+    variables[index].actualData = new avtExtents(1);
 
-    if (variables[index].cumulativeCurrentData != NULL)
+    if (variables[index].thisProcsActualData != NULL)
     {
-        delete variables[index].cumulativeCurrentData;
+        delete variables[index].thisProcsActualData;
     }
-    variables[index].cumulativeCurrentData = new avtExtents(1);
+    variables[index].thisProcsActualData = new avtExtents(1);
 
     if (variables[index].componentExtents != NULL)
     {
@@ -2540,7 +2540,7 @@ avtDataAttributes::SetDynamicDomainDecomposition(bool ddd)
 //    Call WriteLabels method. 
 //
 //    Kathleen Bonnell, Tue Oct  2 15:25:23 PDT 2001 
-//    Write current extents. 
+//    Write actual extents. 
 //
 //    Hank Childs, Fri Mar  8 17:02:10 PST 2002
 //    Write the cycle, time, and filename.
@@ -2686,7 +2686,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[i++] = (containsGlobalNodeIds ? 1 : 0);
     vals[i++] = (canUseInvTransform ? 1 : 0);
     vals[i++] = (canUseTransform ? 1 : 0);
-    vals[i++] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
+    vals[i++] = (canUseThisProcsAsOriginalOrActual ? 1 : 0);
     vals[i++] = windowMode;
     vals[i++] = (adaptsToAnyWindowMode ? 1 : 0);
     vals[i++] = numStates;
@@ -2713,11 +2713,11 @@ avtDataAttributes::Write(avtDataObjectString &str,
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
 
-    trueSpatial->Write(str, wrtr);
-    cumulativeTrueSpatial->Write(str, wrtr);
-    effectiveSpatial->Write(str, wrtr);
-    currentSpatial->Write(str, wrtr);
-    cumulativeCurrentSpatial->Write(str, wrtr);
+    originalSpatial->Write(str, wrtr);
+    thisProcsOriginalSpatial->Write(str, wrtr);
+    desiredSpatial->Write(str, wrtr);
+    actualSpatial->Write(str, wrtr);
+    thisProcsActualSpatial->Write(str, wrtr);
 
     for (i = 0 ; i < variables.size() ; i++)
     {
@@ -2752,11 +2752,11 @@ avtDataAttributes::Write(avtDataObjectString &str,
             wrtr->WriteDouble(str, &(variables[i].binRange[0]), 
                               variables[i].binRange.size());
         }
-        variables[i].trueData->Write(str, wrtr);
-        variables[i].cumulativeTrueData->Write(str, wrtr);
-        variables[i].effectiveData->Write(str, wrtr);
-        variables[i].currentData->Write(str, wrtr);
-        variables[i].cumulativeCurrentData->Write(str, wrtr);
+        variables[i].originalData->Write(str, wrtr);
+        variables[i].thisProcsOriginalData->Write(str, wrtr);
+        variables[i].desiredData->Write(str, wrtr);
+        variables[i].actualData->Write(str, wrtr);
+        variables[i].thisProcsActualData->Write(str, wrtr);
         variables[i].componentExtents->Write(str, wrtr);
     }
 
@@ -2835,7 +2835,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Call ReadLabels method. 
 //
 //    Kathleen Bonnell, Tue Oct  2 15:25:23 PDT 2001 
-//    Read current extents. 
+//    Read actual extents. 
 //
 //    Hank Childs, Fri Mar  8 17:02:10 PST 2002
 //    Read the cycle, time, and filename.
@@ -3039,7 +3039,7 @@ avtDataAttributes::Read(char *input)
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
-    SetCanUseCumulativeAsTrueOrCurrent(tmp != 0 ? true : false);
+    SetCanUseThisProcsAsOriginalOrActual(tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
@@ -3132,15 +3132,15 @@ avtDataAttributes::Read(char *input)
     dtime = dtmp;
 
     int s;
-    s = trueSpatial->Read(input);
+    s = originalSpatial->Read(input);
     input += s; size += s;
-    s = cumulativeTrueSpatial->Read(input);
+    s = thisProcsOriginalSpatial->Read(input);
     input += s; size += s;
-    s = effectiveSpatial->Read(input);
+    s = desiredSpatial->Read(input);
     input += s; size += s;
-    s = currentSpatial->Read(input);
+    s = actualSpatial->Read(input);
     input += s; size += s;
-    s = cumulativeCurrentSpatial->Read(input);
+    s = thisProcsActualSpatial->Read(input);
     input += s; size += s;
 
     for (i = 0 ; i < numVars ; i++)
@@ -3206,15 +3206,15 @@ avtDataAttributes::Read(char *input)
         SetUseForAxis(useForAxis[i], varname.c_str());
         SetVariableType(vartypes[i], varname.c_str());
  
-        s = variables[i].trueData->Read(input);
+        s = variables[i].originalData->Read(input);
         input += s; size += s;
-        s = variables[i].cumulativeTrueData->Read(input);
+        s = variables[i].thisProcsOriginalData->Read(input);
         input += s; size += s;
-        s = variables[i].effectiveData->Read(input);
+        s = variables[i].desiredData->Read(input);
         input += s; size += s;
-        s = variables[i].currentData->Read(input);
+        s = variables[i].actualData->Read(input);
         input += s; size += s;
-        s = variables[i].cumulativeCurrentData->Read(input);
+        s = variables[i].thisProcsActualData->Read(input);
         input += s; size += s;
         s = variables[i].componentExtents->Read(input);
         input += s; size += s;
@@ -3534,10 +3534,10 @@ avtDataAttributes::GetLabels(vector<string> &l)
 
 
 // ****************************************************************************
-//  Method: avtDataAttributes::GetCurrentDataExtents
+//  Method: avtDataAttributes::GetActualDataExtents
 //
 //  Purpose:
-//      Gets the current data extents for the data object.  Hides the logic 
+//      Gets the actual data extents for the data object.  Hides the logic 
 //      regarding which set of extents should be used first, etc.
 //
 //  Arguments:
@@ -3563,7 +3563,7 @@ avtDataAttributes::GetLabels(vector<string> &l)
 // ****************************************************************************
 
 bool
-avtDataAttributes::GetCurrentDataExtents(double *buff, const char *varname)
+avtDataAttributes::GetActualDataExtents(double *buff, const char *varname)
 {
     int index = VariableNameToIndex(varname);
     if (index < 0)
@@ -3579,16 +3579,16 @@ avtDataAttributes::GetCurrentDataExtents(double *buff, const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    if (variables[index].currentData->HasExtents())
+    if (variables[index].actualData->HasExtents())
     {
-        variables[index].currentData->CopyTo(buff);
+        variables[index].actualData->CopyTo(buff);
         return true;
     }
 
-    if (canUseCumulativeAsTrueOrCurrent &&
-        variables[index].cumulativeCurrentData->HasExtents())
+    if (canUseThisProcsAsOriginalOrActual &&
+        variables[index].thisProcsActualData->HasExtents())
     {
-        variables[index].cumulativeCurrentData->CopyTo(buff);
+        variables[index].thisProcsActualData->CopyTo(buff);
         return true;
     }
 
@@ -3597,10 +3597,10 @@ avtDataAttributes::GetCurrentDataExtents(double *buff, const char *varname)
 
 
 // ****************************************************************************
-//  Method: avtDataAttributes::GetCurrentSpatialExtents
+//  Method: avtDataAttributes::GetActualSpatialExtents
 //
 //  Purpose:
-//      Gets the current spatial extents for the data object.  Hides the logic 
+//      Gets the actual spatial extents for the data object.  Hides the logic 
 //      regarding which set of extents should be used first, etc.
 //
 //  Arguments:
@@ -3614,18 +3614,18 @@ avtDataAttributes::GetCurrentDataExtents(double *buff, const char *varname)
 // ****************************************************************************
 
 bool
-avtDataAttributes::GetCurrentSpatialExtents(double *buff)
+avtDataAttributes::GetActualSpatialExtents(double *buff)
 {
-    if (currentSpatial->HasExtents())
+    if (actualSpatial->HasExtents())
     {
-        currentSpatial->CopyTo(buff);
+        actualSpatial->CopyTo(buff);
         return true;
     }
 
-    if (canUseCumulativeAsTrueOrCurrent &&
-        cumulativeCurrentSpatial->HasExtents())
+    if (canUseThisProcsAsOriginalOrActual &&
+        thisProcsActualSpatial->HasExtents())
     {
-        cumulativeCurrentSpatial->CopyTo(buff);
+        thisProcsActualSpatial->CopyTo(buff);
         return true;
     }
 
@@ -3856,11 +3856,11 @@ avtDataAttributes::AddVariable(const std::string &s, const std::string &units)
     new_var.centering = AVT_UNKNOWN_CENT;
     new_var.vartype = AVT_UNKNOWN_TYPE;
     new_var.treatAsASCII = false;
-    new_var.trueData = NULL;
-    new_var.cumulativeTrueData = NULL;
-    new_var.effectiveData = NULL;
-    new_var.currentData = NULL;
-    new_var.cumulativeCurrentData = NULL;
+    new_var.originalData = NULL;
+    new_var.thisProcsOriginalData = NULL;
+    new_var.desiredData = NULL;
+    new_var.actualData = NULL;
+    new_var.thisProcsActualData = NULL;
     new_var.useForAxis = -1;
     new_var.componentExtents = NULL;
     variables.push_back(new_var);
@@ -4602,39 +4602,39 @@ avtDataAttributes::TransformSpatialExtents(avtDataAttributes &outAtts,
     double in[6], out[6]; // 6 is biggest possible -- not necessarily using
                           // all 6 -- up to callback function to decide.
 
-    if (GetTrueSpatialExtents()->HasExtents())
+    if (GetOriginalSpatialExtents()->HasExtents())
     {
-        GetTrueSpatialExtents()->CopyTo(in);
+        GetOriginalSpatialExtents()->CopyTo(in);
         ProjectExtentsCallback(in, out, args);
-        outAtts.GetTrueSpatialExtents()->Set(out);
+        outAtts.GetOriginalSpatialExtents()->Set(out);
     }
 
-    if (GetCumulativeTrueSpatialExtents()->HasExtents())
+    if (GetThisProcsOriginalSpatialExtents()->HasExtents())
     {
-        GetCumulativeTrueSpatialExtents()->CopyTo(in);
+        GetThisProcsOriginalSpatialExtents()->CopyTo(in);
         ProjectExtentsCallback(in, out, args);
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(out);
+        outAtts.GetThisProcsOriginalSpatialExtents()->Set(out);
     }
 
-    if (GetEffectiveSpatialExtents()->HasExtents())
+    if (GetDesiredSpatialExtents()->HasExtents())
     {
-        GetEffectiveSpatialExtents()->CopyTo(in);
+        GetDesiredSpatialExtents()->CopyTo(in);
         ProjectExtentsCallback(in, out, args);
-        outAtts.GetEffectiveSpatialExtents()->Set(out);
+        outAtts.GetDesiredSpatialExtents()->Set(out);
     }
 
-    if (GetCurrentSpatialExtents()->HasExtents())
+    if (GetActualSpatialExtents()->HasExtents())
     {
-        GetCurrentSpatialExtents()->CopyTo(in);
+        GetActualSpatialExtents()->CopyTo(in);
         ProjectExtentsCallback(in, out, args);
-        outAtts.GetCurrentSpatialExtents()->Set(out);
+        outAtts.GetActualSpatialExtents()->Set(out);
     }
 
-    if (GetCumulativeCurrentSpatialExtents()->HasExtents())
+    if (GetThisProcsActualSpatialExtents()->HasExtents())
     {
-        GetCumulativeCurrentSpatialExtents()->CopyTo(in);
+        GetThisProcsActualSpatialExtents()->CopyTo(in);
         ProjectExtentsCallback(in, out, args);
-        outAtts.GetCumulativeCurrentSpatialExtents()->Set(out);
+        outAtts.GetThisProcsActualSpatialExtents()->Set(out);
     }
 }
 
@@ -4964,18 +4964,18 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     webpage->AddSubheading("Spatial extents attributes");
     webpage->StartTable();
     webpage->AddTableHeader2("Field", "Value");
-    ExtentsToString(trueSpatial, str, 4096);
-    webpage->AddTableEntry2("True spatial extents", str);
-    ExtentsToString(cumulativeTrueSpatial, str, 4096);
-    webpage->AddTableEntry2("Cumulative true spatial extents", str);
-    ExtentsToString(effectiveSpatial, str, 4096);
-    webpage->AddTableEntry2("Effective spatial extents", str);
-    ExtentsToString(currentSpatial, str, 4096);
-    webpage->AddTableEntry2("Current spatial extents", str);
-    ExtentsToString(cumulativeCurrentSpatial, str, 4096);
-    webpage->AddTableEntry2("Cumulative current spatial extents", str);
-    webpage->AddTableEntry2("Can use the cumulative extents are true or current extents?", 
-                            YesOrNo(canUseCumulativeAsTrueOrCurrent));
+    ExtentsToString(originalSpatial, str, 4096);
+    webpage->AddTableEntry2("Original spatial extents", str);
+    ExtentsToString(thisProcsOriginalSpatial, str, 4096);
+    webpage->AddTableEntry2("ThisProcs original spatial extents", str);
+    ExtentsToString(desiredSpatial, str, 4096);
+    webpage->AddTableEntry2("Desired spatial extents", str);
+    ExtentsToString(actualSpatial, str, 4096);
+    webpage->AddTableEntry2("Actual spatial extents", str);
+    ExtentsToString(thisProcsActualSpatial, str, 4096);
+    webpage->AddTableEntry2("ThisProcs actual spatial extents", str);
+    webpage->AddTableEntry2("Can use the thisProcs extents are original or actual extents?", 
+                            YesOrNo(canUseThisProcsAsOriginalOrActual));
     webpage->EndTable();
 
     webpage->AddSubheading("Variable attributes");
@@ -5009,14 +5009,14 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
                                     YesOrNo(variables[i].treatAsASCII));
             SNPRINTF(str, 4096, "%d", variables[i].useForAxis);
             webpage->AddTableEntry3(NULL, "Use for axis", str);
-            ExtentsToString(variables[i].cumulativeTrueData, str, 4096);
-            webpage->AddTableEntry3(NULL, "Cumulative true data extents", str);
-            ExtentsToString(variables[i].effectiveData, str, 4096);
-            webpage->AddTableEntry3(NULL, "Effective data extents", str);
-            ExtentsToString(variables[i].currentData, str, 4096);
-            webpage->AddTableEntry3(NULL, "Current data extents", str);
-            ExtentsToString(variables[i].cumulativeCurrentData, str, 4096);
-            webpage->AddTableEntry3(NULL, "Cumulative current data extents", str);
+            ExtentsToString(variables[i].thisProcsOriginalData, str, 4096);
+            webpage->AddTableEntry3(NULL, "ThisProcs original data extents", str);
+            ExtentsToString(variables[i].desiredData, str, 4096);
+            webpage->AddTableEntry3(NULL, "Desired data extents", str);
+            ExtentsToString(variables[i].actualData, str, 4096);
+            webpage->AddTableEntry3(NULL, "Actual data extents", str);
+            ExtentsToString(variables[i].thisProcsActualData, str, 4096);
+            webpage->AddTableEntry3(NULL, "ThisProcs actual data extents", str);
             ExtentsToString(variables[i].componentExtents, str, 4096);
             webpage->AddTableEntry3(NULL, "Component extents", str);
             if (variables[i].subnames.size() != 0)

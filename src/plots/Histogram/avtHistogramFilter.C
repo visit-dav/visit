@@ -212,6 +212,9 @@ avtHistogramFilter::PreExecute(void)
 //    Hank Childs, Wed Dec 12 21:59:49 PST 2007
 //    Add support for weighting by a variable.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -430,11 +433,11 @@ avtHistogramFilter::PostExecute(void)
     }
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.GetTrueSpatialExtents()->Set(extents);
-    outAtts.GetCumulativeTrueSpatialExtents()->Set(extents);
-    outAtts.GetEffectiveSpatialExtents()->Set(extents);
-    outAtts.GetCurrentSpatialExtents()->Set(extents);
-    outAtts.GetCumulativeCurrentSpatialExtents()->Set(extents);
+    outAtts.GetOriginalSpatialExtents()->Set(extents);
+    outAtts.GetThisProcsOriginalSpatialExtents()->Set(extents);
+    outAtts.GetDesiredSpatialExtents()->Set(extents);
+    outAtts.GetActualSpatialExtents()->Set(extents);
+    outAtts.GetThisProcsActualSpatialExtents()->Set(extents);
 
     //
     // Set the X-axis's units to match the variable units.

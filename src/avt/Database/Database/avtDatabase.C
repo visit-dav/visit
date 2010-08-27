@@ -781,6 +781,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Tom Fogal, Fri Aug  6 16:53:50 MDT 2010
 //    Set level of detail info from the mesh meta data.
 //
+//    Hank Childs, Thu Aug 26 13:02:28 PDT 2010
+//    Change named of extents object.
+//
 // ****************************************************************************
 
 void
@@ -802,7 +805,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     atts.SetDynamicDomainDecomposition(md->GetFormatCanDoDomainDecomposition());
     string mesh = md->MeshForVar(var);
     const avtMeshMetaData *mmd = md->GetMesh(mesh);
-    bool haveSetTrueSpatialExtents = false;
+    bool haveSetOriginalSpatialExtents = false;
     atts.SetNumStates(md->GetNumStates());
     if (mmd != NULL)
     {
@@ -844,8 +847,8 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 extents[2*i]   = mmd->minSpatialExtents[i];
                 extents[2*i+1] = mmd->maxSpatialExtents[i];
             }
-            atts.GetTrueSpatialExtents()->Set(extents);
-            haveSetTrueSpatialExtents = true;
+            atts.GetOriginalSpatialExtents()->Set(extents);
+            haveSetOriginalSpatialExtents = true;
         }
         atts.SetMeshType(mmd->meshType);
         atts.SetMeshCoordType(mmd->meshCoordType);
@@ -862,13 +865,13 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     //
     // If we haven't set spatial extents, try using a data tree
     //
-    if (haveSetTrueSpatialExtents == false)
+    if (haveSetOriginalSpatialExtents == false)
     {
         double extents[6];
         if (GetExtentsFromAuxiliaryData(spec, mesh.c_str(),
                 AUXILIARY_DATA_SPATIAL_EXTENTS, extents))
         {
-            atts.GetTrueSpatialExtents()->Set(extents);
+            atts.GetOriginalSpatialExtents()->Set(extents);
         }
     }
         
@@ -917,7 +920,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 extents[0] = smd->minDataExtents;
                 extents[1] = smd->maxDataExtents;
     
-                atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                atts.GetOriginalDataExtents(var_list[i])->Set(extents);
             }
             else
             {
@@ -925,7 +928,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 if (GetExtentsFromAuxiliaryData(spec, var_list[i],
                         AUXILIARY_DATA_DATA_EXTENTS, extents))
                 {
-                    atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                    atts.GetOriginalDataExtents(var_list[i])->Set(extents);
                 }
             }
         }
@@ -951,7 +954,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 double extents[6]; // 6 is probably too much, but better to be safe
                 extents[0] = vmd->minDataExtents;
                 extents[1] = vmd->maxDataExtents;
-                atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                atts.GetOriginalDataExtents(var_list[i])->Set(extents);
             }
             else
             {
@@ -959,7 +962,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 if (GetExtentsFromAuxiliaryData(spec, var_list[i],
                         AUXILIARY_DATA_DATA_EXTENTS, extents))
                 {
-                    atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                    atts.GetOriginalDataExtents(var_list[i])->Set(extents);
                 }
             }
         }
@@ -1013,8 +1016,8 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             double extents[2];
             extents[0] = 0.;
             extents[1] = 1.;
-            atts.GetEffectiveDataExtents(var_list[i])->Set(extents);
-            atts.GetTrueDataExtents(var_list[i])->Set(extents);
+            atts.GetDesiredDataExtents(var_list[i])->Set(extents);
+            atts.GetOriginalDataExtents(var_list[i])->Set(extents);
         }
 
         const avtCurveMetaData *cmd = GetMetaData(ts)->GetCurve(var_list[i]);
@@ -1034,7 +1037,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 double extents[6]; // 6 is probably too much, but better to be safe
                 extents[0] = cmd->minDataExtents;
                 extents[1] = cmd->maxDataExtents;
-                atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                atts.GetOriginalDataExtents(var_list[i])->Set(extents);
             }
             else
             {
@@ -1042,7 +1045,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 if (GetExtentsFromAuxiliaryData(spec, var_list[i],
                         AUXILIARY_DATA_DATA_EXTENTS, extents))
                 {
-                    atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                    atts.GetOriginalDataExtents(var_list[i])->Set(extents);
                 }
             }
         }

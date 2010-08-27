@@ -709,20 +709,23 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Hank Childs, Tue Jul  5 09:23:13 PDT 2005
 //    Properly create extents.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
  
 void
 avtCoordSystemConvert::PostExecute()
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetEffectiveSpatialExtents()->Clear();
-    outAtts.GetCurrentSpatialExtents()->Clear();
+    outAtts.GetOriginalSpatialExtents()->Clear();
+    outAtts.GetDesiredSpatialExtents()->Clear();
+    outAtts.GetActualSpatialExtents()->Clear();
 
     double bounds[6];
     avtDataset_p ds = GetTypedOutput();
     avtDatasetExaminer::GetSpatialExtents(ds, bounds);
-    outAtts.GetCumulativeTrueSpatialExtents()->Set(bounds);
+    outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
 }
 
 
