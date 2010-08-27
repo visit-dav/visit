@@ -485,7 +485,7 @@ avtParallelCoordinatesFilter::PreExecute(void)
 
     sendNullOutput = false;
 
-    ComputeCurrentDataExtentsOverAllDomains();
+    ComputeActualDataExtentsOverAllDomains();
     InitializeDataTupleInput();
     
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
@@ -588,6 +588,9 @@ avtParallelCoordinatesFilter::PreExecute(void)
 //    Jeremy Meredith, Mon Apr 27 11:12:30 EDT 2009
 //    Added ability to draw focus as color-graduated bins.  Added focus gamma.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ***************************************************************************
 
 void
@@ -601,32 +604,32 @@ avtParallelCoordinatesFilter::PostExecute(void)
         avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
         avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
    
-        outAtts.GetTrueSpatialExtents()->Clear();
-        outAtts.GetCumulativeTrueSpatialExtents()->Clear();
+        outAtts.GetOriginalSpatialExtents()->Clear();
+        outAtts.GetThisProcsOriginalSpatialExtents()->Clear();
 
         double spatialExtents[6];
 
-        if (inAtts.GetTrueSpatialExtents()->HasExtents())
+        if (inAtts.GetOriginalSpatialExtents()->HasExtents())
         {
-            inAtts.GetTrueSpatialExtents()->CopyTo(spatialExtents);
+            inAtts.GetOriginalSpatialExtents()->CopyTo(spatialExtents);
 
             spatialExtents[0] = axisCount<2 ? 0 : axisXPositions[0];
             spatialExtents[1] = axisCount<2 ? 1 : axisXPositions[axisCount-1];
             spatialExtents[2] = 0.0;
             spatialExtents[3] = 1.0;
 
-            outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
+            outAtts.GetThisProcsOriginalSpatialExtents()->Set(spatialExtents);
         }
-        else if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+        else if (inAtts.GetThisProcsOriginalSpatialExtents()->HasExtents())
         {
-            inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(spatialExtents);
+            inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(spatialExtents);
 
             spatialExtents[0] = axisCount<2 ? 0 : axisXPositions[0];
             spatialExtents[1] = axisCount<2 ? 1 : axisXPositions[axisCount-1];
             spatialExtents[2] = 0.0;
             spatialExtents[3] = 1.0;
 
-            outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
+            outAtts.GetThisProcsOriginalSpatialExtents()->Set(spatialExtents);
         }
 
         outAtts.SetXLabel("");
@@ -1049,7 +1052,7 @@ avtParallelCoordinatesFilter::ReleaseData(void)
 
 
 // ****************************************************************************
-//  Method: avtParallelCoordinatesPlot::ComputeCurrentDataExtentsOverAllDomains
+//  Method: avtParallelCoordinatesPlot::ComputeActualDataExtentsOverAllDomains
 //
 //  Purpose: Computes extent of each axis's scalar variable.
 //
@@ -1095,10 +1098,13 @@ avtParallelCoordinatesFilter::ReleaseData(void)
 //    Change the way extents are determined for zero ranges to fix
 //    underflow problem.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
-avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
+avtParallelCoordinatesFilter::ComputeActualDataExtentsOverAllDomains()
 {
     int timer1 = visitTimer->StartTimer();
     
@@ -1220,7 +1226,7 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
         {
             string axisVarName = parCoordsAtts.GetScalarAxisNames()[axisNum];
 
-            outAtts.GetCumulativeTrueDataExtents(axisVarName.c_str())->
+            outAtts.GetThisProcsOriginalDataExtents(axisVarName.c_str())->
                 Set(&(varDataExtents[2*axisNum]));
             outAtts.SetUseForAxis(axisNum, axisVarName.c_str());
 

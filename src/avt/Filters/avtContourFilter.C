@@ -245,6 +245,9 @@ avtContourFilter::~avtContourFilter()
 //    so that it would get the correct interval tree.  This fix was provided
 //    Hank Childs.
 //
+//    Hank Childs, Thu Aug 26 17:13:59 PDT 2010
+//    Calculate the extents of the variable if we are doing "nlevels".
+//
 // ****************************************************************************
 
 avtContract_p
@@ -312,6 +315,11 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
             SetIsoValues(extents[0], extents[1]);
         else
         {
+            //
+            // Get the extents of the variable we are contouring by.
+            //
+            contract->SetCalculateVariableExtents(varname, true);
+
             contract->NoStreaming();
             return contract;
         }
@@ -421,6 +429,9 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
 //    Hank Childs, Mon Aug 30 08:42:48 PDT 2004
 //    Initialize current_node and nnodes for better progress indicators.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -457,7 +468,7 @@ avtContourFilter::PreExecute(void)
         if (varname == NULL)
         {
             GetOutput()->GetInfo().GetAttributes()
-                                      .GetEffectiveDataExtents()->Set(extents);
+                                      .GetDesiredDataExtents()->Set(extents);
         }
         SetIsoValues(extents[0], extents[1]);
     }

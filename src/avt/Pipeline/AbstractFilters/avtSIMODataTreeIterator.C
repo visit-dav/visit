@@ -64,10 +64,10 @@ avtSIMODataTreeIterator::avtSIMODataTreeIterator()
 {
     currentNode = 0;
     totalNodes  = 0;
-    overrideTrueSpatialExtents = false;
-    overrideTrueDataExtents    = false;
-    trueSpatialExtents = NULL;
-    trueDataExtents    = NULL;
+    overrideOriginalSpatialExtents = false;
+    overrideOriginalDataExtents    = false;
+    originalSpatialExtents = NULL;
+    originalDataExtents    = NULL;
 }
 
 
@@ -81,15 +81,15 @@ avtSIMODataTreeIterator::avtSIMODataTreeIterator()
 
 avtSIMODataTreeIterator::~avtSIMODataTreeIterator()
 {
-    if (trueSpatialExtents != NULL)
+    if (originalSpatialExtents != NULL)
     {
-        delete trueSpatialExtents;
-        trueSpatialExtents = NULL;
+        delete originalSpatialExtents;
+        originalSpatialExtents = NULL;
     }
-    if (trueDataExtents != NULL)
+    if (originalDataExtents != NULL)
     {
-        delete trueDataExtents;
-        trueDataExtents = NULL;
+        delete originalDataExtents;
+        originalDataExtents = NULL;
     }
 }
 
@@ -284,14 +284,14 @@ avtSIMODataTreeIterator::UpdateExtents(avtDataTree_p tree)
         return;
     }
 
-    if (overrideTrueSpatialExtents)
+    if (overrideOriginalSpatialExtents)
     {
         avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-        if (trueSpatialExtents == NULL)
+        if (originalSpatialExtents == NULL)
         {
             avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-            avtExtents        *exts = atts.GetCumulativeTrueSpatialExtents();
-            trueSpatialExtents = new avtExtents(exts->GetDimension());
+            avtExtents        *exts = atts.GetThisProcsOriginalSpatialExtents();
+            originalSpatialExtents = new avtExtents(exts->GetDimension());
         }
         double bounds[6];
         bool gotBounds = false;
@@ -299,30 +299,30 @@ avtSIMODataTreeIterator::UpdateExtents(avtDataTree_p tree)
         tree->Traverse(CGetSpatialExtents, (void *)&info, gotBounds);
         if (gotBounds)
         {
-            trueSpatialExtents->Merge(bounds);
-            avtExtents *exts = outAtts.GetCumulativeTrueSpatialExtents();
-            *exts = *trueSpatialExtents;
+            originalSpatialExtents->Merge(bounds);
+            avtExtents *exts = outAtts.GetThisProcsOriginalSpatialExtents();
+            *exts = *originalSpatialExtents;
         }
-        outAtts.GetTrueSpatialExtents()->Clear();
+        outAtts.GetOriginalSpatialExtents()->Clear();
     }
 
-    if (overrideTrueDataExtents)
+    if (overrideOriginalDataExtents)
     {
         avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-        if (trueDataExtents == NULL)
+        if (originalDataExtents == NULL)
         {
-            trueDataExtents = new avtExtents(1);
+            originalDataExtents = new avtExtents(1);
         }
         double range[2];  // who has more than 25 vars?
         bool gotBounds = false;
         tree->Traverse(CGetDataExtents, (void *) range, gotBounds);
         if (gotBounds)
         {
-            trueDataExtents->Merge(range);
-            avtExtents *exts = outAtts.GetCumulativeTrueDataExtents();
-            *exts = *trueDataExtents;
+            originalDataExtents->Merge(range);
+            avtExtents *exts = outAtts.GetThisProcsOriginalDataExtents();
+            *exts = *originalDataExtents;
         }
-        outAtts.GetTrueDataExtents()->Clear();
+        outAtts.GetOriginalDataExtents()->Clear();
     }
 }
 

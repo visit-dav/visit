@@ -415,6 +415,9 @@ avtSimilarityTransformFilter::ModifyContract(avtContract_p spec)
 //    Hank Childs, Thu Jul 28 09:07:31 PDT 2005
 //    Fix memory leak.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -450,50 +453,49 @@ avtSimilarityTransformFilter::UpdateDataObjectInfo(void)
                 //
                 // Transform the extents into 3D.
                 //
-                if (inAtts.GetTrueSpatialExtents()->HasExtents())
+                if (inAtts.GetOriginalSpatialExtents()->HasExtents())
                 {
-                    avtExtents *newTrueSpatial = new avtExtents(3);
-                    inAtts.GetTrueSpatialExtents()->CopyTo(extents);
+                    avtExtents *newOriginalSpatial = new avtExtents(3);
+                    inAtts.GetOriginalSpatialExtents()->CopyTo(extents);
                     extents[4] = extents[5] = 0.;
-                    newTrueSpatial->Set(extents);
-                    *(outAtts.GetTrueSpatialExtents()) = *newTrueSpatial;
-                    outAtts.GetTrueSpatialExtents()->Transform(t);
-                    delete newTrueSpatial;
+                    newOriginalSpatial->Set(extents);
+                    *(outAtts.GetOriginalSpatialExtents()) = *newOriginalSpatial;
+                    outAtts.GetOriginalSpatialExtents()->Transform(t);
+                    delete newOriginalSpatial;
                 }
 
-                if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+                if (inAtts.GetThisProcsOriginalSpatialExtents()->HasExtents())
                 {
-                    avtExtents *newCumulativeTrueSpatial = new avtExtents(3);
-                    inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(extents);
+                    avtExtents *newThisProcsOriginalSpatial = new avtExtents(3);
+                    inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(extents);
                     extents[4] = extents[5] = 0.;
-                    newCumulativeTrueSpatial->Set(extents);
-                    *(outAtts.GetCumulativeTrueSpatialExtents()) = 
-                                                     *newCumulativeTrueSpatial;
-                    outAtts.GetCumulativeTrueSpatialExtents()->Transform(t);
-                    delete newCumulativeTrueSpatial;
+                    newThisProcsOriginalSpatial->Set(extents);
+                    *(outAtts.GetThisProcsOriginalSpatialExtents()) = 
+                                                     *newThisProcsOriginalSpatial;
+                    outAtts.GetThisProcsOriginalSpatialExtents()->Transform(t);
+                    delete newThisProcsOriginalSpatial;
                 }
 
-                if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
+                if (inAtts.GetDesiredSpatialExtents()->HasExtents())
                 {
-                    avtExtents *newEffectiveSpatial = new avtExtents(3);
-                    inAtts.GetEffectiveSpatialExtents()->CopyTo(extents);
+                    avtExtents *newDesiredSpatial = new avtExtents(3);
+                    inAtts.GetDesiredSpatialExtents()->CopyTo(extents);
                     extents[4] = extents[5] = 0.;
-                    newEffectiveSpatial->Set(extents);
-                    *(outAtts.GetEffectiveSpatialExtents()) 
-                                                        = *newEffectiveSpatial;
-                    outAtts.GetEffectiveSpatialExtents()->Transform(t);
-                    delete newEffectiveSpatial;
+                    newDesiredSpatial->Set(extents);
+                    *(outAtts.GetDesiredSpatialExtents()) = *newDesiredSpatial;
+                    outAtts.GetDesiredSpatialExtents()->Transform(t);
+                    delete newDesiredSpatial;
                 }
 
-                if (inAtts.GetCurrentSpatialExtents()->HasExtents())
+                if (inAtts.GetActualSpatialExtents()->HasExtents())
                 {
-                    avtExtents *newCurrentSpatial = new avtExtents(3);
-                    inAtts.GetCurrentSpatialExtents()->CopyTo(extents);
+                    avtExtents *newActualSpatial = new avtExtents(3);
+                    inAtts.GetActualSpatialExtents()->CopyTo(extents);
                     extents[4] = extents[5] = 0.;
-                    newCurrentSpatial->Set(extents);
-                    *(outAtts.GetCurrentSpatialExtents()) = *newCurrentSpatial;
-                    outAtts.GetCurrentSpatialExtents()->Transform(t);
-                    delete newCurrentSpatial;
+                    newActualSpatial->Set(extents);
+                    *(outAtts.GetActualSpatialExtents()) = *newActualSpatial;
+                    outAtts.GetActualSpatialExtents()->Transform(t);
+                    delete newActualSpatial;
                 }
             }
         }

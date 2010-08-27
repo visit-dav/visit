@@ -429,6 +429,10 @@ VisWinAxesParallel::SetViewport(double vl_, double vb_, double vr_, double vt_)
 //
 //    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
 //    Replaced EXCEPTION with early return.
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -464,10 +468,10 @@ VisWinAxesParallel::UpdatePlotList(vector<avtActor_p> &list)
         atts.GetLabels(labels);
 
         double extents[6];
-        if (atts.GetTrueSpatialExtents()->HasExtents())
-            atts.GetTrueSpatialExtents()->CopyTo(extents);
-        else if (atts.GetCumulativeTrueSpatialExtents()->HasExtents())
-            atts.GetCumulativeTrueSpatialExtents()->CopyTo(extents);
+        if (atts.GetOriginalSpatialExtents()->HasExtents())
+            atts.GetOriginalSpatialExtents()->CopyTo(extents);
+        else if (atts.GetThisProcsOriginalSpatialExtents()->HasExtents())
+            atts.GetThisProcsOriginalSpatialExtents()->CopyTo(extents);
         else
             return;
       

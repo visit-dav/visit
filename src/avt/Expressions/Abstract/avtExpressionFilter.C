@@ -66,6 +66,7 @@
 #include <DebugStream.h>
 #include <ExpressionException.h>
 #include <snprintf.h>
+#include <TimingsManager.h>
 
 using namespace std;
 
@@ -76,8 +77,12 @@ using namespace std;
 //  Creation:   June 9, 2002
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
 //    Initialize currentTimeState.
+//
+//    Hank Childs, Thu Aug 26 16:36:30 PDT 2010
+//    Initialize calculateExtents.
 //
 // ****************************************************************************
 
@@ -85,6 +90,7 @@ avtExpressionFilter::avtExpressionFilter()
 {
     outputVariableName = NULL;
     currentTimeState = 0;
+    calculateExtents = false;
 }
 
 
@@ -208,6 +214,10 @@ avtExpressionFilter::SetOutputVariableName(const char *name)
 //    Hank Childs, Sun Jan 13 13:46:15 PST 2008
 //    Add support for derived types that cannot handle singleton constants.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.  Only calculate extents if we need it for that
+//    variable.
+//
 // ****************************************************************************
  
 void
@@ -220,9 +230,13 @@ avtExpressionFilter::PreExecute(void)
     }
 
     avtDatasetToDatasetFilter::PreExecute();
-    double exts[2] = {FLT_MAX, -FLT_MAX};
-    GetOutput()->GetInfo().GetAttributes().GetCumulativeTrueDataExtents()
-                                                                   ->Set(exts);
+
+    if (calculateExtents)
+    {
+        double exts[2] = {FLT_MAX, -FLT_MAX};
+        GetOutput()->GetInfo().GetAttributes().
+                GetThisProcsOriginalDataExtents(outputVariableName)->Set(exts);
+    }
 }
 
 
@@ -253,6 +267,9 @@ avtExpressionFilter::PreExecute(void)
 //    Hank Childs, Tue Aug 30 13:30:28 PDT 2005
 //    Update the extents in the data attributes.
 //
+//    Hank Childs, Thu Aug 26 16:36:30 PDT 2010
+//    Only calculate extents if we need extents for that variable.
+//
 // ****************************************************************************
 
 void
@@ -262,7 +279,12 @@ avtExpressionFilter::PostExecute(void)
     avtDatasetToDatasetFilter::PostExecute();
     OutputSetActiveVariable(outputVariableName);
 
-    UpdateExtents(GetDataTree());
+    if (calculateExtents)
+    {
+        int t1 = visitTimer->StartTimer();
+        UpdateExtents(GetDataTree());
+        visitTimer->StopTimer(t1, "Calculating extents for expression");
+    }
 }
 
 
@@ -295,6 +317,9 @@ avtExpressionFilter::PostExecute(void)
 //    Eric Brugger, Tue Apr  8 11:11:41 PDT 2008
 //    Make the use of isfinite conditional, since not all platforms support
 //    it (IRIX64 6.5 with MIPSpro 7.41, solaris with gcc 3.2).
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
 //
 // ****************************************************************************
 
@@ -409,7 +434,7 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
 
         avtDataAttributes &outatts = GetOutput()->GetInfo().GetAttributes();
 
-        outatts.GetCumulativeTrueDataExtents(outputVariableName)->Merge(exts);
+        outatts.GetThisProcsOriginalDataExtents(outputVariableName)->Merge(exts);
 
         // Update component extents in array variables
         if (outatts.GetVariableType(outputVariableName) == AVT_ARRAY_VAR)
@@ -563,16 +588,16 @@ avtExpressionFilter::SetExpressionAttributes(const avtDataAttributes &inputAtts,
 // ****************************************************************************
 
 avtContract_p
-avtExpressionFilter::ModifyContract(avtContract_p spec)
+avtExpressionFilter::ModifyContract(avtContract_p contract)
 {
-    avtContract_p rv = spec;
+    avtContract_p rv = contract;
 
-    avtDataRequest_p ds = spec->GetDataRequest();
+    avtDataRequest_p ds = contract->GetDataRequest();
     if (ds->HasSecondaryVariable(outputVariableName))
     {
         avtDataRequest_p newds = new avtDataRequest(ds);
         newds->RemoveSecondaryVariable(outputVariableName);
-        rv = new avtContract(spec, newds);
+        rv = new avtContract(contract, newds);
     }
 
     return rv;
@@ -768,13 +793,23 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
 //  Programmer: Kathleen Bonnell 
 //  Creation:   June 25, 2004 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 26 16:36:30 PDT 2010
+//    Initialize calculateExtents.
+//
 // ****************************************************************************
 
 void
-avtExpressionFilter::ExamineContract(avtContract_p spec)
+avtExpressionFilter::ExamineContract(avtContract_p contract)
 {
-    avtDatasetToDatasetFilter::ExamineContract(spec);
-    currentTimeState = spec->GetDataRequest()->GetTimestep();
+    if (contract->ShouldCalculateVariableExtents(outputVariableName))
+        calculateExtents = true;
+    else
+        calculateExtents = false;
+
+    avtDatasetToDatasetFilter::ExamineContract(contract);
+    currentTimeState = contract->GetDataRequest()->GetTimestep();
 } 
 
 

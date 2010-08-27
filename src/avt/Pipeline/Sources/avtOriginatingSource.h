@@ -124,6 +124,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Hank Childs, Thu Jun 12 16:12:38 PDT 2008
 //    Add method CanDoStreaming.
 //
+//    Hank Childs, Thu Aug 26 16:57:24 PDT 2010
+//    Add data member for the last contract.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
@@ -218,6 +221,9 @@ class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
     // of progress.
     int                            numberOfExecutions;
     bool                           haveIssuedProgress;
+
+  protected:
+    avtContract_p                  lastContract;
 };
 
 

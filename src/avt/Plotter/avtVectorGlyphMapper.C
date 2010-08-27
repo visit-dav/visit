@@ -499,6 +499,9 @@ avtVectorGlyphMapper::SetLineStyle(_LineStyle ls)
 //    Eric Brugger, Tue Nov 23 12:28:20 PST 2004
 //    Added scaleByMagnitude and autoScale.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -516,7 +519,7 @@ avtVectorGlyphMapper::SetScale(double s)
         if (*input != 0)
         {
             avtDataAttributes &atts=input->GetInfo().GetAttributes();
-            avtExtents *extents = atts.GetTrueSpatialExtents();
+            avtExtents *extents = atts.GetOriginalSpatialExtents();
             int nDims = extents->GetDimension();
             double exts[6];
             extents->CopyTo(exts);
@@ -528,7 +531,7 @@ avtVectorGlyphMapper::SetScale(double s)
             }
             dist = sqrt(dist);
 
-            extents = atts.GetTrueDataExtents();
+            extents = atts.GetOriginalDataExtents();
             extents->CopyTo(exts);
 
             if (scaleByMagnitude)

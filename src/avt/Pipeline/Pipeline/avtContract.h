@@ -103,6 +103,9 @@ typedef ref_ptr<avtContract> avtContract_p;
 //    Dave Pugmire, Tue May 25 10:15:35 EDT 2010
 //    Add domain single domain replication to all processors.
 //
+//    Hank Childs, Wed Aug 25 22:45:04 PDT 2010
+//    Add data members for whether or not extents should be calculated.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtContract
@@ -147,6 +150,17 @@ class PIPELINE_API avtContract
     void                AddFilter(void)  { nFilters++; };
     int                 GetNFilters(void)  { return nFilters; };
 
+    bool                ShouldCalculateMeshExtents(void) { return calculateMeshExtents; };
+    void                SetCalculateMeshExtents(bool c)  { calculateMeshExtents = c; };
+    bool                ShouldCalculateVariableExtents(const std::string &s);
+    void                SetCalculateVariableExtents(const std::string &s, bool v);
+    void                SetCalculateVariableExtentsList(const std::vector<std::string> &l)
+                                                      { needExtentsForTheseVariables = l; };
+    const std::vector<std::string> &  GetCalculateVariableExtentsList(void)
+                                                      { return needExtentsForTheseVariables; };
+    void                DisableExtentsCalculations(void) { calculateMeshExtents = false; 
+                                                           needExtentsForTheseVariables.clear(); };
+
     avtContract        &operator=(const avtContract &);
     void                DebugDump(avtWebpage *);
     void                Print(ostream &);
@@ -160,6 +174,9 @@ class PIPELINE_API avtContract
     bool                haveRectilinearMeshOptimizations;
     bool                replicateSingleDomainOnAllProcessors;
     int                 nFilters;
+
+    std::vector<std::string>    needExtentsForTheseVariables;
+    bool                        calculateMeshExtents;
 
   private:
     // This method is defined to prevent accidental use of a bitwise copy

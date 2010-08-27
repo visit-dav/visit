@@ -118,6 +118,9 @@ class     ExprNode;
 //    Kathleen Bonnell, Fri May  8 13:44:16 PDT 2009
 //    Added method GetNumericVal (moved from avtCylindricalRadiusExpression.h.
 //
+//    Hank Childs, Thu Aug 26 16:36:30 PDT 2010
+//    Add data member for whether or not to calculate the extents.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -147,6 +150,7 @@ class EXPRESSION_API avtExpressionFilter : virtual public
   protected:
     char                    *outputVariableName;
     int                      currentTimeState;
+    bool                     calculateExtents;
 
     virtual bool             IsPointVariable();
 

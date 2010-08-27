@@ -101,6 +101,11 @@ avtNeighborExpression::~avtNeighborExpression()
 //  Programmer:   Akira Haddox
 //  Creation:     June 27, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
  
 vtkDataSet *
@@ -191,7 +196,7 @@ avtNeighborExpression::ExecuteData(vtkDataSet *in_ds, int, std::string)
     exts[0] = range[0];
     exts[1] = range[1];
 
-    GetOutput()->GetInfo().GetAttributes().GetTrueDataExtents()->Merge(exts);
+    GetOutput()->GetInfo().GetAttributes().GetOriginalDataExtents()->Merge(exts);
 
     data->Delete();
     verts->Delete();

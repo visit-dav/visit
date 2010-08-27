@@ -758,6 +758,9 @@ avtStreamlineFilter::SeedInfoString() const
 //    Hank Childs, Sat Jun  5 16:06:26 PDT 2010
 //    Remove data members that are being put into avtPICSFilter.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -775,10 +778,10 @@ avtStreamlineFilter::PostExecute(void)
 
         avtExtents *e;
         e = GetOutput()->GetInfo().GetAttributes()
-                                            .GetCumulativeTrueDataExtents();
+                                            .GetThisProcsOriginalDataExtents();
         e->Merge(range);
         e = GetOutput()->GetInfo().GetAttributes()
-                                           .GetCumulativeCurrentDataExtents();
+                                           .GetThisProcsActualDataExtents();
         e->Merge(range);
     }
 }

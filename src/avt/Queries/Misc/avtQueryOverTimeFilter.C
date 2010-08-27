@@ -371,6 +371,9 @@ avtQueryOverTimeFilter::Execute(void)
 //    Kathleen Bonnell, Tue Jul  8 15:48:38 PDT 2008
 //    Set y-axis labels and units from query var if useVarForYAxis is true.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -383,8 +386,8 @@ avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
 
     if (finalOutputCreated)
     {
-        outAtts.GetTrueSpatialExtents()->Clear();
-        outAtts.GetEffectiveSpatialExtents()->Clear();
+        outAtts.GetOriginalSpatialExtents()->Clear();
+        outAtts.GetDesiredSpatialExtents()->Clear();
         if (useTimeForXAxis)
         {
             outAtts.SetXLabel("Time");
@@ -425,7 +428,7 @@ avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
         double bounds[6];
         avtDataset_p ds = GetTypedOutput();
         avtDatasetExaminer::GetSpatialExtents(ds, bounds);
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(bounds);
+        outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
     }
 }
 

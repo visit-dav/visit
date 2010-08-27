@@ -118,6 +118,9 @@ class     avtLookupTable;
 //    Brad Whitlock, Wed Sep  9 16:23:12 PDT 2009
 //    Override SetCurrentExtents to add in the avtLineToPolylineFilter.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Rename Current->Actual.
+//
 // ****************************************************************************
 
 class avtContourPlot : public avtSurfaceDataPlot
@@ -142,7 +145,7 @@ class avtContourPlot : public avtSurfaceDataPlot
     virtual bool    NeedZBufferToCompositeEvenIn2D(void);
 
   protected:
-     virtual avtDataObject_p SetCurrentExtents(avtDataObject_p);
+     virtual avtDataObject_p SetActualExtents(avtDataObject_p);
 
      avtContourFilter        *contourFilter;
      avtFeatureEdgesFilter   *edgeFilter;

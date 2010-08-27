@@ -464,6 +464,9 @@ avtMeshFilter::UpdateDataObjectInfo(void)
 //    Kathleen Bonnell, Tue Jul 14 13:42:37 PDT 2009
 //    Added test for MayRequireNodes for turning Node numbers on.
 //
+//    Hank Childs, Thu Aug 26 22:23:26 PDT 2010
+//    Calculate the extents of the scaling variable.
+//
 // ****************************************************************************
  
 avtContract_p
@@ -490,6 +493,7 @@ avtMeshFilter::ModifyContract(avtContract_p spec)
             !dataRequest->HasSecondaryVariable(pointVar.c_str()))
         {
             rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
+            rv->SetCalculateVariableExtents(pointVar, true);
         }
 
         avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();

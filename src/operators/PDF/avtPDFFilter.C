@@ -389,6 +389,11 @@ avtPDFFilter::PostExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -432,11 +437,11 @@ avtPDFFilter::UpdateDataObjectInfo(void)
         }
         if (dim == 2)
             exts[4] = exts[5] = 0.;
-        out_atts.GetTrueSpatialExtents()->Set(exts);
-        out_atts.GetCumulativeTrueSpatialExtents()->Set(exts);
-        out_atts.GetEffectiveSpatialExtents()->Set(exts);
-        out_atts.GetCurrentSpatialExtents()->Set(exts);
-        out_atts.GetCumulativeCurrentSpatialExtents()->Set(exts);
+        out_atts.GetOriginalSpatialExtents()->Set(exts);
+        out_atts.GetThisProcsOriginalSpatialExtents()->Set(exts);
+        out_atts.GetDesiredSpatialExtents()->Set(exts);
+        out_atts.GetActualSpatialExtents()->Set(exts);
+        out_atts.GetThisProcsActualSpatialExtents()->Set(exts);
 
         out_atts.SetXLabel(atts.GetVar1());
         out_atts.SetXUnits(in_atts.GetVariableUnits(atts.GetVar1().c_str()));

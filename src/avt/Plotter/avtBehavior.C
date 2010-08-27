@@ -221,6 +221,11 @@ avtBehavior::GetOriginalBounds(double b[6])
 //  Programmer: Hank Childs
 //  Creation:   July 15, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -229,7 +234,7 @@ avtBehavior::GetActualBounds(double b[6])
     int  dim = info.GetAttributes().GetSpatialDimension();
 
     double extents[6];
-    bool gotExtents = info.GetAttributes().GetCurrentSpatialExtents(extents);
+    bool gotExtents = info.GetAttributes().GetActualSpatialExtents(extents);
 
     if (!gotExtents)
     {

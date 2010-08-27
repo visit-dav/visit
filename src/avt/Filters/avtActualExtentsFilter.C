@@ -37,36 +37,45 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtCurrentExtentFilter.h                          // 
+//                         avtActualExtentsFilter.h                          // 
 // ************************************************************************* // 
 
 
-#include <avtCurrentExtentFilter.h>
+#include <avtActualExtentsFilter.h>
 
 #include <avtDataAttributes.h>
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 
+#include <TimingsManager.h>
+
 
 // ****************************************************************************
-//  Method: avtCurrentExtentFilter::Execute
+//  Method: avtActualExtentsFilter::Execute
 //
 //  Purpose:
+//      This filter simply calculates extents.  Do that here.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 2, 2001 
 //
+//  Modifications:
+// 
+//    Hank Childs, Thu Aug 26 16:36:30 PDT 2010
+//    Call UpdateExtents.
+//
 // ****************************************************************************
 
 void
-avtCurrentExtentFilter::Execute(void)
+avtActualExtentsFilter::Execute(void)
 {
+    UpdateExtents();
     SetOutputDataTree(GetInputDataTree());
 }
 
 
 // ****************************************************************************
-//  Method: avtCurrentExtentFilter::UpdateDataObjectInfo
+//  Method: avtActualExtentsFilter::UpdateExtents
 //
 //  Purpose:  Retrieves the actual data/spatial extents from the
 //            input and stores them in output's info.
@@ -88,11 +97,15 @@ avtCurrentExtentFilter::Execute(void)
 //    Kathleen Bonnell, Thu Mar 11 11:16:17 PST 2004 
 //    DataExtents now always have only 2 components. 
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.  Only calculate the requested variables.
+//
 // ****************************************************************************
 
 void
-avtCurrentExtentFilter::UpdateDataObjectInfo(void)
+avtActualExtentsFilter::UpdateExtents(void)
 {
+    int t1 = visitTimer->StartTimer();
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     avtDataset_p ds = GetTypedInput();
@@ -102,25 +115,31 @@ avtCurrentExtentFilter::UpdateDataObjectInfo(void)
     for (int i = 0 ; i < nVars ; i++)
     {
         const char *vname = atts.GetVariableName(i).c_str();
+        if (! lastContract->ShouldCalculateVariableExtents(vname))
+            continue;
     
         bool foundDE = avtDatasetExaminer::GetDataExtents(ds, de, vname);
         if (foundDE)
         {
-            outAtts.GetCumulativeCurrentDataExtents(vname)->Merge(de);
+            outAtts.GetThisProcsActualDataExtents(vname)->Merge(de);
         }
     }
 
-    double se[6];
-    bool foundSE = avtDatasetExaminer::GetSpatialExtents(ds, se);
-    if (foundSE)
+    if (lastContract->ShouldCalculateMeshExtents())
     {
-        outAtts.GetCumulativeCurrentSpatialExtents()->Merge(se);
+        double se[6];
+        bool foundSE = avtDatasetExaminer::GetSpatialExtents(ds, se);
+        if (foundSE)
+        {
+            outAtts.GetThisProcsActualSpatialExtents()->Merge(se);
+        }
     }
+    visitTimer->StopTimer(t1, "Calculating the actual extents");
 }
 
 
 // ****************************************************************************
-//  Method:  avtCurrentExtentFilter::FilterUnderstandsTransformedRectMesh
+//  Method:  avtActualExtentsFilter::FilterUnderstandsTransformedRectMesh
 //
 //  Purpose:
 //    If this filter returns true, this means that it correctly deals
@@ -136,7 +155,7 @@ avtCurrentExtentFilter::UpdateDataObjectInfo(void)
 // ****************************************************************************
 
 bool
-avtCurrentExtentFilter::FilterUnderstandsTransformedRectMesh()
+avtActualExtentsFilter::FilterUnderstandsTransformedRectMesh()
 {
     // there were some changes made at lower levels which make
     // this filter safe
@@ -145,7 +164,7 @@ avtCurrentExtentFilter::FilterUnderstandsTransformedRectMesh()
 
 
 // ****************************************************************************
-//  Method: avtCurrentExtentFilter::ModifyContract
+//  Method: avtActualExtentsFilter::ModifyContract
 //
 //  Purpose:
 //      The base class declares that this filter can only work on floats.
@@ -156,11 +175,17 @@ avtCurrentExtentFilter::FilterUnderstandsTransformedRectMesh()
 //  Programmer: Hank Childs
 //  Creation:   August 26, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 26 16:36:30 PDT 2010
+//    Cache the last contract.
+//
 // ****************************************************************************
 
 avtContract_p
-avtCurrentExtentFilter::ModifyContract(avtContract_p c)
+avtActualExtentsFilter::ModifyContract(avtContract_p c)
 {
+    lastContract = c;
     return c;
 }
 

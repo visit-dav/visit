@@ -859,6 +859,9 @@ avtConeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
 //    Set ZonesSplit.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -899,39 +902,39 @@ avtConeFilter::UpdateDataObjectInfo(void)
  
         double b[6];
  
-        if (inAtts.GetTrueSpatialExtents()->HasExtents())
+        if (inAtts.GetOriginalSpatialExtents()->HasExtents())
         {
-            inAtts.GetTrueSpatialExtents()->CopyTo(b);
+            inAtts.GetOriginalSpatialExtents()->CopyTo(b);
             ProjectExtents(b,transform,cutter,atts.GetCutByLength(),effLength);
-            outAtts.GetTrueSpatialExtents()->Set(b);
+            outAtts.GetOriginalSpatialExtents()->Set(b);
         }
  
-        if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+        if (inAtts.GetThisProcsOriginalSpatialExtents()->HasExtents())
         {
-            inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(b);
+            inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(b);
             ProjectExtents(b,transform,cutter,atts.GetCutByLength(),effLength);
-            outAtts.GetCumulativeTrueSpatialExtents()->Set(b);
+            outAtts.GetThisProcsOriginalSpatialExtents()->Set(b);
         }
  
-        if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
+        if (inAtts.GetDesiredSpatialExtents()->HasExtents())
         {
-            inAtts.GetEffectiveSpatialExtents()->CopyTo(b);
+            inAtts.GetDesiredSpatialExtents()->CopyTo(b);
             ProjectExtents(b,transform,cutter,atts.GetCutByLength(),effLength);
-            outAtts.GetEffectiveSpatialExtents()->Set(b);
+            outAtts.GetDesiredSpatialExtents()->Set(b);
         }
  
-        if (inAtts.GetCurrentSpatialExtents()->HasExtents())
+        if (inAtts.GetActualSpatialExtents()->HasExtents())
         {
-            inAtts.GetCurrentSpatialExtents()->CopyTo(b);
+            inAtts.GetActualSpatialExtents()->CopyTo(b);
             ProjectExtents(b,transform,cutter,atts.GetCutByLength(),effLength);
-            outAtts.GetCurrentSpatialExtents()->Set(b);
+            outAtts.GetActualSpatialExtents()->Set(b);
         }
  
-        if (inAtts.GetCumulativeCurrentSpatialExtents()->HasExtents())
+        if (inAtts.GetThisProcsActualSpatialExtents()->HasExtents())
         {
-            inAtts.GetCumulativeCurrentSpatialExtents()->CopyTo(b);
+            inAtts.GetThisProcsActualSpatialExtents()->CopyTo(b);
             ProjectExtents(b,transform,cutter,atts.GetCutByLength(),effLength);
-            outAtts.GetCumulativeCurrentSpatialExtents()->Set(b);
+            outAtts.GetThisProcsActualSpatialExtents()->Set(b);
         }
     }
     if (atts.GetRepresentation() == ConeAttributes::R_Theta)
@@ -944,39 +947,39 @@ avtConeFilter::UpdateDataObjectInfo(void)
  
         double b[6];
  
-        if (inAtts.GetTrueSpatialExtents()->HasExtents())
+        if (inAtts.GetOriginalSpatialExtents()->HasExtents())
         {
-            inAtts.GetTrueSpatialExtents()->CopyTo(b);
+            inAtts.GetOriginalSpatialExtents()->CopyTo(b);
             PolarExtents(b, transform, cutter,atts.GetCutByLength(),effLength);
-            outAtts.GetTrueSpatialExtents()->Set(b);
+            outAtts.GetOriginalSpatialExtents()->Set(b);
         }
  
-        if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+        if (inAtts.GetThisProcsOriginalSpatialExtents()->HasExtents())
         {
-            inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(b);
+            inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(b);
             PolarExtents(b, transform, cutter,atts.GetCutByLength(),effLength);
-            outAtts.GetCumulativeTrueSpatialExtents()->Set(b);
+            outAtts.GetThisProcsOriginalSpatialExtents()->Set(b);
         }
  
-        if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
+        if (inAtts.GetDesiredSpatialExtents()->HasExtents())
         {
-            inAtts.GetEffectiveSpatialExtents()->CopyTo(b);
+            inAtts.GetDesiredSpatialExtents()->CopyTo(b);
             PolarExtents(b, transform, cutter,atts.GetCutByLength(),effLength);
-            outAtts.GetEffectiveSpatialExtents()->Set(b);
+            outAtts.GetDesiredSpatialExtents()->Set(b);
         }
  
-        if (inAtts.GetCurrentSpatialExtents()->HasExtents())
+        if (inAtts.GetActualSpatialExtents()->HasExtents())
         {
-            inAtts.GetCurrentSpatialExtents()->CopyTo(b);
+            inAtts.GetActualSpatialExtents()->CopyTo(b);
             PolarExtents(b, transform, cutter,atts.GetCutByLength(),effLength);
-            outAtts.GetCurrentSpatialExtents()->Set(b);
+            outAtts.GetActualSpatialExtents()->Set(b);
         }
  
-        if (inAtts.GetCumulativeCurrentSpatialExtents()->HasExtents())
+        if (inAtts.GetThisProcsActualSpatialExtents()->HasExtents())
         {
-            inAtts.GetCumulativeCurrentSpatialExtents()->CopyTo(b);
+            inAtts.GetThisProcsActualSpatialExtents()->CopyTo(b);
             PolarExtents(b, transform, cutter,atts.GetCutByLength(),effLength);
-            outAtts.GetCumulativeCurrentSpatialExtents()->Set(b);
+            outAtts.GetThisProcsActualSpatialExtents()->Set(b);
         }
     }
 }

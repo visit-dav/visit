@@ -197,7 +197,7 @@ avtScatterFilter::PreExecute(void)
              colorExtents[0] << ", " << colorExtents[1] << endl;
     }
 
-    cumulativeSpatialExtents = vector<double>(6,0.0);
+    thisProcsSpatialExtents = vector<double>(6,0.0);
 }
 
 // ****************************************************************************
@@ -392,7 +392,7 @@ debug4 << "avtScatterFilter::ExecuteData" << endl;
 // Method: avtScatterFilter::PostExecute
 //
 // Purpose:
-//   Executes after all domains are processed. Sets cumulative spatial extents
+//   Executes after all domains are processed. Sets thisProcs spatial extents
 //   and if a color var is selected, sets this var as the active variable for
 //   display in the legend.
 //
@@ -403,6 +403,9 @@ debug4 << "avtScatterFilter::ExecuteData" << endl;
 // Creation:   Tue Aug 17 11:43:37 PDT 2010
 //
 // Modifications:
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
 //
 // ****************************************************************************
 
@@ -438,12 +441,12 @@ avtScatterFilter::PostExecute(void)
 
         // Set the new active var and its extents
         out_datts.SetActiveVariable(color_var.c_str());
-        out_datts.GetCumulativeTrueDataExtents()->Set(colorExtents);
+        out_datts.GetThisProcsOriginalDataExtents()->Set(colorExtents);
     }
 
-    // correclty set the proper cumulative spatial extents
-    out_datts.GetCumulativeTrueSpatialExtents()->Clear();
-    out_datts.GetTrueSpatialExtents()->Clear();
+    // correclty set the proper thisProcs spatial extents
+    out_datts.GetThisProcsOriginalSpatialExtents()->Clear();
+    out_datts.GetOriginalSpatialExtents()->Clear();
 
 
 
@@ -452,19 +455,19 @@ avtScatterFilter::PostExecute(void)
         // make sure all procs have the proper spatial extents
         // (unify here b/c processors that didn't have chunks may have invalid
         //  extents)
-        UnifyMinMax(&cumulativeSpatialExtents[0],6);
-        out_datts.GetCumulativeTrueSpatialExtents()->Set(&cumulativeSpatialExtents[0]);
+        UnifyMinMax(&thisProcsSpatialExtents[0],6);
+        out_datts.GetThisProcsOriginalSpatialExtents()->Set(&thisProcsSpatialExtents[0]);
 
-        debug4 << "avtScatterFilter::PostExecute() Final Cumulative Spatial Extents: "
+        debug4 << "avtScatterFilter::PostExecute() Final ThisProcs Spatial Extents: "
                << "xExtents = ["
-               << cumulativeSpatialExtents[0] << ", "
-               << cumulativeSpatialExtents[1]<< "] "
+               << thisProcsSpatialExtents[0] << ", "
+               << thisProcsSpatialExtents[1]<< "] "
                << "yExtents = ["
-               << cumulativeSpatialExtents[2] << ", "
-               << cumulativeSpatialExtents[3]<< "] "
+               << thisProcsSpatialExtents[2] << ", "
+               << thisProcsSpatialExtents[3]<< "] "
                << "zExtents = ["
-               << cumulativeSpatialExtents[4] << ", "
-               << cumulativeSpatialExtents[5]<< "]" << endl;
+               << thisProcsSpatialExtents[4] << ", "
+               << thisProcsSpatialExtents[5]<< "]" << endl;
     }
 
 
@@ -909,12 +912,12 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     // Set the final spatial extents value.
     //
 
-    cumulativeSpatialExtents[0] = xMin;
-    cumulativeSpatialExtents[1] = xMax;
-    cumulativeSpatialExtents[2] = yMin;
-    cumulativeSpatialExtents[3] = yMax;
-    cumulativeSpatialExtents[4] = zMin;
-    cumulativeSpatialExtents[5] = zMax;
+    thisProcsSpatialExtents[0] = xMin;
+    thisProcsSpatialExtents[1] = xMax;
+    thisProcsSpatialExtents[2] = yMin;
+    thisProcsSpatialExtents[3] = yMax;
+    thisProcsSpatialExtents[4] = zMin;
+    thisProcsSpatialExtents[5] = zMax;
 
     ManageMemory(outDS);
     outDS->Delete();

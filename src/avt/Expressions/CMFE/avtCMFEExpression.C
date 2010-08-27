@@ -94,6 +94,7 @@ avtCMFEExpression::avtCMFEExpression()
     varDim = 1;;
     isNodal = false;
     onDemandProcessing = false;
+    calculateMeshExtents = false;
 }
 
 
@@ -364,6 +365,10 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 //
 //    Mark C. Miller, Wed Jun 17 14:23:25 PDT 2009
 //    Replaced CATCH(...) with CATCHALL
+//
+//    Hank Childs, Thu Aug 26 23:36:03 PDT 2010
+//    Pass along Booleans for which extents we should calculate.
+//
 // ****************************************************************************
 
 void
@@ -418,6 +423,8 @@ avtCMFEExpression::Execute()
     spec->GetDataRequest()->SetTimestep(actualTimestep);
     spec->GetDataRequest()->SetDesiredGhostDataType(ghostNeeds);
     spec->SetOnDemandStreaming(onDemandProcessing);
+    spec->SetCalculateMeshExtents(calculateMeshExtents);
+    spec->SetCalculateVariableExtentsList(varExtentsList);
     for (int i = 0 ; i < dataSels.size() ; i++)
         spec->GetDataRequest()->AddDataSelectionRefPtr(dataSels[i]);
 
@@ -647,6 +654,9 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
 //    Hank Childs, Tue Mar 24 13:18:10 CDT 2009
 //    Store the data selections so we can put them in the new contract.
 //
+//    Hank Childs, Thu Aug 26 23:36:03 PDT 2010
+//    Store what extents should be calculated.
+//
 // ****************************************************************************
 
 void
@@ -663,6 +673,8 @@ avtCMFEExpression::ExamineContract(avtContract_p spec)
     for (int i = 0 ; i < numSels ; i++)
         dataSels.push_back(spec->GetDataRequest()->GetDataSelection(i));
     onDemandProcessing = spec->DoingOnDemandStreaming();
+    calculateMeshExtents = spec->ShouldCalculateMeshExtents();
+    varExtentsList = spec->GetCalculateVariableExtentsList();
 }
 
 

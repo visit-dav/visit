@@ -1076,6 +1076,11 @@ avtPseudocolorPlot::GetSmoothingLevel()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 19, 2004 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 26 22:23:26 PDT 2010
+//    Calculate the extents of the scaling variable.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1097,6 +1102,7 @@ avtPseudocolorPlot::EnhanceSpecification(avtContract_p spec)
         {
             rv = new avtContract(spec);
             rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
+            rv->SetCalculateVariableExtents(pointVar, true);
         }
     }
     return rv;

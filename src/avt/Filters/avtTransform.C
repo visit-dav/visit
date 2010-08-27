@@ -725,6 +725,9 @@ avtTransform::TransformRectilinearToCurvilinear(vtkRectilinearGrid *rgrid)
 //    Hank Childs, Fri Jan 13 09:49:08 PST 2006
 //    Invalidate spatial meta-data.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -734,21 +737,21 @@ avtTransform::UpdateDataObjectInfo(void)
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     vtkMatrix4x4 *t = GetTransform();
 
-    (*outAtts.GetTrueSpatialExtents()) =
-        (*inAtts.GetTrueSpatialExtents());
-    outAtts.GetTrueSpatialExtents()->Transform(t);
+    (*outAtts.GetOriginalSpatialExtents()) =
+        (*inAtts.GetOriginalSpatialExtents());
+    outAtts.GetOriginalSpatialExtents()->Transform(t);
 
-    (*outAtts.GetCumulativeTrueSpatialExtents()) =
-        (*inAtts.GetCumulativeTrueSpatialExtents());
-    outAtts.GetCumulativeTrueSpatialExtents()->Transform(t);
+    (*outAtts.GetThisProcsOriginalSpatialExtents()) =
+        (*inAtts.GetThisProcsOriginalSpatialExtents());
+    outAtts.GetThisProcsOriginalSpatialExtents()->Transform(t);
 
-    (*outAtts.GetEffectiveSpatialExtents()) =
-        (*inAtts.GetEffectiveSpatialExtents());
-    outAtts.GetEffectiveSpatialExtents()->Transform(t);
+    (*outAtts.GetDesiredSpatialExtents()) =
+        (*inAtts.GetDesiredSpatialExtents());
+    outAtts.GetDesiredSpatialExtents()->Transform(t);
 
-    (*outAtts.GetCurrentSpatialExtents()) =
-        (*inAtts.GetCurrentSpatialExtents());
-    outAtts.GetCurrentSpatialExtents()->Transform(t);
+    (*outAtts.GetActualSpatialExtents()) =
+        (*inAtts.GetActualSpatialExtents());
+    outAtts.GetActualSpatialExtents()->Transform(t);
 
     GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();

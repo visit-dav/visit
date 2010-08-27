@@ -3726,11 +3726,13 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     //
     stringVector labelStrings;
 
+cerr << "Type = " << type << ", mat = " << AVT_MATERIAL << endl;
     if (type == AVT_MATERIAL)
     {
         if (needInternalSurfaces)
         {
             labelStrings = labels;
+cerr << "Adding mixed" << endl;
             // add the one for the "mixed material"
             labelStrings.push_back("mixed");
         }
@@ -3744,6 +3746,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             //
             char   buff[32];
             string label;
+cerr << "Num selected = " << numSelected << endl;
             sprintf(buff, "%d;", numSelected);
             label += buff;
             for (int i = 0; i < numSelected; i++)
@@ -3754,6 +3757,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                 else
                     label += string(buff) + labels[i] + ";";
             }
+cerr << "Label = " << label << endl;
             labelStrings.push_back(label);
         }
     }
@@ -3789,6 +3793,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         }
     }
 
+cerr << "We have " << numOutput << " with " << labelStrings.size() << " strings" << endl;
     avtDataTree_p outDT = new avtDataTree(numOutput, out_ds, dom, labelStrings);
     for (int i = 0 ; i < numOutput ; i++)
     {

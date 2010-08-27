@@ -320,6 +320,10 @@ avtDataObjectInformation::SwapAndMerge(const avtDataObjectWriter_p dobw,
 //
 //     Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //     Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//     Hank Childs, Thu Aug 26 13:02:28 PDT 2010
+//     Change named of extents object.
+//
 // ****************************************************************************
 
 void
@@ -392,8 +396,8 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
 
 #endif
 
-   // indicate that it is ok to use cummulative true extents as true extents;
-   GetAttributes().SetCanUseCumulativeAsTrueOrCurrent(true);
+   // indicate that it is ok to use this processor's extents as global extents;
+   GetAttributes().SetCanUseThisProcsAsOriginalOrActual(true);
 }
 
 // ****************************************************************************

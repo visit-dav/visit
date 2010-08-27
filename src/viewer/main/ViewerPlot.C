@@ -3503,6 +3503,9 @@ ViewerPlot::GetSpatialDimension() const
 //    Brad Whitlock, Sat Jan 31 23:33:10 PST 2004
 //    I removed the frame argument.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 double *
@@ -3536,7 +3539,7 @@ ViewerPlot::GetSpatialExtents(avtExtentType extsType) const
     }
     else if (realExtsType == AVT_ACTUAL_EXTENTS)
     {
-        if (atts.GetCurrentSpatialExtents(buffer))
+        if (atts.GetActualSpatialExtents(buffer))
         {
             return buffer;
         }

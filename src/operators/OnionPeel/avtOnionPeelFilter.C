@@ -835,6 +835,9 @@ avtOnionPeelFilter::VerifyInput()
 //    Kathleen Bonnell, Wed Jan 19 16:15:35 PST 2005
 //    Added BadNodeException call when badSeed is a node. 
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -918,7 +921,7 @@ avtOnionPeelFilter::PostExecute()
     // execution of this filter, is to retrieve them now (using 
     // avtFilter::GetDataExtents() which will return the accumulated 
     // data range from all processors if this information is available).
-    // Then, clear out the TRUE extents, and set Cummulative True extents.
+    // Then, clear out the TRUE extents, and set ThisProcs True extents.
     //
 
 #ifdef PARALLEL
@@ -930,8 +933,8 @@ avtOnionPeelFilter::PostExecute()
         {
             double *ext = new double[2*dim];
             GetDataExtents(ext);
-            dataAtts.GetTrueDataExtents()->Clear();
-            dataAtts.GetCumulativeTrueDataExtents()->Set(ext);
+            dataAtts.GetOriginalDataExtents()->Clear();
+            dataAtts.GetThisProcsOriginalDataExtents()->Set(ext);
             delete [] ext;
         }
     }

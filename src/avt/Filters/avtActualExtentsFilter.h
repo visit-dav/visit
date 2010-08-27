@@ -37,11 +37,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtCurrentExtentFilter.h                           //
+//                          avtActualExtentsFilter.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_CURRENT_EXTENT_FILTER_H
-#define AVT_CURRENT_EXTENT_FILTER_H
+#ifndef AVT_ACTUAL_EXTENTS_FILTER_H
+#define AVT_ACTUAL_EXTENTS_FILTER_H
 
 #include <filters_exports.h>
 
@@ -49,10 +49,10 @@
 
 
 // ****************************************************************************
-//  Class: avtCurrentExtentFilter
+//  Class: avtActualExtentsFilter
 //
 //  Purpose:
-//    Calculates the current extents, both spatial and data.  Stores them
+//    Calculates the actual extents, both spatial and data.  Stores them
 //    in the output's info. 
 //
 //  Programmer: Kathleen Bonnell 
@@ -66,21 +66,26 @@
 //    Implement ModifyContract to prevent base class from declaring that it
 //    can only work on floats.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Renamed to avtActualExtentsFilter.
+//
 // ****************************************************************************
 
-class AVTFILTERS_API avtCurrentExtentFilter : public avtDatasetToDatasetFilter
+class AVTFILTERS_API avtActualExtentsFilter : public avtDatasetToDatasetFilter
 {
   public:
-                          avtCurrentExtentFilter(){};
-    virtual              ~avtCurrentExtentFilter(){}; 
+                          avtActualExtentsFilter(){};
+    virtual              ~avtActualExtentsFilter(){}; 
 
-    virtual const char   *GetType(void) {return "avtCurrentExtentFilter";};
+    virtual const char   *GetType(void) {return "avtActualExtentsFilter";};
     virtual const char   *GetDescription(void) 
-                              { return "Calculating Current Extents."; };
+                              { return "Calculating Actual Extents."; };
 
   protected:
+    avtContract_p         lastContract;
+
     virtual void          Execute(void);
-    virtual void          UpdateDataObjectInfo(void);
+    virtual void          UpdateExtents(void);
     virtual bool          FilterUnderstandsTransformedRectMesh();
     virtual avtContract_p ModifyContract(avtContract_p);
 };

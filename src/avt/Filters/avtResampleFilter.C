@@ -373,6 +373,9 @@ avtResampleFilter::BypassResample(void)
 //    Add support for distributed resampling in a way that actually
 //    distributes the memory footprint.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -397,7 +400,7 @@ avtResampleFilter::ResampleInput(void)
     if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
     {
         GetDataExtents(range);
-        output->GetInfo().GetAttributes().GetEffectiveDataExtents()->Set(range);
+        output->GetInfo().GetAttributes().GetDesiredDataExtents()->Set(range);
     }
 
     avtViewInfo view;
@@ -892,6 +895,9 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
 //
 //  Modifications:
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 bool avtResampleFilter::GetBounds(double bounds[6]) const
 {
@@ -908,7 +914,7 @@ bool avtResampleFilter::GetBounds(double bounds[6]) const
     else
     {
         const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
-        avtExtents *exts = datts.GetEffectiveSpatialExtents();
+        avtExtents *exts = datts.GetDesiredSpatialExtents();
         if (exts->HasExtents())
         {
             exts->CopyTo(bounds);

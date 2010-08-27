@@ -237,15 +237,20 @@ avtOriginatingSource::GetSpeciesAuxiliaryData(const char *type, void *args,
 //    Hank Childs, Fri Nov 30 16:47:33 PST 2007
 //    Add timing information.
 //
+//    Hank Childs, Thu Aug 26 16:57:24 PDT 2010
+//    Cache the last contract.
+//
 // ****************************************************************************
 
 bool
-avtOriginatingSource::Update(avtContract_p spec)
+avtOriginatingSource::Update(avtContract_p contract)
 {
+    lastContract = contract;
+
     if (!ArtificialPipeline())
         GetOutput()->GetInfo().GetValidity().Reset();
     int t0 = visitTimer->StartTimer();
-    avtDataRequest_p data = BalanceLoad(spec);
+    avtDataRequest_p data = BalanceLoad(contract);
     visitTimer->StopTimer(t0, "Calling BalanceLoad in avtTermSrc::Update");
     int t1 = visitTimer->StartTimer();
     bool rv = FetchData(data);

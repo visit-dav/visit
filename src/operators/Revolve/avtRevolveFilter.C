@@ -472,6 +472,9 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Set the coord system of the output to be XY (cylindrical meshes are
 //    not cylindrical after you revolve them).
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -509,39 +512,39 @@ avtRevolveFilter::UpdateDataObjectInfo(void)
     //
     double b[6];
     int olddim = inAtts.GetSpatialDimension();
-    if (inAtts.GetTrueSpatialExtents()->HasExtents())
+    if (inAtts.GetOriginalSpatialExtents()->HasExtents())
     {
-        inAtts.GetTrueSpatialExtents()->CopyTo(b);
+        inAtts.GetOriginalSpatialExtents()->CopyTo(b);
         RevolveExtents(b, olddim);
-        outAtts.GetTrueSpatialExtents()->Set(b);
+        outAtts.GetOriginalSpatialExtents()->Set(b);
     }
 
-    if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+    if (inAtts.GetThisProcsOriginalSpatialExtents()->HasExtents())
     {
-        inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(b);
+        inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(b);
         RevolveExtents(b, olddim);
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(b);
+        outAtts.GetThisProcsOriginalSpatialExtents()->Set(b);
     }
 
-    if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
+    if (inAtts.GetDesiredSpatialExtents()->HasExtents())
     {
-        inAtts.GetEffectiveSpatialExtents()->CopyTo(b);
+        inAtts.GetDesiredSpatialExtents()->CopyTo(b);
         RevolveExtents(b, olddim);
-        outAtts.GetEffectiveSpatialExtents()->Set(b);
+        outAtts.GetDesiredSpatialExtents()->Set(b);
     }
 
-    if (inAtts.GetCurrentSpatialExtents()->HasExtents())
+    if (inAtts.GetActualSpatialExtents()->HasExtents())
     {
-        inAtts.GetCurrentSpatialExtents()->CopyTo(b);
+        inAtts.GetActualSpatialExtents()->CopyTo(b);
         RevolveExtents(b, olddim);
-        outAtts.GetCurrentSpatialExtents()->Set(b);
+        outAtts.GetActualSpatialExtents()->Set(b);
     }
 
-    if (inAtts.GetCumulativeCurrentSpatialExtents()->HasExtents())
+    if (inAtts.GetThisProcsActualSpatialExtents()->HasExtents())
     {
-        inAtts.GetCumulativeCurrentSpatialExtents()->CopyTo(b);
+        inAtts.GetThisProcsActualSpatialExtents()->CopyTo(b);
         RevolveExtents(b, olddim);
-        outAtts.GetCumulativeCurrentSpatialExtents()->Set(b);
+        outAtts.GetThisProcsActualSpatialExtents()->Set(b);
     }
 }
 

@@ -820,6 +820,9 @@ avtRayTracer::FilterUnderstandsTransformedRectMesh()
 //     Hank Childs, Sat Sep 26 20:43:55 CDT 2009
 //     Fixed bug for tightening planes when the camera is inside the volume.
 //
+//     Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//     Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -832,7 +835,7 @@ avtRayTracer::TightenClippingPlanes(const avtViewInfo &view,
 
     double dbounds[6];
     avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
-    avtExtents *exts = datts.GetEffectiveSpatialExtents();
+    avtExtents *exts = datts.GetDesiredSpatialExtents();
     if (exts->HasExtents())
     {
         exts->CopyTo(dbounds);

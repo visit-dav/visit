@@ -436,6 +436,9 @@ VisWinAxesArray::UpdateView(void)
 //    variable; just ignore it.  It's probably not the primary
 //    variable we're trying to use anyway.
 //
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -467,7 +470,7 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
             }
             int axis = atts.GetUseForAxis(var);
             if (axis == -1 ||
-                atts.GetCumulativeTrueDataExtents(var) == NULL)
+                atts.GetThisProcsOriginalDataExtents(var) == NULL)
                 continue;
             naxes = (axis+1) > naxes ? (axis+1) : naxes;
         }
@@ -520,10 +523,10 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
                 if (axis == -1)
                     continue;
 
-                avtExtents *ext = atts.GetCumulativeTrueDataExtents(var);
+                avtExtents *ext = atts.GetThisProcsOriginalDataExtents(var);
                 // note: we already checked above that ext exists
 
-                atts.GetCumulativeTrueDataExtents(var)->CopyTo(axes[axis].range);
+                atts.GetThisProcsOriginalDataExtents(var)->CopyTo(axes[axis].range);
                 axes[axis].xpos = axis;
                 SNPRINTF(axes[axis].title,256, var);
                 SNPRINTF(axes[axis].units,256, atts.GetVariableUnits(var).c_str());

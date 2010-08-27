@@ -68,47 +68,47 @@ class     avtWebpage;
 //  Notes:
 //      The extents have gotten a bit out of hand, so this an effort at trying
 //      to categorize them:
-//      True...Extents:    The extents from the original dataset.  However
-//                         these extents may be transformed etc.  These are,
-//                         for the most part, display extents.
+//      Original...Extents:    The extents from the original dataset.  Of course,
+//                         these extents may be transformed etc later in the pipeline.  
+//                         These are, for the most part, display extents.
 //
-//                         The 'true' extents are the extents of the dataset
+//                         The 'original' extents are the extents of the dataset
 //                         regardless of its parallel decomposotion, if any.
 //                         That is, upon syncronization of parallel processes,
-//                         all processors should be forced to agree on the true
+//                         all processors should be forced to agree on the original
 //                         extents.
 //
-//                         In theory the 'true' extents are the extents of the
+//                         In theory the 'original' extents are the extents of the
 //                         dataset regardless of whether only some of it has
 //                         been read in. However, for databases that don't 
 //                         support the auxiliary extents data, it would be
 //                         necessary to read data that wasn't needed in a 
-//                         pipeline just to get the 'true' extents set right. 
+//                         pipeline just to get the 'original' extents set right. 
 //                         So we don't do that.
 //
-//      Current...Extents: The extents at the bottom of the pipeline for what
+//      Actual...Extents: The extents at the bottom of the pipeline for what
 //                         is really there.  Used for re-mapping the color to
 //                         what actually exists in what is being rendered, etc.
 //
-//                         The 'current' extents are the extents of what is
+//                         The 'actual' extents are the extents of what is
 //                         left, sort of, after various operations, which may 
 //                         have reduced the data, such as thresholding, 
 //                         slicing, etc.
 //
-//      Effective...Extents: Like the current extents, but sometimes maintained
+//      Desired...Extents: Like the actual extents, but sometimes maintained
 //                         in the middle of a pipeline.  They are used for
 //                         things like resampling onto an area smaller than
-//                         the true extents to get more bang for our buck with
+//                         the original extents to get more bang for our buck with
 //                         splatting, etc.
-//      Cumulative Variants: If we are doing streaming, we can't
+//      ThisProcs Variants: If we are doing streaming, we can't
 //                         what know some extents until we are done executing.
 //                         Then we can take all of the pieces and unify them.
 //                         This is where the pieces are stored.
 //
-//                         The cumulative variants are used as places to store
+//                         The thisProcs variants are used as places to store
 //                         extents information on a per-processor basis *before*
 //                         that information is merged and unified across all
-//                         processors. Think of the cumulative variants as 
+//                         processors. Think of the thisProcs variants as 
 //                         "what this processor has seen so far."
 //
 //  Programmer: Hank Childs
@@ -126,7 +126,7 @@ class     avtWebpage;
 //    Added labels, and associated methods. 
 //
 //    Kathleen Bonnell, Tue Oct  2 15:25:23 PDT 2001 
-//    Added current spatial and data extents, to hold the values
+//    Added actual spatial and data extents, to hold the values
 //    at the end of pipeline execution. 
 //
 //    Hank Childs, Sun Jun 16 19:36:34 PDT 2002
@@ -139,7 +139,7 @@ class     avtWebpage;
 //    Added transform and Set/Get/Merge/Read/Write/Copy methods. 
 //
 //    Mark C. Miller, 15Jul03
-//    Added Set/GetCanUseCumulativeAsTrueOrCurrent
+//    Added Set/GetCanUseThisProcsAsOriginalOrActual
 //    
 //    Eric Brugger, Wed Aug 20 09:27:54 PDT 2003
 //    Added GetWindowMode and SetWindowMode.
@@ -254,6 +254,9 @@ class     avtWebpage;
 //    Tom Fogal, Tue Jun 23 20:10:40 MDT 2009
 //    Marked some trivial accessors as const.
 //
+//    Hank Childs, Thu Aug 26 13:02:28 PDT 2010
+//    Rename extents objects.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -284,31 +287,31 @@ class PIPELINE_API avtDataAttributes
     bool                     GetDynamicDomainDecomposition(void) const
                                         { return dynamicDomainDecomposition; };
 
-    avtExtents              *GetTrueSpatialExtents(void) const
-                                    { return trueSpatial; };
-    avtExtents              *GetTrueDataExtents(const char * = NULL);
+    avtExtents              *GetOriginalSpatialExtents(void) const
+                                    { return originalSpatial; };
+    avtExtents              *GetOriginalDataExtents(const char * = NULL);
 
-    avtExtents              *GetCumulativeTrueSpatialExtents(void) const
-                                    { return cumulativeTrueSpatial; };
-    avtExtents              *GetCumulativeTrueDataExtents(const char * = NULL);
+    avtExtents              *GetThisProcsOriginalSpatialExtents(void) const
+                                    { return thisProcsOriginalSpatial; };
+    avtExtents              *GetThisProcsOriginalDataExtents(const char * = NULL);
 
-    avtExtents              *GetEffectiveSpatialExtents(void) const
-                                    { return effectiveSpatial; };
-    avtExtents              *GetEffectiveDataExtents(const char * = NULL);
+    avtExtents              *GetDesiredSpatialExtents(void) const
+                                    { return desiredSpatial; };
+    avtExtents              *GetDesiredDataExtents(const char * = NULL);
 
-    avtExtents              *GetCurrentSpatialExtents(void) const
-                                    { return currentSpatial; };
-    avtExtents              *GetCurrentDataExtents(const char * = NULL);
+    avtExtents              *GetActualSpatialExtents(void) const
+                                    { return actualSpatial; };
+    avtExtents              *GetActualDataExtents(const char * = NULL);
 
-    avtExtents              *GetCumulativeCurrentSpatialExtents(void) const
-                                    { return cumulativeCurrentSpatial; };
-    avtExtents              *GetCumulativeCurrentDataExtents(const char * 
+    avtExtents              *GetThisProcsActualSpatialExtents(void) const
+                                    { return thisProcsActualSpatial; };
+    avtExtents              *GetThisProcsActualDataExtents(const char * 
                                                              = NULL);
 
-    void                     SetCanUseCumulativeAsTrueOrCurrent(bool canUse)
-                                { canUseCumulativeAsTrueOrCurrent = canUse; }
-    bool                     GetCanUseCumulativeAsTrueOrCurrent(void) const
-                                { return canUseCumulativeAsTrueOrCurrent; }
+    void                     SetCanUseThisProcsAsOriginalOrActual(bool canUse)
+                                { canUseThisProcsAsOriginalOrActual = canUse; }
+    bool                     GetCanUseThisProcsAsOriginalOrActual(void) const
+                                { return canUseThisProcsAsOriginalOrActual; }
 
     void                     SetTopologicalDimension(int);
     int                      GetTopologicalDimension(void) const
@@ -387,10 +390,10 @@ class PIPELINE_API avtDataAttributes
                                    { keepNodeZoneArrays= k; };
 
     bool                     GetDataExtents(double *, const char * = NULL);
-    bool                     GetCurrentDataExtents(double *,
+    bool                     GetActualDataExtents(double *,
                                                    const char * = NULL);
     bool                     GetSpatialExtents(double *);
-    bool                     GetCurrentSpatialExtents(double *);
+    bool                     GetActualSpatialExtents(double *);
     bool                     GetAnySpatialExtents(double *);
 
     void                     SetLabels(const std::vector<std::string> &l);
@@ -559,7 +562,7 @@ class PIPELINE_API avtDataAttributes
     bool                     canUseInvTransform;
     avtMatrix               *transform;
     bool                     canUseTransform;
-    bool                     canUseCumulativeAsTrueOrCurrent;
+    bool                     canUseThisProcsAsOriginalOrActual;
     int                      numStates;
     bool                     mirOccurred;
     bool                     canUseOrigZones;
@@ -573,11 +576,11 @@ class PIPELINE_API avtDataAttributes
     double                   rectilinearGridTransform[16];
     size_t                   levelsOfDetail;
 
-    avtExtents              *trueSpatial;
-    avtExtents              *cumulativeTrueSpatial;
-    avtExtents              *effectiveSpatial;
-    avtExtents              *currentSpatial;
-    avtExtents              *cumulativeCurrentSpatial;
+    avtExtents              *originalSpatial;
+    avtExtents              *thisProcsOriginalSpatial;
+    avtExtents              *desiredSpatial;
+    avtExtents              *actualSpatial;
+    avtExtents              *thisProcsActualSpatial;
 
     struct VarInfo
     {
@@ -587,11 +590,11 @@ class PIPELINE_API avtDataAttributes
         int                  dimension;
         avtCentering         centering;
         bool                 treatAsASCII;
-        avtExtents          *trueData;
-        avtExtents          *cumulativeTrueData;
-        avtExtents          *effectiveData;
-        avtExtents          *currentData;
-        avtExtents          *cumulativeCurrentData;
+        avtExtents          *originalData;
+        avtExtents          *thisProcsOriginalData;
+        avtExtents          *desiredData;
+        avtExtents          *actualData;
+        avtExtents          *thisProcsActualData;
         int                  useForAxis;
         std::vector<std::string>  subnames; // Only used for 'array' vars
                                             // at this point.

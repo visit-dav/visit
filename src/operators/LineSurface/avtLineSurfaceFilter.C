@@ -189,6 +189,11 @@ avtLineSurfaceFilter::Execute(void)
 //  Programmer: Hank Childs
 //  Creation:   January 24, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
+//    Change extents names.
+//
 // ****************************************************************************
 
 void
@@ -289,11 +294,11 @@ avtLineSurfaceFilter::CreateFinalOutput(void)
     avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
     out_atts.SetTopologicalDimension(2);
     out_atts.SetSpatialDimension(3);
-    out_atts.GetTrueSpatialExtents()->Set(bounds);
-    out_atts.GetCumulativeTrueSpatialExtents()->Set(bounds);
-    out_atts.GetEffectiveSpatialExtents()->Set(bounds);
-    out_atts.GetCurrentSpatialExtents()->Set(bounds);
-    out_atts.GetCumulativeCurrentSpatialExtents()->Set(bounds);
+    out_atts.GetOriginalSpatialExtents()->Set(bounds);
+    out_atts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
+    out_atts.GetDesiredSpatialExtents()->Set(bounds);
+    out_atts.GetActualSpatialExtents()->Set(bounds);
+    out_atts.GetThisProcsActualSpatialExtents()->Set(bounds);
 
     out_atts.SetYLabel(pipelineVariable);
     out_atts.SetYUnits(in_atts.GetVariableUnits(pipelineVariable));
