@@ -334,36 +334,38 @@ avtDataAttributes::DestructSelf(void)
 
     for (int i = 0 ; i < variables.size() ; i++)
     {
-        if (variables[i].originalData != NULL)
+        if (variables[i]->originalData != NULL)
         {
-            delete variables[i].originalData;
-            variables[i].originalData = NULL;
+            delete variables[i]->originalData;
+            variables[i]->originalData = NULL;
         }
-        if (variables[i].thisProcsOriginalData != NULL)
+        if (variables[i]->thisProcsOriginalData != NULL)
         {
-            delete variables[i].thisProcsOriginalData;
-            variables[i].thisProcsOriginalData = NULL;
+            delete variables[i]->thisProcsOriginalData;
+            variables[i]->thisProcsOriginalData = NULL;
         }
-        if (variables[i].desiredData != NULL)
+        if (variables[i]->desiredData != NULL)
         {
-            delete variables[i].desiredData;
-            variables[i].desiredData = NULL;
+            delete variables[i]->desiredData;
+            variables[i]->desiredData = NULL;
         }
-        if (variables[i].actualData != NULL)
+        if (variables[i]->actualData != NULL)
         {
-            delete variables[i].actualData;
-            variables[i].actualData = NULL;
+            delete variables[i]->actualData;
+            variables[i]->actualData = NULL;
         }
-        if (variables[i].thisProcsActualData != NULL)
+        if (variables[i]->thisProcsActualData != NULL)
         {
-            delete variables[i].thisProcsActualData;
-            variables[i].thisProcsActualData = NULL;
+            delete variables[i]->thisProcsActualData;
+            variables[i]->thisProcsActualData = NULL;
         }
-        if (variables[i].componentExtents != NULL)
+        if (variables[i]->componentExtents != NULL)
         {
-            delete variables[i].componentExtents;
-            variables[i].componentExtents = NULL;
+            delete variables[i]->componentExtents;
+            variables[i]->componentExtents = NULL;
         }
+        delete variables[i];
+        variables[i] = NULL;
     }
     variables.clear();
 
@@ -624,9 +626,9 @@ avtDataAttributes::Print(ostream &out)
     int i;
     for (i = 0 ; i < variables.size() ; i++)
     {
-        out << "Variable = " << variables[i].varname.c_str() << endl;
+        out << "Variable = " << variables[i]->varname.c_str() << endl;
         out << "Variable type = ";
-        switch (variables[i].vartype)
+        switch (variables[i]->vartype)
         {
           case AVT_MESH:
             out << "mesh";
@@ -664,32 +666,32 @@ avtDataAttributes::Print(ostream &out)
             break;
         }
         out << endl;
-        if (variables[i].subnames.size() != 0)
+        if (variables[i]->subnames.size() != 0)
         {
             out << "Variable subnames = " << endl;
-            for (int j = 0 ; j < variables[i].subnames.size() ; j++)
+            for (int j = 0 ; j < variables[i]->subnames.size() ; j++)
             {
-                out << variables[i].subnames[j].c_str();
-                if (j < variables[i].subnames.size()-1)
+                out << variables[i]->subnames[j].c_str();
+                if (j < variables[i]->subnames.size()-1)
                     out << ", ";
             }
             out << endl;
         }
-        if (variables[i].binRange.size() != 0)
+        if (variables[i]->binRange.size() != 0)
         {
             out << "Bin ranges = " << endl;
-            for (int j = 0 ; j < variables[i].binRange.size() ; j++)
+            for (int j = 0 ; j < variables[i]->binRange.size() ; j++)
             {
-                out << variables[i].binRange[j];
-                if (j < variables[i].binRange.size()-1)
+                out << variables[i]->binRange[j];
+                if (j < variables[i]->binRange.size()-1)
                     out << ", ";
             }
             out << endl;
         }
-        if(variables[i].varunits != "")
-            out << "Units = " << variables[i].varunits.c_str() << endl;
-        out << "Dimension = " << variables[i].dimension << endl;
-        switch (variables[i].centering)
+        if(variables[i]->varunits != "")
+            out << "Units = " << variables[i]->varunits.c_str() << endl;
+        out << "Dimension = " << variables[i]->dimension << endl;
+        switch (variables[i]->centering)
         {
           case AVT_NODECENT:
             out << "Centering is nodal." << endl;
@@ -705,40 +707,40 @@ avtDataAttributes::Print(ostream &out)
             out << "Centering is unknown." << endl;
             break;
         }
-        if (variables[i].treatAsASCII)
+        if (variables[i]->treatAsASCII)
             out << "Treat as ASCII." << endl;
 
-        out << "Used for axis " << variables[i].useForAxis << endl;
+        out << "Used for axis " << variables[i]->useForAxis << endl;
 
-        if (variables[i].originalData != NULL)
+        if (variables[i]->originalData != NULL)
         {
             out << "Original data = " << endl;
-            variables[i].originalData->Print(out);
+            variables[i]->originalData->Print(out);
         }
-        if (variables[i].thisProcsOriginalData != NULL)
+        if (variables[i]->thisProcsOriginalData != NULL)
         {
             out << "ThisProcs original data = " << endl;
-            variables[i].thisProcsOriginalData->Print(out);
+            variables[i]->thisProcsOriginalData->Print(out);
         }
-        if (variables[i].desiredData != NULL)
+        if (variables[i]->desiredData != NULL)
         {
             out << "Desired data = " << endl;
-            variables[i].desiredData->Print(out);
+            variables[i]->desiredData->Print(out);
         }
-        if (variables[i].actualData != NULL)
+        if (variables[i]->actualData != NULL)
         {
             out << "Actual data = " << endl;
-            variables[i].actualData->Print(out);
+            variables[i]->actualData->Print(out);
         }
-        if (variables[i].thisProcsActualData != NULL)
+        if (variables[i]->thisProcsActualData != NULL)
         {
             out << "ThisProcs actual data = " << endl;
-            variables[i].thisProcsActualData->Print(out);
+            variables[i]->thisProcsActualData->Print(out);
         }
-        if (variables[i].componentExtents != NULL)
+        if (variables[i]->componentExtents != NULL)
         {
             out << "Component extents = " << endl;
-            variables[i].componentExtents->Print(out);
+            variables[i]->componentExtents->Print(out);
         }
     }
 
@@ -1023,24 +1025,24 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     canUseThisProcsAsOriginalOrActual = di.canUseThisProcsAsOriginalOrActual;
     for (int i = 0 ; i < di.variables.size() ; i++)
     {
-        const char *vname = di.variables[i].varname.c_str();
-        AddVariable(vname, di.variables[i].varunits);
-        SetVariableType(di.variables[i].vartype, vname);
-        SetVariableSubnames(di.variables[i].subnames, vname);
-        SetVariableBinRanges(di.variables[i].binRange, vname);
-        SetVariableDimension(di.variables[i].dimension, vname);
-        SetCentering(di.variables[i].centering, vname);
-        SetTreatAsASCII(di.variables[i].treatAsASCII, vname);
-        SetUseForAxis(di.variables[i].useForAxis, vname);
-        *(variables[i].originalData)              = *(di.variables[i].originalData);
-        *(variables[i].thisProcsOriginalData)    = 
-                                      *(di.variables[i].thisProcsOriginalData);
-        *(variables[i].desiredData)         =
-                                      *(di.variables[i].desiredData);
-        *(variables[i].actualData)           = *(di.variables[i].actualData);
-        *(variables[i].thisProcsActualData) = 
-                                      *(di.variables[i].thisProcsActualData);
-        *(variables[i].componentExtents) = *(di.variables[i].componentExtents);
+        const char *vname = di.variables[i]->varname.c_str();
+        AddVariable(vname, di.variables[i]->varunits);
+        SetVariableType(di.variables[i]->vartype, vname);
+        SetVariableSubnames(di.variables[i]->subnames, vname);
+        SetVariableBinRanges(di.variables[i]->binRange, vname);
+        SetVariableDimension(di.variables[i]->dimension, vname);
+        SetCentering(di.variables[i]->centering, vname);
+        SetTreatAsASCII(di.variables[i]->treatAsASCII, vname);
+        SetUseForAxis(di.variables[i]->useForAxis, vname);
+        *(variables[i]->originalData)              = *(di.variables[i]->originalData);
+        *(variables[i]->thisProcsOriginalData)    = 
+                                      *(di.variables[i]->thisProcsOriginalData);
+        *(variables[i]->desiredData)         =
+                                      *(di.variables[i]->desiredData);
+        *(variables[i]->actualData)           = *(di.variables[i]->actualData);
+        *(variables[i]->thisProcsActualData) = 
+                                      *(di.variables[i]->thisProcsActualData);
+        *(variables[i]->componentExtents) = *(di.variables[i]->componentExtents);
     }
     activeVariable = di.activeVariable;
 
@@ -1246,53 +1248,53 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     }
     for (i = 0 ; i < variables.size() ; i++)
     {
-        if (variables[i].varname != da.variables[i].varname)
+        if (variables[i]->varname != da.variables[i]->varname)
         {
             EXCEPTION0(InvalidMergeException);
         }
-        if (variables[i].vartype != da.variables[i].vartype)
+        if (variables[i]->vartype != da.variables[i]->vartype)
         {
-            EXCEPTION2(InvalidMergeException, variables[i].vartype,
-                       da.variables[i].vartype);
+            EXCEPTION2(InvalidMergeException, variables[i]->vartype,
+                       da.variables[i]->vartype);
         }
-        if (variables[i].centering != da.variables[i].centering)
+        if (variables[i]->centering != da.variables[i]->centering)
         {
-            EXCEPTION2(InvalidMergeException, variables[i].centering,
-                       da.variables[i].centering);
+            EXCEPTION2(InvalidMergeException, variables[i]->centering,
+                       da.variables[i]->centering);
         }
-        if (variables[i].treatAsASCII != da.variables[i].treatAsASCII)
-        {
-            EXCEPTION0(InvalidMergeException);
-        }
-        if (variables[i].useForAxis != da.variables[i].useForAxis)
+        if (variables[i]->treatAsASCII != da.variables[i]->treatAsASCII)
         {
             EXCEPTION0(InvalidMergeException);
         }
-        if (variables[i].dimension != da.variables[i].dimension)
+        if (variables[i]->useForAxis != da.variables[i]->useForAxis)
         {
-            EXCEPTION2(InvalidMergeException, variables[i].dimension,
-                       da.variables[i].dimension);
+            EXCEPTION0(InvalidMergeException);
         }
-        if (variables[i].subnames.size() != da.variables[i].subnames.size())
+        if (variables[i]->dimension != da.variables[i]->dimension)
+        {
+            EXCEPTION2(InvalidMergeException, variables[i]->dimension,
+                       da.variables[i]->dimension);
+        }
+        if (variables[i]->subnames.size() != da.variables[i]->subnames.size())
         {
             EXCEPTION2(InvalidMergeException, 
-                       (int) variables[i].subnames.size(),
-                       (int) da.variables[i].subnames.size());
+                       (int) variables[i]->subnames.size(),
+                       (int) da.variables[i]->subnames.size());
         }
-        for (int j = 0 ; j < variables[i].subnames.size() ; j++)
-            if (variables[i].subnames[j] != da.variables[i].subnames[j])
+        for (int j = 0 ; j < variables[i]->subnames.size() ; j++)
+            if (variables[i]->subnames[j] != da.variables[i]->subnames[j])
             {
                 EXCEPTION0(InvalidMergeException);
                 EXCEPTION0(InvalidMergeException);
             }
-        if (variables[i].binRange.size() != da.variables[i].binRange.size())
+        if (variables[i]->binRange.size() != da.variables[i]->binRange.size())
         {
             EXCEPTION2(InvalidMergeException, 
-                       (int) variables[i].binRange.size(),
-                       (int) da.variables[i].binRange.size());
+                       (int) variables[i]->binRange.size(),
+                       (int) da.variables[i]->binRange.size());
         }
-        for (int j = 0 ; j < variables[i].binRange.size() ; j++)
-            if (variables[i].binRange[j] != da.variables[i].binRange[j])
+        for (int j = 0 ; j < variables[i]->binRange.size() ; j++)
+            if (variables[i]->binRange[j] != da.variables[i]->binRange[j])
             {
                 EXCEPTION0(InvalidMergeException);
             }
@@ -1442,15 +1444,15 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
 
     for (i = 0 ; i < variables.size() ; i++)
     {
-        variables[i].originalData->Merge(*(da.variables[i].originalData));
-        variables[i].thisProcsOriginalData->Merge(
-                                        *(da.variables[i].thisProcsOriginalData));
-        variables[i].desiredData->Merge(*(da.variables[i].desiredData));
-        variables[i].actualData->Merge(*(da.variables[i].actualData));
-        variables[i].thisProcsActualData->Merge(
-                                     *(da.variables[i].thisProcsActualData));
-        variables[i].componentExtents->Merge(
-                                        *(da.variables[i].componentExtents));
+        variables[i]->originalData->Merge(*(da.variables[i]->originalData));
+        variables[i]->thisProcsOriginalData->Merge(
+                                        *(da.variables[i]->thisProcsOriginalData));
+        variables[i]->desiredData->Merge(*(da.variables[i]->desiredData));
+        variables[i]->actualData->Merge(*(da.variables[i]->actualData));
+        variables[i]->thisProcsActualData->Merge(
+                                     *(da.variables[i]->thisProcsActualData));
+        variables[i]->componentExtents->Merge(
+                                        *(da.variables[i]->componentExtents));
     }
 
     MergeLabels(da.labels);
@@ -1593,16 +1595,16 @@ avtDataAttributes::GetDataExtents(double *buff, const char *varname)
     if (index < 0)
         return false;
 
-    if (variables[index].originalData->HasExtents())
+    if (variables[index]->originalData->HasExtents())
     {
-        variables[index].originalData->CopyTo(buff);
+        variables[index]->originalData->CopyTo(buff);
         return true;
     }
 
     if (canUseThisProcsAsOriginalOrActual &&
-        variables[index].thisProcsOriginalData->HasExtents())
+        variables[index]->thisProcsOriginalData->HasExtents())
     {
-        variables[index].thisProcsOriginalData->CopyTo(buff);
+        variables[index]->thisProcsOriginalData->CopyTo(buff);
         return true;
     }
 
@@ -1653,7 +1655,7 @@ avtDataAttributes::GetOriginalDataExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].originalData;
+    return variables[index]->originalData;
 }
 
 
@@ -1699,7 +1701,7 @@ avtDataAttributes::GetThisProcsOriginalDataExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].thisProcsOriginalData;
+    return variables[index]->thisProcsOriginalData;
 }
 
 
@@ -1740,7 +1742,7 @@ avtDataAttributes::GetVariableComponentExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].componentExtents;
+    return variables[index]->componentExtents;
 }
 
 
@@ -1786,7 +1788,7 @@ avtDataAttributes::GetDesiredDataExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].desiredData;
+    return variables[index]->desiredData;
 }
 
 
@@ -1832,7 +1834,7 @@ avtDataAttributes::GetActualDataExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].actualData;
+    return variables[index]->actualData;
 }
 
 
@@ -1878,7 +1880,7 @@ avtDataAttributes::GetThisProcsActualDataExtents(const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].thisProcsActualData;
+    return variables[index]->thisProcsActualData;
 }
 
 
@@ -2015,48 +2017,48 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    if (vd == variables[index].dimension)
+    if (vd == variables[index]->dimension)
     {
         return;
     }
 
-    variables[index].dimension  = vd;
+    variables[index]->dimension  = vd;
 
-    if (variables[index].originalData != NULL)
+    if (variables[index]->originalData != NULL)
     {
-        delete variables[index].originalData;
+        delete variables[index]->originalData;
     }
-    variables[index].originalData = new avtExtents(1);
+    variables[index]->originalData = new avtExtents(1);
 
-    if (variables[index].thisProcsOriginalData != NULL)
+    if (variables[index]->thisProcsOriginalData != NULL)
     {
-        delete variables[index].thisProcsOriginalData;
+        delete variables[index]->thisProcsOriginalData;
     }
-    variables[index].thisProcsOriginalData = new avtExtents(1);
+    variables[index]->thisProcsOriginalData = new avtExtents(1);
 
-    if (variables[index].desiredData != NULL)
+    if (variables[index]->desiredData != NULL)
     {
-        delete variables[index].desiredData;
+        delete variables[index]->desiredData;
     }
-    variables[index].desiredData =new avtExtents(1);
+    variables[index]->desiredData =new avtExtents(1);
 
-    if (variables[index].actualData != NULL)
+    if (variables[index]->actualData != NULL)
     {
-        delete variables[index].actualData;
+        delete variables[index]->actualData;
     }
-    variables[index].actualData = new avtExtents(1);
+    variables[index]->actualData = new avtExtents(1);
 
-    if (variables[index].thisProcsActualData != NULL)
+    if (variables[index]->thisProcsActualData != NULL)
     {
-        delete variables[index].thisProcsActualData;
+        delete variables[index]->thisProcsActualData;
     }
-    variables[index].thisProcsActualData = new avtExtents(1);
+    variables[index]->thisProcsActualData = new avtExtents(1);
 
-    if (variables[index].componentExtents != NULL)
+    if (variables[index]->componentExtents != NULL)
     {
-        delete variables[index].componentExtents;
+        delete variables[index]->componentExtents;
     }
-    variables[index].componentExtents = new avtExtents(vd);
+    variables[index]->componentExtents = new avtExtents(vd);
 }
 
 
@@ -2095,7 +2097,7 @@ avtDataAttributes::GetVariableDimension(const char *varname) const
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].dimension;
+    return variables[index]->dimension;
 }
 
 
@@ -2140,7 +2142,7 @@ avtDataAttributes::SetCentering(avtCentering cen, const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    variables[index].centering = cen;
+    variables[index]->centering = cen;
 }
 
 
@@ -2178,7 +2180,7 @@ avtDataAttributes::GetCentering(const char *varname) const
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].centering;
+    return variables[index]->centering;
 }
 
 
@@ -2213,7 +2215,7 @@ avtDataAttributes::SetVariableType(avtVarType vt, const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    variables[index].vartype = vt;
+    variables[index]->vartype = vt;
 }
 
 
@@ -2245,7 +2247,7 @@ avtDataAttributes::GetVariableType(const char *varname) const
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].vartype;
+    return variables[index]->vartype;
 }
 
 
@@ -2281,7 +2283,7 @@ avtDataAttributes::SetVariableSubnames(const std::vector<std::string> &sn,
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    variables[index].subnames = sn;
+    variables[index]->subnames = sn;
 }
 
 
@@ -2313,7 +2315,7 @@ avtDataAttributes::GetVariableSubnames(const char *varname) const
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].subnames;
+    return variables[index]->subnames;
 }
 
 
@@ -2349,7 +2351,7 @@ avtDataAttributes::SetVariableBinRanges(const std::vector<double> &bn,
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    variables[index].binRange = bn;
+    variables[index]->binRange = bn;
 }
 
 
@@ -2381,7 +2383,7 @@ avtDataAttributes::GetVariableBinRanges(const char *varname) const
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].binRange;
+    return variables[index]->binRange;
 }
 
 
@@ -2702,13 +2704,13 @@ avtDataAttributes::Write(avtDataObjectString &str,
     int basei = i;
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[basei+varSize*i]   = variables[i].dimension;
-        vals[basei+varSize*i+1] = variables[i].centering;
-        vals[basei+varSize*i+2] = (variables[i].treatAsASCII ? 1 : 0);
-        vals[basei+varSize*i+3] = variables[i].vartype;
-        vals[basei+varSize*i+4] = variables[i].subnames.size();
-        vals[basei+varSize*i+5] = variables[i].binRange.size();
-        vals[basei+varSize*i+6] = variables[i].useForAxis;
+        vals[basei+varSize*i]   = variables[i]->dimension;
+        vals[basei+varSize*i+1] = variables[i]->centering;
+        vals[basei+varSize*i+2] = (variables[i]->treatAsASCII ? 1 : 0);
+        vals[basei+varSize*i+3] = variables[i]->vartype;
+        vals[basei+varSize*i+4] = variables[i]->subnames.size();
+        vals[basei+varSize*i+5] = variables[i]->binRange.size();
+        vals[basei+varSize*i+6] = variables[i]->useForAxis;
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -2722,42 +2724,42 @@ avtDataAttributes::Write(avtDataObjectString &str,
     for (i = 0 ; i < variables.size() ; i++)
     {
         // Write the variable name
-        wrtr->WriteInt(str, variables[i].varname.size());
-        str.Append((char *) variables[i].varname.c_str(),
-                   variables[i].varname.size(),
+        wrtr->WriteInt(str, variables[i]->varname.size());
+        str.Append((char *) variables[i]->varname.c_str(),
+                   variables[i]->varname.size(),
                    avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
 
         // Write the units name.
-        int unitlen = variables[i].varunits.size();
+        int unitlen = variables[i]->varunits.size();
         wrtr->WriteInt(str, unitlen);
         if(unitlen > 0)
         {
-            str.Append((char *) variables[i].varunits.c_str(), unitlen,
+            str.Append((char *) variables[i]->varunits.c_str(), unitlen,
                      avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
         }
 
         // Write the subnames (if any).  Number of subnames already
         // communicated in mass "int" writing phase.
-        for (j = 0 ; j < variables[i].subnames.size() ; j++)
+        for (j = 0 ; j < variables[i]->subnames.size() ; j++)
         {
-            wrtr->WriteInt(str, variables[i].subnames[j].size());
-            str.Append((char *) variables[i].subnames[j].c_str(),
-                     variables[i].subnames[j].size(),
+            wrtr->WriteInt(str, variables[i]->subnames[j].size());
+            str.Append((char *) variables[i]->subnames[j].c_str(),
+                     variables[i]->subnames[j].size(),
                      avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
         }
         // Write the binRanges (if any).  Number of binRanges already
         // communicated in mass "int" writing phase.
-        if (variables[i].binRange.size() > 0)
+        if (variables[i]->binRange.size() > 0)
         {
-            wrtr->WriteDouble(str, &(variables[i].binRange[0]), 
-                              variables[i].binRange.size());
+            wrtr->WriteDouble(str, &(variables[i]->binRange[0]), 
+                              variables[i]->binRange.size());
         }
-        variables[i].originalData->Write(str, wrtr);
-        variables[i].thisProcsOriginalData->Write(str, wrtr);
-        variables[i].desiredData->Write(str, wrtr);
-        variables[i].actualData->Write(str, wrtr);
-        variables[i].thisProcsActualData->Write(str, wrtr);
-        variables[i].componentExtents->Write(str, wrtr);
+        variables[i]->originalData->Write(str, wrtr);
+        variables[i]->thisProcsOriginalData->Write(str, wrtr);
+        variables[i]->desiredData->Write(str, wrtr);
+        variables[i]->actualData->Write(str, wrtr);
+        variables[i]->thisProcsActualData->Write(str, wrtr);
+        variables[i]->componentExtents->Write(str, wrtr);
     }
 
     wrtr->WriteInt(str, meshname.size());
@@ -3206,17 +3208,17 @@ avtDataAttributes::Read(char *input)
         SetUseForAxis(useForAxis[i], varname.c_str());
         SetVariableType(vartypes[i], varname.c_str());
  
-        s = variables[i].originalData->Read(input);
+        s = variables[i]->originalData->Read(input);
         input += s; size += s;
-        s = variables[i].thisProcsOriginalData->Read(input);
+        s = variables[i]->thisProcsOriginalData->Read(input);
         input += s; size += s;
-        s = variables[i].desiredData->Read(input);
+        s = variables[i]->desiredData->Read(input);
         input += s; size += s;
-        s = variables[i].actualData->Read(input);
+        s = variables[i]->actualData->Read(input);
         input += s; size += s;
-        s = variables[i].thisProcsActualData->Read(input);
+        s = variables[i]->thisProcsActualData->Read(input);
         input += s; size += s;
-        s = variables[i].componentExtents->Read(input);
+        s = variables[i]->componentExtents->Read(input);
         input += s; size += s;
     }
     delete [] varDims;
@@ -3579,16 +3581,16 @@ avtDataAttributes::GetActualDataExtents(double *buff, const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    if (variables[index].actualData->HasExtents())
+    if (variables[index]->actualData->HasExtents())
     {
-        variables[index].actualData->CopyTo(buff);
+        variables[index]->actualData->CopyTo(buff);
         return true;
     }
 
     if (canUseThisProcsAsOriginalOrActual &&
-        variables[index].thisProcsActualData->HasExtents())
+        variables[index]->thisProcsActualData->HasExtents())
     {
-        variables[index].thisProcsActualData->CopyTo(buff);
+        variables[index]->thisProcsActualData->CopyTo(buff);
         return true;
     }
 
@@ -3658,7 +3660,7 @@ avtDataAttributes::GetVariableName(void) const
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[activeVariable].varname;
+    return variables[activeVariable]->varname;
 }
 
 
@@ -3681,7 +3683,7 @@ avtDataAttributes::GetVariableName(int index) const
         EXCEPTION2(BadIndexException, index, variables.size());
     }
 
-    return variables[index].varname;
+    return variables[index]->varname;
 }
 
 // ****************************************************************************
@@ -3713,7 +3715,7 @@ avtDataAttributes::GetVariableUnits(const char *varname) const
             EXCEPTION1(ImproperUseException, reason);
         }
 
-        return variables[activeVariable].varunits;
+        return variables[activeVariable]->varunits;
     }
     else
     {
@@ -3723,7 +3725,7 @@ avtDataAttributes::GetVariableUnits(const char *varname) const
             EXCEPTION2(BadIndexException, index, variables.size());
         }
 
-        return variables[index].varunits;
+        return variables[index]->varunits;
     }
 }
 
@@ -3755,7 +3757,7 @@ avtDataAttributes::GetVariableUnits(int index) const
         EXCEPTION2(BadIndexException, index, variables.size());
     }
 
-    return variables[index].varunits;
+    return variables[index]->varunits;
 }
 
 
@@ -3793,7 +3795,7 @@ avtDataAttributes::SetActiveVariable(const char *v)
 {
     for (int i = 0 ; i < variables.size() ; i++)
     {
-        if (variables[i].varname == v)
+        if (variables[i]->varname == v)
         {
             activeVariable = i;
             break;
@@ -3838,9 +3840,10 @@ avtDataAttributes::AddVariable(const std::string &s)
 void
 avtDataAttributes::AddVariable(const std::string &s, const std::string &units)
 {
-    for (int i = 0 ; i < variables.size() ; i++)
+    int size = variables.size();
+    for (int i = 0 ; i < size ; i++)
     {
-        if (variables[i].varname == s)
+        if (variables[i]->varname == s)
         {
             //
             // We already have this variable -- just return.
@@ -3849,20 +3852,7 @@ avtDataAttributes::AddVariable(const std::string &s, const std::string &units)
         }
     }
 
-    VarInfo new_var;
-    new_var.varname = s;
-    new_var.varunits = units;
-    new_var.dimension = -1;
-    new_var.centering = AVT_UNKNOWN_CENT;
-    new_var.vartype = AVT_UNKNOWN_TYPE;
-    new_var.treatAsASCII = false;
-    new_var.originalData = NULL;
-    new_var.thisProcsOriginalData = NULL;
-    new_var.desiredData = NULL;
-    new_var.actualData = NULL;
-    new_var.thisProcsActualData = NULL;
-    new_var.useForAxis = -1;
-    new_var.componentExtents = NULL;
+    VarInfo *new_var = new VarInfo(s, units);
     variables.push_back(new_var);
 }
 
@@ -3888,7 +3878,7 @@ avtDataAttributes::ValidVariable(const std::string &vname) const
 {
     for (int i = 0 ; i < variables.size() ; i++)
     {
-        if (variables[i].varname == vname)
+        if (variables[i]->varname == vname)
         {
             return true;
         }
@@ -3935,20 +3925,23 @@ avtDataAttributes::ValidActiveVariable(void) const
 void
 avtDataAttributes::RemoveVariable(const std::string &s)
 {
-    vector<VarInfo> new_vars;
+    vector<VarInfo *> new_vars;
 
     bool haveActiveVar = false;
     string activeVar;
     if (activeVariable >= 0)
     {
         haveActiveVar = true;
-        activeVar = variables[activeVariable].varname;
+        activeVar = variables[activeVariable]->varname;
     }
 
-    for (int i = 0 ; i < variables.size() ; i++)
+    int size = variables.size();
+    for (int i = 0 ; i < size ; i++)
     {
-        if (variables[i].varname != s)
+        if (variables[i]->varname != s)
             new_vars.push_back(variables[i]);
+        else
+            delete variables[i];
     }
     variables = new_vars;
 
@@ -3980,7 +3973,7 @@ avtDataAttributes::VariableNameToIndex(const char *vname) const
 
     for (int i = 0 ; i < variables.size() ; i++)
     {
-        if (variables[i].varname == vname)
+        if (variables[i]->varname == vname)
             return i;
     }
 
@@ -4371,7 +4364,7 @@ void
 avtDataAttributes::ClearAllUseForAxis()
 {
     for (int i=0; i<variables.size(); i++)
-        variables[i].useForAxis = -1;
+        variables[i]->useForAxis = -1;
 }
 
 
@@ -4409,7 +4402,7 @@ avtDataAttributes::SetUseForAxis(const int ufa, const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    variables[index].useForAxis = ufa;
+    variables[index]->useForAxis = ufa;
 }
 
 
@@ -4444,7 +4437,7 @@ avtDataAttributes::GetUseForAxis(const char *varname) const
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].useForAxis;
+    return variables[index]->useForAxis;
 }
 
 
@@ -4484,7 +4477,7 @@ avtDataAttributes::SetTreatAsASCII(const bool ascii, const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    variables[index].treatAsASCII = ascii;
+    variables[index]->treatAsASCII = ascii;
 }
 
 
@@ -4522,7 +4515,7 @@ avtDataAttributes::GetTreatAsASCII(const char *varname) const
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    return variables[index].treatAsASCII;
+    return variables[index]->treatAsASCII;
 }
 
 // ****************************************************************************
@@ -4985,14 +4978,14 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
         webpage->AddTableHeader3("Variable", "Field", "Value");
         for (int i = 0 ; i < variables.size() ; i++)
         {
-            webpage->AddTableEntry3(variables[i].varname.c_str(), NULL, NULL);
+            webpage->AddTableEntry3(variables[i]->varname.c_str(), NULL, NULL);
             webpage->AddTableEntry3(NULL, "ActiveVar", YesOrNo(i == activeVariable));
             webpage->AddTableEntry3(NULL, "Type", 
-                                   avtVarTypeToString(variables[i].vartype).c_str());
-            webpage->AddTableEntry3(NULL, "Units", variables[i].varunits.c_str());
-            SNPRINTF(str, 4096, "%d", variables[i].dimension);
+                                   avtVarTypeToString(variables[i]->vartype).c_str());
+            webpage->AddTableEntry3(NULL, "Units", variables[i]->varunits.c_str());
+            SNPRINTF(str, 4096, "%d", variables[i]->dimension);
             webpage->AddTableEntry3(NULL, "Dimension", str);
-            switch (variables[i].centering)
+            switch (variables[i]->centering)
             {
               case AVT_NODECENT:
                 strcpy(str, "nodal");
@@ -5006,26 +4999,26 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             }
             webpage->AddTableEntry3(NULL, "Centering", str);
             webpage->AddTableEntry3(NULL, "Treat variable as ASCII characters?",
-                                    YesOrNo(variables[i].treatAsASCII));
-            SNPRINTF(str, 4096, "%d", variables[i].useForAxis);
+                                    YesOrNo(variables[i]->treatAsASCII));
+            SNPRINTF(str, 4096, "%d", variables[i]->useForAxis);
             webpage->AddTableEntry3(NULL, "Use for axis", str);
-            ExtentsToString(variables[i].thisProcsOriginalData, str, 4096);
+            ExtentsToString(variables[i]->thisProcsOriginalData, str, 4096);
             webpage->AddTableEntry3(NULL, "ThisProcs original data extents", str);
-            ExtentsToString(variables[i].desiredData, str, 4096);
+            ExtentsToString(variables[i]->desiredData, str, 4096);
             webpage->AddTableEntry3(NULL, "Desired data extents", str);
-            ExtentsToString(variables[i].actualData, str, 4096);
+            ExtentsToString(variables[i]->actualData, str, 4096);
             webpage->AddTableEntry3(NULL, "Actual data extents", str);
-            ExtentsToString(variables[i].thisProcsActualData, str, 4096);
+            ExtentsToString(variables[i]->thisProcsActualData, str, 4096);
             webpage->AddTableEntry3(NULL, "ThisProcs actual data extents", str);
-            ExtentsToString(variables[i].componentExtents, str, 4096);
+            ExtentsToString(variables[i]->componentExtents, str, 4096);
             webpage->AddTableEntry3(NULL, "Component extents", str);
-            if (variables[i].subnames.size() != 0)
+            if (variables[i]->subnames.size() != 0)
             {
-                for (int j = 0 ; j < variables[i].subnames.size() ; j++)
+                for (int j = 0 ; j < variables[i]->subnames.size() ; j++)
                 {
                     SNPRINTF(str, 4096, "Variable subname[%d]", j);
                     webpage->AddTableEntry3(NULL, str,
-                                            variables[i].subnames[j].c_str());
+                                            variables[i]->subnames[j].c_str());
                 }
             }
         }
@@ -5037,4 +5030,74 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     }
 }
 
+// ****************************************************************************
+//  Method: avtDataAttributes::VarInfo::VarInfo
+//
+//  Purpose:
+//    Init memory
+//
+//  Programmer: David Camp
+//  Creation:   August 27, 2010
+//
+// ****************************************************************************
+avtDataAttributes::VarInfo::VarInfo(const std::string &s, const std::string &units)
+{
+    varname = s;
+    vartype = AVT_UNKNOWN_TYPE;
+    varunits = units;
+    dimension = -1;
+    centering = AVT_UNKNOWN_CENT;
+    treatAsASCII = false;
+    originalData = NULL;
+    thisProcsOriginalData = NULL;
+    desiredData = NULL;
+    actualData = NULL;
+    thisProcsActualData = NULL;
+    useForAxis = -1;
+    componentExtents = NULL;
+}
+
+// ****************************************************************************
+//  Method: avtDataAttributes::VarInfo::~VarInfo
+//
+//  Purpose:
+//    Delete memory
+//
+//  Programmer: David Camp
+//  Creation:   August 27, 2010
+//
+// ****************************************************************************
+avtDataAttributes::VarInfo::~VarInfo()
+{
+    if( originalData )
+    {
+        delete originalData;
+        originalData = NULL;
+    }
+    if( thisProcsOriginalData )
+    {
+        delete thisProcsOriginalData;
+        thisProcsOriginalData = NULL;
+    }
+    if( desiredData )
+    {
+        delete desiredData;
+        desiredData = NULL;
+    }
+    if( actualData )
+    {
+        delete actualData;
+        actualData = NULL;
+    }
+    if( thisProcsActualData )
+    {
+        delete thisProcsActualData;
+        thisProcsActualData = NULL;
+    }
+    if( componentExtents )
+    {
+        delete componentExtents;
+        componentExtents = NULL;
+    }
+}
 
