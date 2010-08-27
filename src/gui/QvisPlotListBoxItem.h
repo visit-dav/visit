@@ -147,7 +147,8 @@ private:
     ClickableRectangleVector clickable;
     bool                     addClickableRects;
 
-    static QPixmap          *subsetIcon, *selectionIcon;
+    static QPixmap          *subsetIcon; 
+    static QPixmap          *selectionIcon;
 };
 
 #endif

@@ -1171,7 +1171,6 @@ ENDFUNCTION(ADD_PARALLEL_LIBRARY)
 # Set up easy to use includes for the common directory
 SET(VISIT_COMMON_INCLUDES
     ${VISIT_BINARY_DIR}/include
-    ${VISIT_BINARY_DIR}/include/visit
     ${VISIT_SOURCE_DIR}/include
     ${VISIT_SOURCE_DIR}/common/Exceptions/Database
     ${VISIT_SOURCE_DIR}/common/Exceptions/Pipeline
