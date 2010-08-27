@@ -306,6 +306,9 @@ avtXRayFilter::~avtXRayFilter()
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Fri Aug 27 11:15:48 PDT 2010
+//    I removed the requirement that a 2d spatial mesh must be an RZ mesh,
+//    and had it assume that it was.
 //  
 // ****************************************************************************
 
@@ -315,8 +318,7 @@ avtXRayFilter::UpdateDataObjectInfo(void)
     avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
 
-    if (inAtts.GetSpatialDimension() == 2 &&
-        inAtts.GetMeshCoordType() == AVT_RZ)
+    if (inAtts.GetSpatialDimension() == 2)
         outAtts.SetSpatialDimension(3);
 
     outAtts.SetTopologicalDimension(1);
@@ -387,6 +389,10 @@ avtXRayFilter::SetImageProperties(float *pos_, float  theta_, float  phi_,
 //    I modified the filter to handle the case where some of the processors
 //    didn't have any data sets when executing in parallel.
 //
+//    Eric Brugger, Fri Aug 27 11:15:48 PDT 2010
+//    I removed the requirement that a 2d spatial mesh must be an RZ mesh,
+//    and had it assume that it was.
+//
 // ****************************************************************************
 
 void
@@ -411,8 +417,7 @@ avtXRayFilter::Execute(void)
     float ***cellData = new float**[totalNodes];
 
     int t1 = visitTimer->StartTimer();
-    if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_RZ &&
-        GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
+    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
     {
         for (currentNode = 0; currentNode < totalNodes; currentNode++)
             CylindricalExecute(dataSets[currentNode],
@@ -479,7 +484,10 @@ avtXRayFilter::Execute(void)
 //    Eric Brugger, Fri Aug 13 10:16:33 PDT 2010
 //    I corrected a bug where the lines for the pixels were not defined
 //    properly for most cases.
-
+//
+//    Eric Brugger, Fri Aug 27 11:15:48 PDT 2010
+//    I removed the requirement that a 2d spatial mesh must be an RZ mesh,
+//    and had it assume that it was.
 //
 // ****************************************************************************
 
@@ -499,9 +507,13 @@ avtXRayFilter::PreExecute(void)
     avtDatasetExaminer::GetSpatialExtents(input, extents);
     UnifyMinMax(extents, 6);
 
-    if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_RZ &&
-        GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
+    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
     {
+        if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() != AVT_RZ)
+        {
+            avtCallback::IssueWarning("Encountered a 2D mesh that was not an "
+                "RZ mesh, assuming it is an RZ mesh.");
+        }
         spatDim = 3;
         extents[4] = extents[0];
         extents[5] = extents[1];
