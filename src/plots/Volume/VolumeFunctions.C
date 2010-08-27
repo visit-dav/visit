@@ -476,12 +476,12 @@ VolumeGetVariableExtents(const VolumeAttributes &atts, vtkDataArray *data,
     VolumeGetRange(data, vmin, vmax);
 
     // Override with the original extents if appropriate.
-    if (atts.GetScaling() != VolumeAttributes::Log10)
+    if (atts.GetScaling() != VolumeAttributes::Log)
     {
         vmin = (varmin < vmin ? varmin : vmin);
         vmax = (varmax > vmax ? varmax : vmax);
     }
-    else //if (atts.GetScaling() == VolumeAttributes::Log10)
+    else //if (atts.GetScaling() == VolumeAttributes::Log)
     {
         if (varmin > 0)
         {
@@ -499,13 +499,13 @@ VolumeGetVariableExtents(const VolumeAttributes &atts, vtkDataArray *data,
     if (atts.GetUseColorVarMin())
     {
         vmin = atts.GetColorVarMin();
-        if (atts.GetScaling() == VolumeAttributes::Log10 && vmin > 0)
+        if (atts.GetScaling() == VolumeAttributes::Log && vmin > 0)
             vmin = log10(vmin);
     }
     if (atts.GetUseColorVarMax())
     {
         vmax = atts.GetColorVarMax();
-        if (atts.GetScaling() == VolumeAttributes::Log10 && vmax > 0)
+        if (atts.GetScaling() == VolumeAttributes::Log && vmax > 0)
             vmax = log10(vmax);
     }
     if (vmin >= vmax)
@@ -559,13 +559,13 @@ VolumeGetOpacityExtents(const VolumeAttributes &atts, vtkDataArray *opac,
         if (atts.GetUseColorVarMin())
         {
             omin = atts.GetColorVarMin();
-            if (atts.GetScaling() == VolumeAttributes::Log10 && omin > 0)
+            if (atts.GetScaling() == VolumeAttributes::Log && omin > 0)
                 omin = log10(omin);
         }
         if (atts.GetUseColorVarMax())
         {
             omax = atts.GetColorVarMax();
-            if (atts.GetScaling() == VolumeAttributes::Log10 && omax > 0)
+            if (atts.GetScaling() == VolumeAttributes::Log && omax > 0)
                 omax = log10(omax);
         }
     }

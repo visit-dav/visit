@@ -460,7 +460,7 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     rb->setChecked(true);
     scalingButtons->addButton(rb, 0);
     dataLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton(tr("Log10"), central);
+    rb = new QRadioButton(tr("Log"), central);
     scalingButtons->addButton(rb, 1);
     dataLayout->addWidget(rb, 0, 2);
     rb = new QRadioButton(tr("Skew"), central);

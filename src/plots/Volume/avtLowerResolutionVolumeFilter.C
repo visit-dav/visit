@@ -229,7 +229,7 @@ avtLowerResolutionVolumeFilter::ExecuteData(vtkDataSet *ds, int, std::string)
         dest->SetName(src->GetName());
 
         // Transform the data.
-        if (atts.GetScaling() == VolumeAttributes::Log10)
+        if (atts.GetScaling() == VolumeAttributes::Log)
         {
             TRY
             {

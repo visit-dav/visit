@@ -77,7 +77,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int GRADIENTTYPE_SOBELOPERATOR = 1;
 
     public final static int SCALING_LINEAR = 0;
-    public final static int SCALING_LOG10 = 1;
+    public final static int SCALING_LOG = 1;
     public final static int SCALING_SKEW = 2;
 
     public final static int LIMITSMODE_ORIGINALDATA = 0;
@@ -764,8 +764,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + indent + "scaling = ";
         if(scaling == SCALING_LINEAR)
             str = str + "SCALING_LINEAR";
-        if(scaling == SCALING_LOG10)
-            str = str + "SCALING_LOG10";
+        if(scaling == SCALING_LOG)
+            str = str + "SCALING_LOG";
         if(scaling == SCALING_SKEW)
             str = str + "SCALING_SKEW";
         str = str + "\n";

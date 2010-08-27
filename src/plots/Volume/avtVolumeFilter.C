@@ -177,7 +177,7 @@ avtVolumeFilter::Execute(void)
         avtDatasetExaminer::GetDataExtents(ds, minmax, primaryVariable);
     minmax[0] = (artificialMin ? atts.GetColorVarMin() : minmax[0]);
     minmax[1] = (artificialMax ? atts.GetColorVarMax() : minmax[1]);
-    if (atts.GetScaling() == VolumeAttributes::Log10)
+    if (atts.GetScaling() == VolumeAttributes::Log)
     {
         if (artificialMin)
             if (minmax[0] > 0)
@@ -359,7 +359,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     double range[2];
     range[0] = (artificialMin ? atts.GetColorVarMin() : actualRange[0]);
     range[1] = (artificialMax ? atts.GetColorVarMax() : actualRange[1]);
-    if (atts.GetScaling() == VolumeAttributes::Log10)
+    if (atts.GetScaling() == VolumeAttributes::Log)
     {
         if (artificialMin)
             if (range[0] > 0)
@@ -836,7 +836,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         primaryVariable = new char[strlen(var)+1];
         strcpy(primaryVariable, var);
     }
-    else if (atts.GetScaling() == VolumeAttributes::Log10)
+    else if (atts.GetScaling() == VolumeAttributes::Log)
     {
         string exprName = (string)"log_" + (string)var;
         char exprDef[128];
