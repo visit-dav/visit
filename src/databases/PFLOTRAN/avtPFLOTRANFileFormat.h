@@ -53,6 +53,8 @@
 #include <avtMTMDFileFormat.h>
 
 #include <vector>
+#include <map>
+#include <string>
 
 
 // ****************************************************************************
@@ -73,6 +75,9 @@
 //    Added support for zonal variables, and recentering old-style files
 //    that used cell centers for the coordinate arrays.
 //
+//    Daniel Schep, Thu Aug 26 15:30:18 EDT 2010
+//    Added support for vector and material data.
+//
 // ****************************************************************************
 
 class avtPFLOTRANFileFormat : public avtMTMDFileFormat
@@ -85,10 +90,10 @@ class avtPFLOTRANFileFormat : public avtMTMDFileFormat
     // This is used to return unconvention data -- ranging from material
     // information to information about block connectivity.
     //
-    // virtual void      *GetAuxiliaryData(const char *var, int timestep, 
-    //                                     int domain, const char *type, void *args, 
-    //                                     DestructorFunction &);
-    //
+    virtual void      *GetAuxiliaryData(const char *var, int timestep, 
+                                         int domain, const char *type, void *args, 
+                                         DestructorFunction &df);
+    
 
     //
     // If you know the times and cycle numbers, overload this function.
@@ -137,6 +142,10 @@ class avtPFLOTRANFileFormat : public avtMTMDFileFormat
 
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+
+    // So that the reader can remember what the vector component arrays are
+    // when asked for the vector data.
+    std::map<std::string, std::vector<std::string> > vectors;
 };
 
 

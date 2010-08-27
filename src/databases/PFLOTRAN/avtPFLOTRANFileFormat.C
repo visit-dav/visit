@@ -57,6 +57,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtDatabase.h>
+#include <avtMaterial.h>
 
 #include <InvalidDBTypeException.h>
 
@@ -72,6 +73,7 @@
 using std::string;
 
 static std::string coordNames[3] = { "X [m]", "Y [m]", "Z [m]" };
+static std::string vecNames[3] = { "X-", "Y-", "Z-" };
 
 // ****************************************************************************
 //  Method: avtPFLOTRANFileFormat constructor
@@ -481,6 +483,9 @@ avtPFLOTRANFileFormat::AddGhostCellInfo(vtkDataSet *ds)
 //    Add support for old-style PFLOTRAN files where the coordinate
 //    arrays represented cell centers.
 //
+//    Daniel Schep, Thu Aug 26 15:30:18 EDT 2010
+//    Added support for returning vector and material data.
+//
 // ****************************************************************************
 
 void
@@ -517,11 +522,105 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
         char name[512];
         H5Gget_objname_by_idx(g, i, name, 512);
 
+        // Check if variable is a Vector component
+        char* vecMatch;
+        for (int comp=0;comp<3;comp++)
+            if (vecMatch = strstr(name,vecNames[comp].c_str())) break;
+        
+        // if so, add component to vector list
+        if (vecMatch)
+        {
+            char vectorName[512];
+            strncpy(vectorName, name, strlen(name)-strlen(vecMatch));
+            strcpy(vectorName+strlen(name)-strlen(vecMatch), vecMatch+2);
+
+            if (vectors.count(string(vectorName)) == 0)
+                vectors[string(vectorName)] = vector<string>();
+            vectors[string(vectorName)].push_back(string(name));
+
+            continue; // Don't add vectors components as scalars.
+        }
+
         hid_t ds = H5Dopen(g, name);
         hid_t dsSpace = H5Dget_space(ds);
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
         if (ndims != 3)
             continue; // skip it
+
+
+        // set metadata for Materials
+        if(strstr(name, "Material_ID"))
+        {
+            hid_t slabSpace = H5Scopy(dsSpace);
+            hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
+            hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
+            if (oldFileNeedingCoordFixup)
+            {
+                for (int dim=0; dim<3; dim++)
+                    count[dim]++;
+            }
+            H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
+
+            hsize_t beg[3];
+            hsize_t end[3];
+            H5Sget_select_bounds(slabSpace, beg, end);
+            int nx = end[0]-beg[0]+1;
+            int ny = end[1]-beg[1]+1;
+            int nz = end[2]-beg[2]+1;
+            int nvals = nx*ny*nz;
+
+            int dims[3];
+            dims[0] = nx;
+            dims[1] = ny;
+            dims[2] = nz;
+
+            hid_t memSpace = H5Screate_simple(3,count,NULL);
+
+            int *matlist = new int[nvals];
+
+            int *in = new int[nvals];
+            herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
+                                 H5P_DEFAULT, in);
+            // Input is in a different ordering (Fortran) than VTK wants (C).
+            for (int i=0;i<nx;i++)
+                for (int j=0;j<ny;j++)
+                    for (int k=0;k<nz;k++)
+                        matlist[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+
+
+            // find the different materials
+            map<int,bool> matls;
+            for (int i=0;i<nvals;i++)
+                matls[matlist[i]] = true;
+
+            int nmats = matls.size();
+            char **names = new char*[nmats];
+            int i = 0;
+            for (map<int,bool>::iterator iter = matls.begin(); iter != matls.end();++iter)
+            {
+                names[i] = new char[8];
+                sprintf(names[i], "%d", iter->first);
+                ++i;
+            }
+
+
+            avtMaterialMetaData *material = new avtMaterialMetaData();
+            material->name = name;
+            material->meshName = "mesh";
+            material->numMaterials = nmats;
+            for(int i=0;i<nmats;++i)
+                material->materialNames.push_back(names[i]);
+            md->Add(material);
+
+     
+            delete [] in;
+            delete [] matlist;
+            for(int i=0;i<nmats;++i)
+                delete [] names[i];
+            delete [] names;
+
+            continue; // Don't add materials as a scalar.
+        }
 
         // We need to check if the coordinate array dims are the same
         // as the variables.  So well save off one of the variable's
@@ -540,6 +639,22 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
         scalar->centering = AVT_ZONECENT;
         md->Add(scalar);
     }
+
+    //add metadata for vectors if they have 3 components
+    for (map<string, vector<string> >::iterator iter=vectors.begin();
+        iter!=vectors.end(); ++iter )
+    {
+        if (iter->second.size() == 3)
+        {
+            avtVectorMetaData *vector = new avtVectorMetaData();
+            vector->name = iter->first;
+            vector->meshName = "mesh";
+            vector->centering = AVT_ZONECENT;
+            md->Add(vector);
+        }
+        // ignore < 3-vectors
+    }
+
 
 #ifdef PARALLEL
     if (oldFileNeedingCoordFixup)
@@ -798,12 +913,229 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
 //  Programmer: Sean Ahern
 //  Creation:   Thu Apr 24 14:00:58 PST 2008
 //
+//  Modifications:
+//    Daniel Schep, Thu Aug 26 15:30:18 EDT 2010
+//    Implemented support to return vector data.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
                                      const char *varname)
 {
-    // We don't have any vectors, so we should never get here.
-    EXCEPTION1(InvalidVariableException, varname);
+    // Make sure the file is opened and ready.
+    LoadFile();
+
+    // Get var component names
+    vector<string> varnames = vectors[string(varname)];
+    sort(varnames.begin(), varnames.end());
+
+
+    hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
+    vtkDoubleArray *array;
+    for(int comp=0; comp<3; comp++)
+        {
+        hid_t ds = H5Dopen(ts, varnames[comp].c_str());
+        hid_t dsSpace = H5Dget_space(ds);
+        int ndims = H5Sget_simple_extent_ndims(dsSpace);
+        if (ndims != 3)
+        {
+            debug1 << "The variable " << varname << " had only " << ndims << " dimensions" << endl;
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+
+        hid_t slabSpace = H5Scopy(dsSpace);
+        hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
+        hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
+        if (oldFileNeedingCoordFixup)
+        {
+            for (int dim=0; dim<3; dim++)
+                count[dim]++;
+        }
+        H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
+
+        hsize_t beg[3];
+        hsize_t end[3];
+        H5Sget_select_bounds(slabSpace, beg, end);
+        int nx = end[0]-beg[0]+1;
+        int ny = end[1]-beg[1]+1;
+        int nz = end[2]-beg[2]+1;
+        int nvals = nx*ny*nz;
+
+        hid_t memSpace = H5Screate_simple(3,count,NULL);
+
+        // Set up the VTK object.
+        double *out;
+        if (comp == 0)
+        {
+            array = vtkDoubleArray::New();
+            array->SetNumberOfComponents(3);
+            array->SetNumberOfTuples(nvals);
+            out = (double*)array->GetVoidPointer(0);
+        }
+
+        // Read the data -- read to ints or doubles directly, as
+        // some versions of HDF5 seem to have problems converting
+        // ints to doubles directly.
+        hid_t intype = H5Dget_type(ds);
+        if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
+            H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
+            H5Tequal(intype, H5T_NATIVE_LDOUBLE))
+        {        
+            double *in = new double[nvals];
+            herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
+                                 H5P_DEFAULT, in);
+
+            // Input is in a different ordering (Fortran) than VTK wants (C).
+            for (int i=0;i<nx;i++)
+                for (int j=0;j<ny;j++)
+                    for (int k=0;k<nz;k++)
+                        out[k*nx*ny*3 + j*nx*3 + i*3 + comp] = in[k + j*nz + i*nz*ny];
+
+            delete [] in;
+        }
+        else
+        {
+            int *in = new int[nvals];
+            herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
+                                 H5P_DEFAULT, in);
+            // Input is in a different ordering (Fortran) than VTK wants (C).
+            for (int i=0;i<nx;i++)
+                for (int j=0;j<ny;j++)
+                    for (int k=0;k<nz;k++)
+                        out[k*nx*ny*3 + j*nx*3 + i*3 + comp] = in[k + j*nz + i*nz*ny];
+
+            delete [] in;
+        }
+    }
+
+    return array;
+}
+
+
+// ****************************************************************************
+//  Method: avtPFLOTRANFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Get Auxiliary Data associated with this file.
+//
+//  Arguments:
+//      var        The variable of interest.
+//      timestep   The index of the timestate.  If GetNTimesteps returned
+//                 'N' time steps, this is guaranteed to be between 0 and N-1.
+//      domain     The index of the domain.  If there are NDomains, this
+//                 value is guaranteed to be between 0 and NDomains-1,
+//                 regardless of block origin.
+//      varname    The name of the variable requested.
+//      type       The type of auxiliary data requested.
+//      args       Optional arguments (unused)
+//      df         Reference variable to a Destructor for the data returned.
+//
+//  Note: The only Auxiliary type supported is AUXILIARY_DATA_MATERIAL.
+//
+//  Programmer: Daniel Schep
+//  Creation:   Thu Aug 26 14:14:09 EDT 2010
+//
+// ****************************************************************************
+
+void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep, 
+                                    int domain, const char *type, void *args, 
+                                    DestructorFunction &df)
+{
+    void *retval = 0;
+
+
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        // Make sure the file is opened and ready.
+        LoadFile();
+
+        // Read the dataset from the file.
+        hid_t ts = H5Gopen(fileID, times[timestep].second.c_str());
+        hid_t ds = H5Dopen(ts, var);
+        hid_t dsSpace = H5Dget_space(ds);
+        int ndims = H5Sget_simple_extent_ndims(dsSpace);
+        if (ndims != 3)
+        {
+            debug1 << "The variable " << var << " had only " << ndims << " dimensions" << endl;
+            EXCEPTION1(InvalidVariableException, var);
+        }
+
+        hid_t slabSpace = H5Scopy(dsSpace);
+        hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
+        hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
+        if (oldFileNeedingCoordFixup)
+        {
+            for (int dim=0; dim<3; dim++)
+                count[dim]++;
+        }
+        H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
+
+        hsize_t beg[3];
+        hsize_t end[3];
+        H5Sget_select_bounds(slabSpace, beg, end);
+        int nx = end[0]-beg[0]+1;
+        int ny = end[1]-beg[1]+1;
+        int nz = end[2]-beg[2]+1;
+        int nvals = nx*ny*nz;
+
+        int dims[3];
+        dims[0] = nx;
+        dims[1] = ny;
+        dims[2] = nz;
+
+        hid_t memSpace = H5Screate_simple(3,count,NULL);
+
+        int *matlist = new int[nvals];
+
+        int *in = new int[nvals];
+        herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
+                             H5P_DEFAULT, in);
+        // Input is in a different ordering (Fortran) than VTK wants (C).
+        for (int i=0;i<nx;i++)
+            for (int j=0;j<ny;j++)
+                for (int k=0;k<nz;k++)
+                    matlist[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+
+
+        map<int,bool> matls;
+        for (int i=0;i<nvals;i++)
+            matls[matlist[i]] = true;
+
+        int nmats = matls.size();
+        cout << nmats << endl;
+        int *matnos = new int[nmats];
+        char **names = new char*[nmats];
+        int i = 0;
+        for(map<int,bool>::iterator iter = matls.begin(); iter != matls.end();++iter)
+        {
+            matnos[i] = iter->first;
+            names[i] = new char[8];
+            sprintf(names[i], "%d", iter->first);
+            ++i;
+        }
+
+        avtMaterial *mat = new avtMaterial(
+            nmats,
+            matnos,
+            names,
+            ndims,
+            dims,
+            0,
+            matlist,
+            0,0,0,0,0);
+
+
+        delete [] in;
+        delete [] matlist;
+        delete [] matnos;
+        for(int i=0;i<nmats;++i)
+            delete [] names[i];
+        delete [] names;
+
+        retval = (void*)mat;
+        df = avtMaterial::Destruct;
+    }
+
+    return retval;
 }
