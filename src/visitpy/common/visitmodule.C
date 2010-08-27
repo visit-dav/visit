@@ -11314,6 +11314,39 @@ visit_ResetPickLetter(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_RenamePickLabel
+//
+// Purpose:
+//   Tells the viewer to rename the pick label in the visual cue.
+//
+// Notes:
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 27 10:33:33 PDT 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_RenamePickLabel(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *oldLabel = NULL, *newLabel = NULL;
+    if(!PyArg_ParseTuple(args,"ss",&oldLabel, &newLabel))
+    {
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        GetViewerMethods()->RenamePickLabel(oldLabel, newLabel);
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_ResetLineoutColor
 //
 // Purpose:
@@ -14580,6 +14613,9 @@ AddMethod(const char *methodName,
 //   Cyrus Harrison, Wed Aug 25 17:03:50 PDT 2010
 //   Add stubs for old ddf function names to support prev api.
 //
+//   Brad Whitlock, Fri Aug 27 10:37:20 PDT 2010
+//   I added RenamePickLabel.
+//
 // ****************************************************************************
 
 static void
@@ -14813,6 +14849,7 @@ AddDefaultMethods()
     AddMethod("RemoveLastOperator", visit_RemoveLastOperator,
                                                      visit_RemoveOperator_doc);
     AddMethod("RemoveOperator", visit_RemoveOperator,visit_RemoveOperator_doc);
+    AddMethod("RenamePickLabel", visit_RenamePickLabel, NULL /* DOCUMENT ME*/);
     AddMethod("ReOpenDatabase", visit_ReOpenDatabase,visit_ReOpenDatabase_doc);
     AddMethod("ReplaceDatabase", visit_ReplaceDatabase,
                                                     visit_ReplaceDatabase_doc);

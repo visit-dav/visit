@@ -255,7 +255,8 @@ public class ViewerRPC extends AttributeSubject
     public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDLASTRPC = 190;
     public final static int VIEWERRPCTYPE_SETPLOTORDERTOFIRSTRPC = 191;
     public final static int VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC = 192;
-    public final static int VIEWERRPCTYPE_MAXRPC = 193;
+    public final static int VIEWERRPCTYPE_RENAMEPICKLABELRPC = 193;
+    public final static int VIEWERRPCTYPE_MAXRPC = 194;
 
 
     public ViewerRPC()
@@ -1416,6 +1417,8 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_SETPLOTORDERTOFIRSTRPC";
         if(RPCType == VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC)
             str = str + "VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC";
+        if(RPCType == VIEWERRPCTYPE_RENAMEPICKLABELRPC)
+            str = str + "VIEWERRPCTYPE_RENAMEPICKLABELRPC";
         if(RPCType == VIEWERRPCTYPE_MAXRPC)
             str = str + "VIEWERRPCTYPE_MAXRPC";
         str = str + "\n";

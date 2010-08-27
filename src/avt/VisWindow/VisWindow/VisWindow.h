@@ -585,7 +585,7 @@ public:
 
     void                 QueryIsValid(const VisualCueInfo *, 
                                       const VisualCueInfo *);
-    void                 UpdateQuery(const VisualCueInfo *);
+    void                 UpdateQuery(const std::string &, const VisualCueInfo *);
     void                 DeleteQuery(const VisualCueInfo *);
     void                 ScalePlots(const double [3]);
 

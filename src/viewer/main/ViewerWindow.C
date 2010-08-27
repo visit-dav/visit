@@ -6914,9 +6914,12 @@ ViewerWindow::ValidateQuery(const PickAttributes *pa, const Line *lineAtts)
 //  Creation:   June 10, 2002
 //
 //  Modifications:
-//
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added code to build visual cue infos from line attributes
+//
+//    Brad Whitlock, Fri Aug 27 11:25:17 PDT 2010
+//    Use the cue label with UpdateQuery.
+//
 // ****************************************************************************
  
 void
@@ -6924,9 +6927,42 @@ ViewerWindow::UpdateQuery(const Line *lineAtts)
 {
     VisualCueInfo cue;
     cue.SetFromL(lineAtts);
-    visWindow->UpdateQuery(&cue);
+    visWindow->UpdateQuery(cue.GetLabel(), &cue);
 }
 
+// ****************************************************************************
+// Method: ViewerWindow::RenamePickLabel
+//
+// Purpose: 
+//   Renames a pick label with a new label.
+//
+// Arguments:
+//   oldLabel : The old pick label.
+//   newLabel : The new pick label.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 26 17:05:12 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::RenamePickLabel(const std::string &oldLabel, const std::string &newLabel)
+{
+    std::vector<const VisualCueInfo *> cues;
+    visWindow->GetVisualCues(VisualCueInfo::PickPoint, cues);
+    for(size_t i = 0; i < cues.size(); ++i)
+    {
+        if(cues[i]->GetLabel() == oldLabel)
+        {
+            VisualCueInfo newCue(*(cues[i]));
+            newCue.SetLabel(newLabel);
+            visWindow->UpdateQuery(oldLabel, &newCue);
+            return;
+        }
+    }
+}
 
 // ****************************************************************************
 //  Method: ViewerWindow::DeleteQuery

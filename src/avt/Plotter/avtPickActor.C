@@ -62,6 +62,9 @@
 //    Kathleen Bonnell, Fri Jun 27 16:57:45 PDT 2003  
 //    Added glyph for NodePicking. 
 //
+//    Brad Whitlock, Fri Aug 27 10:59:33 PDT 2010
+//    Initialize designator.
+//
 // ****************************************************************************
 
 avtPickActor:: avtPickActor()
@@ -69,6 +72,7 @@ avtPickActor:: avtPickActor()
     mode3D  = true;
     useGlyph  = false;
     attach[0] = attach[1] = attach[2] = 0.;
+    designator = "";
 
     //
     //  Set up the pipeline for the line actor.
@@ -361,12 +365,17 @@ avtPickActor::SetScale(double s)
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    March 22, 2002 
 //
+//  Modification:
+//    Brad Whitlock, Fri Aug 27 10:59:01 PDT 2010
+//    Save the designator string.
+//
 // ****************************************************************************
 
-void avtPickActor::SetDesignator(const char *l)
+void avtPickActor::SetDesignator(const std::string &l)
 {
+    designator = l;
     vtkVectorText *vecText = vtkVectorText::New();
-    vecText->SetText(l);
+    vecText->SetText(l.c_str());
 
     vtkPolyDataMapper *pickMapper = vtkPolyDataMapper::New();
     pickMapper->SetInput(vecText->GetOutput());
@@ -377,6 +386,26 @@ void avtPickActor::SetDesignator(const char *l)
     vecText->Delete();
 }
 
+// ****************************************************************************
+// Method: avtPickActor::GetDesignator
+//
+// Purpose: 
+//   Return the pick's designator.
+//
+// Returns:   the pick's designator. 
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 27 10:57:26 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+avtPickActor::GetDesignator() const
+{
+    return designator;
+}
 
 // ****************************************************************************
 //  Method:  avtPickActor::SetForegroundColor

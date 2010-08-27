@@ -5232,21 +5232,26 @@ VisWindow::Get3DAxisScalingFactors(double s[3])  const
 //    Tells the query colleague to do an update. 
 //
 //  Arguments:
-//    lineAtts  Attributes that specify which query is to be updated.
+//    id   which query to update
+//    cue  Attributes used to update the query.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 18, 2002 
 //
 //  Modifications:
-//
 //    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
 //    Changed interface to use VisualCueInfo object
+//
+//    Brad Whitlock, Fri Aug 27 11:30:00 PDT 2010
+//    I made selecting the id separate from the label in the cue, which lets
+//    us pass a new label for picks.
+//
 // ****************************************************************************
  
 void
-VisWindow::UpdateQuery(const VisualCueInfo *lineCue)
+VisWindow::UpdateQuery(const std::string &id, const VisualCueInfo *cue)
 {
-    queries->UpdateQuery(lineCue);
+    queries->UpdateQuery(id, cue);
 }
 
 

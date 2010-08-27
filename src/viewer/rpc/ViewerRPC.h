@@ -256,6 +256,7 @@ public:
         MovePlotOrderTowardLastRPC,
         SetPlotOrderToFirstRPC,
         SetPlotOrderToLastRPC,
+        RenamePickLabelRPC,
         MaxRPC
     };
 

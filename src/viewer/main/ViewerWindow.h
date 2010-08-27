@@ -614,6 +614,7 @@ public:
     void SetPickFunction(void (*func)(void *, bool, const PickAttributes *),
                          void *data, bool);
     void ClearPickPoints();
+    void RenamePickLabel(const std::string &, const std::string &);
 
     void ValidateQuery(const PickAttributes *, const Line *);
     void UpdateQuery(const Line *);
