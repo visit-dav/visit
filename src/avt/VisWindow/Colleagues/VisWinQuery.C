@@ -458,7 +458,7 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
 
     pp->UseGlyph(vq->GetGlyphType() != "");
     
-    pp->SetDesignator(vq->GetLabel().c_str());
+    pp->SetDesignator(vq->GetLabel());
 
     double fg[3];
     mediator.GetForegroundColor(fg);
@@ -733,16 +733,21 @@ VisWinQuery::ClearLineouts()
 //
 //    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
 //    Added code to store visual cue info back into the cache
-//    
+//
+//    Brad Whitlock, Thu Aug 26 16:56:57 PDT 2010
+//    I added code to update the pick actor. I made the matching of actors
+//    use a new passed id so we can rename the pick labels in the cue info.
+//
 // ****************************************************************************
  
 void
-VisWinQuery::UpdateQuery(const VisualCueInfo *vq)
+VisWinQuery::UpdateQuery(const std::string &id, const VisualCueInfo *vq)
 {
+    // Try and update the lineouts
     std::vector< LineEntry >::iterator it;
     for (it = lineOuts.begin() ; it != lineOuts.end() ; it++)
     {
-        if (it->lineActor->GetDesignator() == vq->GetLabel())
+        if (it->lineActor->GetDesignator() == id)
         {
             //
             // Pull the lineout actors a little closer to the camera to make sure
@@ -784,6 +789,20 @@ VisWinQuery::UpdateQuery(const VisualCueInfo *vq)
             it->vqInfo = *vq;
         }
     }
+
+    // Try and update the pick points
+    std::vector<PickEntry>::iterator pit;
+    for(pit = pickPoints.begin(); pit != pickPoints.end(); ++pit)
+    {
+        if(pit->pickActor->GetDesignator() == id)
+        {
+            // Just update the pick label for now.
+            pit->pickActor->SetDesignator(vq->GetLabel());
+
+            pit->vqInfo = *vq;
+        }
+    }
+
     //
     //  Issue a render call so changes take effect.
     //

@@ -1629,6 +1629,13 @@ static std::string log_ResetPickLetterRPC(ViewerRPC *rpc)
     return std::string("ResetPickLetter()\n");
 }
 
+static std::string log_RenamePickLabelRPC(ViewerRPC *rpc)
+{
+    return std::string("RenamePickLabel(\"") + 
+           rpc->GetStringArg1() + std::string("\", \"") + 
+           rpc->GetStringArg2() + std::string("\")\n");
+}
+
 static std::string log_SetDefaultPickAttributesRPC(ViewerRPC *rpc)
 {
     std::string s(PyPickAttributes_GetLogString());
@@ -1932,6 +1939,9 @@ static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 //
 //   Hank Childs, Sat Aug 21 14:05:14 PDT 2010
 //   Rename ddf to data binning.
+//
+//   Brad Whitlock, Fri Aug 27 10:43:32 PDT 2010
+//   I added RenamePickLabel.
 //
 // ****************************************************************************
 
@@ -2479,6 +2489,9 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::SetPlotOrderToLastRPC:
         str = log_SetPlotOrderToLastRPC(rpc);
+        break;
+    case ViewerRPC::RenamePickLabelRPC:
+        str = log_RenamePickLabelRPC(rpc);
         break;
 
     // RPCs that we don't want to log:

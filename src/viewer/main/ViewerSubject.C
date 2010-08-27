@@ -6512,6 +6512,29 @@ ViewerSubject::ResetPickLetter()
     ViewerQueryManager::Instance()->ResetPickLetter(); 
 }
 
+// ****************************************************************************
+// Method: ViewerSubject::RenamePickLabel
+//
+// Purpose: 
+//   Renames a pick label.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 27 10:28:15 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::RenamePickLabel()
+{
+    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+    if(win != 0)
+    {
+        win->RenamePickLabel(GetViewerState()->GetViewerRPC()->GetStringArg1(),
+                             GetViewerState()->GetViewerRPC()->GetStringArg2());
+    }
+}
 
 // ****************************************************************************
 //  Method: ViewerSubject::SetKeyframeAttributes
@@ -8028,6 +8051,9 @@ ViewerSubject::HandleViewerRPC()
 //    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
 //    Rename ddf to data binning.
 //
+//    Brad Whitlock, Fri Aug 27 10:29:23 PDT 2010
+//    I added RenamePickLabel.
+//
 // ****************************************************************************
 
 void
@@ -8417,6 +8443,9 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::UpdateNamedSelectionRPC:
         UpdateNamedSelection();
+        break;
+    case ViewerRPC::RenamePickLabelRPC:
+        RenamePickLabel();
         break;
     case ViewerRPC::MaxRPC:
         break;

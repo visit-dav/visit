@@ -75,6 +75,9 @@ class vtkGlyphSource2D;
 //    Kathleen Bonnell, Wed Aug 18 09:59:02 PDT 2004 
 //    Added 'GetMode3D'. 
 //
+//    Brad Whitlock, Fri Aug 27 10:54:33 PDT 2010
+//    I added GetPickDesignator.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPickActor
@@ -95,7 +98,8 @@ class PLOTTER_API avtPickActor
     void               SetMode3D(const bool);
     const bool         GetMode3D(void) const { return mode3D; };
     void               SetScale(double);
-    void               SetDesignator(const char *l);
+    void               SetDesignator(const std::string &l);
+    std::string        GetDesignator() const;
     void               SetForegroundColor(double fgr, double fgg, double fgb);
     void               SetForegroundColor(double fg[3]);
     void               UpdateView();
@@ -108,6 +112,7 @@ class PLOTTER_API avtPickActor
     bool               mode3D;
     bool               useGlyph;
     double             attach[3];
+    std::string        designator;
     vtkFollower       *letterActor;
 
     vtkActor          *lineActor;

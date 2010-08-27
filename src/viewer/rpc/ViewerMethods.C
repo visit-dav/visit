@@ -3363,6 +3363,38 @@ ViewerMethods::ResetPickLetter()
     state->GetViewerRPC()->Notify();
 }
 
+// ****************************************************************************
+// Method: ViewerMethods::RenamePickLabel
+//
+// Purpose: 
+//   Rename the pick label.
+//
+// Arguments:
+//   oldLabel : The old pick label.
+//   newLabel : The new pick label.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 27 10:39:42 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerMethods::RenamePickLabel(const std::string &oldLabel, const std::string &newLabel)
+{
+    //
+    // Set the rpc type.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::RenamePickLabelRPC);
+    state->GetViewerRPC()->SetStringArg1(oldLabel);
+    state->GetViewerRPC()->SetStringArg2(newLabel);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
 
 // ****************************************************************************
 // Method: ViewerMethods::ResetPickAttributes

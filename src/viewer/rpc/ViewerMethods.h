@@ -133,6 +133,9 @@ class ViewerState;
 //   Hank Childs, Sat Aug 21 14:20:04 PDT 2010
 //   Rename method: DDF to DataBinning.
 //
+//   Brad Whitlock, Fri Aug 27 10:38:23 PDT 2010
+//   I added RenamePickLabel.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -337,7 +340,7 @@ public:
     void SetDefaultPickAttributes();
     void ResetPickAttributes();
     void ResetPickLetter();
-
+    void RenamePickLabel(const std::string &, const std::string &);
     void ResetLineoutColor();
 
     void SetQueryOverTimeAttributes();

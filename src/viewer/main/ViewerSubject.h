@@ -662,6 +662,7 @@ private:
     void SetDefaultPickAttributes();
     void ResetPickAttributes();
     void ResetPickLetter();
+    void RenamePickLabel();
     void SetQueryOverTimeAttributes();
     void SetDefaultQueryOverTimeAttributes();
     void ResetQueryOverTimeAttributes();

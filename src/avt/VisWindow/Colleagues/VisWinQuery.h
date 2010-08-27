@@ -113,7 +113,11 @@
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Brad Whitlock, Fri Aug 27 11:28:26 PDT 2010
+//    Add an id argument to UpdateQuery.
+//
 // ****************************************************************************
+
 class VISWINDOW_API VisWinQuery : public VisWinColleague
 {
   public:
@@ -127,7 +131,7 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
     virtual void                  UpdateView(void);
 
     void                          QueryIsValid(const VisualCueInfo *, const VisualCueInfo *);
-    void                          UpdateQuery(const VisualCueInfo *);
+    void                          UpdateQuery(const std::string &, const VisualCueInfo *);
     void                          DeleteQuery(const VisualCueInfo *);
 
     void                          Lineout(const VisualCueInfo *);
