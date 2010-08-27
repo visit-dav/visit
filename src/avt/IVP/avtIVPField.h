@@ -95,7 +95,8 @@ class IVP_API avtIVPField
         }
     };
 
-                         avtIVPField() {};
+                         avtIVPField() {}
+    virtual             ~avtIVPField() {}
 
     virtual avtVector    operator()(const double& t, 
                                     const avtVector& x) const = 0;
