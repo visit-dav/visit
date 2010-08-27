@@ -163,7 +163,7 @@ DrawPlots()
 Test("mili_29")
 sil = SILRestriction()
 sil.TurnOffAll()
-sil.TurnOnSet(11)
+sil.TurnOnSet(12)
 SetPlotSILRestriction(sil)
 Test("mili_30")
 
