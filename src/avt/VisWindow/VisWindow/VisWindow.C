@@ -242,6 +242,9 @@ VisWindow::VisWindow(bool callInit)
 //    Eric Brugger, Tue Dec  9 14:33:57 PST 2008
 //    Added the AxisParallel window mode.
 //
+//    Hank Childs, Fri Aug 27 15:27:25 PDT 2010
+//    Initialize 3D axis scaling options.
+//
 // ****************************************************************************
 
 void
@@ -277,6 +280,8 @@ VisWindow::Initialize(VisWinRendering *ren)
     SetViewport(0., 0., 1., 1.);
     EnableUpdates();
     NoPlots();
+    doAxisScaling = false;
+    axisScaling[0] = axisScaling[1] = axisScaling[2] = 1.0;
 
     //
     // rendering must be the first colleague added since it must change window
@@ -2927,6 +2932,10 @@ VisWindow::Render(void)
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //    Here's where we check to make sure no scaling factors are nonpositive.
 //
+//    Hank Childs, Fri Aug 27 14:37:31 PDT 2010
+//    1e+18 data seems to be too much for OpenGL and Mesa.  Scale it down 
+//    using our axis scales infrastructure before rendering.
+//
 // *****************************************************************************
 
 void
@@ -2960,9 +2969,6 @@ VisWindow::UpdateView()
     {
         avtViewInfo viewInfo;
 
-        view3D.SetViewInfoFromView(viewInfo);
-        view->SetViewInfo(viewInfo);
-
         double fixedScales[3] = {1,1,1};
         if (view3D.axis3DScales[0] > 0)
             fixedScales[0] = view3D.axis3DScales[0];
@@ -2970,7 +2976,29 @@ VisWindow::UpdateView()
             fixedScales[1] = view3D.axis3DScales[1];
         if (view3D.axis3DScales[2] > 0)
             fixedScales[2] = view3D.axis3DScales[2];
-        Set3DAxisScalingFactors(view3D.axis3DScaleFlag, fixedScales);
+        bool doScale = view3D.axis3DScaleFlag;
+
+        view3D.SetViewInfoFromView(viewInfo);
+        if (viewInfo.parallelScale > 1e+18)
+        {
+            double factor = viewInfo.parallelScale/1e+18;
+            viewInfo.parallelScale = viewInfo.parallelScale/factor;  // 1e+18
+            viewInfo.camera[0] = viewInfo.camera[0]/factor;
+            viewInfo.camera[1] = viewInfo.camera[1]/factor;
+            viewInfo.camera[2] = viewInfo.camera[2]/factor;
+            viewInfo.focus[0] = viewInfo.focus[0]/factor;
+            viewInfo.focus[1] = viewInfo.focus[1]/factor;
+            viewInfo.focus[2] = viewInfo.focus[2]/factor;
+            viewInfo.nearPlane = viewInfo.nearPlane/factor;
+            viewInfo.farPlane = viewInfo.farPlane/factor;
+            fixedScales[0] /= factor;
+            fixedScales[1] /= factor;
+            fixedScales[2] /= factor;
+            doScale = true;
+        }
+        Set3DAxisScalingFactors(doScale, fixedScales);
+        view->SetViewInfo(viewInfo);
+
         Render();
     }
     else if (mode == WINMODE_CURVE)
@@ -5207,17 +5235,21 @@ VisWindow::GetScaleFactorAndType(double &s, int &t)
 // Programmer:  Jeremy Meredith
 // Creation:    May 19, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 15:27:25 PDT 2010
+//    Use explicit data members for 3D axis scaling.
+//
 // ****************************************************************************
 bool
 VisWindow::Get3DAxisScalingFactors(double s[3])  const
 {
     s[0] = s[1] = s[2] = 1.0;
-    if (mode == WINMODE_3D && view3D.axis3DScaleFlag)
+    if (mode == WINMODE_3D && doAxisScaling)
     {
-        const double *const scales = view3D.axis3DScales;
-        s[0] = scales[0];
-        s[1] = scales[1];
-        s[2] = scales[2];
+        s[0] = axisScaling[0];
+        s[1] = axisScaling[1];
+        s[2] = axisScaling[2];
         return true;
     }
 
@@ -6200,11 +6232,20 @@ VisWindow::FullFrameOn(const double scale, const int type)
 //  Programmer: Jeremy Meredith
 //  Creation:   May 19, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 15:27:25 PDT 2010
+//    Use explicit data members for 3D axis scaling.
+//
 // ****************************************************************************
 
 void
 VisWindow::Set3DAxisScalingFactors(bool on, const double s[3])
 {
+    doAxisScaling = on;
+    axisScaling[0] = s[0];
+    axisScaling[1] = s[1];
+    axisScaling[2] = s[2];
     std::vector< VisWinColleague * >::iterator it;
     for (it = colleagues.begin() ; it != colleagues.end() ; it++)
     {

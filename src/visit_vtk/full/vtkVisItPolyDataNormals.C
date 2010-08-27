@@ -321,12 +321,17 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 13, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 14:37:31 PDT 2010
+//    Change to double precision to accomodate accumulating very large normals.
+//
 // ****************************************************************************
 struct NormalEntry
 {
     int          oldId;  // The id of this point before it was split
     int          newId;  // The new id of this node
-    float        n[3];   // The accumulated normal
+    double       n[3];   // The accumulated normal
     float        nn[3];  // The normalized normal
     NormalEntry *next;   // The next entry in the linked list for this oldId
 
@@ -622,7 +627,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
             else if (found) // not the first, but we found a match
             {
                 // This is where we accumulate the normals at the nodes
-                float *n = ne->n;
+                double *n = ne->n;
                 n[0] += normal[0];
                 n[1] += normal[1];
                 n[2] += normal[2];
