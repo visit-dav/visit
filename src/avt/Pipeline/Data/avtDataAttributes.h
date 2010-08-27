@@ -584,6 +584,8 @@ class PIPELINE_API avtDataAttributes
 
     struct VarInfo
     {
+        VarInfo(const std::string &s, const std::string &units);
+        ~VarInfo();
         std::string          varname;
         avtVarType           vartype;
         std::string          varunits;
@@ -602,7 +604,7 @@ class PIPELINE_API avtDataAttributes
                                             // at this point.
         avtExtents          *componentExtents; // Only used for 'array' vars
     };
-    std::vector<VarInfo>     variables;
+    std::vector<VarInfo *>   variables;
     int                      activeVariable;
 
     WINDOW_MODE              windowMode;
