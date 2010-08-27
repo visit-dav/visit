@@ -301,6 +301,9 @@ avtMTMDFileFormatInterface::GetFilename(int ts)
 //    Add check for degenerate case where file format reader gets times array
 //    really wrong, which was then causing crash.
 //
+//    Hank Childs, Fri Aug 27 13:46:28 PDT 2010
+//    Don't overwrite values if they are not monotonic.
+//
 // ****************************************************************************
 
 void
@@ -368,20 +371,24 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             cyclesLookGood = false;
         if (cyclesLookGood == false)
         {
+            std::vector<int> cyclesFromMassCall = cycles;
             cycles.clear();
             for (i = 0; i < nTotalTimesteps; i++)
             {
                 int tsg = GetTimestepGroupForTimestep(i);
                 int lts = GetTimestepWithinGroup(i);
                 int c = chunks[tsg]->FormatGetCycle(lts);
+                if (c == avtFileFormat::INVALID_CYCLE && cyclesFromMassCall.size() > i)
+                    c = cyclesFromMassCall[i];
 
-                cycles.push_back(c);
-
-                if ((c == avtFileFormat::INVALID_CYCLE) ||
-                   ((i != 0) && (cycles[i] <= cycles[i-1])))
+                if (c != avtFileFormat::INVALID_CYCLE) 
+                    cycles.push_back(c);
+                else
                 {
-                    cyclesLookGood = false;
-                    break;
+                    if (i == 0)
+                        cycles.push_back(0);
+                    else
+                        cycles.push_back(cycles[i-1]+1);
                 }
             }
         }
@@ -389,21 +396,8 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         //
         // Ok, now put cycles into the metadata
         //
-        if (cyclesLookGood)
-        {
-            md->SetCycles(cycles);
-            md->SetCyclesAreAccurate(true);
-        }
-        else
-        {
-            cycles.clear();
-            for (j = 0 ; j < nTotalTimesteps ; j++)
-            {
-                cycles.push_back(j);
-            }
-            md->SetCycles(cycles);
-            md->SetCyclesAreAccurate(false);
-        }
+        md->SetCycles(cycles);
+        md->SetCyclesAreAccurate(cyclesLookGood);
     }
 
     if (md->AreAllTimesAccurateAndValid(nTotalTimesteps) != true)
@@ -429,20 +423,24 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             timesLookGood = false;
         if (timesLookGood == false)
         {
+            vector<double> timesFromMassCall = times;
             times.clear();
             for (i = 0; i < nTotalTimesteps; i++)
             {
                 int tsg = GetTimestepGroupForTimestep(i);
                 int lts = GetTimestepWithinGroup(i);
                 double t = chunks[tsg]->FormatGetTime(lts);
+                if (t == avtFileFormat::INVALID_TIME && timesFromMassCall.size() > i)
+                    t = timesFromMassCall[i];
 
-                times.push_back(t);
-
-                if ((t == avtFileFormat::INVALID_TIME) ||
-                   ((i != 0) && (times[i] <= times[i-1])))
+                if (t != avtFileFormat::INVALID_TIME) 
+                    times.push_back(t);
+                else
                 {
-                    timesLookGood = false;
-                    break;
+                    if (i == 0)
+                        times.push_back(0.);
+                    else
+                        times.push_back(times[i-1]+0.0);  // same time
                 }
             }
         }
@@ -450,20 +448,14 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         //
         // Ok, now put times into the metadata
         //
+        md->SetTimes(times);
         if (timesLookGood && times.size() > 0)
         {
-            md->SetTimes(times);
             md->SetTimesAreAccurate(true);
             md->SetTemporalExtents(times[0], times[times.size() - 1]);
         }
         else
         {
-            times.clear();
-            for (j = 0 ; j < nTotalTimesteps ; j++)
-            {
-                times.push_back((double)j);
-            }
-            md->SetTimes(times);
             md->SetTimesAreAccurate(false);
         }
     }
