@@ -165,6 +165,8 @@ public:
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisVolumePlotWindow();
     virtual void CreateWindowContents();
+
+    virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
 public slots:
     virtual void apply();
     virtual void makeDefault();
