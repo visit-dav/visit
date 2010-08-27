@@ -384,6 +384,7 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     pLayout->setStretchFactor(colorWidgetGroup,1000);
     QVBoxLayout *innerColorLayout = new QVBoxLayout(colorWidgetGroup);
     innerColorLayout->setMargin(5);
+    innerColorLayout->setSpacing(0);
 
     // Create the buttons that help manipulate the spectrum bar.
     QHBoxLayout *seLayout = new QHBoxLayout(0);
@@ -551,6 +552,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     pLayout->setStretchFactor(opacityWidgetGroup,1000);
     QVBoxLayout *innerOpacityLayout = new QVBoxLayout(opacityWidgetGroup);
     innerOpacityLayout->setMargin(5);
+    innerOpacityLayout->setSpacing(0);
 
     // Create the buttons that control what mode the opacity widget it in.
     // Create the buttons that help manipulate the spectrum bar.
