@@ -121,25 +121,36 @@ vtkIdType avtCellLocatorRect::FindCell( const double pos[3],
 
     for( unsigned int d=0; d<3; d++ )
     {
-        // binary search
-
-        std::vector<float>::const_iterator ci = 
-            std::lower_bound( coord[d].begin(), coord[d].end(), 
-                              pos[d], std::less<float>() );
-
-        if( ci == coord[d].end() )
-            return -1;
-            
-        if( ci == coord[d].begin() )
+        if( coord[d].size() == 1 )
         {
-            if( pos[d] < *ci )
-                return -1;
+            // flat grid
+            if( pos[d] != coord[d].front() )
+                return false;
+
+            i[d] = 0;
+            l[d] = 0.0;
         }
-        else 
-            --ci;
-        
-        i[d] = ci - coord[d].begin(); 
-        l[d] = (pos[d] - ci[0])/(ci[1]-ci[0]);
+        else
+        {
+            // binary search
+            std::vector<float>::const_iterator ci = 
+                std::lower_bound( coord[d].begin(), coord[d].end(), 
+                                  pos[d], std::less<float>() );
+            
+            if( ci == coord[d].end() )
+                return -1;
+            
+            if( ci == coord[d].begin() )
+            {
+                if( pos[d] < *ci )
+                    return -1;
+            }
+            else 
+                --ci;
+            
+            i[d] = ci - coord[d].begin(); 
+            l[d] = (pos[d] - ci[0])/(ci[1]-ci[0]);
+        }
     }
 
     vtkIdType cell = (i[2]*(coord[1].size()-1) + i[1])*(coord[0].size()-1) + i[0];
@@ -149,7 +160,10 @@ vtkIdType avtCellLocatorRect::FindCell( const double pos[3],
         const float k[3] = { 1.0f-l[0], 1.0f-l[1], 1.0f-l[2] };
 
         vtkIdType base = (i[2]*coord[1].size() + i[1])*coord[0].size() + i[0];
-        vtkIdType dx = 1, dy = coord[0].size(), dz = coord[1].size()*coord[0].size();
+
+        vtkIdType dx = i[0] ? 1 : 0;
+        vtkIdType dy = i[1] ? coord[0].size() : 0;
+        vtkIdType dz = i[2] ? coord[1].size()*coord[0].size() : 0;
 
         weights->resize( 8 );
 
