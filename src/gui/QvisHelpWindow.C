@@ -381,6 +381,9 @@ QvisHelpWindow::ReleaseNotesFile() const
 //   Brad Whitlock, Thu Jun 19 16:39:30 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Bonnell, Sat Aug 28 13:17:45 MST 2010 
+//   Added ultrawrapper document.
+//
 // ****************************************************************************
 
 void
@@ -423,6 +426,12 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
         helpContents);
     contribPage->setText(0, tr("VisIt Contributors"));
     contribPage->setData(0, Qt::UserRole, QVariant("contributors.html"));
+    contribPage->setIcon(0, helpIcon);
+
+    QTreeWidgetItem *ultraPage = new QTreeWidgetItem(
+        helpContents);
+    contribPage->setText(0, tr("VisIt UltraWrapper"));
+    contribPage->setData(0, Qt::UserRole, QVariant("ultrawrapper.html"));
     contribPage->setIcon(0, helpIcon);
 
     // Read the XML file and create the DOM tree. Then use the tree to
@@ -571,6 +580,7 @@ QvisHelpWindow::BuildIndex()
     AddToIndex(tr("Command line arguments"), "args.html");
     AddToIndex(tr("Frequently asked questions"), "faq.html");
     AddToIndex(tr("FAQ"), "faq.html");
+    AddToIndex(tr("Ultra wrapper"), "ultrawrapper.html");
     AddToIndex(tr("VisIt"), "home.html");
     AddToIndex(tr("Release notes"), ReleaseNotesFile());
 

@@ -88,6 +88,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The <i>Curve</i> plot now can add cues to show a location along the curve.  This is anticipated to be a useful feature when animating a curve within a movie.</li>
   <li>The <i>Molecule</i> plot now supports 2D rendering primitives.</li>
   <li>It is no longer necessary to press the <i>Enter</i> key before pressing the <i>Apply</i> button when changing the <i>Format template</i> text field in the <i>Label plot attributes</i> window for the change to take effect.</li>
+  <li>The point and symbol drawing options in the <i>Curve </i>plot have been combined, allowing them to be drawn independently of the curve lines.</li>
+  <li>There are two modes for drawing points/symbols for <i>Curve </i> plots: <b>static:</b> <i>use only nodes from the database</i>, and <b>dyanmic:</b> <i>fill in between the database nodes</i>.  With <i>static</i> mode, a <i>stride </i>can be chosen which allows displaying only every <i>nth</i> node.  With <i>dynamic </i> mode, a fill <i>density</i> can be chosen.</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -127,6 +129,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Macro recording was changed so it generates a function name based on the name supplied for the macro. This eliminates a problem where giving a function name with invalid Python characters caused the macro to be discarded.</li>
 <li>2D axis annotations are now correctly initialized from default annotation attributes.</li>
 <li>The help text under <i>Working with databases->Supported File Types->File extensions</i>, which describes the order in which the database plugins are tried when attempting to open a file, is now current.</li>
+<li>Updating macros can now be accomplished correctly on Windows.</li>
+<li>Documentation for the Ultra Wrapper has been added to the help window.</li>
 </ul>
 
 <a name="Config_changes"></a>
@@ -140,6 +144,9 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>All of VisIt's extents objects were renamed to better reflect their purpose.  Also, extents calculations are performed less often.</li>
 <li>build_visit now builds VisIt using Mesa 7.8.2.</li>
 <li>build_visit now builds VisIt using VTK 5.0.0g. VTK 5.0.0g includes all the patches that were made by build_visit. Because of this it is possible to build VTK 5.0.0g on all our supported platforms without applying any patches.</li>
+<li>If a host-specific config-site file is available on Windows, it will be used instead of the default windows.cmake.</li>
+<li>Host-specific config-site files can be overriden by using -DVISIT_CONFIG_SITE="/path/to/config-site/file" from the CMake command line.</li>
+<li>Default CMAKE_INSTALL_PREFIX on Windows can be overriden by specifying the value from the CMake command line. -DCMAKE_INSTALL_PREFIX="C:/desired/intstall/path"</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

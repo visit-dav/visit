@@ -1,0 +1,980 @@
+<html>
+<body bgcolor="#ffffff">
+<center><b><font size="6">VisIt's Ultra Wrapper</font></b></center>
+<p>
+Allows plotting and manipulation of curves within VisIt using command syntax from the <i>Ultra II </i>curve plotting program.  Not all of Ultra's commands are currently available from VisIt's wrapper. This document describes only the functionality currently available.
+
+For more detailed information on <i>Ultra II</i>, please consult <i>http://wci.llnl.gov/pact/ultra.html</i>.
+
+
+<p>&nbsp;</p>
+<p>
+<b><font size="4">Basics of the VisIt Ultra session</font></b></p>
+The Ultra wrapper is run from VisIt's CLI. When loaded, VisIt's CLI prompt 
+turns into an 'Ultra' prompt <b>U-> </b>and only Ultra syntax commands are 
+accepted.
+<br>
+<br>
+Things to keep in mind:
+<ul>
+<li>Curves from the file, as listed with 'menu' command are referenced by a number.</li>
+<li>Curves currently being displayed, as listed with the 'lst' command, are referenced by a letter.</li>
+<li>Spaces are used to delimit items on the input line. </li>
+<li>Ranges of curve numbers or data-id’s may be indicated using colon notation. For example, a:f or 5:9.</li>
+</ul>
+<p>
+Here are some basic commands to get started:
+<p>
+<b>Start the Ultra session</b>
+<blockquote>
+  >>> LoadUltra()
+</blockquote>
+<p>
+<b>Start the Ultra session and execute a script</b>
+<blockquote>
+  >>> LoadUltra("myscript")
+</blockquote>
+<p>
+<b>Get help</b>
+<blockquote>
+  U-> help
+</blockquote>
+<p>
+<b>Load curve file </b>
+<blockquote>
+  U-> rd file-name
+</blockquote>
+<p>
+<b>See list of curves available for plotting </b>
+<blockquote>
+  U-> menu
+</blockquote>
+<p>
+<b>Select curves for plotting</b>
+<blockquote>
+  U-> select 1:3
+</blockquote>
+<blockquote>
+  U-> select 1 3 7
+</blockquote>
+<p>
+<b>See list of curves that are currently displayed</b>
+<blockquote>
+  U-> lst
+</blockquote>
+<p>
+<b>End the Ultra session</b>
+<blockquote>
+  U-> end
+</blockquote>
+
+<p>
+<b><font size="4"><a name="SupportedCommands">Supported Ultra commands</a></font></b></p>
+The supported commands are presented here in the same groupings as used by 
+the Ultra II manual.
+<ul>
+  <li><a href="#UIO">I/O commands</a></li>
+  <li><a href="#UMANO">Math Operations which do not generate a new curve</a></li>
+  <li><a href="#UMA">Math Operations which do generate a new curve</a></li>
+  <li><a href="#UEI">Environmental inquiry commands</a></li>
+  <li><a href="#UEC">Environmental control commands</a></li>
+  <li><a href="#UPC">Plot control commands</a></li>
+  <li><a href="#UCC">Curve control commands</a></li>
+</ul>
+
+<p>
+<b><font size="4"><a name="UIO">I/O commands</a></font></b></p>
+These commands access disk files either for reading or writing.
+
+<blockquote>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="21%"><b>rd</b></td>
+    <td width="79%">Read curve data file.</td>
+  <tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>rd file-name</td></td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>save</b></td>
+    <td width="79%">Save currently plotted curve and/or curves from the menu to the specified disk file.</td>
+  <tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="90"><b><i>Usage: </i></b>save file-name curve-list</td>
+  </tr>
+</table>
+</blockquote>
+<p>&nbsp;</p>
+
+<p>
+<b><font size="4"><a name="UMANO">Math Operations which do not generate a new curve</a></font></b></p>
+
+These functions all take as arguments a list of curves (some take an 
+additional argument - most often a number). The specified operation is 
+performed on the curves without creating new ones; that is, they modify 
+existing curves.
+
+<blockquote>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="21%"><b>abs</b></td>
+    <td width="79%">Take the absolute value of the y values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>abs curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>absx</b>
+    <td width="79%">Take the absolute value of the x values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>absx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>acos</b>
+    <td width="79%">Take the cos<sup>-1</sup> of the y values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>acos curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>acosx</b>
+    <td width="79%">Take the cos<sup>-1</sup> of the x values of the curves.</td>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>acosx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>asin</b>
+    <td width="79%">Take the sin<sup>-1</sup> of the y values of the curves.</td>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>asin curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>asinx</b>
+    <td width="79%">Take the sin<sup>-1</sup> of the x values of the curves.</td>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>asinx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>atan</b>
+    <td width="79%">Take the tan<sup>-1</sup> of the y values of the curves.</td>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>atan curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>atanx</b>
+    <td width="79%">Take the tan<sup>-1</sup> of the x values of the curves.</td>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>atanx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>cos</b>
+    <td width="79%">Take the cosine of the y values of the curves.</td>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>cos curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>cosh</b>
+    <td width="79%">Take the hyperbolic cosine of the y values of the curves.</td>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>cosh curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>coshx</b>
+    <td width="79%">Take the hyperbolic cosine of the x values of the curves.</td>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>coshx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>cosx</b>
+    <td width="79%">Take the cosine of the x values of the curves.</td>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>cosx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>dx</b></td>
+    <td width="79%">Shift the x values of the curves by a fixed value.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>dx curve-list value</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>dy</b>
+    <td width="79%">Shift the y values of the curves by a fixed value.</td>
+  <tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>dy curve-list value</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>divx</b></td>
+    <td width="79%">Divide the x values of the curves by a fixed value.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>divx curve-list value</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>divy</b></td>
+    <td width="79%">Divide the y values of the curves by a fixed value.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>divy curve-list value</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>exp</b></td>
+    <td width="79%">Take the exponential of the y values of the curves, i.e., y = e<sup>y</sup>.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>exp curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>expx</b>
+    <td width="79%">Take the exponential of the x values of the curves, i.e., x = e<sup>x</sup>.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>expx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>ln</b>
+    <td width="79%">Take the natural logarithm of the y values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>ln curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>lnx</b>
+    <td width="79%">Take the natural logarithm of the x values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>lnx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>log10</b>
+    <td width="79%">Take the base 10 logarithm of the y values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>log10 curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>log10x</b>
+    <td width="79%">Take the base 10 logarithm of the x values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>log10x curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>mx</b>
+    <td width="79%">Scale the x values of the curves by a fixed value.</td>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>mx curve-list value</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>my</b>
+    <td width="79%">Scale the y values of the curves by a fixed value.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>my curve-list value</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>powa</b>
+    <td width="79%">Raise a fixed value, a, to the power of the y values of the curves, i.e., y = a<sup>y</sup>.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>powa curve-list a</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>powax</b>
+    <td width="79%">Raise a fixed value, a, to the power of the x values of the curves, i.e., x = a<sup>x</sup>.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>powax curve-list a</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>powr</b>
+    <td width="79%">Raise the y values of the curves to a fixed power, i.e., y = y<sup>a</sup>.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>powr curve-list a</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>powrx</b>
+    <td width="79%">Raise the x values of the curves to a fixed power, i.e., x = x<sup>a</sup>.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>powrx curve-list a</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>sin</b>
+    <td width="79%">Take the sine of the y values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>sin curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>sinh</b>
+    <td width="79%">Take the hyperbolic sine of the y values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>sinh curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>sinhx</b>
+    <td width="79%">Take the hyperbolic sine of the x values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>sinhx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>sinx</b>
+    <td width="79%">Take the sine of the x values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>sinx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>sqr</b>
+    <td width="79%">Take the square of the y values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>sqr curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>sqrt</b>
+    <td width="79%">Take the square root of the y values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>sqrt curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>sqrtx</b>
+    <td width="79%">Take the square root of the x values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>sqrtx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>sqrx</b>
+    <td width="79%">Take the square of the x values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>sqrx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>tan</b>
+    <td width="79%">Take the tangent of the y values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>tan curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>tanh</b>
+    <td width="79%">Take the hyperbolic tangent of the y values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>tanh curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>tanhx</b>
+    <td width="79%">Take the hyperbolic tangent of the x values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>tanhx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>tanx</b>
+    <td width="79%">Take the tangent of the x values of the curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>tanx curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>xmax</b>
+    <td width="79%">Filter out points in curves whose x-values &gt; limit.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>xmax curve-list limit</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>xmin</b>
+    <td width="79%">Filter out points in curves whose x-values &lt; limit.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>xmin curve-list limit</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>ymax</b>
+    <td width="79%">Filter out points in curves whose y-values &gt; limit.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>ymax curve-list limit</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>ymin</b>
+    <td width="79%">Filter out points in curves whose y-values &lt; limit.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>ymin curve-list limit</td>
+  </tr>
+</table>
+</blockquote>
+
+<p>
+<b><font size="4"><a name="UMA">Math Operations which do generate a new curve</a></font></b></p>
+
+Most of these functions take as arguments a list of the curves. The specified
+operation is performed using the curves to create new ones. The original curves are not modified.
+
+<blockquote>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="21%"><b>+</b>
+    <td width="79%">Take the sum of the curves, i.e., a + b + ... + n.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>+ curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>-</b>
+    <td width="79%">Take the difference of the curves, i.e., a - b - ... - n.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>- curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>*</b>
+    <td width="79%">Take the product of the curves, i.e., a x b x ... x n.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>* curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>/</b>
+    <td width="79%">Take the quotient of the curves, i.e., a / b / ... / n.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>/ curve-list</td>
+  </tr>
+</table>
+</blockquote>
+
+<p>
+<b><font size="4"><a name="UEI">Environmental inquiry commands</a></font></b></p>
+These functions are provided to gain access to information about the state of 
+the session.
+
+<blockquote>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="21%"><b>help</b>
+    <td width="79%">Return information about the specified command. If no argument is supplied, return a list of command categories.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>help [command]</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>lst</b>
+    <td width="79%">Return a list of the curves currently displayed.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>lst </td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>menu</b>
+    <td width="79%">Return a list of the curves available for plotting.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>menu</td>
+  </tr>
+</table>
+</blockquote>
+
+<p>
+<b><font size="4"><a name="UEC">Environmental control commands</a></font></b></p>
+These functions allow you to manipulate the environment of the Ultra session on a global level.
+
+<blockquote>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="21%"><b>end</b>
+    <td width="79%">Exit Ultra session gracefully. Deletes all plotted curves from VisIt's viewer.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>end</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>erase</b>
+    <td width="79%">Erase all curves on the screen.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>erase</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>quit</b>
+    <td width="79%">Exit Ultra session gracefully. Deletes all plotted curves from VisIt's viewer.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>quit</td>
+  </tr>
+</table>
+</blockquote>
+
+<p>
+<b><font size="4"><a name="UPC">Plot control commands</a></font></b></p>
+These functions control the plotting characteristics of ULTRA II which affect all displayed curves.<p>
+
+<blockquote>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="21%"><b>axis</b>
+    <td width="79%">Set whether or not to draw axes on graphs.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>axis on | off</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Default: </i></b>on</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>data-id</b>
+    <td width="79%">Set whether or not to plot curve identifiers. This was formerly the marker </td>
+command.
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>data-id on | off</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Default: </i></b>on</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>domain</b>
+    <td width="79%">Set the domain for plotting. Typing de (for default) will let the curves determine the domain.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>domain low-lim high-lim</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>domain de</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Default: </i></b>de</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>grid</b>
+    <td width="79%">Set whether or not to draw grid lines on graphs.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>grid on | off</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Default: </i></b>off</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>range</b>
+    <td width="79%">Set the range for plotting. Typing de (for default) will let the curves determine the range.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>range low-lim high-lim</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>range de</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Default: </i></b>de</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>x-log-scale </b>
+    <td width="79%">Set log scale on or off for the x axis.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>x-log-scale on | off</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Default: </i></b>off</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>y-log-scale </b>
+    <td width="79%">Set log scale on or off for the y axis.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>y-log-scale on | off</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Default: </i></b>off</td>
+  </tr>
+</table>
+</blockquote>
+
+<p>
+<b><font size="4"><a name="UCC">Curve control commands</a></font></b></p>
+
+These functions control the individual curves that are currently being 
+displayed. They range in type from controlling the appearance of the curve 
+to deleting it.  
+<blockquote>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="21%"><b>del</b>
+    <td width="79%">Delete the specified curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>del curve-list</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>lnstyle</b>
+    <td width="79%">Set the line styles of specified curves.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>lnstyle curve-list solid | dotted | dashed | dotdashed</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Default: </i></b>solid</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>lnwidth</b>
+    <td width="79%">Set the line widths of specified curves. A line width of 0 will always give the thinnest line which the host graphics system supports.</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>lnwidth curve-list width</td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Default: </i></b>0</td>
+  </tr>
+  <tr>
+     <td width "21%">&nbsp;</td>
+     <td width="79%"</td>
+  </tr>
+  <tr>
+    <td width="21%"><b>select</b>
+    <td width="79%">Select curves from the menu for plotting. The list must be space delimited.  Ranges may be indicated with a colon. For example, 2:6 will generate 2 3 4 5 6.  </td>
+  </tr>
+  <tr>
+    <td width="21%"></td>
+    <td width="79%"><b><i>Usage: </i></b>select number-list</td>
+  </tr>
+</table>
+</blockquote>
+
+
+
+
+</body></html>
