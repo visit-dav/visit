@@ -50,7 +50,7 @@ def AddMathOps():
         else:
             yc = "x"
         usg = "Usage: %s <curve-list>" %cmd
-        proc = "Procedure: Take %s of %s values of curves" %(tempDict[cmd], yc)
+        proc = "Take %s of %s values of curves" %(tempDict[cmd], yc)
         cmdHelp[cmd] = [proc, usg]
 
 
@@ -68,27 +68,27 @@ def AddMathOps():
             else: 
                 log = ">"   
             usg = "Usage: %s <curve-list> <limit>" %cmd
-            proc = "Procedure: Filter out point in curves whose %s-values"%yc
+            proc = "Filter out point in curves whose %s-values"%yc
             proc += " %s limit." % log
 
         elif cmd == "powr" or cmd == "powrx": 
             usg = "Usage: %s <curve-list> <a>" %cmd
-            proc = "Procedure: Raise %s values of curves to a power, %s=%s^a"\
+            proc = "Raise %s values of curves to a power, %s=%s^a"\
                    %(yc,yc,yc) 
         elif cmd == "powa" or cmd == "powax":
             usg = "Usage: %s <curve-list> <a>" %cmd
-            proc = "Procedure: Raise a to the power of the %s values of" %yc
+            proc = "Raise a to the power of the %s values of" %yc
             proc += " curves, %s=a^%s" %(yc,yc) 
         else:
             usg = "Usage: %s <curve-list> <value>" %cmd
-            proc = "Procedure: %s %s values of curves by a constant" \
+            proc = "%s %s values of curves by a constant" \
                     %(tempDict[cmd], yc)
         cmdHelp[cmd] = [proc, usg]
 
     tempDict = dict(zip(cmfeOps, cmfeOpsLongName)) 
     for cmd in cmfeOps:
         usg = "Usage: %s <curve-list>" %cmd
-        proc = "Procedure: Take %s of curves" % tempDict[cmd]
+        proc = "Take %s of curves" % tempDict[cmd]
         cmdHelp[cmd] = [proc, usg]
 
 def AddToggleOps():
@@ -114,7 +114,7 @@ def AddRangeOps():
     """
     for cmd in rangePlotOps:
         usg = "Usage: %s <low-lim> <high-lim> or %s de "%(cmd, cmd)
-        proc = "Procedure: Set the %s for plotting"%cmd
+        proc = "Set the %s for plotting"%cmd
         cmdHelp[cmd] = [proc, usg]
 
 def CreateHelp():
@@ -128,30 +128,34 @@ def CreateHelp():
     cmdHelp["cp"] = ["",""]
     cmdHelp["cc"] = ["",""]
     #individual commands
-    cmdHelp["select"] = ["Procedure: Select curves from the menu for plotting"\
+    cmdHelp["select"] = ["Select curves from the menu for plotting"\
                          ,"Usage: select <list-of-menu-numbers>"]
-    cmdHelp["menu"] = ["Macro: List the available curves", \
+    cmdHelp["menu"] = ["List the available curves", \
                        "Usage: menu"]
-    cmdHelp["lst"] = ["Macro: Display curves in list",\
+    cmdHelp["lst"] = ["Display curves in list",\
                       "Usage: lst"]
-    cmdHelp["erase"] = ["Macro: Erases all curves on the screen",\
+    cmdHelp["erase"] = ["Erases all curves on the screen",\
                         "Usage: erase"]
-    cmdHelp["del"] = ["Procedure: Delete curves from list", \
+    cmdHelp["del"] = ["Delete curves from list", \
                       "Usage: del <curve-list>"]
-    cmdHelp["end"] = ["Procedure: Exit ULTRA command wrapper", \
+    cmdHelp["end"] = ["Exit ULTRA command wrapper", \
                       "Usage: end"]
-    cmdHelp["quit"] = ["Procedure: Exit ULTRA command wrapper", \
+    cmdHelp["quit"] = ["Exit ULTRA command wrapper", \
                       "Usage: quit"]
-    cmdHelp["rd"] = ["Macro: Read curve data file", \
+    cmdHelp["rd"] = ["Read curve data file", \
                       "Usage: rd <\"file-name\">"]
-    cmdHelp["lnstyle"] = ["Procedure: Set the line styles of curves", \
+    cmdHelp["lnstyle"] = ["Set the line styles of curves", \
              "Usage: lnstyle <curve-list> solid | dotted | dashed |dotdashed"]
-    cmdHelp["lnwidth"] = ["Procedure: Set the line widths of curves", \
+    cmdHelp["lnwidth"] = ["Set the line widths of curves", \
              "Usage: lnstyle <curve-list> <width-number>"]
-    cmdHelp["save"] = ["Macro: Save curves to file", \
-             "Usage: save [<type>] <\"file-name\"> <curve-list>"]
-    cmdHelp["wrt"] = ["Macro: Save curves to file", \
-             "Usage: wrt [<type>] <\"file-name\"> <curve-list>"]
+    cmdHelp["save"] = ["Save curves to file", \
+             "Usage: save <\"file-name\"> <curve-list>"]
+    #cmdHelp["save"] = ["Save curves to file", \
+    #         "Usage: save [<type>] <\"file-name\"> <curve-list>"]
+    cmdHelp["wrt"] = ["Save curves to file", \
+             "Usage: wrt <\"file-name\"> <curve-list>"]
+    #cmdHelp["wrt"] = ["Save curves to file", \
+    #         "Usage: wrt [<type>] <\"file-name\"> <curve-list>"]
     AddMathOps()
     AddToggleOps()
     AddRangeOps()
@@ -292,9 +296,13 @@ plotOp = (oneOf(togglePlotOps).setResultsName("cmd") + \
 
 #save
 saveCmd = oneOf(saveOps).setResultsName("cmd") + \
-          Optional(oneOf("""ascii pdb""")).setResultsName("type") + \
           fileName.setResultsName("file") + \
           curveListAlpha.setResultsName("clist")
+# save with optional type -- not currently supported
+#saveCmd = oneOf(saveOps).setResultsName("cmd") + \
+#          Optional(oneOf("""ascii pdb""")).setResultsName("type") + \
+#          fileName.setResultsName("file") + \
+#          curveListAlpha.setResultsName("clist")
 
 helpCmd = oneOf("""help""").setResultsName("cmd") + \
              Optional(oneOf(cmdHelp.keys())).setResultsName("arg")

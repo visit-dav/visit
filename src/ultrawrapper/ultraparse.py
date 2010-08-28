@@ -514,9 +514,10 @@ def ultra_plotControl(t):
 #-----------------------------------------------------------------------------
            
 def ultra_saveCurve(t):
-    stype = "ascii"
-    if t.type:
-        stype = t.type
+    # type not currently supported, always saves as ascii
+    #stype = "ascii"
+    #if t.type:
+    #    stype = t.type
     if len(selectedList.curves) == 0:
         return 
     cl =  selectedList.slice(t.clist)
@@ -528,9 +529,9 @@ def ultra_saveCurve(t):
         currentPlot = setAsActivePlot(curve.plotId)
         if (currentPlot != -1):
             # This is how we need to do it for VisIt 2.0
-            #s = GetPlotInformation()['Curve']
+            s = GetPlotInformation()['Curve']
             # This is how we need to do it for VisIt 1.12
-            s = GetOutputArray()
+            #s = GetOutputArray()
             FILE.write("# %s\n"%curve.var) 
             for i in range(0, len(s), 2):
                 FILE.write("%13.6e %13.6e\n"%(s[i], s[i+1]))
