@@ -26,6 +26,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Hank Childs, Sun Aug 29 16:07:56 PDT 2010
+#    Change Log10 to Log, to reflect change in naming.
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotations():
@@ -52,7 +56,7 @@ def TestVolumeScaling():
 
     Test("volumeScaling_01")
 
-    volAtts.scaling = volAtts.Log10
+    volAtts.scaling = volAtts.Log
     SetPlotOptions(volAtts)
     Test("volumeScaling_02")
 
@@ -70,7 +74,7 @@ def TestVolumeScaling():
     SetPlotOptions(volAtts)
     Test("volumeScaling_05")
 
-    volAtts.scaling = volAtts.Log10
+    volAtts.scaling = volAtts.Log
     SetPlotOptions(volAtts)
     Test("volumeScaling_06")
 
@@ -88,7 +92,7 @@ def TestVolumeScaling():
     SetPlotOptions(volAtts)
     Test("volumeScaling_09")
 
-    volAtts.scaling = volAtts.Log10
+    volAtts.scaling = volAtts.Log
     SetPlotOptions(volAtts)
     Test("volumeScaling_10")
 
