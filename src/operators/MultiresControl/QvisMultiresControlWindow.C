@@ -39,6 +39,7 @@
 #include <cstdio>
 #include <string>
 
+#include <QtGui/QApplication>
 #include <QtGui/QLabel>
 #include <QtGui/QGridLayout>
 #include <QtGui/QSlider>
@@ -73,10 +74,7 @@ QvisMultiresControlWindow::QvisMultiresControlWindow(const int type,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad),
       resolution(NULL),
-      info(NULL),
-      resolutionLevelLabel(NULL),
-      resolutionLabel(NULL),
-      infoLabel(NULL)
+      resolutionLevelLabel(NULL)
 {
     atts = subj;
     fileServer->Attach(this);
@@ -118,7 +116,10 @@ QvisMultiresControlWindow::~QvisMultiresControlWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
+//   Tom Fogal, Mon Aug 30 12:30:54 MDT 2010
+//   Add resolution # to label.
+//
 // ****************************************************************************
 
 void
@@ -128,11 +129,11 @@ QvisMultiresControlWindow::CreateWindowContents()
     topLayout->addLayout(mainLayout);
 
     resolutionLevelLabel = new QLabel(this);
-    resolutionLevelLabel->setText(tr("Resolution"));
+    resolutionLevelLabel->setText(tr("Resolution: %1").arg(0));
     mainLayout->addWidget(resolutionLevelLabel,0,0);
 
     this->resolution = new QSlider(Qt::Horizontal, this);
-    this->resolution->setMaximum(32); // HACK, we don't know.
+    this->resolution->setMaximum(32); // HACK, we don't know yet.
     this->resolution->setValue(0);
     mainLayout->addWidget(this->resolution, 0, 1);
 
@@ -153,6 +154,9 @@ QvisMultiresControlWindow::CreateWindowContents()
 // Creation:   omitted
 //
 // Modifications:
+//
+//   Tom Fogal, Mon Aug 30 12:30:28 MDT 2010
+//   Include resolution # in label.
 //   
 // ****************************************************************************
 
@@ -177,7 +181,7 @@ QvisMultiresControlWindow::UpdateWindow(bool doAll)
     }
     else
     {
-      debug1 << "No file server, bailing...\n";
+        debug1 << "No file server, bailing...\n";
     }
     debug1 << atts->GetMaxResolution() << " levels of detail available.\n";
 
@@ -186,6 +190,11 @@ QvisMultiresControlWindow::UpdateWindow(bool doAll)
     this->resolution->setMaximum(std::max(0, atts->GetMaxResolution()));
     this->resolution->blockSignals(false);
     this->resolution->update();
+    this->resolutionLevelLabel->setText(tr("Resolution: %1").
+                                        arg(atts->GetResolution()));
+    // set it back to its default background color.
+    QPalette p = QApplication::palette();
+    this->resolutionLevelLabel->setPalette(p);
 }
 
 
@@ -246,6 +255,10 @@ QvisMultiresControlWindow::GetCurrentValues(int which_widget)
 // Qt Slot functions
 //
 
+// Modificatons:
+//
+//   Tom Fogal, Mon Aug 30 12:52:36 MDT 2010
+//   Change resolution label as well.
 void
 QvisMultiresControlWindow::resolutionLevelChanged(int val)
 {
@@ -253,6 +266,12 @@ QvisMultiresControlWindow::resolutionLevelChanged(int val)
     {
         atts->SetResolution(val);
         resolution->setValue(val);
+        resolutionLevelLabel->setText(tr("Resolution: %1").arg(val));
+        resolutionLevelLabel->setAutoFillBackground(true);
+        // Change the text color to indicate there are unapplied changes.
+        QPalette p;
+        p.setColor(QPalette::WindowText, QColor(0,228,0));
+        resolutionLevelLabel->setPalette(p);
        
         SetUpdate(false);
         Apply();
@@ -274,5 +293,3 @@ QvisMultiresControlWindow::infoProcessText()
     GetCurrentValues(MultiresControlAttributes::ID_info);
     Apply();
 }
-
-
