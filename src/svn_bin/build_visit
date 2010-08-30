@@ -940,6 +940,9 @@
 #     I modified the script to use vtk-5.0.0g. I also removed all the vtk
 #     patches since they are all incorporated in vtk-5.0.0g.
 #
+#     Eric Brugger, Mon Aug 30 13:45:59 PDT 2010
+#     I set the VisIt version number to 2.1.0.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1240,7 +1243,7 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION:-"2.0.2"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.1.0"}
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE:-"vtk-5.0.0g.tar.gz"}
