@@ -387,6 +387,9 @@ QvisCMFEWizard::validateCurrentPage()
 //   Cyrus Harrison, Mon Aug 30 11:59:25 PDT 2010
 //   Simplify wizard & add ability to open new databases.
 //
+//   Cyrus Harrison, Mon Aug 30 13:53:32 PDT 2010
+//   Proper enable/disable for exprDiffVar button.
+//
 // ****************************************************************************
 
 void
@@ -478,12 +481,14 @@ QvisCMFEWizard::initializePage(int pageId)
         exprTypeSelect->blockSignals(false);
         if (decision_exprtype == EXPRESSION_SIMPLE)
         {
+            exprDiffVar->setEnabled(false);
             exprDiffTypeSelect->button(0)->setEnabled(false);
             exprDiffTypeSelect->button(1)->setEnabled(false);
             exprDiffTypeSelect->button(2)->setEnabled(false);
         }
         else
         {
+            exprDiffVar->setEnabled(true);
             exprDiffTypeSelect->button(0)->setEnabled(true);
             exprDiffTypeSelect->button(1)->setEnabled(true);
             exprDiffTypeSelect->button(2)->setEnabled(true);
