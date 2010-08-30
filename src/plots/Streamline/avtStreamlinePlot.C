@@ -535,11 +535,14 @@ avtStreamlinePlot::SetColorTable(const char *ctName)
 //
 //  Modifications:
 //
-//    Hank Childs, Fri Oct 29 10:06:24 PDT 2004
-//    Account for specular lighting.
+//   Hank Childs, Fri Oct 29 10:06:24 PDT 2004
+//   Account for specular lighting.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
+//
+//   Hank Childs, Sun Aug 29 21:08:30 PDT 2010
+//   Lighting options were reversed ... this only showed up in SR mode.
 //
 // ****************************************************************************
 
@@ -548,11 +551,11 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
 {
     if (lightingOn)
     {
-        mapper->GlobalLightingOff();
+        mapper->GlobalLightingOn();
     }
     else
     {
-        mapper->GlobalLightingOn();
+        mapper->GlobalLightingOff();
     }
 }
 
