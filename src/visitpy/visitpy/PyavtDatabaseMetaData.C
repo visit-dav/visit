@@ -401,6 +401,8 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    SNPRINTF(tmpStr, 1000, "%sreplacementMask = %d\n", prefix, atts->GetReplacementMask());
+    str += tmpStr;
     return str;
 }
 
@@ -2551,6 +2553,30 @@ avtDatabaseMetaData_GetSuggestedDefaultSILRestriction(PyObject *self, PyObject *
     return retval;
 }
 
+/*static*/ PyObject *
+avtDatabaseMetaData_SetReplacementMask(PyObject *self, PyObject *args)
+{
+    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the replacementMask in the object.
+    obj->data->SetReplacementMask((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtDatabaseMetaData_GetReplacementMask(PyObject *self, PyObject *args)
+{
+    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetReplacementMask()));
+    return retval;
+}
+
 
 
 PyMethodDef PyavtDatabaseMetaData_methods[AVTDATABASEMETADATA_NMETH] = {
@@ -2659,6 +2685,8 @@ PyMethodDef PyavtDatabaseMetaData_methods[AVTDATABASEMETADATA_NMETH] = {
     {"GetSimInfo", avtDatabaseMetaData_GetSimInfo, METH_VARARGS},
     {"SetSuggestedDefaultSILRestriction", avtDatabaseMetaData_SetSuggestedDefaultSILRestriction, METH_VARARGS},
     {"GetSuggestedDefaultSILRestriction", avtDatabaseMetaData_GetSuggestedDefaultSILRestriction, METH_VARARGS},
+    {"SetReplacementMask", avtDatabaseMetaData_SetReplacementMask, METH_VARARGS},
+    {"GetReplacementMask", avtDatabaseMetaData_GetReplacementMask, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -2755,6 +2783,8 @@ PyavtDatabaseMetaData_getattr(PyObject *self, char *name)
         return avtDatabaseMetaData_GetSimInfo(self, NULL);
     if(strcmp(name, "suggestedDefaultSILRestriction") == 0)
         return avtDatabaseMetaData_GetSuggestedDefaultSILRestriction(self, NULL);
+    if(strcmp(name, "replacementMask") == 0)
+        return avtDatabaseMetaData_GetReplacementMask(self, NULL);
 
     return Py_FindMethod(PyavtDatabaseMetaData_methods, self, name);
 }
@@ -2813,11 +2843,15 @@ PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtDatabaseMetaData_SetSimInfo(self, tuple);
     else if(strcmp(name, "suggestedDefaultSILRestriction") == 0)
         obj = avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(self, tuple);
+    else if(strcmp(name, "replacementMask") == 0)
+        obj = avtDatabaseMetaData_SetReplacementMask(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

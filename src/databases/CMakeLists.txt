@@ -83,6 +83,8 @@
 #    Jeremy Meredith, Thu Aug 12 13:54:57 EDT 2010
 #    Added PuReMD.
 #
+#    Mark C. Miller, Sun Aug 29 23:35:37 PDT 2010
+#    Fixed support for DBIO-ONLY build.
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -253,9 +255,9 @@ IF (NOT WIN32)
         Vis5D
         ZipWrapper
     )
-    IF(NOT VISIT_STATIC)
+    IF(NOT VISIT_STATIC AND NOT VISIT_DBIO_ONLY)
         LIST(APPEND REQUIRED_DATABASE_PLUGINS SimV1 SimV1Writer SimV2)
-    ENDIF(NOT VISIT_STATIC)
+    ENDIF(NOT VISIT_STATIC AND NOT VISIT_DBIO_ONLY)
     SET(OPTIONAL_DATABASE_PLUGINS
         Hex
         Rect

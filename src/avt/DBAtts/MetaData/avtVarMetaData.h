@@ -104,6 +104,7 @@ public:
         ID_hasDataExtents,
         ID_minDataExtents,
         ID_maxDataExtents,
+        ID_matRestricted,
         ID__LAST
     };
 
@@ -114,12 +115,13 @@ public:
     bool         hasDataExtents;
     double       minDataExtents;
     double       maxDataExtents;
+    intVector    matRestricted;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTVARMETADATA_TMFS AVTBASEVARMETADATA_TMFS "ibsbdd"
+#define AVTVARMETADATA_TMFS AVTBASEVARMETADATA_TMFS "ibsbddi*"
 
 #endif

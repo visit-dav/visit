@@ -2444,6 +2444,91 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
 }
 
 // ****************************************************************************
+// Function: Get the material indices (not the same as matnos) to which a
+// subsetting variable is restricted.
+//
+// Created: Mark C. Miller, Mon Aug 30 01:32:15 PDT 2010
+//
+// ****************************************************************************
+
+static int 
+GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const varname,
+    const char *const meshname, const char *const *const region_pnames,
+    vector<int>* restrictToMats)
+{
+    // Find associated material info.
+    const avtMaterialMetaData *mmd = md->GetMaterialOnMesh(meshname);
+
+    if (!mmd)
+    {
+        debug3 << "The variable \"" << varname << "\" appears to be defined on specific regions." << endl
+               << "However, an attempt to get a material object for the associated mesh" << endl
+               << "\"" << meshname << "\" has failed. So, it is being ignored" << endl;
+        return false;
+    }
+
+    int i, j;
+    bool regionNamesButMaterialNumbers = true;
+    for (i = 0; region_pnames[i]; i++)
+    {
+        int rnlen = strlen(region_pnames[i]);
+        int rnspn = strspn(region_pnames[i], "0123456789");
+        if (rnlen == rnspn) // Must be just a number
+        {
+            int regno = strtol(region_pnames[i], 0, 10);
+            regionNamesButMaterialNumbers = false;
+            for (j = 0; j < mmd->numMaterials; j++)
+            {
+                // The 'materialNames' Silo plugin creates are either
+                // "%d (matno)" or "%d (matno) %s (matname)". Either way,
+                // strtol should convert the number part correctly.
+                errno = 0;
+                int matno = strtol(mmd->materialNames[j].c_str(), 0, 10);
+                if (errno == 0 && regno == matno)
+                    restrictToMats->push_back(j);
+            }
+        }
+        else // Not just a number (a name?)
+        {
+            for (j = 0; j < mmd->numMaterials; j++)
+            {
+                int mnlen = strlen(mmd->materialNames[j].c_str());
+                int mnspn = strspn(mmd->materialNames[j].c_str(), "0123456789");
+                if (mnlen == mnspn) // Must be just a number
+                {
+                    continue;
+                }
+                else // Not just a number (a name?)
+                {
+                    regionNamesButMaterialNumbers = false;
+                    if (strcmp(region_pnames[i], &(mmd->materialNames[j].c_str()[mnspn])))
+                        restrictToMats->push_back(j);
+                }
+            }
+        }
+    }
+
+    if (restrictToMats->size() == 0)
+    {
+        debug3 << "The variable \"" << varname << "\" appears to be defined on subsets of the mesh." << endl
+               << "However, attempts to match the named subsets to material names or numbers" << endl
+               << "has failed. " << endl;
+        if (regionNamesButMaterialNumbers)
+        {
+            debug3 << "This is due to fact that the database specifies materials by number only" << endl
+                   << "and yet the region(s) the variable is defined on are specified by name" << endl;
+        }
+        return false;
+    }
+
+    debug3 << "Variable \"" << varname << "\" is restricted to the following regions..." << endl;
+    for (i = 0; i < restrictToMats->size(); i++)
+        debug3 << "\"" << mmd->materialNames[restrictToMats->operator[](i)] << "\" (mat-index = " << i << ")" << endl;
+
+    return true;
+}
+
+// ****************************************************************************
 //  Programmer: Mark C. Miller (re-factored here from ReadDir()
 //  Created: Wed Jun 17 10:42:42 PDT 2009
 //
@@ -2521,6 +2606,15 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                 debug1 << "Invalidating var \"" << multivar_names[i] << "\"" << endl;
                 valid_var = false;
             }
+
+            //
+            // If this variable is defined on material subset(s), determine
+            // the associated material numbers and indi
+            //
+            vector<int> selectedMats;
+            if (mv->region_pnames)
+                valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
+                    meshname.c_str(), mv->region_pnames, &selectedMats);
 
             //
             // Get the centering and dimension information.
@@ -2623,6 +2717,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                 smd->validVariable = valid_var;
                 smd->treatAsASCII = treatAsASCII;
                 smd->hideFromGUI = mv->guihide;
+                smd->matRestricted = selectedMats;
                 if(varUnits != "")
                 {
                     smd->hasUnits = true;
@@ -2644,6 +2739,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                                                  meshname, centering, nvals);
                 vmd->validVariable = valid_var;
                 vmd->hideFromGUI = mv->guihide;
+                vmd->matRestricted = selectedMats;
                 if(varUnits != "")
                 {
                     vmd->hasUnits = true;
@@ -2793,7 +2889,6 @@ avtSiloFileFormat::ReadUcdvars(DBfile *dbfile,
 
         TRY
         {
-
             name_w_dir = GenerateName(dirname, ucdvar_names[i], topDir.c_str());
             char   *realvar = NULL;
             DBfile *correctFile = dbfile;
@@ -2808,6 +2903,7 @@ avtSiloFileFormat::ReadUcdvars(DBfile *dbfile,
 
             char meshname[256];
             DBInqMeshname(correctFile, realvar, meshname);
+            meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
 
             //
             // Get the centering information.
@@ -2817,9 +2913,17 @@ avtSiloFileFormat::ReadUcdvars(DBfile *dbfile,
             bool guiHide = uv->guihide;
 
             //
+            // If this variable is defined on material subset(s), determine
+            // the associated material numbers and indi
+            //
+            vector<int> selectedMats;
+            if (uv->region_pnames)
+                valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
+                    meshname_w_dir, uv->region_pnames, &selectedMats);
+
+            //
             // Get the dimension of the variable.
             //
-            meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
             if (uv->nvals == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
@@ -2827,6 +2931,7 @@ avtSiloFileFormat::ReadUcdvars(DBfile *dbfile,
                 smd->validVariable = valid_var;
                 smd->treatAsASCII = (uv->ascii_labels);
                 smd->hideFromGUI = guiHide;
+                smd->matRestricted = selectedMats;
                 if(uv->units != 0)
                 {
                     smd->hasUnits = true;
@@ -2840,6 +2945,7 @@ avtSiloFileFormat::ReadUcdvars(DBfile *dbfile,
                                              meshname_w_dir, centering, uv->nvals);
                 vmd->validVariable = valid_var;
                 vmd->hideFromGUI = guiHide;
+                vmd->matRestricted = selectedMats;
                 if(uv->units != 0)
                 {
                     vmd->hasUnits = true;
@@ -3797,8 +3903,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     ReadQuadmeshes(dbfile, nqmesh, qmesh_names, dirname, md);
     ReadUcdmeshes(dbfile, nucdmesh, ucdmesh_names, dirname, md);
     ReadPointmeshes(dbfile, nptmesh, ptmesh_names, dirname, md);
-    ReadCurves(dbfile, ncurve, curve_names, dirname, md);
     ReadCSGmeshes(dbfile, ncsgmesh, csgmesh_names, dirname, md);
+    ReadCurves(dbfile, ncurve, curve_names, dirname, md);
+
+    // Mats and Species
+    ReadMaterials(dbfile, nmat, mat_names, dirname, md);
+    ReadMultimats(dbfile, nmultimat, multimat_names, dirname, md);
+    ReadSpecies(dbfile, nmatspecies, matspecies_names, dirname, md);
+    ReadMultispecies(dbfile, nmultimatspecies, multimatspecies_names, dirname, md);
 
     // Vars
     ReadMultivars(dbfile, nmultivar, multivar_names, dirname, md);
@@ -3806,12 +3918,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     ReadUcdvars(dbfile, nucdvar, ucdvar_names, dirname, md);
     ReadPointvars(dbfile, nptvar, ptvar_names, dirname, md);
     ReadCSGvars(dbfile, ncsgvar, csgvar_names, dirname, md);
-
-    // Mats and Species
-    ReadMaterials(dbfile, nmat, mat_names, dirname, md);
-    ReadMultimats(dbfile, nmultimat, multimat_names, dirname, md);
-    ReadSpecies(dbfile, nmatspecies, matspecies_names, dirname, md);
-    ReadMultispecies(dbfile, nmultimatspecies, multimatspecies_names, dirname, md);
 
     // Defined variables
     ReadDefvars(dbfile, ndefvars, defvars_names, dirname, md);
@@ -6749,6 +6855,9 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
 //
 //    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
 //    Added support for LONG LONG types.
+//
+//    Mark C. Miller, Sun Aug 29 23:19:50 PDT 2010
+//    Added logic to expand (material) subsetted variables.
 // ****************************************************************************
 
 vtkDataArray *
@@ -6769,6 +6878,14 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
+
+    //
+    // If the region_pnames option is set, this variable is defined
+    // on only those subsets of the mesh listed there. So, expand
+    // it out to behave like a 'full' variable here and now.
+    //
+    if (uv->region_pnames)
+        ExpandUcdvar(uv, vname, tvn, domain);
 
     string meshName = metadata->MeshForVar(tvn);
     vector<int> noremap;
@@ -6860,7 +6977,7 @@ CopyQuadVectorVar(const DBquadvar *qv)
         {
             *ptr++ = v1[i];
             *ptr++ = v2[i];
-            *ptr++ = 0.0;
+            *ptr++ = 0;
         }
     }
 
@@ -7552,6 +7669,187 @@ ConvertToFloat(int silotype, void *data, int nels)
 }
 
 // ****************************************************************************
+// Function: TraverseMaterialForSubsettedUcdvar
+//
+// Purpose: Help expand a subsetted ucdvar defined on (some) materials to
+// a 'full' ucdvar. Templated to deal with all of Silo's datatypes.
+//
+// Created: Mark C. Miller, Sun Aug 29 23:18:32 PDT 2010
+// ****************************************************************************
+
+template <typename T>
+static void
+TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
+    avtMaterial *mat, const intVector& restrictToMats,
+    void **_newvals, void **_newmixvals, T uval)
+{
+    int i, j;
+    int nzones = mat->GetNZones();
+    T **newvals = new T*[uv->nvals];
+    for (i = 0; i < uv->nvals; i++)
+    {
+        newvals[i] = new T[nzones];
+        for (j = 0; j < nzones; j++)
+            newvals[i][j] = ((T**)uv->vals)[i][0];
+    }
+    T **newmixvals = 0;
+    if (mat->GetMixlen() > 0)
+    {
+        newmixvals = new T*[uv->nvals];
+        for (i = 0; i < uv->nvals; i++)
+        {
+            newmixvals[i] = new T[mat->GetMixlen()];
+            for (j = 0; j < mat->GetMixlen(); j++)
+                newmixvals[i][j] = uval; // sentinal for uninit.
+        }
+    }
+    int nvals = 0;
+    int nmixvals = 0;
+    for (i = 0; i < nzones; i++)
+    {
+        if (mat->GetMatlist()[i] >= 0) // clean case
+        {
+            bool is_selected = false;
+            for (j = 0; j < restrictToMats.size() && !is_selected; j++)
+                if (mat->GetMatlist()[i] == restrictToMats[j]) is_selected = true;
+            if (is_selected)
+            {
+                for (j = 0; j < uv->nvals; j++)
+                    newvals[j][i] = ((T**)uv->vals)[j][nvals++];
+            }
+        }
+        else // mixed case
+        {
+            int mix_idx = -(mat->GetMatlist()[i]) - 1;
+            while (mix_idx >= 0)
+            {
+                bool is_selected = false;
+                for (j = 0; j < restrictToMats.size() && !is_selected; j++)
+                    if (mat->GetMixMat()[mix_idx] == restrictToMats[j]) is_selected = true;
+                if (is_selected)
+                {
+                    for (j = 0; j < uv->nvals; j++)
+                    {
+                        if (restrictToMats.size() == 1) // single material optimization
+                            newmixvals[j][mix_idx] = ((T**)uv->vals)[j][nvals++];
+                        else
+                            newmixvals[j][mix_idx] = ((T**)uv->mixvals)[j][nmixvals++];
+                    }
+                }
+                mix_idx = mat->GetMixNext()[mix_idx]-1;
+            }
+        }
+    }
+    *_newvals = newvals;
+    *_newmixvals = newmixvals;
+}
+
+// ****************************************************************************
+// Method: ExpandUcdvar
+//
+// Purpose: Expand a subsetted ucdvar to a 'full' ucdvar object by traversing
+// associated material object.
+//
+// Created: Mark C. Miller, Sun Aug 29 23:18:32 PDT 2010
+// ****************************************************************************
+void
+avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,  
+    const char *vname, const char *tvn, int domain)
+{
+    // Obtain the avtMaterial object associated with the mesh this
+    // variable is defined on.
+    string meshName = metadata->MeshForVar(tvn);
+    string matObjectName = metadata->MaterialOnMesh(meshName);
+    avtMaterial *mat;
+
+    // First, see if material object is already cached
+    void_ref_ptr vr = cache->GetVoidRef(matObjectName.c_str(),
+        AUXILIARY_DATA_MATERIAL, timestep, domain);
+    mat = (avtMaterial*) *vr;
+
+    // If we don't have it, read it and cache it
+    if (!mat)
+    {
+        DestructorFunction df;
+        void *p = GetAuxiliaryData(matObjectName.c_str(), domain,
+            AUXILIARY_DATA_MATERIAL, (void*)0, df);
+        mat = (avtMaterial*) p;
+        void_ref_ptr vrtmp = void_ref_ptr(p, df);
+        cache->CacheVoidRef(matObjectName.c_str(), AUXILIARY_DATA_MATERIAL,
+            timestep, domain, vrtmp);
+    }
+
+    // If we still don't have it, we're in trouble
+    if (!mat)
+    {
+        char msg[256];
+        SNPRINTF(msg, sizeof(msg), "Unable to obtain material object \"%s\" required to"
+            "compute subsets upon which the variable \"%s\" is defined.",
+            matObjectName.c_str(), vname);
+        EXCEPTION1(InvalidVariableException, msg);
+    }
+
+    vector<int> restrictToMats;
+    if (!GetRestrictedMaterialIndices(metadata, vname, meshName.c_str(),
+        uv->region_pnames, &restrictToMats))
+    {
+        char msg[256];
+        SNPRINTF(msg, sizeof(msg), "Unable to material indices variable \"%s\" "
+            "is restricted to", vname); 
+        EXCEPTION1(InvalidVariableException, msg);
+    }
+
+    int i, nzones = mat->GetNZones();
+    void *newvals, *newmixvals;
+    if (uv->datatype == DB_DOUBLE)
+        TraverseMaterialForSubsettedUcdvar<double>(uv, mat, restrictToMats,
+            &newvals, &newmixvals, -DBL_MAX);
+    else if (uv->datatype == DB_FLOAT)
+        TraverseMaterialForSubsettedUcdvar<float>(uv, mat, restrictToMats,
+            &newvals, &newmixvals, -FLT_MAX);
+    else if (uv->datatype == DB_INT)
+        TraverseMaterialForSubsettedUcdvar<int>(uv, mat, restrictToMats,
+            &newvals, &newmixvals, -INT_MAX);
+    else if (uv->datatype == DB_CHAR)
+        TraverseMaterialForSubsettedUcdvar<char>(uv, mat, restrictToMats,
+            &newvals, &newmixvals, 0xFF);
+    else if (uv->datatype == DB_SHORT)
+        TraverseMaterialForSubsettedUcdvar<short>(uv, mat, restrictToMats,
+            &newvals, &newmixvals, -(0xFFFF-1));
+    else if (uv->datatype == DB_LONG)
+        TraverseMaterialForSubsettedUcdvar<long>(uv, mat, restrictToMats,
+            &newvals, &newmixvals, -LONG_MAX);
+#ifdef DB_LONG_LONG
+    else if (uv->datatype == DB_LONG_LONG)
+        TraverseMaterialForSubsettedUcdvar<long long>(uv, mat, restrictToMats,
+            &newvals, &newmixvals, -LONG_MAX);
+#endif
+
+    // Overwite DBucdvar's old contents with stuff we just expanded.
+    for (i = 0; i < uv->nvals; i++)
+        free(uv->vals[i]);
+    free(uv->vals);
+    uv->nels = nzones;
+#ifdef DB_DTPTR
+    uv->vals = (DB_DTPTR**) newvals;
+#else
+    uv->vals = (float**) newvals;
+#endif
+    if (uv->mixvals)
+    {
+        for (i = 0; i < uv->nvals; i++)
+            free(uv->mixvals[i]);
+        free(uv->mixvals);
+    }
+    uv->mixlen = mat->GetMixlen();
+#ifdef DB_DTPTR
+    uv->mixvals = (DB_DTPTR**) newmixvals;
+#else
+    uv->mixvals = (float**) newmixvals;
+#endif
+}
+
+// ****************************************************************************
 //  Method: avtSiloFileFormat::GetUcdVar
 //
 //  Purpose:
@@ -7606,6 +7904,9 @@ ConvertToFloat(int silotype, void *data, int nels)
 //
 //    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
 //    Added support for LONG LONG types.
+//
+//    Mark C. Miller, Sun Aug 29 23:19:50 PDT 2010
+//    Added logic to expand (material) subsetted variables.
 // ****************************************************************************
 
 vtkDataArray *
@@ -7626,6 +7927,14 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
+
+    //
+    // If the region_pnames option is set, this variable is defined
+    // on only those subsets of the mesh listed there. So, expand
+    // it out to behave like a 'full' variable here and now.
+    //
+    if (uv->region_pnames)
+        ExpandUcdvar(uv, vname, tvn, domain);
 
     string meshName = metadata->MeshForVar(tvn);
     vector<int> noremap;

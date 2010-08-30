@@ -17,6 +17,8 @@
     <Field name="maxDataExtents" label="Maximum data extents" type="double" access="public">
       0.000000
     </Field>
+    <Field name="matRestricted" label="Material numbers variable is restricted to" type="intVector" access="public">
+    </Field>
     <Function name="avtVarMetaData2" user="true" member="true">
     </Function>
     <Function name="avtVarMetaData3" user="true" member="true">

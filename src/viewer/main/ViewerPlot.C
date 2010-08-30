@@ -1488,6 +1488,8 @@ ViewerPlot::GetExpressions() const
 //    Set the meshname data member, and do it independent of what we
 //    find for the SIL/SILR.
 //
+//    Mark C. Miller, Sun Aug 29 23:34:44 PDT 2010
+//    Added logic to set SIL when variable is defined on subsets (materials).
 // ****************************************************************************
 
 bool
@@ -1538,8 +1540,9 @@ ViewerPlot::SetVariableName(const std::string &name)
                 // The new variable has a different top set from the
                 // old variable. Set the top set in the SIL restriction.
                 //
+                intVector restrictToMats = md->GetRestrictedMatnos(name);
                 avtSILSet_p current = silr->GetSILSet(silr->GetTopSet());
-                if (meshName != current->GetName())
+                if (meshName != current->GetName() || restrictToMats.size())
                 {
                     avtSILRestriction_p new_sil = 
                                                new avtSILRestriction(silr);
@@ -1554,6 +1557,7 @@ ViewerPlot::SetVariableName(const std::string &name)
                             break;
                         }
                     }
+
                     //
                     // Change the top set in the current SIL restriction.
                     // This is sufficient due to the previous call to
@@ -1563,6 +1567,9 @@ ViewerPlot::SetVariableName(const std::string &name)
                     new_sil->SetTopSet(topSet);
                     new_sil->TurnOffAll();
                     new_sil->TurnOnSet(topSet);
+                    const int mat_role = 5;
+                    if (restrictToMats.size())
+                        new_sil->RestrictToSetsOfRole(mat_role, restrictToMats);
                     silr = new_sil;
 
                     //

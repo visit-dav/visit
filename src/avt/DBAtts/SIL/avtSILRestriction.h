@@ -112,6 +112,8 @@ typedef ref_ptr<avtSILRestriction> avtSILRestriction_p;
 //    Added higher level EnsureRestrictionCorrectness wrapper to help keep
 //    enum & material selection mutually exclusive. 
 //
+//    Mark C. Miller, Sun Aug 29 23:31:00 PDT 2010
+//    Added RestrictToSetsOfRole.
 // ****************************************************************************
 
 class DBATTS_API avtSILRestriction : public avtSIL
@@ -135,6 +137,9 @@ class DBATTS_API avtSILRestriction : public avtSIL
 
     void                      TurnOnAll(void);
     void                      TurnOffAll(void);
+
+    void                      RestrictToSetsOfRole(int role,
+                                  const std::vector<int> &collIndices);
 
     void                      SuspendCorrectnessChecking(void);
     void                      EnableCorrectnessChecking(void);

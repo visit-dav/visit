@@ -117,6 +117,22 @@ PyavtVarMetaData_ToString(const avtVarMetaData *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxDataExtents = %g\n", prefix, atts->maxDataExtents);
     str += tmpStr;
+    {   const intVector &matRestricted = atts->matRestricted;
+        SNPRINTF(tmpStr, 1000, "%smatRestricted = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < matRestricted.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", matRestricted[i]);
+            str += tmpStr;
+            if(i < matRestricted.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -272,6 +288,69 @@ avtVarMetaData_GetMaxDataExtents(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+avtVarMetaData_SetMatRestricted(PyObject *self, PyObject *args)
+{
+    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+
+    intVector  &vec = obj->data->matRestricted;
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the matRestricted in the object as modified.
+    obj->data->SelectAll();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtVarMetaData_GetMatRestricted(PyObject *self, PyObject *args)
+{
+    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    // Allocate a tuple the with enough entries to hold the matRestricted.
+    const intVector &matRestricted = obj->data->matRestricted;
+    PyObject *retval = PyTuple_New(matRestricted.size());
+    for(size_t i = 0; i < matRestricted.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(matRestricted[i])));
+    return retval;
+}
+
 
 
 PyMethodDef PyavtVarMetaData_methods[AVTVARMETADATA_NMETH] = {
@@ -288,6 +367,8 @@ PyMethodDef PyavtVarMetaData_methods[AVTVARMETADATA_NMETH] = {
     {"GetMinDataExtents", avtVarMetaData_GetMinDataExtents, METH_VARARGS},
     {"SetMaxDataExtents", avtVarMetaData_SetMaxDataExtents, METH_VARARGS},
     {"GetMaxDataExtents", avtVarMetaData_GetMaxDataExtents, METH_VARARGS},
+    {"SetMatRestricted", avtVarMetaData_SetMatRestricted, METH_VARARGS},
+    {"GetMatRestricted", avtVarMetaData_GetMatRestricted, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -357,7 +438,8 @@ PyavtVarMetaData_getattr(PyObject *self, char *name)
         return avtVarMetaData_GetMinDataExtents(self, NULL);
     if(strcmp(name, "maxDataExtents") == 0)
         return avtVarMetaData_GetMaxDataExtents(self, NULL);
-
+    if(strcmp(name, "matRestricted") == 0)
+        return avtVarMetaData_GetMatRestricted(self, NULL);
 
     if(strcmp(name, "__methods__") != 0)
     {
@@ -366,6 +448,7 @@ PyavtVarMetaData_getattr(PyObject *self, char *name)
     }
 
     PyavtVarMetaData_ExtendSetGetMethodTable();
+
     return Py_FindMethod(PyavtVarMetaData_methods, self, name);
 }
 
@@ -394,11 +477,15 @@ PyavtVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtVarMetaData_SetMinDataExtents(self, tuple);
     else if(strcmp(name, "maxDataExtents") == 0)
         obj = avtVarMetaData_SetMaxDataExtents(self, tuple);
+    else if(strcmp(name, "matRestricted") == 0)
+        obj = avtVarMetaData_SetMatRestricted(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

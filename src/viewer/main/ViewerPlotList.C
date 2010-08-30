@@ -5019,10 +5019,12 @@ ViewerPlotList::OverlayDatabase(const EngineKey &key,
 // Creation:   Thu Feb  7 14:33:37 PST 2008
 //
 // Modifications:
+//    Mark C. Miller, Fri Aug 27 12:41:26 PDT 2010
+//    Made it static to reduce pollution of global name space.
 //   
 // ****************************************************************************
 
-void
+static void
 InitializeSILRestrictionFromDatabase(avtSILRestriction_p tmpSilr, int topSet,
     const stringVector &defaultSILRestrictionFromDatabase)
 {
@@ -5204,6 +5206,8 @@ InitializeSILRestrictionFromDatabase(avtSILRestriction_p tmpSilr, int topSet,
 //   I moved some code into its own function and added some more debugging
 //   statements.
 //
+//   Mark C. Miller, Sun Aug 29 23:33:21 PDT 2010
+//   Added logic to set SIL when variable is defined on subsets (materials).
 // ****************************************************************************
 
 avtSILRestriction_p
@@ -5306,6 +5310,14 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
                 defaultSILRestrictionFromDatabase);
         }
 
+        // Handle variables that are defined on subsets defined by materials
+        intVector restrictToMats = md->GetRestrictedMatnos(realvar);
+        if (restrictToMats.size())
+        {
+            tmpSilr->SetTopSet(topSet);
+            tmpSilr->RestrictToSetsOfRole((int)SIL_MATERIAL, restrictToMats);
+        }
+
         // Save SIL restriction in cache
         debug5 << "Caching new SIL restriction with key " << key << endl;
         SILRestrictions[key] = tmpSilr;
@@ -5319,6 +5331,13 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
         debug5 << "Found key. Copying SIL restriction. " << std::endl;
         // Set the SIL restriction to a predefined restriction.
         silr = new avtSILRestriction(pos->second);
+
+        // Handle variables that are defined on subsets defined by materials
+        intVector restrictToMats = md->GetRestrictedMatnos(realvar);
+        if (restrictToMats.size())
+        {
+            silr->RestrictToSetsOfRole((int)SIL_MATERIAL, restrictToMats);
+        }
     }
 
     //

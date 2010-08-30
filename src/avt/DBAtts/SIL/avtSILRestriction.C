@@ -2018,4 +2018,39 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
     return compatible;
 }
 
+// ****************************************************************************
+// Method: avtSILRestriction::RestrictToSetsOfRole
+//
+// Purpose: Set restriction so that only specific sets of a given role are on.
+//
+// Created: Mark C. Miller, Sun Aug 29 23:29:51 PDT 2010
+//
+// ****************************************************************************
 
+void
+avtSILRestriction::RestrictToSetsOfRole(int role, const intVector& collIndices)
+{
+    SuspendCorrectnessChecking();
+    const vector<int> &mapsOut = GetSILSet(topSet)->GetMapsOut();
+    for (int i = 0 ; i < mapsOut.size(); i++)
+    {
+        avtSILCollection_p coll = GetSILCollection(mapsOut[i]);
+        if ((int) coll->GetRole() == role)
+        {
+            int numInRole = coll->GetNumberOfSubsets();
+            // turn off ALL sets with this role 
+            for (int j = 0; j < numInRole; j++)
+            {
+                int setId = coll->GetSubset(j);
+                TurnOffSet(setId);
+            }
+            // turn ON specified sets with this role 
+            for (int j = 0; j < collIndices.size(); j++)
+            {
+                int setId = coll->GetSubset(collIndices[j]);
+                TurnOnSet(setId);
+            }
+        }
+    }
+    EnableCorrectnessChecking();
+}

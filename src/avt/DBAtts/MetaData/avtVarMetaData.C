@@ -88,6 +88,7 @@ void avtVarMetaData::Copy(const avtVarMetaData &obj)
     hasDataExtents = obj.hasDataExtents;
     minDataExtents = obj.minDataExtents;
     maxDataExtents = obj.maxDataExtents;
+    matRestricted = obj.matRestricted;
 
     avtVarMetaData::SelectAll();
 }
@@ -254,6 +255,7 @@ avtVarMetaData::operator == (const avtVarMetaData &obj) const
             (hasDataExtents == obj.hasDataExtents) &&
             (minDataExtents == obj.minDataExtents) &&
             (maxDataExtents == obj.maxDataExtents) &&
+            (matRestricted == obj.matRestricted) &&
             avtBaseVarMetaData::operator==(obj));
 }
 
@@ -406,6 +408,7 @@ avtVarMetaData::SelectAll()
     Select(ID_hasDataExtents, (void *)&hasDataExtents);
     Select(ID_minDataExtents, (void *)&minDataExtents);
     Select(ID_maxDataExtents, (void *)&maxDataExtents);
+    Select(ID_matRestricted,  (void *)&matRestricted);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
