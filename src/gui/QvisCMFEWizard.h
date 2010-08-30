@@ -43,6 +43,7 @@
 #include <map>
 #include <vectortypes.h>
 #include <Expression.h>
+#include <SimpleObserver.h>
 
 class QButtonGroup;
 class QCheckBox;
@@ -71,16 +72,20 @@ class ExpressionList;
 // ****************************************************************************
 // Class: QvisCMFEWizard
 //
-// Purpose: 
+// Purpose:
 //   This class contains the Data-Level Comparisons/CMFE wizard that leads the 
 //   user through all of the questions needed to set up a CMFE.
 //
 // Programmer: Hank Childs
 // Creation:   August 1, 2010
 //
+// Modifications:
+//   Cyrus Harrison, Mon Aug 30 11:59:25 PDT 2010
+//   Simplify wizard & add ability to open new databases.
+//
 // ****************************************************************************
 
-class QvisCMFEWizard : public QvisWizard
+class QvisCMFEWizard : public QvisWizard, public SimpleObserver
 {
     Q_OBJECT
 public:
@@ -89,8 +94,11 @@ public:
 
     int Exec();
 
-    void    SetGlobalAttributes(GlobalAttributes *ga) { globalAtts = ga; };
-    void    SetWindowInformation(WindowInformation *wi) {windowInfo = wi;};
+    virtual void Update(Subject *);
+    virtual void SubjectRemoved(Subject *);
+
+    void    SetGlobalAttributes(GlobalAttributes *ga);
+    void    SetWindowInformation(WindowInformation *wi);
     void    SetExpressionList(ExpressionList *el);
 
     void    AddCMFEExpression(void);
@@ -100,46 +108,48 @@ public:
 protected:
     virtual void initializePage(int id);
 private slots:
-    
-    void page1_donorTypeChanged(int);
-    void page2_sourceChanged(int);
-    void page3_absoluteTimeChanged(int);
-    void page3_timeTypeChanged(int);
-    void page3_timeChanged(const QString &);
-    void page3_cycleChanged(const QString &);
-    void page3_indexChanged(const QString &);
-    void page4_donorChanged(const QString &);
-    void page4_targetChanged(const QString &);
-    void page5_interpChanged(int);
-    void page5_fillChanged(int);
-    void page5_overlapConstChanged(const QString &);
-    void page5_overlapVarChanged(const QString &);
-    void page6_exprNameChanged(const QString &);
-    void page6_exprTypeChanged(int);
-    void page6_diffVariable1Changed(const QString &);
-    void page6_diffTypeChanged(int);
+
+    void donorTypeChanged(int);
+    void targetDatabaseChanged(int);
+    void donorDatabaseChanged(int);
+    void absVsRelTimeChanged(int);
+    void timeTypeChanged(int);
+    void timeChanged(const QString &);
+    void cycleChanged(const QString &);
+    void indexChanged(const QString &);
+    void donorFieldVarChanged(const QString &);
+    void targetMeshVarChanged(const QString &);
+    void interpChanged(int);
+    void nonOverlapChanged(int);
+    void nonOverlapTxtChanged(const QString &);
+    void nonOverlapVarChanged(const QString &);
+    void exprNameChanged(const QString &);
+    void exprTypeChanged(int);
+    void exprDiffVarChanged(const QString &);
+    void exprDiffTypeChanged(int);
+
+    void targetDatabaseOpenClicked();
+    void donorDatabaseOpenClicked();
 
 private:
     enum {
-        Page_Intro,                       // page0
-        Page_DonorType,                   // page1
-        Page_FileSelection,               // page2
-        Page_TimeSpecification,           // page3
-        Page_DonorAndTargetSpecification, // page4
-        Page_InterpSelection,             // page5
-        Page_ActivityDescription,         // page6
+        Page_DonorType,                   // page0
+        Page_DonorAndTargetSpecification, // page1
+        Page_TimeSpecification,           // page2
+        Page_InterpSelection,             // page3
+        Page_ActivityDescription,         // page4
     };
 
-    void CreateIntroPage();              // page0
-    void CreateDonorTypePage();          // page1
-    void CreateFileSelectionPage();      // page2
-    void CreateTimeSpecificationPage();  // page3
-    void CreateDonorAndTargetPage();     // page4
-    void CreateInterpSelectionPage();    // page5
-    void CreateActivityPage();           // page6
+    void CreateDonorTypePage();          // page0
+    void CreateDonorAndTargetPage();     // page1
+    void CreateTimeSpecificationPage();  // page2
+    void CreateInterpSelectionPage();    // page3
+    void CreateActivityPage();           // page4
+
 
     int                     decision_donorType;
-    std::string             decision_source;
+    std::string             decision_donorDatabase;
+    std::string             decision_targetDatabase;
     bool                    decision_absolute;
     int                     decision_timeType;
     double                  decision_time;
@@ -154,59 +164,62 @@ private:
     int                     decision_exprtype;
     std::string             decision_diffvarname;
     std::string             decision_exprname;
-   
+
+    std::string             selectedTargetDatabase;
+    std::string             selectedDonorDatabase;
+
     GlobalAttributes       *globalAtts;
     WindowInformation      *windowInfo;
     ExpressionList         *exprList;
 
-    // Introduce CMFE.
+    // Setup type of cmfe.
     QWizardPage            *page0;
+    QButtonGroup           *donorTypeSelect;
 
-    // Set up the donor type.
+    // Set up the donor and target
     QWizardPage            *page1;
-    QButtonGroup           *page1_buttongroup;
+    QLabel                             *targetDatabaseLabel;
+    QComboBox                          *targetDatabase;
+    QPushButton                        *targetDatabaseOpen;
+    QvisCustomSourceVariableButton     *targetMeshVar;
+    QLabel                             *donorDatabaseLabel;
+    QComboBox                          *donorDatabase;
+    QPushButton                        *donorDatabaseOpen;
+    QvisCustomSourceVariableButton     *donorFieldVar;
 
-    // Set up the file source.
-    QWizardPage            *page2;
-    QComboBox              *page2_sourceComboBox;
 
     // Set up the absolute vs relative time.
-    QWizardPage            *page3;
-    QButtonGroup           *page3_buttongroup1;
-    QButtonGroup           *page3_buttongroup2;
-    QLineEdit              *page3_lineEditTime;
-    QLineEdit              *page3_lineEditCycle;
-    QLineEdit              *page3_lineEditIndex;
-    
-    // Set up the donor and target
-    QWizardPage            *page4;
-    QvisCustomSourceVariableButton     *page4_donorVariable;
-    QvisVariableButton                 *page4_targetMesh;
+    QWizardPage            *page2;
+    QButtonGroup           *absVsRelTimeSelect;
+    QButtonGroup           *timeTypeSelect;
+    QLineEdit              *timeTxt;
+    QLineEdit              *cycleTxt;
+    QLineEdit              *indexTxt;
+
 
     // Set up the CMFE type
-    QWizardPage            *page5;
-    QButtonGroup           *page5_buttongroup1;
-    QButtonGroup           *page5_buttongroup2;
-    QLineEdit              *page5_lineEdit;
-    QvisVariableButton     *page5_overlapVariable;
-    QRadioButton           *page5_button1;
-    QRadioButton           *page5_button2;
+    QWizardPage            *page3;
+    QButtonGroup           *interpSelect;
+
+    QButtonGroup           *nonOverlapSelect;
+    QLineEdit              *nonOverlapTxt;
+    QvisVariableButton     *nonOverlapVar;
 
     // Set up the expression
-    QWizardPage            *page6;
-    QButtonGroup           *page6_buttongroup1;
-    QButtonGroup           *page6_buttongroup2;
-    QvisVariableButton     *page6_diffVariable1;
-    QLineEdit              *page6_lineEdit;
+    QWizardPage            *page4;
+    QLineEdit              *exprNameTxt;
+    QButtonGroup           *exprTypeSelect;
+    QButtonGroup           *exprDiffTypeSelect;
+    QvisVariableButton     *exprDiffVar;
 
     static int              timesCompleted;
 
     // Helper methods.
     void   UpdateSourceList();
-    void   UpdateDonorFields();
-    void   UpdateMeshField();
+    void   UpdateDonorField();
+    void   UpdateTargetMesh();
     Expression::ExprType GetVarType(const std::string &);
-    std::string GetMeshForActiveSource(void);
+    std::string GetMeshForTargetDatabase(void);
 };
 
 #endif
