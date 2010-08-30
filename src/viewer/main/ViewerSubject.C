@@ -10324,8 +10324,11 @@ ReplaceNamedSelection(const EngineKey &engineKey, const std::string &selName,
     int nWindows = 0, *windowIndices = 0;
     windowIndices = wMgr->GetWindowIndices(&nWindows);
     stringVector plotNames;
+    bool *plotlistsChanged = new bool[nWindows+1];
     for(int i = 0; i < nWindows; ++i)
     {
+        plotlistsChanged[i] = false;
+
         ViewerWindow *win = wMgr->GetWindow(windowIndices[i]);
         ViewerPlotList *plist = win->GetPlotList();
         for(int j = 0; j < plist->GetNumPlots(); ++j)
@@ -10336,7 +10339,8 @@ ReplaceNamedSelection(const EngineKey &engineKey, const std::string &selName,
                 plotNames.push_back(plot->GetPlotName());
                 plot->SetNamedSelection(newSelName);
                 plot->ClearActors();
-                windowIndices[i] += 1000;
+
+                plotlistsChanged[i] = true;
             }
         }
     }
@@ -10353,9 +10357,9 @@ ReplaceNamedSelection(const EngineKey &engineKey, const std::string &selName,
         // Reexecute all of the affected plots.
         for(int i = 0; i < nWindows; ++i)
         {
-            if(windowIndices[i] >= 1000)
+            if(plotlistsChanged[i])
             {
-                wMgr->GetWindow(windowIndices[i]-1000)->GetPlotList()->
+                wMgr->GetWindow(windowIndices[i])->GetPlotList()->
                     RealizePlots(false);
             }
         }
@@ -10367,6 +10371,7 @@ ReplaceNamedSelection(const EngineKey &engineKey, const std::string &selName,
     ENDTRY
 
     delete [] windowIndices;
+    delete [] plotlistsChanged;
 }
 
 // ****************************************************************************
