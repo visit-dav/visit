@@ -761,6 +761,9 @@ avtStreamlineFilter::SeedInfoString() const
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Hank Childs, Sun Aug 29 19:26:47 PDT 2010
+//    Set the extents in more situations.
+//
 // ****************************************************************************
 
 void
@@ -770,6 +773,9 @@ avtStreamlineFilter::PostExecute(void)
 
     if (coloringMethod == STREAMLINE_COLOR_VORTICITY ||
         coloringMethod == STREAMLINE_COLOR_SPEED ||
+        coloringMethod == STREAMLINE_COLOR_ARCLENGTH ||
+        coloringMethod == STREAMLINE_COLOR_TIME ||
+        coloringMethod == STREAMLINE_COLOR_ID ||
         coloringMethod == STREAMLINE_COLOR_VARIABLE)
     {
         double range[2];
