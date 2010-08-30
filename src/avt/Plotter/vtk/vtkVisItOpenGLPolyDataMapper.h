@@ -48,6 +48,9 @@ class vtkOpenGLRenderer;
 //    Brad Whitlock, Thu Aug 24 16:06:03 PST 2006
 //    I added support for color texturing for point data.
 //
+//    Dave Pugmire, Mon Aug 30 09:31:24 EDT 2010
+//    Fixed an inconsistency in openGL state when point sprites are used.
+//
 // ****************************************************************************
 
 class PLOTTER_API vtkVisItOpenGLPolyDataMapper : public vtkPolyDataMapper
@@ -165,10 +168,6 @@ protected:
                      int& offset);
 
 private:
-  // Description:
-  // -1 if uninitialized, 0 if not supported, 1 if the point sprite
-  // extension is supported.
-  int PointSpriteSupported;
 
   vtkVisItOpenGLPolyDataMapper(const vtkVisItOpenGLPolyDataMapper&);  // Not implemented.
   void operator=(const vtkVisItOpenGLPolyDataMapper&);  // Not implemented.

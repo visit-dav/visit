@@ -104,6 +104,9 @@ static float vtk1Over255[] = {
 //    Tom Fogal, Tue Apr 27 13:08:59 MDT 2010
 //    Remove Mesa-specific code.
 //
+//    Dave Pugmire, Mon Aug 30 09:31:24 EDT 2010
+//    Fixed an inconsistency in openGL state when point sprites are used.
+//
 // ****************************************************************************
 vtkVisItOpenGLPolyDataMapper::vtkVisItOpenGLPolyDataMapper()
 {
@@ -116,7 +119,6 @@ vtkVisItOpenGLPolyDataMapper::vtkVisItOpenGLPolyDataMapper()
   this->SphereTexturesDataCreated = false;
   this->SphereTexturesLoaded = false;
   this->TextureName = 0;
-  this->PointSpriteSupported = -1;
 
   this->EnableColorTexturing = false;
   this->ColorTexturingAllowed = false;
@@ -4036,6 +4038,9 @@ vtkVisItOpenGLPolyDataMapper::StartFancyPoints(
 // Modifications:
 //   Brad Whitlock, Tue Dec 6 13:39:33 PST 2005
 //   I changed it to 1-pass texturing.
+//
+//    Dave Pugmire, Mon Aug 30 09:31:24 EDT 2010
+//    Fixed an inconsistency in openGL state when point sprites are used.
 //   
 // ****************************************************************************
 
@@ -4047,7 +4052,7 @@ vtkVisItOpenGLPolyDataMapper::EndFancyPoints(
     {
 #ifndef vtkVisItOpenGLPolyDataMapper 
         // If we're in OpenGL and not Mesa then do this test.
-        if(this->PointSpriteSupported < 1)
+        if(!GLEW_ARB_point_sprite)
         {
             // Point sprites are not supported
             return; 
