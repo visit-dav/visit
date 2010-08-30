@@ -59,7 +59,10 @@ class QSlider;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
+//   Tom Fogal,  Mon Aug 30 12:31:44 MDT 2010
+//   Removed some dead/unused variables
+//
 // ****************************************************************************
 
 class QvisMultiresControlWindow : public QvisOperatorWindow
@@ -82,14 +85,8 @@ class QvisMultiresControlWindow : public QvisOperatorWindow
     void infoProcessText();
   private:
     QSlider* resolution;
-    QLineEdit *info;
     QLabel *resolutionLevelLabel;
-    QLabel *resolutionLabel;
-    QLabel *infoLabel;
 
     MultiresControlAttributes *atts;
 };
-
-
-
 #endif
