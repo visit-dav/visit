@@ -854,6 +854,9 @@ avtScatterPlot::ReleaseData(void)
 //   Cyrus Harrison,Thu Aug 19 08:58:26 PDT 2010
 //   Expliclity request var1 if necessary.
 //
+//   Hank Childs, Sun Aug 29 20:05:11 CDT 2010
+//   Calculate the extents of the color variable.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -928,6 +931,15 @@ avtScatterPlot::EnhanceSpecification(avtContract_p contract_in)
         if(addVar4)
             rv->GetDataRequest()->AddSecondaryVariable(var4.c_str());
     }
+
+    if (atts.GetVar1Role() == ScatterAttributes::Color)
+        rv->SetCalculateVariableExtents(var1, true);
+    if (atts.GetVar2Role() == ScatterAttributes::Color)
+        rv->SetCalculateVariableExtents(var2, true);
+    if (atts.GetVar3Role() == ScatterAttributes::Color)
+        rv->SetCalculateVariableExtents(var3, true);
+    if (atts.GetVar4Role() == ScatterAttributes::Color)
+        rv->SetCalculateVariableExtents(var4, true);
 
     return rv;
 }
