@@ -551,6 +551,9 @@ void vtkVisItScalarBarActor::BuildRange(vtkViewport *viewport)
 //    Kathleen Bonnell, Thu Oct  1 14:00:02 PDT 2009
 //    Modified to support user supplied Labels and user supplied tick values.
 //
+//    Hank Childs, Mon Aug 30 07:36:43 PDT 2010
+//    Add support for log and skew scaling.
+//
 // ****************************************************************************
 
 void 
@@ -701,7 +704,6 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
     case VTK_CONTINUOUS:
       if (this->UseSuppliedLabels)
         {
-
         for(i = 0; i < nLabels; ++i)
           {
           bool va = i < this->suppliedValues.size();
@@ -802,7 +804,17 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
 
     if (this->Type == VTK_CONTINUOUS && this->UseSuppliedLabels)
       {
-      double rangePercent = (this->suppliedValues[i] - min) / rangeDiff;
+       double val2 = this->suppliedValues[i];
+       if (this->UseSkewScaling)
+         {
+         // The function we were using was actually the "inverse" skew.
+         val2 = vtkSkewValue(val2, min, max, this->SkewFactor);
+         }
+       else if (this->UseLogScaling)
+         {
+         val2 = (double) log10(val2); 
+         }
+      double rangePercent = (val2 - min) / rangeDiff;
       if (this->Orientation == VERTICAL_TEXT_ON_RIGHT ||
           this->Orientation == VERTICAL_TEXT_ON_LEFT)
         offset = bo + rangePercent*bh/viewSize[1];
@@ -857,6 +869,9 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
 //
 //    Kathleen Bonnell, Thu Oct  1 14:00:02 PDT 2009
 //    Modified to support user supplied Labels and user supplied tick values.
+//
+//    Hank Childs, Mon Aug 30 07:36:43 PDT 2010
+//    Add support for log and skew scaling.
 //
 // **********************************************************************
 
@@ -938,7 +953,17 @@ vtkVisItScalarBarActor::BuildTics(double origin, double width,
       {
       if (this->Type == VTK_CONTINUOUS && this->UseSuppliedLabels) 
         {
-        offset = origin + (this->suppliedValues[i] - min)/rangeDiff * height;
+        double val2 = this->suppliedValues[i];
+        if (this->UseSkewScaling)
+          {
+          // The function we were using was actually the "inverse" skew.
+          val2 = vtkSkewValue(val2, min, max, this->SkewFactor);
+          }
+        else if (this->UseLogScaling)
+          {
+          val2 = (double) log10(val2); 
+          }
+        offset = origin + (val2 - min)/rangeDiff * height;
         }
       x[0] = width;
       x[1] = offset + i*delta;
@@ -998,7 +1023,17 @@ vtkVisItScalarBarActor::BuildTics(double origin, double width,
       {
       if (this->Type == VTK_CONTINUOUS && this->UseSuppliedLabels)
         {
-        offset = (this->suppliedValues[i] - min) / rangeDiff * width;
+        double val2 = this->suppliedValues[i];
+        if (this->UseSkewScaling)
+          {
+          // The function we were using was actually the "inverse" skew.
+          val2 = vtkSkewValue(val2, min, max, this->SkewFactor);
+          }
+        else if (this->UseLogScaling)
+          {
+          val2 = (double) log10(val2); 
+          }
+        offset = (val2 - min) / rangeDiff * width;
         }
 
       x[0] = offset + i*delta;
@@ -2026,6 +2061,13 @@ vtkVisItScalarBarActor::SetSuppliedValues(const doubleVector &values)
     } 
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Mon Aug 30 07:36:43 PDT 2010
+//    Add support for log and skew scaling (so look at the correct range).
+//
+// ****************************************************************************
 void
 vtkVisItScalarBarActor::VerifySuppliedLabels()
 {
@@ -2058,16 +2100,8 @@ vtkVisItScalarBarActor::VerifySuppliedLabels()
     doubleVector tmp;
     stringVector tmp2;
     double min, max;
-    if (this->UseLogScaling)
-      {
-      min = log10(range[0]);
-      max = log10(range[1]);
-      }
-    else
-      {
-      min = range[0];
-      max = range[1];
-      }
+    min = range[0];
+    max = range[1];
 
     // use an epsilon in keeping with the precision specified by
     // the label format.
@@ -2090,8 +2124,9 @@ vtkVisItScalarBarActor::VerifySuppliedLabels()
       }
     for (size_t i = 0; i < this->suppliedValues.size(); ++i)
       {
-      if (this->suppliedValues[i] < (min - eps1) || 
-          this->suppliedValues[i] > (max + eps2))
+       double val2 = this->suppliedValues[i];
+       if (val2 < (min - eps1) || 
+           val2 > (max + eps2))
         {
         vtkDebugMacro("Ignoring supplied tic value " << this->suppliedValues[i] << " as it is out of range.");
         continue;
