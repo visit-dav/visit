@@ -6464,6 +6464,8 @@ QvisGUIApplication::SaveWindow()
 void
 QvisGUIApplication::SetPrinterOptions()
 {
+    PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
+
 #if defined(Q_WS_MACX) && !defined(VISIT_MAC_NO_CARBON)
     //
     // If we're on MacOS X and the Mac application style is being used, manage
@@ -6484,7 +6486,7 @@ QvisGUIApplication::SetPrinterOptions()
         {
             if(PMCreateSession(&psession) != kPMNoError)
             {
-            EXCEPTION0(VisItException);
+                EXCEPTION0(VisItException);
             }
             nObjectsToFree = 1;
         
@@ -6515,9 +6517,7 @@ QvisGUIApplication::SetPrinterOptions()
             Boolean accepted = false;
             if(PMSessionPrintDialog(psession, psettings, pformat, &accepted) == kPMNoError &&
                accepted == true)
-            {
-                PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
-        
+            {       
                 // Get the name of the printer to use for printing the image.
                 CFArrayRef printerList = NULL;
                 CFIndex currentIndex;
@@ -6567,6 +6567,7 @@ QvisGUIApplication::SetPrinterOptions()
      
                 // Set some of the last properties
                 p->SetOutputToFile(false);
+                p->SetOutputToFileName("");
                 p->SetPrintColor(true);
                 p->SetCreator(GetViewerProxy()->GetLocalUserName());
 
@@ -6607,20 +6608,25 @@ QvisGUIApplication::SetPrinterOptions()
         // print once the options are set.
         //
         if(okayToPrint)
-            PrintWindow();
+            GetViewerMethods()->PrintWindow();
     }
     else
     {
+#endif
+#if defined(Q_WS_MACX)
+        // Each time through on the Mac, clear out the printer's save to filename.
+        bool setupPrinter = true;
+        p->SetOutputToFile(false);
+        p->SetOutputToFileName("");
+#else
+        bool setupPrinter = false;
 #endif
         //
         // If we've never set up the printer options, set them up now using
         // Qt's printer object and printer dialog.
         //
-        PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
         if(printer == 0)
         {
-            int timeid = visitTimer->StartTimer();
-
             // Create a new printer object.
             printer = new QPrinter;
 
@@ -6638,12 +6644,15 @@ QvisGUIApplication::SetPrinterOptions()
             printerObserver = new ObserverToCallback(p,
                 UpdatePrinterAttributes, (void *)printer);
 
-            // Store the printer attributes into the printer object.
-            PrinterAttributesToQPrinter(p, printer);
-
-            visitTimer->StopTimer(timeid, "Setting up printer");
+            // Indicate that we need to set up the printer.
+            setupPrinter = true;
         }
 
+        // Store the printer attributes into the printer object.
+        if(setupPrinter)
+            PrinterAttributesToQPrinter(p, printer);
+
+        // Execute the printer dialog
         QPrintDialog printDialog(printer, mainWin);
         if(printDialog.exec() == QDialog::Accepted)
         {
@@ -6661,7 +6670,7 @@ QvisGUIApplication::SetPrinterOptions()
             // options. This says to me that applications expect to print once
             // the options are set.
             //
-            PrintWindow();
+            GetViewerMethods()->PrintWindow();
 #endif
         }
 #if defined(Q_WS_MACX) && !defined(VISIT_MAC_NO_CARBON)
@@ -6679,13 +6688,19 @@ QvisGUIApplication::SetPrinterOptions()
 // Creation:   Wed Feb 20 12:41:13 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 30 11:36:10 PDT 2010
+//   If no printer options have been set up yet then we should do 
+//   SetPrinterOptions.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::PrintWindow()
 {
-    GetViewerMethods()->PrintWindow();
+    if(printer == 0)
+        SetPrinterOptions();
+    else
+        GetViewerMethods()->PrintWindow();
 }
 
 // ****************************************************************************
@@ -6705,6 +6720,9 @@ QvisGUIApplication::PrintWindow()
 //   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Mon Aug 30 14:58:11 PDT 2010
+//   Be more agressive about setting empty strings.
+//
 // ****************************************************************************
 
 static void
@@ -6712,17 +6730,32 @@ QPrinterToPrinterAttributes(QPrinter *printer, PrinterAttributes *p)
 {
     if(!printer->printerName().isNull())
         p->SetPrinterName(printer->printerName().toStdString());
+
     if(!printer->outputFileName().isNull())
+    {
         p->SetOutputToFileName(printer->outputFileName().toStdString());
+        p->SetOutputToFile(true);
+    }
+    else
+    {
+        p->SetOutputToFileName("");
+        p->SetOutputToFile(false);
+    }
+
     if(!printer->printProgram().isNull())
         p->SetPrintProgram(printer->printProgram().toStdString());
+    else
+        p->SetPrintProgram("");
+
     if(!printer->docName().isNull())
         p->SetDocumentName(printer->docName().toStdString());
-    p->SetOutputToFile(!printer->outputFileName().isNull());
+    else
+        p->SetDocumentName("untitled");
+
     p->SetNumCopies(printer->numCopies());
     p->SetPortrait(printer->orientation() == QPrinter::Portrait);
     p->SetPrintColor(printer->colorMode() == QPrinter::Color);
-    p->SetPageSize(printer->pageSize());
+    p->SetPageSize((int)printer->paperSize());
 }
 
 // ****************************************************************************
@@ -6771,9 +6804,11 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
     printer->setFromTo(1, 1);
     printer->setColorMode(p->GetPrintColor() ? QPrinter::Color :
         QPrinter::GrayScale);
-    printer->setOutputFileName(p->GetOutputToFileName().c_str());
-    //printer->setOutputToFile(p->GetOutputToFile());
-    printer->setPageSize((QPrinter::PageSize)p->GetPageSize());
+    if(p->GetOutputToFile())
+        printer->setOutputFileName(p->GetOutputToFileName().c_str());
+    else
+        printer->setOutputFileName(QString());
+    printer->setPaperSize((QPrinter::PaperSize)p->GetPageSize());
 }
 
 // ****************************************************************************

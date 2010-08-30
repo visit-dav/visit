@@ -366,6 +366,9 @@
 //    Brad Whitlock, Fri Aug  6 16:58:31 PDT 2010
 //    Add Selections window.
 //
+//    Brad Whitlock, Mon Aug 30 11:47:46 PDT 2010
+//    Don't do "Set print options" on Mac.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -508,11 +511,20 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->addAction(saveMovieIcon, tr("Save movie . . ."),
                          this, SIGNAL(saveMovie()));
 
+#ifdef Q_WS_MACX
+    // Only have "Print window" on Mac and always make it activate the
+    // printer dialog.
+    filePopup->addAction(printIcon, tr("Print window"),
+                         this, SIGNAL(activatePrintWindow()),
+                         QKeySequence(Qt::CTRL + Qt::Key_P));
+#else
     filePopup->addAction(printIcon, tr("Print window"),
                          this, SIGNAL(printWindow()));
+
     filePopup->addAction(tr("Set Print options . . ."),
                          this, SIGNAL(activatePrintWindow()),
                          QKeySequence(Qt::CTRL + Qt::Key_P));
+#endif
 
     filePopup->addSeparator();
 

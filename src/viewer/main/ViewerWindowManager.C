@@ -2390,6 +2390,10 @@ ViewerWindowManager::GetDataset(int windowIndex,
 //   Brad Whitlock, Tue May 27 14:26:18 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Mon Aug 30 14:58:49 PDT 2010
+//   I added debugging log statements and I made the printer use the doc name
+//   for regular printing and the output filename for file printing.
+//
 // ****************************************************************************
 
 void
@@ -2440,21 +2444,52 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     //
     vtkQtImagePrinter *imagePrinter = vtkQtImagePrinter::New();
     QPrinter &printer = imagePrinter->printer();
+    debug1 << "Setting printer attributes: " << endl;
     printer.setPrinterName(printerAtts->GetPrinterName().c_str());
+    debug1 << "\tprinterName=" << printerAtts->GetPrinterName() << endl;
+
     if(!printerAtts->GetPrintProgram().empty())
+    {
         printer.setPrintProgram(printerAtts->GetPrintProgram().c_str());
+        debug1 << "\tprintProgram=" << printerAtts->GetPrintProgram() << endl;
+    }
+
     printer.setCreator(printerAtts->GetCreator().c_str());
+    debug1 << "\tcreator=" << printerAtts->GetCreator() << endl;
+
     printer.setDocName(printerAtts->GetDocumentName().c_str());
+    debug1 << "\tdocName=" << printerAtts->GetDocumentName() << endl;
+
     printer.setNumCopies(printerAtts->GetNumCopies());
+    debug1 << "\tnumCopies=" << printerAtts->GetNumCopies() << endl;
+
     printer.setOrientation(printerAtts->GetPortrait() ? QPrinter::Portrait :
         QPrinter::Landscape);
+    debug1 << "\torientation="
+           << (printerAtts->GetPortrait()?"portrait":"landscape") << endl;
+
     printer.setFromTo(1,1);
+    debug1 << "\tfromTo=1,1" << endl;
+
     printer.setColorMode(printerAtts->GetPrintColor() ? QPrinter::Color :
         QPrinter::GrayScale);
-    printer.setOutputFileName(printerAtts->GetOutputToFileName().c_str());
+    debug1 << "\tprintColor="
+           << (printerAtts->GetPrintColor()?"color":"grayscale") << endl;
+
     if(printerAtts->GetOutputToFile())
+    {
         printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setPageSize((QPrinter::PageSize)printerAtts->GetPageSize());
+        debug1 << "\toutputFormat=PDF" << endl;
+        printer.setOutputFileName(printerAtts->GetOutputToFileName().c_str());
+        debug1 << "\toutputFilename=" << printerAtts->GetOutputToFileName() << endl;
+    }
+    else
+    {
+        printer.setOutputFileName(QString());
+        debug1 << "\toutputFilename=(empty)" << endl;
+    }
+    printer.setPaperSize((QPrinter::PageSize)printerAtts->GetPageSize());
+    debug1 << "\tpaperSize=" << printerAtts->GetPageSize() << endl;
 
     //
     // Create an image that will fit on the printer, else scale the
@@ -2481,8 +2516,16 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     //
     avtDataObject_p dob;
     CopyTo(dob, image);
-    fileWriter->WriteImageDirectly(imagePrinter,
-                                  printerAtts->GetDocumentName().c_str(), dob);
+    if(printerAtts->GetOutputToFile())
+    {
+        fileWriter->WriteImageDirectly(imagePrinter,
+            printerAtts->GetOutputToFileName().c_str(), dob);
+    }
+    else
+    {
+        fileWriter->WriteImageDirectly(imagePrinter,
+            printerAtts->GetDocumentName().c_str(), dob);
+    }
 
     //
     // Delete the image printer.
