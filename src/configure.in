@@ -43,6 +43,9 @@ dnl
 dnl    Brad Whitlock, Tue Feb 2 10:32:34 PDT 2009
 dnl    I added --enable-java for compatibility with build_visit.
 dnl
+dnl    Mark C. Miller, Sun Aug 29 23:24:19 PDT 2010
+dnl    Added logic to re-enable dbio-only
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl --------------------------------------------------------------------------
@@ -170,6 +173,22 @@ if test "$EnableJava" = "yes"; then
 else
     AC_MSG_RESULT(no)
     VCONF_JAVA="-DVISIT_JAVA:BOOL=OFF"
+fi
+
+#
+# Handle --enable-dbio-only
+#
+AC_MSG_CHECKING(if this is a dbio-only build)
+AC_ARG_ENABLE(dbio-only,
+   [  --enable-dbio-only  build only enough for database i/o],
+   EnableDbioOnly=$enableval, EnableDbioOnly=no)
+
+if test "$EnableDbioOnly" = "yes"; then
+    AC_MSG_RESULT(yes)
+    VCONF_DBIO_ONLY="-DVISIT_DBIO_ONLY:BOOL=ON"
+else
+    AC_MSG_RESULT(no)
+    VCONF_DBIO_ONLY="-DVISIT_DBIO_ONLY:BOOL=OFF"
 fi
 
 
@@ -317,6 +336,7 @@ echo $CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
          $VCONF_PARALLEL \
          $VCONF_SLIVR \
          $VCONF_TUVOK \
+         $VCONF_DBIO_ONLY \
          $VCONF_VMODULE \
          $VCONF_INSTALL_THIRD_PARTY \
          $VCONF_BUILDALL 
@@ -326,6 +346,7 @@ $CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
          $VCONF_PARALLEL \
          $VCONF_SLIVR \
          $VCONF_TUVOK \
+         $VCONF_DBIO_ONLY \
          $VCONF_VMODULE \
          $VCONF_INSTALL_THIRD_PARTY \
          $VCONF_BUILDALL 

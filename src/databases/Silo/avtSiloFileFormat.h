@@ -260,6 +260,8 @@ typedef struct _GroupInfo
 //    Cyrus Harrison, Mon Jun 14 15:45:46 PDT 2010
 //    Added metadataIsTimeVaryingChecked & CheckForTimeVaryingMetadata().
 //
+//    Mark C. Miller, Sun Aug 29 23:19:50 PDT 2010
+//    Added method to expand (material) subsetted ucd variables.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -387,6 +389,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataArray         *GetNodelistsVar(int);
     vtkDataArray         *GetAnnotIntNodelistsVar(int, string);
     vtkDataArray         *GetQuadVar(DBfile *, const char *, const char *,int);
+    void                  ExpandUcdvar(DBucdvar *uv, const char *vname, const char *tvn,
+                              int domain);
     vtkDataArray         *GetUcdVar(DBfile *, const char *, const char *, int);
     vtkDataArray         *GetPointVar(DBfile *, const char *);
     vtkDataArray         *GetCsgVar(DBfile *, const char *);

@@ -5586,10 +5586,6 @@ avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) const
 //    Brad Whitlock, Wed Mar 7 15:05:09 PST 2007
 //    Changed for automatic generation.
 //
-//    Cyrus Harrison, Wed Aug 25 08:35:22 PDT 2010
-//    Support selection of domains, even if we only have
-//    a single domain.
-//
 // ****************************************************************************
 
 std::string
@@ -5630,8 +5626,9 @@ avtDatabaseMetaData::MeshForVar(const std::string &invar) const
             //
             return var;
         }
-        else if (VariableNamesEqual(GetMeshes(i).blockTitle, var) ||
-                 VariableNamesEqual(GetMeshes(i).groupTitle, var))
+        else if ((VariableNamesEqual(GetMeshes(i).blockTitle, var) ||
+                  VariableNamesEqual(GetMeshes(i).groupTitle, var)) &&
+                 GetMeshes(i).numBlocks > 1)
         {
             return GetMeshes(i).name;
         }
@@ -6731,5 +6728,32 @@ void
 avtDatabaseMetaData::Add(avtSubsetsMetaData *smd)
 {
     subsets.push_back(smd);
+}
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetRestrictedMatnos
+//
+//  Purpose: Given variable name, return materials it may be restricted to.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 26, 2010 
+//
+// ****************************************************************************
+#define CHECK_VAR_TYPE(VT)                                  \
+    int num ## VT = GetNum ## VT();                         \
+    for (i = 0 ; i < num ## VT; i++)                        \
+        if (VariableNamesEqual(Get ## VT(i).name, varname)) \
+            return Get ## VT(i).matRestricted
+
+static intVector dummy_matnos;
+const intVector& avtDatabaseMetaData::GetRestrictedMatnos(const std::string& varname) const
+{
+    int i;
+    CHECK_VAR_TYPE(Scalars);
+    CHECK_VAR_TYPE(Vectors);
+    CHECK_VAR_TYPE(Tensors);
+    CHECK_VAR_TYPE(Arrays);
+    CHECK_VAR_TYPE(Labels);
+    return dummy_matnos;
 }
 

@@ -3504,6 +3504,8 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Mark C. Miller, Wed Mar  4 18:00:22 PST 2009
 //    Adjusted for dbio-only build
 //
+//    Mark C. Miller, Sun Aug 29 23:31:55 PDT 2010
+//    Removed extraneous cerr statements left over from debugging.
 // ****************************************************************************
 
 avtDataTree_p
@@ -3726,13 +3728,11 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     //
     stringVector labelStrings;
 
-cerr << "Type = " << type << ", mat = " << AVT_MATERIAL << endl;
     if (type == AVT_MATERIAL)
     {
         if (needInternalSurfaces)
         {
             labelStrings = labels;
-cerr << "Adding mixed" << endl;
             // add the one for the "mixed material"
             labelStrings.push_back("mixed");
         }
@@ -3746,7 +3746,6 @@ cerr << "Adding mixed" << endl;
             //
             char   buff[32];
             string label;
-cerr << "Num selected = " << numSelected << endl;
             sprintf(buff, "%d;", numSelected);
             label += buff;
             for (int i = 0; i < numSelected; i++)
@@ -3757,7 +3756,6 @@ cerr << "Num selected = " << numSelected << endl;
                 else
                     label += string(buff) + labels[i] + ";";
             }
-cerr << "Label = " << label << endl;
             labelStrings.push_back(label);
         }
     }
@@ -3793,7 +3791,6 @@ cerr << "Label = " << label << endl;
         }
     }
 
-cerr << "We have " << numOutput << " with " << labelStrings.size() << " strings" << endl;
     avtDataTree_p outDT = new avtDataTree(numOutput, out_ds, dom, labelStrings);
     for (int i = 0 ; i < numOutput ; i++)
     {

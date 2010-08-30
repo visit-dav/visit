@@ -38,6 +38,8 @@
 
 package llnl.visit;
 
+import java.lang.Integer;
+import java.util.Vector;
 
 // ****************************************************************************
 // Class: avtVarMetaData
@@ -56,7 +58,7 @@ package llnl.visit;
 
 public class avtVarMetaData extends avtBaseVarMetaData
 {
-    private static int avtVarMetaData_numAdditionalAtts = 6;
+    private static int avtVarMetaData_numAdditionalAtts = 7;
 
     public avtVarMetaData()
     {
@@ -68,6 +70,7 @@ public class avtVarMetaData extends avtBaseVarMetaData
         hasDataExtents = false;
         minDataExtents = 0;
         maxDataExtents = 0;
+        matRestricted = new Vector();
     }
 
     public avtVarMetaData(int nMoreFields)
@@ -80,11 +83,14 @@ public class avtVarMetaData extends avtBaseVarMetaData
         hasDataExtents = false;
         minDataExtents = 0;
         maxDataExtents = 0;
+        matRestricted = new Vector();
     }
 
     public avtVarMetaData(avtVarMetaData obj)
     {
         super(avtVarMetaData_numAdditionalAtts);
+
+        int i;
 
         centering = obj.centering;
         hasUnits = obj.hasUnits;
@@ -92,6 +98,12 @@ public class avtVarMetaData extends avtBaseVarMetaData
         hasDataExtents = obj.hasDataExtents;
         minDataExtents = obj.minDataExtents;
         maxDataExtents = obj.maxDataExtents;
+        matRestricted = new Vector();
+        for(i = 0; i < obj.matRestricted.size(); ++i)
+        {
+            Integer iv = (Integer)obj.matRestricted.elementAt(i);
+            matRestricted.addElement(new Integer(iv.intValue()));
+        }
 
         SelectAll();
     }
@@ -108,13 +120,25 @@ public class avtVarMetaData extends avtBaseVarMetaData
 
     public boolean equals(avtVarMetaData obj)
     {
+        int i;
+
+        // Compare the elements in the matRestricted vector.
+        boolean matRestricted_equal = (obj.matRestricted.size() == matRestricted.size());
+        for(i = 0; (i < matRestricted.size()) && matRestricted_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer matRestricted1 = (Integer)matRestricted.elementAt(i);
+            Integer matRestricted2 = (Integer)obj.matRestricted.elementAt(i);
+            matRestricted_equal = matRestricted1.equals(matRestricted2);
+        }
         // Create the return value
         return (super.equals(obj) && (centering == obj.centering) &&
                 (hasUnits == obj.hasUnits) &&
                 (units.equals(obj.units)) &&
                 (hasDataExtents == obj.hasDataExtents) &&
                 (minDataExtents == obj.minDataExtents) &&
-                (maxDataExtents == obj.maxDataExtents));
+                (maxDataExtents == obj.maxDataExtents) &&
+                matRestricted_equal);
     }
 
     // Property setting methods
@@ -154,6 +178,12 @@ public class avtVarMetaData extends avtBaseVarMetaData
         Select((new avtVarMetaData()).Offset() + 5);
     }
 
+    public void SetMatRestricted(Vector matRestricted_)
+    {
+        matRestricted = matRestricted_;
+        Select((new avtVarMetaData()).Offset() + 6);
+    }
+
     // Property getting methods
     public int     GetCentering() { return centering; }
     public boolean GetHasUnits() { return hasUnits; }
@@ -161,6 +191,7 @@ public class avtVarMetaData extends avtBaseVarMetaData
     public boolean GetHasDataExtents() { return hasDataExtents; }
     public double  GetMinDataExtents() { return minDataExtents; }
     public double  GetMaxDataExtents() { return maxDataExtents; }
+    public Vector  GetMatRestricted() { return matRestricted; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -180,6 +211,8 @@ public class avtVarMetaData extends avtBaseVarMetaData
             buf.WriteDouble(minDataExtents);
         if(WriteSelect(offset + 5, buf))
             buf.WriteDouble(maxDataExtents);
+        if(WriteSelect(offset + 6, buf))
+            buf.WriteIntVector(matRestricted);
     }
 
     public void ReadAtts(int id, CommunicationBuffer buf)
@@ -206,6 +239,9 @@ public class avtVarMetaData extends avtBaseVarMetaData
         case 5:
             SetMaxDataExtents(buf.ReadDouble());
             break;
+        case 6:
+            SetMatRestricted(buf.ReadIntVector());
+            break;
         default:
             super.ReadAtts(id, buf);
             break;
@@ -221,6 +257,7 @@ public class avtVarMetaData extends avtBaseVarMetaData
         str = str + boolToString("hasDataExtents", hasDataExtents, indent) + "\n";
         str = str + doubleToString("minDataExtents", minDataExtents, indent) + "\n";
         str = str + doubleToString("maxDataExtents", maxDataExtents, indent) + "\n";
+        str = str + intVectorToString("matRestricted", matRestricted, indent) + "\n";
         return super.toString(indent) + str;
     }
 
@@ -232,5 +269,6 @@ public class avtVarMetaData extends avtBaseVarMetaData
     private boolean hasDataExtents;
     private double  minDataExtents;
     private double  maxDataExtents;
+    private Vector  matRestricted; // vector of Integer objects
 }
 

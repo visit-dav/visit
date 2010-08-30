@@ -395,6 +395,7 @@ public:
     static std::string GetCycleFromFilenameRegex();
     void AddDefaultSILRestrictionDescription(const std::string&);
     void         Add(avtSubsetsMetaData *);
+    const intVector& GetRestrictedMatnos(const std::string&) const;
 
     // IDs that can be used to identify fields in case statements
     enum {

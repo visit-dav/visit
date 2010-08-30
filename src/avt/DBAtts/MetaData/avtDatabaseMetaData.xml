@@ -249,6 +249,8 @@
     </Function>
     <Function name="Add10" user="true" member="true">
     </Function>
+    <Function name="GetRestrictedMatnos" user="true" member="true">
+    </Function>
     <Include file="header" quoted="false">
       Expression.h
     </Include>
