@@ -1045,7 +1045,6 @@ VectorAttributes::SetStride(int stride_)
 void
 VectorAttributes::SetNVectors(int nVectors_)
 {
-cerr << "Setting nvecs as " << nVectors_ << endl;
     nVectors = nVectors_;
     Select(ID_nVectors, (void *)&nVectors);
 }
