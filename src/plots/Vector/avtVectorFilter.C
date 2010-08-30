@@ -489,7 +489,6 @@ avtVectorFilter::ModifyContract(avtContract_p contract)
                 ds->GetTimestep(), ds->GetRestriction());
     nds->AddSecondaryVariable(magVarName.c_str());
     rv = new avtContract(contract, nds);
-cerr << "Var name for " << magVarName << endl;
     rv->SetCalculateVariableExtents(magVarName, true);
     
     // If we're not using the stride, then we have to calculate
