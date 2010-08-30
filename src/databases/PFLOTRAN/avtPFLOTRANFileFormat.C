@@ -1103,7 +1103,6 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
             matls[matlist[i]] = true;
 
         int nmats = matls.size();
-        cout << nmats << endl;
         int *matnos = new int[nmats];
         char **names = new char*[nmats];
         int i = 0;
