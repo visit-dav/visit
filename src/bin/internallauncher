@@ -1662,6 +1662,17 @@ if ( ($parallel) and $exe_name eq "engine" and ($host =~ /jaguarpf/ or $host =~ 
         {
             $remotehost =~ s/jaguar/login/;
         }
+        
+        if ($ENV{PATH} eq "")
+        {
+            $ENV{PATH} = "/opt/torque/default/bin";
+            $ENV{PATH} = join ':' , ("$ENV{PATH}","/usr/bin");
+        }
+        else
+        {
+            $ENV{PATH} = join ':' , ("$ENV{PATH}","/opt/torque/default/bin");
+            $ENV{PATH} = join ':' , ("$ENV{PATH}","/usr/bin");
+        }
     }
 }
 
@@ -2843,7 +2854,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             }
             if ($IsRunningOnJaguar_ORNL)
             {
-                print TFILE 'eval $(modulecmd sh swap PrgEnv-pgi PrgEnv-gnu)',"\n";
+                print TFILE 'eval $(modulecmd sh load PrgEnv-gnu)',"\n";
             }
             if ($IsRunningOnEureka_ANL)
             {
