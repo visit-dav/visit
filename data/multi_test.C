@@ -57,6 +57,11 @@
 
 #include <silo.h>
 
+#include <map>
+#include <vector>
+using std::map;
+using std::vector;
+
 #define MAXBLOCKS       100         // maximum number of blocks in an object
 #define MAXNUMVARS      10          // maximum number of vars to output
 #define STRLEN          256 
@@ -264,8 +269,8 @@ fill_rect3d_mat(float x[], float y[], float z[], int matlist[], int nx,
                     mix_mat[mixlen2 + 1] = matno;
                     mix_next[mixlen2] = mixlen2 + 2;
                     mix_next[mixlen2 + 1] = 0;
-                    mix_zone[mixlen2] = i * nx * ny + j * nx + k;
-                    mix_zone[mixlen2 + 1] = i * nx * ny + j * nx + k;
+                    mix_zone[mixlen2] = i * nx * ny + j * nx + k + 1; // 1-origin
+                    mix_zone[mixlen2 + 1] = i * nx * ny + j * nx + k + 1; // 1-origin
                     mix_vf[mixlen2] = 1. - (((float)cnt) / 1000.);
                     mix_vf[mixlen2 + 1] = ((float)cnt) / 1000.;
                     mixlen2 += 2;
@@ -1584,6 +1589,366 @@ build_block_rect3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
     }
 }
 
+// Purpose: Compute an integer index map into a full zonal (or nodal) array
+// based on traversal for up to 2 specified material(s). In the single
+// material case, we have no need to maintain sep. clean and mixed maps.
+// In the nodal case, the concept of mixing (at a node) is not relevant.
+#define IGNORE_MAT_2 100
+static void TraverseZonelistForMaterials(int mat1, int mat2, int nzones,
+    const int *matlist, const int *mix_next, const int *mix_mat, int *mix_zone,
+    const int *hexlist, int **clean_map, int **mixed_map, int *_nclean, int *_nmixed)
+{
+    *clean_map = new int[nzones*8]; // over-allocation but who cares
+    *mixed_map = new int[nzones*8]; // over-allocation but who cares
+    for (int i = 0; i < nzones*8; i++) (*mixed_map)[i] = -1;
+    map<int, bool> haveSeenNode;
+    int nclean = 0, nmixed = 0; 
+    for (int i = 0; i < nzones; i++)
+    {
+        if (matlist[i] == mat1 || matlist[i] == mat2)
+        {
+            if (hexlist)
+            {
+                int hlidx = i * 8;
+                for (int j = 0; j < 8; j++)
+                {
+                    int nodeid = hexlist[hlidx+j];
+                    if (haveSeenNode.find(nodeid) != haveSeenNode.end())
+                        continue;
+                    haveSeenNode[nodeid] = true;
+                    (*clean_map)[nclean++] = nodeid; 
+                }
+            }
+            else
+                (*clean_map)[nclean++] = i;
+        }
+        else if (matlist[i] < 0)
+        {
+            // Iterate through mixed parts
+            int mix_idx = -matlist[i] - 1;
+            while(mix_idx >=0)
+            {
+                if (mix_mat[mix_idx] == mat1 || mix_mat[mix_idx] == mat2)
+                {
+                    if (hexlist)
+                    {
+                        int hlidx = i * 8;
+                        for (int j = 0; j < 8; j++)
+                        {
+                            int nodeid = hexlist[hlidx+j];
+                            if (haveSeenNode.find(nodeid) != haveSeenNode.end())
+                                continue;
+                            haveSeenNode[nodeid] = true;
+                            if (mat2 == IGNORE_MAT_2) // single material case
+                                (*clean_map)[nclean++] = nodeid; 
+                            else
+                                (*mixed_map)[nmixed++] = nodeid; 
+                        }
+                    }
+                    else
+                    {
+                        if (mat2 == IGNORE_MAT_2) // single material case
+                        {
+                            (*mixed_map)[nclean] = mix_idx;
+                            (*clean_map)[nclean++] = mix_zone[mix_idx]-1; 
+                        }
+                        else
+                            (*mixed_map)[nmixed++] = mix_zone[mix_idx]-1;
+                    }
+                    break;
+                }
+                mix_idx = mix_next[mix_idx]-1;
+            }
+        }
+    }
+    *_nclean = nclean;
+    *_nmixed = nmixed;
+}
+
+// Purpose: Given a zone number, compute the average of its 8 nodal values.
+static float NodalToZonal(const float *nodalvals, const int *hexlist, int zoneno)
+{
+    hexlist += (8 * zoneno);
+    float sum = 0;
+    for (int i = 0; i < 8; i++)
+        sum += nodalvals[hexlist[i]];
+    return sum / 8;
+}
+
+// Purpose: Output two variables (p2 on material 2 and d2 on materials 1 & 3).
+// The work here is to compute the current 'var' buffer for the variable
+// values (which is determined by traversal of the zones comprising the block)
+// and to indicate which materials the variable is defined on with the 
+// DBOPT_REGION_PNAMES optlist option.
+// The variables we are working from actually don't have any mixed parts
+// here. So, we don't really have an opportunity to output mixed values
+// apart from the zonal-averaged values.
+static int
+PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
+    int matnos[], int matlist[], int dims[], int ndims,
+    int mix_next[], int mix_mat[], int mix_zone[], float *mix_vf,
+    int mixlen, int datatype, DBoptlist *optlist, const int *zonelist,
+    const float *p2, const float *d2, int block)
+{
+    int i,j;
+    float *vars[1];
+    char  *varnames[1];
+    char *var1name = "p_on_mats_2";
+    char *var2name = "d_on_mats_1_3";
+
+    // First, handle a variable defined only on material "1".
+    // We don't have material names here. So, we use ascii rep.
+    // for material numbers.
+
+    // We are going to output one variable (p2) on just one material
+    // (number 2) and the other variable, d2, on two materials (1 & 3).
+    // Note that both p2 and d2 are nodal variables. I'd like to have one
+    // be nodal and one be zonal. The two arrays passed in here, p2 and
+    // d2 are assumed to be full nodal arrays.
+
+    // We're going to scan through the full-nodal arrays to construct
+    // the var buffers to pass in the DBPutUcdvar calls.
+
+    // Construct zonal equiv. for p2
+    int nzones = 1;
+    for (i = 0; i < ndims; i++) nzones *= dims[i];
+    float *p2fullz = new float[nzones];
+    for (i = 0; i < nzones; i++)
+        p2fullz[i] = NodalToZonal(p2, zonelist, i);
+
+    // Output re-centered p2 (zone centered) on material 2
+    int *clean_map, *mixed_map, nclean, nmixed;
+    TraverseZonelistForMaterials(2, IGNORE_MAT_2, nzones, matlist, mix_next, mix_mat, mix_zone,
+        0, &clean_map, &mixed_map, &nclean, &nmixed);
+    if (nclean)
+    {
+        float *p2z = new float[nclean];
+        for (i = 0; i < nclean; i++)
+        {
+            p2z[i] = p2fullz[clean_map[i]];
+            if (mix_vf && mixed_map[i] != -1)
+                p2z[i] *= mix_vf[mixed_map[i]];
+        }
+
+        char *matnamelist[] = {"2", 0};
+        vars[0] = p2z;
+        varnames[0] = var1name; 
+        DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist);
+        DBPutUcdvar(dbfile, "p_on_mats_2", meshname, 1, varnames, vars,
+            nclean, NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+        DBClearOption(optlist, DBOPT_REGION_PNAMES);
+        delete [] p2z;
+    }
+    delete [] clean_map;
+    delete [] mixed_map;
+
+
+    // Output material volume fractions as variables
+    for (j = 0; j < nmat; j++)
+    {
+        int matno = matnos[j];
+        TraverseZonelistForMaterials(matno, IGNORE_MAT_2, nzones, matlist, mix_next, mix_mat, mix_zone,
+            0, &clean_map, &mixed_map, &nclean, &nmixed);
+
+        if (nclean == 0)
+        {
+            delete [] clean_map;
+            delete [] mixed_map;
+            continue;
+        }
+
+        float *p2z = new float[nclean];
+        for (i = 0; i < nclean; i++)
+        {
+            p2z[i] = 1.0;
+            if (mix_vf && mixed_map[i] != -1)
+                p2z[i] = mix_vf[mixed_map[i]];
+        }
+        delete [] clean_map;
+        delete [] mixed_map;
+
+        char varname[256];
+        char matname[32];
+        sprintf(matname, "%d", matno);
+        char *matnamelist[] = {matname, 0};
+        sprintf(varname, "m%dvf_on_mats_%d", matno, matno);
+        vars[0] = p2z;
+        varnames[0] = varname; 
+        DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist);
+        DBPutUcdvar(dbfile, varname, meshname, 1, varnames, vars,
+            nclean, NULL, 0, DB_FLOAT, DB_ZONECENT, optlist);
+        DBClearOption(optlist, DBOPT_REGION_PNAMES);
+        delete [] p2z;
+    }
+
+    // Output d2 (node centered) on materials 1 and 3 
+    TraverseZonelistForMaterials(1, 3, nzones, matlist, mix_next, mix_mat, mix_zone,
+        zonelist, &clean_map, &mixed_map, &nclean, &nmixed);
+    if (nclean || nmixed)
+    {
+        float *d2clean = new float[nclean?nclean:nmixed];
+        float *d2mixed = new float[nmixed];
+        if (nclean == 0)
+        {
+            nclean = nmixed;
+            for (i = 0; i < nclean; i++)
+                d2clean[i] = d2[mixed_map[i]];
+        }
+        else
+        {
+            for (i = 0; i < nclean; i++)
+                d2clean[i] = d2[clean_map[i]];
+        }
+        for (i = 0; i < nmixed; i++)
+            d2mixed[i] = d2[mixed_map[i]];
+
+        char *matnamelist[] = {"1", "3", 0};
+        vars[0] = d2clean;
+        varnames[0] = var2name; 
+        float *mvars[1];
+        mvars[0] = d2mixed;
+        DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist);
+        DBPutUcdvar(dbfile, "d_on_mats_1_3", meshname, 1, varnames, vars,
+            nclean, mvars, nmixed, DB_FLOAT, DB_NODECENT, optlist);
+        DBClearOption(optlist, DBOPT_REGION_PNAMES);
+        delete [] d2clean;
+        delete [] d2mixed;
+    }
+    delete [] clean_map;
+    delete [] mixed_map;
+}
+
+// Purpose: Output material information using an MRG tree
+static int
+PutMatsUsingMrgtree(DBfile *dbfile, const char *name, const char *meshname,
+    int nmat, int matnos[], int matlist[], int dims[], int ndims,
+    int mix_next[], int mix_mat[], int mix_zone[], float *mix_vf,
+    int mixlen, int datatype, DBoptlist *optlist, const int *zonelist)
+{
+    map<int, vector<int> > clean_seg_data;
+    map<int, vector<int> > mixed_seg_data;
+    map<int, vector<float> > mixed_frac_data;
+    int i;
+
+    int nzones = 1;
+    for (i = 0; i < ndims; i++) nzones *= dims[i];
+
+    // Scan traditional linked-list material representation into
+    // a collection of pairs (for clean/mixed parts) of maps, one pair for
+    // each material.
+    for (i = 0; i < nzones; i++)
+    {
+        if (matlist[i] >= 0) // clean case
+        {
+            clean_seg_data[matlist[i]].push_back(i);
+        }
+        else // mixed case
+        {
+            int mix_idx = -matlist[i] - 1;
+            while(mix_idx >=0 )
+            {
+                mixed_seg_data[mix_mat[mix_idx]].push_back(mix_zone[mix_idx]);
+                mixed_frac_data[mix_mat[mix_idx]].push_back(mix_vf[mix_idx]);
+                mix_idx = mix_next[mix_idx]-1;
+            }
+        }
+    }
+
+    // Construct arguments to output as groupel map
+    int *seg_types = new int[nmat * 2];
+    int *seg_ids = new int[nmat * 2];
+    int *seg_lens = new int[nmat * 2];
+    int **seg_data = new int*[nmat * 2];
+    void **seg_fracs = new void*[nmat * 2];
+    bool have_fracs = false;
+    for (i = 0; i < nmat; i++)
+    {
+        int matno = matnos[i];
+
+        // clean part
+        seg_types[2*i+0] = DB_ZONECENT;
+        seg_ids[2*i+0] = matno;
+        seg_lens[2*i+0] = clean_seg_data[matno].size();
+        if (clean_seg_data[matno].size() > 0)
+            seg_data[2*i+0] = &(clean_seg_data[matno][0]);
+        else
+            seg_data[2*i+0] = 0;
+        seg_fracs[2*i+0] = 0;
+
+        // mixed part
+        seg_types[2*i+1] = DB_ZONECENT;
+        seg_ids[2*i+1] = matno; 
+        seg_lens[2*i+1] = mixed_seg_data[matno].size();
+        if (mixed_seg_data[matno].size() > 0)
+        {
+            seg_data[2*i+1] = &(mixed_seg_data[matno][0]);
+            seg_fracs[2*i+1] = &(mixed_frac_data[matno][0]); 
+            have_fracs = true;
+        }
+        else
+        {
+            seg_data[2*i+1] = 0;
+            seg_fracs[2*i+1] = 0;
+        }
+    }
+
+    // Output the groupel map for materials
+    if (have_fracs)
+        DBPutGroupelmap(dbfile, "materials_map", nmat * 2,
+            seg_types, seg_lens, seg_ids, seg_data, seg_fracs, DB_FLOAT, 0);
+    else
+        DBPutGroupelmap(dbfile, "materials_map", nmat * 2,
+            seg_types, seg_lens, seg_ids, seg_data, 0, DB_FLOAT, 0);
+
+    // Construct mrgtree consisting solely of material decomp for now
+    DBmrgtree *mrgtree = DBMakeMrgtree(DB_UCDMESH, 0, 1, 0);
+
+    // Top-level 'materials' node
+    DBAddRegion(mrgtree, "materials", 0, nmat, 0, 0, 0, 0, 0, 0);
+    DBSetCwr(mrgtree, "materials");
+
+    // Individual material region nodes
+    char *matnames[] = {"1", "2", "3"};
+    for (i = 0; i < nmat; i++)
+    {
+        // Individual material including both clean and mixed parts
+        DBAddRegion(mrgtree, matnames[i], 0, 2, "materials_map", 2,
+            &(seg_ids[2*i]), &(seg_lens[2*i]), &(seg_types[2*i]), 0);
+
+        DBSetCwr(mrgtree, matnames[i]);
+
+        // Clean part of this material
+        DBAddRegion(mrgtree, "clean", 0, 0, "materials_map", 1,
+            &(seg_ids[2*i]), &(seg_lens[2*i]), &(seg_types[2*i]), 0);
+
+        // Mixed part of this material
+        DBAddRegion(mrgtree, "mixed", 0, 0, "materials_map", 1,
+            &(seg_ids[2*i+1]), &(seg_lens[2*i+1]), &(seg_types[2*i+1]), 0);
+
+        DBSetCwr(mrgtree, "..");
+    }
+    delete [] seg_types;
+    delete [] seg_ids;
+    delete [] seg_lens;
+    delete [] seg_data;
+    delete [] seg_fracs;
+    clean_seg_data.clear();
+    mixed_seg_data.clear();
+    mixed_frac_data.clear();
+
+    DBPutMrgtree(dbfile, "mrgtree", "mesh1", mrgtree, 0);
+    DBFreeMrgtree(mrgtree);
+}
+
+static int
+PutMatVarsUsingMrgtrees(DBfile *dbfile, const char *name, const char *meshname,
+    int nmat, int matnos[], int matlist[], int dims[], int ndims,
+    int mix_next[], int mix_mat[], int mix_zone[], float *mix_vf,
+    int mixlen, int datatype, DBoptlist *optlist, const int *zonelist,
+    const float *p2, const float *d2)
+{
+}
+
 // ****************************************************************************
 //  Modifications:
 //
@@ -1861,8 +2226,19 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
                     zonelist[iz + 7] = (k + 1) * nx * ny + (j + 1) * nx + i + 0;
                     iz += 8;
 
-                    matlist2[k * (nx - 1) * (ny - 1) + j * (nx - 1) + i] =
+                    int localZoneIdx = k * (nx - 1) * (ny - 1) + j * (nx - 1) + i;
+                    matlist2[localZoneIdx] =
                         matlist[n_z * NX * NY + n_y * NX + n_x];
+
+                    if (matlist2[localZoneIdx] < 0)
+                    {
+                        int mix_idx = -matlist2[localZoneIdx] - 1;
+                        while(mix_idx >=0)
+                        {
+                            mix_zone[mix_idx] = localZoneIdx + 1; // 1-origin
+                            mix_idx = mix_next[mix_idx]-1;
+                        }
+                    }
 
                     if (((k == 0 || n_z == kmax - 2) &&
                          (n_z != 0 && n_z != NZ - 1)) ||
@@ -1969,7 +2345,7 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
         //
         // Write out the mesh and variables.
         //
-        optlist = DBMakeOptlist(11);
+        optlist = DBMakeOptlist(12);
         DBAddOption(optlist, DBOPT_CYCLE, &cycle);
         DBAddOption(optlist, DBOPT_TIME, &time);
         DBAddOption(optlist, DBOPT_DTIME, &dtime);
@@ -2195,6 +2571,27 @@ build_block_ucd3d(DBfile *dbfile, char dirnames[MAXBLOCKS][STRLEN],
             DBPutMaterial(dbfile, matnamedup, meshnamedup, nmats, matnos,
                       matlist2, &nzones, 1, mix_next, mix_mat, mix_zone,
                       mix_vf, mixlen, DB_FLOAT, optlist);
+
+        // First, using ordinary material object, output variables
+        // on only some of the materials.
+        PutMatVars(dbfile, matname, meshname, nmats, matnos,
+            matlist2, &nzones, 1, mix_next, mix_mat, mix_zone,
+            mix_vf, mixlen, DB_FLOAT, optlist, zonelist, p2, d2, block);
+
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,8,0)
+        // Now, output materials themselves using mrgtrees
+        PutMatsUsingMrgtree(dbfile, matname, meshname, nmats, matnos,
+            matlist2, &nzones, 1, mix_next, mix_mat, mix_zone,
+            mix_vf, mixlen, DB_FLOAT, optlist, zonelist);
+
+        // Now, using materials defined using mrgtrees, output variables
+        // defined on only some materials.
+        PutMatVarsUsingMrgtrees(dbfile, matname, meshname, nmats, matnos,
+            matlist2, &nzones, 1, mix_next, mix_mat, mix_zone,
+            mix_vf, mixlen, DB_FLOAT, optlist, zonelist, p2, d2);
+#endif
+#endif
 
         DBFreeOptlist(optlist);
 
@@ -2596,6 +2993,11 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     char            names4[MAXBLOCKS][STRLEN];
     char            names5[MAXBLOCKS][STRLEN];
     char            names6[MAXBLOCKS][STRLEN];
+    char            names7[MAXBLOCKS][STRLEN];
+    char            names8[MAXBLOCKS][STRLEN];
+    char            names9[MAXBLOCKS][STRLEN];
+    char            names10[MAXBLOCKS][STRLEN];
+    char            names11[MAXBLOCKS][STRLEN];
     char            names1dup[MAXBLOCKS][STRLEN];
     char            names3dup[MAXBLOCKS][STRLEN];
     char            names4dup[MAXBLOCKS][STRLEN];
@@ -2607,6 +3009,11 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     char           *var4names[MAXBLOCKS];
     char           *var5names[MAXBLOCKS];
     char           *var6names[MAXBLOCKS];
+    char           *var7names[MAXBLOCKS];
+    char           *var8names[MAXBLOCKS];
+    char           *var9names[MAXBLOCKS];
+    char           *var10names[MAXBLOCKS];
+    char           *var11names[MAXBLOCKS];
     char           *var1namesdup[MAXBLOCKS];
     char           *var3namesdup[MAXBLOCKS];
     char           *var4namesdup[MAXBLOCKS];
@@ -2646,12 +3053,35 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         sprintf(names4[i], "/block%d/v", i);
         sprintf(names5[i], "/block%d/w", i);
         sprintf(names6[i], "/block%d/hist", i);
+        if (i == 0 || i == 2 || i == 9 || i == 11 ||
+            i == 24 || i == 26 || i == 33 || i == 35)
+        {
+            sprintf(names7[i], "EMPTY", i);
+            sprintf(names9[i], "EMPTY", i);
+        }
+        else
+        {
+            sprintf(names7[i], "/block%d/p_on_mats_2", i);
+            sprintf(names9[i], "/block%d/m2vf_on_mats_2", i);
+        }
+        if (i == 4 || i == 7 || (i >= 15 && i <= 20) ||
+            i == 28 || i == 31)
+            sprintf(names10[i], "/block%d/m3vf_on_mats_3", i);
+        else
+            sprintf(names10[i], "EMPTY", i);
+        sprintf(names8[i], "/block%d/d_on_mats_1_3", i);
+        sprintf(names11[i], "/block%d/m1vf_on_mats_1", i);
         var1names[i] = names1[i];
         var2names[i] = names2[i];
         var3names[i] = names3[i];
         var4names[i] = names4[i];
         var5names[i] = names5[i];
         var6names[i] = names6[i];
+        var7names[i] = names7[i];
+        var8names[i] = names8[i];
+        var9names[i] = names9[i];
+        var10names[i] = names10[i];
+        var11names[i] = names11[i];
         vartypes[i] = vartype;
 
         sprintf(names0[i], "/block%d/mat1", i);
@@ -2769,7 +3199,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     matnos[1] = 2;
     matnos[2] = 3;
 
-    optlist = DBMakeOptlist(6);
+    optlist = DBMakeOptlist(7);
     DBAddOption(optlist, DBOPT_CYCLE, &cycle);
     DBAddOption(optlist, DBOPT_TIME, &time);
     DBAddOption(optlist, DBOPT_DTIME, &dtime);
@@ -2919,6 +3349,63 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         return (-1);
     }
 
+    // Output material specific variables
+    DBClearOption(optlist, DBOPT_EXTENTS_SIZE);
+    DBClearOption(optlist, DBOPT_EXTENTS);
+    char *matnamelist[] = {"2", 0};
+    DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist);
+    if (DBPutMultivar(dbfile, "p_on_mats_2", nblocks, var7names, vartypes, optlist)
+        == -1)
+    {
+        DBFreeOptlist(optlist);
+        fprintf(stderr, "Error creating multi var p_on_mats_2\n");
+        return (-1);
+    }
+    DBClearOption(optlist, DBOPT_REGION_PNAMES);
+
+    char *matnamelist2[] = {"1","3", 0};
+    DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist2);
+    if (DBPutMultivar(dbfile, "d_on_mats_1_3", nblocks, var8names, vartypes, optlist)
+        == -1)
+    {
+        DBFreeOptlist(optlist);
+        fprintf(stderr, "Error creating multi var d_on_mats_1_3\n");
+        return (-1);
+    }
+    DBClearOption(optlist, DBOPT_REGION_PNAMES);
+
+    char *matnamelist3[] = {"1", 0};
+    DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist3);
+    if (DBPutMultivar(dbfile, "m1vf_on_mats_1", nblocks, var11names, vartypes, optlist)
+        == -1)
+    {
+        DBFreeOptlist(optlist);
+        fprintf(stderr, "Error creating multi var m1vf_on_mats_1\n");
+        return (-1);
+    }
+    DBClearOption(optlist, DBOPT_REGION_PNAMES);
+
+    DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist);
+    if (DBPutMultivar(dbfile, "m2vf_on_mats_2", nblocks, var9names, vartypes, optlist)
+        == -1)
+    {
+        DBFreeOptlist(optlist);
+        fprintf(stderr, "Error creating multi var m2vf_on_mats_2\n");
+        return (-1);
+    }
+    DBClearOption(optlist, DBOPT_REGION_PNAMES);
+
+    char *matnamelist5[] = {"3", 0};
+    DBAddOption(optlist, DBOPT_REGION_PNAMES, matnamelist5);
+    if (DBPutMultivar(dbfile, "m3vf_on_mats_3", nblocks, var10names, vartypes, optlist)
+        == -1)
+    {
+        DBFreeOptlist(optlist);
+        fprintf(stderr, "Error creating multi var m3vf_on_mats_3\n");
+        return (-1);
+    }
+    DBClearOption(optlist, DBOPT_REGION_PNAMES);
+
     // create a hidden variable
     DBAddOption(optlist, DBOPT_HIDE_FROM_GUI, &one) ;
     if (!noDups && nblocks_dup && DBPutMultivar(dbfile, "v_dup_hidden", nblocks_dup,
@@ -2939,7 +3426,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
             return (-1);
         }
         if (!noDups && nblocks_dup && DBPutMultivar(dbfile, "w_dup", nblocks_dup,
-	    var5namesdup, vartypes, NULL) == -1)
+            var5namesdup, vartypes, NULL) == -1)
         {
             fprintf(stderr, "Error creating multi var w\n");
             return (-1);
@@ -2956,7 +3443,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
             return (-1);
         }
         if (!noDups && nblocks_dup && DBPutMultivar(dbfile, "hist_dup", nblocks_dup,
-	    var6namesdup, vartypes, NULL) == -1)
+            var6namesdup, vartypes, NULL) == -1)
         {
             fprintf(stderr, "Error creating multi var w\n");
             return (-1);
@@ -3230,9 +3717,9 @@ main(int argc, char **argv)
         for (iter = 0; iter < 10 && !noCycles; iter++)
         {
             char tmpName[256];
-	    if (noEmptys)
+            if (noEmptys)
                 sprintf(tmpName, "histne_ucd3d_%04d", iter);
-	    else
+            else
                 sprintf(tmpName, "hist_ucd3d_%04d", iter);
             fprintf(stderr, "creating %s\n", tmpName);
 
