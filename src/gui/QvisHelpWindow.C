@@ -43,6 +43,7 @@
 #include <QvisHelpWindow.h>
 #include <QAction>
 #include <QDomDocument>
+#include <QDesktopServices>
 #include <QFile>
 #include <QLayout>
 #include <QLineEdit>
@@ -53,9 +54,11 @@
 #include <QSplitter>
 #include <QTabWidget>
 #include <QTextBrowser>
+#include <QTimer>
 #include <QToolBar>
 #include <QToolButton>
 #include <QTreeWidget>
+#include <QUrl>
 #include <QWidget>
 
 #include <string>
@@ -166,6 +169,9 @@ QvisHelpWindow::SetLocale(const QString &s)
 //   Brad Whitlock, Wed Nov 19 15:51:04 PST 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Tue Aug 31 10:32:50 PDT 2010
+//   I changed how links get clicked through. I also increased min window size.
+//
 // ****************************************************************************
 
 void
@@ -193,7 +199,7 @@ QvisHelpWindow::CreateWindowContents()
 
     // Create the tab widget
     helpTabs = new QTabWidget(splitter);
-    helpTabs->setMinimumWidth(200);
+    helpTabs->setMinimumWidth(250);
     connect(helpTabs, SIGNAL(currentChanged(int)),
             this, SLOT(activeTabChanged(int)));
 
@@ -262,12 +268,14 @@ QvisHelpWindow::CreateWindowContents()
 
     // Create the text browser
     helpBrowser = new QTextBrowser(splitter);
-    helpBrowser->setMinimumWidth(300);
+    helpBrowser->setMinimumWidth(400);
+    helpBrowser->setMinimumHeight(500);
+    splitter->setStretchFactor(1, 10);
     QFont f(helpBrowser->font());
     f.setBold(false);
     helpBrowser->setFont(f);
     connect(helpBrowser, SIGNAL(anchorClicked(const QUrl &)),
-            helpBrowser, SLOT(setSource(const QUrl &)));
+            this, SLOT(anchorClicked(const QUrl &)));
 
     QAction *backAction = tb->addAction(QIcon(backIcon), tr("Back"), 
         helpBrowser, SLOT(backward()));
@@ -430,9 +438,9 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
 
     QTreeWidgetItem *ultraPage = new QTreeWidgetItem(
         helpContents);
-    contribPage->setText(0, tr("VisIt UltraWrapper"));
-    contribPage->setData(0, Qt::UserRole, QVariant("ultrawrapper.html"));
-    contribPage->setIcon(0, helpIcon);
+    ultraPage->setText(0, tr("VisIt UltraWrapper"));
+    ultraPage->setData(0, Qt::UserRole, QVariant("ultrawrapper.html"));
+    ultraPage->setIcon(0, helpIcon);
 
     // Read the XML file and create the DOM tree. Then use the tree to
     // build the User manual content.
@@ -1722,3 +1730,37 @@ QvisHelpWindow::removeBookmark()
     removeBookmarkButton->setEnabled(bookmarks.count() > 0);
 }
 
+// ****************************************************************************
+// Method: QvisHelpWindow::anchorClicked
+//
+// Purpose: 
+//   Set the source of the help browser when a link is clicked. For external
+//   links, we open the user's default web browser.
+//
+// Arguments:
+//   link : The link that was clicked.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 31 10:31:35 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHelpWindow::anchorClicked(const QUrl &link)
+{
+//    qDebug("link scheme = %s", link.scheme().toStdString().c_str());
+
+    if(link.scheme() != "file")
+    {
+        QTimer::singleShot(10, helpBrowser, SLOT(backward()));
+        QDesktopServices::openUrl(link);
+    }
+    else
+        helpBrowser->setSource(link);
+}

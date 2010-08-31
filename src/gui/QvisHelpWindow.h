@@ -53,6 +53,7 @@ class QTabWidget;
 class QTextBrowser;
 class QTreeWidget;
 class QTreeWidgetItem;
+class QUrl;
 class QWidget;
 
 // ****************************************************************************
@@ -127,6 +128,7 @@ private slots:
     void displayBookmarkTopic();
     void addBookmark();
     void removeBookmark();
+    void anchorClicked(const QUrl &);
 private:
     typedef QMap<QString, QString> IndexMap;
 

@@ -43,14 +43,14 @@ function fixup_dylib
     s=$(echo $thisLibrary | grep ".framework")
     if [[ $s != "" ]] ; then
         # Framework
-        thisLibraryFixed=$(echo "$thisLibrary" | sed "s/\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
-        thisLibraryName1=$(echo "$1" | sed "s/\/[A-Za-z0-9_. \/-]*\/lib//g")
-        thisLibraryName2=$(echo "$thisLibrary" | sed "s/\/[A-Za-z0-9_. \/-]*\/lib//g")
+        thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
+        thisLibraryName1=$(echo "$1" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib//g")
+        thisLibraryName2=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib//g")
     else
         # Library
-        thisLibraryFixed=$(echo "$thisLibrary" | sed "s/\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
-        thisLibraryName1=$(echo "$1" | sed "s/\/[A-Za-z0-9_. \/-]*\/lib/lib/g")
-        thisLibraryName2=$(echo "$thisLibrary" | sed "s/\/[A-Za-z0-9_. \/-]*\/lib/lib/g")
+        thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+        thisLibraryName1=$(echo "$1" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/lib/g")
+        thisLibraryName2=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/lib/g")
     fi
 #    echo "thisLibrary = $thisLibrary"
 #    echo "thisLibraryFixed = $thisLibraryFixed"
@@ -65,9 +65,9 @@ function fixup_dylib
         if [[ $s != "" ]] ; then
             framework=$(echo $library | grep ".framework")
             if [[ $framework != "" ]] ; then
-                newlibrary=$(echo $library | sed "s/\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
+                newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
             else
-                newlibrary=$(echo $library | sed "s/\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+                newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
             fi
 #            echo "$library -> $newlibrary"
             command="$command -change $library $newlibrary"
@@ -100,20 +100,20 @@ function fixup_exe
     # Get the name of this library from otool since it might not match quite 
     # what's in $1 because of version number differences.
     thisLibrary=$(otool -D $1 | tail -n 1 | sed "s/\://g")
-    thisLibraryFixed=$(echo "$thisLibrary" | sed "s/\/[A-Za-z0-9_. \/-]*\/bin/@executable_path\/..\/bin/g")
+    thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/bin/@executable_path\/..\/bin/g")
 #    echo "thisLibrary = $thisLibrary"
 #    echo "thisLibraryFixed = $thisLibraryFixed"
 
     sharedLibs=$(otool -L $1 | grep -v ":" | grep "/" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
     command=""
     for library in $sharedLibs ; do
-        s=$(echo $library | grep -v "/usr/lib")
+        s=$(echo $library | grep -v "/usr/lib" | grep -v "/usr/X11R6")
         if [[ $s != "" ]] ; then
             framework=$(echo $library | grep ".framework")
             if [[ $framework != "" ]] ; then
-                newlibrary=$(echo $library | sed "s/\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
+                newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
             else
-                newlibrary=$(echo $library | sed "s/\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
+                newlibrary=$(echo $library | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
             fi
 #            echo "$library -> $newlibrary"
             command="$command -change $library $newlibrary"
