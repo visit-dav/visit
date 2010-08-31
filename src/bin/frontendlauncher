@@ -109,6 +109,10 @@ exec perl -x $0 ${1+"$@"};
 #    Removed '-v' full patch warning. Changed the order of insertion for
 #    '-forceversion' when full patch is specified via '-v'.
 #
+#    Hank Childs, Tue Aug 31 15:29:25 PDT 2010
+#    Add trick to remove trailing slashes for machines with defective
+#    dirname programs.
+#
 ###############################################################################
 
 
@@ -126,6 +130,10 @@ $ENV{PATH} = join ':' , ("$ENV{PATH}","/bin","/usr/bin","/usr/sbin",
 # set base directory
 chomp( $progname= `basename $0`);
 chomp( $progdir = `dirname $0` );
+
+# Defective machines may still have a trailing slash ... fix here:
+chop($progdir) if $progdir =~ m|/$|;
+
 chomp( $cwd     = getcwd()    );
 if (!$cwd) {
     chomp( $cwd     = `pwd`        );
