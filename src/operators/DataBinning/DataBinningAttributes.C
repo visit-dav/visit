@@ -39,6 +39,8 @@
 #include <DataBinningAttributes.h>
 #include <DataNode.h>
 
+#include <string.h>
+
 //
 // Enum conversion methods for DataBinningAttributes::ReductionOperator
 //
