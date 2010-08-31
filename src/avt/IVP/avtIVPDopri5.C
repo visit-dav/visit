@@ -556,6 +556,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             return STEPSIZE_UNDERFLOW;
         }
 
+        // Check to make sure we don't exceed the max step.
         if( h_max != 0.0 && std::abs(h) > std::abs(h_max) )
             h = sign( h_max, h );
 
@@ -565,12 +566,6 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             last = true;
             h = t_max - t;
         }
-
-        // Check to make sure we don't exceed the max step.
-        if( h < 0 && -h > h_max )
-           h = -h_max;
-        else if( h > h_max )
-           h = h_max;
 
         n_steps++;
 
