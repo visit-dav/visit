@@ -254,6 +254,8 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     void  GetNeighborPresence(int domain, bool *hasNeighbor, 
                               std::vector<int> &);
 
+    vector<Neighbor>                  GetNeighbors(int domain);
+
     virtual vector<vtkDataArray*>     ExchangeScalar(vector<int>   domainNum,
                                              bool                  isPointData,
                                              vector<vtkDataArray*> scalars);

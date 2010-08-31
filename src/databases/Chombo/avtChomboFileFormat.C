@@ -145,6 +145,7 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
     mappingIs3D = false;
     hasParticles = false;
     connectParticles = false;
+    alwaysComputeDomainBoundaries = false;
     if (atts != NULL)
     {
         for (int i = 0; i < atts->GetNumberOfOptions(); ++i)
@@ -159,6 +160,8 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
                 checkForMappingFile = atts->GetBool("Check for mapping file and import coordinates if available");
             else if (atts->GetName(i) == "Use particle_nid and polymer_id to connect particles")
                 connectParticles = atts->GetBool("Use particle_nid and polymer_id to connect particles");
+            else if (atts->GetName(i) == "Always compute domain boundaries (hack for AMR stitch cells)")
+                alwaysComputeDomainBoundaries = atts->GetBool("Always compute domain boundaries (hack for AMR stitch cells)");
             else
                 debug1 << "Ignoring unknown option " << atts->GetName(i) << endl;
         }
@@ -1286,7 +1289,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     // Now set up the data structure for patch boundaries.  The data 
     // does all the work ... it just needs to know the extents of each patch.
     //
-    if (!allowedToUseGhosts || !fileContainsGhosts)
+    if (alwaysComputeDomainBoundaries || !allowedToUseGhosts || !fileContainsGhosts)
     {
         int t2 = visitTimer->StartTimer();
         avtRectilinearDomainBoundaries *rdb 

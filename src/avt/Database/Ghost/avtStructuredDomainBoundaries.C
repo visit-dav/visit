@@ -3262,3 +3262,23 @@ avtStructuredDomainBoundaries::GetNeighborPresence(int domain, bool *b,
 }
 
 
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::GetNeighbors
+//
+//  Purpose:
+//     Get the domain ids of domain neighbors on each side of the domain.
+//
+//  Programmer: Eduard Deines
+//  Creation:   Dec 15, 2008
+//
+// ****************************************************************************
+vector<Neighbor> 
+avtStructuredDomainBoundaries::GetNeighbors(int domain)
+{
+  int ntotaldomains = wholeBoundary.size();
+  if (domain < 0 || domain >= ntotaldomains)
+  {
+    EXCEPTION2(BadIndexException, domain, ntotaldomains);
+  }
+  return wholeBoundary[domain].neighbors;
+}

@@ -191,6 +191,7 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     int                    nMaterials;
     bool                   hasParticles;
     bool                   connectParticles;
+    bool                   alwaysComputeDomainBoundaries;
     std::vector<std::string>  particleVarnames;
     double                 dtime;
     int                    cycle;
