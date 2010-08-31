@@ -1495,6 +1495,9 @@ ViewerPlot::GetExpressions() const
 //    Hank Childs, Tue Aug 31 11:32:31 PDT 2010
 //    If we get an operator variable, then add that variable.
 //
+//    Hank Childs, Tue Aug 31 13:33:00 PDT 2010
+//    Expand the plot automatically when we add an auto-operator.
+//
 // ****************************************************************************
 
 bool
@@ -1659,7 +1662,10 @@ ViewerPlot::SetVariableName(const std::string &name)
                     }
 
                     if (!hasAlready)
+                    {
                         AddOperator(j, true);
+                        SetExpanded(true);
+                    }
                     break;
                 }
             }

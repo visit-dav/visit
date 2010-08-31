@@ -235,6 +235,9 @@ avtDataBinningFilter::Execute(void)
 //    Hank Childs, Tue Aug 31 10:20:08 PDT 2010
 //    Change names of added variable.
 //
+//    Hank Childs, Tue Aug 31 13:28:48 PDT 2010
+//    Beef up error messages.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -254,9 +257,12 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
             dim1Var = pipelineVariable;
         else
         {
-            EXCEPTION1(VisItException, "You can't use the default variable "
-                              "in a data binning when you are plotting the "
-                              "data binning (recursive definition).");
+            EXCEPTION1(VisItException, "You specified the first dimension of the "
+                               "data binning as \"default\", but your plotting variable "
+                               "(which \"default\" resolves to) is of the output of the "
+                               "data binning.  This is a recursion definition.  Please "
+                               "change the first dimension of the data binning to be "
+                               "something besides \"default\".");
         }
     }
     const char *dim2Var = atts.GetDim2Var().c_str();
@@ -268,9 +274,12 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
             dim2Var = pipelineVariable;
         else
         {
-            EXCEPTION1(VisItException, "You can't use the default variable "
-                              "in a data binning when you are plotting the "
-                              "data binning (recursive definition).");
+            EXCEPTION1(VisItException, "You specified the second dimension of the "
+                               "data binning as \"default\", but your plotting variable "
+                               "(which \"default\" resolves to) is of the output of the "
+                               "data binning.  This is a recursion definition.  Please "
+                               "change the first dimension of the data binning to be "
+                               "something besides \"default\".");
         }
     }
     const char *dim3Var = atts.GetDim3Var().c_str();
@@ -281,9 +290,12 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
             dim3Var = pipelineVariable;
         else
         {
-            EXCEPTION1(VisItException, "You can't use the default variable "
-                              "in a data binning when you are plotting the "
-                              "data binning (recursive definition).");
+            EXCEPTION1(VisItException, "You specified the third dimension of the "
+                               "data binning as \"default\", but your plotting variable "
+                               "(which \"default\" resolves to) is of the output of the "
+                               "data binning.  This is a recursion definition.  Please "
+                               "change the first dimension of the data binning to be "
+                               "something besides \"default\".");
         }
     }
 
@@ -315,7 +327,19 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
         atts.GetReductionOperator() != DataBinningAttributes::Count)
     {
         if (atts.GetVarForReduction() == "default")
-            out_dr->AddSecondaryVariable(pipelineVariable);
+        {
+            if (defaultVarOK)
+                out_dr->AddSecondaryVariable(pipelineVariable);
+            else
+            {
+                EXCEPTION1(VisItException, "You specified the variable for the reduction operator of your "
+                               "data binning as \"default\", but your plotting variable "
+                               "(which \"default\" resolves to) is of the output of the "
+                               "data binning.  This is a recursion definition.  Please "
+                               "change the first dimension of the data binning to be "
+                               "something besides \"default\".");
+            }
+        }
         else
             out_dr->AddSecondaryVariable(atts.GetVarForReduction().c_str());
     }
