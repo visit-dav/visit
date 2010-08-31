@@ -207,7 +207,7 @@ void avtIntegralCurve::Advance( avtIVPField* field )
     if( !field->IsInside( ivp->GetCurrentT(), ivp->GetCurrentY() ) )
     {
         if( DebugStream::Level5() )
-            debug5 << "avtIntegralCurve::Advance(): initial point is outside domain";
+            debug5 << "avtIntegralCurve::Advance(): initial point is outside domain\n";
 
         return;
     }
@@ -256,6 +256,9 @@ void avtIntegralCurve::Advance( avtIVPField* field )
             // The step was successful, call AnalyzeStep() which will
             // determine((among other things) whether to terminate.
             AnalyzeStep( step, field );
+
+            if( result == avtIVPSolver::TERMINATE )
+                break;
         }
         else if( result == avtIVPSolver::OUTSIDE_DOMAIN )
         {
@@ -338,11 +341,9 @@ void avtIntegralCurve::Advance( avtIVPField* field )
 
                 break;
             }
-            else
-            {
-                // Retry with halved stepsize.
-                ivp->SetNextStepSize( h/2.0 );
-            }
+
+            // Retry with halved stepsize.
+            ivp->SetNextStepSize( h/2.0 );
         }
         else
         {
@@ -461,7 +462,8 @@ void
 avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff, 
                             avtIVPSolver *solver)
 {
-    debug5 << "  avtIntegralCurve::Serialize "
+    if( DebugStream::Level5() )
+        debug5 << "  avtIntegralCurve::Serialize "
            << (mode==MemStream::READ?"READ":"WRITE")<<endl;
 
     buff.io(mode, id);
