@@ -90,6 +90,7 @@
 #include <ObserverToCallback.h>
 #include <PickAttributes.h>
 #include <QueryAttributes.h>
+#include <ParsingExprList.h>
 #include <PlotList.h>
 #include <Plot.h>
 #include <PluginManagerAttributes.h>
@@ -6964,6 +6965,12 @@ QvisGUIApplication::HandleMetaDataUpdate()
 //   
 //   Brad Whitlock, Tue Jun 24 11:53:56 PDT 2008
 //   Get the plugin manager from the viewer proxy.
+//
+//   Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
+//   Add support for operators that add expressions.
+//
+//   Hank Childs, Tue Aug 31 10:10:39 PDT 2010
+//   Move Rob's auto-add operator code to the viewer.
 //
 // ****************************************************************************
 

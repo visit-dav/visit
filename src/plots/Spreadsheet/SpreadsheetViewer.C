@@ -540,6 +540,11 @@ SpreadsheetViewer::render(vtkDataSet *ds)
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying to
 //    PopulateVariableLists
+//
+//    Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
+//    Add argument to PopulateVariableLists (it now supports operators that
+//    add expressions).
+//
 // ****************************************************************************
 
 void
@@ -552,6 +557,7 @@ SpreadsheetViewer::updateVariableMenus()
         plot->GetMetaData(),
         *plot->GetSILRestriction(),
         plot->GetViewerState()->GetExpressionList(),
+        NULL,
         treatAllDBsAsTimeVarying))
     {
         QvisVariableButton::UpdatePlotSourceButtons(&menuPopulator);

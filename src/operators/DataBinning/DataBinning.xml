@@ -77,10 +77,15 @@
       <Field name="emptyVal" label="Value for Bins With No Data" type="double">
         0.000000
       </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
       <Function name="CreateConstructionAtts" user="true" member="true">
       </Function>
       <Include file="header" quoted="false">
         ConstructDataBinningAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
+        Expression.h
       </Include>
     </Attribute>
   </Plugin>

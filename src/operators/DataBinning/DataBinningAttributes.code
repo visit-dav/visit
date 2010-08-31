@@ -1,3 +1,54 @@
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+// Method: DataBinningAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the DataBinningAttributes class.
+//
+// Note:       Copies over expressions as well
+//
+// Programmer: Hank Childs
+// Creation:   August 31, 2010
+//
+// ****************************************************************************
+
+bool
+DataBinningAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const DataBinningAttributes *tmp = (const DataBinningAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "Expression")
+    {
+        Expression *exp = (Expression *)atts;
+        if (strstr(exp->GetName().c_str(), "operators/DataBinning/1D") != NULL)
+        {
+            SetNumDimensions(One);
+            retval = true;
+        }
+        else if (strstr(exp->GetName().c_str(), "operators/DataBinning/2D") != NULL)
+        {
+            SetNumDimensions(Two);
+            retval = true;
+        }
+        else if (strstr(exp->GetName().c_str(), "operators/DataBinning/3D") != NULL)
+        {
+            SetNumDimensions(Three);
+            retval = true;
+        }
+    }
+
+    return retval;
+}
+
 Function: CreateConstructionAtts
 Declaration: ConstructDataBinningAttributes CreateConstructionAtts(void);
 Definition:

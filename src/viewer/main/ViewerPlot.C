@@ -59,6 +59,7 @@
 #include <CompactSILRestrictionAttributes.h>
 #include <DatabaseAttributes.h>
 #include <GlobalAttributes.h>
+#include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
 #include <Plot.h>
 #include <PlotPluginInfo.h>
@@ -1490,6 +1491,10 @@ ViewerPlot::GetExpressions() const
 //
 //    Mark C. Miller, Sun Aug 29 23:34:44 PDT 2010
 //    Added logic to set SIL when variable is defined on subsets (materials).
+//
+//    Hank Childs, Tue Aug 31 11:32:31 PDT 2010
+//    If we get an operator variable, then add that variable.
+//
 // ****************************************************************************
 
 bool
@@ -1624,6 +1629,43 @@ ViewerPlot::SetVariableName(const std::string &name)
         queryAtts->SetChangeType(PlotQueryInfo::VarName);
         queryAtts->Notify();
     }
+
+    // If a plot of an operator variable is added, let's find the operator
+    // and add it to the execution pipeline
+    OperatorPluginManager *oPM = GetOperatorPluginManager();
+    for (int j = 0; j < oPM->GetNEnabledPlugins(); j++)
+    {
+        const string &mesh = GetMeshName();
+        std::string id = oPM->GetEnabledID(j);
+        CommonOperatorPluginInfo *info = oPM->GetCommonPluginInfo(id);
+        ExpressionList *exprs = info->GetCreatedExpressions(mesh.c_str());
+        if (exprs == NULL)
+            continue;
+        for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
+        {
+            Expression expr = exprs->GetExpressions(k);
+            if (name == expr.GetName())
+            {
+                if (expr.GetFromOperator()) // should always be true
+                {
+                    // See if it already has the operator
+                    int nOps = GetNOperators();
+                    bool hasAlready = false;
+                    for (int opId = 0 ; opId < nOps ; opId++)
+                    {
+                        ViewerOperator *op = GetOperator(opId);
+                        if (op->GetPluginID() == id)
+                            hasAlready = true;
+                    }
+
+                    if (!hasAlready)
+                        AddOperator(j, true);
+                    break;
+                }
+            }
+        }
+    }
+
 
     return retval;
 }

@@ -903,6 +903,9 @@ AddPlotAction::~AddPlotAction()
 //   Brad Whitlock, Thu May 29 15:50:33 PDT 2008
 //   Qt 4.
 //
+//   Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
+//   Put expressions from operators into the pipeline.
+//
 // ****************************************************************************
 
 void
@@ -926,10 +929,13 @@ AddPlotAction::Update()
             // Repopulate the menu variable list using information from the
             // new file.
             //
+
+            OperatorPluginManager *oPM = GetOperatorPluginManager();
             bool treatAllDBsAsTimeVarying =
                 ViewerWindowManager::Instance()->GetClientAtts()->GetTreatAllDBsAsTimeVarying();
             if(menuPopulator.PopulateVariableLists(plotList->GetHostDatabaseName(),
                                                    md, sil, exprList,
+                                                   oPM,
                                                    treatAllDBsAsTimeVarying))
             {
                 // Print to the debug logs.

@@ -263,6 +263,9 @@ avtExpressionEvaluatorFilter::Execute(void)
 //    Brad Whitlock, Tue Jan 20 15:57:01 PST 2009
 //    I changed the name of a type conversion function.
 //
+//    Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
+//    Add a check for variables from operators.
+//
 // ****************************************************************************
 
 void
@@ -295,6 +298,16 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
                          "that the variable has been declared correctly.",
                          varname.c_str(),avtVarTypeToString(et_as_avt).c_str(),
                          avtVarTypeToString(vt).c_str());
+            EXCEPTION1(VisItException, msg);
+        }
+        // If the expression is from an operator, and has gotten this far,
+        // something is wrong.
+        if(exp->GetFromOperator())
+        { 
+            char msg[1024];
+            sprintf(msg, "The expression variable \"%s\" was declared as an operator"
+                      " expression.  This variable must be removed from the contract"
+                      " and created by the operator.", varname.c_str());
             EXCEPTION1(VisItException, msg);
         }
     }

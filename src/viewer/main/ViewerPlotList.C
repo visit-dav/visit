@@ -59,6 +59,8 @@
 #include <DataNode.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
+#include <OperatorPluginInfo.h>
+#include <OperatorPluginManager.h>
 #include <Plot.h>
 #include <PlotList.h>
 #include <PlotPluginInfo.h>
@@ -2491,6 +2493,10 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Brad Whitlock, Thu Aug 12 10:15:23 PDT 2010
 //    Make the new plot get a compatible plot's named selection.
 //
+//    Rob Sisneros & Hank Childs, Tue Aug 31 10:18:29 PDT 2010
+//    Code for auto-applying operators, originally placed in the GUI by
+//    Rob and then moved to viewer and adapted by Hank.
+//
 // ****************************************************************************
 
 int
@@ -2596,6 +2602,42 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     //
     ViewerWindowManager::Instance()->UpdateWindowInformation(
          WINDOWINFO_TIMESLIDERS);
+
+    // If a plot of an operator variable is added, let's find the operator
+    // and add it to the execution pipeline
+    OperatorPluginManager *oPM = GetOperatorPluginManager();
+    for (int j = 0; j < oPM->GetNEnabledPlugins(); j++)
+    {
+        const string &mesh = newPlot->GetMeshName();
+        std::string id = oPM->GetEnabledID(j);
+        CommonOperatorPluginInfo *info = oPM->GetCommonPluginInfo(id);
+        ExpressionList *exprs = info->GetCreatedExpressions(mesh.c_str());
+        if (exprs == NULL)
+            continue;
+        for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
+        {
+            Expression expr = exprs->GetExpressions(k);
+            if (var == expr.GetName())
+            {
+                if (expr.GetFromOperator()) // should always be true
+                {
+                    // See if it already has the operator
+                    int nOps = newPlot->GetNOperators();
+                    bool hasAlready = false;
+                    for (int opId = 0 ; opId < nOps ; opId++)
+                    {
+                        ViewerOperator *op = newPlot->GetOperator(opId);
+                        if (op->GetPluginID() == id)
+                            hasAlready = true;
+                    }
+
+                    if (!hasAlready)
+                        newPlot->AddOperator(j, true);
+                    break;
+                }
+            }
+        }
+    }
 
     return plotId;
 }
@@ -7727,6 +7769,10 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 //   operator reports new expressions we will add to the expression list when
 //   they are created, and the operator is expected to override its values.
 //
+//   Hank Childs, Mon Aug 30 20:09:48 PDT 2010
+//   Add code to send the expression being used to the operator as part of
+//   the expression.
+//
 // ****************************************************************************
 
 void
@@ -7814,19 +7860,20 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
         for (int j = 0 ; j < plot->GetNOperators() ; j++)
         {
             ViewerOperator *oper = plot->GetOperator(j);
-            ExpressionList *vars = oper->GetCreatedVariables(mesh.c_str());
-            if (!vars)
-                continue;
-
-            for (int k = 0 ; k < vars->GetNumExpressions() ; k++)
+            ExpressionList *exprs = oper->GetCreatedVariables(mesh.c_str());
+            if (exprs != NULL)
             {
-                Expression exp = vars->GetExpressions(k);
-                exp.SetFromOperator(true);
-                newList.AddExpressions(exp);
+                for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
+                {
+                    Expression exp = exprs->GetExpressions(k);
+                    exp.SetFromOperator(true);
+                    newList.AddExpressions(exp);
+                    if (exp.GetName() == plot->GetVariableName())
+                        oper->SetOperatorAtts(&exp);
+                }
             }
         }
     }
-
 
     //
     // If the new expression list is different from the expression list

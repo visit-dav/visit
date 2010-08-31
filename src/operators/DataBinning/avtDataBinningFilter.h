@@ -77,6 +77,7 @@ class avtDataBinningFilter : public avtPluginDatasetToDatasetFilter
   protected:
     DataBinningAttributes   atts;
     avtContract_p           lastContract;
+    std::string             varname;
 
     virtual void          Execute(void);
     virtual void          UpdateDataObjectInfo(void);

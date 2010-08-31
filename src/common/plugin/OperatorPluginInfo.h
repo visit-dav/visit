@@ -119,6 +119,12 @@ class ExpressionList;
 //    Brad Whitlock, Thu Feb  4 16:04:19 PST 2010
 //    I added a GetCategoryName method.
 //
+//    Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
+//    Add infrastructure for operators to create variables.
+//
+//    Hank Childs, Tue Aug 31 10:20:08 PDT 2010
+//    Remove unused method GetCreateVariables.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
@@ -138,6 +144,7 @@ class PLUGIN_API CommonOperatorPluginInfo : public virtual GeneralOperatorPlugin
     virtual AttributeSubject *AllocAttributes() = 0;
     virtual void CopyAttributes(AttributeSubject *to,
                                 AttributeSubject *from) = 0;
+    virtual ExpressionList *GetCreatedExpressions(const char *mesh) {return NULL;}
 };
 
 class PLUGIN_API GUIOperatorPluginInfo : public virtual CommonOperatorPluginInfo
@@ -175,7 +182,6 @@ class PLUGIN_API ViewerOperatorPluginInfo : public virtual CommonOperatorPluginI
     virtual bool Removeable() const { return true; }
     virtual bool Moveable() const { return true; }
     virtual bool AllowsSubsequentOperators() const { return true; }
-    virtual ExpressionList *GetCreatedVariables(const char *mesh) {return NULL;}
 };
 
 class PLUGIN_API EngineOperatorPluginInfo : public virtual CommonOperatorPluginInfo

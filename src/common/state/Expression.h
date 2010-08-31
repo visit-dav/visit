@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: Expression
 //
@@ -74,13 +75,23 @@ public:
         Species
     };
 
+    // These constructors are for objects of this class
     Expression();
     Expression(const Expression &obj);
+protected:
+    // These constructors are for objects derived from this class
+    Expression(private_tmfs_t tmfs);
+    Expression(const Expression &obj, private_tmfs_t tmfs);
+public:
     virtual ~Expression();
 
     virtual Expression& operator = (const Expression &obj);
     virtual bool operator == (const Expression &obj) const;
     virtual bool operator != (const Expression &obj) const;
+private:
+    void Init();
+    void Copy(const Expression &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -91,6 +102,8 @@ public:
     virtual void SelectAll();
     void SelectName();
     void SelectDefinition();
+    void SelectOperatorName();
+    void SelectMeshName();
     void SelectDbName();
 
     // Property setting methods
@@ -100,6 +113,8 @@ public:
     void SetType(ExprType type_);
     void SetFromDB(bool fromDB_);
     void SetFromOperator(bool fromOperator_);
+    void SetOperatorName(const std::string &operatorName_);
+    void SetMeshName(const std::string &meshName_);
     void SetDbName(const std::string &dbName_);
     void SetAutoExpression(bool autoExpression_);
 
@@ -112,6 +127,10 @@ public:
     ExprType          GetType() const;
     bool              GetFromDB() const;
     bool              GetFromOperator() const;
+    const std::string &GetOperatorName() const;
+          std::string &GetOperatorName();
+    const std::string &GetMeshName() const;
+          std::string &GetMeshName();
     const std::string &GetDbName() const;
           std::string &GetDbName();
     bool              GetAutoExpression() const;
@@ -137,6 +156,7 @@ public:
     static int GetNumTypes();
     static const char * GetTypeString(const Expression::ExprType t);
     static Expression::ExprType GetTypeId(const std::string s);
+    
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -146,8 +166,11 @@ public:
         ID_type,
         ID_fromDB,
         ID_fromOperator,
+        ID_operatorName,
+        ID_meshName,
         ID_dbName,
-        ID_autoExpression
+        ID_autoExpression,
+        ID__LAST
     };
 
 private:
@@ -157,11 +180,15 @@ private:
     int         type;
     bool        fromDB;
     bool        fromOperator;
+    std::string operatorName;
+    std::string meshName;
     std::string dbName;
     bool        autoExpression;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define EXPRESSION_TMFS "ssbibbsssb"
 
 #endif

@@ -65,6 +65,9 @@
 #include <Expression.h>
 #include <GlobalAttributes.h>
 #include <NameSimplifier.h>
+#include <OperatorPluginInfo.h>
+#include <OperatorPluginManager.h>
+#include <ParsingExprList.h>
 #include <PluginManagerAttributes.h>
 #include <QvisPlotListBoxItem.h>
 #include <QvisPlotListBox.h>
@@ -1609,6 +1612,9 @@ QvisPlotManagerWidget::EnablePluginMenus()
 //   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //   Added support to treat all databases as time varying
 //
+//   Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
+//   Add support for operators that create expressions.
+//
 // ****************************************************************************
 
 bool
@@ -1621,6 +1627,8 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
                                 GetStateForSource(filename),
                                  FileServerList::ANY_STATE,
                                 !FileServerList::GET_NEW_MD);
+
+    OperatorPluginManager *oPM = GetViewerProxy()->GetOperatorPluginManager();
 
     if (fileServer->GetTreatAllDBsAsTimeVarying() ||
         (md && md->GetMustRepopulateOnStateChange()))
@@ -1638,7 +1646,7 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
                                FileServerList::GET_NEW_MD);
 
         return populator.PopulateVariableLists(filename.FullName(),
-                                               md, sil, exprList,
+                                               md, sil, exprList, oPM,
                          fileServer->GetTreatAllDBsAsTimeVarying());
     }
     else
@@ -1651,7 +1659,7 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
                               !FileServerList::GET_NEW_MD);
 
         return populator.PopulateVariableLists(filename.FullName(),
-                                               md, sil, exprList,
+                                               md, sil, exprList, oPM,
                          fileServer->GetTreatAllDBsAsTimeVarying());
     }
 }

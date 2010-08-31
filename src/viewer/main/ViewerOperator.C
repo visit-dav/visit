@@ -491,11 +491,14 @@ ViewerOperator::AllowsSubsequentOperators() const
 //    Jeremy Meredith, Tue Feb 19 15:39:42 EST 2008
 //    Allow operators to construct full expressions for their new variables.
 //
+//    Hank Childs, Tue Aug 31 08:12:20 PDT 2010
+//    Use the GetCreatedExpressions method instead.
+//
 // ****************************************************************************
 ExpressionList *
 ViewerOperator::GetCreatedVariables(const char *mesh)
 {
-    return viewerPluginInfo->GetCreatedVariables(mesh);
+    return viewerPluginInfo->GetCreatedExpressions(mesh);
 }
 
 
