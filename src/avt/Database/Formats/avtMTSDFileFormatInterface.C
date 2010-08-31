@@ -426,6 +426,10 @@ avtMTSDFileFormatInterface::GetFilename(int ts)
 //    Hank Childs, Fri Aug 27 13:46:28 PDT 2010
 //    Don't overwrite values if they are not monotonic.
 //
+//    Hank Childs, Tue Aug 31 16:31:07 PDT 2010
+//    Don't uniformly declare all times as inaccurate if they are out of 
+//    sequence.
+//
 // ****************************************************************************
 
 void
@@ -512,6 +516,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                         cycles.push_back(0);
                     else
                         cycles.push_back(cycles[i-1]+1);
+                    md->SetCycleIsAccurate(i, false);
                 }
                 else
                     cycles.push_back(c);
@@ -522,7 +527,8 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         // Ok, now put cycles into the metadata
         //
         md->SetCycles(cycles);
-        md->SetCyclesAreAccurate(cyclesLookGood);
+        if (cyclesLookGood)
+            md->SetCyclesAreAccurate(cyclesLookGood);
     }
 
     if (md->AreAllTimesAccurateAndValid(nTotalTimesteps) != true)
@@ -566,6 +572,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                         times.push_back(0.);
                     else
                         times.push_back(times[i-1]+0.0);  // same time
+                    md->SetTimeIsAccurate(i, false);
                 }
             }
         }
@@ -578,10 +585,6 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         {
             md->SetTimesAreAccurate(true);
             md->SetTemporalExtents(times[0], times[times.size() - 1]);
-        }
-        else
-        {
-            md->SetTimesAreAccurate(false);
         }
     }
 
