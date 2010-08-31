@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+  <Plugin name="AMRStitchCell" type="operator" label="AMR Dual Grid and Stitch Cells" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="AMRStitchCell.xpm" category="Geometry">
+    <Files components="E">
+      avtAMRStitchCellFilter.C
+      AMRStitchCellTesselations3D.C
+      AMRStitchCellTesselations2D.C
+    </Files>
+    <Attribute name="AMRStitchCellAttributes" purpose="Attributes for Stitch Cell Operator" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="AMRStitchCellAttributes.code">
+      <Enum name="CreateType">
+        DualGridAndStitchCells
+        DualGrid
+        StitchCells
+      </Enum>
+      <Field name="CreateCellsOfType" label="Create cells of type" type="enum" subtype="CreateType">
+      </Field>
+    </Attribute>
+  </Plugin>

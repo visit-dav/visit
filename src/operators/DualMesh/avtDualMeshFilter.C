@@ -48,6 +48,7 @@
 #include <vtkPointData.h>
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkUnsignedCharArray.h>
 
 // ****************************************************************************
 //  Method: avtDualMeshFilter constructor
@@ -297,6 +298,48 @@ avtDualMeshFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         result->GetPointData()->ShallowCopy(rgrid->GetCellData());
     }
     
+    if (!expand)
+    {
+        // Update ghost zones
+        vtkUnsignedCharArray *inputGhostZones = (vtkUnsignedCharArray *)
+            in_ds->GetCellData()->GetArray("avtGhostZones");
+
+        vtkUnsignedCharArray *outputGhostZones = vtkUnsignedCharArray::New();
+        outputGhostZones->SetName("avtGhostZones");
+
+        if (rdims[1] > 1)
+        {
+            if (rdims[2] > 1)
+            {
+                // 3D
+            }
+            else
+            {
+                outputGhostZones->SetNumberOfTuples((rdims[0]-1)*(rdims[1]-1));
+
+                // 2D
+                for (int i=0; i < rdims[0]-1; ++i)
+                    for (int j=0; j < rdims[1]-1; ++j)
+                    {
+                        unsigned char ghostInfo = inputGhostZones->GetValue(j*rdims[0]+i);
+                        ghostInfo |= inputGhostZones->GetValue(j*rdims[0]+(i+1));
+                        ghostInfo |= inputGhostZones->GetValue((j+1)*rdims[0]+i);
+                        ghostInfo |= inputGhostZones->GetValue((j+1)*rdims[0]+(i+1));
+                        outputGhostZones->SetValue(j*(rdims[0]-1)+i, ghostInfo);
+                    }
+            }
+
+        }
+        else
+        {
+            EXCEPTION1(ImproperUseException,
+                    "Converting ghost data not implemented for 1D.");
+        }
+
+        result->GetCellData()->AddArray(outputGhostZones);
+    }
+
+
     ManageMemory(result);
     result->Delete();
     return result;

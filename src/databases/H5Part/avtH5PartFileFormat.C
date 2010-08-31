@@ -507,18 +507,14 @@ avtH5PartFileFormat::RegisterDataSelections(
 
     if (useFastBitIndex)
     {
-#if 0
-        // FIXME: Need to debug this, or its corresponding branch in
-        // PerformQuery. Currently using this code leads to an ImproperUse
-        // exception.
-
         if (selList.size() == 1 &&
             std::string(selList[0]->GetType()) ==
                std::string("Identifier Data Selection"))
         {
-            // Short cut. There is only one query and it is a list of identifiers.
+            // Shortcut: There is only one query and it is a list of identifiers.
             // Thus, we can skip the step of creating a string and having FastBit
             // parse it again.
+            (*selsApplied)[0] = true;
             querySpecified = idListQuery;
             avtIdentifierSelection *ids = (avtIdentifierSelection *) *(selList[0]);
             queryIdList = ids->GetIdentifiers();
@@ -526,7 +522,6 @@ avtH5PartFileFormat::RegisterDataSelections(
             debug5 << " ids specified." << std::endl;
         }
         else
-#endif
         {
             for (int i = 0; i < selList.size(); ++i)
             {
@@ -2300,7 +2295,9 @@ void avtH5PartFileFormat::PerformQuery()
 {
     int t1 = visitTimer->StartTimer();
     debug5 << "avtH5PartFileFormat::PerformQuery(): Running query." << std::endl;
-
+#ifdef VERYVERBOSE
+    std::cout << "avtH5PartFileFormat::PerformQuery(): Running query." << std::endl;
+#endif
 
     if (!file)
     {

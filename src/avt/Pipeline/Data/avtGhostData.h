@@ -85,6 +85,9 @@ typedef enum
 //     Hank Childs, Fri Aug  3 13:22:40 PDT 2007
 //     Added ghost node types for coarse/fine boundaries.
 //
+//     Gunther H. Weber, Mon Aug 30 21:27:37 PDT 2010
+//     Added const qualifiers where possible
+//
 // ****************************************************************************
 
 class avtGhostData
@@ -105,13 +108,13 @@ class avtGhostData
             u -= bit;
     }
 
-    static inline bool IsGhostZoneType(unsigned char &u, avtGhostZoneTypes t)
+    static inline bool IsGhostZoneType(const unsigned char &u, avtGhostZoneTypes t)
     {
         unsigned char bit = (1 << t);
         return (u & bit);
     }
 
-    static inline bool IsGhostZone(unsigned char &u)
+    static inline bool IsGhostZone(const unsigned char &u)
     {
         return (u != 0);
     }
@@ -131,24 +134,24 @@ class avtGhostData
             u -= bit;
     }
 
-    static inline bool IsGhostNodeType(unsigned char &u, avtGhostNodeTypes t)
+    static inline bool IsGhostNodeType(const unsigned char &u, avtGhostNodeTypes t)
     {
         unsigned char bit = (1 << t);
         return (u & bit);
     }
 
-    static inline bool IsGhostNode(unsigned char &u)
+    static inline bool IsGhostNode(const unsigned char &u)
     {
         return (u != 0);
     }
 
-    static inline bool UseZoneForInterpolation(unsigned char &u)
+    static inline bool UseZoneForInterpolation(const unsigned char &u)
     {
         unsigned char bit = (1 << ZONE_NOT_APPLICABLE_TO_PROBLEM);
         return (u & bit);
     }
 
-    static inline bool RemoveThisZoneBeforeFindingFacelist(unsigned char &u)
+    static inline bool RemoveThisZoneBeforeFindingFacelist(const unsigned char &u)
     {
         unsigned char bit1 = (1 << ZONE_EXTERIOR_TO_PROBLEM);
         unsigned char bit2 = (1 << ZONE_NOT_APPLICABLE_TO_PROBLEM);
@@ -156,7 +159,7 @@ class avtGhostData
         return (u & bit);
     }
 
-    static inline bool IsZoneDuplicated(unsigned char &u)
+    static inline bool IsZoneDuplicated(const unsigned char &u)
     {
         unsigned char bit1 = (1 << DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         unsigned char bit2 = (1 << ENHANCED_CONNECTIVITY_ZONE);
@@ -165,7 +168,7 @@ class avtGhostData
         return (u & bit);
     }
 
-    static inline bool IsZoneDuplicatedByCombinationOfZones(unsigned char &u)
+    static inline bool IsZoneDuplicatedByCombinationOfZones(const unsigned char &u)
     {
         unsigned char bit1 = (1 << DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         unsigned char bit2 = (1 << ENHANCED_CONNECTIVITY_ZONE);
@@ -175,7 +178,7 @@ class avtGhostData
         return (u & bit);
     }
 
-    static inline bool IsZoneOnExteriorOfDomain(unsigned char &u)
+    static inline bool IsZoneOnExteriorOfDomain(const unsigned char &u)
     {
         unsigned char bit1 = (1 << DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         unsigned char bit2 = (1 << ENHANCED_CONNECTIVITY_ZONE);
@@ -185,7 +188,7 @@ class avtGhostData
         return (u & bit);
     }
 
-    static inline bool CanZoneBeUsedForStatistics(unsigned char &u)
+    static inline bool CanZoneBeUsedForStatistics(const unsigned char &u)
     {
         unsigned char bit1 = (1 << DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         unsigned char bit2 = (1 << ENHANCED_CONNECTIVITY_ZONE);
@@ -195,7 +198,7 @@ class avtGhostData
         return (u & bit);
     }
 
-    static inline bool DiscardFaceIfAllNodesAreOfThisType(unsigned char &u)
+    static inline bool DiscardFaceIfAllNodesAreOfThisType(const unsigned char &u)
     {
         unsigned char bit1 = (1 << DUPLICATED_NODE);
         unsigned char bit2 = (1 << NODE_NOT_APPLICABLE_TO_PROBLEM);
@@ -205,13 +208,13 @@ class avtGhostData
         return (u & bit);
     }
 
-    static inline bool DiscardFaceIfOneNodeIsOfThisType(unsigned char &u)
+    static inline bool DiscardFaceIfOneNodeIsOfThisType(const unsigned char &u)
     {
         unsigned char bit = (1 << NODE_NOT_APPLICABLE_TO_PROBLEM);
         return (u & bit);
     }
 
-    static inline bool UseNodeForInterpolation(unsigned char &u)
+    static inline bool UseNodeForInterpolation(const unsigned char &u)
     {
         unsigned char bit1 = (1 << DUPLICATED_NODE);
         unsigned char bit2 = (1 << NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
