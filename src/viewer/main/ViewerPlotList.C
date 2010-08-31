@@ -2497,6 +2497,9 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Code for auto-applying operators, originally placed in the GUI by
 //    Rob and then moved to viewer and adapted by Hank.
 //
+//    Hank Childs, Tue Aug 31 13:33:00 PDT 2010
+//    Expand the plot automatically when we add an auto-operator.
+//
 // ****************************************************************************
 
 int
@@ -2632,7 +2635,10 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
                     }
 
                     if (!hasAlready)
+                    {
                         newPlot->AddOperator(j, true);
+                        newPlot->SetExpanded(true);
+                    }
                     break;
                 }
             }
