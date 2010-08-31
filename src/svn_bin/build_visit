@@ -70,7 +70,7 @@
 #           szip     2.1      szip-2.1.tar.gz
 #
 #         Experimental (internal)
-#           ITAPS             ITAPS-FMDB-1.1-03Jun10.tar.gz
+#           ITAPS             ITAPS-FMDB-1.1-30Aug10.tar.gz
 #           ITAPS             ITAPS-GRUMMP-0.5.0-03Jun10.tar.gz
 #           ITAPS             ITAPS-MOAB-3.99-10Jun10.tar.gz
 #           ViSUS             visus_26Feb07.tar.gz      -V
@@ -943,6 +943,8 @@
 #     Eric Brugger, Mon Aug 30 13:45:59 PDT 2010
 #     I set the VisIt version number to 2.1.0.
 #
+#     Mark C. Miller, Mon Aug 30 17:57:47 PDT 2010
+#     Update ITAPS-FMDB tarball to something known to compile correctly.
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1366,9 +1368,9 @@ export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION:-"3.99-10Jun10"}
 export ITAPS_MOAB_COMPATIBILITY_VERSION=${ITAPS_MOAB_COMPATIBILITY_VERSION:-"3.99-10Jun10"}
 export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR:-"${ITAPS_MOAB_FILE%.tar*}"}
 
-export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE:-"ITAPS-FMDB-1.1-03Jun10.tar.gz"}
-export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.1-03Jun10"}
-export ITAPS_FMDB_COMPATIBILITY_VERSION=${ITAPS_FMDB_COMPATIBILITY_VERSION:-"1.1-03Jun10"}
+export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE:-"ITAPS-FMDB-1.1-30Aug10.tar.gz"}
+export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.1-30Aug10"}
+export ITAPS_FMDB_COMPATIBILITY_VERSION=${ITAPS_FMDB_COMPATIBILITY_VERSION:-"1.1-30Aug10"}
 export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR:-"${ITAPS_FMDB_FILE%.tar*}"}
 
 export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"ITAPS-GRUMMP-0.5.0-03Jun10.tar.gz"}
