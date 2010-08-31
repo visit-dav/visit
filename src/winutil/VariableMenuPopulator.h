@@ -38,8 +38,12 @@
 
 #ifndef VARIABLE_MENU_POPULATOR_H
 #define VARIABLE_MENU_POPULATOR_H
+
 #include <winutil_exports.h>
+
 #include <ExpressionList.h>
+#include<OperatorPluginInfo.h>
+#include<OperatorPluginManager.h>
 #include <string>
 #include <map>
 #include <vectortypes.h>
@@ -110,6 +114,9 @@ class QObject;
 //   Brad Whitlock, Fri Dec 14 12:00:55 PST 2007
 //   Added methods to the VariableList class.
 //
+//   Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
+//   Add argument to PopulateVariableLists for expressions from operators.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -122,6 +129,7 @@ public:
                                const avtDatabaseMetaData *,
                                const avtSIL *,
                                const ExpressionList *,
+                               OperatorPluginManager *,
                                bool);
 
     int UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,

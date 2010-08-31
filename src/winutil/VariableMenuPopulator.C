@@ -44,6 +44,10 @@
 #include <avtSIL.h>
 #include <PlotPluginInfo.h>
 #include <Expression.h>
+#include <OperatorPluginInfo.h>
+#include <OperatorPluginManager.h>
+#include <ParsingExprList.h>
+#include <PluginManager.h>
 #include <ExpressionList.h>
 #include <QvisVariablePopupMenu.h>
 #include <QObject>
@@ -324,12 +328,16 @@ VariableMenuPopulator::ClearGroupingInfo()
 //
 //    Mark C. Miller, Tue Mar 18 21:25:07 PDT 2008
 //    Added code to hide variables from GUI if variable's md so indicates
+//
+//    Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
+//    Add operator variables to the variable list.
+//
 // ****************************************************************************
 
 bool
 VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     const avtDatabaseMetaData *md, const avtSIL *sil,
-    const ExpressionList *exprList, bool treatAllDBsAsTimeVarying)
+    const ExpressionList *exprList, OperatorPluginManager *oPM, bool treatAllDBsAsTimeVarying)
 {
     if(md == 0 || sil == 0 || exprList == 0)
         return false;
@@ -404,6 +412,10 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     ClearGroupingInfo();
     visitTimer->StopTimer(id, "Clearing vectors and grouping info");
 
+    ExpressionList *fromOperators;
+    ExpressionList *adder = ParsingExprList::Instance()->GetList();
+    bool needExpr;
+
     // Do stuff with the metadata
     id = visitTimer->StartTimer(); 
     int i;
@@ -411,10 +423,41 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     {
         const avtMeshMetaData &mmd = md->GetMeshes(i);
         if (!mmd.hideFromGUI)
+        {
             meshVars.AddVariable(mmd.name, mmd.validVariable);
+            if(oPM != NULL)
+            {
+                for(int j = 0; j < oPM->GetNEnabledPlugins(); j++)
+                {
+                    std::string id(oPM->GetEnabledID(j));
+                    CommonOperatorPluginInfo *ComInfo = oPM->GetCommonPluginInfo(id);
+                    fromOperators = ComInfo->GetCreatedExpressions(mmd.name.c_str());
+                    if(fromOperators != NULL)
+                    {
+                        for(int k = 0; k < fromOperators->GetNumExpressions(); k++)
+                        {
+                            needExpr = true;
+                            const Expression &expr = fromOperators->GetExpressions(k);
+                            for(int l = 0; l < adder->GetNumExpressions(); l++)
+                                if(expr.GetName() == adder->GetExpressions(l).GetName())
+                                    needExpr = false;
+                            if(needExpr)
+                            {
+                                Expression *e = new Expression(expr);
+                                adder->AddExpressions(*e);
+                                delete(e);
+                            }
+                            cachedExpressionList.AddExpressions(expr);
+                        }
+                    }
+                }
+            }
+       }
     }
     if (md->GetUseCatchAllMesh())
+    {
         meshVars.AddVariable(VisItInit::CatchAllMeshName, true);
+    }
     for (i = 0; i < md->GetNumScalars(); ++i)
     {
         const avtScalarMetaData &smd = md->GetScalars(i);

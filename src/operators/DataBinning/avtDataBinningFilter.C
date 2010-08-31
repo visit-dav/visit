@@ -230,15 +230,21 @@ avtDataBinningFilter::Execute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 19, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 31 10:20:08 PDT 2010
+//    Change names of added variable.
+//
 // ****************************************************************************
 
 avtContract_p
 avtDataBinningFilter::ModifyContract(avtContract_p inContract)
 {
     bool defaultVarOK = true;
-    if (strcmp(pipelineVariable, "operators/DataBinning") == 0)
+    if (strncmp(pipelineVariable, "operators/DataBinning", strlen("operators/DataBinning")) == 0)
     {
         defaultVarOK = false;
+        varname = pipelineVariable;
     }
 
     const char *dim1Var = atts.GetDim1Var().c_str();
@@ -283,13 +289,23 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
 
     avtDataRequest_p in_dr  = inContract->GetDataRequest();
     avtDataRequest_p out_dr;
-    if (strcmp(in_dr->GetVariable(), "operators/DataBinning") == 0)
+    if (strncmp(in_dr->GetVariable(), "operators/DataBinning", strlen("operators/DataBinning")) == 0)
         out_dr = new avtDataRequest(in_dr, dim1Var);
     else
         out_dr = new avtDataRequest(in_dr);
-    out_dr->RemoveSecondaryVariable("operators/DataBinning");
+    std::vector<CharStrRef>   vars2nd = in_dr->GetSecondaryVariablesWithoutDuplicates();
+    std::vector<std::string>  removeMe;
+    int  i;
+    for (i = 0 ; i < vars2nd.size() ; i++)
+        if (strncmp(*(vars2nd[i]), "operators/DataBinning", strlen("operators/DataBinning")) == 0)
+        {
+            varname = *(vars2nd[i]);
+            removeMe.push_back(*(vars2nd[i]));
+        }
+    for (i = 0 ; i < removeMe.size() ; i++)
+        out_dr->RemoveSecondaryVariable(removeMe[i].c_str());
+
     out_dr->AddSecondaryVariable(dim1Var);
-        
     if (atts.GetNumDimensions() == DataBinningAttributes::Two || 
         atts.GetNumDimensions() == DataBinningAttributes::Three)
         out_dr->AddSecondaryVariable(dim2Var);
@@ -339,6 +355,9 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Hank Childs, Tue Aug 31 10:20:08 PDT 2010
+//    Set up output labels.
+//
 // ****************************************************************************
 
 void
@@ -359,6 +378,46 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
         dataAtts.SetCentering(AVT_NODECENT);
     else
         dataAtts.SetCentering(AVT_ZONECENT);
+
+    std::string var1 = "";
+    if (atts.GetDim1Var() == "default")
+    {
+        if (pipelineVariable != NULL)
+            var1 = pipelineVariable;
+    }
+    else
+        var1 = atts.GetDim1Var();
+    dataAtts.SetXLabel(var1);
+    dataAtts.SetXUnits("");
+
+    if ((atts.GetNumDimensions() == DataBinningAttributes::Two ||
+         atts.GetNumDimensions() == DataBinningAttributes::Three))
+    {
+        std::string var2 = "";
+        if (atts.GetDim2Var() == "default")
+        {
+            if (pipelineVariable != NULL)
+                var2 = pipelineVariable;
+        }
+        else
+            var2 = atts.GetDim2Var();
+        dataAtts.SetYLabel(var2);
+        dataAtts.SetYUnits("");
+    }
+
+    if (atts.GetNumDimensions() == DataBinningAttributes::Three)
+    {
+        std::string var3 = "";
+        if (atts.GetDim3Var() == "default")
+        {
+            if (pipelineVariable != NULL)
+                var3 = pipelineVariable;
+        }
+        else
+            var3 = atts.GetDim3Var();
+        dataAtts.SetZLabel(var3);
+        dataAtts.SetZUnits("");
+    }
 }
 
 

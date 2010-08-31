@@ -1099,6 +1099,10 @@ QvisCMFEWizard::UpdateSourceList()
 //  Creation:   August 2, 2010
 //
 // Modifications:
+//
+//   Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
+//   Add support for operators that create expressions.
+//
 //   Cyrus Harrison, Mon Aug 30 11:59:25 PDT 2010
 //   Simplify wizard & add ability to open new databases.
 //
@@ -1133,7 +1137,7 @@ QvisCMFEWizard::UpdateDonorField(void)
                           !FileServerList::ANY_STATE,
                            FileServerList::GET_NEW_MD);
 
-    populator->PopulateVariableLists(filename, md, sil, exprList,false);
+    populator->PopulateVariableLists(filename, md, sil, exprList,NULL,false);
 
     donorFieldVar->ResetPopulator(populator);
     donorFieldVar->setText(tr("<Select>"));
@@ -1180,7 +1184,7 @@ QvisCMFEWizard::UpdateTargetMesh(void)
                           !FileServerList::ANY_STATE,
                            FileServerList::GET_NEW_MD);
 
-    populator->PopulateVariableLists(target_source, md, sil, exprList,false);
+    populator->PopulateVariableLists(target_source, md, sil, exprList,NULL,false);
 
     targetMeshVar->ResetPopulator(populator);
 
