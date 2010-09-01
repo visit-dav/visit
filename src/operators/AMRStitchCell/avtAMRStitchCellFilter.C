@@ -1079,7 +1079,7 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                         while (tesselationArray3D[tessPos] != -1)
                         {
                             int numVtcs = tesselationArray3D[tessPos++];
-                            vtkIdType vPtId[numVtcs];
+                            std::vector<vtkIdType> vPtId(numVtcs);
 
                             bool skipCell = false;
                             for (int vtxNo = 0; vtxNo < numVtcs; ++ vtxNo)
@@ -1227,11 +1227,11 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                             std::cout << std::endl;
 #endif
                             if (numVtcs == 4)
-                                ugrid->InsertNextCell(VTK_TETRA, 4, vPtId);
+                                ugrid->InsertNextCell(VTK_TETRA, 4, &vPtId[0]);
                             else if (numVtcs == 5)
-                                ugrid->InsertNextCell(VTK_PYRAMID, 5, vPtId);
+                                ugrid->InsertNextCell(VTK_PYRAMID, 5, &vPtId[0]);
                             else if (numVtcs == 6)
-                                ugrid->InsertNextCell(VTK_WEDGE, 6, vPtId);
+                                ugrid->InsertNextCell(VTK_WEDGE, 6, &vPtId[0]);
                             else if (numVtcs == 7)
                             {
                                 double centroid[3] = { 0, 0, 0 };
@@ -1262,7 +1262,7 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                 ugrid->InsertNextCell(VTK_TETRA, 4, c6);
                             }
                             else if (numVtcs == 8)
-                                ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, vPtId);
+                                ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, &vPtId[0]);
                             else
                                 EXCEPTION1(VisItException, "Invalid cell type (internal error).");
                         }
