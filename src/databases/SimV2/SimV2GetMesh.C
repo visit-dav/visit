@@ -912,6 +912,8 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 // Creation:   Thu Feb 25 14:01:25 PST 2010
 //
 // Modifications:
+//   Brad Whitlock, Wed Sep  1 09:44:34 PDT 2010
+//   I fixed an off by 1 that was pointed out.
 //
 // ****************************************************************************
 
@@ -1071,20 +1073,18 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
     }
     else if (firstRealZone != 0 || lastRealZone != numCells -1)
     {
-        int i;
         vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
         ghostZones->SetNumberOfTuples(numCells);
-        unsigned char *tmp = ghostZones->GetPointer(0);
+        unsigned char *gvals = ghostZones->GetPointer(0);
         unsigned char val = 0;
         avtGhostData::AddGhostZoneType(val, 
             DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-        for(int i = 0; i < numCells; ++i)
-        {
-            if(i < firstRealZone || i > lastRealZone+1)
-                *tmp++ = val;
-            else
-                *tmp++ = 0;
-        }
+        for (int i = 0; i < firstRealZone; i++)
+            gvals[i] = val;
+        for (int i = firstRealZone; i <= lastRealZone; i++)
+            gvals[i] = 0;
+        for (int i = lastRealZone+1; i < numCells; i++)
+            gvals[i] = val;
 
         if(polyhedralCellCount > 0)
         {
