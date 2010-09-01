@@ -45,9 +45,12 @@ IF(WIN32)
         host_princeton_tigressdata.xml
         host_slac_red.xml
         host_snl_closed_redrose.xml
+        host_tacc_longhorn.xml
         host_tacc_ranger_vnc.xml
         host_tacc_ranger.xml
         host_tacc_spur.xml
+        host_umich_flux.xml
+        host_umich_nyx.xml
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/allhosts
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
     )
@@ -100,9 +103,12 @@ ELSE(WIN32)
         host_princeton_tigressdata.xml
         host_slac_red.xml
         host_snl_closed_redrose.xml
+        host_tacc_longhorn.xml
         host_tacc_ranger_vnc.xml
         host_tacc_ranger.xml
         host_tacc_spur.xml
+        host_umich_flux.xml
+        host_umich_nyx.xml
         DESTINATION ${VISIT_VERSION}/.visit/allhosts
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
     )

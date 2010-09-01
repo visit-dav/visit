@@ -8,7 +8,7 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc] [-g group] [-gw] [-l] [-dmg]
+#    visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc | umich] [-g group] [-gw] [-l] [-dmg]
 #                  [-beta | -private] version platform directory
 #
 #    The default is to install this version as the current version.
@@ -217,6 +217,10 @@
 #    B/c of different parsing of the '-i' argument for OSX's sed
 #    implementation.
 #
+#    Hank Childs, Fri Aug 27 16:16:12 PDT 2010
+#    Add profile for U. Mich on behalf of Brock Palen.
+#    Also add TACC longhorn profile.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -284,7 +288,7 @@ while ($option_found == true)
 end
 
 if ($#argv != 3) then
-   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc] [-g group] [-b bank] [-gw] [-l] [-dmg]"
+   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc | umich] [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
    echo "                     This will install all of its files and subdirectories"
@@ -401,8 +405,9 @@ while ($config == prompt)
    echo "   7) ORNL network"
    echo "   8) Princeton network"
    echo "   9) TACC network"
+   echo "   10) U of Michigan Center for Advanced Computing network"
    echo ""
-   echo "(1,2,3,4,5,6,7,8):"
+   echo "(1,2,3,4,5,6,7,8,9,10):"
 
    set config = $<
    switch ($config)
@@ -433,14 +438,17 @@ while ($config == prompt)
       case 9:
          set config = tacc
          breaksw
+      case 10:
+         set config = umich
+         breaksw
       default:
          set config = prompt
          breaksw
    endsw
 end
 
-if ($config != none && $config != llnl_open && $config != llnl_closed && $config != nersc && $config != ornl && $config != anl && $config != princeton && $config != tacc && $config != anag) then
-   echo "Illegal configuration option, choices are none, open, closed, ornl, nersc, anl, princeton, and tacc."
+if ($config != none && $config != llnl_open && $config != llnl_closed && $config != nersc && $config != ornl && $config != anl && $config != princeton && $config != tacc && $config != anag && $config != umich) then
+   echo "Illegal configuration option, choices are none, open, closed, ornl, nersc, anl, princeton, anag, umich, and tacc."
    exit (1)
 endif
 
@@ -635,8 +643,12 @@ else if ($config == princeton) then
    cp "$dir"/$version+/.visit/allhosts/host_princeton_hecate.xml      "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_princeton_tigressdata.xml "$dir"/$version+/.visit/hosts/
 else if ($config == tacc) then
+   cp "$dir"/$version+/.visit/allhosts/host_tacc_longhorn.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_tacc_ranger.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_tacc_spur.xml   "$dir"/$version+/.visit/hosts/
+else if ($config == umich) then
+   cp "$dir"/$version+/.visit/allhosts/host_umich_flux.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_umich_nyx.xml   "$dir"/$version+/.visit/hosts/
 else if ($config == anag) then
    ln -s visit-config-anag.ini    "$dir"/$version+/.visit/config
    ln -s visit-guiconfig-anag.ini "$dir"/$version+/.visit/guiconfig
