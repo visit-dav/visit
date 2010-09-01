@@ -1081,11 +1081,19 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                             int numVtcs = tesselationArray3D[tessPos++];
                             vtkIdType vPtId[numVtcs];
 
-                            int tessPosSave = tessPos;
+                            bool skipCell = false;
                             for (int vtxNo = 0; vtxNo < numVtcs; ++ vtxNo)
-                                if (skipCellVtx[tesselationArray3D[tessPos++]])
-                                    continue; // Skip on to next nexx
-                            tessPos = tessPosSave;
+                                if (skipCellVtx[tesselationArray3D[tessPos+vtxNo]])
+                                {
+                                    skipCell = true;
+                                    break;
+                                }
+
+                            if (skipCell)
+                            {
+                                tessPos += numVtcs;
+                                continue; // Skip on to next cell
+                            }
 
                             for (int vtxNo =0; vtxNo < numVtcs; ++vtxNo)
                             {
@@ -1128,42 +1136,85 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                             outputData->InsertNextTuple1(
                                                     inputData->GetTuple1(vtkIdType(LOC(vI, vJ, vK))));
 
-#if 0
-                                        if ((vI == -1) || (vI == dims[0]-2))
+                                        if (((vI == -1) || (vI == dims[0]-2)) &&
+                                            (vJ != -1) && (vJ != dims[1]-2) &&
+                                            (vK != -1) && (vK != dims[2]-2))
                                         {
-                                            if ((vJ != -1) && (vJ != dims[1]-2))
-                                            {
-                                                if ((vK != -1) && (vK != dims[2]-2))
-                                                {
-                                                    int baseJ = vJ - (vJ % refinementRatio[1]);
-                                                    int baseK = vK - (vK % refinementRatio[2]);
+                                            int baseJ = vJ - (vJ % refinementRatio[1]);
+                                            int baseK = vK - (vK % refinementRatio[2]);
 
-                                                    for (int refJVtxNo = 0; refJVtxNo < refinementRatio[1];
-                                                            ++refJVtxNo)
-                                                        for (int refKVtxNo = 0; refKVtxNo < refinementRatio[2];
-                                                                ++refKVtxNo)
-                                                        {
-                                                            pointIds[LOC(vI, baseJ+refVtxNo, baseK+refKVtxNo)] = 
-                                                                pointIds[LOC(vI,vJ)];
-                                                        }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                assert ((vJ == -1) || (vJ == dims[1]-2));
-
-                                                if ((vI != -1) && (vI != dims[0]-2))
+                                            for (int refJVtxNo = 0; refJVtxNo < refinementRatio[1];
+                                                    ++refJVtxNo)
+                                                for (int refKVtxNo = 0; refKVtxNo < refinementRatio[2];
+                                                        ++refKVtxNo)
                                                 {
-                                                    int baseI = vI - (vI % refinementRatio[0]);
-                                                    for (int refVtxNo = 0; refVtxNo < refinementRatio[0];
-                                                            ++refVtxNo)
-                                                    {
-                                                        pointIds[LOC(baseI+refVtxNo,vJ)]=pointIds[LOC(vI,vJ)];
-                                                    }
+                                                    pointIds[LOC(vI, baseJ+refJVtxNo, baseK+refKVtxNo)] = 
+                                                        pointIds[LOC(vI,vJ,vK)];
                                                 }
-                                            }
                                         }
-#endif
+                                        else if (((vJ == -1) || (vJ == dims[1]-2)) &&
+                                                 (vI != -1) && (vI != dims[0]-2) &&
+                                                 (vK != -1) && (vK != dims[2]-2))
+                                        {
+                                            int baseI = vI - (vI % refinementRatio[0]);
+                                            int baseK = vK - (vK % refinementRatio[2]);
+
+                                            for (int refIVtxNo = 0; refIVtxNo < refinementRatio[0];
+                                                    ++refIVtxNo)
+                                                for (int refKVtxNo = 0; refKVtxNo < refinementRatio[2];
+                                                        ++refKVtxNo)
+                                                {
+                                                    pointIds[LOC(baseI+refIVtxNo, vJ, baseK+refKVtxNo)] = 
+                                                        pointIds[LOC(vI,vJ,vK)];
+                                                }
+                                        }
+                                        else if (((vK == -1) || (vK == dims[2]-2)) &&
+                                                 (vI != -1) && (vI != dims[0]-2) &&
+                                                 (vJ != -1) && (vJ != dims[1]-2))
+                                        {
+                                            int baseI = vI - (vI % refinementRatio[0]);
+                                            int baseJ = vJ - (vJ % refinementRatio[1]);
+
+                                            for (int refIVtxNo = 0; refIVtxNo < refinementRatio[0];
+                                                    ++refIVtxNo)
+                                                for (int refJVtxNo = 0; refJVtxNo < refinementRatio[1];
+                                                        ++refJVtxNo)
+                                                {
+                                                    pointIds[LOC(baseI+refIVtxNo, baseJ+refJVtxNo, vK)] = 
+                                                        pointIds[LOC(vI,vJ,vK)];
+                                                }
+                                        }
+
+                                        else if (((vI == -1) || (vI == dims[0]-2)) &&
+                                                 ((vJ == -1) || (vJ == dims[1]-2)) &&
+                                                 (vK != -1) && (vK != dims[2]-2))
+                                        {
+                                            int baseK = vK - (vK % refinementRatio[2]);
+                                            for (int refKVtxNo = 0; refKVtxNo < refinementRatio[2];
+                                                    ++refKVtxNo)
+                                                    pointIds[LOC(vI, vJ, baseK+refKVtxNo)] = 
+                                                        pointIds[LOC(vI,vJ,vK)];
+                                        } 
+                                        else if (((vI == -1) || (vI == dims[0]-2) ||
+                                                  (vK == -1) || (vK == dims[2]-2)) &&
+                                                 (vJ != -1) && (vJ != dims[1]-2))
+                                        {
+                                            int baseJ = vJ - (vJ % refinementRatio[1]);
+                                            for (int refJVtxNo = 0; refJVtxNo < refinementRatio[1];
+                                                    ++refJVtxNo)
+                                                    pointIds[LOC(vI, baseJ+refJVtxNo, vK)] = 
+                                                        pointIds[LOC(vI,vJ,vK)];
+                                        }
+                                        else if (((vJ == -1) || (vJ == dims[1]-2) ||
+                                                  (vK == -1) || (vK == dims[2]-2)) &&
+                                                 (vI != -1) && (vI != dims[0]-2))
+                                        {
+                                            int baseI = vI - (vI % refinementRatio[0]);
+                                            for (int refIVtxNo = 0; refIVtxNo < refinementRatio[0];
+                                                    ++refIVtxNo)
+                                                    pointIds[LOC(baseI+refIVtxNo, vJ, vK)] = 
+                                                        pointIds[LOC(vI,vJ,vK)];
+                                        }
                                     }
                                 }
 
@@ -1171,6 +1222,10 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                 vPtId[vtxNo] = pointIds[LOC(vI, vJ, vK)];
                             }
 
+#if 0
+                            for (int x=0; x<numVtcs; ++x) std::cout << vPtId[x] << " ";
+                            std::cout << std::endl;
+#endif
                             if (numVtcs == 4)
                                 ugrid->InsertNextCell(VTK_TETRA, 4, vPtId);
                             else if (numVtcs == 5)
@@ -1213,6 +1268,56 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                         }
                     }
                 }
+#if 0
+        std::cout << "IJKmin" << std::endl;
+        for (int i=-1; i<dims[0]-1; ++i)
+        {
+            for (int j=-1; j<dims[1]-1; ++j)
+                std::cout << std::setw(6) << pointIds[LOC(i,j,-1)] << " ";
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+        std::cout << "IJKmax" << std::endl;
+        for (int i=-1; i<dims[0]-1; ++i)
+        {
+            for (int j=-1; j<dims[1]-1; ++j)
+                std::cout << std::setw(6) << pointIds[LOC(i,j,dims[2]-2)] << " ";
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+        std::cout << "IJminK" << std::endl;
+        for (int i=-1; i<dims[0]-1; ++i)
+        {
+            for (int k=-1; k<dims[2]-1; ++k)
+                std::cout << std::setw(6) << pointIds[LOC(i,-1,k)] << " ";
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+        std::cout << "IJmaxK" << std::endl;
+        for (int i=-1; i<dims[0]-1; ++i)
+        {
+            for (int k=-1; k<dims[2]-1; ++k)
+                std::cout << std::setw(6) << pointIds[LOC(i,dims[1]-2,k)] << " ";
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+        std::cout << "IminJK" << std::endl;
+        for (int j=-1; j<dims[1]-1; ++j)
+        {
+            for (int k=-1; k<dims[2]-1; ++k)
+                std::cout << std::setw(6) << pointIds[LOC(-1,j,k)] << " ";
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+        std::cout << "ImaxJK" << std::endl;
+        for (int j=-1; j<dims[1]-1; ++j)
+        {
+            for (int k=-1; k<dims[2]-1; ++k)
+                std::cout << std::setw(6) << pointIds[LOC(dims[0]-2,j,k)] << " ";
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+#endif
     }
 
     // Clean-up
