@@ -297,6 +297,13 @@ simv2_UnstructuredMesh_setConnectivity(visit_handle h, int nzones, visit_handle 
     return retval;
 }
 
+/*******************************************************************************
+ * Modifications:
+ *
+ *   Cihan Altinay, Tue Aug 31 18:18:46 PDT 2010
+ *   Fix bug with setting ghost cells.
+ *
+ ******************************************************************************/
 int
 simv2_UnstructuredMesh_setRealIndices(visit_handle h, int minval, int maxval)
 {
@@ -321,7 +328,7 @@ simv2_UnstructuredMesh_setRealIndices(visit_handle h, int minval, int maxval)
     if(obj != NULL)
     {
         obj->firstRealZone = minval;
-        obj->lastRealZone = minval;
+        obj->lastRealZone = maxval;
         retval = VISIT_OKAY;
     }
     return retval;
