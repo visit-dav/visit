@@ -15344,6 +15344,9 @@ CloseExtensions()
 //   This allows these methods to be accessed from imported python modules
 //   if we are running the cli.
 //
+//   Brad Whitlock, Wed Sep  1 15:26:17 PDT 2010
+//   Don't add to the visitModule if it wasn't created!
+//
 // ****************************************************************************
 
 static void
@@ -15393,21 +15396,24 @@ PlotPluginAddInterface()
                     Py_DECREF(v);
                 }
             }
-            // make sure to add this method to the visitmodule dictionary
-            d = PyModule_GetDict(visitModule);
-            PyMethodDef *method = (PyMethodDef *)methods;
-            for(int j = 0; j < nMethods; ++j, ++method)
+            if(visitModule != 0)
             {
-                debug1 << "\tAdded \"" << method->ml_name << "\" "
-                       << "method to the visitmodule dictionary." << endl;
+                // make sure to add this method to the visitmodule dictionary
+                d = PyModule_GetDict(visitModule);
+                PyMethodDef *method = (PyMethodDef *)methods;
+                for(int j = 0; j < nMethods; ++j, ++method)
+                {
+                    debug1 << "\tAdded \"" << method->ml_name << "\" "
+                           << "method to the visitmodule dictionary." << endl;
 
-                // Add the method to the dictionary.
-                PyObject *v = PyCFunction_New(method, Py_None);
-                if(v == NULL)
-                    continue;
-                if(PyDict_SetItemString(d, method->ml_name, v) != 0)
-                    continue;
-                Py_DECREF(v);
+                    // Add the method to the dictionary.
+                    PyObject *v = PyCFunction_New(method, Py_None);
+                    if(v == NULL)
+                        continue;
+                    if(PyDict_SetItemString(d, method->ml_name, v) != 0)
+                        continue;
+                    Py_DECREF(v);
+                }
             }
         }
     }
@@ -15439,6 +15445,9 @@ PlotPluginAddInterface()
 //   Always add Operator Plugin Interface Methods to the visitmodule.
 //   This allows these methods to be accessed from imported python modules
 //   if we are running the cli.
+//
+//   Brad Whitlock, Wed Sep  1 15:26:17 PDT 2010
+//   Don't add to the visitModule if it wasn't created!
 //
 // ****************************************************************************
 
@@ -15489,21 +15498,24 @@ OperatorPluginAddInterface()
                     Py_DECREF(v);
                 }
             }
-            // make sure to add this method to the visitmodule dictionary
-            d = PyModule_GetDict(visitModule);
-            PyMethodDef *method = (PyMethodDef *)methods;
-            for(int j = 0; j < nMethods; ++j, ++method)
+            if(visitModule != 0)
             {
-                debug1 << "\tAdded \"" << method->ml_name << "\" "
-                       << "method to the visitmodule dictionary." << endl;
+                // make sure to add this method to the visitmodule dictionary
+                d = PyModule_GetDict(visitModule);
+                PyMethodDef *method = (PyMethodDef *)methods;
+                for(int j = 0; j < nMethods; ++j, ++method)
+                {
+                    debug1 << "\tAdded \"" << method->ml_name << "\" "
+                           << "method to the visitmodule dictionary." << endl;
 
-                // Add the method to the dictionary.
-                PyObject *v = PyCFunction_New(method, Py_None);
-                if(v == NULL)
-                    continue;
-                if(PyDict_SetItemString(d, method->ml_name, v) != 0)
-                    continue;
-                Py_DECREF(v);
+                    // Add the method to the dictionary.
+                    PyObject *v = PyCFunction_New(method, Py_None);
+                    if(v == NULL)
+                        continue;
+                    if(PyDict_SetItemString(d, method->ml_name, v) != 0)
+                        continue;
+                    Py_DECREF(v);
+                }
             }
         }
     }
