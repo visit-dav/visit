@@ -3630,14 +3630,14 @@ Definition:
         if (VariableNamesEqual(Get ## VT(i).name, varname)) \
             return Get ## VT(i).matRestricted
 
-static intVector dummy_matnos;
 const intVector& avtDatabaseMetaData::GetRestrictedMatnos(const std::string& varname) const
 {
     int i;
+    static intVector dummy;
     CHECK_VAR_TYPE(Scalars);
     CHECK_VAR_TYPE(Vectors);
     CHECK_VAR_TYPE(Tensors);
     CHECK_VAR_TYPE(Arrays);
     CHECK_VAR_TYPE(Labels);
-    return dummy_matnos;
+    return dummy;
 }
