@@ -654,6 +654,9 @@ $0 = shift @ARGV;
 #    Larry Pezzaglia, Thu Jul 15 13:58:08 PDT 2010
 #    Add support for nautilus.nics.utk.edu.
 #
+#    Hank Childs, Tue Aug 31 19:55:04 PDT 2010
+#    Another change for longhorn.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -3023,12 +3026,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @parcmd, "-q",  $part  if $part_set;
             if ($IsRunningOnLonghorn_TACC)
             {
-                push @parcmd, "-P",  $bank  if $bank_set;
+                push @parcmd, "-P";
+                push @parcmd, "vis";
             }
-            else
-            {
-                push @parcmd, "-A",  $bank  if $bank_set;
-            }
+            push @parcmd, "-A",  $bank  if $bank_set;
       
             @printcmd = @parcmd;
             push @parcmd, $tfilename;
