@@ -36,6 +36,11 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.4.3/${VISITARCH}/bin)
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
 ##
+## You can make distributions on this machine, so install 3rd-party stuff.
+##
+VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON)
+
+##
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
