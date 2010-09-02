@@ -2523,7 +2523,8 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
 
     debug3 << "Variable \"" << varname << "\" is restricted to the following regions..." << endl;
     for (i = 0; i < restrictToMats->size(); i++)
-        debug3 << "\"" << mmd->materialNames[restrictToMats->operator[](i)] << "\" (mat-index = " << i << ")" << endl;
+        debug3 << "\"" << mmd->materialNames[restrictToMats->operator[](i)] << "\" (mat-index = "
+               << restrictToMats->operator[](i) << ")" << endl;
 
     return true;
 }
@@ -7675,20 +7676,28 @@ ConvertToFloat(int silotype, void *data, int nels)
 // a 'full' ucdvar. Templated to deal with all of Silo's datatypes.
 //
 // Created: Mark C. Miller, Sun Aug 29 23:18:32 PDT 2010
+//
+// Modifications:
+//    Mark C. Miller, Wed Sep  1 13:06:03 PDT 2010
+//    Added support for node-centered variables, which require the associated
+//    mesh's zonelist to perform the traversal.
 // ****************************************************************************
 
 template <typename T>
 static void
 TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
-    avtMaterial *mat, const intVector& restrictToMats,
-    void **_newvals, void **_newmixvals, T uval)
+    avtMaterial *mat, vtkUnstructuredGrid *ugrid,
+    const intVector& restrictToMats,
+    void **_newvals, void **_newmixvals)
 {
     int i, j;
     int nzones = mat->GetNZones();
+    int nnodes = ugrid?ugrid->GetNumberOfPoints():0;
     T **newvals = new T*[uv->nvals];
     for (i = 0; i < uv->nvals; i++)
     {
-        newvals[i] = new T[nzones];
+        newvals[i] = new T[ugrid?nnodes:nzones];
+        // Initialize the array to be same as zero entry.
         for (j = 0; j < nzones; j++)
             newvals[i][j] = ((T**)uv->vals)[i][0];
     }
@@ -7699,10 +7708,17 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
         for (i = 0; i < uv->nvals; i++)
         {
             newmixvals[i] = new T[mat->GetMixlen()];
+            // Initialize the array to be same as zero entry.
             for (j = 0; j < mat->GetMixlen(); j++)
-                newmixvals[i][j] = uval; // sentinal for uninit.
+            {
+                if (uv->mixvals)
+                    newmixvals[i][j] = ((T**)uv->mixvals)[i][0]; 
+                else
+                    newmixvals[i][j] = ((T**)uv->vals)[i][0]; 
+            }
         }
     }
+    map<vtkIdType,bool> haveVisitedPoint;
     int nvals = 0;
     int nmixvals = 0;
     for (i = 0; i < nzones; i++)
@@ -7714,8 +7730,25 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                 if (mat->GetMatlist()[i] == restrictToMats[j]) is_selected = true;
             if (is_selected)
             {
-                for (j = 0; j < uv->nvals; j++)
-                    newvals[j][i] = ((T**)uv->vals)[j][nvals++];
+                if (ugrid) // node-centered case
+                {
+                    vtkCell *cell = ugrid->GetCell(i);
+                    for (j = 0; j < cell->GetNumberOfPoints(); j++)
+                    {
+                        vtkIdType ptId = cell->GetPointId(j);
+                        if (haveVisitedPoint.find(ptId) == haveVisitedPoint.end())
+                        {
+                            haveVisitedPoint[ptId] = true;
+                            for (int k = 0; k < uv->nvals; k++)
+                                newvals[k][(int)ptId] = ((T**)uv->vals)[k][nvals++];
+                        }
+                    }
+                }
+                else // zone-centered case
+                {
+                    for (j = 0; j < uv->nvals; j++)
+                        newvals[j][i] = ((T**)uv->vals)[j][nvals++];
+                }
             }
         }
         else // mixed case
@@ -7728,12 +7761,49 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
                     if (mat->GetMixMat()[mix_idx] == restrictToMats[j]) is_selected = true;
                 if (is_selected)
                 {
-                    for (j = 0; j < uv->nvals; j++)
+                    if (ugrid) // node-centered case
                     {
                         if (restrictToMats.size() == 1) // single material optimization
-                            newmixvals[j][mix_idx] = ((T**)uv->vals)[j][nvals++];
-                        else
-                            newmixvals[j][mix_idx] = ((T**)uv->mixvals)[j][nmixvals++];
+                        {
+                            vtkCell *cell = ugrid->GetCell(i);
+                            for (j = 0; j < cell->GetNumberOfPoints(); j++)
+                            {
+                                vtkIdType ptId = cell->GetPointId(j);
+                                if (haveVisitedPoint.find(ptId) == haveVisitedPoint.end())
+                                {
+                                    haveVisitedPoint[ptId] = true;
+                                    for (int k = 0; k < uv->nvals; k++)
+                                        newvals[k][(int)ptId] = ((T**)uv->vals)[k][nvals++];
+                                }
+                            }
+                        }
+                        else // multiple material case
+                        {
+                            vtkCell *cell = ugrid->GetCell(i);
+                            for (j = 0; j < cell->GetNumberOfPoints(); j++)
+                            {
+                                vtkIdType ptId = cell->GetPointId(j);
+                                if (haveVisitedPoint.find(ptId) == haveVisitedPoint.end())
+                                {
+                                    haveVisitedPoint[ptId] = true;
+                                    for (int k = 0; k < uv->nvals; k++)
+                                        newmixvals[k][(int)ptId] = ((T**)uv->mixvals)[k][nmixvals++];
+                                }
+                            }
+                        }
+                    }
+                    else // zone-centered case
+                    {
+                        if (restrictToMats.size() == 1) // single material optimization
+                        {
+                            for (j = 0; j < uv->nvals; j++)
+                                newmixvals[j][mix_idx] = ((T**)uv->vals)[j][nvals++];
+                        }
+                        else // multiple material case
+                        {
+                            for (j = 0; j < uv->nvals; j++)
+                                newmixvals[j][mix_idx] = ((T**)uv->mixvals)[j][nmixvals++];
+                        }
                     }
                 }
                 mix_idx = mat->GetMixNext()[mix_idx]-1;
@@ -7751,6 +7821,11 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
 // associated material object.
 //
 // Created: Mark C. Miller, Sun Aug 29 23:18:32 PDT 2010
+//
+// Modifications:
+//    Mark C. Miller, Wed Sep  1 13:06:03 PDT 2010
+//    Added support for node-centered variables, which require the associated
+//    mesh's zonelist to perform the traversal.
 // ****************************************************************************
 void
 avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,  
@@ -7789,47 +7864,70 @@ avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,
         EXCEPTION1(InvalidVariableException, msg);
     }
 
+    // For node centered variables, we also need the mesh's zonelist.
+    // Because VisIt's generic db always issues the associated GetMesh()
+    // BEFORE issuing GetVar(), we can safely assume the mesh must be in
+    // the cache and look ONLY there for it. Failure to obtain it is a 
+    // problem we cannot recover from.
+    vtkUnstructuredGrid  *ugrid = 0;
+    if (uv->centering == DB_NODECENT)
+    {
+        vtkDataSet *ds = (vtkDataSet *) cache->GetVTKObject(meshName.c_str(),
+                                            avtVariableCache::DATASET_NAME,
+                                            timestep, domain, "_all");
+        if (ds == 0)
+        {
+            char msg[256];
+            SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+                "traverse subsetted node-centered variable, \"%s\"", meshName.c_str(),
+                 domain, vname);
+            EXCEPTION1(ImproperUseException, msg);
+        }
+
+        ugrid = vtkUnstructuredGrid::SafeDownCast(ds);
+    }
+
     vector<int> restrictToMats;
     if (!GetRestrictedMaterialIndices(metadata, vname, meshName.c_str(),
         uv->region_pnames, &restrictToMats))
     {
         char msg[256];
-        SNPRINTF(msg, sizeof(msg), "Unable to material indices variable \"%s\" "
-            "is restricted to", vname); 
+        SNPRINTF(msg, sizeof(msg), "Unable to determine material indices "
+            "variable \"%s\" is restricted to", vname); 
         EXCEPTION1(InvalidVariableException, msg);
     }
 
-    int i, nzones = mat->GetNZones();
+    int i, nzones = mat->GetNZones(), nnodes = ugrid?ugrid->GetNumberOfPoints():0;
     void *newvals, *newmixvals;
     if (uv->datatype == DB_DOUBLE)
-        TraverseMaterialForSubsettedUcdvar<double>(uv, mat, restrictToMats,
-            &newvals, &newmixvals, -DBL_MAX);
+        TraverseMaterialForSubsettedUcdvar<double>(uv, mat, ugrid, restrictToMats,
+            &newvals, &newmixvals);
     else if (uv->datatype == DB_FLOAT)
-        TraverseMaterialForSubsettedUcdvar<float>(uv, mat, restrictToMats,
-            &newvals, &newmixvals, -FLT_MAX);
+        TraverseMaterialForSubsettedUcdvar<float>(uv, mat, ugrid, restrictToMats,
+            &newvals, &newmixvals);
     else if (uv->datatype == DB_INT)
-        TraverseMaterialForSubsettedUcdvar<int>(uv, mat, restrictToMats,
-            &newvals, &newmixvals, -INT_MAX);
+        TraverseMaterialForSubsettedUcdvar<int>(uv, mat, ugrid, restrictToMats,
+            &newvals, &newmixvals);
     else if (uv->datatype == DB_CHAR)
-        TraverseMaterialForSubsettedUcdvar<char>(uv, mat, restrictToMats,
-            &newvals, &newmixvals, 0xFF);
+        TraverseMaterialForSubsettedUcdvar<char>(uv, mat, ugrid, restrictToMats,
+            &newvals, &newmixvals);
     else if (uv->datatype == DB_SHORT)
-        TraverseMaterialForSubsettedUcdvar<short>(uv, mat, restrictToMats,
-            &newvals, &newmixvals, -(0xFFFF-1));
+        TraverseMaterialForSubsettedUcdvar<short>(uv, mat, ugrid, restrictToMats,
+            &newvals, &newmixvals);
     else if (uv->datatype == DB_LONG)
-        TraverseMaterialForSubsettedUcdvar<long>(uv, mat, restrictToMats,
-            &newvals, &newmixvals, -LONG_MAX);
+        TraverseMaterialForSubsettedUcdvar<long>(uv, mat, ugrid, restrictToMats,
+            &newvals, &newmixvals);
 #ifdef DB_LONG_LONG
     else if (uv->datatype == DB_LONG_LONG)
-        TraverseMaterialForSubsettedUcdvar<long long>(uv, mat, restrictToMats,
-            &newvals, &newmixvals, -LONG_MAX);
+        TraverseMaterialForSubsettedUcdvar<long long>(uv, mat, ugrid, restrictToMats,
+            &newvals, &newmixvals);
 #endif
 
     // Overwite DBucdvar's old contents with stuff we just expanded.
     for (i = 0; i < uv->nvals; i++)
         free(uv->vals[i]);
     free(uv->vals);
-    uv->nels = nzones;
+    uv->nels = ugrid?nnodes:nzones;
 #ifdef DB_DTPTR
     uv->vals = (DB_DTPTR**) newvals;
 #else
