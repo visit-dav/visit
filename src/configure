@@ -1571,7 +1571,7 @@ echo $ECHO_N "checking for custom CFLAGS... $ECHO_C" >&6
 if test "$CFLAGS" != ""; then
     echo "$as_me:$LINENO: result: CFLAGS=\"$CFLAGS\"" >&5
 echo "${ECHO_T}CFLAGS=\"$CFLAGS\"" >&6
-    VCONF_CFLAGS="-DVISIT_C_FLAGS:STRING=\"$CFLAGS\""
+    VCONF_CFLAGS="-DVISIT_C_FLAGS:STRING=$CFLAGS"
 else
     echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
@@ -1582,7 +1582,7 @@ echo $ECHO_N "checking for custom CXXFLAGS... $ECHO_C" >&6
 if test "$CXXFLAGS" != ""; then
     echo "$as_me:$LINENO: result: CXXFLAGS=\"$CXXFLAGS\"" >&5
 echo "${ECHO_T}CXXFLAGS=\"$CXXFLAGS\"" >&6
-    VCONF_CXXFLAGS="-DVISIT_CXX_FLAGS:STRING=\"$CXXFLAGS\""
+    VCONF_CXXFLAGS="-DVISIT_CXX_FLAGS:STRING=$CXXFLAGS"
 else
     echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
@@ -1609,7 +1609,10 @@ fi
 
 echo "$as_me:$LINENO: result: -- INVOKING CMAKE --" >&5
 echo "${ECHO_T}-- INVOKING CMAKE --" >&6
-echo $CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
+set -x
+$CMAKE . $VCONF_PREFIX \
+         "$VCONF_CFLAGS" \
+         "$VCONF_CXXFLAGS" \
          $VCONF_JAVA \
          $VCONF_PARALLEL \
          $VCONF_SLIVR \
@@ -1618,13 +1621,4 @@ echo $CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
          $VCONF_VMODULE \
          $VCONF_INSTALL_THIRD_PARTY \
          $VCONF_BUILDALL
-
-$CMAKE . $VCONF_PREFIX $VCONF_CFLAGS $VCONF_CXXFLAGS \
-         $VCONF_JAVA \
-         $VCONF_PARALLEL \
-         $VCONF_SLIVR \
-         $VCONF_TUVOK \
-         $VCONF_DBIO_ONLY \
-         $VCONF_VMODULE \
-         $VCONF_INSTALL_THIRD_PARTY \
-         $VCONF_BUILDALL
+set +x
