@@ -135,6 +135,9 @@ class   avtWebpage;
 //    Dave Pugmire, Fri Jul  2 14:22:34 EDT 2010
 //    Add friend status for avtResampleExpression.
 //
+//    Hank Childs, Thu Sep  2 07:54:12 PDT 2010
+//    Add method RenumberDomainIDs.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -178,6 +181,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     void                     Compact(void);
 
     avtIntervalTree         *CalculateSpatialIntervalTree(void);
+    void                     RenumberDomainIDs(void);
     virtual void             DebugDump(avtWebpage *, const char *);
 
   protected:

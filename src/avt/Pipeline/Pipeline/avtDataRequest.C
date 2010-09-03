@@ -179,6 +179,10 @@ using     std::map;
 //    Mark C. Miller, Wed Mar  3 07:59:15 PST 2010
 //    Changed form of conditional compilation check for HAVE_BILIB from
 //    numeric test to existence test.
+//
+//    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//    Added support for "velocityMustBeContinuous".
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -191,6 +195,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     needGlobalZones = false;
     needGlobalNodes = false;
     needInternalSurfaces = false;
+    velocityMustBeContinuous = false;
     mustDoMIR = false;
     getBoundarySurfaceRep = false;
     getSimplifiedNestingRep = false;
@@ -343,6 +348,9 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
 //    Jeremy Meredith, Tue Aug  4 10:48:26 EDT 2009
 //    Added comment for Youngs algorithm.
 //
+//    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//    Added support for "velocityMustBeContinuous".
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
@@ -354,6 +362,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
     needGlobalZones = false;
     needGlobalNodes = false;
     mustDoMIR = false;
+    velocityMustBeContinuous = false;
     needInternalSurfaces = false;
     getBoundarySurfaceRep = false;
     getSimplifiedNestingRep = false;
@@ -643,6 +652,9 @@ avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
+//    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//    Added support for "velocityMustBeContinuous".
+//
 // ****************************************************************************
 
 avtDataRequest &
@@ -683,6 +695,7 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     needGlobalZones                 = spec.needGlobalZones;
     needGlobalNodes                 = spec.needGlobalNodes;
     needInternalSurfaces            = spec.needInternalSurfaces;
+    velocityMustBeContinuous        = spec.velocityMustBeContinuous;
     getBoundarySurfaceRep           = spec.getBoundarySurfaceRep;
     getSimplifiedNestingRep         = spec.getSimplifiedNestingRep;
     needValidFaceConnectivity       = spec.needValidFaceConnectivity;
@@ -827,6 +840,9 @@ avtDataRequest::operator=(const avtDataRequest &spec)
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
+//    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//    Added support for "velocityMustBeContinuous".
+//
 // ****************************************************************************
 
 bool
@@ -890,6 +906,11 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     }
 
     if (needInternalSurfaces != ds.needInternalSurfaces)
+    {
+        return false;
+    }
+
+    if (velocityMustBeContinuous != ds.velocityMustBeContinuous)
     {
         return false;
     }
@@ -1799,6 +1820,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Jeremy Meredith, Tue Aug  4 10:49:32 EDT 2009
 //    Added MIR algorithm enumeration values to page.
 //
+//    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//    Added support for "velocityMustBeContinuous".
+//
 // ****************************************************************************
 
 static const char *
@@ -1842,6 +1866,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("mayRequireZones", YesOrNo(mayRequireZones));
     webpage->AddTableEntry2("mustDoMIR", YesOrNo(mustDoMIR));
     webpage->AddTableEntry2("needInternalSurfaces", YesOrNo(needInternalSurfaces));
+    webpage->AddTableEntry2("velocityMustBeContinuous", YesOrNo(velocityMustBeContinuous));
     webpage->AddTableEntry2("Get data set as only material boundaries", YesOrNo(getBoundarySurfaceRep));
     webpage->AddTableEntry2("Get data set in a simplified form for showing domain nesting", 
                                     YesOrNo(getSimplifiedNestingRep));
