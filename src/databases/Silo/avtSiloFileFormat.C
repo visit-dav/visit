@@ -7681,6 +7681,11 @@ ConvertToFloat(int silotype, void *data, int nels)
 //    Mark C. Miller, Wed Sep  1 13:06:03 PDT 2010
 //    Added support for node-centered variables, which require the associated
 //    mesh's zonelist to perform the traversal.
+//
+//    Mark C. Miller, Thu Sep  2 21:06:06 PDT 2010
+//    Replace new with malloc. Doh? We're using the data to populate a DBucdvar
+//    which is later going to be free'd by a DBFreeUcdvar() which assumes 
+//    it was malloc'd.
 // ****************************************************************************
 
 template <typename T>
@@ -7693,10 +7698,10 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
     int i, j;
     int nzones = mat->GetNZones();
     int nnodes = ugrid?ugrid->GetNumberOfPoints():0;
-    T **newvals = new T*[uv->nvals];
+    T **newvals = (T**) malloc((uv->nvals)*sizeof(T*));
     for (i = 0; i < uv->nvals; i++)
     {
-        newvals[i] = new T[ugrid?nnodes:nzones];
+        newvals[i] = (T*) malloc((ugrid?nnodes:nzones)*sizeof(T));
         // Initialize the array to be same as zero entry.
         for (j = 0; j < nzones; j++)
             newvals[i][j] = ((T**)uv->vals)[i][0];
@@ -7704,16 +7709,19 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
     T **newmixvals = 0;
     if (mat->GetMixlen() > 0)
     {
-        newmixvals = new T*[uv->nvals];
+        newmixvals = (T**) malloc((uv->nvals)*sizeof(T*));
         for (i = 0; i < uv->nvals; i++)
         {
-            newmixvals[i] = new T[mat->GetMixlen()];
+            newmixvals[i] = (T*) malloc((mat->GetMixlen())*sizeof(T));
             // Initialize the array to be same as zero entry.
-            for (j = 0; j < mat->GetMixlen(); j++)
+            if (uv->mixvals)
             {
-                if (uv->mixvals)
+                for (j = 0; j < mat->GetMixlen(); j++)
                     newmixvals[i][j] = ((T**)uv->mixvals)[i][0]; 
-                else
+            }
+            else
+            {
+                for (j = 0; j < mat->GetMixlen(); j++)
                     newmixvals[i][j] = ((T**)uv->vals)[i][0]; 
             }
         }
