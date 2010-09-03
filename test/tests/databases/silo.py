@@ -422,4 +422,24 @@ TurnOffSetsByName(silr, "levels", "level1")
 SetPlotSILRestriction(silr)
 Test("silo_45")
 
+DeleteAllPlots()
+CloseDatabase("../data/silo_amr_test_data/amr2d_wmrgtree.silo")
+OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+TestSection("Variables defined on material subsets")
+sa = SliceAttributes()
+sa.originType = sa.Percent
+sa.originPercent = 50
+sa.axisType = sa.ZAxis
+testNum = 46
+for varname in ("p_on_mats_2","d_on_mats_1_3","m1vf_on_mats_1","m2vf_on_mats_2","m3vf_on_mats_3"):
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", varname)
+    AddOperator("Slice")
+    SetOperatorOptions(sa)
+    DrawPlots()
+    SetViewExtentsType("actual")
+    ResetView()
+    Test("silo_%d"%testNum)
+    testNum = testNum + 1
+
 Exit()
