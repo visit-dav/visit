@@ -876,6 +876,9 @@ avtPICSFilter::Execute(void)
 //   Dave Pugmire, Mon Jun 14 14:16:57 EDT 2010
 //   Allow serial algorithm to be run in parallel on single domain datasets.
 //
+//   Hank Childs, Thu Sep  2 10:50:05 PDT 2010
+//   Deal with case where domain IDs are not unique.
+//
 // ****************************************************************************
 
 void
@@ -937,7 +940,10 @@ avtPICSFilter::Initialize()
             }
         }
         else 
+        {
+            GetTypedInput()->RenumberDomainIDs();
             intervalTree = GetTypedInput()->CalculateSpatialIntervalTree();
+        }
     }
     else
     {
@@ -2111,6 +2117,10 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 //   Dave Pugmire, Mon Jun 14 14:16:57 EDT 2010
 //   Allow serial algorithm to be run in parallel on single domain datasets.
 //
+//   Hank Childs, Fri Sep  3 12:10:47 PDT 2010
+//   Make sure that we tell upstream filters that we want continuous velocity
+//   fields ... this is important for the Reflect operator.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -2131,15 +2141,11 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
     lastContract = in_contract;
 
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
-    avtDataRequest_p out_dr = NULL;
 
-    if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR ||
-        doPathlines)
-    {
-        // The avtPICSPlot requested "colorVar", so remove that from the
-        // contract now.
-        out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
-    }
+    // If we are part of a plot, the avtPICSPlot requested "colorVar", so remove that from the
+    // contract now.
+    avtDataRequest_p out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
+    out_dr->SetVelocityFieldMustBeContinuous(true);
 
     if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR )
     {

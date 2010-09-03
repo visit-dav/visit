@@ -56,6 +56,8 @@
 #include <avtSourceFromAVTDataset.h>
 #include <avtWebpage.h>
 
+#include <DebugStream.h>
+
 
 // ****************************************************************************
 //  Method: avtDataset constructor
@@ -616,6 +618,64 @@ avtDataset::CalculateSpatialIntervalTree(void)
     
     itree->Calculate();
     return itree;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataset::RenumberDomainIDs
+//
+//  Purpose:
+//      Renumbers the domain IDs.  If a domain has ID 10 and then the reflect
+//      operator comes along, then each of the reflected data sets will also
+//      have ID 10.  This is a nightmare for streamline calculations.
+//      This routine will through away the original IDs and create a new
+//      numbering space.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 2, 2010
+//
+// ****************************************************************************
+
+void
+avtDataset::RenumberDomainIDs(void)
+{
+    int  i;
+
+    if (*dataTree == NULL)
+        return;
+    int numLeaves = 0;
+    vtkDataSet **leaves = dataTree->GetAllLeaves(numLeaves);
+    vector<string> labels;
+    dataTree->GetAllLabels(labels);
+
+    // This should never execute, but better safe than sorry
+    while (labels.size() < numLeaves)
+    {
+        debug1 << "Unexpected: less labels than leaves" << endl;
+        labels.push_back("");
+    }
+
+    int  numProcs = PAR_Rank();
+    int *numPer = new int[numProcs];
+    for (i = 0 ; i < numProcs ; i++)
+        numPer[i] = 0;
+    numPer[PAR_Rank()] = numLeaves;
+    int *numPer2 = new int[numProcs];
+    SumIntArrayAcrossAllProcessors(numPer, numPer2, numProcs);
+    delete [] numPer;
+    numPer = numPer2;
+    int myOffset = 0;
+    for (i = 0 ; i < PAR_Rank() ; i++)
+        myOffset += numPer[i];
+
+    avtDataTree_p *newTrees = new avtDataTree_p[numLeaves];
+    for (i = 0 ; i < numLeaves ; i++)
+         newTrees[i] = new avtDataTree(leaves[i], myOffset++, labels[i]);
+
+    dataTree = new avtDataTree(numLeaves, newTrees);
+
+    delete [] newTrees; // new array allocated by avtDataTree constructor
+    delete [] numPer;
 }
 
 
