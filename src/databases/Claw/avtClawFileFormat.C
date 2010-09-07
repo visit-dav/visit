@@ -423,6 +423,9 @@ DataSegmentLengthInChars(const GridHeader_t *ghdr, int ndims)
 //    Mark C. Miller, Wed Aug  6 09:52:21 PDT 2008
 //    Checked for number of values assigned by sscanf and issue error
 //
+//    Hank Childs, Sat Sep  4 21:49:51 PDT 2010
+//    Fix off-by-one error that caused out-of-bounds array write.
+//
 // ****************************************************************************
 static void 
 ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr, int *nextoff)
@@ -432,7 +435,7 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     // read in a buffer full of characters at the specified offset
     lseek(fd, offset, SEEK_SET);
     int nread = read(fd, buf, sizeof(buf)-1);
-    buf[nread+1] = '\0';
+    buf[nread] = '\0';
 
     // scan the buffer using sscanf for grid header information
     if (thdr->ndims == 2)
@@ -537,7 +540,7 @@ ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
     int ng = 0;
     while (ng < thdr->ngrids)
     {
-        int nextoff;
+        int nextoff = 0;
         GridHeader_t ghdr;
         ReadGridHeader(fd, offset, thdr, &ghdr, &nextoff);
         gridHeaders.push_back(ghdr);
@@ -886,6 +889,11 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
 //    Fixed UMR in 2D where logic to test for 'continue' case was always
 //    assuming 3D.
 //     
+//    Hank Childs, Sat Sep  4 18:30:11 PDT 2010
+//    Fix bug with roundoff error for refinement ratios.  Also find minimum
+//    X, Y, and Z for calculating logical coordinates (we were getting
+//    negative logical coords before).
+//
 // ****************************************************************************
 
 void
@@ -907,8 +915,9 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
     void_ref_ptr vrTmp = cache->GetVoidRef("any_mesh",
                                    AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
                                   timeState, -1);
-    if (*vrTmp == NULL)
+    if (*vrTmp == NULL && num_patches > 0)
     {
+        int i;
 
         //
         // build the avtDomainNesting object
@@ -923,18 +932,28 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
         //
         vector<int> ratios(3,1);
         dn->SetLevelRefinementRatios(0, ratios);
-        for (int i = 1; i < num_levels; i++)
+        for (i = 1; i < num_levels; i++)
         {
-           ratios[0] = (int) (levelsMap[i-1].dx / levelsMap[i].dx);
-           ratios[1] = (int) (levelsMap[i-1].dy / levelsMap[i].dy);
-           ratios[2] = num_dims == 3 ? (int) (levelsMap[i-1].dz / levelsMap[i].dz) : 0;
+           ratios[0] = (int) (levelsMap[i-1].dx / levelsMap[i].dx+0.5);
+           ratios[1] = (int) (levelsMap[i-1].dy / levelsMap[i].dy+0.5);
+           ratios[2] = num_dims == 3 ? (int) (levelsMap[i-1].dz / levelsMap[i].dz+0.5) : 0;
            dn->SetLevelRefinementRatios(i, ratios);
+        }
+
+        float lowestX = gridHdrs[i].xlow;
+        float lowestY = gridHdrs[i].ylow;
+        float lowestZ = gridHdrs[i].zlow;
+        for (i = 0 ; i < num_patches ; i++)
+        {
+            lowestX = (lowestX < gridHdrs[i].xlow ? lowestX : gridHdrs[i].xlow);
+            lowestY = (lowestY < gridHdrs[i].ylow ? lowestY : gridHdrs[i].ylow);
+            lowestZ = (lowestZ < gridHdrs[i].zlow ? lowestZ : gridHdrs[i].zlow);
         }
 
         //
         // set each domain's level, children and logical extents
         //
-        for (int i = 0; i < num_patches; i++)
+        for (i = 0; i < num_patches; i++)
         {
             vector<int> childPatches;
             float x0 = gridHdrs[i].xlow;
@@ -967,9 +986,9 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
             // and our floating pt. arithmatic might fall just below the
             // integral value it is intended to represent
             vector<int> logExts(6);
-            logExts[0] = (int) (gridHdrs[i].xlow / gridHdrs[i].dx + 0.5); 
-            logExts[1] = (int) (gridHdrs[i].ylow / gridHdrs[i].dy + 0.5); 
-            logExts[2] = num_dims == 3 ? (int) (gridHdrs[i].zlow / gridHdrs[i].dz + 0.5) : 0;
+            logExts[0] = (int) ((gridHdrs[i].xlow-lowestX) / gridHdrs[i].dx + 0.5); 
+            logExts[1] = (int) ((gridHdrs[i].ylow-lowestY) / gridHdrs[i].dy + 0.5); 
+            logExts[2] = num_dims == 3 ? (int) ((gridHdrs[i].zlow-lowestZ) / gridHdrs[i].dz + 0.5) : 0;
             logExts[3] = logExts[0] + gridHdrs[i].mx - 1;
             logExts[4] = logExts[1] + gridHdrs[i].my - 1;
             logExts[5] = num_dims == 3 ? logExts[2] + gridHdrs[i].mz - 1 : 0;

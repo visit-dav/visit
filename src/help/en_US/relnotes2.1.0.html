@@ -78,6 +78,7 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>A <i>PuReMD</i> trajectory file format reader was added.</li>
    <li>A <i>Silo</i> bug involving species data was resolved.</li>
    <li>The <i>ITAPS</i> implemenation tarballs were all updated to ~ June, 2010</li>
+   <li>Three separate problems were fixed in the <i>Claw</i> plugin: a random crash with reading uninitialized memory, a problem with calculating refinement ratios, and a problem with calculating nesting for patches near the origin.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -111,6 +112,7 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>New expressions, min_coord and max_coord, can find the smallest or 
        largest coordinate value (X, Y, Z, radius, theta, phi) within a cell.</li>
     <li><i>zonal_constant</i> and <i>nodal_constant</i> expressions were added as aliases for the existing <i>cell_constant</i> and <i>point_constant</i> expressions.</li>
+    <li>A hang was fixed in the key_aggregate expression for the case where there were more processors than chunks of data to process.</li>
 </ul>
 
 
