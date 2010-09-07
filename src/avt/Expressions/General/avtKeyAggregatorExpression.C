@@ -169,6 +169,12 @@ avtKeyAggregatorExpression::GetVariableDimension()
 //   Cyrus Harrison, Thu Oct 29 10:26:42 PDT 2009
 //   Switch to generic use of vtkDataArray to support non integer key types.
 //
+//   Hank Childs, Sat Sep  4 18:26:29 PDT 2010
+//   Fix parallel hang ... if a processor doesn't data, then it didn't finding
+//   out the number of components.  This led to an all reduce with array 
+//   length 0 ... which MPI automatically bails out on (for those processors)
+//   ... and ultimately a hang.
+//
 // ****************************************************************************
 void
 avtKeyAggregatorExpression::Execute()
@@ -271,6 +277,7 @@ avtKeyAggregatorExpression::Execute()
 
 #ifdef PARALLEL
     num_keys = UnifyMaximumValue(num_keys);
+    num_val_comps = UnifyMaximumValue(num_val_comps);
 #endif
     // number of keys is one more than the max key value.
     num_keys++;
