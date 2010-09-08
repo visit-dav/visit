@@ -53,10 +53,11 @@
 #include <vtkTIFFWriter.h>
 
 #include <avtCallback.h>
-#include <avtXRayFilter.h>
+#include <avtDatasetExaminer.h>
 #include <avtOriginatingSource.h>
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
+#include <avtXRayFilter.h>
 
 #include <vectortypes.h>
 
@@ -76,6 +77,12 @@
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
+//
+//  Modifications:
+//    Eric Brugger, Tue Sep  7 16:23:06 PDT 2010
+//    I reduced the number of pixels per iteration, since it doesn't
+//    increase the run time significantly, but reduces the memory
+//    requirements significantly.
 //
 // ****************************************************************************
 
@@ -98,7 +105,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     radBins = NULL;
 
     numBins = 1;
-    numPixelsPerIteration = 40000;
+    numPixelsPerIteration = 4000;
 }
 
 
@@ -432,6 +439,11 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    I modified the query to handle the case where some of the processors
 //    didn't have any data sets when executing in parallel.
 //
+//    Eric Brugger, Tue Sep  7 16:23:06 PDT 2010
+//    I added logic to detect RZ meshes with negative R values up front
+//    before any processing to avoid more complex error handling during
+//    pipeline execution.
+//
 // ****************************************************************************
 
 void
@@ -439,6 +451,26 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 {
     avtDataset_p input = GetTypedInput();
 
+    //
+    // If the grid is 2d and the R coordinates include negative values then
+    // set a flag and exit.
+    //
+    invalidRZMesh = false;
+    if (input->GetInfo().GetAttributes().GetSpatialDimension() == 2)
+    {
+        double extents[6] = {0., 0., 0., 0., 0., 0.};
+        avtDatasetExaminer::GetSpatialExtents(input, extents);
+        UnifyMinMax(extents, 6);
+        if (extents[2] < 0.)
+        {
+            invalidRZMesh = true;
+            return;
+        }
+    }
+
+    //
+    // Process the pixels in multiple iterations.
+    //
     actualPixelsPerIteration = (numPixelsPerIteration / nx) * nx;
 
     pixelsForFirstPass = actualPixelsPerIteration;
@@ -614,11 +646,31 @@ avtXRayImageQuery::PreExecute()
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
 //
+//  Modifications:
+//    Eric Brugger, Tue Sep  7 16:23:06 PDT 2010
+//    I added logic to detect RZ meshes with negative R values up front
+//    before any processing to avoid more complex error handling during
+//    pipeline execution.
+//
 // ****************************************************************************
 
 void
 avtXRayImageQuery::PostExecute(void)
 {
+    //
+    // Print out an error message and exit if we had an invalid RZ mesh.
+    //
+    if (invalidRZMesh)
+    {
+        SetResultMessage("VisIt is unable to execute this query "
+                         "because it has encountered an RZ mesh with "
+                         "negative R values.");
+        return;
+    }
+
+    //
+    // Collect all the images on the root processor.
+    //
     int t1;
     if (PAR_Size() > 1)
     {

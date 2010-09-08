@@ -1673,6 +1673,10 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Tue Sep  7 16:29:51 PDT 2010
+//    I had the routine return instead of throwing an exception if the
+//    segment had a negative R value.  Throwing an exception caused a
+//    crash in parallel.
 //  
 // ****************************************************************************
 
@@ -1681,14 +1685,12 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
                                  const double *line_dir, const double *seg_p1, 
                                  const double *seg_p2, double *inter)
 {
+    //
+    // Exit if the segment crosses the axis line.
+    //
     if (seg_p1[1] < 0. || seg_p2[1] < 0.)
     {
-        // Doesn't make sense to cross the axis line.
-        avtCallback::IssueWarning("VisIt is unable to execute this query, "
-                     "because it has an encountered an RZ mesh with "
-                     "negative R values.");
-
-        EXCEPTION0(ImproperUseException);
+        return 0;
     }
 
     //
