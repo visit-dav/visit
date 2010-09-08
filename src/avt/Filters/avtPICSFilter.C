@@ -2121,6 +2121,9 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 //   Make sure that we tell upstream filters that we want continuous velocity
 //   fields ... this is important for the Reflect operator.
 //
+//   Hank Childs, Tue Sep  7 23:29:40 PDT 2010
+//   Fix problem with previous change regarding removing the color variable.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -2144,7 +2147,15 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
 
     // If we are part of a plot, the avtPICSPlot requested "colorVar", so remove that from the
     // contract now.
-    avtDataRequest_p out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
+    bool removeColorVar = false;
+    if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR ||
+        doPathlines)
+        removeColorVar = true;
+    avtDataRequest_p out_dr = NULL;
+    if (removeColorVar)
+        out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
+    else
+        out_dr = new avtDataRequest(in_dr);
     out_dr->SetVelocityFieldMustBeContinuous(true);
 
     if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR )
@@ -2162,7 +2173,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         out_dr->AddSecondaryVariable("hidden/header/bzero");    // /bzero
         out_dr->AddSecondaryVariable("hidden/header/rzero");    // /rzero
 
-        // The mesh - N elememts x 7
+        // The mesh - N elements x 7
         out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
 
         // Variables on the mesh - N elements x 20
