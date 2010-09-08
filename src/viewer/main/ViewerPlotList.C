@@ -699,10 +699,9 @@ ViewerPlotList::ValidateTimeSlider()
             FindCorrelation(hostDatabaseName);
         if(srcCorrelation != 0)
         {
-            if(TimeSliderExists(hostDatabaseName))
-                activeTimeSlider = hostDatabaseName;
-            else
+            if(!TimeSliderExists(hostDatabaseName))
                 CreateTimeSlider(hostDatabaseName, 0);
+            activeTimeSlider = hostDatabaseName;
             tsChanged = true;
         }
     }
