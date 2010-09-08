@@ -114,7 +114,7 @@ VisItFstat(int fd, VisItStat_t *buf)
 //
 // Arguments:
 //   directory     : The directory to read.
-//   procesOneFile : Callback function to process one file.
+//   processOneFile : Callback function to process one file.
 //   data          : Callback data.
 //   checkAccess   : Whether or not to check the file permissions.
 //
@@ -162,7 +162,7 @@ ReadAndProcessDirectory(const std::string &directory,
             }
         }
     }
-    else
+    else if (directory.size() > 0)
     {
         // Try and read the files in fullPath.
         std::string searchPath(directory + std::string("\\*"));
@@ -187,6 +187,9 @@ ReadAndProcessDirectory(const std::string &directory,
             } while(FindNextFile(dirHandle, &fd));
             FindClose(dirHandle);
         }
+    } else {
+        //Directory string was empty, nothing to do
+        retval = false;
     }
 #else
     DIR     *dir;
