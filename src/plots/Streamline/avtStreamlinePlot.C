@@ -387,6 +387,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources.
 //
+//   Hank Childs, Tue Sep  7 23:29:40 PDT 2010
+//   Tell the legend what color table we're using.
+//
 // ****************************************************************************
 
 void
@@ -474,6 +477,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
 
     UpdateMapperAndLegend();
 
+    SetColorTable(atts.GetColorTableName().c_str());
     if (atts.GetLegendFlag())
     {
         varLegend->LegendOn();
@@ -481,7 +485,6 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     }
     else
         varLegend->LegendOff();
-    
     
     if (atts.GetColoringMethod() == StreamlineAttributes::Solid)
         avtLUT->SetLUTColors(atts.GetSingleColor().GetColor(), 1);
@@ -560,7 +563,7 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
 }
 
 // ****************************************************************************
-// Method: avtStreamlinePlot::SetLegendRanges
+// Method: avtStreamlinePlot::UpdateMapperAndLegend
 //
 // Purpose: 
 //   Sets the range to use for the legend.
@@ -584,6 +587,9 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
 //
 //   Hank Childs, Thu Feb 18 11:29:22 PST 2010
 //   Set up a reasonable range if there are no streamlines.
+//
+//   Hank Childs, Tue Sep  7 23:29:40 PDT 2010
+//   Tell the legend what variable we're using.
 //
 // ****************************************************************************
 
@@ -611,6 +617,30 @@ avtStreamlinePlot::UpdateMapperAndLegend()
     varLegend->SetScaling(0);
     varLegend->SetVarRange(min, max);
     varLegend->SetRange(min, max);
+    switch (atts.GetColoringMethod())
+    {
+      case StreamlineAttributes::Solid:
+        varLegend->SetVarName("Solid");
+        break;
+      case StreamlineAttributes::ColorBySpeed:
+        varLegend->SetVarName("Speed");
+        break;
+      case StreamlineAttributes::ColorByVorticity:
+        varLegend->SetVarName("Vorticity magnitude");
+        break;
+      case StreamlineAttributes::ColorByLength:
+        varLegend->SetVarName("Arc length");
+        break;
+      case StreamlineAttributes::ColorByTime:
+        varLegend->SetVarName("Time");
+        break;
+      case StreamlineAttributes::ColorBySeedPointID:
+        varLegend->SetVarName("Seed point ID");
+        break;
+      case StreamlineAttributes::ColorByVariable:
+        varLegend->SetVarName(atts.GetColoringVariable().c_str());
+        break;
+    }
 }
 
 // ****************************************************************************
