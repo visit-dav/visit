@@ -1293,25 +1293,10 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
         nCells = numCellsPerPart;
       }
       // Adjust bounds
-      if (isDoubleType(ftype)) {
-        double delta = (((double*)upperBounds)[splitAxis] -
-            ((double*)lowerBounds)[splitAxis])/numCellsAlongSplitAxis;
-        static_cast<double*>(lowerBounds)[splitAxis] += startCell * delta;
-        static_cast<double*>(upperBounds)[splitAxis] =
-        static_cast<double*>(lowerBounds)[splitAxis] + nCells * delta;
-        //std::cout << "After adjust: Proc=" << PAR_Rank() << " start=" << startCell << " nCells=" << nCells << " delta=" << delta << " lowerBound=" << static_cast<double*>(lowerBounds)[splitAxis] << " upperBound=" << static_cast<double*>(upperBounds)[splitAxis] << std::endl;
-      }
-      else if (isFloatType(ftype)) {
-        float delta = (((float*)upperBounds)[splitAxis] -
-            ((float*)lowerBounds)[splitAxis])/numCellsAlongSplitAxis;
-        static_cast<float*>(lowerBounds)[splitAxis] += startCell * delta;
-        static_cast<float*>(upperBounds)[splitAxis] =
-        static_cast<float*>(lowerBounds)[splitAxis] + nCells * delta;
-        //std::cout << "After adjust: Proc=" << PAR_Rank() << " start=" << startCell << " nCells=" << nCells << " delta=" << delta << " lowerBound=" << static_cast<float*>(lowerBounds)[splitAxis] << " upperBound=" << static_cast<float*>(upperBounds)[splitAxis] << std::endl;
-      } else {
-        VsLog::debugLog() <<methodSig <<"Unknown data type: " <<ftype <<std::endl;
-        return NULL;
-      }
+      float delta = (upperBounds[splitAxis] - lowerBounds[splitAxis])/numCellsAlongSplitAxis;
+      lowerBounds[splitAxis] += startCell * delta;
+      upperBounds[splitAxis] = lowerBounds[splitAxis] + nCells * delta;
+      //std::cout << "After adjust: Proc=" << PAR_Rank() << " start=" << startCell << " nCells=" << nCells << " delta=" << delta << " lowerBound=" << lowerBounds[splitAxis] << " upperBound=" << upperBounds[splitAxis] << std::endl;
       numCells[splitAxis] = nCells;
       idims[splitAxis] = nCells + 1; // FIXME: May depend on centering
     }
