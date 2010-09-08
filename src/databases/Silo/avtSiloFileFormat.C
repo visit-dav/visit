@@ -8028,10 +8028,7 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
                              const char *tvn, int domain)
 {
     if (string(vname) == "EMPTY")
-    {
-        debug5 << "Attempt to read EMPTY ucdvar, name=\""<<vname<<"\" domain=" << domain << endl;
         return 0;
-    }
 
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
