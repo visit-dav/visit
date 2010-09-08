@@ -45,9 +45,7 @@
 #include <DebugStream.h>
 #include <cassert>
 #include <algorithm>
-#ifdef _WIN32
 #include <functional> // for 'less'
-#endif
 
 // -------------------------------------------------------------------------
 
