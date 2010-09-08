@@ -62,7 +62,7 @@ using std::vector;
 #include <pwd.h>
 #endif
 
-#if !defined(_WIN32) && !defined(__APPLE__)
+#if !defined(_WIN32) && !defined(__APPLE__) && !defined(_AIX)
 #include <execinfo.h>
 #include <cxxabi.h>
 #endif
@@ -267,7 +267,7 @@ GetMemorySize(unsigned int &size, unsigned int &rss)
 void
 PrintCallStack(ostream &out, const char *file, int line)
 {
-#if !defined(_WIN32) && !defined(__APPLE__)
+#if !defined(_WIN32) && !defined(__APPLE__) && !defined(_AIX)
     const int N = 100;
     void *stackAddrs[N];
  
