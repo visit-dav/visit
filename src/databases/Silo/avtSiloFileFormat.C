@@ -7686,6 +7686,10 @@ ConvertToFloat(int silotype, void *data, int nels)
 //    Replace new with malloc. Doh? We're using the data to populate a DBucdvar
 //    which is later going to be free'd by a DBFreeUcdvar() which assumes 
 //    it was malloc'd.
+//
+//    Mark C. Miller, Wed Sep  8 14:09:33 PDT 2010
+//    Fix initialization of vals arrays to go over nnodes or nzones depending
+//    on whether ugrid is present.
 // ****************************************************************************
 
 template <typename T>
@@ -7703,7 +7707,7 @@ TraverseMaterialForSubsettedUcdvar(const DBucdvar *const uv,
     {
         newvals[i] = (T*) malloc((ugrid?nnodes:nzones)*sizeof(T));
         // Initialize the array to be same as zero entry.
-        for (j = 0; j < nzones; j++)
+        for (j = 0; j < (ugrid?nnodes:nzones); j++)
             newvals[i][j] = ((T**)uv->vals)[i][0];
     }
     T **newmixvals = 0;
@@ -7906,7 +7910,7 @@ avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,
     }
 
     int i, nzones = mat->GetNZones(), nnodes = ugrid?ugrid->GetNumberOfPoints():0;
-    void *newvals, *newmixvals;
+    void *newvals=0, *newmixvals=0;
     if (uv->datatype == DB_DOUBLE)
         TraverseMaterialForSubsettedUcdvar<double>(uv, mat, ugrid, restrictToMats,
             &newvals, &newmixvals);
@@ -8024,7 +8028,10 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
                              const char *tvn, int domain)
 {
     if (string(vname) == "EMPTY")
+    {
+        debug5 << "Attempt to read EMPTY ucdvar, name=\""<<vname<<"\" domain=" << domain << endl;
         return 0;
+    }
 
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
