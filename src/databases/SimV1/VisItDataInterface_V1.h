@@ -48,6 +48,9 @@
 **   Changed struct VisIt_SimulationControlCommand name field from a
 **   const to a variable.
 **
+**   Mark C. Miller, Wed Sep  8 11:20:48 PDT 2010
+**   Added GNUC specific function attributes to reduce unused warnings
+**   for clients compiling with -Wall.
 *****************************************************************************/
 
 #ifndef VISIT_DATA_INTERFACE_V1_H
@@ -355,8 +358,13 @@ typedef struct
 } VisIt_SimulationWriterCallback;
 
 /* Helper Methods */
+#ifdef __GNUC__
+#define VISIT_UNUSED_OK __attribute__ ((unused))
+#else
+#define VISIT_UNUSED_OK
+#endif
 
-static VisIt_DataArray VisIt_CreateDataArrayFromChar(int o, char *c)
+static VisIt_DataArray VISIT_UNUSED_OK VisIt_CreateDataArrayFromChar(int o, char *c)
 {
     VisIt_DataArray da;
     da.dataType = VISIT_DATATYPE_CHAR;
@@ -365,7 +373,7 @@ static VisIt_DataArray VisIt_CreateDataArrayFromChar(int o, char *c)
     return da;
 }
 
-static VisIt_DataArray VisIt_CreateDataArrayFromInt(int o, int *i)
+static VisIt_DataArray VISIT_UNUSED_OK VisIt_CreateDataArrayFromInt(int o, int *i)
 {
     VisIt_DataArray da;
     da.dataType = VISIT_DATATYPE_INT;
@@ -374,7 +382,7 @@ static VisIt_DataArray VisIt_CreateDataArrayFromInt(int o, int *i)
     return da;
 }
 
-static VisIt_DataArray VisIt_CreateDataArrayFromFloat(int o, float *f)
+static VisIt_DataArray VISIT_UNUSED_OK VisIt_CreateDataArrayFromFloat(int o, float *f)
 {
     VisIt_DataArray da;
     da.dataType = VISIT_DATATYPE_FLOAT;
@@ -383,7 +391,7 @@ static VisIt_DataArray VisIt_CreateDataArrayFromFloat(int o, float *f)
     return da;
 }
 
-static VisIt_DataArray VisIt_CreateDataArrayFromDouble(int o, double *d)
+static VisIt_DataArray VISIT_UNUSED_OK VisIt_CreateDataArrayFromDouble(int o, double *d)
 {
     VisIt_DataArray da;
     da.dataType = VISIT_DATATYPE_DOUBLE;
