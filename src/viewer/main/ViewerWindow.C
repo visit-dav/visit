@@ -4236,13 +4236,6 @@ ViewerWindow::RecenterView2d(const double *limits)
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
-//    Jeremy Meredith, Thu Sep  2 15:06:26 EDT 2010
-//    When using 3D scaling, everything (including the lower bounding box
-//    limits) is rescaled -- set the focus accordingly.  Also, ignore
-//    effects of 3D scaling when setting parallel scale -- if you don't, then
-//    repeated re-centering with a non-1:1:1 3D scale will cause the parallel
-//    scale to keep shrinking/growing.
-//
 // ****************************************************************************
 
 void
@@ -4282,6 +4275,20 @@ ViewerWindow::RecenterView3d(const double *limits)
     }
 
     //
+    // Determine the zoom factor.
+    //
+    double    width;
+    double    zoomFactor;
+
+    width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
+                        (boundingBox3d[1] - boundingBox3d[0])) +
+                       ((boundingBox3d[3] - boundingBox3d[2]) *
+                        (boundingBox3d[3] - boundingBox3d[2])) +
+                       ((boundingBox3d[5] - boundingBox3d[4]) *
+                        (boundingBox3d[5] - boundingBox3d[4])));
+    zoomFactor = width / view3D.parallelScale;
+
+    //
     // Set the new window.
     //
     int       i;
@@ -4301,30 +4308,12 @@ ViewerWindow::RecenterView3d(const double *limits)
                                            view3D.axis3DScales[1] : 1.0),
                             sizeOrig[2] * (view3D.axis3DScaleFlag ?
                                            view3D.axis3DScales[2] : 1.0)};
-    double startScaled[3] ={boundingBox3d[0] * (view3D.axis3DScaleFlag ?
-                                                view3D.axis3DScales[0] : 1.0),
-                            boundingBox3d[2] * (view3D.axis3DScaleFlag ?
-                                                view3D.axis3DScales[1] : 1.0),
-                            boundingBox3d[4] * (view3D.axis3DScaleFlag ?
-                                                view3D.axis3DScales[2] : 1.0)};
-
-    //
-    // Determine the zoom factor.
-    //
-    double    width;
-    double    zoomFactor;
-
-    width = 0.5 * sqrt(sizeScaled[0]*sizeScaled[0] +
-                       sizeScaled[1]*sizeScaled[1] +
-                       sizeScaled[2]*sizeScaled[2]);
-    zoomFactor = width / view3D.parallelScale;
-
     //
     // Calculate the new focal point.
     //
-    view3D.focus[0] = sizeScaled[0]/2. + startScaled[0];
-    view3D.focus[1] = sizeScaled[1]/2. + startScaled[1];
-    view3D.focus[2] = sizeScaled[2]/2. + startScaled[2];
+    view3D.focus[0] = sizeScaled[0]/2. + boundingBox3d[0];
+    view3D.focus[1] = sizeScaled[1]/2. + boundingBox3d[2];
+    view3D.focus[2] = sizeScaled[2]/2. + boundingBox3d[4];
 
     //
     // Calculate the new parallel scale.
