@@ -8013,12 +8013,19 @@ avtSiloFileFormat::ExpandUcdvar(DBucdvar *uv,
 //
 //    Mark C. Miller, Sun Aug 29 23:19:50 PDT 2010
 //    Added logic to expand (material) subsetted variables.
+//
+//    Mark C. Miller, Tue Sep  7 22:57:28 PDT 2010
+//    Just as for meshes, with vars defined on subsets, we need to accomodate
+//    possible EMPTY domains.
 // ****************************************************************************
 
 vtkDataArray *
 avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
                              const char *tvn, int domain)
 {
+    if (string(vname) == "EMPTY")
+        return 0;
+
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
     // library, so let's cast it away.
