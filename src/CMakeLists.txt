@@ -166,6 +166,9 @@
 #    Kathleen Bonnell, Thu Aug 19 18:05:27 MST 2010 
 #    Fix broken plugin install target on windows.
 #
+#    Kathleen Bonnell, Thu Sep 2 15:44:22 PDT 2010 
+#    Add flag to windows nsis-installer script for 64 bit.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1747,6 +1750,7 @@ ELSE (NOT WIN32)
                     /DCOMPILER=${VISIT_MSVC_VERSION} 
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE} 
                     /DINSTALL_PREFIX=${CIP_NATIVE} 
+                    /DCL_64=${CMAKE_CL_64}
                      ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
             DEPENDS ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
                     ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
