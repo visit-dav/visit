@@ -58,6 +58,12 @@
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
 //
+//  Modifications:
+//    Eric Brugger, Tue Sep  7 16:15:13 PDT 2010
+//    I added logic to detect RZ meshes with negative R values up front
+//    before any processing to avoid more complex error handling during
+//    pipeline execution.
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery
@@ -105,6 +111,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     int                       nImageFragments;
     int                      *imageFragmentSizes;
     float                   **imageFragments;
+
+    bool                      invalidRZMesh;
 
     int                       actualPixelsPerIteration;
     int                       pixelsForFirstPass;
