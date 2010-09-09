@@ -25,6 +25,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Brad Whitlock, Thu Sep  9 11:03:30 PDT 2010
+#    I added tests for time-varying curves, FVCOM.
+#
 # ----------------------------------------------------------------------------
 
 def test0(datapath):
@@ -303,6 +306,18 @@ def test3(datapath):
     Test("netcdf_3_06")
     DeleteAllPlots()
 
+    # Try a file that used to crash on Windows
+    db = "Case5_2D-Q.nc"
+    OpenDatabase(datapath + db)
+    AddPlot("Pseudocolor", "Q")
+    DrawPlots()
+    ResetView()
+    Test("netcdf_3_07")
+    SetTimeSliderState(29)
+    Test("netcdf_3_08")
+    DeleteAllPlots()
+    CloseDatabase(datapath + db)
+
 def test4(datapath):
     TestSection("CCSM reader")
     db = "tas_mean_T63.nc"
@@ -323,6 +338,43 @@ def test4(datapath):
     DeleteAllPlots()
     CloseDatabase(datapath + db)
 
+def test5(datapath):
+    TestSection("Time-varying curves")
+    db = "timecurve.nc"
+    OpenDatabase(datapath + db)
+    AddPlot("Curve", "theta_1_1")
+    c = CurveAttributes()
+    c.showLabels = 0
+    c.curveColor = (255,0,0,255)
+    c.curveColorSource = c.Custom
+    SetPlotOptions(c)
+    cv = GetViewCurve()
+    cv.domainCoords = (0, 9)
+    cv.rangeCoords = (0.40657, 5)
+    cv.viewportCoords = (0.2, 0.95, 0.15, 0.95)
+    cv.domainScale = cv.LINEAR  # LINEAR, LOG
+    cv.rangeScale = cv.LINEAR  # LINEAR, LOG
+    SetViewCurve(cv)
+    DrawPlots()
+    Test("netcdf_5_00")
+    SetTimeSliderState(4)
+    Test("netcdf_5_01")
+    DeleteAllPlots()
+    CloseDatabase(datapath + db)
+
+def test6(datapath):
+    TestSection("FVCOM reader ")
+    db = "chn_0001.nc"
+    OpenDatabase(datapath + db)
+    AddPlot("Pseudocolor", "Dens3{S,Theta,P}")
+    DrawPlots()
+    ResetView()
+    Test("netcdf_6_00")
+    SetTimeSliderState(47)
+    Test("netcdf_6_01")
+    DeleteAllPlots()
+    CloseDatabase(datapath + db)
+
 def main():
     datapath = "../data/netcdf_test_data/"
     test0(datapath)
@@ -330,6 +382,8 @@ def main():
     test2(datapath)
     test3(datapath)
     test4(datapath)
+    test5(datapath)
+    test6(datapath)
 
 main()
 Exit()
