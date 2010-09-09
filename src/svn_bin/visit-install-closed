@@ -29,7 +29,7 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
-crier=true
+termite=true
 purple=true
 hopi=true
 
@@ -44,17 +44,17 @@ for abc
 do
    case $1 in
       -none)
-         crier=false
+         termite=false
          purple=false
          hopi=false
          shift
          ;;
-      -crier)
-         crier=false
+      -termite)
+         termite=false
          shift
          ;;
-      +crier)
-         crier=true
+      +termite)
+         termite=true
          shift
          ;;
       -purple)
@@ -102,39 +102,39 @@ ver2=`echo $ver | tr "." "_"`
 ver=`echo $ver2 | tr "_" "."`
 
 #
-# Install on crier.
+# Install on termite.
 #
-rm -f crier
-cat <<EOF > crier
+rm -f termite
+cat <<EOF > termite
 #!/bin/sh
-./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux_rhel5 /misc/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
-echo "        install of visit on crier"           >> resultlog 2>&1
-echo "       ---------------------------"          >> resultlog 2>&1
+echo "        install of visit on termite"         >> resultlog 2>&1
+echo "       -----------------------------"        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
+df -k /misc/gapps/visit                            >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-intel/bin       >> resultlog 2>&1
+ls -l /misc/gapps/visit/$ver+/linux-intel/bin      >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /misc/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /misc/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /misc/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mv resultlog resultlog.crier
+ls /misc/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/misc\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.termite
 EOF
 
-if [ $crier = true ]
+if [ $termite = true ]
 then
    if [ $test = no ]
    then
-      scp -P 22 crier:/export/scratch/$user/crier/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux_rhel3.tar.gz
-      scp -P 22 visit$ver2.linux_rhel3.tar.gz crier:
-      scp -P 22 visit-install crier:
-      scp -P 22 crier crier:crier_install
-      ssh -p 22 crier "chmod 750 crier_install;./crier_install"
+      scp -P 22 termite:termite/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux_rhel5.tar.gz
+      scp -P 22 visit$ver2.linux_rhel5.tar.gz termite:
+      scp -P 22 visit-install termite:
+      scp -P 22 termite termite:termite_install
+      ssh -p 22 termite "chmod 750 termite_install;./termite_install"
    fi
 fi
 
@@ -233,5 +233,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier purple hopi
+   rm -f termite purple hopi
 fi
