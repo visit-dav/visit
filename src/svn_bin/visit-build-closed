@@ -42,7 +42,7 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
-crier=true
+termite=true
 purple=true
 hopi=true
 
@@ -57,17 +57,17 @@ for abc
 do
    case $1 in
       -none)
-         crier=false
+         termite=false
          purple=false
          hopi=false
          shift
          ;;
-      -crier)
-         crier=false
+      -termite)
+         termite=false
          shift
          ;;
-      +crier)
-         crier=true
+      +termite)
+         termite=true
          shift
          ;;
       -purple)
@@ -100,7 +100,7 @@ if [ $dist = undefined ]
 then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    crier (B-Div, Linux),"
+   echo "    termite (B-Div, Linux),"
    echo "    purple (LC, AIX),"
    echo "    hopi (LC, x86_64)"
    exit
@@ -117,35 +117,30 @@ then
 fi
 
 #
-# Build on crier.
+# Build on termite.
 #
-rm -f crier
-cat <<EOF > crier
+rm -f termite
+cat <<EOF > termite
 #!/bin/sh
-if test ! -e /export/scratch/$user ; then
-   mkdir /export/scratch/$user
+if test ! -e termite ; then
+   mkdir termite
 fi
-if test ! -e /export/scratch/$user/crier ; then
-   mkdir /export/scratch/$user/crier
-fi
-rm -rf /export/scratch/$user/crier/visitbuild
-mkdir /export/scratch/$user/crier/visitbuild
-mv crier_$dist.tar.gz /export/scratch/$user/crier/visitbuild/$dist.tar.gz
-cd /export/scratch/$user/crier/visitbuild
+rm -rf termite/visitbuild
+mkdir termite/visitbuild
+mv termite_$dist.tar.gz termite/visitbuild/$dist.tar.gz
+cd termite/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib
-export LD_LIBRARY_PATH
-/usr/gapps/visit/cmake/2.8.0/linux-i686_gcc-3.2.3/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.0/linux-i686_gcc-4.1.2/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on crier"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
+echo "        build of visit on termite"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -157,14 +152,14 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
  
-if [ $crier = true ]
+if [ $termite = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on crier"
-      scp -P 22 crier crier:crier_buildit
-      scp -P 22 $dist.tar.gz crier:crier_$dist.tar.gz
-      ssh -p 22 crier "chmod 750 crier_buildit;./crier_buildit" &
+      echo "Building on termite"
+      scp -P 22 termite termite:termite_buildit
+      scp -P 22 $dist.tar.gz termite:termite_$dist.tar.gz
+      ssh -p 22 termite "chmod 750 termite_buildit;./termite_buildit" &
    fi
 fi
 
@@ -323,5 +318,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier purple32 purple64 hopi
+   rm -f termite purple32 purple64 hopi
 fi
