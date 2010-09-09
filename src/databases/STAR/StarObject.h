@@ -141,10 +141,10 @@ static FILE* _dfp;  // debug file pointer
 
 #endif // DEBUG_ON
 
-#if defined(_AIX)
-#define NOTIMPL fprintf(stderr,"%s NOT IMPLEMENTED YET\n",__func__)
-#else
+#ifdef __GNUC__
 #define NOTIMPL fprintf(stderr,"%s NOT IMPLEMENTED YET\n",__PRETTY_FUNCTION__)
+#else
+#define NOTIMPL fprintf(stderr,"%s NOT IMPLEMENTED YET\n",__func__)
 #endif
 
 /* ==============================  ASSERTIONS  ============================= */
