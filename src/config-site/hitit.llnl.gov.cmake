@@ -1,9 +1,9 @@
-#/usr/gapps/visit/cmake/2.8.0/linux-i686_gcc-4.1.2/bin/cmake
+#/misc/gapps/visit/cmake/2.8.0/linux-i686_gcc-4.1.2/bin/cmake
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit)
+SET(VISITHOME /misc/gapps/visit)
 SET(VISITARCH linux-i686_gcc-4.1.2)
 
 ##
