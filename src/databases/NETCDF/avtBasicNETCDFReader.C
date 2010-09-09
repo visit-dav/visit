@@ -213,11 +213,11 @@ avtBasicNETCDFReader::CreateGlobalAttributesString(int nGlobalAtts, std::string 
 //
 //    Brad Whitlock, Wed Apr 26 17:53:24 PST 2006
 //    I made it possible to call with a NULL metadata pointer so we can call
-//    this method on ActivateTimestep to ensure that the meshNameToDimensionsSizes map
-//    is populated. I also added a check to set the validVariable flag for
-//    meshes and variables so that we don't have problems later. By adding
-//    the valid variable check, I was able to make 4+ dimensional arrays
-//    safely appear in the variable lists.
+//    this method on ActivateTimestep to ensure that the 
+//    meshNameToDimensionsSizes map is populated. I also added a check to set 
+//    the validVariable flag for meshes and variables so that we don't have 
+//    problems later. By adding the valid variable check, I was able to make 
+//    4+ dimensional arrays safely appear in the variable lists.
 //
 //    Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
 //    Added call to SetFormatCanDoDomainDecomposition
@@ -231,6 +231,9 @@ avtBasicNETCDFReader::CreateGlobalAttributesString(int nGlobalAtts, std::string 
 //
 //    Brad Whitlock, Thu Jul 15 12:15:56 PDT 2010
 //    I added support for curves over time.
+//
+//    Kathleen Bonnell, Wed Sep 8 20:31:55 MST 2010 
+//    Check value of maxDimNotOne before using it as an index, to prevent SEGV.
 //
 // ****************************************************************************
 
@@ -417,7 +420,7 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
                 }
 
                 int maxDimNotOne = meshDimSizes.size();
-                while(meshDimSizes[maxDimNotOne-1] == 1 && maxDimNotOne >= 1)
+                while(maxDimNotOne >= 1 && meshDimSizes[maxDimNotOne-1] == 1)
                      maxDimNotOne--;
 
                 // Make sure it's not 1 or 0 in some of its dimensions
@@ -935,6 +938,9 @@ avtBasicNETCDFReader::GetMesh(int timeState, const char *var)
 //   Brad Whitlock, Thu Oct 29 15:23:32 PDT 2009
 //   I rewrote the code so it can read variables that have a time dimension.
 //
+//   Kathleen Bonnell, Wed Sep 8 20:34:11 MST 2010 
+//   Compare minfo to varToDimensionSizes.end, not meshNameToDimensionsSizes.
+//
 // ****************************************************************************
 
 #define READVAR(VTKTYPE) \
@@ -982,7 +988,7 @@ avtBasicNETCDFReader::GetVar(int timeState, const char *var)
 
     // Look up the mesh dimensions for the mesh.
     StringIntVectorMap::const_iterator minfo = varToDimensionsSizes.find(var);
-    if(minfo != meshNameToDimensionsSizes.end())
+    if(minfo != varToDimensionsSizes.end())
     {
         // Get the dim starts and counts.
         intVector dimStarts, dimCounts;
