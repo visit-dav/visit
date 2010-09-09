@@ -1,76 +1,111 @@
-#/what/is/the/path/to/bin/cmake
+#/usr/gapps/visit/cmake/2.8.0/linux-i686_gcc-4.1.2/bin/cmake
 
 ##
-## Set the VISITHOME environment variable.
+## Setup VISITHOME & VISITARCH variables.
 ##
 SET(VISITHOME /usr/gapps/visit)
-SET(VISIT_VERBOSE_MAKEFILE TRUE)
+SET(VISITARCH linux-i686_gcc-4.1.2)
 
 ##
-## Use the g++ 3.2.3 compiler.
+## Specify the location of the mesa.
 ##
-SET(VISIT_C_COMPILER /usr/gapps/visit/gcc/3.2.3/linux_redhat7/bin/gcc)
-SET(VISIT_CXX_COMPILER /usr/gapps/visit/gcc/3.2.3/linux_redhat7/bin/g++)
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.5/${VISITARCH})
 
 ##
-## If MESA is not set, use VisIt's mesa.
+## Specify the location of the vtk.
 ##
-#if test -z "$MESA"; then
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/current/linux_redhat7_gcc_3.2.3)
-#fi
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0e/${VISITARCH}/lib/vtk-5.0/)
 
 ##
-## If VTK is not set, use VisIt's vtk.
+## Specify the Qt4 binary dir. 
+## (qmake us used to locate & setup Qt4 dependencies)
 ##
-#if test -z "$VTK"; then
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0c/linux_redhat7_gcc_3.2.3/lib/vtk-5.0)
-#fi
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.6.1/${VISITARCH}/bin)
 
 ##
-## If QT is not set, use VisIt's Qt.
+## Specify the location of the python.
 ##
-#if test -z "$VISIT_QT_BIN"; then
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/3.3.2/linux_redhat7_gcc_3.2.3/bin)
-#fi
-#if test -z "$QT_INCLUDE"; then
-#fi
-#if test -z "$QT_LIB"; then
-#fi
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
 ##
-## Use VisIt's Python.
+## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.5/linux_redhat7_gcc_3.2.3)
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-O2")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-O2")
 
+##############################################################
 ##
 ## Database reader plugin support libraries
 ##
-###############################################################################
+##############################################################
+
+##
+## Boxlib
+##
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB2D_DIR ${VISITHOME}/boxlib/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB3D_DIR ${VISITHOME}/boxlib/${VISITARCH})
+
+##
+## CCMIO
+##
+VISIT_OPTION_DEFAULT(VISIT_CCMIO_DIR ${VISITHOME}/ccmio/2.6.1/${VISITARCH})
+
+##
+## CFITSIO
+##
+VISIT_OPTION_DEFAULT(VISIT_CFITSIO_DIR ${VISITHOME}/cfitsio/3006/${VISITARCH})
+
+##
+## CGNS
+##
+VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/2.4/${VISITARCH})
+
+##
+## Exodus
+##
+VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR ${VISITHOME}/exodus/4.46/${VISITARCH})
+
+##
+## GDAL
+##
+#VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.7.1/${VISITARCH})
 
 ##
 ## HDF4
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR /usr/gapps/visit/hdf4/2.4.1/linux_redhat7_gcc_3.2.3)
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP /usr/lib jpeg)
+VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib jpeg)
 
 ##
 ## HDF5
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR /usr/gapps/silo/hdf5/1.8.1/i686_Linux_ELsmp)
-VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz)
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.4/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib z)
+
+##
+## H5Part
+##
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.0/${VISITARCH})
 
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR /usr/gapps/visit/mili/1.10/linux_redhat7_gcc_3.2.3)
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.10.0/${VISITARCH})
 
 ##
-## netCDF
+## NetCDF
 ##
-VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR /usr/gapps/visit/netcdf/3.6.0/linux_redhat7_gcc_3.2.3)
+VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/3.6.3/${VISITARCH})
+
+##
+## SZIP
+##
+VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR /usr/gapps/silo/4.7/i686_Linux_ELsmp)
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
