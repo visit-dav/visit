@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class Expression extends AttributeSubject
 {
-    private static int Expression_numAdditionalAtts = 8;
+    private static int Expression_numAdditionalAtts = 10;
 
     // Enum values
     public final static int EXPRTYPE_UNKNOWN = 0;
@@ -81,6 +81,8 @@ public class Expression extends AttributeSubject
         type = EXPRTYPE_SCALARMESHVAR;
         fromDB = false;
         fromOperator = false;
+        operatorName = new String("__none__");
+        meshName = new String("");
         dbName = new String("__none__");
         autoExpression = false;
     }
@@ -95,6 +97,8 @@ public class Expression extends AttributeSubject
         type = EXPRTYPE_SCALARMESHVAR;
         fromDB = false;
         fromOperator = false;
+        operatorName = new String("__none__");
+        meshName = new String("");
         dbName = new String("__none__");
         autoExpression = false;
     }
@@ -109,6 +113,8 @@ public class Expression extends AttributeSubject
         type = obj.type;
         fromDB = obj.fromDB;
         fromOperator = obj.fromOperator;
+        operatorName = new String(obj.operatorName);
+        meshName = new String(obj.meshName);
         dbName = new String(obj.dbName);
         autoExpression = obj.autoExpression;
 
@@ -134,6 +140,8 @@ public class Expression extends AttributeSubject
                 (type == obj.type) &&
                 (fromDB == obj.fromDB) &&
                 (fromOperator == obj.fromOperator) &&
+                (operatorName.equals(obj.operatorName)) &&
+                (meshName.equals(obj.meshName)) &&
                 (dbName.equals(obj.dbName)) &&
                 (autoExpression == obj.autoExpression));
     }
@@ -175,16 +183,28 @@ public class Expression extends AttributeSubject
         Select(5);
     }
 
+    public void SetOperatorName(String operatorName_)
+    {
+        operatorName = operatorName_;
+        Select(6);
+    }
+
+    public void SetMeshName(String meshName_)
+    {
+        meshName = meshName_;
+        Select(7);
+    }
+
     public void SetDbName(String dbName_)
     {
         dbName = dbName_;
-        Select(6);
+        Select(8);
     }
 
     public void SetAutoExpression(boolean autoExpression_)
     {
         autoExpression = autoExpression_;
-        Select(7);
+        Select(9);
     }
 
     // Property getting methods
@@ -194,6 +214,8 @@ public class Expression extends AttributeSubject
     public int     GetType() { return type; }
     public boolean GetFromDB() { return fromDB; }
     public boolean GetFromOperator() { return fromOperator; }
+    public String  GetOperatorName() { return operatorName; }
+    public String  GetMeshName() { return meshName; }
     public String  GetDbName() { return dbName; }
     public boolean GetAutoExpression() { return autoExpression; }
 
@@ -213,8 +235,12 @@ public class Expression extends AttributeSubject
         if(WriteSelect(5, buf))
             buf.WriteBool(fromOperator);
         if(WriteSelect(6, buf))
-            buf.WriteString(dbName);
+            buf.WriteString(operatorName);
         if(WriteSelect(7, buf))
+            buf.WriteString(meshName);
+        if(WriteSelect(8, buf))
+            buf.WriteString(dbName);
+        if(WriteSelect(9, buf))
             buf.WriteBool(autoExpression);
     }
 
@@ -241,9 +267,15 @@ public class Expression extends AttributeSubject
             SetFromOperator(buf.ReadBool());
             break;
         case 6:
-            SetDbName(buf.ReadString());
+            SetOperatorName(buf.ReadString());
             break;
         case 7:
+            SetMeshName(buf.ReadString());
+            break;
+        case 8:
+            SetDbName(buf.ReadString());
+            break;
+        case 9:
             SetAutoExpression(buf.ReadBool());
             break;
         }
@@ -279,6 +311,8 @@ public class Expression extends AttributeSubject
         str = str + "\n";
         str = str + boolToString("fromDB", fromDB, indent) + "\n";
         str = str + boolToString("fromOperator", fromOperator, indent) + "\n";
+        str = str + stringToString("operatorName", operatorName, indent) + "\n";
+        str = str + stringToString("meshName", meshName, indent) + "\n";
         str = str + stringToString("dbName", dbName, indent) + "\n";
         str = str + boolToString("autoExpression", autoExpression, indent) + "\n";
         return str;
@@ -292,6 +326,8 @@ public class Expression extends AttributeSubject
     private int     type;
     private boolean fromDB;
     private boolean fromOperator;
+    private String  operatorName;
+    private String  meshName;
     private String  dbName;
     private boolean autoExpression;
 }
