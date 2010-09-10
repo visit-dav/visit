@@ -124,6 +124,9 @@ avtParDomICAlgorithm::~avtParDomICAlgorithm()
 //   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
 //   Reflect change in name to InitializeBuffers method.
 //
+//   Dave Pugmire, Fri Sep 10 13:37:36 EDT 2010
+//   Initialize number of recv buffers for both msgs and ICs.
+//
 // ****************************************************************************
 
 void
@@ -133,7 +136,7 @@ avtParDomICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
     if (numRecvs > 64)
         numRecvs = 64;
     
-    avtParICAlgorithm::InitializeBuffers(seedPts, 1, numRecvs);
+    avtParICAlgorithm::InitializeBuffers(seedPts, 1, numRecvs, numRecvs);
     numICChange = 0;
     AddIntegralCurves(seedPts);
 }
@@ -261,7 +264,7 @@ avtParDomICAlgorithm::ExchangeTermination()
 
     // Check to see if msgs are coming in.
     vector<vector<int> > msgs;
-    RecvMsgs(msgs);
+    RecvMsg(msgs);
     for (int i = 0; i < msgs.size(); i++)
     {
         debug2<<msgs[i][1]<<" icChange= "<<msgs[i][1]<<endl;
@@ -328,9 +331,10 @@ avtParDomICAlgorithm::RunAlgorithm()
 {
     debug1<<"avtParDomICAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
-    
+
     while (totalNumIntegralCurves > 0)
     {
+        //debug4<<rank<<": total num SLs= "<<totalNumIntegralCurves<<" activeSLs= "<<activeICs.size()<<" terminated= "<<terminatedICs.size()<<endl;
         //Integrate upto maxCnt streamlines.
         list<avtIntegralCurve *>::iterator s;
         int cnt = 0;
@@ -342,21 +346,18 @@ avtParDomICAlgorithm::RunAlgorithm()
             AdvectParticle(s);
             if (s->status == avtIntegralCurve::STATUS_FINISHED)
             {
-                debug5<<"TerminatedIC: "<<s->id<<endl;
+                //debug5<<"TerminatedIC: "<<s->id<<endl;
                 terminatedICs.push_back(s);
                 numICChange--;
             }
             else
                 HandleOOBIC(s);
-            
+
             cnt++;
         }
 
         //Check for new ICs.
-        int earlyTerminations = 0;
-        RecvICs(activeICs, earlyTerminations);
-        //numICChange -= earlyTerminations;
-
+        RecvICs(activeICs);
         ExchangeTermination();
         CheckPendingSendRequests();
     }
@@ -417,8 +418,8 @@ avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
         {
             vector<avtIntegralCurve *> ics;
             ics.push_back(s);
+            //debug4<<"  send to "<<domRank<<endl;
             SendICs(domRank, ics);
-            //debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> "<<domRank<<endl;
         }
     }
 }

@@ -41,6 +41,8 @@
 // ************************************************************************* //
 
 #include "avtParICAlgorithm.h"
+#include <vtkDataSetWriter.h>
+#include <vtkDataSetReader.h>
 
 #include <avtStateRecorderIntegralCurve.h>
 
@@ -51,8 +53,10 @@ using namespace std;
 
 #ifdef PARALLEL
 
-int avtParICAlgorithm::STATUS_TAG =  420000;
+int avtParICAlgorithm::MESSAGE_TAG =  420000;
 int avtParICAlgorithm::STREAMLINE_TAG = 420001;
+int avtParICAlgorithm::DATASET_PREP_TAG = 420002;
+int avtParICAlgorithm::DATASET_TAG = 420003;
 
 // ****************************************************************************
 //  Method: avtParICAlgorithm::avtParICAlgorithm
@@ -78,9 +82,6 @@ avtParICAlgorithm::avtParICAlgorithm(avtPICSFilter *icFilter)
     nProcs = PAR_Size();
     rank = PAR_Rank();
     msgID = 0;
-    statusMsgSz = -1;
-    numAsyncRecvs = -1;
-    icMsgSz = 10*1024*1024;
 }
 
 // ****************************************************************************
@@ -99,7 +100,25 @@ avtParICAlgorithm::~avtParICAlgorithm()
 }
 
 // ****************************************************************************
-//  Method: avtParICAlgorithm::Initialize
+//  Method: avtParICAlgorithm::PostExecute
+//
+//  Purpose:
+//      Cleanup.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   January 27, 2009
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::PostExecute()
+{
+    CleanupRequests();
+    avtICAlgorithm::PostExecute();
+}
+
+// ****************************************************************************
+//  Method: avtParICAlgorithm::InitializeBufers
 //
 //  Purpose:
 //      Initialize the request buffers.
@@ -121,19 +140,737 @@ avtParICAlgorithm::~avtParICAlgorithm()
 // ****************************************************************************
 
 void
-avtParICAlgorithm::InitializeBuffers(vector<avtIntegralCurve *> &seedPts,
-                                     int msgSz,
-                                     int numRecvs)
+avtParICAlgorithm::InitializeBuffers(vector<avtIntegralCurve *> &seeds,
+                                     int msgSize,
+                                     int nMsgRecvs,
+                                     int nICRecvs,
+                                     int nDSRecvs)
 {
-    //Standardmsg + 1(sender rank) +1(msg ID).
-    statusMsgSz = msgSz+1+1;
-    numAsyncRecvs = numRecvs;
+    avtICAlgorithm::Initialize(seeds);
+
+    numMsgRecvs = nMsgRecvs;
+    numSLRecvs = nICRecvs;
+    numDSRecvs = nDSRecvs;
+
+    // Msgs are handled as vector<int>.
+    // Serialization of msg consists: size_t (num elements) +
+    // sender rank + message size.
+    msgSize = sizeof(size_t);
+    msgSize += sizeof(int); // sender rank.
+    msgSize += msgSize * sizeof(int);
+
+    //During particle advection, the IC state is only serialized.
+    slSize = 256;
+    slsPerRecv = 64;
     
-    if (statusMsgSz <= 0 || numAsyncRecvs <= 0)
+    int dsSize = 2*sizeof(int);
+    
+    messageTagInfo[avtParICAlgorithm::MESSAGE_TAG] = std::pair<int,int>(numMsgRecvs, msgSize);
+    messageTagInfo[avtParICAlgorithm::STREAMLINE_TAG] = std::pair<int,int>(numSLRecvs, slSize*slsPerRecv);
+    messageTagInfo[avtParICAlgorithm::DATASET_PREP_TAG] = std::pair<int,int>(numDSRecvs, dsSize);
+
+    //Setup receive buffers.
+    std::map<int, std::pair<int, int> >::const_iterator it;
+    for (it = messageTagInfo.begin(); it != messageTagInfo.end(); it++)
+    {
+        int tag = it->first, num = it->second.first;
+        for (int i = 0; i < num; i++)
+            PostRecv(tag);
+    }
+}
+
+// ****************************************************************************
+//  Method: avtParICAlgorithm::CleanupAsynchronous
+//
+//  Purpose:
+//      Claenup the buffers used when doing asynchronous processing.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 16, 2008
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::CleanupRequests()
+{
+    for (bufferIterator i = recvBuffers.begin(); i != recvBuffers.end(); i++)
+    {
+        MPI_Request r = i->first.first;
+        if (r != MPI_REQUEST_NULL)
+            MPI_Cancel(&r);
+        if (i->second != NULL)
+            delete [] i->second;
+    }
+    
+    recvBuffers.clear();
+}
+
+// ****************************************************************************
+// Method:  avtParICAlgorithm::PostRecv
+//
+// Purpose:
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 31, 2010
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::PostRecv(int tag)
+{
+    map<int, pair<int, int> >::const_iterator it = messageTagInfo.find(tag);
+    if (it != messageTagInfo.end())
+        PostRecv(tag, it->second.second);
+}
+
+void
+avtParICAlgorithm::PostRecv(int tag, int sz)
+{
+    sz += sizeof(avtParICAlgorithm::Header);
+    unsigned char *buff = new unsigned char[sz];
+    memset(buff, 0, sz);
+    
+    MPI_Request req;
+    MPI_Irecv(buff, sz, MPI_BYTE, MPI_ANY_SOURCE, tag,VISIT_MPI_COMM, &req);
+    
+    RequestTagPair entry(req, tag);
+    recvBuffers[entry] = buff;
+
+    //debug5<<"PostRecv: ("<<req<<", "<<tag<<") buff= "<<(void*)buff<<" sz= "<<sz<<endl;
+}
+
+// ****************************************************************************
+//  Method: avtParICAlgorithm::CheckPendingSendRequests
+//
+//  Purpose:
+//      Check to see if there are any pending send requests.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 16, 2008
+//
+//  Modifications:
+//
+//    Dave Pugmire, Wed Mar 18 17:07:07 EDT 2009
+//    Delete entry from map after send is complete.
+//
+//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//   Change how timings are reported/calculated.
+//
+//   Dave Pugmire, Sat Mar 28 22:21:49 EDT 2009
+//   Bug fix. "notCompleted" wasn't in an else clause for the INT messages.
+//   
+//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
+//   Don't output timing values to the timing logs.
+//
+// ****************************************************************************
+void
+avtParICAlgorithm::CheckPendingSendRequests()
+{
+    bufferIterator it;
+    vector<MPI_Request> req, copy;
+    vector<int> tags;
+    
+    for (it = sendBuffers.begin(); it != sendBuffers.end(); it++)
+    {
+        req.push_back(it->first.first);
+        copy.push_back(it->first.first);
+        tags.push_back(it->first.second);
+    }
+
+    if (req.empty())
+        return;
+    
+    //See if any sends are done.
+    int num = 0, *indices = new int[req.size()];
+    MPI_Status *status = new MPI_Status[req.size()];
+    int err = MPI_Testsome(req.size(), &req[0], &num, indices, status);
+
+    for (int i = 0; i < num; i++)
+    {
+        MPI_Request r = copy[indices[i]];
+        int tag = tags[indices[i]];
+        
+        RequestTagPair k(r,tag);
+        bufferIterator entry = sendBuffers.find(k);
+        if (entry != sendBuffers.end())
+        {
+            delete [] entry->second;
+            sendBuffers.erase(entry);
+        }
+    }
+    
+    delete [] indices;
+    delete [] status;
+}
+
+// ****************************************************************************
+// Method:  avtParICAlgorithm::PacketCompare
+//
+// Purpose: Compare packets for sorting.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+bool
+avtParICAlgorithm::PacketCompare(const unsigned char *a, const unsigned char *b)
+{
+    avtParICAlgorithm::Header ha, hb;
+    memcpy(&ha, a, sizeof(ha));
+    memcpy(&hb, b, sizeof(hb));
+
+    return ha.packet < hb.packet;
+}
+
+// ****************************************************************************
+// Method:  avtParICAlgorithm::PrepareForSend
+//
+// Purpose: Prepare a MemStream for sending. Adds header, breaks up into pieces
+//          if needed.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::PrepareForSend(int tag, MemStream *buff, std::vector<unsigned char *> &buffList)
+{
+    std::map<int, std::pair<int, int> >::const_iterator it = messageTagInfo.find(tag);
+    if (it == messageTagInfo.end())
         EXCEPTION0(ImproperUseException);
     
-    avtICAlgorithm::Initialize(seedPts);
-    InitRequests();
+    int bytesLeft = buff->buffLen();
+    int maxDataLen = it->second.second;
+
+    avtParICAlgorithm::Header header;
+    header.rank = rank;
+    header.id = msgID;
+    header.numPackets = 1;
+    if (buff->buffLen() > maxDataLen)
+        header.numPackets += buff->buffLen() / maxDataLen;
+        
+    header.packet = 0;
+    header.packetSz = 0;
+    header.dataSz = 0;
+    msgID++;
+
+    buffList.resize(header.numPackets);
+
+    size_t pos = 0;
+    for (int i = 0; i < header.numPackets; i++)
+    {
+        header.packet = i;
+        if (i == (header.numPackets-1))
+            header.dataSz = bytesLeft;
+        else
+            header.dataSz = maxDataLen;
+
+        header.packetSz = header.dataSz + sizeof(header);
+        unsigned char *b = new unsigned char[header.packetSz];
+
+        //Write the header.
+        unsigned char *bPtr = b;
+        memcpy(bPtr, &header, sizeof(header));
+        bPtr += sizeof(header);
+
+        //Write the data.
+        memcpy(bPtr, &buff->buff()[pos], header.dataSz);
+        pos += header.dataSz;
+
+        buffList[i] = b;
+        bytesLeft -= maxDataLen;
+    }
+}
+
+// ****************************************************************************
+// Method: avtParICAlgorithm::SendData 
+//
+// Purpose: Send data to destination.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::SendData(int dst, int tag, MemStream *buff)
+{
+    vector<unsigned char *> bufferList;
+
+    //Add headers, break into multiple buffers if needed.
+    PrepareForSend(tag, buff, bufferList);
+    
+    avtParICAlgorithm::Header header;
+    for (int i = 0; i < bufferList.size(); i++)
+    {
+        memcpy(&header, bufferList[i], sizeof(header));
+
+        MPI_Request req;
+        int err = MPI_Isend(bufferList[i], header.packetSz, MPI_BYTE, dst,
+                            tag, VISIT_MPI_COMM, &req);
+        BytesCnt.value += header.packetSz;
+    
+        //Add it to sendBuffers
+        RequestTagPair entry(req, tag);
+        sendBuffers[entry] = bufferList[i];
+    }
+    
+    delete buff;
+}
+
+// ****************************************************************************
+// Method: avtParICAlgorithm::RecvData 
+//
+// Purpose: Receive data from a destination.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+bool
+avtParICAlgorithm::RecvData(int tag, vector<MemStream *> &buffers)
+{
+    buffers.resize(0);
+    
+    //Find all recv of type tag.
+    vector<MPI_Request> req, copy;
+    for (bufferIterator i = recvBuffers.begin(); i != recvBuffers.end(); i++)
+    {
+        if (i->first.second == tag)
+        {
+            req.push_back(i->first.first);
+            copy.push_back(i->first.first);
+        }
+    }
+
+    if (req.empty())
+        return false;
+
+    MPI_Status *status = new MPI_Status[req.size()];
+    int *indices = new int[req.size()], num = 0;
+    MPI_Testsome(req.size(), &req[0], &num, indices, status);
+
+    if (num == 0)
+        return false;
+
+    vector<unsigned char *> incomingBuffers(num);
+    for (int i = 0; i < num; i++)
+    {
+        RequestTagPair entry(copy[indices[i]], tag);
+        bufferIterator it = recvBuffers.find(entry);
+        if ( it == recvBuffers.end())
+            EXCEPTION0(ImproperUseException);
+
+        incomingBuffers[i] = it->second;
+
+        recvBuffers.erase(it);
+    }
+
+    ProcessReceivedBuffers(tag, incomingBuffers, buffers);
+    
+    for (int i = 0; i < num; i++)
+        PostRecv(tag);
+
+    return ! buffers.empty();
+}
+
+// ****************************************************************************
+// Method:  avtParICAlgorithm::ProcessReceivedBuffers
+//
+// Purpose: 
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::ProcessReceivedBuffers(int tag,
+                                          vector<unsigned char*> &incomingBuffers,
+                                          vector<MemStream *> &buffers)
+{
+    for (int i = 0; i < incomingBuffers.size(); i++)
+    {
+        unsigned char *buff = incomingBuffers[i];
+        
+        //Grab the header.
+        avtParICAlgorithm::Header header;
+        memcpy(&header, buff, sizeof(header));
+        
+        //Only 1 packet, strip off header and add to list.
+        if (header.numPackets == 1)
+        {
+            MemStream *b = new MemStream(header.dataSz, (buff + sizeof(header)));
+            b->rewind();
+            buffers.push_back(b);
+            delete [] buff;
+        }
+        
+        //Multi packet....
+        else
+        {
+            RankIdPair k(header.rank, header.id);
+            packetIterator i2 = recvPackets.find(k);
+            
+            //First packet. Create a new list and add it.
+            if (i2 == recvPackets.end())
+            {
+                list<unsigned char *> l;
+                l.push_back(buff);
+                recvPackets[k] = l;
+            }
+            else
+            {
+                i2->second.push_back(buff);
+
+                // The last packet came in, merge into one MemStream.
+                if (i2->second.size() == header.numPackets)
+                {
+                    //Sort the packets into proper order.
+                    i2->second.sort(avtParICAlgorithm::PacketCompare);
+
+                    MemStream *mergedBuff = new MemStream;
+                    list<unsigned char *>::iterator listIt;
+
+                    for (listIt = i2->second.begin(); listIt != i2->second.end(); listIt++)
+                    {
+                        unsigned char *bi = *listIt;
+
+                        avtParICAlgorithm::Header header;
+                        memcpy(&header, bi, sizeof(header));
+                        mergedBuff->write(&bi[sizeof(header)], header.dataSz);
+                        delete [] bi;
+                    }
+
+                    mergedBuff->rewind();
+                    buffers.push_back(mergedBuff);
+                    recvPackets.erase(i2);
+                }
+            }
+        }
+    }
+
+    
+}
+
+// ****************************************************************************
+//  Method: avtParICAlgorithm::SendMsg
+//
+//  Purpose:
+//      Send an asynchronous message.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Dec 18, 2008
+//
+// Modifications:
+//
+//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
+//   Add the senders rank and msgID to the front of the message.
+//
+//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
+//   Don't output timing values to the timing logs.
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::SendMsg(int dst, vector<int> &msg)
+{
+    MemStream *buff = new MemStream;
+    
+    //Write data.
+    buff->write(rank);
+    buff->write(msg);
+
+    SendData(dst, avtParICAlgorithm::MESSAGE_TAG, buff);
+    MsgCnt.value++;
+}
+
+// ****************************************************************************
+//  Method: avtParICAlgorithm::SendAllMsg
+//
+//  Purpose:
+//      Broadcast a message.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Dec 18, 2008
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::SendAllMsg(vector<int> &msg)
+{
+    for (int i = 0; i < nProcs; i++)
+        if (i != rank)
+            SendMsg(i, msg);
+}
+
+// ****************************************************************************
+// Method:  avtParICAlgorithm::RecvMsg
+//
+// Purpose: Check for incoming messages.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+bool
+avtParICAlgorithm::RecvMsg(std::vector<std::vector<int> > &msgs)
+{
+    msgs.resize(0);
+
+    vector<MemStream *> buffers;
+    while (RecvData(avtParICAlgorithm::MESSAGE_TAG, buffers))
+    {
+        for (int i = 0; i < buffers.size(); i++)
+        {
+            int sendRank;
+            vector<int> m;
+            buffers[i]->read(sendRank);
+            buffers[i]->read(m);
+
+            vector<int> msg(1);
+            msg[0] = sendRank;
+            msg.insert(msg.end(), m.begin(), m.end());
+
+            msgs.push_back(msg);
+            delete buffers[i];
+        }
+    }
+
+    return ! msgs.empty();
+}
+
+// ****************************************************************************
+// Method:  avtParICAlgorithm::SendICs
+//
+// Purpose: Send ICs to a destination.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::SendICs(int dst, std::vector<avtIntegralCurve*> &ics)
+{
+    for (int i = 0; i < ics.size(); i++)
+        ics[i]->PrepareForSend();
+
+    if (DoSendICs(dst, ics))
+    {
+        for (int i = 0; i < ics.size(); i++)
+        {
+            avtIntegralCurve *ic = ics[i];
+            
+            //Add if id/seq is unique. (single streamlines can be sent to multiple dst).
+            list<avtIntegralCurve*>::const_iterator si = communicatedICs.begin();
+            bool found = false;
+            for (si = communicatedICs.begin(); !found && si != communicatedICs.end(); si++)
+                found = (*si)->SameCurve(ic);
+        
+            if (!found)
+                communicatedICs.push_back(ic);
+        }
+    }
+    
+    ICCommCnt.value += ics.size();
+    ics.resize(0);
+}
+
+
+// ****************************************************************************
+//  Method: avtParICAlgorithm::RecvICs
+//
+//  Purpose:
+//      Recv streamlines.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Mon Mar 16 15:45:11 EDT 2009
+//
+//  Modifications:
+//
+//  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
+//  RecvSLs broken into two methods.
+//  
+//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
+//  Change how timings are reported/calculated.
+//
+//  Hank Childs, Sat Feb 20 16:53:18 CST 2010
+//  Don't output timing values to the timing logs.
+//
+//  Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//  Use avtStreamlines, not avtStreamlineWrappers.
+//
+//  Hank Childs, Sat Jun  5 16:21:27 CDT 2010
+//  Use the PICS filter to instantiate integral curves, as this is now
+//  an abstract type.
+//
+// ****************************************************************************
+
+bool
+avtParICAlgorithm::RecvICs(list<avtIntegralCurve*> &recvICs)
+{
+    vector<MemStream *> buffers;
+    while (RecvData(avtParICAlgorithm::STREAMLINE_TAG, buffers))
+    {
+        for (int i = 0; i < buffers.size(); i++)
+        {
+            int num;
+            buffers[i]->read(num);
+            for (int j = 0; j < num; j++)
+            {
+                avtIntegralCurve *ic = picsFilter->CreateIntegralCurve();
+                ic->Serialize(MemStream::READ, *buffers[i], GetSolver());
+                recvICs.push_back(ic);
+
+            }
+            delete buffers[i];
+        }
+    }
+
+    return ! recvICs.empty();
+}
+
+
+// ****************************************************************************
+//  Method: avtParICAlgorithm::DoSendICs
+//
+//  Purpose:
+//      Send streamlines to a dst.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   September 24, 2009
+//
+//  Modifications:
+//
+//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
+//   Don't output timing values to the timing logs.
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
+// ****************************************************************************
+
+bool
+avtParICAlgorithm::DoSendICs(int dst, 
+                             vector<avtIntegralCurve*> &ics)
+{
+    if (dst == rank || ics.empty())
+        return false;
+
+    MemStream *buff = new MemStream;
+    int num = ics.size();
+    buff->write(num);
+    
+    for ( int i = 0; i < ics.size(); i++)
+        ics[i]->Serialize(MemStream::WRITE, *buff, GetSolver());
+    
+    SendData(dst, avtParICAlgorithm::STREAMLINE_TAG, buff);
+    
+    return true;
+}
+
+// ****************************************************************************
+// Method:  avtParICAlgorithm::SendDS
+//
+// Purpose: Send a vtk dataset.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+void
+avtParICAlgorithm::SendDS(int dst, std::vector<vtkDataSet *> &ds)
+{
+    //Serialize the data sets.
+    for (int i = 0; i < ds.size(); i++)
+    {
+        vtkDataSetWriter *writer = vtkDataSetWriter::New();
+        writer->WriteToOutputStringOn();
+        writer->SetFileTypeToBinary();
+        writer->SetInput(ds[i]);
+        writer->Write();
+        int dsLen = writer->GetOutputStringLength();
+        
+        MemStream *buff0 = new MemStream(2*sizeof(int));
+        buff0->write(rank);
+        buff0->write(dsLen);
+        SendData(dst, avtParICAlgorithm::DATASET_PREP_TAG, buff0);
+
+        MemStream *buff1 = new MemStream(dsLen, writer->GetBinaryOutputString());
+        messageTagInfo[avtParICAlgorithm::DATASET_TAG] = std::pair<int,int>(1, dsLen+sizeof(avtParICAlgorithm::Header));
+        SendData(dst, avtParICAlgorithm::DATASET_TAG, buff1);
+        messageTagInfo.erase(messageTagInfo.find(avtParICAlgorithm::DATASET_TAG));
+        writer->Delete();
+    }
+}
+
+// ****************************************************************************
+// Method:  avtParICAlgorithm::RecvDS
+//
+// Purpose: Check for incoming vtk datasets.
+//   
+//
+// Arguments:
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+bool
+avtParICAlgorithm::RecvDS(std::vector<vtkDataSet *> &ds)
+{
+    ds.resize(0);
+    vector<MemStream *> buffers;
+
+    while (RecvData(avtParICAlgorithm::DATASET_TAG, buffers))
+    {
+        for (int i = 0; i < buffers.size(); i++)
+        {
+            vtkDataSetReader *reader = vtkDataSetReader::New();
+            reader->ReadFromInputStringOn();
+            const char *data = (const char *)&buffers[i]->buff()[buffers[i]->getPos()];
+            reader->SetBinaryInputString(data, buffers[i]->capacity()-sizeof(avtParICAlgorithm::Header));
+            reader->Update();
+            vtkDataSet *d = reader->GetOutput();
+            ds.push_back(d);
+
+            reader->Delete();
+            delete buffers[i];
+        }
+    }
+    
+    while (RecvData(avtParICAlgorithm::DATASET_PREP_TAG, buffers))
+    {
+        for (int i = 0; i < buffers.size(); i++)
+        {
+            int sendRank, dsLen;
+            buffers[i]->read(sendRank);
+            buffers[i]->read(dsLen);
+            messageTagInfo[avtParICAlgorithm::DATASET_TAG] = std::pair<int,int>(1, dsLen);
+
+            messageTagInfo.erase(messageTagInfo.find(avtParICAlgorithm::DATASET_TAG));
+            PostRecv(avtParICAlgorithm::DATASET_TAG);
+            delete buffers[i];
+        }
+    }
+
+    return ! ds.empty();
 }
 
 
@@ -182,54 +919,7 @@ avtParICAlgorithm::PostRunAlgorithm()
     }
 }
 
-// ****************************************************************************
-//  Method: avtParICAlgorithm::PostExecute
-//
-//  Purpose:
-//      Cleanup.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   January 27, 2009
-//
-// ****************************************************************************
 
-void
-avtParICAlgorithm::PostExecute()
-{
-    CleanupAsynchronous();
-    avtICAlgorithm::PostExecute();
-}
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::InitRequests
-//
-//  Purpose:
-//      Initialize the request buffers.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
-//   Limit the number of async recvs outstanding.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-// ****************************************************************************
-
-void
-avtParICAlgorithm::InitRequests()
-{
-    debug5<<"avtParICAlgorithm::InitRequests() sz= "<<numAsyncRecvs<<endl;
-    statusRecvRequests.resize(numAsyncRecvs, MPI_REQUEST_NULL);
-    icRecvRequests.resize(numAsyncRecvs, MPI_REQUEST_NULL);
-    
-    for (int i = 0; i < statusRecvRequests.size(); i++)
-    {
-        PostRecvStatusReq(i);
-        PostRecvICReq(i);
-    }
-}
 
 static int
 CountIDs(list<avtIntegralCurve *> &l, int id)
@@ -273,6 +963,12 @@ avtParICAlgorithm::RestoreIntegralCurveSequence()
     debug5<<"RestoreIntegralCurveSequence: communicatedICs: "
           <<communicatedICs.size()
           <<" terminatedICs: "<<terminatedICs.size()<<endl;
+
+    //Create larger streamline buffers.
+    CleanupRequests();
+    messageTagInfo[avtParICAlgorithm::STREAMLINE_TAG] = std::pair<int,int>(numSLRecvs, 512*1024);
+    for (int i = 0; i < numSLRecvs; i++)
+        PostRecv(avtParICAlgorithm::STREAMLINE_TAG);
 
     //Communicate to everyone where the terminators are located.
     //Do this "N" streamlines at a time, so we don't have a super big buffer.
@@ -319,7 +1015,7 @@ avtParICAlgorithm::RestoreIntegralCurveSequence()
 
         //Set array for ICs that terminated here. Update sequence counts for communicated
         //ICs.
-        list<avtIntegralCurve*>::iterator t = terminatedICs.begin();
+        list<avtIntegralCurve*>::iterator t = terminatedICs.begin(); //MOVE TO front of loop!
         while (t != terminatedICs.end() && (*t)->id <= maxId)
         {
             if ((*t)->id >= minId)
@@ -327,7 +1023,7 @@ avtParICAlgorithm::RestoreIntegralCurveSequence()
                 int idx = (*t)->id % N;
                 myIDs[idx] = rank;
                 myIDs[idx+N] += 1;
-                debug5<<"I own id= "<<(*t)->id<<" "<<(((avtStateRecorderIntegralCurve *)*t))->sequenceCnt<<" idx= "<<idx<<endl;
+                //debug5<<"I own id= "<<(*t)->id<<" "<<(((avtStateRecorderIntegralCurve *)*t))->sequenceCnt<<" idx= "<<idx<<endl;
             }
 
             t++;
@@ -340,7 +1036,7 @@ avtParICAlgorithm::RestoreIntegralCurveSequence()
             {
                 int idx = (*c)->id % N;
                 myIDs[idx+N] += 1;
-                debug5<<"I have "<<(*c)->id<<" "<<(((avtStateRecorderIntegralCurve *)*c))->sequenceCnt<<" idx= "<<idx<<endl;
+                //debug5<<"I have "<<(*c)->id<<" "<<(((avtStateRecorderIntegralCurve *)*c))->sequenceCnt<<" idx= "<<idx<<endl;
             }
             c++;
         }
@@ -473,742 +1169,6 @@ avtParICAlgorithm::MergeTerminatedICSequences()
             avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(seqs[i]);
         terminatedICs.push_back(s);
     }
-}
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::CleanupAsynchronous
-//
-//  Purpose:
-//      Claenup the buffers used when doing asynchronous processing.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-// ****************************************************************************
-
-void
-avtParICAlgorithm::CleanupAsynchronous()
-{
-    for (int i = 0; i < statusRecvRequests.size(); i++)
-    {
-        MPI_Request req = statusRecvRequests[i];
-        if (req != MPI_REQUEST_NULL)
-            MPI_Cancel(&req);
-    } 
-
-    for (int i = 0; i < icRecvRequests.size(); i++)
-    {
-        MPI_Request req = icRecvRequests[i];
-        if (req != MPI_REQUEST_NULL)
-            MPI_Cancel(&req);
-    }
-
-    // Cleanup recv buffers.
-    map<MPI_Request, unsigned char*>::const_iterator it;
-    for (it = recvICBufferMap.begin(); it != recvICBufferMap.end(); ++it)
-    {
-        char *buff = (char *)it->second;
-        if (it->second != NULL)
-            delete [] it->second;
-    }
-    recvICBufferMap.clear();
-
-    map<MPI_Request, int*>::const_iterator itt;
-    for (itt = recvIntBufferMap.begin(); itt != recvIntBufferMap.end(); ++itt)
-    {
-        char *buff = (char *)itt->second;
-        if (itt->second != NULL)
-            delete [] itt->second;
-    }
-    recvIntBufferMap.clear();
-}
-
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::CheckPendingSendRequests
-//
-//  Purpose:
-//      Check to see if there are any pending send requests.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//  Modifications:
-//
-//    Dave Pugmire, Wed Mar 18 17:07:07 EDT 2009
-//    Delete entry from map after send is complete.
-//
-//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
-//   Change how timings are reported/calculated.
-//
-//   Dave Pugmire, Sat Mar 28 22:21:49 EDT 2009
-//   Bug fix. "notCompleted" wasn't in an else clause for the INT messages.
-//   
-//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
-//   Don't output timing values to the timing logs.
-//
-// ****************************************************************************
-void
-avtParICAlgorithm::CheckPendingSendRequests()
-{
-    debug5<<"avtParICAlgorithm::CheckPendingSendRequests()\n";
-    int communicationTimer = visitTimer->StartTimer();
-    
-    if (sendICBufferMap.size() > 0)
-    {
-        vector<MPI_Request> req, copy;
-
-        int notCompleted = 0;
-        map<MPI_Request, unsigned char*>::const_iterator it;
-        for (it = sendICBufferMap.begin(); it != sendICBufferMap.end(); ++it)
-        {
-            if (it->first != MPI_REQUEST_NULL && it->second != NULL)
-            {
-                req.push_back(it->first);
-                copy.push_back(it->first);
-            }
-            else
-                notCompleted++;
-        }
-
-        debug5 << "\tCheckPendingSendRequests() IC completed = "<<req.size()
-               <<" not completed: "<<notCompleted<<endl;
-
-        if (req.size() > 0)
-        {
-            // See if any sends have completed. Delete buffers if they have.
-            int num = 0, *indices = new int[req.size()];
-            MPI_Status *status = new MPI_Status[req.size()];
-            int err = MPI_Testsome(req.size(), &req[0], &num, indices, status);
-            
-            for (int i = 0; i < num; i++)
-            {
-                int idx = indices[i];
-                MPI_Request r = copy[idx];
-                unsigned char *buff = sendICBufferMap[r];
-                debug5 << "\tidx = " << idx << " r = " << r << " buff = " 
-                       << (void *)buff << endl;
-                if (buff)
-                    delete [] buff;
-
-                sendICBufferMap[r] = NULL;
-                sendICBufferMap.erase(r);
-            }
-            
-            delete [] indices;
-            delete [] status;
-        }
-    }
-
-    if (sendIntBufferMap.size() > 0)
-    {
-        vector<MPI_Request> req, copy;
-        map<MPI_Request, int*>::const_iterator it;
-        int notCompleted = 0;
-
-        for (it = sendIntBufferMap.begin(); it != sendIntBufferMap.end(); ++it)
-        {
-            if (it->first != MPI_REQUEST_NULL && it->second != NULL)
-            {
-                req.push_back(it->first);
-                copy.push_back(it->first);
-            }
-            else
-                notCompleted++;
-        }
-
-        debug5 << "\tCheckPendingSendRequests() INT completed = "<<req.size()
-               <<" not completed: "<<notCompleted<<endl;
-        
-        if (req.size() > 0)
-        {
-            // See if any sends have completed. Delete buffers if they have.
-            int num = 0, *indices = new int[req.size()];
-            MPI_Status *status = new MPI_Status[req.size()];
-            int err = MPI_Testsome(req.size(), &req[0], &num, indices, status);
-            
-            for (int i = 0; i < num; i++)
-            {
-                int idx = indices[i];
-                MPI_Request r = copy[idx];
-                int *buff = sendIntBufferMap[r];
-                debug5 << "\tidx = " << idx << " r = " << r << " buff = " 
-                       << (void *)buff << endl;
-                if (buff)
-                    delete [] buff;
-
-                sendIntBufferMap[r] = NULL;
-                sendIntBufferMap.erase(r);
-            }
-            
-            delete [] indices;
-            delete [] status;
-        }
-    }
-
-    bool nov = visitTimer->GetNeverOutputValue();
-    visitTimer->NeverOutput(true);
-    CommTime.value += visitTimer->StopTimer(communicationTimer, 
-                                            "CheckPending");
-    visitTimer->NeverOutput(nov);
-    debug5 << "DONE  CheckPendingSendRequests()\n";
-}
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::PostRecvStatusReq
-//
-//  Purpose:
-//      Receives status requests.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
-//   Limit the number of async recvs outstanding.
-//
-// ****************************************************************************
-
-void
-avtParICAlgorithm::PostRecvStatusReq(int idx)
-{
-    MPI_Request req;
-    int *buff = new int[statusMsgSz];
-
-    MPI_Irecv(buff, statusMsgSz, MPI_INT, MPI_ANY_SOURCE,
-              avtParICAlgorithm::STATUS_TAG,
-              VISIT_MPI_COMM, &req);
-    debug5 << "Post Statusrecv " <<idx<<" req= "<<req<<endl;
-    statusRecvRequests[idx] = req;
-    recvIntBufferMap[req] = buff;
-}
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::PostRecvICReq
-//
-//  Purpose:
-//      Receives status requests.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//  Modifications:
-//
-//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
-//   Limit the number of async recvs outstanding.
-//
-// ****************************************************************************
-
-void
-avtParICAlgorithm::PostRecvICReq(int idx)
-{
-    MPI_Request req;
-    unsigned char *buff = new unsigned char[icMsgSz];
-    MPI_Irecv(buff, icMsgSz,
-              MPI_UNSIGNED_CHAR, MPI_ANY_SOURCE,
-              avtParICAlgorithm::STREAMLINE_TAG, 
-              VISIT_MPI_COMM, &req);
-
-    debug5 << "Post ICrecv " <<idx<<" req= "<<req<<endl;
-    icRecvRequests[idx] = req;
-    recvICBufferMap[req] = buff;
-}
-
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::SendMsg
-//
-//  Purpose:
-//      Send an asynchronous message.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Dec 18, 2008
-//
-// Modifications:
-//
-//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
-//   Add the senders rank and msgID to the front of the message.
-//
-//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
-//   Don't output timing values to the timing logs.
-//
-// ****************************************************************************
-
-void
-avtParICAlgorithm::SendMsg(int dst,
-                           vector<int> &msg)
-{
-    int communicationTimer = visitTimer->StartTimer();
-    if (msg.size() > statusMsgSz)
-        EXCEPTION0(ImproperUseException);
-    
-    int *buff = new int[statusMsgSz];
-    buff[0] = msgID;
-    msgID++;
-    buff[1] = rank;
-    
-    MPI_Request req;
-    for (int i = 0; i < msg.size(); i++)
-        buff[2+i] = msg[i];
-
-    debug5<<"SendMsg to :"<<dst<<" [";
-    for(int i = 0; i < statusMsgSz; i++) debug5<<buff[i]<<" ";
-    debug5<<"]"<<endl;
-        
-    int err = MPI_Isend(buff, statusMsgSz, MPI_INT, dst,
-                        avtParICAlgorithm::STATUS_TAG,
-                        VISIT_MPI_COMM, &req);
-
-    sendIntBufferMap[req] = buff;
-    
-    BytesCnt.value += (sizeof(int) *statusMsgSz);
-    MsgCnt.value++;
-    bool nov = visitTimer->GetNeverOutputValue();
-    visitTimer->NeverOutput(true);
-    CommTime.value += visitTimer->StopTimer(communicationTimer, 
-                                            "SendMsg");
-    visitTimer->NeverOutput(nov);
-    debug5 << "DONE  CheckPendingSendRequests()\n";
-}
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::SendAllMsg
-//
-//  Purpose:
-//      Broadcast a message.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Dec 18, 2008
-//
-// Modifications:
-//
-//
-// ****************************************************************************
-
-void
-avtParICAlgorithm::SendAllMsg(vector<int> &msg)
-{
-    for (int i = 0; i < nProcs; i++)
-        if (i != rank)
-            SendMsg(i, msg);
-}
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::RecvMsgs
-//
-//  Purpose:
-//      Recieve any messages.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Dec 18, 2008
-//
-// Modifications:
-//
-//   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
-//   Change how timings are reported/calculated.
-//
-//   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
-//   Senders rank and msgID is in the message now.
-//   
-//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
-//   Don't output timing values to the timing logs.
-//
-// ****************************************************************************
-
-void
-avtParICAlgorithm::RecvMsgs(std::vector<std::vector<int> > &msgs)
-{
-    debug5<<"avtParICAlgorithm::RecvMsgs()\n";
-    int communicationTimer = visitTimer->StartTimer();
-    
-    msgs.resize(0);
-    while (true)
-    {
-        int nReq = statusRecvRequests.size();
-        MPI_Status *status = new MPI_Status[nReq];
-        int *indices = new int[nReq];
-        int num = 0, err;
-
-        vector<MPI_Request> copy;
-        for (int i = 0; i < statusRecvRequests.size(); i++)
-            copy.push_back(statusRecvRequests[i]);
-
-        err = MPI_Testsome(nReq, &copy[0], &num, indices, status);
-        debug5<<"::RecvMsgs() err= "<<err<<" Testsome("<<nReq<<"); num= "<<num<<endl;
-
-        if (num > 0)
-        {
-            for (int i = 0; i < num; i++)
-            {
-                int idx = indices[i];
-                debug5<<"RecvMsg from "<<idx<<endl;
-
-                MPI_Request req = statusRecvRequests[idx];
-                if (req == MPI_REQUEST_NULL)
-                    continue;
-                
-                int *buff = recvIntBufferMap[req];
-                recvIntBufferMap.erase(req);
-                if (buff == NULL)
-                    continue;
-
-                debug5<<"RecvMsg: [";
-                for(int i = 0; i < statusMsgSz; i++) debug5<<buff[i]<<" ";
-                debug5<<"]"<<endl;
-                
-                //Skip msg ID, copy buffer int msg.
-                vector<int> msg;
-                for (int i = 1; i < statusMsgSz; i++)
-                    msg.push_back(buff[i]);
-                msgs.push_back(msg);
-
-                //Clean up.
-                delete [] buff;
-            }
-        
-            //Repost recv requests.
-            for (int i = 0; i < num; i++)
-                PostRecvStatusReq(indices[i]);
-        }
-            
-        delete [] status;
-        delete [] indices;
-        if (num == 0)
-            break;
-    }
-    bool nov = visitTimer->GetNeverOutputValue();
-    visitTimer->NeverOutput(true);
-    debug5 << "DONE  CheckPendingSendRequests()\n";
-    CommTime.value += visitTimer->StopTimer(communicationTimer,
-                                            "RecvMsgs");
-    visitTimer->NeverOutput(nov);
-}
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::SendICs
-//
-//  Purpose:
-//      Send streamlines to a dst.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//  Modifications:
-//
-//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
-//   Memory leak fix.
-//
-//   Dave Pugmire, Thu Sep 24 14:03:46 EDT 2009
-//   Call new method, DoSendICs.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
-//   Use virtual methods to reduce dependence on a specific communication
-//   pattern.
-//
-// ****************************************************************************
-
-void
-avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics)
-{
-
-    for (int i = 0; i < ics.size(); i++)
-    {
-        avtIntegralCurve *ic = ics[i];
-        ic->PrepareForSend();
-    }
-
-    if (DoSendICs(dst, ics))
-    {
-        for (int i = 0; i < ics.size(); i++)
-        {
-            avtIntegralCurve *ic = ics[i];
-            
-            //Add if id/seq is unique. (single streamlines can be sent to multiple dst).
-            list<avtIntegralCurve*>::const_iterator si = communicatedICs.begin();
-            bool found = false;
-            for (si = communicatedICs.begin(); !found && si != communicatedICs.end(); si++)
-                found = (*si)->SameCurve(ic);
-        
-            if (!found)
-                communicatedICs.push_back(ic);
-        }
-        
-        //Empty the array.
-        ics.resize(0);
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::DoSendICs
-//
-//  Purpose:
-//      Send streamlines to a dst.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   September 24, 2009
-//
-//  Modifications:
-//
-//   Hank Childs, Sat Feb 20 16:53:18 CST 2010
-//   Don't output timing values to the timing logs.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-// ****************************************************************************
-
-bool
-avtParICAlgorithm::DoSendICs(int dst, 
-                             vector<avtIntegralCurve*> &ics)
-{
-    if (dst == rank)
-        return false;
-  
-    size_t szz = ics.size();
-    if (szz == 0)
-        return false;
-
-    int communicationTimer = visitTimer->StartTimer();
-    MemStream buff;
-    buff.write(&szz, 1);
-
-    for (int i = 0; i < ics.size(); i++)
-    {
-        avtIntegralCurve *ic = ics[i];
-        ic->Serialize(MemStream::WRITE, buff, GetSolver());
-        ICCommCnt.value ++;
-    }
-    
-    // Break it up into multiple messages if needed.
-    if (buff.buffLen() > icMsgSz)
-        EXCEPTION0(ImproperUseException);
-    
-    // Copy it into a byte buffer.
-    size_t sz = buff.buffLen();
-    unsigned char *msg = new unsigned char[sz];
-    memcpy(msg, buff.buff(), sz);
-
-    //Send it along.
-    MPI_Request req;
-    int err = MPI_Isend(msg, sz, MPI_UNSIGNED_CHAR, dst,
-                        avtParICAlgorithm::STREAMLINE_TAG,
-                        VISIT_MPI_COMM, &req);
-    debug5<<err<<" = MPI_Isend(msg, "<<sz<<", MPI_UNSIGNED_CHAR, to "<<dst<<", req= "<<req<<endl;
-    sendICBufferMap[req] = msg;
-
-    BytesCnt.value += sz;
-    bool nov = visitTimer->GetNeverOutputValue();
-    visitTimer->NeverOutput(true);
-    CommTime.value += visitTimer->StopTimer(communicationTimer,
-                                            "SendICs");
-    visitTimer->NeverOutput(nov);
-    debug5 << "DONE  CheckPendingSendRequests()\n";
-    return true;
-}
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::RecvICs
-//
-//  Purpose:
-//      Recv streamlines.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Mon Mar 16 15:45:11 EDT 2009
-//
-//  Modifications:
-//
-//  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//  RecvSLs broken into two methods.
-//  
-//  Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
-//  Change how timings are reported/calculated.
-//
-//  Hank Childs, Sat Feb 20 16:53:18 CST 2010
-//  Don't output timing values to the timing logs.
-//
-//  Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//  Use avtStreamlines, not avtStreamlineWrappers.
-//
-//  Hank Childs, Sat Jun  5 16:21:27 CDT 2010
-//  Use the PICS filter to instantiate integral curves, as this is now
-//  an abstract type.
-//
-// ****************************************************************************
-
-int
-avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs)
-{
-    int communicationTimer = visitTimer->StartTimer();
-    int icCount = 0;
-
-    while (true)
-    {
-        int nReq = icRecvRequests.size();
-        MPI_Status *status = new MPI_Status[nReq];
-        int *indices = new int[nReq];
-        int num = 0, err;
-
-        vector<MPI_Request> copy;
-        for (int i = 0; i < icRecvRequests.size(); i++)
-            copy.push_back(icRecvRequests[i]);
-        err = MPI_Testsome(nReq, &copy[0], &num, indices, status);
-
-        if (num > 0)
-        {
-            for (int i = 0; i < num; i++)
-            {
-                int idx = indices[i];
-                MPI_Request req = icRecvRequests[idx];
-                if (req == MPI_REQUEST_NULL)
-                    continue;
-                
-                //Grab the bytes, unserialize them, add to list.
-                unsigned char *msg = recvICBufferMap[req];
-                recvICBufferMap.erase(req);
-                if (msg == NULL)
-                    continue;
-        
-                MemStream buff(icMsgSz, msg);
-                delete [] msg;
-                msg = NULL;
-
-                size_t numICs;
-                buff.read(numICs);
-
-                for (int j = 0; j < numICs; j++)
-                {
-                    avtIntegralCurve *ic = picsFilter->CreateIntegralCurve();
-                    ic->Serialize(MemStream::READ, buff, GetSolver());
-                    recvICs.push_back(ic);
-                    icCount++;
-                }
-            }
-
-            for (int i = 0; i < num; i++)
-                PostRecvICReq(indices[i]);
-        }
-
-        delete [] status;
-        delete [] indices;
-        
-        if (num == 0)
-            break;
-    }
-    
-    bool nov = visitTimer->GetNeverOutputValue();
-    visitTimer->NeverOutput(true);
-    CommTime.value += visitTimer->StopTimer(communicationTimer,
-                                            "RecvICs");
-    visitTimer->NeverOutput(nov);
-    debug5 << "DONE  CheckPendingSendRequests()\n";
-    return icCount;
-}
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::RecvICs
-//
-//  Purpose:
-//      Recv streamlines.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//  Modifications:
-//
-//    Dave Pugmire, Mon Mar 16 15:45:11 EDT 2009
-//    Call the other RecvSLs and then check for domain inclusion.
-//
-//    Dave Pugmire, Tue Mar 17 12:02:10 EDT 2009
-//    Use new new RecvSLs method, then check for terminations.
-//
-//    Hank Childs, Fri Jun  4 03:52:48 PDT 2010
-//    Rename GetEndPt to GetCurrentLocation.
-//
-//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//    Use avtStreamlines, not avtStreamlineWrappers.
-//
-// ****************************************************************************
-int
-avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &streamlines,
-                           int &earlyTerminations )
-{
-    list<avtIntegralCurve *> recvICs;
-    RecvICs(recvICs);
-
-    earlyTerminations = 0;
-    int icCount = 0;
-    //Check to see if they in this domain.
-    list<avtIntegralCurve *>::iterator s;
-    for (s = recvICs.begin(); s != recvICs.end(); ++s)
-    {
-        avtVector pt;
-        (*s)->CurrentLocation(pt);
-
-        if (PointInDomain(pt, (*s)->domain))
-        {
-            streamlines.push_back(*s);
-            icCount++;
-        }
-        else
-        {
-            // Point not in domain.
-            delete *s;
-            earlyTerminations++;
-        }
-    }
-
-    return icCount;
-}
-
-
-// ****************************************************************************
-//  Method: avtParICAlgorithm::ExchangeICs
-//
-//  Purpose:
-//      Exchange streamlines.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//  Modifications:
-//
-//   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
-//   Add early terminations flag.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-// ****************************************************************************
-
-bool
-avtParICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &streamlines,
-                               vector<vector< avtIntegralCurve *> > &sendICs,
-                               int &earlyTerminations )
-{
-    bool newIntegralCurves = false;
-    earlyTerminations = 0;
-
-    // Do the IC sends.
-    for (int i = 0; i < nProcs; i++)
-    { 
-        vector<avtIntegralCurve *> &ic = sendICs[i];
-        
-        if (i != rank)
-            SendICs(i, ic);
-        else // Pass them to myself....
-        {
-            for (int j = 0; j < ic.size(); j++)
-                streamlines.push_back(ic[j]);
-        }
-    }
-
-    // See if there are any recieves....
-    int numNewICs = RecvICs(streamlines, earlyTerminations);
-    newIntegralCurves = (numNewICs > 0);
-    return newIntegralCurves;
 }
 
 // ****************************************************************************

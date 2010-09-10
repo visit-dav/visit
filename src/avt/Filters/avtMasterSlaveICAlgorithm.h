@@ -106,6 +106,8 @@ class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
                                              int workGroupSz);
 
   protected:
+    bool                      ExchangeICs(std::list<avtIntegralCurve *> &streamlines,
+                                          std::vector<std::vector< avtIntegralCurve *> > &sendICs);
     int                        maxCnt, case4AThreshold;
     int                        NUM_DOMAINS;
     int                        DomToIdx(const DomainType &dom) const

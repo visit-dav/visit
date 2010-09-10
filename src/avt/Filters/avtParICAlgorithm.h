@@ -46,6 +46,9 @@
 
 #include "avtICAlgorithm.h"
 
+class vtkDataSet;
+class MemStream;
+
 // ****************************************************************************
 // Class: avtParICAlgorithm
 //
@@ -89,6 +92,9 @@
 //   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
 //   Rename method to make its communication pattern more clear.
 //
+//   Dave Pugmire, Fri Sep 10 13:36:58 EDT 2010
+//   Rewrite of most of this class.   
+//
 // ****************************************************************************
 
 class avtParICAlgorithm : public avtICAlgorithm
@@ -97,39 +103,40 @@ class avtParICAlgorithm : public avtICAlgorithm
     avtParICAlgorithm(avtPICSFilter *icFilter);
     virtual ~avtParICAlgorithm();
 
-    virtual void              InitializeBuffers(std::vector<avtIntegralCurve *> &,
-                                         int, int);
+    virtual void              InitializeBuffers(std::vector<avtIntegralCurve *> &seeds,
+                                                int msgSize,
+                                                int numMsgRecvs,
+                                                int numICRecvs,
+                                                int numDSRecvs=0);
     virtual void              PostExecute();
 
   protected:
-    virtual void              PostRunAlgorithm();
-    void                      InitRequests();
-    void                      CheckPendingSendRequests();
-    void                      CleanupAsynchronous();
-    void                      RestoreIntegralCurveSequence();
-    void                      PostRecvStatusReq(int idx);
-    void                      PostRecvICReq(int idx);
-    void                      SendMsg(int dest, std::vector<int> &msg);
-    void                      SendAllMsg(std::vector<int> &msg);
-    void                      RecvMsgs(std::vector<std::vector<int> > &msgs);
-    void                      SendICs(int dst,
-                                      std::vector<avtIntegralCurve*> &);
-    bool                      DoSendICs(int dst,
-                                        std::vector<avtIntegralCurve*> &);
-    int                       RecvICs(std::list<avtIntegralCurve*> &);
-    int                       RecvICs(std::list<avtIntegralCurve*> &,
-                                      int &earlyTerminations);
-    bool                      ExchangeICs(std::list<avtIntegralCurve *> &,
-                                          std::vector<std::vector<avtIntegralCurve *> >&,
-                                          int &earlyTerminations );
-    void                      MergeTerminatedICSequences();
-
     int                       rank, nProcs;
     std::list<avtIntegralCurve *> communicatedICs;
-    std::map<MPI_Request, unsigned char*> sendICBufferMap, recvICBufferMap;
-    std::map<MPI_Request, int *> sendIntBufferMap, recvIntBufferMap;
 
-    std::vector<MPI_Request>  statusRecvRequests, icRecvRequests;
+    virtual void              PostRunAlgorithm();
+
+    //Manage communication.
+    void                      CleanupRequests();
+    void                      CheckPendingSendRequests();
+
+    // Send/Recv Integral curves.
+    void                      SendICs(int dst, std::vector<avtIntegralCurve*> &v);
+    bool                      RecvICs(std::list<avtIntegralCurve*> &v);
+
+    // Send/Recv messages.
+    void                      SendMsg(int dst, std::vector<int> &msg);
+    void                      SendAllMsg(std::vector<int> &msg);
+    bool                      RecvMsg(std::vector<std::vector<int> > &msgs);
+
+    // Send/Recv datasets.
+    void                      SendDS(int dst, std::vector<vtkDataSet *> &ds);
+    bool                      RecvDS(std::vector<vtkDataSet *> &ds);
+
+
+    void                      RestoreIntegralCurveSequence();
+    void                      MergeTerminatedICSequences();
+    
 
     virtual void              CompileTimingStatistics();
     virtual void              CompileCounterStatistics();
@@ -137,14 +144,49 @@ class avtParICAlgorithm : public avtICAlgorithm
     virtual void              ReportTimings(ostream &os, bool totals);
     virtual void              ReportCounters(ostream &os, bool totals);
 
-    //Timers.
+    //Timers/Counters.
     ICStatistics              CommTime;
-    //Counters.
     ICStatistics              MsgCnt, ICCommCnt, BytesCnt;
-
+    
   private:
-    static int                STATUS_TAG, STREAMLINE_TAG;
-    int                       statusMsgSz, icMsgSz, numAsyncRecvs, msgID;
+    void                      PostRecv(int tag);
+    void                      PostRecv(int tag, int sz);
+    void                      SendData(int dst, int tag, MemStream *buff);
+    bool                      RecvData(int tag, std::vector<MemStream *> &buffers);
+    void                      AddHeader(MemStream *buff);
+    void                      RemoveHeader(MemStream *input, MemStream *header, MemStream *buff);
+
+    bool                      DoSendICs(int dst,
+                                        std::vector<avtIntegralCurve*> &);
+    void                      PrepareForSend(int tag, MemStream *buff, std::vector<unsigned char *> &buffList);
+    static bool               PacketCompare(const unsigned char *a, const unsigned char *b);
+    void                      ProcessReceivedBuffers(int tag, vector<unsigned char*> &incomingBuffers,
+                                                     vector<MemStream *> &buffers);
+
+    // Send/Recv buffer management structures.
+    typedef std::pair<MPI_Request, int> RequestTagPair;
+    typedef std::pair<int, int> RankIdPair;
+    typedef std::map<RequestTagPair, unsigned char *>::iterator bufferIterator;
+    typedef std::map<RankIdPair, std::list<unsigned char *> >::iterator packetIterator;
+    
+    std::map<RequestTagPair, unsigned char *> sendBuffers, recvBuffers;
+    std::map<RankIdPair, std::list<unsigned char *> > recvPackets;
+
+    
+    // Maps MPI_TAG to pair(num buffers, data size).
+    std::map<int, std::pair<int, int> > messageTagInfo;
+    int numMsgRecvs, numSLRecvs, numDSRecvs;
+    int slSize, slsPerRecv, msgSize;
+    
+    
+    static int                MESSAGE_TAG, STREAMLINE_TAG, DATASET_PREP_TAG, DATASET_TAG;
+    int                       msgID;
+
+    //Message headers.
+    typedef struct
+    {
+        int rank, id, numPackets, packet, packetSz, dataSz;
+    } Header;
 };
 
 #endif
