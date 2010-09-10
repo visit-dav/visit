@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 // Produced at the Lawrence Livermore National Laboratory
-// LLNL-CODE-400124
+// LLNL-CODE-442911
 // All rights reserved.
 //
 // This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -59,24 +59,31 @@ import llnl.visit.Plugin;
 
 public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
 {
-    private static int AMRStitchCellAttributes_numAdditionalAtts = 0;
+    private static int AMRStitchCellAttributes_numAdditionalAtts = 1;
+
+    // Enum values
+    public final static int CREATETYPE_DUALGRIDANDSTITCHCELLS = 0;
+    public final static int CREATETYPE_DUALGRID = 1;
+    public final static int CREATETYPE_STITCHCELLS = 2;
+
 
     public AMRStitchCellAttributes()
     {
         super(AMRStitchCellAttributes_numAdditionalAtts);
 
-    }
+        }
 
     public AMRStitchCellAttributes(int nMoreFields)
     {
         super(AMRStitchCellAttributes_numAdditionalAtts + nMoreFields);
 
-    }
+        }
 
     public AMRStitchCellAttributes(AMRStitchCellAttributes obj)
     {
         super(AMRStitchCellAttributes_numAdditionalAtts);
 
+        CreateCellsOfType = obj.CreateCellsOfType;
 
         SelectAll();
     }
@@ -94,31 +101,50 @@ public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
     public boolean equals(AMRStitchCellAttributes obj)
     {
         // Create the return value
-        return (true);
+        return ((CreateCellsOfType == obj.CreateCellsOfType));
     }
 
     public String GetName() { return "AMRStitchCell"; }
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
+    public void SetCreateCellsOfType(int CreateCellsOfType_)
+    {
+        CreateCellsOfType = CreateCellsOfType_;
+        Select(0);
+    }
+
     // Property getting methods
+    public int GetCreateCellsOfType() { return CreateCellsOfType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
+        if(WriteSelect(0, buf))
+            buf.WriteInt(CreateCellsOfType);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
     {
+        SetCreateCellsOfType(buf.ReadInt());
     }
 
     public String toString(String indent)
     {
         String str = new String();
+        str = str + indent + "CreateCellsOfType = ";
+        if(CreateCellsOfType == CREATETYPE_DUALGRIDANDSTITCHCELLS)
+            str = str + "CREATETYPE_DUALGRIDANDSTITCHCELLS";
+        if(CreateCellsOfType == CREATETYPE_DUALGRID)
+            str = str + "CREATETYPE_DUALGRID";
+        if(CreateCellsOfType == CREATETYPE_STITCHCELLS)
+            str = str + "CREATETYPE_STITCHCELLS";
+        str = str + "\n";
         return str;
     }
 
 
     // Attributes
+    private int CreateCellsOfType;
 }
 
