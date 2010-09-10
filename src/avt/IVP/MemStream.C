@@ -51,7 +51,7 @@
 //
 // ****************************************************************************
 
-MemStream::MemStream( size_t sz0 )
+MemStream::MemStream(size_t sz0)
 {
     pos = 0;
     len = 0;
@@ -69,14 +69,31 @@ MemStream::MemStream( size_t sz0 )
 //
 // ****************************************************************************
 
-MemStream::MemStream( size_t sz, const unsigned char *buff )
+MemStream::MemStream(size_t sz, const unsigned char *buff)
 {
     pos = 0;
     len = sz;
     maxLen = len;
     
     data = new unsigned char[len];
-    memcpy( data, buff, len );
+    memcpy(data, buff, len);
+}
+
+// ****************************************************************************
+// Method:  MemStream constructor
+//
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+MemStream::MemStream(const MemStream &s)
+{
+    pos = 0;
+    len = s.buffLen();
+    maxLen = len;
+    data = new unsigned char[len];
+    memcpy(data, s.buff(), len);
 }
 
 
@@ -90,7 +107,7 @@ MemStream::MemStream( size_t sz, const unsigned char *buff )
 
 MemStream::~MemStream()
 {
-    if ( data )
+    if (data)
         delete [] data;
     pos = 0;
     len = 0;
@@ -111,21 +128,21 @@ MemStream::~MemStream()
 // ****************************************************************************
 
 void
-MemStream::CheckSize( size_t sz )
+MemStream::CheckSize(size_t sz)
 {
     size_t reqLen = pos+sz;
     
-    if ( reqLen > maxLen )
+    if (reqLen > maxLen)
     {
         size_t newLen = 2*maxLen; // double current size.
-        if ( newLen < reqLen )
+        if (newLen < reqLen)
             newLen = reqLen;
         
         unsigned char *newData = new unsigned char[newLen];
         
-        if ( data )
+        if (data)
         {
-            memcpy( newData, data, len ); // copy existing data to new buffer.
+            memcpy(newData, data, len); // copy existing data to new buffer.
             delete [] data;
         }
         data = newData;

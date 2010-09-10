@@ -245,6 +245,9 @@ avtMasterSlaveICAlgorithm::~avtMasterSlaveICAlgorithm()
 //   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
 //   Reflect change in method name to InitializeBuffers.
 //
+//   Dave Pugmire, Fri Sep 10 14:03:45 EDT 2010
+//   Send in number of recvs for msgs and ics.
+//
 // ****************************************************************************
 
 void
@@ -254,7 +257,7 @@ avtMasterSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
     if (numRecvs > 64)
         numRecvs = 64;
     
-    avtParICAlgorithm::InitializeBuffers(seedPts, 2+NUM_DOMAINS, numRecvs);
+    avtParICAlgorithm::InitializeBuffers(seedPts, 2+NUM_DOMAINS, numRecvs, numRecvs);
 }
 
 void
@@ -269,6 +272,40 @@ avtMasterSlaveICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics
     EXCEPTION0(ImproperUseException);
 }
 
+// ****************************************************************************
+// Method:  avtMasterSlaveICAlgorithm::ExchangeICs
+//
+// Purpose:
+//   
+// Programmer:  Dave Pugmire
+// Creation:    September 10, 2010
+//
+// ****************************************************************************
+
+bool
+avtMasterSlaveICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &streamlines,
+                                       vector<vector< avtIntegralCurve *> > &sendICs)
+{
+    bool newIntegralCurves = false;
+    
+    // Do the IC sends.
+    for (int i = 0; i < nProcs; i++)
+    { 
+        vector<avtIntegralCurve *> &ic = sendICs[i];
+        if (i != rank)
+            SendICs(i, ic);
+        else // Pass them to myself....
+        {
+            for (int j = 0; j < ic.size(); j++)
+                streamlines.push_back(ic[j]);
+        }
+    }
+
+    // See if there are any recieves....
+    int numNewICs = RecvICs(streamlines);
+    newIntegralCurves = (numNewICs > 0);
+    return newIntegralCurves;
+}
 
 // ****************************************************************************
 //  Method: avtMasterSlaveICAlgorithm::Sleep
@@ -1014,7 +1051,7 @@ void
 avtMasterICAlgorithm::ProcessMessages()
 {
     vector<vector<int> > msgs;
-    RecvMsgs(msgs);
+    RecvMsg(msgs);
 
     for (int i = 0; i < msgs.size(); i++)
     {
@@ -1542,13 +1579,7 @@ avtMasterICAlgorithm::Case1(int &counter)
     }
 
     if (streamlinesToSend)
-    {
-        int earlyTerminations = 0;
-        ExchangeICs(activeICs, distributeICs, earlyTerminations);
-        
-        if (earlyTerminations != 0)
-            EXCEPTION0(ImproperUseException);
-    }    
+        ExchangeICs(activeICs, distributeICs);
 }
 
 
@@ -2361,9 +2392,9 @@ avtSlaveICAlgorithm::RunAlgorithm()
         oobICs.clear();
         
         //See if we have any ICs.
-        int earlyTerminations = 0;
-        bool newICs = RecvICs(activeICs, earlyTerminations);
-        numTerminated += earlyTerminations;
+        //int earlyTerminations = 0;
+        bool newICs = RecvICs(activeICs);//, earlyTerminations);
+        //numTerminated += earlyTerminations;
         ProcessMessages(done, newMsgs);
         CheckPendingSendRequests();
 
@@ -2430,7 +2461,7 @@ void
 avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
 {
     vector<vector<int> > msgs;
-    RecvMsgs(msgs);
+    RecvMsg(msgs);
     
     done = false;
     newMsgs = (msgs.size() > 0);

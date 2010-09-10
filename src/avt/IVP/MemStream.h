@@ -50,6 +50,7 @@
 #include <avtVector.h>
 #include <vector>
 #include <DebugStream.h>
+#include <VisItException.h>
 
 // ****************************************************************************
 //  Struct: MemStream
@@ -65,6 +66,9 @@
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//   Dave Pugmire, Fri Sep 10 13:35:33 EDT 2010
+//   Add new members.
+//
 // ****************************************************************************
 
 struct IVP_API MemStream
@@ -75,13 +79,22 @@ struct IVP_API MemStream
         WRITE
     };
     
-    MemStream( size_t sz0= 32 );
+    MemStream( size_t sz0= 32);
     MemStream( size_t sz, const unsigned char *buff );
+    MemStream(const MemStream &s);
     ~MemStream();
 
     void rewind() { pos = 0; }
+    size_t getPos() const {return pos;}
+    void setPos(size_t p)
+    {
+        pos = p;
+        if (pos > buffLen())
+            EXCEPTION0(ImproperUseException);
+    }
 
     size_t buffLen() const { return len; }
+    size_t capacity() const { return maxLen; }
     unsigned char *buff() const { return data; }
 
     // General read/write routines.
@@ -189,6 +202,15 @@ struct IVP_API MemStream
     // data members
     unsigned char *data;
     size_t len, maxLen, pos;
+
+    friend std::ostream& operator<<(std::ostream &out, const MemStream &m)
+    {
+        out<<" MemStream(p= "<<m.pos<<", l= "<<m.len<<"["<<m.maxLen<<"]) data=[";
+        for (int i=0; i < m.len; i++)
+            out<<(int)(m.data[i])<<" ";
+        out<<"]";
+        return out;
+    }
 };
 
 #endif
