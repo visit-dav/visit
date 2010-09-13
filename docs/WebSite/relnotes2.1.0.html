@@ -1,0 +1,695 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML><!-- InstanceBegin template="/Templates/Temp_doc.dwt" codeOutsideHTMLIsLocked="false" -->
+
+<HEAD>
+
+<!-- InstanceBeginEditable name="doctitle" -->
+
+<TITLE>VisIt 2.1 Release Notes</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="LLNLRandR" content="LLNL-WEB-452431">
+<meta name="review" content="September 2010">
+<meta name="copyright" content="This document is copyrighted U.S. Department of Energy under Contract DE-AC52-07NA27344">
+<meta name="language" content="en">
+<meta name="rating" content="general">
+<meta name="distribution" content="global">
+<meta name="keywords" content="visualization, qualitative, quantitative, analysis, distributed, parallel, tera-scale, rectilinear, curvilinear, structured, unstructured, mesh, grid, finite element, hydrodynamics, python, java, unix, irix, tru64, aix, linux, solaris, windows 98, windows xp, open source contour, vector, volume visualization, streamlines">
+<meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
+<meta http-equiv="Expires" content="never">
+<meta name="date" content="2010-09-13">
+<meta name="Author" content="Eric Brugger">
+
+<!-- InstanceEndEditable --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+
+<!-- ImageReady Preload Script (template1.psd) -->
+
+<SCRIPT TYPE="text/javascript">
+
+<!--
+
+
+
+
+
+<!--
+
+
+
+function newImage(arg) {
+
+	if (document.images) {
+
+		rslt = new Image();
+
+		rslt.src = arg;
+
+		return rslt;
+
+	}
+
+}
+
+
+
+function changeImages() {
+
+	if (document.images && (preloadFlag == true)) {
+
+		for (var i=0; i<changeImages.arguments.length; i+=2) {
+
+			document[changeImages.arguments[i]].src = changeImages.arguments[i+1];
+
+		}
+
+	}
+
+}
+
+
+
+var preloadFlag = false;
+
+function preloadImages() {
+
+	if (document.images) {
+
+		template1_home_over = newImage("media/template1_home-over.jpg");
+
+		template1_dload_over = newImage("media/template1_dload-over.jpg");
+
+		template1_dload_over006 = newImage("media/template1_dload-over-06.jpg");
+
+		template1_doc_over = newImage("media/template1_doc-over.jpg");
+
+		template1_contact_over = newImage("media/template1_contact-over.jpg");
+
+		preloadFlag = true;
+
+	}
+
+}
+
+
+
+// -->
+
+
+
+function MM_preloadImages() { //v3.0
+
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+
+}
+
+
+
+function MM_findObj(n, d) { //v4.01
+
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+
+}
+
+//-->
+
+</SCRIPT>
+
+<!-- End Preload Script -->
+
+<link href="VisIt.css" rel="stylesheet" type="text/css">
+
+<script language="JavaScript" type="text/JavaScript">
+<!--
+function MM_reloadPage(init) {  //reloads the window if Nav4 resized
+
+  if (init==true) with (navigator) {if ((appName=="Netscape")&&(parseInt(appVersion)==4)) {
+
+    document.MM_pgW=innerWidth; document.MM_pgH=innerHeight; onresize=MM_reloadPage; }}
+
+  else if (innerWidth!=document.MM_pgW || innerHeight!=document.MM_pgH) location.reload();
+
+}
+
+MM_reloadPage(true);
+
+
+
+function MM_showHideLayers() { //v6.0
+
+  var i,p,v,obj,args=MM_showHideLayers.arguments;
+
+  for (i=0; i<(args.length-2); i+=3) if ((obj=MM_findObj(args[i]))!=null) { v=args[i+2];
+
+    if (obj.style) { obj=obj.style; v=(v=='show')?'visible':(v=='hide')?'hidden':v; }
+
+    obj.visibility=v; }
+
+}
+
+
+
+function MM_swapImgRestore() { //v3.0
+
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+
+}
+
+
+
+function MM_swapImage() { //v3.0
+
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+
+}
+
+
+
+function MM_timelineGoto(tmLnName, fNew, numGotos) { //v2.0
+
+  //Copyright 1997, 2000 Macromedia, Inc. All rights reserved.
+
+  var i,j,tmLn,props,keyFrm,sprite,numKeyFr,firstKeyFr,lastKeyFr,propNum,theObj;
+
+  if (document.MM_Time == null) MM_initTimelines(); //if *very* 1st time
+
+  tmLn = document.MM_Time[tmLnName];
+
+  if (numGotos != null)
+
+    if (tmLn.gotoCount == null) tmLn.gotoCount = 1;
+
+    else if (tmLn.gotoCount++ >= numGotos) {tmLn.gotoCount=0; return}
+
+  jmpFwd = (fNew > tmLn.curFrame);
+
+  for (i = 0; i < tmLn.length; i++) {
+
+    sprite = (jmpFwd)? tmLn[i] : tmLn[(tmLn.length-1)-i]; //count bkwds if jumping back
+
+    if (sprite.charAt(0) == "s") {
+
+      numKeyFr = sprite.keyFrames.length;
+
+      firstKeyFr = sprite.keyFrames[0];
+
+      lastKeyFr = sprite.keyFrames[numKeyFr - 1];
+
+      if ((jmpFwd && fNew<firstKeyFr) || (!jmpFwd && lastKeyFr<fNew)) continue; //skip if untouchd
+
+      for (keyFrm=1; keyFrm<numKeyFr && fNew>=sprite.keyFrames[keyFrm]; keyFrm++);
+
+      for (j=0; j<sprite.values.length; j++) {
+
+        props = sprite.values[j];
+
+        if (numKeyFr == props.length) propNum = keyFrm-1 //keyframes only
+
+        else propNum = Math.min(Math.max(0,fNew-firstKeyFr),props.length-1); //or keep in legal range
+
+        if (sprite.obj != null) {
+
+          if (props.prop2 == null) sprite.obj[props.prop] = props[propNum];
+
+          else        sprite.obj[props.prop2][props.prop] = props[propNum];
+
+      } }
+
+    } else if (sprite.charAt(0)=='b' && fNew == sprite.frame) eval(sprite.value);
+
+  }
+
+  tmLn.curFrame = fNew;
+
+  if (tmLn.ID == 0) eval('MM_timelinePlay(tmLnName)');
+
+}
+
+
+
+function MM_timelinePlay(tmLnName, myID) { //v1.2
+
+  //Copyright 1997, 2000 Macromedia, Inc. All rights reserved.
+
+  var i,j,tmLn,props,keyFrm,sprite,numKeyFr,firstKeyFr,propNum,theObj,firstTime=false;
+
+  if (document.MM_Time == null) MM_initTimelines(); //if *very* 1st time
+
+  tmLn = document.MM_Time[tmLnName];
+
+  if (myID == null) { myID = ++tmLn.ID; firstTime=true;}//if new call, incr ID
+
+  if (myID == tmLn.ID) { //if Im newest
+
+    setTimeout('MM_timelinePlay("'+tmLnName+'",'+myID+')',tmLn.delay);
+
+    fNew = ++tmLn.curFrame;
+
+    for (i=0; i<tmLn.length; i++) {
+
+      sprite = tmLn[i];
+
+      if (sprite.charAt(0) == 's') {
+
+        if (sprite.obj) {
+
+          numKeyFr = sprite.keyFrames.length; firstKeyFr = sprite.keyFrames[0];
+
+          if (fNew >= firstKeyFr && fNew <= sprite.keyFrames[numKeyFr-1]) {//in range
+
+            keyFrm=1;
+
+            for (j=0; j<sprite.values.length; j++) {
+
+              props = sprite.values[j]; 
+
+              if (numKeyFr != props.length) {
+
+                if (props.prop2 == null) sprite.obj[props.prop] = props[fNew-firstKeyFr];
+
+                else        sprite.obj[props.prop2][props.prop] = props[fNew-firstKeyFr];
+
+              } else {
+
+                while (keyFrm<numKeyFr && fNew>=sprite.keyFrames[keyFrm]) keyFrm++;
+
+                if (firstTime || fNew==sprite.keyFrames[keyFrm-1]) {
+
+                  if (props.prop2 == null) sprite.obj[props.prop] = props[keyFrm-1];
+
+                  else        sprite.obj[props.prop2][props.prop] = props[keyFrm-1];
+
+        } } } } }
+
+      } else if (sprite.charAt(0)=='b' && fNew == sprite.frame) eval(sprite.value);
+
+      if (fNew > tmLn.lastFrame) tmLn.ID = 0;
+
+  } }
+
+}
+
+
+
+function MM_timelineStop(tmLnName) { //v1.2
+
+  //Copyright 1997, 2000 Macromedia, Inc. All rights reserved.
+
+  if (document.MM_Time == null) MM_initTimelines(); //if *very* 1st time
+
+  if (tmLnName == null)  //stop all
+
+    for (var i=0; i<document.MM_Time.length; i++) document.MM_Time[i].ID = null;
+
+  else document.MM_Time[tmLnName].ID = null; //stop one
+
+}
+
+function MM_initTimelines() { //v4.0
+    //MM_initTimelines() Copyright 1997 Macromedia, Inc. All rights reserved.
+    var ns = navigator.appName == "Netscape";
+    var ns4 = (ns && parseInt(navigator.appVersion) == 4);
+    var ns5 = (ns && parseInt(navigator.appVersion) > 4);
+    var macIE5 = (navigator.platform ? (navigator.platform == "MacPPC") : false) && (navigator.appName == "Microsoft Internet Explorer") && (parseInt(navigator.appVersion) >= 4);
+    document.MM_Time = new Array(1);
+    document.MM_Time[0] = new Array(1);
+    document.MM_Time["submenu"] = document.MM_Time[0];
+    document.MM_Time[0].MM_Name = "submenu";
+    document.MM_Time[0].fps = 5;
+    document.MM_Time[0][0] = new String("behavior");
+    document.MM_Time[0][0].frame = 15;
+    document.MM_Time[0][0].value = "MM_showHideLayers('doc','','hide','dload','','hide')";
+    document.MM_Time[0].lastFrame = 15;
+    for (i=0; i<document.MM_Time.length; i++) {
+        document.MM_Time[i].ID = null;
+        document.MM_Time[i].curFrame = 0;
+        document.MM_Time[i].delay = 1000/document.MM_Time[i].fps;
+    }
+}
+//-->
+</script>
+
+<!-- InstanceBeginEditable name="head" --><!-- InstanceEndEditable -->
+
+</HEAD>
+
+<BODY BGCOLOR=#FFFFFF LEFTMARGIN=0 TOPMARGIN=0 MARGINWIDTH=0 MARGINHEIGHT=0 ONLOAD="preloadImages();MM_preloadImages('media_template/indexT_o.jpg','media_template/homeT_o.jpg','media_template/newT_o.jpg','media_template/contactT_o.jpg','media_template/dloadT_o.jpg')">
+
+<!-- ImageReady Slices (template1.psd) -->
+
+<TABLE WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=0>
+
+  <TR> 
+
+    <TD ROWSPAN=2> <A HREF="home.html"
+
+				ONMOUSEOVER="MM_swapImage('homeT','','Templates/media_template/homeT_o.jpg',1);MM_showHideLayers('doc','','hide','dload','','hide')"
+
+				ONMOUSEOUT="MM_swapImgRestore()"> <IMG SRC="Templates/media_template/homeT.jpg" ALT="Home" NAME="homeT" WIDTH=166 HEIGHT=92 BORDER=0></A></TD>
+
+    <TD ROWSPAN=2> <A HREF="download.html"
+
+				ONMOUSEOVER="MM_showHideLayers('doc','','hide','dload','','show');MM_timelineStop();MM_swapImage('dloadT','','Templates/media_template/dloadT_o.jpg',1)"
+
+				ONMOUSEOUT="MM_timelinePlay('submenu');MM_timelineGoto('submenu','1');MM_swapImgRestore()"> 
+
+      <IMG SRC="Templates/media_template/dloadT.jpg" ALT="Downloads" NAME="dloadT" WIDTH=131 HEIGHT=92 BORDER=0></A></TD>
+
+    <TD ROWSPAN=2> <A HREF="#"
+
+				ONMOUSEOVER="MM_showHideLayers('doc','','show','dload','','hide');MM_timelineStop()"
+
+				ONMOUSEOUT="MM_timelineGoto('submenu','1');MM_timelinePlay('submenu')"> 
+
+      <IMG SRC="Templates/media_template/docT_here.jpg" ALT="Documentation" NAME="docT" WIDTH=129 HEIGHT=92 BORDER=0></A></TD>
+
+    <TD ROWSPAN=2> <A HREF="new.html"
+
+				ONMOUSEOVER="MM_showHideLayers('doc','','hide','dload','','hide');MM_swapImage('newT','','Templates/media_template/newT_o.jpg',1)" onMouseOut="MM_swapImgRestore()"> 
+
+      <IMG SRC="Templates/media_template/newT.jpg" ALT="What's New" NAME="newT" WIDTH=320 HEIGHT=92 BORDER=0></A></TD>
+
+    <TD COLSPAN=2> <IMG SRC="Templates/media_template/logoT.jpg" WIDTH=265 HEIGHT=66 ALT=""></TD>
+
+    <TD width="100%" ROWSPAN=2 background="Templates/media_template/sideT.jpg">&nbsp; </TD>
+
+  </TR>
+
+  <TR> 
+
+    <TD> <A HREF="sitemap.html"
+
+				ONMOUSEOVER="MM_swapImage('indexT','','Templates/media_template/indexT_o.jpg',1)"
+
+				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="indexT" SRC="Templates/media_template/indexT.jpg" WIDTH=76 HEIGHT=26 BORDER=0 ALT="Index"></A></TD>
+
+    <TD> <A HREF="mailto:visit-users@ornl.gov"
+
+				ONMOUSEOVER="MM_swapImage('contactT','','Templates/media_template/contactT_o.jpg',1)"
+
+				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="contactT" SRC="Templates/media_template/contactT.jpg" WIDTH=189 HEIGHT=26 BORDER=0 ALT="Contact"></A></TD>
+
+  </TR>
+
+</TABLE>
+
+<!-- End ImageReady Slices -->
+
+<!-- InstanceBeginEditable name="body" -->
+
+<h1>VisIt 2.1 Release Notes</h1>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<p><b><font size="4">Sections</font></b></p>
+<ul>
+    <li><a href="#General_Features">Features for all users</a></li>
+    <li><a href="#Advanced_Features">Features for advanced users</a></li>
+    <li><a href="#File_format">Changes to file format readers</a></li>
+    <li><a href="#Plot_changes">Changes to plots</a></li>
+    <li><a href="#Operator_changes">Changes to operators</a></li>
+    <li><a href="#Expression_changes">Changes to expressions</a></li>
+    <li><a href="#Query_changes">Changes to picks and queries</a></li>
+    <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+    <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="General_Features"></a>
+<p><b><font size="4">General features added in version 2.1</font></b></p>
+<ul>
+<li>A new wizard was created for setting up comparison-based expressions.  It is available under Controls->Data Level Comparisons.</li>
+<li>A new operator, <i>DataBinning</i>, was added.  This operator calculates statistics over arbitrary spaces.  One example is the calculation of probability density functions (PDFs).  This functionality basically replaces the poorly supported "derived data functions" (DDFs) from previous releases.</li>
+<li>Saving windows now has an "advanced multi-window" option, which allows you to combine the results of multiple windows into one large window.  This goes beyond the "save tiled" option in terms of controls for window layouts, nesting of windows, and transparency.  This option should reduce the need for using image compositing tools when making movies.</li>
+<li>The expressions window now has buttons for managing expressions via separate configuration files.</li>
+<li>Three dimensional plots can now be scaled visually without affecting their axis labels via the View dialog.  This is similar to the 2D "Full Frame" mode.</li>
+<li>Oblique projections are now supported via a new "Shear" setting in the 3D View dialog.</li>
+<li>The cli now provides a <i>RenamePickLabel</i> function that lets you rename the pick markers that VisIt creates so you are not limited to characters A,B,C,etc. An example is <i>RenamePickLabel(&quot;A&quot;, &quot;something more descriptive&quot;)</i>.</li>
+</ul>
+
+<a name="Advanced_Features"></a>
+<p><b><font size="4">Advanced features added in version 2.1</font></b></p>
+<ul>
+   <li>Support for multiresolution databases was added.  AMR databases can
+       also take advantage of this support.  At present, the <TT>STAR</TT> and
+       <TT>Chombo</TT> databases honor resolution requests; documentation on
+       how to enable it in other databases is available in the source
+       repository, under <TT>docs/multiresolution.txt</TT></li>
+   <li>It is now possible to enable and disable warning message popups. The preference <i>Enable warning message popups</i> is located in the <i>Preferences</i> window and is enabled by default.</li>
+   <li>The Selection window was added so users can create selections. A selection is a set of 
+       cellids created by a plot. For example, if you create a ParallelCoordinates plot of several
+       variables, restrict the variable ranges, and create a selection from it then the selection
+       will contain the cellids that fall within the specified ranges. You can name
+       the selection and apply it to other plots, even ones in other windows. In this case, you
+       could use the ParallelCoordinates plot as an interactive thresholding mechanism, modifying 
+       a selection that erodes cells in a plot in another window. You apply a selection to a plot 
+       using new controls in the Subset window. Once a selection is applied to a plot, the set of 
+       cells used to make the plot is restricted to those contained in the selection. When a
+       plot that generates a selection is modified, plots that use the selection are recalculated so 
+       they too match the cells used in the originating plot's selection.
+   </li>
+   <li>The visit_writer library now supports voxels and pixels.</li>
+   <li>Support for variables defined on material subsets was added to the Silo plugin.</li>
+</ul>
+
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 2.1</font></b></p>
+<ul>
+   <li>When they accept a given file name, preferred file format readers now take precedence over non-preferred file formats.  Preferred formats are still also tried before giving up, when all other attempts to guess files based on their name fail.</li>
+   <li>Files formats that support time natively now can correctly report their time when concatenated inside a <i>.visit</i> file.</li>
+   <li>The PFLOTRAN reader now correctly produces material information. It also recognizes the components of a vector and produces a vector, rather than three scalars.  These changes are courtesy Daniel Schep, Savannah River.</li>
+   <li><i>BOV</i> files now properly supports the <i>TIME</i> keyword.  They also support a new keyword, <i>CYCLE</i>.</li>
+   <li>The <i>STAR</i> database was added.</li>
+   <li>A <i>GULP</i> trajectory file format reader was added.</li>
+   <li>A <i>PuReMD</i> trajectory file format reader was added.</li>
+   <li>A <i>Silo</i> bug involving species data was resolved.</li>
+   <li>The <i>ITAPS</i> implemenation tarballs were all updated to ~ June, 2010</li>
+   <li>Three separate problems were fixed in the <i>Claw</i> plugin: a random crash with reading uninitialized memory, a problem with calculating refinement ratios, and a problem with calculating nesting for patches near the origin.</li>
+</ul>
+
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 2.1</font></b></p>
+<ul>
+  <li>The window for the <i>Volume</i> plot was reorgnized so that it would be shorter.  This change should help for users running on small displays, like laptops.</li>
+  <li>The <i>Volume</i> plot now displays a histogram in the transfer function editor when doing RayCasting, matching the behavior for the other rendering types.</li>
+  <li>The <i>Volume</i> plot is now more efficient in memory and execution time
+      when doing a ray casting with logarithmic scale with a minimum value set.</li>
+  <li>The <i>Vector</i> plot now has an option for placing its glyphs uniformly through the mesh, rather than adapting to the mesh's resolution.</li>
+  <li>The window for the <i>Vector</i> plot was reorganized.  The previous version had scaling controls on the wrong tab.</li>
+  <li>The <i>Curve</i> plot now can add cues to show a location along the curve.  This is anticipated to be a useful feature when animating a curve within a movie.</li>
+  <li>The <i>Molecule</i> plot now supports 2D rendering primitives.</li>
+  <li>The <i>Scatter</i> plot was improved to properly support colored scatter plots when material selection is used.</li>
+  <li>The <i>Scatter</i> plot wizard was condensed to provide faster plot setup.</li>
+  <li>The <i>Subset</i> plot now supports meshes with a single domain.</li>
+</ul>
+
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators in version 2.1</font></b></p>
+<ul>
+  <li>The <i>Transform</i> operator can now apply an arbitrary 4x4 matrix
+      transform.</li>
+  <li>The <i>Inverse Ghost Zone</i> operator can now request ghost zones and does so by default.
+  </li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 2.1</font></b></p>
+<ul>
+   <li>New expressions, min_coord and max_coord, can find the smallest or 
+       largest coordinate value (X, Y, Z, radius, theta, phi) within a cell.</li>
+    <li><i>zonal_constant</i> and <i>nodal_constant</i> expressions were added as aliases for the existing <i>cell_constant</i> and <i>point_constant</i> expressions.</li>
+    <li>A hang was fixed in the key_aggregate expression for the case where there were more processors than chunks of data to process.</li>
+</ul>
+
+
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.1</font></b></p>
+<ul>
+<li>The <i>Integrate</i> query now works on one dimensional cross sections.</li>
+<li>Python queries now support passing of arbitrary python objects via the 'args' keyword argument of <i>PythonQuery()</i>.</li>
+<li><i>Variable Sum</i> and <i>Weighted Variable Sum</i> now support array variables and summing each individual component to construct an array result.</li>
+</ul>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Other bugs fixed in version 2.1</font></b></p>
+<ul>
+<li>Data that is larger than 1e+18 can now be rendered (and lit) correctly.</li>
+<li>Macro recording was changed so it generates a function name based on the name supplied for the macro. This eliminates a problem where giving a function name with invalid Python characters caused the macro to be discarded.</li>
+<li>Macro recording for the Chord Length Distribution Query was improved.</li>
+<li>Printing on the Mac was fixed.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.1</font></b></p>
+<ul>
+<li>The cli now has an <i>OpenCLI()</i> method that can be used to spawn another instance of the cli.</li>
+<li>Visit's install process creates a complete python install which supports the installation of additional python modules.</li>
+</ul>
+
+<!-- InstanceEndEditable -->
+
+<div align="center"> 
+
+  <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | <a href="source.html">Source Code</a> | <a href="datafiles.html">Data Files</a> | <a href="about.html" target="_top" class="links">About VisIt</a> | <a href="screens.html" class="links">Screen Shots</a> |&nbsp;<a href="gallery.html" class="links">Gallery</a> |&nbsp;<a href="FAQ.html" class="links">FAQs</a> | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
+
+  <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
+
+    <span class="body_text">Updated: 
+
+    <!-- #BeginDate format:Am1 -->Septembre 13, 2010<!-- #EndDate -->
+
+    </span></p>
+
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
+
+    <tr> 
+
+      <td background="media/bottom_band.jpg">&copy;<span class="body_text">LLNL-WEB-452431, 
+
+        <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
+
+        and legal notice</a></span></td>
+
+      <td width="5">&nbsp;</td>
+
+    </tr>
+
+  </table>
+
+</div>
+
+<!--Begin layers -->
+
+<div id="doc" style="position:absolute; left:297px; top:68px; width:184px; height:27px; z-index:1; visibility: hidden;"> 
+
+  <table border="0" cellspacing="3">
+
+    <tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="about.html"><font color="#FFFFFF">Overview</font></a></div>
+
+      </td>
+
+	</tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center"><span class="menu"><a href="screens.html"><font color="#FFFFFF">Screen 
+
+          Shots</font></a></span><strong><a href="#source"><font color="#333366"> 
+
+          </font></a></strong></div>
+
+      </td>
+
+	</tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+	  <td width="127" height="20"> 
+
+        <div align="center"><span class="menu"><a href="gallery.html"><font color="#FFFFFF">Gallery
+
+		  </font></a></span><strong><a href="#source"><font color="#333366"> 
+
+          </font></a></strong></div>
+
+      </td>
+
+	</tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="FAQ.html"><font color="#FFFFFF">FAQs</font></a></div>
+
+      </td>
+
+	</tr>
+
+    <tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="manuals.html"><font color="#FFFFFF"> 
+
+          Manuals</font></a></div>
+
+      </td>
+
+    </tr>
+
+  </table>
+
+</div>
+
+<div id="dload" style="position:absolute; left:167px; top:68px; width:173px; height:27px; z-index:1; visibility: hidden;"> 
+
+  <table border="0" cellspacing="3">
+
+    <tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="executables.html"><font color="#FFFFFF">Executables</font></a></div></td>
+
+	</tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="source.html"><font color="#FFFFFF">Source 
+
+          Codes</font></a></div>
+
+      </td>
+
+	</tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="manuals.html"><font color="#FFFFFF">Manuals</font></a></div>
+
+      </td>
+
+    </tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="datafiles.html"><font color="#FFFFFF">Data Files</font></a></div>
+
+      </td>
+
+    </tr>
+
+  </table>
+
+</div>
+
+</BODY>
+
+<!-- InstanceEnd --></HTML>
