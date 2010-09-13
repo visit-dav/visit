@@ -225,10 +225,22 @@ class MovieTemplateReader(XMLParser):
     # Creation:   Tue Nov 14 13:48:13 PST 2006
     #
     # Modifications:
+    #   Brad Whitlock, Mon Sep 13 16:03:36 PDT 2010
+    #   Strip leading and trailing quotes off strings.
     #
     ###########################################################################
 
     def EvalField(self):
+        def StripLeadingTrailingQuotes(s):
+            retval = s
+            if len(retval) > 0:
+                if retval[0] == '"':
+                    retval = retval[1:]
+            if len(retval) > 0:
+                if retval[-1] == '"':
+                    retval = retval[:-1]
+            return retval
+
         ret = 0
         s_line = str(self.line)
         if string.find(self.fieldType, "Array") != -1:
@@ -260,7 +272,10 @@ class MovieTemplateReader(XMLParser):
                     values = values + [float(s)]
                 ret = tuple(values)
             elif self.fieldType == "stringVector":
-                ret = stuple
+                values = []
+                for s in stuple:
+                    values = values + [StripLeadingTrailingQuotes(s)]
+                ret = tuple(values)
         elif self.fieldType in ("int", "uchar", "char", "long"):
             stuple = self.SpacedListToStringTuple(s_line)
             if len(stuple) > 0:
@@ -283,7 +298,7 @@ class MovieTemplateReader(XMLParser):
             else:
                 ret = 0
         elif self.fieldType == "string":
-            ret = s_line
+            ret = StripLeadingTrailingQuotes(s_line)
 
         return ret
 
