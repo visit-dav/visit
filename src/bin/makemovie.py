@@ -2309,6 +2309,7 @@ class MakeMovie:
                         tmpPY = os.path.abspath(name2)
                         # Try and stat the tmpPY file.
                         try:
+                            self.Debug(1, "Looking for template work file: %s" % tmpPY)
                             s = os.stat(tmpPY)
                             templatePY = tmpPY
                             fileFound = 1
