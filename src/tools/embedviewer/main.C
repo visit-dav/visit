@@ -59,6 +59,10 @@
 //  Creation:   Mon Aug 18 16:49:40 PDT 2008
 //
 //  Modifications:
+//    Brad Whitlock, Tue Sep 14 11:44:35 PDT 2010
+//    I recoded the logic that sets VISITHOME so it is more tolerant of where
+//    the executable gets placed in the VisIt build tree. I think it only works
+//    for UNIX in-source builds though. A real app would do something better.
 //
 // ****************************************************************************
 
@@ -80,10 +84,19 @@ main(int argc, char *argv[])
         //
         VisItViewer viewer;
 
-        // Set up VISITHOME so it finds our development version of VisIt when 
-        // run from this directory.
-        QDir d("../../");
+        // Go up the dierctory structures until we find the "src" directory,
+        // which is what we'll use for VISITHOME so it finds our development 
+        // version of VisIt.
+#ifdef Q_WS_MACX
+        QDir d(argv[0]);
+#else
+        QDir d;
+#endif
+        bool okay = true;
+        while(okay && !d.absolutePath().endsWith("src"))
+            okay = d.cdUp();
         std::string visithome(d.absolutePath().toStdString());
+        qDebug("Setting VISITHOME to %s", visithome.c_str());
         viewer.SetVISITHOME(visithome);
 
         //
