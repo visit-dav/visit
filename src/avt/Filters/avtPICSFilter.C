@@ -941,7 +941,7 @@ avtPICSFilter::Initialize()
         }
         else 
         {
-            GetTypedInput()->RenumberDomainIDs();
+            //GetTypedInput()->RenumberDomainIDs();
             intervalTree = GetTypedInput()->CalculateSpatialIntervalTree();
         }
     }
