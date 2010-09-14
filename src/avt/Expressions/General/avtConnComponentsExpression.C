@@ -220,11 +220,7 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
 
     debug5 << "avtConnComponentsExpression: Enable Ghost Neighbors ? = "
            << enableGhostNeighbors << endl;
-
 }
-
-
-
 
 
 // ****************************************************************************
@@ -612,7 +608,6 @@ avtConnComponentsExpression::LabelGhostNeighbors(vtkDataSet *data_set)
 }
 
 
-
 // ****************************************************************************
 //  Method: avtConnComponentsExpression::SingleSetLabel
 //
@@ -781,7 +776,8 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
     vector<int> can_cells;
     int src_label, can_label;
 
-    avtIntervalTree tree(nsets, 3, false);
+    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    avtIntervalTree tree(nsets, dim, false);
     for (i = 0 ; i < nsets ; i++)
     {
         double bounds[6];
@@ -933,7 +929,8 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
     vector<int> can_cells;
     int src_label, can_label;
 
-    avtIntervalTree tree(nsets, 3, false);
+    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    avtIntervalTree tree(nsets, dim, false);
     for (i = 0 ; i < nsets ; i++)
     {
         double bounds[6];
@@ -1770,12 +1767,13 @@ avtConnComponentsExpression::BoundarySet::Finalize()
         if(curr_bounds[5] > bounds[5])
             bounds[5] = curr_bounds[5];
 
+        bool is2D = (bounds[4] == bounds[5]);
         // add cells to the current mesh's interval tree
         int curr_ncells = curr_set->GetNumberOfCells();
         // make sure we dont create an empty itree
         if(curr_ncells > 0 )
         {
-            avtIntervalTree *curr_itree = new avtIntervalTree(curr_ncells,3);
+            avtIntervalTree *curr_itree = new avtIntervalTree(curr_ncells,(is2D ? 2 : 3));
 
             for(j = 0; j< curr_ncells; j++)
             {
@@ -2489,12 +2487,18 @@ avtConnComponentsExpression::SpatialPartition::~SpatialPartition()
 //      This class is for setting up a spatial partition.  It contains methods
 //      that allow the spatial partitioning routine to not be so cumbersome.
 // 
-//  Notes: Adapted from Hank Child's Boundary class within 
+//  Notes: Adapted from Hank Childs' Boundary class within 
 //         avtPosCMFEAlgorithm.C. Renamed to PartitionBoundary to avoid
 //         multiple symbol def problems.
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   February 2, 2007
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Sep 13 19:24:34 PDT 2010
+//    Change method names.  General of partition is done (slightly) more
+//    efficiently now.
 //
 // ****************************************************************************
 
@@ -2512,13 +2516,15 @@ class PartitionBoundary
                       PartitionBoundary(const float *, int, Axis);
      virtual         ~PartitionBoundary() {;};
 
-     float           *GetBoundary() { return bounds; };
+     int              GetNumberOfRegions(void) { return npivots+1; };
+     void             GetBoundaryForRegion(int, double *);
+     float           *GetFullBoundary() { return bounds; };
      bool             AttemptSplit(PartitionBoundary *&, PartitionBoundary *&);
 
      bool             IsDone(void) { return isDone; };
      bool             IsLeaf(void) { return (numProcs == 1); };
 
-     void             AddPoint(const float *);
+     void             SetNumberOfPointsForRegion(int, int);;
 
      static void      SetIs2D(bool b) { is2D = b; };
      static void      PrepareSplitQuery(PartitionBoundary **, int);
@@ -2605,7 +2611,9 @@ PartitionBoundary::PrepareSplitQuery(PartitionBoundary **b_list, int listSize)
             in_vals[idx++] = b_list[i]->numCells[j];
 
     int *out_vals = new int[num_vals];
+    int t1 = visitTimer->StartTimer();
     SumIntArrayAcrossAllProcessors(in_vals, out_vals, num_vals);
+    visitTimer->StopTimer(t1, "Waiting for other processors in PrepareSplitQuery");
 
     idx = 0;
     for (i = 0 ; i < listSize ; i++)
@@ -2618,10 +2626,45 @@ PartitionBoundary::PrepareSplitQuery(PartitionBoundary **b_list, int listSize)
 
 
 // ****************************************************************************
-//  Method: PartitionBoundary::AddPoint
+//  Method: PartitionBoundary::GetBoundaryForRegion
 //
 //  Purpose:
-//      Adds a point to the boundary.
+//      Gets the boundary for a given region (the regions are defined by
+//      the pivot points).
+//
+//  Programmer: Hank Childs
+//  Creation:   August 22, 2010
+// 
+// ****************************************************************************
+
+void
+PartitionBoundary::GetBoundaryForRegion(int region, double *bbox)
+{
+    bbox[0] = bounds[0];
+    bbox[1] = bounds[1];
+    bbox[2] = bounds[2];
+    bbox[3] = bounds[3];
+    bbox[4] = bounds[4];
+    bbox[5] = bounds[5];
+    double *axisToSwitch = (axis == X_AXIS ? bbox : axis == Y_AXIS ? bbox+2 : bbox+4);
+    int nregions = GetNumberOfRegions();
+    if (region == 0)
+        axisToSwitch[1] = pivots[0];
+    else if (region == nregions-1)
+        axisToSwitch[0] = pivots[npivots-1];
+    else
+    {
+        axisToSwitch[0] = pivots[region-1];
+        axisToSwitch[1] = pivots[region];
+    }
+}
+
+
+// ****************************************************************************
+//  Method: PartitionBoundary::SetNumberOfPointsForRegion
+//
+//  Purpose:
+//      Sets the number of points contained in a given region.
 //
 //  Programmer: Hank Childs
 //  Creation:   January 9, 2006
@@ -2629,16 +2672,11 @@ PartitionBoundary::PrepareSplitQuery(PartitionBoundary **b_list, int listSize)
 // ****************************************************************************
 
 void
-PartitionBoundary::AddPoint(const float *pt)
+PartitionBoundary::SetNumberOfPointsForRegion(int region, int ncells)
 {
-    float p = (axis == X_AXIS ? pt[0] : axis == Y_AXIS ? pt[1] : pt[2]);
-    for (int i = 0 ; i < npivots ; i++)
-        if (p < pivots[i])
-        {
-            numCells[i]++;
-            return;
-        }
-    numCells[npivots]++;
+    int nregions = GetNumberOfRegions();
+
+    numCells[region] += ncells;
 }
 
 
@@ -2806,6 +2844,9 @@ PartitionBoundary::AttemptSplit(PartitionBoundary *&b1, PartitionBoundary *&b2)
 //    Hank Childs, Sat Mar  6 10:46:11 PST 2010
 //    Cache the locations of the cells, rather than calling GetCell repeatedly.
 //
+//    Hank Childs, Mon Sep 13 19:26:53 PDT 2010
+//    More optimization of this routine.
+//
 // ****************************************************************************
 
 void
@@ -2854,41 +2895,40 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
     int *bin_lookup = new int[2*nProcs];
     bool keepGoing = (nProcs > 1);
 
-    // Calculate the cell center for each cell.  This will be used
-    // repeatedly, so caching it is a big performance improvement.
     int t3 = visitTimer->StartTimer();
     vector<vtkDataSet *> meshes = bset.GetMeshes();
-    std::vector<double *> cellCenter(meshes.size(), NULL);
+    int totalCells = 0;
     for (i = 0 ; i < meshes.size() ; i++)
     {
         const int ncells = meshes[i]->GetNumberOfCells();
-        cellCenter[i] = new double[3*ncells];
+        totalCells += ncells;
+    }
+
+    int cellIndex = 0;
+    avtIntervalTree it(totalCells, (is2D ? 2 : 3), false);
+    it.AccelerateSizeQueries();
+    //it.OptimizeForRepeatedQueries();
+    for (i = 0 ; i < meshes.size() ; i++)
+    {
         double bbox[6];
-
-        // get ghost zone neighbor info if available
-        vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) meshes[i]
-                     ->GetCellData()->GetArray("avtGhostZoneNeighbors");
-
-        unsigned char *gzn_ptr = NULL;
-
-        if (gzn_array)
-            gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
-
+        const int ncells = meshes[i]->GetNumberOfCells();
         for (j = 0 ; j < ncells ; j++)
         {
-            // if we have ghost neighbors labled, we only need to send them
-            if(gzn_ptr)
-                if(gzn_ptr[j] !=1)
-                    continue;
-
+            double cellCenter[6];
             vtkCell *cell = meshes[i]->GetCell(j);
             cell->GetBounds(bbox);
-            cellCenter[i][3*j+0] = (bbox[0] + bbox[1]) / 2.;
-            cellCenter[i][3*j+1] = (bbox[2] + bbox[3]) / 2.;
-            cellCenter[i][3*j+2] = (bbox[4] + bbox[5]) / 2.;
+            cellCenter[0] = (bbox[0] + bbox[1]) / 2.;
+            cellCenter[1] = cellCenter[0];
+            cellCenter[2] = (bbox[2] + bbox[3]) / 2.;
+            cellCenter[3] = cellCenter[2];
+            cellCenter[4] = (bbox[4] + bbox[5]) / 2.;
+            cellCenter[5] = cellCenter[4];
+            it.AddElement(cellIndex+j, cellCenter);
         }
+        cellIndex += ncells;
     }
-    visitTimer->StopTimer(t3,"Getting cell centers for spatial partition generation");
+    it.Calculate(true);
+    visitTimer->StopTimer(t3, "Setting up interval tree for spatial partition generation");
 
     while (keepGoing)
     {
@@ -2902,53 +2942,20 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
                 nBins++;
             }
 
-        // Construct an interval tree out of the boundaries.  We need this
-        // because we want to be able to quickly determine which boundaries
-        // a point falls in.
-        avtIntervalTree it(nBins, 3);
-        nBins = 0;
+        // Calculate how many points fall within each region.
         for (i = 0 ; i < listSize ; i++)
         {
             if (b_list[i]->IsDone())
                 continue;
-            float *b = b_list[i]->GetBoundary();
-            double db[6] = {b[0], b[1], b[2], b[3], b[4], b[5]};
-            it.AddElement(nBins, db);
-            nBins++;
-        }
-        it.Calculate(true);
-
-        // Now add each point to the boundary it falls in.  Start by doing
-        // the points that come from unstructured or structured meshes.
-        // Now do the cells.  We are using the cell centers, which is a decent
-        // approximation.
-        vector<int> list;
-        for (i = 0 ; i < meshes.size() ; i++)
-        {
-            const int ncells = meshes[i]->GetNumberOfCells();
-            // get ghost zone neighbor info if available
-            vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) meshes[i]
-                         ->GetCellData()->GetArray("avtGhostZoneNeighbors");
-            unsigned char *gzn_ptr = NULL;
-            if (gzn_array)
-                gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
-            for (j = 0 ; j < ncells ; j++)
+            int nregions = b_list[i]->GetNumberOfRegions();
+            for (int j = 0 ; j < nregions ; j++)
             {
-                // if we have ghost neighbors labled, we only need to send them
-                if(gzn_ptr)
-                    if(gzn_ptr[j] !=1)
-                        continue;
-                double pt[3];
-                pt[0] = cellCenter[i][3*j];
-                pt[1] = cellCenter[i][3*j+1];
-                pt[2] = cellCenter[i][3*j+2];
-                it.GetElementsListFromRange(pt, pt, list);
-                float fpt[3] = {pt[0], pt[1], pt[2]};
-                for (k = 0 ; k < list.size() ; k++)
-                {
-                    PartitionBoundary *b = b_list[bin_lookup[list[k]]];
-                    b->AddPoint(fpt);
-                }
+                double b[6];
+                b_list[i]->GetBoundaryForRegion(j, b);
+                double min[3] = { b[0], b[2], b[4] };
+                double max[3] = { b[1], b[3], b[5] };
+                int nvals = it.GetNumberOfElementsInRange(min, max);
+                b_list[i]->SetNumberOfPointsForRegion(j, nvals);
             }
         }
 
@@ -2979,13 +2986,13 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
 
     // Construct an interval tree out of the boundaries.  This interval tree
     // contains the actual spatial partitioning.
-    itree = new avtIntervalTree(nProcs, 3);
+    itree = new avtIntervalTree(nProcs, (is2D ? 2 : 3));
     int count = 0;
     for (i = 0 ; i < listSize ; i++)
     {
         if (b_list[i]->IsLeaf())
         {
-            float *b = b_list[i]->GetBoundary();
+            float *b = b_list[i]->GetFullBoundary();
             double db[6] = {b[0], b[1], b[2], b[3], b[4], b[5]};
             itree->AddElement(count++, db);
         }
@@ -2999,8 +3006,6 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
         delete b_list[i];
     delete [] b_list;
     delete [] bin_lookup;
-    for (i = 0 ; i < cellCenter.size() ; i++)
-        delete [] cellCenter[i];
 
     visitTimer->StopTimer(t0, "Creating spatial partition");
 }
