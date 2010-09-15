@@ -106,6 +106,7 @@ do
    $cmd visit$version2.darwin-i386-10.4.tar.gz     >> $output
    $cmd visit$version2.ibm-aix-pwr.tar.gz          >> $output
    $cmd visit$version2.ibm-aix-pwr64.tar.gz        >> $output
+   $cmd visit$version2.linux-euclid.tar.gz         >> $output
    $cmd visit$version2.linux-rhel3.tar.gz          >> $output
    $cmd visit$version2.linux-x86_64-rhel4.tar.gz   >> $output
    $cmd visit$version2.linux-x86_64-ubuntu8.tar.gz >> $output
@@ -123,13 +124,19 @@ do
    $cmd H5Part-1.6.0.tar.gz                        >> ../visit$version/$output
    $cmd HDF4.2r1.tar.gz                            >> ../visit$version/$output
    $cmd ITAPS-FMDB-1.0-15Apr09.tar.gz              >> ../visit$version/$output
+   $cmd ITAPS-FMDB-1.1-03Jun10.tar.gz              >> ../visit$version/$output
+   $cmd ITAPS-FMDB-1.1-30Aug10.tar.gz              >> ../visit$version/$output
    $cmd ITAPS-GRUMMP-0.5.0-20Apr09.tar.gz          >> ../visit$version/$output
+   $cmd ITAPS-GRUMMP-0.5.0-03Jun10.tar.gz          >> ../visit$version/$output
    $cmd ITAPS-MOAB-3.99-20Apr09.tar.gz             >> ../visit$version/$output
+   $cmd ITAPS-MOAB-3.99-10Jun10.tar.gz             >> ../visit$version/$output
    $cmd IceT-0-5-4.tar.gz                          >> ../visit$version/$output
    $cmd Imaging-1.1.6.tar.gz                       >> ../visit$version/$output
    $cmd Mesa-5.0-mangled.tar.gz                    >> ../visit$version/$output
    $cmd MesaLib-6.4.2.tar.gz                       >> ../visit$version/$output
    $cmd MesaLib-7.5.tar.gz                         >> ../visit$version/$output
+   $cmd MesaLib-7.8.2.tar.gz                       >> ../visit$version/$output
+   $cmd pyparsing-1.5.2.tar.gz                     >> ../visit$version/$output
    $cmd Python-2.5.tgz                             >> ../visit$version/$output
    $cmd Python-2.6.4.tgz                           >> ../visit$version/$output
    $cmd Xdmf-2.1.tar.gz                            >> ../visit$version/$output
@@ -149,7 +156,9 @@ do
    $cmd netcdf-3.6.3.tar.gz                        >> ../visit$version/$output
    $cmd qt-everywhere-opensource-src-4.6.1.tar.gz  >> ../visit$version/$output
    $cmd qt-mac-free-3.3.8.tar.gz                   >> ../visit$version/$output
+   $cmd qt-mac-opensource-src-4.4.3.tar.gz         >> ../visit$version/$output
    $cmd qt-x11-free-3.3.8.tar.gz                   >> ../visit$version/$output
+   $cmd qt-x11-opensource-src-4.4.3.tar.gz         >> ../visit$version/$output
    $cmd silo-4.7.2.tar.gz                          >> ../visit$version/$output
    $cmd silo-4.7.tar.gz                            >> ../visit$version/$output
    $cmd szip-2.1.tar.gz                            >> ../visit$version/$output
@@ -157,6 +166,8 @@ do
    $cmd vtk-5.0.0d.tar.gz                          >> ../visit$version/$output
    $cmd vtk-5.0.0e.tar.gz                          >> ../visit$version/$output
    $cmd vtk-5.0.0f.tar.gz                          >> ../visit$version/$output
+   $cmd vtk-5.0.0g.tar.gz                          >> ../visit$version/$output
+   $cmd zlib-1.2.3.tar.gz                          >> ../visit$version/$output
    cd ../visit$version
 
    shift
