@@ -427,6 +427,16 @@ VisWindow::~VisWindow()
         delete axes3D;
         axes3D = NULL;
     }
+    if (axesArray != NULL)
+    {
+        delete axesArray;
+        axesArray = NULL;
+    }
+    if (axesParallel != NULL)
+    {
+        delete axesParallel;
+        axesParallel = NULL;
+    }
     if (tools != NULL)
     {
         delete tools;

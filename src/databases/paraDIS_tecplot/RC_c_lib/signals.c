@@ -1,6 +1,7 @@
 /* $Id: signals.c,v 1.5 2005/09/14 02:30:56 rcook Exp $ */
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #ifdef WIN32
 #  include <winsock2.h>
 #else

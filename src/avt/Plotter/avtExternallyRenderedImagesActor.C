@@ -182,6 +182,11 @@ avtExternallyRenderedImagesActor::~avtExternallyRenderedImagesActor()
         visualQueueMapper->Delete();
         visualQueueMapper = NULL;
     }
+    if (visualQueueActor != NULL)
+    {
+        visualQueueActor->Delete();
+        visualQueueActor = NULL;
+    }
     if (visualQueueProps != NULL)
     {
         visualQueueProps->Delete();

@@ -368,6 +368,10 @@ class ENGINE_MAIN_API Engine
     NamedSelectionRPC        *namedSelectionRPC;
     SetEFileOpenOptionsRPC   *setEFileOpenOptionsRPC;
 
+#ifdef DEBUG_MEMORY_LEAKS
+    ParsingExprList          *parsingExprList;
+#endif
+
     // The metadata, filename, format, control data for a simulation
     std::string               filename;
     std::string               format;
