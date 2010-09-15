@@ -393,12 +393,19 @@ Engine::~Engine()
     delete cloneNetworkRPC;
     delete procInfoRPC;
     delete simulationCommandRPC;
+    delete exportDatabaseRPC;
+    delete constructDataBinningRPC;
+    delete namedSelectionRPC;
     delete setEFileOpenOptionsRPC;
 
     delete viewer;
     delete viewerP;
 
     delete renderingDisplay;
+
+#ifdef DEBUG_MEMORY_LEAKS
+    delete parsingExprList;
+#endif
 
     // Delete the network manager last since it deletes plugin managers
     // and our RPC's may need to call plugin AttributeSubject destructors.
@@ -978,6 +985,9 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     Parser *p = new ExprParser(new avtExprNodeFactory());
     ParsingExprList *l = new ParsingExprList(p);
     xfer->Add(l->GetList());
+#ifdef DEBUG_MEMORY_LEAKS
+    parsingExprList = l;
+#endif
 
     // Hook up metadata and SIL to be send back to the viewer.
     // This is intended to only be used for simulations.

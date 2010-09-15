@@ -148,9 +148,9 @@ static void init()
 }
 
 void error(text)
-char *text;
+const char *text;
 {
-  fprintf(stderr,text);
+  fputs(text,stderr);
   putc('\n',stderr);
   exit(1);
 }

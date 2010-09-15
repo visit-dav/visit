@@ -83,8 +83,10 @@ avtFileDescriptorManager::avtFileDescriptorManager()
 
 avtFileDescriptorManager::~avtFileDescriptorManager()
 {
-    // Can't really think of a good reason to make all of the files be closed.
-    // This should never be called anyway.
+    closeFileCallbacks.clear();
+    closeFileArgs.clear();
+    fileIsOpen.clear();
+    fileTimestamp.clear();
 }
 
 
