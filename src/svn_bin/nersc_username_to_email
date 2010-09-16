@@ -46,7 +46,7 @@ case $1 in
     "js9")
         emaddr=jsmeredith@ornl.gov
         ;;
-    # Hank Childs, Lawrence Livermore National Laboratory
+    # Hank Childs, Lawrence Berkeley National Laboratory
     "hrchilds")
         emaddr=hankchilds@gmail.com
         ;;
@@ -102,9 +102,9 @@ case $1 in
     "jcanders")
         emaddr=anderson@cs.ucdavis.edu
         ;;
-    # David Camp, UC Davis
+    # David Camp, Lawrence Berkeley National Laboratory
     "camp")
-        emaddr=camp@ucdavis.edu
+        emaddr=dcamp@lbl.gov
         ;;
     # Dave Semeraro, NCSA / University of Illinois
     "semeraro")
