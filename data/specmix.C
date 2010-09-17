@@ -49,6 +49,10 @@
  *
  *   Mark C. Miller, Mon Feb  1 17:08:45 PST 2010
  *   Added stuff to output all silo data types.
+ *
+ *   Mark C. Miller, Thu Sep 16 17:58:23 PDT 2010
+ *   Added conditional compilation logic to support float or double
+ *   for mix-relevant data.
  *-----------------------------------------------------------------------*/
 #include <math.h>
 #include <silo.h>
@@ -66,6 +70,13 @@
 #define lim(a,l,h) (max(min((a),(h)),(l)))
 #define lim01(a)   (lim((a),0,1))
 
+#ifndef CMIXTYPE
+#define CMIXTYPE float 
+#endif
+#ifndef DBMIXTYPE
+#define DBMIXTYPE DB_FLOAT 
+#endif
+
 /* Structures for a 2-d problem domain: */
 
 /* Struct: Node */
@@ -81,8 +92,8 @@ typedef struct {
   float vars[MAXVAR];
   int   nmats;
   int   mats[MAXMAT+1];
-  float matvf[MAXMAT+1];
-  float specmf[MAXMAT+1][MAXSPEC];
+  CMIXTYPE matvf[MAXMAT+1];
+  CMIXTYPE specmf[MAXMAT+1][MAXSPEC];
   Node *n[2][2];  /* the four nodes at the corners of this zone*/
 } Zone;
 
@@ -257,7 +268,7 @@ int main(int argc, char *argv[]) {
 
         int   i,j;
         int   c=0;
-        float vf=0.;
+        CMIXTYPE vf=0.;
         const int RES=40; /* subsampling resolution */
 
         /* Subsample the zone at RESxRES to    *
@@ -292,7 +303,7 @@ int main(int argc, char *argv[]) {
           }
         }
 
-        vf /= (float)c;
+        vf /= (CMIXTYPE)c;
 
         mesh.zone[x][y].matvf[m]=vf;
         if (vf)
@@ -403,15 +414,20 @@ int main(int argc, char *argv[]) {
   /* -=-=-=-=-=-=-=-=-=- */
   /* write to silo files */
   /* -=-=-=-=-=-=-=-=-=- */
-
-  sprintf(filename, "specmix_quad%s", file_ext);
+  if (DBMIXTYPE == DB_FLOAT)
+      sprintf(filename, "specmix_quad%s", file_ext);
+  else
+      sprintf(filename, "specmix_double_quad%s", file_ext);
   printf("Writing %s using curvilinear mesh.\n", filename);
   db=DBCreate(filename, DB_CLOBBER, DB_LOCAL, "Mixed zone species test", driver);
   writemesh_curv2d(db);
   writematspec(db);
   DBClose(db);
 
-  sprintf(filename, "specmix_ucd%s", file_ext);
+  if (DBMIXTYPE == DB_FLOAT)
+      sprintf(filename, "specmix_ucd%s", file_ext);
+  else
+      sprintf(filename, "specmix_double_ucd%s", file_ext);
   printf("Writing %s using unstructured mesh.\n", filename);
   db=DBCreate(filename, DB_CLOBBER, DB_LOCAL, "Mixed zone species test", driver);
   writemesh_ucd2d(db);
@@ -507,13 +523,13 @@ void writemesh_curv2d(DBfile *db) {
 
   DBPutQuadvar1(db, "u", "Mesh", f1, dims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
   DBPutQuadvar1(db, "v", "Mesh", f2, dims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
-  DBPutQuadvar1(db, "cnvar", "Mesh", cnvar, dims, 2, NULL, 0, DB_CHAR, DB_NODECENT, NULL);
-  DBPutQuadvar1(db, "snvar", "Mesh", snvar, dims, 2, NULL, 0, DB_SHORT, DB_NODECENT, NULL);
-  DBPutQuadvar1(db, "invar", "Mesh", invar, dims, 2, NULL, 0, DB_INT, DB_NODECENT, NULL);
-  DBPutQuadvar1(db, "lnvar", "Mesh", lnvar, dims, 2, NULL, 0, DB_LONG, DB_NODECENT, NULL);
-  DBPutQuadvar1(db, "Lnvar", "Mesh", Lnvar, dims, 2, NULL, 0, DB_LONG_LONG, DB_NODECENT, NULL);
-  DBPutQuadvar1(db, "fnvar", "Mesh", fnvar, dims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
-  DBPutQuadvar1(db, "dnvar", "Mesh", dnvar, dims, 2, NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "cnvar", "Mesh", (float*)cnvar, dims, 2, NULL, 0, DB_CHAR, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "snvar", "Mesh", (float*)snvar, dims, 2, NULL, 0, DB_SHORT, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "invar", "Mesh", (float*)invar, dims, 2, NULL, 0, DB_INT, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "lnvar", "Mesh", (float*)lnvar, dims, 2, NULL, 0, DB_LONG, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "Lnvar", "Mesh", (float*)Lnvar, dims, 2, NULL, 0, DB_LONG_LONG, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "fnvar", "Mesh", (float*)fnvar, dims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "dnvar", "Mesh", (float*)dnvar, dims, 2, NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
   free(cnvar);
   free(snvar);
   free(invar);
@@ -552,13 +568,13 @@ void writemesh_curv2d(DBfile *db) {
 
   DBPutQuadvar1(db, "p", "Mesh", f1, dims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
   DBPutQuadvar1(db, "d", "Mesh", f2, dims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
-  DBPutQuadvar1(db, "czvar", "Mesh", czvar, dims, 2, NULL, 0, DB_CHAR, DB_ZONECENT, NULL);
-  DBPutQuadvar1(db, "szvar", "Mesh", szvar, dims, 2, NULL, 0, DB_SHORT, DB_ZONECENT, NULL);
-  DBPutQuadvar1(db, "izvar", "Mesh", izvar, dims, 2, NULL, 0, DB_INT, DB_ZONECENT, NULL);
-  DBPutQuadvar1(db, "lzvar", "Mesh", lzvar, dims, 2, NULL, 0, DB_LONG, DB_ZONECENT, NULL);
-  DBPutQuadvar1(db, "Lzvar", "Mesh", Lzvar, dims, 2, NULL, 0, DB_LONG_LONG, DB_ZONECENT, NULL);
-  DBPutQuadvar1(db, "fzvar", "Mesh", fzvar, dims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
-  DBPutQuadvar1(db, "dzvar", "Mesh", dzvar, dims, 2, NULL, 0, DB_DOUBLE, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "czvar", "Mesh", (float*)czvar, dims, 2, NULL, 0, DB_CHAR, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "szvar", "Mesh", (float*)szvar, dims, 2, NULL, 0, DB_SHORT, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "izvar", "Mesh", (float*)izvar, dims, 2, NULL, 0, DB_INT, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "lzvar", "Mesh", (float*)lzvar, dims, 2, NULL, 0, DB_LONG, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "Lzvar", "Mesh", (float*)Lzvar, dims, 2, NULL, 0, DB_LONG_LONG, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "fzvar", "Mesh", (float*)fzvar, dims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "dzvar", "Mesh", (float*)dzvar, dims, 2, NULL, 0, DB_DOUBLE, DB_ZONECENT, NULL);
   free(czvar);
   free(szvar);
   free(izvar);
@@ -680,13 +696,13 @@ void writemesh_ucd2d(DBfile *db) {
     DBAddOption(opt,DBOPT_USESPECMF,&val);
     DBPutUcdvar1(db, "u", "Mesh", f1, nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, opt);
     DBPutUcdvar1(db, "v", "Mesh", f2, nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, opt);
-    DBPutUcdvar1(db, "cnvar", "Mesh", cnvar, nnodes, NULL, 0, DB_CHAR, DB_NODECENT, opt);
-    DBPutUcdvar1(db, "snvar", "Mesh", snvar, nnodes, NULL, 0, DB_SHORT, DB_NODECENT, opt);
-    DBPutUcdvar1(db, "invar", "Mesh", invar, nnodes, NULL, 0, DB_INT, DB_NODECENT, opt);
-    DBPutUcdvar1(db, "lnvar", "Mesh", lnvar, nnodes, NULL, 0, DB_LONG, DB_NODECENT, opt);
-    DBPutUcdvar1(db, "Lnvar", "Mesh", Lnvar, nnodes, NULL, 0, DB_LONG_LONG, DB_NODECENT, opt);
-    DBPutUcdvar1(db, "fnvar", "Mesh", fnvar, nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, opt);
-    DBPutUcdvar1(db, "dnvar", "Mesh", dnvar, nnodes, NULL, 0, DB_DOUBLE, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "cnvar", "Mesh", (float*)cnvar, nnodes, NULL, 0, DB_CHAR, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "snvar", "Mesh", (float*)snvar, nnodes, NULL, 0, DB_SHORT, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "invar", "Mesh", (float*)invar, nnodes, NULL, 0, DB_INT, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "lnvar", "Mesh", (float*)lnvar, nnodes, NULL, 0, DB_LONG, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "Lnvar", "Mesh", (float*)Lnvar, nnodes, NULL, 0, DB_LONG_LONG, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "fnvar", "Mesh", (float*)fnvar, nnodes, NULL, 0, DB_FLOAT, DB_NODECENT, opt);
+    DBPutUcdvar1(db, "dnvar", "Mesh", (float*)dnvar, nnodes, NULL, 0, DB_DOUBLE, DB_NODECENT, opt);
     DBFreeOptlist(opt);
   }
   free(cnvar);
@@ -727,13 +743,13 @@ void writemesh_ucd2d(DBfile *db) {
 
   DBPutUcdvar1(db, "p", "Mesh", f1, nzones, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
   DBPutUcdvar1(db, "d", "Mesh", f2, nzones, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
-  DBPutUcdvar1(db, "czvar", "Mesh", czvar, nzones, NULL, 0, DB_CHAR, DB_ZONECENT, NULL);
-  DBPutUcdvar1(db, "szvar", "Mesh", szvar, nzones, NULL, 0, DB_SHORT, DB_ZONECENT, NULL);
-  DBPutUcdvar1(db, "izvar", "Mesh", izvar, nzones, NULL, 0, DB_INT, DB_ZONECENT, NULL);
-  DBPutUcdvar1(db, "lzvar", "Mesh", lzvar, nzones, NULL, 0, DB_LONG, DB_ZONECENT, NULL);
-  DBPutUcdvar1(db, "Lzvar", "Mesh", Lzvar, nzones, NULL, 0, DB_LONG_LONG, DB_ZONECENT, NULL);
-  DBPutUcdvar1(db, "fzvar", "Mesh", fzvar, nzones, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
-  DBPutUcdvar1(db, "dzvar", "Mesh", dzvar, nzones, NULL, 0, DB_DOUBLE, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "czvar", "Mesh", (float*)czvar, nzones, NULL, 0, DB_CHAR, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "szvar", "Mesh", (float*)szvar, nzones, NULL, 0, DB_SHORT, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "izvar", "Mesh", (float*)izvar, nzones, NULL, 0, DB_INT, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "lzvar", "Mesh", (float*)lzvar, nzones, NULL, 0, DB_LONG, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "Lzvar", "Mesh", (float*)Lzvar, nzones, NULL, 0, DB_LONG_LONG, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "fzvar", "Mesh", (float*)fzvar, nzones, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "dzvar", "Mesh", (float*)dzvar, nzones, NULL, 0, DB_DOUBLE, DB_ZONECENT, NULL);
   free(czvar);
   free(szvar);
   free(izvar);
@@ -831,7 +847,7 @@ writematspec(DBfile *db)
     DBAddOption(optlist, DBOPT_MATNAMES, matnames);
 
     DBPutMaterial(db, "Material", "Mesh", nmat, matnos, matlist, dims, 2,
-                  mix_next, mix_mat, mix_zone, mix_vf, mixc, DB_FLOAT,
+                  mix_next, mix_mat, mix_zone, mix_vf, mixc, DBMIXTYPE,
                   optlist);
 
     /* Okay! Now for the species! */
@@ -901,6 +917,6 @@ writematspec(DBfile *db)
     }
 
     DBPutMatspecies(db, "Species", "Material", nmat, nspec, speclist, dims, 2,
-                    mfc, specmf, mixspeclist, mixc, DB_FLOAT, NULL);
+                    mfc, specmf, mixspeclist, mixc, DBMIXTYPE, NULL);
 
 }
