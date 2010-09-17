@@ -7,6 +7,9 @@
 #     Mark C. Miller, Tue Jul 27 17:48:54 PDT 2010
 #     Update to latest ITAPS implementation. Fixed link from
 #     ITAPS_MOAB to 3.6.0 and not 3.6.3 of netcdf.
+#
+#     Mark C. Miller, Thu Sep 16 17:57:22 PDT 2010
+#     Updated Silo to 4.8
 
 ##
 ## Set the VISITHOME environment variable.
@@ -144,7 +147,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/3.6.0/${VISITARCH})
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.8/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 ##
