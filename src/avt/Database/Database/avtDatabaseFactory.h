@@ -121,6 +121,9 @@ class DatabasePluginManager;
 //    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
 //    Added ability to turn on stricter file format error checking.
 //
+//    Hank Childs, Sun Sep 19 09:07:09 PDT 2010
+//    Add argument to SetupDatabase for setting times explicitly.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -159,7 +162,8 @@ class DATABASE_API avtDatabaseFactory
   protected:
     static avtDatabase          *SetupDatabase(CommonDatabasePluginInfo *,
                                                const char * const *, int,
-                                               int, int, int, bool, bool,bool);
+                                               int, int, int, bool, bool,bool,
+                                               const std::vector<double> &);
 
     static bool                  createMeshQualityExpressions;
     static bool                  createTimeDerivativeExpressions;
