@@ -879,6 +879,9 @@ avtPICSFilter::Execute(void)
 //   Hank Childs, Thu Sep  2 10:50:05 PDT 2010
 //   Deal with case where domain IDs are not unique.
 //
+//   Hank Childs, Sun Sep 19 11:04:32 PDT 2010
+//   Parallel support for case where domain IDs are not unique.
+//
 // ****************************************************************************
 
 void
@@ -941,8 +944,14 @@ avtPICSFilter::Initialize()
         }
         else 
         {
-            //GetTypedInput()->RenumberDomainIDs();
-            intervalTree = GetTypedInput()->CalculateSpatialIntervalTree();
+            bool dataIsReplicated = GetInput()->GetInfo().GetAttributes().
+                                             DataIsReplicatedOnAllProcessors();
+            bool performCalculationsOverAllProcs = true;
+            if (dataIsReplicated)
+                performCalculationsOverAllProcs = false;
+            GetTypedInput()->RenumberDomainIDs(performCalculationsOverAllProcs);
+            intervalTree = GetTypedInput()->CalculateSpatialIntervalTree(
+                                               performCalculationsOverAllProcs);
         }
     }
     else
@@ -1171,6 +1180,28 @@ avtPICSFilter::ReleaseData(void)
             dataSets[i]->UnRegister(NULL);
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtPICSFilter::UpdateDataObjectInfo
+//
+//  Purpose:
+//      Copies data attributes from the input to the output.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 19, 2010
+//
+// ****************************************************************************
+
+void
+avtPICSFilter::UpdateDataObjectInfo(void)
+{
+    avtDatasetToDatasetFilter::UpdateDataObjectInfo();
+    avtDatasetOnDemandFilter::UpdateDataObjectInfo();
+
+    GetOutput()->GetInfo().GetAttributes().SetDataIsReplicatedOnAllProcessors(true);
+}
+
 
 // ****************************************************************************
 //  Method: avtPICSFilter::SetupLocator

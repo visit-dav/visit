@@ -56,10 +56,8 @@ class     avtInlinePipelineSource;
 class     avtMetaData;
 
 
-typedef avtDataRequest_p (*LoadBalanceFunction)(void *,
-                                                   avtContract_p);
-typedef bool                   (*StreamingCheckFunction)(void *,
-                                                   avtContract_p);
+typedef avtDataRequest_p       (*LoadBalanceFunction)(void *, avtContract_p);
+typedef bool                   (*StreamingCheckFunction)(void *,avtContract_p);
 typedef void                   (*InitializeProgressCallback)(void *, int);
 
 
@@ -201,7 +199,7 @@ class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
                                        void *args, avtDataRequest_p,
                                        VoidRefList &);
 
-    avtDataRequest_p         BalanceLoad(avtContract_p);
+    avtDataRequest_p               BalanceLoad(avtContract_p);
 
     virtual bool                   UseLoadBalancer(void) { return true; };
     virtual bool                   ArtificialPipeline(void) { return false; };

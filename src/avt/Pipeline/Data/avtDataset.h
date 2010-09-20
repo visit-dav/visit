@@ -138,6 +138,10 @@ class   avtWebpage;
 //    Hank Childs, Thu Sep  2 07:54:12 PDT 2010
 //    Add method RenumberDomainIDs.
 //
+//    Hank Childs, Fri Sep 10 19:23:26 PDT 2010
+//    Add options to RenumberDomainIDs and CalculateSpatialIntervalTree
+//    to limit the calculations to the current processor only.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -180,8 +184,8 @@ class PIPELINE_API avtDataset : public avtDataObject
     void                     WriteTreeStructure(ostream &os, int indent = 0);
     void                     Compact(void);
 
-    avtIntervalTree         *CalculateSpatialIntervalTree(void);
-    void                     RenumberDomainIDs(void);
+    avtIntervalTree         *CalculateSpatialIntervalTree(bool acrossAllProcs = true);
+    void                     RenumberDomainIDs(bool acrossAllProcs = true);
     virtual void             DebugDump(avtWebpage *, const char *);
 
   protected:

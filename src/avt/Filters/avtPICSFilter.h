@@ -98,6 +98,9 @@ class avtICAlgorithm;
 //   Christoph Garth, Fri Jul 9 12:53:11 PDF 2010
 //   Replace vtkVisItCellLocator by avtCellLocator
 // 
+//   Hank Childs, Sun Sep 19 11:04:32 PDT 2010
+//   Added UpdateDataObjectInfo.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -145,6 +148,7 @@ class AVTFILTERS_API avtPICSFilter :
     void                      InitializeLocators(void);
 
     virtual void              ReleaseData(void);
+    virtual void              UpdateDataObjectInfo(void);
 
   protected:
     double maxStepLength;
