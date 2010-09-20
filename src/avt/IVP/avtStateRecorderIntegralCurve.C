@@ -454,6 +454,9 @@ avtStateRecorderIntegralCurve::IntersectPlane(const avtVector &p0, const avtVect
 //    Add portions for sequence tracking, which were previously in the base
 //    class.
 //
+//   Dave Pugmire, Mon Sep 20 14:51:50 EDT 2010
+//   Serialize the distance field.
+//
 // ****************************************************************************
 
 void
@@ -464,6 +467,7 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     avtIntegralCurve::Serialize(mode, buff, solver);
 
     buff.io(mode, historyMask);
+    buff.io(mode, distance);
     buff.io(mode, numIntersections);
     buff.io(mode, serializeFlags);
 
@@ -489,7 +493,7 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     serializeFlags = 0;
 
     if (DebugStream::Level5())
-        debug5 << "DONE: avtStateRecorderIntegralCurve::Serialize. sz= "<<buff.buffLen() << endl;
+        debug5 << "DONE: avtStateRecorderIntegralCurve::Serialize. sz= "<<buff.len() << endl;
 }
 
 

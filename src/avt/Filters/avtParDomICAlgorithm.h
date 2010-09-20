@@ -89,6 +89,9 @@
 //   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
 //   as opposed to streamlines.
 //
+//   Dave Pugmire, Mon Sep 20 14:52:22 EDT 2010
+//   Add HandleIncomingICs method.
+//
 // ****************************************************************************
 
 class avtParDomICAlgorithm : public avtParICAlgorithm
@@ -106,7 +109,8 @@ class avtParDomICAlgorithm : public avtParICAlgorithm
     virtual void              RunAlgorithm();
     virtual void              PreRunAlgorithm();
     void                      ExchangeTermination();
-    void                      HandleOOBIC(avtIntegralCurve *s);
+    void                      HandleOutOfBoundsIC(avtIntegralCurve *s);
+    void                      HandleIncomingICs();
     
     int                       numICChange, totalNumIntegralCurves;
 

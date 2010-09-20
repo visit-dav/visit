@@ -53,10 +53,10 @@
 
 MemStream::MemStream(size_t sz0)
 {
-    pos = 0;
-    len = 0;
-    maxLen = len;
-    data = NULL;
+    _pos = 0;
+    _len = 0;
+    _maxLen = _len;
+    _data = NULL;
     CheckSize(sz0);
 }
 
@@ -71,12 +71,12 @@ MemStream::MemStream(size_t sz0)
 
 MemStream::MemStream(size_t sz, const unsigned char *buff)
 {
-    pos = 0;
-    len = sz;
-    maxLen = len;
+    _pos = 0;
+    _len = sz;
+    _maxLen = _len;
     
-    data = new unsigned char[len];
-    memcpy(data, buff, len);
+    _data = new unsigned char[_len];
+    memcpy(_data, buff, _len);
 }
 
 // ****************************************************************************
@@ -89,11 +89,11 @@ MemStream::MemStream(size_t sz, const unsigned char *buff)
 
 MemStream::MemStream(const MemStream &s)
 {
-    pos = 0;
-    len = s.buffLen();
-    maxLen = len;
-    data = new unsigned char[len];
-    memcpy(data, s.buff(), len);
+    _pos = 0;
+    _len = s.len();
+    _maxLen = _len;
+    _data = new unsigned char[_len];
+    memcpy(_data, s.data(), _len);
 }
 
 
@@ -107,12 +107,12 @@ MemStream::MemStream(const MemStream &s)
 
 MemStream::~MemStream()
 {
-    if (data)
-        delete [] data;
-    pos = 0;
-    len = 0;
-    maxLen = 0;
-    data = NULL;
+    if (_data)
+        delete [] _data;
+    _pos = 0;
+    _len = 0;
+    _maxLen = 0;
+    _data = NULL;
 }
 
 // ****************************************************************************
@@ -130,23 +130,23 @@ MemStream::~MemStream()
 void
 MemStream::CheckSize(size_t sz)
 {
-    size_t reqLen = pos+sz;
+    size_t reqLen = _pos+sz;
     
-    if (reqLen > maxLen)
+    if (reqLen > _maxLen)
     {
-        size_t newLen = 2*maxLen; // double current size.
+        size_t newLen = 2*_maxLen; // double current size.
         if (newLen < reqLen)
             newLen = reqLen;
         
         unsigned char *newData = new unsigned char[newLen];
         
-        if (data)
+        if (_data)
         {
-            memcpy(newData, data, len); // copy existing data to new buffer.
-            delete [] data;
+            memcpy(newData, _data, _len); // copy existing data to new buffer.
+            delete [] _data;
         }
-        data = newData;
-        maxLen = newLen;
+        _data = newData;
+        _maxLen = newLen;
     }
 }
 

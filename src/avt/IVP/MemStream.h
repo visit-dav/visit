@@ -69,6 +69,9 @@
 //   Dave Pugmire, Fri Sep 10 13:35:33 EDT 2010
 //   Add new members.
 //
+//   Dave Pugmire, Mon Sep 20 15:03:27 EDT 2010
+//   Rename methods, and member data.
+//
 // ****************************************************************************
 
 struct IVP_API MemStream
@@ -79,23 +82,23 @@ struct IVP_API MemStream
         WRITE
     };
     
-    MemStream( size_t sz0= 32);
-    MemStream( size_t sz, const unsigned char *buff );
+    MemStream(size_t sz0= 32);
+    MemStream(size_t sz, const unsigned char *buff);
     MemStream(const MemStream &s);
     ~MemStream();
 
-    void rewind() { pos = 0; }
-    size_t getPos() const {return pos;}
+    void rewind() {_pos = 0;}
+    size_t pos() const {return _pos;}
     void setPos(size_t p)
     {
-        pos = p;
-        if (pos > buffLen())
+        _pos = p;
+        if (_pos > len())
             EXCEPTION0(ImproperUseException);
     }
 
-    size_t buffLen() const { return len; }
-    size_t capacity() const { return maxLen; }
-    unsigned char *buff() const { return data; }
+    size_t len() const { return _len; }
+    size_t capacity() const { return _maxLen; }
+    unsigned char *data() const { return _data; }
 
     // General read/write routines.
     template <typename T> void io( Mode mode, T *pt, size_t num )
@@ -115,8 +118,8 @@ struct IVP_API MemStream
     template <typename T> void read( T *pt, const size_t &num )
     {
         size_t nBytes = sizeof(T)*num;
-        memcpy( pt, &data[pos], nBytes );
-        pos += nBytes;
+        memcpy( pt, &_data[_pos], nBytes );
+        _pos += nBytes;
     }
     
     void read( avtVector &v )
@@ -154,27 +157,27 @@ struct IVP_API MemStream
     */
 
     //Write to buffer.
-    template <typename T> void write( const T& t ) { write( &t, 1 ); }
+    template <typename T> void write(const T& t) { write( &t, 1 ); }
     
-    template <typename T> void write( const T *const pt, size_t num )
+    template <typename T> void write(const T *const pt, size_t num)
     {
         size_t nBytes = sizeof(T)*num;
-        CheckSize( nBytes );
-        memcpy(&data[pos], pt, nBytes );
-        pos += nBytes;
+        CheckSize(nBytes);
+        memcpy(&_data[_pos], pt, nBytes );
+        _pos += nBytes;
         
-        if ( pos > len )
-            len = pos;
+        if (_pos > _len)
+            _len = _pos;
     }
     
-    template <typename T> void write( const std::vector<T> &v )
+    template <typename T> void write(const std::vector<T> &v)
     {
-        write( v.size() );
-        for ( size_t i = 0; i < v.size(); i++ )
-            write( v[i] );
+        write(v.size());
+        for (size_t i = 0; i < v.size(); i++)
+            write(v[i]);
     }
 
-    void write( const avtVector &v )
+    void write(const avtVector &v)
     {
         write(v.x);
         write(v.y);
@@ -196,18 +199,18 @@ struct IVP_API MemStream
     }
     */
 
-  protected:
-    void CheckSize( size_t sz );
-
+  private:
     // data members
-    unsigned char *data;
-    size_t len, maxLen, pos;
+    unsigned char *_data;
+    size_t _len, _maxLen, _pos;
+
+    void CheckSize(size_t sz);
 
     friend std::ostream& operator<<(std::ostream &out, const MemStream &m)
     {
-        out<<" MemStream(p= "<<m.pos<<", l= "<<m.len<<"["<<m.maxLen<<"]) data=[";
-        for (int i=0; i < m.len; i++)
-            out<<(int)(m.data[i])<<" ";
+        out<<" MemStream(p= "<<m.pos()<<", l= "<<m.len()<<"["<<m.capacity()<<"]) data=[";
+        for (int i=0; i < m.len(); i++)
+            out<<(int)(m._data[i])<<" ";
         out<<"]";
         return out;
     }

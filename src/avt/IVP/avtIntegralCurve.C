@@ -497,7 +497,7 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
 
     if( DebugStream::Level5() )
         debug5 << "avtIntegralCurve::Serialize() size is " 
-               << buff.buffLen() << endl;
+               << buff.len() << endl;
 }
 
 bool

@@ -351,13 +351,13 @@ avtParDomICAlgorithm::RunAlgorithm()
                 numICChange--;
             }
             else
-                HandleOOBIC(s);
+                HandleOutOfBoundsIC(s);
 
             cnt++;
         }
 
         //Check for new ICs.
-        RecvICs(activeICs);
+        HandleIncomingICs();
         ExchangeTermination();
         CheckPendingSendRequests();
     }
@@ -368,7 +368,7 @@ avtParDomICAlgorithm::RunAlgorithm()
 
 
 // ****************************************************************************
-//  Method: avtParDomICAlgorithm::HandleOOBIC
+//  Method: avtParDomICAlgorithm::HandleOutOfBoundsIC
 //
 //  Purpose:
 //      Handle an out of bounds streamline.
@@ -394,21 +394,29 @@ avtParDomICAlgorithm::RunAlgorithm()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Dave Pugmire, Mon Sep 20 14:50:13 EDT 2010
+//   Increment number of ICs if ICs are passed to multiple destinations.
+//
+//   Dave Pugmire, Mon Sep 20 14:53:05 EDT 2010
+//   Rename method.
+//
 // ****************************************************************************
 
 void
-avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
+avtParDomICAlgorithm::HandleOutOfBoundsIC(avtIntegralCurve *s)
 {
     // The integrated streamline could lie in multiple domains.
     // Duplicate the IC and send to the proper owner.
+    
+    set<int> sentRanks;
+    
     for (int i = 0; i < s->seedPtDomainList.size(); i++)
     {
-        // if i > 0, we create new streamlines.
-        //        if (i > 0)
-        //            numICChange++;
-
         int domRank = DomainToRank(s->seedPtDomainList[i]);
         s->domain = s->seedPtDomainList[i];
+        
+        if (sentRanks.find(domRank) != sentRanks.end())
+            continue;
         if (domRank == rank)
         {
             activeICs.push_back(s);
@@ -420,9 +428,51 @@ avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
             ics.push_back(s);
             //debug4<<"  send to "<<domRank<<endl;
             SendICs(domRank, ics);
+            sentRanks.insert(domRank);
+        }
+    }
+    
+    int numRanksSent = sentRanks.size();
+    if (numRanksSent > 1)
+        numICChange += (numRanksSent-1);
+}
+
+// ****************************************************************************
+// Class:  avtParDomICAlgorithm::HandleIncomingICs()
+//
+// Purpose:
+//   Process incoming streamlines.
+//
+// Programmer:  Dave Pugmire
+// Creation:    September 20, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtParDomICAlgorithm::HandleIncomingICs()
+{
+    list<avtIntegralCurve *> recvICs;
+    RecvICs(recvICs);
+
+    list<avtIntegralCurve *>::iterator s;
+    for (s = recvICs.begin(); s != recvICs.end(); s++)
+    {
+        avtVector pt;
+        (*s)->CurrentLocation(pt);
+
+        if (PointInDomain(pt, (*s)->domain))
+            activeICs.push_back(*s);
+        else
+        {
+            // Point not in domain. Toss it.
+            delete *s;
+            numICChange --;
         }
     }
 }
+
 
 // ****************************************************************************
 //  Method: avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute

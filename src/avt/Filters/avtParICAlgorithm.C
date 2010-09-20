@@ -343,15 +343,15 @@ avtParICAlgorithm::PrepareForSend(int tag, MemStream *buff, std::vector<unsigned
     if (it == messageTagInfo.end())
         EXCEPTION0(ImproperUseException);
     
-    int bytesLeft = buff->buffLen();
+    int bytesLeft = buff->len();
     int maxDataLen = it->second.second;
 
     avtParICAlgorithm::Header header;
     header.rank = rank;
     header.id = msgID;
     header.numPackets = 1;
-    if (buff->buffLen() > maxDataLen)
-        header.numPackets += buff->buffLen() / maxDataLen;
+    if (buff->len() > maxDataLen)
+        header.numPackets += buff->len() / maxDataLen;
         
     header.packet = 0;
     header.packetSz = 0;
@@ -378,7 +378,7 @@ avtParICAlgorithm::PrepareForSend(int tag, MemStream *buff, std::vector<unsigned
         bPtr += sizeof(header);
 
         //Write the data.
-        memcpy(bPtr, &buff->buff()[pos], header.dataSz);
+        memcpy(bPtr, &buff->data()[pos], header.dataSz);
         pos += header.dataSz;
 
         buffList[i] = b;
@@ -557,8 +557,6 @@ avtParICAlgorithm::ProcessReceivedBuffers(int tag,
             }
         }
     }
-
-    
 }
 
 // ****************************************************************************
@@ -844,7 +842,7 @@ avtParICAlgorithm::RecvDS(std::vector<vtkDataSet *> &ds)
         {
             vtkDataSetReader *reader = vtkDataSetReader::New();
             reader->ReadFromInputStringOn();
-            const char *data = (const char *)&buffers[i]->buff()[buffers[i]->getPos()];
+            const char *data = (const char *)&buffers[i]->data()[buffers[i]->pos()];
             reader->SetBinaryInputString(data, buffers[i]->capacity()-sizeof(avtParICAlgorithm::Header));
             reader->Update();
             vtkDataSet *d = reader->GetOutput();
