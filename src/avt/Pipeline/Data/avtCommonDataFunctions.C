@@ -1231,6 +1231,31 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 
 
 // ****************************************************************************
+//  Function: visitIsFinite
+//
+//  Purpose:
+//      Determines if a given number is finite.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 19, 2010
+//
+// ****************************************************************************
+
+template <class T>
+inline bool visitIsFinite(T t)
+{
+#ifndef _WIN32
+#ifdef HAVE_ISFINITE
+    return isfinite(t);
+#endif
+#else
+    return finite(t);
+#endif
+    return true;
+}
+
+
+// ****************************************************************************
 //  Function: GetDataScalarRange
 //
 //  Purpose:
@@ -1281,10 +1306,15 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 //    Make the use of isfinite conditional, since not all platforms support
 //    it (IRIX64 6.5 with MIPSpro 7.41, solaris with gcc 3.2).
 //
+//    Hank Childs, Sun Sep 19 08:36:03 PDT 2010
+//    Only calculate isfinite at the end of the function.  This is a 3X 
+//    speedup.
+//
 // ****************************************************************************
 
 template <class T> static bool
-GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts)
+GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts, 
+               bool checkFinite)
 {
     T min; 
     T max;
@@ -1294,15 +1324,9 @@ GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts)
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
             continue;
 
-#ifndef _WIN32
-#ifdef HAVE_ISFINITE
-        if (!isfinite(*buf))
-            continue;
-#endif
-#else
-        if (!_finite(*buf))
-            continue;
-#endif
+        if (checkFinite)
+            if (! visitIsFinite(*buf))
+                continue;
 
         if (!setOne)
         {
@@ -1322,6 +1346,9 @@ GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts)
                 max = *buf;
         }
     }
+    if (! visitIsFinite(min) || ! visitIsFinite(max))
+        return GetScalarRange(buf, n, exts, ghosts, true);
+
     exts[0] = (double) min;
     exts[1] = (double) max;
 
@@ -1358,51 +1385,52 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname,
     exts[0] = +FLT_MAX;
     exts[1] = -FLT_MAX;
     
+    bool checkForFiniteByDefault = false;
     switch (da->GetDataType())
     {
         case VTK_CHAR:
             GetScalarRange((char*) da->GetVoidPointer(0), nvals, exts, 
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
         case VTK_UNSIGNED_CHAR:
             GetScalarRange((unsigned char*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
         case VTK_SHORT:
             GetScalarRange((short*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
         case VTK_UNSIGNED_SHORT:
             GetScalarRange((unsigned short*) da->GetVoidPointer(0), nvals,exts,
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
         case VTK_INT:           
             GetScalarRange((int*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
         case VTK_UNSIGNED_INT:  
             GetScalarRange((unsigned int*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
         case VTK_LONG:          
             GetScalarRange((long*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
         case VTK_UNSIGNED_LONG: 
             GetScalarRange((unsigned long*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
         case VTK_FLOAT:         
             GetScalarRange((float*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
         case VTK_DOUBLE:        
             GetScalarRange((double*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
         case VTK_ID_TYPE:       
             GetScalarRange((vtkIdType*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts);
+                           ghosts, checkForFiniteByDefault);
             break;
     }
 }
@@ -1593,11 +1621,15 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Make the use of isfinite conditional, since not all platforms support
 //    it (IRIX64 6.5 with MIPSpro 7.41, solaris with gcc 3.2).
 //
+//    Hank Childs, Sun Sep 19 08:36:03 PDT 2010
+//    Only calculate isfinite at the end of the function.  This is a 3X 
+//    speedup.
+//
 // ****************************************************************************
 
 template <class T> static void
 GetMagnitudeRange(T *buf, int n, int ncomps, double *exts, 
-                  unsigned char *ghosts)
+                  unsigned char *ghosts, bool checkFinite)
 {
     for (int i = 0; i < n; i++)
     {
@@ -1608,15 +1640,9 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts,
         for (int j = 0; j < ncomps; j++, buf++)
             mag += *buf * *buf;
 
-#ifndef _WIN32
-#ifdef HAVE_ISFINITE
-        if (!isfinite(mag))
-            continue;
-#endif
-#else
-        if (!_finite(mag))
-            continue;
-#endif
+        if (checkFinite)
+            if (! visitIsFinite(mag))
+                continue;
 
         if (mag < exts[0])
         {
@@ -1628,6 +1654,10 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts,
                 exts[1] = mag;
         }
     }
+
+    if (! visitIsFinite(exts[0]) || ! visitIsFinite(exts[1]))
+        return GetMagnitudeRange(buf, n, ncomps, exts, ghosts, true);
+
     exts[0] = sqrt(exts[0]);
     exts[1] = sqrt(exts[1]);
 }
@@ -1663,51 +1693,52 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
     int nvals = da->GetNumberOfTuples();
     int ncomps = da->GetNumberOfComponents();
 
+    bool checkForFiniteByDefault = false;
     switch (da->GetDataType())
     {
         case VTK_CHAR:
             GetMagnitudeRange((char*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
         case VTK_UNSIGNED_CHAR:
             GetMagnitudeRange((unsigned char*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
         case VTK_SHORT:
             GetMagnitudeRange((short*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
         case VTK_UNSIGNED_SHORT:
             GetMagnitudeRange((unsigned short*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
         case VTK_INT:           
             GetMagnitudeRange((int*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
         case VTK_UNSIGNED_INT:  
             GetMagnitudeRange((unsigned int*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
         case VTK_LONG:          
             GetMagnitudeRange((long*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
         case VTK_UNSIGNED_LONG: 
             GetMagnitudeRange((unsigned long*) da->GetVoidPointer(0), nvals,
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
         case VTK_FLOAT:         
             GetMagnitudeRange((float*) da->GetVoidPointer(0), nvals,
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
         case VTK_DOUBLE:        
             GetMagnitudeRange((double*) da->GetVoidPointer(0), nvals,
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
         case VTK_ID_TYPE:       
             GetMagnitudeRange((vtkIdType*) da->GetVoidPointer(0), nvals,
-                              ncomps, exts, ghosts);
+                              ncomps, exts, ghosts, checkForFiniteByDefault);
             break;
     }
 }
