@@ -1239,6 +1239,10 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 //  Programmer: Hank Childs
 //  Creation:   September 19, 2010
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Sep 20 10:40:15 MST 2010
+//    Use _finite on Windows.
+//
 // ****************************************************************************
 
 template <class T>
@@ -1249,7 +1253,7 @@ inline bool visitIsFinite(T t)
     return isfinite(t);
 #endif
 #else
-    return finite(t);
+    return _finite(t);
 #endif
     return true;
 }
