@@ -58,6 +58,8 @@
 #include <QToolBar>
 #include <QToolButton>
 
+#include <GetMetaDataException.h>
+
 #include <ViewerProxy.h>
 #include <PlotList.h>
 #include <FileServerList.h>
@@ -1615,53 +1617,65 @@ QvisPlotManagerWidget::EnablePluginMenus()
 //   Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
 //   Add support for operators that create expressions.
 //
+//   Hank Childs, Sun Sep 19 18:48:17 PDT 2010
+//   Catch exception when database meta-data can't be read.
+//
 // ****************************************************************************
 
 bool
 QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
     const QualifiedFilename &filename)
 {
-    // Get a pointer to the specified file's metadata object.
-    const avtDatabaseMetaData *md =
-        fileServer->GetMetaData(filename,
-                                GetStateForSource(filename),
-                                 FileServerList::ANY_STATE,
-                                !FileServerList::GET_NEW_MD);
-
-    OperatorPluginManager *oPM = GetViewerProxy()->GetOperatorPluginManager();
-
-    if (fileServer->GetTreatAllDBsAsTimeVarying() ||
-        (md && md->GetMustRepopulateOnStateChange()))
+    TRY
     {
-        // we need metadata and sil for current state
-        md = fileServer->GetMetaData(filename,
-                                     GetStateForSource(filename),
-                                    !FileServerList::ANY_STATE,
-                                     FileServerList::GET_NEW_MD);
-
-        const avtSIL *sil =
-            fileServer->GetSIL(filename,
-                               GetStateForSource(filename),
-                              !FileServerList::ANY_STATE,
-                               FileServerList::GET_NEW_MD);
-
-        return populator.PopulateVariableLists(filename.FullName(),
-                                               md, sil, exprList, oPM,
-                         fileServer->GetTreatAllDBsAsTimeVarying());
+        // Get a pointer to the specified file's metadata object.
+        const avtDatabaseMetaData *md =
+            fileServer->GetMetaData(filename,
+                                    GetStateForSource(filename),
+                                     FileServerList::ANY_STATE,
+                                    !FileServerList::GET_NEW_MD);
+    
+        OperatorPluginManager *oPM = GetViewerProxy()->GetOperatorPluginManager();
+    
+        if (fileServer->GetTreatAllDBsAsTimeVarying() ||
+            (md && md->GetMustRepopulateOnStateChange()))
+        {
+            // we need metadata and sil for current state
+            md = fileServer->GetMetaData(filename,
+                                         GetStateForSource(filename),
+                                        !FileServerList::ANY_STATE,
+                                         FileServerList::GET_NEW_MD);
+    
+            const avtSIL *sil =
+                fileServer->GetSIL(filename,
+                                   GetStateForSource(filename),
+                                  !FileServerList::ANY_STATE,
+                                   FileServerList::GET_NEW_MD);
+    
+            return populator.PopulateVariableLists(filename.FullName(),
+                                                   md, sil, exprList, oPM,
+                             fileServer->GetTreatAllDBsAsTimeVarying());
+        }
+        else
+        {
+            // any metadata and sil will do
+            const avtSIL *sil =
+                fileServer->GetSIL(filename,
+                                   GetStateForSource(filename),
+                                   FileServerList::ANY_STATE,
+                                  !FileServerList::GET_NEW_MD);
+    
+            return populator.PopulateVariableLists(filename.FullName(),
+                                                   md, sil, exprList, oPM,
+                             fileServer->GetTreatAllDBsAsTimeVarying());
+        }
     }
-    else
+    CATCH2(GetMetaDataException, gmde)
     {
-        // any metadata and sil will do
-        const avtSIL *sil =
-            fileServer->GetSIL(filename,
-                               GetStateForSource(filename),
-                               FileServerList::ANY_STATE,
-                              !FileServerList::GET_NEW_MD);
-
-        return populator.PopulateVariableLists(filename.FullName(),
-                                               md, sil, exprList, oPM,
-                         fileServer->GetTreatAllDBsAsTimeVarying());
+        debug1 << "Unable to get metadata when populating variable list" << endl;
+        return false;
     }
+    ENDTRY
 }
 
 // ****************************************************************************
