@@ -575,34 +575,36 @@ GUIBase::RestoreCursor()
 //   Added extra parameter telling ClearFile whether or not we want it
 //   to forget about which plugin opened a file.  Here, we don't.
 //
+//   Hank Childs, Sun Sep 19 18:48:17 PDT 2010
+//   Catch exception for not being able to read database meta-data.
+//
 // ****************************************************************************
 
 bool
 GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
     SimpleObserver *sob, bool reOpen)
 {
-    const char *mName = "GUIBase::SetOpenDataFile";
     bool retval = true;
-
-    //
-    // Clears any information about the specified file and causes it to be
-    // read again from the mdserver.
-    //
-    if(reOpen)
+    const char *mName = "GUIBase::SetOpenDataFile";
+    TRY
     {
-        fileServer->ClearFile(qf, false);
-        fileServer->CloseFile();
-        if(sob)
-            sob->SetUpdate(false);
-        fileServer->Notify();
-    }
+        //
+        // Clears any information about the specified file and causes it to be
+        // read again from the mdserver.
+        //
+        if(reOpen)
+        {
+            fileServer->ClearFile(qf, false);
+            fileServer->CloseFile();
+            if(sob)
+                sob->SetUpdate(false);
+            fileServer->Notify();
+        }
 
-    //
-    // If the file is not already open, read it in and tell the observers.
-    //
-    if(fileServer->GetOpenFile() != qf)
-    {
-        TRY
+        //
+        // If the file is not already open, read it in and tell the observers.
+        //
+        if(fileServer->GetOpenFile() != qf)
         {
             // Display a message while we open the file.
             QString msg;
@@ -631,25 +633,25 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
             fileServer->Notify();
             ClearStatus();
         }
-        CATCH2(GetMetaDataException, gmde)
-        {
-            // Clear the status bar.
-            ClearStatus();
-
-            // Tell the user about the error.
-            QString msg = QObject::tr("VisIt could not open the file %1.\n\n"
-                                      "The metadata server returned the "
-                                      "following message:\n\n%2", mName).
-                          arg(QString(qf.FullName().c_str())).
-                          arg(QString(gmde.Message().c_str()));
-            debug1 << msg.toStdString().c_str() << endl;
-            debug1 << "Not issuing an error message because the viewer will "
-                   << "cover that." << endl;
-            //Error(msg);
-            retval = false;
-        }
-        ENDTRY
     }
+    CATCH2(GetMetaDataException, gmde)
+    {
+        // Clear the status bar.
+        ClearStatus();
+
+        // Tell the user about the error.
+        QString msg = QObject::tr("VisIt could not open the file %1.\n\n"
+                                  "The metadata server returned the "
+                                  "following message:\n\n%2", mName).
+                      arg(QString(qf.FullName().c_str())).
+                      arg(QString(gmde.Message().c_str()));
+        debug1 << msg.toStdString().c_str() << endl;
+        debug1 << "Not issuing an error message because the viewer will "
+               << "cover that." << endl;
+        //Error(msg);
+        retval = false;
+    }
+    ENDTRY
 
     return retval;
 }
