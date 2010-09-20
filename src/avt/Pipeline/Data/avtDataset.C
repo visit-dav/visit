@@ -562,10 +562,13 @@ avtDataset::DebugDump(avtWebpage *webpage, const char *prefix)
 //    Hank Childs, Wed Aug 13 09:05:12 PDT 2008
 //    Add support for processors that have no data.
 //
+//    Hank Childs, Fri Sep 10 19:20:28 PDT 2010
+//    Add an option for calculating a tree only on this processor.
+//
 // ****************************************************************************
 
 avtIntervalTree *
-avtDataset::CalculateSpatialIntervalTree(void)
+avtDataset::CalculateSpatialIntervalTree(bool acrossAllProcs)
 {
     vector<avtDataTree_p> trees;
     avtDataTree_p root = GetDataTree();
@@ -574,7 +577,8 @@ avtDataset::CalculateSpatialIntervalTree(void)
     int max = -1;
     for (int i = 0 ; i < ids.size() ; i++)
         max = (ids[i] > max ? ids[i] : max);
-    max = UnifyMaximumValue(max);
+    if (acrossAllProcs)
+        max = UnifyMaximumValue(max);
     if (max < 0)
     {
         EXCEPTION0(ImproperUseException);
@@ -582,10 +586,10 @@ avtDataset::CalculateSpatialIntervalTree(void)
     max += 1;
 
     int dim = GetInfo().GetAttributes().GetSpatialDimension();
-    avtIntervalTree *itree = new avtIntervalTree(max, dim, true);
+    avtIntervalTree *itree = new avtIntervalTree(max, dim, acrossAllProcs);
     trees.push_back(root);
     int idx = 1;
-    while (( idx > 0 )) 
+    while (idx > 0)
     {
         idx -= 1;
 
@@ -634,10 +638,15 @@ avtDataset::CalculateSpatialIntervalTree(void)
 //  Programmer: Hank Childs
 //  Creation:   September 2, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 10 19:20:28 PDT 2010
+//    Add an option for limiting the calculation to each processor.
+//
 // ****************************************************************************
 
 void
-avtDataset::RenumberDomainIDs(void)
+avtDataset::RenumberDomainIDs(bool acrossAllProcs)
 {
     int  i;
 
@@ -655,19 +664,23 @@ avtDataset::RenumberDomainIDs(void)
         labels.push_back("");
     }
 
-    int  numProcs = PAR_Rank();
-    int *numPer = new int[numProcs];
-    for (i = 0 ; i < numProcs ; i++)
-        numPer[i] = 0;
-    numPer[PAR_Rank()] = numLeaves;
-    int *numPer2 = new int[numProcs];
-    SumIntArrayAcrossAllProcessors(numPer, numPer2, numProcs);
-    delete [] numPer;
-    numPer = numPer2;
     int myOffset = 0;
-    for (i = 0 ; i < PAR_Rank() ; i++)
-        myOffset += numPer[i];
-
+    if (acrossAllProcs)
+    {
+        int  numProcs = PAR_Rank();
+        int *numPer = new int[numProcs];
+        for (i = 0 ; i < numProcs ; i++)
+            numPer[i] = 0;
+        numPer[PAR_Rank()] = numLeaves;
+        int *numPer2 = new int[numProcs];
+        SumIntArrayAcrossAllProcessors(numPer, numPer2, numProcs);
+        delete [] numPer;
+        numPer = numPer2;
+        for (i = 0 ; i < PAR_Rank() ; i++)
+            myOffset += numPer[i];
+        delete [] numPer;
+    }
+    
     avtDataTree_p *newTrees = new avtDataTree_p[numLeaves];
     for (i = 0 ; i < numLeaves ; i++)
          newTrees[i] = new avtDataTree(leaves[i], myOffset++, labels[i]);
@@ -675,7 +688,6 @@ avtDataset::RenumberDomainIDs(void)
     dataTree = new avtDataTree(numLeaves, newTrees);
 
     delete [] newTrees; // new array allocated by avtDataTree constructor
-    delete [] numPer;
 }
 
 

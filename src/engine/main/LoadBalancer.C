@@ -537,6 +537,17 @@ LoadBalancer::Reduce(avtContract_p input)
     avtDataRequest_p data = input->GetDataRequest();
 
     //
+    // It is difficult for the load balancer to communicate with the originating
+    // source because it is done through callbacks.
+    // So we do it by setting a Boolean in the contract.  Since there is only
+    // one path that involves actually doing data replication, and many that don't,
+    // we will unset the Boolean now and reset it in the case we actually do
+    // data replication.
+    //
+    bool dataReplicationRequested = input->ReplicateSingleDomainOnAllProcessors();
+    input->SetReplicateSingleDomainOnAllProcessors(false);
+
+    //
     // Pipeline index 0 is reserved for meta-data.  It should already be
     // load balanced.
     //
@@ -656,10 +667,14 @@ LoadBalancer::Reduce(avtContract_p input)
         vector<int> mylist;
         trav.GetDomainList(list);
 
-        if (input->ReplicateSingleDomainOnAllProcessors() && list.size() == 1)
+        if (dataReplicationRequested && list.size() == 1)
         {
             silr->RestrictDomainsForLoadBalance(list);
             pipelineInfo[input->GetPipelineIndex()].complete = true;
+
+            // Communicate back to the pipeline that we are replicating.
+            input->SetReplicateSingleDomainOnAllProcessors(true);
+
             return data;
         }
 

@@ -487,6 +487,9 @@ avtOriginatingSource::FetchSpeciesAuxiliaryData(const char *,void *,
 //    If we are doing on demand streaming, then indicate that we are streaming
 //    in the output.
 //
+//    Hank Childs, Sun Sep 19 10:47:12 PDT 2010
+//    Determine if data replication occurred.
+//
 // ****************************************************************************
 
 avtDataRequest_p
@@ -512,6 +515,7 @@ avtOriginatingSource::BalanceLoad(avtContract_p contract)
     //
     // Allow the load balancer to split the load across processors.
     //
+    bool dataReplicationOccurred = false;
     avtDataRequest_p rv = NULL;
     if (!UseLoadBalancer())
     {
@@ -528,6 +532,8 @@ avtOriginatingSource::BalanceLoad(avtContract_p contract)
     {
         debug5 << "Using load balancer to reduce data." << endl;
         rv = loadBalanceFunction(loadBalanceFunctionArgs, contract);
+        dataReplicationOccurred =
+                              contract->ReplicateSingleDomainOnAllProcessors();
     }
     else
     {
@@ -539,6 +545,13 @@ avtOriginatingSource::BalanceLoad(avtContract_p contract)
     // Return the portion for this processor.
     //
     rv->SetUsesAllDomains(usesAllDomains);
+
+    //
+    // Tell the output if we are doing data replication.
+    //
+    if (dataReplicationOccurred)
+        GetOutput()->GetInfo().GetAttributes().SetDataIsReplicatedOnAllProcessors(true);
+
     return rv;
 }
 

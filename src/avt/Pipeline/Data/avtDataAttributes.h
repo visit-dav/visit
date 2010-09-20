@@ -257,6 +257,9 @@ class     avtWebpage;
 //    Hank Childs, Thu Aug 26 13:02:28 PDT 2010
 //    Rename extents objects.
 //
+//    Hank Childs, Sun Sep 19 10:39:29 PDT 2010
+//    Add boolean that describes that the data is replicated on all processors.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -477,6 +480,11 @@ class PIPELINE_API avtDataAttributes
     void                     SetNumStates(int n)
                                    { numStates = n; };
 
+    bool                     DataIsReplicatedOnAllProcessors(void) const
+                                   { return dataIsReplicatedOnAllProcessors; };
+    void                     SetDataIsReplicatedOnAllProcessors(bool v)
+                                   { dataIsReplicatedOnAllProcessors = v; };
+
     bool                     MIROccurred(void) const
                                    { return mirOccurred; };
     void                     SetMIROccurred(bool mo)
@@ -564,6 +572,7 @@ class PIPELINE_API avtDataAttributes
     bool                     canUseTransform;
     bool                     canUseThisProcsAsOriginalOrActual;
     int                      numStates;
+    bool                     dataIsReplicatedOnAllProcessors;
     bool                     mirOccurred;
     bool                     canUseOrigZones;
     bool                     origElementsRequiredForPick;
