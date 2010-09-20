@@ -2,8 +2,8 @@
 <helpml version="1.1">
     <head>
         <title>VisIt Help Contents</title>
-        <dateCreated>Mon Nov 5 11:31:41 PDT 2007</dateCreated>
-        <version>1.7</version>
+        <dateCreated>Mon Sep 20 14:48:21 2010</dateCreated>
+        <version>2.1</version>
     </head>
     <body>
         <help topic="Introduction to VisIt" doc="list0001.html">
@@ -20,7 +20,7 @@
             </help>
             <help topic="Getting started" doc="help0010.html"/>
         </help>
-        <help topic="Working with databases" doc="list0002.html">
+        <help topic="Working with Databases" doc="list0002.html">
             <help topic="Overview" doc="help0011.html"/>
             <help topic="Supported File Types" doc="help0012.html">
                 <help topic="File extensions" doc="help0013.html"/>
@@ -100,7 +100,7 @@
                     <help topic="Restricting the number of labels" doc="help0075.html"/>
                     <help topic="Depth testing for 3D Label plots" doc="help0076.html"/>
                     <help topic="Formatting labels" doc="help0077.html"/>
-                    <help topic="Labelling subset names and material names" doc="help0078.html"/>
+                    <help topic="Labeling subset names and material names" doc="help0078.html"/>
                 </help>
                 <help topic="Mesh Plot" doc="help0079.html">
                     <help topic="Mesh plot opaque modes" doc="help0080.html"/>
@@ -392,7 +392,7 @@
                 </help>
             </help>
         </help>
-        <help topic="Subsets" doc="list0007.html">
+        <help topic="Subsetting" doc="list0007.html">
             <help topic="Overview" doc="help0310.html"/>
             <help topic="What is a subset?" doc="help0311.html"/>
             <help topic="Subset Inclusion Lattice" doc="help0312.html"/>
@@ -668,7 +668,7 @@
                     <help topic="Setting the number of nodes" doc="help0525.html"/>
                     <help topic="Load balancing" doc="help0526.html"/>
                     <help topic="Setting the default bank" doc="help0527.html"/>
-                    <help topic="Setting the time parallel limit" doc="help0528.html"/>
+                    <help topic="Setting the parallel time limit" doc="help0528.html"/>
                     <help topic="Specifying a machine file" doc="help0529.html"/>
                 </help>
                 <help topic="Advanced host profile options" doc="help0530.html">

@@ -6,8 +6,15 @@ import os, string, sys, time
 def MakePath(outputdir, filename):
     return "%s/%s" % (outputdir, filename)
 
+def MakeDirectory(dirname):
+    try:
+        os.mkdir(dirname)
+    except:
+        pass
+    return dirname
+
 def printAtts(element):
-    #return # unless we're debugging
+    return # unless we're debugging
     for i in range(element.attributes.length):
         att = element.attributes.item(i)
         print "    att = "
@@ -121,7 +128,7 @@ class HTMLpages:
         f.write('<title>%s</title>\n' % self.bookName)
         f.write('</head>\n')
         f.write('<body link="#0000FF" vlink="#800080" alink="#FF0000" bgcolor="#FFFFFF">\n')
-        f.write('<center><h1>%s</h1></center>\n' % self.bookName)
+        f.write('<center><h2>%s</h2></center>\n' % self.bookName)
         f.write('<ul>\n')
         for i in range(len(self.chapters)):
             f.write('<li><a href="list%04d.html">%s</a></li>\n' % (i+1,self.chapters[i]))
@@ -145,7 +152,7 @@ class HTMLpages:
             f.write('<center align="right">[<a href="list%04d.html">Back</a>] [<a href="list0000.html">Up</a>] [Next]</center>' % (chapter-1))
         else:
             f.write('<center align="right">[<a href="list%04d.html">Back</a>] [<a href="list0000.html">Up</a>] [<a href="list%04d.html">Next</a>]</center>' % (chapter-1, chapter+1))
-        f.write('<h1>%s</h1>\n' % self.chapters[chapter-1])
+        f.write('<h2>%s</h2>\n' % self.chapters[chapter-1])
         f.write('<ul>\n')
         pages = self.GetPagesForChapter(chapter)
         curLevel = 0
@@ -295,7 +302,7 @@ class HTMLpages:
                 f.write('[<a href="help%04d.html">Next</a>]' % (i+1))
             f.write('</center>\n')
 
-            f.write("<h1>%s</h1>\n" % page[1])
+            f.write("<h2>%s</h2>\n" % page[1])
             f.write("%s\n" % page[4])
             self.WriteGenerationComment(f)
             f.write("</body>\n")
@@ -306,7 +313,8 @@ class HTMLpages:
         self.WriteHelpML(outputdir, "visit.helpml")
 
     def WriteGenerationComment(self, f):
-        f.write('<br><br><p><i><font color="#888888">Generated from %s on %s</font></i></p>\n' % (self.bookName, self.invocationDate))
+        return
+        #f.write('<br><br><p><i><font color="#888888">Generated from %s on %s</font></i></p>\n' % (self.bookName, self.invocationDate))
 
 ################################################################################
 # Function: HTMLize
@@ -384,6 +392,11 @@ def HTMLize(chapterName, filename, pages):
                         html += dom_iterate(e, docs)
                     html += "</p>"
                     handled = 1
+                elif paraStyle=="Figure" or string.find(paraStyle, "Frame") == 0:
+                    for e in element.childNodes:            
+                        dom_iterate(e, docs)
+                    html = ""
+                    handled = 1
                 else:
                     #print "PARAGRAPH STYLE: ",paraStyle
                     #printAtts(element)
@@ -399,52 +412,17 @@ def HTMLize(chapterName, filename, pages):
                 for e in element.childNodes:            
                     html += dom_iterate(e, docs)
                 html += docs.EndTextStyle(textStyle)
-                
-#                if textStyle == "GUIText" or textStyle == "Strong_20_Emphasis":
-#                    html += "<b>"
-#                    for e in element.childNodes:            
-#                        html += dom_iterate(e, docs)
-#                    html += "</b>"
-#                    handled = 1
-#                elif textStyle == "Emphasis":
-#                    html += "<i>"
-#                    for e in element.childNodes:            
-#                        html += dom_iterate(e, docs)
-#                    html += "</i>"
-#                    handled = 1
-#                elif textStyle == "T2" or textStyle == "T3":
-#                    html += "<sup>"
-#                    for e in element.childNodes:
-#                        html += dom_iterate(e, docs)
-#                    html += "</sup>"
-#                    handled = 1
-#                elif textStyle == "T1":
-#                    html += "<sub>"
-#                    for e in element.childNodes:
-#                        html += dom_iterate(e, docs)
-#                    html += "</sub>"
-#                    handled = 1
-#                else:
-#                    #print "TEXT STYLE: ", textStyle
-#                    #printAtts(element)
-#                    for e in element.childNodes:            
-#                        html += dom_iterate(e, docs)
 
             #
             # Figures
             #
-#           elif element.tagName == "text:sequence":
-#               print element.tagName
-#               printAtts(element)
-#               html += '<a name="Figure%d"></a>\n' % docs.figure
-#               docs.figure = docs.figure + 1
             elif element.tagName == "text:sequence-ref":
                 html += "figure"
                 handled = 1
             elif element.tagName  == "draw:image":
                 imageRef = element.getAttribute("xlink:href")
                 if imageRef != "":
-                    imagefile = string.replace(imageRef[3:], ".gif", ".png")
+                    imagefile = string.replace(imageRef, ".gif", ".png")
                     img = '<br><center>'
                     img += '<table border="0"><tr><td>'
                     img += '<a name="Figure%d"></a>' % docs.figure
@@ -455,7 +433,8 @@ def HTMLize(chapterName, filename, pages):
                     img += '</center><br>'
                     docs.figure = docs.figure + 1
                     docs.AppendHTML(img)
-                    handled = 1
+                html = ""
+                handled = 1
 
             #
             # Tables
@@ -593,6 +572,102 @@ def HTMLize(chapterName, filename, pages):
     # Clean up the temporary directory
     s = os.system("rm -rf %s" % tmpdir)
 
+################################################################################
+# Function: ResizeImage
+#
+# Purpose:
+#    This function reads an image, resizes it, and writes it to another file.
+#
+# Programmer: Brad Whitlock
+# Date: Tue Sep 14 13:36:59 PDT 2010
+#
+# Modifications:
+#
+################################################################################
+
+def ResizeImage(input, output):
+    try:
+        from PIL import Image
+        maxSize = 500
+        image = Image.open(input)
+        image = image.convert("RGB")
+        width = image.size[0]
+        height = image.size[1]
+        if width > maxSize:
+            # Scale down so we have an image that's maxSize pixels wide
+            s = float(maxSize) / float(width)
+            width = maxSize
+            height *= s
+        if height > maxSize:
+            # Scale down so we have an image that's maxSize pixels tall
+            s = float(maxSize) / float(height)
+            width *= s
+            height = maxSize
+        small = image.resize((int(width),int(height)), Image.BICUBIC)
+        small.save(output)
+    except ImportError:
+        print "PIL was not imported so",output,"was not saved."
+
+################################################################################
+# Function: ResizeImageDirectory
+#
+# Purpose:
+#    This function resizes all of the png files in a directory.
+#
+# Programmer: Brad Whitlock
+# Date: Tue Sep 14 13:36:59 PDT 2010
+#
+# Modifications:
+#
+################################################################################
+
+def ResizeImageDirectory(imagedir, outputdir):
+    files = os.listdir(imagedir)
+    for f in files:
+        if f[-4:] == ".png":
+            ResizeImage(MakePath(imagedir,f), MakePath(outputdir,f))
+
+################################################################################
+# Function: ProcessHelpImages
+#
+# Purpose:
+#    This function reads resizes all of the User Manual's images and saves them
+#    to a new output directory.
+#
+# Programmer: Brad Whitlock
+# Date: Tue Sep 14 13:36:59 PDT 2010
+#
+# Modifications:
+#
+################################################################################
+
+def ProcessHelpImages(inputdir, outputdir):
+    inputimages = MakePath(inputdir, "images")
+    outputimages = MakeDirectory(MakePath(outputdir, "images"))
+    #
+    # Iterate over the manual image directories and resize the images so they
+    # are small and get copied into help/images.  
+    #
+    manualDirs = (
+    "Animation",
+    "Help",
+    "InteractiveTools",
+    "Intro",
+    "MakingItPretty",
+    "MultipleDatabaseAndWindows",
+    "Operators",
+    "Plots",
+    "Preferences",
+    "Quantitative",
+    "RemoteVisualization",
+    "SavingPrinting",
+    "Subsetting",
+    "VisualizationWindows",
+    "WorkingWithFiles")
+    for d in manualDirs:
+        inputdir = MakePath(inputimages, d)
+        outputdir = MakeDirectory(MakePath(outputimages, d))
+        ResizeImageDirectory(inputdir, outputdir)
 
 ################################################################################
 # Function: ProcessUserManual
@@ -608,7 +683,7 @@ def HTMLize(chapterName, filename, pages):
 #
 ################################################################################
 
-def ProcessUserManual(inputdir, outputdir):
+def ProcessUserManual(inputdir, outputdir, writeImages):
     pages = HTMLpages()
     pages.SetBookName("VisIt User's Manual")
 
@@ -628,13 +703,27 @@ def ProcessUserManual(inputdir, outputdir):
     HTMLize("Setting Preferences",      MakePath(inputdir, "Preferences.odt"), pages)
     HTMLize("Help",                     MakePath(inputdir, "Help.odt"), pages)
 
-    pages.WritePages(outputdir)
+    pages.WritePages(MakePath(outputdir, "en_US"))
+
+    if writeImages:
+        ProcessHelpImages(inputdir, outputdir)  
+
+#
+# Check the arguments
+#
+writeImages = 0
+for arg in sys.argv[1:]:
+    if arg == "-images":
+        writeImages = 1
+    else:
+        print "Error!", arg, "is not a supported argument."
+        print "Usage: makehelp [-images]"
 
 #
 # Make sure the manual and help paths exist
 #
 manualPath = os.path.abspath(os.path.abspath(".") + os.path.sep + "../../docs/UserManual")
-helpPath = os.path.abspath(os.path.abspath(".") + os.path.sep + "../help/en_US")
+helpPath = os.path.abspath(os.path.abspath(".") + os.path.sep + "../help")
 if not os.path.exists(manualPath):
     print "The manual does not exist at the path %s. Did you check out the docs directory? Did you run makehelp from the src/svn_bin directory?" % manualPath
     sys.exit(1)
@@ -645,6 +734,6 @@ if not os.path.exists(helpPath):
 #
 # Generate the new help files.
 #
-ProcessUserManual(manualPath, helpPath)
+ProcessUserManual(manualPath, helpPath, writeImages)
 
 sys.exit(0)
