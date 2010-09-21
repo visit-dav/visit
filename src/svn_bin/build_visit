@@ -945,6 +945,9 @@
 #
 #     Mark C. Miller, Mon Aug 30 17:57:47 PDT 2010
 #     Update ITAPS-FMDB tarball to something known to compile correctly.
+#
+#     Mark C. Miller, Tue Sep 21 05:46:10 PDT 2010
+#     Fix DBIO_ONLY mode.
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -3545,10 +3548,12 @@ function build_vtk
     if [[ -e ${PYTHON_INSTALL}/python ]] ; then
        info "VTK: Python found"
     else
-       build_python
-       if [[ $? != 0 ]] ; then
-          warn "Unable to build python. Giving up"
-          return 1
+       if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+          build_python
+          if [[ $? != 0 ]] ; then
+             warn "Unable to build python. Giving up"
+             return 1
+          fi
        fi
     fi
 
@@ -3559,10 +3564,12 @@ function build_vtk
     if [[ -e ${MESA_INSTALL} ]] ; then
        info "VTK: Mesa found"
     else
-       build_mesa
-       if [[ $? != 0 ]] ; then
-          warn "Unable to build Mesa. Giving up"
-          return 1
+       if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+          build_mesa
+          if [[ $? != 0 ]] ; then
+             warn "Unable to build Mesa. Giving up"
+             return 1
+          fi
        fi
     fi
 
@@ -3746,11 +3753,7 @@ function build_vtk
                -DVTK_USE_TK:BOOL=OFF\
                -DTK_INCLUDE_PATH:FILEPATH=""\
                -DTK_LIBRARY:FILEPATH=""\
-               -DVTK_WRAP_PYTHON:BOOL=ON\
-               -DPYTHON_EXECUTABLE:FILEPATH="${VISIT_PYTHON_DIR}/bin/python"\
-               -DPYTHON_INCLUDE_PATH:FILEPATH="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}/"\
-               -DPYTHON_LIBRARY:FILEPATH="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${LIBEXT}"\
-               -DPYTHON_EXTRA_LIBS:STRING="$VTK_PY_LIBS" \
+               -DVTK_WRAP_PYTHON:BOOL=OFF\
                .
        else
            if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
