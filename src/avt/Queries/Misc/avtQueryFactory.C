@@ -295,6 +295,9 @@ avtQueryFactory::Instance()
 //    Eric Brugger, Wed Jun 30 14:03:06 PDT 2010
 //    Added the xray image query.
 //
+//    Cyrus Harrison, Tue Sep 21 11:12:17 PDT 2010
+//    Added explicit passing of args to the python filter query.
+//
 // ****************************************************************************
 
 avtDataObjectQuery *
@@ -678,12 +681,13 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         int nargs = args.size();
         stringVector vars;
 
-        for(int i= 0; i < nargs -1;i++)
+        for(int i= 0; i < nargs -2;i++)
             vars.push_back(args[i]);
 
         // set variable names
         py_query->SetVariableNames(vars);
         // python script is passed in as the last variable
+        py_query->SetPythonArgs(args[nargs-2]);
         py_query->SetPythonScript(args[nargs-1]);
         query = py_query;
 #else

@@ -83,7 +83,7 @@ using std::string;
 // ****************************************************************************
 
 avtPythonQuery::avtPythonQuery()
-: avtDataObjectQuery(), avtDatasetSink(), pyEnv(NULL)
+: avtDataObjectQuery(), avtDatasetSink(), pyEnv(NULL), pyScript(""),pyArgs("")
 {
     pyEnv = new avtPythonFilterEnvironment();
 }
@@ -209,6 +209,27 @@ avtPythonQuery::SetPythonScript(const std::string &py_script)
 }
 
 // ****************************************************************************
+//  Method: avtPythonQuery::SetPythonArgs
+//
+//  Purpose:
+//    Sets the python args scring used to setup the python query. This string
+//    should contain a pickled list.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   September 21, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPythonQuery::SetPythonArgs(const std::string &py_args)
+{
+    pyArgs = py_args;
+}
+
+
+// ****************************************************************************
 //  Method: avtPythonQuery::PerformQuery
 //
 //  Purpose:
@@ -319,6 +340,8 @@ avtPythonQuery::GetSecondaryVariables(std::vector<std::string> &res)
 //  Creation:   Wed Feb 17 09:30:46 PST 2010
 //
 //  Modifications:
+//    Cyrus Harrison, Tue Sep 21 11:29:47 PDT 2010
+//    Unpickle passed args from pyArgs member.
 //
 // ****************************************************************************
 
@@ -411,10 +434,9 @@ avtPythonQuery::UpdateContract()
     }
 
     // get any other args
-    std::string args_str = varNames[varNames.size()-1];
-    if(args_str != "")
+    if(pyArgs != "")
     {
-        PyObject *py_args = pyEnv->Unpickle(args_str);
+        PyObject *py_args = pyEnv->Unpickle(pyArgs);
         if(!pyEnv->Filter()->SetAttribute("arguments",py_args))
             PYQUERY_ERROR("avtPythonQuery::UpdateContract Error - "
                       "Unable to set Python Query 'arguments' attribute.");
