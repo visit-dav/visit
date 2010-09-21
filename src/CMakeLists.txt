@@ -169,6 +169,8 @@
 #    Kathleen Bonnell, Thu Sep 2 15:44:22 PDT 2010 
 #    Add flag to windows nsis-installer script for 64 bit.
 #
+#    Mark C. Miller, Tue Sep 21 13:47:27 PDT 2010
+#    Fix DBIO_ONLY mode.
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -656,9 +658,9 @@ INCLUDE(${CMAKE_ROOT}/Modules/CheckSymbolExists.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/FindX11.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
 
-IF(VISIT_PYTHON_SCRIPTING)
+IF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItPython.cmake)
-ENDIF(VISIT_PYTHON_SCRIPTING)
+ENDIF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_DBIO_ONLY)
 
 IF(VISIT_JAVA)
     INCLUDE(${CMAKE_ROOT}/Modules/FindJava.cmake)
@@ -686,10 +688,14 @@ CHECK_INCLUDE_FILES (zlib.h      HAVE_ZLIB_H)
 CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 
 # Configure OpenGL support.
-INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
+IF(NOT VISIT_DBIO_ONLY)
+    INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
+ENDIF(NOT VISIT_DBIO_ONLY)
 
 # Configure Mesa support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
+IF(NOT VISIT_DBIO_ONLY)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
+ENDIF(NOT VISIT_DBIO_ONLY)
 
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
@@ -718,8 +724,15 @@ IF(VISIT_PYTHON_FILTERS AND VISIT_NOLINK_MPI_WITH_LIBRARIES)
     MESSAGE(STATUS "Python Engine Filters disabled because VISIT_NOLINK_MPI_WITH_LIBRARIES was selected.")
 ENDIF(VISIT_PYTHON_FILTERS AND VISIT_NOLINK_MPI_WITH_LIBRARIES)
 
+IF(VISIT_PYTHON_FILTERS AND VISIT_DBIO_ONLY)
+    SET(VISIT_PYTHON_FILTERS OFF)
+    MESSAGE(STATUS "Python Engine Filters disabled because VISIT_DBIO_ONLY was selected.")
+ENDIF(VISIT_PYTHON_FILTERS AND VISIT_DBIO_ONLY)
+
 # Configure Qt4 support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt4.cmake)
+IF(NOT VISIT_DBIO_ONLY)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt4.cmake)
+ENDIF(NOT VISIT_DBIO_ONLY)
 
 # Treat GLEW as a 3rd party builtin for now
 SET(GLEW_FOUND 1)
@@ -1197,9 +1210,9 @@ SET(VISIT_COMMON_INCLUDES
 # Override the OPENGL_glu_LIBRARY returned by CMake on the Mac because the
 # AGL framework does NOT contain gluTess functions. We want to instead use
 # Mesa's GLU functions.
-IF(APPLE)
+IF(APPLE AND NOT VISIT_DBIO_ONLY)
     SET(OPENGL_glu_LIBRARY ${MESA_LIBRARY_DIR}/libMesaGLU.dylib CACHE INTERNAL "AGL lib for OSX")   
-ENDIF(APPLE)
+ENDIF(APPLE AND NOT VISIT_DBIO_ONLY)
 
 # We use libGLU for its tessellation abilities but it requires libGL sometimes.
 IF(UNIX AND NOT APPLE)
