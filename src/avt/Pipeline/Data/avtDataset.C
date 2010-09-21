@@ -579,6 +579,7 @@ avtDataset::CalculateSpatialIntervalTree(bool acrossAllProcs)
         max = (ids[i] > max ? ids[i] : max);
     if (acrossAllProcs)
         max = UnifyMaximumValue(max);
+
     if (max < 0)
     {
         EXCEPTION0(ImproperUseException);
@@ -643,6 +644,9 @@ avtDataset::CalculateSpatialIntervalTree(bool acrossAllProcs)
 //    Hank Childs, Fri Sep 10 19:20:28 PDT 2010
 //    Add an option for limiting the calculation to each processor.
 //
+//    Hank Childs, Tue Sep 21 11:34:17 CDT 2010
+//    Fix array size problem.
+//
 // ****************************************************************************
 
 void
@@ -650,24 +654,31 @@ avtDataset::RenumberDomainIDs(bool acrossAllProcs)
 {
     int  i;
 
-    if (*dataTree == NULL)
-        return;
     int numLeaves = 0;
-    vtkDataSet **leaves = dataTree->GetAllLeaves(numLeaves);
     vector<string> labels;
-    dataTree->GetAllLabels(labels);
+    vtkDataSet **leaves = NULL;
+    if (*dataTree == NULL)
+    {
+        if (! acrossAllProcs)
+            return;
+    }
+    else
+    {
+        leaves = dataTree->GetAllLeaves(numLeaves);
+        dataTree->GetAllLabels(labels);
+    }
 
     // This should never execute, but better safe than sorry
     while (labels.size() < numLeaves)
     {
-        debug1 << "Unexpected: less labels than leaves" << endl;
+        //debug1 << "Unexpected: less labels than leaves" << endl;
         labels.push_back("");
     }
 
     int myOffset = 0;
     if (acrossAllProcs)
     {
-        int  numProcs = PAR_Rank();
+        int  numProcs = PAR_Size();
         int *numPer = new int[numProcs];
         for (i = 0 ; i < numProcs ; i++)
             numPer[i] = 0;
@@ -681,6 +692,9 @@ avtDataset::RenumberDomainIDs(bool acrossAllProcs)
         delete [] numPer;
     }
     
+    if (numLeaves == 0) // had to wait this long to do parallel communication.
+        return;
+
     avtDataTree_p *newTrees = new avtDataTree_p[numLeaves];
     for (i = 0 ; i < numLeaves ; i++)
          newTrees[i] = new avtDataTree(leaves[i], myOffset++, labels[i]);
