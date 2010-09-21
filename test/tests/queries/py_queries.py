@@ -17,15 +17,24 @@
 import os
 from os.path import join as pjoin
 
+def script_path(sname):
+    return pjoin(os.path.split(TestScriptPath())[0],sname)
+
 OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
-script_file = pjoin(os.path.split(TestScriptPath())[0],"py_query_script_00.vpq")
 
-PythonQuery(file=script_file)
+PythonQuery(file=script_path("py_query_script_00.vpq"))
 res = GetQueryOutputString()
 TestText("py_queries_00",res + "\n")
+
+script_file = pjoin(os.path.split(TestScriptPath())[0],"py_query_script_01.vpq")
+
+PythonQuery(file=script_path("py_query_script_01.vpq"),vars=["default","p"],args=["test",0.0,[1,2.0,3]])
+res = GetQueryOutputString()
+TestText("py_queries_01",res + "\n")
+
 
 Exit()
