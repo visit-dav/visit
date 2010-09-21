@@ -63,6 +63,8 @@ class avtPythonFilterEnvironment;
 //  Creation:   Tue Feb  9 15:15:41 PST 2010
 //
 //  Modifications:
+//  Cyrus Harrison, Tue Sep 21 11:14:21 PDT 2010
+//  Added SetPythonArgs()
 //
 // ****************************************************************************
 
@@ -75,6 +77,7 @@ class QUERY_API avtPythonQuery :  public avtDataObjectQuery,
     void                        CleanUp();
 
     void                        SetPythonScript(const std::string &py_script);
+    void                        SetPythonArgs(const std::string &py_args);
 
     virtual const char         *GetType(void);
     virtual const char         *GetDescription(void);
@@ -107,6 +110,7 @@ class QUERY_API avtPythonQuery :  public avtDataObjectQuery,
 
     avtPythonFilterEnvironment *pyEnv;
     std::string                 pyScript;
+    std::string                 pyArgs;
 
     stringVector                varNames;
 

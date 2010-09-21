@@ -1673,6 +1673,8 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
 //
 //
 // Modifications:
+//  Cyrus Harrison, Tue Sep 21 11:23:00 PDT 2010
+//  Support passing of arbitary arguments via "args" keyword.
 //
 // ****************************************************************************
 
@@ -1687,6 +1689,8 @@ QvisQueryWindow::ExecutePythonQuery()
     QStringListIterator itr(vlist);
     while(itr.hasNext())
         py_args.push_back(itr.next().toStdString());
+    // blank spot for 'args' that can be passed via the cli
+    py_args.push_back("");
 
     // get python script from pyFilterEdit
     QString query_def = pyFilterEdit->getSource();
