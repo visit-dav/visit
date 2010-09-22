@@ -171,6 +171,10 @@
 #
 #    Mark C. Miller, Tue Sep 21 13:47:27 PDT 2010
 #    Fix DBIO_ONLY mode.
+#
+#    Tom Fogal, Wed Sep 22 13:45:36 MDT 2010
+#    Fix HAVE_LIBGLEW definition.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -734,9 +738,9 @@ IF(NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt4.cmake)
 ENDIF(NOT VISIT_DBIO_ONLY)
 
-# Treat GLEW as a 3rd party builtin for now
+# Treat GLEW as a 3rd party builtin.
 SET(GLEW_FOUND 1)
-SET(HAVE_LIBGLEW 1)
+ADD_DEFINITIONS(-DHAVE_LIBGLEW)
 SET(GLEW_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/glew/glew/include)
 SET(GLEW_LIBRARY_DIR ${VISIT_SOURCE_DIR}/lib)
 SET(GLEW_LIB GLEW)
