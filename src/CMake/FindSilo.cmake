@@ -49,6 +49,10 @@
 #    Fixed query for Silo version number to use MAJ/MIN/PAT symbols in 
 #    silo.h header file instead of Silo_version_... thingy. This allows
 #    it to correctly interpret '4.8-pre3' for example.
+#
+#    Brad Whitlock, Wed Sep 22 14:15:23 PST 2010
+#    I added FORCE to the lines that set the PDB variables.
+#
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file 
@@ -94,10 +98,10 @@ IF(SILO_FOUND)
         MESSAGE(STATUS "    PDB Lite has long long support")
     ENDIF("${SILO_MAJ_NO}.${SILO_MIN_NO}.${SILO_PAT_NO}" VERSION_LESS 4.7.2)
 
-    SET(PDB_FOUND 1 CACHE BOOL "PDB library found")
-    SET(PDB_INCLUDE_DIR ${SILO_INCLUDE_DIR} CACHE PATH "PDB include directory")
-    SET(PDB_LIBRARY_DIR ${SILO_LIBRARY_DIR} CACHE PATH "PDB library directory")
-    SET(PDB_LIB ${SILO_LIB} CACHE STRING "PDB library")
+    SET(PDB_FOUND 1 CACHE BOOL "PDB library found" FORCE)
+    SET(PDB_INCLUDE_DIR ${SILO_INCLUDE_DIR} CACHE PATH "PDB include directory" FORCE)
+    SET(PDB_LIBRARY_DIR ${SILO_LIBRARY_DIR} CACHE PATH "PDB library directory" FORCE)
+    SET(PDB_LIB ${SILO_LIB} CACHE STRING "PDB library" FORCE)
     MARK_AS_ADVANCED(PDB_INCLUDE_DIR PDB_LIBRARY_DIR PDB_LIB)
 
 ENDIF(SILO_FOUND)
