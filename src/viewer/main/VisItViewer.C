@@ -218,7 +218,7 @@ VisItViewer::GetVisItHome() const
     else if(visitHomeMethod == FromArgv0)
     {
         QString appDir(QDir::current().path());
-#if defined(__WIN32)
+#if defined(_WIN32)
         int index = appDir.lastIndexOf("\\");
 #else
         int index = appDir.lastIndexOf("/");
@@ -834,7 +834,7 @@ VisItViewer::GetOperatorIndex(const std::string &operatorName) const
 std::string
 VisItViewer::GetVisItCommand() const
 {
-#if defined(__WIN32)
+#if defined(_WIN32)
     return GetVisItHome() + "\\visit.exe";
 #else
     return GetVisItHome() + "/bin/visit";
