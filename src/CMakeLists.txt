@@ -200,28 +200,11 @@ SET(BUILD_SHARED_LIBS 1)
 SITE_NAME(HOSTNAME)
 
 #-----------------------------------------------------------------------------
-# Add an option to not force cache for 3rd party
-#----------------------------------------------------------------------------
-
-OPTION(VISIT_OPTION_DEFAULT_NOFORCE
-  "Do not force replacement in cache." OFF)
-
-#-----------------------------------------------------------------------------
 # Include this computer's config-site if one exists
 #-----------------------------------------------------------------------------
+
 FUNCTION(VISIT_OPTION_DEFAULT var)
-  IF(VISIT_OPTION_DEFAULT_NOFORCE)
-    # MESSAGE(STATUS "VISIT_OPTION_DEFAULT_NOFORCE is on.")
-    IF(NOT ${var})
-      MESSAGE(STATUS "Setting ${var}.")
-      SET(${var} ${ARGN} CACHE PATH "${var} default value")
-    ELSE()
-      MESSAGE(STATUS "Not setting ${var}.")
-    ENDIF()
-  ELSE()
-    # MESSAGE(STATUS "VISIT_OPTION_DEFAULT_NOFORCE is off.")
-    SET(${var} ${ARGN} CACHE PATH "${var} default value" FORCE)
-  ENDIF()
+  SET(${var} ${ARGN} CACHE PATH "${var} default value" FORCE)
 ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetupITAPS.cmake)
 
@@ -288,7 +271,20 @@ IF (WIN32)
       INCLUDE(config-site/windows.cmake)
   ENDIF (VISIT_CONFIG_SITE)
   SET(CMAKE_SKIP_RPATH ON CACHE INTERNAL "VisIt builds with rpath set." FORCE)
-  SET(VISIT_WIN_ICON_RESOURCE ${VISIT_WINDOWS_DIR}/resources/visitresources.rc)
+  IF(NOT VISIT_WINDOWS_DIR)
+    MESSAGE(FATAL_ERROR "VISIT_WINDOWS_DIR is not defined.")
+  ENDIF()
+  IF(NOT EXISTS ${VISIT_WINDOWS_DIR})
+    MESSAGE(FATAL_ERROR "${VISIT_WINDOWS_DIR} does not exist.")
+  ENDIF()
+  IF(EXISTS ${VISIT_WINDOWS_DIR}/resources/visitresources.rc)
+    SET(VISIT_WIN_ICON_RESOURCE ${VISIT_WINDOWS_DIR}/resources/visitresources.rc)
+  ELSEIF(EXISTS ${VISIT_WINDOWS_DIR}/visitresources/visitresources.rc)
+    SET(VISIT_WIN_ICON_RESOURCE ${VISIT_WINDOWS_DIR}/visitresources/visitresources.rc)
+  ELSE()
+    MESSAGE(FATAL_ERROR "Cannot find visitresources.rc in either ${VISIT_WINDOWS_DIR}/resources or ${VISIT_WINDOWS_DIR}/visitresources")
+  ENDIF()
+  MESSAGE(STATUS "VISIT_WIN_ICON_RESOURCE = ${VISIT_WIN_ICON_RESOURCE}")
 ENDIF (WIN32)
 
 #-----------------------------------------------------------------------------
@@ -591,15 +587,26 @@ MACRO(VISIT_INSTALL_PLUGINS type)
             # not configure, so the dollar sign must be escaped in the string
             # below.  Then during install, ${BUILD_TYPE} will be expanded.
             FOREACH(target ${ARGN})
-                SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/lib${target}.dll")
-                INSTALL(FILES ${filename}
+                IF(MSVC_IDE)
+                  SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/lib${target}.dll")
+                  INSTALL(FILES ${filename}
                     DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
                     COMPONENT RUNTIME
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                                 GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                                 WORLD_READ             WORLD_EXECUTE
                     CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-                )
+                  )
+                ELSE()  # For no IDE, installed straight into exe
+                  SET(filename "${VISIT_BINARY_DIR}/exe/lib${target}.dll")
+                  INSTALL(FILES ${filename}
+                    DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
+                    COMPONENT RUNTIME
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                                WORLD_READ             WORLD_EXECUTE
+                  )
+                ENDIF()
             ENDFOREACH(target)
         ENDIF(NOT WIN32)
         IF(APPLE)
@@ -1405,7 +1412,7 @@ FUNCTION(CHECK_ISFINITE_EXISTS VAR)
     ELSE(tmpVar)
         MESSAGE(STATUS "Check for isfinite - not found")
         IF (NOT WIN32)
-            MESSAGE("Check for isfinite - ${outvar}")
+            MESSAGE(STATUS "Check for isfinite - ${outvar}")
         ENDIF (NOT WIN32)
     ENDIF(tmpVar)
 ENDFUNCTION(CHECK_ISFINITE_EXISTS)
