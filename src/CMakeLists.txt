@@ -169,6 +169,9 @@
 #    Kathleen Bonnell, Thu Sep 2 15:44:22 PDT 2010 
 #    Add flag to windows nsis-installer script for 64 bit.
 #
+#    Tom Fogal, Wed Sep 22 13:45:36 MDT 2010
+#    Fix HAVE_LIBGLEW definition.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -721,9 +724,9 @@ ENDIF(VISIT_PYTHON_FILTERS AND VISIT_NOLINK_MPI_WITH_LIBRARIES)
 # Configure Qt4 support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt4.cmake)
 
-# Treat GLEW as a 3rd party builtin for now
+# Treat GLEW as a 3rd party builtin.
 SET(GLEW_FOUND 1)
-SET(HAVE_LIBGLEW 1)
+ADD_DEFINITIONS(-DHAVE_LIBGLEW)
 SET(GLEW_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/glew/glew/include)
 SET(GLEW_LIBRARY_DIR ${VISIT_SOURCE_DIR}/lib)
 SET(GLEW_LIB GLEW)
