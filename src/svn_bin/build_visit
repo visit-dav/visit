@@ -1929,6 +1929,12 @@ function check_files
 #    Keep dependencies for VTK (CMake, Python, and Mesa) but made sure they
 #    are only checked once.
 #
+#    Mark C. Miller, Tue Sep 21 22:33:53 PDT 2010
+#    When DO_VTK was added as a conditional to trigger python and mesa 
+#    builds, dbio-only mode could no longer prevent python/mesa from being
+#    built even though they are NOT required for dbio-only mode because
+#    dbio-only does require VTK. So, I added logic to prevent python and
+#    mesa from being built in that case.
 # *************************************************************************** #
 
 function check_required_3rdparty
@@ -1946,17 +1952,21 @@ function check_required_3rdparty
         fi
     fi
 
-    if [[ "$DO_PYTHON" == "yes" || "$DO_VTK" == "yes" ]] ; then
-        ensure_built_or_ready "python" $PYTHON_VERSION $PYTHON_BUILD_DIR $PYTHON_FILE
-        if [[ $? != 0 ]] ; then
-            return 1
+    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+        if [[ "$DO_PYTHON" == "yes" || "$DO_VTK" == "yes" ]] ; then
+            ensure_built_or_ready "python" $PYTHON_VERSION $PYTHON_BUILD_DIR $PYTHON_FILE
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
         fi
     fi
 
-    if [[ "$DO_MESA" == "yes" || "$DO_VTK" == "yes" ]] ; then
-        ensure_built_or_ready "mesa"   $MESA_VERSION   $MESA_BUILD_DIR   $MESA_FILE $MESA_URL
-        if [[ $? != 0 ]] ; then
-            return 1
+    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+        if [[ "$DO_MESA" == "yes" || "$DO_VTK" == "yes" ]] ; then
+            ensure_built_or_ready "mesa"   $MESA_VERSION   $MESA_BUILD_DIR   $MESA_FILE $MESA_URL
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
         fi
     fi
 
