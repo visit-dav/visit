@@ -38,6 +38,7 @@
 
 #include "avtOpenGLAtomTexturer3D.h"
 #include <vtkConfigure.h>
+#include <cstring>
 #include <math.h>
 
 #include <vtkConfigure.h>
