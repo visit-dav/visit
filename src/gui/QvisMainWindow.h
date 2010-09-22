@@ -273,7 +273,6 @@ signals:
     void activateFileOpenWindow();
     void activateFileInformationWindow();
     void activateSimulationWindow();
-    void activatePrintWindow();
     void activateSaveWindow();
     void activateExportDBWindow();
     void activateAnimationWindow();
