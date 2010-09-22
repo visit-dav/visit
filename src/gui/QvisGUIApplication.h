@@ -453,7 +453,6 @@ private slots:
     void SaveMovie();
     void SaveMovieMain();
     void SaveWindow();
-    void SetPrinterOptions();
     void PrintWindow();
     void RefreshFileList();
     void RefreshFileListAndNextFrame();

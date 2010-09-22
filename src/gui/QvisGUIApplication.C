@@ -2891,6 +2891,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Thu Jan 31 12:33:17 PST 2008
 //   Connected new saveCrashRecoveryFile signal from Main window.
 //
+//   Brad Whitlock, Wed Sep 22 10:58:37 PDT 2010
+//   Just do PrintWindow.
+//
 // ****************************************************************************
 
 void
@@ -2920,7 +2923,6 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(saveMovie()), this, SLOT(SaveMovie()));
     connect(mainWin, SIGNAL(setupCMFE()), this, SLOT(SetupCMFE()));
     connect(mainWin, SIGNAL(printWindow()), this, SLOT(PrintWindow()));
-    connect(mainWin, SIGNAL(activatePrintWindow()), this, SLOT(SetPrinterOptions()));
     
     connect(mainWin->GetPlotManager(), SIGNAL(activatePlotWindow(int)),
             this, SLOT(ActivatePlotWindow(int)));
@@ -6423,10 +6425,11 @@ QvisGUIApplication::SaveWindow()
 }
 
 // ****************************************************************************
-// Method: QvisGUIApplication::SetPrinterOptions
+// Method: QvisGUIApplication::PrintWindow
 //
 // Purpose: 
-//   This is a Qt slot function that tells the viewer to set its print options.
+//   This is a Qt slot function that lets the user set print options and then
+//   it tells the viewer to print.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Feb 20 12:40:41 PDT 2002
@@ -6460,10 +6463,14 @@ QvisGUIApplication::SaveWindow()
 //   Set the QPrinter's printer name into the printer attributes if there was
 //   no valid printer name. Print after the dialog is dismissed on Mac too.
 //
+//   Brad Whitlock, Wed Sep 22 10:59:27 PDT 2010
+//   I renamed this method to PrintWindow and I made all platforms print if
+//   the print dialog is accepted.
+//
 // ****************************************************************************
     
 void
-QvisGUIApplication::SetPrinterOptions()
+QvisGUIApplication::PrintWindow()
 {
     PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
 
@@ -6614,14 +6621,11 @@ QvisGUIApplication::SetPrinterOptions()
     else
     {
 #endif
-#if defined(Q_WS_MACX)
-        // Each time through on the Mac, clear out the printer's save to filename.
+        // Each time through, clear out the printer's save to filename.
         bool setupPrinter = true;
         p->SetOutputToFile(false);
         p->SetOutputToFileName("");
-#else
-        bool setupPrinter = false;
-#endif
+
         //
         // If we've never set up the printer options, set them up now using
         // Qt's printer object and printer dialog.
@@ -6664,44 +6668,18 @@ QvisGUIApplication::SetPrinterOptions()
             p->SetCreator("VisIt");
             printerObserver->SetUpdate(false);
             p->Notify();
-#if defined(WIN32) || defined(Q_WS_MACX)
+
             //
-            // Tell the viewer to print the image because Windows & Mac printer
-            // dialogs have the word "Print" to click when you're done setting
-            // options. This says to me that applications expect to print once
-            // the options are set.
+            // Tell the viewer to print the image. All print dialogs I've seen
+            // for Qt 4 have "Print" as the button that accepts the Print dialog.
+            // This says to me that applications expect to print once the options
+            // are set.
             //
             GetViewerMethods()->PrintWindow();
-#endif
         }
 #if defined(Q_WS_MACX) && !defined(VISIT_MAC_NO_CARBON)
     }
 #endif
-}
-
-// ****************************************************************************
-// Method: QvisGUIApplication::PrintWindow
-//
-// Purpose: 
-//   This is a Qt slot function that tells the viewer to print the window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Feb 20 12:41:13 PDT 2002
-//
-// Modifications:
-//   Brad Whitlock, Mon Aug 30 11:36:10 PDT 2010
-//   If no printer options have been set up yet then we should do 
-//   SetPrinterOptions.
-//
-// ****************************************************************************
-
-void
-QvisGUIApplication::PrintWindow()
-{
-    if(printer == 0)
-        SetPrinterOptions();
-    else
-        GetViewerMethods()->PrintWindow();
 }
 
 // ****************************************************************************
