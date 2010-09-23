@@ -4073,6 +4073,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added logic to pass along ignore extents bools.
+//
+//    Cyrus Harrison, Thu Sep 23 11:02:22 PDT 2010
+//    Added missing broadcast for 'haveAMRGroupInfo'.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
@@ -4156,7 +4160,7 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BroadcastInt(maxAnnotIntLists);
     if (maxAnnotIntLists > 0)
         avtScalarMetaData::BuildEnumNChooseRMap(maxAnnotIntLists, maxCoincidentNodelists, pascalsTriangleMap);
-    
+
     //
     // Broadcast Group Info
     //
@@ -4173,6 +4177,10 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     ignore_extents = ignoreDataExtents;
     BroadcastInt(ignore_extents);
     ignoreDataExtents = ignore_extents;
+    int have_amr_group_info =haveAmrGroupInfo;
+    BroadcastInt(have_amr_group_info);
+    haveAmrGroupInfo = have_amr_group_info;
+
 #endif
 }
 
