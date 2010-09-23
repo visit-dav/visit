@@ -4,6 +4,10 @@
 #   Requests of additonal vars.
 #   Passing of arbitary python args.
 #
+#  Modifications:
+#   Only use var check results on first proc (b/c we are running this on a
+#   single domain dataset.)
+#
 # ----------------------------------------------------------------------------
 
 class TestQuery(SimplePythonQuery):
@@ -16,13 +20,14 @@ class TestQuery(SimplePythonQuery):
         arrs = [ds_in.GetCellData().GetArray(name) for name in self.input_var_names]
         self.input_vars_ok = [arr is not None for arr in arrs]
     def post_execute(self):
-        res = "Input Vars:\n"
-        for i in xrange(len(self.input_var_names)):
-            res+= " %s(found=%s)\n" % (self.input_var_names[i],self.input_vars_ok[i])
-        res += "Input Arguments:\n"
-        for r in self.arguments:
-            res+= " %s\n" % str(r)
-        self.set_result_text(res)
-        self.set_result_value(0.0)
+        if mpicom.rank() == 0:
+            res = "Input Vars:\n"
+            for i in xrange(len(self.input_var_names)):
+                res+= " %s(found=%s)\n" % (self.input_var_names[i],self.input_vars_ok[i])
+            res += "Input Arguments:\n"
+            for r in self.arguments:
+                res+= " %s\n" % str(r)
+            self.set_result_text(res)
+            self.set_result_value(0.0)
 
 py_filter = TestQuery
