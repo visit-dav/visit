@@ -321,6 +321,10 @@ avtParDomICAlgorithm::PreRunAlgorithm()
 //   Rename data members to reflect the new emphasis in particle advection, as
 //   opposed to streamlines.
 //
+//   Dave Pugmire, Fri Sep 24 12:42:49 EDT 2010
+//   Handle case where single IC goes to multiple places. Increase number of ICs.
+//   Decrement for early terminators.
+//
 // ****************************************************************************
 
 void
@@ -355,7 +359,7 @@ avtParDomICAlgorithm::RunAlgorithm()
         //Check for new ICs.
         int earlyTerminations = 0;
         RecvICs(activeICs, earlyTerminations);
-        //numICChange -= earlyTerminations;
+        numICChange -= earlyTerminations;
 
         ExchangeTermination();
         CheckPendingSendRequests();
@@ -393,6 +397,9 @@ avtParDomICAlgorithm::RunAlgorithm()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Dave Pugmire, Fri Sep 24 12:42:49 EDT 2010
+//   Handle case where single IC goes to multiple places. Increase number of ICs.
+//
 // ****************************************************************************
 
 void
@@ -400,27 +407,36 @@ avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 {
     // The integrated streamline could lie in multiple domains.
     // Duplicate the IC and send to the proper owner.
+    set<int> sentRanks;
+    
     for (int i = 0; i < s->seedPtDomainList.size(); i++)
     {
         // if i > 0, we create new streamlines.
         //        if (i > 0)
         //            numICChange++;
-
+        
         int domRank = DomainToRank(s->seedPtDomainList[i]);
+        if (sentRanks.find(domRank) != sentRanks.end())
+            continue;
+        
         s->domain = s->seedPtDomainList[i];
         if (domRank == rank)
         {
             activeICs.push_back(s);
-            //debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> me"<<endl;
+            debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> me"<<endl;
         }
         else
         {
             vector<avtIntegralCurve *> ics;
             ics.push_back(s);
             SendICs(domRank, ics);
-            //debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> "<<domRank<<endl;
+            sentRanks.insert(domRank);
+            
+            debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> "<<domRank<<endl;
         }
     }
+    if (sentRanks.size() > 1)
+        numICChange += (sentRanks.size()-1);
 }
 
 // ****************************************************************************
