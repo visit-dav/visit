@@ -43,6 +43,7 @@
 #ifndef VTK_SURFACE_FROM_VOLUME_H
 #define VTK_SURFACE_FROM_VOLUME_H
 
+#include <visit_vtk_exports.h>
 #include <vtkDataSetFromVolume.h>
 
 #include <vector>
@@ -74,7 +75,7 @@ class vtkPolyData;
 //
 // ****************************************************************************
 
-class vtkSurfaceFromVolume : public vtkDataSetFromVolume
+class VISIT_VTK_API vtkSurfaceFromVolume : public vtkDataSetFromVolume
 {
 
 class TriangleList
