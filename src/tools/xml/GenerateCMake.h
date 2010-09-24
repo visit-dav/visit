@@ -93,6 +93,10 @@
 //    Add some more defines for HDF4, discovered as necessary when compiling
 //    with Visual Studio 9.
 //
+//    Kathleen Bonnell, Fri Sep 24 11:25:32 MST 2010 
+//    Add ENGINE target definition for operators if they contain 
+//    engine-specific code.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -582,11 +586,15 @@ class CMakeGeneratorPlugin : public Plugin
         out << "ADD_LIBRARY(E"<<name<<"Operator_ser ${LIBE_SOURCES})" << endl;
         out << "TARGET_LINK_LIBRARIES(E"<<name<<"Operator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser "<< ToString(elibsSer) << ")" << endl;
         out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Operator_ser)" << endl;
+        if (hasEngineSpecificCode)
+            out << "ADD_TARGET_DEFINITIONS(E"<<name<<"Operator_ser ENGINE)" << endl;
         out << endl;
         out << "IF(VISIT_PARALLEL)" << endl;
         out << "    ADD_PARALLEL_LIBRARY(E"<<name<<"Operator_par ${LIBE_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Operator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par "<< ToString(elibsPar) << ")" << endl;
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Operator_par)" << endl;
+        if (hasEngineSpecificCode)
+            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<"Operator_par ENGINE)" << endl;
         out << "ENDIF(VISIT_PARALLEL)" << endl;
         out << endl;
         out << "VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})" << endl;
