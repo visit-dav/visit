@@ -105,6 +105,11 @@ avtBase10LogWithMinExpression::~avtBase10LogWithMinExpression()
 //  Programmer: Hank Childs
 //  Creation:   May 20, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 23 14:10:45 PDT 2010
+//    Correct minimum test.
+//
 // ****************************************************************************
 
 void
@@ -130,7 +135,7 @@ avtBase10LogWithMinExpression::DoOperation(vtkDataArray *in1,vtkDataArray *in2,
         {
             int tup1 = (var1IsSingleton ? 0 : i);
             float f1 = in1->GetComponent(tup1, j);
-            float f = (f2 < f1 ? f2 : f1);
+            float f = (f1 < f2 ? f2 : f1);
             out->SetComponent(i, j, log10(f));
         }
     }
