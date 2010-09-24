@@ -169,9 +169,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         pointList.addElement(new Double(0));
         pointList.addElement(new Double(1));
         pointList.addElement(new Double(0));
-        sampleDensity0 = 1;
-        sampleDensity1 = 1;
-        sampleDensity2 = 1;
+        sampleDensity0 = 2;
+        sampleDensity1 = 2;
+        sampleDensity2 = 2;
         displayMethod = DISPLAYMETHOD_LINES;
         showSeeds = false;
         showHeads = false;
@@ -279,9 +279,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         pointList.addElement(new Double(0));
         pointList.addElement(new Double(1));
         pointList.addElement(new Double(0));
-        sampleDensity0 = 1;
-        sampleDensity1 = 1;
-        sampleDensity2 = 1;
+        sampleDensity0 = 2;
+        sampleDensity1 = 2;
+        sampleDensity2 = 2;
         displayMethod = DISPLAYMETHOD_LINES;
         showSeeds = false;
         showHeads = false;
