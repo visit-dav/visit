@@ -42,6 +42,9 @@
 #   Hank Childs, Sat Aug  7 03:39:33 PDT 2010
 #   Add DataBinning operator.
 #
+#   Hank Childs, Fri Sep 24 08:16:10 PDT 2010
+#   Add SurfaceNormal, Flux, and ConnectedComponents operators.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
@@ -55,6 +58,7 @@ BoundaryOp
 Box
 Clip
 Cone
+ConnectedComponents
 CoordSwap
 CracksClipper
 CreateBonds
@@ -68,6 +72,7 @@ DualMesh
 Edge
 Elevate
 ExternalSurface
+Flux
 IndexSelect
 InverseGhostZone
 Isosurface
@@ -86,6 +91,7 @@ Revolve
 Slice
 Smooth
 SphereSlice
+SurfaceNormal
 ThreeSlice
 Threshold
 Transform
