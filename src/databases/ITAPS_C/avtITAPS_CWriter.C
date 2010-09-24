@@ -86,6 +86,9 @@ using namespace avtITAPS_CUtility;
 //
 //    Mark C. Miller, Tue Apr 21 16:05:30 PDT 2009
 //    Added addFacesFor3DEnts=true for GRUMMP.
+//
+//    Mark C. Miller, Thu Sep 23 20:20:43 PDT 2010
+//    Save option 'MOAB' no longer recognized.
 // ****************************************************************************
 
 avtITAPS_CWriter::avtITAPS_CWriter(DBOptionsAttributes *dbopts)
@@ -100,7 +103,7 @@ avtITAPS_CWriter::avtITAPS_CWriter(DBOptionsAttributes *dbopts)
 #endif
 
 #if defined(ITAPS_MOAB)
-    saveOptions = "MOAB";
+    saveOptions = "";
     formatExtension = "h5m";
 #elif defined(ITAPS_GRUMMP)
     formatExtension = ""; // grummp seems to append '.vmesh' always
