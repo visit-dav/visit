@@ -59,7 +59,7 @@
 //
 // ****************************************************************************
 
-class avtDeferExpressionBaseFilter : virtual public avtExpressionEvaluatorFilter
+class EXPRESSION_API avtDeferExpressionBaseFilter : virtual public avtExpressionEvaluatorFilter
 {
   public:
                          avtDeferExpressionBaseFilter();
