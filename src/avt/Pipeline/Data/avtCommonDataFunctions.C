@@ -1314,12 +1314,16 @@ inline bool visitIsFinite(T t)
 //    Only calculate isfinite at the end of the function.  This is a 3X 
 //    speedup.
 //
+//    Hank Childs, Thu Sep 23 14:06:57 PDT 2010
+//    Use the original pointer when doing a recursive call.
+//
 // ****************************************************************************
 
 template <class T> static bool
 GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts, 
                bool checkFinite)
 {
+    T *buf_orig = buf;
     T min; 
     T max;
     bool setOne = false;
@@ -1351,7 +1355,7 @@ GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts,
         }
     }
     if (! visitIsFinite(min) || ! visitIsFinite(max))
-        return GetScalarRange(buf, n, exts, ghosts, true);
+        return GetScalarRange(buf_orig, n, exts, ghosts, true);
 
     exts[0] = (double) min;
     exts[1] = (double) max;
@@ -1629,12 +1633,16 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Only calculate isfinite at the end of the function.  This is a 3X 
 //    speedup.
 //
+//    Hank Childs, Thu Sep 23 14:06:57 PDT 2010
+//    Use the original pointer when doing a recursive call.
+//
 // ****************************************************************************
 
 template <class T> static void
 GetMagnitudeRange(T *buf, int n, int ncomps, double *exts, 
                   unsigned char *ghosts, bool checkFinite)
 {
+    T *buf_orig = buf;
     for (int i = 0; i < n; i++)
     {
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
@@ -1660,7 +1668,11 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts,
     }
 
     if (! visitIsFinite(exts[0]) || ! visitIsFinite(exts[1]))
-        return GetMagnitudeRange(buf, n, ncomps, exts, ghosts, true);
+    {
+        exts[0] = +FLT_MAX;
+        exts[1] = 0;
+        return GetMagnitudeRange(buf_orig, n, ncomps, exts, ghosts, true);
+    }
 
     exts[0] = sqrt(exts[0]);
     exts[1] = sqrt(exts[1]);
