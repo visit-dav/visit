@@ -597,7 +597,7 @@ vtkVisItClipper::Execute()
         }
         if (!canClip)
         {
-            if (numIcantClip == NULL)
+            if (numIcantClip == 0)
                 stuff_I_cant_clip->GetCellData()->
                                        CopyAllocate(ds->GetCellData(), nCells);
 

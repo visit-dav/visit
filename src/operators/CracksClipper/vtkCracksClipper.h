@@ -39,11 +39,11 @@
 #ifndef VTK_CRACKS_CLIPPER_H
 #define VTK_CRACKS_CLIPPER_H
 
-#include <vtkVisItClipper.h>
 #include <vtkImplicitFunction.h>
+#include <vtkDataSetToUnstructuredGridFilter.h>
 
 class vtkImplicitBoolean;
-
+class vtkUnstructuredGrid;
 
 class AlwaysNegative : public vtkImplicitFunction
 {
@@ -80,18 +80,34 @@ private:
 //  Creation:    August 22, 2005 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Sep 23 13:28:57 MST 2010
+//    Changed inheritance to vtkDataSetToUnstructuredGridFilter and added all
+//    functionality from 1.12 version of vtkVisItClipper class.  Changes made
+//    to vtkVisItClipper for 2.0 don't meet needs of CracksClipper, which 
+//    applies a different Clip Function to every cell. 
 //
 // ****************************************************************************
 
-class vtkCracksClipper : public vtkVisItClipper
+class vtkCracksClipper
+    : public vtkDataSetToUnstructuredGridFilter
 {
   public:
-    vtkTypeRevisionMacro(vtkCracksClipper,vtkVisItClipper);
+    vtkTypeRevisionMacro(vtkCracksClipper,vtkDataSetToUnstructuredGridFilter);
+    void PrintSelf(ostream& os, vtkIndent indent);
 
     static vtkCracksClipper *New();
 
-    virtual void SetUpClipFunction(int);
-    virtual void SetUseOppositePlane(bool val) { useOppositePlane = val;};
+    virtual void SetRemoveWholeCells(bool);
+    virtual void SetClipFunction(vtkImplicitFunction*);
+    virtual void SetClipScalars(vtkDataArray *, float);
+    virtual void SetInsideOut(bool);
+    virtual void SetComputeInsideAndOut(bool);
+    virtual void SetUseZeroCrossings(bool);
+    virtual vtkUnstructuredGrid *GetOtherOutput();
+
+    void SetCellList(int *, int);
+    void SetUpClipFunction(int);
+    void SetUseOppositePlane(bool val) { useOppositePlane = val;};
 
     vtkSetStringMacro(CrackDir);
     vtkSetStringMacro(CrackWidth);
@@ -101,7 +117,29 @@ class vtkCracksClipper : public vtkVisItClipper
     vtkCracksClipper();
     ~vtkCracksClipper();
 
+    void Execute();
+    void RectilinearGridExecute();
+    void StructuredGridExecute();
+    void UnstructuredGridExecute();
+    void PolyDataExecute();
+    void GeneralExecute();
+    void ClipDataset(vtkDataSet *, vtkUnstructuredGrid *);
+
+    int *CellList;
+    int  CellListSize;
   private:
+    bool   removeWholeCells;
+    bool   insideOut;
+    vtkImplicitFunction *clipFunction;
+    bool   iOwnData;
+    float *scalarArray;
+    vtkDataArray *scalarArrayAsVTK;
+    float  scalarCutoff;
+    bool   scalarFlip;
+    bool   useZeroCrossings;
+    bool   computeInsideAndOut;
+
+    vtkUnstructuredGrid *otherOutput;
     vtkCracksClipper(const vtkCracksClipper&);  // Not implemented.
     void operator=(const vtkCracksClipper&);  // Not implemented.
 

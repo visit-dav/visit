@@ -125,11 +125,13 @@ ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_D
 ADD_LIBRARY(ECracksClipperOperator_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(ECracksClipperOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} ECracksClipperOperator_ser)
+ADD_TARGET_DEFINITIONS(ECracksClipperOperator_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ECracksClipperOperator_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(ECracksClipperOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ECracksClipperOperator_par)
+    ADD_TARGET_DEFINITIONS(ECracksClipperOperator_par ENGINE)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})

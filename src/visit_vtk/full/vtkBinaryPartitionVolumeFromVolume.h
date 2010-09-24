@@ -43,6 +43,7 @@
 #ifndef VTK_BINARY_PARTITION_VOLUME_FROM_VOLUME_H
 #define VTK_BINARY_PARTITION_VOLUME_FROM_VOLUME_H
 
+#include <visit_vtk_exports.h>
 #include <vtkVolumeFromVolume.h>
 #include <FixedLengthBitField.h>
 
@@ -77,7 +78,7 @@ class vtkUnstructuredGrid;
 //
 // ****************************************************************************
 
-class vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVolume
+class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVolume
 {
   protected:
 

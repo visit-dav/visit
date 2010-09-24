@@ -43,6 +43,7 @@
 #ifndef VTK_VOLUME_FROM_VOLUME_H
 #define VTK_VOLUME_FROM_VOLUME_H
 
+#include <visit_vtk_exports.h>
 #include <vtkDataSetFromVolume.h>
 #include <vtkCellType.h>
 
@@ -87,7 +88,7 @@ class vtkUnstructuredGrid;
 //
 // ****************************************************************************
 
-class vtkVolumeFromVolume : public vtkDataSetFromVolume
+class VISIT_VTK_API vtkVolumeFromVolume : public vtkDataSetFromVolume
 {
 protected:
 class ShapeList
