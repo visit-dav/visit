@@ -44,8 +44,10 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkVisItPolyDataNormals.h>
 
 #include <ExpressionException.h>
@@ -101,11 +103,21 @@ avtSurfaceNormalExpression::~avtSurfaceNormalExpression()
 //  Programmer:   Hank Childs
 //  Creation:     September 22, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 24 10:18:38 PDT 2010
+//    Add support for rectilinear grids.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds)
 {
+    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        return RectilinearDeriveVariable((vtkRectilinearGrid *) in_ds);
+    }
+
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {
         EXCEPTION2(ExpressionException, outputVariableName, "The Surface normal expression "
@@ -146,6 +158,67 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds)
     n->Delete();
 
     return arr;
+}
+
+
+
+// ****************************************************************************
+//  Method: avtSurfaceNormalExpression::RectilinearDeriveVariable
+//
+//  Purpose:
+//      A method that does special handling for rectilinear generation.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 24, 2010
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSurfaceNormalExpression::RectilinearDeriveVariable(vtkRectilinearGrid *rgrid)
+{
+    int dims[3];
+    rgrid->GetDimensions(dims);
+    int nMatch = 0;
+    bool doX = (dims[0] == 1);
+    if (doX)
+        nMatch++;
+    bool doY = (dims[1] == 1);
+    if (doY)
+        nMatch++;
+    bool doZ = (dims[2] == 1);
+    if (doZ)
+        nMatch++;
+    if (nMatch == 0)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, "Can not determine "
+                   "surface normals for a 3D data set.");
+    }
+    if (nMatch > 1)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, "Can not determine "
+                   "surface normals for lines and vertices.");
+    }
+    vtkFloatArray *n = vtkFloatArray::New();
+    n->SetNumberOfComponents(3);
+    int ntuples = (isPoint ? rgrid->GetNumberOfPoints() 
+                           : rgrid->GetNumberOfCells());
+    n->SetNumberOfTuples(ntuples);
+    float norm[3] = { 0, 0, 0 };
+    if (doX)  
+        norm[0] = 1.0;
+    if (doY)  
+        norm[1] = 1.0;
+    if (doZ)  
+        norm[2] = 1.0;
+    float *ptr = n->GetPointer(0);
+    for (int i = 0 ; i < ntuples ; i++)
+    {
+        *ptr++ = norm[0];
+        *ptr++ = norm[1];
+        *ptr++ = norm[2];
+    }
+
+    return n;
 }
 
 
