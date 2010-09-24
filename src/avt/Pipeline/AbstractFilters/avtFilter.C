@@ -785,6 +785,10 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
 //    Hank Childs, Thu Aug 26 13:02:28 PDT 2010
 //    Change named of extents object.
 //
+//    Hank Childs, Thu Sep 23 13:57:01 PDT 2010
+//    Be more aggressive in setting back extents.  Also set it correctly
+//    with the input ... not with the output (wrong).
+//
 // ****************************************************************************
 
 void
@@ -818,15 +822,21 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
 
     UnifyMinMax(outexts, 2, 2);
 
-    if (varname == NULL)
+    //
+    // We now have determined the true data extents, so we may as well 
+    // set them back.
+    //
+    avtExtents *e = NULL;
+    TRY
     {
-        //
-        // We now have determined the true spatial extents, so we may as well 
-        // set them back.
-        //
-        GetOutput()->GetInfo().GetAttributes().GetOriginalDataExtents()
-                                                                ->Set(outexts);
+        e = GetInput()->GetInfo().GetAttributes().GetOriginalDataExtents(varname);
     }
+    CATCH(ImproperUseException)
+    {
+    }
+    ENDTRY
+    if (e != NULL)
+        e->Set(outexts);
 }
 
 
