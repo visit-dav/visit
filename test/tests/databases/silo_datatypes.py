@@ -31,6 +31,9 @@
 #
 #    Mark C. Miller, Mon Jul 26 17:08:59 PDT 2010
 #    Override pass/fail status for long long data until we switch to silo-4.8
+#
+#    Mark C. Miller, Thu Sep 23 21:23:42 PDT 2010
+#    Remove override of pass/fail for long long data since now using silo-4.8
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -131,10 +134,6 @@ for smode in ("hdf5", "pdb"):
                          result = "PASSED"
                          if (dPixs > 0 and davg > 1):
                              result = "FAILED, %f %f"%(dPixs,davg)
-                         # Overridde pass/fail status for Long long data
-                         # until we switch over to silo-4.8
-                         if (d == "L"):
-                             result = "PASSED"
                          diffResults += "%s_%s:    %s\n"%(mt,varname,result)
             CloseDatabase(dbname)
         TestText("silo_datatypes_diffs_%s_fs%s"%(smode,fsmode),diffResults)
