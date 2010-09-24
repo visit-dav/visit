@@ -51,6 +51,9 @@
 #    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
 #    Rename ApplyDDFExpression to ApplyDataBinningExpression.
 #
+#   Hank Childs, Thu Sep 23 16:00:56 PDT 2010
+#   Added avtDeferExpressionBaseFilter.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -175,6 +178,7 @@ ImageProcessing/avtMedianFilterExpression.C
 
 SET(MANAGEMENT_SOURCES
 Management/avtConstantCreatorExpression.C
+Management/avtDeferExpressionBaseFilter.C
 Management/avtExecuteThenTimeLoopFilter.C
 Management/avtExpressionEvaluatorFilter.C
 Management/avtExprNode.C
