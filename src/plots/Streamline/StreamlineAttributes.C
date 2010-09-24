@@ -44,6 +44,7 @@
 #include <SphereAttributes.h>
 #include <PointAttributes.h>
 #include <BoxExtents.h>
+#include <stdlib.h>
 
 //
 // Enum conversion methods for StreamlineAttributes::SourceType
@@ -484,9 +485,9 @@ void StreamlineAttributes::Init()
     pointList.push_back(0);
     pointList.push_back(1);
     pointList.push_back(0);
-    sampleDensity0 = 1;
-    sampleDensity1 = 1;
-    sampleDensity2 = 1;
+    sampleDensity0 = 2;
+    sampleDensity1 = 2;
+    sampleDensity2 = 2;
     displayMethod = Lines;
     showSeeds = false;
     showHeads = false;
@@ -3924,12 +3925,18 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
 //
 // Modifications:
 //
+//   Dave Pugmire, Fri Sep 24 10:27:47 EDT 2010
+//   Fix handling of radius and pointDensity fields.
+//
 // ****************************************************************************
 
 void
 StreamlineAttributes::ProcessOldVersions(DataNode *parentNode,
                                          const char *configVersion)
 {
+    char num1[2] = {configVersion[0], '\0'}, num2[2] = {configVersion[2], '\0'}, num3[2] = {configVersion[4], '\0'};
+    int major = atoi(num1), minor = atoi(num2), patch = atoi(num3);
+    
     DataNode *searchNode = parentNode->GetNode("StreamlineDirection");
     if (searchNode)
     {
@@ -3949,17 +3956,33 @@ StreamlineAttributes::ProcessOldVersions(DataNode *parentNode,
         DataNode *newNode = new DataNode("showSeeds", val);
         parentNode->AddNode(newNode);
     }
+    
+    if (major < 2)
+    {
+        searchNode = parentNode->GetNode("radius");
+        if (searchNode)
+        {
+            double val = searchNode->AsDouble();
+            parentNode->RemoveNode(searchNode);
+            DataNode *newNode = new DataNode("tubeRadius", val);
+            parentNode->AddNode(newNode);
+            
+            newNode = new DataNode("ribbonWidth", val);
+            parentNode->AddNode(newNode);
+        }
+    }
 
-    searchNode = parentNode->GetNode("radius");
+    searchNode = parentNode->GetNode("pointDensity");
     if (searchNode)
     {
-        double val = searchNode->AsDouble();
+        int val = searchNode->AsInt();
         parentNode->RemoveNode(searchNode);
-        DataNode *newNode = new DataNode("tubeRadius", val);
-        parentNode->AddNode(newNode);
-        
-        newNode = new DataNode("ribbonWidth", val);
-        parentNode->AddNode(newNode);
+        DataNode *newNode0 = new DataNode("sampleDensity0", val);
+        parentNode->AddNode(newNode0);
+        DataNode *newNode1 = new DataNode("sampleDensity1", val);
+        parentNode->AddNode(newNode1);
+        DataNode *newNode2 = new DataNode("sampleDensity2", val);
+        parentNode->AddNode(newNode2);
     }
 }
 

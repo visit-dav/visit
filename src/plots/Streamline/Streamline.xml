@@ -154,13 +154,13 @@
         0.000000
       </Field>
       <Field name="sampleDensity0" label="sampleDensity0" type="int">
-        1
+        2
       </Field>
       <Field name="sampleDensity1" label="sampleDensity1" type="int">
-        1
+        2
       </Field>
       <Field name="sampleDensity2" label="sampleDensity2" type="int">
-        1
+        2
       </Field>
       <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">
         Lines
@@ -341,6 +341,9 @@
       </Include>
       <Include file="source" quoted="false">
         BoxExtents.h
+      </Include>
+      <Include file="source" quoted="false">
+        stdlib.h
       </Include>
     </Attribute>
   </Plugin>
