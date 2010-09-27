@@ -23,6 +23,7 @@ std::string VsSchema::meshAtt = "vsMesh";
 std::string VsSchema::centeringAtt ="vsCentering";
 std::string VsSchema::indexOrderAtt = "vsIndexOrder";
 std::string VsSchema::numSpatialDimsAtt = "vsNumSpatialDims";
+std::string VsSchema::numSpatialDimsAtt_deprecated = "numSpatialDims";
 std::string VsSchema::spatialIndicesAtt = "vsSpatialIndices";
 std::string VsSchema::labelsAtt = "vsLabels";
 std::string VsSchema::axisLabelsAtt = "vsAxisLabels";
@@ -53,11 +54,15 @@ std::string VsSchema::Rectilinear::axis2DefaultName = "axis2";
 std::string VsSchema::Rectilinear::transformKey = "vsTransform";
 
 std::string VsSchema::Uniform::key = "uniform";
-std::string VsSchema::Uniform::deprecated_key = "uniformCartesian";
+std::string VsSchema::Uniform::key_deprecated = "uniformCartesian";
 std::string VsSchema::Uniform::lowerBounds = "vsLowerBounds";
+std::string VsSchema::Uniform::lowerBounds_deprecated = "lowerBounds";
 std::string VsSchema::Uniform::startCell = "vsStartCell";
+std::string VsSchema::Uniform::startCell_deprecated = "startCell";
 std::string VsSchema::Uniform::numCells = "vsNumCells";
+std::string VsSchema::Uniform::numCells_deprecated = "numPhysCells";
 std::string VsSchema::Uniform::upperBounds = "vsUpperBounds";
+std::string VsSchema::Uniform::upperBounds_deprecated = "upperBounds";
 
 std::string VsSchema::Unstructured::key = "unstructured";
 

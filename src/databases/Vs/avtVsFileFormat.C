@@ -79,7 +79,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     VsLog::initialize(DebugStream::Stream3(), DebugStream::Stream4(), DebugStream::Stream5());
     
     VsLog::debugLog() <<"avtVsFileFormat::constructor() - entering" <<std::endl;
-    VsLog::debugLog() <<"avtVsFileFormat::constructor() - VizSchema Revision #738" <<std::endl;
+    VsLog::debugLog() <<"avtVsFileFormat::constructor() - VizSchema Revision #742" <<std::endl;
 
     //reader starts off empty
     reader = NULL;
@@ -1251,7 +1251,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     std::vector<int> startCell;
     herr_t err = uniformMesh->getStartCell(&startCell);
     if (err < 0) {
-      VsLog::warningLog() <<methodSig <<"Uniform mesh does not have optional startCell attribute." <<std::endl;
+      VsLog::warningLog() <<methodSig <<"Uniform mesh does not have information about starting cell position." <<std::endl;
     } else {
       // Adjust the box by startCell
       VsLog::debugLog() <<methodSig <<"Adjusting numCells by startCells." << endl;
@@ -2285,7 +2285,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
         } else {
           //When there is only one component, we don't create a component name
           //Instead, we just use the straight-up name
-          avtCurveMetaData* cmd = new avtCurveMetaData((*it).c_str());
+          avtCurveMetaData* cmd = new avtCurveMetaData(*it);
           cmd->hasDataExtents = false;
           md->Add(cmd);
         }
