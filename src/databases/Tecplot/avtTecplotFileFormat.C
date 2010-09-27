@@ -851,6 +851,9 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Allow the "$" which seems to appear alone on the last line of some
 //    ASCII tecplot files.
 //
+//    Jeremy Meredith, Mon Sep 27 16:03:56 EDT 2010
+//    Accept "NODES" and "ELEMENTS" as aliases for "N" and "E" in ZONE records.
+//
 // ****************************************************************************
 
 void
@@ -1051,7 +1054,9 @@ avtTecplotFileFormat::ReadFile()
                      tok != "J"  &&
                      tok != "K"  &&
                      tok != "N"  &&
+                     tok != "NODES"  &&
                      tok != "E"  &&
+                     tok != "ELEMENTS"  &&
                      tok != "ET" &&
                      tok != "F"  &&
                      tok != "ZONETYPE"  &&
@@ -1082,11 +1087,11 @@ avtTecplotFileFormat::ReadFile()
                 {
                     numK = atoi(GetNextToken().c_str());
                 }
-                else if (tok == "N")
+                else if (tok == "N" || tok == "NODES")
                 {
                     numNodes = atoi(GetNextToken().c_str());
                 }
-                else if (tok == "E")
+                else if (tok == "E" || tok == "ELEMENTS")
                 {
                     numElements = atoi(GetNextToken().c_str());
                 }
