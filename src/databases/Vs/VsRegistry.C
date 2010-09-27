@@ -278,16 +278,29 @@ void VsRegistry::buildDatasetObjects() {
      it != allDatasets.end(); it++)  {
     VsH5Dataset* dataset = it->second;
     VsLog::debugLog() <<"VsRegistry::buildDatasetObjects() - looking at dataset " <<dataset->getFullName() <<std::endl;
-    
+
+    //Try to determine the type of the object
+    std::string type;    
     VsH5Attribute* typeAtt = dataset->getAttribute(VsSchema::typeAtt);
     if (!typeAtt) {
-      VsLog::warningLog() <<"VsRegistry::buildDatasetObjects() - unable to find attribute " <<VsSchema::typeAtt
-        <<".  Skipping object " <<dataset->getFullName() <<std::endl;
-      continue;
+      VsLog::warningLog() <<"VsRegistry::buildDatasetObjects() - unable to find attribute " <<VsSchema::typeAtt <<std::endl;
+      
+      //If the object contains the "vsMesh" attribute, then it is probably intended to be a variable
+      //So continue with that assumption
+      VsLog::warningLog() <<"VsRegistry::buildDatasetObjects() - Second chance - looking for attribute " <<VsSchema::meshAtt <<std::endl;
+      VsH5Attribute* meshAtt = dataset->getAttribute(VsSchema::meshAtt);
+      if (meshAtt) {
+        VsLog::warningLog() <<"VsRegistry::buildDatasetObjects() - Found attribute " <<VsSchema::meshAtt <<" assuming that this is a variable." <<std::endl;
+        type = VsSchema::varKey;
+      } else {
+        VsLog::warningLog() <<"VsRegistry::buildDatasetObjects() - Did not find attribute " <<VsSchema::meshAtt
+                  <<", second chance option has failed.  Skipping object: " <<dataset->getFullName() <<std::endl;
+        continue;
+      }
+    } else {
+      typeAtt->getStringValue(&type);
     }
     
-    std::string type;
-    typeAtt->getStringValue(&type);
     VsLog::debugLog() <<"VsRegistry::buildDatasetObjects() - object is of type " <<type <<std::endl;
     if (type == VsSchema::meshKey) {
       VsMesh::buildObject(dataset);

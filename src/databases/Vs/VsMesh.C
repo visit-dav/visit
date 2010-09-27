@@ -151,7 +151,7 @@ VsMesh* VsMesh::buildObject(VsH5Group* group) {
   kindAtt->getStringValue(&kind);
   VsLog::debugLog() <<"VsMesh::buildObject() - mesh group has kind: " <<kind <<std::endl;
 
-  if ((kind == VsSchema::Uniform::deprecated_key) || (kind == VsSchema::Uniform::key)) {
+  if ((kind == VsSchema::Uniform::key_deprecated) || (kind == VsSchema::Uniform::key)) {
     return VsUniformMesh::buildUniformMesh(group);
   } else if (kind == VsSchema::Unstructured::key) {
     return VsUnstructuredMesh::buildUnstructuredMesh(group);

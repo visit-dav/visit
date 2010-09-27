@@ -43,16 +43,22 @@ bool VsUniformMesh::initialize() {
   //For a uniform mesh, spatial dimensionality is the length of the numCells array
   numCellsAtt = getAttribute(VsSchema::Uniform::numCells);
   if (!numCellsAtt) {
-    VsLog::errorLog() <<"VsUniformMesh::initialize() - Uniform mesh is missing attribute: " <<VsSchema::Uniform::numCells;
+    VsLog::errorLog() <<"VsUniformMesh::initialize() - Uniform mesh is missing attribute: " <<VsSchema::Uniform::numCells <<std::endl;
+    VsLog::debugLog() <<"VsUniformMesh::initialize() - Looking for deprecated attribute: " <<VsSchema::Uniform::numCells_deprecated <<std::endl;
+    numCellsAtt = getAttribute(VsSchema::Uniform::numCells_deprecated);
+  }
+  if (!numCellsAtt) {
+    VsLog::errorLog() <<"VsUniformMesh::initialize() - Uniform mesh is also missing deprecated attribute: " <<VsSchema::Uniform::numCells_deprecated <<std::endl;
     VsLog::debugLog() <<"VsUniformMesh::initialize() - Unable to initialize mesh, returning failure." <<std::endl;
     return false;
   }
+  
   std::vector<int> dims;
   herr_t err = numCellsAtt->getIntVectorValue(&dims);
   if (!err) {
     numSpatialDims = dims.size();
   } else {
-    VsLog::errorLog() <<"VsUniformMesh::initialize() - Unable to get dimensionality from attribute: " <<VsSchema::Uniform::numCells;
+    VsLog::errorLog() <<"VsUniformMesh::initialize() - Unable to get dimensionality from attribute: " <<numCellsAtt->getShortName() <<std::endl;
     VsLog::errorLog() <<"VsUniformMesh::initialize() - Unable to initialize mesh, returning failure." <<std::endl;
     numSpatialDims = -1;
     return false;
@@ -62,14 +68,24 @@ bool VsUniformMesh::initialize() {
   lowerBoundsAtt = getAttribute(VsSchema::Uniform::lowerBounds);
   if (!lowerBoundsAtt) {
     VsLog::errorLog() <<"VsUniformMesh::initialize() - Uniform mesh is missing attribute: " <<VsSchema::Uniform::lowerBounds <<std::endl;
+    VsLog::errorLog() <<"VsUniformMesh::initialize() - Looking for deprecated attribute: " <<VsSchema::Uniform::lowerBounds_deprecated <<std::endl;
+    lowerBoundsAtt = getAttribute(VsSchema::Uniform::lowerBounds_deprecated);
+  }
+  if (!lowerBoundsAtt) {
+    VsLog::errorLog() <<"VsUniformMesh::initialize() - Uniform mesh is also missing deprecated attribute: " <<VsSchema::Uniform::lowerBounds_deprecated <<std::endl;
     VsLog::errorLog() <<"VsUniformMesh::initialize() - Unable to initialize mesh, returning failure." <<std::endl;
     return false;
   }
   
   // Upperbounds is required
   upperBoundsAtt = getAttribute(VsSchema::Uniform::upperBounds);
-  if (!lowerBoundsAtt) {
+  if (!upperBoundsAtt) {
     VsLog::errorLog() <<"VsUniformMesh::initialize() - Uniform mesh is missing attribute: " <<VsSchema::Uniform::upperBounds <<std::endl;
+    VsLog::errorLog() <<"VsUniformMesh::initialize() - Looking for deprecated attribute: " <<VsSchema::Uniform::upperBounds_deprecated <<std::endl;
+    upperBoundsAtt = getAttribute(VsSchema::Uniform::upperBounds_deprecated);
+  }
+  if (!upperBoundsAtt) {
+    VsLog::errorLog() <<"VsUniformMesh::initialize() - Uniform mesh is also missing deprecated attribute: " <<VsSchema::Uniform::upperBounds_deprecated <<std::endl;
     VsLog::errorLog() <<"VsUniformMesh::initialize() - Unable to initialize mesh, returning failure." <<std::endl;
     return false;
   }
@@ -78,6 +94,12 @@ bool VsUniformMesh::initialize() {
   startCellAtt = getAttribute(VsSchema::Uniform::startCell);
   if (!startCellAtt) {
     VsLog::debugLog() <<"VsUniformMesh::initialize() - Uniform mesh does not have optional attribute: " <<VsSchema::Uniform::startCell <<std::endl;
+    VsLog::debugLog() <<"VsUniformMesh::initialize() - Looking for deprecated attribute: " <<VsSchema::Uniform::startCell_deprecated <<std::endl;
+    startCellAtt = getAttribute(VsSchema::Uniform::startCell_deprecated);
+  }
+  if (!startCellAtt) {
+    VsLog::debugLog() <<"VsUniformMesh::initialize() - Uniform mesh also does not have deprecated attribute: " <<VsSchema::Uniform::startCell_deprecated <<std::endl;
+    VsLog::debugLog() <<"VsUniformMesh::initialize() - Using default start cell of 0." <<std::endl;
   }
   
   return initializeRoot();
@@ -109,7 +131,7 @@ herr_t VsUniformMesh::getLowerBounds(std::vector<float>* fVals) {
   
   if (err < 0) {
     VsLog::debugLog() << "VsUniformMesh::getLowerBounds(): error " << err <<
-    " in reading attribute '" << VsSchema::Uniform::lowerBounds << "'." << std::endl;
+    " in reading attribute '" <<lowerBoundsAtt->getShortName() << "'." << std::endl;
   }
   
   VsLog::debugLog() << "VsUniformMesh::getLowerBounds() - Returning " <<err <<"." << std::endl;
@@ -133,7 +155,7 @@ herr_t VsUniformMesh::getUpperBounds(std::vector<float>* fVals) {
   
   if (err < 0) {
     VsLog::debugLog() << "VsUniformMesh::getUpperBounds(): error " << err <<
-    " in reading attribute '" << VsSchema::Uniform::upperBounds << "'." << std::endl;
+    " in reading attribute '" << upperBoundsAtt->getShortName() << "'." << std::endl;
   }
   
   VsLog::debugLog() << "VsUniformMesh::getUpperBounds() - Returning " <<err <<"." << std::endl;
@@ -149,7 +171,7 @@ herr_t VsUniformMesh::getStartCell(std::vector<int>* startCell) {
   herr_t err = startCellAtt->getIntVectorValue(startCell);
   if (err < 0) {
     VsLog::debugLog() << "VsUniformMesh::getStartCell(): error " << err <<
-    " in reading attribute '" << VsSchema::Uniform::startCell << "'." << std::endl;
+    " in reading attribute '" << startCellAtt->getShortName() << "'." << std::endl;
   }
   
   VsLog::debugLog() << "VsUniformMesh::getStartCell() - Returning " <<err <<"." << std::endl;
@@ -160,13 +182,7 @@ size_t VsUniformMesh::getMeshDims(std::vector<int>* dims, bool useStride, std::v
   VsLog::debugLog() << "VsUniformMesh::getMeshDims(): Entering." << std::endl;
   
   // Read dims of totalNumCells attribute
-  VsH5Attribute* numCellsAttribute = getAttribute(VsSchema::Uniform::numCells);
-  if (numCellsAttribute) {
-    numCellsAttribute->getIntVectorValue(dims);
-  } else {
-    VsLog::errorLog() <<"VsUniformMesh::getMeshDims() - unable to get numcells attribute for mesh " <<getFullName() <<std::endl;
-    return 0;
-  }
+  numCellsAtt->getIntVectorValue(dims);
   
   if (useStride) {
     VsLog::debugLog() <<"VsUniformMesh::getMeshDims() - Adjusting size of mesh using stride." <<std::endl;

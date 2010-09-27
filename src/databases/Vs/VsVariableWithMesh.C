@@ -158,7 +158,13 @@ bool VsVariableWithMesh::initialize() {
   //So for a 3-d mesh we have [0, 1, 2]
   if (!numDimsSet) {
     VsLog::debugLog() <<"VsVariableWithMesh::buildVariable(): did not find spatialIndices, trying regular style." <<std::endl;
+    VsLog::debugLog() <<"VsVariableWithMesh::buildVariable(): Looking for attribute: " <<VsSchema::numSpatialDimsAtt <<std::endl;
     VsH5Attribute* numDimsAtt = getAttribute(VsSchema::numSpatialDimsAtt);
+    if (!numDimsAtt) {
+      VsLog::warningLog() <<"VsVariableWithMesh::buildVariable(): Did not find attribute: " <<VsSchema::numSpatialDimsAtt <<std::endl;
+      VsLog::warningLog() <<"VsVariableWithMesh::buildVariable(): Looking for deprecated attribute: " <<VsSchema::numSpatialDimsAtt_deprecated <<std::endl;
+      numDimsAtt = getAttribute(VsSchema::numSpatialDimsAtt_deprecated);
+    }
     if (numDimsAtt) {
       std::vector<int> in;
       herr_t err = numDimsAtt->getIntVectorValue(&in);
@@ -177,6 +183,8 @@ bool VsVariableWithMesh::initialize() {
         
       numDimsSet = true;
       VsLog::debugLog() << "VsVariableWithMesh::buildVariable(): numSpatialDims = " << this->getNumSpatialDims() << "." << std::endl;
+    } else {
+      VsLog::warningLog() <<"VsVariableWithMesh::buildVariable(): Did not find deprecated attribute either: " <<VsSchema::numSpatialDimsAtt_deprecated <<std::endl;
     }
   }
   

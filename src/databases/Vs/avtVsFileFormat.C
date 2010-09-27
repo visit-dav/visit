@@ -76,10 +76,10 @@
 avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
   avtSTMDFileFormat(&dfnm, 1), dataFileName(dfnm) {
 
-  VsLog::initialize(DebugStream::Stream3(), DebugStream::Stream4(), DebugStream::Stream5());
+    VsLog::initialize(DebugStream::Stream3(), DebugStream::Stream4(), DebugStream::Stream5());
     
     VsLog::debugLog() <<"avtVsFileFormat::constructor() - entering" <<std::endl;
-    VsLog::debugLog() <<"avtVsFileFormat::constructor() - VizSchema Revision #723" <<std::endl;
+    VsLog::debugLog() <<"avtVsFileFormat::constructor() - VizSchema Revision #742" <<std::endl;
 
     //reader starts off empty
     reader = NULL;
@@ -271,9 +271,26 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     VsLog::debugLog() <<methodSig <<"Looking for variable metadata." <<endl;
     VsVariable* varMeta = registry->getVariable(name);
     if (varMeta == NULL) {
-      VsLog::debugLog() <<methodSig <<"NO variable metadata found. Returning NULL." <<endl;
-      return NULL;
+      VsLog::debugLog() <<methodSig <<"No variable metadata found under name " <<name <<endl;
+      VsLog::debugLog() <<methodSig <<"Looking for information in component registry." <<std::endl;
+
+      //Is this a component?
+      //If so, we swap the component name with the "real" variable name
+      //And remember that we're a component
+      int componentIndex = 0;
+      NamePair foundName;
+      registry->getComponentInfo(name, &foundName);
+      if (!foundName.first.empty()) {
+        VsLog::debugLog() <<methodSig <<"This is a component, and actually refers to variable " <<foundName.first <<" and index " <<foundName.second <<std::endl;
+        varMeta = registry->getVariable(foundName.first);
+      }
+      
+      if (varMeta == NULL) {
+        VsLog::debugLog() <<methodSig <<"Failed to find variable in component list, giving up and returning NULL." <<std::endl;
+        return NULL;
+      }
     }
+
     VsLog::debugLog() <<methodSig <<"Found variable metadata." <<name <<endl;
 
     std::string meshName = varMeta->getMeshName();
@@ -318,7 +335,16 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     int numDims = meshMeta->getNumSpatialDims();
     VsLog::debugLog() <<methodSig <<"Mesh has " <<numDims <<" dimensions" <<endl;
 
-    int nPts = varMeta->getLength();
+    //This used to be "varMeta->getLength()"
+    //Which is incorrect if the variable has multiple components
+    //Instead, we have to check the proper dimensional index
+    int nPts = 0;
+    if (varMeta->isCompMinor()) {
+      nPts = varMeta->getDims()[0];
+    } else {
+      nPts = varMeta->getDims()[1];
+    }
+
     VsLog::debugLog() <<methodSig <<"Variable has " <<nPts <<" points." <<endl;
 
     // Create 1-D RectilinearGrid
@@ -1225,7 +1251,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     std::vector<int> startCell;
     herr_t err = uniformMesh->getStartCell(&startCell);
     if (err < 0) {
-      VsLog::warningLog() <<methodSig <<"Uniform mesh does not have optional startCell attribute." <<std::endl;
+      VsLog::warningLog() <<methodSig <<"Uniform mesh does not have information about starting cell position." <<std::endl;
     } else {
       // Adjust the box by startCell
       VsLog::debugLog() <<methodSig <<"Adjusting numCells by startCells." << endl;
@@ -1293,25 +1319,10 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
         nCells = numCellsPerPart;
       }
       // Adjust bounds
-      if (isDoubleType(ftype)) {
-        double delta = (((double*)upperBounds)[splitAxis] -
-            ((double*)lowerBounds)[splitAxis])/numCellsAlongSplitAxis;
-        static_cast<double*>(lowerBounds)[splitAxis] += startCell * delta;
-        static_cast<double*>(upperBounds)[splitAxis] =
-        static_cast<double*>(lowerBounds)[splitAxis] + nCells * delta;
-        //std::cout << "After adjust: Proc=" << PAR_Rank() << " start=" << startCell << " nCells=" << nCells << " delta=" << delta << " lowerBound=" << static_cast<double*>(lowerBounds)[splitAxis] << " upperBound=" << static_cast<double*>(upperBounds)[splitAxis] << std::endl;
-      }
-      else if (isFloatType(ftype)) {
-        float delta = (((float*)upperBounds)[splitAxis] -
-            ((float*)lowerBounds)[splitAxis])/numCellsAlongSplitAxis;
-        static_cast<float*>(lowerBounds)[splitAxis] += startCell * delta;
-        static_cast<float*>(upperBounds)[splitAxis] =
-        static_cast<float*>(lowerBounds)[splitAxis] + nCells * delta;
-        //std::cout << "After adjust: Proc=" << PAR_Rank() << " start=" << startCell << " nCells=" << nCells << " delta=" << delta << " lowerBound=" << static_cast<float*>(lowerBounds)[splitAxis] << " upperBound=" << static_cast<float*>(upperBounds)[splitAxis] << std::endl;
-      } else {
-        VsLog::debugLog() <<methodSig <<"Unknown data type: " <<ftype <<std::endl;
-        return NULL;
-      }
+      float delta = (upperBounds[splitAxis] - lowerBounds[splitAxis])/numCellsAlongSplitAxis;
+      lowerBounds[splitAxis] += startCell * delta;
+      upperBounds[splitAxis] = lowerBounds[splitAxis] + nCells * delta;
+      //std::cout << "After adjust: Proc=" << PAR_Rank() << " start=" << startCell << " nCells=" << nCells << " delta=" << delta << " lowerBound=" << lowerBounds[splitAxis] << " upperBound=" << upperBounds[splitAxis] << std::endl;
       numCells[splitAxis] = nCells;
       idims[splitAxis] = nCells + 1; // FIXME: May depend on centering
     }
@@ -2253,16 +2264,37 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
       // Number of component of the var
       size_t numComps = vMeta->getNumComps(reader->useStride, this->stride);
       if (isOneDVar) {
-        VsLog::debugLog() <<methodSig <<"Adding curve metadata for " <<*it <<endl;
-        avtCurveMetaData* cmd = new avtCurveMetaData((*it).c_str());
-        cmd->hasDataExtents = false;
-        md->Add(cmd);
+        if (numComps > 1) {
+          //go through list of components
+          //generate a name for each one
+          //then add to VisIt registry
+          for (size_t i = 0; i < numComps; ++i) {
+            //First we look for a match in the component registry
+            //using var name and component index to search
+            std::string componentName = registry->getComponentName(*it, i);
+  
+            if (!componentName.empty()) {
+              VsLog::debugLog() <<methodSig <<"Adding curve component " <<componentName <<"." <<std::endl;
+              avtCurveMetaData* cmd = new avtCurveMetaData(componentName.c_str());
+              cmd->hasDataExtents = false;
+              md->Add(cmd);
+            } else {
+              VsLog::debugLog() <<methodSig <<"Unable to find match for curve variable in component registry." <<std::endl;
+            }
+          }
+        } else {
+          //When there is only one component, we don't create a component name
+          //Instead, we just use the straight-up name
+          avtCurveMetaData* cmd = new avtCurveMetaData(*it);
+          cmd->hasDataExtents = false;
+          md->Add(cmd);
+        }
       }
       else if (numComps > 1) {
         //go through list of components
         //generate a name for each one
         //then add to VisIt registry
-        for (size_t i = 0; i<numComps; ++i) {
+        for (size_t i = 0; i < numComps; ++i) {
           //First we look for a match in the component registry
           //using var name and component index to search
           std::string componentName = registry->getComponentName(*it, i);

@@ -87,7 +87,7 @@ std::string VsMDMesh::getMeshKind()   {
 }
 
 bool VsMDMesh::isUniformMesh()   {
-  return ((kind == VsSchema::Uniform::key) || (kind == VsSchema::Uniform::deprecated_key));
+  return ((kind == VsSchema::Uniform::key) || (kind == VsSchema::Uniform::key_deprecated));
 }
 
 bool VsMDMesh::isRectilinearMesh()   {
