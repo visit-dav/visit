@@ -948,6 +948,12 @@
 #
 #     Mark C. Miller, Tue Sep 21 05:46:10 PDT 2010
 #     Fix DBIO_ONLY mode.
+#
+#     Gunther H. Weber, Tue Sep 28 14:38:30 PDT 2010
+#     Updated FastBit to 1.2.0. Do not enable HDF5 by default if FastBit is
+#     built. Even though both are used in H5Part, FastBit can be built
+#     independently from HDF5.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1344,11 +1350,11 @@ export H5PART_FILE=${H5PART_FILE:-"H5Part-${H5PART_VERSION}.tar.gz"}
 export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION:-"1.6"}
 export H5PART_BUILD_DIR=${H5PART_BUILD_DIR:-"H5Part-${H5PART_VERSION}"}
 
-export FASTBIT_VERSION=${FASTBIT_VERSION:-"1.1.9"}
+export FASTBIT_VERSION=${FASTBIT_VERSION:-"1.2.0"}
 export FASTBIT_FILE=${FASTBIT_FILE:-"fastbit-ibis${FASTBIT_VERSION}.tar.gz"}
-# Note: last 2-digit field in URL changes with version.
-export FASTBIT_URL=${FASTBIT_URL:-"https://codeforge.lbl.gov/frs/download.php/186"}
-export FASTBIT_BUILD_DIR=${FASTBIT_BUILD_DIR:-"fastbit-ibis1.1.9"}
+# Note: last 3-digit field in URL changes with version.
+export FASTBIT_URL=${FASTBIT_URL:-"https://codeforge.lbl.gov/frs/download.php/208"}
+export FASTBIT_BUILD_DIR=${FASTBIT_BUILD_DIR:-"fastbit-ibis${FASTBIT_VERSION}"}
 
 export MDSPLUS_VERSION=${MDSPLUS_VERSION:-"2.2"}
 export MDSPLUS_FILE=${MDSPLUS_FILE:-"mdsplus-${MDSPLUS_VERSION}-4.tar.gz"}
@@ -9215,8 +9221,7 @@ for arg in "${arguments[@]}" ; do
         --dbio-only) DO_DBIO_ONLY="yes";;
         --debug) set -vx;;
         --download-only) DOWNLOAD_ONLY="yes";;
-        --fastbit) DO_FASTBIT="yes"; ON_FASTBIT="on"
-                  DO_HDF5="yes"; ON_HDF5="on";;
+        --fastbit) DO_FASTBIT="yes"; ON_FASTBIT="on";;
         --exodus) DO_EXODUS="yes"; ON_EXODUS="on"
                   DO_NETCDF="yes"; ON_NETCDF="on";;
         --flags-debug) next_arg="flags-debug";;
