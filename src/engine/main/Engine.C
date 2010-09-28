@@ -1782,6 +1782,9 @@ Engine::ProcessInput()
 //    Tom Fogal, Fri Apr 16 12:40:09 MDT 2010
 //    Ignore IceT flags if we've already seen -hw-accel.
 //
+//    Mark C. Miller, Tue Sep 28 16:13:17 PDT 2010
+//    Added new name for '-timeout' option, '-idle-timeout' plus deprecation
+//    warning. Added '-exec-timeout' to control execution timeout option.
 // ****************************************************************************
 
 void
@@ -1855,7 +1858,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
             visitTimer->WithholdOutput(true);
         else if (strcmp(argv[i], "-never-output-timings") == 0)
             visitTimer->NeverOutput(true);
-        else if (strcmp(argv[i], "-timeout") == 0)
+        else if (strcmp(argv[i], "-timeout") == 0 ||
+                 strcmp(argv[i], "-idle-timeout") == 0 ||
+                 strcmp(argv[i], "-exec-timeout") == 0)
         {
             if (i+1 < argc)
             {
@@ -1864,19 +1869,28 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 long int to = strtol(argv[i+1], &endptr, 10);
                 if (*(argv[i+1]) != '\0' && *endptr == '\0' && errno == 0)
                 {
-                    idleTimeoutMins = (int) to;
+                    if (strcmp(argv[i], "-timeout") == 0)
+                    {
+                        cerr << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
+                        debug1 << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
+                        idleTimeoutMins = (int) to;
+                    }
+                    else if (strcmp(argv[i], "-idle-timeout") == 0)
+                        idleTimeoutMins = (int) to;
+                    else
+                        executionTimeoutMins = (int) to;
                 }
                 else
                 {
-                    cerr << "-timeout option ignored due to bad argument." << endl;
-                    debug1 << "-timeout option ignored due to bad argument." << endl;
+                    cerr << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
+                    debug1 << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
                 }
                 i++;
             }
             else
             {
-                cerr << "-timeout option ignored due to missing argument." << endl;
-                debug1 << "-timeout option ignored due to missing argument." << endl;
+                cerr << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
+                debug1 << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
             }
         }
         else if (strcmp(argv[i], "-ui-bcast-thresholds") == 0)
