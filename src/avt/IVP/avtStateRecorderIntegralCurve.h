@@ -147,6 +147,7 @@ public:
 
     unsigned char      historyMask;
     std::vector<float> history;
+    static const double      epsilon;
 
     void RecordStep( const avtIVPField* field, 
                      const avtIVPStep& step, 
