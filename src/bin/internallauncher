@@ -657,6 +657,10 @@ $0 = shift @ARGV;
 #    Hank Childs, Tue Aug 31 19:55:04 PDT 2010
 #    Another change for longhorn.
 #
+#    Mark C. Miller, Tue Sep 28 16:15:25 PDT 2010
+#    Added usage notes for -idle-timeout and -exec-timeout. Note that
+#    -timeout was never documented here and I deprecated it in engine so no
+#    need to document it here now.
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -994,7 +998,23 @@ $fullusage = "$usage
                              processors maximally for 5 seconds before inserting
                              sleeps such that polling happens at the rate of 20
                              times per second.
-
+        -idle-timeout <int>  An integer representing the number of minutes an
+                             engine is allowed to idle (e.g. sit there doing no
+                             executation whatsoever, waiting for commands from
+                             the viewer). If this timeout is reached, the engine
+                             will terminate itself. The default is 480 minutes
+                             (8 hours).
+        -exec-timeout <int>  An integer representing the number of minutes an
+                             executing engine is allowed to remain in the
+                             execution of any single command from the viewer.
+                             If this timeout is reached, the engine will
+                             terminate itself. the default is 30 minutes.
+                             Beware that among other things, this timeout
+                             effects how long orphaned parallel processes will
+                             hang around, tying up parallel compute resources,
+                             following an exit-triggering error condition on
+                             any one process.
+                     
     Developer options (most for xml2... tools)
     ---------------------------------------------------------------------------
         -public              xml2cmake: force install plugins publicly
