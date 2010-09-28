@@ -97,9 +97,7 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
     static                    std::string tangentsArrayName;
 
   protected:
-    vtkPolyData*              GetVTKPolyData(avtIntegralCurve *sl, int id);
-    void                      CreateIntegralCurveOutput( 
-                                 vector<avtIntegralCurve *> &streamlines );
+    void                      CreateIntegralCurveOutput(vector<avtIntegralCurve *> &streamlines );
 };
 
 

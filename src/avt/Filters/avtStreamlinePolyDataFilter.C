@@ -44,15 +44,11 @@
 
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
-#include <vtkCleanPolyData.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyLine.h>
-#include <vtkRibbonFilter.h>
-#include <vtkTubeFilter.h>
-
 #include <avtParallel.h>
 #include <avtStateRecorderIntegralCurve.h>
 
@@ -61,7 +57,6 @@ std::string avtStreamlinePolyDataFilter::paramArrayName = "params";
 std::string avtStreamlinePolyDataFilter::opacityArrayName = "opacity";
 std::string avtStreamlinePolyDataFilter::thetaArrayName = "theta";
 std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
-
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CreateIntegralCurveOutput
@@ -99,299 +94,164 @@ std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 //   Rename this method to reflect the new emphasis in particle advection, as
 //   opposed to streamlines.
 //
+//   Dave Pugmire, Tue Sep 28 10:41:00 EDT 2010
+//   Optimize the creation of vtkPolyData.
+//
 // ****************************************************************************
 
 void
-avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(
-                                   vector<avtIntegralCurve *> &streamlines)
+avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *> &ics)
 {
-    debug5 << "::CreateIntegralCurveOutput " << streamlines.size() << endl;
+    debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
 
-    if (streamlines.size() == 0)
+    int numICs = ics.size(), numPts = 0;
+    if (numICs == 0)
         return;
 
-    // Join all the streamline pieces.
-    vtkAppendPolyData *append = vtkAppendPolyData::New();
-    for (int i = 0; i < streamlines.size(); i++)
+    //See how many pts, ics we have so we can preallocate everything.
+    for (int i = 0; i < numICs; i++)
     {
-        avtIntegralCurve *sl = streamlines[i];
-        vtkPolyData *pd = GetVTKPolyData(sl, sl->id);
-
-        if (pd == NULL)
-            continue;
-
-        vtkCleanPolyData *clean = vtkCleanPolyData::New();
-        clean->SetInput(pd);
-        clean->Update();
-        pd->Delete();
-
-        pd = clean->GetOutput();
-        pd->Register(NULL);
-        pd->SetSource(NULL);
-        clean->Delete();
-
-        append->AddInput(pd);
-
-        pd->Delete();
+        avtStateRecorderIntegralCurve *ic = dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
+        size_t numSamps = (ic ? ic->GetNumberOfSamples() : 0);
+        if (numSamps > 1)
+            numPts += numSamps;
     }
 
-    append->Update();
-    vtkPolyData *outPD = append->GetOutput();
-    outPD->Register(NULL);
-    outPD->SetSource(NULL);
-    append->Delete();
-
-    avtDataTree *dt = new avtDataTree(outPD, 0);
-    SetOutputDataTree(dt);
-}
-
-
-// ****************************************************************************
-//  Method: avtStreamlinePolyDataFilter::GetVTKPolyData
-//
-//  Purpose:
-//      Converts the avtIntegralCurve into a VTK poly data object.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 16, 2008
-//
-//  Modifications:
-//
-//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
-//   Step derivative is not giving the right answer. So, use the velEnd vector
-//   for coloring by speed.
-//
-//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
-//   Add new coloring methods, length, time and ID.
-//
-//   Dave Pugmire, Mon Feb  2 14:39:35 EST 2009
-//   Moved this method from avtStreamline to avtStreamlinePolyDataFilter.
-//
-//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
-//   Handle color by variable.
-//
-//   Dave Pugmire (for Christoph Garth), Wed Jan 20 09:28:59 EST 2010
-//   Add tangents array.
-//
-//   Dave Pugmire, Tue Apr  6 08:24:44 EDT 2010
-//   Bug fix for setting opacity.
-//
-//   Hank Childs, Sat Jun  5 16:24:25 CDT 2010
-//   Use avtStateRecorderIntegralCurves.
-//
-//   Christoph Garth, Wed Jul 14 13:48:11 PDT 2010
-//   Adapt to new storage scheme in avtStateRecorderIntegralCurve.
-//
-// ****************************************************************************
-
-vtkPolyData *
-avtStreamlinePolyDataFilter::GetVTKPolyData( avtIntegralCurve *sl2, int id )
-{
-    avtStateRecorderIntegralCurve *sl = 
-        dynamic_cast<avtStateRecorderIntegralCurve*>(sl2);
-
-    if( sl == NULL || sl->GetNumberOfSamples() == 0 )
-        return NULL;
-
+    //Make a polydata.
     vtkPoints     *points   = vtkPoints::New();
-    vtkCellArray  *cells    = vtkCellArray::New();
+    vtkCellArray  *lines    = vtkCellArray::New();
     vtkFloatArray *scalars  = vtkFloatArray::New();
     vtkFloatArray *params   = vtkFloatArray::New();
     vtkFloatArray *tangents = vtkFloatArray::New();
     vtkFloatArray *thetas   = NULL;
     vtkFloatArray *opacity  = NULL;
 
-    // if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
-    //     thetas = vtkFloatArray::New();
-
-    // int opacityIdx = -1, colorIdx = -1;
-    // if (coloringVariable != "")
-    // {
-    //     colorIdx = sl->GetVariableIdx(coloringVariable);
-    //     if (colorIdx == -1)
-    //         EXCEPTION1(ImproperUseException, "Unknown coloring variable.");
-    // }
-    // if (opacityVariable != "")
-    // {
-    //     opacityIdx = sl->GetVariableIdx(opacityVariable);
-    //     if (opacityIdx == -1)
-    //         EXCEPTION1(ImproperUseException, "Unknown opacity variable.");
-    //     opacity = vtkFloatArray::New();
-    // }
+    lines->Allocate(numICs);
+    points->Allocate(numPts);
+    scalars->Allocate(numPts);
+    params->Allocate(numPts);
+    tangents->SetNumberOfComponents(3);
+    tangents->SetNumberOfTuples(numPts);
     
-    const size_t size = sl->GetNumberOfSamples();
-
-    cells->InsertNextCell( size );
-    scalars->Allocate( size );
-    params->Allocate( size );
-    tangents->SetNumberOfComponents( 3 );
-    tangents->SetNumberOfTuples( size );
-    
-    // unsigned int i = 0;
-    // float val = 0.0, theta = 0.0, param = 0.0;
-    // for(siter = sl->begin(); siter != sl->end(); ++siter, i++)
-
-    float arclength = 0.0;
-
-    for( size_t i=0; i<size; ++i )
-    {
-        avtStateRecorderIntegralCurve::Sample s = sl->GetSample( i );
-
-        cells->InsertCellPoint( i );
-
-        // positions
-        points->InsertPoint( i, s.position.x, 
-                                s.position.y, 
-                                s.position.z );
-
-        float speed = s.velocity.length();
-
-        if( speed > 0 )
-            s.velocity *= 1.0f/speed;
-
-        // tangents
-        tangents->InsertTuple3( i, s.velocity.x, 
-                                   s.velocity.y,
-                                   s.velocity.z );
-
-        // color scalars
-        switch( coloringMethod )
-        {
-        case STREAMLINE_COLOR_TIME:
-            scalars->InsertTuple1( i, s.time );
-            break;
-        case STREAMLINE_COLOR_SPEED:
-            scalars->InsertTuple1( i, speed );
-            break;
-        case STREAMLINE_COLOR_VORTICITY:
-            scalars->InsertTuple1( i, s.vorticity );
-            break;
-        case STREAMLINE_COLOR_ARCLENGTH:
-            scalars->InsertTuple1( i, s.arclength );
-            break;
-        case STREAMLINE_COLOR_VARIABLE:
-            scalars->InsertTuple1( i, s.scalar0 );
-            break;
-        case STREAMLINE_COLOR_ID:
-            scalars->InsertTuple1( i, id );
-            break;
-        }
-
-        // parameter scalars
-        switch( terminationType )
-        {
-        case avtIntegralCurve::TERMINATE_TIME:
-            params->InsertTuple1( i, s.time );
-            break;
-        case avtIntegralCurve::TERMINATE_DISTANCE:
-            params->InsertTuple1( i, arclength );
-            break;
-        case avtIntegralCurve::TERMINATE_STEPS:
-            params->InsertTuple1( i, i );
-            break;
-        }
-
-        // opacity scalars
-        if( opacity )
-            opacity->InsertTuple1( i, s.scalar1 );
-    }
-
-    //     avtIVPStep *step = (*siter);
-
-    //     // Set the color-by scalar.
-    //     if (coloringMethod == STREAMLINE_COLOR_SPEED)
-    //     {
-    //         val = step->speed;
-    //     }
-    //     else if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
-    //     {
-    //         val = step->scalarValues[colorIdx];
-    //     }
-    //     else if (coloringMethod == STREAMLINE_COLOR_VORTICITY)
-    //     {
-    //         double dT = (step->tEnd - step->tStart);
-    //         val = step->vorticity * dT;
-    //     }
-    //     else if (coloringMethod ==  STREAMLINE_COLOR_ARCLENGTH)
-    //     {
-    //         val += step->length();
-    //     }
-    //     else if (coloringMethod ==  STREAMLINE_COLOR_TIME)
-    //     {
-    //         val = step->tEnd;
-    //     }
-    //     else if (coloringMethod ==  STREAMLINE_COLOR_ID)
-    //     {
-    //         val = (float)id;
-    //     }
-
-    //     if (terminationType == avtIVPSolver::TIME)
-    //         param = step->tEnd;
-    //     else if (terminationType == avtIVPSolver::DISTANCE)
-    //         param += step->length();
-    //     else if (terminationType == avtIVPSolver::STEPS)
-    //         param = param+1.0;
-    //     else
-    //         param = param+1.0;
-        
-    //     //Ribbon display, record the angle.
-    //     if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
-    //     {
-    //         double dT = (step->tEnd - step->tStart);
-    //         float scaledVort = step->vorticity * dT;
-    //         theta += scaledVort;
-    //         thetas->InsertTuple1(i,theta);
-    //     }
-    //     if (opacity)
-    //     {
-    //         opacity->InsertTuple1(i, step->scalarValues[opacityIdx]);
-    //     }
-
-    //     if (tangents)
-    //     {        
-    //         tangents->InsertTuple3(i, (*siter)->velEnd[0], (*siter)->velEnd[1],
-    //                                   (dataSpatialDimension > 2 ? (*siter)->velEnd[2] : 0.0));
-    //     }
-        
-    //     scalars->InsertTuple1(i, val);
-    //     params->InsertTuple1(i, param);
-    // }
-    
-    //Create the polydata.
     vtkPolyData *pd = vtkPolyData::New();
     pd->SetPoints(points);
-    pd->SetLines(cells);
+    pd->SetLines(lines);
     scalars->SetName(colorvarArrayName.c_str());
     params->SetName(paramArrayName.c_str());
-    
+    tangents->SetName(tangentsArrayName.c_str());
+
     pd->GetPointData()->AddArray(scalars);
     pd->GetPointData()->AddArray(params);
-    
-    // if (thetas)
-    // {
-    //     thetas->SetName(thetaArrayName.c_str());
-    //     pd->GetPointData()->AddArray(thetas);
-    //     thetas->Delete();
-    // }
-    if (opacity)
+    pd->GetPointData()->AddArray(tangents);
+
+    if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
     {
+        thetas = vtkFloatArray::New();
+        thetas->Allocate(numPts);
+        thetas->SetName(thetaArrayName.c_str());
+        pd->GetPointData()->AddArray(thetas);
+    }
+    if (opacityVariable != "")
+    {
+        opacity = vtkFloatArray::New();
+        opacity->Allocate(numPts);
         opacity->SetName(opacityArrayName.c_str());
         pd->GetPointData()->AddArray(opacity);
-        opacity->Delete();
     }
 
-    if (tangents)
+
+    vtkIdType pIdx = 0, idx = 0;
+    for (int i = 0; i < numICs; i++)
     {
-        tangents->SetName(tangentsArrayName.c_str());
-        pd->GetPointData()->AddArray(tangents);
-        tangents->Delete();
-    }
+        avtStateRecorderIntegralCurve *ic = dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
+        size_t numSamps = (ic ? ic->GetNumberOfSamples() : 0);
+        if (numSamps <= 1)
+            continue;
+        
+        vtkPolyLine *line = vtkPolyLine::New();
+        line->GetPointIds()->SetNumberOfIds(numSamps);
 
+        float theta = 0.0, prevT = 0.0;
+        avtVector lastPos;
+        
+        for (int j = 0; j < numSamps; j++)
+        {
+            avtStateRecorderIntegralCurve::Sample s = ic->GetSample(j);
+            line->GetPointIds()->SetId(j, pIdx);
+            points->InsertPoint(pIdx, s.position.x, s.position.y, s.position.z);
+            
+            float speed = s.velocity.length();
+            if (speed > 0)
+                s.velocity *= 1.0f/speed;
+            tangents->InsertTuple3(pIdx, s.velocity.x, s.velocity.y, s.velocity.z);
+
+            // color scalars
+            switch (coloringMethod)
+            {
+              case STREAMLINE_COLOR_TIME:
+                scalars->InsertTuple1(pIdx, s.time);
+                break;
+              case STREAMLINE_COLOR_SPEED:
+                scalars->InsertTuple1(pIdx, speed);
+                break;
+              case STREAMLINE_COLOR_VORTICITY:
+                scalars->InsertTuple1(pIdx, s.vorticity);
+                break;
+              case STREAMLINE_COLOR_ARCLENGTH:
+                scalars->InsertTuple1(pIdx, s.arclength);
+                break;
+              case STREAMLINE_COLOR_VARIABLE:
+                scalars->InsertTuple1(pIdx, s.scalar0);
+                break;
+              case STREAMLINE_COLOR_ID:
+                scalars->InsertTuple1(pIdx, ic->id);
+                break;
+            }
+
+            // parameter scalars
+            switch (terminationType)
+            {
+              case avtIntegralCurve::TERMINATE_TIME:
+                params->InsertTuple1(pIdx, s.time);
+                break;
+              case avtIntegralCurve::TERMINATE_DISTANCE:
+                params->InsertTuple1(pIdx, s.arclength);
+                break;
+              case avtIntegralCurve::TERMINATE_STEPS:
+                params->InsertTuple1(pIdx, j);
+                break;
+            }
+            
+            // opacity/theta scalars
+            if (opacity)
+                opacity->InsertTuple1(pIdx, s.scalar1);
+            if (thetas)
+            {
+                float scaledVort = s.vorticity * (prevT-s.time);
+                theta += scaledVort;
+                thetas->InsertTuple1(pIdx, theta);
+                prevT = s.time;
+            }
+            
+            pIdx++;
+            lastPos = s.position;
+        }
+        
+        lines->InsertNextCell(line);
+        line->Delete();
+        idx++;
+    }
+    
     points->Delete();
-    cells->Delete();
+    lines->Delete();
     scalars->Delete();
     params->Delete();
+    tangents->Delete();
+    if (thetas)
+        thetas->Delete();
+    if (opacity)
+        opacity->Delete();
 
-    return pd;
+    avtDataTree *dt = new avtDataTree(pd, 0);
+    SetOutputDataTree(dt);
 }
-

@@ -53,6 +53,9 @@
 #include <avtVector.h>
 #include <algorithm>
 
+const double avtStateRecorderIntegralCurve::epsilon = 100.0*(std::numeric_limits<float>::epsilon() *
+                                                            std::numeric_limits<float>::epsilon());
+
 
 // ****************************************************************************
 //  Method: avtStateRecorderIntegralCurve constructor
@@ -123,13 +126,31 @@ avtStateRecorderIntegralCurve::~avtStateRecorderIntegralCurve()
 //  Programmer: Christoph Garth
 //  Creation:   July 22, 2010
 //
+//  Modifications:
+//
+//   Dave Pugmire, Tue Sep 28 10:39:11 EDT 2010
+//   If step is with tolerance of previous step, just overwrite the previous step.
+//
 // ****************************************************************************
 
-void avtStateRecorderIntegralCurve::RecordStep( const avtIVPField* field,
-                                                const avtIVPStep& step,
-                                                double t )
+void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
+                                               const avtIVPStep& step,
+                                               double t)
 {
-    avtVector p = step.GetP( t );
+    avtVector p = step.GetP(t);
+    
+    //If the step is within tolerance of the previous step, just overwrite the last step
+    //with this step.
+    size_t nSamp = GetNumberOfSamples();
+    if (nSamp > 1)
+    {
+        Sample prevSamp = GetSample(nSamp-1);
+        if ((p-prevSamp.position).length2() < epsilon)
+        {
+            std::vector<float>::iterator m = history.begin() + (nSamp-1)*GetSampleStride();
+            history.erase(m, history.end());
+        }
+    }
 
     if( historyMask & SAMPLE_TIME )
         history.push_back( t );
@@ -273,7 +294,7 @@ size_t avtStateRecorderIntegralCurve::GetSampleStride() const
 //
 // ****************************************************************************
 
-avtStateRecorderIntegralCurve::Sample 
+avtStateRecorderIntegralCurve::Sample
 avtStateRecorderIntegralCurve::GetSample( size_t n ) const
 {
     std::vector<float>::const_iterator m = history.begin() + n*GetSampleStride();
