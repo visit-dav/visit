@@ -208,6 +208,9 @@
 //   Brad Whitlock, Thu Feb  4 16:11:35 PST 2010
 //   I added support for generating a GetCategoryName method for operator plugins.
 //
+//   Kathleen Bonnell, Wed Sep 29 08:49:20 PDT 2010
+//   Added ability to override operator common method 'GetCreatedExpressions.'
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -238,7 +241,8 @@ class InfoGeneratorPlugin : public Plugin
         return retval;
     }
 
-    // Returns true if we're replacing a required built-in function and write the definition.
+    // Returns true if we're replacing a required built-in function and write 
+    // the definition.
     bool ReplaceBuiltin(QTextStream &c, const QString &funcName)
     {
         if (!atts)
@@ -422,6 +426,10 @@ class InfoGeneratorPlugin : public Plugin
             h << "  public:" << endl;
             h << "    virtual AttributeSubject *AllocAttributes();" << endl;
             h << "    virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);" << endl;
+            if(OverrideBuiltin(name + "CommonPluginInfo::GetCreatedExpressions"))
+            {
+                h << "    virtual ExpressionList *GetCreatedExpressions(const char *);" << endl;
+            }
             h << "};" << endl;
             h << endl;
             QString infoName = name + "GUIPluginInfo";
@@ -1145,6 +1153,13 @@ class InfoGeneratorPlugin : public Plugin
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             c << "#include <"<<atts->name<<".h>" << endl;
             c << endl;
+            if (type=="operator" && OverrideBuiltin(name + 
+                        "CommonPluginInfo::GetCreatedExpressions")) 
+            {
+                c << "#include <Expression.h>" << endl;
+                c << "#include <ExpressionList.h>" << endl;
+                c << endl;
+            }
             QString funcName = name + "CommonPluginInfo::AllocAttributes";
             if(!ReplaceBuiltin(c, funcName))
             {
@@ -1193,6 +1208,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "    *(("<<atts->name<<" *) to) = *(("<<atts->name<<" *) from);" << endl;
                 c << "}" << endl;
             }
+            WriteOverrideDefinition(c, name + "CommonPluginInfo::GetCreatedExpressions");
         }
     }
 

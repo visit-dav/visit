@@ -96,17 +96,20 @@ QvisCracksClipperWindow::~QvisCracksClipperWindow()
 
 
 // ****************************************************************************
-// Method: QvisCracksClipperWindow::CreateWindowContents
+//  Method: QvisCracksClipperWindow::CreateWindowContents
 //
-// Purpose: 
-//   Creates the widgets for the window.
+//  Purpose: 
+//    Creates the widgets for the window.
 //
-// Programmer: xml2window
-// Creation:   Mon Aug 22 09:10:02 PDT 2005
+//  Programmer: xml2window
+//  Creation:   Mon Aug 22 09:10:02 PDT 2005
 //
-// Modifications:
-//   Cyrus Harrison, Tue Aug 19 08:24:17 PDT 2008
-//   Qt4 Port.
+//  Modifications:
+//    Cyrus Harrison, Tue Aug 19 08:24:17 PDT 2008
+//    Qt4 Port.
+//
+//    Kathleen Bonnell, Wed Sep 29 08:59:10 PDT 2010
+//    Remove 'Density variable' and 'calculate density' toggle.
 //
 // ****************************************************************************
 
@@ -166,12 +169,6 @@ QvisCracksClipperWindow::CreateWindowContents()
         this, SLOT(strainVarChanged(const QString &)));
     mainLayout->addWidget(strainVar, 6, 1, 1, 3);
 
-    // Calculate Density 
-    calculateDensity = new QCheckBox(tr("Calculate Density"),central);
-    connect(calculateDensity, SIGNAL(toggled(bool)),
-        this, SLOT(calculateDensityChanged(bool)));
-    mainLayout->addWidget(calculateDensity, 7, 0);
-
     // Input Mass Variable 
     inMassVarLabel = new QLabel(tr("Input Mass Variable"), central);
     mainLayout->addWidget(inMassVarLabel, 8, 0);
@@ -181,33 +178,28 @@ QvisCracksClipperWindow::CreateWindowContents()
         this, SLOT(inMassVarChanged(const QString &)));
     mainLayout->addWidget(inMassVar, 8, 1, 1, 3);
 
-    // Output Density Variable 
-    outDenVarLabel = new QLabel(tr("Output Density Variable"), central);
-    mainLayout->addWidget(outDenVarLabel, 9, 0);
-    outDenVar = new QvisVariableButton(true, true, true,
-                                       QvisVariableButton::Scalars, central);
-    connect(outDenVar, SIGNAL(activated(const QString &)),
-        this, SLOT(outDenVarChanged(const QString &)));
-    mainLayout->addWidget(outDenVar, 9, 1, 1, 3);
 }
 
 
 // ****************************************************************************
-// Method: QvisCracksClipperWindow::UpdateWindow
+//  Method: QvisCracksClipperWindow::UpdateWindow
 //
-// Purpose: 
-//   Updates the widgets in the window when the subject changes.
+//  Purpose: 
+//    Updates the widgets in the window when the subject changes.
 //
-// Programmer: xml2window
-// Creation:   Mon Aug 22 09:10:02 PDT 2005
+//  Programmer: xml2window
+//  Creation:   Mon Aug 22 09:10:02 PDT 2005
 //
-// Modifications:
-//   Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
-//   Added calculateDensity, inMarVar, outDenVar.
+//  Modifications:
+//    Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
+//    Added calculateDensity, inMarVar, outDenVar.
 //   
-//   Kathleen Bonnell, Tue Jul 1 15:10:55 PDT 2008 
-//   Removed unreferenced variable.
+//    Kathleen Bonnell, Tue Jul 1 15:10:55 PDT 2008 
+//    Removed unreferenced variable.
 //   
+//    Kathleen Bonnell, Wed Sep 29 08:59:10 PDT 2010
+//    Remove 'Density variable' and 'calculate density' toggle.
+//
 // ****************************************************************************
 
 void
@@ -226,45 +218,34 @@ QvisCracksClipperWindow::UpdateWindow(bool doAll)
         }
         switch(i)
         {
-          case 0: //crack1Var
+          case CracksClipperAttributes::ID_crack1Var:
             temp = atts->GetCrack1Var().c_str();
             crack1Var->setText(temp);
             break;
-          case 1: //crack2Var
+          case CracksClipperAttributes::ID_crack2Var: //crack2Var
             temp = atts->GetCrack2Var().c_str();
             crack2Var->setText(temp);
             break;
-          case 2: //crack3Var
+          case CracksClipperAttributes::ID_crack3Var: //crack3Var
             temp = atts->GetCrack3Var().c_str();
             crack3Var->setText(temp);
             break;
-          case 3: //strainVar
+          case CracksClipperAttributes::ID_strainVar: //strainVar
             temp = atts->GetStrainVar().c_str();
             strainVar->setText(temp);
             break;
-          case 4: //showCrack1
+          case CracksClipperAttributes::ID_showCrack1: //showCrack1
             showCrack1->setChecked(atts->GetShowCrack1());
             break;
-          case 5: //showCrack2
+          case CracksClipperAttributes::ID_showCrack2: //showCrack2
             showCrack2->setChecked(atts->GetShowCrack2());
             break;
-          case 6: //showCrack3
+          case CracksClipperAttributes::ID_showCrack3: //showCrack3
             showCrack3->setChecked(atts->GetShowCrack3());
             break;
-          case 7: //calculateDensity
-            calculateDensity->setChecked(atts->GetCalculateDensity());
-            inMassVarLabel->setEnabled(atts->GetCalculateDensity());
-            outDenVarLabel->setEnabled(atts->GetCalculateDensity());
-            inMassVar->setEnabled(atts->GetCalculateDensity());
-            outDenVar->setEnabled(atts->GetCalculateDensity());
-            break;
-          case 8: //inMassVar
+          case CracksClipperAttributes::ID_inMassVar: //inMassVar
             temp = atts->GetInMassVar().c_str();
             inMassVar->setText(temp);
-            break;
-          case 9: //outDenVar
-            temp = atts->GetOutDenVar().c_str();
-            outDenVar->setText(temp);
             break;
         }
     }
@@ -399,12 +380,6 @@ QvisCracksClipperWindow::showCrack3Changed(bool val)
     Apply();
 }
 
-void
-QvisCracksClipperWindow::calculateDensityChanged(bool val)
-{
-    atts->SetCalculateDensity(val);
-    Apply();
-}
 
 void
 QvisCracksClipperWindow::inMassVarChanged(const QString &var)
@@ -414,10 +389,3 @@ QvisCracksClipperWindow::inMassVarChanged(const QString &var)
     Apply();
 }
 
-void
-QvisCracksClipperWindow::outDenVarChanged(const QString &var)
-{
-    atts->SetOutDenVar(var.toStdString());
-    SetUpdate(false);
-    Apply();
-}

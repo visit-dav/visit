@@ -44,7 +44,7 @@
 #include <ConnectedComponentsAttributes.h>
 
 #include <Expression.h>
-
+#include <ExpressionList.h>
 
 // ****************************************************************************
 //  Method: ConnectedComponentsCommonPluginInfo::AllocAttributes
@@ -87,7 +87,6 @@ ConnectedComponentsCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     *((ConnectedComponentsAttributes *) to) = *((ConnectedComponentsAttributes *) from);
 }
 
-
 ExpressionList *
 ConnectedComponentsCommonPluginInfo::GetCreatedExpressions(const char *mesh)
 {
@@ -107,5 +106,4 @@ ConnectedComponentsCommonPluginInfo::GetCreatedExpressions(const char *mesh)
 
     return el;
 }
-
 

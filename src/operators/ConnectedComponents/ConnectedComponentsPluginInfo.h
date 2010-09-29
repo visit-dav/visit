@@ -42,9 +42,6 @@
 
 #ifndef CONNECTEDCOMPONENTS_PLUGIN_INFO_H
 #define CONNECTEDCOMPONENTS_PLUGIN_INFO_H
-
-#include <ExpressionList.h>
-
 #include <OperatorPluginInfo.h>
 #include <operator_plugin_exports.h>
 

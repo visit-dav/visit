@@ -11,3 +11,39 @@ CracksClipperAttributes::ChangesRequireRecalculation(const CracksClipperAttribut
     return true;
 }
 
+Target: xml2info
+Function: CracksClipperCommonPluginInfo::GetCreatedExpressions
+Declaration: virtual ExpressionList *GetCreatedExpressions(const char *);
+Definition:
+
+// ***************************************************************************
+//  Method: CracksClipperCommonPluginInfo::GetCreatedExpressions
+//
+//  Purpose: Adds expressions to the pipeline that will be evaluated after
+//           this operator is executed.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    September 27, 2010
+//
+//  Modifications:
+//    
+// ***************************************************************************
+
+ExpressionList *
+CracksClipperCommonPluginInfo::GetCreatedExpressions(const char *mesh)
+{
+    char name[1024];
+    char defn[1024];
+    ExpressionList *el = new ExpressionList;
+ 
+    Expression e2;
+    sprintf(name, "operators/CracksClipper/%s/den", mesh);
+    e2.SetName(name);
+    e2.SetType(Expression::ScalarMeshVar);
+    e2.SetFromOperator(true);
+    sprintf(defn, "cell_constant(%s, 0.)", mesh);
+    e2.SetDefinition(defn);
+    el->AddExpressions(e2);
+
+    return el;
+}

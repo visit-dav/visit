@@ -87,5 +87,7 @@
       <Include file="header" quoted="false">
         Expression.h
       </Include>
+      <Function name="DataBinningCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

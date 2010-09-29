@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: CracksClipperAttributes
 //
@@ -59,13 +60,23 @@
 class CracksClipperAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     CracksClipperAttributes();
     CracksClipperAttributes(const CracksClipperAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    CracksClipperAttributes(private_tmfs_t tmfs);
+    CracksClipperAttributes(const CracksClipperAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~CracksClipperAttributes();
 
     virtual CracksClipperAttributes& operator = (const CracksClipperAttributes &obj);
     virtual bool operator == (const CracksClipperAttributes &obj) const;
     virtual bool operator != (const CracksClipperAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const CracksClipperAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -79,7 +90,6 @@ public:
     void SelectCrack3Var();
     void SelectStrainVar();
     void SelectInMassVar();
-    void SelectOutDenVar();
 
     // Property setting methods
     void SetCrack1Var(const std::string &crack1Var_);
@@ -89,9 +99,7 @@ public:
     void SetShowCrack1(bool showCrack1_);
     void SetShowCrack2(bool showCrack2_);
     void SetShowCrack3(bool showCrack3_);
-    void SetCalculateDensity(bool calculateDensity_);
     void SetInMassVar(const std::string &inMassVar_);
-    void SetOutDenVar(const std::string &outDenVar_);
 
     // Property getting methods
     const std::string &GetCrack1Var() const;
@@ -105,11 +113,8 @@ public:
     bool              GetShowCrack1() const;
     bool              GetShowCrack2() const;
     bool              GetShowCrack3() const;
-    bool              GetCalculateDensity() const;
     const std::string &GetInMassVar() const;
           std::string &GetInMassVar();
-    const std::string &GetOutDenVar() const;
-          std::string &GetOutDenVar();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -134,9 +139,8 @@ public:
         ID_showCrack1,
         ID_showCrack2,
         ID_showCrack3,
-        ID_calculateDensity,
         ID_inMassVar,
-        ID_outDenVar
+        ID__LAST
     };
 
 private:
@@ -147,12 +151,12 @@ private:
     bool        showCrack1;
     bool        showCrack2;
     bool        showCrack3;
-    bool        calculateDensity;
     std::string inMassVar;
-    std::string outDenVar;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CRACKSCLIPPERATTRIBUTES_TMFS "ssssbbbs"
 
 #endif

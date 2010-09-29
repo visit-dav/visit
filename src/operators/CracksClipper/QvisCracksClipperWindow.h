@@ -49,20 +49,23 @@ class QLabel;
 class QvisVariableButton;
 
 // ****************************************************************************
-// Class: QvisCracksClipperWindow
+//  Class: QvisCracksClipperWindow
 //
-// Purpose: 
-//   Defines QvisCracksClipperWindow class.
+//  Purpose: 
+//    Defines QvisCracksClipperWindow class.
 //
-// Notes:      This class was automatically generated!
-
-// Programmer: xml2window
-// Creation:   Mon Aug 22 09:10:02 PDT 2005
+//  Notes:      This class was automatically generated!
 //
-// Modifications:
-//   Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
-//   Added calculateDensity, inMassVar, outDenVar.
+//  Programmer: xml2window
+//  Creation:   Mon Aug 22 09:10:02 PDT 2005
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
+//    Added calculateDensity, inMassVar, outDenVar.
 //   
+//    Kathleen Bonnell, Wed Sep 29 09:01:48 PDT 2010
+//    Removed calculateDensity, outDenVar.
+//
 // ****************************************************************************
 
 class QvisCracksClipperWindow : public QvisOperatorWindow
@@ -87,9 +90,7 @@ class QvisCracksClipperWindow : public QvisOperatorWindow
     void showCrack1Changed(bool val);
     void showCrack2Changed(bool val);
     void showCrack3Changed(bool val);
-    void calculateDensityChanged(bool val);
     void inMassVarChanged(const QString &);
-    void outDenVarChanged(const QString &);
   private:
     QvisVariableButton *crack1Var;
     QvisVariableButton *crack2Var;
@@ -98,11 +99,8 @@ class QvisCracksClipperWindow : public QvisOperatorWindow
     QCheckBox *showCrack1;
     QCheckBox *showCrack2;
     QCheckBox *showCrack3;
-    QCheckBox *calculateDensity;
     QvisVariableButton *inMassVar;
-    QvisVariableButton *outDenVar;
     QLabel *inMassVarLabel;
-    QLabel *outDenVarLabel;
 
     CracksClipperAttributes *atts;
 };
