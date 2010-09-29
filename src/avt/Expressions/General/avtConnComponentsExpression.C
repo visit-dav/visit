@@ -2847,6 +2847,12 @@ PartitionBoundary::AttemptSplit(PartitionBoundary *&b1, PartitionBoundary *&b2)
 //    Hank Childs, Mon Sep 13 19:26:53 PDT 2010
 //    More optimization of this routine.
 //
+//    Cyrus Harrison, Wed Sep 29 11:25:41 PDT 2010
+//    Prevent use of interval trees w/ zero elements. This would happen if
+//    some processors have no data. The interval tree class does not behave
+//    well in this case - it currently tries to allocate an array of size "-1"
+//    & blows memory.
+//
 // ****************************************************************************
 
 void
@@ -2904,84 +2910,143 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
         totalCells += ncells;
     }
 
-    int cellIndex = 0;
-    avtIntervalTree it(totalCells, (is2D ? 2 : 3), false);
-    it.AccelerateSizeQueries();
-    //it.OptimizeForRepeatedQueries();
-    for (i = 0 ; i < meshes.size() ; i++)
+    if(totalCells > 0)
     {
-        double bbox[6];
-        const int ncells = meshes[i]->GetNumberOfCells();
-        for (j = 0 ; j < ncells ; j++)
+        int cellIndex = 0;
+        avtIntervalTree it(totalCells, (is2D ? 2 : 3), false);
+        it.AccelerateSizeQueries();
+        //it.OptimizeForRepeatedQueries();
+        for (i = 0 ; i < meshes.size() ; i++)
         {
-            double cellCenter[6];
-            vtkCell *cell = meshes[i]->GetCell(j);
-            cell->GetBounds(bbox);
-            cellCenter[0] = (bbox[0] + bbox[1]) / 2.;
-            cellCenter[1] = cellCenter[0];
-            cellCenter[2] = (bbox[2] + bbox[3]) / 2.;
-            cellCenter[3] = cellCenter[2];
-            cellCenter[4] = (bbox[4] + bbox[5]) / 2.;
-            cellCenter[5] = cellCenter[4];
-            it.AddElement(cellIndex+j, cellCenter);
+            double bbox[6];
+            const int ncells = meshes[i]->GetNumberOfCells();
+            for (j = 0 ; j < ncells ; j++)
+            {
+                double cellCenter[6];
+                vtkCell *cell = meshes[i]->GetCell(j);
+                cell->GetBounds(bbox);
+                cellCenter[0] = (bbox[0] + bbox[1]) / 2.;
+                cellCenter[1] = cellCenter[0];
+                cellCenter[2] = (bbox[2] + bbox[3]) / 2.;
+                cellCenter[3] = cellCenter[2];
+                cellCenter[4] = (bbox[4] + bbox[5]) / 2.;
+                cellCenter[5] = cellCenter[4];
+                it.AddElement(cellIndex+j, cellCenter);
+            }
+            cellIndex += ncells;
         }
-        cellIndex += ncells;
+        it.Calculate(true);
+        visitTimer->StopTimer(t3, "Setting up interval tree for spatial partition generation");
+
+        while (keepGoing)
+        {
+            int t5 = visitTimer->StartTimer();
+            // Figure out how many boundaries need to keep going.
+            int nBins = 0;
+            for (i = 0 ; i < listSize ; i++)
+                if (!(b_list[i]->IsDone()))
+                {
+                    bin_lookup[nBins] = i;
+                    nBins++;
+                }
+
+            // Calculate how many points fall within each region.
+            for (i = 0 ; i < listSize ; i++)
+            {
+                if (b_list[i]->IsDone())
+                    continue;
+                int nregions = b_list[i]->GetNumberOfRegions();
+                for (int j = 0 ; j < nregions ; j++)
+                {
+                    double b[6];
+                    b_list[i]->GetBoundaryForRegion(j, b);
+                    double min[3] = { b[0], b[2], b[4] };
+                    double max[3] = { b[1], b[3], b[5] };
+                    int nvals = it.GetNumberOfElementsInRange(min, max);
+                    b_list[i]->SetNumberOfPointsForRegion(j, nvals);
+                }
+            }
+
+            // See which boundaries found a suitable pivot and can now split.
+            PartitionBoundary::PrepareSplitQuery(b_list, listSize);
+            int numAtStartOfLoop = listSize;
+            for (i = 0 ; i < numAtStartOfLoop ; i++)
+            {
+                if (b_list[i]->IsDone())
+                    continue;
+                PartitionBoundary *b1, *b2;
+                if (b_list[i]->AttemptSplit(b1, b2))
+                {
+                    b_list[listSize++] = b1;
+                    b_list[listSize++] = b2;
+                }
+            }
+
+            // See if there are any boundaries that need more processing.
+            // Obviously, all the boundaries that were just split need more 
+            // processing, because they haven't done any yet.
+            keepGoing = false;
+            for (i = 0 ; i < listSize ; i++)
+                if (!(b_list[i]->IsDone()))
+                    keepGoing = true;
+            visitTimer->StopTimer(t5, "One iteration of spatial partition generation");
+        }
     }
-    it.Calculate(true);
-    visitTimer->StopTimer(t3, "Setting up interval tree for spatial partition generation");
-
-    while (keepGoing)
+    else
     {
-        int t5 = visitTimer->StartTimer();
-        // Figure out how many boundaries need to keep going.
-        int nBins = 0;
-        for (i = 0 ; i < listSize ; i++)
-            if (!(b_list[i]->IsDone()))
-            {
-                bin_lookup[nBins] = i;
-                nBins++;
-            }
-
-        // Calculate how many points fall within each region.
-        for (i = 0 ; i < listSize ; i++)
+        //
+        // even if this proc has zero cells, we still have to participate in
+        // the construction of the partitions, so we simply return 0 values
+        // we appropriate
+        //
+        while (keepGoing)
         {
-            if (b_list[i]->IsDone())
-                continue;
-            int nregions = b_list[i]->GetNumberOfRegions();
-            for (int j = 0 ; j < nregions ; j++)
-            {
-                double b[6];
-                b_list[i]->GetBoundaryForRegion(j, b);
-                double min[3] = { b[0], b[2], b[4] };
-                double max[3] = { b[1], b[3], b[5] };
-                int nvals = it.GetNumberOfElementsInRange(min, max);
-                b_list[i]->SetNumberOfPointsForRegion(j, nvals);
-            }
-        }
+            int t5 = visitTimer->StartTimer();
+            // Figure out how many boundaries need to keep going.
+            int nBins = 0;
+            for (i = 0 ; i < listSize ; i++)
+                if (!(b_list[i]->IsDone()))
+                {
+                    bin_lookup[nBins] = i;
+                    nBins++;
+                }
 
-        // See which boundaries found a suitable pivot and can now split.
-        PartitionBoundary::PrepareSplitQuery(b_list, listSize);
-        int numAtStartOfLoop = listSize;
-        for (i = 0 ; i < numAtStartOfLoop ; i++)
-        {
-            if (b_list[i]->IsDone())
-                continue;
-            PartitionBoundary *b1, *b2;
-            if (b_list[i]->AttemptSplit(b1, b2))
+            // Calculate how many points fall within each region.
+            for (i = 0 ; i < listSize ; i++)
             {
-                b_list[listSize++] = b1;
-                b_list[listSize++] = b2;
+                if (b_list[i]->IsDone())
+                    continue;
+                int nregions = b_list[i]->GetNumberOfRegions();
+                for (int j = 0 ; j < nregions ; j++)
+                {
+                    b_list[i]->SetNumberOfPointsForRegion(j, 0);
+                }
             }
-        }
 
-        // See if there are any boundaries that need more processing.  
-        // Obviously, all the boundaries that were just split need more 
-        // processing, because they haven't done any yet.
-        keepGoing = false;
-        for (i = 0 ; i < listSize ; i++)
-            if (!(b_list[i]->IsDone()))
-                keepGoing = true;
-        visitTimer->StopTimer(t5, "One iteration of spatial partition generation");
+            // See which boundaries found a suitable pivot and can now split.
+            PartitionBoundary::PrepareSplitQuery(b_list, listSize);
+            int numAtStartOfLoop = listSize;
+            for (i = 0 ; i < numAtStartOfLoop ; i++)
+            {
+                if (b_list[i]->IsDone())
+                    continue;
+                PartitionBoundary *b1, *b2;
+                if (b_list[i]->AttemptSplit(b1, b2))
+                {
+                    b_list[listSize++] = b1;
+                    b_list[listSize++] = b2;
+                }
+            }
+
+            // See if there are any boundaries that need more processing.
+            // Obviously, all the boundaries that were just split need more 
+            // processing, because they haven't done any yet.
+            keepGoing = false;
+            for (i = 0 ; i < listSize ; i++)
+                if (!(b_list[i]->IsDone()))
+                    keepGoing = true;
+            visitTimer->StopTimer(t5, "One iteration of spatial partition generation");
+        }
     }
 
     // Construct an interval tree out of the boundaries.  This interval tree
