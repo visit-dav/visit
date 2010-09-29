@@ -75,6 +75,7 @@ class CracksClipperCommonPluginInfo : public virtual CommonOperatorPluginInfo, p
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual ExpressionList *GetCreatedExpressions(const char *);
 };
 
 class CracksClipperGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual CracksClipperCommonPluginInfo

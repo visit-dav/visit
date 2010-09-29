@@ -36,16 +36,12 @@
       <Field name="showCrack3" label="Show Crack 3" type="bool">
         true
       </Field>
-      <Field name="calculateDensity" label="Calculate Density" type="bool">
-        true
-      </Field>
       <Field name="inMassVar" label="Input Mass Variable" type="string">
         ems
       </Field>
-      <Field name="outDenVar" label="Output Density Variable" type="string">
-        ems
-      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="CracksClipperCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>

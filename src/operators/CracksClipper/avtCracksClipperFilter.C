@@ -77,10 +77,15 @@
 //  Programmer: Kathleen Bonnell
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Sep 29 08:51:55 PDT 2010
+//    Add calculateDensity.
+//
 // ****************************************************************************
 
 avtCracksClipperFilter::avtCracksClipperFilter()
 {
+    calculateDensity = false;
 }
 
 
@@ -174,6 +179,11 @@ avtCracksClipperFilter::Equivalent(const AttributeGroup *a)
 //    be calculated.  Due to use of avtVMetricVolume, made the entire
 //    method engine-specific.
 //
+//    Kathleen Bonnell, Wed Sep 29 08:52:39 PDT 2010
+//    Use ivar 'calculateDensity' instead of atts var. Whether or not 
+//    density is calculated is now based on if this operator was instantiated
+//    via it's created variable, or not.
+//
 // ****************************************************************************
 
 void
@@ -196,7 +206,7 @@ avtCracksClipperFilter::Execute(void)
     removeCracks.SetAtts(&atts);
     removeCracks.SetInput(data);
 
-    if (atts.GetCalculateDensity())
+    if (calculateDensity)
     {
         //
         // Calculate volume for the new cells 
@@ -264,6 +274,10 @@ avtCracksClipperFilter::Execute(void)
 //    Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
 //    Added logic to add InMassVar as a secondary variable if necessary.
 //
+//    Kathleen Bonnell, Wed Sep 29 08:54:27 PDT 2010
+//    Added logic to determine if this operator was instantiated via it's
+//    'created' density var.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -271,29 +285,68 @@ avtCracksClipperFilter::ModifyContract(avtContract_p contract)
 {
     avtDataRequest_p ds = contract->GetDataRequest();
 
+    calculateDensity = false;
+    if (strncmp(ds->GetVariable(), "operators/CracksClipper",
+                strlen("operators/CracksClipper")) == 0)
+    {
+        calculateDensity = true;
+    }
+
     // Retrieve secondary variables, if any, to pass along to the 
     // newly created DataSpec
-    std::vector<CharStrRef> csv = ds->GetSecondaryVariables();
+    std::vector<CharStrRef> csv = ds->GetSecondaryVariablesWithoutDuplicates();
+    std::vector<std::string> removeMe;
+    if (!calculateDensity)
+    {
+        for (int i = 0; i < csv.size(); i++)
+        {
+            if (strncmp(*(csv[i]), "operators/CracksClipper",
+                strlen("operators/CracksClipper")) == 0)
+            {
+                calculateDensity = true;
+                removeMe.push_back(*(csv[i]));
+            }
+        }
+    }
 
     // Create a new dataRequest so that we can add secondary vars
-    avtDataRequest_p nds = new avtDataRequest(ds->GetVariable(),
+    avtDataRequest_p nds;
+    if (calculateDensity)
+    {
+        nds = new avtDataRequest(atts.GetInMassVar().c_str(),
                 ds->GetTimestep(), ds->GetRestriction());
+    }
+    else
+    {
+        nds = new avtDataRequest(ds->GetVariable(),
+                ds->GetTimestep(), ds->GetRestriction());
+    }
 
     // Add any previously existing SecondaryVariables.
-    for (int i = 0; i < csv.size(); i++)
+    for (size_t i = 0; i < csv.size(); i++)
+    {
         nds->AddSecondaryVariable(*(csv[i]));
+        if (strncmp(*(csv[i]), "operators/CracksClipper",
+            strlen("operators/CracksClipper")) == 0)
+        {
+            calculateDensity = true;
+        }
+    }
+
+    // remove the special variable for this operator
+    for (size_t i = 0; i < removeMe.size(); ++i)
+    {
+        nds->RemoveSecondaryVariable(removeMe[i].c_str());
+    }
 
     // Add secondary variables necessary for CracksClipper
     nds->AddSecondaryVariable(atts.GetCrack1Var().c_str());
     nds->AddSecondaryVariable(atts.GetCrack2Var().c_str());
     nds->AddSecondaryVariable(atts.GetCrack3Var().c_str());
 
-    if (atts.GetCalculateDensity())
+    if (calculateDensity)
     {
-        if (atts.GetInMassVar() != atts.GetOutDenVar())
-        {
-            nds->AddSecondaryVariable(atts.GetInMassVar().c_str());
-        }
+        nds->AddSecondaryVariable(atts.GetInMassVar().c_str());
     }
 
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
@@ -380,6 +433,9 @@ avtCracksClipperFilter::UpdateDataObjectInfo()
 //    Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
 //    Added logic to remove InMassVar if necessary.
 //
+//    Kathleen Bonnell, Wed Sep 29 08:55:31 PDT 2010
+//    Re-add the density variable to the pipeline if needed.
+// 
 // ****************************************************************************
 
 void
@@ -393,10 +449,15 @@ avtCracksClipperFilter::PostExecute()
     outAtts.RemoveVariable(atts.GetCrack3Var().c_str());
     outAtts.RemoveVariable(atts.GetStrainVar().c_str());
 
-    if (atts.GetCalculateDensity())
+    if (calculateDensity)
     {
-        if (atts.GetInMassVar() != atts.GetOutDenVar())
-            outAtts.RemoveVariable(atts.GetInMassVar().c_str());
+        outAtts.RemoveVariable(atts.GetInMassVar().c_str());
+
+        outAtts.AddVariable("operators/CracksClipper/den");
+        outAtts.SetActiveVariable("operators/CracksClipper/den");
+        outAtts.SetVariableDimension(1);
+        outAtts.SetVariableType(AVT_SCALAR_VAR);
+        outAtts.SetCentering(AVT_ZONECENT);
     }
 }
 
@@ -412,6 +473,8 @@ avtCracksClipperFilter::PostExecute()
 //  Creation:   May 7, 2007 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Sep 29 08:52:39 PDT 2010
+//    Use ivar 'calculateDensity' instead of atts var. 
 //
 // ****************************************************************************
 
@@ -419,10 +482,11 @@ int
 avtCracksClipperFilter::AdditionalPipelineFilters(void)
 {
     int rv = 1;
-    if (atts.GetCalculateDensity())
+    if (calculateDensity)
     {
         rv += 2;
     }
     return rv;
 }
+
 

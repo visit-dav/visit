@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="ConnectedComponents" type="operator" label="ConnectedComponents" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis">
-    <Attribute name="ConnectedComponentsAttributes" purpose="Attributes for Connected Components operator" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="ConnectedComponentsAttributes" purpose="Attributes for Connected Components operator" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="ConnectedComponents.code">
+      <Function name="ConnectedComponentsCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

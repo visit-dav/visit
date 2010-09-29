@@ -87,7 +87,6 @@ FluxCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     *((FluxAttributes *) to) = *((FluxAttributes *) from);
 }
 
-
 ExpressionList *
 FluxCommonPluginInfo::GetCreatedExpressions(const char *mesh)
 {

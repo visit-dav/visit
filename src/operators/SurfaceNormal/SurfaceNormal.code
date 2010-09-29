@@ -1,0 +1,25 @@
+Target: xml2info
+Function: SurfaceNormalCommonPluginInfo::GetCreatedExpressions
+Declaration: virtual ExpressionList *GetCreatedExpressions(const char *);
+Definition:
+
+ExpressionList *
+SurfaceNormalCommonPluginInfo::GetCreatedExpressions(const char *mesh)
+{
+    char name[1024];
+    char defn[1024];
+    ExpressionList *el = new ExpressionList;
+
+    Expression e2;
+    sprintf(name, "operators/SurfaceNormal/%s", mesh);
+    e2.SetName(name);
+    e2.SetType(Expression::VectorMeshVar);
+    e2.SetFromOperator(true);
+    e2.SetOperatorName("SurfaceNormal");
+    sprintf(defn, "point_surface_normal(%s)", mesh);
+    e2.SetDefinition(defn);
+    el->AddExpressions(e2);
+
+    return el;
+}
+

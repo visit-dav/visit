@@ -43,9 +43,6 @@
 #include <DataBinningPluginInfo.h>
 #include <DataBinningAttributes.h>
 
-#include <Expression.h>
-#include <ExpressionList.h>
-
 #include <visit-config.h>
 extern "C" OP_EXPORT const char *DataBinningVisItPluginVersion = VISIT_VERSION;
 
@@ -156,44 +153,4 @@ const char *
 DataBinningGeneralPluginInfo::GetCategoryName() const
 {
     return "Analysis";
-}
-
-ExpressionList *
-DataBinningCommonPluginInfo::GetCreatedExpressions(const char *mesh)
-{
-    char name[1024];
-    char defn[1024];
-    ExpressionList *el = new ExpressionList;
-
-    Expression e2; 
-    sprintf(name, "operators/DataBinning/1D/%s", mesh);
-    e2.SetName(name);
-    e2.SetType(Expression::CurveMeshVar);
-    e2.SetFromOperator(true);
-    e2.SetOperatorName("DataBinning");
-    sprintf(defn, "cell_constant(%s, 0)", mesh);
-    e2.SetDefinition(defn);
-    el->AddExpressions(e2);
-
-    Expression e; 
-    sprintf(name, "operators/DataBinning/2D/%s", mesh);
-    e.SetName(name);
-    e.SetType(Expression::ScalarMeshVar);
-    e.SetFromOperator(true);
-    e.SetOperatorName("DataBinning");
-    sprintf(defn, "cell_constant(%s, 0)", mesh);
-    e.SetDefinition(defn);
-    el->AddExpressions(e);
-
-    Expression e3; 
-    sprintf(name, "operators/DataBinning/3D/%s", mesh);
-    e3.SetName(name);
-    e3.SetType(Expression::ScalarMeshVar);
-    e3.SetFromOperator(true);
-    e3.SetOperatorName("DataBinning");
-    sprintf(defn, "cell_constant(%s, 0)", mesh);
-    e3.SetDefinition(defn);
-    el->AddExpressions(e3);
-   
-    return el;
 }

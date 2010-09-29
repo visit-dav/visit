@@ -46,6 +46,7 @@
 
 #include <avtPluginFilter.h>
 #include <avtDatasetToDatasetFilter.h>
+#include <avtDeferExpressionBaseFilter.h>
 #include <CracksClipperAttributes.h>
 
 
@@ -69,6 +70,9 @@ class vtkDataSet;
 //    Changed inheritance for this filter, so that it can create a pipeline
 //    with multiple filters.  Moved bulk of code to new avtRemoveCracksFilter.
 //
+//    Kathleen Bonnell, Wed Sep 29 08:58:10 PDT 2010
+//    Add ivar 'calculateDensity'.
+//
 // ****************************************************************************
 
 class avtCracksClipperFilter : virtual public avtPluginFilter,
@@ -89,15 +93,13 @@ class avtCracksClipperFilter : virtual public avtPluginFilter,
 
   protected:
     CracksClipperAttributes   atts;
+    bool                  calculateDensity;
 
     virtual void          Execute(void);
     virtual void          PostExecute(void);
     virtual void          UpdateDataObjectInfo(void);
     virtual int           AdditionalPipelineFilters(void);
-    virtual avtContract_p
-                          ModifyContract(avtContract_p);
-
-  private:
+    virtual avtContract_p ModifyContract(avtContract_p);
 };
 
 
