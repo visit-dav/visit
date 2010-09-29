@@ -97,6 +97,9 @@ std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 //   Dave Pugmire, Tue Sep 28 10:41:00 EDT 2010
 //   Optimize the creation of vtkPolyData.
 //
+//   Dave Pugmire, Wed Sep 29 14:57:59 EDT 2010
+//   Initialize scalar array if coloring by solid.
+//
 // ****************************************************************************
 
 void
@@ -206,6 +209,8 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
               case STREAMLINE_COLOR_ID:
                 scalars->InsertTuple1(pIdx, ic->id);
                 break;
+              case STREAMLINE_COLOR_SOLID:
+                scalars->InsertTuple1(pIdx, 0.0f);
             }
 
             // parameter scalars
