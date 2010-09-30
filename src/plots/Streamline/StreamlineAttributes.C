@@ -243,21 +243,21 @@ StreamlineAttributes::TerminationType_FromString(const std::string &s, Streamlin
 //
 
 static const char *StreamlineAlgorithmType_strings[] = {
-"LoadOnDemand", "ParallelStaticDomains", "MasterSlave"
-};
+"LoadOnDemand", "ParallelStaticDomains", "MasterSlave", 
+"VisItSelects"};
 
 std::string
 StreamlineAttributes::StreamlineAlgorithmType_ToString(StreamlineAttributes::StreamlineAlgorithmType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 4) index = 0;
     return StreamlineAlgorithmType_strings[index];
 }
 
 std::string
 StreamlineAttributes::StreamlineAlgorithmType_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 4) ? 0 : t;
     return StreamlineAlgorithmType_strings[index];
 }
 
@@ -265,7 +265,7 @@ bool
 StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, StreamlineAttributes::StreamlineAlgorithmType &val)
 {
     val = StreamlineAttributes::LoadOnDemand;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 4; ++i)
     {
         if(s == StreamlineAlgorithmType_strings[i])
         {
@@ -502,7 +502,7 @@ void StreamlineAttributes::Init()
     absTol = 1e-05;
     terminationType = Distance;
     integrationType = DormandPrince;
-    streamlineAlgorithmType = ParallelStaticDomains;
+    streamlineAlgorithmType = VisItSelects;
     maxStreamlineProcessCount = 10;
     maxDomainCacheSize = 3;
     workGroupSize = 32;
@@ -1873,7 +1873,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 4)
                 SetStreamlineAlgorithmType(StreamlineAlgorithmType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

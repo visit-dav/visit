@@ -103,7 +103,8 @@ public:
     {
         LoadOnDemand,
         ParallelStaticDomains,
-        MasterSlave
+        MasterSlave,
+        VisItSelects
     };
     enum IntegrationType
     {

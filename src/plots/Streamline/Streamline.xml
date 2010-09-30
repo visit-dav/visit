@@ -62,6 +62,7 @@
         LoadOnDemand
         ParallelStaticDomains
         MasterSlave
+        VisItSelects
       </Enum>
       <Enum name="IntegrationType">
         DormandPrince
@@ -214,7 +215,7 @@
         DormandPrince
       </Field>
       <Field name="streamlineAlgorithmType" label="Streamline algorithm type" type="enum" subtype="StreamlineAlgorithmType">
-        ParallelStaticDomains
+        VisItSelects
       </Field>
       <Field name="maxStreamlineProcessCount" label="maxStreamlineProcessCount" type="int">
         10

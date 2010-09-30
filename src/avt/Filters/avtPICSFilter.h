@@ -72,6 +72,8 @@ class avtICAlgorithm;
 #define STREAMLINE_LOAD_ONDEMAND 0
 #define STREAMLINE_PARALLEL_STATIC_DOMAINS 1
 #define STREAMLINE_MASTER_SLAVE 2
+#define STREAMLINE_VISIT_SELECTS 3
+
 
 // ****************************************************************************
 // Class: avtPICSFilter

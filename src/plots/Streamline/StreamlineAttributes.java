@@ -96,6 +96,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
     public final static int STREAMLINEALGORITHMTYPE_MASTERSLAVE = 2;
+    public final static int STREAMLINEALGORITHMTYPE_VISITSELECTS = 3;
 
     public final static int INTEGRATIONTYPE_DORMANDPRINCE = 0;
     public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
@@ -188,7 +189,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         absTol = 1e-05;
         terminationType = TERMINATIONTYPE_DISTANCE;
         integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
-        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS;
+        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_VISITSELECTS;
         maxStreamlineProcessCount = 10;
         maxDomainCacheSize = 3;
         workGroupSize = 32;
@@ -298,7 +299,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         absTol = 1e-05;
         terminationType = TERMINATIONTYPE_DISTANCE;
         integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
-        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS;
+        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_VISITSELECTS;
         maxStreamlineProcessCount = 10;
         maxDomainCacheSize = 3;
         workGroupSize = 32;
@@ -1591,6 +1592,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             str = str + "STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS";
         if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_MASTERSLAVE)
             str = str + "STREAMLINEALGORITHMTYPE_MASTERSLAVE";
+        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_VISITSELECTS)
+            str = str + "STREAMLINEALGORITHMTYPE_VISITSELECTS";
         str = str + "\n";
         str = str + intToString("maxStreamlineProcessCount", maxStreamlineProcessCount, indent) + "\n";
         str = str + intToString("maxDomainCacheSize", maxDomainCacheSize, indent) + "\n";
