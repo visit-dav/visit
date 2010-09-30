@@ -421,7 +421,7 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
-    const char *streamlineAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave";
+    const char *streamlineAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
     switch (atts->GetStreamlineAlgorithmType())
     {
       case StreamlineAttributes::LoadOnDemand:
@@ -434,6 +434,10 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
       case StreamlineAttributes::MasterSlave:
           SNPRINTF(tmpStr, 1000, "%sstreamlineAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, streamlineAlgorithmType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::VisItSelects:
+          SNPRINTF(tmpStr, 1000, "%sstreamlineAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, streamlineAlgorithmType_names);
           str += tmpStr;
           break;
       default:
@@ -1795,14 +1799,14 @@ StreamlineAttributes_SetStreamlineAlgorithmType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the streamlineAlgorithmType in the object.
-    if(ival >= 0 && ival < 3)
+    if(ival >= 0 && ival < 4)
         obj->data->SetStreamlineAlgorithmType(StreamlineAttributes::StreamlineAlgorithmType(ival));
     else
     {
         fprintf(stderr, "An invalid streamlineAlgorithmType value was given. "
-                        "Valid values are in the range of [0,2]. "
+                        "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
-                        "LoadOnDemand, ParallelStaticDomains, MasterSlave.");
+                        "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects.");
         return NULL;
     }
 
@@ -2961,6 +2965,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(StreamlineAttributes::ParallelStaticDomains));
     if(strcmp(name, "MasterSlave") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::MasterSlave));
+    if(strcmp(name, "VisItSelects") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::VisItSelects));
 
     if(strcmp(name, "maxStreamlineProcessCount") == 0)
         return StreamlineAttributes_GetMaxStreamlineProcessCount(self, NULL);

@@ -821,6 +821,47 @@ avtPICSFilter::Execute(void)
     }
 }
 
+
+// ****************************************************************************
+//  Function: AlgorithmToString
+//
+//  Purpose:
+//      Gets the name of an algorithm
+//
+//  Programmer: Hank Childs
+//  Creation:   September 29, 2010
+//
+// ****************************************************************************
+
+const char *
+AlgorithmToString(int algo)
+{
+    if (algo == STREAMLINE_PARALLEL_STATIC_DOMAINS)
+    {
+        static const char *s = "Parallel Static Domains";
+        return s;
+    }
+    if (algo == STREAMLINE_MASTER_SLAVE)
+    {
+        static const char *s = "Master Slave";
+        return s;
+    }
+    if (algo == STREAMLINE_LOAD_ONDEMAND)
+    {
+        static const char *s = "Load On-Demand";
+        return s;
+    }
+    if (algo == STREAMLINE_VISIT_SELECTS)
+    {
+        static const char *s = "VisIt Selects Best Algo";
+        return s;
+    }
+
+    static const char *s = "Unknown Algorithm";
+    return s;
+}
+
+
 // ****************************************************************************
 //  Method: avtPICSFilter::Initialize
 //
@@ -881,6 +922,9 @@ avtPICSFilter::Execute(void)
 //
 //   Hank Childs, Sun Sep 19 11:04:32 PDT 2010
 //   Parallel support for case where domain IDs are not unique.
+//
+//   Hank Childs, Wed Sep 29 19:25:06 PDT 2010
+//   Add support for the "VisIt Selects" algorithm.
 //
 // ****************************************************************************
 
@@ -1022,12 +1066,32 @@ avtPICSFilter::Initialize()
 
 #ifdef PARALLEL
     // If not operating on demand, the method *has* to be parallel static domains.
+    int actualMethod = method;
+    if (actualMethod == STREAMLINE_VISIT_SELECTS)
+        actualMethod = STREAMLINE_MASTER_SLAVE;
+    
     if ( ! OperatingOnDemand() )
-        method = STREAMLINE_PARALLEL_STATIC_DOMAINS;
+    {
+        debug1 << "Can only use parallel static domains because we can't operate on demand" << endl;
+        actualMethod = STREAMLINE_PARALLEL_STATIC_DOMAINS;
+    }
 
     // Parallel and one domains, use the serial algorithm.
     if (numDomains == 1)
+    {
+        debug1 << "Forcing load-on-demand since there is only one domain." << endl;
         method = STREAMLINE_LOAD_ONDEMAND;
+    }
+
+    if ((method != STREAMLINE_VISIT_SELECTS) && (method != actualMethod))
+    {
+        char str[1024];
+        SNPRINTF(str, 1024, "Warning: you selected the algorithm \"%s\", but VisIt decided "
+                            "it could not use that algorithm and instead used \"%s\".\n",
+                         AlgorithmToString(method), AlgorithmToString(actualMethod));
+        avtCallback::IssueWarning(str);
+    }
+    method = actualMethod;
 #else
     // for serial, it's all load on demand.
     method = STREAMLINE_LOAD_ONDEMAND;

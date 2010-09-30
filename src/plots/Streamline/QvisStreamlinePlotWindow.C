@@ -935,6 +935,9 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
 //
 // Modifications:
 //
+//   Hank Childs, Wed Sep 29 19:25:06 PDT 2010
+//   Add option for having VisIt select the best algorithm.
+//
 // ****************************************************************************
 
 void
@@ -959,6 +962,7 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     slAlgo->addItem(tr("Streamlines"));
     slAlgo->addItem(tr("Domains"));
     slAlgo->addItem(tr("Streamlines and Domains"));
+    slAlgo->addItem(tr("Have VisIt select the best algorithm"));
     connect(slAlgo, SIGNAL(activated(int)),
             this, SLOT(streamlineAlgorithmChanged(int)));
     algoGLayout->addWidget( slAlgoLabel, 1,0);
