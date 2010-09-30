@@ -69,7 +69,7 @@
         M3DC1Integrator
       </Enum>
       <Enum name="OpacityType">
-        None
+        FullyOpaque
         Constant
         Ramp
         VariableRange
@@ -181,7 +181,7 @@
         2
       </Field>
       <Field name="coloringMethod" label="Coloring method" type="enum" subtype="ColoringMethod">
-        ColorBySpeed
+        ColorByTime
       </Field>
       <Field name="colorTableName" label="Color table" type="colortable">
         Default
@@ -267,7 +267,7 @@
         0.500000
       </Field>
       <Field name="opacityType" label="opacityType" type="enum" subtype="OpacityType">
-        None
+        FullyOpaque
       </Field>
       <Field name="opacityVariable" label="opacityVariable" type="string">
       </Field>

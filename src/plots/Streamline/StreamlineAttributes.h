@@ -113,7 +113,7 @@ public:
     };
     enum OpacityType
     {
-        None,
+        FullyOpaque,
         Constant,
         Ramp,
         VariableRange

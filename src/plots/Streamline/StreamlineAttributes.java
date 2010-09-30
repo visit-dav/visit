@@ -101,7 +101,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
     public final static int INTEGRATIONTYPE_M3DC1INTEGRATOR = 2;
 
-    public final static int OPACITYTYPE_NONE = 0;
+    public final static int OPACITYTYPE_FULLYOPAQUE = 0;
     public final static int OPACITYTYPE_CONSTANT = 1;
     public final static int OPACITYTYPE_RAMP = 2;
     public final static int OPACITYTYPE_VARIABLERANGE = 3;
@@ -178,7 +178,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         tubeRadius = 0.125;
         ribbonWidth = 0.125;
         lineWidth = 2;
-        coloringMethod = COLORINGMETHOD_COLORBYSPEED;
+        coloringMethod = COLORINGMETHOD_COLORBYTIME;
         colorTableName = new String("Default");
         singleColor = new ColorAttribute(0, 0, 0);
         legendFlag = true;
@@ -206,7 +206,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         headDisplayType = GEOMDISPLAYTYPE_SPHERE;
         headDisplayRadius = 0.25;
         headDisplayHeight = 0.5;
-        opacityType = OPACITYTYPE_NONE;
+        opacityType = OPACITYTYPE_FULLYOPAQUE;
         opacityVariable = new String("");
         opacity = 1;
         opacityVarMin = 0;
@@ -288,7 +288,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         tubeRadius = 0.125;
         ribbonWidth = 0.125;
         lineWidth = 2;
-        coloringMethod = COLORINGMETHOD_COLORBYSPEED;
+        coloringMethod = COLORINGMETHOD_COLORBYTIME;
         colorTableName = new String("Default");
         singleColor = new ColorAttribute(0, 0, 0);
         legendFlag = true;
@@ -316,7 +316,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         headDisplayType = GEOMDISPLAYTYPE_SPHERE;
         headDisplayRadius = 0.25;
         headDisplayHeight = 0.5;
-        opacityType = OPACITYTYPE_NONE;
+        opacityType = OPACITYTYPE_FULLYOPAQUE;
         opacityVariable = new String("");
         opacity = 1;
         opacityVarMin = 0;
@@ -1615,8 +1615,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("headDisplayRadius", headDisplayRadius, indent) + "\n";
         str = str + doubleToString("headDisplayHeight", headDisplayHeight, indent) + "\n";
         str = str + indent + "opacityType = ";
-        if(opacityType == OPACITYTYPE_NONE)
-            str = str + "OPACITYTYPE_NONE";
+        if(opacityType == OPACITYTYPE_FULLYOPAQUE)
+            str = str + "OPACITYTYPE_FULLYOPAQUE";
         if(opacityType == OPACITYTYPE_CONSTANT)
             str = str + "OPACITYTYPE_CONSTANT";
         if(opacityType == OPACITYTYPE_RAMP)
