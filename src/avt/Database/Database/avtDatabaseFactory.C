@@ -275,6 +275,10 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Hank Childs, Sun Sep 19 09:02:05 PDT 2010
 //    Add parsing for explicit setting of times by user.
 //
+//    Jeremy Meredith, Thu Sep 30 12:16:00 EDT 2010
+//    Allow specified file type to look for a name match, now allowing
+//    "VTK" (as well as "VTK_1.0" which previously worked), for example.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -335,6 +339,13 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         debug3 << "avtDatabaseFactory: specifically told to use "
                << format << endl;
         int formatindex = dbmgr->GetAllIndex(format);
+        if (formatindex < 0)
+        {
+            formatindex = dbmgr->GetAllIndexFromName(format);
+            debug3 << "avtDatabaseFactory: couldn't find "
+                   << format << " by ID, attempt at a name match "
+                   << ((formatindex>=0) ? "succeeded" : "failed") << endl;
+        }
         if (formatindex < 0)
         {
             char msg[1000];
