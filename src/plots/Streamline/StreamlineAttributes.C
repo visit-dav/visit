@@ -427,6 +427,43 @@ StreamlineAttributes::GeomDisplayType_FromString(const std::string &s, Streamlin
     return false;
 }
 
+//
+// Enum conversion methods for StreamlineAttributes::SizeType
+//
+
+static const char *SizeType_strings[] = {
+"Absolute", "FractionOfBBox"};
+
+std::string
+StreamlineAttributes::SizeType_ToString(StreamlineAttributes::SizeType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return SizeType_strings[index];
+}
+
+std::string
+StreamlineAttributes::SizeType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return SizeType_strings[index];
+}
+
+bool
+StreamlineAttributes::SizeType_FromString(const std::string &s, StreamlineAttributes::SizeType &val)
+{
+    val = StreamlineAttributes::Absolute;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == SizeType_strings[i])
+        {
+            val = (SizeType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: StreamlineAttributes::StreamlineAttributes
 //
@@ -487,12 +524,6 @@ void StreamlineAttributes::Init()
     sampleDensity0 = 2;
     sampleDensity1 = 2;
     sampleDensity2 = 2;
-    displayMethod = Lines;
-    showSeeds = false;
-    showHeads = false;
-    tubeRadius = 0.125;
-    ribbonWidth = 0.125;
-    lineWidth = 2;
     coloringMethod = ColorByTime;
     legendFlag = true;
     lightingFlag = true;
@@ -517,10 +548,24 @@ void StreamlineAttributes::Init()
     displayEnd = 1;
     displayBeginFlag = false;
     displayEndFlag = false;
-    seedDisplayRadius = 0.25;
+    displayMethod = Lines;
+    tubeSizeType = FractionOfBBox;
+    tubeRadiusAbsolute = 0.125;
+    tubeRadiusBBox = 0.005;
+    ribbonWidthSizeType = FractionOfBBox;
+    ribbonWidthAbsolute = 0.125;
+    ribbonWidthBBox = 0.01;
+    lineWidth = 2;
+    showSeeds = true;
+    seedRadiusSizeType = FractionOfBBox;
+    seedRadiusAbsolute = 1;
+    seedRadiusBBox = 0.015;
+    showHeads = false;
     headDisplayType = Sphere;
-    headDisplayRadius = 0.25;
-    headDisplayHeight = 0.5;
+    headRadiusSizeType = FractionOfBBox;
+    headRadiusAbsolute = 0.25;
+    headRadiusBBox = 0.02;
+    headHeightRatio = 2;
     opacityType = FullyOpaque;
     opacity = 1;
     opacityVarMin = 0;
@@ -598,12 +643,6 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     sampleDensity0 = obj.sampleDensity0;
     sampleDensity1 = obj.sampleDensity1;
     sampleDensity2 = obj.sampleDensity2;
-    displayMethod = obj.displayMethod;
-    showSeeds = obj.showSeeds;
-    showHeads = obj.showHeads;
-    tubeRadius = obj.tubeRadius;
-    ribbonWidth = obj.ribbonWidth;
-    lineWidth = obj.lineWidth;
     coloringMethod = obj.coloringMethod;
     colorTableName = obj.colorTableName;
     singleColor = obj.singleColor;
@@ -631,10 +670,24 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     displayEnd = obj.displayEnd;
     displayBeginFlag = obj.displayBeginFlag;
     displayEndFlag = obj.displayEndFlag;
-    seedDisplayRadius = obj.seedDisplayRadius;
+    displayMethod = obj.displayMethod;
+    tubeSizeType = obj.tubeSizeType;
+    tubeRadiusAbsolute = obj.tubeRadiusAbsolute;
+    tubeRadiusBBox = obj.tubeRadiusBBox;
+    ribbonWidthSizeType = obj.ribbonWidthSizeType;
+    ribbonWidthAbsolute = obj.ribbonWidthAbsolute;
+    ribbonWidthBBox = obj.ribbonWidthBBox;
+    lineWidth = obj.lineWidth;
+    showSeeds = obj.showSeeds;
+    seedRadiusSizeType = obj.seedRadiusSizeType;
+    seedRadiusAbsolute = obj.seedRadiusAbsolute;
+    seedRadiusBBox = obj.seedRadiusBBox;
+    showHeads = obj.showHeads;
     headDisplayType = obj.headDisplayType;
-    headDisplayRadius = obj.headDisplayRadius;
-    headDisplayHeight = obj.headDisplayHeight;
+    headRadiusSizeType = obj.headRadiusSizeType;
+    headRadiusAbsolute = obj.headRadiusAbsolute;
+    headRadiusBBox = obj.headRadiusBBox;
+    headHeightRatio = obj.headHeightRatio;
     opacityType = obj.opacityType;
     opacityVariable = obj.opacityVariable;
     opacity = obj.opacity;
@@ -867,12 +920,6 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (sampleDensity0 == obj.sampleDensity0) &&
             (sampleDensity1 == obj.sampleDensity1) &&
             (sampleDensity2 == obj.sampleDensity2) &&
-            (displayMethod == obj.displayMethod) &&
-            (showSeeds == obj.showSeeds) &&
-            (showHeads == obj.showHeads) &&
-            (tubeRadius == obj.tubeRadius) &&
-            (ribbonWidth == obj.ribbonWidth) &&
-            (lineWidth == obj.lineWidth) &&
             (coloringMethod == obj.coloringMethod) &&
             (colorTableName == obj.colorTableName) &&
             (singleColor == obj.singleColor) &&
@@ -900,10 +947,24 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (displayEnd == obj.displayEnd) &&
             (displayBeginFlag == obj.displayBeginFlag) &&
             (displayEndFlag == obj.displayEndFlag) &&
-            (seedDisplayRadius == obj.seedDisplayRadius) &&
+            (displayMethod == obj.displayMethod) &&
+            (tubeSizeType == obj.tubeSizeType) &&
+            (tubeRadiusAbsolute == obj.tubeRadiusAbsolute) &&
+            (tubeRadiusBBox == obj.tubeRadiusBBox) &&
+            (ribbonWidthSizeType == obj.ribbonWidthSizeType) &&
+            (ribbonWidthAbsolute == obj.ribbonWidthAbsolute) &&
+            (ribbonWidthBBox == obj.ribbonWidthBBox) &&
+            (lineWidth == obj.lineWidth) &&
+            (showSeeds == obj.showSeeds) &&
+            (seedRadiusSizeType == obj.seedRadiusSizeType) &&
+            (seedRadiusAbsolute == obj.seedRadiusAbsolute) &&
+            (seedRadiusBBox == obj.seedRadiusBBox) &&
+            (showHeads == obj.showHeads) &&
             (headDisplayType == obj.headDisplayType) &&
-            (headDisplayRadius == obj.headDisplayRadius) &&
-            (headDisplayHeight == obj.headDisplayHeight) &&
+            (headRadiusSizeType == obj.headRadiusSizeType) &&
+            (headRadiusAbsolute == obj.headRadiusAbsolute) &&
+            (headRadiusBBox == obj.headRadiusBBox) &&
+            (headHeightRatio == obj.headHeightRatio) &&
             (opacityType == obj.opacityType) &&
             (opacityVariable == obj.opacityVariable) &&
             (opacity == obj.opacity) &&
@@ -1193,12 +1254,6 @@ StreamlineAttributes::SelectAll()
     Select(ID_sampleDensity0,            (void *)&sampleDensity0);
     Select(ID_sampleDensity1,            (void *)&sampleDensity1);
     Select(ID_sampleDensity2,            (void *)&sampleDensity2);
-    Select(ID_displayMethod,             (void *)&displayMethod);
-    Select(ID_showSeeds,                 (void *)&showSeeds);
-    Select(ID_showHeads,                 (void *)&showHeads);
-    Select(ID_tubeRadius,                (void *)&tubeRadius);
-    Select(ID_ribbonWidth,               (void *)&ribbonWidth);
-    Select(ID_lineWidth,                 (void *)&lineWidth);
     Select(ID_coloringMethod,            (void *)&coloringMethod);
     Select(ID_colorTableName,            (void *)&colorTableName);
     Select(ID_singleColor,               (void *)&singleColor);
@@ -1226,10 +1281,24 @@ StreamlineAttributes::SelectAll()
     Select(ID_displayEnd,                (void *)&displayEnd);
     Select(ID_displayBeginFlag,          (void *)&displayBeginFlag);
     Select(ID_displayEndFlag,            (void *)&displayEndFlag);
-    Select(ID_seedDisplayRadius,         (void *)&seedDisplayRadius);
+    Select(ID_displayMethod,             (void *)&displayMethod);
+    Select(ID_tubeSizeType,              (void *)&tubeSizeType);
+    Select(ID_tubeRadiusAbsolute,        (void *)&tubeRadiusAbsolute);
+    Select(ID_tubeRadiusBBox,            (void *)&tubeRadiusBBox);
+    Select(ID_ribbonWidthSizeType,       (void *)&ribbonWidthSizeType);
+    Select(ID_ribbonWidthAbsolute,       (void *)&ribbonWidthAbsolute);
+    Select(ID_ribbonWidthBBox,           (void *)&ribbonWidthBBox);
+    Select(ID_lineWidth,                 (void *)&lineWidth);
+    Select(ID_showSeeds,                 (void *)&showSeeds);
+    Select(ID_seedRadiusSizeType,        (void *)&seedRadiusSizeType);
+    Select(ID_seedRadiusAbsolute,        (void *)&seedRadiusAbsolute);
+    Select(ID_seedRadiusBBox,            (void *)&seedRadiusBBox);
+    Select(ID_showHeads,                 (void *)&showHeads);
     Select(ID_headDisplayType,           (void *)&headDisplayType);
-    Select(ID_headDisplayRadius,         (void *)&headDisplayRadius);
-    Select(ID_headDisplayHeight,         (void *)&headDisplayHeight);
+    Select(ID_headRadiusSizeType,        (void *)&headRadiusSizeType);
+    Select(ID_headRadiusAbsolute,        (void *)&headRadiusAbsolute);
+    Select(ID_headRadiusBBox,            (void *)&headRadiusBBox);
+    Select(ID_headHeightRatio,           (void *)&headHeightRatio);
     Select(ID_opacityType,               (void *)&opacityType);
     Select(ID_opacityVariable,           (void *)&opacityVariable);
     Select(ID_opacity,                   (void *)&opacity);
@@ -1373,42 +1442,6 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     {
         addToParent = true;
         node->AddNode(new DataNode("sampleDensity2", sampleDensity2));
-    }
-
-    if(completeSave || !FieldsEqual(ID_displayMethod, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("displayMethod", DisplayMethod_ToString(displayMethod)));
-    }
-
-    if(completeSave || !FieldsEqual(ID_showSeeds, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("showSeeds", showSeeds));
-    }
-
-    if(completeSave || !FieldsEqual(ID_showHeads, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("showHeads", showHeads));
-    }
-
-    if(completeSave || !FieldsEqual(ID_tubeRadius, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("tubeRadius", tubeRadius));
-    }
-
-    if(completeSave || !FieldsEqual(ID_ribbonWidth, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("ribbonWidth", ribbonWidth));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineWidth", lineWidth));
     }
 
     if(completeSave || !FieldsEqual(ID_coloringMethod, &defaultObject))
@@ -1575,10 +1608,82 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("displayEndFlag", displayEndFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_seedDisplayRadius, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_displayMethod, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("seedDisplayRadius", seedDisplayRadius));
+        node->AddNode(new DataNode("displayMethod", DisplayMethod_ToString(displayMethod)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tubeSizeType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tubeSizeType", SizeType_ToString(tubeSizeType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tubeRadiusAbsolute, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tubeRadiusAbsolute", tubeRadiusAbsolute));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tubeRadiusBBox, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tubeRadiusBBox", tubeRadiusBBox));
+    }
+
+    if(completeSave || !FieldsEqual(ID_ribbonWidthSizeType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("ribbonWidthSizeType", SizeType_ToString(ribbonWidthSizeType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_ribbonWidthAbsolute, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("ribbonWidthAbsolute", ribbonWidthAbsolute));
+    }
+
+    if(completeSave || !FieldsEqual(ID_ribbonWidthBBox, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("ribbonWidthBBox", ribbonWidthBBox));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineWidth", lineWidth));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showSeeds, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showSeeds", showSeeds));
+    }
+
+    if(completeSave || !FieldsEqual(ID_seedRadiusSizeType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("seedRadiusSizeType", SizeType_ToString(seedRadiusSizeType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_seedRadiusAbsolute, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("seedRadiusAbsolute", seedRadiusAbsolute));
+    }
+
+    if(completeSave || !FieldsEqual(ID_seedRadiusBBox, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("seedRadiusBBox", seedRadiusBBox));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showHeads, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showHeads", showHeads));
     }
 
     if(completeSave || !FieldsEqual(ID_headDisplayType, &defaultObject))
@@ -1587,16 +1692,28 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("headDisplayType", GeomDisplayType_ToString(headDisplayType)));
     }
 
-    if(completeSave || !FieldsEqual(ID_headDisplayRadius, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_headRadiusSizeType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("headDisplayRadius", headDisplayRadius));
+        node->AddNode(new DataNode("headRadiusSizeType", SizeType_ToString(headRadiusSizeType)));
     }
 
-    if(completeSave || !FieldsEqual(ID_headDisplayHeight, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_headRadiusAbsolute, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("headDisplayHeight", headDisplayHeight));
+        node->AddNode(new DataNode("headRadiusAbsolute", headRadiusAbsolute));
+    }
+
+    if(completeSave || !FieldsEqual(ID_headRadiusBBox, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("headRadiusBBox", headRadiusBBox));
+    }
+
+    if(completeSave || !FieldsEqual(ID_headHeightRatio, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("headHeightRatio", headHeightRatio));
     }
 
     if(completeSave || !FieldsEqual(ID_opacityType, &defaultObject))
@@ -1783,32 +1900,6 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetSampleDensity1(node->AsInt());
     if((node = searchNode->GetNode("sampleDensity2")) != 0)
         SetSampleDensity2(node->AsInt());
-    if((node = searchNode->GetNode("displayMethod")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
-                SetDisplayMethod(DisplayMethod(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            DisplayMethod value;
-            if(DisplayMethod_FromString(node->AsString(), value))
-                SetDisplayMethod(value);
-        }
-    }
-    if((node = searchNode->GetNode("showSeeds")) != 0)
-        SetShowSeeds(node->AsBool());
-    if((node = searchNode->GetNode("showHeads")) != 0)
-        SetShowHeads(node->AsBool());
-    if((node = searchNode->GetNode("tubeRadius")) != 0)
-        SetTubeRadius(node->AsDouble());
-    if((node = searchNode->GetNode("ribbonWidth")) != 0)
-        SetRibbonWidth(node->AsDouble());
-    if((node = searchNode->GetNode("lineWidth")) != 0)
-        SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("coloringMethod")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1933,8 +2024,88 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetDisplayBeginFlag(node->AsBool());
     if((node = searchNode->GetNode("displayEndFlag")) != 0)
         SetDisplayEndFlag(node->AsBool());
-    if((node = searchNode->GetNode("seedDisplayRadius")) != 0)
-        SetSeedDisplayRadius(node->AsDouble());
+    if((node = searchNode->GetNode("displayMethod")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetDisplayMethod(DisplayMethod(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            DisplayMethod value;
+            if(DisplayMethod_FromString(node->AsString(), value))
+                SetDisplayMethod(value);
+        }
+    }
+    if((node = searchNode->GetNode("tubeSizeType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetTubeSizeType(SizeType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            SizeType value;
+            if(SizeType_FromString(node->AsString(), value))
+                SetTubeSizeType(value);
+        }
+    }
+    if((node = searchNode->GetNode("tubeRadiusAbsolute")) != 0)
+        SetTubeRadiusAbsolute(node->AsDouble());
+    if((node = searchNode->GetNode("tubeRadiusBBox")) != 0)
+        SetTubeRadiusBBox(node->AsDouble());
+    if((node = searchNode->GetNode("ribbonWidthSizeType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetRibbonWidthSizeType(SizeType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            SizeType value;
+            if(SizeType_FromString(node->AsString(), value))
+                SetRibbonWidthSizeType(value);
+        }
+    }
+    if((node = searchNode->GetNode("ribbonWidthAbsolute")) != 0)
+        SetRibbonWidthAbsolute(node->AsDouble());
+    if((node = searchNode->GetNode("ribbonWidthBBox")) != 0)
+        SetRibbonWidthBBox(node->AsDouble());
+    if((node = searchNode->GetNode("lineWidth")) != 0)
+        SetLineWidth(node->AsInt());
+    if((node = searchNode->GetNode("showSeeds")) != 0)
+        SetShowSeeds(node->AsBool());
+    if((node = searchNode->GetNode("seedRadiusSizeType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetSeedRadiusSizeType(SizeType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            SizeType value;
+            if(SizeType_FromString(node->AsString(), value))
+                SetSeedRadiusSizeType(value);
+        }
+    }
+    if((node = searchNode->GetNode("seedRadiusAbsolute")) != 0)
+        SetSeedRadiusAbsolute(node->AsDouble());
+    if((node = searchNode->GetNode("seedRadiusBBox")) != 0)
+        SetSeedRadiusBBox(node->AsDouble());
+    if((node = searchNode->GetNode("showHeads")) != 0)
+        SetShowHeads(node->AsBool());
     if((node = searchNode->GetNode("headDisplayType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1951,10 +2122,28 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
                 SetHeadDisplayType(value);
         }
     }
-    if((node = searchNode->GetNode("headDisplayRadius")) != 0)
-        SetHeadDisplayRadius(node->AsDouble());
-    if((node = searchNode->GetNode("headDisplayHeight")) != 0)
-        SetHeadDisplayHeight(node->AsDouble());
+    if((node = searchNode->GetNode("headRadiusSizeType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetHeadRadiusSizeType(SizeType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            SizeType value;
+            if(SizeType_FromString(node->AsString(), value))
+                SetHeadRadiusSizeType(value);
+        }
+    }
+    if((node = searchNode->GetNode("headRadiusAbsolute")) != 0)
+        SetHeadRadiusAbsolute(node->AsDouble());
+    if((node = searchNode->GetNode("headRadiusBBox")) != 0)
+        SetHeadRadiusBBox(node->AsDouble());
+    if((node = searchNode->GetNode("headHeightRatio")) != 0)
+        SetHeadHeightRatio(node->AsDouble());
     if((node = searchNode->GetNode("opacityType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -2151,48 +2340,6 @@ StreamlineAttributes::SetSampleDensity2(int sampleDensity2_)
 }
 
 void
-StreamlineAttributes::SetDisplayMethod(StreamlineAttributes::DisplayMethod displayMethod_)
-{
-    displayMethod = displayMethod_;
-    Select(ID_displayMethod, (void *)&displayMethod);
-}
-
-void
-StreamlineAttributes::SetShowSeeds(bool showSeeds_)
-{
-    showSeeds = showSeeds_;
-    Select(ID_showSeeds, (void *)&showSeeds);
-}
-
-void
-StreamlineAttributes::SetShowHeads(bool showHeads_)
-{
-    showHeads = showHeads_;
-    Select(ID_showHeads, (void *)&showHeads);
-}
-
-void
-StreamlineAttributes::SetTubeRadius(double tubeRadius_)
-{
-    tubeRadius = tubeRadius_;
-    Select(ID_tubeRadius, (void *)&tubeRadius);
-}
-
-void
-StreamlineAttributes::SetRibbonWidth(double ribbonWidth_)
-{
-    ribbonWidth = ribbonWidth_;
-    Select(ID_ribbonWidth, (void *)&ribbonWidth);
-}
-
-void
-StreamlineAttributes::SetLineWidth(int lineWidth_)
-{
-    lineWidth = lineWidth_;
-    Select(ID_lineWidth, (void *)&lineWidth);
-}
-
-void
 StreamlineAttributes::SetColoringMethod(StreamlineAttributes::ColoringMethod coloringMethod_)
 {
     coloringMethod = coloringMethod_;
@@ -2382,10 +2529,94 @@ StreamlineAttributes::SetDisplayEndFlag(bool displayEndFlag_)
 }
 
 void
-StreamlineAttributes::SetSeedDisplayRadius(double seedDisplayRadius_)
+StreamlineAttributes::SetDisplayMethod(StreamlineAttributes::DisplayMethod displayMethod_)
 {
-    seedDisplayRadius = seedDisplayRadius_;
-    Select(ID_seedDisplayRadius, (void *)&seedDisplayRadius);
+    displayMethod = displayMethod_;
+    Select(ID_displayMethod, (void *)&displayMethod);
+}
+
+void
+StreamlineAttributes::SetTubeSizeType(StreamlineAttributes::SizeType tubeSizeType_)
+{
+    tubeSizeType = tubeSizeType_;
+    Select(ID_tubeSizeType, (void *)&tubeSizeType);
+}
+
+void
+StreamlineAttributes::SetTubeRadiusAbsolute(double tubeRadiusAbsolute_)
+{
+    tubeRadiusAbsolute = tubeRadiusAbsolute_;
+    Select(ID_tubeRadiusAbsolute, (void *)&tubeRadiusAbsolute);
+}
+
+void
+StreamlineAttributes::SetTubeRadiusBBox(double tubeRadiusBBox_)
+{
+    tubeRadiusBBox = tubeRadiusBBox_;
+    Select(ID_tubeRadiusBBox, (void *)&tubeRadiusBBox);
+}
+
+void
+StreamlineAttributes::SetRibbonWidthSizeType(StreamlineAttributes::SizeType ribbonWidthSizeType_)
+{
+    ribbonWidthSizeType = ribbonWidthSizeType_;
+    Select(ID_ribbonWidthSizeType, (void *)&ribbonWidthSizeType);
+}
+
+void
+StreamlineAttributes::SetRibbonWidthAbsolute(double ribbonWidthAbsolute_)
+{
+    ribbonWidthAbsolute = ribbonWidthAbsolute_;
+    Select(ID_ribbonWidthAbsolute, (void *)&ribbonWidthAbsolute);
+}
+
+void
+StreamlineAttributes::SetRibbonWidthBBox(double ribbonWidthBBox_)
+{
+    ribbonWidthBBox = ribbonWidthBBox_;
+    Select(ID_ribbonWidthBBox, (void *)&ribbonWidthBBox);
+}
+
+void
+StreamlineAttributes::SetLineWidth(int lineWidth_)
+{
+    lineWidth = lineWidth_;
+    Select(ID_lineWidth, (void *)&lineWidth);
+}
+
+void
+StreamlineAttributes::SetShowSeeds(bool showSeeds_)
+{
+    showSeeds = showSeeds_;
+    Select(ID_showSeeds, (void *)&showSeeds);
+}
+
+void
+StreamlineAttributes::SetSeedRadiusSizeType(StreamlineAttributes::SizeType seedRadiusSizeType_)
+{
+    seedRadiusSizeType = seedRadiusSizeType_;
+    Select(ID_seedRadiusSizeType, (void *)&seedRadiusSizeType);
+}
+
+void
+StreamlineAttributes::SetSeedRadiusAbsolute(double seedRadiusAbsolute_)
+{
+    seedRadiusAbsolute = seedRadiusAbsolute_;
+    Select(ID_seedRadiusAbsolute, (void *)&seedRadiusAbsolute);
+}
+
+void
+StreamlineAttributes::SetSeedRadiusBBox(double seedRadiusBBox_)
+{
+    seedRadiusBBox = seedRadiusBBox_;
+    Select(ID_seedRadiusBBox, (void *)&seedRadiusBBox);
+}
+
+void
+StreamlineAttributes::SetShowHeads(bool showHeads_)
+{
+    showHeads = showHeads_;
+    Select(ID_showHeads, (void *)&showHeads);
 }
 
 void
@@ -2396,17 +2627,31 @@ StreamlineAttributes::SetHeadDisplayType(StreamlineAttributes::GeomDisplayType h
 }
 
 void
-StreamlineAttributes::SetHeadDisplayRadius(double headDisplayRadius_)
+StreamlineAttributes::SetHeadRadiusSizeType(StreamlineAttributes::SizeType headRadiusSizeType_)
 {
-    headDisplayRadius = headDisplayRadius_;
-    Select(ID_headDisplayRadius, (void *)&headDisplayRadius);
+    headRadiusSizeType = headRadiusSizeType_;
+    Select(ID_headRadiusSizeType, (void *)&headRadiusSizeType);
 }
 
 void
-StreamlineAttributes::SetHeadDisplayHeight(double headDisplayHeight_)
+StreamlineAttributes::SetHeadRadiusAbsolute(double headRadiusAbsolute_)
 {
-    headDisplayHeight = headDisplayHeight_;
-    Select(ID_headDisplayHeight, (void *)&headDisplayHeight);
+    headRadiusAbsolute = headRadiusAbsolute_;
+    Select(ID_headRadiusAbsolute, (void *)&headRadiusAbsolute);
+}
+
+void
+StreamlineAttributes::SetHeadRadiusBBox(double headRadiusBBox_)
+{
+    headRadiusBBox = headRadiusBBox_;
+    Select(ID_headRadiusBBox, (void *)&headRadiusBBox);
+}
+
+void
+StreamlineAttributes::SetHeadHeightRatio(double headHeightRatio_)
+{
+    headHeightRatio = headHeightRatio_;
+    Select(ID_headHeightRatio, (void *)&headHeightRatio);
 }
 
 void
@@ -2682,42 +2927,6 @@ StreamlineAttributes::GetSampleDensity2() const
     return sampleDensity2;
 }
 
-StreamlineAttributes::DisplayMethod
-StreamlineAttributes::GetDisplayMethod() const
-{
-    return DisplayMethod(displayMethod);
-}
-
-bool
-StreamlineAttributes::GetShowSeeds() const
-{
-    return showSeeds;
-}
-
-bool
-StreamlineAttributes::GetShowHeads() const
-{
-    return showHeads;
-}
-
-double
-StreamlineAttributes::GetTubeRadius() const
-{
-    return tubeRadius;
-}
-
-double
-StreamlineAttributes::GetRibbonWidth() const
-{
-    return ribbonWidth;
-}
-
-int
-StreamlineAttributes::GetLineWidth() const
-{
-    return lineWidth;
-}
-
 StreamlineAttributes::ColoringMethod
 StreamlineAttributes::GetColoringMethod() const
 {
@@ -2898,10 +3107,82 @@ StreamlineAttributes::GetDisplayEndFlag() const
     return displayEndFlag;
 }
 
-double
-StreamlineAttributes::GetSeedDisplayRadius() const
+StreamlineAttributes::DisplayMethod
+StreamlineAttributes::GetDisplayMethod() const
 {
-    return seedDisplayRadius;
+    return DisplayMethod(displayMethod);
+}
+
+StreamlineAttributes::SizeType
+StreamlineAttributes::GetTubeSizeType() const
+{
+    return SizeType(tubeSizeType);
+}
+
+double
+StreamlineAttributes::GetTubeRadiusAbsolute() const
+{
+    return tubeRadiusAbsolute;
+}
+
+double
+StreamlineAttributes::GetTubeRadiusBBox() const
+{
+    return tubeRadiusBBox;
+}
+
+StreamlineAttributes::SizeType
+StreamlineAttributes::GetRibbonWidthSizeType() const
+{
+    return SizeType(ribbonWidthSizeType);
+}
+
+double
+StreamlineAttributes::GetRibbonWidthAbsolute() const
+{
+    return ribbonWidthAbsolute;
+}
+
+double
+StreamlineAttributes::GetRibbonWidthBBox() const
+{
+    return ribbonWidthBBox;
+}
+
+int
+StreamlineAttributes::GetLineWidth() const
+{
+    return lineWidth;
+}
+
+bool
+StreamlineAttributes::GetShowSeeds() const
+{
+    return showSeeds;
+}
+
+StreamlineAttributes::SizeType
+StreamlineAttributes::GetSeedRadiusSizeType() const
+{
+    return SizeType(seedRadiusSizeType);
+}
+
+double
+StreamlineAttributes::GetSeedRadiusAbsolute() const
+{
+    return seedRadiusAbsolute;
+}
+
+double
+StreamlineAttributes::GetSeedRadiusBBox() const
+{
+    return seedRadiusBBox;
+}
+
+bool
+StreamlineAttributes::GetShowHeads() const
+{
+    return showHeads;
 }
 
 StreamlineAttributes::GeomDisplayType
@@ -2910,16 +3191,28 @@ StreamlineAttributes::GetHeadDisplayType() const
     return GeomDisplayType(headDisplayType);
 }
 
-double
-StreamlineAttributes::GetHeadDisplayRadius() const
+StreamlineAttributes::SizeType
+StreamlineAttributes::GetHeadRadiusSizeType() const
 {
-    return headDisplayRadius;
+    return SizeType(headRadiusSizeType);
 }
 
 double
-StreamlineAttributes::GetHeadDisplayHeight() const
+StreamlineAttributes::GetHeadRadiusAbsolute() const
 {
-    return headDisplayHeight;
+    return headRadiusAbsolute;
+}
+
+double
+StreamlineAttributes::GetHeadRadiusBBox() const
+{
+    return headRadiusBBox;
+}
+
+double
+StreamlineAttributes::GetHeadHeightRatio() const
+{
+    return headHeightRatio;
 }
 
 StreamlineAttributes::OpacityType
@@ -3152,12 +3445,6 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_sampleDensity0:            return "sampleDensity0";
     case ID_sampleDensity1:            return "sampleDensity1";
     case ID_sampleDensity2:            return "sampleDensity2";
-    case ID_displayMethod:             return "displayMethod";
-    case ID_showSeeds:                 return "showSeeds";
-    case ID_showHeads:                 return "showHeads";
-    case ID_tubeRadius:                return "tubeRadius";
-    case ID_ribbonWidth:               return "ribbonWidth";
-    case ID_lineWidth:                 return "lineWidth";
     case ID_coloringMethod:            return "coloringMethod";
     case ID_colorTableName:            return "colorTableName";
     case ID_singleColor:               return "singleColor";
@@ -3185,10 +3472,24 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_displayEnd:                return "displayEnd";
     case ID_displayBeginFlag:          return "displayBeginFlag";
     case ID_displayEndFlag:            return "displayEndFlag";
-    case ID_seedDisplayRadius:         return "seedDisplayRadius";
+    case ID_displayMethod:             return "displayMethod";
+    case ID_tubeSizeType:              return "tubeSizeType";
+    case ID_tubeRadiusAbsolute:        return "tubeRadiusAbsolute";
+    case ID_tubeRadiusBBox:            return "tubeRadiusBBox";
+    case ID_ribbonWidthSizeType:       return "ribbonWidthSizeType";
+    case ID_ribbonWidthAbsolute:       return "ribbonWidthAbsolute";
+    case ID_ribbonWidthBBox:           return "ribbonWidthBBox";
+    case ID_lineWidth:                 return "lineWidth";
+    case ID_showSeeds:                 return "showSeeds";
+    case ID_seedRadiusSizeType:        return "seedRadiusSizeType";
+    case ID_seedRadiusAbsolute:        return "seedRadiusAbsolute";
+    case ID_seedRadiusBBox:            return "seedRadiusBBox";
+    case ID_showHeads:                 return "showHeads";
     case ID_headDisplayType:           return "headDisplayType";
-    case ID_headDisplayRadius:         return "headDisplayRadius";
-    case ID_headDisplayHeight:         return "headDisplayHeight";
+    case ID_headRadiusSizeType:        return "headRadiusSizeType";
+    case ID_headRadiusAbsolute:        return "headRadiusAbsolute";
+    case ID_headRadiusBBox:            return "headRadiusBBox";
+    case ID_headHeightRatio:           return "headHeightRatio";
     case ID_opacityType:               return "opacityType";
     case ID_opacityVariable:           return "opacityVariable";
     case ID_opacity:                   return "opacity";
@@ -3246,12 +3547,6 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_sampleDensity0:            return FieldType_int;
     case ID_sampleDensity1:            return FieldType_int;
     case ID_sampleDensity2:            return FieldType_int;
-    case ID_displayMethod:             return FieldType_enum;
-    case ID_showSeeds:                 return FieldType_bool;
-    case ID_showHeads:                 return FieldType_bool;
-    case ID_tubeRadius:                return FieldType_double;
-    case ID_ribbonWidth:               return FieldType_double;
-    case ID_lineWidth:                 return FieldType_linewidth;
     case ID_coloringMethod:            return FieldType_enum;
     case ID_colorTableName:            return FieldType_colortable;
     case ID_singleColor:               return FieldType_color;
@@ -3279,10 +3574,24 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_displayEnd:                return FieldType_double;
     case ID_displayBeginFlag:          return FieldType_bool;
     case ID_displayEndFlag:            return FieldType_bool;
-    case ID_seedDisplayRadius:         return FieldType_double;
+    case ID_displayMethod:             return FieldType_enum;
+    case ID_tubeSizeType:              return FieldType_enum;
+    case ID_tubeRadiusAbsolute:        return FieldType_double;
+    case ID_tubeRadiusBBox:            return FieldType_double;
+    case ID_ribbonWidthSizeType:       return FieldType_enum;
+    case ID_ribbonWidthAbsolute:       return FieldType_double;
+    case ID_ribbonWidthBBox:           return FieldType_double;
+    case ID_lineWidth:                 return FieldType_linewidth;
+    case ID_showSeeds:                 return FieldType_bool;
+    case ID_seedRadiusSizeType:        return FieldType_enum;
+    case ID_seedRadiusAbsolute:        return FieldType_double;
+    case ID_seedRadiusBBox:            return FieldType_double;
+    case ID_showHeads:                 return FieldType_bool;
     case ID_headDisplayType:           return FieldType_enum;
-    case ID_headDisplayRadius:         return FieldType_double;
-    case ID_headDisplayHeight:         return FieldType_double;
+    case ID_headRadiusSizeType:        return FieldType_enum;
+    case ID_headRadiusAbsolute:        return FieldType_double;
+    case ID_headRadiusBBox:            return FieldType_double;
+    case ID_headHeightRatio:           return FieldType_double;
     case ID_opacityType:               return FieldType_enum;
     case ID_opacityVariable:           return FieldType_string;
     case ID_opacity:                   return FieldType_double;
@@ -3340,12 +3649,6 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_sampleDensity0:            return "int";
     case ID_sampleDensity1:            return "int";
     case ID_sampleDensity2:            return "int";
-    case ID_displayMethod:             return "enum";
-    case ID_showSeeds:                 return "bool";
-    case ID_showHeads:                 return "bool";
-    case ID_tubeRadius:                return "double";
-    case ID_ribbonWidth:               return "double";
-    case ID_lineWidth:                 return "linewidth";
     case ID_coloringMethod:            return "enum";
     case ID_colorTableName:            return "colortable";
     case ID_singleColor:               return "color";
@@ -3373,10 +3676,24 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_displayEnd:                return "double";
     case ID_displayBeginFlag:          return "bool";
     case ID_displayEndFlag:            return "bool";
-    case ID_seedDisplayRadius:         return "double";
+    case ID_displayMethod:             return "enum";
+    case ID_tubeSizeType:              return "enum";
+    case ID_tubeRadiusAbsolute:        return "double";
+    case ID_tubeRadiusBBox:            return "double";
+    case ID_ribbonWidthSizeType:       return "enum";
+    case ID_ribbonWidthAbsolute:       return "double";
+    case ID_ribbonWidthBBox:           return "double";
+    case ID_lineWidth:                 return "linewidth";
+    case ID_showSeeds:                 return "bool";
+    case ID_seedRadiusSizeType:        return "enum";
+    case ID_seedRadiusAbsolute:        return "double";
+    case ID_seedRadiusBBox:            return "double";
+    case ID_showHeads:                 return "bool";
     case ID_headDisplayType:           return "enum";
-    case ID_headDisplayRadius:         return "double";
-    case ID_headDisplayHeight:         return "double";
+    case ID_headRadiusSizeType:        return "enum";
+    case ID_headRadiusAbsolute:        return "double";
+    case ID_headRadiusBBox:            return "double";
+    case ID_headHeightRatio:           return "double";
     case ID_opacityType:               return "enum";
     case ID_opacityVariable:           return "string";
     case ID_opacity:                   return "double";
@@ -3540,36 +3857,6 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (sampleDensity2 == obj.sampleDensity2);
         }
         break;
-    case ID_displayMethod:
-        {  // new scope
-        retval = (displayMethod == obj.displayMethod);
-        }
-        break;
-    case ID_showSeeds:
-        {  // new scope
-        retval = (showSeeds == obj.showSeeds);
-        }
-        break;
-    case ID_showHeads:
-        {  // new scope
-        retval = (showHeads == obj.showHeads);
-        }
-        break;
-    case ID_tubeRadius:
-        {  // new scope
-        retval = (tubeRadius == obj.tubeRadius);
-        }
-        break;
-    case ID_ribbonWidth:
-        {  // new scope
-        retval = (ribbonWidth == obj.ribbonWidth);
-        }
-        break;
-    case ID_lineWidth:
-        {  // new scope
-        retval = (lineWidth == obj.lineWidth);
-        }
-        break;
     case ID_coloringMethod:
         {  // new scope
         retval = (coloringMethod == obj.coloringMethod);
@@ -3705,9 +3992,69 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (displayEndFlag == obj.displayEndFlag);
         }
         break;
-    case ID_seedDisplayRadius:
+    case ID_displayMethod:
         {  // new scope
-        retval = (seedDisplayRadius == obj.seedDisplayRadius);
+        retval = (displayMethod == obj.displayMethod);
+        }
+        break;
+    case ID_tubeSizeType:
+        {  // new scope
+        retval = (tubeSizeType == obj.tubeSizeType);
+        }
+        break;
+    case ID_tubeRadiusAbsolute:
+        {  // new scope
+        retval = (tubeRadiusAbsolute == obj.tubeRadiusAbsolute);
+        }
+        break;
+    case ID_tubeRadiusBBox:
+        {  // new scope
+        retval = (tubeRadiusBBox == obj.tubeRadiusBBox);
+        }
+        break;
+    case ID_ribbonWidthSizeType:
+        {  // new scope
+        retval = (ribbonWidthSizeType == obj.ribbonWidthSizeType);
+        }
+        break;
+    case ID_ribbonWidthAbsolute:
+        {  // new scope
+        retval = (ribbonWidthAbsolute == obj.ribbonWidthAbsolute);
+        }
+        break;
+    case ID_ribbonWidthBBox:
+        {  // new scope
+        retval = (ribbonWidthBBox == obj.ribbonWidthBBox);
+        }
+        break;
+    case ID_lineWidth:
+        {  // new scope
+        retval = (lineWidth == obj.lineWidth);
+        }
+        break;
+    case ID_showSeeds:
+        {  // new scope
+        retval = (showSeeds == obj.showSeeds);
+        }
+        break;
+    case ID_seedRadiusSizeType:
+        {  // new scope
+        retval = (seedRadiusSizeType == obj.seedRadiusSizeType);
+        }
+        break;
+    case ID_seedRadiusAbsolute:
+        {  // new scope
+        retval = (seedRadiusAbsolute == obj.seedRadiusAbsolute);
+        }
+        break;
+    case ID_seedRadiusBBox:
+        {  // new scope
+        retval = (seedRadiusBBox == obj.seedRadiusBBox);
+        }
+        break;
+    case ID_showHeads:
+        {  // new scope
+        retval = (showHeads == obj.showHeads);
         }
         break;
     case ID_headDisplayType:
@@ -3715,14 +4062,24 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (headDisplayType == obj.headDisplayType);
         }
         break;
-    case ID_headDisplayRadius:
+    case ID_headRadiusSizeType:
         {  // new scope
-        retval = (headDisplayRadius == obj.headDisplayRadius);
+        retval = (headRadiusSizeType == obj.headRadiusSizeType);
         }
         break;
-    case ID_headDisplayHeight:
+    case ID_headRadiusAbsolute:
         {  // new scope
-        retval = (headDisplayHeight == obj.headDisplayHeight);
+        retval = (headRadiusAbsolute == obj.headRadiusAbsolute);
+        }
+        break;
+    case ID_headRadiusBBox:
+        {  // new scope
+        retval = (headRadiusBBox == obj.headRadiusBBox);
+        }
+        break;
+    case ID_headHeightRatio:
+        {  // new scope
+        retval = (headHeightRatio == obj.headHeightRatio);
         }
         break;
     case ID_opacityType:

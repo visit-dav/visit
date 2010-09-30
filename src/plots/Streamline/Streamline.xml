@@ -85,6 +85,10 @@
         Sphere
         Cone
       </Enum>
+      <Enum name="SizeType">
+        Absolute
+        FractionOfBBox
+      </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
       </Field>
@@ -158,24 +162,6 @@
         2
       </Field>
       <Field name="sampleDensity2" label="sampleDensity2" type="int">
-        2
-      </Field>
-      <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">
-        Lines
-      </Field>
-      <Field name="showSeeds" label="Show seed points" type="bool">
-        false
-      </Field>
-      <Field name="showHeads" label="show heads" type="bool">
-        false
-      </Field>
-      <Field name="tubeRadius" label="Radius" type="double">
-        0.125000
-      </Field>
-      <Field name="ribbonWidth" label="ribbonWidth" type="double">
-        0.125000
-      </Field>
-      <Field name="lineWidth" label="Line width" type="linewidth">
         2
       </Field>
       <Field name="coloringMethod" label="Coloring method" type="enum" subtype="ColoringMethod">
@@ -261,17 +247,59 @@
       <Field name="displayEndFlag" label="displayEndFlag" type="bool">
         false
       </Field>
-      <Field name="seedDisplayRadius" label="displaySeedRadius" type="double">
-        0.250000
+      <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">
+        Lines
+      </Field>
+      <Field name="tubeSizeType" label="tubeSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="tubeRadiusAbsolute" label="Radius (Absolute)" type="double" enabler="tubeSizeType:Absolute">
+        0.125000
+      </Field>
+      <Field name="tubeRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="tubeSizeType:FractionOfBBox">
+        0.005000
+      </Field>
+      <Field name="ribbonWidthSizeType" label="ribbonWidthSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="ribbonWidthAbsolute" label="ribbonWidthAbsolute" type="double" enabler="ribbonWidthSizeType:Absolute">
+        0.125000
+      </Field>
+      <Field name="ribbonWidthBBox" label="ribbonWidthBBox" type="double" enabler="ribbonWidthSizeType:FractionOfBBox">
+        0.010000
+      </Field>
+      <Field name="lineWidth" label="Line width" type="linewidth">
+        2
+      </Field>
+      <Field name="showSeeds" label="Show seed points" type="bool">
+        true
+      </Field>
+      <Field name="seedRadiusSizeType" label="seedRadiusSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="seedRadiusAbsolute" label="seedRadiusAbsolute" type="double" enabler="seedRadiusSizeType:Absolute">
+        1.000000
+      </Field>
+      <Field name="seedRadiusBBox" label="seedRadiusBBox" type="double" enabler="seedRadiusSizeType:FractionOfBBox">
+        0.015000
+      </Field>
+      <Field name="showHeads" label="show heads" type="bool">
+        false
       </Field>
       <Field name="headDisplayType" label="headDisplayType" type="enum" subtype="GeomDisplayType">
         Sphere
       </Field>
-      <Field name="headDisplayRadius" label="headDisplayRadius" type="double">
+      <Field name="headRadiusSizeType" label="headRadiusSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="headRadiusAbsolute" label="headRadiusAbsolute" type="double" enabler="headRadiusSizeType:Absolute">
         0.250000
       </Field>
-      <Field name="headDisplayHeight" label="headDisplayHeight" type="double">
-        0.500000
+      <Field name="headRadiusBBox" label="headRadiusBBox" type="double" enabler="headRadiusSizeType:FractionOfBBox">
+        0.020000
+      </Field>
+      <Field name="headHeightRatio" label="headHeightRatio" type="double">
+        2.000000
       </Field>
       <Field name="opacityType" label="opacityType" type="enum" subtype="OpacityType">
         FullyOpaque

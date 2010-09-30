@@ -272,41 +272,6 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssampleDensity2 = %d\n", prefix, atts->GetSampleDensity2());
     str += tmpStr;
-    const char *displayMethod_names = "Lines, Tubes, Ribbons";
-    switch (atts->GetDisplayMethod())
-    {
-      case StreamlineAttributes::Lines:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMethod = %sLines  # %s\n", prefix, prefix, displayMethod_names);
-          str += tmpStr;
-          break;
-      case StreamlineAttributes::Tubes:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMethod = %sTubes  # %s\n", prefix, prefix, displayMethod_names);
-          str += tmpStr;
-          break;
-      case StreamlineAttributes::Ribbons:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMethod = %sRibbons  # %s\n", prefix, prefix, displayMethod_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    if(atts->GetShowSeeds())
-        SNPRINTF(tmpStr, 1000, "%sshowSeeds = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sshowSeeds = 0\n", prefix);
-    str += tmpStr;
-    if(atts->GetShowHeads())
-        SNPRINTF(tmpStr, 1000, "%sshowHeads = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sshowHeads = 0\n", prefix);
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stubeRadius = %g\n", prefix, atts->GetTubeRadius());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sribbonWidth = %g\n", prefix, atts->GetRibbonWidth());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
-    str += tmpStr;
     const char *coloringMethod_names = "Solid, ColorBySpeed, ColorByVorticity, ColorByLength, ColorByTime, "
         "ColorBySeedPointID, ColorByVariable";
     switch (atts->GetColoringMethod())
@@ -492,7 +457,93 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%sdisplayEndFlag = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sseedDisplayRadius = %g\n", prefix, atts->GetSeedDisplayRadius());
+    const char *displayMethod_names = "Lines, Tubes, Ribbons";
+    switch (atts->GetDisplayMethod())
+    {
+      case StreamlineAttributes::Lines:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMethod = %sLines  # %s\n", prefix, prefix, displayMethod_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::Tubes:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMethod = %sTubes  # %s\n", prefix, prefix, displayMethod_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::Ribbons:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMethod = %sRibbons  # %s\n", prefix, prefix, displayMethod_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *tubeSizeType_names = "Absolute, FractionOfBBox";
+    switch (atts->GetTubeSizeType())
+    {
+      case StreamlineAttributes::Absolute:
+          SNPRINTF(tmpStr, 1000, "%stubeSizeType = %sAbsolute  # %s\n", prefix, prefix, tubeSizeType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::FractionOfBBox:
+          SNPRINTF(tmpStr, 1000, "%stubeSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, tubeSizeType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%stubeRadiusAbsolute = %g\n", prefix, atts->GetTubeRadiusAbsolute());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stubeRadiusBBox = %g\n", prefix, atts->GetTubeRadiusBBox());
+    str += tmpStr;
+    const char *ribbonWidthSizeType_names = "Absolute, FractionOfBBox";
+    switch (atts->GetRibbonWidthSizeType())
+    {
+      case StreamlineAttributes::Absolute:
+          SNPRINTF(tmpStr, 1000, "%sribbonWidthSizeType = %sAbsolute  # %s\n", prefix, prefix, ribbonWidthSizeType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::FractionOfBBox:
+          SNPRINTF(tmpStr, 1000, "%sribbonWidthSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, ribbonWidthSizeType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sribbonWidthAbsolute = %g\n", prefix, atts->GetRibbonWidthAbsolute());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sribbonWidthBBox = %g\n", prefix, atts->GetRibbonWidthBBox());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
+    str += tmpStr;
+    if(atts->GetShowSeeds())
+        SNPRINTF(tmpStr, 1000, "%sshowSeeds = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowSeeds = 0\n", prefix);
+    str += tmpStr;
+    const char *seedRadiusSizeType_names = "Absolute, FractionOfBBox";
+    switch (atts->GetSeedRadiusSizeType())
+    {
+      case StreamlineAttributes::Absolute:
+          SNPRINTF(tmpStr, 1000, "%sseedRadiusSizeType = %sAbsolute  # %s\n", prefix, prefix, seedRadiusSizeType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::FractionOfBBox:
+          SNPRINTF(tmpStr, 1000, "%sseedRadiusSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, seedRadiusSizeType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sseedRadiusAbsolute = %g\n", prefix, atts->GetSeedRadiusAbsolute());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sseedRadiusBBox = %g\n", prefix, atts->GetSeedRadiusBBox());
+    str += tmpStr;
+    if(atts->GetShowHeads())
+        SNPRINTF(tmpStr, 1000, "%sshowHeads = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowHeads = 0\n", prefix);
     str += tmpStr;
     const char *headDisplayType_names = "Sphere, Cone";
     switch (atts->GetHeadDisplayType())
@@ -509,9 +560,26 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sheadDisplayRadius = %g\n", prefix, atts->GetHeadDisplayRadius());
+    const char *headRadiusSizeType_names = "Absolute, FractionOfBBox";
+    switch (atts->GetHeadRadiusSizeType())
+    {
+      case StreamlineAttributes::Absolute:
+          SNPRINTF(tmpStr, 1000, "%sheadRadiusSizeType = %sAbsolute  # %s\n", prefix, prefix, headRadiusSizeType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::FractionOfBBox:
+          SNPRINTF(tmpStr, 1000, "%sheadRadiusSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, headRadiusSizeType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sheadRadiusAbsolute = %g\n", prefix, atts->GetHeadRadiusAbsolute());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sheadDisplayHeight = %g\n", prefix, atts->GetHeadDisplayHeight());
+    SNPRINTF(tmpStr, 1000, "%sheadRadiusBBox = %g\n", prefix, atts->GetHeadRadiusBBox());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sheadHeightRatio = %g\n", prefix, atts->GetHeadHeightRatio());
     str += tmpStr;
     const char *opacityType_names = "FullyOpaque, Constant, Ramp, VariableRange";
     switch (atts->GetOpacityType())
@@ -1290,159 +1358,6 @@ StreamlineAttributes_GetSampleDensity2(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_SetDisplayMethod(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the displayMethod in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDisplayMethod(StreamlineAttributes::DisplayMethod(ival));
-    else
-    {
-        fprintf(stderr, "An invalid displayMethod value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Lines, Tubes, Ribbons.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_GetDisplayMethod(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayMethod()));
-    return retval;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_SetShowSeeds(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showSeeds in the object.
-    obj->data->SetShowSeeds(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_GetShowSeeds(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowSeeds()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_SetShowHeads(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the showHeads in the object.
-    obj->data->SetShowHeads(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_GetShowHeads(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowHeads()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_SetTubeRadius(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the tubeRadius in the object.
-    obj->data->SetTubeRadius(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_GetTubeRadius(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetTubeRadius());
-    return retval;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_SetRibbonWidth(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the ribbonWidth in the object.
-    obj->data->SetRibbonWidth(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_GetRibbonWidth(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetRibbonWidth());
-    return retval;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_SetLineWidth(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_GetLineWidth(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
-    return retval;
-}
-
-/*static*/ PyObject *
 StreamlineAttributes_SetColoringMethod(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
@@ -2190,7 +2105,73 @@ StreamlineAttributes_GetDisplayEndFlag(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_SetSeedDisplayRadius(PyObject *self, PyObject *args)
+StreamlineAttributes_SetDisplayMethod(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the displayMethod in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetDisplayMethod(StreamlineAttributes::DisplayMethod(ival));
+    else
+    {
+        fprintf(stderr, "An invalid displayMethod value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Lines, Tubes, Ribbons.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetDisplayMethod(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayMethod()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetTubeSizeType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the tubeSizeType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetTubeSizeType(StreamlineAttributes::SizeType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid tubeSizeType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Absolute, FractionOfBBox.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetTubeSizeType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTubeSizeType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetTubeRadiusAbsolute(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
 
@@ -2198,18 +2179,276 @@ StreamlineAttributes_SetSeedDisplayRadius(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the seedDisplayRadius in the object.
-    obj->data->SetSeedDisplayRadius(dval);
+    // Set the tubeRadiusAbsolute in the object.
+    obj->data->SetTubeRadiusAbsolute(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_GetSeedDisplayRadius(PyObject *self, PyObject *args)
+StreamlineAttributes_GetTubeRadiusAbsolute(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetSeedDisplayRadius());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTubeRadiusAbsolute());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetTubeRadiusBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the tubeRadiusBBox in the object.
+    obj->data->SetTubeRadiusBBox(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetTubeRadiusBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTubeRadiusBBox());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetRibbonWidthSizeType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the ribbonWidthSizeType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetRibbonWidthSizeType(StreamlineAttributes::SizeType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid ribbonWidthSizeType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Absolute, FractionOfBBox.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetRibbonWidthSizeType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRibbonWidthSizeType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetRibbonWidthAbsolute(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the ribbonWidthAbsolute in the object.
+    obj->data->SetRibbonWidthAbsolute(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetRibbonWidthAbsolute(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetRibbonWidthAbsolute());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetRibbonWidthBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the ribbonWidthBBox in the object.
+    obj->data->SetRibbonWidthBBox(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetRibbonWidthBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetRibbonWidthBBox());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetLineWidth(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the lineWidth in the object.
+    obj->data->SetLineWidth(ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetLineWidth(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetShowSeeds(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showSeeds in the object.
+    obj->data->SetShowSeeds(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetShowSeeds(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowSeeds()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetSeedRadiusSizeType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the seedRadiusSizeType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetSeedRadiusSizeType(StreamlineAttributes::SizeType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid seedRadiusSizeType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Absolute, FractionOfBBox.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetSeedRadiusSizeType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetSeedRadiusSizeType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetSeedRadiusAbsolute(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the seedRadiusAbsolute in the object.
+    obj->data->SetSeedRadiusAbsolute(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetSeedRadiusAbsolute(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetSeedRadiusAbsolute());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetSeedRadiusBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the seedRadiusBBox in the object.
+    obj->data->SetSeedRadiusBBox(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetSeedRadiusBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetSeedRadiusBBox());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetShowHeads(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showHeads in the object.
+    obj->data->SetShowHeads(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetShowHeads(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowHeads()?1L:0L);
     return retval;
 }
 
@@ -2247,31 +2486,40 @@ StreamlineAttributes_GetHeadDisplayType(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_SetHeadDisplayRadius(PyObject *self, PyObject *args)
+StreamlineAttributes_SetHeadRadiusSizeType(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the headDisplayRadius in the object.
-    obj->data->SetHeadDisplayRadius(dval);
+    // Set the headRadiusSizeType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetHeadRadiusSizeType(StreamlineAttributes::SizeType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid headRadiusSizeType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Absolute, FractionOfBBox.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_GetHeadDisplayRadius(PyObject *self, PyObject *args)
+StreamlineAttributes_GetHeadRadiusSizeType(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetHeadDisplayRadius());
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetHeadRadiusSizeType()));
     return retval;
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_SetHeadDisplayHeight(PyObject *self, PyObject *args)
+StreamlineAttributes_SetHeadRadiusAbsolute(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
 
@@ -2279,18 +2527,66 @@ StreamlineAttributes_SetHeadDisplayHeight(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the headDisplayHeight in the object.
-    obj->data->SetHeadDisplayHeight(dval);
+    // Set the headRadiusAbsolute in the object.
+    obj->data->SetHeadRadiusAbsolute(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_GetHeadDisplayHeight(PyObject *self, PyObject *args)
+StreamlineAttributes_GetHeadRadiusAbsolute(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetHeadDisplayHeight());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetHeadRadiusAbsolute());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetHeadRadiusBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the headRadiusBBox in the object.
+    obj->data->SetHeadRadiusBBox(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetHeadRadiusBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetHeadRadiusBBox());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetHeadHeightRatio(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the headHeightRatio in the object.
+    obj->data->SetHeadHeightRatio(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetHeadHeightRatio(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetHeadHeightRatio());
     return retval;
 }
 
@@ -2756,18 +3052,6 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetSampleDensity1", StreamlineAttributes_GetSampleDensity1, METH_VARARGS},
     {"SetSampleDensity2", StreamlineAttributes_SetSampleDensity2, METH_VARARGS},
     {"GetSampleDensity2", StreamlineAttributes_GetSampleDensity2, METH_VARARGS},
-    {"SetDisplayMethod", StreamlineAttributes_SetDisplayMethod, METH_VARARGS},
-    {"GetDisplayMethod", StreamlineAttributes_GetDisplayMethod, METH_VARARGS},
-    {"SetShowSeeds", StreamlineAttributes_SetShowSeeds, METH_VARARGS},
-    {"GetShowSeeds", StreamlineAttributes_GetShowSeeds, METH_VARARGS},
-    {"SetShowHeads", StreamlineAttributes_SetShowHeads, METH_VARARGS},
-    {"GetShowHeads", StreamlineAttributes_GetShowHeads, METH_VARARGS},
-    {"SetTubeRadius", StreamlineAttributes_SetTubeRadius, METH_VARARGS},
-    {"GetTubeRadius", StreamlineAttributes_GetTubeRadius, METH_VARARGS},
-    {"SetRibbonWidth", StreamlineAttributes_SetRibbonWidth, METH_VARARGS},
-    {"GetRibbonWidth", StreamlineAttributes_GetRibbonWidth, METH_VARARGS},
-    {"SetLineWidth", StreamlineAttributes_SetLineWidth, METH_VARARGS},
-    {"GetLineWidth", StreamlineAttributes_GetLineWidth, METH_VARARGS},
     {"SetColoringMethod", StreamlineAttributes_SetColoringMethod, METH_VARARGS},
     {"GetColoringMethod", StreamlineAttributes_GetColoringMethod, METH_VARARGS},
     {"SetColorTableName", StreamlineAttributes_SetColorTableName, METH_VARARGS},
@@ -2822,14 +3106,42 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetDisplayBeginFlag", StreamlineAttributes_GetDisplayBeginFlag, METH_VARARGS},
     {"SetDisplayEndFlag", StreamlineAttributes_SetDisplayEndFlag, METH_VARARGS},
     {"GetDisplayEndFlag", StreamlineAttributes_GetDisplayEndFlag, METH_VARARGS},
-    {"SetSeedDisplayRadius", StreamlineAttributes_SetSeedDisplayRadius, METH_VARARGS},
-    {"GetSeedDisplayRadius", StreamlineAttributes_GetSeedDisplayRadius, METH_VARARGS},
+    {"SetDisplayMethod", StreamlineAttributes_SetDisplayMethod, METH_VARARGS},
+    {"GetDisplayMethod", StreamlineAttributes_GetDisplayMethod, METH_VARARGS},
+    {"SetTubeSizeType", StreamlineAttributes_SetTubeSizeType, METH_VARARGS},
+    {"GetTubeSizeType", StreamlineAttributes_GetTubeSizeType, METH_VARARGS},
+    {"SetTubeRadiusAbsolute", StreamlineAttributes_SetTubeRadiusAbsolute, METH_VARARGS},
+    {"GetTubeRadiusAbsolute", StreamlineAttributes_GetTubeRadiusAbsolute, METH_VARARGS},
+    {"SetTubeRadiusBBox", StreamlineAttributes_SetTubeRadiusBBox, METH_VARARGS},
+    {"GetTubeRadiusBBox", StreamlineAttributes_GetTubeRadiusBBox, METH_VARARGS},
+    {"SetRibbonWidthSizeType", StreamlineAttributes_SetRibbonWidthSizeType, METH_VARARGS},
+    {"GetRibbonWidthSizeType", StreamlineAttributes_GetRibbonWidthSizeType, METH_VARARGS},
+    {"SetRibbonWidthAbsolute", StreamlineAttributes_SetRibbonWidthAbsolute, METH_VARARGS},
+    {"GetRibbonWidthAbsolute", StreamlineAttributes_GetRibbonWidthAbsolute, METH_VARARGS},
+    {"SetRibbonWidthBBox", StreamlineAttributes_SetRibbonWidthBBox, METH_VARARGS},
+    {"GetRibbonWidthBBox", StreamlineAttributes_GetRibbonWidthBBox, METH_VARARGS},
+    {"SetLineWidth", StreamlineAttributes_SetLineWidth, METH_VARARGS},
+    {"GetLineWidth", StreamlineAttributes_GetLineWidth, METH_VARARGS},
+    {"SetShowSeeds", StreamlineAttributes_SetShowSeeds, METH_VARARGS},
+    {"GetShowSeeds", StreamlineAttributes_GetShowSeeds, METH_VARARGS},
+    {"SetSeedRadiusSizeType", StreamlineAttributes_SetSeedRadiusSizeType, METH_VARARGS},
+    {"GetSeedRadiusSizeType", StreamlineAttributes_GetSeedRadiusSizeType, METH_VARARGS},
+    {"SetSeedRadiusAbsolute", StreamlineAttributes_SetSeedRadiusAbsolute, METH_VARARGS},
+    {"GetSeedRadiusAbsolute", StreamlineAttributes_GetSeedRadiusAbsolute, METH_VARARGS},
+    {"SetSeedRadiusBBox", StreamlineAttributes_SetSeedRadiusBBox, METH_VARARGS},
+    {"GetSeedRadiusBBox", StreamlineAttributes_GetSeedRadiusBBox, METH_VARARGS},
+    {"SetShowHeads", StreamlineAttributes_SetShowHeads, METH_VARARGS},
+    {"GetShowHeads", StreamlineAttributes_GetShowHeads, METH_VARARGS},
     {"SetHeadDisplayType", StreamlineAttributes_SetHeadDisplayType, METH_VARARGS},
     {"GetHeadDisplayType", StreamlineAttributes_GetHeadDisplayType, METH_VARARGS},
-    {"SetHeadDisplayRadius", StreamlineAttributes_SetHeadDisplayRadius, METH_VARARGS},
-    {"GetHeadDisplayRadius", StreamlineAttributes_GetHeadDisplayRadius, METH_VARARGS},
-    {"SetHeadDisplayHeight", StreamlineAttributes_SetHeadDisplayHeight, METH_VARARGS},
-    {"GetHeadDisplayHeight", StreamlineAttributes_GetHeadDisplayHeight, METH_VARARGS},
+    {"SetHeadRadiusSizeType", StreamlineAttributes_SetHeadRadiusSizeType, METH_VARARGS},
+    {"GetHeadRadiusSizeType", StreamlineAttributes_GetHeadRadiusSizeType, METH_VARARGS},
+    {"SetHeadRadiusAbsolute", StreamlineAttributes_SetHeadRadiusAbsolute, METH_VARARGS},
+    {"GetHeadRadiusAbsolute", StreamlineAttributes_GetHeadRadiusAbsolute, METH_VARARGS},
+    {"SetHeadRadiusBBox", StreamlineAttributes_SetHeadRadiusBBox, METH_VARARGS},
+    {"GetHeadRadiusBBox", StreamlineAttributes_GetHeadRadiusBBox, METH_VARARGS},
+    {"SetHeadHeightRatio", StreamlineAttributes_SetHeadHeightRatio, METH_VARARGS},
+    {"GetHeadHeightRatio", StreamlineAttributes_GetHeadHeightRatio, METH_VARARGS},
     {"SetOpacityType", StreamlineAttributes_SetOpacityType, METH_VARARGS},
     {"GetOpacityType", StreamlineAttributes_GetOpacityType, METH_VARARGS},
     {"SetOpacityVariable", StreamlineAttributes_SetOpacityVariable, METH_VARARGS},
@@ -2939,25 +3251,6 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetSampleDensity1(self, NULL);
     if(strcmp(name, "sampleDensity2") == 0)
         return StreamlineAttributes_GetSampleDensity2(self, NULL);
-    if(strcmp(name, "displayMethod") == 0)
-        return StreamlineAttributes_GetDisplayMethod(self, NULL);
-    if(strcmp(name, "Lines") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::Lines));
-    if(strcmp(name, "Tubes") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::Tubes));
-    if(strcmp(name, "Ribbons") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::Ribbons));
-
-    if(strcmp(name, "showSeeds") == 0)
-        return StreamlineAttributes_GetShowSeeds(self, NULL);
-    if(strcmp(name, "showHeads") == 0)
-        return StreamlineAttributes_GetShowHeads(self, NULL);
-    if(strcmp(name, "tubeRadius") == 0)
-        return StreamlineAttributes_GetTubeRadius(self, NULL);
-    if(strcmp(name, "ribbonWidth") == 0)
-        return StreamlineAttributes_GetRibbonWidth(self, NULL);
-    if(strcmp(name, "lineWidth") == 0)
-        return StreamlineAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "coloringMethod") == 0)
         return StreamlineAttributes_GetColoringMethod(self, NULL);
     if(strcmp(name, "Solid") == 0)
@@ -3057,8 +3350,54 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetDisplayBeginFlag(self, NULL);
     if(strcmp(name, "displayEndFlag") == 0)
         return StreamlineAttributes_GetDisplayEndFlag(self, NULL);
-    if(strcmp(name, "seedDisplayRadius") == 0)
-        return StreamlineAttributes_GetSeedDisplayRadius(self, NULL);
+    if(strcmp(name, "displayMethod") == 0)
+        return StreamlineAttributes_GetDisplayMethod(self, NULL);
+    if(strcmp(name, "Lines") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Lines));
+    if(strcmp(name, "Tubes") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Tubes));
+    if(strcmp(name, "Ribbons") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Ribbons));
+
+    if(strcmp(name, "tubeSizeType") == 0)
+        return StreamlineAttributes_GetTubeSizeType(self, NULL);
+    if(strcmp(name, "Absolute") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Absolute));
+    if(strcmp(name, "FractionOfBBox") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::FractionOfBBox));
+
+    if(strcmp(name, "tubeRadiusAbsolute") == 0)
+        return StreamlineAttributes_GetTubeRadiusAbsolute(self, NULL);
+    if(strcmp(name, "tubeRadiusBBox") == 0)
+        return StreamlineAttributes_GetTubeRadiusBBox(self, NULL);
+    if(strcmp(name, "ribbonWidthSizeType") == 0)
+        return StreamlineAttributes_GetRibbonWidthSizeType(self, NULL);
+    if(strcmp(name, "Absolute") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Absolute));
+    if(strcmp(name, "FractionOfBBox") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::FractionOfBBox));
+
+    if(strcmp(name, "ribbonWidthAbsolute") == 0)
+        return StreamlineAttributes_GetRibbonWidthAbsolute(self, NULL);
+    if(strcmp(name, "ribbonWidthBBox") == 0)
+        return StreamlineAttributes_GetRibbonWidthBBox(self, NULL);
+    if(strcmp(name, "lineWidth") == 0)
+        return StreamlineAttributes_GetLineWidth(self, NULL);
+    if(strcmp(name, "showSeeds") == 0)
+        return StreamlineAttributes_GetShowSeeds(self, NULL);
+    if(strcmp(name, "seedRadiusSizeType") == 0)
+        return StreamlineAttributes_GetSeedRadiusSizeType(self, NULL);
+    if(strcmp(name, "Absolute") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Absolute));
+    if(strcmp(name, "FractionOfBBox") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::FractionOfBBox));
+
+    if(strcmp(name, "seedRadiusAbsolute") == 0)
+        return StreamlineAttributes_GetSeedRadiusAbsolute(self, NULL);
+    if(strcmp(name, "seedRadiusBBox") == 0)
+        return StreamlineAttributes_GetSeedRadiusBBox(self, NULL);
+    if(strcmp(name, "showHeads") == 0)
+        return StreamlineAttributes_GetShowHeads(self, NULL);
     if(strcmp(name, "headDisplayType") == 0)
         return StreamlineAttributes_GetHeadDisplayType(self, NULL);
     if(strcmp(name, "Sphere") == 0)
@@ -3066,10 +3405,19 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Cone") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::Cone));
 
-    if(strcmp(name, "headDisplayRadius") == 0)
-        return StreamlineAttributes_GetHeadDisplayRadius(self, NULL);
-    if(strcmp(name, "headDisplayHeight") == 0)
-        return StreamlineAttributes_GetHeadDisplayHeight(self, NULL);
+    if(strcmp(name, "headRadiusSizeType") == 0)
+        return StreamlineAttributes_GetHeadRadiusSizeType(self, NULL);
+    if(strcmp(name, "Absolute") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Absolute));
+    if(strcmp(name, "FractionOfBBox") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::FractionOfBBox));
+
+    if(strcmp(name, "headRadiusAbsolute") == 0)
+        return StreamlineAttributes_GetHeadRadiusAbsolute(self, NULL);
+    if(strcmp(name, "headRadiusBBox") == 0)
+        return StreamlineAttributes_GetHeadRadiusBBox(self, NULL);
+    if(strcmp(name, "headHeightRatio") == 0)
+        return StreamlineAttributes_GetHeadHeightRatio(self, NULL);
     if(strcmp(name, "opacityType") == 0)
         return StreamlineAttributes_GetOpacityType(self, NULL);
     if(strcmp(name, "FullyOpaque") == 0)
@@ -3168,18 +3516,6 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetSampleDensity1(self, tuple);
     else if(strcmp(name, "sampleDensity2") == 0)
         obj = StreamlineAttributes_SetSampleDensity2(self, tuple);
-    else if(strcmp(name, "displayMethod") == 0)
-        obj = StreamlineAttributes_SetDisplayMethod(self, tuple);
-    else if(strcmp(name, "showSeeds") == 0)
-        obj = StreamlineAttributes_SetShowSeeds(self, tuple);
-    else if(strcmp(name, "showHeads") == 0)
-        obj = StreamlineAttributes_SetShowHeads(self, tuple);
-    else if(strcmp(name, "tubeRadius") == 0)
-        obj = StreamlineAttributes_SetTubeRadius(self, tuple);
-    else if(strcmp(name, "ribbonWidth") == 0)
-        obj = StreamlineAttributes_SetRibbonWidth(self, tuple);
-    else if(strcmp(name, "lineWidth") == 0)
-        obj = StreamlineAttributes_SetLineWidth(self, tuple);
     else if(strcmp(name, "coloringMethod") == 0)
         obj = StreamlineAttributes_SetColoringMethod(self, tuple);
     else if(strcmp(name, "colorTableName") == 0)
@@ -3234,14 +3570,42 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetDisplayBeginFlag(self, tuple);
     else if(strcmp(name, "displayEndFlag") == 0)
         obj = StreamlineAttributes_SetDisplayEndFlag(self, tuple);
-    else if(strcmp(name, "seedDisplayRadius") == 0)
-        obj = StreamlineAttributes_SetSeedDisplayRadius(self, tuple);
+    else if(strcmp(name, "displayMethod") == 0)
+        obj = StreamlineAttributes_SetDisplayMethod(self, tuple);
+    else if(strcmp(name, "tubeSizeType") == 0)
+        obj = StreamlineAttributes_SetTubeSizeType(self, tuple);
+    else if(strcmp(name, "tubeRadiusAbsolute") == 0)
+        obj = StreamlineAttributes_SetTubeRadiusAbsolute(self, tuple);
+    else if(strcmp(name, "tubeRadiusBBox") == 0)
+        obj = StreamlineAttributes_SetTubeRadiusBBox(self, tuple);
+    else if(strcmp(name, "ribbonWidthSizeType") == 0)
+        obj = StreamlineAttributes_SetRibbonWidthSizeType(self, tuple);
+    else if(strcmp(name, "ribbonWidthAbsolute") == 0)
+        obj = StreamlineAttributes_SetRibbonWidthAbsolute(self, tuple);
+    else if(strcmp(name, "ribbonWidthBBox") == 0)
+        obj = StreamlineAttributes_SetRibbonWidthBBox(self, tuple);
+    else if(strcmp(name, "lineWidth") == 0)
+        obj = StreamlineAttributes_SetLineWidth(self, tuple);
+    else if(strcmp(name, "showSeeds") == 0)
+        obj = StreamlineAttributes_SetShowSeeds(self, tuple);
+    else if(strcmp(name, "seedRadiusSizeType") == 0)
+        obj = StreamlineAttributes_SetSeedRadiusSizeType(self, tuple);
+    else if(strcmp(name, "seedRadiusAbsolute") == 0)
+        obj = StreamlineAttributes_SetSeedRadiusAbsolute(self, tuple);
+    else if(strcmp(name, "seedRadiusBBox") == 0)
+        obj = StreamlineAttributes_SetSeedRadiusBBox(self, tuple);
+    else if(strcmp(name, "showHeads") == 0)
+        obj = StreamlineAttributes_SetShowHeads(self, tuple);
     else if(strcmp(name, "headDisplayType") == 0)
         obj = StreamlineAttributes_SetHeadDisplayType(self, tuple);
-    else if(strcmp(name, "headDisplayRadius") == 0)
-        obj = StreamlineAttributes_SetHeadDisplayRadius(self, tuple);
-    else if(strcmp(name, "headDisplayHeight") == 0)
-        obj = StreamlineAttributes_SetHeadDisplayHeight(self, tuple);
+    else if(strcmp(name, "headRadiusSizeType") == 0)
+        obj = StreamlineAttributes_SetHeadRadiusSizeType(self, tuple);
+    else if(strcmp(name, "headRadiusAbsolute") == 0)
+        obj = StreamlineAttributes_SetHeadRadiusAbsolute(self, tuple);
+    else if(strcmp(name, "headRadiusBBox") == 0)
+        obj = StreamlineAttributes_SetHeadRadiusBBox(self, tuple);
+    else if(strcmp(name, "headHeightRatio") == 0)
+        obj = StreamlineAttributes_SetHeadHeightRatio(self, tuple);
     else if(strcmp(name, "opacityType") == 0)
         obj = StreamlineAttributes_SetOpacityType(self, tuple);
     else if(strcmp(name, "opacityVariable") == 0)

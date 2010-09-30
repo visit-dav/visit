@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int StreamlineAttributes_numAdditionalAtts = 70;
+    private static int StreamlineAttributes_numAdditionalAtts = 78;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -114,6 +114,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public final static int GEOMDISPLAYTYPE_SPHERE = 0;
     public final static int GEOMDISPLAYTYPE_CONE = 1;
+
+    public final static int SIZETYPE_ABSOLUTE = 0;
+    public final static int SIZETYPE_FRACTIONOFBBOX = 1;
 
 
     public StreamlineAttributes()
@@ -172,12 +175,6 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         sampleDensity0 = 2;
         sampleDensity1 = 2;
         sampleDensity2 = 2;
-        displayMethod = DISPLAYMETHOD_LINES;
-        showSeeds = false;
-        showHeads = false;
-        tubeRadius = 0.125;
-        ribbonWidth = 0.125;
-        lineWidth = 2;
         coloringMethod = COLORINGMETHOD_COLORBYTIME;
         colorTableName = new String("Default");
         singleColor = new ColorAttribute(0, 0, 0);
@@ -205,10 +202,24 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         displayEnd = 1;
         displayBeginFlag = false;
         displayEndFlag = false;
-        seedDisplayRadius = 0.25;
+        displayMethod = DISPLAYMETHOD_LINES;
+        tubeSizeType = SIZETYPE_FRACTIONOFBBOX;
+        tubeRadiusAbsolute = 0.125;
+        tubeRadiusBBox = 0.005;
+        ribbonWidthSizeType = SIZETYPE_FRACTIONOFBBOX;
+        ribbonWidthAbsolute = 0.125;
+        ribbonWidthBBox = 0.01;
+        lineWidth = 2;
+        showSeeds = true;
+        seedRadiusSizeType = SIZETYPE_FRACTIONOFBBOX;
+        seedRadiusAbsolute = 1;
+        seedRadiusBBox = 0.015;
+        showHeads = false;
         headDisplayType = GEOMDISPLAYTYPE_SPHERE;
-        headDisplayRadius = 0.25;
-        headDisplayHeight = 0.5;
+        headRadiusSizeType = SIZETYPE_FRACTIONOFBBOX;
+        headRadiusAbsolute = 0.25;
+        headRadiusBBox = 0.02;
+        headHeightRatio = 2;
         opacityType = OPACITYTYPE_FULLYOPAQUE;
         opacityVariable = new String("");
         opacity = 1;
@@ -284,12 +295,6 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         sampleDensity0 = 2;
         sampleDensity1 = 2;
         sampleDensity2 = 2;
-        displayMethod = DISPLAYMETHOD_LINES;
-        showSeeds = false;
-        showHeads = false;
-        tubeRadius = 0.125;
-        ribbonWidth = 0.125;
-        lineWidth = 2;
         coloringMethod = COLORINGMETHOD_COLORBYTIME;
         colorTableName = new String("Default");
         singleColor = new ColorAttribute(0, 0, 0);
@@ -317,10 +322,24 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         displayEnd = 1;
         displayBeginFlag = false;
         displayEndFlag = false;
-        seedDisplayRadius = 0.25;
+        displayMethod = DISPLAYMETHOD_LINES;
+        tubeSizeType = SIZETYPE_FRACTIONOFBBOX;
+        tubeRadiusAbsolute = 0.125;
+        tubeRadiusBBox = 0.005;
+        ribbonWidthSizeType = SIZETYPE_FRACTIONOFBBOX;
+        ribbonWidthAbsolute = 0.125;
+        ribbonWidthBBox = 0.01;
+        lineWidth = 2;
+        showSeeds = true;
+        seedRadiusSizeType = SIZETYPE_FRACTIONOFBBOX;
+        seedRadiusAbsolute = 1;
+        seedRadiusBBox = 0.015;
+        showHeads = false;
         headDisplayType = GEOMDISPLAYTYPE_SPHERE;
-        headDisplayRadius = 0.25;
-        headDisplayHeight = 0.5;
+        headRadiusSizeType = SIZETYPE_FRACTIONOFBBOX;
+        headRadiusAbsolute = 0.25;
+        headRadiusBBox = 0.02;
+        headHeightRatio = 2;
         opacityType = OPACITYTYPE_FULLYOPAQUE;
         opacityVariable = new String("");
         opacity = 1;
@@ -399,12 +418,6 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         sampleDensity0 = obj.sampleDensity0;
         sampleDensity1 = obj.sampleDensity1;
         sampleDensity2 = obj.sampleDensity2;
-        displayMethod = obj.displayMethod;
-        showSeeds = obj.showSeeds;
-        showHeads = obj.showHeads;
-        tubeRadius = obj.tubeRadius;
-        ribbonWidth = obj.ribbonWidth;
-        lineWidth = obj.lineWidth;
         coloringMethod = obj.coloringMethod;
         colorTableName = new String(obj.colorTableName);
         singleColor = new ColorAttribute(obj.singleColor);
@@ -432,10 +445,24 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         displayEnd = obj.displayEnd;
         displayBeginFlag = obj.displayBeginFlag;
         displayEndFlag = obj.displayEndFlag;
-        seedDisplayRadius = obj.seedDisplayRadius;
+        displayMethod = obj.displayMethod;
+        tubeSizeType = obj.tubeSizeType;
+        tubeRadiusAbsolute = obj.tubeRadiusAbsolute;
+        tubeRadiusBBox = obj.tubeRadiusBBox;
+        ribbonWidthSizeType = obj.ribbonWidthSizeType;
+        ribbonWidthAbsolute = obj.ribbonWidthAbsolute;
+        ribbonWidthBBox = obj.ribbonWidthBBox;
+        lineWidth = obj.lineWidth;
+        showSeeds = obj.showSeeds;
+        seedRadiusSizeType = obj.seedRadiusSizeType;
+        seedRadiusAbsolute = obj.seedRadiusAbsolute;
+        seedRadiusBBox = obj.seedRadiusBBox;
+        showHeads = obj.showHeads;
         headDisplayType = obj.headDisplayType;
-        headDisplayRadius = obj.headDisplayRadius;
-        headDisplayHeight = obj.headDisplayHeight;
+        headRadiusSizeType = obj.headRadiusSizeType;
+        headRadiusAbsolute = obj.headRadiusAbsolute;
+        headRadiusBBox = obj.headRadiusBBox;
+        headHeightRatio = obj.headHeightRatio;
         opacityType = obj.opacityType;
         opacityVariable = new String(obj.opacityVariable);
         opacity = obj.opacity;
@@ -537,12 +564,6 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (sampleDensity0 == obj.sampleDensity0) &&
                 (sampleDensity1 == obj.sampleDensity1) &&
                 (sampleDensity2 == obj.sampleDensity2) &&
-                (displayMethod == obj.displayMethod) &&
-                (showSeeds == obj.showSeeds) &&
-                (showHeads == obj.showHeads) &&
-                (tubeRadius == obj.tubeRadius) &&
-                (ribbonWidth == obj.ribbonWidth) &&
-                (lineWidth == obj.lineWidth) &&
                 (coloringMethod == obj.coloringMethod) &&
                 (colorTableName.equals(obj.colorTableName)) &&
                 (singleColor == obj.singleColor) &&
@@ -570,10 +591,24 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (displayEnd == obj.displayEnd) &&
                 (displayBeginFlag == obj.displayBeginFlag) &&
                 (displayEndFlag == obj.displayEndFlag) &&
-                (seedDisplayRadius == obj.seedDisplayRadius) &&
+                (displayMethod == obj.displayMethod) &&
+                (tubeSizeType == obj.tubeSizeType) &&
+                (tubeRadiusAbsolute == obj.tubeRadiusAbsolute) &&
+                (tubeRadiusBBox == obj.tubeRadiusBBox) &&
+                (ribbonWidthSizeType == obj.ribbonWidthSizeType) &&
+                (ribbonWidthAbsolute == obj.ribbonWidthAbsolute) &&
+                (ribbonWidthBBox == obj.ribbonWidthBBox) &&
+                (lineWidth == obj.lineWidth) &&
+                (showSeeds == obj.showSeeds) &&
+                (seedRadiusSizeType == obj.seedRadiusSizeType) &&
+                (seedRadiusAbsolute == obj.seedRadiusAbsolute) &&
+                (seedRadiusBBox == obj.seedRadiusBBox) &&
+                (showHeads == obj.showHeads) &&
                 (headDisplayType == obj.headDisplayType) &&
-                (headDisplayRadius == obj.headDisplayRadius) &&
-                (headDisplayHeight == obj.headDisplayHeight) &&
+                (headRadiusSizeType == obj.headRadiusSizeType) &&
+                (headRadiusAbsolute == obj.headRadiusAbsolute) &&
+                (headRadiusBBox == obj.headRadiusBBox) &&
+                (headHeightRatio == obj.headHeightRatio) &&
                 (opacityType == obj.opacityType) &&
                 (opacityVariable.equals(obj.opacityVariable)) &&
                 (opacity == obj.opacity) &&
@@ -764,328 +799,376 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(15);
     }
 
-    public void SetDisplayMethod(int displayMethod_)
-    {
-        displayMethod = displayMethod_;
-        Select(16);
-    }
-
-    public void SetShowSeeds(boolean showSeeds_)
-    {
-        showSeeds = showSeeds_;
-        Select(17);
-    }
-
-    public void SetShowHeads(boolean showHeads_)
-    {
-        showHeads = showHeads_;
-        Select(18);
-    }
-
-    public void SetTubeRadius(double tubeRadius_)
-    {
-        tubeRadius = tubeRadius_;
-        Select(19);
-    }
-
-    public void SetRibbonWidth(double ribbonWidth_)
-    {
-        ribbonWidth = ribbonWidth_;
-        Select(20);
-    }
-
-    public void SetLineWidth(int lineWidth_)
-    {
-        lineWidth = lineWidth_;
-        Select(21);
-    }
-
     public void SetColoringMethod(int coloringMethod_)
     {
         coloringMethod = coloringMethod_;
-        Select(22);
+        Select(16);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(23);
+        Select(17);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(24);
+        Select(18);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(25);
+        Select(19);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(26);
+        Select(20);
     }
 
     public void SetStreamlineDirection(int streamlineDirection_)
     {
         streamlineDirection = streamlineDirection_;
-        Select(27);
+        Select(21);
     }
 
     public void SetMaxStepLength(double maxStepLength_)
     {
         maxStepLength = maxStepLength_;
-        Select(28);
+        Select(22);
     }
 
     public void SetLimitMaximumTimestep(boolean limitMaximumTimestep_)
     {
         limitMaximumTimestep = limitMaximumTimestep_;
-        Select(29);
+        Select(23);
     }
 
     public void SetMaxTimeStep(double maxTimeStep_)
     {
         maxTimeStep = maxTimeStep_;
-        Select(30);
+        Select(24);
     }
 
     public void SetRelTol(double relTol_)
     {
         relTol = relTol_;
-        Select(31);
+        Select(25);
     }
 
     public void SetAbsTol(double absTol_)
     {
         absTol = absTol_;
-        Select(32);
+        Select(26);
     }
 
     public void SetTerminationType(int terminationType_)
     {
         terminationType = terminationType_;
-        Select(33);
+        Select(27);
     }
 
     public void SetIntegrationType(int integrationType_)
     {
         integrationType = integrationType_;
-        Select(34);
+        Select(28);
     }
 
     public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
     {
         streamlineAlgorithmType = streamlineAlgorithmType_;
-        Select(35);
+        Select(29);
     }
 
     public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
     {
         maxStreamlineProcessCount = maxStreamlineProcessCount_;
-        Select(36);
+        Select(30);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(37);
+        Select(31);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(38);
+        Select(32);
     }
 
     public void SetPathlines(boolean pathlines_)
     {
         pathlines = pathlines_;
-        Select(39);
+        Select(33);
     }
 
     public void SetColoringVariable(String coloringVariable_)
     {
         coloringVariable = coloringVariable_;
-        Select(40);
+        Select(34);
     }
 
     public void SetLegendMinFlag(boolean legendMinFlag_)
     {
         legendMinFlag = legendMinFlag_;
-        Select(41);
+        Select(35);
     }
 
     public void SetLegendMaxFlag(boolean legendMaxFlag_)
     {
         legendMaxFlag = legendMaxFlag_;
-        Select(42);
+        Select(36);
     }
 
     public void SetLegendMin(double legendMin_)
     {
         legendMin = legendMin_;
-        Select(43);
+        Select(37);
     }
 
     public void SetLegendMax(double legendMax_)
     {
         legendMax = legendMax_;
-        Select(44);
+        Select(38);
     }
 
     public void SetDisplayBegin(double displayBegin_)
     {
         displayBegin = displayBegin_;
-        Select(45);
+        Select(39);
     }
 
     public void SetDisplayEnd(double displayEnd_)
     {
         displayEnd = displayEnd_;
-        Select(46);
+        Select(40);
     }
 
     public void SetDisplayBeginFlag(boolean displayBeginFlag_)
     {
         displayBeginFlag = displayBeginFlag_;
-        Select(47);
+        Select(41);
     }
 
     public void SetDisplayEndFlag(boolean displayEndFlag_)
     {
         displayEndFlag = displayEndFlag_;
+        Select(42);
+    }
+
+    public void SetDisplayMethod(int displayMethod_)
+    {
+        displayMethod = displayMethod_;
+        Select(43);
+    }
+
+    public void SetTubeSizeType(int tubeSizeType_)
+    {
+        tubeSizeType = tubeSizeType_;
+        Select(44);
+    }
+
+    public void SetTubeRadiusAbsolute(double tubeRadiusAbsolute_)
+    {
+        tubeRadiusAbsolute = tubeRadiusAbsolute_;
+        Select(45);
+    }
+
+    public void SetTubeRadiusBBox(double tubeRadiusBBox_)
+    {
+        tubeRadiusBBox = tubeRadiusBBox_;
+        Select(46);
+    }
+
+    public void SetRibbonWidthSizeType(int ribbonWidthSizeType_)
+    {
+        ribbonWidthSizeType = ribbonWidthSizeType_;
+        Select(47);
+    }
+
+    public void SetRibbonWidthAbsolute(double ribbonWidthAbsolute_)
+    {
+        ribbonWidthAbsolute = ribbonWidthAbsolute_;
         Select(48);
     }
 
-    public void SetSeedDisplayRadius(double seedDisplayRadius_)
+    public void SetRibbonWidthBBox(double ribbonWidthBBox_)
     {
-        seedDisplayRadius = seedDisplayRadius_;
+        ribbonWidthBBox = ribbonWidthBBox_;
         Select(49);
+    }
+
+    public void SetLineWidth(int lineWidth_)
+    {
+        lineWidth = lineWidth_;
+        Select(50);
+    }
+
+    public void SetShowSeeds(boolean showSeeds_)
+    {
+        showSeeds = showSeeds_;
+        Select(51);
+    }
+
+    public void SetSeedRadiusSizeType(int seedRadiusSizeType_)
+    {
+        seedRadiusSizeType = seedRadiusSizeType_;
+        Select(52);
+    }
+
+    public void SetSeedRadiusAbsolute(double seedRadiusAbsolute_)
+    {
+        seedRadiusAbsolute = seedRadiusAbsolute_;
+        Select(53);
+    }
+
+    public void SetSeedRadiusBBox(double seedRadiusBBox_)
+    {
+        seedRadiusBBox = seedRadiusBBox_;
+        Select(54);
+    }
+
+    public void SetShowHeads(boolean showHeads_)
+    {
+        showHeads = showHeads_;
+        Select(55);
     }
 
     public void SetHeadDisplayType(int headDisplayType_)
     {
         headDisplayType = headDisplayType_;
-        Select(50);
+        Select(56);
     }
 
-    public void SetHeadDisplayRadius(double headDisplayRadius_)
+    public void SetHeadRadiusSizeType(int headRadiusSizeType_)
     {
-        headDisplayRadius = headDisplayRadius_;
-        Select(51);
+        headRadiusSizeType = headRadiusSizeType_;
+        Select(57);
     }
 
-    public void SetHeadDisplayHeight(double headDisplayHeight_)
+    public void SetHeadRadiusAbsolute(double headRadiusAbsolute_)
     {
-        headDisplayHeight = headDisplayHeight_;
-        Select(52);
+        headRadiusAbsolute = headRadiusAbsolute_;
+        Select(58);
+    }
+
+    public void SetHeadRadiusBBox(double headRadiusBBox_)
+    {
+        headRadiusBBox = headRadiusBBox_;
+        Select(59);
+    }
+
+    public void SetHeadHeightRatio(double headHeightRatio_)
+    {
+        headHeightRatio = headHeightRatio_;
+        Select(60);
     }
 
     public void SetOpacityType(int opacityType_)
     {
         opacityType = opacityType_;
-        Select(53);
+        Select(61);
     }
 
     public void SetOpacityVariable(String opacityVariable_)
     {
         opacityVariable = opacityVariable_;
-        Select(54);
+        Select(62);
     }
 
     public void SetOpacity(double opacity_)
     {
         opacity = opacity_;
-        Select(55);
+        Select(63);
     }
 
     public void SetOpacityVarMin(double opacityVarMin_)
     {
         opacityVarMin = opacityVarMin_;
-        Select(56);
+        Select(64);
     }
 
     public void SetOpacityVarMax(double opacityVarMax_)
     {
         opacityVarMax = opacityVarMax_;
-        Select(57);
+        Select(65);
     }
 
     public void SetOpacityVarMinFlag(boolean opacityVarMinFlag_)
     {
         opacityVarMinFlag = opacityVarMinFlag_;
-        Select(58);
+        Select(66);
     }
 
     public void SetOpacityVarMaxFlag(boolean opacityVarMaxFlag_)
     {
         opacityVarMaxFlag = opacityVarMaxFlag_;
-        Select(59);
+        Select(67);
     }
 
     public void SetTubeDisplayDensity(int tubeDisplayDensity_)
     {
         tubeDisplayDensity = tubeDisplayDensity_;
-        Select(60);
+        Select(68);
     }
 
     public void SetGeomDisplayQuality(int geomDisplayQuality_)
     {
         geomDisplayQuality = geomDisplayQuality_;
-        Select(61);
+        Select(69);
     }
 
     public void SetSampleDistance0(double sampleDistance0_)
     {
         sampleDistance0 = sampleDistance0_;
-        Select(62);
+        Select(70);
     }
 
     public void SetSampleDistance1(double sampleDistance1_)
     {
         sampleDistance1 = sampleDistance1_;
-        Select(63);
+        Select(71);
     }
 
     public void SetSampleDistance2(double sampleDistance2_)
     {
         sampleDistance2 = sampleDistance2_;
-        Select(64);
+        Select(72);
     }
 
     public void SetFillInterior(boolean fillInterior_)
     {
         fillInterior = fillInterior_;
-        Select(65);
+        Select(73);
     }
 
     public void SetRandomSamples(boolean randomSamples_)
     {
         randomSamples = randomSamples_;
-        Select(66);
+        Select(74);
     }
 
     public void SetRandomSeed(int randomSeed_)
     {
         randomSeed = randomSeed_;
-        Select(67);
+        Select(75);
     }
 
     public void SetNumberOfRandomSamples(int numberOfRandomSamples_)
     {
         numberOfRandomSamples = numberOfRandomSamples_;
-        Select(68);
+        Select(76);
     }
 
     public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
     {
         forceNodeCenteredData = forceNodeCenteredData_;
-        Select(69);
+        Select(77);
     }
 
     // Property getting methods
@@ -1105,12 +1188,6 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public int            GetSampleDensity0() { return sampleDensity0; }
     public int            GetSampleDensity1() { return sampleDensity1; }
     public int            GetSampleDensity2() { return sampleDensity2; }
-    public int            GetDisplayMethod() { return displayMethod; }
-    public boolean        GetShowSeeds() { return showSeeds; }
-    public boolean        GetShowHeads() { return showHeads; }
-    public double         GetTubeRadius() { return tubeRadius; }
-    public double         GetRibbonWidth() { return ribbonWidth; }
-    public int            GetLineWidth() { return lineWidth; }
     public int            GetColoringMethod() { return coloringMethod; }
     public String         GetColorTableName() { return colorTableName; }
     public ColorAttribute GetSingleColor() { return singleColor; }
@@ -1138,10 +1215,24 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public double         GetDisplayEnd() { return displayEnd; }
     public boolean        GetDisplayBeginFlag() { return displayBeginFlag; }
     public boolean        GetDisplayEndFlag() { return displayEndFlag; }
-    public double         GetSeedDisplayRadius() { return seedDisplayRadius; }
+    public int            GetDisplayMethod() { return displayMethod; }
+    public int            GetTubeSizeType() { return tubeSizeType; }
+    public double         GetTubeRadiusAbsolute() { return tubeRadiusAbsolute; }
+    public double         GetTubeRadiusBBox() { return tubeRadiusBBox; }
+    public int            GetRibbonWidthSizeType() { return ribbonWidthSizeType; }
+    public double         GetRibbonWidthAbsolute() { return ribbonWidthAbsolute; }
+    public double         GetRibbonWidthBBox() { return ribbonWidthBBox; }
+    public int            GetLineWidth() { return lineWidth; }
+    public boolean        GetShowSeeds() { return showSeeds; }
+    public int            GetSeedRadiusSizeType() { return seedRadiusSizeType; }
+    public double         GetSeedRadiusAbsolute() { return seedRadiusAbsolute; }
+    public double         GetSeedRadiusBBox() { return seedRadiusBBox; }
+    public boolean        GetShowHeads() { return showHeads; }
     public int            GetHeadDisplayType() { return headDisplayType; }
-    public double         GetHeadDisplayRadius() { return headDisplayRadius; }
-    public double         GetHeadDisplayHeight() { return headDisplayHeight; }
+    public int            GetHeadRadiusSizeType() { return headRadiusSizeType; }
+    public double         GetHeadRadiusAbsolute() { return headRadiusAbsolute; }
+    public double         GetHeadRadiusBBox() { return headRadiusBBox; }
+    public double         GetHeadHeightRatio() { return headHeightRatio; }
     public int            GetOpacityType() { return opacityType; }
     public String         GetOpacityVariable() { return opacityVariable; }
     public double         GetOpacity() { return opacity; }
@@ -1196,112 +1287,128 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(15, buf))
             buf.WriteInt(sampleDensity2);
         if(WriteSelect(16, buf))
-            buf.WriteInt(displayMethod);
-        if(WriteSelect(17, buf))
-            buf.WriteBool(showSeeds);
-        if(WriteSelect(18, buf))
-            buf.WriteBool(showHeads);
-        if(WriteSelect(19, buf))
-            buf.WriteDouble(tubeRadius);
-        if(WriteSelect(20, buf))
-            buf.WriteDouble(ribbonWidth);
-        if(WriteSelect(21, buf))
-            buf.WriteInt(lineWidth);
-        if(WriteSelect(22, buf))
             buf.WriteInt(coloringMethod);
-        if(WriteSelect(23, buf))
+        if(WriteSelect(17, buf))
             buf.WriteString(colorTableName);
-        if(WriteSelect(24, buf))
+        if(WriteSelect(18, buf))
             singleColor.Write(buf);
-        if(WriteSelect(25, buf))
+        if(WriteSelect(19, buf))
             buf.WriteBool(legendFlag);
-        if(WriteSelect(26, buf))
+        if(WriteSelect(20, buf))
             buf.WriteBool(lightingFlag);
-        if(WriteSelect(27, buf))
+        if(WriteSelect(21, buf))
             buf.WriteInt(streamlineDirection);
-        if(WriteSelect(28, buf))
+        if(WriteSelect(22, buf))
             buf.WriteDouble(maxStepLength);
-        if(WriteSelect(29, buf))
+        if(WriteSelect(23, buf))
             buf.WriteBool(limitMaximumTimestep);
-        if(WriteSelect(30, buf))
+        if(WriteSelect(24, buf))
             buf.WriteDouble(maxTimeStep);
-        if(WriteSelect(31, buf))
+        if(WriteSelect(25, buf))
             buf.WriteDouble(relTol);
-        if(WriteSelect(32, buf))
+        if(WriteSelect(26, buf))
             buf.WriteDouble(absTol);
-        if(WriteSelect(33, buf))
+        if(WriteSelect(27, buf))
             buf.WriteInt(terminationType);
-        if(WriteSelect(34, buf))
+        if(WriteSelect(28, buf))
             buf.WriteInt(integrationType);
-        if(WriteSelect(35, buf))
+        if(WriteSelect(29, buf))
             buf.WriteInt(streamlineAlgorithmType);
-        if(WriteSelect(36, buf))
+        if(WriteSelect(30, buf))
             buf.WriteInt(maxStreamlineProcessCount);
-        if(WriteSelect(37, buf))
+        if(WriteSelect(31, buf))
             buf.WriteInt(maxDomainCacheSize);
-        if(WriteSelect(38, buf))
+        if(WriteSelect(32, buf))
             buf.WriteInt(workGroupSize);
-        if(WriteSelect(39, buf))
+        if(WriteSelect(33, buf))
             buf.WriteBool(pathlines);
-        if(WriteSelect(40, buf))
+        if(WriteSelect(34, buf))
             buf.WriteString(coloringVariable);
-        if(WriteSelect(41, buf))
+        if(WriteSelect(35, buf))
             buf.WriteBool(legendMinFlag);
-        if(WriteSelect(42, buf))
+        if(WriteSelect(36, buf))
             buf.WriteBool(legendMaxFlag);
-        if(WriteSelect(43, buf))
+        if(WriteSelect(37, buf))
             buf.WriteDouble(legendMin);
-        if(WriteSelect(44, buf))
+        if(WriteSelect(38, buf))
             buf.WriteDouble(legendMax);
-        if(WriteSelect(45, buf))
+        if(WriteSelect(39, buf))
             buf.WriteDouble(displayBegin);
-        if(WriteSelect(46, buf))
+        if(WriteSelect(40, buf))
             buf.WriteDouble(displayEnd);
-        if(WriteSelect(47, buf))
+        if(WriteSelect(41, buf))
             buf.WriteBool(displayBeginFlag);
-        if(WriteSelect(48, buf))
+        if(WriteSelect(42, buf))
             buf.WriteBool(displayEndFlag);
+        if(WriteSelect(43, buf))
+            buf.WriteInt(displayMethod);
+        if(WriteSelect(44, buf))
+            buf.WriteInt(tubeSizeType);
+        if(WriteSelect(45, buf))
+            buf.WriteDouble(tubeRadiusAbsolute);
+        if(WriteSelect(46, buf))
+            buf.WriteDouble(tubeRadiusBBox);
+        if(WriteSelect(47, buf))
+            buf.WriteInt(ribbonWidthSizeType);
+        if(WriteSelect(48, buf))
+            buf.WriteDouble(ribbonWidthAbsolute);
         if(WriteSelect(49, buf))
-            buf.WriteDouble(seedDisplayRadius);
+            buf.WriteDouble(ribbonWidthBBox);
         if(WriteSelect(50, buf))
-            buf.WriteInt(headDisplayType);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(51, buf))
-            buf.WriteDouble(headDisplayRadius);
+            buf.WriteBool(showSeeds);
         if(WriteSelect(52, buf))
-            buf.WriteDouble(headDisplayHeight);
+            buf.WriteInt(seedRadiusSizeType);
         if(WriteSelect(53, buf))
-            buf.WriteInt(opacityType);
+            buf.WriteDouble(seedRadiusAbsolute);
         if(WriteSelect(54, buf))
-            buf.WriteString(opacityVariable);
+            buf.WriteDouble(seedRadiusBBox);
         if(WriteSelect(55, buf))
-            buf.WriteDouble(opacity);
+            buf.WriteBool(showHeads);
         if(WriteSelect(56, buf))
-            buf.WriteDouble(opacityVarMin);
+            buf.WriteInt(headDisplayType);
         if(WriteSelect(57, buf))
-            buf.WriteDouble(opacityVarMax);
+            buf.WriteInt(headRadiusSizeType);
         if(WriteSelect(58, buf))
-            buf.WriteBool(opacityVarMinFlag);
+            buf.WriteDouble(headRadiusAbsolute);
         if(WriteSelect(59, buf))
-            buf.WriteBool(opacityVarMaxFlag);
+            buf.WriteDouble(headRadiusBBox);
         if(WriteSelect(60, buf))
-            buf.WriteInt(tubeDisplayDensity);
+            buf.WriteDouble(headHeightRatio);
         if(WriteSelect(61, buf))
-            buf.WriteInt(geomDisplayQuality);
+            buf.WriteInt(opacityType);
         if(WriteSelect(62, buf))
-            buf.WriteDouble(sampleDistance0);
+            buf.WriteString(opacityVariable);
         if(WriteSelect(63, buf))
-            buf.WriteDouble(sampleDistance1);
+            buf.WriteDouble(opacity);
         if(WriteSelect(64, buf))
-            buf.WriteDouble(sampleDistance2);
+            buf.WriteDouble(opacityVarMin);
         if(WriteSelect(65, buf))
-            buf.WriteBool(fillInterior);
+            buf.WriteDouble(opacityVarMax);
         if(WriteSelect(66, buf))
-            buf.WriteBool(randomSamples);
+            buf.WriteBool(opacityVarMinFlag);
         if(WriteSelect(67, buf))
-            buf.WriteInt(randomSeed);
+            buf.WriteBool(opacityVarMaxFlag);
         if(WriteSelect(68, buf))
-            buf.WriteInt(numberOfRandomSamples);
+            buf.WriteInt(tubeDisplayDensity);
         if(WriteSelect(69, buf))
+            buf.WriteInt(geomDisplayQuality);
+        if(WriteSelect(70, buf))
+            buf.WriteDouble(sampleDistance0);
+        if(WriteSelect(71, buf))
+            buf.WriteDouble(sampleDistance1);
+        if(WriteSelect(72, buf))
+            buf.WriteDouble(sampleDistance2);
+        if(WriteSelect(73, buf))
+            buf.WriteBool(fillInterior);
+        if(WriteSelect(74, buf))
+            buf.WriteBool(randomSamples);
+        if(WriteSelect(75, buf))
+            buf.WriteInt(randomSeed);
+        if(WriteSelect(76, buf))
+            buf.WriteInt(numberOfRandomSamples);
+        if(WriteSelect(77, buf))
             buf.WriteBool(forceNodeCenteredData);
     }
 
@@ -1358,166 +1465,190 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             SetSampleDensity2(buf.ReadInt());
             break;
         case 16:
-            SetDisplayMethod(buf.ReadInt());
-            break;
-        case 17:
-            SetShowSeeds(buf.ReadBool());
-            break;
-        case 18:
-            SetShowHeads(buf.ReadBool());
-            break;
-        case 19:
-            SetTubeRadius(buf.ReadDouble());
-            break;
-        case 20:
-            SetRibbonWidth(buf.ReadDouble());
-            break;
-        case 21:
-            SetLineWidth(buf.ReadInt());
-            break;
-        case 22:
             SetColoringMethod(buf.ReadInt());
             break;
-        case 23:
+        case 17:
             SetColorTableName(buf.ReadString());
             break;
-        case 24:
+        case 18:
             singleColor.Read(buf);
-            Select(24);
+            Select(18);
             break;
-        case 25:
+        case 19:
             SetLegendFlag(buf.ReadBool());
             break;
-        case 26:
+        case 20:
             SetLightingFlag(buf.ReadBool());
             break;
-        case 27:
+        case 21:
             SetStreamlineDirection(buf.ReadInt());
             break;
-        case 28:
+        case 22:
             SetMaxStepLength(buf.ReadDouble());
             break;
-        case 29:
+        case 23:
             SetLimitMaximumTimestep(buf.ReadBool());
             break;
-        case 30:
+        case 24:
             SetMaxTimeStep(buf.ReadDouble());
             break;
-        case 31:
+        case 25:
             SetRelTol(buf.ReadDouble());
             break;
-        case 32:
+        case 26:
             SetAbsTol(buf.ReadDouble());
             break;
-        case 33:
+        case 27:
             SetTerminationType(buf.ReadInt());
             break;
-        case 34:
+        case 28:
             SetIntegrationType(buf.ReadInt());
             break;
-        case 35:
+        case 29:
             SetStreamlineAlgorithmType(buf.ReadInt());
             break;
-        case 36:
+        case 30:
             SetMaxStreamlineProcessCount(buf.ReadInt());
             break;
-        case 37:
+        case 31:
             SetMaxDomainCacheSize(buf.ReadInt());
             break;
-        case 38:
+        case 32:
             SetWorkGroupSize(buf.ReadInt());
             break;
-        case 39:
+        case 33:
             SetPathlines(buf.ReadBool());
             break;
-        case 40:
+        case 34:
             SetColoringVariable(buf.ReadString());
             break;
-        case 41:
+        case 35:
             SetLegendMinFlag(buf.ReadBool());
             break;
-        case 42:
+        case 36:
             SetLegendMaxFlag(buf.ReadBool());
             break;
-        case 43:
+        case 37:
             SetLegendMin(buf.ReadDouble());
             break;
-        case 44:
+        case 38:
             SetLegendMax(buf.ReadDouble());
             break;
-        case 45:
+        case 39:
             SetDisplayBegin(buf.ReadDouble());
             break;
-        case 46:
+        case 40:
             SetDisplayEnd(buf.ReadDouble());
             break;
-        case 47:
+        case 41:
             SetDisplayBeginFlag(buf.ReadBool());
             break;
-        case 48:
+        case 42:
             SetDisplayEndFlag(buf.ReadBool());
             break;
+        case 43:
+            SetDisplayMethod(buf.ReadInt());
+            break;
+        case 44:
+            SetTubeSizeType(buf.ReadInt());
+            break;
+        case 45:
+            SetTubeRadiusAbsolute(buf.ReadDouble());
+            break;
+        case 46:
+            SetTubeRadiusBBox(buf.ReadDouble());
+            break;
+        case 47:
+            SetRibbonWidthSizeType(buf.ReadInt());
+            break;
+        case 48:
+            SetRibbonWidthAbsolute(buf.ReadDouble());
+            break;
         case 49:
-            SetSeedDisplayRadius(buf.ReadDouble());
+            SetRibbonWidthBBox(buf.ReadDouble());
             break;
         case 50:
-            SetHeadDisplayType(buf.ReadInt());
+            SetLineWidth(buf.ReadInt());
             break;
         case 51:
-            SetHeadDisplayRadius(buf.ReadDouble());
+            SetShowSeeds(buf.ReadBool());
             break;
         case 52:
-            SetHeadDisplayHeight(buf.ReadDouble());
+            SetSeedRadiusSizeType(buf.ReadInt());
             break;
         case 53:
-            SetOpacityType(buf.ReadInt());
+            SetSeedRadiusAbsolute(buf.ReadDouble());
             break;
         case 54:
-            SetOpacityVariable(buf.ReadString());
+            SetSeedRadiusBBox(buf.ReadDouble());
             break;
         case 55:
-            SetOpacity(buf.ReadDouble());
+            SetShowHeads(buf.ReadBool());
             break;
         case 56:
-            SetOpacityVarMin(buf.ReadDouble());
+            SetHeadDisplayType(buf.ReadInt());
             break;
         case 57:
-            SetOpacityVarMax(buf.ReadDouble());
+            SetHeadRadiusSizeType(buf.ReadInt());
             break;
         case 58:
-            SetOpacityVarMinFlag(buf.ReadBool());
+            SetHeadRadiusAbsolute(buf.ReadDouble());
             break;
         case 59:
-            SetOpacityVarMaxFlag(buf.ReadBool());
+            SetHeadRadiusBBox(buf.ReadDouble());
             break;
         case 60:
-            SetTubeDisplayDensity(buf.ReadInt());
+            SetHeadHeightRatio(buf.ReadDouble());
             break;
         case 61:
-            SetGeomDisplayQuality(buf.ReadInt());
+            SetOpacityType(buf.ReadInt());
             break;
         case 62:
-            SetSampleDistance0(buf.ReadDouble());
+            SetOpacityVariable(buf.ReadString());
             break;
         case 63:
-            SetSampleDistance1(buf.ReadDouble());
+            SetOpacity(buf.ReadDouble());
             break;
         case 64:
-            SetSampleDistance2(buf.ReadDouble());
+            SetOpacityVarMin(buf.ReadDouble());
             break;
         case 65:
-            SetFillInterior(buf.ReadBool());
+            SetOpacityVarMax(buf.ReadDouble());
             break;
         case 66:
-            SetRandomSamples(buf.ReadBool());
+            SetOpacityVarMinFlag(buf.ReadBool());
             break;
         case 67:
-            SetRandomSeed(buf.ReadInt());
+            SetOpacityVarMaxFlag(buf.ReadBool());
             break;
         case 68:
-            SetNumberOfRandomSamples(buf.ReadInt());
+            SetTubeDisplayDensity(buf.ReadInt());
             break;
         case 69:
+            SetGeomDisplayQuality(buf.ReadInt());
+            break;
+        case 70:
+            SetSampleDistance0(buf.ReadDouble());
+            break;
+        case 71:
+            SetSampleDistance1(buf.ReadDouble());
+            break;
+        case 72:
+            SetSampleDistance2(buf.ReadDouble());
+            break;
+        case 73:
+            SetFillInterior(buf.ReadBool());
+            break;
+        case 74:
+            SetRandomSamples(buf.ReadBool());
+            break;
+        case 75:
+            SetRandomSeed(buf.ReadInt());
+            break;
+        case 76:
+            SetNumberOfRandomSamples(buf.ReadInt());
+            break;
+        case 77:
             SetForceNodeCenteredData(buf.ReadBool());
             break;
         }
@@ -1557,19 +1688,6 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + intToString("sampleDensity0", sampleDensity0, indent) + "\n";
         str = str + intToString("sampleDensity1", sampleDensity1, indent) + "\n";
         str = str + intToString("sampleDensity2", sampleDensity2, indent) + "\n";
-        str = str + indent + "displayMethod = ";
-        if(displayMethod == DISPLAYMETHOD_LINES)
-            str = str + "DISPLAYMETHOD_LINES";
-        if(displayMethod == DISPLAYMETHOD_TUBES)
-            str = str + "DISPLAYMETHOD_TUBES";
-        if(displayMethod == DISPLAYMETHOD_RIBBONS)
-            str = str + "DISPLAYMETHOD_RIBBONS";
-        str = str + "\n";
-        str = str + boolToString("showSeeds", showSeeds, indent) + "\n";
-        str = str + boolToString("showHeads", showHeads, indent) + "\n";
-        str = str + doubleToString("tubeRadius", tubeRadius, indent) + "\n";
-        str = str + doubleToString("ribbonWidth", ribbonWidth, indent) + "\n";
-        str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + indent + "coloringMethod = ";
         if(coloringMethod == COLORINGMETHOD_SOLID)
             str = str + "COLORINGMETHOD_SOLID";
@@ -1642,15 +1760,56 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("displayEnd", displayEnd, indent) + "\n";
         str = str + boolToString("displayBeginFlag", displayBeginFlag, indent) + "\n";
         str = str + boolToString("displayEndFlag", displayEndFlag, indent) + "\n";
-        str = str + doubleToString("seedDisplayRadius", seedDisplayRadius, indent) + "\n";
+        str = str + indent + "displayMethod = ";
+        if(displayMethod == DISPLAYMETHOD_LINES)
+            str = str + "DISPLAYMETHOD_LINES";
+        if(displayMethod == DISPLAYMETHOD_TUBES)
+            str = str + "DISPLAYMETHOD_TUBES";
+        if(displayMethod == DISPLAYMETHOD_RIBBONS)
+            str = str + "DISPLAYMETHOD_RIBBONS";
+        str = str + "\n";
+        str = str + indent + "tubeSizeType = ";
+        if(tubeSizeType == SIZETYPE_ABSOLUTE)
+            str = str + "SIZETYPE_ABSOLUTE";
+        if(tubeSizeType == SIZETYPE_FRACTIONOFBBOX)
+            str = str + "SIZETYPE_FRACTIONOFBBOX";
+        str = str + "\n";
+        str = str + doubleToString("tubeRadiusAbsolute", tubeRadiusAbsolute, indent) + "\n";
+        str = str + doubleToString("tubeRadiusBBox", tubeRadiusBBox, indent) + "\n";
+        str = str + indent + "ribbonWidthSizeType = ";
+        if(ribbonWidthSizeType == SIZETYPE_ABSOLUTE)
+            str = str + "SIZETYPE_ABSOLUTE";
+        if(ribbonWidthSizeType == SIZETYPE_FRACTIONOFBBOX)
+            str = str + "SIZETYPE_FRACTIONOFBBOX";
+        str = str + "\n";
+        str = str + doubleToString("ribbonWidthAbsolute", ribbonWidthAbsolute, indent) + "\n";
+        str = str + doubleToString("ribbonWidthBBox", ribbonWidthBBox, indent) + "\n";
+        str = str + intToString("lineWidth", lineWidth, indent) + "\n";
+        str = str + boolToString("showSeeds", showSeeds, indent) + "\n";
+        str = str + indent + "seedRadiusSizeType = ";
+        if(seedRadiusSizeType == SIZETYPE_ABSOLUTE)
+            str = str + "SIZETYPE_ABSOLUTE";
+        if(seedRadiusSizeType == SIZETYPE_FRACTIONOFBBOX)
+            str = str + "SIZETYPE_FRACTIONOFBBOX";
+        str = str + "\n";
+        str = str + doubleToString("seedRadiusAbsolute", seedRadiusAbsolute, indent) + "\n";
+        str = str + doubleToString("seedRadiusBBox", seedRadiusBBox, indent) + "\n";
+        str = str + boolToString("showHeads", showHeads, indent) + "\n";
         str = str + indent + "headDisplayType = ";
         if(headDisplayType == GEOMDISPLAYTYPE_SPHERE)
             str = str + "GEOMDISPLAYTYPE_SPHERE";
         if(headDisplayType == GEOMDISPLAYTYPE_CONE)
             str = str + "GEOMDISPLAYTYPE_CONE";
         str = str + "\n";
-        str = str + doubleToString("headDisplayRadius", headDisplayRadius, indent) + "\n";
-        str = str + doubleToString("headDisplayHeight", headDisplayHeight, indent) + "\n";
+        str = str + indent + "headRadiusSizeType = ";
+        if(headRadiusSizeType == SIZETYPE_ABSOLUTE)
+            str = str + "SIZETYPE_ABSOLUTE";
+        if(headRadiusSizeType == SIZETYPE_FRACTIONOFBBOX)
+            str = str + "SIZETYPE_FRACTIONOFBBOX";
+        str = str + "\n";
+        str = str + doubleToString("headRadiusAbsolute", headRadiusAbsolute, indent) + "\n";
+        str = str + doubleToString("headRadiusBBox", headRadiusBBox, indent) + "\n";
+        str = str + doubleToString("headHeightRatio", headHeightRatio, indent) + "\n";
         str = str + indent + "opacityType = ";
         if(opacityType == OPACITYTYPE_FULLYOPAQUE)
             str = str + "OPACITYTYPE_FULLYOPAQUE";
@@ -1707,12 +1866,6 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private int            sampleDensity0;
     private int            sampleDensity1;
     private int            sampleDensity2;
-    private int            displayMethod;
-    private boolean        showSeeds;
-    private boolean        showHeads;
-    private double         tubeRadius;
-    private double         ribbonWidth;
-    private int            lineWidth;
     private int            coloringMethod;
     private String         colorTableName;
     private ColorAttribute singleColor;
@@ -1740,10 +1893,24 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private double         displayEnd;
     private boolean        displayBeginFlag;
     private boolean        displayEndFlag;
-    private double         seedDisplayRadius;
+    private int            displayMethod;
+    private int            tubeSizeType;
+    private double         tubeRadiusAbsolute;
+    private double         tubeRadiusBBox;
+    private int            ribbonWidthSizeType;
+    private double         ribbonWidthAbsolute;
+    private double         ribbonWidthBBox;
+    private int            lineWidth;
+    private boolean        showSeeds;
+    private int            seedRadiusSizeType;
+    private double         seedRadiusAbsolute;
+    private double         seedRadiusBBox;
+    private boolean        showHeads;
     private int            headDisplayType;
-    private double         headDisplayRadius;
-    private double         headDisplayHeight;
+    private int            headRadiusSizeType;
+    private double         headRadiusAbsolute;
+    private double         headRadiusBBox;
+    private double         headHeightRatio;
     private int            opacityType;
     private String         opacityVariable;
     private double         opacity;

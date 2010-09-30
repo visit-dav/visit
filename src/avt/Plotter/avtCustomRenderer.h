@@ -87,6 +87,9 @@ typedef void (*OverrideRenderCallback)(void *, avtDataObject_p &);
 //    Brad Whitlock, Wed Aug 22 11:38:46 PDT 2007
 //    Added reduced detail mode.
 //
+//    Hank Childs, Thu Sep 30 00:39:47 PDT 2010
+//    Add methods for setting the bbox.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtCustomRenderer
@@ -99,8 +102,10 @@ class PLOTTER_API avtCustomRenderer
     void                    SetView(avtViewInfo &);
 
     void                    SetRange(double, double);
+    void                    SetBoundingBox(const double *);
 
     virtual bool            OperatesOnScalars(void) { return false; };
+    virtual bool            NeedsBoundingBox(void) { return false; };
 
     virtual void            GlobalLightingOn(void);
     virtual void            GlobalLightingOff(void);
@@ -127,6 +132,7 @@ class PLOTTER_API avtCustomRenderer
   protected:
     avtViewInfo             view;
     double                  varmin, varmax;
+    double                  bbox[6];
     vtkRenderer            *VTKRen;
     bool                    immediateModeRendering;
 
