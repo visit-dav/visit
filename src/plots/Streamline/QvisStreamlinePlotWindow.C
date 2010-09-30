@@ -727,13 +727,25 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     drawLayout->addWidget(tubeRadius, 1, 1);
     drawLayout->addWidget(ribbonWidth, 1, 1);
 
+    tubeSizeType = new QComboBox(displayGrp);
+    tubeSizeType->addItem(tr("Absolute"), 0);
+    tubeSizeType->addItem(tr("Fraction of Bounding Box"), 1);
+    connect(tubeSizeType, SIGNAL(activated(int)), this, SLOT(tubeSizeTypeChanged(int)));
+    drawLayout->addWidget(tubeSizeType, 1, 2);
+
+    ribbonSizeType = new QComboBox(displayGrp);
+    ribbonSizeType->addItem(tr("Absolute"), 0);
+    ribbonSizeType->addItem(tr("Fraction of Bounding Box"), 1);
+    connect(ribbonSizeType, SIGNAL(activated(int)), this, SLOT(ribbonSizeTypeChanged(int)));
+    drawLayout->addWidget(ribbonSizeType, 1, 2);
+
     tubeDisplayDensity = new QSpinBox(displayGrp);
     tubeDisplayDensity->setMinimum(2);
     tubeDisplayDensity->setMaximum(100);
     tubeDisplayDensityLabel = new QLabel(tr("Display density"), displayGrp);
     connect(tubeDisplayDensity, SIGNAL(valueChanged(int)), this, SLOT(tubeDisplayDensityChanged(int)));
-    drawLayout->addWidget(tubeDisplayDensityLabel, 1, 2);
-    drawLayout->addWidget(tubeDisplayDensity, 1, 3);
+    drawLayout->addWidget(tubeDisplayDensityLabel, 0, 2);
+    drawLayout->addWidget(tubeDisplayDensity, 0, 3);
 
 
     // Splitter
@@ -766,6 +778,12 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     showLayout->addWidget(seedRadiusLabel, 0, 1, Qt::AlignRight);
     showLayout->addWidget(seedRadius, 0, 2);
 
+    seedSizeType = new QComboBox(displayGrp);
+    seedSizeType->addItem(tr("Absolute"), 0);
+    seedSizeType->addItem(tr("Fraction of Bounding Box"), 1);
+    connect(seedSizeType, SIGNAL(activated(int)), this, SLOT(seedSizeTypeChanged(int)));
+    showLayout->addWidget(seedSizeType, 0, 3);
+
     //show heads
     showHeads = new QCheckBox(tr("Show heads"), displayGrp);
     connect(showHeads, SIGNAL(toggled(bool)),this, SLOT(showHeadsChanged(bool)));
@@ -779,22 +797,26 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     showLayout->addWidget(headDisplayTypeLabel, 1, 1, Qt::AlignRight);
     showLayout->addWidget(headDisplayType, 1, 2);
 
-
     headRadius = new QLineEdit(displayGrp);
     connect(headRadius, SIGNAL(returnPressed()), this, SLOT(headRadiusProcessText()));
     headRadiusLabel = new QLabel(tr("Radius"), displayGrp);
     headRadiusLabel->setBuddy(headRadius);
     headRadiusLabel->setToolTip(tr("Radius for head point display."));
     headHeight = new QLineEdit(displayGrp);
-    connect(headHeight, SIGNAL(returnPressed()), this, SLOT(headHeightProcessText()));
-    headHeightLabel = new QLabel(tr("Height"), displayGrp);
+    connect(headHeight, SIGNAL(returnPressed()), this, SLOT(headHeightRatioProcessText()));
+    headHeightLabel = new QLabel(tr("Height:Radius Ratio"), displayGrp);
     headHeightLabel->setBuddy(headHeight);
     headHeightLabel->setToolTip(tr("Height for head point display."));
     showLayout->addWidget(headRadiusLabel, 2, 1, Qt::AlignRight);
     showLayout->addWidget(headRadius, 2, 2);
-    showLayout->addWidget(headHeightLabel, 2, 3);
-    showLayout->addWidget(headHeight, 2, 4);
+    showLayout->addWidget(headHeightLabel, 3, 1);
+    showLayout->addWidget(headHeight, 3, 2);
 
+    headSizeType = new QComboBox(displayGrp);
+    headSizeType->addItem(tr("Absolute"), 0);
+    headSizeType->addItem(tr("Fraction of Bounding Box"), 1);
+    connect(headSizeType, SIGNAL(activated(int)), this, SLOT(headSizeTypeChanged(int)));
+    showLayout->addWidget(headSizeType, 2, 3);
 
     geomDisplayQuality = new QComboBox(displayGrp);
     geomDisplayQuality->addItem(tr("Low"), 0);
@@ -803,8 +825,8 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     geomDisplayQuality->addItem(tr("Super"), 3);
     geomDisplayQualityLabel = new QLabel(tr("Display quality"), displayGrp);
     connect(geomDisplayQuality, SIGNAL(activated(int)), this, SLOT(geomDisplayQualityChanged(int)));
-    showLayout->addWidget(geomDisplayQualityLabel, 3, 0);
-    showLayout->addWidget(geomDisplayQuality, 3, 1);
+    showLayout->addWidget(geomDisplayQualityLabel, 4, 0);
+    showLayout->addWidget(geomDisplayQuality, 4, 1);
 
 
     // Splitter
@@ -1102,6 +1124,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //   Hank Childs, Wed Sep 29 20:22:36 PDT 2010
 //   Add maxTimeStep.
 //
+//   Hank Childs, Thu Sep 30 12:07:14 PDT 2010
+//   Support widgets for scaling based on fraction of the bounding box.
+//
 // ****************************************************************************
 
 void
@@ -1306,6 +1331,8 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
 
                 tubeRadius->hide();
                 ribbonWidth->hide();
+                tubeSizeType->hide();
+                ribbonSizeType->hide();
                 geomRadiusLabel->hide();
                 tubeDisplayDensityLabel->hide();
                 tubeDisplayDensity->hide();
@@ -1319,11 +1346,15 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 {
                     tubeRadius->show();
                     ribbonWidth->hide();
+                    tubeSizeType->show();
+                    ribbonSizeType->hide();
                 }
                 if (streamAtts->GetDisplayMethod() == StreamlineAttributes::Ribbons)
                 {
                     ribbonWidth->show();
                     tubeRadius->hide();
+                    tubeSizeType->hide();
+                    ribbonSizeType->show();
                 }
                 
                 geomRadiusLabel->show();
@@ -1347,6 +1378,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
         case StreamlineAttributes::ID_showSeeds:
             seedRadius->setEnabled(streamAtts->GetShowSeeds());
             seedRadiusLabel->setEnabled(streamAtts->GetShowSeeds());
+            seedSizeType->setEnabled(streamAtts->GetShowSeeds());
             geomDisplayQuality->setEnabled(streamAtts->GetShowSeeds()||streamAtts->GetShowHeads());
             geomDisplayQualityLabel->setEnabled(streamAtts->GetShowSeeds()||streamAtts->GetShowHeads());
 
@@ -1358,6 +1390,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
         case StreamlineAttributes::ID_showHeads:
             headRadius->setEnabled(streamAtts->GetShowHeads());
             headRadiusLabel->setEnabled(streamAtts->GetShowHeads());
+            headSizeType->setEnabled(streamAtts->GetShowHeads());
             headDisplayType->setEnabled(streamAtts->GetShowHeads());
             headHeight->setEnabled(streamAtts->GetShowHeads() && streamAtts->GetHeadDisplayType() == StreamlineAttributes::Cone);
             headHeightLabel->setEnabled(streamAtts->GetShowHeads() && streamAtts->GetHeadDisplayType() == StreamlineAttributes::Cone);
@@ -1369,26 +1402,126 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             showHeads->blockSignals(false);
             break;
             
-        case StreamlineAttributes::ID_seedDisplayRadius:
-            temp.setNum(streamAtts->GetSeedDisplayRadius());
-            seedRadius->setText(temp);
+        case StreamlineAttributes::ID_seedRadiusSizeType:
+            seedSizeType->blockSignals(true);
+            seedSizeType->setCurrentIndex((int) streamAtts->GetSeedRadiusSizeType());
+            seedSizeType->blockSignals(false);
+            if (streamAtts->GetSeedRadiusSizeType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetSeedRadiusAbsolute());
+                seedRadius->setText(temp);
+            }
+            else
+            {
+                temp.setNum(streamAtts->GetSeedRadiusBBox());
+                seedRadius->setText(temp);
+            }
             break;
-        case StreamlineAttributes::ID_headDisplayRadius:
-            temp.setNum(streamAtts->GetHeadDisplayRadius());
-            headRadius->setText(temp);
+        case StreamlineAttributes::ID_seedRadiusAbsolute:
+            if (streamAtts->GetSeedRadiusSizeType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetSeedRadiusAbsolute());
+                seedRadius->setText(temp);
+            }
             break;
-        case StreamlineAttributes::ID_headDisplayHeight:
-            temp.setNum(streamAtts->GetHeadDisplayHeight());
+        case StreamlineAttributes::ID_seedRadiusBBox:
+            if (streamAtts->GetSeedRadiusSizeType() == StreamlineAttributes::FractionOfBBox)
+            {
+                temp.setNum(streamAtts->GetSeedRadiusBBox());
+                seedRadius->setText(temp);
+            }
+            break;
+        case StreamlineAttributes::ID_headRadiusSizeType:
+            headSizeType->blockSignals(true);
+            headSizeType->setCurrentIndex((int) streamAtts->GetHeadRadiusSizeType());
+            headSizeType->blockSignals(false);
+            if (streamAtts->GetHeadRadiusSizeType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetHeadRadiusAbsolute());
+                headRadius->setText(temp);
+            }
+            else
+            {
+                temp.setNum(streamAtts->GetHeadRadiusBBox());
+                headRadius->setText(temp);
+            }
+            break;
+        case StreamlineAttributes::ID_headRadiusAbsolute:
+            if (streamAtts->GetHeadRadiusSizeType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetHeadRadiusAbsolute());
+                headRadius->setText(temp);
+            }
+            break;
+        case StreamlineAttributes::ID_headRadiusBBox:
+            if (streamAtts->GetHeadRadiusSizeType() == StreamlineAttributes::FractionOfBBox)
+            {
+                temp.setNum(streamAtts->GetHeadRadiusBBox());
+                headRadius->setText(temp);
+            }
+            break;
+        case StreamlineAttributes::ID_headHeightRatio:
+            temp.setNum(streamAtts->GetHeadHeightRatio());
             headHeight->setText(temp);
             break;
 
-        case StreamlineAttributes::ID_tubeRadius:
-            temp.setNum(streamAtts->GetTubeRadius());
-            tubeRadius->setText(temp);
+        case StreamlineAttributes::ID_tubeSizeType:
+            tubeSizeType->blockSignals(true);
+            tubeSizeType->setCurrentIndex((int) streamAtts->GetTubeSizeType());
+            tubeSizeType->blockSignals(false);
+            if (streamAtts->GetTubeSizeType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetTubeRadiusAbsolute());
+                tubeRadius->setText(temp);
+            }
+            else
+            {
+                temp.setNum(streamAtts->GetTubeRadiusBBox());
+                tubeRadius->setText(temp);
+            }
             break;
-        case StreamlineAttributes::ID_ribbonWidth:
-            temp.setNum(streamAtts->GetRibbonWidth());
-            ribbonWidth->setText(temp);
+        case StreamlineAttributes::ID_tubeRadiusAbsolute:
+            if (streamAtts->GetTubeSizeType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetTubeRadiusAbsolute());
+                tubeRadius->setText(temp);
+            }
+            break;
+        case StreamlineAttributes::ID_tubeRadiusBBox:
+            if (streamAtts->GetTubeSizeType() == StreamlineAttributes::FractionOfBBox)
+            {
+                temp.setNum(streamAtts->GetTubeRadiusBBox());
+                tubeRadius->setText(temp);
+            }
+            break;
+        case StreamlineAttributes::ID_ribbonWidthSizeType:
+            ribbonSizeType->blockSignals(true);
+            ribbonSizeType->setCurrentIndex((int) streamAtts->GetRibbonWidthSizeType());
+            ribbonSizeType->blockSignals(false);
+            if (streamAtts->GetRibbonWidthSizeType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetRibbonWidthAbsolute());
+                ribbonWidth->setText(temp);
+            }
+            else
+            {
+                temp.setNum(streamAtts->GetRibbonWidthBBox());
+                ribbonWidth->setText(temp);
+            }
+            break;
+        case StreamlineAttributes::ID_ribbonWidthAbsolute:
+            if (streamAtts->GetRibbonWidthSizeType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetRibbonWidthAbsolute());
+                ribbonWidth->setText(temp);
+            }
+            break;
+        case StreamlineAttributes::ID_ribbonWidthBBox:
+            if (streamAtts->GetRibbonWidthSizeType() == StreamlineAttributes::FractionOfBBox)
+            {
+                temp.setNum(streamAtts->GetRibbonWidthBBox());
+                ribbonWidth->setText(temp);
+            }
             break;
         case StreamlineAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
@@ -2065,6 +2198,9 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 //   Hank Childs, Wed Sep 29 20:44:18 PDT 2010
 //   Add support for the max time step.
 //
+//   Hank Childs, Thu Sep 30 01:48:49 PDT 2010
+//   Support widgets for fraction bbox vs absolute sizes.
+//
 // ****************************************************************************
 
 void
@@ -2337,30 +2473,58 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do radius
-    if(which_widget == StreamlineAttributes::ID_tubeRadius || doAll)
+    if ((which_widget == StreamlineAttributes::ID_tubeRadiusAbsolute || doAll)
+        && streamAtts->GetTubeSizeType() == StreamlineAttributes::Absolute)
     {
         double val;
         if(LineEditGetDouble(tubeRadius, val))
-            streamAtts->SetTubeRadius(val);
+            streamAtts->SetTubeRadiusAbsolute(val);
         else
         {
             ResettingError(tr("tube radius"),
-                DoubleToQString(streamAtts->GetTubeRadius()));
-            streamAtts->SetTubeRadius(streamAtts->GetTubeRadius());
+                DoubleToQString(streamAtts->GetTubeRadiusAbsolute()));
+            streamAtts->SetTubeRadiusAbsolute(streamAtts->GetTubeRadiusAbsolute());
+        }
+    }
+    if ((which_widget == StreamlineAttributes::ID_tubeRadiusBBox || doAll)
+        && streamAtts->GetTubeSizeType() == StreamlineAttributes::FractionOfBBox)
+    {
+        double val;
+        if(LineEditGetDouble(tubeRadius, val))
+            streamAtts->SetTubeRadiusBBox(val);
+        else
+        {
+            ResettingError(tr("tube radius"),
+                DoubleToQString(streamAtts->GetTubeRadiusBBox()));
+            streamAtts->SetTubeRadiusBBox(streamAtts->GetTubeRadiusBBox());
         }
     }
 
     // Do radius
-    if(which_widget == StreamlineAttributes::ID_ribbonWidth || doAll)
+    if ((which_widget == StreamlineAttributes::ID_ribbonWidthAbsolute || doAll)
+        && streamAtts->GetRibbonWidthSizeType() == StreamlineAttributes::Absolute)
     {
         double val;
         if(LineEditGetDouble(ribbonWidth, val))
-            streamAtts->SetRibbonWidth(val);
+            streamAtts->SetRibbonWidthAbsolute(val);
         else
         {
             ResettingError(tr("ribbon width"),
-                DoubleToQString(streamAtts->GetRibbonWidth()));
-            streamAtts->SetRibbonWidth(streamAtts->GetRibbonWidth());
+                DoubleToQString(streamAtts->GetRibbonWidthAbsolute()));
+            streamAtts->SetRibbonWidthAbsolute(streamAtts->GetRibbonWidthAbsolute());
+        }
+    }
+    if ((which_widget == StreamlineAttributes::ID_ribbonWidthBBox || doAll)
+        && streamAtts->GetRibbonWidthSizeType() == StreamlineAttributes::FractionOfBBox)
+    {
+        double val;
+        if(LineEditGetDouble(ribbonWidth, val))
+            streamAtts->SetRibbonWidthBBox(val);
+        else
+        {
+            ResettingError(tr("ribbon width"),
+                DoubleToQString(streamAtts->GetRibbonWidthBBox()));
+            streamAtts->SetRibbonWidthBBox(streamAtts->GetRibbonWidthBBox());
         }
     }
 
@@ -2444,42 +2608,72 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
     }
 
     // seedRadius
-    if(which_widget == StreamlineAttributes::ID_seedDisplayRadius || doAll)
+    if ((which_widget == StreamlineAttributes::ID_seedRadiusAbsolute || doAll)
+        && streamAtts->GetSeedRadiusSizeType() == StreamlineAttributes::Absolute)
     {
         double val;
         if(LineEditGetDouble(seedRadius, val))
-            streamAtts->SetSeedDisplayRadius(val);
+            streamAtts->SetSeedRadiusAbsolute(val);
         else
         {
             ResettingError(tr("Seed radius"),
-                DoubleToQString(streamAtts->GetSeedDisplayRadius()));
-            streamAtts->SetSeedDisplayRadius(streamAtts->GetSeedDisplayRadius());
+                DoubleToQString(streamAtts->GetSeedRadiusAbsolute()));
+            streamAtts->SetSeedRadiusAbsolute(streamAtts->GetSeedRadiusAbsolute());
         }
     }
+    if ((which_widget == StreamlineAttributes::ID_seedRadiusBBox || doAll)
+        && streamAtts->GetSeedRadiusSizeType() == StreamlineAttributes::FractionOfBBox)
+    {
+        double val;
+        if(LineEditGetDouble(seedRadius, val))
+            streamAtts->SetSeedRadiusBBox(val);
+        else
+        {
+            ResettingError(tr("Seed radius"),
+                DoubleToQString(streamAtts->GetSeedRadiusBBox()));
+            streamAtts->SetSeedRadiusBBox(streamAtts->GetSeedRadiusBBox());
+        }
+    }
+
     // headRadius
-    if(which_widget == StreamlineAttributes::ID_headDisplayRadius || doAll)
+    if ((which_widget == StreamlineAttributes::ID_headRadiusAbsolute || doAll)
+        && streamAtts->GetHeadRadiusSizeType() == StreamlineAttributes::Absolute)
     {
         double val;
         if(LineEditGetDouble(headRadius, val))
-            streamAtts->SetHeadDisplayRadius(val);
+            streamAtts->SetHeadRadiusAbsolute(val);
         else
         {
             ResettingError(tr("Head radius"),
-                DoubleToQString(streamAtts->GetHeadDisplayRadius()));
-            streamAtts->SetHeadDisplayRadius(streamAtts->GetHeadDisplayRadius());
+                DoubleToQString(streamAtts->GetHeadRadiusAbsolute()));
+            streamAtts->SetHeadRadiusAbsolute(streamAtts->GetHeadRadiusAbsolute());
         }
     }
+    if ((which_widget == StreamlineAttributes::ID_headRadiusBBox || doAll)
+        && streamAtts->GetHeadRadiusSizeType() == StreamlineAttributes::FractionOfBBox)
+    {
+        double val;
+        if(LineEditGetDouble(headRadius, val))
+            streamAtts->SetHeadRadiusBBox(val);
+        else
+        {
+            ResettingError(tr("Head radius"),
+                DoubleToQString(streamAtts->GetHeadRadiusBBox()));
+            streamAtts->SetHeadRadiusBBox(streamAtts->GetHeadRadiusBBox());
+        }
+    }
+
     // headHeight
-    if(which_widget == StreamlineAttributes::ID_headDisplayHeight || doAll)
+    if(which_widget == StreamlineAttributes::ID_headHeightRatio || doAll)
     {
         double val;
         if(LineEditGetDouble(headHeight, val))
-            streamAtts->SetHeadDisplayHeight(val);
+            streamAtts->SetHeadHeightRatio(val);
         else
         {
             ResettingError(tr("Head height"),
-                DoubleToQString(streamAtts->GetHeadDisplayHeight()));
-            streamAtts->SetHeadDisplayHeight(streamAtts->GetHeadDisplayHeight());
+                DoubleToQString(streamAtts->GetHeadHeightRatio()));
+            streamAtts->SetHeadHeightRatio(streamAtts->GetHeadHeightRatio());
         }
     }
     
@@ -2858,35 +3052,67 @@ QvisStreamlinePlotWindow::showHeadsChanged(bool val)
 void
 QvisStreamlinePlotWindow::tubeRadiusProcessText()
 {
-    GetCurrentValues(StreamlineAttributes::ID_tubeRadius);
+    GetCurrentValues(StreamlineAttributes::ID_tubeRadiusAbsolute);
+    GetCurrentValues(StreamlineAttributes::ID_tubeRadiusBBox);
     Apply();
 }
 
 void
 QvisStreamlinePlotWindow::ribbonWidthProcessText()
 {
-    GetCurrentValues(StreamlineAttributes::ID_ribbonWidth);
+    GetCurrentValues(StreamlineAttributes::ID_ribbonWidthAbsolute);
+    GetCurrentValues(StreamlineAttributes::ID_ribbonWidthBBox);
     Apply();
 }
 
 void
 QvisStreamlinePlotWindow::seedRadiusProcessText()
 {
-    GetCurrentValues(StreamlineAttributes::ID_seedDisplayRadius);
+    GetCurrentValues(StreamlineAttributes::ID_seedRadiusAbsolute);
+    GetCurrentValues(StreamlineAttributes::ID_seedRadiusBBox);
     Apply();
 }
 
 void
 QvisStreamlinePlotWindow::headRadiusProcessText()
 {
-    GetCurrentValues(StreamlineAttributes::ID_headDisplayRadius);
+    GetCurrentValues(StreamlineAttributes::ID_headRadiusAbsolute);
+    GetCurrentValues(StreamlineAttributes::ID_headRadiusBBox);
     Apply();
 }
 
 void
-QvisStreamlinePlotWindow::headHeightProcessText()
+QvisStreamlinePlotWindow::headHeightRatioProcessText()
 {
-    GetCurrentValues(StreamlineAttributes::ID_headDisplayHeight);
+    GetCurrentValues(StreamlineAttributes::ID_headHeightRatio);
+    Apply();
+}
+
+void 
+QvisStreamlinePlotWindow::headSizeTypeChanged(int v)
+{
+    streamAtts->SetHeadRadiusSizeType((StreamlineAttributes::SizeType) v);
+    Apply();
+}
+
+void 
+QvisStreamlinePlotWindow::tubeSizeTypeChanged(int v)
+{
+    streamAtts->SetTubeSizeType((StreamlineAttributes::SizeType) v);
+    Apply();
+}
+
+void 
+QvisStreamlinePlotWindow::seedSizeTypeChanged(int v)
+{
+    streamAtts->SetSeedRadiusSizeType((StreamlineAttributes::SizeType) v);
+    Apply();
+}
+
+void 
+QvisStreamlinePlotWindow::ribbonSizeTypeChanged(int v)
+{
+    streamAtts->SetRibbonWidthSizeType((StreamlineAttributes::SizeType) v);
     Apply();
 }
 

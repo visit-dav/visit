@@ -169,6 +169,10 @@ avtUserDefinedMapper::GetCurrentDataRange(double &rmin, double &rmax)
 //    Kathleen Bonnell, Wed Mar 19 14:26:05 PST 2003
 //    Removed test for min == max, no longer an issue with vtkLookupTables or 
 //    vtkMappers.
+//
+//    Hank Childs, Thu Sep 30 00:45:38 PDT 2010
+//    Also do bounding boxes.
+//
 // ****************************************************************************
 
 void
@@ -184,6 +188,13 @@ avtUserDefinedMapper::CustomizeMappers(void)
         // Now tell the renderer what its variable range should be.
         //
         renderer->SetRange(mmin, mmax);
+    }
+    if (renderer->NeedsBoundingBox())
+    {
+        double bbox[6];
+        avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+        atts.GetSpatialExtents(bbox);
+        renderer->SetBoundingBox(bbox);
     }
 }
 

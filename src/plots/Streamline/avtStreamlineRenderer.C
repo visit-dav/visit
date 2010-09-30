@@ -159,6 +159,9 @@ avtStreamlineRenderer::New()
 //  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
 //  Pass in camera to do transparency sorting.
 //
+//  Hank Childs, Thu Sep 30 00:45:38 PDT 2010
+//  Pass along the bounding box to the renderer implementation.
+//
 // ****************************************************************************
 
 void
@@ -194,6 +197,7 @@ avtStreamlineRenderer::Render(vtkDataSet *ds)
     winsize[0] = VTKRen->GetVTKWindow()->GetSize()[0];
     winsize[1] = VTKRen->GetVTKWindow()->GetSize()[1];
 
+    rendererImplementation->SetBoundingBox(bbox);
     rendererImplementation->Render(polydata,
                                    atts,
                                    immediateModeRendering,

@@ -396,3 +396,23 @@ avtCustomRenderer::SetSurfaceRepresentation(int rep)
     ;
 }
 
+
+// ****************************************************************************
+//  Method: avtCustomRenderer::SetBoundingBox
+//
+//  Purpose:
+//      Sets the bounding box of the input.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 30, 2010
+//
+// ****************************************************************************
+
+void
+avtCustomRenderer::SetBoundingBox(const double *b)
+{
+    for (int i = 0 ; i < 6 ; i++)
+        bbox[i] = b[i];
+}
+
+

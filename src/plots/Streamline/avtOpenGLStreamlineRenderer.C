@@ -594,6 +594,7 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
         shader->Disable();
 }
 
+
 // ****************************************************************************
 //  Method:  avtOpenGLStreamlineRenderer::DrawAsTubes
 //
@@ -609,8 +610,11 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Changed some attribute names.
 //
-//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
-//  Support for transparency sorting.
+//   Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//   Support for transparency sorting.
+//
+//   Hank Childs, Thu Sep 30 01:11:03 PDT 2010
+//   Add an option for sizing based on a fraction of the bounding box.
 //
 // ****************************************************************************
 
@@ -618,7 +622,10 @@ void
 avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
 {
     vtkTubeFilter *tube = vtkTubeFilter::New();
-    tube->SetRadius(atts.GetTubeRadius());
+    double tubeRadius = atts.GetTubeRadiusAbsolute();
+    if (atts.GetTubeSizeType() == StreamlineAttributes::FractionOfBBox)
+        tubeRadius = atts.GetTubeRadiusBBox() * GetBBoxSize();
+    tube->SetRadius(tubeRadius);
 
     tube->SetNumberOfSides(atts.GetTubeDisplayDensity());
     tube->SetCapping(1);
@@ -678,8 +685,11 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Changed some attribute names.
 //
-//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
-//  Support for transparency sorting.
+//   Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//   Support for transparency sorting.
+//
+//   Hank Childs, Thu Sep 30 01:11:03 PDT 2010
+//   Add an option for sizing based on a fraction of the bounding box.
 //
 // ****************************************************************************
 
@@ -759,7 +769,10 @@ avtOpenGLStreamlineRenderer::DrawAsRibbons(vtkPolyData *data)
         lineNormalGenerator->Delete();
         
         vtkRibbonFilter *ribbons = vtkRibbonFilter::New();
-        ribbons->SetWidth(atts.GetRibbonWidth());
+        double ribbonWidth = atts.GetRibbonWidthAbsolute();
+        if (atts.GetRibbonWidthSizeType() == StreamlineAttributes::FractionOfBBox)
+            ribbonWidth = atts.GetRibbonWidthBBox() * GetBBoxSize();
+        ribbons->SetWidth(ribbonWidth);
         ribbons->SetInput(pd);
         ribbons->Update();
         
@@ -788,8 +801,11 @@ avtOpenGLStreamlineRenderer::DrawAsRibbons(vtkPolyData *data)
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Changed some attribute names.
 //
-//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
-//  Support for transparency sorting.
+//   Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//   Support for transparency sorting.
+//
+//   Hank Childs, Thu Sep 30 01:11:03 PDT 2010
+//   Add an option for sizing based on a fraction of the bounding box.
 //
 // ****************************************************************************
 
@@ -797,7 +813,9 @@ void
 avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
 {
     CalculateSpherePts();
-    double rad = atts.GetSeedDisplayRadius();
+    double rad = atts.GetSeedRadiusAbsolute();
+    if (atts.GetSeedRadiusSizeType() == StreamlineAttributes::FractionOfBBox)
+        rad = atts.GetSeedRadiusBBox() * GetBBoxSize();
     int quality = (int)(atts.GetGeomDisplayQuality());
 
     vtkPoints *points = data->GetPoints();
@@ -855,14 +873,19 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
 //   Dave Pugmire, Thu Mar 25 16:34:23 EDT 2010
 //   Fixed indexing problem.
 //
+//   Hank Childs, Thu Sep 30 01:11:03 PDT 2010
+//   Add an option for sizing based on a fraction of the bounding box.
+//
 // ****************************************************************************
 
 void
 avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
 {
     CalculateSpherePts();
-    double rad = atts.GetHeadDisplayRadius();
-    double height = atts.GetHeadDisplayHeight();
+    double rad = atts.GetHeadRadiusAbsolute();
+    if (atts.GetHeadRadiusSizeType() == StreamlineAttributes::FractionOfBBox)
+        rad = atts.GetHeadRadiusBBox() * GetBBoxSize();
+    double height = rad*atts.GetHeadHeightRatio();
     int quality = (int)(atts.GetGeomDisplayQuality());
 
     vtkPoints *points = data->GetPoints();

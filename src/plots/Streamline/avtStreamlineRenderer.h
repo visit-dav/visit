@@ -54,12 +54,15 @@ class avtStreamlineRendererImplementation;
 //  Class: avtStreamlineRenderer
 //
 //  Purpose:
-//
+//      A specialized renderer for rendering streamlines.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   December 29, 2009
 //
 //  Modifications:
+//
+//    Hank Childs, Thu Sep 30 00:45:38 PDT 2010
+//    Added method NeedsBoundingBox.
 //
 // ****************************************************************************
 
@@ -75,6 +78,7 @@ class avtStreamlineRenderer : public avtCustomRenderer
 
     virtual void            ReleaseGraphicsResources();
     virtual void            Render(vtkDataSet *);
+    virtual bool            NeedsBoundingBox(void) { return true; };
     
     void SetLevelsLUT(avtLookupTable *);
 

@@ -63,6 +63,9 @@ struct avtViewInfo;
 //  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
 //  Support for transparency sorting.
 //
+//  Hank Childs, Thu Sep 30 00:45:38 PDT 2010
+//  Store the bounding box.
+//
 // ****************************************************************************
 class avtStreamlineRendererImplementation
 {
@@ -74,7 +77,23 @@ class avtStreamlineRendererImplementation
         varMin = min;
         varMax = max;
     }
-    
+    void           SetBoundingBox(const double *b)
+    {
+        for (int i = 0 ; i < 6 ; i++)
+            bbox[i] = b[i];
+    }
+    double         GetBBoxSize(void)
+    {
+        double smallest = 1e+32;
+        if ((bbox[1]-bbox[0] != 0.) && ((bbox[1]-bbox[0]) < smallest))
+            smallest = bbox[1]-bbox[0];
+        if ((bbox[3]-bbox[2] != 0.) && ((bbox[3]-bbox[2]) < smallest))
+            smallest = bbox[3]-bbox[2];
+        if ((bbox[5]-bbox[4] != 0.) && ((bbox[5]-bbox[4]) < smallest))
+            smallest = bbox[5]-bbox[4];
+        return smallest;
+    }
+   
     virtual void   Render(vtkPolyData *data, const StreamlineAttributes&,
                           bool immediateModeRendering,
                           double vMin, double vMax,
@@ -88,6 +107,7 @@ class avtStreamlineRendererImplementation
     
 protected:
     double varMin, varMax;
+    double bbox[6];
 };
 
 #endif

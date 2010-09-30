@@ -131,6 +131,11 @@ public:
         Sphere,
         Cone
     };
+    enum SizeType
+    {
+        Absolute,
+        FractionOfBBox
+    };
 
     // These constructors are for objects of this class
     StreamlineAttributes();
@@ -188,12 +193,6 @@ public:
     void SetSampleDensity0(int sampleDensity0_);
     void SetSampleDensity1(int sampleDensity1_);
     void SetSampleDensity2(int sampleDensity2_);
-    void SetDisplayMethod(DisplayMethod displayMethod_);
-    void SetShowSeeds(bool showSeeds_);
-    void SetShowHeads(bool showHeads_);
-    void SetTubeRadius(double tubeRadius_);
-    void SetRibbonWidth(double ribbonWidth_);
-    void SetLineWidth(int lineWidth_);
     void SetColoringMethod(ColoringMethod coloringMethod_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetSingleColor(const ColorAttribute &singleColor_);
@@ -221,10 +220,24 @@ public:
     void SetDisplayEnd(double displayEnd_);
     void SetDisplayBeginFlag(bool displayBeginFlag_);
     void SetDisplayEndFlag(bool displayEndFlag_);
-    void SetSeedDisplayRadius(double seedDisplayRadius_);
+    void SetDisplayMethod(DisplayMethod displayMethod_);
+    void SetTubeSizeType(SizeType tubeSizeType_);
+    void SetTubeRadiusAbsolute(double tubeRadiusAbsolute_);
+    void SetTubeRadiusBBox(double tubeRadiusBBox_);
+    void SetRibbonWidthSizeType(SizeType ribbonWidthSizeType_);
+    void SetRibbonWidthAbsolute(double ribbonWidthAbsolute_);
+    void SetRibbonWidthBBox(double ribbonWidthBBox_);
+    void SetLineWidth(int lineWidth_);
+    void SetShowSeeds(bool showSeeds_);
+    void SetSeedRadiusSizeType(SizeType seedRadiusSizeType_);
+    void SetSeedRadiusAbsolute(double seedRadiusAbsolute_);
+    void SetSeedRadiusBBox(double seedRadiusBBox_);
+    void SetShowHeads(bool showHeads_);
     void SetHeadDisplayType(GeomDisplayType headDisplayType_);
-    void SetHeadDisplayRadius(double headDisplayRadius_);
-    void SetHeadDisplayHeight(double headDisplayHeight_);
+    void SetHeadRadiusSizeType(SizeType headRadiusSizeType_);
+    void SetHeadRadiusAbsolute(double headRadiusAbsolute_);
+    void SetHeadRadiusBBox(double headRadiusBBox_);
+    void SetHeadHeightRatio(double headHeightRatio_);
     void SetOpacityType(OpacityType opacityType_);
     void SetOpacityVariable(const std::string &opacityVariable_);
     void SetOpacity(double opacity_);
@@ -269,12 +282,6 @@ public:
     int                  GetSampleDensity0() const;
     int                  GetSampleDensity1() const;
     int                  GetSampleDensity2() const;
-    DisplayMethod        GetDisplayMethod() const;
-    bool                 GetShowSeeds() const;
-    bool                 GetShowHeads() const;
-    double               GetTubeRadius() const;
-    double               GetRibbonWidth() const;
-    int                  GetLineWidth() const;
     ColoringMethod       GetColoringMethod() const;
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
@@ -305,10 +312,24 @@ public:
     double               GetDisplayEnd() const;
     bool                 GetDisplayBeginFlag() const;
     bool                 GetDisplayEndFlag() const;
-    double               GetSeedDisplayRadius() const;
+    DisplayMethod        GetDisplayMethod() const;
+    SizeType             GetTubeSizeType() const;
+    double               GetTubeRadiusAbsolute() const;
+    double               GetTubeRadiusBBox() const;
+    SizeType             GetRibbonWidthSizeType() const;
+    double               GetRibbonWidthAbsolute() const;
+    double               GetRibbonWidthBBox() const;
+    int                  GetLineWidth() const;
+    bool                 GetShowSeeds() const;
+    SizeType             GetSeedRadiusSizeType() const;
+    double               GetSeedRadiusAbsolute() const;
+    double               GetSeedRadiusBBox() const;
+    bool                 GetShowHeads() const;
     GeomDisplayType      GetHeadDisplayType() const;
-    double               GetHeadDisplayRadius() const;
-    double               GetHeadDisplayHeight() const;
+    SizeType             GetHeadRadiusSizeType() const;
+    double               GetHeadRadiusAbsolute() const;
+    double               GetHeadRadiusBBox() const;
+    double               GetHeadHeightRatio() const;
     OpacityType          GetOpacityType() const;
     const std::string    &GetOpacityVariable() const;
           std::string    &GetOpacityVariable();
@@ -383,6 +404,11 @@ public:
 protected:
     static std::string GeomDisplayType_ToString(int);
 public:
+    static std::string SizeType_ToString(SizeType);
+    static bool SizeType_FromString(const std::string &, SizeType &);
+protected:
+    static std::string SizeType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -412,12 +438,6 @@ public:
         ID_sampleDensity0,
         ID_sampleDensity1,
         ID_sampleDensity2,
-        ID_displayMethod,
-        ID_showSeeds,
-        ID_showHeads,
-        ID_tubeRadius,
-        ID_ribbonWidth,
-        ID_lineWidth,
         ID_coloringMethod,
         ID_colorTableName,
         ID_singleColor,
@@ -445,10 +465,24 @@ public:
         ID_displayEnd,
         ID_displayBeginFlag,
         ID_displayEndFlag,
-        ID_seedDisplayRadius,
+        ID_displayMethod,
+        ID_tubeSizeType,
+        ID_tubeRadiusAbsolute,
+        ID_tubeRadiusBBox,
+        ID_ribbonWidthSizeType,
+        ID_ribbonWidthAbsolute,
+        ID_ribbonWidthBBox,
+        ID_lineWidth,
+        ID_showSeeds,
+        ID_seedRadiusSizeType,
+        ID_seedRadiusAbsolute,
+        ID_seedRadiusBBox,
+        ID_showHeads,
         ID_headDisplayType,
-        ID_headDisplayRadius,
-        ID_headDisplayHeight,
+        ID_headRadiusSizeType,
+        ID_headRadiusAbsolute,
+        ID_headRadiusBBox,
+        ID_headHeightRatio,
         ID_opacityType,
         ID_opacityVariable,
         ID_opacity,
@@ -486,12 +520,6 @@ private:
     int            sampleDensity0;
     int            sampleDensity1;
     int            sampleDensity2;
-    int            displayMethod;
-    bool           showSeeds;
-    bool           showHeads;
-    double         tubeRadius;
-    double         ribbonWidth;
-    int            lineWidth;
     int            coloringMethod;
     std::string    colorTableName;
     ColorAttribute singleColor;
@@ -519,10 +547,24 @@ private:
     double         displayEnd;
     bool           displayBeginFlag;
     bool           displayEndFlag;
-    double         seedDisplayRadius;
+    int            displayMethod;
+    int            tubeSizeType;
+    double         tubeRadiusAbsolute;
+    double         tubeRadiusBBox;
+    int            ribbonWidthSizeType;
+    double         ribbonWidthAbsolute;
+    double         ribbonWidthBBox;
+    int            lineWidth;
+    bool           showSeeds;
+    int            seedRadiusSizeType;
+    double         seedRadiusAbsolute;
+    double         seedRadiusBBox;
+    bool           showHeads;
     int            headDisplayType;
-    double         headDisplayRadius;
-    double         headDisplayHeight;
+    int            headRadiusSizeType;
+    double         headRadiusAbsolute;
+    double         headRadiusBBox;
+    double         headHeightRatio;
     int            opacityType;
     std::string    opacityVariable;
     double         opacity;
@@ -545,6 +587,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "idDDDDDDdDDbd*iiiibbddiisabbidbdddiiiiiibsbbddddbbdiddisdddbbiidddbbiib"
+#define STREAMLINEATTRIBUTES_TMFS "idDDDDDDdDDbd*iiiisabbidbdddiiiiiibsbbddddbbiiddiddibiddbiidddisdddbbiidddbbiib"
 
 #endif

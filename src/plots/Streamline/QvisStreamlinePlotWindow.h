@@ -131,6 +131,9 @@ class StreamlineAttributes;
 //   Add methods for the maximum time step (DoPri), which is distinct from
 //   the step length (Adams/Bashforth).
 //
+//   Hank Childs, Thu Sep 30 01:22:24 PDT 2010
+//   Add widgets for choosing size type between fraction of bbox and absolute.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -203,7 +206,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void ribbonWidthProcessText();
     void seedRadiusProcessText();
     void headRadiusProcessText();
-    void headHeightProcessText();
+    void headHeightRatioProcessText();
     void lineWidthChanged(int style);
     void coloringMethodChanged(int val);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
@@ -240,6 +243,10 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void textChanged(const QString &currentText);
     void forceNodalChanged(bool);
     void limitMaxTimeStepChanged(bool);
+    void headSizeTypeChanged(int);
+    void seedSizeTypeChanged(int);
+    void tubeSizeTypeChanged(int);
+    void ribbonSizeTypeChanged(int);
 
   private:
     int plotType;
@@ -298,9 +305,13 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QCheckBox *showSeeds, *showHeads;
     QLabel    *seedRadiusLabel, *headRadiusLabel, *headHeightLabel;
     QComboBox *headDisplayType;
+    QComboBox *headSizeType;
     QLabel    *headDisplayTypeLabel;
     QLineEdit *seedRadius, *headRadius, *headHeight;
+    QComboBox *seedSizeType;
     QLineEdit *tubeRadius, *ribbonWidth;
+    QComboBox *tubeSizeType;
+    QComboBox *ribbonSizeType;
     QLabel    *geomRadiusLabel;
     QvisLineWidthWidget *lineWidth;
     QLabel    *lineWidthLabel;
