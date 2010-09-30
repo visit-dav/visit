@@ -393,6 +393,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Hank Childs, Tue Sep  7 23:29:40 PDT 2010
 //   Tell the legend what color table we're using.
 //
+//   Hank Childs, Wed Sep 29 20:52:04 PDT 2010
+//   The DoPri option now has an explicit field for max time step.
+//
 // ****************************************************************************
 
 void
@@ -462,7 +465,16 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
                                              atts.GetMaxStreamlineProcessCount(),
                                              atts.GetMaxDomainCacheSize(),
                                              atts.GetWorkGroupSize());
-    streamlineFilter->SetMaxStepLength(atts.GetMaxStepLength());
+    if (atts.GetIntegrationType() == StreamlineAttributes::DormandPrince)
+    {
+        // For DoPri, the max time step is sent in to the PICS filter as the max step length.
+        double step = atts.GetMaxTimeStep();
+        if (! atts.GetLimitMaximumTimestep())
+            step = 0;
+        streamlineFilter->SetMaxStepLength(step);
+    }
+    else
+        streamlineFilter->SetMaxStepLength(atts.GetMaxStepLength());
     streamlineFilter->SetTolerances(atts.GetRelTol(), atts.GetAbsTol());
 
     streamlineFilter->SetTermination(atts.GetTerminationType(),

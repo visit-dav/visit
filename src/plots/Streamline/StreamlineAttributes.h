@@ -173,7 +173,6 @@ public:
 
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
-    void SetMaxStepLength(double maxStepLength_);
     void SetTermination(double termination_);
     void SetPointSource(const double *pointSource_);
     void SetLineStart(const double *lineStart_);
@@ -201,6 +200,9 @@ public:
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetStreamlineDirection(IntegrationDirection streamlineDirection_);
+    void SetMaxStepLength(double maxStepLength_);
+    void SetLimitMaximumTimestep(bool limitMaximumTimestep_);
+    void SetMaxTimeStep(double maxTimeStep_);
     void SetRelTol(double relTol_);
     void SetAbsTol(double absTol_);
     void SetTerminationType(TerminationType terminationType_);
@@ -243,7 +245,6 @@ public:
 
     // Property getting methods
     SourceType           GetSourceType() const;
-    double               GetMaxStepLength() const;
     double               GetTermination() const;
     const double         *GetPointSource() const;
           double         *GetPointSource();
@@ -282,6 +283,9 @@ public:
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
     IntegrationDirection GetStreamlineDirection() const;
+    double               GetMaxStepLength() const;
+    bool                 GetLimitMaximumTimestep() const;
+    double               GetMaxTimeStep() const;
     double               GetRelTol() const;
     double               GetAbsTol() const;
     TerminationType      GetTerminationType() const;
@@ -393,7 +397,6 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_sourceType = 0,
-        ID_maxStepLength,
         ID_termination,
         ID_pointSource,
         ID_lineStart,
@@ -421,6 +424,9 @@ public:
         ID_legendFlag,
         ID_lightingFlag,
         ID_streamlineDirection,
+        ID_maxStepLength,
+        ID_limitMaximumTimestep,
+        ID_maxTimeStep,
         ID_relTol,
         ID_absTol,
         ID_terminationType,
@@ -465,7 +471,6 @@ public:
 
 private:
     int            sourceType;
-    double         maxStepLength;
     double         termination;
     double         pointSource[3];
     double         lineStart[3];
@@ -493,6 +498,9 @@ private:
     bool           legendFlag;
     bool           lightingFlag;
     int            streamlineDirection;
+    double         maxStepLength;
+    bool           limitMaximumTimestep;
+    double         maxTimeStep;
     double         relTol;
     double         absTol;
     int            terminationType;
@@ -537,6 +545,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iddDDDDDDdDDbd*iiiibbddiisabbiddiiiiiibsbbddddbbdiddisdddbbiidddbbiib"
+#define STREAMLINEATTRIBUTES_TMFS "idDDDDDDdDDbd*iiiibbddiisabbidbdddiiiiiibsbbddddbbdiddisdddbbiidddbbiib"
 
 #endif

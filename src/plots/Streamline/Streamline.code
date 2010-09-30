@@ -217,6 +217,8 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         streamlineDirection != obj.streamlineDirection ||
         integrationType != obj.integrationType ||
         maxStepLength != obj.maxStepLength ||
+        maxTimeStep != obj.maxTimeStep ||
+        limitMaximumTimestep != obj.limitMaximumTimestep ||
         relTol != obj.relTol ||
         absTol != obj.absTol ||
         forceNodeCenteredData != obj.forceNodeCenteredData ||
