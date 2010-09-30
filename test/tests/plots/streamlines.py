@@ -11,6 +11,12 @@
 #  Programmer: Christoph Garth
 #  Date:       July 20, 2010
 #
+#  Modifications:
+#
+#    Hank Childs, Thu Sep 30 12:32:30 PDT 2010
+#    Update for new attribute names for scaling based on bbox.
+#    Also for yesterday's change to the step size.
+#
 # ----------------------------------------------------------------------------
 
 OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
@@ -35,7 +41,8 @@ SetView3D(View3DAtts)
 
 StreamlineAtts = StreamlineAttributes()
 StreamlineAtts.sourceType = StreamlineAtts.SpecifiedPlane  # SpecifiedPoint, SpecifiedPointList, SpecifiedLine, SpecifiedCircle, SpecifiedPlane, SpecifiedSphere, SpecifiedBox
-StreamlineAtts.maxStepLength = 0.02
+StreamlineAtts.limitMaximumTimestep = 1
+StreamlineAtts.maxTimeStep = 0.02
 StreamlineAtts.termination = 200
 StreamlineAtts.pointSource = (0, 0, 0)
 StreamlineAtts.lineStart = (0, 0, 0)
@@ -54,8 +61,10 @@ StreamlineAtts.sampleDensity2 = 1
 StreamlineAtts.displayMethod = StreamlineAtts.Tubes  # Lines, Tubes, Ribbons
 StreamlineAtts.showSeeds = 1
 StreamlineAtts.showHeads = 0
-StreamlineAtts.tubeRadius = 0.25
-StreamlineAtts.ribbonWidth = 0.125
+StreamlineAtts.tubeSizeType = StreamlineAtts.Absolute
+StreamlineAtts.tubeRadiusAbsolute = 0.25
+StreamlineAtts.ribbonWidthSizeType = StreamlineAtts.Absolute
+StreamlineAtts.ribbonWidthAbsolute = 0.125
 StreamlineAtts.lineWidth = 2
 StreamlineAtts.coloringMethod = StreamlineAtts.ColorBySpeed  # Solid, ColorBySpeed, ColorByVorticity, ColorByLength, ColorByTime, ColorBySeedPointID, ColorByVariable
 StreamlineAtts.colorTableName = "Default"
@@ -81,11 +90,13 @@ StreamlineAtts.displayBegin = 0
 StreamlineAtts.displayEnd = 1
 StreamlineAtts.displayBeginFlag = 0
 StreamlineAtts.displayEndFlag = 0
-StreamlineAtts.seedDisplayRadius = 0.8
+StreamlineAtts.seedRadiusSizeType = StreamlineAtts.Absolute
+StreamlineAtts.seedRadiusAbsolute = 0.8
 StreamlineAtts.headDisplayType = StreamlineAtts.Sphere  # Sphere, Cone
-StreamlineAtts.headDisplayRadius = 0.25
-StreamlineAtts.headDisplayHeight = 0.5
-StreamlineAtts.opacityType = StreamlineAtts.None  # None, Constant, Ramp, VariableRange
+StreamlineAtts.headRadiusSizeType = StreamlineAtts.Absolute
+StreamlineAtts.headRadiusAbsolute = 0.25
+StreamlineAtts.headHeightRatio = 2
+StreamlineAtts.opacityType = StreamlineAtts.FullyOpaque  # FullyOpaque, Constant, Ramp, VariableRange
 StreamlineAtts.opacityVariable = ""
 StreamlineAtts.opacity = 1
 StreamlineAtts.opacityVarMin = 0
