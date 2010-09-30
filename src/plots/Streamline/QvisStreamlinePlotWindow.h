@@ -127,6 +127,10 @@ class StreamlineAttributes;
 //   Dave Pugmire, Wed Jun 23 16:44:36 EDT 2010
 //   Repace fill interior checkbox with radio button.
 //
+//   Hank Childs, Wed Sep 29 20:22:36 PDT 2010
+//   Add methods for the maximum time step (DoPri), which is distinct from
+//   the step length (Adams/Bashforth).
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -165,6 +169,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void streamlineAlgorithmChanged(int val);
     void directionTypeChanged(int val);
     void maxStepLengthProcessText();
+    void maxTimeStepProcessText();
     void terminationProcessText();
     void relTolProcessText();
     void absTolProcessText();
@@ -234,13 +239,18 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void readPoints();
     void textChanged(const QString &currentText);
     void forceNodalChanged(bool);
+    void limitMaxTimeStepChanged(bool);
 
   private:
     int plotType;
     QComboBox *sourceType;
     QComboBox *directionType;
+    QLabel    *limitMaxTimeStepLabel;
+    QCheckBox *limitMaxTimeStep;
     QLineEdit *maxStepLength;
     QLabel    *maxStepLengthLabel;
+    QLineEdit *maxTimeStep;
+    QLabel    *maxTimeStepLabel;
     QLineEdit *termination;
     QLineEdit *relTol;
     QLabel    *relTolLabel;

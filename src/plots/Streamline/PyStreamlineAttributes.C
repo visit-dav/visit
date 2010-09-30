@@ -113,8 +113,6 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%stermination = %g\n", prefix, atts->GetTermination());
     str += tmpStr;
     {   const double *pointSource = atts->GetPointSource();
@@ -379,6 +377,15 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
+    str += tmpStr;
+    if(atts->GetLimitMaximumTimestep())
+        SNPRINTF(tmpStr, 1000, "%slimitMaximumTimestep = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%slimitMaximumTimestep = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smaxTimeStep = %g\n", prefix, atts->GetMaxTimeStep());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sabsTol = %g\n", prefix, atts->GetAbsTol());
@@ -640,30 +647,6 @@ StreamlineAttributes_GetSourceType(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSourceType()));
-    return retval;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the maxStepLength in the object.
-    obj->data->SetMaxStepLength(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxStepLength());
     return retval;
 }
 
@@ -1676,6 +1659,78 @@ StreamlineAttributes_GetStreamlineDirection(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+StreamlineAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the maxStepLength in the object.
+    obj->data->SetMaxStepLength(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxStepLength());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the limitMaximumTimestep in the object.
+    obj->data->SetLimitMaximumTimestep(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetLimitMaximumTimestep(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetLimitMaximumTimestep()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the maxTimeStep in the object.
+    obj->data->SetMaxTimeStep(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetMaxTimeStep(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxTimeStep());
+    return retval;
+}
+
+/*static*/ PyObject *
 StreamlineAttributes_SetRelTol(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
@@ -2671,8 +2726,6 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"Notify", StreamlineAttributes_Notify, METH_VARARGS},
     {"SetSourceType", StreamlineAttributes_SetSourceType, METH_VARARGS},
     {"GetSourceType", StreamlineAttributes_GetSourceType, METH_VARARGS},
-    {"SetMaxStepLength", StreamlineAttributes_SetMaxStepLength, METH_VARARGS},
-    {"GetMaxStepLength", StreamlineAttributes_GetMaxStepLength, METH_VARARGS},
     {"SetTermination", StreamlineAttributes_SetTermination, METH_VARARGS},
     {"GetTermination", StreamlineAttributes_GetTermination, METH_VARARGS},
     {"SetPointSource", StreamlineAttributes_SetPointSource, METH_VARARGS},
@@ -2727,6 +2780,12 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetLightingFlag", StreamlineAttributes_GetLightingFlag, METH_VARARGS},
     {"SetStreamlineDirection", StreamlineAttributes_SetStreamlineDirection, METH_VARARGS},
     {"GetStreamlineDirection", StreamlineAttributes_GetStreamlineDirection, METH_VARARGS},
+    {"SetMaxStepLength", StreamlineAttributes_SetMaxStepLength, METH_VARARGS},
+    {"GetMaxStepLength", StreamlineAttributes_GetMaxStepLength, METH_VARARGS},
+    {"SetLimitMaximumTimestep", StreamlineAttributes_SetLimitMaximumTimestep, METH_VARARGS},
+    {"GetLimitMaximumTimestep", StreamlineAttributes_GetLimitMaximumTimestep, METH_VARARGS},
+    {"SetMaxTimeStep", StreamlineAttributes_SetMaxTimeStep, METH_VARARGS},
+    {"GetMaxTimeStep", StreamlineAttributes_GetMaxTimeStep, METH_VARARGS},
     {"SetRelTol", StreamlineAttributes_SetRelTol, METH_VARARGS},
     {"GetRelTol", StreamlineAttributes_GetRelTol, METH_VARARGS},
     {"SetAbsTol", StreamlineAttributes_SetAbsTol, METH_VARARGS},
@@ -2850,8 +2909,6 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "SpecifiedBox") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::SpecifiedBox));
 
-    if(strcmp(name, "maxStepLength") == 0)
-        return StreamlineAttributes_GetMaxStepLength(self, NULL);
     if(strcmp(name, "termination") == 0)
         return StreamlineAttributes_GetTermination(self, NULL);
     if(strcmp(name, "pointSource") == 0)
@@ -2935,6 +2992,12 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Both") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::Both));
 
+    if(strcmp(name, "maxStepLength") == 0)
+        return StreamlineAttributes_GetMaxStepLength(self, NULL);
+    if(strcmp(name, "limitMaximumTimestep") == 0)
+        return StreamlineAttributes_GetLimitMaximumTimestep(self, NULL);
+    if(strcmp(name, "maxTimeStep") == 0)
+        return StreamlineAttributes_GetMaxTimeStep(self, NULL);
     if(strcmp(name, "relTol") == 0)
         return StreamlineAttributes_GetRelTol(self, NULL);
     if(strcmp(name, "absTol") == 0)
@@ -3075,8 +3138,6 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "sourceType") == 0)
         obj = StreamlineAttributes_SetSourceType(self, tuple);
-    else if(strcmp(name, "maxStepLength") == 0)
-        obj = StreamlineAttributes_SetMaxStepLength(self, tuple);
     else if(strcmp(name, "termination") == 0)
         obj = StreamlineAttributes_SetTermination(self, tuple);
     else if(strcmp(name, "pointSource") == 0)
@@ -3131,6 +3192,12 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetLightingFlag(self, tuple);
     else if(strcmp(name, "streamlineDirection") == 0)
         obj = StreamlineAttributes_SetStreamlineDirection(self, tuple);
+    else if(strcmp(name, "maxStepLength") == 0)
+        obj = StreamlineAttributes_SetMaxStepLength(self, tuple);
+    else if(strcmp(name, "limitMaximumTimestep") == 0)
+        obj = StreamlineAttributes_SetLimitMaximumTimestep(self, tuple);
+    else if(strcmp(name, "maxTimeStep") == 0)
+        obj = StreamlineAttributes_SetMaxTimeStep(self, tuple);
     else if(strcmp(name, "relTol") == 0)
         obj = StreamlineAttributes_SetRelTol(self, tuple);
     else if(strcmp(name, "absTol") == 0)

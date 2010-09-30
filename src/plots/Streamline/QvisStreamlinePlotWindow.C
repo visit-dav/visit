@@ -185,6 +185,10 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
 //   Rename Exterior to Boundary.
 //
+//   Hank Childs, Wed Sep 29 20:22:36 PDT 2010
+//   Add label and check box for whether we should restrict the maximum
+//   time step length.
+//
 // ****************************************************************************
 
 void
@@ -523,26 +527,40 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationLayout->addWidget(maxStepLengthLabel, 1,0);
     integrationLayout->addWidget(maxStepLength, 1,1);
 
+    limitMaxTimeStepLabel = new QLabel(tr("Limit Maximum Time Step"), integrationGroup);
+    limitMaxTimeStep = new QCheckBox(integrationGroup);
+    connect(limitMaxTimeStep, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeStepChanged(bool)));
+    integrationLayout->addWidget(limitMaxTimeStepLabel, 2,0);
+    integrationLayout->addWidget(limitMaxTimeStep, 2, 1);
+    
+    // Create the step length text field.
+    maxTimeStepLabel = new QLabel(tr("Maximum time step"), integrationGroup);
+    maxTimeStep = new QLineEdit(integrationGroup);
+    connect(maxTimeStep, SIGNAL(returnPressed()),
+            this, SLOT(maxTimeStepProcessText()));
+    integrationLayout->addWidget(maxTimeStepLabel, 3,0);
+    integrationLayout->addWidget(maxTimeStep, 3,1);
+
     // Create the relative tolerance text field.
     relTolLabel = new QLabel(tr("Relative tolerance"), integrationGroup);
     relTol = new QLineEdit(integrationGroup);
     connect(relTol, SIGNAL(returnPressed()),
             this, SLOT(relTolProcessText()));
-    integrationLayout->addWidget(relTolLabel, 2,0);
-    integrationLayout->addWidget(relTol, 2, 1);
+    integrationLayout->addWidget(relTolLabel, 4,0);
+    integrationLayout->addWidget(relTol, 4, 1);
 
     // Create the absolute tolerance text field.
     absTolLabel = new QLabel(tr("Absolute tolerance"), integrationGroup);
     absTol = new QLineEdit(integrationGroup);
     connect(absTol, SIGNAL(returnPressed()), this, SLOT(absTolProcessText()));
-    integrationLayout->addWidget(absTolLabel, 3,0);
-    integrationLayout->addWidget(absTol, 3, 1);
+    integrationLayout->addWidget(absTolLabel, 5,0);
+    integrationLayout->addWidget(absTol, 5, 1);
 
     forceNodalLabel = new QLabel(tr("Force node centering"), integrationGroup);
     forceNodal = new QCheckBox(integrationGroup);
     connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
-    integrationLayout->addWidget(forceNodalLabel, 4,0);
-    integrationLayout->addWidget(forceNodal, 4, 1);
+    integrationLayout->addWidget(forceNodalLabel, 6,0);
+    integrationLayout->addWidget(forceNodal, 6, 1);
     
 
     // ----------------------------------------------------------------------
@@ -1081,6 +1099,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //   Hank Childs, Wed Sep 29 19:12:39 PDT 2010
 //   Rename None to FullyOpaque.
 //
+//   Hank Childs, Wed Sep 29 20:22:36 PDT 2010
+//   Add maxTimeStep.
+//
 // ****************************************************************************
 
 void
@@ -1112,6 +1133,29 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
         case StreamlineAttributes::ID_maxStepLength:
             temp.setNum(streamAtts->GetMaxStepLength());
             maxStepLength->setText(temp);
+            break;
+        case StreamlineAttributes::ID_limitMaximumTimestep:
+            limitMaxTimeStep->blockSignals(true);
+            limitMaxTimeStep->setChecked(streamAtts->GetLimitMaximumTimestep());
+            limitMaxTimeStep->blockSignals(false);
+            maxTimeStep->blockSignals(true);
+            maxTimeStepLabel->blockSignals(true);
+            if (streamAtts->GetIntegrationType() == StreamlineAttributes::DormandPrince
+                && !streamAtts->GetLimitMaximumTimestep())
+            {
+                maxTimeStep->setEnabled(false);
+                maxTimeStepLabel->setEnabled(false);
+            }
+            else
+            {
+                maxTimeStep->setEnabled(true);
+                maxTimeStepLabel->setEnabled(true);
+            }
+            maxTimeStep->blockSignals(false);
+            break;
+        case StreamlineAttributes::ID_maxTimeStep:
+            temp.setNum(streamAtts->GetMaxTimeStep());
+            maxTimeStep->setText(temp);
             break;
         case StreamlineAttributes::ID_termination:
             temp.setNum(streamAtts->GetTermination());
@@ -1860,6 +1904,9 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
 //   Dave Pugmire, Fri Aug 8 16:27:03 EDT 2008
 //   Change the step label text based on the integration method.
 //
+//   Hank Childs, Wed Sep 29 20:22:36 PDT 2010
+//   Add support for limiting the maximum time step.
+//
 // ****************************************************************************
 
 void
@@ -1868,6 +1915,10 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
     //Turn off everything.
     maxStepLength->hide();
     maxStepLengthLabel->hide();
+    limitMaxTimeStepLabel->hide();
+    limitMaxTimeStep->hide();
+    maxTimeStep->hide();
+    maxTimeStepLabel->hide();
     relTol->hide();
     relTolLabel->hide();
     absTol->hide();
@@ -1876,9 +1927,10 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
     switch( streamAtts->GetIntegrationType() )
     {
     case StreamlineAttributes::DormandPrince:
-        maxStepLength->show();
-        maxStepLengthLabel->show();
-        maxStepLengthLabel->setText(tr("Maximum step length"));
+        limitMaxTimeStepLabel->show();
+        limitMaxTimeStep->show();
+        maxTimeStep->show();
+        maxTimeStepLabel->show();
         relTol->show();
         relTolLabel->show();
         absTol->show();
@@ -1889,7 +1941,6 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
     case StreamlineAttributes::M3DC1Integrator:
         maxStepLength->show();
         maxStepLengthLabel->show();
-        maxStepLengthLabel->setText(tr("Step length"));
         absTol->show();
         absTolLabel->show();
         break;
@@ -2011,6 +2062,9 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
+//   Hank Childs, Wed Sep 29 20:44:18 PDT 2010
+//   Add support for the max time step.
+//
 // ****************************************************************************
 
 void
@@ -2030,6 +2084,20 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("step length"),
                 DoubleToQString(streamAtts->GetMaxStepLength()));
             streamAtts->SetMaxStepLength(streamAtts->GetMaxStepLength());
+        }
+    }
+
+    // Do max time step
+    if(which_widget == StreamlineAttributes::ID_maxTimeStep || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(maxTimeStep, val))
+            streamAtts->SetMaxTimeStep(val);
+        else
+        {
+            ResettingError(tr("step length"),
+                DoubleToQString(streamAtts->GetMaxTimeStep()));
+            streamAtts->SetMaxTimeStep(streamAtts->GetMaxTimeStep());
         }
     }
 
@@ -2598,6 +2666,13 @@ QvisStreamlinePlotWindow::maxStepLengthProcessText()
 }
 
 void
+QvisStreamlinePlotWindow::maxTimeStepProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_maxTimeStep);
+    Apply();
+}
+
+void
 QvisStreamlinePlotWindow::terminationProcessText()
 {
     GetCurrentValues(StreamlineAttributes::ID_termination);
@@ -2897,6 +2972,13 @@ void
 QvisStreamlinePlotWindow::absTolProcessText()
 {
     GetCurrentValues(StreamlineAttributes::ID_absTol);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::limitMaxTimeStepChanged(bool val)
+{
+    streamAtts->SetLimitMaximumTimestep(val);
     Apply();
 }
 

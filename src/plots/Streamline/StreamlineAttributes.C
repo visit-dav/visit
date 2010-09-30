@@ -445,7 +445,6 @@ StreamlineAttributes::GeomDisplayType_FromString(const std::string &s, Streamlin
 void StreamlineAttributes::Init()
 {
     sourceType = SpecifiedPoint;
-    maxStepLength = 0.1;
     termination = 10;
     pointSource[0] = 0;
     pointSource[1] = 0;
@@ -498,6 +497,9 @@ void StreamlineAttributes::Init()
     legendFlag = true;
     lightingFlag = true;
     streamlineDirection = Forward;
+    maxStepLength = 0.1;
+    limitMaximumTimestep = false;
+    maxTimeStep = 0.1;
     relTol = 0.0001;
     absTol = 1e-05;
     terminationType = Distance;
@@ -558,7 +560,6 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
 {
 
     sourceType = obj.sourceType;
-    maxStepLength = obj.maxStepLength;
     termination = obj.termination;
     pointSource[0] = obj.pointSource[0];
     pointSource[1] = obj.pointSource[1];
@@ -609,6 +610,9 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     streamlineDirection = obj.streamlineDirection;
+    maxStepLength = obj.maxStepLength;
+    limitMaximumTimestep = obj.limitMaximumTimestep;
+    maxTimeStep = obj.maxTimeStep;
     relTol = obj.relTol;
     absTol = obj.absTol;
     terminationType = obj.terminationType;
@@ -848,7 +852,6 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
 
     // Create the return value
     return ((sourceType == obj.sourceType) &&
-            (maxStepLength == obj.maxStepLength) &&
             (termination == obj.termination) &&
             pointSource_equal &&
             lineStart_equal &&
@@ -876,6 +879,9 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag) &&
             (streamlineDirection == obj.streamlineDirection) &&
+            (maxStepLength == obj.maxStepLength) &&
+            (limitMaximumTimestep == obj.limitMaximumTimestep) &&
+            (maxTimeStep == obj.maxTimeStep) &&
             (relTol == obj.relTol) &&
             (absTol == obj.absTol) &&
             (terminationType == obj.terminationType) &&
@@ -1172,7 +1178,6 @@ void
 StreamlineAttributes::SelectAll()
 {
     Select(ID_sourceType,                (void *)&sourceType);
-    Select(ID_maxStepLength,             (void *)&maxStepLength);
     Select(ID_termination,               (void *)&termination);
     Select(ID_pointSource,               (void *)pointSource, 3);
     Select(ID_lineStart,                 (void *)lineStart, 3);
@@ -1200,6 +1205,9 @@ StreamlineAttributes::SelectAll()
     Select(ID_legendFlag,                (void *)&legendFlag);
     Select(ID_lightingFlag,              (void *)&lightingFlag);
     Select(ID_streamlineDirection,       (void *)&streamlineDirection);
+    Select(ID_maxStepLength,             (void *)&maxStepLength);
+    Select(ID_limitMaximumTimestep,      (void *)&limitMaximumTimestep);
+    Select(ID_maxTimeStep,               (void *)&maxTimeStep);
     Select(ID_relTol,                    (void *)&relTol);
     Select(ID_absTol,                    (void *)&absTol);
     Select(ID_terminationType,           (void *)&terminationType);
@@ -1275,12 +1283,6 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     {
         addToParent = true;
         node->AddNode(new DataNode("sourceType", SourceType_ToString(sourceType)));
-    }
-
-    if(completeSave || !FieldsEqual(ID_maxStepLength, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("maxStepLength", maxStepLength));
     }
 
     if(completeSave || !FieldsEqual(ID_termination, &defaultObject))
@@ -1445,6 +1447,24 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     {
         addToParent = true;
         node->AddNode(new DataNode("streamlineDirection", IntegrationDirection_ToString(streamlineDirection)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxStepLength, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxStepLength", maxStepLength));
+    }
+
+    if(completeSave || !FieldsEqual(ID_limitMaximumTimestep, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("limitMaximumTimestep", limitMaximumTimestep));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxTimeStep, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxTimeStep", maxTimeStep));
     }
 
     if(completeSave || !FieldsEqual(ID_relTol, &defaultObject))
@@ -1733,8 +1753,6 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
                 SetSourceType(value);
         }
     }
-    if((node = searchNode->GetNode("maxStepLength")) != 0)
-        SetMaxStepLength(node->AsDouble());
     if((node = searchNode->GetNode("termination")) != 0)
         SetTermination(node->AsDouble());
     if((node = searchNode->GetNode("pointSource")) != 0)
@@ -1831,6 +1849,12 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
                 SetStreamlineDirection(value);
         }
     }
+    if((node = searchNode->GetNode("maxStepLength")) != 0)
+        SetMaxStepLength(node->AsDouble());
+    if((node = searchNode->GetNode("limitMaximumTimestep")) != 0)
+        SetLimitMaximumTimestep(node->AsBool());
+    if((node = searchNode->GetNode("maxTimeStep")) != 0)
+        SetMaxTimeStep(node->AsDouble());
     if((node = searchNode->GetNode("relTol")) != 0)
         SetRelTol(node->AsDouble());
     if((node = searchNode->GetNode("absTol")) != 0)
@@ -2004,13 +2028,6 @@ StreamlineAttributes::SetSourceType(StreamlineAttributes::SourceType sourceType_
 {
     sourceType = sourceType_;
     Select(ID_sourceType, (void *)&sourceType);
-}
-
-void
-StreamlineAttributes::SetMaxStepLength(double maxStepLength_)
-{
-    maxStepLength = maxStepLength_;
-    Select(ID_maxStepLength, (void *)&maxStepLength);
 }
 
 void
@@ -2215,6 +2232,27 @@ StreamlineAttributes::SetStreamlineDirection(StreamlineAttributes::IntegrationDi
 {
     streamlineDirection = streamlineDirection_;
     Select(ID_streamlineDirection, (void *)&streamlineDirection);
+}
+
+void
+StreamlineAttributes::SetMaxStepLength(double maxStepLength_)
+{
+    maxStepLength = maxStepLength_;
+    Select(ID_maxStepLength, (void *)&maxStepLength);
+}
+
+void
+StreamlineAttributes::SetLimitMaximumTimestep(bool limitMaximumTimestep_)
+{
+    limitMaximumTimestep = limitMaximumTimestep_;
+    Select(ID_limitMaximumTimestep, (void *)&limitMaximumTimestep);
+}
+
+void
+StreamlineAttributes::SetMaxTimeStep(double maxTimeStep_)
+{
+    maxTimeStep = maxTimeStep_;
+    Select(ID_maxTimeStep, (void *)&maxTimeStep);
 }
 
 void
@@ -2501,12 +2539,6 @@ StreamlineAttributes::GetSourceType() const
 }
 
 double
-StreamlineAttributes::GetMaxStepLength() const
-{
-    return maxStepLength;
-}
-
-double
 StreamlineAttributes::GetTermination() const
 {
     return termination;
@@ -2732,6 +2764,24 @@ StreamlineAttributes::IntegrationDirection
 StreamlineAttributes::GetStreamlineDirection() const
 {
     return IntegrationDirection(streamlineDirection);
+}
+
+double
+StreamlineAttributes::GetMaxStepLength() const
+{
+    return maxStepLength;
+}
+
+bool
+StreamlineAttributes::GetLimitMaximumTimestep() const
+{
+    return limitMaximumTimestep;
+}
+
+double
+StreamlineAttributes::GetMaxTimeStep() const
+{
+    return maxTimeStep;
 }
 
 double
@@ -3087,7 +3137,6 @@ StreamlineAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_sourceType:                return "sourceType";
-    case ID_maxStepLength:             return "maxStepLength";
     case ID_termination:               return "termination";
     case ID_pointSource:               return "pointSource";
     case ID_lineStart:                 return "lineStart";
@@ -3115,6 +3164,9 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_legendFlag:                return "legendFlag";
     case ID_lightingFlag:              return "lightingFlag";
     case ID_streamlineDirection:       return "streamlineDirection";
+    case ID_maxStepLength:             return "maxStepLength";
+    case ID_limitMaximumTimestep:      return "limitMaximumTimestep";
+    case ID_maxTimeStep:               return "maxTimeStep";
     case ID_relTol:                    return "relTol";
     case ID_absTol:                    return "absTol";
     case ID_terminationType:           return "terminationType";
@@ -3179,7 +3231,6 @@ StreamlineAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_sourceType:                return FieldType_enum;
-    case ID_maxStepLength:             return FieldType_double;
     case ID_termination:               return FieldType_double;
     case ID_pointSource:               return FieldType_doubleArray;
     case ID_lineStart:                 return FieldType_doubleArray;
@@ -3207,6 +3258,9 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_legendFlag:                return FieldType_bool;
     case ID_lightingFlag:              return FieldType_bool;
     case ID_streamlineDirection:       return FieldType_enum;
+    case ID_maxStepLength:             return FieldType_double;
+    case ID_limitMaximumTimestep:      return FieldType_bool;
+    case ID_maxTimeStep:               return FieldType_double;
     case ID_relTol:                    return FieldType_double;
     case ID_absTol:                    return FieldType_double;
     case ID_terminationType:           return FieldType_enum;
@@ -3271,7 +3325,6 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_sourceType:                return "enum";
-    case ID_maxStepLength:             return "double";
     case ID_termination:               return "double";
     case ID_pointSource:               return "doubleArray";
     case ID_lineStart:                 return "doubleArray";
@@ -3299,6 +3352,9 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_legendFlag:                return "bool";
     case ID_lightingFlag:              return "bool";
     case ID_streamlineDirection:       return "enum";
+    case ID_maxStepLength:             return "double";
+    case ID_limitMaximumTimestep:      return "bool";
+    case ID_maxTimeStep:               return "double";
     case ID_relTol:                    return "double";
     case ID_absTol:                    return "double";
     case ID_terminationType:           return "enum";
@@ -3367,11 +3423,6 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_sourceType:
         {  // new scope
         retval = (sourceType == obj.sourceType);
-        }
-        break;
-    case ID_maxStepLength:
-        {  // new scope
-        retval = (maxStepLength == obj.maxStepLength);
         }
         break;
     case ID_termination:
@@ -3547,6 +3598,21 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_streamlineDirection:
         {  // new scope
         retval = (streamlineDirection == obj.streamlineDirection);
+        }
+        break;
+    case ID_maxStepLength:
+        {  // new scope
+        retval = (maxStepLength == obj.maxStepLength);
+        }
+        break;
+    case ID_limitMaximumTimestep:
+        {  // new scope
+        retval = (limitMaximumTimestep == obj.limitMaximumTimestep);
+        }
+        break;
+    case ID_maxTimeStep:
+        {  // new scope
+        retval = (maxTimeStep == obj.maxTimeStep);
         }
         break;
     case ID_relTol:
@@ -3797,6 +3863,8 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         streamlineDirection != obj.streamlineDirection ||
         integrationType != obj.integrationType ||
         maxStepLength != obj.maxStepLength ||
+        maxTimeStep != obj.maxTimeStep ||
+        limitMaximumTimestep != obj.limitMaximumTimestep ||
         relTol != obj.relTol ||
         absTol != obj.absTol ||
         forceNodeCenteredData != obj.forceNodeCenteredData ||

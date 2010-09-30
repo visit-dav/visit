@@ -88,9 +88,6 @@
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
       </Field>
-      <Field name="maxStepLength" label="maximum step length" type="double">
-        0.100000
-      </Field>
       <Field name="termination" label="Termination" type="double">
         10.000000
       </Field>
@@ -201,6 +198,15 @@
       </Field>
       <Field name="streamlineDirection" label="streamlineDirection" type="enum" subtype="IntegrationDirection">
         Forward
+      </Field>
+      <Field name="maxStepLength" label="maximum step length" type="double">
+        0.100000
+      </Field>
+      <Field name="limitMaximumTimestep" label="Limit Maximum Timestep (DoPri only)?" type="bool">
+        false
+      </Field>
+      <Field name="maxTimeStep" label="maximum time step length" type="double">
+        0.100000
       </Field>
       <Field name="relTol" label="rel. tolerance" type="double">
         0.000100
