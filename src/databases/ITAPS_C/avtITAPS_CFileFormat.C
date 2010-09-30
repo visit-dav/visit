@@ -213,8 +213,11 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
              vmeshFileName[q-4] == 'u' && vmeshFileName[q-3] == 'b')
         tmpFileName = string(vmeshFileName, 0, q-4);
 
-    char dummyStr[32] = "";
-    iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, 0);
+    string loadOptions;
+#ifdef ITAPS_GRUMMP
+    loadOptions = "silent";
+#endif
+    iMesh_newMesh("", &itapsMesh, &itapsError, 0);
     CheckITAPSError(itapsMesh, iMesh_newMesh, NoL);
     iMesh_getRootSet(itapsMesh, &rootSet, &itapsError);
     CheckITAPSError(itapsMesh, iMesh_getRootSet, NoL);
@@ -235,8 +238,8 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         CheckITAPSError(itapsMesh, iMeshP_getLocalParts, NoL);
         debug3 << "parts_size = " << parts_size << endl;
 #else
-        iMesh_load(itapsMesh, rootSet, tmpFileName.c_str(), dummyStr, &itapsError,
-            tmpFileName.length(), 0);
+        iMesh_load(itapsMesh, rootSet, tmpFileName.c_str(), loadOptions.c_str(), &itapsError,
+            tmpFileName.length(), loadOptions.length());
         CheckITAPSError(itapsMesh, iMesh_load, NoL);
 #endif
 
@@ -534,9 +537,7 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
         iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc); 
         if (!avtCallback::IssueWarning(msg))
@@ -761,9 +762,7 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
         iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc); 
         if (!avtCallback::IssueWarning(msg))
@@ -951,9 +950,7 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
         iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc); 
         if (!avtCallback::IssueWarning(msg))
@@ -1133,9 +1130,7 @@ tagFound:
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
         iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc); 
         if (!avtCallback::IssueWarning(msg))
