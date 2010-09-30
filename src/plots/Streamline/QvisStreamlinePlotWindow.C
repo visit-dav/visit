@@ -580,6 +580,9 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 //   Dave Pugmire, Tue Apr  6 08:15:33 EDT 2010
 //   Rearrange the color by variable widgets.
 //
+//   Hank Childs, Wed Sep 29 19:12:39 PDT 2010
+//   Rename None to FullyOpaque.
+//
 // ****************************************************************************
 
 void
@@ -854,7 +857,7 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     
     // Create the opacity widgets.
     opacityType = new QComboBox(colorGrp);
-    opacityType->addItem(tr("None"),0);
+    opacityType->addItem(tr("Fully Opaque"),0);
     opacityType->addItem(tr("Constant"),1);
     opacityType->addItem(tr("Ramp"),2);
     opacityType->addItem(tr("Variable Range"),3);
@@ -1070,6 +1073,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
+//
+//   Hank Childs, Wed Sep 29 19:12:39 PDT 2010
+//   Rename None to FullyOpaque.
 //
 // ****************************************************************************
 
@@ -1532,7 +1538,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             break;
             
           case StreamlineAttributes::ID_opacityType:
-            if (streamAtts->GetOpacityType() == StreamlineAttributes::None)
+            if (streamAtts->GetOpacityType() == StreamlineAttributes::FullyOpaque)
             {
                 opacitySlider->hide();
                 opacityVar->hide();

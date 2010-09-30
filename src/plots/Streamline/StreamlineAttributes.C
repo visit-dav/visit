@@ -319,7 +319,7 @@ StreamlineAttributes::IntegrationType_FromString(const std::string &s, Streamlin
 //
 
 static const char *OpacityType_strings[] = {
-"None", "Constant", "Ramp", 
+"FullyOpaque", "Constant", "Ramp", 
 "VariableRange"};
 
 std::string
@@ -340,7 +340,7 @@ StreamlineAttributes::OpacityType_ToString(int t)
 bool
 StreamlineAttributes::OpacityType_FromString(const std::string &s, StreamlineAttributes::OpacityType &val)
 {
-    val = StreamlineAttributes::None;
+    val = StreamlineAttributes::FullyOpaque;
     for(int i = 0; i < 4; ++i)
     {
         if(s == OpacityType_strings[i])
@@ -494,7 +494,7 @@ void StreamlineAttributes::Init()
     tubeRadius = 0.125;
     ribbonWidth = 0.125;
     lineWidth = 2;
-    coloringMethod = ColorBySpeed;
+    coloringMethod = ColorByTime;
     legendFlag = true;
     lightingFlag = true;
     streamlineDirection = Forward;
@@ -519,7 +519,7 @@ void StreamlineAttributes::Init()
     headDisplayType = Sphere;
     headDisplayRadius = 0.25;
     headDisplayHeight = 0.5;
-    opacityType = None;
+    opacityType = FullyOpaque;
     opacity = 1;
     opacityVarMin = 0;
     opacityVarMax = 1;

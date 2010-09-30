@@ -502,11 +502,11 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sheadDisplayHeight = %g\n", prefix, atts->GetHeadDisplayHeight());
     str += tmpStr;
-    const char *opacityType_names = "None, Constant, Ramp, VariableRange";
+    const char *opacityType_names = "FullyOpaque, Constant, Ramp, VariableRange";
     switch (atts->GetOpacityType())
     {
-      case StreamlineAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%sopacityType = %sNone  # %s\n", prefix, prefix, opacityType_names);
+      case StreamlineAttributes::FullyOpaque:
+          SNPRINTF(tmpStr, 1000, "%sopacityType = %sFullyOpaque  # %s\n", prefix, prefix, opacityType_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::Constant:
@@ -2252,7 +2252,7 @@ StreamlineAttributes_SetOpacityType(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid opacityType value was given. "
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
-                        "None, Constant, Ramp, VariableRange.");
+                        "FullyOpaque, Constant, Ramp, VariableRange.");
         return NULL;
     }
 
@@ -3003,8 +3003,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetHeadDisplayHeight(self, NULL);
     if(strcmp(name, "opacityType") == 0)
         return StreamlineAttributes_GetOpacityType(self, NULL);
-    if(strcmp(name, "None") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::None));
+    if(strcmp(name, "FullyOpaque") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::FullyOpaque));
     if(strcmp(name, "Constant") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::Constant));
     if(strcmp(name, "Ramp") == 0)

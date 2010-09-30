@@ -384,15 +384,18 @@ avtOpenGLStreamlineRenderer::Render(vtkPolyData *data,
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Add drawHead geom.
 //
-//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
-//  Support for transparency sorting.
+//   Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//   Support for transparency sorting.
+//
+//   Hank Childs, Wed Sep 29 19:12:39 PDT 2010
+//   Rename None to FullyOpaque.
 //
 // ****************************************************************************
 
 void
 avtOpenGLStreamlineRenderer::DrawStreamlines(vtkPolyData *data)
 {
-    if (atts.GetOpacityType() != StreamlineAttributes::None)
+    if (atts.GetOpacityType() != StreamlineAttributes::FullyOpaque)
         appendForTranspPolys = vtkAppendPolyData::New();
     if (atts.GetOpacityType() == StreamlineAttributes::VariableRange)
         InitVarOpacity(data);
@@ -1349,6 +1352,9 @@ avtOpenGLStreamlineRenderer::SetColor(const float &scalar,
 //
 //  Modifications:
 //
+//   Hank Childs, Wed Sep 29 19:12:39 PDT 2010
+//   Rename None to FullyOpaque.
+//
 // ****************************************************************************
 
 void
@@ -1359,7 +1365,7 @@ avtOpenGLStreamlineRenderer::InitColors()
         unsigned char rgba[4];
         
         memcpy(rgba, atts.GetSingleColor().GetColor(), 4);
-        if (atts.GetOpacityType() == StreamlineAttributes::None)
+        if (atts.GetOpacityType() == StreamlineAttributes::FullyOpaque)
             rgba[3] = (unsigned char)255;
         else if (atts.GetOpacityType() == StreamlineAttributes::Constant)
             rgba[3] = (unsigned char)(atts.GetOpacity()*255.0f);

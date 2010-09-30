@@ -282,6 +282,9 @@ avtStreamlinePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the streamlines plots.
 //
+//   Hank Childs, Wed Sep 29 19:11:51 PDT 2010
+//   Rename "None" to "FullyOpaque".
+//
 // ****************************************************************************
 
 void
@@ -289,7 +292,7 @@ avtStreamlinePlot::CustomizeBehavior(void)
 {
     UpdateMapperAndLegend();
 
-    if (atts.GetOpacityType() != StreamlineAttributes::None)
+    if (atts.GetOpacityType() != StreamlineAttributes::FullyOpaque)
     {
         behavior->SetRenderOrder(MUST_GO_LAST);
         behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
