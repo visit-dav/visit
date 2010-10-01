@@ -129,7 +129,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
 
     // Start
     startPathTypeLabel = new QLabel(tr("Type of path"), central);
-    mainLayout->addWidget(startPathTypeLabel,1,0);
+    mainLayout->addWidget(startPathTypeLabel,0,0);
     startPathType = new QWidget(central);
     startPathTypeButtonGroup= new QButtonGroup(startPathType);
     QHBoxLayout *startPathTypeLayout = new QHBoxLayout(startPathType);
@@ -155,7 +155,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
 
     // Stop
     stopPathTypeLabel = new QLabel(tr("Type of path"), central);
-    mainLayout->addWidget(stopPathTypeLabel,3,0);
+    mainLayout->addWidget(stopPathTypeLabel,2,0);
     stopPathType = new QWidget(central);
     stopPathTypeButtonGroup= new QButtonGroup(stopPathType);
     QHBoxLayout *stopPathTypeLayout = new QHBoxLayout(stopPathType);
