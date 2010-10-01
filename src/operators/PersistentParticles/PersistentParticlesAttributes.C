@@ -94,10 +94,10 @@ PersistentParticlesAttributes::PathTypeEnum_FromString(const std::string &s, Per
 void PersistentParticlesAttributes::Init()
 {
     startIndex = 0;
-    startPathType = 0;
     stopIndex = 1;
-    stopPathType = 0;
     stride = 1;
+    startPathType = Absolute;
+    stopPathType = Absolute;
     connectParticles = false;
 
     PersistentParticlesAttributes::SelectAll();
@@ -121,10 +121,10 @@ void PersistentParticlesAttributes::Init()
 void PersistentParticlesAttributes::Copy(const PersistentParticlesAttributes &obj)
 {
     startIndex = obj.startIndex;
-    startPathType = obj.startPathType;
     stopIndex = obj.stopIndex;
-    stopPathType = obj.stopPathType;
     stride = obj.stride;
+    startPathType = obj.startPathType;
+    stopPathType = obj.stopPathType;
     traceVariableX = obj.traceVariableX;
     traceVariableY = obj.traceVariableY;
     traceVariableZ = obj.traceVariableZ;
@@ -292,10 +292,10 @@ PersistentParticlesAttributes::operator == (const PersistentParticlesAttributes 
 {
     // Create the return value
     return ((startIndex == obj.startIndex) &&
-            (startPathType == obj.startPathType) &&
             (stopIndex == obj.stopIndex) &&
-            (stopPathType == obj.stopPathType) &&
             (stride == obj.stride) &&
+            (startPathType == obj.startPathType) &&
+            (stopPathType == obj.stopPathType) &&
             (traceVariableX == obj.traceVariableX) &&
             (traceVariableY == obj.traceVariableY) &&
             (traceVariableZ == obj.traceVariableZ) &&
@@ -445,10 +445,10 @@ void
 PersistentParticlesAttributes::SelectAll()
 {
     Select(ID_startIndex,       (void *)&startIndex);
-    Select(ID_startPathType,    (void *)&startPathType);
     Select(ID_stopIndex,        (void *)&stopIndex);
-    Select(ID_stopPathType,     (void *)&stopPathType);
     Select(ID_stride,           (void *)&stride);
+    Select(ID_startPathType,    (void *)&startPathType);
+    Select(ID_stopPathType,     (void *)&stopPathType);
     Select(ID_traceVariableX,   (void *)&traceVariableX);
     Select(ID_traceVariableY,   (void *)&traceVariableY);
     Select(ID_traceVariableZ,   (void *)&traceVariableZ);
@@ -492,28 +492,28 @@ PersistentParticlesAttributes::CreateNode(DataNode *parentNode, bool completeSav
         node->AddNode(new DataNode("startIndex", startIndex));
     }
 
-    if(completeSave || !FieldsEqual(ID_startPathType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("startPathType", startPathType));
-    }
-
     if(completeSave || !FieldsEqual(ID_stopIndex, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("stopIndex", stopIndex));
     }
 
-    if(completeSave || !FieldsEqual(ID_stopPathType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("stopPathType", stopPathType));
-    }
-
     if(completeSave || !FieldsEqual(ID_stride, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("stride", stride));
+    }
+
+    if(completeSave || !FieldsEqual(ID_startPathType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("startPathType", PathTypeEnum_ToString(startPathType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_stopPathType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("stopPathType", PathTypeEnum_ToString(stopPathType)));
     }
 
     if(completeSave || !FieldsEqual(ID_traceVariableX, &defaultObject))
@@ -584,14 +584,42 @@ PersistentParticlesAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("startIndex")) != 0)
         SetStartIndex(node->AsInt());
-    if((node = searchNode->GetNode("startPathType")) != 0)
-        SetStartPathType(node->AsInt());
     if((node = searchNode->GetNode("stopIndex")) != 0)
         SetStopIndex(node->AsInt());
-    if((node = searchNode->GetNode("stopPathType")) != 0)
-        SetStopPathType(node->AsInt());
     if((node = searchNode->GetNode("stride")) != 0)
         SetStride(node->AsInt());
+    if((node = searchNode->GetNode("startPathType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetStartPathType(PathTypeEnum(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            PathTypeEnum value;
+            if(PathTypeEnum_FromString(node->AsString(), value))
+                SetStartPathType(value);
+        }
+    }
+    if((node = searchNode->GetNode("stopPathType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetStopPathType(PathTypeEnum(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            PathTypeEnum value;
+            if(PathTypeEnum_FromString(node->AsString(), value))
+                SetStopPathType(value);
+        }
+    }
     if((node = searchNode->GetNode("traceVariableX")) != 0)
         SetTraceVariableX(node->AsString());
     if((node = searchNode->GetNode("traceVariableY")) != 0)
@@ -616,13 +644,6 @@ PersistentParticlesAttributes::SetStartIndex(int startIndex_)
 }
 
 void
-PersistentParticlesAttributes::SetStartPathType(int startPathType_)
-{
-    startPathType = startPathType_;
-    Select(ID_startPathType, (void *)&startPathType);
-}
-
-void
 PersistentParticlesAttributes::SetStopIndex(int stopIndex_)
 {
     stopIndex = stopIndex_;
@@ -630,17 +651,24 @@ PersistentParticlesAttributes::SetStopIndex(int stopIndex_)
 }
 
 void
-PersistentParticlesAttributes::SetStopPathType(int stopPathType_)
-{
-    stopPathType = stopPathType_;
-    Select(ID_stopPathType, (void *)&stopPathType);
-}
-
-void
 PersistentParticlesAttributes::SetStride(int stride_)
 {
     stride = stride_;
     Select(ID_stride, (void *)&stride);
+}
+
+void
+PersistentParticlesAttributes::SetStartPathType(PersistentParticlesAttributes::PathTypeEnum startPathType_)
+{
+    startPathType = startPathType_;
+    Select(ID_startPathType, (void *)&startPathType);
+}
+
+void
+PersistentParticlesAttributes::SetStopPathType(PersistentParticlesAttributes::PathTypeEnum stopPathType_)
+{
+    stopPathType = stopPathType_;
+    Select(ID_stopPathType, (void *)&stopPathType);
 }
 
 void
@@ -689,27 +717,27 @@ PersistentParticlesAttributes::GetStartIndex() const
 }
 
 int
-PersistentParticlesAttributes::GetStartPathType() const
-{
-    return startPathType;
-}
-
-int
 PersistentParticlesAttributes::GetStopIndex() const
 {
     return stopIndex;
 }
 
 int
-PersistentParticlesAttributes::GetStopPathType() const
-{
-    return stopPathType;
-}
-
-int
 PersistentParticlesAttributes::GetStride() const
 {
     return stride;
+}
+
+PersistentParticlesAttributes::PathTypeEnum
+PersistentParticlesAttributes::GetStartPathType() const
+{
+    return PathTypeEnum(startPathType);
+}
+
+PersistentParticlesAttributes::PathTypeEnum
+PersistentParticlesAttributes::GetStopPathType() const
+{
+    return PathTypeEnum(stopPathType);
 }
 
 const std::string &
@@ -819,10 +847,10 @@ PersistentParticlesAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_startIndex:       return "startIndex";
-    case ID_startPathType:    return "startPathType";
     case ID_stopIndex:        return "stopIndex";
-    case ID_stopPathType:     return "stopPathType";
     case ID_stride:           return "stride";
+    case ID_startPathType:    return "startPathType";
+    case ID_stopPathType:     return "stopPathType";
     case ID_traceVariableX:   return "traceVariableX";
     case ID_traceVariableY:   return "traceVariableY";
     case ID_traceVariableZ:   return "traceVariableZ";
@@ -853,10 +881,10 @@ PersistentParticlesAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_startIndex:       return FieldType_int;
-    case ID_startPathType:    return FieldType_int;
     case ID_stopIndex:        return FieldType_int;
-    case ID_stopPathType:     return FieldType_int;
     case ID_stride:           return FieldType_int;
+    case ID_startPathType:    return FieldType_enum;
+    case ID_stopPathType:     return FieldType_enum;
     case ID_traceVariableX:   return FieldType_variablename;
     case ID_traceVariableY:   return FieldType_variablename;
     case ID_traceVariableZ:   return FieldType_variablename;
@@ -887,10 +915,10 @@ PersistentParticlesAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_startIndex:       return "int";
-    case ID_startPathType:    return "int";
     case ID_stopIndex:        return "int";
-    case ID_stopPathType:     return "int";
     case ID_stride:           return "int";
+    case ID_startPathType:    return "enum";
+    case ID_stopPathType:     return "enum";
     case ID_traceVariableX:   return "variablename";
     case ID_traceVariableY:   return "variablename";
     case ID_traceVariableZ:   return "variablename";
@@ -927,24 +955,24 @@ PersistentParticlesAttributes::FieldsEqual(int index_, const AttributeGroup *rhs
         retval = (startIndex == obj.startIndex);
         }
         break;
-    case ID_startPathType:
-        {  // new scope
-        retval = (startPathType == obj.startPathType);
-        }
-        break;
     case ID_stopIndex:
         {  // new scope
         retval = (stopIndex == obj.stopIndex);
         }
         break;
-    case ID_stopPathType:
-        {  // new scope
-        retval = (stopPathType == obj.stopPathType);
-        }
-        break;
     case ID_stride:
         {  // new scope
         retval = (stride == obj.stride);
+        }
+        break;
+    case ID_startPathType:
+        {  // new scope
+        retval = (startPathType == obj.startPathType);
+        }
+        break;
+    case ID_stopPathType:
+        {  // new scope
+        retval = (stopPathType == obj.stopPathType);
         }
         break;
     case ID_traceVariableX:

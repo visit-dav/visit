@@ -90,7 +90,6 @@ avtExecuteThenTimeLoopFilter::avtExecuteThenTimeLoopFilter()
 
 avtExecuteThenTimeLoopFilter::~avtExecuteThenTimeLoopFilter()
 {
-    ;
 }
 
 
@@ -108,7 +107,8 @@ avtExecuteThenTimeLoopFilter::~avtExecuteThenTimeLoopFilter()
 void
 avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
 {
-    int numStates = GetInput()->GetInfo().GetAttributes().GetNumStates(); 
+    int numStates = GetInput()->GetInfo().GetAttributes().GetNumStates();
+
     if (startTime < 0)
     {
         startTime = 0;
@@ -121,6 +121,7 @@ avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
     {
         stride = 1;
     }
+
     if (startTime > endTime)
     {
         std::string msg("Start time must be smaller than or equal to the end time for " );
@@ -129,15 +130,19 @@ avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
         EXCEPTION1(ImproperUseException, msg);
     }
 
-    nFrames = (int) ceil((((float)endTime -startTime))/(float)stride) + 1; 
+    nFrames = (int) ceil((((float)endTime-startTime))/(float)stride) + 1; 
 
-    if (nFrames < 1)
-    {
-        std::string msg(GetType());
-        msg = msg +  " requires at least 1 frame, please correct start " + 
-               "and end times and try again.";
-        EXCEPTION1(ImproperUseException, msg);
-    }
+    // ARS - This check will always pass because of the additional
+    // frame added to nFrames above and startTime must be greater than
+    // or equal to endTime. Thus it is commented out.
+
+//     if (nFrames < 1)
+//     {
+//         std::string msg(GetType());
+//         msg = msg +  " requires at least 1 frame, please correct start " + 
+//                "and end times and try again.";
+//         EXCEPTION1(ImproperUseException, msg);
+//    }
 
     if (endTime >= numStates)
     {
@@ -150,7 +155,7 @@ avtExecuteThenTimeLoopFilter::FinalizeTimeLoop()
     // Ensure that the specified endTime is included,
     // regardless of the stride.
     //
-    actualEnd = startTime + nFrames *stride;
+    actualEnd = startTime + nFrames * stride;
     if (actualEnd < endTime)
         actualEnd = endTime + stride;
 }
@@ -206,13 +211,15 @@ avtExecuteThenTimeLoopFilter::Execute(void)
 
         avtContract_p contract = new avtContract(origContract);
         int currentTime = (i < endTime ? i : endTime);
+
         debug5 << "Execute-then-time-loop-filter updating with time slice #" 
                << currentTime << endl;
         contract->GetDataRequest()->SetTimestep(currentTime);
 
         eef.Update(contract);
 
-        // Friend status plus reference points leads to some extra contortions here.
+        // Friend status plus reference points leads to some extra
+        // contortions here.
         avtDataset *ds = *(eef.GetTypedOutput());
         avtDataTree_p tree = ds->GetDataTree();
         Iterate(currentTime, tree);
@@ -244,5 +251,3 @@ avtExecuteThenTimeLoopFilter::Execute(void)
 
     Finalize();
 }
-
-

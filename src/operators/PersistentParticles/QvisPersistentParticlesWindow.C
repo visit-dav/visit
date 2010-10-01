@@ -127,13 +127,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    startIndexLabel = new QLabel(tr("Index of first time slice"), central);
-    mainLayout->addWidget(startIndexLabel,0,0);
-    startIndex = new QLineEdit(central);
-    connect(startIndex, SIGNAL(returnPressed()),
-            this, SLOT(startIndexProcessText()));
-    mainLayout->addWidget(startIndex, 0,1);
-
+    // Start
     startPathTypeLabel = new QLabel(tr("Type of path"), central);
     mainLayout->addWidget(startPathTypeLabel,1,0);
     startPathType = new QWidget(central);
@@ -141,6 +135,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     QHBoxLayout *startPathTypeLayout = new QHBoxLayout(startPathType);
     startPathTypeLayout->setMargin(0);
     startPathTypeLayout->setSpacing(10);
+
     QRadioButton *startPathTypePathTypeEnumAbsolute = new QRadioButton(tr("Absolute"), startPathType);
     startPathTypeButtonGroup->addButton(startPathTypePathTypeEnumAbsolute, 0);
     startPathTypeLayout->addWidget(startPathTypePathTypeEnumAbsolute);
@@ -149,15 +144,16 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     startPathTypeLayout->addWidget(startPathTypePathTypeEnumRelative);
     connect(startPathTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(startPathTypeChanged(int)));
-    mainLayout->addWidget(startPathType, 1,1);
+    mainLayout->addWidget(startPathType, 0,1);
 
-    stopIndexLabel = new QLabel(tr("Index of last time slice"), central);
-    mainLayout->addWidget(stopIndexLabel,2,0);
-    stopIndex = new QLineEdit(central);
-    connect(stopIndex, SIGNAL(returnPressed()),
-            this, SLOT(stopIndexProcessText()));
-    mainLayout->addWidget(stopIndex, 2,1);
+    startIndexLabel = new QLabel(tr("Index of first time slice"), central);
+    mainLayout->addWidget(startIndexLabel,1,0);
+    startIndex = new QLineEdit(central);
+    connect(startIndex, SIGNAL(returnPressed()),
+            this, SLOT(startIndexProcessText()));
+    mainLayout->addWidget(startIndex, 1,1);
 
+    // Stop
     stopPathTypeLabel = new QLabel(tr("Type of path"), central);
     mainLayout->addWidget(stopPathTypeLabel,3,0);
     stopPathType = new QWidget(central);
@@ -173,8 +169,16 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     stopPathTypeLayout->addWidget(stopPathTypePathTypeEnumRelative);
     connect(stopPathTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(stopPathTypeChanged(int)));
-    mainLayout->addWidget(stopPathType, 3,1);
+    mainLayout->addWidget(stopPathType, 2,1);
 
+    stopIndexLabel = new QLabel(tr("Index of last time slice"), central);
+    mainLayout->addWidget(stopIndexLabel,3,0);
+    stopIndex = new QLineEdit(central);
+    connect(stopIndex, SIGNAL(returnPressed()),
+            this, SLOT(stopIndexProcessText()));
+    mainLayout->addWidget(stopIndex, 3,1);
+
+    // Stride
     strideLabel = new QLabel(tr("Skip rate between time slices"), central);
     mainLayout->addWidget(strideLabel,4,0);
     stride = new QLineEdit(central);
@@ -182,6 +186,7 @@ QvisPersistentParticlesWindow::CreateWindowContents()
             this, SLOT(strideProcessText()));
     mainLayout->addWidget(stride, 4,1);
 
+    // Coordinates
     traceVariableXLabel = new QLabel(tr("X-Coordinate"), central);
     mainLayout->addWidget(traceVariableXLabel,5,0);
     int traceVariableXMask = QvisVariableButton::Scalars;
@@ -256,8 +261,7 @@ QvisPersistentParticlesWindow::UpdateWindow(bool doAll)
         {
           case PersistentParticlesAttributes::ID_startIndex:
             startIndex->blockSignals(true);
-            temp.sprintf("%d", atts->GetStartIndex());
-            startIndex->setText(temp);
+            startIndex->setText(IntToQString(atts->GetStartIndex()));
             startIndex->blockSignals(false);
             break;
           case PersistentParticlesAttributes::ID_startPathType:
@@ -269,8 +273,7 @@ QvisPersistentParticlesWindow::UpdateWindow(bool doAll)
             break;
           case PersistentParticlesAttributes::ID_stopIndex:
             stopIndex->blockSignals(true);
-            temp.sprintf("%d", atts->GetStopIndex());
-            stopIndex->setText(temp);
+            stopIndex->setText(IntToQString(atts->GetStopIndex()));
             stopIndex->blockSignals(false);
             break;
           case PersistentParticlesAttributes::ID_stopPathType:
@@ -281,7 +284,9 @@ QvisPersistentParticlesWindow::UpdateWindow(bool doAll)
             stopPathType->blockSignals(false);
             break;
           case PersistentParticlesAttributes::ID_stride:
+            stride->blockSignals(true);
             stride->setText(IntToQString(atts->GetStride()));
+            stride->blockSignals(true);
             break;
           case PersistentParticlesAttributes::ID_traceVariableX:
             traceVariableX->blockSignals(true);
@@ -402,7 +407,6 @@ QvisPersistentParticlesWindow::startIndexProcessText()
     Apply();
 }
 
-
 void
 QvisPersistentParticlesWindow::startPathTypeChanged(int val)
 {
@@ -415,6 +419,18 @@ QvisPersistentParticlesWindow::startPathTypeChanged(int val)
     updateStartIndexText();
 }
 
+void
+QvisPersistentParticlesWindow::updateStartIndexText()
+{
+    if( atts->GetStartPathType() == 0 )
+    {
+        startIndexLabel->setText(tr("Index of the first time slice"));
+    }
+    else
+    {
+        startIndexLabel->setText(tr("Number of slices backwards in time"));
+    }
+}
 
 void
 QvisPersistentParticlesWindow::stopIndexProcessText()
@@ -446,19 +462,6 @@ QvisPersistentParticlesWindow::updateStopIndexText()
     else
     {
         stopIndexLabel->setText(tr("Number of slices forward in time"));
-    }
-}
-
-void
-QvisPersistentParticlesWindow::updateStartIndexText()
-{
-    if( atts->GetStartPathType() == 0 )
-    {
-        startIndexLabel->setText(tr("Index of the first time slice"));
-    }
-    else
-    {
-        startIndexLabel->setText(tr("Number of slices backwards in time"));
     }
 }
 
