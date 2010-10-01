@@ -98,10 +98,10 @@ public:
 
     // Property setting methods
     void SetStartIndex(int startIndex_);
-    void SetStartPathType(int startPathType_);
     void SetStopIndex(int stopIndex_);
-    void SetStopPathType(int stopPathType_);
     void SetStride(int stride_);
+    void SetStartPathType(PathTypeEnum startPathType_);
+    void SetStopPathType(PathTypeEnum stopPathType_);
     void SetTraceVariableX(const std::string &traceVariableX_);
     void SetTraceVariableY(const std::string &traceVariableY_);
     void SetTraceVariableZ(const std::string &traceVariableZ_);
@@ -110,10 +110,10 @@ public:
 
     // Property getting methods
     int               GetStartIndex() const;
-    int               GetStartPathType() const;
     int               GetStopIndex() const;
-    int               GetStopPathType() const;
     int               GetStride() const;
+    PathTypeEnum      GetStartPathType() const;
+    PathTypeEnum      GetStopPathType() const;
     const std::string &GetTraceVariableX() const;
           std::string &GetTraceVariableX();
     const std::string &GetTraceVariableY() const;
@@ -145,10 +145,10 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_startIndex = 0,
-        ID_startPathType,
         ID_stopIndex,
-        ID_stopPathType,
         ID_stride,
+        ID_startPathType,
+        ID_stopPathType,
         ID_traceVariableX,
         ID_traceVariableY,
         ID_traceVariableZ,
@@ -159,10 +159,10 @@ public:
 
 private:
     int         startIndex;
-    int         startPathType;
     int         stopIndex;
-    int         stopPathType;
     int         stride;
+    int         startPathType;
+    int         stopPathType;
     std::string traceVariableX;
     std::string traceVariableY;
     std::string traceVariableZ;

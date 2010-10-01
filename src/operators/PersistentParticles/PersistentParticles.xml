@@ -8,17 +8,17 @@
       <Field name="startIndex" label="Index of first time slice" type="int">
         0
       </Field>
-      <Field name="startPathType" label="Absolute" type="int">
-        0
-      </Field>
       <Field name="stopIndex" label="Index of last time slice" type="int">
         1
       </Field>
-      <Field name="stopPathType" label="Absolute" type="int">
-        0
-      </Field>
       <Field name="stride" label="Skip rate between time slices" type="int">
         1
+      </Field>
+      <Field name="startPathType" label="Type of Path" type="enum" subtype="PathTypeEnum">
+        Absolute
+      </Field>
+      <Field name="stopPathType" label="Type of Path" type="enum" subtype="PathTypeEnum">
+        Absolute
       </Field>
       <Field name="traceVariableX" label="X-Coordinate" type="variablename" vartypes="01000000000">
       </Field>

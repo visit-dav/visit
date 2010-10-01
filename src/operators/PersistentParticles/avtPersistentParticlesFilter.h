@@ -108,6 +108,8 @@ class avtPersistentParticlesFilter
 
     string mainVariable;   
     int activeTimeStep;
+    int startTimeSlice;
+    int stopTimeSlice;
     bool haveData;
 };
 #endif
