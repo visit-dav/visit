@@ -1080,7 +1080,7 @@ avtPICSFilter::Initialize()
     if (numDomains == 1)
     {
         debug1 << "Forcing load-on-demand since there is only one domain." << endl;
-        method = STREAMLINE_LOAD_ONDEMAND;
+        actualMethod = STREAMLINE_LOAD_ONDEMAND;
     }
 
     if ((method != STREAMLINE_VISIT_SELECTS) && (method != actualMethod))
