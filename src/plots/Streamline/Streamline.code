@@ -202,6 +202,10 @@ Definition:
 //
 //   Christoph Garth, Wed Jan 13 17:14:21 PST 2010 
 //   Add support for circle source.
+//
+//   Hank Childs, Fri Oct  1 20:43:34 PDT 2010
+//   Add support for absTol that is fraction of the bounding box.
+//
 // ****************************************************************************
 
 #define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
@@ -220,7 +224,9 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         maxTimeStep != obj.maxTimeStep ||
         limitMaximumTimestep != obj.limitMaximumTimestep ||
         relTol != obj.relTol ||
-        absTol != obj.absTol ||
+        absTolAbsolute != obj.absTolAbsolute ||
+        absTolBBox != obj.absTolBBox ||
+        absTolSizeType != obj.absTolSizeType ||
         forceNodeCenteredData != obj.forceNodeCenteredData ||
         pathlines != obj.pathlines ||
         coloringVariable != obj.coloringVariable ||

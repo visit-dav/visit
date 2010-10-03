@@ -189,6 +189,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Add label and check box for whether we should restrict the maximum
 //   time step length.
 //
+//   Hank Childs, Fri Oct  1 21:13:56 PDT 2010
+//   Add size type for absTol.
+//
 // ****************************************************************************
 
 void
@@ -556,12 +559,17 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationLayout->addWidget(absTolLabel, 5,0);
     integrationLayout->addWidget(absTol, 5, 1);
 
+    absTolSizeType = new QComboBox(integrationGroup);
+    absTolSizeType->addItem(tr("Absolute"), 0);
+    absTolSizeType->addItem(tr("Fraction of Bounding Box"), 1);
+    connect(absTolSizeType, SIGNAL(activated(int)), this, SLOT(absTolSizeTypeChanged(int)));
+    integrationLayout->addWidget(absTolSizeType, 5, 2);
+
     forceNodalLabel = new QLabel(tr("Force node centering"), integrationGroup);
     forceNodal = new QCheckBox(integrationGroup);
     connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
     integrationLayout->addWidget(forceNodalLabel, 6,0);
     integrationLayout->addWidget(forceNodal, 6, 1);
-    
 
     // ----------------------------------------------------------------------
     // Appearance tab
@@ -1597,9 +1605,34 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             temp.setNum(streamAtts->GetRelTol());
             relTol->setText(temp);
             break;
-        case StreamlineAttributes::ID_absTol:
-            temp.setNum(streamAtts->GetAbsTol());
-            absTol->setText(temp);
+        case StreamlineAttributes::ID_absTolSizeType:
+            absTolSizeType->blockSignals(true);
+            absTolSizeType->setCurrentIndex((int) streamAtts->GetAbsTolSizeType());
+            absTolSizeType->blockSignals(false);
+            if (streamAtts->GetAbsTolSizeType() == StreamlineAttributes::FractionOfBBox)
+            {
+                temp.setNum(streamAtts->GetAbsTolBBox());
+                absTol->setText(temp);
+            }
+            if (streamAtts->GetAbsTolSizeType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetAbsTolAbsolute());
+                absTol->setText(temp);
+            }
+            break;
+        case StreamlineAttributes::ID_absTolBBox:
+            if (streamAtts->GetAbsTolSizeType() == StreamlineAttributes::FractionOfBBox)
+            {
+                temp.setNum(streamAtts->GetAbsTolBBox());
+                absTol->setText(temp);
+            }
+            break;
+        case StreamlineAttributes::ID_absTolAbsolute:
+            if (streamAtts->GetAbsTolSizeType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetAbsTolAbsolute());
+                absTol->setText(temp);
+            }
             break;
         case StreamlineAttributes::ID_terminationType:
             UpdateTerminationType();
@@ -2266,16 +2299,30 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do absTol
-    if(which_widget == StreamlineAttributes::ID_absTol || doAll)
+    if ((which_widget == StreamlineAttributes::ID_absTolBBox || doAll)
+        && streamAtts->GetAbsTolSizeType() == StreamlineAttributes::FractionOfBBox)
     {
         double val;
         if(LineEditGetDouble(absTol, val))
-            streamAtts->SetAbsTol(val);
+            streamAtts->SetAbsTolBBox(val);
         else
         {
             ResettingError(tr("absolute tolerance"),
-                DoubleToQString(streamAtts->GetAbsTol()));
-            streamAtts->SetAbsTol(streamAtts->GetAbsTol());
+                DoubleToQString(streamAtts->GetAbsTolBBox()));
+                streamAtts->SetAbsTolBBox(streamAtts->GetAbsTolBBox());
+        }
+    }
+    if ((which_widget == StreamlineAttributes::ID_absTolAbsolute || doAll)
+        && streamAtts->GetAbsTolSizeType() == StreamlineAttributes::Absolute)
+    {
+        double val;
+        if(LineEditGetDouble(absTol, val))
+            streamAtts->SetAbsTolAbsolute(val);
+        else
+        {
+            ResettingError(tr("absolute tolerance"),
+                DoubleToQString(streamAtts->GetAbsTolAbsolute()));
+                streamAtts->SetAbsTolAbsolute(streamAtts->GetAbsTolAbsolute());
         }
     }
 
@@ -3197,7 +3244,15 @@ QvisStreamlinePlotWindow::pathlineFlagChanged(bool val)
 void
 QvisStreamlinePlotWindow::absTolProcessText()
 {
-    GetCurrentValues(StreamlineAttributes::ID_absTol);
+    GetCurrentValues(StreamlineAttributes::ID_absTolBBox);
+    GetCurrentValues(StreamlineAttributes::ID_absTolAbsolute);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::absTolSizeTypeChanged(int val)
+{
+    streamAtts->SetAbsTolSizeType((StreamlineAttributes::SizeType) val);
     Apply();
 }
 

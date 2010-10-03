@@ -353,7 +353,24 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%srelTol = %g\n", prefix, atts->GetRelTol());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sabsTol = %g\n", prefix, atts->GetAbsTol());
+    const char *absTolSizeType_names = "Absolute, FractionOfBBox";
+    switch (atts->GetAbsTolSizeType())
+    {
+      case StreamlineAttributes::Absolute:
+          SNPRINTF(tmpStr, 1000, "%sabsTolSizeType = %sAbsolute  # %s\n", prefix, prefix, absTolSizeType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::FractionOfBBox:
+          SNPRINTF(tmpStr, 1000, "%sabsTolSizeType = %sFractionOfBBox  # %s\n", prefix, prefix, absTolSizeType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sabsTolAbsolute = %g\n", prefix, atts->GetAbsTolAbsolute());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
     const char *terminationType_names = "Distance, Time, Step";
     switch (atts->GetTerminationType())
@@ -1670,7 +1687,40 @@ StreamlineAttributes_GetRelTol(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_SetAbsTol(PyObject *self, PyObject *args)
+StreamlineAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the absTolSizeType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetAbsTolSizeType(StreamlineAttributes::SizeType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid absTolSizeType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Absolute, FractionOfBBox.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetAbsTolSizeType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAbsTolSizeType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
 
@@ -1678,18 +1728,42 @@ StreamlineAttributes_SetAbsTol(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the absTol in the object.
-    obj->data->SetAbsTol(dval);
+    // Set the absTolAbsolute in the object.
+    obj->data->SetAbsTolAbsolute(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_GetAbsTol(PyObject *self, PyObject *args)
+StreamlineAttributes_GetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTol());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolAbsolute());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the absTolBBox in the object.
+    obj->data->SetAbsTolBBox(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolBBox());
     return retval;
 }
 
@@ -3072,8 +3146,12 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetMaxTimeStep", StreamlineAttributes_GetMaxTimeStep, METH_VARARGS},
     {"SetRelTol", StreamlineAttributes_SetRelTol, METH_VARARGS},
     {"GetRelTol", StreamlineAttributes_GetRelTol, METH_VARARGS},
-    {"SetAbsTol", StreamlineAttributes_SetAbsTol, METH_VARARGS},
-    {"GetAbsTol", StreamlineAttributes_GetAbsTol, METH_VARARGS},
+    {"SetAbsTolSizeType", StreamlineAttributes_SetAbsTolSizeType, METH_VARARGS},
+    {"GetAbsTolSizeType", StreamlineAttributes_GetAbsTolSizeType, METH_VARARGS},
+    {"SetAbsTolAbsolute", StreamlineAttributes_SetAbsTolAbsolute, METH_VARARGS},
+    {"GetAbsTolAbsolute", StreamlineAttributes_GetAbsTolAbsolute, METH_VARARGS},
+    {"SetAbsTolBBox", StreamlineAttributes_SetAbsTolBBox, METH_VARARGS},
+    {"GetAbsTolBBox", StreamlineAttributes_GetAbsTolBBox, METH_VARARGS},
     {"SetTerminationType", StreamlineAttributes_SetTerminationType, METH_VARARGS},
     {"GetTerminationType", StreamlineAttributes_GetTerminationType, METH_VARARGS},
     {"SetIntegrationType", StreamlineAttributes_SetIntegrationType, METH_VARARGS},
@@ -3293,8 +3371,17 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetMaxTimeStep(self, NULL);
     if(strcmp(name, "relTol") == 0)
         return StreamlineAttributes_GetRelTol(self, NULL);
-    if(strcmp(name, "absTol") == 0)
-        return StreamlineAttributes_GetAbsTol(self, NULL);
+    if(strcmp(name, "absTolSizeType") == 0)
+        return StreamlineAttributes_GetAbsTolSizeType(self, NULL);
+    if(strcmp(name, "Absolute") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Absolute));
+    if(strcmp(name, "FractionOfBBox") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::FractionOfBBox));
+
+    if(strcmp(name, "absTolAbsolute") == 0)
+        return StreamlineAttributes_GetAbsTolAbsolute(self, NULL);
+    if(strcmp(name, "absTolBBox") == 0)
+        return StreamlineAttributes_GetAbsTolBBox(self, NULL);
     if(strcmp(name, "terminationType") == 0)
         return StreamlineAttributes_GetTerminationType(self, NULL);
     if(strcmp(name, "Distance") == 0)
@@ -3536,8 +3623,12 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetMaxTimeStep(self, tuple);
     else if(strcmp(name, "relTol") == 0)
         obj = StreamlineAttributes_SetRelTol(self, tuple);
-    else if(strcmp(name, "absTol") == 0)
-        obj = StreamlineAttributes_SetAbsTol(self, tuple);
+    else if(strcmp(name, "absTolSizeType") == 0)
+        obj = StreamlineAttributes_SetAbsTolSizeType(self, tuple);
+    else if(strcmp(name, "absTolAbsolute") == 0)
+        obj = StreamlineAttributes_SetAbsTolAbsolute(self, tuple);
+    else if(strcmp(name, "absTolBBox") == 0)
+        obj = StreamlineAttributes_SetAbsTolBBox(self, tuple);
     else if(strcmp(name, "terminationType") == 0)
         obj = StreamlineAttributes_SetTerminationType(self, tuple);
     else if(strcmp(name, "integrationType") == 0)

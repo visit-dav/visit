@@ -396,6 +396,10 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Hank Childs, Wed Sep 29 20:52:04 PDT 2010
 //   The DoPri option now has an explicit field for max time step.
 //
+//   Hank Childs, Fri Oct  1 20:35:21 PDT 2010
+//   Add support for absolute tolerances that are a fraction of the bounding
+//   box.
+//
 // ****************************************************************************
 
 void
@@ -475,7 +479,13 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     }
     else
         streamlineFilter->SetMaxStepLength(atts.GetMaxStepLength());
-    streamlineFilter->SetTolerances(atts.GetRelTol(), atts.GetAbsTol());
+    double absTol = 0.;
+    bool doBBox = (atts.GetAbsTolSizeType() == StreamlineAttributes::FractionOfBBox);
+    if (doBBox)
+        absTol = atts.GetAbsTolBBox();
+    else
+        absTol = atts.GetAbsTolAbsolute();
+    streamlineFilter->SetTolerances(atts.GetRelTol(), absTol, doBBox);
 
     streamlineFilter->SetTermination(atts.GetTerminationType(),
                                      atts.GetTermination());

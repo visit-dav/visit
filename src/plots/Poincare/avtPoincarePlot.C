@@ -347,6 +347,10 @@ avtPoincarePlot::CustomizeBehavior()
 //   Dave Pugmire, Thu Jul  1 13:55:28 EDT 2010
 //   Switch to variablePointGlyphMapper
 //
+//   Hank Childs, Sat Oct  2 21:23:41 PDT 2010
+//   Reflect new interface in absolute tolerance.  (The ones for the Poincare
+//   plots are not a fraction of the bounding box.)
+//
 // ****************************************************************************
 
 void
@@ -422,7 +426,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetStreamlineAlgorithm(STREAMLINE_PARALLEL_STATIC_DOMAINS,
                                            10, 3, 1);
     poincareFilter->SetMaxStepLength(atts.GetMaxStepLength());
-    poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
+    poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol(), false);
 
     
     poincareFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 

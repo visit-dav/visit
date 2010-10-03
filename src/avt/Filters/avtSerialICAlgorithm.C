@@ -277,8 +277,6 @@ avtSerialICAlgorithm::RunAlgorithm()
         GetDomain(s);
     }
 
-    std::cout << "\ndone\n";
-
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
 
