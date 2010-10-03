@@ -112,6 +112,11 @@ Consider the leaveDomains ICs and the balancing at the same time.
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Oct  1 20:43:34 PDT 2010
+//    Initialize absTolIsFraction.
+//
 // ****************************************************************************
 
 avtPICSFilter::avtPICSFilter()
@@ -130,6 +135,7 @@ avtPICSFilter::avtPICSFilter()
     integrationType = STREAMLINE_INTEGRATE_DORMAND_PRINCE;
     relTol = 1e-7;
     absTol = 0;
+    absTolIsFraction = false;
     intervalTree = NULL;
     specifyPoint = false;
     solver = NULL;
@@ -649,19 +655,24 @@ avtPICSFilter::SetStreamlineAlgorithm(int algo,
 // Arguments:
 //   reltol : The new relative tolerance.
 //   abstol : The new absolute tolerance.
+//   isBBox : Is abstol a fraction of the bounding box.
 //
 // Programmer: Christoph Garth
 // Creation:   Mon Feb 25 16:14:44 PST 2008
 //
 // Modifications:
 //
+//   Hank Childs, Fri Oct  1 20:35:21 PDT 2010
+//   Add option for absTol that is a fraction of the bbox.
+//
 // ****************************************************************************
 
 void
-avtPICSFilter::SetTolerances(double reltol, double abstol)
+avtPICSFilter::SetTolerances(double reltol, double abstol, bool isFraction)
 {
     relTol = reltol;
     absTol = abstol;
+    absTolIsFraction = isFraction;
 }
 
 
@@ -1894,6 +1905,61 @@ avtPICSFilter::SetZToZero(vtkPolyData *pd) const
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtPICSFilter::GetLengthScale
+//
+//  Purpose:
+//      Gets the length scale of the volume.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 1, 2010
+//
+// ****************************************************************************
+
+double
+avtPICSFilter::GetLengthScale(void)
+{
+    double bbox[6];
+    bool   gotBounds = false;
+    if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
+    {
+        avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
+        if (it != NULL)
+        {
+            it->GetExtents(bbox);
+            gotBounds = true;
+        }
+    }
+
+    if (!gotBounds)
+    {
+        GetSpatialExtents(bbox);
+    }
+
+    double vol = 1;
+    int    numDims = 0;
+    if (bbox[1] > bbox[0])
+    {
+        vol *= (bbox[1]-bbox[0]);
+        numDims++;
+    }
+    if (bbox[3] > bbox[2])
+    {
+        vol *= (bbox[3]-bbox[2]);
+        numDims++;
+    }
+    if (bbox[5] > bbox[4])
+    {
+        vol *= (bbox[5]-bbox[4]);
+        numDims++;
+    }
+
+    double length = pow(vol, 1.0/numDims);
+    return length;
+}
+
+
 // ****************************************************************************
 //  Method: avtPICSFilter::PreExecute
 //
@@ -1908,6 +1974,9 @@ avtPICSFilter::SetZToZero(vtkPolyData *pd) const
 //    Dave Pugmire, Tue Aug 12 13:44:10 EDT 2008
 //    Moved the box extents code to the seed point generation function.
 //
+//    Hank Childs, Fri Oct  1 20:43:34 PDT 2010
+//    Add an option for absTol to be a fraction of the bbox.
+//
 // ****************************************************************************
 
 void
@@ -1915,24 +1984,30 @@ avtPICSFilter::PreExecute(void)
 {
     avtDatasetOnDemandFilter::PreExecute();
 
+    double absTolToUse = absTol;
+    if (absTolIsFraction)
+    {
+        double l = GetLengthScale();
+        absTolToUse = l*absTol;
+    }
     // Create the solver. --Get from user prefs.
     if (integrationType == STREAMLINE_INTEGRATE_DORMAND_PRINCE)
     {
         solver = new avtIVPDopri5;
         solver->SetMaximumStepSize(maxStepLength);
-        solver->SetTolerances(relTol, absTol);
+        solver->SetTolerances(relTol, absTolToUse);
     }
     else if (integrationType == STREAMLINE_INTEGRATE_ADAMS_BASHFORTH)
     {
         solver = new avtIVPAdamsBashforth;
         solver->SetMaximumStepSize(maxStepLength);
-        solver->SetTolerances(relTol, absTol);
+        solver->SetTolerances(relTol, absTolToUse);
     }
     else if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR)
     {
         solver = new avtIVPM3DC1Integrator;
         solver->SetMaximumStepSize(maxStepLength);
-        solver->SetTolerances(relTol, absTol);
+        solver->SetTolerances(relTol, absTolToUse);
     }
 }
 

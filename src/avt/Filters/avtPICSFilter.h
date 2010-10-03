@@ -103,6 +103,9 @@ class avtICAlgorithm;
 //   Hank Childs, Sun Sep 19 11:04:32 PDT 2010
 //   Added UpdateDataObjectInfo.
 //
+//   Hank Childs, Fri Oct  1 20:35:21 PDT 2010
+//   Add an argument for absTol that is a fraction of the bounding box.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -143,7 +146,7 @@ class AVTFILTERS_API avtPICSFilter :
     void                      SetStreamlineAlgorithm(int algo, int maxCnt,
                                                      int domainCache,
                                                      int workGrpSz);
-    void                      SetTolerances(double reltol, double abstol);
+    void                      SetTolerances(double reltol, double abstol, bool isFraction);
 
     void                      SetIntegrationDirection(int dir);
 
@@ -156,6 +159,7 @@ class AVTFILTERS_API avtPICSFilter :
     double maxStepLength;
     double relTol;
     double absTol;
+    bool   absTolIsFraction;
     avtIntegralCurve::TerminationType terminationType;
     int integrationType;
     double termination;
@@ -233,6 +237,7 @@ class AVTFILTERS_API avtPICSFilter :
     void                      ComputeRankList(const std::vector<int> &domList,
                                               std::vector<int> &ranks,
                                               std::vector<int> &doms );
+    double                    GetLengthScale(void);
 
     avtCellLocator           *SetupLocator(const DomainType &, vtkDataSet *);
     virtual avtIVPField      *GetFieldForDomain(const DomainType&, vtkDataSet*);

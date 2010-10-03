@@ -532,7 +532,9 @@ void StreamlineAttributes::Init()
     limitMaximumTimestep = false;
     maxTimeStep = 0.1;
     relTol = 0.0001;
-    absTol = 1e-05;
+    absTolSizeType = FractionOfBBox;
+    absTolAbsolute = 1e-06;
+    absTolBBox = 1e-06;
     terminationType = Distance;
     integrationType = DormandPrince;
     streamlineAlgorithmType = VisItSelects;
@@ -653,7 +655,9 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     limitMaximumTimestep = obj.limitMaximumTimestep;
     maxTimeStep = obj.maxTimeStep;
     relTol = obj.relTol;
-    absTol = obj.absTol;
+    absTolSizeType = obj.absTolSizeType;
+    absTolAbsolute = obj.absTolAbsolute;
+    absTolBBox = obj.absTolBBox;
     terminationType = obj.terminationType;
     integrationType = obj.integrationType;
     streamlineAlgorithmType = obj.streamlineAlgorithmType;
@@ -930,7 +934,9 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (limitMaximumTimestep == obj.limitMaximumTimestep) &&
             (maxTimeStep == obj.maxTimeStep) &&
             (relTol == obj.relTol) &&
-            (absTol == obj.absTol) &&
+            (absTolSizeType == obj.absTolSizeType) &&
+            (absTolAbsolute == obj.absTolAbsolute) &&
+            (absTolBBox == obj.absTolBBox) &&
             (terminationType == obj.terminationType) &&
             (integrationType == obj.integrationType) &&
             (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
@@ -1264,7 +1270,9 @@ StreamlineAttributes::SelectAll()
     Select(ID_limitMaximumTimestep,      (void *)&limitMaximumTimestep);
     Select(ID_maxTimeStep,               (void *)&maxTimeStep);
     Select(ID_relTol,                    (void *)&relTol);
-    Select(ID_absTol,                    (void *)&absTol);
+    Select(ID_absTolSizeType,            (void *)&absTolSizeType);
+    Select(ID_absTolAbsolute,            (void *)&absTolAbsolute);
+    Select(ID_absTolBBox,                (void *)&absTolBBox);
     Select(ID_terminationType,           (void *)&terminationType);
     Select(ID_integrationType,           (void *)&integrationType);
     Select(ID_streamlineAlgorithmType,   (void *)&streamlineAlgorithmType);
@@ -1506,10 +1514,22 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("relTol", relTol));
     }
 
-    if(completeSave || !FieldsEqual(ID_absTol, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_absTolSizeType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("absTol", absTol));
+        node->AddNode(new DataNode("absTolSizeType", SizeType_ToString(absTolSizeType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_absTolAbsolute, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("absTolAbsolute", absTolAbsolute));
+    }
+
+    if(completeSave || !FieldsEqual(ID_absTolBBox, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("absTolBBox", absTolBBox));
     }
 
     if(completeSave || !FieldsEqual(ID_terminationType, &defaultObject))
@@ -1948,8 +1968,26 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetMaxTimeStep(node->AsDouble());
     if((node = searchNode->GetNode("relTol")) != 0)
         SetRelTol(node->AsDouble());
-    if((node = searchNode->GetNode("absTol")) != 0)
-        SetAbsTol(node->AsDouble());
+    if((node = searchNode->GetNode("absTolSizeType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetAbsTolSizeType(SizeType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            SizeType value;
+            if(SizeType_FromString(node->AsString(), value))
+                SetAbsTolSizeType(value);
+        }
+    }
+    if((node = searchNode->GetNode("absTolAbsolute")) != 0)
+        SetAbsTolAbsolute(node->AsDouble());
+    if((node = searchNode->GetNode("absTolBBox")) != 0)
+        SetAbsTolBBox(node->AsDouble());
     if((node = searchNode->GetNode("terminationType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -2410,10 +2448,24 @@ StreamlineAttributes::SetRelTol(double relTol_)
 }
 
 void
-StreamlineAttributes::SetAbsTol(double absTol_)
+StreamlineAttributes::SetAbsTolSizeType(StreamlineAttributes::SizeType absTolSizeType_)
 {
-    absTol = absTol_;
-    Select(ID_absTol, (void *)&absTol);
+    absTolSizeType = absTolSizeType_;
+    Select(ID_absTolSizeType, (void *)&absTolSizeType);
+}
+
+void
+StreamlineAttributes::SetAbsTolAbsolute(double absTolAbsolute_)
+{
+    absTolAbsolute = absTolAbsolute_;
+    Select(ID_absTolAbsolute, (void *)&absTolAbsolute);
+}
+
+void
+StreamlineAttributes::SetAbsTolBBox(double absTolBBox_)
+{
+    absTolBBox = absTolBBox_;
+    Select(ID_absTolBBox, (void *)&absTolBBox);
 }
 
 void
@@ -2999,10 +3051,22 @@ StreamlineAttributes::GetRelTol() const
     return relTol;
 }
 
-double
-StreamlineAttributes::GetAbsTol() const
+StreamlineAttributes::SizeType
+StreamlineAttributes::GetAbsTolSizeType() const
 {
-    return absTol;
+    return SizeType(absTolSizeType);
+}
+
+double
+StreamlineAttributes::GetAbsTolAbsolute() const
+{
+    return absTolAbsolute;
+}
+
+double
+StreamlineAttributes::GetAbsTolBBox() const
+{
+    return absTolBBox;
 }
 
 StreamlineAttributes::TerminationType
@@ -3455,7 +3519,9 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_limitMaximumTimestep:      return "limitMaximumTimestep";
     case ID_maxTimeStep:               return "maxTimeStep";
     case ID_relTol:                    return "relTol";
-    case ID_absTol:                    return "absTol";
+    case ID_absTolSizeType:            return "absTolSizeType";
+    case ID_absTolAbsolute:            return "absTolAbsolute";
+    case ID_absTolBBox:                return "absTolBBox";
     case ID_terminationType:           return "terminationType";
     case ID_integrationType:           return "integrationType";
     case ID_streamlineAlgorithmType:   return "streamlineAlgorithmType";
@@ -3557,7 +3623,9 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_limitMaximumTimestep:      return FieldType_bool;
     case ID_maxTimeStep:               return FieldType_double;
     case ID_relTol:                    return FieldType_double;
-    case ID_absTol:                    return FieldType_double;
+    case ID_absTolSizeType:            return FieldType_enum;
+    case ID_absTolAbsolute:            return FieldType_double;
+    case ID_absTolBBox:                return FieldType_double;
     case ID_terminationType:           return FieldType_enum;
     case ID_integrationType:           return FieldType_enum;
     case ID_streamlineAlgorithmType:   return FieldType_enum;
@@ -3659,7 +3727,9 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_limitMaximumTimestep:      return "bool";
     case ID_maxTimeStep:               return "double";
     case ID_relTol:                    return "double";
-    case ID_absTol:                    return "double";
+    case ID_absTolSizeType:            return "enum";
+    case ID_absTolAbsolute:            return "double";
+    case ID_absTolBBox:                return "double";
     case ID_terminationType:           return "enum";
     case ID_integrationType:           return "enum";
     case ID_streamlineAlgorithmType:   return "enum";
@@ -3907,9 +3977,19 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (relTol == obj.relTol);
         }
         break;
-    case ID_absTol:
+    case ID_absTolSizeType:
         {  // new scope
-        retval = (absTol == obj.absTol);
+        retval = (absTolSizeType == obj.absTolSizeType);
+        }
+        break;
+    case ID_absTolAbsolute:
+        {  // new scope
+        retval = (absTolAbsolute == obj.absTolAbsolute);
+        }
+        break;
+    case ID_absTolBBox:
+        {  // new scope
+        retval = (absTolBBox == obj.absTolBBox);
         }
         break;
     case ID_terminationType:
@@ -4205,6 +4285,10 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //
 //   Christoph Garth, Wed Jan 13 17:14:21 PST 2010 
 //   Add support for circle source.
+//
+//   Hank Childs, Fri Oct  1 20:43:34 PDT 2010
+//   Add support for absTol that is fraction of the bounding box.
+//
 // ****************************************************************************
 
 #define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
@@ -4223,7 +4307,9 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         maxTimeStep != obj.maxTimeStep ||
         limitMaximumTimestep != obj.limitMaximumTimestep ||
         relTol != obj.relTol ||
-        absTol != obj.absTol ||
+        absTolAbsolute != obj.absTolAbsolute ||
+        absTolBBox != obj.absTolBBox ||
+        absTolSizeType != obj.absTolSizeType ||
         forceNodeCenteredData != obj.forceNodeCenteredData ||
         pathlines != obj.pathlines ||
         coloringVariable != obj.coloringVariable ||

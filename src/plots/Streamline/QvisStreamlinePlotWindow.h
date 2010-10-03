@@ -134,6 +134,9 @@ class StreamlineAttributes;
 //   Hank Childs, Thu Sep 30 01:22:24 PDT 2010
 //   Add widgets for choosing size type between fraction of bbox and absolute.
 //
+//   Hank Childs, Fri Oct  1 21:13:56 PDT 2010
+//   Add size type option for absTol.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -176,6 +179,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void terminationProcessText();
     void relTolProcessText();
     void absTolProcessText();
+    void absTolSizeTypeChanged(int);
     void pointSourceProcessText();
     void lineStartProcessText();
     void lineEndProcessText();
@@ -262,6 +266,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLineEdit *relTol;
     QLabel    *relTolLabel;
     QLineEdit *absTol;
+    QComboBox *absTolSizeType;
     QLabel    *absTolLabel;
     QLabel    *forceNodalLabel;
     QCheckBox *forceNodal;

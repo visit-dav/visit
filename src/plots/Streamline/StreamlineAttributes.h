@@ -203,7 +203,9 @@ public:
     void SetLimitMaximumTimestep(bool limitMaximumTimestep_);
     void SetMaxTimeStep(double maxTimeStep_);
     void SetRelTol(double relTol_);
-    void SetAbsTol(double absTol_);
+    void SetAbsTolSizeType(SizeType absTolSizeType_);
+    void SetAbsTolAbsolute(double absTolAbsolute_);
+    void SetAbsTolBBox(double absTolBBox_);
     void SetTerminationType(TerminationType terminationType_);
     void SetIntegrationType(IntegrationType integrationType_);
     void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
@@ -294,7 +296,9 @@ public:
     bool                 GetLimitMaximumTimestep() const;
     double               GetMaxTimeStep() const;
     double               GetRelTol() const;
-    double               GetAbsTol() const;
+    SizeType             GetAbsTolSizeType() const;
+    double               GetAbsTolAbsolute() const;
+    double               GetAbsTolBBox() const;
     TerminationType      GetTerminationType() const;
     IntegrationType      GetIntegrationType() const;
     StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
@@ -448,7 +452,9 @@ public:
         ID_limitMaximumTimestep,
         ID_maxTimeStep,
         ID_relTol,
-        ID_absTol,
+        ID_absTolSizeType,
+        ID_absTolAbsolute,
+        ID_absTolBBox,
         ID_terminationType,
         ID_integrationType,
         ID_streamlineAlgorithmType,
@@ -530,7 +536,9 @@ private:
     bool           limitMaximumTimestep;
     double         maxTimeStep;
     double         relTol;
-    double         absTol;
+    int            absTolSizeType;
+    double         absTolAbsolute;
+    double         absTolBBox;
     int            terminationType;
     int            integrationType;
     int            streamlineAlgorithmType;
@@ -587,6 +595,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "idDDDDDDdDDbd*iiiisabbidbdddiiiiiibsbbddddbbiiddiddibiddbiidddisdddbbiidddbbiib"
+#define STREAMLINEATTRIBUTES_TMFS "idDDDDDDdDDbd*iiiisabbidbddiddiiiiiibsbbddddbbiiddiddibiddbiidddisdddbbiidddbbiib"
 
 #endif

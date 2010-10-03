@@ -197,8 +197,14 @@
       <Field name="relTol" label="rel. tolerance" type="double">
         0.000100
       </Field>
-      <Field name="absTol" label="abs. tolerance" type="double">
-        0.000010
+      <Field name="absTolSizeType" label="AbsoluteToleranceSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="absTolAbsolute" label="abs. tolerance" type="double" enabler="absTolSizeType:Absolute">
+        0.000001
+      </Field>
+      <Field name="absTolBBox" label="AbsTolBBox" type="double" enabler="absTolSizeType:FractionOfBBox">
+        0.000001
       </Field>
       <Field name="terminationType" label="Termination Type" type="enum" subtype="TerminationType">
         Distance

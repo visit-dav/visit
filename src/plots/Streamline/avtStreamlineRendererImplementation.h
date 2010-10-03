@@ -39,6 +39,8 @@
 #ifndef AVT_STREAMLINE_RENDERER_IMPLEMENTATION_H
 #define AVT_STREAMLINE_RENDERER_IMPLEMENTATION_H
 
+#include <math.h>
+
 class avtLookupTable;
 class vtkPolyData;
 class vtkDataArray;
@@ -84,14 +86,26 @@ class avtStreamlineRendererImplementation
     }
     double         GetBBoxSize(void)
     {
-        double smallest = 1e+32;
-        if ((bbox[1]-bbox[0] != 0.) && ((bbox[1]-bbox[0]) < smallest))
-            smallest = bbox[1]-bbox[0];
-        if ((bbox[3]-bbox[2] != 0.) && ((bbox[3]-bbox[2]) < smallest))
-            smallest = bbox[3]-bbox[2];
-        if ((bbox[5]-bbox[4] != 0.) && ((bbox[5]-bbox[4]) < smallest))
-            smallest = bbox[5]-bbox[4];
-        return smallest;
+        double vol = 1;
+        int    numDims = 0;
+        if (bbox[1] > bbox[0])
+        {
+            vol *= (bbox[1]-bbox[0]);
+            numDims++;
+        }
+        if (bbox[3] > bbox[2])
+        {
+            vol *= (bbox[3]-bbox[2]);
+            numDims++;
+        }
+        if (bbox[5] > bbox[4])
+        {
+            vol *= (bbox[5]-bbox[4]);
+            numDims++;
+        }
+
+        double length = pow(vol, 1.0/numDims);
+        return length;
     }
    
     virtual void   Render(vtkPolyData *data, const StreamlineAttributes&,
