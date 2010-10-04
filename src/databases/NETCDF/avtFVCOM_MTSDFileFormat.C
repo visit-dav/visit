@@ -105,6 +105,9 @@ avtFVCOM_MTSDFileFormat::Identify(NETCDFFileObject *fileObject)
 //    its interface has changed to accept both a number of timestep groups
 //    and a number of blocks.
 //
+//    Brad Whitlock, Mon Oct  4 11:20:51 PDT 2010
+//    I changed the code back to using 2 constructors so it works again.
+//
 // ****************************************************************************
 
 
@@ -119,8 +122,13 @@ avtFVCOM_MTSDFileFormat::CreateInterface(NETCDFFileObject *f,
         ffl[i] = new avtMTSDFileFormat*[nBlock];
         for (int j = 0 ; j < nBlock ; j++)
         {
-            ffl[i][j] = new avtFVCOM_MTSDFileFormat(list[i*nBlock+j],
-                                                    (i==0) ? f : NULL);
+            if(f != 0)
+            {
+                ffl[i][j] = new avtFVCOM_MTSDFileFormat(list[i*nBlock+j], f);
+                f = 0;
+            }
+            else
+                ffl[i][j] = new avtFVCOM_MTSDFileFormat(list[i*nBlock+j]);
         }
     }
 
