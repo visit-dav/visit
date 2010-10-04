@@ -21,7 +21,7 @@
   retrieved using complex compound range queries such as "(energy > 100)
   && (70 < pressure < 90)". The bitmap index technology only retrieves
   the data elements that satisfy the query condition and shows
-  significant speedup compared with reading the entire datasets.   
+  significant speedup compared with reading the entire datasets.
 
 */
 
@@ -37,28 +37,28 @@ public:
     ~HDF5_FQ();
 
     /*!
-      \brief Open or create a new HDF5_UC file.  
+      \brief Open or create a new HDF5_UC file.
       Files that are not found will be created using that name.
 
       \param name IN: name of the file
       \param useH5PartFile IN: If set to true, H5Part format is assumed.
     */
-    void openFile(const char* name,                 
-                  const bool useH5PartFile = false  
+    void openFile(const char* name,
+                  const bool useH5PartFile = false
                   );
 
     /*!
-      \brief Open or create a new HDF5_UC file.  
+      \brief Open or create a new HDF5_UC file.
       Files that are not found will be created using that name.
-      
+
       \param name IN: name of the file.
       \param useH5PartFile IN: If set to true, H5Part format is assumed.
     */
-    void openFile(const std::string & name,         
-                  const bool useH5PartFile = false  
+    void openFile(const std::string & name,
+                  const bool useH5PartFile = false
                   );
 
-    
+
     /*!
       \brief Close the current file.
     */
@@ -70,15 +70,15 @@ public:
 
       \param variableName IN: Name of the variable to be created.
       \param dims IN: Vector containing the dimensions for a given variable.
-      \param type IN: Enumerated type of variable 
+      \param type IN: Enumerated type of variable
       H5_Float=0,H5_Double=1,H5_Int32=2,H5_Int64=3,H5_Byte=4.
       \param sDataCenter IN: meta data value about the variable.
       \param sCoordsys  IN: meta data value about the variable.
       \param sSchema  IN: meta data value about the variable.
       \param sSchemaType IN: meta data value about the variable.
     */
-    void createNewVariable(char* variableName, 
-                           std::vector<int64_t> dims, 
+    void createNewVariable(char* variableName,
+                           std::vector<int64_t> dims,
                            BaseFileInterface::DataType type,
                            char* sDataCenter,
                            char* sCoordsys,
@@ -90,7 +90,7 @@ public:
 
       \param variableName IN: Name of the variable to be created.
       \param dims IN: Vector containing the dimensions for a given dataset.
-      \param type IN: Enumerated type of variable 
+      \param type IN: Enumerated type of variable
       H5_Float=0,H5_Double=1,H5_Int32=2,H5_Int64=3,H5_Byte=4
       \param sDataCenter IN: meta data value about the variable.
       \param sCoordsys  IN: meta data value about the variable.
@@ -111,7 +111,7 @@ public:
       \param variableName IN: name of the variable
       \param timestep IN: timestep.
       \param data IN: data values.
-      \param type IN:  Enumerated type of variable 
+      \param type IN:  Enumerated type of variable
       H5_Float=0,H5_Double=1,H5_Int32=2,H5_Int64=3,H5_Byte=4
       \param min IN: min data value.
       \param max IN: max data value.
@@ -122,14 +122,14 @@ public:
                     const BaseFileInterface::DataType type,
                     const void* min,
                     const void* max);
-    
+
     /*!
       \brief Insert data values for a particular timestep.
 
       \param variableName IN: name of the variable.
       \param timestep IN: timestep.
       \param data IN: data values.
-      \param type IN:  Enumerated type of variable 
+      \param type IN:  Enumerated type of variable
       H5_Float=0,H5_Double=1,H5_Int32=2,H5_Int64=3,H5_Byte=4
       \param min IN: min data value.
       \param max IN: max data value.
@@ -166,7 +166,7 @@ public:
     void getData(const char* variableName,
                  int64_t timestep,
                  void *data);
-        
+
     /*!
       \brief Get particular values of a variable specified by the vector
       indices.
@@ -190,16 +190,16 @@ public:
       \param data OUT: data values.
       \param indices IN: indices of the data values to be retrieved.
     */
-    
+
     void getPointData(const char* variableName,
                       int64_t timestep,
                       void *data,
                       const std::vector<hsize_t>& indices);
 
- 
+
     /*!
       \brief Calculate the size of any group of arrays based upon type and dims.
-        
+
       \param dims IN: vector containing the dimensions for a given variable.
       \param type IN: The enumerated type of data for the dataset
       referenced by dims
@@ -214,7 +214,7 @@ public:
       \param variableName IN: name of the variable.
       \param timestep IN: timestep.
       \param dims OUT: Vector containing the dimensions for a given variable.
-      \param type OUT: Enumerated type of variable 
+      \param type OUT: Enumerated type of variable
       H5_Float=0,H5_Double=1,H5_Int32=2,H5_Int64=3,H5_Byte=4
 
     */
@@ -231,7 +231,7 @@ public:
       \param variableName IN: name of the variable
       \param timestep IN: timestep.
       \param dims OUT: Vector containing the dimensions for a given variable.
-      \param type OUT: Enumerated type of variable 
+      \param type OUT: Enumerated type of variable
       H5_Float=0,H5_Double=1,H5_Int32=2,H5_Int64=3,H5_Byte=4
 
     */
@@ -250,11 +250,11 @@ public:
 
       Histograms can be made conditional depending on whether 'condition'
       is specified.
-             
+
       \param variableName IN: name of the variable
       \param timestep IN: timestep.
       \param condition IN: conditions under which histogram is evaluated
-      \param num_bins IN: number of bins to create 
+      \param num_bins IN: number of bins to create
       \param bounds OUT: Vector containing the bounds for the bins
       \param counts OUT: Vector containing the counts for the bins
 
@@ -266,13 +266,13 @@ public:
                         const char* variableName,
                         std::vector<double> &bounds,
                         std::vector<uint32_t> &counts);
-        
+
     long get1DHistogram(int64_t timestep,
                         const char* condition,
                         const char* variableName,
                         std::vector<double> &bounds,
                         std::vector<uint32_t> &counts);
-        
+
     long get1DHistogram(int64_t timestep,
                         const char* variableName,
                         uint32_t num_bins,
@@ -290,30 +290,30 @@ public:
                         const char* condition,
                         const char* variableName,
                         double begin, double end, double stride,
-                        std::vector<uint32_t> &counts); 
+                        std::vector<uint32_t> &counts);
 
 
     long get2DHistogram(int64_t timestep,
                         const char *condition,
-                        const char *variableName1, 
+                        const char *variableName1,
                         double begin1, double end1, uint32_t num_bins1,
                         const char *variableName2,
                         double begin2, double end2, uint32_t num_bins2,
                         std::vector<double> &bounds1,
                         std::vector<double> &bounds2,
                         std::vector<uint32_t> &counts);
-        
+
 
     long get2DHistogram(int64_t timestep,
                         const char *condition,
-                        const char *variableName1, 
+                        const char *variableName1,
                         const char *variableName2,
                         std::vector<double> &bounds1,
                         std::vector<double> &bounds2,
                         std::vector<uint32_t> &counts);
-        
+
     long get2DHistogram(int64_t timestep,
-                        const char *condition, 
+                        const char *condition,
                         const char *variableName1,
                         double begin1, double end1, double stride1,
                         const char *variableName2,
@@ -332,24 +332,24 @@ public:
 
     // New call from John (2/2)
     long get2DAdaptiveHistogram(int64_t timestep,
-                                const char *condition, 
+                                const char *condition,
                                 const char *variableName1,
                                 const char *variableName2,
-                                uint32_t num_bins1, 
+                                uint32_t num_bins1,
                                 uint32_t num_bins2,
                                 std::vector<double> &bounds1,
                                 std::vector<double> &bounds2,
                                 std::vector<uint32_t> &counts);
-        
+
     // New set of calls from John Wu. These set of calls return a
     // 3D histogram, with a bitmap vector on a per-bin basis
     // we can check the length of the bitmap vector to get counts
     long get3DBins(int64_t timestep,
-                   const char *condition, 
+                   const char *condition,
                    const char *variableName1,
-                   double begin1, double end1, uint32_t num_bins1, 
+                   double begin1, double end1, uint32_t num_bins1,
                    const char *variableName2,
-                   double begin2, double end2, uint32_t num_bins2, 
+                   double begin2, double end2, uint32_t num_bins2,
                    const char *variableName3,
                    double begin3, double end3, uint32_t num_bins3,
                    std::vector<double> &bounds1,
@@ -371,12 +371,12 @@ public:
                    std::vector<double> &bounds3,
                    std::vector<uint32_t> &counts,
                    std::map<int , ibis::bitvector*> &bitmaps);
-        
+
     int get_Bitmap_Data(int64_t timestep,
                         const char* name,
                         const std::vector<ibis::bitvector*> &bitmaps,
                         void*& result);
-        
+
     /*!
       \brief Initialize data structures for indexing and querying over all
       timesteps.
@@ -402,7 +402,7 @@ public:
       \brief Build bitmap indices for a specific variable over all timesteps.
 
       \param variableName IN: name of the variable.
-      \param binning IN: binning option (optional) 
+      \param binning IN: binning option (optional)
       The format for the binning option is '\<binning nbins=xxxx /\>'
       where xxxx is the number of bins.
       If no binning is specified, a bitmap index is built for
@@ -411,7 +411,7 @@ public:
       http://sdm.lbl.gov/fastbit/doc/indexSpec.html
 
     */
-    void buildIndexes(const char* variableName, 
+    void buildIndexes(const char* variableName,
                       const char *binning=0);
 
 
@@ -420,7 +420,7 @@ public:
 
       \param timestep IN: timestep.
       \param variableName IN: name of the variable.
-      \param binning IN: binning option (optional) 
+      \param binning IN: binning option (optional)
       The format for the binning option is '\<binning nbins=xxxx /\>'
       where xxxx is the number of bins.
       If no binning is specified, a bitmap index is built for
@@ -429,8 +429,8 @@ public:
       http://sdm.lbl.gov/fastbit/doc/indexSpec.html
 
     */
-    void buildSpecificTimeIndex(int64_t timestep, 
-                                const char* variableName, 
+    void buildSpecificTimeIndex(int64_t timestep,
+                                const char* variableName,
                                 const char *binning=0);
 
 
@@ -448,10 +448,10 @@ public:
                       std::vector<hsize_t>& offset);
 
     // Query for Equality selection. vector of double values is specified
-    // which will avoid string creation/parsing overhead.. 
+    // which will avoid string creation/parsing overhead..
     int64_t executeEqualitySelectionQuery
-    (const char * varname, int64_t time, 
-     const std::vector<double>& identifiers, 
+    (const char * varname, int64_t time,
+     const std::vector<double>& identifiers,
      std::vector<hsize_t>& offset);
 
     /*!
@@ -470,7 +470,7 @@ public:
       \brief Add a timestep with a specific time value.
 
       \param timeValue IN: value of the timestep.
-    
+
     */
 
     void addNewTimeStep(double timeValue);
@@ -555,8 +555,8 @@ private:
     void createSlices();
     /// Remove the data structures representing the time slices.
     void deleteSlices();
-        
-   
+
+
     /// Number of time slices (time steps) in the HDF5 file.
     size_t numTimeSlices() const {return timeSlices.size();}
 

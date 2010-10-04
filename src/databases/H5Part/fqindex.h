@@ -1,4 +1,4 @@
-// $Id: fqindex.h,v 1.2 2009-05-06 21:51:12 kewu Exp $
+// $Id: fqindex.h,v 1.5 2009-11-13 18:59:52 kewu Exp $
 #ifndef _FASTQUERY_INDEX_H
 #define _FASTQUERY_INDEX_H
 
@@ -31,7 +31,7 @@ public:
     /// read from a HDF5 file.
     bool newIndex() const {return isNewIndex;}
 
-    /// Write the content of the index to 
+    /// Write the content of the index to
     void write(H5_Index& h5file) const;
 
 
@@ -69,7 +69,7 @@ public:
     /// read from a HDF5 file.
     bool newIndex() const {return isNewIndex;}
 
-    /// Write the content of the index to 
+    /// Write the content of the index to
     void write(H5_Index& h5file) const;
 
 

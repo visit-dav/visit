@@ -44,7 +44,7 @@ public:
 private:
         //is the classID valid...i.e. is it tied to a file?
         bool valid;
-        hid_t classID;  
+        hid_t classID;
         herr_t status;
-};      
+};
 #endif

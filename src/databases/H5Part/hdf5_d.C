@@ -40,13 +40,14 @@ bool H5D::open(hid_t filename, const char *groupname){
     }
     //  printf("%d\n",classID);
     else if((status>=0)&&(classID>=0)){
-        valid = true;   
+        valid = true;
         return true;
     }
     else return false;
 }
 
-bool H5D::create(hid_t filename, const char *groupname,hid_t memtype,hid_t attribute_space){
+bool H5D::create(hid_t filename, const char *groupname,hid_t memtype,
+                 hid_t attribute_space){
     //if currently valid, close and open a new
     if(valid){
         status = H5Dclose(classID);
@@ -209,7 +210,7 @@ BaseFileInterface::DataType H5D::getDataType(){
     hid_t data_type = H5Dget_type(classID);
     hid_t specific_type = H5Tget_native_type(data_type,H5T_DIR_ASCEND);
     BaseFileInterface::DataType answer;
-        
+
     if(H5Tequal(specific_type, H5T_NATIVE_INT32)){
         answer = BaseFileInterface::DataType(2);
     }

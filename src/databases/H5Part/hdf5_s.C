@@ -61,10 +61,27 @@ bool H5S::selectNone(){
 }
 
 /// Defines a selection with nsel points.
+/// @note This implementation relies on the fact that std::vector stores
+/// its members consecutively in memory!
 bool H5S::selectElements(hsize_t nsel, hsize_t num_dimms,
-                         const std::vector<hsize_t>& indices) {
-    return(0 <=
-           H5Sselect_elements(classID, H5S_SELECT_SET, nsel, &(indices[0])));
+        const std::vector<hsize_t>& indices) {
+    if (nsel*num_dimms <= indices.size()) {
+#ifndef H5_USE_16_API
+        herr_t ierr =
+            H5Sselect_elements(classID, H5S_SELECT_SET, nsel, &(indices[0]));
+#else
+        // need a new array to use use the older interface
+        std::vector<const hsize_t*> pptr(nsel);
+        for (hsize_t j = 0; j < nsel; ++ j)
+            pptr[j] = &(indices[j*num_dimms]);
+        herr_t ierr =
+            H5Sselect_elements(classID, H5S_SELECT_SET, nsel, &(pptr[0]));
+#endif
+        return(0 <= ierr);
+    }
+    else {
+        return false;
+    }
 }
 
 bool H5S::selectHSlab(hsize_t offset[], hsize_t count[]){

@@ -1,4 +1,4 @@
-#include "hdf5_f.h" 
+#include "hdf5_f.h"
 
 H5F::H5F(){
         valid = false;
@@ -35,8 +35,8 @@ bool H5F::open(const char *filename){
                 temp = H5Fis_hdf5(filename);
         }H5E_END_TRY;
 
-        if(temp > 0){   
-                classID = H5Fopen(filename,H5F_ACC_RDONLY,H5P_DEFAULT); // FIXME: open read or read/write as necessary
+        if(temp > 0){
+                classID = H5Fopen(filename,H5F_ACC_RDONLY,H5P_DEFAULT);
                 if(classID >=0) valid = true;
         }
 
@@ -51,7 +51,7 @@ bool H5F::testFileExist(const char *filename){
         //make sure the file is a valid HDF5 file and that is exists...
         std::ifstream filestr;
         filestr.open(filename, std::ifstream::in);
-        if(filestr.is_open() && (H5Fis_hdf5(filename) > 0)){    
+        if(filestr.is_open() && (H5Fis_hdf5(filename) > 0)){
                 answer = true;
         }
         else{

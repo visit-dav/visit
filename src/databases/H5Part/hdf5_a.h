@@ -36,12 +36,12 @@ public:
         hid_t getID() const {return classID;}
         //return the number of subgroups in this group
         hsize_t getGroupCount();
-        
+
 
 private:
         //is the classID valid...i.e. is it tied to a file?
         bool valid;
-        hid_t classID;  
+        hid_t classID;
         herr_t status;
-};      
+};
 #endif

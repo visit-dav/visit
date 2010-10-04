@@ -1,4 +1,4 @@
-// $Id: timestep.h,v 1.8 2009-05-05 17:48:27 kewu Exp $
+// $Id: timestep.h,v 1.12 2010-04-26 23:27:31 prabhat Exp $
 #ifndef _FASTQUERY_TIMESTEP_H
 #define _FASTQUERY_TIMESTEP_H
 
@@ -10,7 +10,7 @@
 #include <column.h>     // ibis::column
 #include <part.h>       // ibis::part
 #include <meshQuery.h>  // ibis::meshQuery
-
+#include <util.h>       
 /**
    The class H5_FQ_Timestep is a container of the variables (HDF5
    datasets).  It mirrors a FastBit data partition.
@@ -26,7 +26,7 @@ public:
     /// Return an reference to an array storing the extend of the
     /// dimensions of the regular mesh that defines the data sets.
     const std::vector<uint32_t>& getMeshDims() const { return shapeSize;}
- 
+
     /// Build indexes for all datasets in the time step.  If opt is nil, it
     /// uses the default option for bitmap indexes, which builds unbinned
     /// indexes.  The second argument in FastBit specifies the number of
@@ -91,7 +91,7 @@ public:
     /// function.
     int64_t getHitLocations(const char *token,
                             std::vector<hsize_t>& coord) const;
-                            
+
 
     /*
       void get1DHistogram(const char* varName,
@@ -151,13 +151,18 @@ public:
 
     /// Read values with specified coordinates.
     template <typename E>
-    int getPointValues(array_t<E>& arr,
+    int getPointValues(ibis::array_t<E>& arr,
                        const std::vector<hsize_t>& coords) const;
-    virtual array_t<double>*  selectDoubles(const ibis::bitvector& mask) const;
-    virtual array_t<float>*   selectFloats(const ibis::bitvector& mask) const;
-    virtual array_t<int32_t>* selectInts(const ibis::bitvector& mask) const;
-    virtual array_t<int64_t>* selectLongs(const ibis::bitvector& mask) const;
-    virtual array_t<char>*    selectBytes(const ibis::bitvector& mask) const;
+    virtual ibis::array_t<double>*
+    selectDoubles(const ibis::bitvector& mask) const;
+    virtual ibis::array_t<float>*
+    selectFloats(const ibis::bitvector& mask) const;
+    virtual ibis::array_t<int32_t>*
+    selectInts(const ibis::bitvector& mask) const;
+    virtual ibis::array_t<int64_t>*
+    selectLongs(const ibis::bitvector& mask) const;
+    virtual ibis::array_t<char>*
+    selectBytes(const ibis::bitvector& mask) const;
 
     /// Return the H5_Index object containing this variable.
     H5_Index& getH5Index() const {return h5file_;}

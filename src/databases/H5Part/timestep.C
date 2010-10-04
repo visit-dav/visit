@@ -1,4 +1,4 @@
-// $Id: timestep.C,v 1.2 2009-05-06 21:51:12 kewu Exp $
+// $Id: timestep.C,v 1.10 2010-09-08 16:36:23 kewu Exp $
 
 #include "timestep.h"   // H5_FQ_Timestep and H5_FQ_Variable
 #include "fqindex.h"    // H5_FQ_IndexUnbinned
@@ -19,7 +19,7 @@ H5_FQ_Variable::H5_FQ_Variable(const H5_FQ_Timestep *tbl, const char *nm)
 
     int64_t timeValue = tbl->getTimeValue();
     h5file_.getVariableInfo(strnm, timeValue, dims, &type);
-    
+
     switch (type) {
     case BaseFileInterface::H5_Int32:
         m_type = ibis::INT; break;
@@ -73,30 +73,30 @@ int H5_FQ_Variable::getValuesArray(void* arr) const {
     switch (type) {
     case BaseFileInterface::H5_Float: {
         size /= sizeof(float);
-        array_t<float> &vals = *static_cast<array_t<float>*>(arr);
+        ibis::array_t<float> &vals = *static_cast<ibis::array_t<float>*>(arr);
         vals.resize(size);
         h5file_.getData(strnm, tval, vals.begin());
         break;}
     case BaseFileInterface::H5_Double: {
         size /= sizeof(double);
-        array_t<double> &vals = *static_cast<array_t<double>*>(arr);
+        ibis::array_t<double> &vals = *static_cast<ibis::array_t<double>*>(arr);
         vals.resize(size);
         h5file_.getData(strnm, tval, vals.begin());
         break;}
     case BaseFileInterface::H5_Int32: {
         size /= sizeof(int32_t);
-        array_t<int32_t> &vals = *static_cast<array_t<int32_t>*>(arr);
+        ibis::array_t<int32_t> &vals = *static_cast<ibis::array_t<int32_t>*>(arr);
         vals.resize(size);
         h5file_.getData(strnm, tval, vals.begin());
         break;}
     case BaseFileInterface::H5_Int64: {
         size /= sizeof(int64_t);
-        array_t<int64_t> &vals = *static_cast<array_t<int64_t>*>(arr);
+        ibis::array_t<int64_t> &vals = *static_cast<ibis::array_t<int64_t>*>(arr);
         vals.resize(size);
         h5file_.getData(strnm, tval, vals.begin());
         break;}
     case BaseFileInterface::H5_Byte: {
-        array_t<char> &vals = *static_cast<array_t<char>*>(arr);
+        ibis::array_t<char> &vals = *static_cast<ibis::array_t<char>*>(arr);
         vals.resize(size);
         h5file_.getData(strnm, tval, vals.begin());
         break;}
@@ -114,7 +114,7 @@ int H5_FQ_Variable::getValuesArray(void* arr) const {
 } // H5_FQ_Variable::getValuesArray
 
 template <typename E>
-int H5_FQ_Variable::getPointValues(array_t<E>& arr,
+int H5_FQ_Variable::getPointValues(ibis::array_t<E>& arr,
                                    const std::vector<hsize_t>& coords) const {
     std::string evt = "H5_FQ_Variable::getPointValues";
     if (ibis::gVerbose > 1) {
@@ -143,10 +143,10 @@ int H5_FQ_Variable::getPointValues(array_t<E>& arr,
         return -1;
 } // H5_FQ_Variable::getPointValues
 
-array_t<double>*
+ibis::array_t<double>*
 H5_FQ_Variable::selectDoubles(const ibis::bitvector& mask) const {
-    array_t<double>* array = new array_t<double>;
-    array_t<double> prop;
+    ibis::array_t<double>* array = new ibis::array_t<double>;
+    ibis::array_t<double> prop;
     uint32_t i = 0;
     uint32_t tot = mask.cnt();
     ibis::horometer timer;
@@ -172,7 +172,7 @@ H5_FQ_Variable::selectDoubles(const ibis::bitvector& mask) const {
         LOGGER(ibis::gVerbose > 1)
             << "H5_FQ_Variable[" << (thePart->name() ? thePart->name() : "?")
             << "." << name() << "]::selectDoubles using getValuesArray to retrieve "
-            << i; 
+            << i;
     }
     else if (mask.size() < 1048576 || tot+tot > mask.size() ||
              mask.bytes()/240 > mask.size()/ibis::fileManager::pageSize()) {
@@ -224,7 +224,7 @@ H5_FQ_Variable::selectDoubles(const ibis::bitvector& mask) const {
             << "H5_FQ_Variable[" << (thePart->name() ? thePart->name() : "?")
             << "." << name()
             << "]::selectDoubles using getValuesArray and extracted "
-            << i; 
+            << i;
     }
     else {
         // generate the coordinates and ask HDF5 function to extract them
@@ -246,7 +246,7 @@ H5_FQ_Variable::selectDoubles(const ibis::bitvector& mask) const {
         LOGGER(ibis::gVerbose > 1)
             << "H5_FQ_Variable[" << (thePart->name() ? thePart->name() : "?")
             << "." << name() << "]::selectDoubles using getPointValues. i = "
-            << i; 
+            << i;
     }
     if (i != tot) {
         array->resize(i);
@@ -263,13 +263,13 @@ H5_FQ_Variable::selectDoubles(const ibis::bitvector& mask) const {
             << timer.CPUTime() << " sec (CPU) and " << timer.realTime()
             << " sec (elapsed) time";
     }
-    return array;       
+    return array;
 } // H5_FQ_Variable::selectDoubles
 
-array_t<float>*
+ibis::array_t<float>*
 H5_FQ_Variable::selectFloats(const ibis::bitvector& mask) const {
-    array_t<float>* array = new array_t<float>;
-    array_t<float> prop;
+    ibis::array_t<float>* array = new ibis::array_t<float>;
+    ibis::array_t<float> prop;
     uint32_t i = 0;
     uint32_t tot = mask.cnt();
     ibis::horometer timer;
@@ -383,13 +383,13 @@ H5_FQ_Variable::selectFloats(const ibis::bitvector& mask) const {
             << timer.CPUTime() << " sec (CPU) and " << timer.realTime()
             << " sec (elapsed) time";
     }
-    return array;       
+    return array;
 } // H5_FQ_Variable::selectFloats
 
-array_t<int32_t>*
+ibis::array_t<int32_t>*
 H5_FQ_Variable::selectInts(const ibis::bitvector& mask) const {
-    array_t<int32_t>* array = new array_t<int32_t>;
-    array_t<int32_t> prop;
+    ibis::array_t<int32_t>* array = new ibis::array_t<int32_t>;
+    ibis::array_t<int32_t> prop;
     uint32_t i = 0;
     uint32_t tot = mask.cnt();
     ibis::horometer timer;
@@ -486,7 +486,7 @@ H5_FQ_Variable::selectInts(const ibis::bitvector& mask) const {
         LOGGER(ibis::gVerbose > 1)
             << "H5_FQ_Variable[" << (thePart->name() ? thePart->name() : "?")
             << "." << name() << "]::selectInts using getPointValues. i = "
-            << i; 
+            << i;
     }
     if (i != tot) {
         array->resize(i);
@@ -503,13 +503,13 @@ H5_FQ_Variable::selectInts(const ibis::bitvector& mask) const {
             << timer.CPUTime() << " sec (CPU) and " << timer.realTime()
             << " sec (elapsed) time";
     }
-    return array;       
+    return array;
 } // H5_FQ_Variable::selectInts
 
-array_t<int64_t>*
+ibis::array_t<int64_t>*
 H5_FQ_Variable::selectLongs(const ibis::bitvector& mask) const {
-    array_t<int64_t>* array = new array_t<int64_t>;
-    array_t<int64_t> prop;
+    ibis::array_t<int64_t>* array = new ibis::array_t<int64_t>;
+    ibis::array_t<int64_t> prop;
     uint32_t i = 0;
     uint32_t tot = mask.cnt();
     ibis::horometer timer;
@@ -622,13 +622,13 @@ H5_FQ_Variable::selectLongs(const ibis::bitvector& mask) const {
             << timer.CPUTime() << " sec (CPU) and " << timer.realTime()
             << " sec (elapsed) time";
     }
-    return array;       
+    return array;
 } // H5_FQ_Variable::selectLongs
 
-array_t<char>*
+ibis::array_t<char>*
 H5_FQ_Variable::selectBytes(const ibis::bitvector& mask) const {
-    array_t<char>* array = new array_t<char>;
-    array_t<char> prop;
+    ibis::array_t<char>* array = new ibis::array_t<char>;
+    ibis::array_t<char> prop;
     uint32_t i = 0;
     uint32_t tot = mask.cnt();
     ibis::horometer timer;
@@ -724,7 +724,7 @@ H5_FQ_Variable::selectBytes(const ibis::bitvector& mask) const {
         i = getPointValues(*array, coord);
         LOGGER(ibis::gVerbose > 1 && thePart->name() != 0)
             << "H5_FQ_Variable[" << thePart->name() << "." << name()
-            << "]::selectBytes using getPointValues. i = " << i; 
+            << "]::selectBytes using getPointValues. i = " << i;
     }
     if (i != tot) {
         array->resize(i);
@@ -741,7 +741,7 @@ H5_FQ_Variable::selectBytes(const ibis::bitvector& mask) const {
             << timer.CPUTime() << " sec (CPU) and " << timer.realTime()
             << " sec (elapsed) time";
     }
-    return array;       
+    return array;
 } // H5_FQ_Variable::selectBytes
 
 /// This function is required to have two arguments in order to be a proper
@@ -767,7 +767,7 @@ void H5_FQ_Variable::loadIndex(const char*, int) const throw () {
             }
             if (idx && ibis::gVerbose > 10) {
                 ibis::util::logger lg;
-                idx->print(lg.buffer());
+                idx->print(lg());
             }
         }
         catch (const char *s) {
@@ -795,19 +795,19 @@ long H5_FQ_Variable::indexSize() const{
     int64_t timeval = tbl->getTimeValue();
     std::string strname(name());
     uint64_t size = 0;
-  
+
     bool berr = h5file_.getBitmapSize(strname, (unsigned int64_t)(timeval),
                                       &size);
-  
+
     if (ibis::gVerbose > 3) {
-        if (!berr || size<=0) 
+        if (!berr || size<=0)
             logWarning("indexSize", "failed to determine the bitmap length "
                        "for variable %s in file %s", name(),
                        h5file_.getFileName().c_str());
-    
-        else 
+
+        else
             logMessage("indexSize", "found bitmap length "
-                       "for variable %s in file %s to be %lu", 
+                       "for variable %s in file %s to be %lu",
                        name(), h5file_.getFileName().c_str(), size);
     }
     return size;
@@ -850,10 +850,11 @@ double H5_FQ_Variable::getActualMin() const{
         return range[0];
         break;
     }
-    default: 
+    default:
         return 0.0; // default do something silly
 
     }
+    return 0.0;
 }
 
 double H5_FQ_Variable::getActualMax() const{
@@ -861,7 +862,7 @@ double H5_FQ_Variable::getActualMax() const{
         reinterpret_cast<const H5_FQ_Timestep*>(partition());
 
     switch (m_type) {
-    
+
     case ibis::DOUBLE: {
         double range[2];
         h5file_.getActualRange(m_name, tbl->getTimeValue(), (void*)range);
@@ -893,9 +894,10 @@ double H5_FQ_Variable::getActualMax() const{
         return range[1];
         break;
     }
-    default: 
+    default:
         return 0.0; // default do something silly
     }
+    return 0.0;
 }
 
 /// The called is responsible for deallocating the index returned.
@@ -904,7 +906,8 @@ ibis::index* H5_FQ_Variable::readIndex() const {
         reinterpret_cast<const H5_FQ_Timestep*>(partition());
     int64_t timeval = tbl->getTimeValue();
     std::string strname(name());
-    uint64_t nkeys, noffsets;
+    uint64_t nkeys;
+    int64_t noffsets;
     bool berr = h5file_.getBitmapKeysLength(strname, (uint64_t)timeval, &nkeys);
     ibis::index *ret = 0;
     if (!berr || nkeys == 0) {
@@ -915,8 +918,8 @@ ibis::index* H5_FQ_Variable::readIndex() const {
         return ret;
     }
 
-    berr = h5file_.getBitmapOffsetsLength(strname, timeval, &noffsets);
-    if (!berr || nkeys == 0) {
+    noffsets = h5file_.getBitmapOffsetsLength(strname, timeval);
+    if (noffsets <= 0 || nkeys == 0) {
         if (ibis::gVerbose > 3)
             logWarning("readIndex", "failed to find the length of the offset "
                        "array for variable %s in file %s", name(),
@@ -924,20 +927,20 @@ ibis::index* H5_FQ_Variable::readIndex() const {
         return ret;
     }
 
-    if (nkeys+1 == noffsets) {
+    if (nkeys+1 == (uint64_t)noffsets) {
         ret = new H5_FQ_IndexUnbinned(this);
     }
-    else if (nkeys == (noffsets-1)*2) {
+    else if (nkeys == (uint64_t)(noffsets-1)*2) {
         ret = new H5_FQ_IndexBinned(this, 0);
     }
     else {
         ibis::util::logger lg;
-        lg.buffer() << "Error -- H5_FQ_Variable::readIndex found nkeys = "
-                    << nkeys << " and noffsets = " << noffsets
-                    << " for variable " << name() << " in "
-                    << h5file_.getFileName() << " do not satisfy "
+        lg() << "Error -- H5_FQ_Variable::readIndex found nkeys = "
+            << nkeys << " and noffsets = " << noffsets
+            << " for variable " << name() << " in "
+            << h5file_.getFileName() << " do not satisfy "
             "nkeys+1==noffsets or nkeys==2*(offsets-1)"
-                    << std::endl;
+            << std::endl;
     }
     return ret;
 } // H5_FQ_Variable::readIndex
@@ -949,70 +952,70 @@ int H5_FQ_Variable::searchSorted(const ibis::qContinuousRange& rng,
         << "... entering H5_FQ_Variable::searchSorted to resolve " << rng;
     switch (m_type) {
     case ibis::BYTE: {
-        array_t<char> vals;
+        ibis::array_t<char> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
         }
         break;}
     case ibis::UBYTE: {
-        array_t<unsigned char> vals;
+        ibis::array_t<unsigned char> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
         }
         break;}
     case ibis::SHORT: {
-        array_t<int16_t> vals;
+        ibis::array_t<int16_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
         }
         break;}
     case ibis::USHORT: {
-        array_t<uint16_t> vals;
+        ibis::array_t<uint16_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
         }
         break;}
     case ibis::INT: {
-        array_t<int32_t> vals;
+        ibis::array_t<int32_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
         }
         break;}
     case ibis::UINT: {
-        array_t<uint32_t> vals;
+        ibis::array_t<uint32_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
         }
         break;}
     case ibis::LONG: {
-        array_t<int64_t> vals;
+        ibis::array_t<int64_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
         }
         break;}
     case ibis::ULONG: {
-        array_t<uint64_t> vals;
+        ibis::array_t<uint64_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
         }
         break;}
     case ibis::FLOAT: {
-        array_t<float> vals;
+        ibis::array_t<float> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
         }
         break;}
     case ibis::DOUBLE: {
-        array_t<double> vals;
+        ibis::array_t<double> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
@@ -1038,70 +1041,70 @@ int H5_FQ_Variable::searchSorted(const ibis::qDiscreteRange& rng,
         << "... entering H5_FQ_Variable::searchSorted to resolve " << rng;
     switch (m_type) {
     case ibis::BYTE: {
-        array_t<char> vals;
+        ibis::array_t<char> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
         }
         break;}
     case ibis::UBYTE: {
-        array_t<unsigned char> vals;
+        ibis::array_t<unsigned char> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
         }
         break;}
     case ibis::SHORT: {
-        array_t<int16_t> vals;
+        ibis::array_t<int16_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
         }
         break;}
     case ibis::USHORT: {
-        array_t<uint16_t> vals;
+        ibis::array_t<uint16_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
         }
         break;}
     case ibis::INT: {
-        array_t<int32_t> vals;
+        ibis::array_t<int32_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
         }
         break;}
     case ibis::UINT: {
-        array_t<uint32_t> vals;
+        ibis::array_t<uint32_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
         }
         break;}
     case ibis::LONG: {
-        array_t<int64_t> vals;
+        ibis::array_t<int64_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
         }
         break;}
     case ibis::ULONG: {
-        array_t<uint64_t> vals;
+        ibis::array_t<uint64_t> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
         }
         break;}
     case ibis::FLOAT: {
-        array_t<float> vals;
+        ibis::array_t<float> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
         }
         break;}
     case ibis::DOUBLE: {
-        array_t<double> vals;
+        ibis::array_t<double> vals;
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
@@ -1128,6 +1131,15 @@ H5_FQ_Timestep::H5_FQ_Timestep(const H5_Index& h5file, const int64_t t) :
     std::vector<std::string> names;
 
     h5file_.getVariableNames(names);
+    if (! names.empty()) {
+        std::ostringstream ostr;
+        ostr << h5file_.getFileName();
+        ostr << '.' << time_;
+        m_name = ibis::util::strnewdup(ostr.str().c_str());
+        ostr << " -- time step " << time_ << " in file "
+             << h5file_.getFileName();
+        m_desc = ibis::util::strnewdup(ostr.str().c_str());
+    }
 
     for (unsigned i = 0; i < names.size(); ++ i) {
         H5_FQ_Variable *var = new H5_FQ_Variable(this, names[i].c_str());
@@ -1148,13 +1160,6 @@ H5_FQ_Timestep::H5_FQ_Timestep(const H5_Index& h5file, const int64_t t) :
     }
 
     if (nEvents > 0 && ! columns.empty()) {// define a name for the table
-        std::ostringstream ostr;
-        ostr << h5file_.getFileName();
-        ostr << '.' << time_;
-        m_name = ibis::util::strnewdup(ostr.str().c_str());
-        ostr << " -- time step " << time_ << " in file "
-             << h5file_.getFileName();
-        m_desc = ibis::util::strnewdup(ostr.str().c_str());
         amask.set(1, nEvents); // every record is valid
 
         // TODO: need to allocate a cleaner object, actually define a new
@@ -1204,7 +1209,7 @@ int H5_FQ_Timestep::createIndex(const std::vector<const char *>& names,
                 if (ibis::gVerbose > 5) {
                     // print some information about the index
                     ibis::util::logger lg;
-                    tmp.print(lg.buffer());
+                    tmp.print(lg());
                 }
             }
         }
@@ -1218,7 +1223,7 @@ int H5_FQ_Timestep::createIndex(const std::vector<const char *>& names,
                 if (ibis::gVerbose > 5) {
                     // print some information about the index
                     ibis::util::logger lg;
-                    tmp.print(lg.buffer());
+                    tmp.print(lg());
                 }
             }
         }
@@ -1305,7 +1310,7 @@ int H5_FQ_Timestep::buildIndex(const char *name, const char *binning) {
             tmp.write(h5file_);
             if (ibis::gVerbose > 5) { // print some information about the index
                 ibis::util::logger lg;
-                tmp.print(lg.buffer());
+                tmp.print(lg());
             }
         }
     }
@@ -1317,7 +1322,7 @@ int H5_FQ_Timestep::buildIndex(const char *name, const char *binning) {
             tmp.write(h5file_);
             if (ibis::gVerbose > 5) { // print some information about the index
                 ibis::util::logger lg;
-                tmp.print(lg.buffer());
+                tmp.print(lg());
             }
         }
     }
@@ -1459,22 +1464,22 @@ H5_FQ_Timestep::createEqualitySelectionQuery(const char *varname,
                                              const std::vector<double>& ids) {
     const char *token = 0;
     if (varname == 0) return token;
-  
+
     ibis::meshQuery *sel = new ibis::meshQuery(ibis::util::userName(), this);
-  
+
     // FastBit expects the list of doubles to be sorted
     std::vector<double> sorted_ids;
     for (unsigned int i=0; i<ids.size(); i++)
         sorted_ids.push_back(ids[i]);
     sort(sorted_ids.begin(), sorted_ids.end());
-  
+
     ibis::qDiscreteRange* dRange =
         new ibis::qDiscreteRange(varname, sorted_ids);
-  
+
     sorted_ids.clear();
 
     sel->setWhereClause(dRange);
-  
+
     token = sel->id();
     {
         writeLock lock(this, "createQuery");
@@ -1484,7 +1489,7 @@ H5_FQ_Timestep::createEqualitySelectionQuery(const char *varname,
             << " quer" << (qlist.size() > 1 ? "ier" : "y") << " in memory";
     }
     return token;
-} 
+}
 
 
 void H5_FQ_Timestep::destroyQuery(const char *token) {
@@ -1543,13 +1548,13 @@ int64_t H5_FQ_Timestep::sequentialScan(const char *token) const {
           nhits = 0;
           }
         */
-      
+
         ibis::bitvector hits;
         nhits = (*it).second->sequentialScan(hits);
-     
+
         if (nhits<0)
             nhits = 0;
-      
+
     }
     return nhits;
 } // H5_FQ_Timestep::sequentialScan
@@ -1755,7 +1760,7 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
     switch ((*it).second->type()) {
         //case ibis::column::KEY:
     case ibis::UINT: {
-        array_t<uint32_t> arr;
+        ibis::array_t<uint32_t> arr;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1779,7 +1784,7 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
         break;
     }
     case ibis::INT: {
-        array_t<int32_t> arr;
+        ibis::array_t<int32_t> arr;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1803,7 +1808,7 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
         break;
     }
     case ibis::LONG: {
-        array_t<int64_t> arr;
+        ibis::array_t<int64_t> arr;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1827,7 +1832,7 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
         break;
     }
     case ibis::FLOAT: {
-        array_t<float> arr;
+        ibis::array_t<float> arr;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1851,7 +1856,7 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
         break;
     }
     case ibis::DOUBLE: {
-        array_t<double> arr;
+        ibis::array_t<double> arr;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1903,7 +1908,7 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
     switch ((*it).second->type()) {
         //case ibis::column::KEY:
     case ibis::UINT: {
-        array_t<uint32_t> arr;
+        ibis::array_t<uint32_t> arr;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1927,7 +1932,7 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
         break;
     }
     case ibis::INT: {
-        array_t<int32_t> arr;
+        ibis::array_t<int32_t> arr;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1951,7 +1956,7 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
         break;
     }
     case ibis::LONG: {
-        array_t<int64_t> arr;
+        ibis::array_t<int64_t> arr;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1975,7 +1980,7 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
         break;
     }
     case ibis::FLOAT: {
-        array_t<float> arr;
+        ibis::array_t<float> arr;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1999,7 +2004,7 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
         break;
     }
     case ibis::DOUBLE: {
-        array_t<double> arr;
+        ibis::array_t<double> arr;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)

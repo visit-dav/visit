@@ -106,7 +106,7 @@ static BaseFileInterface::DataType TypeConvert(int datatype){
 
 int64_t H5UC_getDatasetSize(H5UCFile f,int rank,int *dims,int datatype){ // generic size calculator
   H5_Index *file=H5_Indexptr(f);
-  if(!file) return 0;   
+  if(!file) return 0;
   std::vector<int64_t> dimvec;
   dimvec.resize(rank);
   BaseFileInterface::DataType t=TypeConvert(datatype);

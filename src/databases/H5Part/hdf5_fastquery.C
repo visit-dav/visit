@@ -6,17 +6,20 @@
 /// Constructor.
 ///@arg v Verbose level.  Default to 0.
 ///@arg rcfile The name of runtime-control file.  The default value is nil,
-///in which case it will examine the following values to find a rc file.
-///If none is fine, the run-time parameter list is empty.
+///     in which case it will examine the following values to find a rc file.
+/// If none is fine, the run-time parameter list is empty.
 /// - Environment variable IBISRC.
 /// - File named ibis.rc in the current working directory.
 /// - File named .ibisrc in the current working directory.
-/// - File named .ibisrc in the current user's home directory (only if 
+/// - File named .ibisrc in the current user's home directory (only if
 ///   the environmental variable HOME is defined).
 ///@arg loffile The name of the log file used for output error messages.
+///     If it is nil or points to an empty string, the messages are sent to
+///     the standard output.
 HDF5_FQ::HDF5_FQ(const int v, const char* rcfile, const char* logfile)
     : dataFile(0) {
-    ibis::init(v, rcfile, logfile);
+    ibis::util::setVerboseLevel(v);
+    ibis::init(rcfile, logfile);
     //  ibis::gParameters().add("fileManager.maxBytes", "3GB");
     // ibis::util::setLogFileName("FastBit.Log");
 }
@@ -179,7 +182,7 @@ void HDF5_FQ::getVariableInformation(const char* variableName,
                                      int64_t time,
                                      std::vector <int64_t> &dims,
                                      BaseFileInterface::DataType *type){
-        
+
     std::string temp = variableName;
     getVariableInformation(temp, time, dims, type);
 }
@@ -244,7 +247,7 @@ int64_t HDF5_FQ::executeEqualitySelectionQuery
     int64_t numHits = tstep->submitQuery(tok);
     if (numHits > 0)
         tstep->getHitLocations(tok,offset);
-  
+
     tstep->destroyQuery(tok);
     return numHits;
 }
@@ -367,7 +370,7 @@ long HDF5_FQ::get1DHistogram(int64_t timestep,
                              std::vector<uint32_t> &counts) {
     long err;
     err = timeSlices[timestep]->getDistribution
-        (variableName, bounds, counts);  
+        (variableName, bounds, counts);
     return err;
 }
 
@@ -378,7 +381,7 @@ long HDF5_FQ::get1DHistogram(int64_t timestep,
                              std::vector<uint32_t> &counts) {
     long err;
     err = timeSlices[timestep]->getDistribution
-        (condition, variableName, bounds, counts);  
+        (condition, variableName, bounds, counts);
     return err;
 }
 
@@ -394,7 +397,7 @@ long HDF5_FQ::get1DHistogram(int64_t timestep,
     bounds.resize(num_bins-1);
 
     err = timeSlices[timestep]->getDistribution
-        (variableName, num_bins, &bounds[0], &counts[0]);  
+        (variableName, num_bins, &bounds[0], &counts[0]);
     return err;
 }
 
@@ -409,7 +412,7 @@ long HDF5_FQ::get1DHistogram(int64_t timestep,
     bounds.resize(num_bins-1);
 
     err = timeSlices[timestep]->getDistribution
-        (condition, variableName, num_bins, &bounds[0], &counts[0]);  
+        (condition, variableName, num_bins, &bounds[0], &counts[0]);
     return err;
 }
 
@@ -433,19 +436,19 @@ long HDF5_FQ::get1DHistogram(int64_t timestep,
     //TODO:: transfer result from count to counts;
     // Check this with John Wu
     LOGGER(ibis::gVerbose > 0)
-        <<"get1DDistribution w/ strides returned " << err 
+        <<"get1DDistribution w/ strides returned " << err
         << "count size is " << count.size();
 
     for (unsigned int i=0; i<count.size(); i++)
         counts.push_back((uint32_t)count[i]);
-  
+
     err = counts.size();
-    count.clear();  
+    count.clear();
     return err;
 }
 
 long HDF5_FQ::get2DHistogram(int64_t timestep,
-                             const char *condition, 
+                             const char *condition,
                              const char *variableName1,
                              double begin1, double end1, uint32_t num_bins1,
                              const char *variableName2,
@@ -454,8 +457,8 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
                              std::vector<double> &bounds2,
                              std::vector<uint32_t> &counts) {
     long err;
-    
-    double stride1; 
+
+    double stride1;
     stride1 = (end1 - begin1)/num_bins1;
     // make sure that begin1 + stride1*num_bins1 > end1
     stride1 = ibis::util::incrDouble(stride1);
@@ -464,7 +467,7 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
     stride2 = (end2 - begin2)/num_bins2;
     stride2 = ibis::util::incrDouble(stride2);
 
-    err = timeSlices[timestep]->get2DDistribution(condition, 
+    err = timeSlices[timestep]->get2DDistribution(condition,
                                                   variableName1,
                                                   begin1, end1, stride1,
                                                   variableName2,
@@ -478,8 +481,8 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
       while (counter<=end1) {
       bounds1.push_back(counter);
       counter = counter + stride1;
-      }         
-      
+      }
+
       bounds2.clear();
       counter = begin2;
       while(counter<=end2) {
@@ -490,28 +493,28 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
     bounds1.clear();
     for (unsigned int i=0; i<=num_bins1; i++)
         bounds1.push_back(begin1 + i*stride1);
-    
+
     bounds2.clear();
     for (unsigned int i=0; i<=num_bins2; i++)
         bounds2.push_back(begin2 + i*stride2);
-    
+
     LOGGER(ibis::gVerbose > 0)
         << "HDF_FQ:: get2DHistogram created "
-        << " bounds1 [size= " << bounds1.size() << "], " 
+        << " bounds1 [size= " << bounds1.size() << "], "
         << " bounds2 [size= " << bounds2.size() << "]";
     return err;
 }
 
 long HDF5_FQ::get2DHistogram(int64_t timestep,
                              const char *condition,
-                             const char *variableName1, 
+                             const char *variableName1,
                              const char *variableName2,
                              std::vector<double> &bounds1,
                              std::vector<double> &bounds2,
                              std::vector<uint32_t> &counts) {
-    long err;  
+    long err;
     err = timeSlices[timestep]->getJointDistribution(condition,
-                                                     variableName1, 
+                                                     variableName1,
                                                      variableName2,
                                                      bounds1,
                                                      bounds2,
@@ -520,7 +523,7 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
 }
 
 long HDF5_FQ::get2DHistogram(int64_t timestep,
-                             const char *condition, 
+                             const char *condition,
                              const char *variableName1,
                              double begin1, double end1, double stride1,
                              const char *variableName2,
@@ -534,14 +537,14 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
         << variableName1 << "[" << begin1 << "," << end1 << "," << stride1
         << "] " << variableName2 << "[" << begin2 << "," << end2 << ","
         << stride2 << "] ";
-    
-    err = timeSlices[timestep]->get2DDistribution(condition, 
+
+    err = timeSlices[timestep]->get2DDistribution(condition,
                                                   variableName1,
                                                   begin1, end1, stride1,
                                                   variableName2,
                                                   begin2, end2, stride2,
                                                   counts);
-    
+
     LOGGER(ibis::gVerbose > 0)
         << "HDF_FQ:: returned from 2DDistribution call with err=" << err;
     return err;
@@ -555,12 +558,12 @@ long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
                                      std::vector<double> &bounds1,
                                      std::vector<double> &bounds2,
                                      std::vector<uint32_t> &counts) {
-    long err;  
+    long err;
     const char* option = "d";
     LOGGER(ibis::gVerbose > 0)
         << "HDF_FQ:: starting get2DAdaptive call with following info" <<
         variableName1 << ", #bins1 = " << num_bins1 << ", " <<
-        variableName2 << ", #bins2 = " << num_bins2 << "." <<    
+        variableName2 << ", #bins2 = " << num_bins2 << "." <<
         " Data/index option = " << option;
 
     err = timeSlices[timestep]->get2DDistribution(variableName1, variableName2,
@@ -570,17 +573,17 @@ long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
 
     LOGGER(ibis::gVerbose > 0)
         << "HDF_FQ:: returned from First New 2DAdaptiveDistribution call "
-        "with err=" << err 
+        "with err=" << err
         << ", bounds sizes = " << bounds1.size()<<"x"<<bounds2.size()
         << ", Counts size = " << counts.size();
     return err;
 }
 
 long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
-                                     const char *condition, 
+                                     const char *condition,
                                      const char *variableName1,
                                      const char *variableName2,
-                                     uint32_t num_bins1, 
+                                     uint32_t num_bins1,
                                      uint32_t num_bins2,
                                      std::vector<double> &bounds1,
                                      std::vector<double> &bounds2,
@@ -590,7 +593,7 @@ long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
     err = timeSlices[timestep]->get2DDistribution(condition,
                                                   variableName1, variableName2,
                                                   num_bins1, num_bins2,
-                                                  bounds1, 
+                                                  bounds1,
                                                   bounds2,
                                                   counts);
     LOGGER(ibis::gVerbose > 0)
@@ -600,25 +603,25 @@ long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
 }
 
 long HDF5_FQ::get3DBins(int64_t timestep,
-                        const char *condition, 
+                        const char *condition,
                         const char *variableName1,
-                        double begin1, double end1, uint32_t num_bins1, 
+                        double begin1, double end1, uint32_t num_bins1,
                         const char *variableName2,
-                        double begin2, double end2, uint32_t num_bins2, 
+                        double begin2, double end2, uint32_t num_bins2,
                         const char *variableName3,
                         double begin3, double end3, uint32_t num_bins3,
                         std::vector<double> &bounds1,
                         std::vector<double> &bounds2,
                         std::vector<double> &bounds3,
                         std::vector<uint32_t> &counts,
-                        std::vector<ibis::bitvector*> &bitmaps) {  
+                        std::vector<ibis::bitvector*> &bitmaps) {
     long err;
 
-    double stride1; 
+    double stride1;
     stride1 = (end1 - begin1)/num_bins1;
     // make sure that begin1 + stride1*num_bins1 > end1
     stride1 = ibis::util::incrDouble(stride1);
-  
+
     double stride2;
     stride2 = (end2 - begin2)/num_bins2;
     stride2 = ibis::util::incrDouble(stride2);
@@ -626,8 +629,8 @@ long HDF5_FQ::get3DBins(int64_t timestep,
     double stride3;
     stride3 = (end3 - begin3)/num_bins3;
     stride3 = ibis::util::incrDouble(stride3);
-  
-    err = timeSlices[timestep]->get3DBins(condition, 
+
+    err = timeSlices[timestep]->get3DBins(condition,
                                           variableName1, begin1, end1, stride1,
                                           variableName2, begin2, end2, stride2,
                                           variableName3, begin3, end3, stride3,
@@ -654,9 +657,9 @@ long HDF5_FQ::get3DBins(int64_t timestep,
         // cnt() function on a bitvector gives the # elements
         if (bitmaps[i]!=NULL)
             counts[i] = bitmaps[i]->cnt();
-        else 
-            counts[i] = 0;      
-    } 
+        else
+            counts[i] = 0;
+    }
     return err;
 }
 
@@ -718,7 +721,7 @@ long HDF5_FQ::get3DBins(int64_t timestep,
         if (tempBitmaps[i]!=NULL)
             counts[i] = tempBitmaps[i]->cnt();
         else
-            counts[i] = 0; 
+            counts[i] = 0;
 
         if (counts[i] > 0) {
             bitmaps[i] = tempBitmaps[i];
@@ -735,13 +738,13 @@ int HDF5_FQ::get_Bitmap_Data(int64_t timestep,
     // << " entries in the bitmaps vector" << std::endl;
 
     // create a composit bitvector
-    ibis::bitvector composit_bitvector;  
+    ibis::bitvector composit_bitvector;
     for (unsigned int i=0; i<bitmaps.size(); i++) {
         if (bitmaps[i]!=NULL) {
             if ((*bitmaps[i]).size()>0) {
                 composit_bitvector |= *bitmaps[i];
             }
-            else { 
+            else {
                 // do nothing, this bitvector does not exist
             }
         }
@@ -751,12 +754,12 @@ int HDF5_FQ::get_Bitmap_Data(int64_t timestep,
     std::vector<int64_t> dims;
     BaseFileInterface::DataType dataType;
     getVariableInformation(name, timestep, dims, &dataType);
-  
+
     int i;
-    array_t<float>    *ftmp;  float    *fptr;
-    array_t<double>   *dtmp;  double   *dptr;
-    array_t<int32_t>  *itmp;  int32_t  *iptr;
-    array_t<int64_t>  *litmp; int64_t  *liptr;
+    ibis::array_t<float>    *ftmp;  float    *fptr;
+    ibis::array_t<double>   *dtmp;  double   *dptr;
+    ibis::array_t<int32_t>  *itmp;  int32_t  *iptr;
+    ibis::array_t<int64_t>  *litmp; int64_t  *liptr;
 
     switch(dataType) {
 
@@ -765,7 +768,7 @@ int HDF5_FQ::get_Bitmap_Data(int64_t timestep,
         i = 0;
         ftmp = timeSlices[timestep]->selectFloats(name, composit_bitvector);
         fptr = (float*) malloc(ftmp->size()*sizeof(float));
-        for (array_t<float>::const_iterator ii = ftmp->begin();
+        for (ibis::array_t<float>::const_iterator ii = ftmp->begin();
              ii!= ftmp->end(); ii++, i++)
             fptr[i] = *ii;
 
@@ -780,7 +783,7 @@ int HDF5_FQ::get_Bitmap_Data(int64_t timestep,
         i = 0;
         dtmp = timeSlices[timestep]->selectDoubles(name, composit_bitvector);
         dptr = (double*) malloc(dtmp->size()*sizeof(double));
-        for (array_t<double>::const_iterator ii = dtmp->begin();
+        for (ibis::array_t<double>::const_iterator ii = dtmp->begin();
              ii!= dtmp->end(); ii++, i++)
             dptr[i] = *ii;
 
@@ -795,7 +798,7 @@ int HDF5_FQ::get_Bitmap_Data(int64_t timestep,
         i = 0;
         itmp = timeSlices[timestep]->selectInts(name, composit_bitvector);
         iptr = (int32_t*) malloc(itmp->size()*sizeof(int32_t));
-        for (array_t<int32_t>::const_iterator ii = itmp->begin();
+        for (ibis::array_t<int32_t>::const_iterator ii = itmp->begin();
              ii!= itmp->end(); ii++, i++)
             iptr[i] = *ii;
 
@@ -810,7 +813,7 @@ int HDF5_FQ::get_Bitmap_Data(int64_t timestep,
         i = 0;
         litmp = timeSlices[timestep]->selectLongs(name, composit_bitvector);
         liptr = (int64_t*) malloc(litmp->size()*sizeof(int64_t));
-        for (array_t<int64_t>::const_iterator ii = litmp->begin();
+        for (ibis::array_t<int64_t>::const_iterator ii = litmp->begin();
              ii!= litmp->end(); ii++, i++)
             liptr[i] = *ii;
 
@@ -827,7 +830,7 @@ int HDF5_FQ::get_Bitmap_Data(int64_t timestep,
         result = NULL;
         return 0;
         break;    }
-    
+
     }
     return -1;
 }

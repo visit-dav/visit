@@ -43,12 +43,12 @@ public:
         hid_t getDataSpace(){return H5Dget_space(classID);}
         hsize_t getSize(){return H5Dget_storage_size(classID);}
         void getSize(uint64_t *length);
-        
+
 
 private:
         //is the classID valid...i.e. is it tied to a file?
         bool valid;
-        hid_t classID;  
+        hid_t classID;
         herr_t status;
-};      
+};
 #endif
