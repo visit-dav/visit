@@ -22,7 +22,7 @@ typedef caddr_t H5UCFile;
 #define H5_INT64 3
 #define H5_BYTE 4
 #define H5_ERROR -1
-  
+
 H5UCFile H5UC_Open(char *filename);
 void H5UC_Close(H5UCFile f);
 int H5UC_getNumVariables(H5UCFile f);

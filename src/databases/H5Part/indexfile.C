@@ -19,7 +19,7 @@ H5_Index::H5_Index(const bool useH5PartFile) {
 
 H5_Index::~H5_Index() {
     if (!useH5Part) {
-        if(file_open){
+        if (file_open){
             closeHDF5File();
         }
     }
@@ -37,7 +37,7 @@ void H5_Index::closeHDF5File() {
 
         //write out the min_max values
         attribute_id.open(group_id.getID(),"TimeInterval");
-        attribute_id.write(H5T_NATIVE_DOUBLE,min_max_time);     
+        attribute_id.write(H5T_NATIVE_DOUBLE,min_max_time);
 
         //close the group and file
         delete [] timevalues;
@@ -56,7 +56,7 @@ void H5_Index::closeHDF5File() {
 
 
 void H5_Index::openHDF5File(const char* file_location){
-  
+
     if (useH5Part == true) {
         openH5PartFile(file_location);
     }
@@ -78,21 +78,21 @@ void H5_Index::openHDF5File(const std::string& file_location){
 void H5_Index::openHDF5FileLocal(const char* file_location){
     char path1[200],path2[200],string_type[200];
     std::string data_type;
-        
-    if(file_open){
+
+    if (file_open){
         closeHDF5File();
     }
-         
+
     file_open = true;
-    if(file_id.open(file_location)){
+    if (file_id.open(file_location)){
         //open and read the attributes
         group_id.open(file_id.getID(),"/HDF5_UC");
         hsize_t j;
         //get the total groupcount -1 = # of timesteps
         j = group_id.getGroupCount();
-        timeStepNum = j-1;              
+        timeStepNum = j-1;
         timevalues = new double [timeStepNum];
-        
+
         for(int64_t i=0;i<timeStepNum;i++){
             double x;
             sprintf(path2,"/HDF5_UC/TimeStep%d",(int)i);
@@ -102,21 +102,21 @@ void H5_Index::openHDF5FileLocal(const char* file_location){
             strncpy(string_type,"",200);
             attribute_id.read(H5T_NATIVE_DOUBLE,&x);
             timevalues[i] = x;
-                        
+
             //find the existing min and max
-            if(i == 0){
+            if (i == 0){
                 min_max_time[0]=x;
                 min_max_time[1]=x;
             }
-            if(min_max_time[0] > x){
+            if (min_max_time[0] > x){
                 min_max_time[0]=x;
             }
-            if(min_max_time[1] < x){
+            if (min_max_time[1] < x){
                 min_max_time[1]=x;
             }
             //close the file, group and attribute
-        }               
-                
+        }
+
         //get the attributes for all Step<n>
         group_id.open(file_id.getID(),"/HDF5_UC/TOC");
         attribute_id.open(group_id.getID(),"GroupCount");
@@ -132,15 +132,15 @@ void H5_Index::openHDF5FileLocal(const char* file_location){
             data_type = string_type;
             variable_names.push_back(data_type);
         }
-        //QSort(0,timeStepNum-1);               
+        //QSort(0,timeStepNum-1);
     }
     //if it does not...we need to make a new file formatted to the HDF5_UC
     //format
     else{
         group_id.create(file_id.getID(),"/HDF5_UC");
-                
+
         char attr_data_c[200];
-                
+
         //create the groupcount attribute
         timeStepNum = 0;
         min_max_time[0] = min_max_time[1] = 0;
@@ -152,7 +152,7 @@ void H5_Index::openHDF5FileLocal(const char* file_location){
                             dataspace_id.getID());
         //write the attribute data
         attribute_id.write(H5T_NATIVE_INT64,&timeStepNum);
-        
+
         dimms = 2;
         //write the min_max attributes
         dataspace_id.create(1,&dimms);
@@ -181,7 +181,7 @@ void H5_Index::openHDF5FileLocal(const char* file_location){
                             dataspace_id.getID());
         //write the attribute data
         attribute_id.write(H5T_NATIVE_DOUBLE,&time_var);
-                        
+
         //create the TOC group
         group_id.create(file_id.getID(),"/HDF5_UC/TOC");
         //create the groupcount attribute
@@ -191,10 +191,10 @@ void H5_Index::openHDF5FileLocal(const char* file_location){
                             dataspace_id.getID());
         //write the attribute data
         attribute_id.write(H5T_NATIVE_INT64,&timeStepNum);
-        
+
         //add the FastBit group
         group_id.create(file_id.getID(),"/HDF5_UC/TOC/FastBit");
-        
+
         timevalues = new double [1];
         timevalues[0] = 0;
         variableStepNum = 0;
@@ -206,8 +206,8 @@ void H5_Index::openH5PartFile(const std::string& file_location) {
     //std::cout << "OpenH5PartFile..." << std::endl;
 
     // open in HDF5_UC file mode
-    if (!file_open) { 
-        if(!file_id.open(file_location.c_str())) {
+    if (!file_open) {
+        if (!file_id.open(file_location.c_str())) {
             perror("File open failed:  exiting!");
         }
     }
@@ -217,7 +217,7 @@ void H5_Index::openH5PartFile(const std::string& file_location) {
     h5partFileOpen = true;
     strcpy(fileName, file_location.c_str());
     h5partFile = H5PartOpenFile(file_location.c_str(), H5PART_READ);
-    if(!h5partFile) {
+    if (!h5partFile) {
         perror("File open failed:  exiting!");
         exit(0);
     }
@@ -314,7 +314,7 @@ std::string H5_Index::getSortedFieldName() const {
         result = std::string(data);
     }
     else {
-        result = "";    
+        result = "";
     }
     return result;
 }
@@ -332,7 +332,7 @@ void H5_Index::getH5PartVariableNames(std::vector<std::string> &names) const {
 bool H5_Index::queryVariableNames(const std::string& q_string) const{
     bool answer = false;
     for(int64_t i=0;i< (int64_t) variable_names.size();i++){
-        if(variable_names[i] == q_string){
+        if (variable_names[i] == q_string){
             answer = true;
             i=variable_names.size();
         }
@@ -366,7 +366,7 @@ int64_t H5_Index::getDatasetSize(const std::vector<int64_t>        dims,
     default:
         value = 0;
         break;
-    }   
+    }
 
     result_immediate=1;
     for(int64_t i=0;i<(int64_t)dims.size();i++){
@@ -390,20 +390,20 @@ int64_t H5_Index::getVariableInfo(const std::string           &variableName,
         std::string path = stringPath(variableName,time);
         dataset_id.open(file_id.getID(),path.c_str());
         hsize_t *stddims,*maxdims;
-        
+
         //get the type of data in the data set
         *type = dataset_id.getDataType();
 
         int64_t int_dim,num_dim;
         //get the # of dims for this data set (attribute Nspace)
-        
+
         int_dim = dataspace_id.getNDim(dataset_id.getDataSpace());
         stddims = new hsize_t[int_dim];
         maxdims = new hsize_t[int_dim];
-        
+
         num_dim = dataspace_id.getDim(dataset_id.getDataSpace(), stddims,
                                       maxdims);
-        
+
         //now read the attributes for this data set to get the number of dim
         for(int64_t i=0;i<num_dim;i++){
             dims.push_back(stddims[i]);
@@ -412,7 +412,7 @@ int64_t H5_Index::getVariableInfo(const std::string           &variableName,
         delete[] maxdims;
         int64_t answer;
         attribute_id.open(dataset_id.getID(), "DataKey");
-        attribute_id.read(H5T_NATIVE_INT64,&answer);    
+        attribute_id.read(H5T_NATIVE_INT64,&answer);
         return answer;
     }
 }
@@ -493,7 +493,7 @@ void H5_Index::getData(const std::string& variablename, int64_t time,
         dataset_id.open(file_id.getID(),path.c_str());
         //first get the type information...
         var_type = dataset_id.getDataType();
-        
+
         //read the data set according to datatype
         switch(var_type){
         case BaseFileInterface::DataType(0):
@@ -630,12 +630,12 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
     }
 
     //the attribute for the dataset
-    hsize_t temp_size = 1;      
+    hsize_t temp_size = 1;
 
 
     //create a new data space and dataset for this group...
     group_id.open(file_id.getID(),file_path);
-        
+
     dataspace_id.create(k,size);
     switch(type){
     case H5_Float:
@@ -647,7 +647,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
         }
         dataset_id.create(group_id.getID(),variablename,H5T_NATIVE_FLOAT,
                           dataspace_id.getID());
-        //read out the data to the new file 
+        //read out the data to the new file
         dataset_id.write(H5T_NATIVE_FLOAT,temp_float);
         //release the memory
         delete temp_float;
@@ -675,7 +675,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
         }
         dataset_id.create(group_id.getID(),variablename,H5T_NATIVE_DOUBLE,
                           dataspace_id.getID());
-        //read out the data to the new file 
+        //read out the data to the new file
         dataset_id.write(H5T_NATIVE_DOUBLE,temp_double);
         //release the memory
         delete temp_double;
@@ -704,7 +704,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
         }
         dataset_id.create(group_id.getID(),variablename,H5T_NATIVE_INT32,
                           dataspace_id.getID());
-        //read out the data to the new file 
+        //read out the data to the new file
         dataset_id.write(H5T_NATIVE_INT32,temp_int);
         //release the memory
         delete temp_int;
@@ -733,7 +733,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
         }
         dataset_id.create(group_id.getID(),variablename,H5T_NATIVE_INT64,
                           dataspace_id.getID());
-        //read out the data to the new file 
+        //read out the data to the new file
         dataset_id.write(H5T_NATIVE_INT64,temp_lng);
         //release the memory
         delete temp_lng;
@@ -762,7 +762,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
         }
         dataset_id.create(group_id.getID(),variablename,H5T_NATIVE_CHAR,
                           dataspace_id.getID());
-        //read out the data to the new file 
+        //read out the data to the new file
         dataset_id.write(H5T_NATIVE_CHAR,temp_chr);
         //release the memory
         delete temp_chr;
@@ -785,7 +785,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
     default:
         break;
     }
-        
+
 
     dataspace_id.create(1,&temp_size);
     //create the attribute
@@ -794,27 +794,27 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
     //write the attribute data
     attribute_id.write(H5T_NATIVE_INT64,&new_dataset);
     //close the attribute data
-        
+
     delete size;
 }
 
 // create a uint32_t array with [nelements] elements and fill them with 0.
-bool H5_Index::createBitmap(const std::string& variableName, 
+bool H5_Index::createBitmap(const std::string& variableName,
                             uint64_t timestep,
                             uint64_t nelements){
-    bool answer = true; 
+    bool answer = true;
     hsize_t temp_size = nelements;
     std::string file_path;
     char p2[200];
     strncpy(p2,"",(int)200);
-        
+
     file_path = variableName + ".bitmap";
 
     if (useH5Part) {
-        // create index group 
+        // create index group
         group_id.create(file_id.getID(),"/__H5PartIndex__");
         sprintf(p2,"/__H5PartIndex__/Step#%d",(int)timestep);
-          
+
         // create time step group
         group_id.create(file_id.getID(), p2);
     }
@@ -824,10 +824,10 @@ bool H5_Index::createBitmap(const std::string& variableName,
 
     //create a new data space and .bitmap dataset for this group...
     answer = group_id.open(file_id.getID(),p2);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     //initialize data to be read to the group
     answer = dataspace_id.create(1,&temp_size);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     uint32_t *temp_int;
     temp_int = new uint32_t[nelements];
     for(int64_t i=0;i<(int64_t)nelements;i++){
@@ -836,11 +836,11 @@ bool H5_Index::createBitmap(const std::string& variableName,
 
     answer = dataset_id.create(group_id.getID(),file_path.c_str(),
                                H5T_NATIVE_UINT32,dataspace_id.getID());
-    if(answer == false) return answer;
-     
-    //read out the data to the new file 
+    if (answer == false) return answer;
+
+    //read out the data to the new file
     answer = dataset_id.write(H5T_NATIVE_UINT32,temp_int);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //release the memory from the three datasets
     delete temp_int;
@@ -848,7 +848,7 @@ bool H5_Index::createBitmap(const std::string& variableName,
     //determine the type of the original data...
     BaseFileInterface::DataType type;
     answer = getAttribute(variableName, timestep, &type, ".bitmap");
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     return answer;
 }
@@ -864,7 +864,7 @@ bool H5_Index::getPointData(const std::string& variablename,int64_t time,
 
     //open an existing data set...
     answer = dataset_id.open(file_id.getID(),path.c_str());
-    if(answer == false) {
+    if (answer == false) {
         LOGGER(ibis::gVerbose >= 0)
             << "Dataset of file " << file_id.getID() << " could not be opened";
         return answer;
@@ -874,7 +874,7 @@ bool H5_Index::getPointData(const std::string& variablename,int64_t time,
 
     //pass the space handle for the dataset
     answer = dataspace_id.assignSpace(dataset_id.getDataSpace());
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //next determine the dimmensionality of the dataset...
     hsize_t num_dimms = dataspace_id.getNDim(dataset_id.getDataSpace());
@@ -885,13 +885,13 @@ bool H5_Index::getPointData(const std::string& variablename,int64_t time,
 
     /// the function selectElements should not modify indices array!
     answer = dataspace_id.selectElements(max, num_dimms, indices);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     H5S dataspace_id2;
     count[0] = max;
     answer = dataspace_id2.create(1,count);
-    if(answer == false) return answer;
-        
+    if (answer == false) return answer;
+
     switch(var_type){
     case BaseFileInterface::DataType(0):
         float *f_ptr;
@@ -926,14 +926,14 @@ bool H5_Index::getPointData(const std::string& variablename,int64_t time,
     default:
         break;
     }
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     return answer;
 }
 
 bool H5_Index::getSpecificData(const std::string& variablename,int64_t time,
                                void *data, const std::vector<hsize_t>& indices){
     bool answer = true;
-        
+
     //here we get specific values from the datasets indicated by the
     //indices vector
     BaseFileInterface::DataType var_type;
@@ -941,14 +941,14 @@ bool H5_Index::getSpecificData(const std::string& variablename,int64_t time,
 
     //open an existing data set...
     answer = dataset_id.open(file_id.getID(),path.c_str());
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //first get the type information...
     var_type = dataset_id.getDataType();
 
     //pass the space handle for the dataset
     answer = dataspace_id.assignSpace(dataset_id.getDataSpace());
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //next determine the dimmensionality of the dataset...
     hsize_t num_dimms = dataspace_id.getNDim(dataset_id.getDataSpace());
@@ -959,10 +959,10 @@ bool H5_Index::getSpecificData(const std::string& variablename,int64_t time,
     max /= num_dimms;
     //loop through them all and get all of the values...store them in *data
     for(int32_t i=0;i<max;i++){
-                        
+
         //define the hyperslab in the dataset
         hsize_t offset[255],count[255];
-        if(num_dimms>= 255){
+        if (num_dimms>= 255){
             printf("Error too many dimmensions per element");
         }
         for(int32_t i2=0;i2<255;i2++){
@@ -972,18 +972,18 @@ bool H5_Index::getSpecificData(const std::string& variablename,int64_t time,
             offset[j]=indices.operator[] (num_dimms*i + j);
         }
         answer = dataspace_id.selectHSlab(offset,count);
-        if(answer == false) return answer;
+        if (answer == false) return answer;
 
         //define a new memory dataspace of EQUAL size to the portion being read
         H5S dataspace_id2;
         answer = dataspace_id2.create(num_dimms,count);
-        if(answer == false) return answer;
-        
+        if (answer == false) return answer;
+
         //now define this memory hyperslab
         hsize_t offset2[255] = {0};
         answer = dataspace_id2.selectHSlab(&offset2[0],count);
-        if(answer == false) return answer;
-        
+        if (answer == false) return answer;
+
         //read into memory
         switch(var_type){
         case BaseFileInterface::DataType(0):
@@ -1019,79 +1019,82 @@ bool H5_Index::getSpecificData(const std::string& variablename,int64_t time,
         default:
             break;
         }
-        if(answer == false) return answer;
+        if (answer == false) return answer;
         counter ++;
     }
-        
+
     return answer;
 }
 
-bool H5_Index::readBitmap(const std::string& variableName, uint64_t timestep, 
-                          uint64_t startoffset, 
-                          uint64_t endoffset,
+bool H5_Index::readBitmap(const std::string& variableName, uint64_t timestep,
+                          uint64_t startoffset, uint64_t endoffset,
                           uint32_t *data) {
     bool answer = true;
 
-    std::string path = stringPathIdx(variableName,timestep);
+    std::string path = stringPathIdx(variableName, timestep);
     answer = dataset_id.open(file_id.getID(),path.c_str());
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //pass the space handle for the dataset
     answer = dataspace_id.assignSpace(dataset_id.getDataSpace());
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //define the hyperslab in the dataset
-    hsize_t offset = startoffset,count = (endoffset - startoffset);
+    hsize_t offset = startoffset, count = (endoffset - startoffset);
     answer = dataspace_id.selectHSlab(&offset,&count);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //define a new memory dataspace of EQUAL size to the portion being read
     H5S dataspace_id2;
     answer = dataspace_id2.create(1,&count);
-    if(answer == false) return answer;
-        
+    if (answer == false) return answer;
+
     //now define this memory hyperslab
     offset = 0;
     answer = dataspace_id2.selectHSlab(&offset,&count);
-    if(answer == false) return answer;
-        
+    if (answer == false) return answer;
+
     //read into memory
     answer = dataset_id.slabRead(H5T_NATIVE_UINT32,dataspace_id2.getID(),
                                  dataspace_id.getID(),data);
-
+    LOGGER(ibis::gVerbose > 5)
+        << "H5_Index[" << file_id.getName() << "/__H5PartIndex__/Step#"
+        << timestep << '/' << variableName << ".bitmap]::readBitmap "
+        << (answer ? " successfully read " : " failed to read ")
+        << "offsets [" << startoffset << ", " << endoffset << ')';
     return answer;
 }
 
-bool H5_Index::writeBitmap(const std::string& variableName, 
+bool H5_Index::writeBitmap(const std::string& variableName,
                            uint64_t timestep,
                            uint64_t startoffset,
                            uint64_t endoffset,
                            uint32_t *data){
-    bool answer = true; 
+    bool answer = true;
 
     std::string path = stringPathIdx(variableName,timestep);
     answer = dataset_id.open(file_id.getID(),path.c_str());
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //pass the space handle for the dataset
     answer = dataspace_id.assignSpace(dataset_id.getDataSpace());
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //define the hyperslab in the dataset
     hsize_t offset = startoffset,count = (endoffset - startoffset);
     answer = dataspace_id.selectHSlab(&offset,&count);
-    if(answer == false) return answer;
-        
+    if (answer == false) return answer;
+
     //define a new memory dataspace of EQUAL size to the portion being read
     H5S dataspace_id2;
     answer = dataspace_id2.create(1,&count);
-    if(answer == false) return answer;
-        
+    if (answer == false) return answer;
+
     //now define this memory hyperslab
     offset = 0;
     answer = dataspace_id2.selectHSlab(&offset,&count);
-    if(answer == false) return answer;
-        
+    if (answer == false) return answer;
+
     // write into file
     answer = dataset_id.slabWrite(H5T_NATIVE_UINT32,dataspace_id2.getID(),
                                   dataspace_id.getID(),data);
@@ -1116,7 +1119,7 @@ bool H5_Index::getType(const std::string& variable, uint64_t time,
     variableName += "/";
     variableName += variable;
     answer = dataset_id.open(file_id.getID(),variableName.c_str());
-    if(answer != false){
+    if (answer != false){
         //get the type of data in the data set
         *type = dataset_id.getDataType();
     }
@@ -1133,7 +1136,7 @@ bool H5_Index::getAttribute(const std::string& variable, uint64_t time,
     //sprintf(p2,"/HDF5_UC/TimeStep%d",(int)time);
     sprintf(p2, timestepPath,(int)time);
     answer = getType(variable,time,type);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     variableName = p2;
     variableName += "/";
     variableName += variable + attribute;
@@ -1153,7 +1156,7 @@ bool H5_Index::getBitmapKeysLength(const std::string& variableName,
 
     //determine the type of the original data...
     answer = getType(variableName,timestep,&type);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     strncpy(p2,"",(int)200);
     sprintf(p2,timestepPath,(int)timestep);
 
@@ -1161,10 +1164,10 @@ bool H5_Index::getBitmapKeysLength(const std::string& variableName,
 
     //open this group...
     answer = group_id.open(file_id.getID(),p2);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     answer = dataset_id.open(group_id.getID(),file_path.c_str());
-    if(answer == false) return answer;
-    //read out the data to the new file 
+    if (answer == false) return answer;
+    //read out the data to the new file
     dataset_id.getSize(length);
     switch(type){
     case BaseFileInterface::DataType(0):
@@ -1184,7 +1187,7 @@ bool H5_Index::getBitmapKeysLength(const std::string& variableName,
     break;
     default:
         break;
-    }   
+    }
     return answer;
 }
 
@@ -1195,23 +1198,23 @@ bool H5_Index::getBitmapSize(const std::string& variableName, uint64_t timestep,
     BaseFileInterface::DataType type;
     std::string file_path;
     char p2[200];
-  
+
     //determine the type of the original data...
     answer = getType(variableName,timestep,&type);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     strncpy(p2,"",(int)200);
     sprintf(p2,timestepPath,(int)timestep);
-  
+
     file_path = variableName + ".bitmap";
-  
+
     //open this group...
     answer = group_id.open(file_id.getID(),p2);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     answer = dataset_id.open(group_id.getID(),file_path.c_str());
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
-    //read out the data to the new file 
+    //read out the data to the new file
     dataset_id.getSize(length);
 
     return answer;
@@ -1226,7 +1229,7 @@ bool H5_Index::getBitmapKeys(const std::string& variableName,uint64_t timestep,
 
     //determine the type of the original data...
     answer = getType(variableName,timestep,&type);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     strncpy(p2,"",(int)200);
     //sprintf(p2,"/HDF5_UC/TimeStep%d",(int)timestep);
     sprintf(p2,timestepPath,(int)timestep);
@@ -1234,12 +1237,12 @@ bool H5_Index::getBitmapKeys(const std::string& variableName,uint64_t timestep,
     file_path = variableName + ".bitmapKeys";
     //open this group...
     answer = group_id.open(file_id.getID(),p2);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     answer = dataset_id.open(group_id.getID(),file_path.c_str());
-    if(answer == false) return answer;
-    //read out the data to the new file 
+    if (answer == false) return answer;
+    //read out the data to the new file
     answer = dataset_id.read_type(type,keys);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     return answer;
 }
 
@@ -1253,7 +1256,7 @@ bool H5_Index::setBitmapKeys(const std::string& variableName, int64_t timestep,
 
     //determine the type of the original data...
     answer = getType(variableName,timestep,&type);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     strncpy(p2,"",(int)200);
     //sprintf(p2,"/HDF5_UC/TimeStep%d",(int)timestep);
     sprintf(p2,timestepPath,(int)timestep);
@@ -1261,31 +1264,31 @@ bool H5_Index::setBitmapKeys(const std::string& variableName, int64_t timestep,
     file_path = variableName + ".bitmapKeys";
     //create a new data space for this group...
     answer = group_id.open(file_id.getID(),p2);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     //initialize data to be read to the group
     answer = dataspace_id.create(1,&temp_size);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     //by default make the first datatype UINT_32
     answer = dataset_id.create_type(group_id.getID(),file_path.c_str(),type,
                                     dataspace_id.getID());
-    if(answer == false) return answer;
-    //write out the data to the new file 
+    if (answer == false) return answer;
+    //write out the data to the new file
     answer = dataset_id.write_type(type,data);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //actualRange
     temp_size = 2;
     answer = dataspace_id.create(1,&temp_size);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     //create the attribute
     answer = attribute_id.create_type(dataset_id.getID(),"actualRange",type,
                                       dataspace_id.getID());
-    if(answer == false) return answer;
+    if (answer == false) return answer;
 
     //expectedRange
     temp_size = 2;
     answer = dataspace_id.create(1,&temp_size);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     //create the attribute
     answer = attribute_id.create_type(dataset_id.getID(),"expectedRange",
                                       type,dataspace_id.getID());
@@ -1293,33 +1296,75 @@ bool H5_Index::setBitmapKeys(const std::string& variableName, int64_t timestep,
     return answer;
 }
 
-bool H5_Index::getBitmapOffsetsLength(const std::string& variableName,
-                                      uint64_t timestep, uint64_t *length){
-    bool answer = true;
-    std::string file_path;
+/// Return the data type used to represent the bitmap offsets.  Currently,
+/// it should be either H5_Int32 or H5_Int64.  If the return value is
+/// anything else, it should be treated as an error.
+BaseFileInterface::DataType
+H5_Index::getBitmapOffsetsType(const std::string& variableName,
+                               uint64_t timestep) {
+    bool berr;
     char p2[200];
+    BaseFileInterface::DataType answer = BaseFileInterface::H5_Error;
+    std::string file_path;
 
     //bitmapOffsets
     strncpy(p2,"",(int)200);
     //sprintf(p2,"/HDF5_UC/TimeStep%d",(int)timestep);
-    sprintf(p2, timestepPath,(int)timestep);
+    sprintf(p2, timestepPath, (int)timestep);
 
     file_path = variableName + ".bitmapOffsets";
-    //create a new data space and .bitmap dataset for this group...
-    answer = group_id.open(file_id.getID(),p2);
-    if(answer == false) return answer;
-    //by default make the first datatype UINT_32
-    answer = dataset_id.open(group_id.getID(),file_path.c_str());
-    if(answer == false) return answer;
-    //read out the data to the new file 
-    dataset_id.getSize(length);
-    *length /= sizeof(uint32_t);
+    // open the group
+    berr = group_id.open(file_id.getID(), p2);
+    if (berr == false) return answer;
+    // open the dataset
+    berr = dataset_id.open(group_id.getID(), file_path.c_str());
+    if (berr == false) return answer;
+    // read out the data to the new file
+    answer = dataset_id.getDataType();
+    return answer;
+}
+
+/// Return the number of elements in the BitmapOffsets dataset.  A negative
+/// return indicates error.
+int64_t H5_Index::getBitmapOffsetsLength(const std::string& variableName,
+                                         uint64_t timestep) {
+    bool berr;
+    char p2[200];
+    int64_t answer = -1;
+    std::string file_path;
+    BaseFileInterface::DataType type = BaseFileInterface::H5_Error;
+
+    //bitmapOffsets
+    strncpy(p2,"",(int)200);
+    //sprintf(p2,"/HDF5_UC/TimeStep%d",(int)timestep);
+    sprintf(p2, timestepPath, (int)timestep);
+
+    file_path = variableName + ".bitmapOffsets";
+    // open the group
+    berr = group_id.open(file_id.getID(), p2);
+    if (berr == false) return -1;
+    // open the dataset
+    berr = dataset_id.open(group_id.getID(), file_path.c_str());
+    if (berr == false) return -2;
+
+    answer = dataset_id.getSize(); // get the number of bytes
+    type = dataset_id.getDataType();
+    switch (type) {
+    case BaseFileInterface::H5_Int32:
+        answer >>= 2; // divide by 4 to get the number of elements
+        break;
+    case BaseFileInterface::H5_Int64:
+        answer >>= 3; // divide by 8 to get the nubmer of elements
+        break;
+    default:
+        answer = -3;
+    }
     return answer;
 }
 
 bool H5_Index::getBitmapOffsets(const std::string& variableName,
                                 uint64_t timestep,
-                                uint32_t *offsets){
+                                void *offsets) {
     bool answer = true;
     std::string file_path;
     char p2[200];
@@ -1329,21 +1374,31 @@ bool H5_Index::getBitmapOffsets(const std::string& variableName,
     //sprintf(p2,"/HDF5_UC/TimeStep%d",(int)timestep);
     sprintf(p2,timestepPath,(int)timestep);
     file_path = variableName + ".bitmapOffsets";
-    //create a new data space and .bitmap dataset for this group...
+    // open the group
     answer = group_id.open(file_id.getID(),p2);
-    if(answer == false) return answer;
-    //by default make the first datatype UINT_32
+    if (answer == false) return answer;
+    // open the dataset
     answer = dataset_id.open(group_id.getID(),file_path.c_str());
-    if(answer == false) return answer;
-    //read out the data to the new file 
-    answer = dataset_id.read(H5T_NATIVE_UINT32,offsets);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
+
+    //read out the data based on the data type
+    BaseFileInterface::DataType type = dataset_id.getDataType();
+    switch (type) {
+    case BaseFileInterface::H5_Int32:
+        answer = dataset_id.read(H5T_NATIVE_INT32, offsets);
+        break;
+    case BaseFileInterface::H5_Int64:
+        answer = dataset_id.read(H5T_NATIVE_INT64, offsets);
+        break;
+    default:
+        answer = false;
+    }
     return answer;
 }
 
 bool H5_Index::setBitmapOffsets(const std::string& variableName,
                                 uint64_t timestep,
-                                uint32_t *offsets, uint64_t nelements){
+                                int64_t *offsets, uint64_t nelements){
     bool answer = true;
     hsize_t temp_size = nelements;
     std::string file_path;
@@ -1355,16 +1410,40 @@ bool H5_Index::setBitmapOffsets(const std::string& variableName,
     file_path = variableName + ".bitmapOffsets";
     //create a new data space and .bitmap dataset for this group...
     answer = group_id.open(file_id.getID(),p2);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     //initialize data to be read to the group
     answer = dataspace_id.create(1,&temp_size);
-    if(answer == false) return answer;
-    //by default make the first datatype UINT_32
-    answer = dataset_id.create(group_id.getID(),file_path.c_str(),H5T_NATIVE_UINT32,dataspace_id.getID());
-    if(answer == false) return answer;
-    //write out the data to the new file 
-    answer = dataset_id.write(H5T_NATIVE_UINT32,offsets);
-    if(answer == false) return answer;
+    if (answer == false) return answer;
+
+    int32_t *shortoffsets = 0;
+    if (offsets[nelements-1] <= 0x7FFFFFFFL) {
+        try {
+            shortoffsets = new int32_t[nelements];
+        }
+        catch (...) {
+            shortoffsets = 0;
+        }
+    }
+    if (shortoffsets != 0) {
+        for (uint64_t j = 0; j < nelements; ++ j)
+            shortoffsets[j] = offsets[j];
+        answer = dataset_id.create(group_id.getID(), file_path.c_str(),
+                H5T_NATIVE_INT32, dataspace_id.getID());
+        if (answer == false) {
+            delete [] shortoffsets;
+            return answer;
+        }
+        //write out the data to the new file
+        answer = dataset_id.write(H5T_NATIVE_INT32, shortoffsets);
+        delete [] shortoffsets;
+    }
+    else {// by default make the first datatype INT_64
+        answer = dataset_id.create(group_id.getID(), file_path.c_str(),
+                H5T_NATIVE_INT64, dataspace_id.getID());
+        if (answer == false) return answer;
+        //write out the data to the new file
+        answer = dataset_id.write(H5T_NATIVE_UINT64,offsets);
+    }
     return answer;
 }
 
@@ -1374,10 +1453,10 @@ bool H5_Index::getExpectedRange(const std::string& variableName,
     bool answer = true;
     BaseFileInterface::DataType type;
     answer = getAttribute(variableName,timestep,&type,".bitmapKeys");
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     answer = attribute_id.open(dataset_id.getID(),"expectedRange");
-    if(answer == false) return answer;
-    answer = attribute_id.read_type(type,range);                
+    if (answer == false) return answer;
+    answer = attribute_id.read_type(type,range);
     return answer;
 }
 
@@ -1387,23 +1466,23 @@ bool H5_Index::setExpectedRange(const std::string& variableName,
     bool answer = true;
     BaseFileInterface::DataType type;
     answer = getAttribute(variableName,timestep,&type,".bitmapKeys");
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     answer = attribute_id.open(dataset_id.getID(),"expectedRange");
-    if(answer == false) return answer;
-    answer = attribute_id.write_type(type,range);               
+    if (answer == false) return answer;
+    answer = attribute_id.write_type(type,range);
     return answer;
 }
- 
+
 bool H5_Index::getActualRange(const std::string& variableName,
                               uint64_t timestep,
                               void *range){
     bool answer = true;
     BaseFileInterface::DataType type;
     answer = getAttribute(variableName,timestep,&type,".bitmapKeys");
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     answer = attribute_id.open(dataset_id.getID(),"actualRange");
-    if(answer == false) return answer;
-    answer = attribute_id.read_type(type,range);                
+    if (answer == false) return answer;
+    answer = attribute_id.read_type(type,range);
     return answer;
 }
 
@@ -1413,10 +1492,10 @@ bool H5_Index::setActualRange(const std::string& variableName,
     bool answer = true;
     BaseFileInterface::DataType type;
     answer = getAttribute(variableName,timestep,&type,".bitmapKeys");
-    if(answer == false) return answer;
+    if (answer == false) return answer;
     answer = attribute_id.open(dataset_id.getID(),"actualRange");
-    if(answer == false) return answer;
-    answer = attribute_id.write_type(type,range);               
+    if (answer == false) return answer;
+    answer = attribute_id.write_type(type,range);
     return answer;
 }
 
@@ -1427,7 +1506,7 @@ bool H5_Index::setActualRange(const std::string& variableName,
 int64_t H5_Index::declareVariable(const std::string& variableName,
                                   const std::vector<int64_t > dims,
                                   const BaseFileInterface::DataType type,
-                                  const std::string& sData_center, 
+                                  const std::string& sData_center,
                                   const std::string& sCoordsys,
                                   const std::string& sScheme,
                                   const std::string& sSchema_type){
@@ -1465,7 +1544,7 @@ int64_t H5_Index::declareVariable(const std::string& variableName,
     sprintf(temp_str,"%s",variableName.c_str());
     //create and initialize a new data set in every time step
     variableStepNum++;
-    if(timeStepNum == 0){
+    if (timeStepNum == 0){
         strncpy(temp_str2,"",200);
         sprintf(temp_str2,"/HDF5_UC/TimeStep0");
         create_dataset(dims, temp_str,type,temp_str2,(variableStepNum-1));
@@ -1477,7 +1556,7 @@ int64_t H5_Index::declareVariable(const std::string& variableName,
             create_dataset(dims, temp_str,type,temp_str2,(variableStepNum-1));
         }
     }
-        
+
     return variableNum;
 }
 
@@ -1486,10 +1565,10 @@ void H5_Index::getTimeStepDataMinMax(const std::string& variable_name,
                                      const BaseFileInterface::DataType type,
                                      void *min,
                                      void *max){
-  
+
     std::cout << "WARNING! H5_Index::getTimeStepDataMinMax, this function does not work if DataSetMin/Max Value attributes are not present in the dataset" << std::endl;
 
-    //given a path and data, open the old file and write 
+    //given a path and data, open the old file and write
     //the new data to it
     std::string path = stringPath(variable_name,timestep);
     dataset_id.open(file_id.getID(),path.c_str());
@@ -1499,31 +1578,31 @@ void H5_Index::getTimeStepDataMinMax(const std::string& variable_name,
         attribute_id.open(dataset_id.getID(),"DataSetMinValue");
         attribute_id.read(H5T_NATIVE_FLOAT,min);
         attribute_id.open(dataset_id.getID(),"DataSetMaxValue");
-        attribute_id.read(H5T_NATIVE_FLOAT,max);        
+        attribute_id.read(H5T_NATIVE_FLOAT,max);
         break;
     case H5_Double:
         attribute_id.open(dataset_id.getID(),"DataSetMinValue");
         attribute_id.read(H5T_NATIVE_DOUBLE,min);
         attribute_id.open(dataset_id.getID(),"DataSetMaxValue");
-        attribute_id.read(H5T_NATIVE_DOUBLE,max);       
+        attribute_id.read(H5T_NATIVE_DOUBLE,max);
         break;
     case H5_Int32:
         attribute_id.open(dataset_id.getID(),"DataSetMinValue");
         attribute_id.read(H5T_NATIVE_INT32,min);
         attribute_id.open(dataset_id.getID(),"DataSetMaxValue");
-        attribute_id.read(H5T_NATIVE_INT32,max);        
+        attribute_id.read(H5T_NATIVE_INT32,max);
         break;
     case H5_Int64:
         attribute_id.open(dataset_id.getID(),"DataSetMinValue");
         attribute_id.read(H5T_NATIVE_INT64,min);
         attribute_id.open(dataset_id.getID(),"DataSetMaxValue");
-        attribute_id.read(H5T_NATIVE_INT64,max);        
+        attribute_id.read(H5T_NATIVE_INT64,max);
         break;
     case H5_Byte:
         attribute_id.open(dataset_id.getID(),"DataSetMinValue");
         attribute_id.read(H5T_NATIVE_CHAR,min);
         attribute_id.open(dataset_id.getID(),"DataSetMaxValue");
-        attribute_id.read(H5T_NATIVE_CHAR,max); 
+        attribute_id.read(H5T_NATIVE_CHAR,max);
         break;
     default:
         break;
@@ -1536,7 +1615,7 @@ void H5_Index::insertVariableData(const std::string& variableName,
                                   const BaseFileInterface::DataType type,
                                   const void* min,
                                   const void* max){
-    //given a path and data, open the old file and write 
+    //given a path and data, open the old file and write
     //the new data to it
     std::string path = stringPath(variableName,time);
     dataset_id.open(file_id.getID(),path.c_str());
@@ -1547,65 +1626,65 @@ void H5_Index::insertVariableData(const std::string& variableName,
         data_f = (float *)data;
         dataset_id.write(H5T_NATIVE_FLOAT,data_f);
         //write the min max if we have them
-        if((min != NULL) && (max != NULL)){
+        if ((min != NULL) && (max != NULL)){
             attribute_id.open(dataset_id.getID(),"DataSetMinValue");
             data_f = (float *)min;
             attribute_id.write(H5T_NATIVE_FLOAT,data_f);
             attribute_id.open(dataset_id.getID(),"DataSetMaxValue");
             data_f = (float *)max;
-            attribute_id.write(H5T_NATIVE_FLOAT,data_f);        
+            attribute_id.write(H5T_NATIVE_FLOAT,data_f);
         }
         break;
     case H5_Double:
         double *data_d;
         data_d = (double *)data;
         dataset_id.write(H5T_NATIVE_DOUBLE,data_d);
-        if((min != NULL) && (max != NULL)){
+        if ((min != NULL) && (max != NULL)){
             attribute_id.open(dataset_id.getID(),"DataSetMinValue");
             data_d = (double *)min;
             attribute_id.write(H5T_NATIVE_DOUBLE,data_d);
             attribute_id.open(dataset_id.getID(),"DataSetMaxValue");
             data_d = (double *)max;
-            attribute_id.write(H5T_NATIVE_DOUBLE,data_d);       
+            attribute_id.write(H5T_NATIVE_DOUBLE,data_d);
         }
         break;
     case H5_Int32:
         int32_t *data_i;
         data_i = (int32_t *)data;
         dataset_id.write(H5T_NATIVE_INT32,data_i);
-        if((min != NULL) && (max != NULL)){
+        if ((min != NULL) && (max != NULL)){
             attribute_id.open(dataset_id.getID(),"DataSetMinValue");
             data_i = (int32_t *)min;
             attribute_id.write(H5T_NATIVE_INT32,data_i);
             attribute_id.open(dataset_id.getID(),"DataSetMaxValue");
             data_i = (int32_t *)max;
-            attribute_id.write(H5T_NATIVE_INT32,data_i);        
+            attribute_id.write(H5T_NATIVE_INT32,data_i);
         }
         break;
     case H5_Int64:
         int64_t *data_l;
         data_l = (int64_t *)data;
         dataset_id.write(H5T_NATIVE_INT64,data_l);
-        if((min != NULL) && (max != NULL)){
+        if ((min != NULL) && (max != NULL)){
             attribute_id.open(dataset_id.getID(),"DataSetMinValue");
             data_l = (int64_t *)min;
             attribute_id.write(H5T_NATIVE_INT64,data_l);
             attribute_id.open(dataset_id.getID(),"DataSetMaxValue");
             data_l = (int64_t *)max;
-            attribute_id.write(H5T_NATIVE_INT64,data_l);        
+            attribute_id.write(H5T_NATIVE_INT64,data_l);
         }
         break;
     case H5_Byte:
         char *data_b;
         data_b = (char *)data;
-        dataset_id.write(H5T_NATIVE_CHAR,data_b);       
-        if((min != NULL) && (max != NULL)){
+        dataset_id.write(H5T_NATIVE_CHAR,data_b);
+        if ((min != NULL) && (max != NULL)){
             attribute_id.open(dataset_id.getID(),"DataSetMinValue");
             data_b = (char *)min;
             attribute_id.write(H5T_NATIVE_CHAR,data_b);
             attribute_id.open(dataset_id.getID(),"DataSetMaxValue");
             data_b = (char *)max;
-            attribute_id.write(H5T_NATIVE_CHAR,data_b); 
+            attribute_id.write(H5T_NATIVE_CHAR,data_b);
         }
         break;
     default:
@@ -1613,7 +1692,7 @@ void H5_Index::insertVariableData(const std::string& variableName,
     }
 }
 
-//function returns false if an identicle time value 
+//function returns false if an identicle time value
 //is found at a previous time step
 bool H5_Index::queryTimeValue(double timeValue){
     bool answer = true;
@@ -1625,7 +1704,7 @@ bool H5_Index::queryTimeValue(double timeValue){
         group_id.open(file_id.getID(),path);
         attribute_id.open(group_id.getID(),"TimeValue");
         attribute_id.read(H5T_NATIVE_DOUBLE,&x);
-        if(timeValue == x){
+        if (timeValue == x){
             i=timeStepNum;
             answer = false;
         }
@@ -1639,11 +1718,11 @@ void H5_Index::insertStep(double timeValue){
     char temp_str[200];
 
     //first verify the value is NOT a duplicate
-    if(queryTimeValue(timeValue)){
+    if (queryTimeValue(timeValue)){
 
         strncpy(temp_str,"",200);
         sprintf(temp_str,"/HDF5_UC/TimeStep%d",(int)timeStepNum);
-        
+
         //update the appropriate /Time attributes
         timeStepNum++;
 
@@ -1653,8 +1732,8 @@ void H5_Index::insertStep(double timeValue){
         group_id.open(file_id.getID(),"/HDF5_UC/TOC");
         attribute_id.open(group_id.getID(),"GroupCount");
         attribute_id.read(H5T_NATIVE_INT64,&variableNum);
-                
-        if(timeStepNum == 1){
+
+        if (timeStepNum == 1){
             //first create the new time step
             group_id.open(file_id.getID(),temp_str);
             min_max_time[0] = min_max_time[1] = timeValue;
@@ -1664,7 +1743,7 @@ void H5_Index::insertStep(double timeValue){
         else{
             //first create the new time step
             group_id.create(file_id.getID(),temp_str);
-            if(min_max_time[0] > timeValue){
+            if (min_max_time[0] > timeValue){
                 min_max_time[0] = timeValue;
             }
             else if (min_max_time[1] < timeValue){
@@ -1673,8 +1752,8 @@ void H5_Index::insertStep(double timeValue){
             //calls to write the values to the new group
             create_double_attribute(timeValue,"TimeValue");
         }
-                
-        
+
+
         //save the new value to the list of all time values
         double *timevalues2;
         timevalues2 = new double [timeStepNum];
@@ -1688,7 +1767,7 @@ void H5_Index::insertStep(double timeValue){
             timevalues[i] = timevalues2[i];
         }
         delete []timevalues2;
-        
+
         //Now create new datasets under this new time step group
         //by using the /Time/Step0 information
         std::vector<int64_t> dims;
@@ -1696,7 +1775,7 @@ void H5_Index::insertStep(double timeValue){
         BaseFileInterface::DataType type;
         char temp_str2[200];
         group_id.open(file_id.getID(),"/HDF5_UC/TOC");
-        if(timeStepNum > 1){
+        if (timeStepNum > 1){
             for(int64_t i=0;i<variableNum;i++){
                 //start by getting the name of the dataset
                 strncpy(temp_str,"",200);
@@ -1722,7 +1801,7 @@ void H5_Index::insertStep(double timeValue){
 }
 void H5_Index::QSort(int64_t p,int64_t r){
     int64_t q;
-    if(p < r){
+    if (p < r){
         q = Partition(p,r);
         QSort(p,q-1);
         QSort(q+1,r);
@@ -1735,18 +1814,18 @@ int64_t H5_Index::Partition(int64_t p,int64_t r){
     x = timevalues[r];
     i = p-1;
     for(int64_t j=p;j<=r-1;j++){
-        if(timevalues[j] <= x){
+        if (timevalues[j] <= x){
             i = i+1;
             double temp_int = timevalues[i];
             timevalues[i] = timevalues[j];
             timevalues[j] = temp_int;
-            if(i != j)flipGroup(i,j);
+            if (i != j)flipGroup(i,j);
         }
     }
     double temp_int = timevalues[i+1];
     timevalues[i+1] = timevalues[r];
     timevalues[r] = temp_int;
-    if((i+1) != r)flipGroup(i+1,r);
+    if ((i+1) != r)flipGroup(i+1,r);
     return i+1;
 }
 
@@ -1783,21 +1862,21 @@ std::string H5_Index::stringPath(const std::string& s1,int64_t time){
     strncpy(temp,"",250);
     sprintf(temp,"%d",(int)time);
     std::string ret;
-    if (useH5Part) 
+    if (useH5Part)
         ret = "/Step#";
     else
         ret = "HDF5_UC/TimeStep";
     ret += temp;
     ret += "/" + s1;
     return ret;
-}       
+}
 
 std::string H5_Index::stringPathIdx(const std::string& s1,int64_t time){
     char temp[250];
     strncpy(temp,"",250);
     sprintf(temp,"%d",(int)time);
     std::string ret;
-    if (useH5Part) 
+    if (useH5Part)
         ret = "__H5PartIndex__/Step#";
     else
         ret = "HDF5_UC/TimeStep";
@@ -1805,6 +1884,6 @@ std::string H5_Index::stringPathIdx(const std::string& s1,int64_t time){
     ret += "/" + s1;
     ret += ".bitmap";
     return ret;
-}       
+}
 
 #endif
