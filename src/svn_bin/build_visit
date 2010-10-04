@@ -954,6 +954,9 @@
 #     built. Even though both are used in H5Part, FastBit can be built
 #     independently from HDF5.
 #
+#     Gunther H. Weber, Mon Oct  4 11:32:31 PDT 2010
+#     Cleaned-up build_boxlib after trnasition to new current boxlib version.
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1335,10 +1338,10 @@ export EXODUS_VERSION=${EXODUS_VERSION:-"4.46"}
 export EXODUS_COMPATIBILITY_VERSION=${EXODUS_COMPATIBILITY_VERSION:-"4.0"}
 export EXODUS_BUILD_DIR=${EXODUS_BUILD_DIR:-"exodusii-4.46"}
 
-export BOXLIB_FILE=${BOXLIB_FILE:-"boxlib.tar.gz"}
-export BOXLIB_VERSION=${BOXLIB_VERSION:-"2.5"}
-export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"2.0"}
-export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"CCSEApps/BoxLib"}
+export BOXLIB_VERSION=${BOXLIB_VERSION:-"2010.10.01"}
+export BOXLIB_FILE=${BOXLIB_FILE:-"BoxLib-${BOXLIB_VERSION}.tar.gz"}
+export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"2010.10.01"}
+export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"BoxLib-${BOXLIB_VERSION}/BoxLib"}
 
 export CFITSIO_FILE=${CFITSIO_FILE:-"cfitsio3006.tar.gz"}
 export CFITSIO_VERSION=${CFITSIO_VERSION:-"3006"}
@@ -6278,569 +6281,9 @@ function build_exodus
     return 0
 }
 
-
 # *************************************************************************** #
 #                         Function 8.8, build_boxlib                          #
 # *************************************************************************** #
-
-function apply_boxlib_25_aix_patch
-{
-   patch -p0 << \EOF
-diff -c a/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** a/BoxLib/GNUmakefile
---- CCSEApps/BoxLib/GNUmakefile
-***************
-*** 7,16 ****
-  TOP = $(PBOXLIB_HOME)
-  
-  PRECISION = DOUBLE
-! DEBUG     = TRUE
-  DIM       = 3
-! COMP      = KCC
-! USE_MPI   = TRUE
-  #NAMESPACE = TRUE
-  NAMESPACE = FALSE
-  
---- 7,16 ----
-  TOP = $(PBOXLIB_HOME)
-  
-  PRECISION = DOUBLE
-! DEBUG     = FALSE
-  DIM       = 3
-! COMP      = xlC
-! USE_MPI   = FALSE
-  #NAMESPACE = TRUE
-  NAMESPACE = FALSE
-  
-EOF
-
-   if [[ $? != 0 ]] ; then
-       warn "Unable to patch Boxlib 3D. Wrong version?"
-       return 1
-   fi
-
-   return 0
-}
-
-function apply_boxlib_25_gcc_patch
-{
-    patch -p0 << \EOF
-diff -c a/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** a/BoxLib/GNUmakefile
---- CCSEApps/BoxLib/GNUmakefile
-*************** PBOXLIB_HOME = ..
-*** 7,16 ****
-  TOP = $(PBOXLIB_HOME)
-
-  PRECISION = DOUBLE
-! DEBUG     = TRUE
-  DIM       = 3
-! COMP      = KCC
-! USE_MPI   = TRUE
-  #NAMESPACE = TRUE
-  NAMESPACE = FALSE
-
---- 7,16 ----
-  TOP = $(PBOXLIB_HOME)
-
-  PRECISION = DOUBLE
-! DEBUG     = FALSE
-  DIM       = 3
-! COMP      = 
-! USE_MPI   = FALSE
-  #NAMESPACE = TRUE
-  NAMESPACE = FALSE
-
-EOF
-   if [[ $? != 0 ]] ; then
-       warn "Unable to patch Boxlib 3D. Wrong version?"
-       return 1
-   fi
-
-   return 0
-}
-
-function apply_boxlib_25_darwin_patch
-{
-   patch -p0 << \EOF
-diff -rp a/BoxLib/BaseFab.cpp CCSEApps/BoxLib/BaseFab.cpp
-*** a/BoxLib/BaseFab.cpp
---- CCSEApps/BoxLib/BaseFab.cpp
-***************
-*** 28,34 ****
-  #include <BArena.H>
-  #include <CArena.H>
-  #include <Thread.H>
-! #include <SPECIALIZE_F.H>
-  
-  int BoxLib::BF_init::m_cnt = 0;
-  
---- 28,34 ----
-  #include <BArena.H>
-  #include <CArena.H>
-  #include <Thread.H>
-! //#include <SPECIALIZE_F.H>
-  
-  int BoxLib::BF_init::m_cnt = 0;
-  
-*************** BaseFab<Real>::performCopy (const BaseFa
-*** 98,105 ****
-  
-      BL_PROFILE("template<> BaseFab<Real>::performCopy()");
-  
-!     if (destbox == domain && srcbox == src.box())
-!     {
-          Real*       data_dst = dataPtr(destcomp);
-          const Real* data_src = src.dataPtr(srccomp);
-  
---- 98,105 ----
-  
-      BL_PROFILE("template<> BaseFab<Real>::performCopy()");
-  
-! //    if (destbox == domain && srcbox == src.box())
-! //    {
-          Real*       data_dst = dataPtr(destcomp);
-          const Real* data_src = src.dataPtr(srccomp);
-  
-*************** BaseFab<Real>::performCopy (const BaseFa
-*** 107,138 ****
-          {
-              *data_dst++ = *data_src++;
-          }
-!     }
-!     else
-!     {
-!         const int* destboxlo  = destbox.loVect();
-!         const int* destboxhi  = destbox.hiVect();
-!         const int* _th_plo    = loVect();
-!         const int* _th_phi    = hiVect();
-!         const int* _x_lo      = srcbox.loVect();
-!         const int* _x_hi      = srcbox.hiVect(); 
-!         const int* _x_plo     = src.loVect();
-!         const int* _x_phi     = src.hiVect();
-!         Real*       _th_p     = dataPtr(destcomp);
-!         const Real* _x_p      = src.dataPtr(srccomp);
-! 
-!         FORT_FASTCOPY(_th_p,
-!                       ARLIM(_th_plo),
-!                       ARLIM(_th_phi),
-!                       D_DECL(destboxlo[0],destboxlo[1],destboxlo[2]),
-!                       D_DECL(destboxhi[0],destboxhi[1],destboxhi[2]),
-!                       _x_p,
-!                       ARLIM(_x_plo),
-!                       ARLIM(_x_phi),
-!                       D_DECL(_x_lo[0],_x_lo[1],_x_lo[2]),
-!                       D_DECL(_x_hi[0],_x_hi[1],_x_hi[2]),
-!                       numcomp);
-!     }
-  }
-  
-  template<>
---- 107,138 ----
-          {
-              *data_dst++ = *data_src++;
-          }
-! //    }
-! //    else
-! //    {
-! //        const int* destboxlo  = destbox.loVect();
-! //        const int* destboxhi  = destbox.hiVect();
-! //        const int* _th_plo    = loVect();
-! //        const int* _th_phi    = hiVect();
-! //        const int* _x_lo      = srcbox.loVect();
-! //        const int* _x_hi      = srcbox.hiVect(); 
-! //        const int* _x_plo     = src.loVect();
-! //        const int* _x_phi     = src.hiVect();
-! //        Real*       _th_p     = dataPtr(destcomp);
-! //        const Real* _x_p      = src.dataPtr(srccomp);
-! //
-! //        FORT_FASTCOPY(_th_p,
-! //                      ARLIM(_th_plo),
-! //                      ARLIM(_th_phi),
-! //                      D_DECL(destboxlo[0],destboxlo[1],destboxlo[2]),
-! //                      D_DECL(destboxhi[0],destboxhi[1],destboxhi[2]),
-! //                      _x_p,
-! //                      ARLIM(_x_plo),
-! //                      ARLIM(_x_phi),
-! //                      D_DECL(_x_lo[0],_x_lo[1],_x_lo[2]),
-! //                      D_DECL(_x_hi[0],_x_hi[1],_x_hi[2]),
-! //                      numcomp);
-! //    }
-  }
-  
-  template<>
-*************** BaseFab<Real>::performSetVal (Real      
-*** 145,175 ****
-      BL_ASSERT(domain.contains(bx));
-      BL_ASSERT(ns >= 0 && ns + num <= nvar);
-  
-!     if (bx == domain)
-!     {
-          Real* data = &dptr[ns*numpts];
-  
-          for (long i = 0, N = num*numpts; i < N; i++)
-          {
-              *data++ = val;
-          }
-!     }
-!     else
-!     {
-!         const int* _box_lo = bx.loVect();            
-!         const int* _box_hi = bx.hiVect();            
-!         const int* _th_plo = loVect();                           
-!         const int* _th_phi = hiVect();
-! 
-!         Real* _th_p = dataPtr(ns);
-! 
-!         FORT_FASTSETVAL(&val,
-!                         _box_lo,
-!                         _box_hi,
-!                         _th_p,
-!                         ARLIM(_th_plo),
-!                         ARLIM(_th_phi),
-!                         num);
-!     }
-  }
-  #endif
---- 145,175 ----
-      BL_ASSERT(domain.contains(bx));
-      BL_ASSERT(ns >= 0 && ns + num <= nvar);
-  
-! //    if (bx == domain)
-! //    {
-          Real* data = &dptr[ns*numpts];
-  
-          for (long i = 0, N = num*numpts; i < N; i++)
-          {
-              *data++ = val;
-          }
-! //    }
-! //    else
-! //    {
-! //        const int* _box_lo = bx.loVect();            
-! //        const int* _box_hi = bx.hiVect();            
-! //        const int* _th_plo = loVect();                           
-! //        const int* _th_phi = hiVect();
-! 
-! //        Real* _th_p = dataPtr(ns);
-! 
-! //        FORT_FASTSETVAL(&val,
-! //                        _box_lo,
-! //                        _box_hi,
-! //                        _th_p,
-! //                        ARLIM(_th_plo),
-! //                        ARLIM(_th_phi),
-! //                        num);
-! //    }
-  }
-  #endif
-diff -c a/BoxLib/FPC.cpp CCSEApps/BoxLib/FPC.cpp
-*** a/BoxLib/FPC.cpp
---- CCSEApps/BoxLib/FPC.cpp
-*************** FPC::NativeLongDescriptor ()
-*** 64,70 ****
-  #endif
-  
-  #if defined(__sgi) || \
-!     defined(__sun) || \
-      defined(_AIX)  || \
-      defined(_CRAYT3E)  || \
-      defined(__hpux)
---- 64,70 ----
-  #endif
-  
-  #if defined(__sgi) || \
-!     defined(__sun) || defined(__ppc__) || defined(__ppc64__) || \
-      defined(_AIX)  || \
-      defined(_CRAYT3E)  || \
-      defined(__hpux)
-*************** FPC::NativeRealDescriptor ()
-*** 91,97 ****
-  #endif
-  
-  #if defined(__sgi) || \
-!     defined(__sun) || \
-      defined(_AIX)  || \
-      defined(_CRAYT3E)  || \
-      defined(__hpux)
---- 91,97 ----
-  #endif
-  
-  #if defined(__sgi) || \
-!     defined(__sun) || defined(__ppc__) || defined(__ppc64__) || \
-      defined(_AIX)  || \
-      defined(_CRAYT3E)  || \
-      defined(__hpux)
-*************** FPC::Ieee64NormalRealDescriptor ()
-*** 137,143 ****
-        defined(_CRAY1)     || \
-        defined(_CRAYT3E)   || \
-        defined(__sgi)      || \
-!       defined(__sun)      || \
-        defined(__i486__)   || \
-        defined(i386)       || \
-        defined(__i386__)   || \
---- 137,143 ----
-        defined(_CRAY1)     || \
-        defined(_CRAYT3E)   || \
-        defined(__sgi)      || \
-!       defined(__sun)      || defined(__ppc__) || defined(__ppc64__) || \
-        defined(__i486__)   || \
-        defined(i386)       || \
-        defined(__i386__)   || \
-diff -c a/BoxLib/Make.package CCSEApps/BoxLib/Make.package
-*** a/BoxLib/Make.package
---- CCSEApps/BoxLib/Make.package
-*************** T_headers += ccse-mpi.H
-*** 91,99 ****
-  # Fortran interface routines.
-  #
-  
-! f$(BOXLIB_BASE)_sources += BLutil_F.f
-! f$(BOXLIB_BASE)_sources += BLParmParse_F.f
-! f$(BOXLIB_BASE)_sources += BLBoxLib_F.f
-  
-! F$(BOXLIB_BASE)_sources += SPECIALIZE_$(DIM)D.F
-! F$(BOXLIB_BASE)_headers += SPECIALIZE_F.H
---- 91,99 ----
-  # Fortran interface routines.
-  #
-  
-! #f$(BOXLIB_BASE)_sources += BLutil_F.f
-! #f$(BOXLIB_BASE)_sources += BLParmParse_F.f
-! #f$(BOXLIB_BASE)_sources += BLBoxLib_F.f
-  
-! #F$(BOXLIB_BASE)_sources += SPECIALIZE_$(DIM)D.F
-! #F$(BOXLIB_BASE)_headers += SPECIALIZE_F.H
-EOF
-    if [[ $? != 0 ]] ; then
-       warn "Unable to patch Boxlib 3D. Wrong version?"
-       return 1
-    fi
-
-    return 0
-}
-
-# Modifies the makefile to use `gfortran' instead of `g77'.
-function apply_boxlib_25_gfortran_patch
-{
-
-    patch -u -p0 << \EOF
---- CCSEApps/mk/Make.Linux	2003-02-05 09:33:24.000000000 -0700
-+++ CCSEApps/mk/Make.Linux.gfortran	2008-10-06 16:47:30.000000000 -0600
-@@ -51,7 +51,7 @@
-   fOPTF += $(INTEL_EXTRA_OPT_FLAGS)
- else
- ifeq ($(FCOMP),f77)
--  FC       := g77 -fno-second-underscore
-+  FC       := gfortran -fno-second-underscore
-   fC       := $(FC)
-   # default g77/f77 version
-   FOPTF += -O
-EOF
-}
-
-# Modifies the makefile to include `-fPIC' int he compiler flags.
-function apply_boxlib_25_fPIC_patch
-{
-    patch -u -p0 << \EOF
---- CCSEApps/mk/Make.Linux	2003-02-05 09:33:24.000000000 -0700
-+++ CCSEApps/mk/Make.Linux.fPIC	2008-10-06 16:46:16.000000000 -0600
-@@ -54,10 +54,10 @@
-   FC       := g77 -fno-second-underscore
-   fC       := $(FC)
-   # default g77/f77 version
--  FOPTF += -O
--  fOPTF += -O
--  FDEBF += -g
--  fDEBF += -g
-+  FOPTF += -O -fPIC
-+  fOPTF += -O -fPIC
-+  FDEBF += -g -fPIC
-+  fDEBF += -g -fPIC
-   #DEFINES += -DBL_FORT_USE_UNDERSCORE
-   #override XTRALIBS +=  -lf2c
- # LIBRARY_LOCATIONS += /usr/lib/gcc-lib/i386-redhat-linux/2.96
-EOF
-}
-
-# Adds some defines so that boxlib builds properly on linux-ppc64
-function apply_boxlib_25_ppc_patch
-{
-    patch -u -p1 << \EOF
---- visit-build-old/CCSEApps/BoxLib/FPC.cpp	2006-01-11 14:13:06.000000000 -0500
-+++ visit-build/CCSEApps/BoxLib/FPC.cpp	2009-02-19 18:41:26.616492453 -0500
-@@ -64,7 +64,7 @@
- #endif
- 
- #if defined(__sgi) || \
--    defined(__sun) || \
-+    defined(__sun) || defined powerpc || defined __powerpc || defined ppc || defined __ppc || \
-     defined(_AIX)  || \
-     defined(_CRAYT3E)  || \
-     defined(__hpux)
-@@ -91,7 +91,7 @@
- #endif
- 
- #if defined(__sgi) || \
--    defined(__sun) || \
-+    defined(__sun) || defined powerpc || defined __powerpc || defined ppc || defined __ppc || \
-     defined(_AIX)  || \
-     defined(_CRAYT3E)  || \
-     defined(__hpux)
-@@ -137,7 +137,7 @@
-       defined(_CRAY1)     || \
-       defined(_CRAYT3E)   || \
-       defined(__sgi)      || \
--      defined(__sun)      || \
-+      defined(__sun)      || defined powerpc || defined __powerpc || defined ppc || defined __ppc || \
-       defined(__i486__)   || \
-       defined(i386)       || \
-       defined(__i386__)   || \
-EOF
-}
-
-# Modifies the VisMF.cpp to use more const.
-function apply_boxlib_25_const_patch
-{
-    patch -u -p0 << \EOF
---- CCSEApps/BoxLib/VisMF.cpp	2010-02-10 22:49:11.728859467 -0800
-+++ CCSEApps/BoxLib/VisMF.cpp.const	2010-02-10 22:48:52.828860805 -0800
-@@ -343,7 +343,7 @@
- {
-     BL_ASSERT(filename[filename.length() - 1] != '/');
- 
--    if (char* slash = strrchr(filename.c_str(), '/'))
-+    if (const char* slash = strrchr(filename.c_str(), '/'))
-     {
-         //
-         // Got at least one slash -- give'm the following tail.
-@@ -368,7 +368,7 @@
- 
-     const char* str = filename.c_str();    
- 
--    if (char* slash = strrchr(str, '/'))
-+    if (const char* slash = strrchr(str, '/'))
-     {
-         //
-         // Got at least one slash -- give'm the dirname including last slash.
-EOF
-}
-
-function apply_boxlib_25_patch
-{
-   # We start by fixing the Makefiles ... one way for AIX, one way for GCC
-   if [[ "$OPSYS" == "AIX" ]]; then
-       apply_boxlib_25_aix_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   else
-       apply_boxlib_25_gcc_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-       apply_boxlib_25_fPIC_patch
-       # Do we need to use gfortran instead of g77?
-       if test -z `which g77`; then
-           warn "g77 not found; patching BoxLib for gfortran compile."
-           apply_boxlib_25_gfortran_patch
-       fi
-   fi
-
-   # Fix some const
-   apply_boxlib_25_const_patch
-
-   # Now make the OPSYS specific changes
-   if [[ "$OPSYS" == "Darwin" ]]; then
-       apply_boxlib_25_darwin_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   elif test `uname -m` = "ppc64" ; then
-       apply_boxlib_25_ppc_patch
-   fi
-
-   return 0
-}
-
-function apply_boxlib_patch
-{
-   if [[ ${BOXLIB_VERSION} == 2.5 ]] ; then
-       apply_boxlib_25_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
-
-   return 0
-}
-
-function change_boxlib_dim_using_patches
-{
-    #
-    # Apply patches
-    #
-    if [[ ${BOXLIB_VERSION} == 2.5 ]] ; then
-       info "Changing the Boxlib dimension from 3 to 2! Going to $START_DIR"
-       cd $START_DIR || error "Can't cd to ${START_DIR}"
-       if [[ "$OPSYS" == "AIX" ]]; then
-          info "PATCHING AIX"
-          patch -p0 << \EOF
-diff -c a/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** a/BoxLib/GNUmakefile
---- CCSEApps/BoxLib/GNUmakefile
-*************** TOP = $(PBOXLIB_HOME)
-*** 8,14 ****
-  
-  PRECISION = DOUBLE
-  DEBUG     = FALSE
-! DIM       = 3
-  COMP      = xlC
-  USE_MPI   = FALSE
-  #NAMESPACE = TRUE
---- 8,14 ----
-  
-  PRECISION = DOUBLE
-  DEBUG     = FALSE
-! DIM       = 2
-  COMP      = xlC
-  USE_MPI   = FALSE
-  #NAMESPACE = TRUE
-EOF
-       else
-          info "PATCHING GCC"
-          patch -p0 << \EOF
-diff -c a/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** a/BoxLib/GNUmakefile
---- CCSEApps/BoxLib/GNUmakefile
-*************** TOP = $(PBOXLIB_HOME)
-*** 8,14 ****
-  
-  PRECISION = DOUBLE
-  DEBUG     = FALSE
-! DIM       = 3
-  COMP      = 
-  USE_MPI   = FALSE
-  #NAMESPACE = TRUE
---- 8,14 ----
-  
-  PRECISION = DOUBLE
-  DEBUG     = FALSE
-! DIM       = 2
-  COMP      = 
-  USE_MPI   = FALSE
-  #NAMESPACE = TRUE
-EOF
-       fi
-       if [[ $? != 0 ]] ; then
-           warn "Unable to patch Boxlib 2D. Wrong version?"
-           return 1
-       fi
-    fi
-
-    return 0
-}
 
 function build_boxlib
 {
@@ -6854,151 +6297,94 @@ function build_boxlib
        return 1
     fi
 
-    #
-    # Apply patches
-    #
-    info "Patching Boxlib . . ."
-    apply_boxlib_patch
-    if [[ $? != 0 ]] ; then
-       if [[ $untarred_boxlib == 1 ]] ; then
-          warn "Giving up on Boxlib build because the patch failed."
-          return 1
-       else
-          warn "Patch failed, but continuing.  I believe that this script\n" \
-               "tried to apply a patch to an existing directory which had\n" \
-               "already been patched ... that is, that the patch is\n" \
-               "failing harmlessly on a second application." 
-       fi
-    fi
-
     cd $BOXLIB_BUILD_DIR || error "Can't cd to BoxLib build dir."
-    #
-    # Build Boxlib 3D
-    #
-    info "Building Boxlib 3D. . . (~2 minutes)"
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
-       cp ../mk/Make.FreeBSD ../mk/Make.Darwin
-    fi
-    $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CCFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS"
-    if [[ $? != 0 ]] ; then
-       warn "Boxlib build failed.  Giving up"
-       return 1
-    fi
     #
-    # Install into the VisIt third party location.
+    # Build BoxLib
     #
-    info "Installing Boxlib 3D. . ."
+    info "Building Boxlib. . . (~4 minutes)"
 
-    mkdir "$VISITDIR/boxlib"
-    mkdir "$VISITDIR/boxlib/$VISITARCH"
-    mkdir "$VISITDIR/boxlib/$VISITARCH/include"
-    mkdir "$VISITDIR/boxlib/$VISITARCH/lib"
-    mkdir "$VISITDIR/boxlib/$VISITARCH/include/2D"
-    mkdir "$VISITDIR/boxlib/$VISITARCH/include/3D"
+    if [[ "$OPSYS" == "AIX" ]]; then
+        $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+           CCFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+           DEBUG="FALSE" DIM=3 COMP="xlC" USE_MPI="FALSE" \
+           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+
+        $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+           CCFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+           DEBUG="FALSE" DIM=2 COMP="xlC" USE_MPI="FALSE" \
+           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+    else
+        $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+           CCFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+           DEBUG="FALSE" DIM=3 USE_MPI="FALSE" \
+           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+
+        $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+           CCFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+           DEBUG="FALSE" DIM=2 USE_MPI="FALSE" \
+           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+    fi
+ 
+    #
+    # Create dynamic library for Darwin
+    #
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/boxlib/$VISITARCH/lib"
+           INSTALLNAMEPATH="$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib"
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
-        mkdir tmp
-        cd tmp
-        ar x ../libbox3d.Darwin.CC.f77.a
-        $CXX_COMPILER -dynamiclib -o libbox3D.$SO_EXT *.o \
+        $CXX_COMPILER -dynamiclib -o libbox3D.$SO_EXT o/3d.Darwin.*/*.o \
           -lSystem -Wl,-headerpad_max_install_names \
           -Wl,-install_name,$INSTALLNAMEPATH/libbox3D.$SO_EXT \
           -Wl,-compatibility_version,$BOXLIB_COMPATIBILITY_VERSION \
-          -Wl,-current_version,$BOXLIB_VERSION
-        if [[ $? != 0 ]] ; then
-          warn "Creation of dynamic 3D Boxlib library failed.  Giving up"
-          return 1
-        fi
-        cp libbox3D.$SO_EXT "$VISITDIR/boxlib/$VISITARCH/lib/"
-        rm *.o
-        cd ..
-        tar cf Boxlib3D.h.tar *.H
-    else
-       cp libbox3d*.a \
-       "$VISITDIR/boxlib/$VISITARCH/lib/libbox3D.a"
-       $TAR cf Boxlib3D.h.tar *.H
-       if [[ $? != 0 ]] ; then
-          warn "Boxlib install failed.  Giving up"
-          return 1
-       fi
-    fi
-    $MAKE clean
-
-    change_boxlib_dim_using_patches
-
-    cd $BOXLIB_BUILD_DIR || error "Can't cd to BoxLib build dir."
-    #
-    # Build Boxlib 2D
-    #
-    info "Building Boxlib 2D. . . (~2 minutes)"
-
-    if [[ "$OPSYS" == "Darwin" ]]; then
-       cp ../mk/Make.FreeBSD ../mk/Make.Darwin
-    fi
-    $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CCFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" 
-    if [[ $? != 0 ]] ; then
-       warn "Boxlib build failed.  Giving up"
-       return 1
-    fi
-    info "Installing Boxlib 2D. . ." 
-
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
-        if [[ $ABS_PATH == "yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/boxlib/$VISITARCH/lib"
-        else
-           INSTALLNAMEPATH="@executable_path/../lib"
-        fi
-        cd tmp
-        ar x ../libbox2d.Darwin.CC.f77.a
-        $CXX_COMPILER -dynamiclib -o libbox2D.$SO_EXT *.o \
+          -Wl,-current_version,$BOXLIB_VERSION || \
+          error "Creation of dynamic 3D Boxlib library failed. Giving up!"
+        $CXX_COMPILER -dynamiclib -o libbox2D.$SO_EXT o/2d.Darwin.*/*.o \
           -lSystem -Wl,-headerpad_max_install_names \
           -Wl,-install_name,$INSTALLNAMEPATH/libbox2D.$SO_EXT \
           -Wl,-compatibility_version,$BOXLIB_COMPATIBILITY_VERSION \
-          -Wl,-current_version,$BOXLIB_VERSION
-        if [[ $? != 0 ]] ; then
-          warn "Creation of dynamic 2D Boxlib library failed.  Giving up"
-          return 1
-        fi
-        cp libbox2D.$SO_EXT "$VISITDIR/boxlib/$VISITARCH/lib/"
-        rm *.o
-        cd ..
-        rmdir tmp
-        $TAR cf Boxlib2D.h.tar *.H
+          -Wl,-current_version,$BOXLIB_VERSION || \
+          error "Creation of dynamic 2D Boxlib library failed. Giving up!"
+        boxlib_ext=$SO_EXT
     else
-        cp libbox2d*.a \
-        "$VISITDIR/boxlib/$VISITARCH/lib/libbox2D.a"
-        $TAR cf Boxlib2D.h.tar *.H
-        if [[ $? != 0 ]] ; then
-          warn "Boxlib install failed.  Giving up"
-          return 1
-        fi
+        mv libbox3d.*.a libbox3D.a
+        mv libbox2d.*.a libbox2D.a
+        boxlib_ext=a
     fi
 
-    info "Installing Boxlib includes. . ."
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing Boxlib . . ."
 
-    cp Boxlib2D.h.tar "$VISITDIR/boxlib/$VISITARCH/include/2D"
-    cp Boxlib3D.h.tar "$VISITDIR/boxlib/$VISITARCH/include/3D"
-    cd "$VISITDIR/boxlib/$VISITARCH/include/2D"
-    tar xf Boxlib2D.h.tar
-    cd "$VISITDIR/boxlib/$VISITARCH/include/3D"
-    tar xf Boxlib3D.h.tar
+    mkdir "$VISITDIR/boxlib"
+    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION"
+    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH"
+    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include"
+    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib"
+
+    cp libbox3D.$boxlib_ext \
+       "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/" || \
+       error "Boxlib install failed. Giving up!"
+
+    cp libbox2D.$boxlib_ext \
+       "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/" || \
+       error "Boxlib install failed. Giving up!"
+
+    cp *.H "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include" || \
+       error "Boxlib install failed. Giving up!"
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/boxlib"
        chgrp -R ${GROUP} "$VISITDIR/boxlib"
     fi
+
     cd "$START_DIR"
-    info "Done with Boxlib"
+    info "Done with BoxLib"
     return 0
 }
-
 
 # *************************************************************************** #
 #                         Function 8.9, build_cfitsio                         #
@@ -8353,10 +7739,10 @@ function build_hostconf
         echo "## Boxlib" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_BOXLIB2D_DIR \${VISITHOME}/boxlib/\${VISITARCH})" \
+        "VISIT_OPTION_DEFAULT(VISIT_BOXLIB2D_DIR \${VISITHOME}/boxlib/$BOXLIB_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_BOXLIB3D_DIR \${VISITHOME}/boxlib/\${VISITARCH})" \
+        "VISIT_OPTION_DEFAULT(VISIT_BOXLIB3D_DIR \${VISITHOME}/boxlib/$BOXLIB_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
     fi
 
@@ -10020,7 +9406,7 @@ fi
 
 cd "$START_DIR"
 if [[ "$DO_BOXLIB" == "yes" ]] ; then
-    check_if_installed "boxlib"
+    check_if_installed "boxlib" $BOXLIB_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping Boxlib build.  Boxlib is already installed."
     else
