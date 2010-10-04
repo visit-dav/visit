@@ -113,6 +113,9 @@ exec perl -x $0 ${1+"$@"};
 #    Add trick to remove trailing slashes for machines with defective
 #    dirname programs.
 #
+#    Gunther H. Weber, Mon Oct  4 14:49:52 PDT 2010
+#    If running as MacOS app bundle change directory to user's home direcotry.
+#
 ###############################################################################
 
 
@@ -459,11 +462,20 @@ $ENV{VISITPROGRAM} = $progname;
 $ENV{VISITDIR}     = $visitdir;
 
 # -----------------------------------------------------------------------------
+#     If launched from an MacOS app bundle, change directory to users home
+# -----------------------------------------------------------------------------
+# Otherwise all file dialogs in the gui default to a location inside the
+# appbundle, which is confusing to users.
+if ($ENV{VISIT_STARTED_FROM_APPBUNDLE} eq "TRUE")
+{
+    chdir($ENV{HOME});
+}
+
+# -----------------------------------------------------------------------------
 #                       Run the internal launcher!
 # -----------------------------------------------------------------------------
 @visitcmd = ("${visitdir}/bin/internallauncher", @visitargs);
 exec @visitcmd or die "Can't execute visit launcher script: $!\n";
-
 
 # -----------------------------------------------------------------------------
 #                          Helper functions
