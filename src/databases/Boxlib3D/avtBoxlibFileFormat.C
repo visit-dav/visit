@@ -1160,6 +1160,9 @@ avtBoxlibFileFormat::GetDimensions(int *dims, double *lo, double *hi,
 //    Hank Childs, Wed Jul  7 16:15:36 PDT 2004
 //    Account for non 0-origin variables.
 //
+//    Gunther H. Weber, Mon Oct  4 11:06:18 PDT 2010
+//    Only get reference to fab. (BoxLib no longer provides a copy constructor.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1196,7 +1199,7 @@ avtBoxlibFileFormat::GetVar(int patch, const char *var_name)
     clearlist.push_back(compId);
 
     // Get the data (an FArrayBox)
-    FArrayBox fab = vmf->GetFab(local_patch, compId);
+    const FArrayBox &fab = vmf->GetFab(local_patch, compId);
     const int *len = fab.length();
 
     int dims[BL_SPACEDIM];
@@ -1260,7 +1263,6 @@ avtBoxlibFileFormat::GetVar(int patch, const char *var_name)
     }
 #endif
     
-    fab.clear();
     return farr;
 }
 
@@ -1299,6 +1301,10 @@ avtBoxlibFileFormat::GetVar(int patch, const char *var_name)
 //    Kathleen Bonnell, Thu Sep 25 09:06:25 PDT 2008 
 //    fab[2] doesn't exist for 2d case, so use 0 to initialzie fptr instead.
 //
+//    Gunther H. Weber, Mon Oct  4 11:07:45 PDT 2010
+//    Work with pointers to fabs since BoxLib no longer provides copy
+//    construcotr.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1324,7 +1330,7 @@ avtBoxlibFileFormat::GetVectorVar(int patch, const char *var_name)
         EXCEPTION1(InvalidVariableException, var_name);
     
     // Get the data for the components (in FArrayBoxes).
-    vector<FArrayBox *> fab(dimension);
+    vector<const FArrayBox *> fab(dimension);
     
     int i;
     vector<int> compIdsList;
@@ -1342,7 +1348,7 @@ avtBoxlibFileFormat::GetVectorVar(int patch, const char *var_name)
         clearlist.push_back(compId);
 
         VisMF *vmf = GetVisMF(mfIndex); 
-        fab[i] = new FArrayBox(vmf->GetFab(local_patch, compId));
+        fab[i] = &vmf->GetFab(local_patch, compId);
         compIdsList.push_back(compId);
         vmfList.push_back(vmf);
     }
@@ -1421,12 +1427,6 @@ avtBoxlibFileFormat::GetVectorVar(int patch, const char *var_name)
     }
 #endif
     
-    for (i = 0; i < dimension; ++i)
-    {
-        fab[i]->clear();
-        delete fab[i];
-    }
-
     return farr;
 }
 
