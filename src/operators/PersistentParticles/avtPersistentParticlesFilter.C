@@ -270,6 +270,12 @@ avtPersistentParticlesFilter::Execute(void)
     SetEndFrame(stopTimeSlice);
     SetStride( atts.GetStride() );
 
+    //Clean-up the current output dataset if necessary
+    if( particlePathData ) {
+        particlePathData->Delete();
+        particlePathData = NULL;
+    }
+
     //Iterate over the time series
     avtExecuteThenTimeLoopFilter::Execute();
 }
@@ -519,47 +525,48 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     currPoints = uGrid->GetPoints();
     //Get the ID variable. Use the mainVariable if default is specified
     currWeight = 0;
-    if( atts.GetIndexVariable() != "default" ){
-      currWeight = uGrid->GetPointData()->GetArray( atts.GetIndexVariable().c_str() );
-    }else{
+    if( atts.GetIndexVariable() != "default" ) {
+      currWeight =
+        uGrid->GetPointData()->GetArray( atts.GetIndexVariable().c_str() );
+    } else {
       currWeight = uGrid->GetPointData()->GetArray( mainVariable.c_str() );
     }
-    if (currWeight == 0){
+    if (currWeight == 0) {
       EXCEPTION1(ImproperUseException, "Index variable not found.");
     }
     //Get the data to be used as x variable
     currXData = 0;
-    if( replaceX ){
-      currXData = uGrid->GetPointData()->GetArray( atts.GetTraceVariableX().c_str() );
+    if( replaceX ) {
+      currXData =
+        uGrid->GetPointData()->GetArray( atts.GetTraceVariableX().c_str() );
+
       if( currXData == 0 )
         EXCEPTION1(ImproperUseException, "X coordinate variable not found.");
-
     }
     //Get the data to be used as y variable
     currYData = 0;
-    if( replaceY  ){
-      currYData = uGrid->GetPointData()->GetArray( atts.GetTraceVariableY().c_str() );
+    if( replaceY  ) {
+      currYData =
+        uGrid->GetPointData()->GetArray( atts.GetTraceVariableY().c_str() );
+
       if( currYData == 0 )
         EXCEPTION1(ImproperUseException, "Y coordinate variable not found.");
     }
     //Get the data to be used as z variable
     currZData = 0;
-    if( atts.GetTraceVariableZ() != "default" ){
-      currZData = uGrid->GetPointData()->GetArray( atts.GetTraceVariableZ().c_str() );
+    if( atts.GetTraceVariableZ() != "default" ) {
+      currZData =
+        uGrid->GetPointData()->GetArray( atts.GetTraceVariableZ().c_str() );
+
       if( currZData == 0 )
         EXCEPTION1(ImproperUseException, "Z coordinate variable not found.");
     }
     //Get the current PointData
-    currData   = uGrid->GetPointData();
+    currData = uGrid->GetPointData();
 
     //Create a new output dataset if needed
     //If first timestep or if output dataset has not been created yet
-    if( ts == startTimeSlice || !particlePathData ){
-          //Delete the current output dataset if necessary
-          if( particlePathData ){
-            particlePathData->Delete();
-            particlePathData = NULL;
-          }
+    if( !particlePathData ) {
           //Create and initalize the new dataset
           particlePathData = vtkUnstructuredGrid::New();
           particlePathData->SetPoints( vtkPoints::New() );
@@ -567,8 +574,9 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
           particlePathData->GetPointData()->ShallowCopy(allData);
     }
 
-    //Write the current particles into a map to decide which ones should be traced
-    //Check if particle ID is unique, if not then stop tracing of that particle
+    //Write the current particles into a map to decide which ones
+    //should be traced. Check if particle ID is unique, if not then
+    //stop tracing of that particle
     int nPoints = uGrid->GetNumberOfPoints();
     std::map<double , bool> trace;
     int numSkipped = 0;
