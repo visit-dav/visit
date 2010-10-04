@@ -210,7 +210,7 @@
 #
 #     Kathleen Bonnell, Mon Aug 27 08:42:06 PDT 2007
 #     Changed -DMANGLED_OSMESA_INCLUDE to -DMANGLED_OSMESA_INCLUDE_DIR
-#     in build_vtk. 
+#     in build_vtk.
 #
 #     Gunther H. Weber, Wed Aug 29 12:34:58 PDT 2007
 #     - Added rv=0 to beginning of check_parallel to fix error when trying
