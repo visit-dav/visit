@@ -1801,6 +1801,20 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "legendFlag") == 0)
         return ScatterAttributes_GetLegendFlag(self, NULL);
 
+    // try to handle old attributes
+    if(strcmp(name, "foregroundFlag") == 0)
+    {
+        if( ScatterAttributes_GetColorType(self, NULL) == PyInt_FromLong(0) )
+        {
+            PyObject *retval = PyInt_FromLong(1);
+            return retval;
+        }
+        else //if( ScatterAttributes_GetColorType(self, NULL) == PyInt_FromLong(1) )
+        {
+            PyObject *retval = PyInt_FromLong(0);
+            return retval;
+        }
+    }
     return Py_FindMethod(PyScatterAttributes_methods, self, name);
 }
 
@@ -1895,6 +1909,36 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "legendFlag") == 0)
         obj = ScatterAttributes_SetLegendFlag(self, tuple);
 
+
+    // try to handle old attributes
+    if(strcmp(name, "foregroundFlag") == 0)
+    {
+      PyObject *new_args;
+
+      // In this case the color is set so the color table should be used.
+      if( ScatterAttributes_GetVar1Role(self, NULL) == PyInt_FromLong(3) ||
+          ScatterAttributes_GetVar2Role(self, NULL) == PyInt_FromLong(3) ||
+          ScatterAttributes_GetVar3Role(self, NULL) == PyInt_FromLong(3) ||
+          ScatterAttributes_GetVar4Role(self, NULL) == PyInt_FromLong(3) )
+      {
+          new_args = Py_BuildValue("(i)", 2);
+      }
+
+      else {
+
+        // from the tuple get the foreground value
+        int ival;
+        if(!PyArg_ParseTuple(tuple, "i", &ival))
+              new_args = Py_BuildValue("(i)", 0);
+
+        // foreground is false so single color and color type is 1
+        else if( ival == 0 )
+              new_args = Py_BuildValue("(i)", 1);
+        // foreground is true so foreground color and color type is 0
+        else if( ival == 1 )
+              new_args = Py_BuildValue("(i)", 0);
+      }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 
