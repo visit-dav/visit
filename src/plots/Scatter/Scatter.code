@@ -91,7 +91,8 @@ ScatterAttributes::ChangesRequireRecalculation(const ScatterAttributes &obj) con
             var4Changed = var4 != obj.var4;
     }
 
-    return var1Role != obj.var1Role ||
+    return colorType != obj.colorType ||
+           var1Role != obj.var1Role ||
            var2Role != obj.var2Role ||
            var3Role != obj.var3Role ||
            var4Role != obj.var4Role ||

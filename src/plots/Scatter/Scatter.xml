@@ -22,6 +22,11 @@
         Log
         Skew
       </Enum>
+      <Enum name="ColoringMethod">
+        ColorByForegroundColor
+        ColorBySingleColor
+        ColorByColorTable
+      </Enum>
       <Enum name="PointType">
         Box
         Axis
@@ -153,8 +158,8 @@
         0
         255
       </Field>
-      <Field name="foregroundFlag" label="Use Foreground " type="bool">
-        true
+      <Field name="colorType" label="colorType" type="enum" subtype="ColoringMethod">
+        ColorByColorTable
       </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true

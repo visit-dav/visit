@@ -50,6 +50,7 @@ class QLineEdit;
 class QSpinBox;
 class QVBox;
 class QButtonGroup;
+class QRadioButton;
 class QvisColorTableButton;
 class QvisOpacitySlider;
 class QvisColorButton;
@@ -136,9 +137,9 @@ private slots:
     void pointSizeProcessText();
     void pointTypeChanged(int val);
     void scaleCubeChanged(bool val);
+    void colorModeChanged(int index);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
     void singleColorChanged(const QColor &color);
-    void foregroundFlagChanged(bool val);
     void legendToggled(bool val);
 private:
     int plotType;
@@ -189,26 +190,22 @@ private:
     QLabel    *pointSizeLabel;
     QComboBox *pointType;
     QCheckBox *scaleCube;
-    QvisColorTableButton *colorTableName;
-    QLabel *singleColorLabel;
+    QButtonGroup *colorModeButtons;
+    QRadioButton *colorTableRadioButton;
     QvisColorButton *singleColor;
-    QCheckBox *foregroundFlag;
+    QvisColorTableButton *colorTableName;
     QCheckBox *legendToggle;
 
     QLabel *var1ScalingLabel;
-    QLabel *var1SkewFactorLabel;
 
     QLabel *var2Label;
     QLabel *var2ScalingLabel;
-    QLabel *var2SkewFactorLabel;
 
     QLabel *var3Label;
     QLabel *var3ScalingLabel;
-    QLabel *var3SkewFactorLabel;
 
     QLabel *var4Label;
     QLabel *var4ScalingLabel;
-    QLabel *var4SkewFactorLabel;
 
     ScatterAttributes *atts;
 };

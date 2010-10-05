@@ -67,6 +67,12 @@ public:
         Log,
         Skew
     };
+    enum ColoringMethod
+    {
+        ColorByForegroundColor,
+        ColorBySingleColor,
+        ColorByColorTable
+    };
     enum PointType
     {
         Box,
@@ -155,7 +161,7 @@ public:
     void SetScaleCube(bool scaleCube_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetSingleColor(const ColorAttribute &singleColor_);
-    void SetForegroundFlag(bool foregroundFlag_);
+    void SetColorType(ColoringMethod colorType_);
     void SetLegendFlag(bool legendFlag_);
 
     // Property getting methods
@@ -203,7 +209,7 @@ public:
           std::string    &GetColorTableName();
     const ColorAttribute &GetSingleColor() const;
           ColorAttribute &GetSingleColor();
-    bool                 GetForegroundFlag() const;
+    ColoringMethod       GetColorType() const;
     bool                 GetLegendFlag() const;
 
     // Persistence methods
@@ -215,6 +221,11 @@ public:
     static bool Scaling_FromString(const std::string &, Scaling &);
 protected:
     static std::string Scaling_ToString(int);
+public:
+    static std::string ColoringMethod_ToString(ColoringMethod);
+    static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
+protected:
+    static std::string ColoringMethod_ToString(int);
 public:
     static std::string PointType_ToString(PointType);
     static bool PointType_FromString(const std::string &, PointType &);
@@ -276,7 +287,7 @@ public:
         ID_scaleCube,
         ID_colorTableName,
         ID_singleColor,
-        ID_foregroundFlag,
+        ID_colorType,
         ID_legendFlag,
         ID__LAST
     };
@@ -320,13 +331,13 @@ private:
     bool           scaleCube;
     std::string    colorTableName;
     ColorAttribute singleColor;
-    bool           foregroundFlag;
+    int            colorType;
     bool           legendFlag;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SCATTERATTRIBUTES_TMFS "sibbddidisbbddidisbbddidisbbddiddiibsabb"
+#define SCATTERATTRIBUTES_TMFS "sibbddidisbbddidisbbddidisbbddiddiibsaib"
 
 #endif

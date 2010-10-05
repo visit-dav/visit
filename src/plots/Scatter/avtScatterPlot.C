@@ -429,23 +429,23 @@ avtScatterPlot::SetAtts(const AttributeGroup *a)
     GetColorInformation(colorString, mode, skew, minFlag, minVal,
         maxFlag, maxVal);
 
-    if(colorString.size() > 0)
-    {
-        glyphMapper->ColorByScalarOn(colorString);
-        varLegend->SetColorBarVisibility(1);
-        varLegend->SetVarRangeVisibility(1);
-    }
-    else if(atts.GetForegroundFlag())
+    if(atts.GetColorType() == ScatterAttributes::ColorByForegroundColor)
     {
         varLegend->SetColorBarVisibility(0);
         varLegend->SetVarRangeVisibility(0);
         glyphMapper->ColorBySingleColor(fgColor);
     }
-    else
+    else if(atts.GetColorType() == ScatterAttributes::ColorBySingleColor)
     {
         varLegend->SetColorBarVisibility(0);
         varLegend->SetVarRangeVisibility(0);
         glyphMapper->ColorBySingleColor(atts.GetSingleColor().GetColor());
+    }
+    else //if(atts.GetColorType() == ScatterAttributes::ColorByColorTable)
+    {
+        glyphMapper->ColorByScalarOn(colorString);
+        varLegend->SetColorBarVisibility(1);
+        varLegend->SetVarRangeVisibility(1);
     }
 
     SetScaling(mode, skew);
@@ -744,7 +744,7 @@ avtScatterPlot::SetForegroundColor(const double *fg)
 {
     bool retval = false;
 
-    if (atts.GetForegroundFlag())
+    if(atts.GetColorType() == ScatterAttributes::ColorByForegroundColor)
     {
        if (fgColor[0] != fg[0] || fgColor[1] != fg[1] || fgColor[2] != fg[2])
        {
@@ -943,4 +943,3 @@ avtScatterPlot::EnhanceSpecification(avtContract_p contract_in)
 
     return rv;
 }
-
