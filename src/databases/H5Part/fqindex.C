@@ -2,6 +2,8 @@
 #include <math.h>       // std::log
 #include "fqindex.h"
 
+#ifdef HAVE_LIBFASTBIT
+
 /// Constructor.
 H5_FQ_IndexUnbinned::H5_FQ_IndexUnbinned(const H5_FQ_Variable* c)
     : ibis::relic(static_cast<ibis::column*>(0)), isNewIndex(false) {
@@ -1448,3 +1450,4 @@ void H5_FQ_IndexBinned::activate(uint32_t i, uint32_t j) const {
         } // while (i < j)
     }
 } // H5_FQ_IndexBinned::activate
+#endif
