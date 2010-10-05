@@ -78,6 +78,44 @@ ScatterAttributes::Scaling_FromString(const std::string &s, ScatterAttributes::S
 }
 
 //
+// Enum conversion methods for ScatterAttributes::ColoringMethod
+//
+
+static const char *ColoringMethod_strings[] = {
+"ColorByForegroundColor", "ColorBySingleColor", "ColorByColorTable"
+};
+
+std::string
+ScatterAttributes::ColoringMethod_ToString(ScatterAttributes::ColoringMethod t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return ColoringMethod_strings[index];
+}
+
+std::string
+ScatterAttributes::ColoringMethod_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return ColoringMethod_strings[index];
+}
+
+bool
+ScatterAttributes::ColoringMethod_FromString(const std::string &s, ScatterAttributes::ColoringMethod &val)
+{
+    val = ScatterAttributes::ColorByForegroundColor;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == ColoringMethod_strings[i])
+        {
+            val = (ColoringMethod)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for ScatterAttributes::PointType
 //
 
@@ -206,7 +244,7 @@ void ScatterAttributes::Init()
     pointSizePixels = 1;
     pointType = Point;
     scaleCube = true;
-    foregroundFlag = true;
+    colorType = ColorByColorTable;
     legendFlag = true;
 
     ScatterAttributes::SelectAll();
@@ -267,7 +305,7 @@ void ScatterAttributes::Copy(const ScatterAttributes &obj)
     scaleCube = obj.scaleCube;
     colorTableName = obj.colorTableName;
     singleColor = obj.singleColor;
-    foregroundFlag = obj.foregroundFlag;
+    colorType = obj.colorType;
     legendFlag = obj.legendFlag;
 
     ScatterAttributes::SelectAll();
@@ -466,7 +504,7 @@ ScatterAttributes::operator == (const ScatterAttributes &obj) const
             (scaleCube == obj.scaleCube) &&
             (colorTableName == obj.colorTableName) &&
             (singleColor == obj.singleColor) &&
-            (foregroundFlag == obj.foregroundFlag) &&
+            (colorType == obj.colorType) &&
             (legendFlag == obj.legendFlag));
 }
 
@@ -649,7 +687,7 @@ ScatterAttributes::SelectAll()
     Select(ID_scaleCube,       (void *)&scaleCube);
     Select(ID_colorTableName,  (void *)&colorTableName);
     Select(ID_singleColor,     (void *)&singleColor);
-    Select(ID_foregroundFlag,  (void *)&foregroundFlag);
+    Select(ID_colorType,       (void *)&colorType);
     Select(ID_legendFlag,      (void *)&legendFlag);
 }
 
@@ -913,10 +951,10 @@ ScatterAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
         }
         else
             delete singleColorNode;
-    if(completeSave || !FieldsEqual(ID_foregroundFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_colorType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("foregroundFlag", foregroundFlag));
+        node->AddNode(new DataNode("colorType", ColoringMethod_ToString(colorType)));
     }
 
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
@@ -1163,8 +1201,22 @@ ScatterAttributes::SetFromNode(DataNode *parentNode)
         SetColorTableName(node->AsString());
     if((node = searchNode->GetNode("singleColor")) != 0)
         singleColor.SetFromNode(node);
-    if((node = searchNode->GetNode("foregroundFlag")) != 0)
-        SetForegroundFlag(node->AsBool());
+    if((node = searchNode->GetNode("colorType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetColorType(ColoringMethod(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ColoringMethod value;
+            if(ColoringMethod_FromString(node->AsString(), value))
+                SetColorType(value);
+        }
+    }
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
 }
@@ -1440,10 +1492,10 @@ ScatterAttributes::SetSingleColor(const ColorAttribute &singleColor_)
 }
 
 void
-ScatterAttributes::SetForegroundFlag(bool foregroundFlag_)
+ScatterAttributes::SetColorType(ScatterAttributes::ColoringMethod colorType_)
 {
-    foregroundFlag = foregroundFlag_;
-    Select(ID_foregroundFlag, (void *)&foregroundFlag);
+    colorType = colorType_;
+    Select(ID_colorType, (void *)&colorType);
 }
 
 void
@@ -1721,10 +1773,10 @@ ScatterAttributes::GetSingleColor()
     return singleColor;
 }
 
-bool
-ScatterAttributes::GetForegroundFlag() const
+ScatterAttributes::ColoringMethod
+ScatterAttributes::GetColorType() const
 {
-    return foregroundFlag;
+    return ColoringMethod(colorType);
 }
 
 bool
@@ -1835,7 +1887,7 @@ ScatterAttributes::GetFieldName(int index) const
     case ID_scaleCube:       return "scaleCube";
     case ID_colorTableName:  return "colorTableName";
     case ID_singleColor:     return "singleColor";
-    case ID_foregroundFlag:  return "foregroundFlag";
+    case ID_colorType:       return "colorType";
     case ID_legendFlag:      return "legendFlag";
     default:  return "invalid index";
     }
@@ -1899,7 +1951,7 @@ ScatterAttributes::GetFieldType(int index) const
     case ID_scaleCube:       return FieldType_bool;
     case ID_colorTableName:  return FieldType_colortable;
     case ID_singleColor:     return FieldType_color;
-    case ID_foregroundFlag:  return FieldType_bool;
+    case ID_colorType:       return FieldType_enum;
     case ID_legendFlag:      return FieldType_bool;
     default:  return FieldType_unknown;
     }
@@ -1963,7 +2015,7 @@ ScatterAttributes::GetFieldTypeName(int index) const
     case ID_scaleCube:       return "bool";
     case ID_colorTableName:  return "colortable";
     case ID_singleColor:     return "color";
-    case ID_foregroundFlag:  return "bool";
+    case ID_colorType:       return "enum";
     case ID_legendFlag:      return "bool";
     default:  return "invalid index";
     }
@@ -2181,9 +2233,9 @@ ScatterAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (singleColor == obj.singleColor);
         }
         break;
-    case ID_foregroundFlag:
+    case ID_colorType:
         {  // new scope
-        retval = (foregroundFlag == obj.foregroundFlag);
+        retval = (colorType == obj.colorType);
         }
         break;
     case ID_legendFlag:
@@ -2291,7 +2343,8 @@ ScatterAttributes::ChangesRequireRecalculation(const ScatterAttributes &obj) con
             var4Changed = var4 != obj.var4;
     }
 
-    return var1Role != obj.var1Role ||
+    return colorType != obj.colorType ||
+           var1Role != obj.var1Role ||
            var2Role != obj.var2Role ||
            var3Role != obj.var3Role ||
            var4Role != obj.var4Role ||

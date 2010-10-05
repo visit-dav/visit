@@ -374,11 +374,25 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
     SNPRINTF(tmpStr, 1000, "%ssingleColor = (%d, %d, %d, %d)\n", prefix, int(singleColor[0]), int(singleColor[1]), int(singleColor[2]), int(singleColor[3]));
     str += tmpStr;
-    if(atts->GetForegroundFlag())
-        SNPRINTF(tmpStr, 1000, "%sforegroundFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sforegroundFlag = 0\n", prefix);
-    str += tmpStr;
+    const char *colorType_names = "ColorByForegroundColor, ColorBySingleColor, ColorByColorTable";
+    switch (atts->GetColorType())
+    {
+      case ScatterAttributes::ColorByForegroundColor:
+          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByForegroundColor  # %s\n", prefix, prefix, colorType_names);
+          str += tmpStr;
+          break;
+      case ScatterAttributes::ColorBySingleColor:
+          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorBySingleColor  # %s\n", prefix, prefix, colorType_names);
+          str += tmpStr;
+          break;
+      case ScatterAttributes::ColorByColorTable:
+          SNPRINTF(tmpStr, 1000, "%scolorType = %sColorByColorTable  # %s\n", prefix, prefix, colorType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     if(atts->GetLegendFlag())
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
@@ -1448,7 +1462,7 @@ ScatterAttributes_GetSingleColor(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ScatterAttributes_SetForegroundFlag(PyObject *self, PyObject *args)
+ScatterAttributes_SetColorType(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
@@ -1456,18 +1470,27 @@ ScatterAttributes_SetForegroundFlag(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the foregroundFlag in the object.
-    obj->data->SetForegroundFlag(ival != 0);
+    // Set the colorType in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetColorType(ScatterAttributes::ColoringMethod(ival));
+    else
+    {
+        fprintf(stderr, "An invalid colorType value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "ColorByForegroundColor, ColorBySingleColor, ColorByColorTable.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ScatterAttributes_GetForegroundFlag(PyObject *self, PyObject *args)
+ScatterAttributes_GetColorType(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetForegroundFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetColorType()));
     return retval;
 }
 
@@ -1575,8 +1598,8 @@ PyMethodDef PyScatterAttributes_methods[SCATTERATTRIBUTES_NMETH] = {
     {"GetColorTableName", ScatterAttributes_GetColorTableName, METH_VARARGS},
     {"SetSingleColor", ScatterAttributes_SetSingleColor, METH_VARARGS},
     {"GetSingleColor", ScatterAttributes_GetSingleColor, METH_VARARGS},
-    {"SetForegroundFlag", ScatterAttributes_SetForegroundFlag, METH_VARARGS},
-    {"GetForegroundFlag", ScatterAttributes_GetForegroundFlag, METH_VARARGS},
+    {"SetColorType", ScatterAttributes_SetColorType, METH_VARARGS},
+    {"GetColorType", ScatterAttributes_GetColorType, METH_VARARGS},
     {"SetLegendFlag", ScatterAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", ScatterAttributes_GetLegendFlag, METH_VARARGS},
     {NULL, NULL}
@@ -1766,8 +1789,15 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
         return ScatterAttributes_GetColorTableName(self, NULL);
     if(strcmp(name, "singleColor") == 0)
         return ScatterAttributes_GetSingleColor(self, NULL);
-    if(strcmp(name, "foregroundFlag") == 0)
-        return ScatterAttributes_GetForegroundFlag(self, NULL);
+    if(strcmp(name, "colorType") == 0)
+        return ScatterAttributes_GetColorType(self, NULL);
+    if(strcmp(name, "ColorByForegroundColor") == 0)
+        return PyInt_FromLong(long(ScatterAttributes::ColorByForegroundColor));
+    if(strcmp(name, "ColorBySingleColor") == 0)
+        return PyInt_FromLong(long(ScatterAttributes::ColorBySingleColor));
+    if(strcmp(name, "ColorByColorTable") == 0)
+        return PyInt_FromLong(long(ScatterAttributes::ColorByColorTable));
+
     if(strcmp(name, "legendFlag") == 0)
         return ScatterAttributes_GetLegendFlag(self, NULL);
 
@@ -1860,8 +1890,8 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ScatterAttributes_SetColorTableName(self, tuple);
     else if(strcmp(name, "singleColor") == 0)
         obj = ScatterAttributes_SetSingleColor(self, tuple);
-    else if(strcmp(name, "foregroundFlag") == 0)
-        obj = ScatterAttributes_SetForegroundFlag(self, tuple);
+    else if(strcmp(name, "colorType") == 0)
+        obj = ScatterAttributes_SetColorType(self, tuple);
     else if(strcmp(name, "legendFlag") == 0)
         obj = ScatterAttributes_SetLegendFlag(self, tuple);
 

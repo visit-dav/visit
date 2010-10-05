@@ -197,8 +197,18 @@ QvisScatterPlotWindow::CreateWindowContents()
     var1TopLayout->setMargin(0);
     var1VeryTopLayout->addLayout(var1TopLayout);
 
-    QLabel *var1Label = new QLabel(tr("Variable"), var1Top);
-    var1TopLayout->addWidget(var1Label,0,0);
+    // Create a role button
+    var1Role = new QComboBox(var1Top);
+    for(i = 0; i < 4; ++i)
+        var1Role->addItem(roleNames[i]);
+    connect(var1Role, SIGNAL(activated(int)),
+            this, SLOT(var1RoleChanged(int)));
+
+    QLabel *var1RoleLabel = new QLabel(tr("Role"), var1Top);
+    var1RoleLabel->setBuddy(var1Role);
+    var1TopLayout->addWidget(var1RoleLabel, 0, 0, Qt::AlignRight);
+    var1TopLayout->addWidget(var1Role, 0, 1, Qt::AlignLeft);
+
     // Create a variable button
     var1 = new QvisVariableButton(true, true, true,
         QvisVariableButton::Scalars | QvisVariableButton::Curves,
@@ -206,64 +216,90 @@ QvisScatterPlotWindow::CreateWindowContents()
     connect(var1, SIGNAL(activated(const QString &)),
             this, SLOT(var1Selected(const QString &)));
 
-    var1TopLayout->addWidget(var1, 0,1);
+    QLabel *var1Label = new QLabel(tr("Variable"), var1Top);
+    var1Label->setBuddy(var1);
+    var1TopLayout->addWidget(var1Label, 0, 2, Qt::AlignRight);
+    var1TopLayout->addWidget(var1, 0, 3, Qt::AlignLeft);
 
-    var1Role = new QComboBox(var1Top);
-    for(i = 0; i < 4; ++i)
-        var1Role->addItem(roleNames[i]);
-    connect(var1Role, SIGNAL(activated(int)),
-            this, SLOT(var1RoleChanged(int)));
-    var1TopLayout->addWidget(var1Role, 1,1);
-    QLabel *var1RoleLabel = new QLabel(tr("Role"), var1Top);
-    var1RoleLabel->setBuddy(var1Role);
-    var1TopLayout->addWidget(var1RoleLabel,1,0);
+    //
+    // Create the scale group
+    //
+    QGroupBox * dataGroup = new QGroupBox(central);
+    dataGroup->setTitle(tr("Data"));
+    var1TopLayout->addWidget(dataGroup, 1, 0, 2, 4);
 
-    // var1 Max
-    var1MaxFlag = new QCheckBox(tr("Maximum"), var1Top);
-    connect(var1MaxFlag, SIGNAL(toggled(bool)),
-            this, SLOT(var1MaxFlagChanged(bool)));
-    var1TopLayout->addWidget(var1MaxFlag, 2,0);
-    var1Max = new QLineEdit(var1Top);
-    connect(var1Max, SIGNAL(returnPressed()),
-            this, SLOT(var1MaxProcessText()));
-    var1TopLayout->addWidget(var1Max, 2,1);
+    QGridLayout * dataLayout = new QGridLayout(dataGroup);
+    dataLayout->setMargin(5);
+    dataLayout->setSpacing(10);
 
-    // var1 Min
-    var1MinFlag = new QCheckBox(tr("Minimum"), var1Top);
-    connect(var1MinFlag, SIGNAL(toggled(bool)),
-            this, SLOT(var1MinFlagChanged(bool)));
-    var1TopLayout->addWidget(var1MinFlag, 3,0);
-    var1Min = new QLineEdit(var1Top);
-    connect(var1Min, SIGNAL(returnPressed()),
-            this, SLOT(var1MinProcessText()));
-    var1TopLayout->addWidget(var1Min, 3,1);
+    //
+    // Create the scale radio buttons
+    //
+    dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
+    
+    // Create the radio buttons
+    var1Scaling = new QButtonGroup(central);
 
-    var1ScalingLabel = new QLabel(tr("Scale"), var1Top);
-    var1TopLayout->addWidget(var1ScalingLabel,4,0);
-    QWidget *var1ScalingWidget = new QWidget(var1Top);
-    var1Scaling = new QButtonGroup(var1ScalingWidget);
-    QHBoxLayout *var1ScalingLayout = new QHBoxLayout(var1ScalingWidget);
-    var1ScalingLayout->setMargin(0);
-    var1ScalingLayout->setSpacing(10);
-    QRadioButton *var1ScalingScalingLinear = new QRadioButton(tr("Linear"),var1ScalingWidget);
-    var1Scaling->addButton(var1ScalingScalingLinear, 0);
-    var1ScalingLayout->addWidget(var1ScalingScalingLinear);
-    QRadioButton *var1ScalingScalingLog = new QRadioButton(tr("Log"),var1ScalingWidget);
-    var1Scaling->addButton(var1ScalingScalingLog, 1);
-    var1ScalingLayout->addWidget(var1ScalingScalingLog);
-    QRadioButton *var1ScalingScalingSkew = new QRadioButton(tr("Skew"),var1ScalingWidget);
-    var1Scaling->addButton(var1ScalingScalingSkew, 2);
-    var1ScalingLayout->addWidget(var1ScalingScalingSkew);
+    QRadioButton * rb = new QRadioButton(tr("Linear"), central);
+    rb->setChecked(true);
+    var1Scaling->addButton(rb, 0);
+    dataLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Log"), central);
+    var1Scaling->addButton(rb, 1);
+    dataLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton(tr("Skew"), central);
+    var1Scaling->addButton(rb, 2);
+    dataLayout->addWidget(rb, 0, 3);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
     connect(var1Scaling, SIGNAL(buttonClicked(int)),
             this, SLOT(var1ScalingChanged(int)));
-    var1TopLayout->addWidget(var1ScalingWidget, 4,1);
 
-    var1SkewFactorLabel = new QLabel(tr("Skew factor"), var1Top);
-    var1TopLayout->addWidget(var1SkewFactorLabel,5,0);
-    var1SkewFactor = new QLineEdit(var1Top);
+    // Create the skew factor line edit    
+    var1SkewFactor = new QLineEdit(central);
+    dataLayout->addWidget(var1SkewFactor, 0, 4);
     connect(var1SkewFactor, SIGNAL(returnPressed()),
             this, SLOT(var1SkewFactorProcessText()));
-    var1TopLayout->addWidget(var1SkewFactor, 5,1);
+
+    //
+    // Create the Limits stuff
+    //
+    QGroupBox *limitsGroup = new QGroupBox(central);
+    dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
+
+    QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+//     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
+
+//     limitsSelect = new QComboBox(central);
+//     limitsSelect->addItem(tr("Use Original Data"));
+//     limitsSelect->addItem(tr("Use Current Plot"));
+//     connect(limitsSelect, SIGNAL(activated(int)),
+//             this, SLOT(limitsSelectChanged(int))); 
+//     limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
+
+    // Create the min toggle and line edit
+    var1MinFlag = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(var1MinFlag, 1, 0);
+    connect(var1MinFlag, SIGNAL(toggled(bool)),
+            this, SLOT(var1MinFlagChanged(bool)));
+    var1Min = new QLineEdit(central);
+    connect(var1Min, SIGNAL(returnPressed()),
+            this, SLOT(var1MinProcessText())); 
+    limitsLayout->addWidget(var1Min, 1, 1);
+
+    // Create the max toggle and line edit
+    var1MaxFlag = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(var1MaxFlag, 1, 2);
+    connect(var1MaxFlag, SIGNAL(toggled(bool)),
+            this, SLOT(var1MaxFlagChanged(bool)));
+    var1Max = new QLineEdit(central);
+    connect(var1Max, SIGNAL(returnPressed()),
+            this, SLOT(var1MaxProcessText())); 
+    limitsLayout->addWidget(var1Max, 1, 3);
+
 
     //
     // Create a tab for the var2
@@ -277,73 +313,109 @@ QvisScatterPlotWindow::CreateWindowContents()
     var2TopLayout->setMargin(0);
     var2VeryTopLayout->addLayout(var2TopLayout);
 
-    QLabel *var2Label = new QLabel(tr("Variable"), var2Top);
-    var2TopLayout->addWidget(var2Label,0,0);
-
-    // Create a variable button
-    var2 = new QvisVariableButton(true, true, true, 
-        QvisVariableButton::Scalars | QvisVariableButton::Curves,
-        var2Top);
-    connect(var2, SIGNAL(activated(const QString &)),
-            this, SLOT(var2Selected(const QString &)));
-    var2TopLayout->addWidget(var2, 0,1);
-
+    // Create a role button
     var2Role = new QComboBox(var2Top);
     for(i = 0; i < 5; ++i)
         var2Role->addItem(roleNames[i]);
     connect(var2Role, SIGNAL(activated(int)),
             this, SLOT(var2RoleChanged(int)));
-    var2TopLayout->addWidget(var2Role, 1,1);
+
     QLabel *var2RoleLabel = new QLabel(tr("Role"), var2Top);
     var2RoleLabel->setBuddy(var2Role);
-    var2TopLayout->addWidget(var2RoleLabel,1,0);
+    var2TopLayout->addWidget(var2RoleLabel, 0, 0, Qt::AlignRight);
+    var2TopLayout->addWidget(var2Role, 0, 1, Qt::AlignLeft);
 
-    // var2 Max
-    var2MaxFlag = new QCheckBox(tr("Maximum"), var2Top);
-    connect(var2MaxFlag, SIGNAL(toggled(bool)),
-            this, SLOT(var2MaxFlagChanged(bool)));
-    var2TopLayout->addWidget(var2MaxFlag, 2,0);
-    var2Max = new QLineEdit(var2Top);
-    connect(var2Max, SIGNAL(returnPressed()),
-            this, SLOT(var2MaxProcessText()));
-    var2TopLayout->addWidget(var2Max, 2,1);
+    // Create a variable button
+    var2 = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars | QvisVariableButton::Curves,
+        var2Top);
+    connect(var2, SIGNAL(activated(const QString &)),
+            this, SLOT(var2Selected(const QString &)));
 
-    // var2 Min
-    var2MinFlag = new QCheckBox(tr("Minimum"), var2Top);
-    connect(var2MinFlag, SIGNAL(toggled(bool)),
-            this, SLOT(var2MinFlagChanged(bool)));
-    var2TopLayout->addWidget(var2MinFlag, 3,0);
-    var2Min = new QLineEdit(var2Top);
-    connect(var2Min, SIGNAL(returnPressed()),
-            this, SLOT(var2MinProcessText()));
-    var2TopLayout->addWidget(var2Min, 3,1);
+    QLabel *var2Label = new QLabel(tr("Variable"), var2Top);
+    var2Label->setBuddy(var2);
+    var2TopLayout->addWidget(var2Label, 0, 2, Qt::AlignRight);
+    var2TopLayout->addWidget(var2, 0, 3, Qt::AlignLeft);
 
-    var2ScalingLabel = new QLabel(tr("Scale"), var2Top);
-    var2TopLayout->addWidget(var2ScalingLabel,4,0);
-    QWidget *var2ScalingWidget = new QWidget(var2Top);
-    var2Scaling = new QButtonGroup(var2ScalingWidget);
-    QHBoxLayout *var2ScalingLayout = new QHBoxLayout(var2ScalingWidget);
-    var2ScalingLayout->setMargin(0);
-    var2ScalingLayout->setSpacing(10);
-    QRadioButton *var2ScalingScalingLinear = new QRadioButton(tr("Linear"),var2ScalingWidget);
-    var2Scaling->addButton(var2ScalingScalingLinear, 0);
-    var2ScalingLayout->addWidget(var2ScalingScalingLinear);
-    QRadioButton *var2ScalingScalingLog = new QRadioButton(tr("Log"),var2ScalingWidget);
-    var2Scaling->addButton(var2ScalingScalingLog, 1);
-    var2ScalingLayout->addWidget(var2ScalingScalingLog);
-    QRadioButton *var2ScalingScalingSkew = new QRadioButton(tr("Skew"),var2ScalingWidget);
-    var2Scaling->addButton(var2ScalingScalingSkew, 2);
-    var2ScalingLayout->addWidget(var2ScalingScalingSkew);
+    //
+    // Create the scale group
+    //
+    dataGroup = new QGroupBox(central);
+    dataGroup->setTitle(tr("Data"));
+    var2TopLayout->addWidget(dataGroup, 1, 0, 2, 4);
+
+    dataLayout = new QGridLayout(dataGroup);
+    dataLayout->setMargin(5);
+    dataLayout->setSpacing(10);
+
+    //
+    // Create the scale radio buttons
+    //
+    dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
+    
+    // Create the radio buttons
+    var2Scaling = new QButtonGroup(central);
+
+    rb = new QRadioButton(tr("Linear"), central);
+    rb->setChecked(true);
+    var2Scaling->addButton(rb, 0);
+    dataLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Log"), central);
+    var2Scaling->addButton(rb, 1);
+    dataLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton(tr("Skew"), central);
+    var2Scaling->addButton(rb, 2);
+    dataLayout->addWidget(rb, 0, 3);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
     connect(var2Scaling, SIGNAL(buttonClicked(int)),
             this, SLOT(var2ScalingChanged(int)));
-    var2TopLayout->addWidget(var2ScalingWidget, 4,1);
 
-    var2SkewFactorLabel = new QLabel(tr("Skew factor"), var2Top);
-    var2TopLayout->addWidget(var2SkewFactorLabel,5,0);
-    var2SkewFactor = new QLineEdit(var2Top);
+    // Create the skew factor line edit    
+    var2SkewFactor = new QLineEdit(central);
+    dataLayout->addWidget(var2SkewFactor, 0, 4);
     connect(var2SkewFactor, SIGNAL(returnPressed()),
             this, SLOT(var2SkewFactorProcessText()));
-    var2TopLayout->addWidget(var2SkewFactor, 5,1);
+
+    //
+    // Create the Limits stuff
+    //
+    limitsGroup = new QGroupBox(central);
+    dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
+
+    limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+//     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
+
+//     limitsSelect = new QComboBox(central);
+//     limitsSelect->addItem(tr("Use Original Data"));
+//     limitsSelect->addItem(tr("Use Current Plot"));
+//     connect(limitsSelect, SIGNAL(activated(int)),
+//             this, SLOT(limitsSelectChanged(int))); 
+//     limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
+
+    // Create the min toggle and line edit
+    var2MinFlag = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(var2MinFlag, 1, 0);
+    connect(var2MinFlag, SIGNAL(toggled(bool)),
+            this, SLOT(var2MinFlagChanged(bool)));
+    var2Min = new QLineEdit(central);
+    connect(var2Min, SIGNAL(returnPressed()),
+            this, SLOT(var2MinProcessText())); 
+    limitsLayout->addWidget(var2Min, 1, 1);
+
+    // Create the max toggle and line edit
+    var2MaxFlag = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(var2MaxFlag, 1, 2);
+    connect(var2MaxFlag, SIGNAL(toggled(bool)),
+            this, SLOT(var2MaxFlagChanged(bool)));
+    var2Max = new QLineEdit(central);
+    connect(var2Max, SIGNAL(returnPressed()),
+            this, SLOT(var2MaxProcessText())); 
+    limitsLayout->addWidget(var2Max, 1, 3);
+
 
     //
     // Create a tab for the var3
@@ -357,73 +429,110 @@ QvisScatterPlotWindow::CreateWindowContents()
     var3TopLayout->setMargin(0);
     var3VeryTopLayout->addLayout(var3TopLayout);
 
-    QLabel *var3Label = new QLabel(tr("Variable"), var3Top);
-    var3TopLayout->addWidget(var3Label,0,0);
 
-    // Create a variable button.
-    var3 = new QvisVariableButton(true, true, true, 
-        QvisVariableButton::Scalars | QvisVariableButton::Curves,
-        var3Top);
-    connect(var3, SIGNAL(activated(const QString &)),
-            this, SLOT(var3Selected(const QString &)));
-    var3TopLayout->addWidget(var3, 0,1);
-
+    // Create a role button
     var3Role = new QComboBox(var3Top);
     for(i = 0; i < 5; ++i)
         var3Role->addItem(roleNames[i]);
     connect(var3Role, SIGNAL(activated(int)),
             this, SLOT(var3RoleChanged(int)));
-    var3TopLayout->addWidget(var3Role, 1,1);
+
     QLabel *var3RoleLabel = new QLabel(tr("Role"), var3Top);
     var3RoleLabel->setBuddy(var3Role);
-    var3TopLayout->addWidget(var3RoleLabel,1,0);
+    var3TopLayout->addWidget(var3RoleLabel, 0, 0, Qt::AlignRight);
+    var3TopLayout->addWidget(var3Role, 0, 1, Qt::AlignLeft);
 
-    // var3 Max
-    var3MaxFlag = new QCheckBox(tr("Maximum"), var3Top);
-    connect(var3MaxFlag, SIGNAL(toggled(bool)),
-            this, SLOT(var3MaxFlagChanged(bool)));
-    var3TopLayout->addWidget(var3MaxFlag, 2,0);
-    var3Max = new QLineEdit(var3Top);
-    connect(var3Max, SIGNAL(returnPressed()),
-            this, SLOT(var3MaxProcessText()));
-    var3TopLayout->addWidget(var3Max, 2,1);
+    // Create a variable button
+    var3 = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars | QvisVariableButton::Curves,
+        var3Top);
+    connect(var3, SIGNAL(activated(const QString &)),
+            this, SLOT(var3Selected(const QString &)));
 
-    // var3 Min
-    var3MinFlag = new QCheckBox(tr("Minimum"), var3Top);
-    connect(var3MinFlag, SIGNAL(toggled(bool)),
-            this, SLOT(var3MinFlagChanged(bool)));
-    var3TopLayout->addWidget(var3MinFlag, 3,0);
-    var3Min = new QLineEdit(var3Top);
-    connect(var3Min, SIGNAL(returnPressed()),
-            this, SLOT(var3MinProcessText()));
-    var3TopLayout->addWidget(var3Min, 3,1);
+    QLabel *var3Label = new QLabel(tr("Variable"), var3Top);
+    var3Label->setBuddy(var3);
+    var3TopLayout->addWidget(var3Label, 0, 2, Qt::AlignRight);
+    var3TopLayout->addWidget(var3, 0, 3, Qt::AlignLeft);
 
-    var3ScalingLabel = new QLabel(tr("Scale"), var3Top);
-    var3TopLayout->addWidget(var3ScalingLabel,4,0);
-    QWidget *var3ScalingWidget = new QWidget(var3Top);
-    var3Scaling = new QButtonGroup(var3ScalingWidget);
-    QHBoxLayout *var3ScalingLayout = new QHBoxLayout(var3ScalingWidget);
-    var3ScalingLayout->setMargin(0);
-    var3ScalingLayout->setSpacing(10);
-    QRadioButton *var3ScalingScalingLinear = new QRadioButton(tr("Linear"),var3ScalingWidget);
-    var3Scaling->addButton(var3ScalingScalingLinear, 0);
-    var3ScalingLayout->addWidget(var3ScalingScalingLinear);
-    QRadioButton *var3ScalingScalingLog = new QRadioButton(tr("Log"),var3ScalingWidget);
-    var3Scaling->addButton(var3ScalingScalingLog, 1);
-    var3ScalingLayout->addWidget(var3ScalingScalingLog);
-    QRadioButton *var3ScalingScalingSkew = new QRadioButton(tr("Skew"),var3ScalingWidget);
-    var3Scaling->addButton(var3ScalingScalingSkew, 2);
-    var3ScalingLayout->addWidget(var3ScalingScalingSkew);
+    //
+    // Create the scale group
+    //
+    dataGroup = new QGroupBox(central);
+    dataGroup->setTitle(tr("Data"));
+    var3TopLayout->addWidget(dataGroup, 1, 0, 2, 4);
+
+    dataLayout = new QGridLayout(dataGroup);
+    dataLayout->setMargin(5);
+    dataLayout->setSpacing(10);
+
+    //
+    // Create the scale radio buttons
+    //
+    dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
+    
+    // Create the radio buttons
+    var3Scaling = new QButtonGroup(central);
+
+    rb = new QRadioButton(tr("Linear"), central);
+    rb->setChecked(true);
+    var3Scaling->addButton(rb, 0);
+    dataLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Log"), central);
+    var3Scaling->addButton(rb, 1);
+    dataLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton(tr("Skew"), central);
+    var3Scaling->addButton(rb, 2);
+    dataLayout->addWidget(rb, 0, 3);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
     connect(var3Scaling, SIGNAL(buttonClicked(int)),
             this, SLOT(var3ScalingChanged(int)));
-    var3TopLayout->addWidget(var3ScalingWidget, 4,1);
 
-    var3SkewFactorLabel = new QLabel(tr("Skew factor"), var3Top);
-    var3TopLayout->addWidget(var3SkewFactorLabel,5,0);
-    var3SkewFactor = new QLineEdit(var3Top);
+    // Create the skew factor line edit    
+    var3SkewFactor = new QLineEdit(central);
+    dataLayout->addWidget(var3SkewFactor, 0, 4);
     connect(var3SkewFactor, SIGNAL(returnPressed()),
             this, SLOT(var3SkewFactorProcessText()));
-    var3TopLayout->addWidget(var3SkewFactor, 5,1);
+
+    //
+    // Create the Limits stuff
+    //
+    limitsGroup = new QGroupBox(central);
+    dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
+
+    limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+//     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
+
+//     limitsSelect = new QComboBox(central);
+//     limitsSelect->addItem(tr("Use Original Data"));
+//     limitsSelect->addItem(tr("Use Current Plot"));
+//     connect(limitsSelect, SIGNAL(activated(int)),
+//             this, SLOT(limitsSelectChanged(int))); 
+//     limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
+
+    // Create the min toggle and line edit
+    var3MinFlag = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(var3MinFlag, 1, 0);
+    connect(var3MinFlag, SIGNAL(toggled(bool)),
+            this, SLOT(var3MinFlagChanged(bool)));
+    var3Min = new QLineEdit(central);
+    connect(var3Min, SIGNAL(returnPressed()),
+            this, SLOT(var3MinProcessText())); 
+    limitsLayout->addWidget(var3Min, 1, 1);
+
+    // Create the max toggle and line edit
+    var3MaxFlag = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(var3MaxFlag, 1, 2);
+    connect(var3MaxFlag, SIGNAL(toggled(bool)),
+            this, SLOT(var3MaxFlagChanged(bool)));
+    var3Max = new QLineEdit(central);
+    connect(var3Max, SIGNAL(returnPressed()),
+            this, SLOT(var3MaxProcessText())); 
+    limitsLayout->addWidget(var3Max, 1, 3);
+
 
     //
     // Create a tab for the var4
@@ -437,73 +546,111 @@ QvisScatterPlotWindow::CreateWindowContents()
     var4TopLayout->setMargin(0);
     var4VeryTopLayout->addLayout(var4TopLayout);
 
-    QLabel *var4Label = new QLabel(tr("Variable"), var4Top);
-    var4TopLayout->addWidget(var4Label,0,0);
 
-    // Create a variable button.
-    var4 = new QvisVariableButton(true, true, true, 
-        QvisVariableButton::Scalars | QvisVariableButton::Curves,
-        var4Top);
-    connect(var4, SIGNAL(activated(const QString &)),
-            this, SLOT(var4Selected(const QString &)));
-    var4TopLayout->addWidget(var4, 0,1);
 
+    // Create a role button
     var4Role = new QComboBox(var4Top);
     for(i = 0; i < 5; ++i)
         var4Role->addItem(roleNames[i]);
     connect(var4Role, SIGNAL(activated(int)),
             this, SLOT(var4RoleChanged(int)));
-    var4TopLayout->addWidget(var4Role, 1,1);
+
     QLabel *var4RoleLabel = new QLabel(tr("Role"), var4Top);
     var4RoleLabel->setBuddy(var4Role);
-    var4TopLayout->addWidget(var4RoleLabel,1,0);
+    var4TopLayout->addWidget(var4RoleLabel, 0, 0, Qt::AlignRight);
+    var4TopLayout->addWidget(var4Role, 0, 1, Qt::AlignLeft);
 
-    // var4 Max
-    var4MaxFlag = new QCheckBox(tr("Maximum"), var4Top);
-    connect(var4MaxFlag, SIGNAL(toggled(bool)),
-            this, SLOT(var4MaxFlagChanged(bool)));
-    var4TopLayout->addWidget(var4MaxFlag, 2,0);
-    var4Max = new QLineEdit(var4Top);
-    connect(var4Max, SIGNAL(returnPressed()),
-            this, SLOT(var4MaxProcessText()));
-    var4TopLayout->addWidget(var4Max, 2,1);
+    // Create a variable button
+    var4 = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars | QvisVariableButton::Curves,
+        var4Top);
+    connect(var4, SIGNAL(activated(const QString &)),
+            this, SLOT(var4Selected(const QString &)));
 
-    // var4 Min
-    var4MinFlag = new QCheckBox(tr("Minimum"), var4Top);
-    connect(var4MinFlag, SIGNAL(toggled(bool)),
-            this, SLOT(var4MinFlagChanged(bool)));
-    var4TopLayout->addWidget(var4MinFlag, 3,0);
-    var4Min = new QLineEdit(var4Top);
-    connect(var4Min, SIGNAL(returnPressed()),
-            this, SLOT(var4MinProcessText()));
-    var4TopLayout->addWidget(var4Min, 3,1);
+    QLabel *var4Label = new QLabel(tr("Variable"), var4Top);
+    var4Label->setBuddy(var4);
+    var4TopLayout->addWidget(var4Label, 0, 2, Qt::AlignRight);
+    var4TopLayout->addWidget(var4, 0, 3, Qt::AlignLeft);
 
-    var4ScalingLabel = new QLabel(tr("Scale"), var4Top);
-    var4TopLayout->addWidget(var4ScalingLabel,4,0);
-    QWidget *var4ScalingWidget = new QWidget(var4Top);
-    var4Scaling = new QButtonGroup(var4ScalingWidget);
-    QHBoxLayout *var4ScalingLayout = new QHBoxLayout(var4ScalingWidget);
-    var4ScalingLayout->setMargin(0);
-    var4ScalingLayout->setSpacing(10);
-    QRadioButton *var4ScalingScalingLinear = new QRadioButton(tr("Linear"),var4ScalingWidget);
-    var4Scaling->addButton(var4ScalingScalingLinear, 0);
-    var4ScalingLayout->addWidget(var4ScalingScalingLinear);
-    QRadioButton *var4ScalingScalingLog = new QRadioButton(tr("Log"),var4ScalingWidget);
-    var4Scaling->addButton(var4ScalingScalingLog, 1);
-    var4ScalingLayout->addWidget(var4ScalingScalingLog);
-    QRadioButton *var4ScalingScalingSkew = new QRadioButton(tr("Skew"),var4ScalingWidget);
-    var4Scaling->addButton(var4ScalingScalingSkew, 2);
-    var4ScalingLayout->addWidget(var4ScalingScalingSkew);
+    //
+    // Create the scale group
+    //
+    dataGroup = new QGroupBox(central);
+    dataGroup->setTitle(tr("Data"));
+    var4TopLayout->addWidget(dataGroup, 1, 0, 2, 4);
+
+    dataLayout = new QGridLayout(dataGroup);
+    dataLayout->setMargin(5);
+    dataLayout->setSpacing(10);
+
+    //
+    // Create the scale radio buttons
+    //
+    dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
+    
+    // Create the radio buttons
+    var4Scaling = new QButtonGroup(central);
+
+    rb = new QRadioButton(tr("Linear"), central);
+    rb->setChecked(true);
+    var4Scaling->addButton(rb, 0);
+    dataLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton(tr("Log"), central);
+    var4Scaling->addButton(rb, 1);
+    dataLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton(tr("Skew"), central);
+    var4Scaling->addButton(rb, 2);
+    dataLayout->addWidget(rb, 0, 3);
+
+    // Each time a radio button is clicked, call the scale clicked slot.
     connect(var4Scaling, SIGNAL(buttonClicked(int)),
             this, SLOT(var4ScalingChanged(int)));
-    var4TopLayout->addWidget(var4ScalingWidget, 4,1);
 
-    var4SkewFactorLabel = new QLabel(tr("Skew factor"), var4Top);
-    var4TopLayout->addWidget(var4SkewFactorLabel,5,0);
-    var4SkewFactor = new QLineEdit(var4Top);
+    // Create the skew factor line edit    
+    var4SkewFactor = new QLineEdit(central);
+    dataLayout->addWidget(var4SkewFactor, 0, 4);
     connect(var4SkewFactor, SIGNAL(returnPressed()),
             this, SLOT(var4SkewFactorProcessText()));
-    var4TopLayout->addWidget(var4SkewFactor, 5,1);
+
+    //
+    // Create the Limits stuff
+    //
+    limitsGroup = new QGroupBox(central);
+    dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
+
+    limitsLayout = new QGridLayout(limitsGroup);
+    limitsLayout->setMargin(5);
+    limitsLayout->setSpacing(10);
+
+//     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
+
+//     limitsSelect = new QComboBox(central);
+//     limitsSelect->addItem(tr("Use Original Data"));
+//     limitsSelect->addItem(tr("Use Current Plot"));
+//     connect(limitsSelect, SIGNAL(activated(int)),
+//             this, SLOT(limitsSelectChanged(int))); 
+//     limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
+
+    // Create the min toggle and line edit
+    var4MinFlag = new QCheckBox(tr("Minimum"), central);
+    limitsLayout->addWidget(var4MinFlag, 1, 0);
+    connect(var4MinFlag, SIGNAL(toggled(bool)),
+            this, SLOT(var4MinFlagChanged(bool)));
+    var4Min = new QLineEdit(central);
+    connect(var4Min, SIGNAL(returnPressed()),
+            this, SLOT(var4MinProcessText())); 
+    limitsLayout->addWidget(var4Min, 1, 1);
+
+    // Create the max toggle and line edit
+    var4MaxFlag = new QCheckBox(tr("Maximum"), central);
+    limitsLayout->addWidget(var4MaxFlag, 1, 2);
+    connect(var4MaxFlag, SIGNAL(toggled(bool)),
+            this, SLOT(var4MaxFlagChanged(bool)));
+    var4Max = new QLineEdit(central);
+    connect(var4Max, SIGNAL(returnPressed()),
+            this, SLOT(var4MaxProcessText())); 
+    limitsLayout->addWidget(var4Max, 1, 3);
+
 
     //
     // Appearance widgets
@@ -519,14 +666,70 @@ QvisScatterPlotWindow::CreateWindowContents()
     aLayout->setSpacing(10);
     aTopLayout->addStretch(10);
 
-    pointSize = new QLineEdit(appearanceGroup);
-    connect(pointSize, SIGNAL(returnPressed()),
-            this, SLOT(pointSizeProcessText()));
-    aLayout->addWidget(pointSize, 0, 1);
-    pointSizeLabel = new QLabel(tr("Point size"), appearanceGroup);
-    pointSizeLabel->setBuddy(pointSize);
-    aLayout->addWidget(pointSizeLabel, 0, 0);
+    // Scaling
+    QGroupBox * scalingGroup = new QGroupBox(central);
+    scalingGroup->setTitle(tr("Scaling"));
+    aTopLayout->addWidget(scalingGroup);
 
+    QGridLayout *scalingLayout = new QGridLayout(scalingGroup);
+    scalingLayout->setMargin(5);
+    scalingLayout->setSpacing(10);
+ 
+    scaleCube = new QCheckBox(tr("Normlize the axis to a cube"), appearanceGroup);
+    connect(scaleCube, SIGNAL(toggled(bool)),
+            this, SLOT(scaleCubeChanged(bool)));
+    scalingLayout->addWidget(scaleCube, 0, 0 );
+
+    // Color
+    QGroupBox * colorGroup = new QGroupBox(central);
+    colorGroup->setTitle(tr("Color"));
+    aTopLayout->addWidget(colorGroup);
+
+    QGridLayout *colorLayout = new QGridLayout(colorGroup);
+    colorLayout->setMargin(5);
+    colorLayout->setSpacing(10);
+
+
+    // Create the mode buttons that determine if the window is in single
+    // or multiple color mode.
+    colorModeButtons = new QButtonGroup(colorGroup);
+    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+
+    rb = new QRadioButton(tr("Foreground Color"), colorGroup);
+    colorModeButtons->addButton(rb, 0);
+    colorLayout->addWidget(rb, 0, 0);
+    rb = new QRadioButton(tr("Single"), colorGroup);
+    colorModeButtons->addButton(rb, 1);
+    colorLayout->addWidget(rb, 1, 0);
+    colorTableRadioButton =
+      new QRadioButton(tr("Color table"), colorGroup);
+    colorModeButtons->addButton(colorTableRadioButton, 2);
+    colorLayout->addWidget(colorTableRadioButton, 2, 0);
+
+    // Create the single color button.
+    singleColor = new QvisColorButton(colorGroup);
+    singleColor->setButtonColor(QColor(255, 0, 0));
+    connect(singleColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(singleColorChanged(const QColor &)));
+    colorLayout->addWidget(singleColor, 1, 1);
+
+    // Create the color table selection.
+    colorTableName = new QvisColorTableButton(colorGroup);
+    connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
+            this, SLOT(colorTableNameChanged(bool, const QString&)));
+    colorLayout->addWidget(colorTableName, 2, 1);
+
+
+    // Rendering
+    QGroupBox * styleGroup = new QGroupBox(central);
+    styleGroup->setTitle(tr("Point Style"));
+    aTopLayout->addWidget(styleGroup);
+
+    QGridLayout *styleLayout = new QGridLayout(styleGroup);
+    styleLayout->setMargin(5);
+    styleLayout->setSpacing(10);
+ 
     pointType = new QComboBox(appearanceGroup);
     pointType->addItem(tr("Box"));
     pointType->addItem(tr("Axis"));
@@ -535,43 +738,18 @@ QvisScatterPlotWindow::CreateWindowContents()
     pointType->addItem(tr("Sphere"));
     connect(pointType, SIGNAL(activated(int)),
             this, SLOT(pointTypeChanged(int)));
-    aLayout->addWidget(pointType, 1, 1);
+    styleLayout->addWidget(pointType, 0, 1);
     QLabel *pointTypeLabel = new QLabel(tr("Point Type"), appearanceGroup);
     pointTypeLabel->setBuddy(pointType);
-    aLayout->addWidget(pointTypeLabel, 1, 0);
+    styleLayout->addWidget(pointTypeLabel, 0, 0);
 
-    colorTableName = new QvisColorTableButton(appearanceGroup);
-    connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
-            this, SLOT(colorTableNameChanged(bool, const QString&)));
-    aLayout->addWidget(colorTableName, 2, 1);
-    QLabel *colorTableNameLabel = new QLabel(tr("Color table"), appearanceGroup);
-    colorTableNameLabel->setBuddy(colorTableName);
-    aLayout->addWidget(colorTableNameLabel, 2, 0);
-
-    singleColorLabel = new QLabel(tr("Single color"), appearanceGroup);
-    aLayout->addWidget(singleColorLabel, 3, 0);
-
-    QWidget *scBox = new QWidget(appearanceGroup);
-    QHBoxLayout *scBoxLayout = new QHBoxLayout(scBox);
-    scBoxLayout->setMargin(0);
-    scBoxLayout->setSpacing(10);
-    aLayout->addWidget(scBox, 3, 1);
-
-    singleColor = new QvisColorButton(scBox);
-    singleColorLabel->setBuddy(singleColor);
-    connect(singleColor, SIGNAL(selectedColor(const QColor&)),
-            this, SLOT(singleColorChanged(const QColor&)));
-    scBoxLayout->addWidget(singleColor);
-
-    foregroundFlag = new QCheckBox(tr("Use foreground "), scBox);
-    connect(foregroundFlag, SIGNAL(toggled(bool)),
-            this, SLOT(foregroundFlagChanged(bool)));
-    scBoxLayout->addWidget(foregroundFlag);
-
-    scaleCube = new QCheckBox(tr("Scale to cube"), appearanceGroup);
-    connect(scaleCube, SIGNAL(toggled(bool)),
-            this, SLOT(scaleCubeChanged(bool)));
-    aLayout->addWidget(scaleCube, 4, 0, 1, 2);
+    pointSize = new QLineEdit(appearanceGroup);
+    connect(pointSize, SIGNAL(returnPressed()),
+            this, SLOT(pointSizeProcessText()));
+    styleLayout->addWidget(pointSize, 0, 3);
+    pointSizeLabel = new QLabel(tr("Point size"), appearanceGroup);
+    pointSizeLabel->setBuddy(pointSize);
+    styleLayout->addWidget(pointSizeLabel, 0, 2);
 
     //
     // Role labels.
@@ -586,9 +764,9 @@ QvisScatterPlotWindow::CreateWindowContents()
     yCoordRoleLabel = new QLabel(tr("Y coordinate:    "), roleGroup);
     roleLayout->addWidget(yCoordRoleLabel, 1, 0);
     zCoordRoleLabel = new QLabel(tr("Z coordinate:    "), roleGroup);
-    roleLayout->addWidget(zCoordRoleLabel, 0, 1);
+    roleLayout->addWidget(zCoordRoleLabel, 2, 0);
     colorRoleLabel = new QLabel(tr("Color:    "), roleGroup);
-    roleLayout->addWidget(colorRoleLabel, 1, 1);
+    roleLayout->addWidget(colorRoleLabel, 0, 1);
 
     //
     // Create the misc stuff
@@ -688,15 +866,9 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             break;
         case ScatterAttributes::ID_var1Scaling:
             if (atts->GetVar1Scaling() == ScatterAttributes::Skew)
-            {
                 var1SkewFactor->setEnabled(true);
-                var1SkewFactorLabel->setEnabled(true);
-            }
             else
-            {
                 var1SkewFactor->setEnabled(false);
-                var1SkewFactorLabel->setEnabled(false);
-            }
             var1Scaling->blockSignals(true);
             var1Scaling->button(atts->GetVar1Scaling())->setChecked(true);
             var1Scaling->blockSignals(false);
@@ -735,15 +907,9 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             break;
         case ScatterAttributes::ID_var2Scaling:
             if (atts->GetVar2Scaling() == ScatterAttributes::Skew)
-            {
                 var2SkewFactor->setEnabled(true);
-                var2SkewFactorLabel->setEnabled(true);
-            }
             else
-            {
                 var2SkewFactor->setEnabled(false);
-                var2SkewFactorLabel->setEnabled(false);
-            }
             var2Scaling->blockSignals(true);
             var2Scaling->button(atts->GetVar2Scaling())->setChecked(true);
             var2Scaling->blockSignals(false);
@@ -782,15 +948,9 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             break;
         case ScatterAttributes::ID_var3Scaling:
             if (atts->GetVar3Scaling() == ScatterAttributes::Skew)
-            {
                 var3SkewFactor->setEnabled(true);
-                var3SkewFactorLabel->setEnabled(true);
-            }
             else
-            {
                 var3SkewFactor->setEnabled(false);
-                var3SkewFactorLabel->setEnabled(false);
-            }
             var3Scaling->blockSignals(true);
             var3Scaling->button(atts->GetVar3Scaling())->setChecked(true);
             var3Scaling->blockSignals(false);
@@ -829,15 +989,9 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             break;
         case ScatterAttributes::ID_var4Scaling:
             if (atts->GetVar4Scaling() == ScatterAttributes::Skew)
-            {
                 var4SkewFactor->setEnabled(true);
-                var4SkewFactorLabel->setEnabled(true);
-            }
             else
-            {
                 var4SkewFactor->setEnabled(false);
-                var4SkewFactorLabel->setEnabled(false);
-            }
             var4Scaling->blockSignals(true);
             var4Scaling->button(atts->GetVar4Scaling())->setChecked(true);
             var4Scaling->blockSignals(false);
@@ -862,6 +1016,17 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             scaleCube->setChecked(atts->GetScaleCube());
             scaleCube->blockSignals(false);
             break;
+        case ScatterAttributes::ID_colorType:
+          if( atts->GetColorType() ==
+              ScatterAttributes::ColorByForegroundColor) 
+            colorModeButtons->button(0)->setChecked(true);
+          else if( atts->GetColorType() ==
+                  ScatterAttributes::ColorBySingleColor) 
+            colorModeButtons->button(1)->setChecked(true);
+          else if( atts->GetColorType() ==
+                  ScatterAttributes::ColorByColorTable) 
+            colorModeButtons->button(2)->setChecked(true);
+            break;
         case ScatterAttributes::ID_colorTableName:
             colorTableName->setColorTable(atts->GetColorTableName().c_str());
             break;
@@ -870,16 +1035,6 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
                                atts->GetSingleColor().Green(),
                                atts->GetSingleColor().Blue());
             singleColor->setButtonColor(tempcolor);
-            break;
-        case ScatterAttributes::ID_foregroundFlag:
-            if(singleColorLabel->isEnabled() == atts->GetForegroundFlag())
-            {
-                singleColorLabel->setEnabled(!atts->GetForegroundFlag());
-                singleColor->setEnabled(!atts->GetForegroundFlag());
-            }
-            foregroundFlag->blockSignals(true);
-            foregroundFlag->setChecked(atts->GetForegroundFlag());
-            foregroundFlag->blockSignals(false);
             break;
         case ScatterAttributes::ID_legendFlag:
             legendToggle->blockSignals(true);
@@ -958,10 +1113,32 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
                 label = label + var;
             }
 
+            if( role == 3)
+            {
+              colorTableRadioButton->setEnabled( haveVar );
+
+              if( atts->GetColorType() ==
+                  ScatterAttributes::ColorByColorTable )
+              {
+                colorModeButtons->blockSignals(true);
+                colorModeButtons->button(0)->setChecked(true);
+                colorModeButtons->blockSignals(false);
+                colorModeChanged(0);
+              }
+
+            }
+
             roleLabels[role]->setText(label);
             roleLabels[role]->setEnabled(haveVar);
         }
     }
+
+    singleColor->setEnabled(atts->GetColorType() ==
+        ScatterAttributes::ColorBySingleColor);
+
+    colorTableName->setEnabled(atts->GetColorType() ==
+        ScatterAttributes::ColorByColorTable);
+
 }
 
 
@@ -1671,6 +1848,18 @@ QvisScatterPlotWindow::scaleCubeChanged(bool val)
     Apply();
 }
 
+void
+QvisScatterPlotWindow::colorModeChanged(int index)
+{
+    if(index == 0)
+        atts->SetColorType(ScatterAttributes::ColorByForegroundColor);
+    else if(index == 1)
+        atts->SetColorType(ScatterAttributes::ColorBySingleColor);
+    else if(index == 2)
+        atts->SetColorType(ScatterAttributes::ColorByColorTable);
+
+    Apply();
+}
 
 void
 QvisScatterPlotWindow::colorTableNameChanged(bool useDefault, const QString &ctName)
@@ -1692,19 +1881,9 @@ QvisScatterPlotWindow::singleColorChanged(const QColor &color)
 
 
 void
-QvisScatterPlotWindow::foregroundFlagChanged(bool val)
-{
-    atts->SetForegroundFlag(val);
-    Apply();
-}
-
-
-void
 QvisScatterPlotWindow::legendToggled(bool val)
 {
     atts->SetLegendFlag(val);
     SetUpdate(false);
     Apply();
 }
-
-
