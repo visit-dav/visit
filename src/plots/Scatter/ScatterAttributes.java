@@ -126,7 +126,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         scaleCube = true;
         colorTableName = new String("hot");
         singleColor = new ColorAttribute(255, 0, 0);
-        colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
+        colorType = COLORINGMETHOD_COLORBYFOREGROUNDCOLOR;
         legendFlag = true;
     }
 
@@ -172,7 +172,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         scaleCube = true;
         colorTableName = new String("hot");
         singleColor = new ColorAttribute(255, 0, 0);
-        colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
+        colorType = COLORINGMETHOD_COLORBYFOREGROUNDCOLOR;
         legendFlag = true;
     }
 

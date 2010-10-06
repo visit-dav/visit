@@ -159,7 +159,7 @@
         255
       </Field>
       <Field name="colorType" label="colorType" type="enum" subtype="ColoringMethod">
-        ColorByColorTable
+        ColorByForegroundColor
       </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true
