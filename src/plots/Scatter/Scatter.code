@@ -24,18 +24,7 @@ Postfix:
     // try to handle old attributes
     if(strcmp(name, "foregroundFlag") == 0)
     {
-      PyObject *new_args;
-
-      // In this case the color is set so the color table should be used.
-      if( ScatterAttributes_GetVar1Role(self, NULL) == PyInt_FromLong(3) ||
-          ScatterAttributes_GetVar2Role(self, NULL) == PyInt_FromLong(3) ||
-          ScatterAttributes_GetVar3Role(self, NULL) == PyInt_FromLong(3) ||
-          ScatterAttributes_GetVar4Role(self, NULL) == PyInt_FromLong(3) )
-      {
-          new_args = Py_BuildValue("(i)", 2);
-      }
-
-      else {
+        PyObject *new_args;
 
         // from the tuple get the foreground value
         int ival;
@@ -44,13 +33,52 @@ Postfix:
 
         // foreground is false so single color and color type is 1
         else if( ival == 0 )
-              new_args = Py_BuildValue("(i)", 1);
+        {
+            new_args = Py_BuildValue("(i)", 1);
+        }
         // foreground is true so foreground color and color type is 0
         else if( ival == 1 )
-              new_args = Py_BuildValue("(i)", 0);
-      }
+        {
+            new_args = Py_BuildValue("(i)", 0);
+        }
+
+        obj = ScatterAttributes_SetColorType(self, new_args);
+        Py_DECREF(new_args);
     }
 
+    // If the user changes one of the roles and one of the roles is
+    // "Color" then assume that they want to use the color table.
+
+    // The above maintains backwards compatibility. Below allows new
+    // foreward new capibility.
+
+    // If they do not want to use the color table and want to use
+    // either the foreground or a single color they must set it after
+    // all variables (roles) have been set.
+    if( strcmp(name, "var1Role") == 0 ||
+        strcmp(name, "var2Role") == 0 ||
+        strcmp(name, "var3Role") == 0 ||
+        strcmp(name, "var4Role") == 0 )
+    {
+        // A color variable has been specified.
+        if(ScatterAttributes_GetVar1Role(self, NULL) == PyInt_FromLong(3) ||
+           ScatterAttributes_GetVar2Role(self, NULL) == PyInt_FromLong(3) ||
+           ScatterAttributes_GetVar3Role(self, NULL) == PyInt_FromLong(3) ||
+           ScatterAttributes_GetVar4Role(self, NULL) == PyInt_FromLong(3) )
+        {
+            PyObject *new_args = Py_BuildValue("(i)", 2);
+            obj = ScatterAttributes_SetColorType(self, new_args);
+            Py_DECREF(new_args);
+        }
+
+        // No color variable so use the foreground as a default.
+        else
+        {
+            PyObject *new_args = Py_BuildValue("(i)", 0);
+            obj = ScatterAttributes_SetColorType(self, new_args);
+            Py_DECREF(new_args);
+        }
+    }
 
 Target: xml2atts
 Function: ChangesRequireRecalculation
