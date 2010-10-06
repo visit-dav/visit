@@ -664,6 +664,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     preshiftX = 0;
     preshiftY = 0;
     useWindowMetrics = true;
+    noViewerGeometry = true;
 
     // Default values.
     localOnly = false;
@@ -1581,6 +1582,9 @@ QvisGUIApplication::FinalInitialization()
     debug4 << "QvisGUIApplication::FinalInitialization: initStage="
            << initStage << endl;
 
+    // We use this to check if the gui is fully initialized.
+#define LAST_FINAL_INIT_STAGE 15
+
     switch(initStage)
     {
     case 0:
@@ -1746,7 +1750,6 @@ QvisGUIApplication::FinalInitialization()
     default:
         visitTimer->StopTimer(stagedInit, "FinalInitialization");
         visitTimer->StopTimer(completeInit, "VisIt to be ready");
-
         moreInit = false;
     }
 
@@ -1762,6 +1765,60 @@ QvisGUIApplication::FinalInitialization()
 }
 
 // ****************************************************************************
+// Method: QvisGUIApplication::IsFullyInitialized
+//
+// Purpose: 
+//   Returns whether the gui has been fully initialized.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct  6 12:09:27 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisGUIApplication::IsFullyInitialized() const
+{
+    return initStage >= LAST_FINAL_INIT_STAGE;
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SetWindowArea
+//
+// Purpose: 
+//   Set the window area for the viewer.
+//
+// Arguments:
+//   x,y,w,h : The window area for the viewer.
+//
+// Returns:    
+//
+// Note:       We let the routine tell the viewer the window area if the gui
+//             is fully initialized or if there is no viewer geometry. This
+//             lets us rely on the viewer using the viewer geometry during
+//             setup if it was provided. If no viewer geometry was given then
+//             we allow the window area to be set. We also allow the window area
+//             to be set always if the gui is fully initialized, at which point
+//             we're probably changing orientation, etc.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct  6 12:02:51 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::SetWindowArea(int x, int y, int w, int h)
+{
+    if(IsFullyInitialized() || noViewerGeometry)
+    {
+        GetViewerMethods()->SetWindowArea(x, y, w, h);
+    }
+}
+
+// ****************************************************************************
 // Method: QvisGUIApplication::ShowAllWindows
 //
 // Purpose: 
@@ -1773,6 +1830,8 @@ QvisGUIApplication::FinalInitialization()
 // Creation:   Fri May  7 17:02:57 PDT 2010
 //
 // Modifications:
+//   Brad Whitlock, Wed Oct  6 12:14:21 PDT 2010
+//   I made it call SetWindowArea for this class.
 //   
 // ****************************************************************************
 
@@ -1783,7 +1842,7 @@ QvisGUIApplication::ShowAllWindows()
     int x, y, w, h;
     CalculateViewerArea(GetViewerState()->GetAppearanceAttributes()->GetOrientation(),
         x, y, w, h);
-    GetViewerMethods()->SetWindowArea(x, y, w, h);
+    SetWindowArea(x, y, w, h);
 
     // Tell the viewer to show its windows.
     GetViewerMethods()->ShowAllWindows();
@@ -2024,6 +2083,9 @@ QvisGUIApplication::Quit()
 //    Jeremy Meredith, Fri Mar 26 13:11:46 EDT 2010
 //    Allow for the -o command line option to take an optional ,<pluginID>
 //    suffix, e.g. "-o foobar,LAMMPS_1.0".
+//
+//    Brad Whitlock, Wed Oct  6 12:20:28 PDT 2010
+//    Detect whether the user wants -viewer_geometry.
 //
 // ****************************************************************************
 
@@ -2315,6 +2377,14 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
         {
             useWindowMetrics = false;
         }
+        else if(current == "-viewer_geometry")
+        {
+            // Detect whether -viewer_geometry was passed. We don't use it
+            // except that when it's present, we don't tell the viewer where
+            // to put its windows on startup.
+            noViewerGeometry = false;
+            ++i;
+        }
         else if(current == std::string("-launchengine"))
         {
             if(i + 1 < argc)
@@ -2446,7 +2516,9 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
 // Creation:   Tue Jan 29 13:02:36 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct  6 12:14:21 PDT 2010
+//   I made it call SetWindowArea for this class.
+//
 // ****************************************************************************
 
 void
@@ -2465,7 +2537,7 @@ QvisGUIApplication::SetOrientation(int orientation)
     //
     int x, y, w, h;
     CalculateViewerArea(orientation, x, y, w, h);
-    GetViewerMethods()->SetWindowArea(x, y, w, h);
+    SetWindowArea(x, y, w, h);
 }
 
 // ****************************************************************************
