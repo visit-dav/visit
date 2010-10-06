@@ -76,6 +76,7 @@ class NetworkManager;
 class NonBlockingRPC;
 class Observer;
 class ParentProcess;
+class ParsingExprList;
 class ProcessAttributes;
 class ViewerRemoteProcess;
 class VisItDisplay;
