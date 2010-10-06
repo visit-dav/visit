@@ -959,6 +959,7 @@
 #
 #     Tom Fogal, Wed Oct  6 00:12:56 MDT 2010
 #     Added a hack to workaround a Mesa issue.
+#     Only apply said hack on Linux, though.
 #
 # *****************************************************************************
 #                                                                             #
@@ -3002,7 +3003,9 @@ function build_mesa
     
     # Neither of these should be necessary, but we use them as a temporary
     # workaround for a mesa issue.
-    HACK_FLAGS="-fPIC -DGLX_USE_TLS"
+    if test `uname` = "Linux" ; then
+      HACK_FLAGS="-fPIC -DGLX_USE_TLS"
+    fi
     ./configure \
       CC="${C_COMPILER}" \
       CXX="${CXX_COMPILER}" \
