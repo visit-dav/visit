@@ -337,7 +337,13 @@ private:
             {
                 float cen = (pc->min[d] + pc->max[d])/2.0f;
                 int   ind = (int)( (cen-min[d])*iext[d] );
-                
+
+                if( ind<0 )
+                    ind = 0;
+
+                if( ind>=nbuckets )
+                    ind = nbuckets-1;
+
                 b[d][ind].add( pc->min[d], pc->max[d] );
             }
         }
