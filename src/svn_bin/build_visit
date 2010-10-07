@@ -2975,16 +2975,22 @@ function build_mesa
 
     info 
     
+    # Neither of these should be necessary, but we use them as a temporary
+    # workaround for a mesa issue.
+    if test `uname` = "Linux" ; then
+      HACK_FLAGS="-fPIC -DGLX_USE_TLS"
+    fi
     ./configure \
       CC="${C_COMPILER}" \
       CXX="${CXX_COMPILER}" \
-      CFLAGS="${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE"     \
-      CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE" \
+      CFLAGS="${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
+      CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
       --prefix=${PF}               \
       --without-demos              \
       --disable-gallium            \
       --with-driver=xlib           \
       --enable-gl-osmesa           \
+      --enable-glx-tls             \
       --disable-glw                \
       --disable-glu                \
       --disable-egl ${MESA_STATIC_DYNAMIC}
@@ -3033,14 +3039,15 @@ function build_mesa
     ./configure \
       CC="${C_COMPILER}" \
       CXX="${CXX_COMPILER}" \
-      CFLAGS="${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE"     \
-      CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE" \
+      CFLAGS="${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
+      CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
       --prefix=${PF}                    \
       --without-demos                   \
       --with-driver=osmesa              \
       --disable-gallium                 \
       --with-max-width=16384            \
       --with-max-height=16384           \
+      --enable-glx-tls                  \
       --disable-glw                     \
       ${DISABLE_GLU}                    \
       --disable-egl  ${MESA_STATIC_DYNAMIC}
