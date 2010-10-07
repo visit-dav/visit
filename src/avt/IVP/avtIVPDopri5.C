@@ -445,9 +445,10 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
             // passed in - let's reduce that and try again.
             // (we're really using local_h_max since h_max is const double&)
             
-            // (Oh, and if local_h_max is zero, let's set it to unit
+            // (Oh, and if local_h_max is zero or infinite, let's set it to unit
             // length (= direction))
-            if( !local_h_max )
+            if( local_h_max == 0.0 ||
+                local_h_max == std::numeric_limits<double>::infinity() )
                 local_h_max = direction;
             else 
                 local_h_max /= 2;
