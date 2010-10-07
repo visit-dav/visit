@@ -8817,6 +8817,9 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
               warn "Please hit enter to continue."
               (read junkvar)
             fi
+        else
+            warn "Some versions of 'whiptail' fail to display anything with --infobox."
+            warn "Continuing in command line mode..."
         fi
     fi
 fi
