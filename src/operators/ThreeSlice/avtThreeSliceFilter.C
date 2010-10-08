@@ -166,6 +166,11 @@ avtThreeSliceFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Wed Sep  6 14:20:59 PDT 2006 
 //    Another fix for new vtk pipeline changes. 
 //
+//    Jeremy Meredith, Fri Oct  8 17:14:47 EDT 2010
+//    ALWAYS set the cell list in vtkSlicer, even if it's NULL.  Since we 
+//    keep the vtkSlicer around, it might have an old cell list from a
+//    previous pass, and we need to clear it out if it's no longer valid.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -328,8 +333,7 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         {
             continue;
         }
-        if (cellList[i])
-            slicer->SetCellList(cellList[i], nCells[i]);
+        slicer->SetCellList(cellList[i], nCells[i]);
 
         //
         // Set and fix the plane orientation.
