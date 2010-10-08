@@ -228,6 +228,10 @@ NewHandler(void)
 //    Brad Whitlock, Thu Jun 18 15:21:06 PDT 2009
 //    I added -debug-processor-stride
 //
+//    Kathleen Bonnell, Thu Sep  7 12:02:15 PDT 2010
+//    Use InstallationFunction GetUserVisItDirectory instead of retreiving
+//    VISITUSERHOME directly from environment (in case it is not set).
+//
 // ****************************************************************************
 
 void
@@ -359,11 +363,9 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
 #ifdef WIN32
     // On windows, we want timings and log files to go in user's directory,
     // not install directory, because users may not have write permissions.
-    const char *home = getenv("VISITUSERHOME");
-    std::string homedir;
-    if(home != 0)
+    std::string homedir = GetUserVisItDirectory();
+    if(!homedir.empty())
     {
-        homedir = std::string(home);
         if(homedir[homedir.size() - 1] != visitcommon::SlashChar())
             homedir += VISIT_SLASH_STRING;
         homedir += executableName;

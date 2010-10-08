@@ -18,6 +18,7 @@
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
 #include <RuntimeSetting.h>
+#include <InstallationFunctions.h>
 
 #include <StringHelpers.h>
 
@@ -204,6 +205,9 @@ VisItViewer::SetVISITHOME(const std::string &path)
 //   Brad Whitlock, Tue Aug 26 13:41:04 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Bonnell, Fri Oct 8 08:57:19 PDT 2010
+//   Remove extra leading underscore from _WIN32.
+//
 // ****************************************************************************
 
 std::string
@@ -214,11 +218,15 @@ VisItViewer::GetVisItHome() const
     {
         if(getenv("VISITHOME") != NULL)
             home = getenv("VISITHOME");
+#ifdef _WIN32
+        else
+            home = GetVisItInstallationDirectory();
+#endif
     }
     else if(visitHomeMethod == FromArgv0)
     {
         QString appDir(QDir::current().path());
-#if defined(__WIN32)
+#if defined(_WIN32)
         int index = appDir.lastIndexOf("\\");
 #else
         int index = appDir.lastIndexOf("/");
@@ -828,13 +836,15 @@ VisItViewer::GetOperatorIndex(const std::string &operatorName) const
 // Creation:   Thu Aug 21 15:20:06 PDT 2008
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Oct 8 08:57:19 PDT 2010
+//   Remove extra leading underscore from _WIN32.
 //   
 // ****************************************************************************
 
 std::string
 VisItViewer::GetVisItCommand() const
 {
-#if defined(__WIN32)
+#if defined(_WIN32)
     return GetVisItHome() + "\\visit.exe";
 #else
     return GetVisItHome() + "/bin/visit";

@@ -46,6 +46,8 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include <direct.h>
+#include <shlobj.h>
+#include <shlwapi.h>
 #else
 #include <unistd.h>
 #include <sys/types.h>
@@ -254,30 +256,60 @@ GetSystemConfigFile(const char *filename)
 //   Tom Fogal, Sun Apr 19 12:44:06 MST 2009
 //   Use `Environment' to simplify and fix a compilation error.
 //
+//   Kathleen Bonnell, Thu Oct 7 12:47:33 PDT 2010
+//   In case VISITUSERHOME not set on Windows, try a few other things to
+//   fill it in.
+//
 // ****************************************************************************
 
 std::string
 GetUserVisItDirectory()
 {
+    std::string homedir;
 #if defined(_WIN32)
     const std::string home = Environment::get("VISITUSERHOME");
+    if (!home.empty())
+    {
+        homedir = home;
+    }
+    else
+    {
+        char visituserpath[MAX_PATH], expvisituserpath[MAX_PATH];
+        int haveVISITUSERHOME=0;
+        TCHAR szPath[MAX_PATH];
+        struct _stat fs;
+        if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
+                                 SHGFP_TYPE_CURRENT, szPath))) 
+        {
+            SNPRINTF(visituserpath, MAX_PATH, "%s\\VisIt %s", szPath, VISIT_VERSION);
+            haveVISITUSERHOME = 1;
+        }
+
+        if (haveVISITUSERHOME)
+        {
+            ExpandEnvironmentStrings(visituserpath,expvisituserpath,MAX_PATH);
+            if (_stat(expvisituserpath, &fs) == -1)
+            {
+                _mkdir(expvisituserpath);
+            }
+            homedir = expvisituserpath;
+        }
+        else
+        {
+            homedir = GetVisItInstallationDirectory();
+        }
+    }
 #else
     const std::string home = Environment::get("HOME");
-#endif
-
-    std::string homedir;
-
     if(!home.empty())
     {
-#if defined(_WIN32)
-        homedir = home;
-#else
         homedir = home + "/.visit";
+    }
 #endif
 
-        if(homedir[homedir.size() - 1] != VISIT_SLASH_CHAR)
-            homedir += VISIT_SLASH_STRING;
-    }
+
+    if(! homedir.empty() && homedir[homedir.size() - 1] != VISIT_SLASH_CHAR)
+        homedir += VISIT_SLASH_STRING;
 
     return homedir;
 }
@@ -579,6 +611,10 @@ GetIsDevelopmentVersion()
 //   On Windows, no longer use VISITDEVDIR environment variable when VISITHOME 
 //   is not defined.  Rather determine the path from the module's location.
 //
+//   Kathleen Bonnell, Thu Oct  7 09:37:51 PDT 2010 
+//   On Windows, if VISISTHOME not defined in registry, check environment
+//   before getting the module path.
+//
 // ****************************************************************************
 
 std::string
@@ -600,15 +636,25 @@ GetVisItInstallationDirectory(const char *version)
     }
     else
     {
-        char tmpdir[MAX_PATH];
-        if (GetModuleFileName(NULL, tmpdir, MAX_PATH) != 0)
+        // try the environment
+        const std::string idir = Environment::get("VISITHOME");
+        if (!idir.empty())
         {
-            std::string visitpath(tmpdir);
-            int lastSlash = visitpath.rfind("\\");
-            if(lastSlash != -1)
-                installDir = visitpath.substr(0, lastSlash);
-            else
-                installDir = visitpath;
+            installDir = idir;
+        }
+        else
+        {
+            // get the path for this process
+            char tmpdir[MAX_PATH];
+            if (GetModuleFileName(NULL, tmpdir, MAX_PATH) != 0)
+            {
+                std::string visitpath(tmpdir);
+                int lastSlash = visitpath.rfind("\\");
+                if(lastSlash != -1)
+                    installDir = visitpath.substr(0, lastSlash);
+                else
+                    installDir = visitpath;
+            }
         }
     }
     if (visitHome != 0)
@@ -621,12 +667,12 @@ GetVisItInstallationDirectory(const char *version)
     const std::string idir = Environment::get("VISITHOME");
     if(!idir.empty())
     {
-        // The directory often has a "/bin" on the end. Strip it off.
-        std::string home(idir);
         if(isDevelopmentVersion)
             installDir = idir;
         else
         {
+            // The directory often has a "/bin" on the end. Strip it off.
+            std::string home(idir);
             int lastSlash = home.rfind("/");
             if(lastSlash != -1)
                 installDir = home.substr(0, lastSlash);
