@@ -87,6 +87,7 @@ main(int argc, char *argv[])
         // Go up the dierctory structures until we find the "src" directory,
         // which is what we'll use for VISITHOME so it finds our development 
         // version of VisIt.
+#ifndef _WIN32
 #ifdef Q_WS_MACX
         QDir d(argv[0]);
 #else
@@ -98,6 +99,7 @@ main(int argc, char *argv[])
         std::string visithome(d.absolutePath().toStdString());
         qDebug("Setting VISITHOME to %s", visithome.c_str());
         viewer.SetVISITHOME(visithome);
+#endif
 
         //
         // Process the command line arguments first since some may be removed

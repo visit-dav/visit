@@ -615,6 +615,8 @@ RemoteProxyBase::Parallel() const
 // Creation:   Fri May 2 15:01:39 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Oct 8 08:50:11 PDT 2010
+//   On Windows, append "visit" instead of "bin/visit".
 //   
 // ****************************************************************************
 
@@ -632,7 +634,11 @@ RemoteProxyBase::GetVisItString() const
             visitString = dirArg;
             if (dirArg[dirArg.size() - 1] != '/')
                 visitString += "/";
+#ifndef _WIN32
             visitString += "bin/visit";
+#else
+            visitString += "visit";
+#endif
             ++i;
         }
     }
