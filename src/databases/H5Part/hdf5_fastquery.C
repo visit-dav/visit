@@ -271,25 +271,25 @@ bool HDF5_FQ::getDataMinMax(const std::string& variableName,
     switch (type) {
     case BaseFileInterface::H5_Float: {
         float buff[2];
-        ret = dataFile->getActualRange(variableName, 0, (void*)buff);
+        ret = dataFile->getActualRange(variableName, timestep, (void*)buff);
         *(float*)min = buff[0];
         *(float*)max = buff[1];
         break;}
     case BaseFileInterface::H5_Double: {
         double buff[2];
-        ret = dataFile->getActualRange(variableName, 0, (void*)buff);
+        ret = dataFile->getActualRange(variableName, timestep, (void*)buff);
         *(double*)min = buff[0];
         *(double*)max = buff[1];
         break;}
     case BaseFileInterface::H5_Int32: {
         int32_t buff[2];
-        ret = dataFile->getActualRange(variableName, 0, (void*)buff);
+        ret = dataFile->getActualRange(variableName, timestep, (void*)buff);
         *(int32_t*)min = buff[0];
         *(int32_t*)max = buff[1];
         break;}
     case BaseFileInterface::H5_Int64: {
         int64_t buff[2];
-        ret = dataFile->getActualRange(variableName, 0, (void*)buff);
+        ret = dataFile->getActualRange(variableName, timestep, (void*)buff);
         *(int64_t*)min = buff[0];
         *(int64_t*)max = buff[1];
         if (ret == true)
@@ -298,7 +298,7 @@ bool HDF5_FQ::getDataMinMax(const std::string& variableName,
         break;}
     case BaseFileInterface::H5_Byte: {
         char buff[2];
-        ret = dataFile->getActualRange(variableName, 0, (void*)buff);
+        ret = dataFile->getActualRange(variableName, timestep, (void*)buff);
         *(char*)min = buff[0];
         *(char*)max = buff[1];
         break;}
@@ -321,25 +321,25 @@ bool HDF5_FQ::getDataMinMax_Double(const std::string& variableName,
     switch (type) {
     case BaseFileInterface::H5_Float: {
         float buff[2];
-        ret = dataFile->getActualRange(variableName, 0, (void*)buff);
+        ret = dataFile->getActualRange(variableName, timestep, (void*)buff);
         min = buff[0];
         max = buff[1];
         break;}
     case BaseFileInterface::H5_Double: {
         double buff[2];
-        ret = dataFile->getActualRange(variableName, 0, (void*)buff);
+        ret = dataFile->getActualRange(variableName, timestep, (void*)buff);
         min = buff[0];
         max = buff[1];
         break;}
     case BaseFileInterface::H5_Int32: {
         int32_t buff[2];
-        ret = dataFile->getActualRange(variableName, 0, (void*)buff);
+        ret = dataFile->getActualRange(variableName, timestep, (void*)buff);
         min = buff[0];
         max = buff[1];
         break;}
     case BaseFileInterface::H5_Int64: {
         int64_t buff[2];
-        ret = dataFile->getActualRange(variableName, 0, (void*)buff);
+        ret = dataFile->getActualRange(variableName, timestep, (void*)buff);
         min = buff[0];
         max = buff[1];
         if (ret == true)
@@ -348,7 +348,7 @@ bool HDF5_FQ::getDataMinMax_Double(const std::string& variableName,
         break;}
     case BaseFileInterface::H5_Byte: {
         char buff[2];
-        ret = dataFile->getActualRange(variableName, 0, (void*)buff);
+        ret = dataFile->getActualRange(variableName, timestep, (void*)buff);
         min = buff[0];
         max = buff[1];
         break;}
