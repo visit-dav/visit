@@ -52,13 +52,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#if _MSC_VER <= 1310
-#define _VISIT_MSVC "MSVC7.Net"
-#elif _MSC_VER <= 1400
-#define _VISIT_MSVC "MSVC8.Net"
-#else
-#define _VISIT_MSVC ""
-#endif
 
 using std::vector;
 using std::string;
@@ -866,7 +859,7 @@ AddEnvironment(int useShortFileName)
      * Determine visit user path (Path to My Documents).
      */
     {
-        char visituserpath[512], expvisituserpath[512];
+        char visituserpath[MAX_PATH], expvisituserpath[MAX_PATH];
         int haveVISITUSERHOME=0;
         TCHAR szPath[MAX_PATH];
         struct _stat fs;

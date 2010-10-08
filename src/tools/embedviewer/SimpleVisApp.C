@@ -173,6 +173,18 @@ SimpleVisApp::show()
     QMainWindow::show();
 }
 
+// ****************************************************************************
+// Method: SimpleVisApp::selectFile
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 21 10:23:40 PST 2008
+//
+// Modifications:
+//   Kathleen Bonnell, Fri Oct 8 08:55:44 PDT 2010
+//   Make sure path separators are converted to native format. 
+//
+// ****************************************************************************
+
 void
 SimpleVisApp::selectFile()
 {
@@ -181,6 +193,8 @@ SimpleVisApp::selectFile()
                tr("Open File"),
                QDir::current().path(),
                tr("Data files (*.silo *.vtk *.cgns *.nc *.h5 *.pdb *.visit)"));
+
+    filename = QDir::toNativeSeparators(filename);
 
     openFile(filename);
 }
