@@ -53,7 +53,7 @@
         Backward
         Both
       </Enum>
-      <Enum name="TerminationType">
+      <Enum name="ReferenceType">
         Distance
         Time
         Step
@@ -91,9 +91,6 @@
       </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
-      </Field>
-      <Field name="termination" label="Termination" type="double">
-        10.000000
       </Field>
       <Field name="pointSource" label="Starting point" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
         0.000000
@@ -185,6 +182,21 @@
       <Field name="streamlineDirection" label="streamlineDirection" type="enum" subtype="IntegrationDirection">
         Forward
       </Field>
+      <Field name="maxSteps" label="Maximum number of steps" type="int">
+        1000
+      </Field>
+      <Field name="terminateByDistance" label="Use the distance criteria for termination" type="bool">
+        false
+      </Field>
+      <Field name="termDistance" label="Distance for Termination" type="double" enabler="terminateByDistance:true">
+        1.000000
+      </Field>
+      <Field name="terminateByTime" label="Use the time criteria for termination" type="bool">
+        false
+      </Field>
+      <Field name="termTime" label="Time Elapsed for Particle Before Termination" type="double" enabler="terminateByTime:true">
+        1.000000
+      </Field>
       <Field name="maxStepLength" label="maximum step length" type="double">
         0.100000
       </Field>
@@ -205,9 +217,6 @@
       </Field>
       <Field name="absTolBBox" label="AbsTolBBox" type="double" enabler="absTolSizeType:FractionOfBBox">
         0.000001
-      </Field>
-      <Field name="terminationType" label="Termination Type" type="enum" subtype="TerminationType">
-        Distance
       </Field>
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         DormandPrince
@@ -252,6 +261,9 @@
       </Field>
       <Field name="displayEndFlag" label="displayEndFlag" type="bool">
         false
+      </Field>
+      <Field name="referenceTypeForDisplay" label="Reference Type for Display" type="enum" subtype="ReferenceType">
+        Distance
       </Field>
       <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">
         Lines
@@ -356,6 +368,9 @@
       </Field>
       <Field name="forceNodeCenteredData" label="forceNodeCenteredData" type="bool">
         false
+      </Field>
+      <Field name="issueTerminationWarnings" label="Issue Warning When Termination Criteria Is Not Met" type="bool">
+        true
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

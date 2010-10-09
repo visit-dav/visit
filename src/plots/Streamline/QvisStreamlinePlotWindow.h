@@ -137,6 +137,9 @@ class StreamlineAttributes;
 //   Hank Childs, Fri Oct  1 21:13:56 PDT 2010
 //   Add size type option for absTol.
 //
+//   Hank Childs, Wed Oct  6 20:27:09 PDT 2010
+//   Add options for different termination types.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -167,16 +170,18 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void TurnOffSourceAttributes();
     void UpdateAlgorithmAttributes();
     void UpdateIntegrationAttributes();
-    void UpdateTerminationType();
   private slots:
     void sourceTypeChanged(int val);
-    void termTypeChanged(int val);
     void integrationTypeChanged(int val);
     void streamlineAlgorithmChanged(int val);
     void directionTypeChanged(int val);
     void maxStepLengthProcessText();
     void maxTimeStepProcessText();
-    void terminationProcessText();
+    void maxStepsProcessText();
+    void limitMaxTimeChanged(bool);
+    void maxTimeProcessText();
+    void limitMaxDistanceChanged(bool);
+    void maxDistanceProcessText();
     void relTolProcessText();
     void absTolProcessText();
     void absTolSizeTypeChanged(int);
@@ -234,6 +239,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void opacityMaxToggled(bool);
     void processOpacityVarMin();
     void processOpacityVarMax();
+    void displayReferenceTypeChanged(int val);
     void displayBeginToggled(bool);
     void displayEndToggled(bool);
     void tubeDisplayDensityChanged(int);
@@ -251,6 +257,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void seedSizeTypeChanged(int);
     void tubeSizeTypeChanged(int);
     void ribbonSizeTypeChanged(int);
+    void issueWarningForMaxStepsChanged(bool);
 
   private:
     int plotType;
@@ -262,7 +269,11 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *maxStepLengthLabel;
     QLineEdit *maxTimeStep;
     QLabel    *maxTimeStepLabel;
-    QLineEdit *termination;
+    QLineEdit *maxSteps;
+    QCheckBox *limitMaxTime;
+    QLineEdit *maxTime;
+    QCheckBox *limitMaxDistance;
+    QLineEdit *maxDistance;
     QLineEdit *relTol;
     QLabel    *relTolLabel;
     QLineEdit *absTol;
@@ -329,7 +340,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QCheckBox *legendFlag;
     QCheckBox *lightingFlag;
     QCheckBox *pathlineFlag;
-    QComboBox *termType;
     QComboBox *integrationType;
     QLabel    *slAlgoLabel;
     QComboBox *slAlgo;
@@ -345,6 +355,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QCheckBox *legendMinToggle;
     QLineEdit *legendMaxEdit;
     QLineEdit *legendMinEdit;
+    QComboBox *displayReferenceType;
     QLabel    *displayLabel;
     QCheckBox *displayBeginToggle;
     QCheckBox *displayEndToggle;
@@ -363,6 +374,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *geomDisplayQualityLabel;
     QComboBox *geomDisplayQuality;
 
+    QCheckBox *issueWarningForMaxSteps;
     StreamlineAttributes *streamAtts;
 };
 

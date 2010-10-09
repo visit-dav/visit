@@ -117,6 +117,9 @@ Consider the leaveDomains ICs and the balancing at the same time.
 //    Hank Childs, Fri Oct  1 20:43:34 PDT 2010
 //    Initialize absTolIsFraction.
 //
+//    Hank Childs, Mon Oct  4 14:50:01 PDT 2010
+//    Remove data members for termination.
+//
 // ****************************************************************************
 
 avtPICSFilter::avtPICSFilter()
@@ -129,8 +132,6 @@ avtPICSFilter::avtPICSFilter()
     avtICAlgorithm *icAlgo = NULL;
 
     maxStepLength = 0.;
-    terminationType = avtIntegralCurve::TERMINATE_TIME;
-    termination = 100.;
     integrationDirection = VTK_INTEGRATE_FORWARD;
     integrationType = STREAMLINE_INTEGRATE_DORMAND_PRINCE;
     relTol = 1e-7;
@@ -530,58 +531,6 @@ void
 avtPICSFilter::SetIntegrationType(int type)
 {
     integrationType = type;
-}
-
-
-// ****************************************************************************
-// Method: avtPICSFilter::SetTermination
-//
-// Purpose: 
-//   Sets the termination criteria
-//
-// Arguments:
-//   type : Type of termination.
-//   term : When to terminate.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 6 12:57:25 PDT 2002
-//
-// Modifications:
-//   Brad Whitlock, Tue Jan 4 08:58:59 PDT 2005
-//   Removed code to set the max time for the filter.
-//
-//   Christoph Garth, Mon Feb 25 17:12:49 PST 2008
-//   Port to new streamline infrastructure
-//
-//   Dave Pugmire, Fri Jul 11 14:12:49 EST 2008
-//   Changed name to SetTermination and added the terminationType argument.
-//
-//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
-//   Add accurate distance calculate option.
-//
-//   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
-//   Remove accurate distance calculate option.
-//
-//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//   Added termination by number of steps.
-//   
-// ****************************************************************************
-
-void
-avtPICSFilter::SetTermination(int type, double term)
-{
-    terminationType = avtIntegralCurve::TERMINATE_TIME;
-    
-    if (type == STREAMLINE_TERMINATE_DISTANCE)
-        terminationType = avtIntegralCurve::TERMINATE_DISTANCE;
-    else if (type == STREAMLINE_TERMINATE_TIME)
-        terminationType = avtIntegralCurve::TERMINATE_TIME;
-    else if (type == STREAMLINE_TERMINATE_STEPS)
-        terminationType = avtIntegralCurve::TERMINATE_STEPS;
-    else if (type == STREAMLINE_TERMINATE_INTERSECTIONS)
-        terminationType = avtIntegralCurve::TERMINATE_INTERSECTIONS;
-
-    termination = term;
 }
 
 
@@ -2200,6 +2149,10 @@ avtPICSFilter::AddSeedpoints(std::vector<avtVector> &pts,
 //   Hank Childs, Sat Jun  5 16:26:12 CDT 2010
 //   Use avtIntegralCurves.
 //
+//   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+//   Don't do initialization of distance for integral curves.  That happens in
+//   the derived type of integral curve now.
+//
 // ****************************************************************************
 
 void
@@ -2230,8 +2183,6 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                                         GetNextCurveID());
 
                 ic->domain = dom;
-                ic->termination     = termination;
-                ic->terminationType = terminationType;
             
                 curves.push_back(ic);
                 seedPtIds.push_back(ic->id);
@@ -2246,8 +2197,6 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                                         seedTime0, pts[i], 
                                         GetNextCurveID());
                 ic->domain = dom;
-                ic->termination     = -termination;
-                ic->terminationType = terminationType;
             
                 curves.push_back(ic);
                 seedPtIds.push_back(ic->id);

@@ -57,7 +57,9 @@ avtIVPM3DC1Field.C
 avtIVPM3DC1Integrator.C
 avtIVPVTKField.C
 avtIVPVTKTimeVaryingField.C
+avtPoincareIC.C
 avtStateRecorderIntegralCurve.C
+avtStreamlineIC.C
 MemStream.C
 )
 

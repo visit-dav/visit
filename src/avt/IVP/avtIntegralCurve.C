@@ -88,6 +88,9 @@ using namespace std;
 //   Separate out portions related to Streamline and Poincare into 
 //   avtStateRecorderIntegralCurve.
 //
+//   Hank Childs, Tue Oct  5 18:41:35 PDT 2010
+//   Remove references to "termination", which now go in derived type.
+//
 // ****************************************************************************
 
 avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model, 
@@ -99,9 +102,6 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
 {
     ivp = model->Clone();
     ivp->Reset( t_start, p_start );
-
-    termination = 0.0;
-    terminationType = TERMINATE_TIME;
 }
 
 
@@ -129,6 +129,9 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
 //   Separate out portions related to Streamline and Poincare into 
 //   avtStateRecorderIntegralCurve.
 //
+//   Hank Childs, Tue Oct  5 18:41:35 PDT 2010
+//   Remove references to "termination", which now go in derived type.
+//
 // ****************************************************************************
 
 avtIntegralCurve::avtIntegralCurve()
@@ -139,9 +142,6 @@ avtIntegralCurve::avtIntegralCurve()
     domain = -1;
     sortKey = 0;
     id = -1;
-
-    termination = 0.0;
-    terminationType = TERMINATE_TIME;
 }
 
 
@@ -223,17 +223,15 @@ void avtIntegralCurve::Advance( avtIVPField* field )
     {
         tfinal = range[1];
 
-        if( terminationType == TERMINATE_TIME && 
-            termination < tfinal )
-            tfinal = termination;
+        if (UseFixedTerminationTime() && FixedTerminationTime() < tfinal)
+            tfinal = FixedTerminationTime();
     }
     else
     {
         tfinal = range[0];
 
-        if( terminationType == TERMINATE_TIME &&
-            termination > tfinal )
-            tfinal = termination;
+        if (UseFixedTerminationTime() && FixedTerminationTime() > tfinal)
+            tfinal = FixedTerminationTime();
     }
 
     // Loop doing integration steps.
@@ -456,6 +454,9 @@ avtIntegralCurve::CurrentLocation(avtVector &end)
 //    Separate out portions related to sequence tracking into
 //    avtStateRecorderIntegralCurve.
 //
+//   Hank Childs, Tue Oct  5 18:41:35 PDT 2010
+//   Remove references to "termination", which now go in derived type.
+//
 // ****************************************************************************
 
 void
@@ -470,8 +471,6 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, direction);
     buff.io(mode, domain);
     buff.io(mode, status);
-    buff.io(mode, termination);
-    buff.io(mode, terminationType);
     
     if ( mode == MemStream::WRITE )
     {

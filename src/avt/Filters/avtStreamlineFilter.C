@@ -87,6 +87,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <avtMetaData.h>
 #include <avtParallel.h>
 #include <avtStateRecorderIntegralCurve.h>
+#include <avtStreamlineIC.h>
 #include <avtVector.h>
 
 #include <DebugStream.h>
@@ -188,6 +189,7 @@ avtStreamlineFilter::avtStreamlineFilter()
 {
     coloringMethod = STREAMLINE_COLOR_SPEED;
     displayMethod = STREAMLINE_DISPLAY_LINES;
+    referenceTypeForDisplay = 0;
 
     //
     // Initialize source values.
@@ -201,7 +203,8 @@ avtStreamlineFilter::avtStreamlineFilter()
     fill = false;
     useBBox = false;
 
-    intersectObj = NULL;
+    storeVelocitiesForLighting = false;
+    issueWarningForMaxStepsTermination = true;
 }
 
 
@@ -234,8 +237,6 @@ avtStreamlineFilter::avtStreamlineFilter()
 
 avtStreamlineFilter::~avtStreamlineFilter()
 {
-    if (intersectObj)
-        intersectObj->Delete();
 }
 
 // ****************************************************************************
@@ -247,14 +248,44 @@ avtStreamlineFilter::~avtStreamlineFilter()
 //
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2010
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Oct  4 14:53:13 PDT 2010
+//    Create an avtStreamline (not an avtStateRecorderIntegralCurve) and
+//    put the termination criteria into the signature.
 //
 // ****************************************************************************
 
 avtIntegralCurve *
 avtStreamlineFilter::CreateIntegralCurve() 
 {
-    return new avtStateRecorderIntegralCurve();
+    return new avtStreamlineIC();
 }
+
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::SetTermination
+//
+//  Purpose:
+//      Sets the termination criteria for a streamline.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 5, 2010
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetTermination(int maxSteps_, bool doDistance_,
+                            double maxDistance_, bool doTime_, double maxTime_)
+{
+    maxSteps = maxSteps_;
+    doDistance = doDistance_;
+    maxDistance = maxDistance_;
+    doTime = doTime_;
+    maxTime = maxTime_;
+}
+
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CreateIntegralCurve
@@ -265,6 +296,12 @@ avtStreamlineFilter::CreateIntegralCurve()
 //
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2010
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Oct  4 14:53:13 PDT 2010
+//    Create an avtStreamline (not an avtStateRecorderIntegralCurve) and
+//    put the termination criteria into the signature.
 //
 // ****************************************************************************
 
@@ -275,30 +312,40 @@ avtStreamlineFilter::CreateIntegralCurve( const avtIVPSolver* model,
                                           const avtVector &p_start, long ID ) 
 {
     // need at least these three attributes
-    unsigned char attr = 
-        avtStateRecorderIntegralCurve::SAMPLE_TIME |
-        avtStateRecorderIntegralCurve::SAMPLE_POSITION |
-        avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
+    unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
+
+    if (storeVelocitiesForLighting)
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
+
+    switch (referenceTypeForDisplay)
+    {
+      case 0:  // Distance
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
+        break;
+      case 1:  // Time
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
+        break;
+      case 2:  // Steps
+        break;
+    }
 
     // color scalars
     switch( coloringMethod )
     {
-    case STREAMLINE_COLOR_VORTICITY:
+      case STREAMLINE_COLOR_SPEED:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
+        break;
+      case STREAMLINE_COLOR_TIME:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
+        break;
+      case STREAMLINE_COLOR_VORTICITY:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_VORTICITY;
         break;
-    case STREAMLINE_COLOR_ARCLENGTH:
+      case STREAMLINE_COLOR_ARCLENGTH:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
         break;
-    case STREAMLINE_COLOR_VARIABLE:
+      case STREAMLINE_COLOR_VARIABLE:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR0;
-        break;
-    }
-
-    // parameter scalars
-    switch( terminationType )
-    {
-    case avtIntegralCurve::TERMINATE_DISTANCE:
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
         break;
     }
 
@@ -307,39 +354,10 @@ avtStreamlineFilter::CreateIntegralCurve( const avtIVPSolver* model,
         attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR1;
 
     avtStateRecorderIntegralCurve *rv = 
-        new avtStateRecorderIntegralCurve( attr, model, dir, t_start, p_start, ID );
-
-    if (intersectObj)
-        rv->SetIntersectionObject(intersectObj);
+        new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, maxTime,
+                            attr, model, dir, t_start, p_start, ID);
 
     return rv;
-}
-
-
-// ****************************************************************************
-// Method: avtStreamlineFilter::SetIntersectionObject
-//
-// Purpose: 
-//   Sets the intersection object.
-//
-// Arguments:
-//   obj : Intersection object.
-//
-// Programmer: Dave Pugmire
-// Creation:   11 August 2009
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-avtStreamlineFilter::SetIntersectionObject(vtkObject *obj)
-{
-    if (obj)
-    {
-        intersectObj = obj;
-        intersectObj->Register(NULL);
-    }
 }
 
 

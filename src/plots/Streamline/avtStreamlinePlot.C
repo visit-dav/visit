@@ -369,6 +369,7 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //
 //   Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
 //   Initial steps to unification with Poincare attributes.
+//
 //   Hank Childs, Sun May  3 12:32:13 CDT 2009
 //   Added support for point list source types.
 //
@@ -399,6 +400,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Hank Childs, Fri Oct  1 20:35:21 PDT 2010
 //   Add support for absolute tolerances that are a fraction of the bounding
 //   box.
+//
+//   Hank Childs, Mon Oct  4 14:38:20 PDT 2010
+//   Add support for varying termination criteria.
 //
 // ****************************************************************************
 
@@ -487,14 +491,20 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
         absTol = atts.GetAbsTolAbsolute();
     streamlineFilter->SetTolerances(atts.GetRelTol(), absTol, doBBox);
 
-    streamlineFilter->SetTermination(atts.GetTerminationType(),
-                                     atts.GetTermination());
+    streamlineFilter->SetTermination(atts.GetMaxSteps(),
+                                     atts.GetTerminateByDistance(),
+                                     atts.GetTermDistance(),
+                                     atts.GetTerminateByTime(),
+                                     atts.GetTermTime());
     streamlineFilter->SetDisplayMethod(atts.GetDisplayMethod());
+    streamlineFilter->IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
 
     streamlineFilter->SetIntegrationDirection(atts.GetStreamlineDirection());
 
     streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()),
                                         atts.GetColoringVariable());
+    streamlineFilter->SetVelocitiesForLighting(atts.GetLightingFlag());
+    streamlineFilter->SetReferenceTypeForDisplay(atts.GetReferenceTypeForDisplay());
 
     if (atts.GetOpacityType() == StreamlineAttributes::VariableRange)
         streamlineFilter->SetOpacityVariable(atts.GetOpacityVariable());

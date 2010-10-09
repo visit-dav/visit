@@ -206,6 +206,9 @@ Definition:
 //   Hank Childs, Fri Oct  1 20:43:34 PDT 2010
 //   Add support for absTol that is fraction of the bounding box.
 //
+//   Hank Childs, Mon Oct  4 14:32:06 PDT 2010
+//   Add support for having multiple termination criterias.
+//
 // ****************************************************************************
 
 #define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
@@ -216,8 +219,11 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
 {
     //Check the general stuff first...
     if (sourceType != obj.sourceType ||
-        termination != obj.termination ||
-        terminationType != obj.terminationType ||
+        maxSteps != obj.maxSteps ||
+        terminateByDistance != obj.terminateByDistance ||
+        termDistance != obj.termDistance ||
+        terminateByTime != obj.terminateByTime ||
+        termTime != obj.termTime ||
         streamlineDirection != obj.streamlineDirection ||
         integrationType != obj.integrationType ||
         maxStepLength != obj.maxStepLength ||
@@ -228,6 +234,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         absTolBBox != obj.absTolBBox ||
         absTolSizeType != obj.absTolSizeType ||
         forceNodeCenteredData != obj.forceNodeCenteredData ||
+        referenceTypeForDisplay != obj.referenceTypeForDisplay ||
         pathlines != obj.pathlines ||
         coloringVariable != obj.coloringVariable ||
         (displayMethod != obj.displayMethod && obj.displayMethod == Ribbons) ||
@@ -239,6 +246,16 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         return true;
     }
          
+    // If they say they don't want warnings, then don't re-execute.  If they say they do,
+    // then we better re-execute so we can give them that warning.
+    if (issueTerminationWarnings != obj.issueTerminationWarnings &&
+        obj.issueTerminationWarnings == true)
+        return true;
+
+    // We need velocities for illuminate streamlines rendered as lines
+    if (lightingFlag != obj.lightingFlag && obj.lightingFlag == true)
+        return true;
+
     //Check by source type.
     if ((sourceType == SpecifiedPoint) && POINT_DIFFERS(pointSource, obj.pointSource))
     {

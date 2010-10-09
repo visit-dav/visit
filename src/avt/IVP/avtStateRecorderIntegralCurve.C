@@ -49,7 +49,6 @@
 #include <limits>
 #include <ImproperUseException.h>
 #include <DebugStream.h>
-#include <vtkPlane.h>
 #include <avtVector.h>
 #include <algorithm>
 
@@ -73,14 +72,9 @@ avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(
     const avtVector &p_start, int ID) :
     avtIntegralCurve(model, dir, t_start, p_start, ID), historyMask(mask)
 {
-    intersectionsSet = false;
-    numIntersections = 0;
-
+    distance = 0.0;
     sequenceCnt = 0;
     serializeFlags = 0;
-
-    distance = 0;
-    numSteps = 0;
 }
 
 
@@ -94,14 +88,10 @@ avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(
 
 avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve()
 {
-    intersectionsSet = false;
-    numIntersections = 0;
+    distance = 0.0;
     sequenceCnt = 0;
     serializeFlags = 0;
     historyMask = 0;
-
-    distance = 0;
-    numSteps = 0;
 }
 
 
@@ -192,63 +182,28 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
 //  Programmer: Hank Childs
 //  Creation:   June 4, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+//    Move termination criteria into derived types.
+//
 // ****************************************************************************
 
 void
 avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step, 
                                             avtIVPField* field )
 {
-    if( intersectionsSet )
-        HandleIntersections( step );
-
     // Record the first position of the step.
     RecordStep( field, step, step.GetT0() );
 
-    // Check for termination.
-    if( terminationType == TERMINATE_TIME )
-    {
-        if( (direction == DIRECTION_FORWARD  && step.GetT1() >= termination) ||
-            (direction == DIRECTION_BACKWARD && step.GetT1() <= termination) )
-            status = STATUS_FINISHED;
-    }
-    else if( terminationType == TERMINATE_DISTANCE )
-    {
-        double Lstep = step.GetLength();
-        double Ltogo = std::abs(termination) - distance;
-
-        if( Lstep > Ltogo )
-        {
-            step.ClampToLength( Ltogo );
-            status = STATUS_FINISHED;
-        }
-        else if( Lstep / std::abs(step.t1 - step.t0) < 1e-8 )
-        {
-            // Above condition ensures that the curve makes progress 
-            // w.r.t. distance to avoid infinite integration into a 
-            // critical point.
-            //
-            // FIXME: I don't like the above hardcoded threshold -
-            // this should probably be something like 
-            // Lstep / Lmax < 1e-6 ?
-            //
-            // FIXME: Also, this should only be tested in the stationary 
-            // case, since in a time-varying scenario, the critical point
-            // might move.
-            status = STATUS_FINISHED;
-        }
-    }
-    else if( terminationType == TERMINATE_STEPS )
-    {
-        if( numSteps >= std::abs(termination) )
-            status = STATUS_FINISHED;
-    }
-
-    // Update other termination criteria.
+    // Possibly need this for state we record.
     distance += step.GetLength();
-    numSteps += 1;
 
-    if( status == STATUS_FINISHED )
+    if (CheckForTermination(step))
+    {
+        status = STATUS_FINISHED;
         RecordStep( field, step, step.GetT1() );
+    }
 }
 
 // ****************************************************************************
@@ -348,117 +303,6 @@ size_t avtStateRecorderIntegralCurve::GetNumberOfSamples() const
     return history.size() / GetSampleStride();
 }
 
-// ****************************************************************************
-//  Method: avtStateRecorderIntegralCurve::SetIntersectionObject
-//
-//  Purpose:
-//      Defines an object for streamline intersection.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 10, 2009
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
-//   Store plane equation.
-//
-// ****************************************************************************
-
-void
-avtStateRecorderIntegralCurve::SetIntersectionObject(vtkObject *obj)
-{
-    // Only plane supported for now.
-    if (!obj->IsA("vtkPlane"))
-        EXCEPTION1(ImproperUseException, "Only plane supported.");
-
-    intersectionsSet = true;
-    avtVector intersectPlanePt = avtVector(((vtkPlane *)obj)->GetOrigin());
-    avtVector intersectPlaneNorm = avtVector(((vtkPlane *)obj)->GetNormal());
-
-    intersectPlaneNorm.normalize();
-    intersectPlaneEq[0] = intersectPlaneNorm.x;
-    intersectPlaneEq[1] = intersectPlaneNorm.y;
-    intersectPlaneEq[2] = intersectPlaneNorm.z;
-    intersectPlaneEq[3] = intersectPlanePt.length();
-}
-
-// ****************************************************************************
-//  Method: avtStateRecorderIntegralCurve::HandleIntersections
-//
-//  Purpose:
-//      Defines an object for streamline intersection.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 10, 2009
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
-//   Don't record intersection points, just count them.
-//
-//   Dave Pugmire, Fri Feb 19 16:57:04 EST 2010
-//   Replace _steps.size()==0 with _steps.empty()
-//
-// ****************************************************************************
-
-void
-avtStateRecorderIntegralCurve::HandleIntersections(const avtIVPStep& step)
-{
-    if( IntersectPlane( step.GetP0(), step.GetP1() ) )
-    {
-        numIntersections++;
-
-        if( terminationType == TERMINATE_INTERSECTIONS &&
-            numIntersections >= (int)termination )
-            status = STATUS_FINISHED;
-    }
-}
-
-// ****************************************************************************
-//  Method: avtStateRecorderIntegralCurve::IntersectPlane
-//
-//  Purpose:
-//      Intersect streamline with a plane.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 10, 2009
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Aug 18 08:47:40 EDT 2009
-//   Don't record intersection points, just count them.
-//
-//    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
-//    Switch from avtVec to avtVector.
-//
-// ****************************************************************************
-
-bool
-avtStateRecorderIntegralCurve::IntersectPlane(const avtVector &p0, const avtVector &p1)
-{
-    double distP0 = intersectPlaneEq[0] * p0.x +
-                    intersectPlaneEq[1] * p0.y +
-                    intersectPlaneEq[2] * p0.z +
-                    intersectPlaneEq[3];
-
-    double distP1 = intersectPlaneEq[0] * p1.x +
-                    intersectPlaneEq[1] * p1.y +
-                    intersectPlaneEq[2] * p1.z +
-                    intersectPlaneEq[3];
-
-#define SIGN(x) ((x) < 0.0 ? -1 : 1)
-
-    // If either point on the plane, or points on opposite
-    // sides of the plane, the line intersects.
-    if (distP0 == 0.0 || distP1 == 0.0 ||
-        SIGN(distP0) != SIGN(distP1))
-    {
-        return true;
-    }
-
-    return false;
-}
-
 
 // ****************************************************************************
 //  Method: avtStateRecorderIntegralCurve::Serialize
@@ -487,9 +331,9 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     // Have the base class serialize its part
     avtIntegralCurve::Serialize(mode, buff, solver);
 
-    buff.io(mode, historyMask);
     buff.io(mode, distance);
-    buff.io(mode, numIntersections);
+
+    buff.io(mode, historyMask);
     buff.io(mode, serializeFlags);
 
     bool serializeSteps = serializeFlags&SERIALIZE_STEPS;
@@ -497,8 +341,6 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     if (DebugStream::Level5())
         debug5<<"  avtStateRecorderIntegralCurve::Serialize "<<(mode==MemStream::READ?"READ":"WRITE")<<" serSteps= "<<serializeSteps<<endl;
     
-    buff.io(mode, numIntersections);
-
     // R/W the steps.
     if( serializeSteps )
         buff.io(mode, history);

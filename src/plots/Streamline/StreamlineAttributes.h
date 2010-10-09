@@ -93,7 +93,7 @@ public:
         Backward,
         Both
     };
-    enum TerminationType
+    enum ReferenceType
     {
         Distance,
         Time,
@@ -178,7 +178,6 @@ public:
 
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
-    void SetTermination(double termination_);
     void SetPointSource(const double *pointSource_);
     void SetLineStart(const double *lineStart_);
     void SetLineEnd(const double *lineEnd_);
@@ -199,6 +198,11 @@ public:
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetStreamlineDirection(IntegrationDirection streamlineDirection_);
+    void SetMaxSteps(int maxSteps_);
+    void SetTerminateByDistance(bool terminateByDistance_);
+    void SetTermDistance(double termDistance_);
+    void SetTerminateByTime(bool terminateByTime_);
+    void SetTermTime(double termTime_);
     void SetMaxStepLength(double maxStepLength_);
     void SetLimitMaximumTimestep(bool limitMaximumTimestep_);
     void SetMaxTimeStep(double maxTimeStep_);
@@ -206,7 +210,6 @@ public:
     void SetAbsTolSizeType(SizeType absTolSizeType_);
     void SetAbsTolAbsolute(double absTolAbsolute_);
     void SetAbsTolBBox(double absTolBBox_);
-    void SetTerminationType(TerminationType terminationType_);
     void SetIntegrationType(IntegrationType integrationType_);
     void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
     void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
@@ -222,6 +225,7 @@ public:
     void SetDisplayEnd(double displayEnd_);
     void SetDisplayBeginFlag(bool displayBeginFlag_);
     void SetDisplayEndFlag(bool displayEndFlag_);
+    void SetReferenceTypeForDisplay(ReferenceType referenceTypeForDisplay_);
     void SetDisplayMethod(DisplayMethod displayMethod_);
     void SetTubeSizeType(SizeType tubeSizeType_);
     void SetTubeRadiusAbsolute(double tubeRadiusAbsolute_);
@@ -257,10 +261,10 @@ public:
     void SetRandomSeed(int randomSeed_);
     void SetNumberOfRandomSamples(int numberOfRandomSamples_);
     void SetForceNodeCenteredData(bool forceNodeCenteredData_);
+    void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
-    double               GetTermination() const;
     const double         *GetPointSource() const;
           double         *GetPointSource();
     const double         *GetLineStart() const;
@@ -292,6 +296,11 @@ public:
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
     IntegrationDirection GetStreamlineDirection() const;
+    int                  GetMaxSteps() const;
+    bool                 GetTerminateByDistance() const;
+    double               GetTermDistance() const;
+    bool                 GetTerminateByTime() const;
+    double               GetTermTime() const;
     double               GetMaxStepLength() const;
     bool                 GetLimitMaximumTimestep() const;
     double               GetMaxTimeStep() const;
@@ -299,7 +308,6 @@ public:
     SizeType             GetAbsTolSizeType() const;
     double               GetAbsTolAbsolute() const;
     double               GetAbsTolBBox() const;
-    TerminationType      GetTerminationType() const;
     IntegrationType      GetIntegrationType() const;
     StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
     int                  GetMaxStreamlineProcessCount() const;
@@ -316,6 +324,7 @@ public:
     double               GetDisplayEnd() const;
     bool                 GetDisplayBeginFlag() const;
     bool                 GetDisplayEndFlag() const;
+    ReferenceType        GetReferenceTypeForDisplay() const;
     DisplayMethod        GetDisplayMethod() const;
     SizeType             GetTubeSizeType() const;
     double               GetTubeRadiusAbsolute() const;
@@ -352,6 +361,7 @@ public:
     int                  GetRandomSeed() const;
     int                  GetNumberOfRandomSamples() const;
     bool                 GetForceNodeCenteredData() const;
+    bool                 GetIssueTerminationWarnings() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -378,10 +388,10 @@ public:
 protected:
     static std::string IntegrationDirection_ToString(int);
 public:
-    static std::string TerminationType_ToString(TerminationType);
-    static bool TerminationType_FromString(const std::string &, TerminationType &);
+    static std::string ReferenceType_ToString(ReferenceType);
+    static bool ReferenceType_FromString(const std::string &, ReferenceType &);
 protected:
-    static std::string TerminationType_ToString(int);
+    static std::string ReferenceType_ToString(int);
 public:
     static std::string StreamlineAlgorithmType_ToString(StreamlineAlgorithmType);
     static bool StreamlineAlgorithmType_FromString(const std::string &, StreamlineAlgorithmType &);
@@ -427,7 +437,6 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_sourceType = 0,
-        ID_termination,
         ID_pointSource,
         ID_lineStart,
         ID_lineEnd,
@@ -448,6 +457,11 @@ public:
         ID_legendFlag,
         ID_lightingFlag,
         ID_streamlineDirection,
+        ID_maxSteps,
+        ID_terminateByDistance,
+        ID_termDistance,
+        ID_terminateByTime,
+        ID_termTime,
         ID_maxStepLength,
         ID_limitMaximumTimestep,
         ID_maxTimeStep,
@@ -455,7 +469,6 @@ public:
         ID_absTolSizeType,
         ID_absTolAbsolute,
         ID_absTolBBox,
-        ID_terminationType,
         ID_integrationType,
         ID_streamlineAlgorithmType,
         ID_maxStreamlineProcessCount,
@@ -471,6 +484,7 @@ public:
         ID_displayEnd,
         ID_displayBeginFlag,
         ID_displayEndFlag,
+        ID_referenceTypeForDisplay,
         ID_displayMethod,
         ID_tubeSizeType,
         ID_tubeRadiusAbsolute,
@@ -506,12 +520,12 @@ public:
         ID_randomSeed,
         ID_numberOfRandomSamples,
         ID_forceNodeCenteredData,
+        ID_issueTerminationWarnings,
         ID__LAST
     };
 
 private:
     int            sourceType;
-    double         termination;
     double         pointSource[3];
     double         lineStart[3];
     double         lineEnd[3];
@@ -532,6 +546,11 @@ private:
     bool           legendFlag;
     bool           lightingFlag;
     int            streamlineDirection;
+    int            maxSteps;
+    bool           terminateByDistance;
+    double         termDistance;
+    bool           terminateByTime;
+    double         termTime;
     double         maxStepLength;
     bool           limitMaximumTimestep;
     double         maxTimeStep;
@@ -539,7 +558,6 @@ private:
     int            absTolSizeType;
     double         absTolAbsolute;
     double         absTolBBox;
-    int            terminationType;
     int            integrationType;
     int            streamlineAlgorithmType;
     int            maxStreamlineProcessCount;
@@ -555,6 +573,7 @@ private:
     double         displayEnd;
     bool           displayBeginFlag;
     bool           displayEndFlag;
+    int            referenceTypeForDisplay;
     int            displayMethod;
     int            tubeSizeType;
     double         tubeRadiusAbsolute;
@@ -590,11 +609,12 @@ private:
     int            randomSeed;
     int            numberOfRandomSamples;
     bool           forceNodeCenteredData;
+    bool           issueTerminationWarnings;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "idDDDDDDdDDbd*iiiisabbidbddiddiiiiiibsbbddddbbiiddiddibiddbiidddisdddbbiidddbbiib"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibb"
 
 #endif
