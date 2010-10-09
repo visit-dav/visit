@@ -36,29 +36,65 @@
 *
 *****************************************************************************/
 
-#ifndef PY_STREAMLINEATTRIBUTES_H
-#define PY_STREAMLINEATTRIBUTES_H
-#include <Python.h>
-#include <StreamlineAttributes.h>
+// ************************************************************************* //
+//                            avtStreamlineIC.h                              //
+// ************************************************************************* //
 
-//
-// Functions exposed to the VisIt module.
-//
-#define STREAMLINEATTRIBUTES_NMETH 172
-void           PyStreamlineAttributes_StartUp(StreamlineAttributes *subj, void *data);
-void           PyStreamlineAttributes_CloseDown();
-PyMethodDef *  PyStreamlineAttributes_GetMethodTable(int *nMethods);
-bool           PyStreamlineAttributes_Check(PyObject *obj);
-StreamlineAttributes *  PyStreamlineAttributes_FromPyObject(PyObject *obj);
-PyObject *     PyStreamlineAttributes_New();
-PyObject *     PyStreamlineAttributes_Wrap(const StreamlineAttributes *attr);
-void           PyStreamlineAttributes_SetParent(PyObject *obj, PyObject *parent);
-void           PyStreamlineAttributes_SetDefaults(const StreamlineAttributes *atts);
-std::string    PyStreamlineAttributes_GetLogString();
-std::string    PyStreamlineAttributes_ToString(const StreamlineAttributes *, const char *);
-PyObject *     PyStreamlineAttributes_getattr(PyObject *self, char *name);
-int            PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args);
-extern PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH];
+#ifndef AVT_STREAMLINE_IC_H
+#define AVT_STREAMLINE_IC_H
 
-#endif
+#include <avtStateRecorderIntegralCurve.h>
+
+// ****************************************************************************
+//  Class: avtStreamlineIC
+//
+//  Purpose:
+//      A derived type of avtStateRecorderIntegralCurve.  This class 
+//      decides how to terminate a streamline.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 4, 2010
+//
+// ****************************************************************************
+
+class IVP_API avtStreamlineIC : public avtStateRecorderIntegralCurve
+{
+public:
+
+    avtStreamlineIC(int maxSteps, bool doDistance, double maxDistance,
+                    bool doTime, double maxTime,
+                    unsigned char mask, const avtIVPSolver* model, 
+                    Direction dir, const double& t_start, 
+                    const avtVector &p_start, int ID);
+
+    avtStreamlineIC();
+    virtual ~avtStreamlineIC();
+
+    virtual void  Serialize(MemStream::Mode mode, MemStream &buff, 
+                                avtIVPSolver *solver);
+    virtual bool    UseFixedTerminationTime(void) { return doTime; };
+    virtual double  FixedTerminationTime(void)    { return maxTime; };
+
+    bool            TerminatedBecauseOfMaxSteps(void) 
+                                 { return terminatedBecauseOfMaxSteps; };
+
+  protected:
+    avtStreamlineIC( const avtStreamlineIC& );
+    avtStreamlineIC& operator=( const avtStreamlineIC& );
+    
+  public:
+    virtual bool CheckForTermination(avtIVPStep& step);
+
+    unsigned int     numSteps;
+    unsigned int     maxSteps;
+    bool             doDistance;
+    double           maxDistance;
+    bool             doTime;
+    double           maxTime;
+    bool             terminatedBecauseOfMaxSteps;
+};
+
+
+#endif 
+
 

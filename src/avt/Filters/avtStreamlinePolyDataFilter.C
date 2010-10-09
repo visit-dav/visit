@@ -49,8 +49,11 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyLine.h>
+
+#include <avtCallback.h>
 #include <avtParallel.h>
 #include <avtStateRecorderIntegralCurve.h>
+#include <avtStreamlineIC.h>
 
 std::string avtStreamlinePolyDataFilter::colorvarArrayName = "colorVar";
 std::string avtStreamlinePolyDataFilter::paramArrayName = "params";
@@ -100,6 +103,12 @@ std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 //   Dave Pugmire, Wed Sep 29 14:57:59 EDT 2010
 //   Initialize scalar array if coloring by solid.
 //
+//   Hank Childs, Wed Oct  6 20:07:28 PDT 2010
+//   Initialize referenceTypeForDisplay.
+//
+//   Hank Childs, Fri Oct  8 14:57:13 PDT 2010
+//   Check to see if any curves terminated because of the steps criteria.
+//
 // ****************************************************************************
 
 void
@@ -111,13 +120,40 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
     if (numICs == 0)
         return;
 
+    int numEarlyTerminators = 0;
+
     //See how many pts, ics we have so we can preallocate everything.
     for (int i = 0; i < numICs; i++)
     {
-        avtStateRecorderIntegralCurve *ic = dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
+        avtStreamlineIC *ic = dynamic_cast<avtStreamlineIC*>(ics[i]);
         size_t numSamps = (ic ? ic->GetNumberOfSamples() : 0);
         if (numSamps > 1)
             numPts += numSamps;
+
+        if (ic->TerminatedBecauseOfMaxSteps())
+            numEarlyTerminators++;
+    }
+
+    if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
+    {
+        SumIntAcrossAllProcessors(numEarlyTerminators);
+        if (numEarlyTerminators > 0)
+        {
+            char str[1024];
+            SNPRINTF(str, 1024, 
+               "%d of your streamlines terminated because they "
+               "reached the maximum number of steps.  This may be indicative of your "
+               "time or distance criteria being too large or of other attributes being "
+               "set incorrectly (example: your step size is too small).  If you are "
+               "confident in your settings and want the particles to advect farther, "
+               "you should increase the maximum number of steps.  If you want to disable "
+               "this message, you can do this under the Advaced tab of the streamline plot."
+               "  Note that this message does not mean that an error has occurred; it simply "
+               "means that VisIt stopped advecting particles because it reached the maximum "
+               "number of steps. (That said, this case happens most often when other attributes "
+               "are set incorrectly.)", numEarlyTerminators);
+            avtCallback::IssueWarning(str);
+        }
     }
 
     //Make a polydata.
@@ -161,7 +197,6 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
         opacity->SetName(opacityArrayName.c_str());
         pd->GetPointData()->AddArray(opacity);
     }
-
 
     vtkIdType pIdx = 0, idx = 0;
     for (int i = 0; i < numICs; i++)
@@ -214,15 +249,15 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
             }
 
             // parameter scalars
-            switch (terminationType)
+            switch (referenceTypeForDisplay)
             {
-              case avtIntegralCurve::TERMINATE_TIME:
-                params->InsertTuple1(pIdx, s.time);
-                break;
-              case avtIntegralCurve::TERMINATE_DISTANCE:
+              case 0: // Distance
                 params->InsertTuple1(pIdx, s.arclength);
                 break;
-              case avtIntegralCurve::TERMINATE_STEPS:
+              case 1: // Time
+                params->InsertTuple1(pIdx, s.time);
+                break;
+              case 2: // Steps
                 params->InsertTuple1(pIdx, j);
                 break;
             }

@@ -46,7 +46,7 @@
 #include <avtStreamlineFilter.h>
 
 
-class avtStateRecorderIntegralCurve;
+class avtPoincareIC;
 
 
 // ****************************************************************************
@@ -77,6 +77,10 @@ class avtStateRecorderIntegralCurve;
 //    Hank Childs, Sun Jun  6 14:54:08 CDT 2010
 //    Convert references from avtStreamline to avtIntegralCurve, the new name
 //    for the abstract base type.
+//
+//    Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+//    Change methods for setting up termination criteria to reflect refactor
+//    in integral curves.
 //
 // ****************************************************************************
 
@@ -125,6 +129,9 @@ class avtPoincareFilter : public avtStreamlineFilter
     void SetPointScale(int scale)   { pointScale = scale; }
     void SetVerboseFlag( bool val ) { verboseFlag = val; }
     void SetShowRidgelines( bool val )   { showRidgelines = val; }
+
+    // Methods to set the filter's attributes.
+    void                      SetIntersectionCriteria(vtkObject *obj, int);
 
   protected:
     // Streamline overides.
@@ -207,6 +214,9 @@ class avtPoincareFilter : public avtStreamlineFilter
 
     unsigned int dataValue;
   
+    vtkObject *intersectObj; 
+    int maxIntersections;
+
     bool showOPoints, showIslands, showChaotic;
     bool showLines, showPoints, showRidgelines, verboseFlag;
     int  pointScale;
@@ -217,7 +227,7 @@ class avtPoincareFilter : public avtStreamlineFilter
         ICHelper() {}
         ~ICHelper() {}
 
-        avtStateRecorderIntegralCurve *ic;
+        avtPoincareIC *ic;
         std::vector<avtVector> points;
         FieldlineProperties properties;
         long int id;

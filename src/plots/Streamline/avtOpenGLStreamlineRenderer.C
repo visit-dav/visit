@@ -876,6 +876,9 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
 //   Hank Childs, Thu Sep 30 01:11:03 PDT 2010
 //   Add an option for sizing based on a fraction of the bounding box.
 //
+//   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+//   Allow for display begin/end to be from distance/time/steps.
+//
 // ****************************************************************************
 
 void
@@ -946,7 +949,21 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
         
         if (appendForTranspPolys)
         {
-            float param = atts.GetTermination();
+            float param = 1000000;
+            switch (atts.GetReferenceTypeForDisplay())
+            {
+               case StreamlineAttributes::Distance:
+                 if (atts.GetTerminateByDistance())
+                     param = atts.GetTermDistance();
+                 break;
+               case StreamlineAttributes::Time:
+                 if (atts.GetTerminateByTime())
+                     param = atts.GetTermTime();
+                 break;
+               case StreamlineAttributes::Step:
+                 param = atts.GetMaxSteps();
+                 break;
+            }
             if (atts.GetDisplayEndFlag())
                 param = atts.GetDisplayEnd();
             vtkPolyData *pd = NULL;
@@ -1993,6 +2010,9 @@ avtOpenGLStreamlineRenderer::GenerateSpherePolys(float x0,
 //
 //  Modifications:
 //
+//   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+//   Allow for display begin/end to be from distance/time/steps.
+//
 // ****************************************************************************
 
 bool
@@ -2037,9 +2057,25 @@ avtOpenGLStreamlineRenderer::GetEndPoints(vtkPolyData *data,
         }
     }
     
+    float termination = 1000000;
+    switch (atts.GetReferenceTypeForDisplay())
+    {
+       case StreamlineAttributes::Distance:
+         if (atts.GetTerminateByDistance())
+             termination = atts.GetTermDistance();
+         break;
+       case StreamlineAttributes::Time:
+         if (atts.GetTerminateByTime())
+             termination = atts.GetTermTime();
+         break;
+       case StreamlineAttributes::Step:
+         termination = atts.GetMaxSteps();
+         break;
+    }
+
     // Find the end.
     double end = atts.GetDisplayEnd();
-    if (atts.GetDisplayEndFlag() && end < atts.GetTermination())
+    if (atts.GetDisplayEndFlag() && end < termination)
     {
         for (int i = nPts-1; i >= 0; i--)
         {
@@ -2071,12 +2107,32 @@ avtOpenGLStreamlineRenderer::GetEndPoints(vtkPolyData *data,
 //
 //  Modifications:
 //
+//   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+//   Allow for display begin/end to be from distance/time/steps.
+//
 // ****************************************************************************
 
 float
 avtOpenGLStreamlineRenderer::ComputeRampOpacity(const float &p) const
 {
-    float p0 = 0, p1 = atts.GetTermination();
+    float p1 = 100000;
+    switch (atts.GetReferenceTypeForDisplay())
+    {
+       case StreamlineAttributes::Distance:
+         if (atts.GetTerminateByDistance())
+             p1 = atts.GetTermDistance();
+         break;
+       case StreamlineAttributes::Time:
+         if (atts.GetTerminateByTime())
+             p1 = atts.GetTermTime();
+         break;
+       case StreamlineAttributes::Step:
+         p1 = atts.GetMaxSteps();
+         break;
+    }
+
+    // Find the end.
+    float p0 = 0;
     if (atts.GetDisplayBeginFlag())
         p0 = atts.GetDisplayBegin();
     if (atts.GetDisplayEndFlag())

@@ -36,29 +36,59 @@
 *
 *****************************************************************************/
 
-#ifndef PY_STREAMLINEATTRIBUTES_H
-#define PY_STREAMLINEATTRIBUTES_H
-#include <Python.h>
-#include <StreamlineAttributes.h>
+// ************************************************************************* //
+//                            avtPoincareIC.h                              //
+// ************************************************************************* //
 
-//
-// Functions exposed to the VisIt module.
-//
-#define STREAMLINEATTRIBUTES_NMETH 172
-void           PyStreamlineAttributes_StartUp(StreamlineAttributes *subj, void *data);
-void           PyStreamlineAttributes_CloseDown();
-PyMethodDef *  PyStreamlineAttributes_GetMethodTable(int *nMethods);
-bool           PyStreamlineAttributes_Check(PyObject *obj);
-StreamlineAttributes *  PyStreamlineAttributes_FromPyObject(PyObject *obj);
-PyObject *     PyStreamlineAttributes_New();
-PyObject *     PyStreamlineAttributes_Wrap(const StreamlineAttributes *attr);
-void           PyStreamlineAttributes_SetParent(PyObject *obj, PyObject *parent);
-void           PyStreamlineAttributes_SetDefaults(const StreamlineAttributes *atts);
-std::string    PyStreamlineAttributes_GetLogString();
-std::string    PyStreamlineAttributes_ToString(const StreamlineAttributes *, const char *);
-PyObject *     PyStreamlineAttributes_getattr(PyObject *self, char *name);
-int            PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args);
-extern PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH];
+#ifndef AVT_POINCARE_IC_H
+#define AVT_POINCARE_IC_H
 
-#endif
+#include <avtStateRecorderIntegralCurve.h>
+
+// ****************************************************************************
+//  Class: avtPoincareIC
+//
+//  Purpose:
+//      A derived type of avtStateRecorderIntegralCurve.  This class 
+//      decides how to terminate a streamline.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 4, 2010
+//
+// ****************************************************************************
+
+class IVP_API avtPoincareIC : public avtStateRecorderIntegralCurve
+{
+public:
+    avtPoincareIC(unsigned char mask, const avtIVPSolver* model, 
+                  Direction dir, const double& t_start, 
+                  const avtVector &p_start, int ID);
+
+    void          SetIntersectionCriteria(vtkObject *obj, int);
+
+    avtPoincareIC();
+    virtual ~avtPoincareIC();
+
+    virtual void  Serialize(MemStream::Mode mode, MemStream &buff, 
+                                avtIVPSolver *solver);
+
+  protected:
+    avtPoincareIC( const avtPoincareIC& );
+    avtPoincareIC& operator=( const avtPoincareIC& );
+    
+    bool      IntersectPlane(const avtVector &p0, const avtVector &p1);
+
+  public:
+    virtual bool CheckForTermination(avtIVPStep& step);
+
+    // Intersection points.
+    bool   intersectionsSet;
+    int    maxIntersections;
+    int    numIntersections;
+    double intersectPlaneEq[4];
+};
+
+
+#endif 
+
 

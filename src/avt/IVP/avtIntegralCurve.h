@@ -174,6 +174,9 @@ class IVP_API DomainType
 //   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
 //   Put sequence tracking code into avtStateRecorderIntegralCurve.
 //
+//   Hank Childs, Mon Oct  4 15:03:43 PDT 2010
+//   Remove termination code.  It now goes in derived types.
+//
 // ****************************************************************************
 
 class IVP_API avtIntegralCurve
@@ -190,14 +193,6 @@ class IVP_API avtIntegralCurve
     {
         STATUS_OK       = 0,
         STATUS_FINISHED = 1,
-    };
-
-    enum TerminationType
-    {
-        TERMINATE_TIME          = 0,
-        TERMINATE_DISTANCE      = 1,
-        TERMINATE_STEPS         = 2,
-        TERMINATE_INTERSECTIONS = 3
     };
 
     enum SerializeFlags
@@ -237,14 +232,13 @@ class IVP_API avtIntegralCurve
     
     virtual void AnalyzeStep( avtIVPStep& step,
                               avtIVPField* field ) = 0;
+    virtual bool    UseFixedTerminationTime(void) { return false; };
+    virtual double  FixedTerminationTime(void)    { return 0; };
 
   public:
 
     Status    status;
     Direction direction;
-
-    double          termination;
-    TerminationType terminationType;
 
     // Helpers needed for figuring out which domain to use next
     std::vector<DomainType> seedPtDomainList;
@@ -271,24 +265,6 @@ inline std::ostream& operator<<( std::ostream& out,
         return out << "OK";
     case avtIntegralCurve::STATUS_FINISHED:
         return out << "FINISHED";
-    default:
-        return out << "UNKNOWN";
-    }
-}
-
-inline std::ostream& operator<<( std::ostream& out, 
-                                 avtIntegralCurve::TerminationType term )
-{
-    switch( term )
-    {
-    case avtIntegralCurve::TERMINATE_TIME:
-        return out << "TIME";
-    case avtIntegralCurve::TERMINATE_STEPS:
-        return out << "STEPS";
-    case avtIntegralCurve::TERMINATE_DISTANCE:
-        return out << "DISTANCE";
-    case avtIntegralCurve::TERMINATE_INTERSECTIONS:
-        return out << "INTERSECTIONS";
     default:
         return out << "UNKNOWN";
     }

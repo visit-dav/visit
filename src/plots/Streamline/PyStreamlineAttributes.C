@@ -113,8 +113,6 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%stermination = %g\n", prefix, atts->GetTermination());
-    str += tmpStr;
     {   const double *pointSource = atts->GetPointSource();
         SNPRINTF(tmpStr, 1000, "%spointSource = (", prefix);
         str += tmpStr;
@@ -342,6 +340,22 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
+    str += tmpStr;
+    if(atts->GetTerminateByDistance())
+        SNPRINTF(tmpStr, 1000, "%sterminateByDistance = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sterminateByDistance = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stermDistance = %g\n", prefix, atts->GetTermDistance());
+    str += tmpStr;
+    if(atts->GetTerminateByTime())
+        SNPRINTF(tmpStr, 1000, "%sterminateByTime = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sterminateByTime = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stermTime = %g\n", prefix, atts->GetTermTime());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxStepLength = %g\n", prefix, atts->GetMaxStepLength());
     str += tmpStr;
     if(atts->GetLimitMaximumTimestep())
@@ -372,25 +386,6 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
-    const char *terminationType_names = "Distance, Time, Step";
-    switch (atts->GetTerminationType())
-    {
-      case StreamlineAttributes::Distance:
-          SNPRINTF(tmpStr, 1000, "%sterminationType = %sDistance  # %s\n", prefix, prefix, terminationType_names);
-          str += tmpStr;
-          break;
-      case StreamlineAttributes::Time:
-          SNPRINTF(tmpStr, 1000, "%sterminationType = %sTime  # %s\n", prefix, prefix, terminationType_names);
-          str += tmpStr;
-          break;
-      case StreamlineAttributes::Step:
-          SNPRINTF(tmpStr, 1000, "%sterminationType = %sStep  # %s\n", prefix, prefix, terminationType_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     const char *integrationType_names = "DormandPrince, AdamsBashforth, M3DC1Integrator";
     switch (atts->GetIntegrationType())
     {
@@ -474,6 +469,25 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%sdisplayEndFlag = 0\n", prefix);
     str += tmpStr;
+    const char *referenceTypeForDisplay_names = "Distance, Time, Step";
+    switch (atts->GetReferenceTypeForDisplay())
+    {
+      case StreamlineAttributes::Distance:
+          SNPRINTF(tmpStr, 1000, "%sreferenceTypeForDisplay = %sDistance  # %s\n", prefix, prefix, referenceTypeForDisplay_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::Time:
+          SNPRINTF(tmpStr, 1000, "%sreferenceTypeForDisplay = %sTime  # %s\n", prefix, prefix, referenceTypeForDisplay_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::Step:
+          SNPRINTF(tmpStr, 1000, "%sreferenceTypeForDisplay = %sStep  # %s\n", prefix, prefix, referenceTypeForDisplay_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *displayMethod_names = "Lines, Tubes, Ribbons";
     switch (atts->GetDisplayMethod())
     {
@@ -689,6 +703,11 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetIssueTerminationWarnings())
+        SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -732,30 +751,6 @@ StreamlineAttributes_GetSourceType(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSourceType()));
-    return retval;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_SetTermination(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the termination in the object.
-    obj->data->SetTermination(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_GetTermination(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetTermination());
     return retval;
 }
 
@@ -1591,6 +1586,126 @@ StreamlineAttributes_GetStreamlineDirection(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+StreamlineAttributes_SetMaxSteps(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maxSteps in the object.
+    obj->data->SetMaxSteps((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetMaxSteps(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxSteps()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the terminateByDistance in the object.
+    obj->data->SetTerminateByDistance(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetTerminateByDistance(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetTerminateByDistance()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetTermDistance(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the termDistance in the object.
+    obj->data->SetTermDistance(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetTermDistance(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTermDistance());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the terminateByTime in the object.
+    obj->data->SetTerminateByTime(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetTerminateByTime(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetTerminateByTime()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetTermTime(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the termTime in the object.
+    obj->data->SetTermTime(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetTermTime(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTermTime());
+    return retval;
+}
+
+/*static*/ PyObject *
 StreamlineAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
@@ -1764,39 +1879,6 @@ StreamlineAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolBBox());
-    return retval;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_SetTerminationType(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the terminationType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetTerminationType(StreamlineAttributes::TerminationType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid terminationType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Distance, Time, Step.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-StreamlineAttributes_GetTerminationType(PyObject *self, PyObject *args)
-{
-    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetTerminationType()));
     return retval;
 }
 
@@ -2175,6 +2257,39 @@ StreamlineAttributes_GetDisplayEndFlag(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDisplayEndFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetReferenceTypeForDisplay(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the referenceTypeForDisplay in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetReferenceTypeForDisplay(StreamlineAttributes::ReferenceType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid referenceTypeForDisplay value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Distance, Time, Step.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetReferenceTypeForDisplay(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetReferenceTypeForDisplay()));
     return retval;
 }
 
@@ -3090,14 +3205,36 @@ StreamlineAttributes_GetForceNodeCenteredData(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+StreamlineAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the issueTerminationWarnings in the object.
+    obj->data->SetIssueTerminationWarnings(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIssueTerminationWarnings()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"Notify", StreamlineAttributes_Notify, METH_VARARGS},
     {"SetSourceType", StreamlineAttributes_SetSourceType, METH_VARARGS},
     {"GetSourceType", StreamlineAttributes_GetSourceType, METH_VARARGS},
-    {"SetTermination", StreamlineAttributes_SetTermination, METH_VARARGS},
-    {"GetTermination", StreamlineAttributes_GetTermination, METH_VARARGS},
     {"SetPointSource", StreamlineAttributes_SetPointSource, METH_VARARGS},
     {"GetPointSource", StreamlineAttributes_GetPointSource, METH_VARARGS},
     {"SetLineStart", StreamlineAttributes_SetLineStart, METH_VARARGS},
@@ -3138,6 +3275,16 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetLightingFlag", StreamlineAttributes_GetLightingFlag, METH_VARARGS},
     {"SetStreamlineDirection", StreamlineAttributes_SetStreamlineDirection, METH_VARARGS},
     {"GetStreamlineDirection", StreamlineAttributes_GetStreamlineDirection, METH_VARARGS},
+    {"SetMaxSteps", StreamlineAttributes_SetMaxSteps, METH_VARARGS},
+    {"GetMaxSteps", StreamlineAttributes_GetMaxSteps, METH_VARARGS},
+    {"SetTerminateByDistance", StreamlineAttributes_SetTerminateByDistance, METH_VARARGS},
+    {"GetTerminateByDistance", StreamlineAttributes_GetTerminateByDistance, METH_VARARGS},
+    {"SetTermDistance", StreamlineAttributes_SetTermDistance, METH_VARARGS},
+    {"GetTermDistance", StreamlineAttributes_GetTermDistance, METH_VARARGS},
+    {"SetTerminateByTime", StreamlineAttributes_SetTerminateByTime, METH_VARARGS},
+    {"GetTerminateByTime", StreamlineAttributes_GetTerminateByTime, METH_VARARGS},
+    {"SetTermTime", StreamlineAttributes_SetTermTime, METH_VARARGS},
+    {"GetTermTime", StreamlineAttributes_GetTermTime, METH_VARARGS},
     {"SetMaxStepLength", StreamlineAttributes_SetMaxStepLength, METH_VARARGS},
     {"GetMaxStepLength", StreamlineAttributes_GetMaxStepLength, METH_VARARGS},
     {"SetLimitMaximumTimestep", StreamlineAttributes_SetLimitMaximumTimestep, METH_VARARGS},
@@ -3152,8 +3299,6 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetAbsTolAbsolute", StreamlineAttributes_GetAbsTolAbsolute, METH_VARARGS},
     {"SetAbsTolBBox", StreamlineAttributes_SetAbsTolBBox, METH_VARARGS},
     {"GetAbsTolBBox", StreamlineAttributes_GetAbsTolBBox, METH_VARARGS},
-    {"SetTerminationType", StreamlineAttributes_SetTerminationType, METH_VARARGS},
-    {"GetTerminationType", StreamlineAttributes_GetTerminationType, METH_VARARGS},
     {"SetIntegrationType", StreamlineAttributes_SetIntegrationType, METH_VARARGS},
     {"GetIntegrationType", StreamlineAttributes_GetIntegrationType, METH_VARARGS},
     {"SetStreamlineAlgorithmType", StreamlineAttributes_SetStreamlineAlgorithmType, METH_VARARGS},
@@ -3184,6 +3329,8 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetDisplayBeginFlag", StreamlineAttributes_GetDisplayBeginFlag, METH_VARARGS},
     {"SetDisplayEndFlag", StreamlineAttributes_SetDisplayEndFlag, METH_VARARGS},
     {"GetDisplayEndFlag", StreamlineAttributes_GetDisplayEndFlag, METH_VARARGS},
+    {"SetReferenceTypeForDisplay", StreamlineAttributes_SetReferenceTypeForDisplay, METH_VARARGS},
+    {"GetReferenceTypeForDisplay", StreamlineAttributes_GetReferenceTypeForDisplay, METH_VARARGS},
     {"SetDisplayMethod", StreamlineAttributes_SetDisplayMethod, METH_VARARGS},
     {"GetDisplayMethod", StreamlineAttributes_GetDisplayMethod, METH_VARARGS},
     {"SetTubeSizeType", StreamlineAttributes_SetTubeSizeType, METH_VARARGS},
@@ -3254,6 +3401,8 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetNumberOfRandomSamples", StreamlineAttributes_GetNumberOfRandomSamples, METH_VARARGS},
     {"SetForceNodeCenteredData", StreamlineAttributes_SetForceNodeCenteredData, METH_VARARGS},
     {"GetForceNodeCenteredData", StreamlineAttributes_GetForceNodeCenteredData, METH_VARARGS},
+    {"SetIssueTerminationWarnings", StreamlineAttributes_SetIssueTerminationWarnings, METH_VARARGS},
+    {"GetIssueTerminationWarnings", StreamlineAttributes_GetIssueTerminationWarnings, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -3299,8 +3448,6 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "SpecifiedBox") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::SpecifiedBox));
 
-    if(strcmp(name, "termination") == 0)
-        return StreamlineAttributes_GetTermination(self, NULL);
     if(strcmp(name, "pointSource") == 0)
         return StreamlineAttributes_GetPointSource(self, NULL);
     if(strcmp(name, "lineStart") == 0)
@@ -3363,6 +3510,16 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Both") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::Both));
 
+    if(strcmp(name, "maxSteps") == 0)
+        return StreamlineAttributes_GetMaxSteps(self, NULL);
+    if(strcmp(name, "terminateByDistance") == 0)
+        return StreamlineAttributes_GetTerminateByDistance(self, NULL);
+    if(strcmp(name, "termDistance") == 0)
+        return StreamlineAttributes_GetTermDistance(self, NULL);
+    if(strcmp(name, "terminateByTime") == 0)
+        return StreamlineAttributes_GetTerminateByTime(self, NULL);
+    if(strcmp(name, "termTime") == 0)
+        return StreamlineAttributes_GetTermTime(self, NULL);
     if(strcmp(name, "maxStepLength") == 0)
         return StreamlineAttributes_GetMaxStepLength(self, NULL);
     if(strcmp(name, "limitMaximumTimestep") == 0)
@@ -3382,15 +3539,6 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetAbsTolAbsolute(self, NULL);
     if(strcmp(name, "absTolBBox") == 0)
         return StreamlineAttributes_GetAbsTolBBox(self, NULL);
-    if(strcmp(name, "terminationType") == 0)
-        return StreamlineAttributes_GetTerminationType(self, NULL);
-    if(strcmp(name, "Distance") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::Distance));
-    if(strcmp(name, "Time") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::Time));
-    if(strcmp(name, "Step") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::Step));
-
     if(strcmp(name, "integrationType") == 0)
         return StreamlineAttributes_GetIntegrationType(self, NULL);
     if(strcmp(name, "DormandPrince") == 0)
@@ -3437,6 +3585,15 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetDisplayBeginFlag(self, NULL);
     if(strcmp(name, "displayEndFlag") == 0)
         return StreamlineAttributes_GetDisplayEndFlag(self, NULL);
+    if(strcmp(name, "referenceTypeForDisplay") == 0)
+        return StreamlineAttributes_GetReferenceTypeForDisplay(self, NULL);
+    if(strcmp(name, "Distance") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Distance));
+    if(strcmp(name, "Time") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Time));
+    if(strcmp(name, "Step") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Step));
+
     if(strcmp(name, "displayMethod") == 0)
         return StreamlineAttributes_GetDisplayMethod(self, NULL);
     if(strcmp(name, "Lines") == 0)
@@ -3557,6 +3714,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetNumberOfRandomSamples(self, NULL);
     if(strcmp(name, "forceNodeCenteredData") == 0)
         return StreamlineAttributes_GetForceNodeCenteredData(self, NULL);
+    if(strcmp(name, "issueTerminationWarnings") == 0)
+        return StreamlineAttributes_GetIssueTerminationWarnings(self, NULL);
 
     return Py_FindMethod(PyStreamlineAttributes_methods, self, name);
 }
@@ -3573,8 +3732,6 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "sourceType") == 0)
         obj = StreamlineAttributes_SetSourceType(self, tuple);
-    else if(strcmp(name, "termination") == 0)
-        obj = StreamlineAttributes_SetTermination(self, tuple);
     else if(strcmp(name, "pointSource") == 0)
         obj = StreamlineAttributes_SetPointSource(self, tuple);
     else if(strcmp(name, "lineStart") == 0)
@@ -3615,6 +3772,16 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetLightingFlag(self, tuple);
     else if(strcmp(name, "streamlineDirection") == 0)
         obj = StreamlineAttributes_SetStreamlineDirection(self, tuple);
+    else if(strcmp(name, "maxSteps") == 0)
+        obj = StreamlineAttributes_SetMaxSteps(self, tuple);
+    else if(strcmp(name, "terminateByDistance") == 0)
+        obj = StreamlineAttributes_SetTerminateByDistance(self, tuple);
+    else if(strcmp(name, "termDistance") == 0)
+        obj = StreamlineAttributes_SetTermDistance(self, tuple);
+    else if(strcmp(name, "terminateByTime") == 0)
+        obj = StreamlineAttributes_SetTerminateByTime(self, tuple);
+    else if(strcmp(name, "termTime") == 0)
+        obj = StreamlineAttributes_SetTermTime(self, tuple);
     else if(strcmp(name, "maxStepLength") == 0)
         obj = StreamlineAttributes_SetMaxStepLength(self, tuple);
     else if(strcmp(name, "limitMaximumTimestep") == 0)
@@ -3629,8 +3796,6 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetAbsTolAbsolute(self, tuple);
     else if(strcmp(name, "absTolBBox") == 0)
         obj = StreamlineAttributes_SetAbsTolBBox(self, tuple);
-    else if(strcmp(name, "terminationType") == 0)
-        obj = StreamlineAttributes_SetTerminationType(self, tuple);
     else if(strcmp(name, "integrationType") == 0)
         obj = StreamlineAttributes_SetIntegrationType(self, tuple);
     else if(strcmp(name, "streamlineAlgorithmType") == 0)
@@ -3661,6 +3826,8 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetDisplayBeginFlag(self, tuple);
     else if(strcmp(name, "displayEndFlag") == 0)
         obj = StreamlineAttributes_SetDisplayEndFlag(self, tuple);
+    else if(strcmp(name, "referenceTypeForDisplay") == 0)
+        obj = StreamlineAttributes_SetReferenceTypeForDisplay(self, tuple);
     else if(strcmp(name, "displayMethod") == 0)
         obj = StreamlineAttributes_SetDisplayMethod(self, tuple);
     else if(strcmp(name, "tubeSizeType") == 0)
@@ -3731,6 +3898,8 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetNumberOfRandomSamples(self, tuple);
     else if(strcmp(name, "forceNodeCenteredData") == 0)
         obj = StreamlineAttributes_SetForceNodeCenteredData(self, tuple);
+    else if(strcmp(name, "issueTerminationWarnings") == 0)
+        obj = StreamlineAttributes_SetIssueTerminationWarnings(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

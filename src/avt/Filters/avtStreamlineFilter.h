@@ -210,6 +210,10 @@ class vtkAppendPolyData;
 //   Dave Pugmire, Fri Jun 11 15:12:04 EDT 2010
 //   Remove seed densities.
 //
+//   Hank Childs, Mon Oct  4 14:50:01 PDT 2010
+//   Specify termination type at avtStreamlineFilter, not avtPICSFilter.
+//   Add data member for reference type for display.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
@@ -229,8 +233,9 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
                                         const double& t_start,
                                         const avtVector &p_start, long ID);
 
-    // Methods to set the filter's attributes.
-    void                      SetIntersectionObject(vtkObject *obj);
+    void                      SetTermination(int maxSteps, 
+                                             bool doDistance, double maxDistance, 
+                                             bool doTime, double maxTime);
 
     void                      SetPointSource(const double *p);
     void                      SetLineSource(const double *p0, const double *p1,
@@ -252,7 +257,13 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
 
     void                      SetDisplayMethod(int d);
     void                      SetColoringMethod(int, const std::string &var="");
+    void                      SetVelocitiesForLighting(bool v) { storeVelocitiesForLighting = v; };
     void                      SetOpacityVariable(const std::string &var);
+
+    void                      SetReferenceTypeForDisplay(int d) 
+                                               { referenceTypeForDisplay = d; };
+    void                      IssueWarningForMaxStepsTermination(bool v) 
+                                      { issueWarningForMaxStepsTermination = v; };
 
     virtual avtIVPField      *GetFieldForDomain(const DomainType&, vtkDataSet*);
 
@@ -264,7 +275,14 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     int    sourceType;   
     int    displayMethod;
     int    coloringMethod;
+    int    referenceTypeForDisplay;
     std::string coloringVariable, opacityVariable;
+
+    int      maxSteps;
+    bool     doDistance;
+    double   maxDistance;
+    bool     doTime;
+    double   maxTime;
 
     // Various starting locations for streamlines.
     std::vector<avtVector> pointList;
@@ -277,10 +295,10 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     bool      randomSamples;
     int       randomSeed;
     bool      fill, useBBox;
+    bool      storeVelocitiesForLighting;
+    bool      issueWarningForMaxStepsTermination;
 
     std::string             SeedInfoString() const;
-
-    vtkObject *intersectObj;
 
     void                      GenerateSeedPointsFromPoint(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromLine(std::vector<avtVector> &pts);

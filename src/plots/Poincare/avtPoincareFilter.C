@@ -59,7 +59,7 @@
 
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
-#include <avtStateRecorderIntegralCurve.h>
+#include <avtPoincareIC.h>
 #include <utility>
 
 #ifdef STRAIGHTLINE_SKELETON
@@ -174,6 +174,8 @@ avtPoincareFilter::avtPoincareFilter() :
     planes.resize(1);
     planes[0] = 0;
     fieldlines.erase( fieldlines.begin(), fieldlines.end() );
+    intersectObj = NULL;
+    maxIntersections = 0;
 }
 
 
@@ -193,6 +195,8 @@ avtPoincareFilter::avtPoincareFilter() :
 avtPoincareFilter::~avtPoincareFilter()
 {
     fieldlines.erase( fieldlines.begin(), fieldlines.end() );
+    if (intersectObj)
+        intersectObj->Delete();
 }
 
 // ****************************************************************************
@@ -256,6 +260,12 @@ avtPoincareFilter::PostExecute(void)
 //
 //  Programmer: Christoph Garth
 //  Creation:   Thu July 15, 2010
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+//    Create PoincareICs, not StateRecorderICs.
+//
 // ****************************************************************************
 
 avtIntegralCurve *
@@ -267,12 +277,11 @@ avtPoincareFilter::CreateIntegralCurve( const avtIVPSolver* model,
     // need at least these three attributes
     unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
 
-    avtStateRecorderIntegralCurve *rv = 
-        new avtStateRecorderIntegralCurve( attr, model, dir, 
+    avtPoincareIC *rv = new avtPoincareIC( attr, model, dir, 
                                            t_start, p_start, ID );
 
     if (intersectObj)
-        rv->SetIntersectionObject(intersectObj);
+        rv->SetIntersectionCriteria(intersectObj, maxIntersections);
 
     return rv;
 }
@@ -298,8 +307,7 @@ avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic)
 {
     for ( int i=0; i<ic.size(); ++i )
     {
-        avtStateRecorderIntegralCurve * sric =
-          (avtStateRecorderIntegralCurve *) ic[i];
+        avtPoincareIC * sric = (avtPoincareIC *) ic[i];
 
         // Use the curve id because the number of curves will change
         // over time.
@@ -486,6 +494,10 @@ avtPoincareFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //    Use avtStreamlines, not avtStreamlineWrappers.
 //
+//    Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+//    Max intersections is now represented by an explicit data member, not
+//    by generic "termination" field.
+//
 // ****************************************************************************
 
 bool
@@ -531,11 +543,11 @@ avtPoincareFilter::ClassifyStreamlines()
 
         // Check to see if there are enough points for the analysis.
         if( fp.nPuncturesNeeded != 0 &&
-            fp.nPuncturesNeeded != iter->second.ic->termination/2 )
+            fp.nPuncturesNeeded != iter->second.ic->maxIntersections/2 )
         {
           analysisComplete = false;
 
-          iter->second.ic->termination = 2 * fp.nPuncturesNeeded;
+          iter->second.ic->maxIntersections = 2 * fp.nPuncturesNeeded;
           iter->second.ic->status = avtIntegralCurve::STATUS_OK;
         }
         else
@@ -572,7 +584,7 @@ avtPoincareFilter::ClassifyStreamlines()
                << "  poloidalPeriod = " << fp.poloidalPeriod
                << "  complete " << (fp.analysisState == FieldlineProperties::COMPLETED ? "Yes " : "No ")
                << (iter->second.ic->status == avtIntegralCurve::STATUS_FINISHED ? 
-                   0 : iter->second.ic->termination )
+                   0 : iter->second.ic->maxIntersections )
                << endl << endl;
 
         ++iter;
@@ -2859,3 +2871,33 @@ avtPoincareFilter::drawPoints( avtDataTree *dt,
   
   dt->Merge( new avtDataTree(outPD, 0) );
 }
+
+
+// ****************************************************************************
+// Method: avtPoincareFilter::SetIntersectionCriteria
+//
+// Purpose:
+//   Sets the intersection object.
+//
+// Arguments:
+//   obj : Intersection object.
+//
+// Programmer: Dave Pugmire
+// Creation:   11 August 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtPoincareFilter::SetIntersectionCriteria(vtkObject *obj, int mi)
+{
+    if (obj)
+    {
+        intersectObj = obj;
+        intersectObj->Register(NULL);
+    }
+    maxIntersections = mi;
+}
+
+

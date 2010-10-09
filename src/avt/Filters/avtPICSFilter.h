@@ -106,6 +106,9 @@ class avtICAlgorithm;
 //   Hank Childs, Fri Oct  1 20:35:21 PDT 2010
 //   Add an argument for absTol that is a fraction of the bounding box.
 //
+//   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+//   Allow for multiple termination criterias.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -140,7 +143,6 @@ class AVTFILTERS_API avtPICSFilter :
 
     // Methods to set the filter's attributes.
     void                      SetMaxStepLength(double len);
-    void                      SetTermination(int type, double term);
     void                      SetPathlines(bool pathlines, double time0=0.0);
     void                      SetIntegrationType(int algo);
     void                      SetStreamlineAlgorithm(int algo, int maxCnt,
@@ -160,9 +162,7 @@ class AVTFILTERS_API avtPICSFilter :
     double relTol;
     double absTol;
     bool   absTolIsFraction;
-    avtIntegralCurve::TerminationType terminationType;
     int integrationType;
-    double termination;
     int    integrationDirection;
     int    dataSpatialDimension;
     avtICAlgorithm *icAlgo;

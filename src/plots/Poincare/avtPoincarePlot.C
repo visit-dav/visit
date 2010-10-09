@@ -351,6 +351,10 @@ avtPoincarePlot::CustomizeBehavior()
 //   Reflect new interface in absolute tolerance.  (The ones for the Poincare
 //   plots are not a fraction of the bounding box.)
 //
+//   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+//   Reflect new interface for terminations, due to refactoring of integral
+//   curves.
+//
 // ****************************************************************************
 
 void
@@ -371,14 +375,6 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
 #ifdef ENGINE
 
-    // Streamline specific attributes (avtStreamlineFilter).
-
-    // Make the number of punctures 2x because the Poincare analysis
-    // uses only the punctures in the same direction as the plane normal
-    // while the streamline uses the plane regardless of the normal.
-    poincareFilter->SetTermination(STREAMLINE_TERMINATE_INTERSECTIONS,
-                             2*atts.GetMinPunctures());
-
     poincareFilter->SetMaxPunctures(atts.GetMaxPunctures());
     
     vtkPlane *intPlane = vtkPlane::New();
@@ -388,9 +384,13 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         intPlane->SetNormal( 0,0,1 );
     else if ( atts.GetPuncturePlane() == PoincareAttributes::Poloidal )
         intPlane->SetNormal( 0,1,0 );
-    poincareFilter->SetIntersectionObject(intPlane);    
     intPlane->Delete();
     
+    // Make the number of punctures 2x because the Poincare analysis
+    // uses only the punctures in the same direction as the plane normal
+    // while the streamline uses the plane regardless of the normal.
+    poincareFilter->SetIntersectionCriteria(intPlane, 2*atts.GetMinPunctures());
+
     poincareFilter->SetIntegrationDirection(0);
 
     switch (atts.GetSourceType())

@@ -192,6 +192,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Hank Childs, Fri Oct  1 21:13:56 PDT 2010
 //   Add size type for absTol.
 //
+//   Hank Childs, Oct  8 23:30:27 PDT 2010
+//   Set up controls for multiple termination criteria.
+// 
 // ****************************************************************************
 
 void
@@ -472,30 +475,40 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     terminationLayout->setMargin(5);
     terminationLayout->setSpacing(10);
 
+    QLabel *maxStepsLabel = new QLabel(tr("Maximum number of steps"), terminationGroup);
+    terminationLayout->addWidget(maxStepsLabel, 0,1);
+    maxSteps = new QLineEdit(central);
+    connect(maxSteps, SIGNAL(returnPressed()),
+            this, SLOT(maxStepsProcessText()));
+    terminationLayout->addWidget(maxSteps, 0,2);
 
-    // Create the maximum time text field.
-    termType = new QComboBox(central);
-    termType->addItem(tr("Distance"));
-    termType->addItem(tr("Time"));
-    termType->addItem(tr("Number of Steps"));
-    connect(termType, SIGNAL(activated(int)),
-            this, SLOT(termTypeChanged(int)));
-    terminationLayout->addWidget(termType, 1,0);
+    limitMaxDistance = new QCheckBox(central);
+    connect(limitMaxDistance, SIGNAL(toggled(bool)), this, SLOT(limitMaxDistanceChanged(bool)));
+    terminationLayout->addWidget(limitMaxDistance, 1,0);
+    QLabel *limitMaxDistanceLabel = new QLabel(tr("Limit maximum distance traveled by particles"), terminationGroup);
+    terminationLayout->addWidget(limitMaxDistanceLabel, 1,1);
+    maxDistance = new QLineEdit(central);
+    connect(maxDistance, SIGNAL(returnPressed()), this, SLOT(maxDistanceProcessText()));
+    terminationLayout->addWidget(maxDistance, 1,2);
 
-    termination = new QLineEdit(central);
-    connect(termination, SIGNAL(returnPressed()),
-            this, SLOT(terminationProcessText()));
-    terminationLayout->addWidget(termination, 1,1);
+    limitMaxTime = new QCheckBox(central);
+    connect(limitMaxTime, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeChanged(bool)));
+    terminationLayout->addWidget(limitMaxTime, 2,0);
+    QLabel *limitMaxTimeLabel = new QLabel(tr("Limit maximum time elapsed for particles"), terminationGroup);
+    terminationLayout->addWidget(limitMaxTimeLabel, 2,1);
+    maxTime = new QLineEdit(central);
+    connect(maxTime, SIGNAL(returnPressed()), this, SLOT(maxTimeProcessText()));
+    terminationLayout->addWidget(maxTime, 2,2);
 
     //Create the direction of integration.
-    terminationLayout->addWidget(new QLabel(tr("Streamline direction"), central),3,0);
+    terminationLayout->addWidget(new QLabel(tr("Streamline direction"), central),3,1, Qt::AlignRight);
     directionType = new QComboBox(central);
     directionType->addItem(tr("Forward"));
     directionType->addItem(tr("Backward"));
     directionType->addItem(tr("Both"));
     connect(directionType, SIGNAL(activated(int)),
             this, SLOT(directionTypeChanged(int)));
-    terminationLayout->addWidget(directionType, 3,1);
+    terminationLayout->addWidget(directionType, 3,2);
 
     /*pathlineFlag = new QCheckBox(tr("Pathlines"), central);
     connect(pathlineFlag, SIGNAL(toggled(bool)),
@@ -530,7 +543,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationLayout->addWidget(maxStepLengthLabel, 1,0);
     integrationLayout->addWidget(maxStepLength, 1,1);
 
-    limitMaxTimeStepLabel = new QLabel(tr("Limit Maximum Time Step"), integrationGroup);
+    limitMaxTimeStepLabel = new QLabel(tr("Limit maximum time step"), integrationGroup);
     limitMaxTimeStep = new QCheckBox(integrationGroup);
     connect(limitMaxTimeStep, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeStepChanged(bool)));
     integrationLayout->addWidget(limitMaxTimeStepLabel, 2,0);
@@ -581,9 +594,9 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     // Parallel tab
     // ----------------------------------------------------------------------
-    QWidget *parallelTab = new QWidget(central);
-    propertyTabs->addTab(parallelTab, tr("Parallel"));
-    CreateAdvancedTab(parallelTab);
+    QWidget *advancedTab = new QWidget(central);
+    propertyTabs->addTab(advancedTab, tr("Advanced"));
+    CreateAdvancedTab(advancedTab);
 }
 
 // ****************************************************************************
@@ -609,6 +622,9 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 //   Hank Childs, Wed Sep 29 19:12:39 PDT 2010
 //   Rename None to FullyOpaque.
 //
+//   Hank Childs, Oct  8 23:30:27 PDT 2010
+//   Set up controls for multiple termination criteria.
+// 
 // ****************************************************************************
 
 void
@@ -679,7 +695,7 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
             this, SLOT(processMaxLimitText()));
     limitsLayout->addWidget(legendMaxEdit, 0, 4);
 
-        // Create the display group
+    // Create the display group
     QGroupBox *displayGrp = new QGroupBox(pageAppearance);
     displayGrp->setTitle(tr("Display"));
     appearanceLayout->addWidget(displayGrp);
@@ -761,8 +777,6 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     splitter->setFrameStyle(QFrame::HLine + QFrame::Raised);
     dLayout->addWidget(splitter, 2, 0, 1, 5);
 
-
-
     // Create the show subgroup
     QWidget *showGroup = new QWidget(displayGrp);
     dLayout->addWidget(showGroup, 3, 0, 4, 5);
@@ -836,39 +850,38 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     showLayout->addWidget(geomDisplayQualityLabel, 4, 0);
     showLayout->addWidget(geomDisplayQuality, 4, 1);
 
+    // Create the display group
+    QGroupBox *cropGrp = new QGroupBox(pageAppearance);
+    cropGrp->setTitle(tr("Crop away portion of streamlines (for animations)"));
+    appearanceLayout->addWidget(cropGrp);
 
-    // Splitter
-    splitter = new QFrame(displayGrp);
-    splitter->setFrameStyle(QFrame::HLine + QFrame::Raised);
-    dLayout->addWidget(splitter, 7, 0, 1, 5);
+    QGridLayout *cropLayout = new QGridLayout(cropGrp);
+    cropLayout->setMargin(5);
+    cropLayout->setSpacing(10);
 
-
-    QWidget *ddGroup = new QWidget(displayGrp);
-    dLayout->addWidget(ddGroup, 8, 0, 1, 5);
-
-    QHBoxLayout *ddLayout = new QHBoxLayout(ddGroup);
-    ddLayout->setMargin(5);
-    ddLayout->setSpacing(10);
-
-
-    displayLabel = new QLabel(tr("Display"), displayGrp);
-    displayBeginToggle = new QCheckBox(tr("Begin"), displayGrp);
-    displayEndToggle = new QCheckBox(tr("End"), displayGrp);
+    displayBeginToggle = new QCheckBox(tr("Retain from"), cropGrp);
+    displayEndToggle = new QCheckBox(tr("To"), cropGrp);
     connect(displayBeginToggle, SIGNAL(toggled(bool)), this, SLOT(displayBeginToggled(bool)));
     connect(displayEndToggle, SIGNAL(toggled(bool)), this, SLOT(displayEndToggled(bool)));
 
-    displayBeginEdit = new QLineEdit(displayGrp);
-    displayEndEdit = new QLineEdit(displayGrp);
+    displayBeginEdit = new QLineEdit(cropGrp);
+    displayEndEdit = new QLineEdit(cropGrp);
     connect(displayBeginEdit, SIGNAL(returnPressed()), this, SLOT(processDisplayBeginText()));
     connect(displayEndEdit, SIGNAL(returnPressed()), this, SLOT(processDisplayEndText()));
 
-    ddLayout->addWidget(displayLabel, 0);
-    ddLayout->addWidget(displayBeginToggle, 1);
-    ddLayout->addWidget(displayBeginEdit, 2);
-    ddLayout->addWidget(displayEndToggle, 3, Qt::AlignRight);
-    ddLayout->addWidget(displayEndEdit, 4);
+    displayReferenceType = new QComboBox(cropGrp);
+    displayReferenceType->addItem(tr("Distance"));
+    displayReferenceType->addItem(tr("Time"));
+    displayReferenceType->addItem(tr("Step numbers"));
+    connect(displayReferenceType, SIGNAL(activated(int)), this, SLOT(displayReferenceTypeChanged(int)));
+    QLabel *drtl = new QLabel(tr("Units are in"), cropGrp);
 
-
+    cropLayout->addWidget(displayBeginToggle, 0, 0);
+    cropLayout->addWidget(displayBeginEdit, 0, 1);
+    cropLayout->addWidget(displayEndToggle, 0, 2);
+    cropLayout->addWidget(displayEndEdit, 0, 3);
+    cropLayout->addWidget(drtl, 1, 0);
+    cropLayout->addWidget(displayReferenceType, 1, 1);
 
     QGroupBox *colorGrp = new QGroupBox(pageAppearance);
     colorGrp->setTitle(tr("Color"));
@@ -879,7 +892,6 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cLayout->setSpacing(10);
     cLayout->setColumnStretch(1,10);
     int cRow = 0;
-
 
     //--table
     colorTableName = new QvisColorTableButton(colorGrp);
@@ -986,6 +998,9 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
 //   Hank Childs, Wed Sep 29 19:25:06 PDT 2010
 //   Add option for having VisIt select the best algorithm.
 //
+//   Hank Childs, Oct  8 23:30:27 PDT 2010
+//   Set up controls for multiple termination criteria.
+// 
 // ****************************************************************************
 
 void
@@ -1042,6 +1057,22 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
             this, SLOT(workGroupSizeChanged(int)));
     algoGLayout->addWidget( workGroupSizeLabel, 4,0);
     algoGLayout->addWidget( workGroupSize, 4,1);
+
+    // Warnings group.
+    QGroupBox *warningsGrp = new QGroupBox(pageAdvanced);
+    warningsGrp->setTitle(tr("Warnings"));
+    advGLayout->addWidget(warningsGrp, 1, 0, 1, 4);
+
+    QGridLayout *warningsGLayout = new QGridLayout(warningsGrp);
+    warningsGLayout->setSpacing(10);
+    warningsGLayout->setColumnStretch(1,10);
+
+    issueWarningForMaxSteps = new QCheckBox(central);
+    connect(issueWarningForMaxSteps, SIGNAL(toggled(bool)),
+            this, SLOT(issueWarningForMaxStepsChanged(bool)));
+    warningsGLayout->addWidget(issueWarningForMaxSteps, 0, 0);
+    QLabel *warningsLabel = new QLabel(tr("Issue warnings when the maximum number of steps is reached"), warningsGrp);
+    warningsGLayout->addWidget(warningsLabel, 0, 1, 1, 4);
 }
 
 // ****************************************************************************
@@ -1135,6 +1166,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //   Hank Childs, Thu Sep 30 12:07:14 PDT 2010
 //   Support widgets for scaling based on fraction of the bounding box.
 //
+//   Hank Childs, Oct  8 23:30:27 PDT 2010
+//   Set up controls for multiple termination criteria.
+// 
 // ****************************************************************************
 
 void
@@ -1190,9 +1224,29 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             temp.setNum(streamAtts->GetMaxTimeStep());
             maxTimeStep->setText(temp);
             break;
-        case StreamlineAttributes::ID_termination:
-            temp.setNum(streamAtts->GetTermination());
-            termination->setText(temp);
+        case StreamlineAttributes::ID_maxSteps:
+            temp.setNum(streamAtts->GetMaxSteps());
+            maxSteps->setText(temp);
+            break;
+        case StreamlineAttributes::ID_terminateByDistance:
+            limitMaxDistance->blockSignals(true);
+            limitMaxDistance->setChecked(streamAtts->GetTerminateByDistance());
+            limitMaxDistance->blockSignals(false);
+            maxDistance->setEnabled(streamAtts->GetTerminateByDistance());
+            break;
+        case StreamlineAttributes::ID_termDistance:
+            temp.setNum(streamAtts->GetTermDistance());
+            maxDistance->setText(temp);
+            break;
+        case StreamlineAttributes::ID_terminateByTime:
+            limitMaxTime->blockSignals(true);
+            limitMaxTime->setChecked(streamAtts->GetTerminateByTime());
+            limitMaxTime->blockSignals(false);
+            maxTime->setEnabled(streamAtts->GetTerminateByTime());
+            break;
+        case StreamlineAttributes::ID_termTime:
+            temp.setNum(streamAtts->GetTermTime());
+            maxTime->setText(temp);
             break;
         case StreamlineAttributes::ID_pointSource:
             pointSource->setText(DoublesToQString(streamAtts->GetPointSource(),3));
@@ -1634,12 +1688,6 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 absTol->setText(temp);
             }
             break;
-        case StreamlineAttributes::ID_terminationType:
-            UpdateTerminationType();
-            termType->blockSignals(true);
-            termType->setCurrentIndex( int(streamAtts->GetTerminationType()) );
-            termType->blockSignals(false);
-            break;
         case StreamlineAttributes::ID_integrationType:
             // Update lots of widget visibility and enabled states.
             UpdateIntegrationAttributes();
@@ -1728,6 +1776,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             displayEndEdit->setEnabled(streamAtts->GetDisplayEndFlag());
             temp.setNum(streamAtts->GetDisplayEnd());
             displayEndEdit->setText(temp);
+            break;
+          case StreamlineAttributes::ID_referenceTypeForDisplay:
+            displayReferenceType->blockSignals(true);
+            displayReferenceType->setCurrentIndex((int) streamAtts->GetReferenceTypeForDisplay());
+            displayReferenceType->blockSignals(false);
             break;
 
           case StreamlineAttributes::ID_opacityVariable:
@@ -1831,11 +1884,17 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
               numberOfRandomSamples->blockSignals(false);
               break;
 
-        case StreamlineAttributes::ID_forceNodeCenteredData:
-            forceNodal->blockSignals(true);
-            forceNodal->setChecked(streamAtts->GetForceNodeCenteredData());
-            forceNodal->blockSignals(false);
-            break;
+            case StreamlineAttributes::ID_forceNodeCenteredData:
+              forceNodal->blockSignals(true);
+              forceNodal->setChecked(streamAtts->GetForceNodeCenteredData());
+              forceNodal->blockSignals(false);
+              break;
+
+            case StreamlineAttributes::ID_issueTerminationWarnings:
+              issueWarningForMaxSteps->blockSignals(true);
+              issueWarningForMaxSteps->setChecked(streamAtts->GetIssueTerminationWarnings());
+              issueWarningForMaxSteps->blockSignals(false);
+              break;
         }
     }
 }
@@ -2113,34 +2172,6 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
     }
 }
 
-// ****************************************************************************
-// Method: QvisStreamlinePlotWindow::UpdateTerminationType
-//
-// Purpose: 
-//   Updates the widgets for the various termination types.
-//
-// Programmer: Dave Pugmire
-// Creation:   Thu Feb 19 12:35:38 EST 2008
-//
-//
-// ****************************************************************************
-
-void
-QvisStreamlinePlotWindow::UpdateTerminationType()
-{
-  /*
-    if (streamAtts->GetTerminationType() == StreamlineAttributes::Time ||
-        streamAtts->GetTerminationType() == StreamlineAttributes::Distance)
-      {
-        //termination->SetPrecision(5);
-      }
-    else
-      {
-      streamAtts->SetTermination( (int)streamAtts->GetTermination());
-      }
-  */
-}
-
 
 // ****************************************************************************
 // Method: QvisStreamlinePlotWindow::UpdateAlgorithmAttributes
@@ -2234,6 +2265,9 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 //   Hank Childs, Thu Sep 30 01:48:49 PDT 2010
 //   Support widgets for fraction bbox vs absolute sizes.
 //
+//   Hank Childs, Oct  8 23:30:27 PDT 2010
+//   Set up controls for multiple termination criteria.
+// 
 // ****************************************************************************
 
 void
@@ -2271,16 +2305,40 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do termination
-    if(which_widget == StreamlineAttributes::ID_termination || doAll)
+    if(which_widget == StreamlineAttributes::ID_maxSteps || doAll)
     {
-        double val;
-        if(LineEditGetDouble(termination, val))
-            streamAtts->SetTermination(val);
+        int val;
+        if(LineEditGetInt(maxSteps, val))
+            streamAtts->SetMaxSteps(val);
         else
         {
-            ResettingError(tr("termination"),
-                DoubleToQString(streamAtts->GetTermination()));
-            streamAtts->SetTermination(streamAtts->GetTermination());
+            ResettingError(tr("maxsteps"),
+                IntToQString(streamAtts->GetMaxSteps()));
+            streamAtts->SetMaxSteps(streamAtts->GetMaxSteps());
+        }
+    }
+    if(which_widget == StreamlineAttributes::ID_termTime || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(maxTime, val))
+            streamAtts->SetTermTime(val);
+        else
+        {
+            ResettingError(tr("maxtime"),
+                DoubleToQString(streamAtts->GetTermTime()));
+            streamAtts->SetTermTime(streamAtts->GetTermTime());
+        }
+    }
+    if(which_widget == StreamlineAttributes::ID_termDistance || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(maxDistance, val))
+            streamAtts->SetTermDistance(val);
+        else
+        {
+            ResettingError(tr("maxdistance"),
+                DoubleToQString(streamAtts->GetTermDistance()));
+            streamAtts->SetTermDistance(streamAtts->GetTermDistance());
         }
     }
 
@@ -2870,16 +2928,6 @@ QvisStreamlinePlotWindow::directionTypeChanged(int val)
 }   
 
 void
-QvisStreamlinePlotWindow::termTypeChanged(int val)
- {
-    if(val != streamAtts->GetTerminationType())
-    {
-        streamAtts->SetTerminationType(StreamlineAttributes::TerminationType(val));
-        Apply();
-    }
-}   
-
-void
 QvisStreamlinePlotWindow::integrationTypeChanged(int val)
  {
     if(val != streamAtts->GetIntegrationType())
@@ -2914,9 +2962,43 @@ QvisStreamlinePlotWindow::maxTimeStepProcessText()
 }
 
 void
-QvisStreamlinePlotWindow::terminationProcessText()
+QvisStreamlinePlotWindow::maxStepsProcessText()
 {
-    GetCurrentValues(StreamlineAttributes::ID_termination);
+    GetCurrentValues(StreamlineAttributes::ID_maxSteps);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::limitMaxTimeChanged(bool val)
+{
+    if(val != streamAtts->GetTerminateByTime())
+    {
+        streamAtts->SetTerminateByTime(val);
+        Apply();
+    }
+}
+
+void
+QvisStreamlinePlotWindow::limitMaxDistanceChanged(bool val)
+{
+    if(val != streamAtts->GetTerminateByDistance())
+    {
+        streamAtts->SetTerminateByDistance(val);
+        Apply();
+    }
+}
+
+void
+QvisStreamlinePlotWindow::maxTimeProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_termTime);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::maxDistanceProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_termDistance);
     Apply();
 }
 
@@ -3376,6 +3458,13 @@ QvisStreamlinePlotWindow::headDisplayTypeChanged(int val)
 }
 
 void
+QvisStreamlinePlotWindow::issueWarningForMaxStepsChanged(bool val)
+{
+    streamAtts->SetIssueTerminationWarnings(val);
+    Apply();
+}
+
+void
 QvisStreamlinePlotWindow::tubeDisplayDensityChanged(int val)
 {
     streamAtts->SetTubeDisplayDensity(val);
@@ -3407,6 +3496,13 @@ void
 QvisStreamlinePlotWindow::numberOfRandomSamplesChanged(int val)
 {
     streamAtts->SetNumberOfRandomSamples(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::displayReferenceTypeChanged(int val)
+{
+    streamAtts->SetReferenceTypeForDisplay((StreamlineAttributes::ReferenceType) val);
     Apply();
 }
 
@@ -3511,4 +3607,3 @@ TurnOff(QWidget *w0, QWidget *w1)
         w1->hide();
     }
 }
-
