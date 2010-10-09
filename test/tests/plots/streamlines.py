@@ -17,6 +17,9 @@
 #    Update for new attribute names for scaling based on bbox.
 #    Also for yesterday's change to the step size.
 #
+#    Hank Childs, Fri Oct  8 23:30:27 PDT 2010
+#    Reflect new interface for multiple termination criteria.
+#
 # ----------------------------------------------------------------------------
 
 OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
@@ -43,7 +46,9 @@ StreamlineAtts = StreamlineAttributes()
 StreamlineAtts.sourceType = StreamlineAtts.SpecifiedPlane  # SpecifiedPoint, SpecifiedPointList, SpecifiedLine, SpecifiedCircle, SpecifiedPlane, SpecifiedSphere, SpecifiedBox
 StreamlineAtts.limitMaximumTimestep = 1
 StreamlineAtts.maxTimeStep = 0.02
-StreamlineAtts.termination = 200
+StreamlineAtts.terminateByTime = 1
+StreamlineAtts.termTime = 200
+StreamlineAtts.maxSteps = 100000
 StreamlineAtts.pointSource = (0, 0, 0)
 StreamlineAtts.lineStart = (0, 0, 0)
 StreamlineAtts.lineEnd = (1, 0, 0)
@@ -75,7 +80,6 @@ StreamlineAtts.streamlineDirection = StreamlineAtts.Both  # Forward, Backward, B
 StreamlineAtts.relTol = 1e-06
 StreamlineAtts.absTolSizeType = StreamlineAtts.Absolute
 StreamlineAtts.absTolAbsolute = 1e-07
-StreamlineAtts.terminationType = StreamlineAtts.Time  # Distance, Time, Step
 StreamlineAtts.integrationType = StreamlineAtts.DormandPrince  # DormandPrince, AdamsBashforth, M3DC1Integrator
 StreamlineAtts.streamlineAlgorithmType = StreamlineAtts.ParallelStaticDomains  # LoadOnDemand, ParallelStaticDomains, MasterSlave
 StreamlineAtts.maxStreamlineProcessCount = 10
@@ -156,25 +160,25 @@ Test( "streamlines_07" )
 
 StreamlineAtts.coloringMethod = StreamlineAtts.Solid
 
-StreamlineAtts.terminationType = StreamlineAtts.Distance
-StreamlineAtts.termination = 10
+StreamlineAtts.terminateByTime = 0
+StreamlineAtts.terminateByDistance = 1
+StreamlineAtts.termDistance = 10
 SetPlotOptions(StreamlineAtts)
 DrawPlots()
 Test( "streamlines_08" )
 
-StreamlineAtts.termination = 5
+StreamlineAtts.termDistance = 5
 SetPlotOptions(StreamlineAtts)
 DrawPlots()
 Test( "streamlines_09" )
 
-StreamlineAtts.terminationType = StreamlineAtts.Step
-StreamlineAtts.termination = 500
+StreamlineAtts.terminateByDistance = 0
+StreamlineAtts.maxSteps = 500
 SetPlotOptions(StreamlineAtts)
 DrawPlots()
 Test( "streamlines_10" )
 
-StreamlineAtts.terminationType = StreamlineAtts.Step
-StreamlineAtts.termination = 250
+StreamlineAtts.maxSteps = 250
 SetPlotOptions(StreamlineAtts)
 DrawPlots()
 Test( "streamlines_11" )
