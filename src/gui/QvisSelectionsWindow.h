@@ -52,6 +52,7 @@ class QTabWidget;
 
 class PlotList;
 class SelectionList;
+class EngineList;
 
 // ****************************************************************************
 // Class: QvisSelectionsWindow
@@ -80,12 +81,16 @@ public:
 
     void ConnectSelectionList(SelectionList *);
     void ConnectPlotList(PlotList *);
+    void ConnectEngineList(EngineList *);
+
     virtual void SubjectRemoved(Subject *);
 public  slots:
     void highlightSelection(const QString &);
 protected:
     void    UpdateWindow(bool doAll);
     void    Apply(bool forceUpdate = false);
+
+    QString GetLoadHost() const;
 private slots:
     void    automaticallyApplyChanged(bool val);
     void    UpdateWindowSingleItem();
@@ -119,6 +124,7 @@ private:
     // State information
     SelectionList      *selectionList;
     PlotList           *plotList;
+    EngineList         *engineList;
 };
 
 #endif

@@ -38,11 +38,14 @@
 
 #include <QvisSelectionsWindow.h>
 
+#include <EngineList.h>
 #include <Plot.h>
 #include <PlotList.h>
 #include <SelectionProperties.h>
 #include <SelectionList.h>
 #include <ViewerProxy.h>
+#include <QualifiedFilename.h>
+#include <QvisFileOpenDialog.h>
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -79,6 +82,7 @@ QvisSelectionsWindow::QvisSelectionsWindow(const QString &caption,
 {
     selectionList = 0;
     plotList = 0;
+    engineList = 0;
 }
 
 // ****************************************************************************
@@ -99,6 +103,8 @@ QvisSelectionsWindow::~QvisSelectionsWindow()
         selectionList->Detach(this);
     if(plotList != 0)
         plotList->Detach(this);
+    if(engineList != 0)
+        engineList->Detach(this);
 }
 
 void
@@ -116,6 +122,13 @@ QvisSelectionsWindow::ConnectPlotList(PlotList *s)
 }
 
 void
+QvisSelectionsWindow::ConnectEngineList(EngineList *el)
+{
+    engineList = el;
+    engineList->Attach(this);
+}
+
+void
 QvisSelectionsWindow::SubjectRemoved(Subject *s)
 {
     if(selectionList == s)
@@ -123,6 +136,9 @@ QvisSelectionsWindow::SubjectRemoved(Subject *s)
 
     if(plotList == s)
         plotList = 0;
+
+    if(engineList == s)
+        engineList = 0;
 }
 
 // ****************************************************************************
@@ -178,7 +194,6 @@ QvisSelectionsWindow::CreateWindowContents()
             this, SLOT(updateSelection()));
     listLayout->addWidget(updateButton, 3,0);
 #define SELECTIONS_ARENT_DONE
-#ifndef SELECTIONS_ARENT_DONE
     saveButton = new QPushButton(tr("Save"), f1);
     connect(saveButton, SIGNAL(pressed()),
             this, SLOT(saveSelection()));
@@ -188,7 +203,6 @@ QvisSelectionsWindow::CreateWindowContents()
     connect(loadButton, SIGNAL(pressed()),
             this, SLOT(loadSelection()));
     listLayout->addWidget(loadButton, 4,1);
-#endif
 
     //
     // Properties group
@@ -263,6 +277,9 @@ QvisSelectionsWindow::CreateStatisticsTab(QWidget *parent)
 // Creation:   Fri Aug  6 15:44:09 PDT 2010
 //
 // Modifications:
+//   Brad Whitlock, Mon Oct 11 16:31:15 PDT 2010
+//   I made it observe the engine list so we can set the load selection button's
+//   enabled state to true if we have 1 engine but no plots.
 //
 // ****************************************************************************
 
@@ -272,7 +289,9 @@ QvisSelectionsWindow::UpdateWindow(bool doAll)
     if(selectionList == 0 || plotList == 0)
         return;
 
-    if(SelectedSubject() == selectionList || doAll)
+    if(SelectedSubject() == selectionList ||
+       SelectedSubject() == engineList ||
+       doAll)
     {
         automaticallyApply->blockSignals(true);
         automaticallyApply->setChecked(selectionList->GetAutoApplyUpdates());
@@ -355,6 +374,47 @@ QvisSelectionsWindow::automaticallyApplyChanged(bool val)
 }
 
 // ****************************************************************************
+// Method: QvisSelectionsWindow::GetLoadHost
+//
+// Purpose: 
+//   Get the host to use for the load button.
+//
+// Arguments:
+//
+// Returns:    The most likely host name to use for loading a selection.
+//
+// Note:       We use the first selected plot's host name as the selection
+//             load host. Otherwise, we use the only engine's host name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 11 15:15:51 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisSelectionsWindow::GetLoadHost() const
+{
+    QString loadHost; 
+
+    int index = plotList->FirstSelectedIndex();
+    if(index != -1)
+    {
+        QualifiedFilename db(plotList->GetPlots(index).GetDatabaseName());
+        loadHost = QString(db.host.c_str());
+    }
+    if(loadHost.isEmpty())
+    {
+        stringVector engines(engineList->GetEngines());
+        if(engines.size() == 1) 
+            loadHost = QString(engines[0].c_str());
+    }
+
+    return loadHost;
+}
+
+// ****************************************************************************
 //  Method:  QvisSelectionsWindow::UpdateWindowSingleItem
 //
 //  Purpose:
@@ -364,6 +424,8 @@ QvisSelectionsWindow::automaticallyApplyChanged(bool val)
 //  Creation:    Fri Aug  6 15:44:09 PDT 2010
 //
 //  Modifications:
+//    Brad Whitlock, Mon Oct 11 15:15:37 PDT 2010
+//    Set the enabled state for the load button.
 //
 // ****************************************************************************
 
@@ -381,13 +443,20 @@ QvisSelectionsWindow::UpdateWindowSingleItem()
     {
         const SelectionProperties &sel = (*selectionList)[index];
         nameEdit->setText(sel.GetName().c_str());
-        plotNameLabel->setText(sel.GetOriginatingPlot().c_str());
+        if(sel.GetOriginatingPlot().empty())
+            plotNameLabel->setText(tr("none"));
+        else
+            plotNameLabel->setText(sel.GetOriginatingPlot().c_str());
     }
     nameEdit->blockSignals(false);
 
     deleteButton->setEnabled(index >= 0);
-#ifndef SELECTIONS_ARENT_DONE
     saveButton->setEnabled(index >= 0);
+
+    // Set the enabled state of the load button.
+    loadButton->setEnabled(!GetLoadHost().isEmpty());
+
+#ifndef SELECTIONS_ARENT_DONE
     nameEdit->setEnabled(index >= 0);
 #endif
     updateButton->setEnabled(index >= 0);
@@ -502,7 +571,25 @@ QvisSelectionsWindow::updateSelection()
 void
 QvisSelectionsWindow::loadSelection()
 {
-    qDebug("load selection");
+    QString loadHost(GetLoadHost());
+    if(loadHost.isEmpty())
+    {
+        Warning(tr("VisIt can't determine the host for the compute engine to "
+                   "use for loading the selection").arg(loadHost));
+    }
+    else
+    {
+        // Get the list of files at ~/.visit on the remote side that end with .ns
+        QString loadFile(loadHost + ":~/.visit/");
+        QString selName = QvisFileOpenDialog::getOpenFileName(loadFile,
+            "*.ns", tr("Load selection from file"));
+        if(!selName.isEmpty())
+        {
+            QualifiedFilename f(selName.toStdString());
+            GetViewerMethods()->LoadNamedSelection(f.filename.substr(0, f.filename.size()-3),
+                                                   loadHost.toStdString(), "");
+        }
+    }
 }
 
 // ****************************************************************************
