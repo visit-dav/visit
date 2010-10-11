@@ -961,6 +961,9 @@
 #     Added a hack to workaround a Mesa issue.
 #     Only apply said hack on Linux, though.
 #
+#     Brad Whitlock, Mon Oct 11 11:23:18 PDT 2010
+#     Added support for NETCDF 4.1.1
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1317,10 +1320,10 @@ export MILI_VERSION=${MILI_VERSION:-"1.10.0"}
 export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"1.0"}
 export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
 
-export NETCDF_VERSION=${NETCDF_VERSION-"3.6.3"}
+export NETCDF_VERSION=${NETCDF_VERSION-"4.1.1"}
 export NETCDF_FILE=${NETCDF_FILE-"netcdf-${NETCDF_VERSION}.tar.gz"}
-export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"3.6"}
-export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-3.6.3"}
+export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"4.1"}
+export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-4.1.1"}
 
 export ADVIO_FILE=${ADVIO_FILE:-"AdvIO-1.2.tar.gz"}
 export ADVIO_VERSION=${ADVIO_VERSION:-"1.2"}
@@ -4529,7 +4532,7 @@ function build_hdf5
     #
     # Build HDF5
     #
-    info "Building HDF5 . . . (~2 minutes)"
+    info "Building HDF5 . . . (~5 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        warn "HDF5 build failed.  Giving up"
@@ -5819,54 +5822,8 @@ function build_hdf4
 #                         Function 8.4, build_netcdf                          #
 # *************************************************************************** #
 
-function apply_netcdf_360_patch
-{
-  patch -p0 << \EOF
-*** netcdf-3.6.0-p1.orig/src/libsrc/netcdf.h	Tue Sep 14 06:41:22 2004
---- netcdf-3.6.0-p1/src/libsrc/netcdf.h	Thu Apr 26 14:14:41 2007
-*************** typedef enum {
-*** 130,140 ****
-   * applications and utilities.  However, nothing is statically allocated to
-   * these sizes internally.
-   */
-! #define NC_MAX_DIMS	512	 /* max dimensions per file */
-  #define NC_MAX_ATTRS	4096	 /* max global or per variable attributes */
-! #define NC_MAX_VARS	4096	 /* max variables per file */
-  #define NC_MAX_NAME	128	 /* max length of a name */
-! #define NC_MAX_VAR_DIMS	NC_MAX_DIMS /* max per variable dimensions */
-  
-  
-  /*
---- 130,140 ----
-   * applications and utilities.  However, nothing is statically allocated to
-   * these sizes internally.
-   */
-! #define NC_MAX_DIMS	65536	 /* max dimensions per file */
-  #define NC_MAX_ATTRS	4096	 /* max global or per variable attributes */
-! #define NC_MAX_VARS	524288	 /* max variables per file */
-  #define NC_MAX_NAME	128	 /* max length of a name */
-! #define NC_MAX_VAR_DIMS	8 	 /* max per variable dimensions */
-  
-  
-  /*
-EOF
-  if [[ $? != 0 ]] ; then
-      warn "Unable to patch NetCDF. Wrong version?"
-      return 1
-  fi
-
-  return 0
-}
-
 function apply_netcdf_patch
 {
-   if [[ ${NETCDF_VERSION} == 3.6.0 ]] ; then
-       apply_netcdf_360_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
-
    return 0
 }
 
@@ -5910,10 +5867,25 @@ function build_netcdf
     else
         EXTRA_FLAGS=""
     fi
+    H5ARGS=""
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        H5ARGS="--enable-netcdf4"
+        H5ARGS="$H5ARGS --with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
+        if [[ "$DO_SZIP" == "yes" ]] ; then
+            H5ARGS="$H5ARGS --with-szlib=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        fi
+    fi
+
+    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
+        FC=\"\" $EXTRA_FLAGS --enable-cxx-4 $H5ARGS \
+        --prefix=\"$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH\""
+
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        FC="" $EXTRA_FLAGS \
+        FC="" $EXTRA_FLAGS --enable-cxx-4 $H5ARGS \
         --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
+
     if [[ $? != 0 ]] ; then
         warn "NetCDF configure failed.  Giving up"
         return 1
@@ -7902,6 +7874,11 @@ function build_hostconf
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR \${VISITHOME}/netcdf/$NETCDF_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
+            >> $HOSTCONF
+        fi
     fi
 
     if [[ "$DO_SZIP" == "yes" ]] ; then
@@ -9284,7 +9261,7 @@ if [[ "$DO_HDF5" == "yes" ]] ; then
     if [[ $? == 0 ]] ; then
         info "Skipping HDF5 build.  HDF5 is already installed."
     else
-        info "Building HDF5 (~2 minutes)"
+        info "Building HDF5 (~5 minutes)"
         build_hdf5
         if [[ $? != 0 ]] ; then
             error "Unable to build or install HDF5.  Bailing out."
@@ -9344,7 +9321,7 @@ if [[ "$DO_NETCDF" == "yes" ]] ; then
    if [[ $? == 0 ]] ; then
         info "Skipping NetCDF build.  NetCDF is already installed."
    else
-        info "Building NetCDF (~2 minutes)"
+        info "Building NetCDF (~5 minutes)"
         build_netcdf
         if [[ $? != 0 ]] ; then
             error "Unable to build or install NetCDF.  Bailing out."
