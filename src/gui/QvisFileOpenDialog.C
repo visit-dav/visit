@@ -138,6 +138,7 @@ QvisFileOpenDialog::setResult(int r)
 //
 // Arguments:
 //   initialFile : The host and path that we're using.
+//   fltr        : Pass in the filter to use.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 15 16:29:09 PST 2006
@@ -147,9 +148,11 @@ QvisFileOpenDialog::setResult(int r)
 // ****************************************************************************
 
 void
-QvisFileOpenDialog::delayedChangePath(const QString &initialFile)
+QvisFileOpenDialog::delayedChangePath(const QString &initialFile, 
+    const QString &fltr)
 {
     filename = initialFile;
+    filter = fltr;
     QTimer::singleShot(500, this, SLOT(changeThePath()));
 }
 
@@ -162,6 +165,7 @@ QvisFileOpenDialog::delayedChangePath(const QString &initialFile)
 //
 // Arguments:
 //   initialFile : The host and path that we're opening.
+//   fltr        : The filter to use.
 //
 // Returns:    The full filename selected by the user.
 //
@@ -169,22 +173,25 @@ QvisFileOpenDialog::delayedChangePath(const QString &initialFile)
 // Creation:   Wed Nov 15 16:30:43 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 11 15:40:21 PDT 2010
+//   Pass in a filter.
+//
 // ****************************************************************************
 
 QString
-QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile)
+QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile, 
+    const QString &fltr)
 {
     QString ret;
 
     // The entire state of the file open window depends on the file server
     // so let's back up the file server's state so we can update it.
-    std::string host(fileServer->GetHost());
-    std::string path(fileServer->GetPath());
-    std::string filter(fileServer->GetFilter());
+    std::string oldhost(fileServer->GetHost());
+    std::string oldpath(fileServer->GetPath());
+    std::string oldfilter(fileServer->GetFilter());
 
     // Set up a delayed order to change the path.
-    delayedChangePath(initialFile);
+    delayedChangePath(initialFile, fltr);
 
     // Set the return value for the method based on the event loop return value.
     if(exec() == Accepted)
@@ -193,9 +200,9 @@ QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile)
     // Try and restore the host,path,filter into the file server.
     TRY
     {
-        fileServer->SetHost(host);
-        fileServer->SetPath(path);
-        fileServer->SetFilter(filter);
+        fileServer->SetHost(oldhost);
+        fileServer->SetPath(oldpath);
+        fileServer->SetFilter(oldfilter);
         fileServer->Notify();
     }
     CATCH(VisItException)
@@ -228,19 +235,38 @@ QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile)
 // Modifications:
 //   Brad Whitlock, Wed Apr  9 10:40:51 PDT 2008
 //   Made caption use QString.
-//  
+//
+//   Brad Whitlock, Mon Oct 11 15:38:41 PDT 2010
+//   I added a version that can pass the filter.
+//
 // ****************************************************************************
 
 QString
 QvisFileOpenDialog::getOpenFileName(const QString &initialFile, 
-    const QString &caption)
+    const QString &fltr, const QString &caption)
 {
     QString filename;
 
     // Create a new file open window
     QvisFileOpenDialog *dlg = new QvisFileOpenDialog(caption);
     dlg->SetUsageMode(QvisFileOpenDialog::SelectFilename);
-    filename = dlg->getOpenFileNameEx(initialFile);
+    filename = dlg->getOpenFileNameEx(initialFile, fltr);
+    dlg->deleteLater();
+
+    return filename;
+}
+
+QString
+QvisFileOpenDialog::getOpenFileName(const QString &initialFile, 
+    const QString &caption)
+{
+    QString filename;
+    QString fltr(fileServer->GetFilter().c_str());
+
+    // Create a new file open window
+    QvisFileOpenDialog *dlg = new QvisFileOpenDialog(caption);
+    dlg->SetUsageMode(QvisFileOpenDialog::SelectFilename);
+    filename = dlg->getOpenFileNameEx(initialFile, fltr);
     dlg->deleteLater();
 
     return filename;
@@ -269,6 +295,9 @@ QvisFileOpenDialog::getOpenFileName(const QString &initialFile,
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Mon Oct 11 15:33:53 PDT 2010
+//   Set the filter too.
+//
 // ****************************************************************************
 
 void
@@ -285,6 +314,7 @@ QvisFileOpenDialog::changeThePath()
         {
             fileServer->SetHost(f.host);
             fileServer->SetPath(f.path);
+            fileServer->SetFilter(filter.toStdString());
             fileServer->Notify();
             retry_loop = false;
         }

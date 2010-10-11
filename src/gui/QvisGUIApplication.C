@@ -3532,6 +3532,7 @@ QvisGUIApplication::WindowFactory(int i)
               tr("Selections"), mainWin->GetNotepad());
           sWin->ConnectSelectionList(GetViewerState()->GetSelectionList());
           sWin->ConnectPlotList(GetViewerState()->GetPlotList());
+          sWin->ConnectEngineList(GetViewerState()->GetEngineList());
           win = sWin;
         }
         break;

@@ -10447,6 +10447,10 @@ ViewerSubject::DeleteNamedSelection()
 //  Programmer:  Hank Childs
 //  Creation:    January 28, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Mon Oct 11 16:04:41 PDT 2010
+//    Add the new file-based selection to the list.
+//
 // ****************************************************************************
 
 void
@@ -10470,6 +10474,19 @@ ViewerSubject::LoadNamedSelection()
         if (ViewerEngineManager::Instance()->LoadNamedSelection(engineKey, selName))
         {
             Message(tr("Loaded named selection"));
+
+            ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
+
+            // Remove any selection that may already exist by this name.
+            int index = wMgr->GetSelectionList()->GetSelection(selName);
+            wMgr->GetSelectionList()->RemoveSelections(index);
+
+            // Add a new selection to the selection list. Just set the name so
+            // it will not have an originating plot.
+            SelectionProperties props;
+            props.SetName(selName);
+            wMgr->GetSelectionList()->AddSelections(props);
+            wMgr->GetSelectionList()->Notify();
         }
         else
         {

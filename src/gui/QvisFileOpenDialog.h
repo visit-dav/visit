@@ -70,6 +70,10 @@ public:
     static QString getOpenFileName(const QString &initialFile, 
                                    const QString &caption);
 
+    static QString getOpenFileName(const QString &initialFile, 
+                                   const QString &filter,
+                                   const QString &caption);
+
     int exec();
     void setFilename(const QString &);
     QString getFilename() const;
@@ -83,13 +87,14 @@ private slots:
 private:
     void setResult(int);
     int result() const;
-    void delayedChangePath(const QString &initialFile);
+    void delayedChangePath(const QString &initialFile, const QString &fltr);
     void restoreHostPathFilter(const QString &host,
                                const QString &path, const QString &filter);
-    QString getOpenFileNameEx(const QString &initialFile);
+    QString getOpenFileNameEx(const QString &initialFile, const QString &filter);
     void done(int r);
 
     QString filename;
+    QString filter;
     bool    in_loop;
     int     _result;
 };
