@@ -412,8 +412,6 @@ QvisSubsetPanelWidget::SetSelectedItemState(int state)
     }
 }
 
-
-
 // ****************************************************************************
 // Method: QvisSubsetPanelWidget::Clear
 //
@@ -435,9 +433,7 @@ QvisSubsetPanelWidget::Clear()
     tree->setEnabled(false);
     tree->headerItem()->setText(0,"");
     EnableButtons(false);
-
 }
-
 
 // ****************************************************************************
 // Method: QvisSubsetPanelWidget::onAllSetsButton
@@ -451,7 +447,9 @@ QvisSubsetPanelWidget::Clear()
 // Creation:   Mon Jun 30 08:45:28 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct 12 11:48:09 PDT 2010
+//   Always emit stateChanged.
+//
 // ****************************************************************************
 
 void
@@ -463,6 +461,8 @@ QvisSubsetPanelWidget::onAllSetsButton()
         TurnOnOff(true,false);
     else if(allSetsButton->text() == tr("Turn Off"))
         TurnOnOff(false,false);
+
+    emit stateChanged();
 }
 
 // ****************************************************************************
@@ -537,7 +537,9 @@ QvisSubsetPanelWidget::onAllSetsActionOff()
 // Creation:   Mon Jun 30 08:45:28 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct 12 11:47:37 PDT 2010
+//   Always emit stateChanged.
+//
 // ****************************************************************************
 
 void
@@ -549,6 +551,8 @@ QvisSubsetPanelWidget::onSelectedSetsButton()
         TurnOnOff(true,true);
     else if(selectedSetsButton->text() == tr("Turn Off"))
         TurnOnOff(false,true);
+
+    emit stateChanged();
 }
 
 // ****************************************************************************
@@ -779,6 +783,8 @@ QvisSubsetPanelWidget::EnableButtons(bool on)
 // Creation:   Mon Jun 30 08:45:28 PDT 2008
 //
 // Modifications:
+//    Brad Whitlock, Tue Oct 12 11:46:52 PDT 2010
+//    I removed stateChanged code.
 //
 // ****************************************************************************
 
@@ -788,7 +794,6 @@ QvisSubsetPanelWidget::Reverse(bool only_selected)
     avtSILRestriction_p restriction = viewerProxy->GetPlotSILRestriction();
     restriction->SuspendCorrectnessChecking();
 
-    bool update = false;
     QTreeWidgetItemIterator itr(tree);
 
     while(*itr)
@@ -803,18 +808,12 @@ QvisSubsetPanelWidget::Reverse(bool only_selected)
                 numChecked--;
             else
                 numChecked++;
-
-            // if the child item is active, subpanels will depend on it
-            if(activeChild && activeChild->parent() == item)
-                update  = true;
         }
         ++itr;
     }
 
     restriction->EnableCorrectnessChecking();
     UpdateParentState();
-    if(update)
-        emit stateChanged();
 }
 
 // ****************************************************************************
@@ -832,6 +831,8 @@ QvisSubsetPanelWidget::Reverse(bool only_selected)
 // Creation:   Mon Jun 30 08:45:28 PDT 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Oct 12 11:46:28 PDT 2010
+//   I removed stateChanged code.
 //
 // ****************************************************************************
 
@@ -841,7 +842,6 @@ QvisSubsetPanelWidget::TurnOnOff(bool on, bool only_selected)
     avtSILRestriction_p restriction = viewerProxy->GetPlotSILRestriction();
     restriction->SuspendCorrectnessChecking();
 
-    bool update = false;
     QTreeWidgetItemIterator itr(tree);
 
     while(*itr)
@@ -866,18 +866,11 @@ QvisSubsetPanelWidget::TurnOnOff(bool on, bool only_selected)
                 if(prev_on)
                     numChecked--;
             }
-
-            // if the child item is active, subpanels will depend on it
-            if(activeChild && activeChild->parent() == item)
-                update  = true;
         }
         ++itr;
     }
 
     restriction->EnableCorrectnessChecking();
     UpdateParentState();
-    if(update)
-        emit stateChanged();
-
 }
 
