@@ -652,7 +652,7 @@ RemovePrependedDirs(const char *path, char *name)
     //
     int  len = strlen(path);
     int lastSlash;
-    for (lastSlash=len ; path[lastSlash]!=visitcommon::SlashChar() && lastSlash>=0 ; lastSlash--)
+    for (lastSlash=len ; lastSlash>=0 && path[lastSlash]!=visitcommon::SlashChar() ; lastSlash--)
     {
         continue;
     }
