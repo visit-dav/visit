@@ -176,6 +176,9 @@ QvisFileOpenDialog::delayedChangePath(const QString &initialFile,
 //   Brad Whitlock, Mon Oct 11 15:40:21 PDT 2010
 //   Pass in a filter.
 //
+//   Brad Whitlock, Tue Oct 12 14:26:21 PDT 2010
+//   Pass back the right return value.
+//
 // ****************************************************************************
 
 QString
@@ -210,7 +213,7 @@ QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile,
     }
     ENDTRY
 
-    return filename;
+    return ret;
 }
 
 // ****************************************************************************

@@ -411,6 +411,12 @@ QvisSelectionsWindow::GetLoadHost() const
             loadHost = QString(engines[0].c_str());
     }
 
+    // If loadHost == the expanded localhost name then we want to
+    // just return localhost. This prevents us from opening an extra mdserver
+    // when we want to open a selection on localhost.
+    if(GetViewerProxy()->GetLocalHostName() == loadHost.toStdString())
+        loadHost = "localhost";
+
     return loadHost;
 }
 
