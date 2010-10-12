@@ -636,6 +636,10 @@ QvisSubsetWindow::onPanelItemSelected(int id, bool parent)
 //   Brad Whitlock, Tue Aug 10 13:59:46 PDT 2010
 //   I added sil_dirty.
 //
+//   Brad Whitlock, Tue Oct 12 11:48:48 PDT 2010
+//   Call Apply() since we're likely getting here because we used one of the
+//   en masse change buttons in the panel.
+//
 // ****************************************************************************
 
 void
@@ -649,6 +653,8 @@ QvisSubsetWindow::onPanelStateChanged()
     // The user has changed the SIL controls.
     sil_dirty = true;
     UpdatePanels(index,true);
+
+    Apply();
 }
 
 // ****************************************************************************
