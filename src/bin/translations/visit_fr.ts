@@ -1,7 +1,6 @@
-<!DOCTYPE TS><TS>
-<context>
-    <name>@default</name>
-</context>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>AddOperatorAction</name>
     <message>
@@ -27,11 +26,11 @@
 <context>
     <name>AddWindowAction</name>
     <message>
-        <source>Add new window</source>
+        <source>Create a new viewer window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add</source>
+        <source>New</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -65,6 +64,14 @@
     </message>
     <message>
         <source>Stop animation</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ChangeActivePlotsVarAction</name>
+    <message>
+        <source>VisIt was unable to change the active variable because: %1
+</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -115,18 +122,18 @@
 <context>
     <name>ClearWindowAction</name>
     <message>
-        <source>Clear plots</source>
+        <source>Clear all plots from this window</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>CloneWindowAction</name>
     <message>
-        <source>Clone window</source>
+        <source>Clone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Clone</source>
+        <source>Clone this window</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -147,11 +154,11 @@
 <context>
     <name>DeleteWindowAction</name>
     <message>
-        <source>Delete window</source>
+        <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete</source>
+        <source>Delete this window</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -257,6 +264,36 @@
     </message>
     <message>
         <source>Swap background and foreground colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>KeyframeDataModel</name>
+    <message>
+        <source>Current frame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyframes</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MenuQuitAction</name>
+    <message>
+        <source>Quit</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -443,6 +480,20 @@
     </message>
 </context>
 <context>
+    <name>OpenCLIClientAction</name>
+    <message>
+        <source>Open CLI</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OpenGUIClientAction</name>
+    <message>
+        <source>Open GUI</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>OperatorNames</name>
     <message>
         <source>Boundary</source>
@@ -616,6 +667,54 @@
         <source>Zone Dump</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>AMR Dual Grid and Stitch Cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ConnectedComponents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DataBinning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DeformSphereGlyph</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delaunay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual Mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flux</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MultiresControl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PersistentParticles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SurfaceNormal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Triangulate Regular Points</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PlotNames</name>
@@ -638,10 +737,6 @@
     <message>
         <source>Histogram</source>
         <translation>Histogramme</translation>
-    </message>
-    <message>
-        <source>Kerbel</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Label</source>
@@ -703,12 +798,93 @@
         <source>Volume</source>
         <translation>Rendu volumique </translation>
     </message>
+    <message>
+        <source>MultiCurve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poincare</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well Bore</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
         <source>hidden</source>
         <comment>QvisPlotListBoxItem</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reopening </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> on </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opening </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not open the file %1.
+
+The metadata server returned the following message:
+
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value(s) for &apos;%1&apos; were invalid. Resetting to the last good value(s) of %2.</source>
+        <comment>ResettingError</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use selection [%1]</source>
+        <comment>QvisPlotListBoxItem</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create selection [%1]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt has encountered the following error: %1.
+VisIt will attempt to continue processing, but it may behave unreliably.  Please save this error message and give it to a VisIt developer.  In addition, you may want to save your session and re-start.  Of course, this session may still cause VisIt to malfunction.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QPlaneGroup</name>
+    <message>
+        <source>Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisAMRStitchCellWindow</name>
+    <message>
+        <source>Create cells of type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual grid and stitch cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stitch cells</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -744,6 +920,10 @@
     </message>
     <message>
         <source>faster</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Animation increment</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1020,6 +1200,30 @@
         <source>No annotation object was created.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Time scale factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Array</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>General Array</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Axes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tick marks visible</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisAppearanceWindow</name>
@@ -1053,6 +1257,10 @@
     </message>
     <message>
         <source>The background color and foreground color will not be changed because the selected colors are too similar and using them would make it too difficult to use VisIt.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use default system appearance</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1104,6 +1312,57 @@
     </message>
     <message>
         <source>An invalid value was provided for </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisBaseVariableButton</name>
+    <message>
+        <source>Scalars</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Meshes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Materials</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Subsets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Species</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tensors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Symmetric Tensors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arrays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create new expression ...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1169,10 +1428,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Geometry smoothing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1182,6 +1437,26 @@
     </message>
     <message>
         <source>High</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1223,28 +1498,284 @@
         <source>Z-Maximum</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>QvisCMFEWizard</name>
     <message>
-        <source>The value of minx was invalid. Resetting to the last good value of %1.</source>
+        <source>Data-Level Comparison Setup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of maxx was invalid. Resetting to the last good value of %1.</source>
+        <source>Target Database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of miny was invalid. Resetting to the last good value of %1.</source>
+        <source>Database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of maxy was invalid. Resetting to the last good value of %1.</source>
+        <source>Data-Level Comparisons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of minz was invalid. Resetting to the last good value of %1.</source>
+        <source>Cross-mesh field evaluations (CMFEs) take a field from a donor mesh and place that field on a target mesh.  To begin select the type of evaluation to setup:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of maxz was invalid. Resetting to the last good value of %1.</source>
+        <source>Between different time slices on the same mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Between meshes in a single database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Between meshes in two separate databases</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor &amp; Target Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Which mesh should be used as the evaluation target? What is the desired donor field?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target Mesh:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor Database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor Field:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specify Donor Time Slice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Which time slice do you want to extract data from?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Absolute Versus Relative Time&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>I want to specify an absolute time.
+The time slice I specify should not change as I change the time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>I want to specify a relative time.
+The time slice I want will change as I change the time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Time Type and Value&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation cycle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Time index is the most robust and works in all circumstances)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Examples&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>#1: &quot;Simulation time&quot; with &quot;10.5&quot; and absolute time will always return the data from simulation time 10.5.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>#2: &quot;Time index&quot; with &quot;-1&quot; and relative time will always return the data from the time slice immediately preceding the current one.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specify Evaluation Scheme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you want to use indexing or interpolation?  How will you handle regions of non-overlap?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Evaluation Scheme&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connectivity-based CMFE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value at index &apos;i&apos; of the target is assigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>the value of index &apos;i&apos; from the donor.  This is efficient,</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>but requires that the meshes are congruent.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position-based CMFE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value at index &apos;i&apos; from the target is evaluated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>by first determining its location and then determining the</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>value at that location from the donor mesh.  This is less</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>efficient, but is robust and works on non-congruent meshes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;Handling For Non-Overlapping Regions&lt;/u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use a constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use a variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Setting Up The Expression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>How do you want to use your new CMFE expression?  What is its name?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name of Expression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;u&gt;What do you want to do with the donor field?&lt;u&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simply place it on the target mesh (you can then use this field in the expression editor to do more complex things)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Difference with </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute value of difference</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donor field minus variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable minus donor field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;Select&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Target Database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Donor Database</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisCMap2Widget</name>
+    <message>
+        <source>Widget list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rectangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ellipsoid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Paraboloid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Widget attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Size/Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tri</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ellipse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>paraboloid</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1307,31 +1838,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Plane %1</source>
+        <source>Plane 1 Origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Origin</source>
+        <source>Plane 2 Origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Normal</source>
+        <source>Plane 3 Origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The origin vector was invalid. Resetting to the last good value %1.</source>
+        <source>Plane 1 Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The normal vector was invalid. Resetting to the last good value %1.</source>
+        <source>Plane 2 Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The center was invalid. Resetting to the last good value %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The radius was invalid. Resetting to the last good value %1.</source>
+        <source>Plane 3 Normal</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1435,6 +1962,14 @@
         <source> is already in the color table list. You must provide a unique name for the new color table before it can be added.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Show index hints</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alpha</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisCommandWindow</name>
@@ -1503,23 +2038,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Please enter the name of the Python function to be defined for the macro.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Please enter the name of the macro to be defined (as you want it to appear in a button).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>VisIt could not update the file: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Function names must start with a letter. Please try to create the macro again with a function name that starts with a letter.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Function names may only contain letters, numbers, and underscores.  Please try again with only those characters.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1569,27 +2092,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cut cone off?    Length</source>
+        <source>Cut cone off?   Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of angle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of origin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of normal was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of upAxis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of length was invalid. Resetting to the last good value of %1.</source>
+        <source>Cone Length</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1597,10 +2104,6 @@
     <name>QvisConnCompReduceWindow</name>
     <message>
         <source>Target Reduction </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of target was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1632,34 +2135,6 @@
     </message>
     <message>
         <source>Map values above the cutoff to </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of offset was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of low was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of hi was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of context was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of cutoff was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of below was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of above was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1722,18 +2197,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Limits</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Min</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Legend</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1750,14 +2213,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>VisIt requires at least one contour.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1765,35 +2220,59 @@
         <source>VisIt will not allow more than %1 contours.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Contour Levels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisCoordSwapWindow</name>
-    <message>
-        <source>New Coordinate 1?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Old Coordinate 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Old Coordinate 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Old Coordinate 3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>New Coordinate 2?</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>New Coordinate 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>One coordinate is being used more than one time.  Resetting to the initial state.</source>
+        <source>New Coordinate 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coord1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coord2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coord3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Coordinate 2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1828,15 +2307,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Calculate Density</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Input Mass Variable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Output Density Variable</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1848,10 +2319,6 @@
     </message>
     <message>
         <source>Maximum bonds per atom</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Bonds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1914,23 +2381,55 @@
         <source>The value for maxBonds must be between 1 and 100.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Bonding parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add periodic bonds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Periodic in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use provided unit cell vectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector for X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector for Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector for Z</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisCurvePlotWindow</name>
     <message>
-        <source>Draw curve using lines</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Draw curve using symbols</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Line style</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Line Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1946,14 +2445,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Density</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cycle colors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Color</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1966,7 +2457,107 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The point size was invalid. Resetting to the last good value of %1.</source>
+        <source>Line/Point Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>triangle up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>triangle down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>square</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Static</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dynamic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point density</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Curve color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cycle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create Cue For Current Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Ball</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ball size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position of cue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time Cue Ball Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>timeForTimeCue</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1984,18 +2575,6 @@
         <source>Radius</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>The value of point1 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of point2 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of radius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QvisDBOptionsDialog</name>
@@ -2005,6 +2584,81 @@
     </message>
     <message>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisDataBinningWindow</name>
+    <message>
+        <source>Bin Definitions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimensions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimension 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimension 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dimension 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of Bins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specify range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Behavior for data outside range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clamp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction Operator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value for bins with no data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NumBins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value for Bins With No Data</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2156,15 +2810,45 @@
         <source>The reduction target field is only valid between 0 1.  The number specified is the proportion of number of polygonal cells in the outputted dataset &quot;over&quot; the number of polygonal cells in the original dataset.  Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>The value of target was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QvisDeferExpressionWindow</name>
     <message>
         <source>Variables</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisDeformSphereGlyphWindow</name>
+    <message>
+        <source>var</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scale Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisDelaunayWindow</name>
+    <message>
+        <source>Dimension</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Triangulation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tetrahedralization</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2178,8 +2862,30 @@
         <source>Displacement variable</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>QvisDualMeshWindow</name>
     <message>
-        <source>The value of factor was invalid. Resetting to the last good value of %1.</source>
+        <source>Conversion Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nodes to Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zones to Nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisEdgeWindow</name>
+    <message>
+        <source>dummy</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2194,10 +2900,6 @@
     <name>QvisElevateWindow</name>
     <message>
         <source>Elevation height relative to XY limits?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Limits mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2249,19 +2951,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Elevate by variable</source>
+        <source>Limits Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of skewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of max was invalid. Resetting to the last good value of %1.</source>
+        <source>Elevate by Variable</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2316,10 +3010,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Disconnect simulation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Default</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2365,6 +3055,10 @@
         <source>Really disconnect from the simulation &quot;%1&quot; on host &quot;%2&quot;?
 
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disconnect</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2529,6 +3223,18 @@
         <source>Insert Variable...</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Time Iteration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arguments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python Expression Script</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisExternalSurfaceWindow</name>
@@ -2566,46 +3272,6 @@
 <context>
     <name>QvisFileOpenWindow</name>
     <message>
-        <source>Host</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Path</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Filter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use &quot;current working directory&quot; by default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Off</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>On</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Smart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>File grouping</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Remove recent paths</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Remove paths . . .</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Directories</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2634,55 +3300,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Changing directory.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The MetaData server running could not get the file list for the current directory, which is required before setting the file filter. Try entering a valid path before changing the file filter.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>An error occured when trying to set the file filter.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>An invalid filter was entered.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>(current directory)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>(go up 1 directory level)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Changing directory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Guess from file name/extension</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Opening server on %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&quot;%1&quot; is not a valid host.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The MetaData server running on %1 could not change the current directory to %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The MetaData server running on %1 could not get the file list for the current directory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2693,10 +3311,6 @@
 <context>
     <name>QvisFilePanel</name>
     <message>
-        <source>Selected files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2706,10 +3320,6 @@
     </message>
     <message>
         <source>Overlay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Active time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2729,10 +3339,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The active time slider is already at state</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Activate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2740,49 +3346,41 @@
         <source>Reopen cannot be used to change the active time state for an animation because reopen discards all cached networks and causes the database to actually be reopened. If you want to change the active time state, use the animation slider or select a new time state and click the Replace button.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Selected Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Replace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace &amp;Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Overlay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Activate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Re&amp;Open</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisFileSelectionWindow</name>
-    <message>
-        <source>Host</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Path</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Filter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use &quot;current working directory&quot; by default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Off</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>On</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Smart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>File grouping</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Remove recent paths</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Remove paths . . .</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Directories</source>
         <translation type="unfinished"></translation>
@@ -2828,7 +3426,78 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Creating group list on %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFileWindowBase</name>
+    <message>
+        <source>(current directory)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(go up 1 directory level)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use &quot;current working directory&quot; by default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File grouping</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove recent paths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove paths . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opening server on %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot; is not a valid host.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Changing directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The MetaData server running on %1 could not change the current directory to %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The MetaData server running on %1 could not get the file list for the current directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2844,39 +3513,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>(current directory)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>(go up 1 directory level)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Changing directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Opening server on %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&quot;%1&quot; is not a valid host.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The MetaData server running on %1 could not change the current directory to %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The MetaData server running on %1 could not get the file list for the current directory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The MetaData server running on %1 could not get the file list for the current directory.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Creating group list on %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2935,10 +3576,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Geometry smoothing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2948,6 +3585,41 @@
     </message>
     <message>
         <source>High</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisFluxWindow</name>
+    <message>
+        <source>Flow field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiply dot product by a scalar variable?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Weight field</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3340,6 +4012,22 @@ version of VisIt?</source>
         <source>VisIt could not run %1.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Selections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Session File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open VisIt Session File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisGlobalLineoutWindow</name>
@@ -3359,10 +4047,6 @@ will use this same window.</source>
     </message>
     <message>
         <source>Synchronize with originating plot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Dynamic options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3466,10 +4150,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add Bookmark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Dismiss</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3535,6 +4215,18 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>This page cannot be bookmarked.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add bookmark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt UltraWrapper</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ultra wrapper</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3665,62 +4357,26 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of min was invalid. Resetting to the last good value of %1.</source>
+        <source>minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of max was invalid. Resetting to the last good value of %1.</source>
+        <source>maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of numBins was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of domain was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of zone was invalid. Resetting to the last good value of %1.</source>
+        <source>number of bins</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisHostProfileWindow</name>
     <message>
-        <source>Host profiles</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>New profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete profile</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Selected profile</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Parallel options</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Advanced options</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Applies to all profiles for a given host</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Profile name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Default profile for host</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3740,14 +4396,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Additional options</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Parallel computation engine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>(default)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3761,10 +4409,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Sublauncher arguments</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Partition / Pool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3792,10 +4436,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Default Bank</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Default Time Limit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3809,18 +4449,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Use VisIt script to set up parallel environment</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Networking</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Hardware acceleration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Networking options apply to all profiles for a given host.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3903,6 +4531,78 @@ by Lineout Operator</source>
         <source>An invalid timeout was specified, reverting to %1 minutes.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Hosts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch Profiles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host nickname</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Path to VisIt installation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GPU Accel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Additional arguments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Launch (parallel) engine using job control system</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Partition / Pool / Queue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default Bank / Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(default</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisImageAnnotationInterface</name>
@@ -3952,10 +4652,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Images</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select Image</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4009,6 +4705,10 @@ by Lineout Operator</source>
         <source>Use Whole Collection</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Wrap</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisInteractorWindow</name>
@@ -4052,6 +4752,22 @@ by Lineout Operator</source>
         <source>Snap to horizontal grid</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Switch to bounding box when changing views:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto (remote rendering only)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisInterpreter</name>
@@ -4067,11 +4783,15 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Ghost zones only</source>
+        <source>Request Ghost Zones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Both ghost zones and real zones</source>
+        <source>GhostZonesOnly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GhostZonesAndRealZones</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4106,18 +4826,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Limits</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Min</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Variable</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4126,11 +4834,19 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
+        <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4148,58 +4864,11 @@ by Lineout Operator</source>
         <source>Variable</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>The lower bound value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The upper bound value was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QvisKerbelPlotWindow</name>
-    <message>
-        <source>Center</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Radius</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Opacity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Color table</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Legend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Filename</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QvisKeyframeWindow</name>
     <message>
-        <source>State</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Atts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Keyframing enabled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Snap to frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4207,19 +4876,7 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Attributes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Keyframes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Add state keyframe</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4228,7 +4885,11 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value for the number of frames was invalid. Resetting to the last good value of %1.</source>
+        <source>Add view keyframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use view keyframes</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4363,19 +5024,23 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value entered for the number of labels was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value entered for the text height was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Must enter a printf-style template that would be valid for a single floating point number.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>The template produces values that are too long.  36 character limit.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>number of labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>text height</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4403,10 +5068,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Draw title</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Draw labels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4451,6 +5112,102 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>The format string for the legend was not used because it contains multiple &apos;%&apos; characters.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vertical, Text on Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vertical, Text on Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Horizontal, Text on Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Horizontal, Text on Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Orientation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let VisIt determine tick labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Num ticks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Inclusive of min and max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Values and Labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specify tick values and labels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add tick value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete selected value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tick Marks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw min/max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Courier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Computed values</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4544,14 +5301,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Begin Arrow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>End Arrow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Visible</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4561,6 +5310,33 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Begin arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>End arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisLineStyleWidget</name>
+    <message>
+        <source>solid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dotted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dash/dot</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4586,26 +5362,6 @@ by Lineout Operator</source>
         <source>Point 2</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>The value of startTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of endTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of stride was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of point1 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of point2 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QvisLineoutWindow</name>
@@ -4626,10 +5382,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Global Lineout Overrides</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Use Sampling</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4642,15 +5394,7 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of point1 is not valid. It should consist of two or three real world coordinate values.  Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of point2 is not valid. It should consist of two or three real world coordinate values.  Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of numberOfSamplePoints was invalid. Resetting to the last good value of %1.</source>
+        <source>Number of Sample Points </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4724,19 +5468,11 @@ by Lineout Operator</source>
         <translation>Imprimer fenêtre</translation>
     </message>
     <message>
-        <source>Set Print options . . .</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Restore session . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Restore session with sources . . .</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save session . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4864,10 +5600,6 @@ by Lineout Operator</source>
         <translation>Fenêtres</translation>
     </message>
     <message>
-        <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Clone</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4972,18 +5704,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Full frame</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Navigate bbox</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Spin</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>&amp;Help</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5012,24 +5732,8 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Maintain limits</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>view</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>data</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Replace plots</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Auto update</source>
-        <translation type="unfinished">Automatique</translation>
+        <translation type="obsolete">Automatique</translation>
     </message>
     <message>
         <source>done</source>
@@ -5043,6 +5747,50 @@ by Lineout Operator</source>
         <source>Window </source>
         <translation>Fenêtre</translation>
     </message>
+    <message>
+        <source>Save session</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save session as . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Data-Level Comparisons . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selections . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Full frame mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spin mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Main Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Main</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto apply</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisMaterialWindow</name>
@@ -5051,23 +5799,7 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Tetrahedral (obsolete)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Zoo-based (default)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Isovolume (special-purpose)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable interface smoothing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Force full connectivity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5106,6 +5838,58 @@ by Lineout Operator</source>
         <source>The value of isoVolumeFraction was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Equi-T (obsolete)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Equi-Z (default, supports iteration)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PLIC (accurate/discontinuous)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discrete (accurate/10X memory footprint/rect. only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable interface smoothing (Equi-* only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Force full connectivity (Equi-T only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable iteration (Equi-Z, Isovolume only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Convergence rate (&gt;0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Annealing time (seconds) (Discrete only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of numIterations was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of iterationDamping was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of annealingTime was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisMergeWindow</name>
@@ -5115,10 +5899,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Maximum distance between points that should be merged</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of tolerance was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5164,6 +5944,10 @@ by Lineout Operator</source>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Multi-pass</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisMeshPlotWindow</name>
@@ -5180,15 +5964,7 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Use foreground</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Opaque color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5208,10 +5984,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Show Internal Zones</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Outline only</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5221,10 +5993,6 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Geometry smoothing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5240,7 +6008,51 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The error tolerance was invalid. Resetting to the last good value of %1.</source>
+        <source>Zone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show internal zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Foreground</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>error tolerance</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5273,10 +6085,6 @@ by Lineout Operator</source>
 </context>
 <context>
     <name>QvisMetricThresholdWindow</name>
-    <message>
-        <source>Preset Data for: </source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>None</source>
         <translation type="unfinished"></translation>
@@ -5366,14 +6174,6 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Enable Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Exclusion Range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>hex_lower</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5442,51 +6242,7 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of hex_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of hex_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of tet_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of tet_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of wed_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of wed_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of pyr_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of pyr_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of tri_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of tri_upper was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of quad_lower was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of quad_upper was invalid. Resetting to the last good value of %1.</source>
+        <source>preset</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5653,23 +6409,27 @@ by Lineout Operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of radiusScaleFactor was invalid. Resetting to the last good value of %1.</source>
+        <source>Misc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of radiusFixed was invalid. Resetting to the last good value of %1.</source>
+        <source>radius scale factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of bondRadius was invalid. Resetting to the last good value of %1.</source>
+        <source>fixed radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of scalarMin was invalid. Resetting to the last good value of %1.</source>
+        <source>bond radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of scalarMax was invalid. Resetting to the last good value of %1.</source>
+        <source>minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5677,6 +6437,76 @@ by Lineout Operator</source>
     <name>QvisMovieProgressDialog</name>
     <message>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisMultiCurvePlotWindow</name>
+    <message>
+        <source>Curve colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiple</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Curve</source>
+        <translation type="unfinished">Courbe</translation>
+    </message>
+    <message>
+        <source>Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis title format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis tick spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display markers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marker variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display ids</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Id variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>yAxisTickSpacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisMultiresControlWindow</name>
+    <message>
+        <source>Resolution: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of info was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5721,14 +6551,6 @@ by Lineout Operator</source>
 </context>
 <context>
     <name>QvisOperatorWindow</name>
-    <message>
-        <source>Yes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Yes, Do not prompt again</source>
         <translation type="unfinished"></translation>
@@ -5887,67 +6709,11 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Number of zones</source>
+        <source>Variable 2 Max</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of var1 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var1Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var1Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var1SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var1NumSamples was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var2 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var2Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var2Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var2SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var2NumSamples was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var3 was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var3Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var3Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var3SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var3NumSamples was invalid. Resetting to the last good value of %1.</source>
+        <source>ZoneCount</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5990,15 +6756,7 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Draw individual lines</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>... but only when axis extents have been restricted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Line color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6029,145 +6787,137 @@ Do you want to apply the %2 operator?
         <source>The value of contextNumPartitions was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Min value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Max value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw focus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw focus as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Individual lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bins of constant color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bins colored by population</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Focus color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of focusGamma was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisParallelCoordinatesPlotWizard</name>
     <message>
-        <source>The plot has successfully been defined by use of an array variable.</source>
+        <source>Parallel Coordinates Plot Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisParallelCoordinatesPlotWizardPage</name>
+    <message>
+        <source>Select axis variables</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Click Finish</source>
+        <source>Please select at least 2 variables to setup your plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>ParallelCoordinates Plot Wizard</source>
+        <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>A ParallelCoordinates plot needs at least 2 axes.
-Choose a scalar variable for the second axis.</source>
+        <source>Move Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose second axis variable</source>
+        <source>Move Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Would you like to add a third axis to the plot?</source>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPersistentParticlesWindow</name>
+    <message>
+        <source>Type of path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add third axis?</source>
+        <source>Absolute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose a scalar variable for the third axis.</source>
+        <source>Relative</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose third axis variable</source>
+        <source>Index of first time slice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Would you like to add a fourth axis to the plot?</source>
+        <source>Index of last time slice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add fourth axis?</source>
+        <source>Skip rate between time slices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose a scalar variable for the fourth axis.</source>
+        <source>X-Coordinate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose fourth axis variable</source>
+        <source>Y-Coordinate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Would you like to add a fifth axis to the plot?</source>
+        <source>Z-Coordinate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add fifth axis?</source>
+        <source>Connect Particles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose a scalar variable for the fifth axis.</source>
+        <source>Index Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose fifth axis variable</source>
+        <source>Index of the first time slice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Would you like to add a sixth axis to the plot?</source>
+        <source>Number of slices backwards in time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add sixth axis?</source>
+        <source>Index of the last time slice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose a scalar variable for the sixth axis.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose sixth axis variable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Would you like to add a seventh axis to the plot?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add seventh axis?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose a scalar variable for the seventh axis.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose seventh axis variable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Would you like to add an eighth axis to the plot?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add eighth axis?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose a scalar variable for the eighth axis.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose eighth axis variable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Click the Finish button to create a new ParallelCoordinates plot.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Variable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Selected variable duplicates variable of another axis.
-Choose a unique scalar variable for the new axis.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Yes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No</source>
+        <source>Number of slices forward in time</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6186,35 +6936,11 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Float Format:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Concise Output.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Show Mesh Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Show Timestep</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Display incident nodes/zones.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Display global nodes/zones.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Display reference pick letter.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Display for Nodes:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6234,19 +6960,11 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Display for Zones:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Automatically show window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Don&apos;t clear this window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Create time curve with next pick.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6258,15 +6976,63 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Create spreadsheet with next pick.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Invalid pick floating point format string.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>VisIt could not save the pick resultsto the selected file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Float Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Concise Output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display incident nodes/zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display global nodes/zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display reference pick letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display for Nodes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display for Zones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear Picks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create time curve with next pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Repeat Pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create spreadsheet with next pick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display in Spreadsheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose save filename</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6313,48 +7079,64 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Copy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copy this plot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copy To Window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copy this plot to different window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Window 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Window 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Disconnect From TimeSlider</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Disconnect this plot from time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clone this plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit plot description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add a meaningful name for the plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move toward first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move this plot one slot toward the first plot in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move toward last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move this plot one slot toward the last plot in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make this plot be the first in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Make this plot be the last in the plot list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disconnect From time slider</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisPlotManagerWidget</name>
-    <message>
-        <source>Source</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Active plots</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Hide/Show</source>
         <translation type="unfinished"></translation>
@@ -6365,14 +7147,6 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Draw</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Apply </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>operators</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6416,27 +7190,58 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Copy This Plot To Window</source>
+        <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Not Yet Implemented...</source>
+        <source>Apply operators  /</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Window 1</source>
+        <source>Analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Copy Plot to Window 1</source>
+        <source>Debugging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Window 2</source>
+        <source>Geometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Copy Plot to Window 2</source>
+        <source>Molecular</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Slicing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transforms</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPluginManagerAttributesDataModel</name>
+    <message>
+        <source>Enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Category</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6451,10 +7256,6 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Operators</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6463,27 +7264,462 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Open Options</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Unselect all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Set Default Open Options</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Note:  Plugins are loaded at startup.  Please save your settings and restart VisIt to apply your changes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Default file opening options for %1 reader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear category for all operators</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disable all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set default open options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add to preferred list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>yes</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPoincarePlotWindow</name>
+    <message>
+        <source>Streamlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>End Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point density</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrator:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maxiumum step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Force node centering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Punctures</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Puncture Plane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poloidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toroidal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Punctures only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum toroidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override toroidal winding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Winding pair confidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Periodicity consistency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Critical Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detect O Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Maximum iterations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overlaps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overlaping curve sections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Raw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Merge</source>
+        <translation type="unfinished">Combiner</translation>
+    </message>
+    <message>
+        <source>Smooth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show islands only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show chaotic fieldlines (as points)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show ridgelines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Verbose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data value:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OriginalValue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>InputOrder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PointIndex</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WindingGroup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WindingPointOrder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WindingPointOrderModulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ToroidalWindings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PoloidalWindings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SafetyFactor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Confidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RidgelineVariance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>   </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Curves</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Surfaces</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of planes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base plane (degrees)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adjust plane index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set explicitly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>From color table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Points</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lighting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel streamline options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize across</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamlines and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain cache size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Work group size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Point Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Point End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>windingPairConfidence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>periodicityConsistency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>singlePlane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step length</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6518,11 +7754,11 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Point Type</source>
+        <source>Point size (pixels)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Point size (pixels)</source>
+        <source>Point type</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6542,6 +7778,25 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Dismiss</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPostableWindowObserver</name>
+    <message>
+        <source>Open Attribute XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML Files (*.xml);;All files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Attribute XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML Files (*.xml)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6581,6 +7836,14 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Yes, Do not prompt again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6701,6 +7964,22 @@ Choose a unique scalar variable for the new axis.</source>
         <source>Number of significant digits</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>New plots automatically expanded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace plots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable warning message popups</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ignore database extents (may degrade performance)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisProjectWindow</name>
@@ -6709,11 +7988,47 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>XYCartesian</source>
+        <source>X-Axis Cartesian (x &lt;= z, y &lt;= y)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>ZRCylindrical</source>
+        <source>Y-Axis Cartesian (x &lt;= x, y &lt;= z)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z-Axis Cartesian (x &lt;= x, y &lt;= y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X-Axis Cylindrical (x &lt;= x, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y-Axis Cylindrical (x &lt;= y, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z-Axis Cylindrical (x &lt;= z, y &lt;= r)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vector transform method:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No transformation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as point coordinates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as coordinate displacements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Treat as instantaneous directions</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6721,10 +8036,6 @@ Choose a unique scalar variable for the new axis.</source>
     <name>QvisPseudocolorPlotWindow</name>
     <message>
         <source>Centering</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Natural</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6748,14 +8059,6 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Min</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Scale</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6769,10 +8072,6 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Skew</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Skew factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6792,10 +8091,6 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Geometry smoothing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6808,15 +8103,106 @@ Choose a unique scalar variable for the new axis.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
+        <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
+        <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Original</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set explicitly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>From color table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisPythonFilterEditor</name>
+    <message>
+        <source>Load Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;File</source>
+        <translation type="unfinished">&amp;Fichier</translation>
+    </message>
+    <message>
+        <source>&amp;Simple Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Advanced Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python Script File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Python Filter Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load Python Filter</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6989,10 +8375,6 @@ use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Variable Names</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Ray Center</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7057,15 +8439,55 @@ use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>VisIt could not save the query resultsto the selected file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Performing %1 query.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>The %1 is not valid. It should consist of two or three real world coordinate values.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python Query Script</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Execute Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Divide Emis by Absorb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output Image Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Theta, Phi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Width, Height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Pixel Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are currently no query results to save.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Query Results As</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not save the query results to the selected file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7211,19 +8633,19 @@ use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of specifiedX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of specifiedY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of specifiedZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The reflection attributes require the 3D input mode because the original data octant or one or more of the reflection octants has a negative Z value. The input mode will remain 3D.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specified X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specified Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Specified Z</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7249,23 +8671,11 @@ use this same window.</source>
         <source>Domain</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>The value of cell was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of domain was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QvisRenderingWindow</name>
     <message>
         <source>Basic</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Basic Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7341,10 +8751,6 @@ use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Advanced Options</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Use scalable rendering</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7353,23 +8759,11 @@ use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Compress images (geom too) from engine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Shadows (scalable rendering only)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Depth Cueing (scalable rendering only)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Start point</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>End point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7429,11 +8823,35 @@ use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The start point was invalid. Resetting to the last good value %1.</source>
+        <source>Compress images (geometry too) from engine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The end point was invalid. Resetting to the last good value %1.</source>
+        <source>Compact domains on engine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When domains per process exceeds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue automatically along camera depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual start point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manual end point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>start point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>end point</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7477,27 +8895,15 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of xVector was invalid. Resetting to the last good value of %1.</source>
+        <source>Shift atoms to new periodic origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of yVector was invalid. Resetting to the last good value of %1.</source>
+        <source>New periodic atom origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of zVector was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of xReplications was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of yReplications was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of zReplications was invalid. Resetting to the last good value of %1.</source>
+        <source>New periodic origin</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7572,49 +8978,7 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Distribute resampled data
-set across all processors
-(parallel only)?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of startX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of endX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of samplesX was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of startY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of endY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of samplesY was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of startZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of endZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of samplesZ was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of defaultValue was invalid. Resetting to the last good value of %1.</source>
+        <source>Distribute resampled data set across all processors (parallel only)?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7660,22 +9024,6 @@ set across all processors
         <source>Number of steps</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>The value of axis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of startAngle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of stopAngle was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of steps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QvisRotationTransition</name>
@@ -7711,10 +9059,6 @@ set across all processors
     </message>
     <message>
         <source>Would you like to create a new simple movie or use your previous settings?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Template uage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7954,10 +9298,6 @@ set across all processors
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Movie settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8142,16 +9482,20 @@ set across all processors
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>%1 page %2 for sequence %3</source>
+        <source>Template usage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User interface</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 sequence</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisSaveWindow</name>
-    <message>
-        <source>File information</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Output files to current directory</source>
         <translation type="unfinished"></translation>
@@ -8268,6 +9612,62 @@ set across all processors
         <source>The height was invalid. Resetting to the last good value %1.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Format Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Standard Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced Multi-Window Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do Advanced Multi-Window Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Total Window Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Individual Window Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Omit Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position (X)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position (Y)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Layer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transparency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The x position was invalid. Resetting to the last good value %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The y position was invalid. Resetting to the last good value %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisScatterPlotWindow</name>
@@ -8288,14 +9688,6 @@ set across all processors
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Min</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Scale</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8309,10 +9701,6 @@ set across all processors
     </message>
     <message>
         <source>Skew</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Skew factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8364,18 +9752,6 @@ set across all processors
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Single color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use foreground </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scale to cube</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Roles</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8404,127 +9780,212 @@ set across all processors
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of var1Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var1Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var1SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var2Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var2Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var2SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var3Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var3Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var3SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var4Min was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var4Max was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of var4SkewFactor was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of pointSizePixels was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of pointSize was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The %1 role was being fulfilled by another input variable. To ensure that the %2 role is fulfilled by the %3 variable, the other variable&apos;s role has been set to None.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normlize the axis to a cube</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 1 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 1 max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 1 skew factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 2 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 2 maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 2 skew factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 3 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 3 maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 3 skew factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 4 minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 4 maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable 4 skew factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>point size (pixels)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>point size</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisScatterPlotWizard</name>
     <message>
-        <source>Scatter plot wizard</source>
+        <source>Scatter Plot Setup</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisScatterPlotWizardPage</name>
+    <message>
+        <source>&lt;Select&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose a variable to use for the Scatter
-plot&apos;s Y coordinate.</source>
+        <source>Select variables for a new Scatter Plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose Y coordinate</source>
+        <source>X Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Would you like to choose a variable to use
-as the Scatter plot&apos;s Z coordinate?</source>
+        <source>Y Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose Z coordinate</source>
+        <source>Z Variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose a variable to use for the Scatter
-plot&apos;s Z coordinate.</source>
+        <source>Color Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisSelectionsWindow</name>
+    <message>
+        <source>Automatically apply updated selections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Would you like to choose a variable to use
-as the Scatter plot&apos;s color?</source>
+        <source>Selections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose color variable</source>
+        <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Choose a variable to use for the Scatter
-plot&apos;s color.</source>
+        <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Click the Finish button to create a new Scatter plot</source>
+        <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Click Finish</source>
+        <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Variable</source>
+        <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Yes</source>
+        <source>Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>No</source>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plot the defines the selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Histogram</source>
+        <translation type="unfinished">Histogramme</translation>
+    </message>
+    <message>
+        <source>Statistics</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>none</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter a name for the new selection.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt can&apos;t determine the host for the compute engine to use for loading the selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load selection from file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8621,31 +10082,15 @@ plot&apos;s color.</source>
         <source>Display output</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>The value of filename was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
-    <name>QvisSimulationWindow</name>
+    <name>QvisSimulationCommandWindow</name>
     <message>
-        <source>Simulation:</source>
+        <source>Commands</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Attribute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Value</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Simulation Status: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt Status</source>
+        <source>Enable time ranging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8661,7 +10106,18 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Enable Time Ranging</source>
+        <source>Custom . . .</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisSimulationWindow</name>
+    <message>
+        <source>Attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8674,18 +10130,6 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Clear cache</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Commands</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Message Viewer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Unpost Strip Chart Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8709,22 +10153,6 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Simulation Status: Running</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Simulation Status: Stopped</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Ok</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>VisIt could not locate the simulation&apos;s user interface creation file at: %1. The custom user interface for this simulation will be unavailable.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8738,6 +10166,50 @@ plot&apos;s color.</source>
         <source>Really disconnect from the simulation &quot;%1&quot; on host &quot;%2&quot;?
 
 </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not connected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simulation messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Running</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stopped</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8824,43 +10296,43 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The normal vector was invalid. Resetting to the last good value %1.</source>
+        <source>normal vector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The upAxis vector was invalid. Resetting to the last good value %1.</source>
+        <source>upAxis vector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The origin point vector was invalid. Resetting to the last good value %1.</source>
+        <source>origin point vector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The origin intercept was invalid. Resetting to the last good value %1.</source>
+        <source>origin intercept</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The origin percent was invalid. Resetting to the last good value %1.</source>
+        <source>origin percent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The origin zone was invalid. Resetting to the last good value %1.</source>
+        <source>origin zone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The origin node was invalid. Resetting to the last good value %1.</source>
+        <source>origin node</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The origin domain was invalid. Resetting to the last good value %1.</source>
+        <source>origin domain</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of meshName was invalid. Resetting to the last good value of %1.</source>
+        <source>mesh name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The theta-phi angles were invalid. Resetting to the last good value %1.</source>
+        <source>theta-phi angles</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8894,24 +10366,35 @@ plot&apos;s color.</source>
         <source>Smooth Along Boundaries</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>QvisSourceManagerWidget</name>
     <message>
-        <source>The value of numIterations was invalid. Resetting to the last good value of %1.</source>
+        <source>Sources</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of relaxationFactor was invalid. Resetting to the last good value of %1.</source>
+        <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of convergence was invalid. Resetting to the last good value of %1.</source>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of featureAngle was invalid. Resetting to the last good value of %1.</source>
+        <source>Reopen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of edgeAngle was invalid. Resetting to the last good value of %1.</source>
+        <source>Replace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overlay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Active source</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8923,14 +10406,6 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Radius</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of origin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of radius was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8992,23 +10467,7 @@ plot&apos;s color.</source>
 <context>
     <name>QvisStreamlinePlotWindow</name>
     <message>
-        <source>Step length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Maximum steps</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Streamline source</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Source type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9092,15 +10551,7 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Show start</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Radius used for tubes and ribbons.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Line width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9116,19 +10567,11 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Color by</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Color table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Single color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Point density</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9156,55 +10599,503 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of stepLength was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of maxTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of pointSource was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of lineStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of lineEnd was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of planeOrigin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of planeNormal was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of planeUpAxis was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of planeRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of sphereOrigin was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of sphereRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The box extents contained errors so the previous values will be used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of radius was invalid. Resetting to the last good value of %1.</source>
+        <source>Streamlines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read Text File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete Point</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling along:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Boundary</source>
+        <translation type="unfinished">Frontière</translation>
+    </message>
+    <message>
+        <source>Interior</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Random</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of Samples</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample density 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sample distance 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Termination</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum number of steps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum distance traveled by particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum time elapsed for particles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dormand-Prince (Runge-Kutta)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adams-Bashforth (Multi-step)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>M3D-C1 Integrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limit maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum time step</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Absolute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fraction of Bounding Box</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Force node centering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arc length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seed point ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Limits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display density</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show seeds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Radius for seed point display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show heads</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cone</source>
+        <translation type="unfinished">Cone</translation>
+    </message>
+    <message>
+        <source>Radius for head point display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Height:Radius Ratio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Height for head point display.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Super</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crop away portion of streamlines (for animations)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Retain from</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Step numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Units are in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fully Opaque</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ramp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opacity Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallel streamline options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parallelize across</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streamlines and Domains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have VisIt select the best algorithm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain cache size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Work group size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Issue warnings when the maximum number of steps is reached</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples along line:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance in X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance in Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in X:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Y:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Theta:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in R:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Latitude:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Longitude:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Samples in Z:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>step length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxsteps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxtime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maxdistance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>relative tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>absolute tolerance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>point source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>line start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>line end</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane up axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plane radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sphere origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tube radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ribbon width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend Min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend Max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display Begin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display End</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seed radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Head radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Head height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open text file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9251,14 +11142,6 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Zoom In</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Zoom Out</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Focus</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9274,11 +11157,16 @@ plot&apos;s color.</source>
         <source>Invalid index encountered for Sim engine access</source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>QvisStripChartTabWidget</name>
     <message>
-        <source>VisIt Strip Chart</source>
+        <source>Strip charts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zoom in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zoom out</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9304,16 +11192,27 @@ plot&apos;s color.</source>
         <source>Variable to base subdivision on</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>QvisSubsetPanelWidget</name>
     <message>
-        <source>The value of threshold was invalid. Resetting to the last good value of %1.</source>
+        <source>All Sets:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of maxSubdivs was invalid. Resetting to the last good value of %1.</source>
+        <source>Reverse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of variable was invalid. Resetting to the last good value of %1.</source>
+        <source>Turn On</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Turn Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selected Sets:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9364,10 +11263,6 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Geometry smoothing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9379,6 +11274,26 @@ plot&apos;s color.</source>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point / Line Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisSubsetWindow</name>
@@ -9387,23 +11302,11 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Reverse</source>
+        <source>Applied selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Turn on</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Turn off</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>All sets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Selected sets</source>
+        <source>None</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9513,76 +11416,19 @@ plot&apos;s color.</source>
         <source>Number of steps in Z</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>QvisSurfaceNormalWindow</name>
     <message>
-        <source>The value of thetaStart was invalid. Resetting to the last good value of %1.</source>
+        <source>Centering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of thetaStop was invalid. Resetting to the last good value of %1.</source>
+        <source>Point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of thetaSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of phiStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of phiStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of phiSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of startRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of endRadius was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of radiusSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of xStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of xStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of xSteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of yStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of yStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of ySteps was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of zStart was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of zStop was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of zSteps was invalid. Resetting to the last good value of %1.</source>
+        <source>Cell</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9597,22 +11443,6 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Surface color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Z Value</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Constant</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wire Color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Line width</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9621,19 +11451,11 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Scale  </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Linear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Log</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Skew</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9649,14 +11471,6 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Min</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Legend</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9665,34 +11479,50 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The skew factor was invalid. Resetting to the last good value of %1.</source>
+        <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
+        <source>Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
+        <source>Limits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color by Z value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wire color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisTensorPlotWindow</name>
     <message>
-        <source>Tensor color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Eigenvalues</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Constant</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tensor scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9724,15 +11554,19 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The scale value was invalid. Resetting to the last good value of %1.</source>
+        <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The head size was invalid. Resetting to the last good value of %1.</source>
+        <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The stride was invalid. Resetting to the last good value of %1.</source>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9780,6 +11614,18 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Visible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Courier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Times</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9861,15 +11707,15 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of x was invalid. Resetting to the last good value of %1.</source>
+        <source>x</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of y was invalid. Resetting to the last good value of %1.</source>
+        <source>y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of z was invalid. Resetting to the last good value of %1.</source>
+        <source>z</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9937,6 +11783,29 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Part in range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>max</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisTimeSliderControlWidget</name>
+    <message>
+        <source>Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Active time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The active time slider is already at state</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10018,23 +11887,7 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Min Color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Opacity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Min Plateau Color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max Plateau Color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10043,14 +11896,6 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>hitpercent</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of tolerance was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of hitpercent was invalid. Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10073,11 +11918,11 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of numiter was invalid. Resetting to the last good value of %1.</source>
+        <source>number of iterations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of output was invalid. Resetting to the last good value of %1.</source>
+        <source>output</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10144,10 +11989,6 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Spherical (r,phi,theta)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Output coordinates</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10160,83 +12001,94 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>m00</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>m01</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>m02</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>m10</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>m11</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>m12</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>m20</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>m21</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>m22</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Invert linear transform</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of rotateOrigin was invalid. Resetting to the last good value of %1.</source>
+        <source>Transform vectors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of rotateAxis was invalid. Resetting to the last good value of %1.</source>
+        <source>Spherical (r,theta,phi)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of rotateAmount was invalid. Resetting to the last good value of %1.</source>
+        <source>Vector transform method:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of scaleOrigin was invalid. Resetting to the last good value of %1.</source>
+        <source>No transformation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of scaleX was invalid. Resetting to the last good value of %1.</source>
+        <source>Treat as point coordinates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of scaleY was invalid. Resetting to the last good value of %1.</source>
+        <source>Treat as coordinate displacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of scaleZ was invalid. Resetting to the last good value of %1.</source>
+        <source>Treat as instantaneous directions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of translateX was invalid. Resetting to the last good value of %1.</source>
+        <source>rotate origin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of translateY was invalid. Resetting to the last good value of %1.</source>
+        <source>rotate axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of translateZ was invalid. Resetting to the last good value of %1.</source>
+        <source>rotate amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>scale origin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>translation in X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>translation in Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>translation in Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisTriangulateRegularPointsWindow</name>
+    <message>
+        <source>Use X grid spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X grid spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Y grid spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y grid spacing</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10250,98 +12102,40 @@ plot&apos;s color.</source>
         <source>Lighting</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QvisTubeWindow</name>
-    <message>
-        <source>width</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Fineness of tube</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cap Tubes?</source>
+        <source>Scale width by variable?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of width was invalid. Resetting to the last good value of %1.</source>
+        <source>Tube width (fixed)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The fineness of the tube is limited from 3 (coarsest) to 12 (finest)</source>
+        <source>Tube width scaling variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of fineness was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QvisVariableButton</name>
-    <message>
-        <source>Create new expression ...</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QvisVariableButton::VariablePopupInfo</name>
-    <message>
-        <source>Scalars</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Vectors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Meshes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Materials</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Subsets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Species</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Curves</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Tensors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Symmetric Tensors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Labels</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Arrays</source>
+        <source>Cap ends of the tubes</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QvisVectorPlotWindow</name>
-    <message>
-        <source>Reduce by</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>N vectors</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Stride</source>
         <translation type="unfinished"></translation>
@@ -10351,31 +12145,11 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Vector style</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Line:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cylinder:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Draw head:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Size</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>High quality geometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10399,10 +12173,6 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Vector color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Magnitude</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10423,19 +12193,7 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Min</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Scale</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Vector scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10451,27 +12209,123 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The scale value was invalid. Resetting to the last good value of %1.</source>
+        <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The head size was invalid. Resetting to the last good value of %1.</source>
+        <source>Where to place the vectors and how many of them</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The stride was invalid. Resetting to the last good value of %1.</source>
+        <source>Vector placement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The minimum value was invalid. Resetting to the last good value of %1.</source>
+        <source>Adapted to resolution of mesh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The maximum value was invalid. Resetting to the last good value of %1.</source>
+        <source>Uniformly located throughout mesh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The stem width was invalid. Resetting to the last good value of %1.</source>
+        <source>Vector amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fixed number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only show vectors on original nodes/cells</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Glyph type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ellipsoid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cylinder</source>
+        <translation type="unfinished">Cylindre</translation>
+    </message>
+    <message>
+        <source>Draw head</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fast</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rendering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>scale value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>head size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>number of vectors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>stride</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minimum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>stem width</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10650,63 +12504,83 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The viewport values were invalid. Resetting to the last good values of %1.</source>
+        <source>Shear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The domain values were invalid. Resetting to the last good values of %1.</source>
+        <source>Scale 3D axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The range values were invalid. Resetting to the last good values of %1.</source>
+        <source>Maintain view limits</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The window values were invalid. Resetting to the last good values of %1.</source>
+        <source>viewport</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The normal location values were invalid. Resetting to the last good values of %1.</source>
+        <source>domain</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The focus location values were invalid. Resetting to the last good values of %1.</source>
+        <source>range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The up vector values were invalid. Resetting to the last good values of %1.</source>
+        <source>window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The viewangle was invalid. Resetting to the last good value of %1.</source>
+        <source>normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The parallel scale was invalid. Resetting to the last good value of %1.</source>
+        <source>focus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The near clipping value was invalid. Resetting to the last good value of %1.</source>
+        <source>up vector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The far clipping value was invalid. Resetting to the last good value of %1.</source>
+        <source>viewangle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The image pan values were invalid. Resetting to the last good values of %1.</source>
+        <source>parallel scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The image zoom value was invalid. Resetting to the last good value of %1.</source>
+        <source>near clipping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The eye angle value was invalid. Resetting to the last good value of %1.</source>
+        <source>far clipping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The center of rotation values were invalid. Resetting to the last good values of %1.</source>
+        <source>image pan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>image zoom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>eye angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>center of rotation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>axis3DScales</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>shear</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10724,10 +12598,6 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>VisIt could not determine the platform that you are running on so VisIt cannot automatically update. You should browse to ftp://ftp.llnl.gov/pub/visit and download the latest binary distribution for your platform.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Installation complete.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10736,16 +12606,7 @@ plot&apos;s color.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>VisIt could not complete the update.
-FTP Error: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>VisIt determined that you do not have write permission to the %1 directory where VisIt is installed. You must have group %2 write access to update VisIt.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Could not download %1! Can&apos;t finish updating VisIt.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10753,11 +12614,31 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Downloaded %1 bytes.</source>
+        <source>VisIt %1 is available for download. Would you like to install it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>VisIt %1 is available for download. Would you like to install it?</source>
+        <source>VisIt could not determine the platform that you are running on so VisIt cannot automatically update. You should browse to %1 and download the latest binary distribution for your platform.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There is a newer version of VisIt available (version %1) but your distribution type: %2 was not found in the new version. There is likely another distribution type that will work for you but you will need to determine that and install VisIt yourself. Alternatively, you can build VisIt for your platform using the build_visit script.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt was not able to check for updates.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt was not able to download %1 so the update will not proceed. Try again later.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Downloaded %1 / %2 bytes.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10788,14 +12669,6 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Min</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Max</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Scale</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10804,23 +12677,11 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Log10</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Skew</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Skew factor </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Opacity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show Colors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10860,14 +12721,6 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>SCI, University of Utah (SLIVR)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Rendering method</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Number of samples</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10885,10 +12738,6 @@ FTP Error: </source>
     </message>
     <message>
         <source>Gradient method</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Centered diff</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10920,10 +12769,6 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of resampleTarget was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The minimum value for the color variable was invalid.Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10932,19 +12777,7 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The minimum value for the opacity var was invalid.Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The maximum value for the opacity var was invalid.Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The number of samples per ray was invalid.Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The number of 3d slices was invalid.Resetting to the last good value of %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10952,11 +12785,258 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of renderer samples was invalid. Valid values are in the range [1.,%1]. Resetting to the last good value of %2.</source>
+        <source>The range set for indexing colors will also be used when indexing opacities</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The range set for indexing colors will also be used when indexing opacities</source>
+        <source>Renderer Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D transfer function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2D transfer function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>From Color Table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rendering Method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tuvok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SLIVR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transfer function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Methods</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Centered differences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low gradient lighting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reduction maximum value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The minimum value for the opacity variable was invalid.Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value for the low gradient lighting max clamp was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QvisWellBorePlotWindow</name>
+    <message>
+        <source>Read well bores...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Write well bores...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Definition</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Multiple</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Draw wells as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cylinders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well cylinder quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Super</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well line width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well line style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well annotation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stem only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stem and name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well stem height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Well name scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of wellRadius was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of wellStemHeight was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The value of wellNameScale was invalid. Resetting to the last good value of %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10987,15 +13067,7 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The value of lowerBound was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of upperBound was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The value of outputFile was invalid. Resetting to the last good value of %1.</source>
+        <source>Output File </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11099,7 +13171,7 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Make window active</source>
+        <source>Make this window active</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11107,6 +13179,29 @@ FTP Error: </source>
     <name>SetPlotFollowsTimeAction</name>
     <message>
         <source>Disconnect from time slider</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SetToolUpdateModeAction</name>
+    <message>
+        <source>Tool Updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set tool update frequency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Continuously</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On Mouse Release</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On Tool Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11304,7 +13399,55 @@ FTP Error: </source>
     </message>
     <message>
         <source>July 2008</source>
-        <translation type="unfinished">Juillet 2008</translation>
+        <translation type="obsolete">Juillet 2008</translation>
+    </message>
+    <message>
+        <source>January</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>February</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>March</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>April</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>May</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>June</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>July</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>August</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>September</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>October</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>November</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>December</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11346,10 +13489,6 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Show in visualizaion window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Tracer plane</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11375,7 +13514,7 @@ FTP Error: </source>
     </message>
     <message>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Fichier</translation>
     </message>
     <message>
         <source>Save as text . . .</source>
@@ -11441,6 +13580,35 @@ FTP Error: </source>
         <source>The average value of the selected cells is: %1.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Show in visualization window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: row vs. coordinate 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: row vs. coordinate 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: column vs. coordinate 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create curve: column vs. coordinate 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>* Note that the vertical ordering of this file&apos;s contents is opposite from what you would see in the Spreadsheet window.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TimeSliderForwardStepAction</name>
@@ -11461,17 +13629,6 @@ FTP Error: </source>
     </message>
     <message>
         <source>Step back one frame</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>ToggleBoundingBoxModeAction</name>
-    <message>
-        <source>Navigate bbox</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toggle bounding box navigation</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11643,10 +13800,6 @@ FTP Error: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The launch of the compute engine on host &quot;%1&quot; has been cancelled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Connecting to simulation at %1:%2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11710,6 +13863,16 @@ FTP Error: </source>
         <source>VisIt can only export data to a simulation if the data being exported originated in a simulation.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>The launch of the compute engine on host &quot;%1&quot; has been cancelled.
+
+You might want to check the job control system on &quot;%2&quot; to be sure the job is no longer present</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Communication with the compute engine on host &quot;%1&quot; has been lost.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ViewerFileServer</name>
@@ -11723,14 +13886,6 @@ FTP Error: </source>
 The generated error message was:
 
 %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt could not read from the file &quot;%`&quot; on host %2.
-
-The generated error message was:
-
-%3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11766,20 +13921,6 @@ The metadata server returned the following message:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The metadata server on host %1 could not be launched or it could not connect back to your local computer. This can happen for a variety of reasons.
-
-It is possible that SSH was unable to launch VisIt on %1. If you want to verify this, run &quot;visit -debug 5&quot; and then check to see if any vcl, mdserver, or engine log files are present on %1 in your home directory. If no log files were created then SSH was probably not able to launch VisIt components on %1. In that case, check that you can SSH to %1 and check your local VisIt installation&apos;s Host profiles to make sure the path to VisIt on %1 is specified. Alternatively, you set the PATH environment variable on %1 so it contains the path to the program &quot;visit&quot;.
-
-If there were no debug logs to be found on %1 and your local computer runs a newer version of Linux then quit VisIt and try running &quot;visit -nopty -debug 5&quot;. The &quot;-nopty&quot; option tells VisIt not to allocate a pseudoterminal in which to run SSH. When you run with the &quot;-nopty&quot; option, VisIt&apos;s password window will not be used. Instead, look for an SSH prompt in the terminal window where you ran VisIt. You should be able to enter your password at that prompt. If successful, SSH should continue trying to launch VisIt on %1. If VisIt still cannot connect after SSH launches VisIt&apos;s remote components, check for debug logs on %1 to see if VisIt was at least able to launch there.
-
-If you found debug log files on %1 but VisIt still can&apos;t connect then it&apos;s possible that %1 cannot connect to your local computer. Some desktop computers do not provide a valid network name when VisIt asks for one. If you suspect that this could be the cause of the launch failure, try using &quot;Parse from SSH_CLIENT&quot; in your host profile for host %1. If that does not work and if you are using VPN then you should try manually setting the local host name VisIt will use when telling its remote components to connect back to your local computer. Open the Host profiles window and go to the Advanced options tab. Click the &quot;Specify manually&quot; radio button and type in the IP address of your VPN session into the adjacent text field before you try connecting again.
-
-If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
-
-If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The launch of the metadata server on host &quot;%1&quot; has been cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11805,6 +13946,30 @@ If none of these suggestions allow you to successfully connect to %1 then contac
     </message>
     <message>
         <source>VisIt was unable to determine the real variable type for %1&apos;s %2 variable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not read from the file &quot;%1&quot; on host %2.
+
+The generated error message was:
+
+%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The metadata server on host %1 could not be launched or it could not connect back to your local computer. This can happen for a variety of reasons.
+
+It is possible that SSH was unable to launch VisIt on %1. If you want to verify this, run &quot;visit -debug 5&quot; and then check to see if any vcl, mdserver, or engine log files are present on %1 in your home directory. If no log files were created then SSH was probably not able to launch VisIt components on %1. In that case, check that you can SSH to %1 and check your local VisIt installation&apos;s Host profiles to make sure the path to VisIt on %1 is specified. Alternatively, you set the PATH environment variable on %1 so it contains the path to the program &quot;visit&quot;.
+
+If there were no debug logs to be found on %1 and your local computer runs a newer version of Linux then quit VisIt and try running &quot;visit -nopty -debug 5&quot;. The &quot;-nopty&quot; option tells VisIt not to allocate a pseudoterminal in which to run SSH. When you run with the &quot;-nopty&quot; option, VisIt&apos;s password window will not be used. Instead, look for an SSH prompt in the terminal window where you ran VisIt. You should be able to enter your password at that prompt. If successful, SSH should continue trying to launch VisIt on %1. If VisIt still cannot connect after SSH launches VisIt&apos;s remote components, check for debug logs on %1 to see if VisIt was at least able to launch there.
+
+&quot;vglrun&quot;: If you do not know what &quot;vglrun&quot; is, you can ignore this paragraph.  If there were no debug logs to be found on %1 and you are using vglrun, then vglrun may be causing VisIt to fail. Some versions of vglrun cause the ssh program to fail.  If you are running VisIt in conjunction with vglrun, this may be causing your failure.  (You can test this by running &quot;vglrun ssh&quot; and seeing if it cores.)
+
+If you found debug log files on %1 but VisIt still can&apos;t connect then it&apos;s possible that %1 cannot connect to your local computer. Some desktop computers do not provide a valid network name when VisIt asks for one. If you suspect that this could be the cause of the launch failure, try using &quot;Parse from SSH_CLIENT&quot; in your host profile for host %1. If that does not work and if you are using VPN then you should try manually setting the local host name VisIt will use when telling its remote components to connect back to your local computer. Open the Host profiles window and go to the Advanced options tab. Click the &quot;Specify manually&quot; radio button and type in the IP address of your VPN session into the adjacent text field before you try connecting again.
+
+If changing the above settings still does not allow you to connect then you may have a local firewall blocking ports 5600-5609, which are the ports that VisIt uses to listen for incoming connections (when they are expected) from remote VisIt components. If you&apos;ve tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to local computer. Try turning the firewall off or allowing ports 5600-5609 and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.
+
+If none of these suggestions allow you to successfully connect to %1 then contact visit-users@ornl.gov and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11877,10 +14042,6 @@ If none of these suggestions allow you to successfully connect to %1 then contac
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You have added the &quot;%1&quot; operator multiple times. For some operators, like &quot;Slice&quot;, this can lead to an empty plot but is otherwise harmless.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>VisIt cannot move the %1 operator because it is already the first operator.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11922,6 +14083,10 @@ If none of these suggestions allow you to successfully connect to %1 then contac
     </message>
     <message>
         <source>The session file was missing the pluginID for a plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You have added the &quot;Slice&quot; operator multiple times. This can lead to an empty plot.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11970,10 +14135,6 @@ operation could take as much as a few minutes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>VisIt cannot set the %1 plot attributes since no plots of that type are selected. Please select a %2 plot before trying to modify its plot attributes.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>The %1 plot of &quot;%2&quot; cannot be regenerated using the database: %3 since the variable is not contained in the new database.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12019,6 +14180,18 @@ operation could take as much as a few minutes.</source>
     </message>
     <message>
         <source>The session file did not specify how many plots to create.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt cannot set the %1 plot attributes since no plots of that type are selected. This can either mean that you have no plots selected or you have more than one instance of the %1 plot in your plot list. Please select a %1 plot before trying to modify its plot attributes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No plots were created as a result of the overlay because no plots were selected in the plot list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not create a plot of type from variable %1 of database %2 on host %3.  This often happens because something has changed since the session file was saved.  (For example, the file was overwritten.)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12184,32 +14357,11 @@ Please select a plot and try again.
 <context>
     <name>ViewerSubject</name>
     <message>
-        <source>VisIt has encountered the following error: %1.
-VisIt will attempt to continue processing, but it may behave unreliably.  Please save this error message and give it to a VisIt developer.  In addition, you may want to save your session and re-start.  Of course, this session may still cause VisIt to malfunction.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>You cannot define a database correlation that has the same name as a source. No database correlation will be created for %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>VisIt did not open a new compute engine on host %1 because a compute engine is already running there.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>To construct a derived data function, you must have an active plot.  No DDF was created.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Only one DDF can be created at a time.  VisIt is using the first active plot.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Created DDF</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Unable to create DDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12265,11 +14417,79 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Invalid PlotId</source>
+        <source>To construct a data binning, you must have an active plot.  No data binning was created.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Invalid WindowId</source>
+        <source>Only one data binning can be created at a time.  VisIt is using the first active plot.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Created data binning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to create data binning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An invalid selection name was provided. No selection was applied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To apply a named selection, you must have an active plot.  No named selection was applied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All plots involving a named selection must come from the same engine.  No named selection was applied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Applied named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to apply named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>To create a named selection, you must have an active plot that has been drawn.  No named selection was created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can only have one active plot when creating a named selection.  No named selection was created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Created named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to create named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Deleted named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to delete named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Loaded named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to load named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saved named selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to save named selection</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12428,38 +14648,6 @@ support log-scaling.  It will not be done.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>There are non-positive values in the domain of the
-curve, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There are non-positive values in the range of the
-curve, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There are non-positive values in the x-coords of
-the mesh, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>There are non-positive values in the y-coords of
-the mesh, so log scaling cannot be done. You must
-limit the spatial extents to positive values.
-e.g. via Transform or Box operators and/or
-setting view extents type to &apos;actual&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Would you like to modify the %1 correlation so it correlates the following databases?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12549,11 +14737,55 @@ To avoid this warning in the future, make sure that locked windows have compatib
         <source>VisIt could not open a window for TimeQuery because the maximum number of windows was exceeded.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>VisIt did not do an advanced window save because none of the windows had any plots.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the domain of 
+the curve, so log scaling cannot be done. You must
+limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the range of 
+the curve, so log scaling cannot be done. You must
+limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the x-coords 
+of the mesh, so log scaling cannot be done. You must
+limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are non-positive values in the y-coords
+of the mesh, so log scaling cannot be done. You
+must limit the spatial extents to positive values.
+e.g. via Transform or Box operators and/or
+setting &apos;view based on&apos; &apos;Original spatial extents&apos;
+in Controls-&gt;View-&gt;Advanced</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not create named selection %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>VisItSimStripChart</name>
     <message>
-        <source>Strip Chart</source>
+        <source>Strip chart</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12565,7 +14797,7 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Fichier</translation>
     </message>
     <message>
         <source>&amp;New</source>
@@ -12593,10 +14825,6 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>Plugin</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Makefile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12636,15 +14864,7 @@ To avoid this warning in the future, make sure that locked windows have compatib
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>XMLOpen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Open file...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>XMLSave</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12661,6 +14881,17 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>Generate code for %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CMake</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditAttribute</name>
+    <message>
+        <source>Base Class</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12729,14 +14960,6 @@ To avoid this warning in the future, make sure that locked windows have compatib
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Project file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Makefile</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Plugin information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12750,6 +14973,10 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CMake</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13083,6 +15310,26 @@ equality calculations</source>
         <source>Plugin has code specific to the MDServer (Database Plugins only)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>GUI Libs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Viewer Libs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MDServer Libs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Engine Libs (ser)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Engine Libs (par)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>XMLEditPlugin</name>
@@ -13207,10 +15454,6 @@ equality calculations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Extensions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>File format can also write data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13219,11 +15462,15 @@ equality calculations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Format uses explicit filenames</source>
+        <source>Default file name patterns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Filenames</source>
+        <source>File name patterns are strict by default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File format opens a whole directory (not a single file)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
