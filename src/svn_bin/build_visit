@@ -2078,6 +2078,10 @@ function check_visit_source_code
 #    Brad Whitlock, Mon Apr 26 14:04:16 PST 2010
 #    I added Xdmf support.
 #
+#    Cyrus Harrison, Wed Oct 13 13:30:35 PDT 2010
+#    Added pass of BOXLIB_VERSION to ensure_built_or_ready, now that boxlib
+#    has a version number.
+#
 # *************************************************************************** #
 
 function check_optional_3rdparty
@@ -2094,7 +2098,7 @@ function check_optional_3rdparty
     fi
 
     if [[ "$DO_BOXLIB" == "yes" ]] ; then
-        ensure_built_or_ready "boxlib"  "" $BOXLIB_BUILD_DIR  $BOXLIB_FILE
+        ensure_built_or_ready "boxlib" $BOXLIB_VERSION  $BOXLIB_BUILD_DIR  $BOXLIB_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_BOXLIB="no"
