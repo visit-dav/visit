@@ -47,6 +47,10 @@
 #   the 3rd party libs since the size difference isn't worth the
 #   extra build time IMHO.
 #
+#   Cyrus Harrison, Thu Oct 14 09:59:13 PDT 2010
+#   Added cyrush@llnl.gov to the email list & fixed problem with
+#   creating proper config-site.cmake on alastor.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -75,6 +79,12 @@ case $user in
       ;;
    whitlocb)
       emailName=whitlock2@llnl.gov
+      ;;
+   harrison37)
+      emailName=cyrush@llnl.gov
+      ;;
+   cyrush)
+      emailName=cyrush@llnl.gov
       ;;
 esac
 
@@ -423,7 +433,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-ln -s yana1.conf config-site/\`hostname\`.conf
+cp config-site/yana1.cmake config-site/\`hostname\`.cmake
 /usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 12 >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
