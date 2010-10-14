@@ -78,6 +78,7 @@ InverseGhostZone
 Isosurface
 Isovolume
 Lineout
+LineSampler
 Merge
 MultiresControl
 OnionPeel
