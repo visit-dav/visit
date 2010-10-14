@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+  <Plugin name="LineSampler" type="operator" label="LineSampler" version="1.0" iconFile="LineSampler.xpm" category="Slicing">
+    <Attribute name="LineSamplerAttributes" purpose="This class contains attributes for the line sampler operator." persistent="true">
+      <Enum name="BeamType">
+        Parallel
+        Fan
+      </Enum>
+      <Enum name="BeamAxis">
+        R
+        Z
+      </Enum>
+      <Enum name="BeamShape">
+        Line
+        Cylinder
+        Cone
+      </Enum>
+      <Enum name="ViewDimension">
+        One
+        Two
+        Three
+      </Enum>
+      <Field name="beamType" label="Beam type" type="enum" subtype="BeamType">
+        Parallel
+      </Field>
+      <Field name="beamShape" label="Beam shape" type="enum" subtype="BeamShape">
+        Line
+      </Field>
+      <Field name="radius" label="Cylinder radius" type="double">
+        5
+      </Field>
+      <Field name="divergence" label="Cone divergence" type="double">
+        5
+      </Field>
+      <Field name="nBeams" label="Number of beams" type="int">
+        5
+      </Field>
+      <Field name="nLinearSamples" label="Number of linear samples" type="int">
+        100
+      </Field>
+      <Field name="nRadialSamples" label="Number of radial samples" type="int">
+        36
+      </Field>
+      <Field name="spacing" label="Parallel Spacing" type="double">
+        5.000000
+      </Field>
+      <Field name="angle" label="Fan Angle" type="double">
+        45.000000
+      </Field>
+      <Field name="origin" label="Origin" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="beamAxis" label="Beam axis" type="enum" subtype="BeamAxis">
+        Z
+      </Field>
+      <Field name="poloialAngle" label="Poloidal angle" type="double">
+        0.000000
+      </Field>
+      <Field name="poloialTilt" label="Poloidal tilt" type="double">
+        0.000000
+      </Field>
+      <Field name="toroialAngle" label="Toroidal angle" type="double">
+        0.000000
+      </Field>
+
+      <Field name="viewDimension" label="View dimension" type="enum" subtype="ViewDimension">
+        Three
+      </Field>
+    </Attribute>
+  </Plugin>
