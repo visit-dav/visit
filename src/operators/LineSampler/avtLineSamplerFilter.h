@@ -47,7 +47,7 @@
 #include <avtPluginDataTreeIterator.h>
 #include <LineSamplerAttributes.h>
 
-
+class vtkAlgorithm;
 class vtkDataSet;
 
 
@@ -81,6 +81,20 @@ class avtLineSamplerFilter : public avtPluginDataTreeIterator
     LineSamplerAttributes   atts;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+
+    virtual void createLine( vtkAlgorithm *vtkAlgo,
+                             avtVector startPoint,
+                             avtVector stopPoint );
+  
+    virtual void createCylinder( vtkAlgorithm *vtkAlgo,
+                                 avtVector startPoint,
+                                 avtVector stopPoint,
+                                 avtVector normal );
+  
+    virtual void createCone( vtkAlgorithm *vtkAlgo,
+                             avtVector startPoint,
+                             avtVector stopPoint,
+                             avtVector normal );
 };
 
 
