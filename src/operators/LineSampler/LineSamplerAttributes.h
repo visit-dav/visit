@@ -116,8 +116,8 @@ public:
     void SetRadius(double radius_);
     void SetDivergence(double divergence_);
     void SetNBeams(int nBeams_);
-    void SetNLinearSamples(int nLinearSamples_);
-    void SetNRadialSamples(int nRadialSamples_);
+    void SetSampleDistance(double sampleDistance_);
+    void SetSampleArc(double sampleArc_);
     void SetSpacing(double spacing_);
     void SetAngle(double angle_);
     void SetOrigin(const double *origin_);
@@ -133,8 +133,8 @@ public:
     double       GetRadius() const;
     double       GetDivergence() const;
     int          GetNBeams() const;
-    int          GetNLinearSamples() const;
-    int          GetNRadialSamples() const;
+    double       GetSampleDistance() const;
+    double       GetSampleArc() const;
     double       GetSpacing() const;
     double       GetAngle() const;
     const double *GetOrigin() const;
@@ -185,8 +185,8 @@ public:
         ID_radius,
         ID_divergence,
         ID_nBeams,
-        ID_nLinearSamples,
-        ID_nRadialSamples,
+        ID_sampleDistance,
+        ID_sampleArc,
         ID_spacing,
         ID_angle,
         ID_origin,
@@ -204,8 +204,8 @@ private:
     double radius;
     double divergence;
     int    nBeams;
-    int    nLinearSamples;
-    int    nRadialSamples;
+    double sampleDistance;
+    double sampleArc;
     double spacing;
     double angle;
     double origin[3];
@@ -219,6 +219,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LINESAMPLERATTRIBUTES_TMFS "iiddiiiddDidddi"
+#define LINESAMPLERATTRIBUTES_TMFS "iiddiddddDidddi"
 
 #endif

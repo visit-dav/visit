@@ -31,24 +31,24 @@
         Line
       </Field>
       <Field name="radius" label="Cylinder radius" type="double">
-        5.000000
+        0.100000
       </Field>
-      <Field name="divergence" label="Cone divergence" type="double">
-        5.000000
+      <Field name="divergence" label="Cone divergence (degrees)" type="double">
+        1.000000
       </Field>
       <Field name="nBeams" label="Number of beams" type="int">
         5
       </Field>
-      <Field name="nLinearSamples" label="Number of linear samples" type="int">
-        100
+      <Field name="sampleDistance" label="Linear sample distance" type="double">
+        0.1
       </Field>
-      <Field name="nRadialSamples" label="Number of radial samples" type="int">
-        36
+      <Field name="sampleArc" label="Radial sample arc (degrees)" type="double">
+        10.0
       </Field>
       <Field name="spacing" label="Parallel Spacing" type="double">
         5.000000
       </Field>
-      <Field name="angle" label="Fan Angle" type="double">
+      <Field name="angle" label="Fan Angle (degrees)" type="double">
         45.000000
       </Field>
       <Field name="origin" label="Origin" type="doubleArray" length="3">
@@ -59,13 +59,13 @@
       <Field name="beamAxis" label="Beam axis" type="enum" subtype="BeamAxis">
         Z
       </Field>
-      <Field name="poloialAngle" label="Poloidal angle" type="double">
+      <Field name="poloialAngle" label="Poloidal angle (degrees)" type="double">
         0.000000
       </Field>
-      <Field name="poloialTilt" label="Poloidal tilt" type="double">
+      <Field name="poloialTilt" label="Poloidal tilt (degrees)" type="double">
         0.000000
       </Field>
-      <Field name="toroialAngle" label="Toroidal angle" type="double">
+      <Field name="toroialAngle" label="Toroidal angle (degrees)" type="double">
         0.000000
       </Field>
       <Field name="viewDimension" label="View dimension" type="enum" subtype="ViewDimension">

@@ -116,9 +116,9 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%snBeams = %d\n", prefix, atts->GetNBeams());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snLinearSamples = %d\n", prefix, atts->GetNLinearSamples());
+    SNPRINTF(tmpStr, 1000, "%ssampleDistance = %g\n", prefix, atts->GetSampleDistance());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%snRadialSamples = %d\n", prefix, atts->GetNRadialSamples());
+    SNPRINTF(tmpStr, 1000, "%ssampleArc = %g\n", prefix, atts->GetSampleArc());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sspacing = %g\n", prefix, atts->GetSpacing());
     str += tmpStr;
@@ -331,50 +331,50 @@ LineSamplerAttributes_GetNBeams(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetNLinearSamples(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetSampleDistance(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the nLinearSamples in the object.
-    obj->data->SetNLinearSamples((int)ival);
+    // Set the sampleDistance in the object.
+    obj->data->SetSampleDistance(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetNLinearSamples(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetSampleDistance(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetNLinearSamples()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance());
     return retval;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetNRadialSamples(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetSampleArc(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the nRadialSamples in the object.
-    obj->data->SetNRadialSamples((int)ival);
+    // Set the sampleArc in the object.
+    obj->data->SetSampleArc(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetNRadialSamples(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetSampleArc(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetNRadialSamples()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleArc());
     return retval;
 }
 
@@ -632,10 +632,10 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetDivergence", LineSamplerAttributes_GetDivergence, METH_VARARGS},
     {"SetNBeams", LineSamplerAttributes_SetNBeams, METH_VARARGS},
     {"GetNBeams", LineSamplerAttributes_GetNBeams, METH_VARARGS},
-    {"SetNLinearSamples", LineSamplerAttributes_SetNLinearSamples, METH_VARARGS},
-    {"GetNLinearSamples", LineSamplerAttributes_GetNLinearSamples, METH_VARARGS},
-    {"SetNRadialSamples", LineSamplerAttributes_SetNRadialSamples, METH_VARARGS},
-    {"GetNRadialSamples", LineSamplerAttributes_GetNRadialSamples, METH_VARARGS},
+    {"SetSampleDistance", LineSamplerAttributes_SetSampleDistance, METH_VARARGS},
+    {"GetSampleDistance", LineSamplerAttributes_GetSampleDistance, METH_VARARGS},
+    {"SetSampleArc", LineSamplerAttributes_SetSampleArc, METH_VARARGS},
+    {"GetSampleArc", LineSamplerAttributes_GetSampleArc, METH_VARARGS},
     {"SetSpacing", LineSamplerAttributes_SetSpacing, METH_VARARGS},
     {"GetSpacing", LineSamplerAttributes_GetSpacing, METH_VARARGS},
     {"SetAngle", LineSamplerAttributes_SetAngle, METH_VARARGS},
@@ -702,10 +702,10 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetDivergence(self, NULL);
     if(strcmp(name, "nBeams") == 0)
         return LineSamplerAttributes_GetNBeams(self, NULL);
-    if(strcmp(name, "nLinearSamples") == 0)
-        return LineSamplerAttributes_GetNLinearSamples(self, NULL);
-    if(strcmp(name, "nRadialSamples") == 0)
-        return LineSamplerAttributes_GetNRadialSamples(self, NULL);
+    if(strcmp(name, "sampleDistance") == 0)
+        return LineSamplerAttributes_GetSampleDistance(self, NULL);
+    if(strcmp(name, "sampleArc") == 0)
+        return LineSamplerAttributes_GetSampleArc(self, NULL);
     if(strcmp(name, "spacing") == 0)
         return LineSamplerAttributes_GetSpacing(self, NULL);
     if(strcmp(name, "angle") == 0)
@@ -758,10 +758,10 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetDivergence(self, tuple);
     else if(strcmp(name, "nBeams") == 0)
         obj = LineSamplerAttributes_SetNBeams(self, tuple);
-    else if(strcmp(name, "nLinearSamples") == 0)
-        obj = LineSamplerAttributes_SetNLinearSamples(self, tuple);
-    else if(strcmp(name, "nRadialSamples") == 0)
-        obj = LineSamplerAttributes_SetNRadialSamples(self, tuple);
+    else if(strcmp(name, "sampleDistance") == 0)
+        obj = LineSamplerAttributes_SetSampleDistance(self, tuple);
+    else if(strcmp(name, "sampleArc") == 0)
+        obj = LineSamplerAttributes_SetSampleArc(self, tuple);
     else if(strcmp(name, "spacing") == 0)
         obj = LineSamplerAttributes_SetSpacing(self, tuple);
     else if(strcmp(name, "angle") == 0)
