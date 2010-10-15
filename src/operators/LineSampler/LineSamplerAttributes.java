@@ -83,11 +83,11 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
 
         beamType = BEAMTYPE_PARALLEL;
         beamShape = BEAMSHAPE_LINE;
-        radius = 5;
-        divergence = 5;
+        radius = 0.1;
+        divergence = 1;
         nBeams = 5;
-        nLinearSamples = 100;
-        nRadialSamples = 36;
+        sampleDistance = 0.1;
+        sampleArc = 10;
         spacing = 5;
         angle = 45;
         origin = new double[3];
@@ -107,11 +107,11 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
 
         beamType = BEAMTYPE_PARALLEL;
         beamShape = BEAMSHAPE_LINE;
-        radius = 5;
-        divergence = 5;
+        radius = 0.1;
+        divergence = 1;
         nBeams = 5;
-        nLinearSamples = 100;
-        nRadialSamples = 36;
+        sampleDistance = 0.1;
+        sampleArc = 10;
         spacing = 5;
         angle = 45;
         origin = new double[3];
@@ -136,8 +136,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         radius = obj.radius;
         divergence = obj.divergence;
         nBeams = obj.nBeams;
-        nLinearSamples = obj.nLinearSamples;
-        nRadialSamples = obj.nRadialSamples;
+        sampleDistance = obj.sampleDistance;
+        sampleArc = obj.sampleArc;
         spacing = obj.spacing;
         angle = obj.angle;
         origin = new double[3];
@@ -179,8 +179,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
                 (radius == obj.radius) &&
                 (divergence == obj.divergence) &&
                 (nBeams == obj.nBeams) &&
-                (nLinearSamples == obj.nLinearSamples) &&
-                (nRadialSamples == obj.nRadialSamples) &&
+                (sampleDistance == obj.sampleDistance) &&
+                (sampleArc == obj.sampleArc) &&
                 (spacing == obj.spacing) &&
                 (angle == obj.angle) &&
                 origin_equal &&
@@ -225,15 +225,15 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         Select(4);
     }
 
-    public void SetNLinearSamples(int nLinearSamples_)
+    public void SetSampleDistance(double sampleDistance_)
     {
-        nLinearSamples = nLinearSamples_;
+        sampleDistance = sampleDistance_;
         Select(5);
     }
 
-    public void SetNRadialSamples(int nRadialSamples_)
+    public void SetSampleArc(double sampleArc_)
     {
-        nRadialSamples = nRadialSamples_;
+        sampleArc = sampleArc_;
         Select(6);
     }
 
@@ -301,8 +301,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public double   GetRadius() { return radius; }
     public double   GetDivergence() { return divergence; }
     public int      GetNBeams() { return nBeams; }
-    public int      GetNLinearSamples() { return nLinearSamples; }
-    public int      GetNRadialSamples() { return nRadialSamples; }
+    public double   GetSampleDistance() { return sampleDistance; }
+    public double   GetSampleArc() { return sampleArc; }
     public double   GetSpacing() { return spacing; }
     public double   GetAngle() { return angle; }
     public double[] GetOrigin() { return origin; }
@@ -326,9 +326,9 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(4, buf))
             buf.WriteInt(nBeams);
         if(WriteSelect(5, buf))
-            buf.WriteInt(nLinearSamples);
+            buf.WriteDouble(sampleDistance);
         if(WriteSelect(6, buf))
-            buf.WriteInt(nRadialSamples);
+            buf.WriteDouble(sampleArc);
         if(WriteSelect(7, buf))
             buf.WriteDouble(spacing);
         if(WriteSelect(8, buf))
@@ -367,10 +367,10 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             SetNBeams(buf.ReadInt());
             break;
         case 5:
-            SetNLinearSamples(buf.ReadInt());
+            SetSampleDistance(buf.ReadDouble());
             break;
         case 6:
-            SetNRadialSamples(buf.ReadInt());
+            SetSampleArc(buf.ReadDouble());
             break;
         case 7:
             SetSpacing(buf.ReadDouble());
@@ -419,8 +419,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("radius", radius, indent) + "\n";
         str = str + doubleToString("divergence", divergence, indent) + "\n";
         str = str + intToString("nBeams", nBeams, indent) + "\n";
-        str = str + intToString("nLinearSamples", nLinearSamples, indent) + "\n";
-        str = str + intToString("nRadialSamples", nRadialSamples, indent) + "\n";
+        str = str + doubleToString("sampleDistance", sampleDistance, indent) + "\n";
+        str = str + doubleToString("sampleArc", sampleArc, indent) + "\n";
         str = str + doubleToString("spacing", spacing, indent) + "\n";
         str = str + doubleToString("angle", angle, indent) + "\n";
         str = str + doubleArrayToString("origin", origin, indent) + "\n";
@@ -451,8 +451,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     private double   radius;
     private double   divergence;
     private int      nBeams;
-    private int      nLinearSamples;
-    private int      nRadialSamples;
+    private double   sampleDistance;
+    private double   sampleArc;
     private double   spacing;
     private double   angle;
     private double[] origin;

@@ -91,8 +91,8 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void radiusProcessText();
     void divergenceProcessText();
     void nBeamsProcessText();
-    void nLinearSamplesProcessText();
-    void nRadialSamplesProcessText();
+    void sampleDistanceProcessText();
+    void sampleArcProcessText();
     void spacingProcessText();
     void angleProcessText();
     void originProcessText();
@@ -109,8 +109,8 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLineEdit *radius;
     QLineEdit *divergence;
     QLineEdit *nBeams;
-    QLineEdit *nLinearSamples;
-    QLineEdit *nRadialSamples;
+    QLineEdit *sampleDistance;
+    QLineEdit *sampleArc;
     QLineEdit *spacing;
     QLineEdit *angle;
     QLineEdit *origin;
@@ -126,8 +126,8 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLabel *radiusLabel;
     QLabel *divergenceLabel;
     QLabel *nBeamsLabel;
-    QLabel *nLinearSamplesLabel;
-    QLabel *nRadialSamplesLabel;
+    QLabel *sampleDistanceLabel;
+    QLabel *sampleArcLabel;
     QLabel *spacingLabel;
     QLabel *angleLabel;
     QLabel *originLabel;

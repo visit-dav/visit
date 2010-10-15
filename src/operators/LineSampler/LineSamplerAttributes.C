@@ -208,11 +208,11 @@ void LineSamplerAttributes::Init()
 {
     beamType = Parallel;
     beamShape = Line;
-    radius = 5;
-    divergence = 5;
+    radius = 0.1;
+    divergence = 1;
     nBeams = 5;
-    nLinearSamples = 100;
-    nRadialSamples = 36;
+    sampleDistance = 0.1;
+    sampleArc = 10;
     spacing = 5;
     angle = 45;
     origin[0] = 0;
@@ -249,8 +249,8 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     radius = obj.radius;
     divergence = obj.divergence;
     nBeams = obj.nBeams;
-    nLinearSamples = obj.nLinearSamples;
-    nRadialSamples = obj.nRadialSamples;
+    sampleDistance = obj.sampleDistance;
+    sampleArc = obj.sampleArc;
     spacing = obj.spacing;
     angle = obj.angle;
     origin[0] = obj.origin[0];
@@ -429,8 +429,8 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
             (radius == obj.radius) &&
             (divergence == obj.divergence) &&
             (nBeams == obj.nBeams) &&
-            (nLinearSamples == obj.nLinearSamples) &&
-            (nRadialSamples == obj.nRadialSamples) &&
+            (sampleDistance == obj.sampleDistance) &&
+            (sampleArc == obj.sampleArc) &&
             (spacing == obj.spacing) &&
             (angle == obj.angle) &&
             origin_equal &&
@@ -587,8 +587,8 @@ LineSamplerAttributes::SelectAll()
     Select(ID_radius,         (void *)&radius);
     Select(ID_divergence,     (void *)&divergence);
     Select(ID_nBeams,         (void *)&nBeams);
-    Select(ID_nLinearSamples, (void *)&nLinearSamples);
-    Select(ID_nRadialSamples, (void *)&nRadialSamples);
+    Select(ID_sampleDistance, (void *)&sampleDistance);
+    Select(ID_sampleArc,      (void *)&sampleArc);
     Select(ID_spacing,        (void *)&spacing);
     Select(ID_angle,          (void *)&angle);
     Select(ID_origin,         (void *)origin, 3);
@@ -659,16 +659,16 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("nBeams", nBeams));
     }
 
-    if(completeSave || !FieldsEqual(ID_nLinearSamples, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_sampleDistance, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("nLinearSamples", nLinearSamples));
+        node->AddNode(new DataNode("sampleDistance", sampleDistance));
     }
 
-    if(completeSave || !FieldsEqual(ID_nRadialSamples, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_sampleArc, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("nRadialSamples", nRadialSamples));
+        node->AddNode(new DataNode("sampleArc", sampleArc));
     }
 
     if(completeSave || !FieldsEqual(ID_spacing, &defaultObject))
@@ -793,10 +793,10 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         SetDivergence(node->AsDouble());
     if((node = searchNode->GetNode("nBeams")) != 0)
         SetNBeams(node->AsInt());
-    if((node = searchNode->GetNode("nLinearSamples")) != 0)
-        SetNLinearSamples(node->AsInt());
-    if((node = searchNode->GetNode("nRadialSamples")) != 0)
-        SetNRadialSamples(node->AsInt());
+    if((node = searchNode->GetNode("sampleDistance")) != 0)
+        SetSampleDistance(node->AsDouble());
+    if((node = searchNode->GetNode("sampleArc")) != 0)
+        SetSampleArc(node->AsDouble());
     if((node = searchNode->GetNode("spacing")) != 0)
         SetSpacing(node->AsDouble());
     if((node = searchNode->GetNode("angle")) != 0)
@@ -883,17 +883,17 @@ LineSamplerAttributes::SetNBeams(int nBeams_)
 }
 
 void
-LineSamplerAttributes::SetNLinearSamples(int nLinearSamples_)
+LineSamplerAttributes::SetSampleDistance(double sampleDistance_)
 {
-    nLinearSamples = nLinearSamples_;
-    Select(ID_nLinearSamples, (void *)&nLinearSamples);
+    sampleDistance = sampleDistance_;
+    Select(ID_sampleDistance, (void *)&sampleDistance);
 }
 
 void
-LineSamplerAttributes::SetNRadialSamples(int nRadialSamples_)
+LineSamplerAttributes::SetSampleArc(double sampleArc_)
 {
-    nRadialSamples = nRadialSamples_;
-    Select(ID_nRadialSamples, (void *)&nRadialSamples);
+    sampleArc = sampleArc_;
+    Select(ID_sampleArc, (void *)&sampleArc);
 }
 
 void
@@ -988,16 +988,16 @@ LineSamplerAttributes::GetNBeams() const
     return nBeams;
 }
 
-int
-LineSamplerAttributes::GetNLinearSamples() const
+double
+LineSamplerAttributes::GetSampleDistance() const
 {
-    return nLinearSamples;
+    return sampleDistance;
 }
 
-int
-LineSamplerAttributes::GetNRadialSamples() const
+double
+LineSamplerAttributes::GetSampleArc() const
 {
-    return nRadialSamples;
+    return sampleArc;
 }
 
 double
@@ -1093,8 +1093,8 @@ LineSamplerAttributes::GetFieldName(int index) const
     case ID_radius:         return "radius";
     case ID_divergence:     return "divergence";
     case ID_nBeams:         return "nBeams";
-    case ID_nLinearSamples: return "nLinearSamples";
-    case ID_nRadialSamples: return "nRadialSamples";
+    case ID_sampleDistance: return "sampleDistance";
+    case ID_sampleArc:      return "sampleArc";
     case ID_spacing:        return "spacing";
     case ID_angle:          return "angle";
     case ID_origin:         return "origin";
@@ -1132,8 +1132,8 @@ LineSamplerAttributes::GetFieldType(int index) const
     case ID_radius:         return FieldType_double;
     case ID_divergence:     return FieldType_double;
     case ID_nBeams:         return FieldType_int;
-    case ID_nLinearSamples: return FieldType_int;
-    case ID_nRadialSamples: return FieldType_int;
+    case ID_sampleDistance: return FieldType_double;
+    case ID_sampleArc:      return FieldType_double;
     case ID_spacing:        return FieldType_double;
     case ID_angle:          return FieldType_double;
     case ID_origin:         return FieldType_doubleArray;
@@ -1171,8 +1171,8 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
     case ID_radius:         return "double";
     case ID_divergence:     return "double";
     case ID_nBeams:         return "int";
-    case ID_nLinearSamples: return "int";
-    case ID_nRadialSamples: return "int";
+    case ID_sampleDistance: return "double";
+    case ID_sampleArc:      return "double";
     case ID_spacing:        return "double";
     case ID_angle:          return "double";
     case ID_origin:         return "doubleArray";
@@ -1232,14 +1232,14 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (nBeams == obj.nBeams);
         }
         break;
-    case ID_nLinearSamples:
+    case ID_sampleDistance:
         {  // new scope
-        retval = (nLinearSamples == obj.nLinearSamples);
+        retval = (sampleDistance == obj.sampleDistance);
         }
         break;
-    case ID_nRadialSamples:
+    case ID_sampleArc:
         {  // new scope
-        retval = (nRadialSamples == obj.nRadialSamples);
+        retval = (sampleArc == obj.sampleArc);
         }
         break;
     case ID_spacing:

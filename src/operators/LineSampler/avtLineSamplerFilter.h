@@ -48,6 +48,7 @@
 #include <LineSamplerAttributes.h>
 
 class vtkAlgorithm;
+class vtkTransform;
 class vtkDataSet;
 
 
@@ -86,16 +87,21 @@ class avtLineSamplerFilter : public avtPluginDataTreeIterator
                              avtVector startPoint,
                              avtVector stopPoint );
   
-    virtual void createCylinder( vtkAlgorithm *vtkAlgo,
-                                 avtVector startPoint,
-                                 avtVector stopPoint,
-                                 avtVector normal );
-  
     virtual void createCone( vtkAlgorithm *vtkAlgo,
                              avtVector startPoint,
                              avtVector stopPoint,
-                             avtVector normal );
-};
+                             avtVector normal,
+                             double radius,
+                             double divergence );
 
+    avtVector ProjectPointOnPlane( avtVector planePoint,
+                                   avtVector planeNormal,
+                                   avtVector point,
+                                   avtVector direction );
+
+  void applyTransform( vtkTransform* transform, avtVector &point );
+
+  void checkExtents( avtVector &startPoint, avtVector &stopPoint );
+};
 
 #endif

@@ -171,7 +171,7 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(radiusProcessText()));
     mainLayout->addWidget(radius, 2,1);
 
-    divergenceLabel = new QLabel(tr("Cone divergence"), central);
+    divergenceLabel = new QLabel(tr("Cone divergence (degrees)"), central);
     mainLayout->addWidget(divergenceLabel,3,0);
     divergence = new QLineEdit(central);
     connect(divergence, SIGNAL(returnPressed()),
@@ -185,19 +185,19 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(nBeamsProcessText()));
     mainLayout->addWidget(nBeams, 4,1);
 
-    nLinearSamplesLabel = new QLabel(tr("Number of linear samples"), central);
-    mainLayout->addWidget(nLinearSamplesLabel,5,0);
-    nLinearSamples = new QLineEdit(central);
-    connect(nLinearSamples, SIGNAL(returnPressed()),
-            this, SLOT(nLinearSamplesProcessText()));
-    mainLayout->addWidget(nLinearSamples, 5,1);
+    sampleDistanceLabel = new QLabel(tr("Linear sample distance"), central);
+    mainLayout->addWidget(sampleDistanceLabel,5,0);
+    sampleDistance = new QLineEdit(central);
+    connect(sampleDistance, SIGNAL(returnPressed()),
+            this, SLOT(sampleDistanceProcessText()));
+    mainLayout->addWidget(sampleDistance, 5,1);
 
-    nRadialSamplesLabel = new QLabel(tr("Number of radial samples"), central);
-    mainLayout->addWidget(nRadialSamplesLabel,6,0);
-    nRadialSamples = new QLineEdit(central);
-    connect(nRadialSamples, SIGNAL(returnPressed()),
-            this, SLOT(nRadialSamplesProcessText()));
-    mainLayout->addWidget(nRadialSamples, 6,1);
+    sampleArcLabel = new QLabel(tr("Radial sample arc (degrees)"), central);
+    mainLayout->addWidget(sampleArcLabel,6,0);
+    sampleArc = new QLineEdit(central);
+    connect(sampleArc, SIGNAL(returnPressed()),
+            this, SLOT(sampleArcProcessText()));
+    mainLayout->addWidget(sampleArc, 6,1);
 
     spacingLabel = new QLabel(tr("Parallel Spacing"), central);
     mainLayout->addWidget(spacingLabel,7,0);
@@ -206,7 +206,7 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(spacingProcessText()));
     mainLayout->addWidget(spacing, 7,1);
 
-    angleLabel = new QLabel(tr("Fan Angle"), central);
+    angleLabel = new QLabel(tr("Fan Angle (degrees)"), central);
     mainLayout->addWidget(angleLabel,8,0);
     angle = new QLineEdit(central);
     connect(angle, SIGNAL(returnPressed()),
@@ -237,21 +237,21 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(beamAxisChanged(int)));
     mainLayout->addWidget(beamAxis, 10,1);
 
-    poloialAngleLabel = new QLabel(tr("Poloidal angle"), central);
+    poloialAngleLabel = new QLabel(tr("Poloidal angle (degrees)"), central);
     mainLayout->addWidget(poloialAngleLabel,11,0);
     poloialAngle = new QLineEdit(central);
     connect(poloialAngle, SIGNAL(returnPressed()),
             this, SLOT(poloialAngleProcessText()));
     mainLayout->addWidget(poloialAngle, 11,1);
 
-    poloialTiltLabel = new QLabel(tr("Poloidal tilt"), central);
+    poloialTiltLabel = new QLabel(tr("Poloidal tilt (degrees)"), central);
     mainLayout->addWidget(poloialTiltLabel,12,0);
     poloialTilt = new QLineEdit(central);
     connect(poloialTilt, SIGNAL(returnPressed()),
             this, SLOT(poloialTiltProcessText()));
     mainLayout->addWidget(poloialTilt, 12,1);
 
-    toroialAngleLabel = new QLabel(tr("Toroidal angle"), central);
+    toroialAngleLabel = new QLabel(tr("Toroidal angle (degrees)"), central);
     mainLayout->addWidget(toroialAngleLabel,13,0);
     toroialAngle = new QLineEdit(central);
     connect(toroialAngle, SIGNAL(returnPressed()),
@@ -333,11 +333,11 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
           case LineSamplerAttributes::ID_nBeams:
             nBeams->setText(IntToQString(atts->GetNBeams()));
             break;
-          case LineSamplerAttributes::ID_nLinearSamples:
-            nLinearSamples->setText(IntToQString(atts->GetNLinearSamples()));
+          case LineSamplerAttributes::ID_sampleDistance:
+            sampleDistance->setText(DoubleToQString(atts->GetSampleDistance()));
             break;
-          case LineSamplerAttributes::ID_nRadialSamples:
-            nRadialSamples->setText(IntToQString(atts->GetNRadialSamples()));
+          case LineSamplerAttributes::ID_sampleArc:
+            sampleArc->setText(DoubleToQString(atts->GetSampleArc()));
             break;
           case LineSamplerAttributes::ID_spacing:
             spacing->setText(DoubleToQString(atts->GetSpacing()));
@@ -416,7 +416,7 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
             atts->SetDivergence(val);
         else
         {
-            ResettingError(tr("Cone divergence"),
+            ResettingError(tr("Cone divergence (degrees)"),
                 DoubleToQString(atts->GetDivergence()));
             atts->SetDivergence(atts->GetDivergence());
         }
@@ -436,31 +436,31 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do nLinearSamples
-    if(which_widget == LineSamplerAttributes::ID_nLinearSamples || doAll)
+    // Do sampleDistance
+    if(which_widget == LineSamplerAttributes::ID_sampleDistance || doAll)
     {
-        int val;
-        if(LineEditGetInt(nLinearSamples, val))
-            atts->SetNLinearSamples(val);
+        double val;
+        if(LineEditGetDouble(sampleDistance, val))
+            atts->SetSampleDistance(val);
         else
         {
-            ResettingError(tr("Number of linear samples"),
-                IntToQString(atts->GetNLinearSamples()));
-            atts->SetNLinearSamples(atts->GetNLinearSamples());
+            ResettingError(tr("Linear sample distance"),
+                DoubleToQString(atts->GetSampleDistance()));
+            atts->SetSampleDistance(atts->GetSampleDistance());
         }
     }
 
-    // Do nRadialSamples
-    if(which_widget == LineSamplerAttributes::ID_nRadialSamples || doAll)
+    // Do sampleArc
+    if(which_widget == LineSamplerAttributes::ID_sampleArc || doAll)
     {
-        int val;
-        if(LineEditGetInt(nRadialSamples, val))
-            atts->SetNRadialSamples(val);
+        double val;
+        if(LineEditGetDouble(sampleArc, val))
+            atts->SetSampleArc(val);
         else
         {
-            ResettingError(tr("Number of radial samples"),
-                IntToQString(atts->GetNRadialSamples()));
-            atts->SetNRadialSamples(atts->GetNRadialSamples());
+            ResettingError(tr("Radial sample arc (degrees)"),
+                DoubleToQString(atts->GetSampleArc()));
+            atts->SetSampleArc(atts->GetSampleArc());
         }
     }
 
@@ -486,7 +486,7 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
             atts->SetAngle(val);
         else
         {
-            ResettingError(tr("Fan Angle"),
+            ResettingError(tr("Fan Angle (degrees)"),
                 DoubleToQString(atts->GetAngle()));
             atts->SetAngle(atts->GetAngle());
         }
@@ -514,7 +514,7 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
             atts->SetPoloialAngle(val);
         else
         {
-            ResettingError(tr("Poloidal angle"),
+            ResettingError(tr("Poloidal angle (degrees)"),
                 DoubleToQString(atts->GetPoloialAngle()));
             atts->SetPoloialAngle(atts->GetPoloialAngle());
         }
@@ -528,7 +528,7 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
             atts->SetPoloialTilt(val);
         else
         {
-            ResettingError(tr("Poloidal tilt"),
+            ResettingError(tr("Poloidal tilt (degrees)"),
                 DoubleToQString(atts->GetPoloialTilt()));
             atts->SetPoloialTilt(atts->GetPoloialTilt());
         }
@@ -542,7 +542,7 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
             atts->SetToroialAngle(val);
         else
         {
-            ResettingError(tr("Toroidal angle"),
+            ResettingError(tr("Toroidal angle (degrees)"),
                 DoubleToQString(atts->GetToroialAngle()));
             atts->SetToroialAngle(atts->GetToroialAngle());
         }
@@ -605,17 +605,17 @@ QvisLineSamplerWindow::nBeamsProcessText()
 
 
 void
-QvisLineSamplerWindow::nLinearSamplesProcessText()
+QvisLineSamplerWindow::sampleDistanceProcessText()
 {
-    GetCurrentValues(LineSamplerAttributes::ID_nLinearSamples);
+    GetCurrentValues(LineSamplerAttributes::ID_sampleDistance);
     Apply();
 }
 
 
 void
-QvisLineSamplerWindow::nRadialSamplesProcessText()
+QvisLineSamplerWindow::sampleArcProcessText()
 {
-    GetCurrentValues(LineSamplerAttributes::ID_nRadialSamples);
+    GetCurrentValues(LineSamplerAttributes::ID_sampleArc);
     Apply();
 }
 
