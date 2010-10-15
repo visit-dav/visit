@@ -45,6 +45,8 @@
 #include <avtIntervalTree.h>
 #include <avtVector.h>
 
+#include <vtkAppendFilter.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -54,6 +56,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyLine.h>
+#include <vtkQuad.h>
 #include <vtkTransform.h>
 
 #include <vtkVisItProbeFilter.h>
@@ -163,7 +166,10 @@ vtkDataSet *
 avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
     vtkDataSet *out_ds = NULL;
-    vtkAppendPolyData *append = vtkAppendPolyData::New();
+    vtkDataSet *outDS = NULL;
+
+    vtkAppendPolyData *appendPolyData = vtkAppendPolyData::New();
+    vtkAppendFilter *appendFilter = vtkAppendFilter::New();
 
 
     bool parallel = (atts.GetBeamType() == LineSamplerAttributes::Parallel );
@@ -192,13 +198,11 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
       beamSpacingDirection = avtVector( beamSpacing, 0, 0 );
     }
 
-    bool showBeamAsLine = true;
-
     avtVector beamOrigin( origin[0], origin[1], origin[2] );
 
     avtVector startBeamOrigin;
     double startBeamAngle;
-
+    double dAngle;
 
     if( atts.GetViewDimension() == LineSamplerAttributes::Three )
     {
@@ -206,15 +210,17 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
       if( nBeams % 2 == 1 )
       {
         if( parallel )
+        {
           startBeamOrigin =
             beamOrigin - (int) (nBeams/2) * beamSpacingDirection;
+        }
         else //if( fan )
         {
           startBeamOrigin = beamOrigin;
 
-          if( nBeams )
+          if( nBeams > 1 )
           {
-            double dAngle = beamAngle / (double) (nBeams-1);
+            dAngle = beamAngle / (double) (nBeams-1);
             startBeamAngle = (int) (nBeams/2) * dAngle;
           }
           else
@@ -228,15 +234,15 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
       {
         if( parallel )
           startBeamOrigin =
-            beamOrigin - (nBeams/2.0) * beamSpacingDirection;
+            beamOrigin - (nBeams/2.0-0.5) * beamSpacingDirection;
         else //if( fan )
         {
           startBeamOrigin = beamOrigin;
 
-          if( nBeams )
+          if( nBeams > 1 )
           {
-            double dAngle = beamAngle / (double) (nBeams-1);
-            startBeamAngle = nBeams / 2.0 * dAngle;
+            dAngle = beamAngle / (double) (nBeams-1);
+            startBeamAngle = (nBeams / 2.0 - 0.5)  * dAngle;
           }
           else
             startBeamAngle = 0;
@@ -246,16 +252,9 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
       // Loop through each beam.
       for( int b=0; b<nBeams; ++b ) 
       {
-        //Create groups that represent each beam.
-        vtkPoints *points = vtkPoints::New();
-        vtkCellArray *cells = vtkCellArray::New();
-        vtkFloatArray *scalars = vtkFloatArray::New();
-            
-        cells->InsertNextCell(nLinearSamples);
-        scalars->Allocate    (nLinearSamples);
-
         avtVector startPoint;
         avtVector stopPoint;
+        avtVector normal;
 
         if( parallel )
         {
@@ -271,21 +270,24 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
           if( atts.GetBeamAxis() == LineSamplerAttributes::R )
           {
-            startPoint.x = 0;
-            stopPoint.x = extents[1]; // Need to get Rmax;
+            startPoint.x = extents[1]; // Need to get Rmax;
+            stopPoint.x  = 0;
+
+            normal = avtVector( 0, 0, 1 );
           }
 
           else //if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
           {
-            startPoint.z = extents[4];  // Need to get Zmin;
-            stopPoint.z  = extents[5];  // Need to get Zmax;
+            startPoint.z = extents[5];  // Need to get Zmax;
+            stopPoint.z  = extents[4];  // Need to get Zmin;
+
+            normal = avtVector( 1, 0, 0 );
           }
         }
         else //if( fan )
         {
           double angle =
-            2.0 * M_PI * (startBeamAngle -
-                          (double) b * beamAngle / (double) nBeams) / 360.0 ;
+            2.0 * M_PI * (startBeamAngle - (double) b * dAngle) / 360.0;
 
           startPoint = startBeamOrigin;
 
@@ -294,6 +296,8 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             // Get the inital stop point based on the angle
             stopPoint = startBeamOrigin +
               avtVector( -cos( angle ), 0, -sin(angle) );
+
+            normal = avtVector( -sin( angle ), 0, -cos(angle) );
 
             // Find the intersection of the beam with the R = 0 plane.
             avtVector planePt( 0, 0, 0 );
@@ -320,6 +324,8 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             // Get the inital stop point based on the angle
             stopPoint = startBeamOrigin +
               avtVector( -sin( angle ), 0, -cos(angle) );
+
+            normal = avtVector( -cos( angle ), 0, -sin(angle) );
 
             // Find the intersection of the beam with the Z = z_min plane.
             avtVector planePt( 0, 0, -1 );
@@ -401,57 +407,312 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         stopPoint.y = tmpPt[1];
         stopPoint.z = tmpPt[2];
 
+        // Transform the normal
+        tmpPt[0] = normal.x;
+        tmpPt[1] = normal.y;
+        tmpPt[2] = normal.z;
+        tmpPt[3] = 1.0;
+
+        matrix->MultiplyPoint( tmpPt, tmpPt );
+
+        normal.x = tmpPt[0];
+        normal.y = tmpPt[1];
+        normal.z = tmpPt[2];
+
         transform->Delete();
 
-        // sampling offset between points.
-        avtVector delta =
-          (stopPoint - startPoint) / (double) (nLinearSamples-1);
-
-        // Create the points for sampling
-        for( unsigned int i=0; i<nLinearSamples; ++i ) 
-        {
-          avtVector pt = startPoint + (double) i * delta;
-
-          points->InsertPoint(i, pt.x, pt.y, pt.z);
-          
-          cells->InsertCellPoint(i);
-
-          scalars->InsertTuple1(i, b);
-        }
-         
-        // Create a new VTK polyline.
-        vtkPolyData *pd = vtkPolyData::New();
-        pd->SetPoints(points);
-        pd->SetLines(cells);
-        scalars->SetName("colorVar");
-        pd->GetPointData()->SetScalars(scalars);
-        append->AddInput(pd);
-        
-        points->Delete();
-        cells->Delete();
-        scalars->Delete();
+        if( atts.GetBeamShape() == LineSamplerAttributes::Line )
+          createLine( appendPolyData, startPoint, stopPoint );
+        else if( atts.GetBeamShape() == LineSamplerAttributes::Cylinder )
+          createCylinder( appendFilter, startPoint, stopPoint, normal );
+        else if( atts.GetBeamShape() == LineSamplerAttributes::Cone )
+          createCone( appendFilter, startPoint, stopPoint, normal );
       }   
     }
 
-    append->Update();
-    vtkPolyData *outPD = append->GetOutput();
-    outPD->Register(NULL);
-    outPD->SetSource(NULL);
-    append->Delete();
+    if( atts.GetBeamShape() == LineSamplerAttributes::Line )
+    {
+      appendPolyData->Update();
+      vtkPolyData *outPD = appendPolyData->GetOutput();
+      outPD->Register(NULL);
+      outPD->SetSource(NULL);
+      appendPolyData->Delete();
 
-    out_ds = outPD;
+      outDS = outPD;
+    }
+    else //if( atts.GetBeamShape() == LineSamplerAttributes::Cylinder ||
+         //    atts.GetBeamShape() == LineSamplerAttributes::Cone )
+
+    {
+      appendFilter->Update();
+      vtkUnstructuredGrid *outUG = appendFilter->GetOutput();
+
+      outUG->Register(NULL);
+      outUG->SetSource(NULL);
+      appendFilter->Delete();
+
+      outDS = outUG;
+    }
 
     vtkVisItProbeFilter *probeFilter = vtkVisItProbeFilter::New();
 
     probeFilter->SetSource( in_ds );
-    probeFilter->SetInput( outPD );
+    probeFilter->SetInput( outDS );
     probeFilter->Update();
 
-    out_ds = probeFilter->GetPolyDataOutput();
+    out_ds = probeFilter->GetOutput();
+
     out_ds->Register(NULL);
     out_ds->SetSource(NULL);
 
     probeFilter->Delete();
 
     return out_ds;
+}
+
+void
+avtLineSamplerFilter::createLine( vtkAlgorithm *vtkAlgo,
+                                  avtVector startPoint,
+                                  avtVector stopPoint )
+{
+  int nLinearSamples = atts.GetNLinearSamples();
+
+  //Create groups that represent each beam.
+  vtkPoints *points = vtkPoints::New();
+  vtkCellArray *cells = vtkCellArray::New();
+//vtkFloatArray *scalars = vtkFloatArray::New();
+            
+  cells->InsertNextCell(nLinearSamples);
+//scalars->Allocate    (nLinearSamples);
+
+
+  // sampling offset between points.
+  avtVector delta =
+    (stopPoint - startPoint) / (double) (nLinearSamples-1);
+  
+  // Create the points for sampling
+  for( unsigned int i=0; i<nLinearSamples; ++i )
+  {
+    avtVector pt = startPoint + (double) i * delta;
+    
+    points->InsertPoint(i, pt.x, pt.y, pt.z);
+    
+    cells->InsertCellPoint(i);
+
+//  scalars->InsertTuple1(i, b);
+  }
+         
+  // Create a new VTK polyline.
+  vtkPolyData *pd = vtkPolyData::New();
+  pd->SetPoints(points);
+  pd->SetLines(cells);
+//scalars->SetName("colorVar");
+//pd->GetPointData()->SetScalars(scalars);
+  ((vtkAppendPolyData*) vtkAlgo)->AddInput(pd);
+  
+  points->Delete();
+  cells->Delete();
+//scalars->Delete();
+}
+
+void
+avtLineSamplerFilter::createCylinder( vtkAlgorithm *vtkAlgo,
+                                      avtVector startPoint,
+                                      avtVector stopPoint,
+                                      avtVector normal )
+{
+  int nLinearSamples = atts.GetNLinearSamples();
+  int nRadialSamples = atts.GetNRadialSamples();
+
+  double radius = atts.GetRadius();
+
+  // Create an unstructured quad for the island surface.
+  vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
+  vtkQuad *quad = vtkQuad::New();
+  vtkPoints *points = vtkPoints::New();
+//  vtkFloatArray *scalars = vtkFloatArray::New();
+    
+  points->SetNumberOfPoints(nLinearSamples*nRadialSamples);
+//  scalars->Allocate(nLinearSamples*nRadialSamples);
+    
+  float *points_ptr = (float *) points->GetVoidPointer(0);
+
+  // sampling offset between points.
+  avtVector deltaLinear =
+    (stopPoint - startPoint) / (double) (nLinearSamples-1);
+
+  double deltaAngle = 360.0 / (double) (nRadialSamples);
+
+  for( unsigned int i=0, index=0; i<nLinearSamples; ++i )
+  {
+    avtVector basePoint = startPoint + (double) i * deltaLinear +
+      radius * normal;
+
+    for( unsigned int j=0; j<nRadialSamples; ++j, ++index )
+    {
+      double angle = (double) j * deltaAngle;
+
+      // Now apply the transformations.
+      vtkTransform *transform = vtkTransform::New();
+
+      transform->Identity();
+      transform->PostMultiply();
+
+      transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
+
+      // Rotation about the axis.
+      transform->RotateWXYZ( angle,
+                             deltaLinear.x, deltaLinear.y, deltaLinear.z );
+
+      transform->Translate( startPoint.x, startPoint.y, startPoint.z );
+
+      vtkMatrix4x4 *matrix = transform->GetMatrix();
+
+      float tmpPt[4];
+
+      // Transform the start point
+      tmpPt[0] = basePoint.x;
+      tmpPt[1] = basePoint.y;
+      tmpPt[2] = basePoint.z;
+      tmpPt[3] = 1.0;
+
+      matrix->MultiplyPoint( tmpPt, tmpPt );
+
+      points_ptr[index*3  ] = tmpPt[0];
+      points_ptr[index*3+1] = tmpPt[1];
+      points_ptr[index*3+2] = tmpPt[2];
+        
+      transform->Delete();
+
+//      scalars->InsertTuple1(index, index);
+
+      // Create the quad.
+      if( i<nLinearSamples-1 )
+      {
+        int i1 = i+1;
+        int j1 = (j+1) % nRadialSamples;
+          
+        quad->GetPointIds()->SetId( 0, i  * nRadialSamples + j  );
+        quad->GetPointIds()->SetId( 1, i1 * nRadialSamples + j  );
+        quad->GetPointIds()->SetId( 2, i1 * nRadialSamples + j1 );
+        quad->GetPointIds()->SetId( 3, i  * nRadialSamples + j1 );
+
+        grid->InsertNextCell( quad->GetCellType(),
+                              quad->GetPointIds() );                
+      }
+    }
+  }
+
+  // Stuff the points and scalars into the VTK unstructure grid.
+  grid->SetPoints(points);
+//  scalars->SetName("colorVar");
+//  grid->GetPointData()->SetScalars(scalars);
+
+  ((vtkAppendFilter*) vtkAlgo)->AddInput(grid);
+    
+  quad->Delete();
+  points->Delete();
+//  scalars->Delete();
+}
+
+void
+avtLineSamplerFilter::createCone( vtkAlgorithm *vtkAlgo,
+                                  avtVector startPoint,
+                                  avtVector stopPoint,
+                                  avtVector normal )
+{
+  int nLinearSamples = atts.GetNLinearSamples();
+  int nRadialSamples = atts.GetNRadialSamples();
+
+  double tangent = tan( 2.0 * M_PI * atts.GetDivergence() / 360.0 );
+
+  // Create an unstructured quad for the island surface.
+  vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
+  vtkQuad *quad = vtkQuad::New();
+  vtkPoints *points = vtkPoints::New();
+//  vtkFloatArray *scalars = vtkFloatArray::New();
+    
+  points->SetNumberOfPoints(nLinearSamples*nRadialSamples);
+//  scalars->Allocate(nLinearSamples*nRadialSamples);
+    
+  float *points_ptr = (float *) points->GetVoidPointer(0);
+
+  // sampling offset between points.
+  avtVector deltaLinear =
+    (stopPoint - startPoint) / (double) (nLinearSamples-1);
+
+  double deltaAngle = 360.0 / (double) (nRadialSamples);
+
+  for( unsigned int i=0, index=0; i<nLinearSamples; ++i )
+  {
+    double radius = ((double) i * deltaLinear.length()) * tangent;
+
+    avtVector basePoint = startPoint + (double) i * deltaLinear +
+      radius * normal;
+
+    for( unsigned int j=0; j<nRadialSamples; ++j, ++index )
+    {
+      double angle = (double) j * deltaAngle;
+
+      // Now apply the transformations.
+      vtkTransform *transform = vtkTransform::New();
+
+      transform->Identity();
+      transform->PostMultiply();
+
+      transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
+
+      // Rotation about the axis.
+      transform->RotateWXYZ( angle,
+                             deltaLinear.x, deltaLinear.y, deltaLinear.z );
+
+      transform->Translate( startPoint.x, startPoint.y, startPoint.z );
+
+      vtkMatrix4x4 *matrix = transform->GetMatrix();
+
+      float tmpPt[4];
+
+      // Transform the start point
+      tmpPt[0] = basePoint.x;
+      tmpPt[1] = basePoint.y;
+      tmpPt[2] = basePoint.z;
+      tmpPt[3] = 1.0;
+
+      matrix->MultiplyPoint( tmpPt, tmpPt );
+
+      points_ptr[index*3  ] = tmpPt[0];
+      points_ptr[index*3+1] = tmpPt[1];
+      points_ptr[index*3+2] = tmpPt[2];
+        
+      transform->Delete();
+
+//      scalars->InsertTuple1(index, index);
+
+      // Create the quad.
+      if( i<nLinearSamples-1 )
+      {
+        int i1 = i+1;
+        int j1 = (j+1) % nRadialSamples;
+          
+        quad->GetPointIds()->SetId( 0, i  * nRadialSamples + j  );
+        quad->GetPointIds()->SetId( 1, i1 * nRadialSamples + j  );
+        quad->GetPointIds()->SetId( 2, i1 * nRadialSamples + j1 );
+        quad->GetPointIds()->SetId( 3, i  * nRadialSamples + j1 );
+
+        grid->InsertNextCell( quad->GetCellType(),
+                              quad->GetPointIds() );                
+      }
+    }
+  }
+
+  // Stuff the points and scalars into the VTK unstructure grid.
+  grid->SetPoints(points);
+//  scalars->SetName("colorVar");
+//  grid->GetPointData()->SetScalars(scalars);
+
+  ((vtkAppendFilter*) vtkAlgo)->AddInput(grid);
+    
+  quad->Delete();
+  points->Delete();
+//  scalars->Delete();
 }
