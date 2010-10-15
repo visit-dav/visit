@@ -56,7 +56,7 @@
 #include <vtkPolyLine.h>
 #include <vtkTransform.h>
 
-#include <vtkVisitProbeFilter.h>
+#include <vtkVisItProbeFilter.h>
 
 // ****************************************************************************
 //  Method: avtLineSamplerFilter constructor
