@@ -43,6 +43,7 @@
 
 #include <ConstructDataBinningAttributes.h>
 #include <Expression.h>
+#include <cstring>
 
 // ****************************************************************************
 // Class: DataBinningAttributes

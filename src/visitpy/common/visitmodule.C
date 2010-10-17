@@ -6815,6 +6815,9 @@ visit_SetColorTexturingEnabled(PyObject *self, PyObject *args)
 //   Gunther H. Weber, Wed Mar 19 18:52:36 PDT 2008
 //   Added spreadsheet pick
 //
+//   Hank Childs, Sun Oct 17 11:17:22 PDT 2010
+//   Fix errors matching up window modes with indices.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6831,16 +6834,16 @@ visit_SetWindowMode(PyObject *self, PyObject *args)
 
         if(strcmp(cMode, "navigate") == 0)
             mode = 0;
+        else if(strcmp(cMode, "zoom") == 0)
+            mode = 1;
         else if((strcmp(cMode, "pick") == 0) ||
                (strcmp(cMode, "zone pick") == 0))
-            mode = 1;
-        else if(strcmp(cMode, "node pick") == 0)
             mode = 2;
-        else if(strcmp(cMode, "zoom") == 0)
+        else if(strcmp(cMode, "node pick") == 0)
             mode = 3;
-        else if(strcmp(cMode, "lineout") == 0)
-            mode = 4;
         else if (strcmp(cMode, "spreadsheet pick") == 0)
+            mode = 4;
+        else if(strcmp(cMode, "lineout") == 0)
             mode = 5;
         else
             mode = 0;
