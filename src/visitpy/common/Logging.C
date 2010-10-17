@@ -1183,8 +1183,8 @@ static std::string log_ClearPickPointsRPC(ViewerRPC *rpc)
 
 static std::string log_SetWindowModeRPC(ViewerRPC *rpc)
 {
-    const char *wmodes[] = {"navigate", "zone pick", "node pick", "zoom",
-                            "lineout", "spreadsheet pick"};
+    const char *wmodes[] = {"navigate", "zoom" "zone pick", "node pick", 
+                            "spreadsheet pick", "lineout"};
     return (std::string("SetWindowMode(\"") + wmodes[rpc->GetWindowMode()]) + "\")\n";
 }
 
