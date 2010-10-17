@@ -1643,6 +1643,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Hank Childs, Thu Jul 22 09:55:03 PDT 2010
 //    Added support for advanced multi-window saves.
 //
+//    Hank Childs, Sun Oct 17 12:25:00 PDT 2010
+//    When doing screen proportions, get the size of the rendering area, not
+//    the size of the window.
+//
 // ****************************************************************************
 
 void
@@ -1823,7 +1827,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                 SaveWindowAttributes::ScreenProportions)
             {
                 int winx, winy;
-                windows[iCurrWindow]->GetWindowSize(winx, winy);
+                windows[iCurrWindow]->GetSize(winx, winy);
 
                 h = (int)((double)w * (double)winy / (double)winx);
             }
