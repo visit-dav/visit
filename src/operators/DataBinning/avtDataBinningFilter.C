@@ -64,6 +64,7 @@
 
 avtDataBinningFilter::avtDataBinningFilter()
 {
+    varname = "operators/DataBinning";
 }
 
 
@@ -153,6 +154,9 @@ avtDataBinningFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Hank Childs, Sun Oct 17 09:45:44 PDT 2010
+//    Change the name of the variable we create.
+//
 // ****************************************************************************
 
 void
@@ -200,17 +204,16 @@ avtDataBinningFilter::Execute(void)
     {
         vtkDataSet *ds = d->CreateGrid();
         if (atts.GetNumDimensions() == DataBinningAttributes::One)
-            ds->GetPointData()->GetScalars()->SetName("operators/DataBinning");
+            ds->GetPointData()->GetScalars()->SetName(varname.c_str());
         else
-            ds->GetCellData()->GetScalars()->SetName("operators/DataBinning");
+            ds->GetCellData()->GetScalars()->SetName(varname.c_str());
+        ds->GetCellData()->SetActiveScalars(varname.c_str());
         SetOutputDataTree(new avtDataTree(ds, -1));
         double range[2] = { FLT_MAX, -FLT_MAX };
-        GetDataRange(ds, range, "operators/DataBinning", false);
+        GetDataRange(ds, range, varname.c_str(), false);
         avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
-        dataAtts.GetThisProcsOriginalDataExtents("operators/DataBinning")
-             ->Set(range);
-        dataAtts.GetThisProcsActualDataExtents("operators/DataBinning")
-             ->Set(range);
+        dataAtts.GetThisProcsOriginalDataExtents(varname.c_str())->Set(range);
+        dataAtts.GetThisProcsActualDataExtents(varname.c_str())->Set(range);
 
         ds->Delete();
     }
@@ -382,6 +385,9 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
 //    Hank Childs, Tue Aug 31 10:20:08 PDT 2010
 //    Set up output labels.
 //
+//    Hank Childs, Sun Oct 17 09:45:44 PDT 2010
+//    Change the name of the variable we create.
+//
 // ****************************************************************************
 
 void
@@ -394,8 +400,8 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
     dataAtts.SetSpatialDimension(dim);
     dataAtts.GetThisProcsOriginalSpatialExtents()->Clear();
     dataAtts.GetOriginalSpatialExtents()->Clear();
-    dataAtts.AddVariable("operators/DataBinning");
-    dataAtts.SetActiveVariable("operators/DataBinning");
+    dataAtts.AddVariable(varname);
+    dataAtts.SetActiveVariable(varname.c_str());
     dataAtts.SetVariableDimension(1);
     dataAtts.SetVariableType(AVT_SCALAR_VAR);
     if (atts.GetNumDimensions() == DataBinningAttributes::One)

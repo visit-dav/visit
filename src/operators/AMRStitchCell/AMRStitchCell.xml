@@ -5,7 +5,7 @@
       AMRStitchCellTesselations3D.C
       AMRStitchCellTesselations2D.C
     </Files>
-    <Attribute name="AMRStitchCellAttributes" purpose="Attributes for Stitch Cell Operator" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="AMRStitchCellAttributes.code">
+    <Attribute name="AMRStitchCellAttributes" purpose="Attributes for Stitch Cell Operator" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="AMRStitchCellAttributes.code">
       <Enum name="CreateType">
         DualGridAndStitchCells
         DualGrid

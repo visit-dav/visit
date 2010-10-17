@@ -20,12 +20,18 @@
 rendering mode.</li>
 <li>The FVCOM reader can group files again.</li>
 <li>The <i>-viewer_geometry</i> argument works again, letting you tell VisIt where to place the viewer windows.</li>
-<LI>Position independent code is forced when building Mesa, as a workaround for
-issues on SELinux-enabled systems.</LI>
+<LI>Position independent code is forced when building Mesa, as a workaround for build that appeared on 32bit
+SELinux-enabled systems.</LI>
 <LI>Some streamline plot memory corruption issues affecting
     <A HREF="http://visitbugs.ornl.gov/issues/368">issue 368</A> have been
     corrected.</LI>
 <li>The <i>Reverse, Turn all on, Turn all off</i> buttons in the Subset window now take effect immediately when the <i>Auto apply</i> setting is enabled.</li>
+<li>The DataBinning operator now can be used in conjunction with the Contour plot and the Volume plot.</li>
+<li><i>Save Session</i> and <i>Save Settings</i> will now work correctly for the DataBinning, AMRStitchCell,
+    DeformSphereGlyph, Delaunay, and Edge operators.</li>
+<li>The PersistentParticles operator now works in conjunction with <i>Selections</i> for all data.  (It previously
+    only worked with FastBit data.)</li>
+<li>Banks can now be correctly specified on Argonne's Eureka machine.</li>
 </ul>
 <p><b><font size="4">Enhancements in version 2.1.1</font></b></p>
 <ul>
