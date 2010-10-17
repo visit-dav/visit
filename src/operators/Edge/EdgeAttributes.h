@@ -40,6 +40,7 @@
 #define EDGEATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: EdgeAttributes
 //
@@ -58,13 +59,23 @@
 class EdgeAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     EdgeAttributes();
     EdgeAttributes(const EdgeAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    EdgeAttributes(private_tmfs_t tmfs);
+    EdgeAttributes(const EdgeAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~EdgeAttributes();
 
     virtual EdgeAttributes& operator = (const EdgeAttributes &obj);
     virtual bool operator == (const EdgeAttributes &obj) const;
     virtual bool operator != (const EdgeAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const EdgeAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -80,6 +91,10 @@ public:
     // Property getting methods
     bool GetDummy() const;
 
+    // Persistence methods
+    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+    virtual void SetFromNode(DataNode *node);
+
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -90,7 +105,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_dummy = 0
+        ID_dummy = 0,
+        ID__LAST
     };
 
 private:
@@ -98,6 +114,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define EDGEATTRIBUTES_TMFS "b"
 
 #endif

@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: DeformSphereGlyphAttributes
 //
@@ -59,13 +60,23 @@
 class DeformSphereGlyphAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     DeformSphereGlyphAttributes();
     DeformSphereGlyphAttributes(const DeformSphereGlyphAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    DeformSphereGlyphAttributes(private_tmfs_t tmfs);
+    DeformSphereGlyphAttributes(const DeformSphereGlyphAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~DeformSphereGlyphAttributes();
 
     virtual DeformSphereGlyphAttributes& operator = (const DeformSphereGlyphAttributes &obj);
     virtual bool operator == (const DeformSphereGlyphAttributes &obj) const;
     virtual bool operator != (const DeformSphereGlyphAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const DeformSphereGlyphAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -87,6 +98,10 @@ public:
     double            GetScale() const;
     double            GetMinSize() const;
 
+    // Persistence methods
+    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+    virtual void SetFromNode(DataNode *node);
+
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -99,7 +114,8 @@ public:
     enum {
         ID_var = 0,
         ID_scale,
-        ID_minSize
+        ID_minSize,
+        ID__LAST
     };
 
 private:
@@ -109,6 +125,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define DEFORMSPHEREGLYPHATTRIBUTES_TMFS "sdd"
 
 #endif

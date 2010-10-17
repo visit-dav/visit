@@ -547,6 +547,7 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     }
     //Get the current PointData
     currData   = uGrid->GetPointData();
+    vtkCellData *currCellData = uGrid->GetCellData();
 
     //Create a new output dataset if needed
     //If first timestep or if output dataset has not been created yet
@@ -561,6 +562,7 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
           particlePathData->SetPoints( vtkPoints::New() );
           vtkPointData* allData = uGrid->GetPointData();
           particlePathData->GetPointData()->ShallowCopy(allData);
+          particlePathData->GetCellData()->ShallowCopy(uGrid->GetCellData());
     }
 
     //Write the current particles into a map to decide which ones should be traced
@@ -600,15 +602,25 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
 
                 //The index of the new point
                 int  newPointIndex = particlePathData->GetPoints()->GetNumberOfPoints()-1;
+                int  newCellIndex = particlePathData->GetNumberOfCells()-1;
 
                 //Copy the pointdata from the input mesh to the output mesh
                 vtkPointData* allData = particlePathData->GetPointData();
-                for( int j=0 ; j<allData->GetNumberOfArrays() ; j++) {
+                int j;
+                for( j=0 ; j<allData->GetNumberOfArrays() ; j++) {
                       allData->GetArray(j)->InsertTuple(
                       newPointIndex  ,
                               currData->GetArray(j)->GetTuple(i)
                       );
                 }
+                vtkCellData* allCellData = particlePathData->GetCellData();
+                for( j=0 ; j<allCellData->GetNumberOfArrays() ; j++) {
+                  allCellData->GetArray(j)->InsertTuple(
+                                              newCellIndex,
+                                              currCellData->GetArray(j)->GetTuple(i)
+                                              );
+                }
+                newCellIndex++;
 
                 //add a new line segment
                 if( lastPoint != particlePaths.end() ){
@@ -618,6 +630,14 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
                       pointList[1]   = newPointIndex;
                       //add a new line segment
                       particlePathData->InsertNextCell( VTK_LINE , 2 , pointList );
+                      for( j=0 ; j<allCellData->GetNumberOfArrays() ; j++) {
+                         allCellData->GetArray(j)->InsertTuple(
+                                                        newCellIndex,
+                                                        currCellData->GetArray(j)->GetTuple(i)
+                                                        );
+                      }
+                      newCellIndex++;
+
                       delete[] pointList;
                 }
 

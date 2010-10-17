@@ -164,6 +164,10 @@ public:
           std::string &GetVarForReduction();
     double            GetEmptyVal() const;
 
+    // Persistence methods
+    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+    virtual void SetFromNode(DataNode *node);
+
     // Enum conversion functions
     static std::string ReductionOperator_ToString(ReductionOperator);
     static bool ReductionOperator_FromString(const std::string &, ReductionOperator &);

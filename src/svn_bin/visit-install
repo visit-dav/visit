@@ -221,6 +221,10 @@
 #    Add profile for U. Mich on behalf of Brock Palen.
 #    Also add TACC longhorn profile.
 #
+#    Hank Childs, Fri Oct 15 21:00:34 PDT 2010
+#    Remove davinci profile.  Also change warning when we use /tmp to 
+#    untar files.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -513,7 +517,7 @@ if ($status == 0) then
     echo "Local directory is writable."
     set dist = "distribution"
 else
-    echo "Local directory is NOT writable.  Using /tmp."
+    echo "Note: local directory is not writable, so we are putting our intermediate files into /tmp instead."
     set dist = "/tmp/distribution"
 endif
 rm -rf $dist
@@ -627,7 +631,6 @@ else if ($config == llnl_open) then
    cp "$dir"/$version+/.visit/allhosts/host_llnl_zeus.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml     "$dir"/$version+/.visit/hosts/
 else if ($config == nersc) then
-   cp "$dir"/$version+/.visit/allhosts/host_nersc_davinci.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_franklin.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_hopper.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_euclid.xml "$dir"/$version+/.visit/hosts/

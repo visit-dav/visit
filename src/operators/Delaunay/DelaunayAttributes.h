@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: DelaunayAttributes
 //
@@ -66,13 +67,23 @@ public:
         Tetrahedralization
     };
 
+    // These constructors are for objects of this class
     DelaunayAttributes();
     DelaunayAttributes(const DelaunayAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    DelaunayAttributes(private_tmfs_t tmfs);
+    DelaunayAttributes(const DelaunayAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~DelaunayAttributes();
 
     virtual DelaunayAttributes& operator = (const DelaunayAttributes &obj);
     virtual bool operator == (const DelaunayAttributes &obj) const;
     virtual bool operator != (const DelaunayAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const DelaunayAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -87,6 +98,10 @@ public:
 
     // Property getting methods
     Dimension GetDimension() const;
+
+    // Persistence methods
+    virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
+    virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
     static std::string Dimension_ToString(Dimension);
@@ -104,7 +119,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_dimension = 0
+        ID_dimension = 0,
+        ID__LAST
     };
 
 private:
@@ -112,6 +128,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define DELAUNAYATTRIBUTES_TMFS "i"
 
 #endif

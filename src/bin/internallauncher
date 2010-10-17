@@ -657,6 +657,9 @@ $0 = shift @ARGV;
 #    Hank Childs, Tue Aug 31 19:55:04 PDT 2010
 #    Another change for longhorn.
 #
+#    Hank Childs, Fri Oct 15 21:00:34 PDT 2010
+#    Pass along the the bank name for Eureka.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -3051,6 +3054,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @printcmd, ("\"".(pop @printcmd)."\"");
             if ( $IsRunningOnEureka_ANL ) {
                @parcmd = "qsub";
+               push @parcmd, "-A",  $bank  if $bank_set;
                push @parcmd, "-n";
                push @parcmd, $nodes;
                push @parcmd, "-t";
