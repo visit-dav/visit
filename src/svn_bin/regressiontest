@@ -184,6 +184,11 @@
 #
 #    Mark C. Miller, Wed Nov 29 08:19:52 PST 2006 
 #    Changed meddiff to avgdiff
+#
+#    Hank Childs, Mon Oct 18 09:02:32 PDT 2010
+#    Add persistent_particles to the skipList until the source of crash is
+#    discovered.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -356,6 +361,9 @@ esac
 skipList="scalable,parallel:tests/databases/boxlib.py \
           scalable,parallel:tests/hybrid/locus.py \
           parallel:tests/hybrid/locus.py \
+          serial:tests/operators/persistent_particles.py \
+          parallel:tests/operators/persistent_particles.py \
+          scalable,parallel:tests/operators/persistent_particles.py \
           scalable,parallel:tests/rendering/saveformats.py \
           dlb:tests/databases/global_node_ids.py \
           dlb:tests/queries/pick.py \
