@@ -40,6 +40,43 @@
 #include <DataNode.h>
 
 //
+// Enum conversion methods for LineSamplerAttributes::CoordinateSystem
+//
+
+static const char *CoordinateSystem_strings[] = {
+"Cartesian", "Cylindrical"};
+
+std::string
+LineSamplerAttributes::CoordinateSystem_ToString(LineSamplerAttributes::CoordinateSystem t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return CoordinateSystem_strings[index];
+}
+
+std::string
+LineSamplerAttributes::CoordinateSystem_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return CoordinateSystem_strings[index];
+}
+
+bool
+LineSamplerAttributes::CoordinateSystem_FromString(const std::string &s, LineSamplerAttributes::CoordinateSystem &val)
+{
+    val = LineSamplerAttributes::Cartesian;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == CoordinateSystem_strings[i])
+        {
+            val = (CoordinateSystem)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for LineSamplerAttributes::BeamType
 //
 
@@ -206,6 +243,7 @@ LineSamplerAttributes::ViewDimension_FromString(const std::string &s, LineSample
 
 void LineSamplerAttributes::Init()
 {
+    coordinateSystem = Cylindrical;
     beamType = Parallel;
     beamShape = Line;
     radius = 0.1;
@@ -213,14 +251,15 @@ void LineSamplerAttributes::Init()
     nBeams = 5;
     sampleDistance = 0.1;
     sampleArc = 10;
-    spacing = 5;
+    offset = 5;
     angle = 45;
     origin[0] = 0;
     origin[1] = 0;
     origin[2] = 0;
     beamAxis = Z;
     poloialAngle = 0;
-    poloialTilt = 0;
+    poloialRTilt = 0;
+    poloialZTilt = 0;
     toroialAngle = 0;
     viewDimension = Three;
 
@@ -244,6 +283,7 @@ void LineSamplerAttributes::Init()
 
 void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
 {
+    coordinateSystem = obj.coordinateSystem;
     beamType = obj.beamType;
     beamShape = obj.beamShape;
     radius = obj.radius;
@@ -251,7 +291,7 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     nBeams = obj.nBeams;
     sampleDistance = obj.sampleDistance;
     sampleArc = obj.sampleArc;
-    spacing = obj.spacing;
+    offset = obj.offset;
     angle = obj.angle;
     origin[0] = obj.origin[0];
     origin[1] = obj.origin[1];
@@ -259,7 +299,8 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
 
     beamAxis = obj.beamAxis;
     poloialAngle = obj.poloialAngle;
-    poloialTilt = obj.poloialTilt;
+    poloialRTilt = obj.poloialRTilt;
+    poloialZTilt = obj.poloialZTilt;
     toroialAngle = obj.toroialAngle;
     viewDimension = obj.viewDimension;
 
@@ -424,19 +465,21 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
         origin_equal = (origin[i] == obj.origin[i]);
 
     // Create the return value
-    return ((beamType == obj.beamType) &&
+    return ((coordinateSystem == obj.coordinateSystem) &&
+            (beamType == obj.beamType) &&
             (beamShape == obj.beamShape) &&
             (radius == obj.radius) &&
             (divergence == obj.divergence) &&
             (nBeams == obj.nBeams) &&
             (sampleDistance == obj.sampleDistance) &&
             (sampleArc == obj.sampleArc) &&
-            (spacing == obj.spacing) &&
+            (offset == obj.offset) &&
             (angle == obj.angle) &&
             origin_equal &&
             (beamAxis == obj.beamAxis) &&
             (poloialAngle == obj.poloialAngle) &&
-            (poloialTilt == obj.poloialTilt) &&
+            (poloialRTilt == obj.poloialRTilt) &&
+            (poloialZTilt == obj.poloialZTilt) &&
             (toroialAngle == obj.toroialAngle) &&
             (viewDimension == obj.viewDimension));
 }
@@ -582,21 +625,23 @@ LineSamplerAttributes::NewInstance(bool copy) const
 void
 LineSamplerAttributes::SelectAll()
 {
-    Select(ID_beamType,       (void *)&beamType);
-    Select(ID_beamShape,      (void *)&beamShape);
-    Select(ID_radius,         (void *)&radius);
-    Select(ID_divergence,     (void *)&divergence);
-    Select(ID_nBeams,         (void *)&nBeams);
-    Select(ID_sampleDistance, (void *)&sampleDistance);
-    Select(ID_sampleArc,      (void *)&sampleArc);
-    Select(ID_spacing,        (void *)&spacing);
-    Select(ID_angle,          (void *)&angle);
-    Select(ID_origin,         (void *)origin, 3);
-    Select(ID_beamAxis,       (void *)&beamAxis);
-    Select(ID_poloialAngle,   (void *)&poloialAngle);
-    Select(ID_poloialTilt,    (void *)&poloialTilt);
-    Select(ID_toroialAngle,   (void *)&toroialAngle);
-    Select(ID_viewDimension,  (void *)&viewDimension);
+    Select(ID_coordinateSystem, (void *)&coordinateSystem);
+    Select(ID_beamType,         (void *)&beamType);
+    Select(ID_beamShape,        (void *)&beamShape);
+    Select(ID_radius,           (void *)&radius);
+    Select(ID_divergence,       (void *)&divergence);
+    Select(ID_nBeams,           (void *)&nBeams);
+    Select(ID_sampleDistance,   (void *)&sampleDistance);
+    Select(ID_sampleArc,        (void *)&sampleArc);
+    Select(ID_offset,           (void *)&offset);
+    Select(ID_angle,            (void *)&angle);
+    Select(ID_origin,           (void *)origin, 3);
+    Select(ID_beamAxis,         (void *)&beamAxis);
+    Select(ID_poloialAngle,     (void *)&poloialAngle);
+    Select(ID_poloialRTilt,     (void *)&poloialRTilt);
+    Select(ID_poloialZTilt,     (void *)&poloialZTilt);
+    Select(ID_toroialAngle,     (void *)&toroialAngle);
+    Select(ID_viewDimension,    (void *)&viewDimension);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -628,6 +673,12 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     bool addToParent = false;
     // Create a node for LineSamplerAttributes.
     DataNode *node = new DataNode("LineSamplerAttributes");
+
+    if(completeSave || !FieldsEqual(ID_coordinateSystem, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("coordinateSystem", CoordinateSystem_ToString(coordinateSystem)));
+    }
 
     if(completeSave || !FieldsEqual(ID_beamType, &defaultObject))
     {
@@ -671,10 +722,10 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("sampleArc", sampleArc));
     }
 
-    if(completeSave || !FieldsEqual(ID_spacing, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_offset, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("spacing", spacing));
+        node->AddNode(new DataNode("offset", offset));
     }
 
     if(completeSave || !FieldsEqual(ID_angle, &defaultObject))
@@ -701,10 +752,16 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("poloialAngle", poloialAngle));
     }
 
-    if(completeSave || !FieldsEqual(ID_poloialTilt, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_poloialRTilt, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("poloialTilt", poloialTilt));
+        node->AddNode(new DataNode("poloialRTilt", poloialRTilt));
+    }
+
+    if(completeSave || !FieldsEqual(ID_poloialZTilt, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("poloialZTilt", poloialZTilt));
     }
 
     if(completeSave || !FieldsEqual(ID_toroialAngle, &defaultObject))
@@ -755,6 +812,22 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("coordinateSystem")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetCoordinateSystem(CoordinateSystem(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            CoordinateSystem value;
+            if(CoordinateSystem_FromString(node->AsString(), value))
+                SetCoordinateSystem(value);
+        }
+    }
     if((node = searchNode->GetNode("beamType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -797,8 +870,8 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         SetSampleDistance(node->AsDouble());
     if((node = searchNode->GetNode("sampleArc")) != 0)
         SetSampleArc(node->AsDouble());
-    if((node = searchNode->GetNode("spacing")) != 0)
-        SetSpacing(node->AsDouble());
+    if((node = searchNode->GetNode("offset")) != 0)
+        SetOffset(node->AsDouble());
     if((node = searchNode->GetNode("angle")) != 0)
         SetAngle(node->AsDouble());
     if((node = searchNode->GetNode("origin")) != 0)
@@ -821,8 +894,10 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("poloialAngle")) != 0)
         SetPoloialAngle(node->AsDouble());
-    if((node = searchNode->GetNode("poloialTilt")) != 0)
-        SetPoloialTilt(node->AsDouble());
+    if((node = searchNode->GetNode("poloialRTilt")) != 0)
+        SetPoloialRTilt(node->AsDouble());
+    if((node = searchNode->GetNode("poloialZTilt")) != 0)
+        SetPoloialZTilt(node->AsDouble());
     if((node = searchNode->GetNode("toroialAngle")) != 0)
         SetToroialAngle(node->AsDouble());
     if((node = searchNode->GetNode("viewDimension")) != 0)
@@ -846,6 +921,13 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+LineSamplerAttributes::SetCoordinateSystem(LineSamplerAttributes::CoordinateSystem coordinateSystem_)
+{
+    coordinateSystem = coordinateSystem_;
+    Select(ID_coordinateSystem, (void *)&coordinateSystem);
+}
 
 void
 LineSamplerAttributes::SetBeamType(LineSamplerAttributes::BeamType beamType_)
@@ -897,10 +979,10 @@ LineSamplerAttributes::SetSampleArc(double sampleArc_)
 }
 
 void
-LineSamplerAttributes::SetSpacing(double spacing_)
+LineSamplerAttributes::SetOffset(double offset_)
 {
-    spacing = spacing_;
-    Select(ID_spacing, (void *)&spacing);
+    offset = offset_;
+    Select(ID_offset, (void *)&offset);
 }
 
 void
@@ -934,10 +1016,17 @@ LineSamplerAttributes::SetPoloialAngle(double poloialAngle_)
 }
 
 void
-LineSamplerAttributes::SetPoloialTilt(double poloialTilt_)
+LineSamplerAttributes::SetPoloialRTilt(double poloialRTilt_)
 {
-    poloialTilt = poloialTilt_;
-    Select(ID_poloialTilt, (void *)&poloialTilt);
+    poloialRTilt = poloialRTilt_;
+    Select(ID_poloialRTilt, (void *)&poloialRTilt);
+}
+
+void
+LineSamplerAttributes::SetPoloialZTilt(double poloialZTilt_)
+{
+    poloialZTilt = poloialZTilt_;
+    Select(ID_poloialZTilt, (void *)&poloialZTilt);
 }
 
 void
@@ -957,6 +1046,12 @@ LineSamplerAttributes::SetViewDimension(LineSamplerAttributes::ViewDimension vie
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+LineSamplerAttributes::CoordinateSystem
+LineSamplerAttributes::GetCoordinateSystem() const
+{
+    return CoordinateSystem(coordinateSystem);
+}
 
 LineSamplerAttributes::BeamType
 LineSamplerAttributes::GetBeamType() const
@@ -1001,9 +1096,9 @@ LineSamplerAttributes::GetSampleArc() const
 }
 
 double
-LineSamplerAttributes::GetSpacing() const
+LineSamplerAttributes::GetOffset() const
 {
-    return spacing;
+    return offset;
 }
 
 double
@@ -1037,9 +1132,15 @@ LineSamplerAttributes::GetPoloialAngle() const
 }
 
 double
-LineSamplerAttributes::GetPoloialTilt() const
+LineSamplerAttributes::GetPoloialRTilt() const
 {
-    return poloialTilt;
+    return poloialRTilt;
+}
+
+double
+LineSamplerAttributes::GetPoloialZTilt() const
+{
+    return poloialZTilt;
 }
 
 double
@@ -1088,21 +1189,23 @@ LineSamplerAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_beamType:       return "beamType";
-    case ID_beamShape:      return "beamShape";
-    case ID_radius:         return "radius";
-    case ID_divergence:     return "divergence";
-    case ID_nBeams:         return "nBeams";
-    case ID_sampleDistance: return "sampleDistance";
-    case ID_sampleArc:      return "sampleArc";
-    case ID_spacing:        return "spacing";
-    case ID_angle:          return "angle";
-    case ID_origin:         return "origin";
-    case ID_beamAxis:       return "beamAxis";
-    case ID_poloialAngle:   return "poloialAngle";
-    case ID_poloialTilt:    return "poloialTilt";
-    case ID_toroialAngle:   return "toroialAngle";
-    case ID_viewDimension:  return "viewDimension";
+    case ID_coordinateSystem: return "coordinateSystem";
+    case ID_beamType:         return "beamType";
+    case ID_beamShape:        return "beamShape";
+    case ID_radius:           return "radius";
+    case ID_divergence:       return "divergence";
+    case ID_nBeams:           return "nBeams";
+    case ID_sampleDistance:   return "sampleDistance";
+    case ID_sampleArc:        return "sampleArc";
+    case ID_offset:           return "offset";
+    case ID_angle:            return "angle";
+    case ID_origin:           return "origin";
+    case ID_beamAxis:         return "beamAxis";
+    case ID_poloialAngle:     return "poloialAngle";
+    case ID_poloialRTilt:     return "poloialRTilt";
+    case ID_poloialZTilt:     return "poloialZTilt";
+    case ID_toroialAngle:     return "toroialAngle";
+    case ID_viewDimension:    return "viewDimension";
     default:  return "invalid index";
     }
 }
@@ -1127,21 +1230,23 @@ LineSamplerAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_beamType:       return FieldType_enum;
-    case ID_beamShape:      return FieldType_enum;
-    case ID_radius:         return FieldType_double;
-    case ID_divergence:     return FieldType_double;
-    case ID_nBeams:         return FieldType_int;
-    case ID_sampleDistance: return FieldType_double;
-    case ID_sampleArc:      return FieldType_double;
-    case ID_spacing:        return FieldType_double;
-    case ID_angle:          return FieldType_double;
-    case ID_origin:         return FieldType_doubleArray;
-    case ID_beamAxis:       return FieldType_enum;
-    case ID_poloialAngle:   return FieldType_double;
-    case ID_poloialTilt:    return FieldType_double;
-    case ID_toroialAngle:   return FieldType_double;
-    case ID_viewDimension:  return FieldType_enum;
+    case ID_coordinateSystem: return FieldType_enum;
+    case ID_beamType:         return FieldType_enum;
+    case ID_beamShape:        return FieldType_enum;
+    case ID_radius:           return FieldType_double;
+    case ID_divergence:       return FieldType_double;
+    case ID_nBeams:           return FieldType_int;
+    case ID_sampleDistance:   return FieldType_double;
+    case ID_sampleArc:        return FieldType_double;
+    case ID_offset:           return FieldType_double;
+    case ID_angle:            return FieldType_double;
+    case ID_origin:           return FieldType_doubleArray;
+    case ID_beamAxis:         return FieldType_enum;
+    case ID_poloialAngle:     return FieldType_double;
+    case ID_poloialRTilt:     return FieldType_double;
+    case ID_poloialZTilt:     return FieldType_double;
+    case ID_toroialAngle:     return FieldType_double;
+    case ID_viewDimension:    return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -1166,21 +1271,23 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_beamType:       return "enum";
-    case ID_beamShape:      return "enum";
-    case ID_radius:         return "double";
-    case ID_divergence:     return "double";
-    case ID_nBeams:         return "int";
-    case ID_sampleDistance: return "double";
-    case ID_sampleArc:      return "double";
-    case ID_spacing:        return "double";
-    case ID_angle:          return "double";
-    case ID_origin:         return "doubleArray";
-    case ID_beamAxis:       return "enum";
-    case ID_poloialAngle:   return "double";
-    case ID_poloialTilt:    return "double";
-    case ID_toroialAngle:   return "double";
-    case ID_viewDimension:  return "enum";
+    case ID_coordinateSystem: return "enum";
+    case ID_beamType:         return "enum";
+    case ID_beamShape:        return "enum";
+    case ID_radius:           return "double";
+    case ID_divergence:       return "double";
+    case ID_nBeams:           return "int";
+    case ID_sampleDistance:   return "double";
+    case ID_sampleArc:        return "double";
+    case ID_offset:           return "double";
+    case ID_angle:            return "double";
+    case ID_origin:           return "doubleArray";
+    case ID_beamAxis:         return "enum";
+    case ID_poloialAngle:     return "double";
+    case ID_poloialRTilt:     return "double";
+    case ID_poloialZTilt:     return "double";
+    case ID_toroialAngle:     return "double";
+    case ID_viewDimension:    return "enum";
     default:  return "invalid index";
     }
 }
@@ -1207,6 +1314,11 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_coordinateSystem:
+        {  // new scope
+        retval = (coordinateSystem == obj.coordinateSystem);
+        }
+        break;
     case ID_beamType:
         {  // new scope
         retval = (beamType == obj.beamType);
@@ -1242,9 +1354,9 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (sampleArc == obj.sampleArc);
         }
         break;
-    case ID_spacing:
+    case ID_offset:
         {  // new scope
-        retval = (spacing == obj.spacing);
+        retval = (offset == obj.offset);
         }
         break;
     case ID_angle:
@@ -1272,9 +1384,14 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (poloialAngle == obj.poloialAngle);
         }
         break;
-    case ID_poloialTilt:
+    case ID_poloialRTilt:
         {  // new scope
-        retval = (poloialTilt == obj.poloialTilt);
+        retval = (poloialRTilt == obj.poloialRTilt);
+        }
+        break;
+    case ID_poloialZTilt:
+        {  // new scope
+        retval = (poloialZTilt == obj.poloialZTilt);
         }
         break;
     case ID_toroialAngle:

@@ -6,6 +6,10 @@
       -g
     </CXXFLAGS>
     <Attribute name="LineSamplerAttributes" purpose="This class contains attributes for the line sampler operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="CoordinateSystem">
+        Cartesian
+        Cylindrical
+      </Enum>
       <Enum name="BeamType">
         Parallel
         Fan
@@ -24,6 +28,9 @@
         Two
         Three
       </Enum>
+      <Field name="coordinateSystem" label="Coordinate Systems" type="enum" subtype="CoordinateSystem">
+        Cylindrical
+      </Field>
       <Field name="beamType" label="Beam type" type="enum" subtype="BeamType">
         Parallel
       </Field>
@@ -45,7 +52,7 @@
       <Field name="sampleArc" label="Radial sample arc (degrees)" type="double">
         10.0
       </Field>
-      <Field name="spacing" label="Parallel Spacing" type="double">
+      <Field name="offset" label="Parallel beam offset" type="double">
         5.000000
       </Field>
       <Field name="angle" label="Fan Angle (degrees)" type="double">
@@ -62,7 +69,10 @@
       <Field name="poloialAngle" label="Poloidal angle (degrees)" type="double">
         0.000000
       </Field>
-      <Field name="poloialTilt" label="Poloidal tilt (degrees)" type="double">
+      <Field name="poloialRTilt" label="Poloidal plane R-tilt (degrees)" type="double">
+        0.000000
+      </Field>
+      <Field name="poloialZTilt" label="Poloidal plane Z-tilt (degrees)" type="double">
         0.000000
       </Field>
       <Field name="toroialAngle" label="Toroidal angle (degrees)" type="double">

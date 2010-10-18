@@ -58,6 +58,7 @@
 #include <vtkPolyLine.h>
 #include <vtkQuad.h>
 #include <vtkTransform.h>
+#include <vtkTransformFilter.h>
 
 #include <vtkVisItProbeFilter.h>
 
@@ -166,20 +167,23 @@ vtkDataSet *
 avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
     vtkDataSet *out_ds = NULL;
-    vtkDataSet *outDS = NULL;
 
-    vtkAppendPolyData *appendPolyData = vtkAppendPolyData::New();
     vtkAppendFilter *appendFilter = vtkAppendFilter::New();
 
+    vtkTransformFilter *transformFilter = vtkTransformFilter::New();
+    vtkTransform *transform = vtkTransform::New();
+    transform->PostMultiply();
 
-    bool parallel = (atts.GetBeamType() == LineSamplerAttributes::Parallel );
+    vtkVisItProbeFilter *probeFilter = vtkVisItProbeFilter::New();
+    probeFilter->SetSource( in_ds );
 
-    double beamSpacing = atts.GetSpacing();
-    double beamAngle = atts.GetAngle();
+    double offset = atts.GetOffset();
+    double angle = atts.GetAngle();
     int nBeams = atts.GetNBeams();
     double *origin = atts.GetOrigin();
     double poloidalAngle = atts.GetPoloialAngle();
-    double tilt = atts.GetPoloialTilt();
+    double rTilt = atts.GetPoloialRTilt();
+    double zTilt = atts.GetPoloialZTilt();
     double toroidalAngle = atts.GetToroialAngle();
 
     double radius = atts.GetRadius();
@@ -187,67 +191,99 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
     avtVector beamDirection;
-    avtVector beamSpacingDirection;
 
+    // Set the beam direction
     if( atts.GetBeamAxis() == LineSamplerAttributes::R )
     {
       beamDirection = avtVector(-1, 0, 0 );
-      beamSpacingDirection = avtVector( 0, 0, beamSpacing );
     }
     else // if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
     {
       beamDirection = avtVector(0, 0, -1);
-      beamSpacingDirection = avtVector( beamSpacing, 0, 0 );
     }
 
-    double startBeamAngle = -poloidalAngle;
-    double dAngle = beamAngle / (double) (nBeams - 1);
+    avtVector beamOffset(0,0,0);
+    double beamAngle(0);
 
-    startBeamAngle = 0;
+    // For a parallel set of beams set the offset between beams
+    if( atts.GetBeamType() == LineSamplerAttributes::Parallel )
+    {
+      // When the beam is in the R direction we also need to include the
+      // rTilt into the offset otherwise it is a rotation about itself.
+      if( atts.GetBeamAxis() == LineSamplerAttributes::R )
+      {
+        beamOffset = avtVector( 0,
+                                offset*sin(2.0*M_PI*rTilt/360.0),
+                                offset*cos(2.0*M_PI*rTilt/360.0) );
+
+        rTilt = 0;
+      }
+      // When the beam is in the Z direction we also need to include the
+      // zTilt into the offset otherwise it is a rotation about itself.
+      else // if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
+      {
+        beamOffset = avtVector( offset*cos(2.0*M_PI*zTilt/360.0),
+                                offset*sin(2.0*M_PI*zTilt/360.0),
+                                0 );
+
+        zTilt = 0;
+      }
+    }
+
+    // For a fan beam set set the angle between beams
+    else if( atts.GetBeamType() == LineSamplerAttributes::Fan )
+    {
+      beamAngle = angle / (double) (nBeams - 1);
+    }
 
     // Get the indexing offset so that it is easy to calculate the
-    // beam locaation based on a 0 to nBeans loop.
-    double offset;
+    // beam location based on a 0 to nBeans loop.
+    double indexOffset;
 
     // Even number of beams
     if( nBeams % 2 == 1 )
-      offset = nBeams / 2.0 - 0.5;
+      indexOffset = nBeams / 2.0 - 0.5;
     else
-      offset = nBeams / 2.0 - 1.0;
+      indexOffset = nBeams / 2.0 - 1.0;
 
     // Loop through each beam.
     for( int b=0; b<nBeams; ++b ) 
     {
+      // Inital start point is the origin.
       avtVector startPoint = avtVector( 0, 0,  0 );
       avtVector stopPoint;
       avtVector normal;
       
+      // Stop point based on the beam direction With the normal being
+      // at a 45 degree angle so that it can be rotated appropriately.
       if( atts.GetBeamAxis() == LineSamplerAttributes::R )
       {
-        stopPoint  = avtVector( -1, 0, 0 );
+        stopPoint = avtVector( -1, 0, 0 );
         normal = avtVector( 0, 1, 1 );
       }
       
       else //if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
       {
-        stopPoint  = avtVector( 0, 0, -1 );     
+        stopPoint = avtVector( 0, 0, -1 );     
         normal = avtVector( 1, 1, 0 );
       }
 
       normal.normalize();
 
+      // Initial translation based on the user origin for the central
+      // beam.
       avtVector translate( origin[0], origin[1], origin[2] );
       double poloidalBeamAngle = 0;
 
-      if( parallel )
-        translate += ((double) (b) - offset) * beamSpacingDirection;
-      else //if( fan )
-        poloidalBeamAngle = ((double) (b) - offset) * dAngle;
+      // For a parallel beam set add the offset to the next beam.
+      if( atts.GetBeamType() == LineSamplerAttributes::Parallel )
+        translate += ((double) (b) - indexOffset) * beamOffset;
+
+      // For a fan beam set, set the angle to the next beam.
+      else //if( atts.GetBeamType() == LineSamplerAttributes::Fan )
+        poloidalBeamAngle = ((double) (b) - indexOffset) * beamAngle;
 
       // Now apply the transformations.
-      vtkTransform *transform = vtkTransform::New();
-      transform->PostMultiply();
-
 
       // Set up the transform for the normal
       transform->Identity();
@@ -256,9 +292,13 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
       if( poloidalBeamAngle || poloidalAngle )
         transform->RotateY( poloidalBeamAngle + poloidalAngle );
 
-      // Poloidal plane tilting.
-      if( tilt )
-        transform->RotateX( tilt );
+      // Poloidal plane x axis tilting.
+      if( rTilt )
+        transform->RotateX( rTilt );
+
+      // Poloidal plane z axis tilting.
+      if( zTilt )
+        transform->RotateZ( zTilt );
 
       // Toroidal rotation.
       if( toroidalAngle )
@@ -268,7 +308,9 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
       applyTransform( transform, normal );
 
         
-      // Transform the start and stop points
+      // Transform the start and stop points and check the extents so
+      // that the beam goes from the start point through the dataset
+      // appropriately.
 
       // Translate to the correct location
       if( translate.length() > 0 )
@@ -276,7 +318,6 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         transform->Identity();
         transform->Translate( translate.x, translate.y, translate.z );
 
-        // Transform the start point and stop point
         applyTransform( transform, startPoint );
         applyTransform( transform, stopPoint );      
 
@@ -297,12 +338,26 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         checkExtents( startPoint, stopPoint );
       }
 
-      // Poloidal plane tilting.
-      if( tilt ) 
+      // Poloidal plane rTilting.
+      if( rTilt )
       {
         transform->Identity();
         transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
-        transform->RotateX( tilt );
+        transform->RotateX( rTilt );
+        transform->Translate( startPoint.x, startPoint.y, startPoint.z );
+
+        applyTransform( transform, startPoint );
+        applyTransform( transform, stopPoint );
+          
+        checkExtents( startPoint, stopPoint );
+      }
+
+      // Poloidal plane rTilting.
+      if( zTilt ) 
+      {
+        transform->Identity();
+        transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
+        transform->RotateZ( zTilt );
         transform->Translate( startPoint.x, startPoint.y, startPoint.z );
 
         applyTransform( transform, startPoint );
@@ -324,66 +379,118 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         // original plane.
       }
 
-      transform->Delete();
-
+      // Create the appropriate goemetry.
       if( atts.GetBeamShape() == LineSamplerAttributes::Line )
-        createLine( appendPolyData, startPoint, stopPoint );
+      {
+        out_ds = (vtkPolyData *) createLine( startPoint, stopPoint );
+      }
       else if( atts.GetBeamShape() == LineSamplerAttributes::Cylinder )
-        createCone( appendFilter, startPoint, stopPoint, normal, radius, 0 );
+      {
+        out_ds = (vtkUnstructuredGrid *) 
+          createCone( startPoint, stopPoint, normal, radius, 0 );
+      }
       else if( atts.GetBeamShape() == LineSamplerAttributes::Cone )
-        createCone( appendFilter, startPoint, stopPoint, normal, 0, divergence );
+      {
+        out_ds = (vtkUnstructuredGrid *)
+          createCone( startPoint, stopPoint, normal, 0, divergence );
+      }
+
+      // Do the sampling
+      probeFilter->SetInput( out_ds );
+      probeFilter->Update();
+
+      out_ds = probeFilter->GetOutput();
+
+      // If the user has elected to display the geometry in the Phi=0
+      // plane then back out the toroidal rotation.
+      if( atts.GetViewDimension() == LineSamplerAttributes::Two )
+      {
+        if( toroidalAngle )
+        {
+          transform->Identity();
+
+          // Back out the toroidal transform.
+          transform->RotateZ( -toroidalAngle );
+
+          applyTransform( transform, startPoint );
+          
+          transformFilter->SetTransform( transform );
+          transformFilter->SetInput( out_ds );
+          
+          out_ds = transformFilter->GetOutput();
+          out_ds->Update();
+          out_ds->Register(NULL);
+          out_ds->SetSource(NULL);
+        }
+      }
+
+      // If the user has elected to display the geometry as a 1D plot
+      // then back out all of the transformations and put it into the
+      // XY plane.
+      else if( atts.GetViewDimension() == LineSamplerAttributes::One )
+      {
+        transform->Identity();
+
+        // Back out the toroidal transform.
+        if( toroidalAngle )
+          transform->RotateZ( -toroidalAngle );
+
+        // Get the startPoint now that it is back Phi=0 plane.
+        applyTransform( transform, startPoint );
+
+        // Back out the translation.
+        if( startPoint.length() > 0 )
+          transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
+
+        // Back out the zTilt plane transform.
+        if( zTilt )
+          transform->RotateZ( -zTilt );
+
+        // Back out the rTilt plane transform.
+        if( rTilt )
+          transform->RotateX( -rTilt );
+
+        // Back out the poloidal transform.
+        if( poloidalBeamAngle || poloidalAngle )
+          transform->RotateY( -(poloidalBeamAngle + poloidalAngle) );
+
+        // Rotate to be along the x axis.
+        transform->RotateY( -90 );
+        // translate so each beam can be seen.
+        transform->Translate( 0, (double) b*0.1, 0 );
+        
+        transformFilter->SetTransform( transform );
+        transformFilter->SetInput( out_ds );
+
+        out_ds = transformFilter->GetOutput();
+        out_ds->Update();
+      }
+
+      out_ds->Register(NULL);
+      out_ds->SetSource(NULL);
+
+      // Merge all of the datasets together
+      appendFilter->AddInput( out_ds );
     }
 
-    if( atts.GetBeamShape() == LineSamplerAttributes::Line )
-    {
-      appendPolyData->Update();
-      vtkPolyData *outPD = appendPolyData->GetOutput();
-      outPD->Register(NULL);
-      outPD->SetSource(NULL);
-      appendPolyData->Delete();
-
-      outDS = outPD;
-    }
-    else //if( atts.GetBeamShape() == LineSamplerAttributes::Cylinder ||
-         //    atts.GetBeamShape() == LineSamplerAttributes::Cone )
-
-    {
-      appendFilter->Update();
-      vtkUnstructuredGrid *outUG = appendFilter->GetOutput();
-
-      outUG->Register(NULL);
-      outUG->SetSource(NULL);
-      appendFilter->Delete();
-
-      outDS = outUG;
-    }
-
-    vtkVisItProbeFilter *probeFilter = vtkVisItProbeFilter::New();
-
-    probeFilter->SetSource( in_ds );
-    probeFilter->SetInput( outDS );
-    probeFilter->Update();
-
-    out_ds = probeFilter->GetOutput();
-
+    // Get the appended datasets.
+    appendFilter->Update();
+    out_ds = appendFilter->GetOutput();
     out_ds->Register(NULL);
     out_ds->SetSource(NULL);
 
+    // Nuke all the vtk filters
+    appendFilter->Delete();    
     probeFilter->Delete();
 
-    if( atts.GetViewDimension() == LineSamplerAttributes::Two )
-    {
-    }
-    else if( atts.GetViewDimension() == LineSamplerAttributes::One )
-    {
-    }
+    transform->Delete();
+    transformFilter->Delete();
 
     return out_ds;
 }
 
-void
-avtLineSamplerFilter::createLine( vtkAlgorithm *vtkAlgo,
-                                  avtVector startPoint,
+vtkPolyData*
+avtLineSamplerFilter::createLine( avtVector startPoint,
                                   avtVector stopPoint )
 {
   avtVector axis = (stopPoint - startPoint);
@@ -423,21 +530,21 @@ avtLineSamplerFilter::createLine( vtkAlgorithm *vtkAlgo,
   }
          
   // Create a new VTK polyline.
-  vtkPolyData *pd = vtkPolyData::New();
-  pd->SetPoints(points);
-  pd->SetLines(cells);
+  vtkPolyData *polydata = vtkPolyData::New();
+  polydata->SetPoints(points);
+  polydata->SetLines(cells);
 //scalars->SetName("colorVar");
-//pd->GetPointData()->SetScalars(scalars);
-  ((vtkAppendPolyData*) vtkAlgo)->AddInput(pd);
-  
+//polydata->GetPointData()->SetScalars(scalars);
+
   points->Delete();
   cells->Delete();
 //scalars->Delete();
+
+  return polydata;
 }
 
-void
-avtLineSamplerFilter::createCone( vtkAlgorithm *vtkAlgo,
-                                  avtVector startPoint,
+vtkUnstructuredGrid *
+avtLineSamplerFilter::createCone( avtVector startPoint,
                                   avtVector stopPoint,
                                   avtVector normal,
                                   double radius,
@@ -460,6 +567,7 @@ avtLineSamplerFilter::createCone( vtkAlgorithm *vtkAlgo,
 
   // Create an unstructured quad for the island surface.
   vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
+
   vtkQuad *quad = vtkQuad::New();
   vtkPoints *points = vtkPoints::New();
 //  vtkFloatArray *scalars = vtkFloatArray::New();
@@ -545,11 +653,11 @@ avtLineSamplerFilter::createCone( vtkAlgorithm *vtkAlgo,
 //  scalars->SetName("colorVar");
 //  grid->GetPointData()->SetScalars(scalars);
 
-  ((vtkAppendFilter*) vtkAlgo)->AddInput(grid);
-    
   quad->Delete();
   points->Delete();
 //  scalars->Delete();
+
+  return grid;
 }
 
 avtVector
@@ -607,61 +715,55 @@ avtLineSamplerFilter::checkExtents( avtVector &startPoint,
   avtVector axis = stopPoint - startPoint;
   axis.normalize();
 
-  // Make sure the bounds of the beam are correct.
-  if( atts.GetBeamType() == LineSamplerAttributes::Parallel )
+  if( atts.GetBeamAxis() == LineSamplerAttributes::R )
   {
-    if( atts.GetBeamAxis() == LineSamplerAttributes::R )
-    {
-      // Find the intersection of the beam with the R = Rmax plane.
+    double Rmin;
+    // Find the intersection of the beam with the X = Xmin plane.
+    if( atts.GetCoordinateSystem() == LineSamplerAttributes::Cartesian )
+      Rmin = extents[0];
+    // Find the intersection of the beam with the R = 0 plane.
+    else if( atts.GetCoordinateSystem() == LineSamplerAttributes::Cylindrical)
+      Rmin = 0;
+    
+    // Find the intersection of the beam with the plane.
+    stopPoint = ProjectPointOnPlane( avtVector( Rmin, 0, 0 ),
+                                     avtVector( 1, 0, 0 ),
+                                     startPoint,
+                                     axis );
+  }
+
+  else //if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
+  {
+    // Find the intersection of the beam with the Z = z_min plane.
+    stopPoint = ProjectPointOnPlane( avtVector( 0, 0, extents[4] ),
+                                     avtVector( 0, 0, -1 ),
+                                     startPoint,
+                                     axis );
+  }
+
+//   // Make sure the bounds of the beam are correct.
+//   if( atts.GetBeamType() == LineSamplerAttributes::Parallel )
+//   {
+//     if( atts.GetBeamAxis() == LineSamplerAttributes::R )
+//     {
+//       // Find the intersection of the beam with the R = Rmax plane.
 //       if( atts.GetBeamShape() == LineSamplerAttributes::Line ||
 //        atts.GetBeamShape() == LineSamplerAttributes::Cylinder )
 //      startPoint = ProjectPointOnPlane( avtVector( extents[1], 0, 0 ),
 //                                        avtVector( 1, 0, 0 ),
 //                                        startPoint,
 //                                        axis );
+//     }
 
-      // Find the intersection of the beam with the R = 0 plane.
-      stopPoint = ProjectPointOnPlane( avtVector( 0, 0, 0 ),
-                                       avtVector( 1, 0, 0 ),
-                                       startPoint,
-                                       axis );
-    }
-
-    else //if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
-    {
-      // Find the intersection of the beam with the Z = Zmax plane.
+//     else //if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
+//     {
+//       // Find the intersection of the beam with the Z = Zmax plane.
 //       if( atts.GetBeamShape() == LineSamplerAttributes::Line ||
 //        atts.GetBeamShape() == LineSamplerAttributes::Cylinder )
 //      startPoint = ProjectPointOnPlane( avtVector( 0, 0, extents[5] ),
-//                                        avtVector( 0, 0, -1 ),
+//                                        avtVector( 0, 0, 1 ),
 //                                        startPoint,
 //                                        axis );
-
-      // Find the intersection of the beam with the Z = Zmin plane.
-      stopPoint = ProjectPointOnPlane( avtVector( 0, 0, extents[4] ),
-                                       avtVector( 0, 0, 1 ),
-                                       startPoint,
-                                       axis );
-    }
-  }
-  else //if( atts.GetBeamType() == LineSamplerAttributes::Fan )
-  {
-    if( atts.GetBeamAxis() == LineSamplerAttributes::R )
-    {
-      // Find the intersection of the beam with the R = 0 plane.
-      stopPoint = ProjectPointOnPlane( avtVector( 0, 0, 0 ),
-                                       avtVector( 1, 0, 0 ),
-                                       startPoint,
-                                       axis );
-    }
-
-    else //if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
-    {
-      // Find the intersection of the beam with the Z = z_min plane.
-      stopPoint = ProjectPointOnPlane( avtVector( 0, 0, extents[4] ),
-                                       avtVector( 0, 0, -1 ),
-                                       startPoint,
-                                       axis );
-    }
-  }
+//     }
+//   }
 }
