@@ -47,9 +47,10 @@
 #include <avtPluginDataTreeIterator.h>
 #include <LineSamplerAttributes.h>
 
-class vtkAlgorithm;
 class vtkTransform;
 class vtkDataSet;
+class vtkPolyData;
+class vtkUnstructuredGrid;
 
 
 // ****************************************************************************
@@ -83,25 +84,23 @@ class avtLineSamplerFilter : public avtPluginDataTreeIterator
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
 
-    virtual void createLine( vtkAlgorithm *vtkAlgo,
-                             avtVector startPoint,
-                             avtVector stopPoint );
+    virtual vtkPolyData *createLine( avtVector startPoint,
+                                     avtVector stopPoint );
   
-    virtual void createCone( vtkAlgorithm *vtkAlgo,
-                             avtVector startPoint,
-                             avtVector stopPoint,
-                             avtVector normal,
-                             double radius,
-                             double divergence );
+    virtual vtkUnstructuredGrid *createCone( avtVector startPoint,
+                                             avtVector stopPoint,
+                                             avtVector normal,
+                                             double radius,
+                                             double divergence );
 
     avtVector ProjectPointOnPlane( avtVector planePoint,
                                    avtVector planeNormal,
                                    avtVector point,
                                    avtVector direction );
 
-  void applyTransform( vtkTransform* transform, avtVector &point );
+    void applyTransform( vtkTransform* transform, avtVector &point );
 
-  void checkExtents( avtVector &startPoint, avtVector &stopPoint );
+    void checkExtents( avtVector &startPoint, avtVector &stopPoint );
 };
 
 #endif

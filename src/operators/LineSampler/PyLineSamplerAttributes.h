@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LINESAMPLERATTRIBUTES_NMETH 32
+#define LINESAMPLERATTRIBUTES_NMETH 36
 void           PyLineSamplerAttributes_StartUp(LineSamplerAttributes *subj, void *data);
 void           PyLineSamplerAttributes_CloseDown();
 PyMethodDef *  PyLineSamplerAttributes_GetMethodTable(int *nMethods);

@@ -86,6 +86,7 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
+    void coordinateSystemChanged(int val);
     void beamTypeChanged(int val);
     void beamShapeChanged(int val);
     void radiusProcessText();
@@ -93,15 +94,18 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void nBeamsProcessText();
     void sampleDistanceProcessText();
     void sampleArcProcessText();
-    void spacingProcessText();
+    void offsetProcessText();
     void angleProcessText();
     void originProcessText();
     void beamAxisChanged(int val);
     void poloialAngleProcessText();
-    void poloialTiltProcessText();
+    void poloialRTiltProcessText();
+    void poloialZTiltProcessText();
     void toroialAngleProcessText();
     void viewDimensionChanged(int val);
   private:
+    QWidget      *coordinateSystem;
+    QButtonGroup *coordinateSystemButtonGroup;
     QWidget      *beamType;
     QButtonGroup *beamTypeButtonGroup;
     QWidget      *beamShape;
@@ -111,16 +115,18 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLineEdit *nBeams;
     QLineEdit *sampleDistance;
     QLineEdit *sampleArc;
-    QLineEdit *spacing;
+    QLineEdit *offset;
     QLineEdit *angle;
     QLineEdit *origin;
     QWidget      *beamAxis;
     QButtonGroup *beamAxisButtonGroup;
     QLineEdit *poloialAngle;
-    QLineEdit *poloialTilt;
+    QLineEdit *poloialRTilt;
+    QLineEdit *poloialZTilt;
     QLineEdit *toroialAngle;
     QWidget      *viewDimension;
     QButtonGroup *viewDimensionButtonGroup;
+    QLabel *coordinateSystemLabel;
     QLabel *beamTypeLabel;
     QLabel *beamShapeLabel;
     QLabel *radiusLabel;
@@ -128,12 +134,13 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLabel *nBeamsLabel;
     QLabel *sampleDistanceLabel;
     QLabel *sampleArcLabel;
-    QLabel *spacingLabel;
+    QLabel *offsetLabel;
     QLabel *angleLabel;
     QLabel *originLabel;
     QLabel *beamAxisLabel;
     QLabel *poloialAngleLabel;
-    QLabel *poloialTiltLabel;
+    QLabel *poloialRTiltLabel;
+    QLabel *poloialZTiltLabel;
     QLabel *toroialAngleLabel;
     QLabel *viewDimensionLabel;
 

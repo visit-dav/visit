@@ -59,9 +59,12 @@ import llnl.visit.Plugin;
 
 public class LineSamplerAttributes extends AttributeSubject implements Plugin
 {
-    private static int LineSamplerAttributes_numAdditionalAtts = 15;
+    private static int LineSamplerAttributes_numAdditionalAtts = 17;
 
     // Enum values
+    public final static int COORDINATESYSTEM_CARTESIAN = 0;
+    public final static int COORDINATESYSTEM_CYLINDRICAL = 1;
+
     public final static int BEAMTYPE_PARALLEL = 0;
     public final static int BEAMTYPE_FAN = 1;
 
@@ -81,6 +84,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     {
         super(LineSamplerAttributes_numAdditionalAtts);
 
+        coordinateSystem = COORDINATESYSTEM_CYLINDRICAL;
         beamType = BEAMTYPE_PARALLEL;
         beamShape = BEAMSHAPE_LINE;
         radius = 0.1;
@@ -88,7 +92,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         nBeams = 5;
         sampleDistance = 0.1;
         sampleArc = 10;
-        spacing = 5;
+        offset = 5;
         angle = 45;
         origin = new double[3];
         origin[0] = 0;
@@ -96,7 +100,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         origin[2] = 0;
         beamAxis = BEAMAXIS_Z;
         poloialAngle = 0;
-        poloialTilt = 0;
+        poloialRTilt = 0;
+        poloialZTilt = 0;
         toroialAngle = 0;
         viewDimension = VIEWDIMENSION_THREE;
     }
@@ -105,6 +110,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     {
         super(LineSamplerAttributes_numAdditionalAtts + nMoreFields);
 
+        coordinateSystem = COORDINATESYSTEM_CYLINDRICAL;
         beamType = BEAMTYPE_PARALLEL;
         beamShape = BEAMSHAPE_LINE;
         radius = 0.1;
@@ -112,7 +118,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         nBeams = 5;
         sampleDistance = 0.1;
         sampleArc = 10;
-        spacing = 5;
+        offset = 5;
         angle = 45;
         origin = new double[3];
         origin[0] = 0;
@@ -120,7 +126,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         origin[2] = 0;
         beamAxis = BEAMAXIS_Z;
         poloialAngle = 0;
-        poloialTilt = 0;
+        poloialRTilt = 0;
+        poloialZTilt = 0;
         toroialAngle = 0;
         viewDimension = VIEWDIMENSION_THREE;
     }
@@ -131,6 +138,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
 
         int i;
 
+        coordinateSystem = obj.coordinateSystem;
         beamType = obj.beamType;
         beamShape = obj.beamShape;
         radius = obj.radius;
@@ -138,7 +146,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         nBeams = obj.nBeams;
         sampleDistance = obj.sampleDistance;
         sampleArc = obj.sampleArc;
-        spacing = obj.spacing;
+        offset = obj.offset;
         angle = obj.angle;
         origin = new double[3];
         origin[0] = obj.origin[0];
@@ -147,7 +155,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
 
         beamAxis = obj.beamAxis;
         poloialAngle = obj.poloialAngle;
-        poloialTilt = obj.poloialTilt;
+        poloialRTilt = obj.poloialRTilt;
+        poloialZTilt = obj.poloialZTilt;
         toroialAngle = obj.toroialAngle;
         viewDimension = obj.viewDimension;
 
@@ -174,19 +183,21 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             origin_equal = (origin[i] == obj.origin[i]);
 
         // Create the return value
-        return ((beamType == obj.beamType) &&
+        return ((coordinateSystem == obj.coordinateSystem) &&
+                (beamType == obj.beamType) &&
                 (beamShape == obj.beamShape) &&
                 (radius == obj.radius) &&
                 (divergence == obj.divergence) &&
                 (nBeams == obj.nBeams) &&
                 (sampleDistance == obj.sampleDistance) &&
                 (sampleArc == obj.sampleArc) &&
-                (spacing == obj.spacing) &&
+                (offset == obj.offset) &&
                 (angle == obj.angle) &&
                 origin_equal &&
                 (beamAxis == obj.beamAxis) &&
                 (poloialAngle == obj.poloialAngle) &&
-                (poloialTilt == obj.poloialTilt) &&
+                (poloialRTilt == obj.poloialRTilt) &&
+                (poloialZTilt == obj.poloialZTilt) &&
                 (toroialAngle == obj.toroialAngle) &&
                 (viewDimension == obj.viewDimension));
     }
@@ -195,58 +206,64 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
+    public void SetCoordinateSystem(int coordinateSystem_)
+    {
+        coordinateSystem = coordinateSystem_;
+        Select(0);
+    }
+
     public void SetBeamType(int beamType_)
     {
         beamType = beamType_;
-        Select(0);
+        Select(1);
     }
 
     public void SetBeamShape(int beamShape_)
     {
         beamShape = beamShape_;
-        Select(1);
+        Select(2);
     }
 
     public void SetRadius(double radius_)
     {
         radius = radius_;
-        Select(2);
+        Select(3);
     }
 
     public void SetDivergence(double divergence_)
     {
         divergence = divergence_;
-        Select(3);
+        Select(4);
     }
 
     public void SetNBeams(int nBeams_)
     {
         nBeams = nBeams_;
-        Select(4);
+        Select(5);
     }
 
     public void SetSampleDistance(double sampleDistance_)
     {
         sampleDistance = sampleDistance_;
-        Select(5);
+        Select(6);
     }
 
     public void SetSampleArc(double sampleArc_)
     {
         sampleArc = sampleArc_;
-        Select(6);
+        Select(7);
     }
 
-    public void SetSpacing(double spacing_)
+    public void SetOffset(double offset_)
     {
-        spacing = spacing_;
-        Select(7);
+        offset = offset_;
+        Select(8);
     }
 
     public void SetAngle(double angle_)
     {
         angle = angle_;
-        Select(8);
+        Select(9);
     }
 
     public void SetOrigin(double[] origin_)
@@ -254,7 +271,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         origin[0] = origin_[0];
         origin[1] = origin_[1];
         origin[2] = origin_[2];
-        Select(9);
+        Select(10);
     }
 
     public void SetOrigin(double e0, double e1, double e2)
@@ -262,40 +279,47 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         origin[0] = e0;
         origin[1] = e1;
         origin[2] = e2;
-        Select(9);
+        Select(10);
     }
 
     public void SetBeamAxis(int beamAxis_)
     {
         beamAxis = beamAxis_;
-        Select(10);
+        Select(11);
     }
 
     public void SetPoloialAngle(double poloialAngle_)
     {
         poloialAngle = poloialAngle_;
-        Select(11);
+        Select(12);
     }
 
-    public void SetPoloialTilt(double poloialTilt_)
+    public void SetPoloialRTilt(double poloialRTilt_)
     {
-        poloialTilt = poloialTilt_;
-        Select(12);
+        poloialRTilt = poloialRTilt_;
+        Select(13);
+    }
+
+    public void SetPoloialZTilt(double poloialZTilt_)
+    {
+        poloialZTilt = poloialZTilt_;
+        Select(14);
     }
 
     public void SetToroialAngle(double toroialAngle_)
     {
         toroialAngle = toroialAngle_;
-        Select(13);
+        Select(15);
     }
 
     public void SetViewDimension(int viewDimension_)
     {
         viewDimension = viewDimension_;
-        Select(14);
+        Select(16);
     }
 
     // Property getting methods
+    public int      GetCoordinateSystem() { return coordinateSystem; }
     public int      GetBeamType() { return beamType; }
     public int      GetBeamShape() { return beamShape; }
     public double   GetRadius() { return radius; }
@@ -303,12 +327,13 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public int      GetNBeams() { return nBeams; }
     public double   GetSampleDistance() { return sampleDistance; }
     public double   GetSampleArc() { return sampleArc; }
-    public double   GetSpacing() { return spacing; }
+    public double   GetOffset() { return offset; }
     public double   GetAngle() { return angle; }
     public double[] GetOrigin() { return origin; }
     public int      GetBeamAxis() { return beamAxis; }
     public double   GetPoloialAngle() { return poloialAngle; }
-    public double   GetPoloialTilt() { return poloialTilt; }
+    public double   GetPoloialRTilt() { return poloialRTilt; }
+    public double   GetPoloialZTilt() { return poloialZTilt; }
     public double   GetToroialAngle() { return toroialAngle; }
     public int      GetViewDimension() { return viewDimension; }
 
@@ -316,34 +341,38 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(beamType);
+            buf.WriteInt(coordinateSystem);
         if(WriteSelect(1, buf))
-            buf.WriteInt(beamShape);
+            buf.WriteInt(beamType);
         if(WriteSelect(2, buf))
-            buf.WriteDouble(radius);
+            buf.WriteInt(beamShape);
         if(WriteSelect(3, buf))
-            buf.WriteDouble(divergence);
+            buf.WriteDouble(radius);
         if(WriteSelect(4, buf))
-            buf.WriteInt(nBeams);
+            buf.WriteDouble(divergence);
         if(WriteSelect(5, buf))
-            buf.WriteDouble(sampleDistance);
+            buf.WriteInt(nBeams);
         if(WriteSelect(6, buf))
-            buf.WriteDouble(sampleArc);
+            buf.WriteDouble(sampleDistance);
         if(WriteSelect(7, buf))
-            buf.WriteDouble(spacing);
+            buf.WriteDouble(sampleArc);
         if(WriteSelect(8, buf))
-            buf.WriteDouble(angle);
+            buf.WriteDouble(offset);
         if(WriteSelect(9, buf))
-            buf.WriteDoubleArray(origin);
+            buf.WriteDouble(angle);
         if(WriteSelect(10, buf))
-            buf.WriteInt(beamAxis);
+            buf.WriteDoubleArray(origin);
         if(WriteSelect(11, buf))
-            buf.WriteDouble(poloialAngle);
+            buf.WriteInt(beamAxis);
         if(WriteSelect(12, buf))
-            buf.WriteDouble(poloialTilt);
+            buf.WriteDouble(poloialAngle);
         if(WriteSelect(13, buf))
-            buf.WriteDouble(toroialAngle);
+            buf.WriteDouble(poloialRTilt);
         if(WriteSelect(14, buf))
+            buf.WriteDouble(poloialZTilt);
+        if(WriteSelect(15, buf))
+            buf.WriteDouble(toroialAngle);
+        if(WriteSelect(16, buf))
             buf.WriteInt(viewDimension);
     }
 
@@ -352,48 +381,54 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         switch(index)
         {
         case 0:
-            SetBeamType(buf.ReadInt());
+            SetCoordinateSystem(buf.ReadInt());
             break;
         case 1:
-            SetBeamShape(buf.ReadInt());
+            SetBeamType(buf.ReadInt());
             break;
         case 2:
-            SetRadius(buf.ReadDouble());
+            SetBeamShape(buf.ReadInt());
             break;
         case 3:
-            SetDivergence(buf.ReadDouble());
+            SetRadius(buf.ReadDouble());
             break;
         case 4:
-            SetNBeams(buf.ReadInt());
+            SetDivergence(buf.ReadDouble());
             break;
         case 5:
-            SetSampleDistance(buf.ReadDouble());
+            SetNBeams(buf.ReadInt());
             break;
         case 6:
-            SetSampleArc(buf.ReadDouble());
+            SetSampleDistance(buf.ReadDouble());
             break;
         case 7:
-            SetSpacing(buf.ReadDouble());
+            SetSampleArc(buf.ReadDouble());
             break;
         case 8:
-            SetAngle(buf.ReadDouble());
+            SetOffset(buf.ReadDouble());
             break;
         case 9:
-            SetOrigin(buf.ReadDoubleArray());
+            SetAngle(buf.ReadDouble());
             break;
         case 10:
-            SetBeamAxis(buf.ReadInt());
+            SetOrigin(buf.ReadDoubleArray());
             break;
         case 11:
-            SetPoloialAngle(buf.ReadDouble());
+            SetBeamAxis(buf.ReadInt());
             break;
         case 12:
-            SetPoloialTilt(buf.ReadDouble());
+            SetPoloialAngle(buf.ReadDouble());
             break;
         case 13:
-            SetToroialAngle(buf.ReadDouble());
+            SetPoloialRTilt(buf.ReadDouble());
             break;
         case 14:
+            SetPoloialZTilt(buf.ReadDouble());
+            break;
+        case 15:
+            SetToroialAngle(buf.ReadDouble());
+            break;
+        case 16:
             SetViewDimension(buf.ReadInt());
             break;
         }
@@ -402,6 +437,12 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
+        str = str + indent + "coordinateSystem = ";
+        if(coordinateSystem == COORDINATESYSTEM_CARTESIAN)
+            str = str + "COORDINATESYSTEM_CARTESIAN";
+        if(coordinateSystem == COORDINATESYSTEM_CYLINDRICAL)
+            str = str + "COORDINATESYSTEM_CYLINDRICAL";
+        str = str + "\n";
         str = str + indent + "beamType = ";
         if(beamType == BEAMTYPE_PARALLEL)
             str = str + "BEAMTYPE_PARALLEL";
@@ -421,7 +462,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         str = str + intToString("nBeams", nBeams, indent) + "\n";
         str = str + doubleToString("sampleDistance", sampleDistance, indent) + "\n";
         str = str + doubleToString("sampleArc", sampleArc, indent) + "\n";
-        str = str + doubleToString("spacing", spacing, indent) + "\n";
+        str = str + doubleToString("offset", offset, indent) + "\n";
         str = str + doubleToString("angle", angle, indent) + "\n";
         str = str + doubleArrayToString("origin", origin, indent) + "\n";
         str = str + indent + "beamAxis = ";
@@ -431,7 +472,8 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             str = str + "BEAMAXIS_Z";
         str = str + "\n";
         str = str + doubleToString("poloialAngle", poloialAngle, indent) + "\n";
-        str = str + doubleToString("poloialTilt", poloialTilt, indent) + "\n";
+        str = str + doubleToString("poloialRTilt", poloialRTilt, indent) + "\n";
+        str = str + doubleToString("poloialZTilt", poloialZTilt, indent) + "\n";
         str = str + doubleToString("toroialAngle", toroialAngle, indent) + "\n";
         str = str + indent + "viewDimension = ";
         if(viewDimension == VIEWDIMENSION_ONE)
@@ -446,6 +488,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
+    private int      coordinateSystem;
     private int      beamType;
     private int      beamShape;
     private double   radius;
@@ -453,12 +496,13 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     private int      nBeams;
     private double   sampleDistance;
     private double   sampleArc;
-    private double   spacing;
+    private double   offset;
     private double   angle;
     private double[] origin;
     private int      beamAxis;
     private double   poloialAngle;
-    private double   poloialTilt;
+    private double   poloialRTilt;
+    private double   poloialZTilt;
     private double   toroialAngle;
     private int      viewDimension;
 }

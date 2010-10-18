@@ -76,6 +76,21 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     std::string str; 
     char tmpStr[1000]; 
 
+    const char *coordinateSystem_names = "Cartesian, Cylindrical";
+    switch (atts->GetCoordinateSystem())
+    {
+      case LineSamplerAttributes::Cartesian:
+          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCartesian  # %s\n", prefix, prefix, coordinateSystem_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::Cylindrical:
+          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCylindrical  # %s\n", prefix, prefix, coordinateSystem_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *beamType_names = "Parallel, Fan";
     switch (atts->GetBeamType())
     {
@@ -120,7 +135,7 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssampleArc = %g\n", prefix, atts->GetSampleArc());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sspacing = %g\n", prefix, atts->GetSpacing());
+    SNPRINTF(tmpStr, 1000, "%soffset = %g\n", prefix, atts->GetOffset());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sangle = %g\n", prefix, atts->GetAngle());
     str += tmpStr;
@@ -157,7 +172,9 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
 
     SNPRINTF(tmpStr, 1000, "%spoloialAngle = %g\n", prefix, atts->GetPoloialAngle());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spoloialTilt = %g\n", prefix, atts->GetPoloialTilt());
+    SNPRINTF(tmpStr, 1000, "%spoloialRTilt = %g\n", prefix, atts->GetPoloialRTilt());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spoloialZTilt = %g\n", prefix, atts->GetPoloialZTilt());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%storoialAngle = %g\n", prefix, atts->GetToroialAngle());
     str += tmpStr;
@@ -190,6 +207,39 @@ LineSamplerAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the coordinateSystem in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetCoordinateSystem(LineSamplerAttributes::CoordinateSystem(ival));
+    else
+    {
+        fprintf(stderr, "An invalid coordinateSystem value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Cartesian, Cylindrical.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCoordinateSystem()));
+    return retval;
 }
 
 /*static*/ PyObject *
@@ -379,7 +429,7 @@ LineSamplerAttributes_GetSampleArc(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetSpacing(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetOffset(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
@@ -387,18 +437,18 @@ LineSamplerAttributes_SetSpacing(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the spacing in the object.
-    obj->data->SetSpacing(dval);
+    // Set the offset in the object.
+    obj->data->SetOffset(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetSpacing(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetOffset(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetSpacing());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOffset());
     return retval;
 }
 
@@ -538,7 +588,7 @@ LineSamplerAttributes_GetPoloialAngle(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_SetPoloialTilt(PyObject *self, PyObject *args)
+LineSamplerAttributes_SetPoloialRTilt(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
@@ -546,18 +596,42 @@ LineSamplerAttributes_SetPoloialTilt(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the poloialTilt in the object.
-    obj->data->SetPoloialTilt(dval);
+    // Set the poloialRTilt in the object.
+    obj->data->SetPoloialRTilt(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LineSamplerAttributes_GetPoloialTilt(PyObject *self, PyObject *args)
+LineSamplerAttributes_GetPoloialRTilt(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetPoloialTilt());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPoloialRTilt());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetPoloialZTilt(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the poloialZTilt in the object.
+    obj->data->SetPoloialZTilt(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetPoloialZTilt(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPoloialZTilt());
     return retval;
 }
 
@@ -622,6 +696,8 @@ LineSamplerAttributes_GetViewDimension(PyObject *self, PyObject *args)
 
 PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"Notify", LineSamplerAttributes_Notify, METH_VARARGS},
+    {"SetCoordinateSystem", LineSamplerAttributes_SetCoordinateSystem, METH_VARARGS},
+    {"GetCoordinateSystem", LineSamplerAttributes_GetCoordinateSystem, METH_VARARGS},
     {"SetBeamType", LineSamplerAttributes_SetBeamType, METH_VARARGS},
     {"GetBeamType", LineSamplerAttributes_GetBeamType, METH_VARARGS},
     {"SetBeamShape", LineSamplerAttributes_SetBeamShape, METH_VARARGS},
@@ -636,8 +712,8 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetSampleDistance", LineSamplerAttributes_GetSampleDistance, METH_VARARGS},
     {"SetSampleArc", LineSamplerAttributes_SetSampleArc, METH_VARARGS},
     {"GetSampleArc", LineSamplerAttributes_GetSampleArc, METH_VARARGS},
-    {"SetSpacing", LineSamplerAttributes_SetSpacing, METH_VARARGS},
-    {"GetSpacing", LineSamplerAttributes_GetSpacing, METH_VARARGS},
+    {"SetOffset", LineSamplerAttributes_SetOffset, METH_VARARGS},
+    {"GetOffset", LineSamplerAttributes_GetOffset, METH_VARARGS},
     {"SetAngle", LineSamplerAttributes_SetAngle, METH_VARARGS},
     {"GetAngle", LineSamplerAttributes_GetAngle, METH_VARARGS},
     {"SetOrigin", LineSamplerAttributes_SetOrigin, METH_VARARGS},
@@ -646,8 +722,10 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetBeamAxis", LineSamplerAttributes_GetBeamAxis, METH_VARARGS},
     {"SetPoloialAngle", LineSamplerAttributes_SetPoloialAngle, METH_VARARGS},
     {"GetPoloialAngle", LineSamplerAttributes_GetPoloialAngle, METH_VARARGS},
-    {"SetPoloialTilt", LineSamplerAttributes_SetPoloialTilt, METH_VARARGS},
-    {"GetPoloialTilt", LineSamplerAttributes_GetPoloialTilt, METH_VARARGS},
+    {"SetPoloialRTilt", LineSamplerAttributes_SetPoloialRTilt, METH_VARARGS},
+    {"GetPoloialRTilt", LineSamplerAttributes_GetPoloialRTilt, METH_VARARGS},
+    {"SetPoloialZTilt", LineSamplerAttributes_SetPoloialZTilt, METH_VARARGS},
+    {"GetPoloialZTilt", LineSamplerAttributes_GetPoloialZTilt, METH_VARARGS},
     {"SetToroialAngle", LineSamplerAttributes_SetToroialAngle, METH_VARARGS},
     {"GetToroialAngle", LineSamplerAttributes_GetToroialAngle, METH_VARARGS},
     {"SetViewDimension", LineSamplerAttributes_SetViewDimension, METH_VARARGS},
@@ -680,6 +758,13 @@ LineSamplerAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyLineSamplerAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "coordinateSystem") == 0)
+        return LineSamplerAttributes_GetCoordinateSystem(self, NULL);
+    if(strcmp(name, "Cartesian") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Cartesian));
+    if(strcmp(name, "Cylindrical") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Cylindrical));
+
     if(strcmp(name, "beamType") == 0)
         return LineSamplerAttributes_GetBeamType(self, NULL);
     if(strcmp(name, "Parallel") == 0)
@@ -706,8 +791,8 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetSampleDistance(self, NULL);
     if(strcmp(name, "sampleArc") == 0)
         return LineSamplerAttributes_GetSampleArc(self, NULL);
-    if(strcmp(name, "spacing") == 0)
-        return LineSamplerAttributes_GetSpacing(self, NULL);
+    if(strcmp(name, "offset") == 0)
+        return LineSamplerAttributes_GetOffset(self, NULL);
     if(strcmp(name, "angle") == 0)
         return LineSamplerAttributes_GetAngle(self, NULL);
     if(strcmp(name, "origin") == 0)
@@ -721,8 +806,10 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "poloialAngle") == 0)
         return LineSamplerAttributes_GetPoloialAngle(self, NULL);
-    if(strcmp(name, "poloialTilt") == 0)
-        return LineSamplerAttributes_GetPoloialTilt(self, NULL);
+    if(strcmp(name, "poloialRTilt") == 0)
+        return LineSamplerAttributes_GetPoloialRTilt(self, NULL);
+    if(strcmp(name, "poloialZTilt") == 0)
+        return LineSamplerAttributes_GetPoloialZTilt(self, NULL);
     if(strcmp(name, "toroialAngle") == 0)
         return LineSamplerAttributes_GetToroialAngle(self, NULL);
     if(strcmp(name, "viewDimension") == 0)
@@ -748,7 +835,9 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "beamType") == 0)
+    if(strcmp(name, "coordinateSystem") == 0)
+        obj = LineSamplerAttributes_SetCoordinateSystem(self, tuple);
+    else if(strcmp(name, "beamType") == 0)
         obj = LineSamplerAttributes_SetBeamType(self, tuple);
     else if(strcmp(name, "beamShape") == 0)
         obj = LineSamplerAttributes_SetBeamShape(self, tuple);
@@ -762,8 +851,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetSampleDistance(self, tuple);
     else if(strcmp(name, "sampleArc") == 0)
         obj = LineSamplerAttributes_SetSampleArc(self, tuple);
-    else if(strcmp(name, "spacing") == 0)
-        obj = LineSamplerAttributes_SetSpacing(self, tuple);
+    else if(strcmp(name, "offset") == 0)
+        obj = LineSamplerAttributes_SetOffset(self, tuple);
     else if(strcmp(name, "angle") == 0)
         obj = LineSamplerAttributes_SetAngle(self, tuple);
     else if(strcmp(name, "origin") == 0)
@@ -772,8 +861,10 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetBeamAxis(self, tuple);
     else if(strcmp(name, "poloialAngle") == 0)
         obj = LineSamplerAttributes_SetPoloialAngle(self, tuple);
-    else if(strcmp(name, "poloialTilt") == 0)
-        obj = LineSamplerAttributes_SetPoloialTilt(self, tuple);
+    else if(strcmp(name, "poloialRTilt") == 0)
+        obj = LineSamplerAttributes_SetPoloialRTilt(self, tuple);
+    else if(strcmp(name, "poloialZTilt") == 0)
+        obj = LineSamplerAttributes_SetPoloialZTilt(self, tuple);
     else if(strcmp(name, "toroialAngle") == 0)
         obj = LineSamplerAttributes_SetToroialAngle(self, tuple);
     else if(strcmp(name, "viewDimension") == 0)
