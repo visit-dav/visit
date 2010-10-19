@@ -115,6 +115,9 @@ else
 fi
 
 skipList_for_Alastor="\
+    alastor,serial:tests/operators/persistent_particles.py \
+    alastor,parallel:tests/operators/persistent_particles.py \
+    alastor,scalable,parallel,icet:tests/operators/persistent_particles.py \
     alastor,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
     alastor,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
     alastor,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
