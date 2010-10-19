@@ -194,6 +194,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
+//
+//   Dave Pugmire, Tue Oct 19 13:52:00 EDT 2010
+//   Add a delete all points button for the point list seed option.
 // 
 // ****************************************************************************
 
@@ -274,10 +277,13 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 
     pointListAddPoint = new QPushButton(tr("Add Point"), sourceGroup);
     pointListDelPoint = new QPushButton(tr("Delete Point"), sourceGroup);
+    pointListDelAllPoints = new QPushButton(tr("Delete All Points"), sourceGroup);
     connect(pointListAddPoint, SIGNAL(clicked()), this, SLOT(addPoint()));
     connect(pointListDelPoint, SIGNAL(clicked()), this, SLOT(deletePoint()));
+    connect(pointListDelAllPoints, SIGNAL(clicked()), this, SLOT(deletePoints()));
     geometryLayout->addWidget(pointListAddPoint, gRow, 0);
     geometryLayout->addWidget(pointListDelPoint, gRow, 1);
+    geometryLayout->addWidget(pointListDelAllPoints, gRow, 2);
     gRow++;
 
     // Create the widgets that specify a line source.
@@ -3537,6 +3543,12 @@ QvisStreamlinePlotWindow::deletePoint()
     {
         qDeleteAll(pointList->selectedItems());
     }
+}
+
+void
+QvisStreamlinePlotWindow::deletePoints()
+{
+    pointList->clear();
 }
 
 void

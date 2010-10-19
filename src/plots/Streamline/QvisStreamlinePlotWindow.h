@@ -249,6 +249,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void pointListDoubleClicked(QListWidgetItem*);
     void addPoint();
     void deletePoint();
+    void deletePoints();
     void readPoints();
     void textChanged(const QString &currentText);
     void forceNodalChanged(bool);
@@ -288,7 +289,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLineEdit *lineEnd;
     QLabel    *lineEndLabel;
     QListWidget *pointList;
-    QPushButton *pointListDelPoint, *pointListAddPoint, *pointListReadPoints;
+    QPushButton *pointListDelPoint, *pointListDelAllPoints, *pointListAddPoint, *pointListReadPoints;
     QLineEdit *planeOrigin;
     QLabel    *planeOriginLabel;
     QLineEdit *planeNormal;
