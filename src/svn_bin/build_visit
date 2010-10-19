@@ -1296,8 +1296,8 @@ export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
 export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
 export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
 
-export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.7.0.tar.gz"}
-export QT_VERSION=${QT_VERSION:-"4.7.0"}
+export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.6.1.tar.gz"}
+export QT_VERSION=${QT_VERSION:-"4.6.1"}
 
 export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
 
