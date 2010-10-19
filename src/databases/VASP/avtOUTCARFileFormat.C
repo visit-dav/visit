@@ -664,6 +664,10 @@ avtOUTCARFileFormat::GetNTimesteps(void)
 //    Jeremy Meredith, Tue Oct 19 12:59:24 EDT 2010
 //    Added support for optional velocities.
 //
+//    Jeremy Meredith, Tue Oct 19 17:02:28 EDT 2010
+//    Velocities are actually now written after the positions/forces
+//    with their own header.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAllMetaData()
@@ -707,29 +711,13 @@ avtOUTCARFileFormat::ReadAllMetaData()
             float d1,d2,d3,d4,d5,d6,d7,d8,d9;
             int n = sscanf(line, "%f %f %f %f %f %f %f %f %f",
                            &d1,&d2,&d3,&d4,&d5,&d6,&d7,&d8,&d9);
-            if (n !=6 && n != 9)
+            if (n != 6)
                 EXCEPTION2(InvalidFilesException, filename.c_str(),
-                           "Expected either 6 or 9 values per atom line.");
-
-            // on the first time step; record the value
-            // on later time steps, error if there's a mismatch
-            if (ntimesteps == 1)
-            {
-                // 6 vals = position + force
-                // 9 vals = pos + force + velocities
-                if (n == 6)
-                    has_velocities = false;
-                else // (n == 9)
-                    has_velocities = true;
-            }
-            else
-            {
-                if ((  has_velocities  &&  n != 9) ||
-                    ( !has_velocities  &&  n != 6))
-                    EXCEPTION2(InvalidFilesException, filename.c_str(),
-                               "Some time steps didn't agree on whether "
-                               "or not to include velocities.");
-            }
+                           "Expected 6 values per atom line.");
+        }
+        else if (!strncmp(line," VELOCITIES",11))
+        {
+            has_velocities = true;
         }
         /*
           NOT SURE WHY, BUT THESE ARE IN THE WRONG ORDER AND NEGATIVE
@@ -981,6 +969,10 @@ avtOUTCARFileFormat::ReadAllMetaData()
 //    Jeremy Meredith, Tue Oct 19 12:59:24 EDT 2010
 //    Added support for optional velocities.
 //
+//    Jeremy Meredith, Tue Oct 19 17:02:28 EDT 2010
+//    Velocities are actually now written after the positions/forces
+//    with their own header.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
@@ -1029,11 +1021,35 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
                 a.elementtype_index = et_index;
                 in >> a.x  >> a.y  >> a.z;
                 in >> a.fx >> a.fy >> a.fz;
-                if (has_velocities)
-                    in >> a.vx >> a.vy >> a.vz;
-                else
-                    a.vx = a.vy = a.vz = 0.;
+                a.vx = a.vy = a.vz = 0.;
                 index++;
+            }
+        }
+
+        // the velocities appear after the positions/forces now
+        if (has_velocities)
+        {
+            in.getline(line, 4096);
+            int maxlines = 100, linectr = 0;
+            while (in && linectr < maxlines)
+            {
+                if (!strncmp(line," VELOCITIES",11))
+                {
+                    in.getline(line, 4096); // skip the separator
+                    for (int i = 0 ; i < natoms; i++)
+                    {
+                        in >> atoms[i].vx >> atoms[i].vy >> atoms[i].vz;
+                    }
+                    break;
+                }
+                linectr++;
+                in.getline(line, 4096);
+            }
+            if (linectr >= maxlines)
+            {
+                EXCEPTION2(InvalidFilesException, filename.c_str(),
+                           "Could not find velocities for time step within a "
+                           "reasonable number of lines after the positions.");
             }
         }
     }
