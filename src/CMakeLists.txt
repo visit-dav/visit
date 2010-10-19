@@ -392,6 +392,7 @@ VISIT_3RDPARTY_VAR(VISIT_BOXLIB3D_DIR  "Path containing the Boxlib 3D library's 
 VISIT_3RDPARTY_VAR(VISIT_CCMIO_DIR     "Path containing the CCMIO library's include and lib" CCMIO_DIR)
 VISIT_3RDPARTY_VAR(VISIT_CFITSIO_DIR   "Path containing the CFITSIO library's include and lib" CFITSIO_DIR)
 VISIT_3RDPARTY_VAR(VISIT_CGNS_DIR      "Path containing the CGNS library's include and lib" CGNS_DIR)
+VISIT_3RDPARTY_VAR(VISIT_CGNS_LIBDEP   "CGNS library dependencies" CGNS_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_EXODUSII_DIR  "Path containing the ExodusII library's include and lib" EXODUSII_DIR)
 VISIT_3RDPARTY_VAR(VISIT_FASTBIT_DIR   "Path containing the Fastbit library's include and lib" FASTBIT_DIR)
 VISIT_3RDPARTY_VAR(VISIT_GDAL_DIR      "Path containing the GDAL library's include and lib" GDAL_DIR)
@@ -402,10 +403,12 @@ VISIT_3RDPARTY_DEP(VISIT_HDF5_LIBDEP   "HDF5 library dependencies" HDF5_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_H5PART_DIR    "Path containing the H5Part library's include and lib" H5PART_DIR)
 VISIT_3RDPARTY_VAR(VISIT_MILI_DIR      "Path containing the Mili library's include and lib" MILI_DIR)
 VISIT_3RDPARTY_VAR(VISIT_NETCDF_DIR    "Path containing the NETCDF library's include and lib" NETCDF_DIR)
+VISIT_3RDPARTY_VAR(VISIT_NETCDF_LIBDEP "NETCDF library dependencies" NETCDF_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_SILO_DIR      "Path containing the Silo library's include and lib" SILO_DIR)
 VISIT_3RDPARTY_DEP(VISIT_SILO_LIBDEP   "Silo library dependencies" SILO_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_VISUS_DIR     "Path containing the ViSUS library's include and lib" VISUS_DIR)
 VISIT_3RDPARTY_VAR(VISIT_XDMF_DIR      "Path containing the Xdmf library's include and lib" XDMF_DIR)
+VISIT_3RDPARTY_VAR(VISIT_XDMF_LIBDEP   "Xdmf library dependencies" XDMF_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_MDSPLUS_DIR   "Path containing the MDSplus library's include and lib" MDSPLUS_DIR)
 #-----------------------------------------------------------------------------
 # Read the version
@@ -785,6 +788,12 @@ ENDIF(VISIT_PARALLEL)
 # Include TCMALLOC support if we can.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
 
+# Configure HDF5 support. Do it before the other libraries since many can depend on it.
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF5.cmake)
+IF(HDF5_FOUND)
+    SET(HAVE_LIBHDF5 1)
+ENDIF(HDF5_FOUND)
+
 # Configure adios support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS.cmake)
 IF(ADIOS_FOUND)
@@ -847,12 +856,6 @@ ELSE(VISIT_STATIC)
       SET(HAVE_LIBHDF4 1)
   ENDIF(HDF4_FOUND)
 ENDIF(VISIT_STATIC)
-
-# Configure HDF5 support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF5.cmake)
-IF(HDF5_FOUND)
-    SET(HAVE_LIBHDF5 1)
-ENDIF(HDF5_FOUND)
 
 # Configure h5part support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindH5Part.cmake)

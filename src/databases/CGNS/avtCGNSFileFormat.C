@@ -253,7 +253,7 @@ avtCGNSFileFormat::GetFileHandle()
 {
     if(fn == INVALID_FILE_HANDLE)
     {
-        if(cg_open(cgnsFileName, MODE_READ, &fn) != CG_OK)
+        if(cg_open(cgnsFileName, CG_MODE_READ, &fn) != CG_OK)
         {
             debug4 << cg_get_error() << endl;
             EXCEPTION1(InvalidFilesException, cgnsFileName);
