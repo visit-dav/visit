@@ -52,22 +52,22 @@
 #        build, either through run string options or the dialog gui. If
 #        the tarballs don't exist they will not be built or downloaded
 #           Library  Version  Source Tarball Name    Command Option
-#           Boxlib   2.5      boxlib.tar.gz          -b
-#           CCMIO    2.6.1    libccmio-2.6.1.tar.gz  -C
-#           CFITSIO  3006     cfitsio3006.tar.gz     -f
-#           CGNS     2.4.3    cgnslib_2.4-3.tar.gz   -c
-#           ExodusII 4.46     exodusii-4.46.tar.gz   -e
-#           FastBit  0.9.9    fastbit-b0.9.9.tar.gz  -r
-#           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g (no AIX)
-#           H5part   1.6.0    H5Part-1.6.0.tar.gz    -r
-#           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
-#           HDF5     1.8.4    hdf5-1.8.4.tar.gz      -5
+#           Boxlib   2.5      boxlib.tar.gz          --boxlib
+#           CCMIO    2.6.1    libccmio-2.6.1.tar.gz  --ccmio
+#           CFITSIO  3006     cfitsio3006.tar.gz     --cfitsio
+#           CGNS     2.5.4    cgnslib_2.5-4.tar.gz   --cgns
+#           ExodusII 4.46     exodusii-4.46.tar.gz   -exodus
+#           FastBit  0.9.9    fastbit-b0.9.9.tar.gz  
+#           GDAL     1.3.2    gdal-1.3.2.tar.gz      --gdal
+#           H5part   1.6.0    H5Part-1.6.0.tar.gz    --h5part
+#           HDF4     2.4.1    HDF4.2r1.tar.gz        --hdf4
+#           HDF5     1.8.4    hdf5-1.8.4.tar.gz      --hdf5
 #           MDSplus  2.2      mdsplus-2.2-4.tar.gz
-#           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
-#           NetCDF   3.6.0    netcdf.tar.gz          -n
-#           AdvIO    1.2.0    AdvIO-1.2.tar.gz
-#           Silo     4.7.2    silo-4.7.2.tar.gz
-#           szip     2.1      szip-2.1.tar.gz
+#           Mili     1.10     mili-1.10a.tar.gz      --mili
+#           NetCDF   4.1,1    netcdf-4.1.1.tar.gz    --netcdf
+#           AdvIO    1.2.0    AdvIO-1.2.tar.gz       --advio
+#           Silo     4.7.2    silo-4.7.2.tar.gz      --silo
+#           szip     2.1      szip-2.1.tar.gz        --szip
 #
 #         Experimental (internal)
 #           ITAPS             ITAPS-FMDB-1.1-30Aug10.tar.gz
@@ -964,6 +964,9 @@
 #     Brad Whitlock, Mon Oct 11 11:23:18 PDT 2010
 #     Added support for NETCDF 4.1.1
 #
+#     Brad Whitlock, Tue Oct 19 11:28:16 PDT 2010
+#     I added support for cgns 3.0.8
+#
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1293,8 +1296,8 @@ export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
 export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
 export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
 
-export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.6.1.tar.gz"}
-export QT_VERSION=${QT_VERSION:-"4.6.1"}
+export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.7.0.tar.gz"}
+export QT_VERSION=${QT_VERSION:-"4.7.0"}
 
 export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
 
@@ -1330,10 +1333,10 @@ export ADVIO_VERSION=${ADVIO_VERSION:-"1.2"}
 export ADVIO_COMPATIBILITY_VERSION=${ADVIO_COMPATIBILITY_VERSION:-"1.2"}
 export ADVIO_BUILD_DIR=${ADVIO_BUILD_DIR:-AdvIO-1.2}
 
-export CGNS_FILE=${CGNS_FILE:-"cgnslib_2.4-3.tar.gz"}
-export CGNS_VERSION=${CGNS_VERSION:-"2.4"}
-export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"2.4"}
-export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-${CGNS_FILE%-3.tar*}}
+export CGNS_FILE=${CGNS_FILE:-"cgns-3.0.8-Source.tar.gz"}
+export CGNS_VERSION=${CGNS_VERSION:-"3.0.8"}
+export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"3.0"}
+export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"cgns-3.0.8-Source/src"}
 
 export GDAL_FILE=${GDAL_FILE:-"gdal-1.7.1.tar.gz"}
 export GDAL_VERSION=${GDAL_VERSION:-"1.7.1"}
@@ -5956,9 +5959,22 @@ function build_cgns
     info "Configuring CGNS . . ."
     cd $CGNS_BUILD_DIR || error "Can't cd to CGNS build dir."
     info "Invoking command to configure CGNS"
+    # optionally add HDF5 and szip to the configure.
+    H5ARGS=""
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
+        if [[ "$DO_SZIP" == "yes" ]] ; then
+            H5ARGS="$H5ARGS --with-szlib=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        fi
+    fi
+    info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+       CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
+       ./configure $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
+
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-       ./configure --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+       ./configure $H5ARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+
     if [[ $? != 0 ]] ; then
        warn "CGNS configure failed.  Giving up"
        return 1
@@ -6008,8 +6024,15 @@ function build_cgns
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
+        H5LINK=""
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            H5LINK="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.dylib"
+            if [[ "$DO_SZIP" == "yes" ]] ; then
+                H5LINK="$H5LINK $VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.dylib"
+            fi
+        fi
         /usr/bin/libtool -o libcgns.${SO_EXT} -dynamic DARWIN/libcgns.a \
-           -lSystem $USESTUBS -headerpad_max_install_names \
+           -lSystem $USESTUBS $H5LINK -headerpad_max_install_names \
            -install_name $INSTALLNAMEPATH/libcgns.${SO_EXT} \
            -compatibility_version $CGNS_COMPATIBILITY_VERSION \
            -current_version $CGNS_VERSION
@@ -6018,6 +6041,7 @@ function build_cgns
            return 1
         fi
         cp libcgns.${SO_EXT} "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib"
+        rm "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib/libcgns.a"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
@@ -7761,6 +7785,11 @@ function build_hostconf
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR \${VISITHOME}/cgns/$CGNS_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
+            >> $HOSTCONF
+        fi
     fi
 
     if [[ "$DO_EXODUS" == "yes" ]] ; then
