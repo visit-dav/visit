@@ -116,7 +116,8 @@ class avtParICAlgorithm : public avtICAlgorithm
                                       std::vector<avtIntegralCurve*> &);
     bool                      DoSendICs(int dst,
                                         std::vector<avtIntegralCurve*> &);
-    int                       RecvICs(std::list<avtIntegralCurve*> &);
+    int                       RecvICs(std::list<avtIntegralCurve*> &ics,
+                                      std::list<int> *ranks=NULL);
     int                       RecvICs(std::list<avtIntegralCurve*> &,
                                       int &earlyTerminations);
     bool                      ExchangeICs(std::list<avtIntegralCurve *> &,

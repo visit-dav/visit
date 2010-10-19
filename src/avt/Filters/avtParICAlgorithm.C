@@ -1039,7 +1039,8 @@ avtParICAlgorithm::DoSendICs(int dst,
 // ****************************************************************************
 
 int
-avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs)
+avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs,
+                           list<int> *ranks)
 {
     int communicationTimer = visitTimer->StartTimer();
     int icCount = 0;
@@ -1084,6 +1085,8 @@ avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs)
                     ic->Serialize(MemStream::READ, buff, GetSolver());
                     recvICs.push_back(ic);
                     icCount++;
+                    if (ranks)
+                        ranks->push_back(status[i].MPI_SOURCE);
                 }
             }
 

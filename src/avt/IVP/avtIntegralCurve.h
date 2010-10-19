@@ -252,6 +252,7 @@ class IVP_API avtIntegralCurve
     long long sortKey;
 
     long id;
+    int counter;
 
   protected:
 

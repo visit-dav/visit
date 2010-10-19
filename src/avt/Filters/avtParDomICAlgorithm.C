@@ -47,6 +47,10 @@ using namespace std;
 
 #ifdef PARALLEL
 
+static const int PARTICLE_TERMINATE_COUNT = 0;
+static const int PARTICLE_USED = 1;
+static const int PARTICLE_NOT_USED = 2;
+
 // ****************************************************************************
 //  Method: avtParDomICAlgorithm::avtParDomICAlgorithm
 //
@@ -73,6 +77,7 @@ avtParDomICAlgorithm::avtParDomICAlgorithm(avtPICSFilter *icFilter,
     numICChange = 0;
     totalNumIntegralCurves = 0;
     maxCnt = maxCount;
+    sentICCounter = 0;
 }
 
 
@@ -133,7 +138,7 @@ avtParDomICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
     if (numRecvs > 64)
         numRecvs = 64;
     
-    avtParICAlgorithm::InitializeBuffers(seedPts, 1, numRecvs);
+    avtParICAlgorithm::InitializeBuffers(seedPts, 3, numRecvs);
     numICChange = 0;
     AddIntegralCurves(seedPts);
 }
@@ -243,6 +248,10 @@ avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
 //    Rename data members to reflect the new emphasis in particle advection, as
 //    opposed to streamlines.
 //
+//   Dave Pugmire, Tue Oct 19 10:53:51 EDT 2010
+//   Fix for unstructured meshes.
+//
+//
 // ****************************************************************************
 
 void
@@ -251,9 +260,11 @@ avtParDomICAlgorithm::ExchangeTermination()
     // If I have terminations, send it out.
     if (numICChange != 0)
     {
-        vector<int> msg(1);
-        msg[0] = numICChange;
+        vector<int> msg(2);
+        msg[0] = PARTICLE_TERMINATE_COUNT;
+        msg[1] = numICChange;
         SendAllMsg(msg);
+        debug5<<rank<<": SEND TERMINATE "<<numICChange<<endl;
         
         totalNumIntegralCurves += numICChange;
         numICChange = 0;
@@ -264,8 +275,47 @@ avtParDomICAlgorithm::ExchangeTermination()
     RecvMsgs(msgs);
     for (int i = 0; i < msgs.size(); i++)
     {
-        debug2<<msgs[i][1]<<" icChange= "<<msgs[i][1]<<endl;
-        totalNumIntegralCurves += msgs[i][1];
+        int fromRank = msgs[i][0], msgType = msgs[i][1];
+        
+        if (msgType == PARTICLE_TERMINATE_COUNT)
+        {
+            totalNumIntegralCurves += msgs[i][2];
+            debug5<<fromRank<<": RECV DECR"<<endl;
+        }
+        else
+        {
+            //Find the right entry.
+            int icID = msgs[i][2], icCnt = msgs[i][3];
+            pair<int,int> key(icID, icCnt);
+
+            sendICInfoIterator i = sendICInfo.find(key);
+            if (i == sendICInfo.end())
+            {
+                debug5<<icID<<", "<<icCnt<<" not found in sendICInfo!!"<<endl;
+                continue;
+            }
+
+            list<int>::iterator li;
+            for (li = i->second.second.begin(); li != i->second.second.end(); li++)
+                if (*li == fromRank)
+                {
+                    i->second.second.erase(li);
+                    if (msgType == PARTICLE_USED)
+                        i->second.first++;
+                    break;
+                }
+
+            //Everyone has reported back.
+            if (i->second.second.empty())
+            {
+                //Nobody used it
+                if (i->second.first == 0)
+                    numICChange--;
+                else if (i->second.first > 1)
+                    numICChange += (i->second.first-1);
+                sendICInfo.erase(i);
+            }
+        }
     }
 }
 
@@ -325,6 +375,10 @@ avtParDomICAlgorithm::PreRunAlgorithm()
 //   Handle case where single IC goes to multiple places. Increase number of ICs.
 //   Decrement for early terminators.
 //
+//   Dave Pugmire, Tue Oct 19 10:53:51 EDT 2010
+//   Fix for unstructured meshes.
+//
+//
 // ****************************************************************************
 
 void
@@ -356,10 +410,13 @@ avtParDomICAlgorithm::RunAlgorithm()
             cnt++;
         }
 
+        HandleIncomingIC();
+        /*
         //Check for new ICs.
         int earlyTerminations = 0;
         RecvICs(activeICs, earlyTerminations);
-        numICChange -= earlyTerminations;
+        //numICChange -= earlyTerminations;
+        */
 
         ExchangeTermination();
         CheckPendingSendRequests();
@@ -367,6 +424,38 @@ avtParDomICAlgorithm::RunAlgorithm()
 
     CheckPendingSendRequests();
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
+
+    cout<<"All done. sendICInfo size= "<<sendICInfo.size()<<endl;
+}
+
+
+void
+avtParDomICAlgorithm::HandleIncomingIC()
+{
+    list<avtIntegralCurve *> incoming;
+    list<int> ranks;
+    RecvICs(incoming, &ranks);
+
+    list<avtIntegralCurve *>::iterator s;
+    list<int>::iterator r = ranks.begin();
+    for (s = incoming.begin(); s != incoming.end(); s++, r++)
+    {
+        vector<int> msg(3);
+        msg[0] = PARTICLE_USED;
+        msg[1] = (*s)->id;
+        msg[2] = (*s)->counter;
+
+        avtVector pt;
+        (*s)->CurrentLocation(pt);
+        if (PointInDomain(pt, (*s)->domain))
+            activeICs.push_back(*s);
+        else
+        {
+            msg[0] = PARTICLE_NOT_USED;
+            delete *s;
+        }
+        SendMsg(*r, msg);
+    }
 }
 
 
@@ -428,15 +517,30 @@ avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
         else
         {
             vector<avtIntegralCurve *> ics;
+            s->counter = sentICCounter;
             ics.push_back(s);
             SendICs(domRank, ics);
             sentRanks.insert(domRank);
             
             debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> "<<domRank<<endl;
+
+            //Add it to the sendICInfo.
+            pair<int, int> key(s->id, s->counter);
+            sendICInfoIterator i = sendICInfo.find(key);
+
+            pair<int,list<int> > entry;
+            if (i == sendICInfo.end())
+            {
+                entry.first = 0;
+                entry.second.push_back(domRank);
+                sendICInfo[key] = entry;
+            }
+            else
+                i->second.second.push_back(domRank);
         }
     }
-    if (sentRanks.size() > 1)
-        numICChange += (sentRanks.size()-1);
+
+    sentICCounter++;
 }
 
 // ****************************************************************************

@@ -88,6 +88,9 @@ using namespace std;
 //   Separate out portions related to Streamline and Poincare into 
 //   avtStateRecorderIntegralCurve.
 //
+//   Dave Pugmire, Tue Oct 19 10:53:51 EDT 2010
+//   Fix for unstructured meshes.
+//
 // ****************************************************************************
 
 avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model, 
@@ -95,7 +98,7 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
                                     const double& t_start,
                                     const avtVector &p_start, 
                                     long ID )
-    : status(STATUS_OK), direction(dir), domain(-1), sortKey(0), id(ID)
+    : status(STATUS_OK), direction(dir), domain(-1), sortKey(0), id(ID), counter(0)
 {
     ivp = model->Clone();
     ivp->Reset( t_start, p_start );
@@ -456,6 +459,9 @@ avtIntegralCurve::CurrentLocation(avtVector &end)
 //    Separate out portions related to sequence tracking into
 //    avtStateRecorderIntegralCurve.
 //
+//   Dave Pugmire, Tue Oct 19 10:53:51 EDT 2010
+//   Fix for unstructured meshes.
+//
 // ****************************************************************************
 
 void
@@ -472,6 +478,7 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, status);
     buff.io(mode, termination);
     buff.io(mode, terminationType);
+    buff.io(mode, counter);
     
     if ( mode == MemStream::WRITE )
     {

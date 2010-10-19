@@ -89,6 +89,9 @@
 //   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
 //   as opposed to streamlines.
 //
+//   Dave Pugmire, Tue Oct 19 10:53:51 EDT 2010
+//   Fix for unstructured meshes.
+//
 // ****************************************************************************
 
 class avtParDomICAlgorithm : public avtParICAlgorithm
@@ -107,11 +110,16 @@ class avtParDomICAlgorithm : public avtParICAlgorithm
     virtual void              PreRunAlgorithm();
     void                      ExchangeTermination();
     void                      HandleOOBIC(avtIntegralCurve *s);
+    void                      HandleIncomingIC();
     
     int                       numICChange, totalNumIntegralCurves;
+    int                       sentICCounter;
 
     std::list<avtIntegralCurve *> activeICs;
     int                       maxCnt;
+
+    std::map<std::pair<int,int>, std::pair<int, std::list<int> > > sendICInfo;
+    typedef std::map<std::pair<int,int>, std::pair<int, std::list<int> > >::iterator sendICInfoIterator;
 };
 
 #endif
