@@ -48,6 +48,9 @@ using std::vector;
 //    Jeremy Meredith, Thu Aug 12 16:26:24 EDT 2010
 //    Allowed per-cycle changes in unit cell vectors.
 //
+//    Jeremy Meredith, Tue Oct 19 12:59:24 EDT 2010
+//    Added support for optional velocities.
+//
 // ****************************************************************************
 
 avtOUTCARFileFormat::avtOUTCARFileFormat(const char *fn)
@@ -58,6 +61,7 @@ avtOUTCARFileFormat::avtOUTCARFileFormat(const char *fn)
 
     metadata_read = false;
     has_magnetization = false;
+    has_velocities = false;
 
     natoms = 0;
     ntimesteps = 0;
@@ -152,6 +156,9 @@ avtOUTCARFileFormat::OpenFileAtBeginning()
 //    Jeremy Meredith, Thu Aug 12 16:26:24 EDT 2010
 //    Allowed per-cycle changes in unit cell vectors.
 //
+//    Jeremy Meredith, Tue Oct 19 12:59:24 EDT 2010
+//    Added support for optional velocities.
+//
 // ****************************************************************************
 
 void
@@ -204,6 +211,18 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
         forcevec_expr.SetDefinition("{fx, fy, fz}");
         forcevec_expr.SetType(Expression::VectorMeshVar);
         md->AddExpression(&forcevec_expr);
+    }
+    if (has_velocities)
+    {
+        AddScalarVarToMetaData(md, "vx", "mesh", AVT_NODECENT);
+        AddScalarVarToMetaData(md, "vy", "mesh", AVT_NODECENT);
+        AddScalarVarToMetaData(md, "vz", "mesh", AVT_NODECENT);
+
+        Expression velocityvec_expr;
+        velocityvec_expr.SetName("velocity");
+        velocityvec_expr.SetDefinition("{vx, vy, vz}");
+        velocityvec_expr.SetType(Expression::VectorMeshVar);
+        md->AddExpression(&velocityvec_expr);
     }
     if (has_magnetization)
     {
@@ -369,6 +388,9 @@ avtOUTCARFileFormat::GetMesh(int ts, const char *name)
 //    Jeremy Meredith, Fri Apr 20 15:01:36 EDT 2007
 //    Added support for magnetization fields.
 //
+//    Jeremy Meredith, Tue Oct 19 12:59:24 EDT 2010
+//    Added support for optional velocities.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -423,6 +445,42 @@ avtOUTCARFileFormat::GetVar(int ts, const char *varname)
         for (int i=0; i<natoms; i++)
         {
             ptr[i] = atoms[i].fz;
+        }
+        return scalars;
+    }
+
+    if (string(varname) == "vx")
+    {
+        vtkFloatArray *scalars = vtkFloatArray::New();
+        scalars->SetNumberOfTuples(atoms.size());
+        float *ptr = (float *) scalars->GetVoidPointer(0);
+        for (int i=0; i<natoms; i++)
+        {
+            ptr[i] = atoms[i].vx;
+        }
+        return scalars;
+    }
+
+    if (string(varname) == "vy")
+    {
+        vtkFloatArray *scalars = vtkFloatArray::New();
+        scalars->SetNumberOfTuples(atoms.size());
+        float *ptr = (float *) scalars->GetVoidPointer(0);
+        for (int i=0; i<natoms; i++)
+        {
+            ptr[i] = atoms[i].vy;
+        }
+        return scalars;
+    }
+
+    if (string(varname) == "vz")
+    {
+        vtkFloatArray *scalars = vtkFloatArray::New();
+        scalars->SetNumberOfTuples(atoms.size());
+        float *ptr = (float *) scalars->GetVoidPointer(0);
+        for (int i=0; i<natoms; i++)
+        {
+            ptr[i] = atoms[i].vz;
         }
         return scalars;
     }
@@ -603,6 +661,9 @@ avtOUTCARFileFormat::GetNTimesteps(void)
 //    Jeremy Meredith, Thu Aug 12 16:26:24 EDT 2010
 //    Allowed per-cycle changes in unit cell vectors.
 //
+//    Jeremy Meredith, Tue Oct 19 12:59:24 EDT 2010
+//    Added support for optional velocities.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAllMetaData()
@@ -639,6 +700,36 @@ avtOUTCARFileFormat::ReadAllMetaData()
         {
             file_positions.push_back(in.tellg());
             ntimesteps++;
+
+            // detect how many vals per line
+            in.getline(line, 4096); // skip the separator
+            in.getline(line, 4096); // get the value line
+            float d1,d2,d3,d4,d5,d6,d7,d8,d9;
+            int n = sscanf(line, "%f %f %f %f %f %f %f %f %f",
+                           &d1,&d2,&d3,&d4,&d5,&d6,&d7,&d8,&d9);
+            if (n !=6 && n != 9)
+                EXCEPTION2(InvalidFilesException, filename.c_str(),
+                           "Expected either 6 or 9 values per atom line.");
+
+            // on the first time step; record the value
+            // on later time steps, error if there's a mismatch
+            if (ntimesteps == 1)
+            {
+                // 6 vals = position + force
+                // 9 vals = pos + force + velocities
+                if (n == 6)
+                    has_velocities = false;
+                else // (n == 9)
+                    has_velocities = true;
+            }
+            else
+            {
+                if ((  has_velocities  &&  n != 9) ||
+                    ( !has_velocities  &&  n != 6))
+                    EXCEPTION2(InvalidFilesException, filename.c_str(),
+                               "Some time steps didn't agree on whether "
+                               "or not to include velocities.");
+            }
         }
         /*
           NOT SURE WHY, BUT THESE ARE IN THE WRONG ORDER AND NEGATIVE
@@ -887,6 +978,9 @@ avtOUTCARFileFormat::ReadAllMetaData()
 //    Jeremy Meredith, Mon May 10 18:01:23 EDT 2010
 //    Don't assume short line lengths.
 //
+//    Jeremy Meredith, Tue Oct 19 12:59:24 EDT 2010
+//    Added support for optional velocities.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
@@ -935,6 +1029,10 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
                 a.elementtype_index = et_index;
                 in >> a.x  >> a.y  >> a.z;
                 in >> a.fx >> a.fy >> a.fz;
+                if (has_velocities)
+                    in >> a.vx >> a.vy >> a.vz;
+                else
+                    a.vx = a.vy = a.vz = 0.;
                 index++;
             }
         }
@@ -966,6 +1064,7 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
                 a.elementtype_index = et_index;
                 in >> a.x  >> a.y  >> a.z;
                 a.fx = a.fy = a.fz = 0.;
+                a.vx = a.vy = a.vz = 0.;
                 index++;
             }
         }
