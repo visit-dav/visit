@@ -24,6 +24,10 @@
         Weighted
         Variable
       </Enum>
+      <Enum name="LimitsMode">
+        OriginalData
+        CurrentPlot
+      </Enum>
       <Enum name="DataScale">
         Linear
         Log
@@ -38,13 +42,19 @@
       <Field name="weightVariable" label="Variable to Weight By" type="variablename" enabler="histogramType:Variable" vartypes="01000000000">
         default
       </Field>
-      <Field name="specifyRange" label="Specify Range?" type="bool" enabler="basedOn:ManyZonesForSingleVar">
+      <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
+        OriginalData
+      </Field>
+      <Field name="minFlag" label="Use min" type="bool">
         false
       </Field>
-      <Field name="min" label="Minimum" type="double" enabler="specifyRange:true">
+      <Field name="maxFlag" label="Use max" type="bool">
+        false
+      </Field>
+      <Field name="min" label="Minimum" type="double" enabler="minFlag:true">
         0.000000
       </Field>
-      <Field name="max" label="Maximum" type="double" enabler="specifyRange:true">
+      <Field name="max" label="Maximum" type="double" enabler="maxFlag:true">
         1.000000
       </Field>
       <Field name="numBins" label="Number of Bins" type="int" enabler="basedOn:ManyZonesForSingleVar">

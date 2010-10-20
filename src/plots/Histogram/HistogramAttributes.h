@@ -40,6 +40,7 @@
 #define HISTOGRAMATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 #include <PickAttributes.h>
 
@@ -77,6 +78,11 @@ public:
         Weighted,
         Variable
     };
+    enum LimitsMode
+    {
+        OriginalData,
+        CurrentPlot
+    };
     enum DataScale
     {
         Linear,
@@ -84,13 +90,23 @@ public:
         SquareRoot
     };
 
+    // These constructors are for objects of this class
     HistogramAttributes();
     HistogramAttributes(const HistogramAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    HistogramAttributes(private_tmfs_t tmfs);
+    HistogramAttributes(const HistogramAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~HistogramAttributes();
 
     virtual HistogramAttributes& operator = (const HistogramAttributes &obj);
     virtual bool operator == (const HistogramAttributes &obj) const;
     virtual bool operator != (const HistogramAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const HistogramAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -106,7 +122,9 @@ public:
     void SetBasedOn(BasedOn basedOn_);
     void SetHistogramType(BinContribution histogramType_);
     void SetWeightVariable(const std::string &weightVariable_);
-    void SetSpecifyRange(bool specifyRange_);
+    void SetLimitsMode(LimitsMode limitsMode_);
+    void SetMinFlag(bool minFlag_);
+    void SetMaxFlag(bool maxFlag_);
     void SetMin(double min_);
     void SetMax(double max_);
     void SetNumBins(int numBins_);
@@ -125,7 +143,9 @@ public:
     BinContribution      GetHistogramType() const;
     const std::string    &GetWeightVariable() const;
           std::string    &GetWeightVariable();
-    bool                 GetSpecifyRange() const;
+    LimitsMode           GetLimitsMode() const;
+    bool                 GetMinFlag() const;
+    bool                 GetMaxFlag() const;
     double               GetMin() const;
     double               GetMax() const;
     int                  GetNumBins() const;
@@ -160,6 +180,11 @@ public:
 protected:
     static std::string BinContribution_ToString(int);
 public:
+    static std::string LimitsMode_ToString(LimitsMode);
+    static bool LimitsMode_FromString(const std::string &, LimitsMode &);
+protected:
+    static std::string LimitsMode_ToString(int);
+public:
     static std::string DataScale_ToString(DataScale);
     static bool DataScale_FromString(const std::string &, DataScale &);
 protected:
@@ -181,7 +206,9 @@ public:
         ID_basedOn = 0,
         ID_histogramType,
         ID_weightVariable,
-        ID_specifyRange,
+        ID_limitsMode,
+        ID_minFlag,
+        ID_maxFlag,
         ID_min,
         ID_max,
         ID_numBins,
@@ -193,14 +220,17 @@ public:
         ID_lineWidth,
         ID_color,
         ID_dataScale,
-        ID_binScale
+        ID_binScale,
+        ID__LAST
     };
 
 private:
     int            basedOn;
     int            histogramType;
     std::string    weightVariable;
-    bool           specifyRange;
+    int            limitsMode;
+    bool           minFlag;
+    bool           maxFlag;
     double         min;
     double         max;
     int            numBins;
@@ -216,6 +246,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define HISTOGRAMATTRIBUTES_TMFS "iisibbddiiibiiiaii"
 
 #endif
