@@ -45,6 +45,7 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDoubleSpinBox>
 #include <QGroupBox>
 #include <QWidget>
 #include <QLabel>
@@ -138,6 +139,9 @@ QvisLabelPlotWindow::~QvisLabelPlotWindow()
 //
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
+//
+//   Hank Childs, Wed Oct 20 11:04:12 PDT 2010
+//   Change text heights from spin box to "double spin box".
 //
 // ****************************************************************************
 
@@ -251,22 +255,24 @@ QvisLabelPlotWindow::CreateWindowContents()
             this, SLOT(textColor2Changed(const QColor&)));
     fmtLayout->addWidget(textColor2Button, 2, 1, Qt::AlignLeft);
 
-    textHeight1SpinBox = new QSpinBox(formattingGroupBox);
-    textHeight1SpinBox->setRange(1,100);
-    textHeight1SpinBox->setSingleStep(1);
+    textHeight1SpinBox = new QDoubleSpinBox(formattingGroupBox);
+    textHeight1SpinBox->setMinimum(0.0);
+    textHeight1SpinBox->setMaximum(100.0);
+    textHeight1SpinBox->setSingleStep(0.1);
     textHeight1SpinBox->setSuffix("%");
-    connect(textHeight1SpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(textHeight1Changed(int)));
+    connect(textHeight1SpinBox, SIGNAL(valueChanged(double)),
+            this, SLOT(textHeight1Changed(double)));
     textHeight1Label = new QLabel(tr("Label height"),formattingGroupBox);
     fmtLayout->addWidget(textHeight1Label, 3, 0);
     fmtLayout->addWidget(textHeight1SpinBox, 3, 1);
 
-    textHeight2SpinBox = new QSpinBox(formattingGroupBox);
-    textHeight2SpinBox->setRange(1,100);
-    textHeight2SpinBox->setSingleStep(1);
+    textHeight2SpinBox = new QDoubleSpinBox(formattingGroupBox);
+    textHeight2SpinBox->setMinimum(0.0);
+    textHeight2SpinBox->setMaximum(100.0);
+    textHeight2SpinBox->setSingleStep(0.1);
     textHeight2SpinBox->setSuffix("%");
-    connect(textHeight2SpinBox, SIGNAL(valueChanged(int)),
-            this, SLOT(textHeight2Changed(int)));
+    connect(textHeight2SpinBox, SIGNAL(valueChanged(double)),
+            this, SLOT(textHeight2Changed(double)));
     textHeight2Label = new QLabel(tr("Node label height"),formattingGroupBox);
     fmtLayout->addWidget(textHeight2Label, 4, 0);
     fmtLayout->addWidget(textHeight2SpinBox, 4, 1);
@@ -341,6 +347,9 @@ QvisLabelPlotWindow::CreateWindowContents()
 //
 //   Cyrus Harrison, Fri Jul 18 14:44:51 PDT 2008
 //   Initial Qt4 Port. 
+//
+//   Hank Childs, Wed Oct 20 11:04:12 PDT 2010
+//   Change text heights from spin box to "double spin box".
 //
 // ****************************************************************************
 
@@ -438,7 +447,7 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
             break;
         case LabelAttributes::ID_textHeight1:
             textHeight1SpinBox->blockSignals(true);
-            textHeight1SpinBox->setValue(int(labelAtts->GetTextHeight1() * 100.f + 0.5f));
+            textHeight1SpinBox->setValue(labelAtts->GetTextHeight1() * 100.f);
             textHeight1SpinBox->blockSignals(false);
             break;
 
@@ -457,7 +466,7 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
             break;
         case LabelAttributes::ID_textHeight2:
             textHeight2SpinBox->blockSignals(true);
-            textHeight2SpinBox->setValue(int(labelAtts->GetTextHeight2() * 100.f + 0.5f));
+            textHeight2SpinBox->setValue(labelAtts->GetTextHeight2() * 100.f);
             textHeight2SpinBox->blockSignals(false);
             break;
         case LabelAttributes::ID_horizontalJustification:
@@ -513,6 +522,9 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
 //   Eric Brugger, Tue Aug 24 10:42:22 PDT 2010
 //   I added code for formatTemplate. 
 //
+//   Hank Childs, Wed Oct 20 11:04:12 PDT 2010
+//   Change text heights from spin box to "double spin box".
+//
 // ****************************************************************************
 
 void
@@ -554,8 +566,7 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         okay = !temp.isEmpty();
         if(okay)
         {
-            int ival = temp.toInt(&okay);
-            float val = float(ival) * 0.01f;
+            double val = temp.toDouble(&okay) * 0.01f;
             if(okay)
                 labelAtts->SetTextHeight1(val);
         }
@@ -563,7 +574,7 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             ResettingError(tr("text height"),
-                IntToQString(int(labelAtts->GetTextHeight1() * 100.)));
+                DoubleToQString(labelAtts->GetTextHeight1() * 100.));
             labelAtts->SetTextHeight1(labelAtts->GetTextHeight1());
         }
     }
@@ -581,8 +592,7 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         okay = !temp.isEmpty();
         if(okay)
         {
-            int ival = temp.toInt(&okay);
-            float val = float(ival) * 0.01f;
+            double val = temp.toDouble(&okay)*0.01f;
             if(okay)
                 labelAtts->SetTextHeight2(val);
         }
@@ -590,7 +600,7 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             ResettingError(tr("text height"),
-                IntToQString(int(labelAtts->GetTextHeight2() * 100.)));
+                DoubleToQString(labelAtts->GetTextHeight2() * 100.));
             labelAtts->SetTextHeight2(labelAtts->GetTextHeight2());
         }
     }
@@ -824,18 +834,18 @@ QvisLabelPlotWindow::specifyTextColor2Toggled(bool val)
 }
 
 void
-QvisLabelPlotWindow::textHeight1Changed(int val)
+QvisLabelPlotWindow::textHeight1Changed(double val)
 {
-    float textHeight = float(val) * 0.01f;
+    float textHeight = val * 0.01f;
     labelAtts->SetTextHeight1(textHeight);
     SetUpdate(false);
     Apply();
 }
 
 void
-QvisLabelPlotWindow::textHeight2Changed(int val)
+QvisLabelPlotWindow::textHeight2Changed(double val)
 {
-    float textHeight = float(val) * 0.01f;
+    float textHeight = val * 0.01f;
     labelAtts->SetTextHeight2(textHeight);
     SetUpdate(false);
     Apply();

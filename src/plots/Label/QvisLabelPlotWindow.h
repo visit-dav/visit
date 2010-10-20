@@ -48,6 +48,7 @@ class QButtonGroup;
 class QCheckBox;
 class QComboBox;
 class QGroupBox;
+class QDoubleSpinBox;
 class QLineEdit;
 class QSpinBox;
 class QvisColorButton;
@@ -69,6 +70,9 @@ class QvisColorButton;
 //
 //   Cyrus Harrison, Fri Jul 18 14:38:14 PDT 2008
 //   Initial Qt4 Port.
+//
+//   Hank Childs, Wed Oct 20 10:45:46 PDT 2010
+//   Change "Label height" to be a QDoubleSpinBox.
 //
 // ****************************************************************************
 
@@ -102,10 +106,10 @@ private slots:
 
     void specifyTextColor1Toggled(bool val);
     void textColor1Changed(const QColor &color);
-    void textHeight1Changed(int val);
+    void textHeight1Changed(double val);
     void specifyTextColor2Toggled(bool val);
     void textColor2Changed(const QColor &color);
-    void textHeight2Changed(int val);
+    void textHeight2Changed(double val);
 
     void horizontalJustificationChanged(int val);
     void verticalJustificationChanged(int val);
@@ -131,9 +135,9 @@ private:
     QvisColorButton *textColor2Button;
     QCheckBox       *specifyTextColor2Toggle;
     QLabel          *textHeight1Label;
-    QSpinBox        *textHeight1SpinBox;
+    QDoubleSpinBox  *textHeight1SpinBox;
     QLabel          *textHeight2Label;
-    QSpinBox        *textHeight2SpinBox;
+    QDoubleSpinBox  *textHeight2SpinBox;
     QComboBox       *horizontalJustificationComboBox;
     QComboBox       *verticalJustificationComboBox;
     QLineEdit       *formatTemplate;
