@@ -4,11 +4,9 @@ Definition:
 bool
 HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj) const
 {
-    if (specifyRange != obj.GetSpecifyRange())
+    if (minFlag && (min != obj.GetMin()))
         return true;
-    if (specifyRange && (min != obj.GetMin()))
-        return true;
-    if (specifyRange && (max != obj.GetMax()))
+    if (minFlag && (max != obj.GetMax()))
         return true;
     if (useBinWidths != obj.GetUseBinWidths())
         return true;
@@ -25,9 +23,9 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
     if (histogramType != obj.GetHistogramType())
         return true; 
     if ( dataScale != obj.GetDataScale() )
-	return true;
+        return true;
     if ( binScale != obj.GetBinScale() )
-	return true;
+        return true;
     return false;
 }
 

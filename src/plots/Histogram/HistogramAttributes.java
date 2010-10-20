@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class HistogramAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 16;
+    private static int HistogramAttributes_numAdditionalAtts = 18;
 
     // Enum values
     public final static int OUTPUTTYPE_CURVE = 0;
@@ -73,6 +73,9 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
     public final static int BINCONTRIBUTION_WEIGHTED = 1;
     public final static int BINCONTRIBUTION_VARIABLE = 2;
 
+    public final static int LIMITSMODE_ORIGINALDATA = 0;
+    public final static int LIMITSMODE_CURRENTPLOT = 1;
+
     public final static int DATASCALE_LINEAR = 0;
     public final static int DATASCALE_LOG = 1;
     public final static int DATASCALE_SQUAREROOT = 2;
@@ -80,12 +83,14 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
 
     public HistogramAttributes()
     {
-        super(numAdditionalAttributes);
+        super(HistogramAttributes_numAdditionalAtts);
 
         basedOn = BASEDON_MANYZONESFORSINGLEVAR;
         histogramType = BINCONTRIBUTION_FREQUENCY;
         weightVariable = new String("default");
-        specifyRange = false;
+        limitsMode = LIMITSMODE_ORIGINALDATA;
+        minFlag = false;
+        maxFlag = false;
         min = 0;
         max = 1;
         numBins = 32;
@@ -102,12 +107,14 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
 
     public HistogramAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(HistogramAttributes_numAdditionalAtts + nMoreFields);
 
         basedOn = BASEDON_MANYZONESFORSINGLEVAR;
         histogramType = BINCONTRIBUTION_FREQUENCY;
         weightVariable = new String("default");
-        specifyRange = false;
+        limitsMode = LIMITSMODE_ORIGINALDATA;
+        minFlag = false;
+        maxFlag = false;
         min = 0;
         max = 1;
         numBins = 32;
@@ -124,12 +131,14 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
 
     public HistogramAttributes(HistogramAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(HistogramAttributes_numAdditionalAtts);
 
         basedOn = obj.basedOn;
         histogramType = obj.histogramType;
         weightVariable = new String(obj.weightVariable);
-        specifyRange = obj.specifyRange;
+        limitsMode = obj.limitsMode;
+        minFlag = obj.minFlag;
+        maxFlag = obj.maxFlag;
         min = obj.min;
         max = obj.max;
         numBins = obj.numBins;
@@ -153,7 +162,7 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return HistogramAttributes_numAdditionalAtts;
     }
 
     public boolean equals(HistogramAttributes obj)
@@ -162,7 +171,9 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         return ((basedOn == obj.basedOn) &&
                 (histogramType == obj.histogramType) &&
                 (weightVariable.equals(obj.weightVariable)) &&
-                (specifyRange == obj.specifyRange) &&
+                (limitsMode == obj.limitsMode) &&
+                (minFlag == obj.minFlag) &&
+                (maxFlag == obj.maxFlag) &&
                 (min == obj.min) &&
                 (max == obj.max) &&
                 (numBins == obj.numBins) &&
@@ -199,89 +210,103 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         Select(2);
     }
 
-    public void SetSpecifyRange(boolean specifyRange_)
+    public void SetLimitsMode(int limitsMode_)
     {
-        specifyRange = specifyRange_;
+        limitsMode = limitsMode_;
         Select(3);
+    }
+
+    public void SetMinFlag(boolean minFlag_)
+    {
+        minFlag = minFlag_;
+        Select(4);
+    }
+
+    public void SetMaxFlag(boolean maxFlag_)
+    {
+        maxFlag = maxFlag_;
+        Select(5);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(4);
+        Select(6);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(5);
+        Select(7);
     }
 
     public void SetNumBins(int numBins_)
     {
         numBins = numBins_;
-        Select(6);
+        Select(8);
     }
 
     public void SetDomain(int domain_)
     {
         domain = domain_;
-        Select(7);
+        Select(9);
     }
 
     public void SetZone(int zone_)
     {
         zone = zone_;
-        Select(8);
+        Select(10);
     }
 
     public void SetUseBinWidths(boolean useBinWidths_)
     {
         useBinWidths = useBinWidths_;
-        Select(9);
+        Select(11);
     }
 
     public void SetOutputType(int outputType_)
     {
         outputType = outputType_;
-        Select(10);
+        Select(12);
     }
 
     public void SetLineStyle(int lineStyle_)
     {
         lineStyle = lineStyle_;
-        Select(11);
+        Select(13);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(12);
+        Select(14);
     }
 
     public void SetColor(ColorAttribute color_)
     {
         color = color_;
-        Select(13);
+        Select(15);
     }
 
     public void SetDataScale(int dataScale_)
     {
         dataScale = dataScale_;
-        Select(14);
+        Select(16);
     }
 
     public void SetBinScale(int binScale_)
     {
         binScale = binScale_;
-        Select(15);
+        Select(17);
     }
 
     // Property getting methods
     public int            GetBasedOn() { return basedOn; }
     public int            GetHistogramType() { return histogramType; }
     public String         GetWeightVariable() { return weightVariable; }
-    public boolean        GetSpecifyRange() { return specifyRange; }
+    public int            GetLimitsMode() { return limitsMode; }
+    public boolean        GetMinFlag() { return minFlag; }
+    public boolean        GetMaxFlag() { return maxFlag; }
     public double         GetMin() { return min; }
     public double         GetMax() { return max; }
     public int            GetNumBins() { return numBins; }
@@ -305,30 +330,34 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(2, buf))
             buf.WriteString(weightVariable);
         if(WriteSelect(3, buf))
-            buf.WriteBool(specifyRange);
+            buf.WriteInt(limitsMode);
         if(WriteSelect(4, buf))
-            buf.WriteDouble(min);
+            buf.WriteBool(minFlag);
         if(WriteSelect(5, buf))
-            buf.WriteDouble(max);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(6, buf))
-            buf.WriteInt(numBins);
+            buf.WriteDouble(min);
         if(WriteSelect(7, buf))
-            buf.WriteInt(domain);
+            buf.WriteDouble(max);
         if(WriteSelect(8, buf))
-            buf.WriteInt(zone);
+            buf.WriteInt(numBins);
         if(WriteSelect(9, buf))
-            buf.WriteBool(useBinWidths);
+            buf.WriteInt(domain);
         if(WriteSelect(10, buf))
-            buf.WriteInt(outputType);
+            buf.WriteInt(zone);
         if(WriteSelect(11, buf))
-            buf.WriteInt(lineStyle);
+            buf.WriteBool(useBinWidths);
         if(WriteSelect(12, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteInt(outputType);
         if(WriteSelect(13, buf))
-            color.Write(buf);
+            buf.WriteInt(lineStyle);
         if(WriteSelect(14, buf))
-            buf.WriteInt(dataScale);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(15, buf))
+            color.Write(buf);
+        if(WriteSelect(16, buf))
+            buf.WriteInt(dataScale);
+        if(WriteSelect(17, buf))
             buf.WriteInt(binScale);
     }
 
@@ -346,43 +375,49 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
             SetWeightVariable(buf.ReadString());
             break;
         case 3:
-            SetSpecifyRange(buf.ReadBool());
+            SetLimitsMode(buf.ReadInt());
             break;
         case 4:
-            SetMin(buf.ReadDouble());
+            SetMinFlag(buf.ReadBool());
             break;
         case 5:
-            SetMax(buf.ReadDouble());
+            SetMaxFlag(buf.ReadBool());
             break;
         case 6:
-            SetNumBins(buf.ReadInt());
+            SetMin(buf.ReadDouble());
             break;
         case 7:
-            SetDomain(buf.ReadInt());
+            SetMax(buf.ReadDouble());
             break;
         case 8:
-            SetZone(buf.ReadInt());
+            SetNumBins(buf.ReadInt());
             break;
         case 9:
-            SetUseBinWidths(buf.ReadBool());
+            SetDomain(buf.ReadInt());
             break;
         case 10:
-            SetOutputType(buf.ReadInt());
+            SetZone(buf.ReadInt());
             break;
         case 11:
-            SetLineStyle(buf.ReadInt());
+            SetUseBinWidths(buf.ReadBool());
             break;
         case 12:
-            SetLineWidth(buf.ReadInt());
+            SetOutputType(buf.ReadInt());
             break;
         case 13:
-            color.Read(buf);
-            Select(13);
+            SetLineStyle(buf.ReadInt());
             break;
         case 14:
-            SetDataScale(buf.ReadInt());
+            SetLineWidth(buf.ReadInt());
             break;
         case 15:
+            color.Read(buf);
+            Select(15);
+            break;
+        case 16:
+            SetDataScale(buf.ReadInt());
+            break;
+        case 17:
             SetBinScale(buf.ReadInt());
             break;
         }
@@ -406,7 +441,14 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
             str = str + "BINCONTRIBUTION_VARIABLE";
         str = str + "\n";
         str = str + stringToString("weightVariable", weightVariable, indent) + "\n";
-        str = str + boolToString("specifyRange", specifyRange, indent) + "\n";
+        str = str + indent + "limitsMode = ";
+        if(limitsMode == LIMITSMODE_ORIGINALDATA)
+            str = str + "LIMITSMODE_ORIGINALDATA";
+        if(limitsMode == LIMITSMODE_CURRENTPLOT)
+            str = str + "LIMITSMODE_CURRENTPLOT";
+        str = str + "\n";
+        str = str + boolToString("minFlag", minFlag, indent) + "\n";
+        str = str + boolToString("maxFlag", maxFlag, indent) + "\n";
         str = str + doubleToString("min", min, indent) + "\n";
         str = str + doubleToString("max", max, indent) + "\n";
         str = str + intToString("numBins", numBins, indent) + "\n";
@@ -446,7 +488,9 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
     private int            basedOn;
     private int            histogramType;
     private String         weightVariable;
-    private boolean        specifyRange;
+    private int            limitsMode;
+    private boolean        minFlag;
+    private boolean        maxFlag;
     private double         min;
     private double         max;
     private int            numBins;
