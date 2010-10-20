@@ -53,10 +53,10 @@
       <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
         OriginalData
       </Field>
-      <Field name="min" label="Min" type="double" enabler="minFlag:true">
+      <Field name="min" label="Minimum" type="double" enabler="minFlag:true">
         0.000000
       </Field>
-      <Field name="max" label="Max" type="double" enabler="maxFlag:true">
+      <Field name="max" label="Maximum" type="double" enabler="maxFlag:true">
         1.000000
       </Field>
       <Field name="pointSize" label="Point size" type="double">
