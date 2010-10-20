@@ -211,20 +211,22 @@ BaseFileInterface::DataType H5D::getDataType(){
     hid_t specific_type = H5Tget_native_type(data_type,H5T_DIR_ASCEND);
     BaseFileInterface::DataType answer;
 
-    if(H5Tequal(specific_type, H5T_NATIVE_INT32)){
-        answer = BaseFileInterface::DataType(2);
-    }
-    else if(H5Tequal(specific_type, H5T_NATIVE_FLOAT)){
+    if(H5Tequal(specific_type, H5T_NATIVE_FLOAT)){
         answer = BaseFileInterface::DataType(0);
-    }
-    else if(H5Tequal(specific_type,H5T_NATIVE_CHAR)){
-        answer = BaseFileInterface::DataType(4);
     }
     else if(H5Tequal(specific_type,H5T_NATIVE_DOUBLE)){
         answer = BaseFileInterface::DataType(1);
     }
-    else if(H5Tequal(specific_type,H5T_NATIVE_INT64)){
+    else if(H5Tequal(specific_type,H5T_NATIVE_INT32) ||
+            H5Tequal(specific_type,H5T_NATIVE_UINT32)){
+        answer = BaseFileInterface::DataType(2);
+    }
+    else if(H5Tequal(specific_type,H5T_NATIVE_INT64) ||
+            H5Tequal(specific_type,H5T_NATIVE_UINT64)){
         answer = BaseFileInterface::DataType(3);
+    }
+    else if(H5Tequal(specific_type,H5T_NATIVE_CHAR)){
+        answer = BaseFileInterface::DataType(4);
     }
     else {
         answer = BaseFileInterface::H5_Error;
