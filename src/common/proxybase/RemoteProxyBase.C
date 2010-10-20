@@ -398,6 +398,8 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Jeremy Meredith, Fri Feb 19 09:55:03 EST 2010
 //    Remove assumption that the machine profile has an active launch profile.
 //
+//    Mark C. Miller, Tue Oct 19 21:42:22 PDT 2010
+//    Name of '-timeout' argument was changed to '-idle-timeout'.
 // ****************************************************************************
 
 void
@@ -572,7 +574,7 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
     // Add the timeout argument
     char temp[10];
     SNPRINTF(temp, 10, "%d", launch->GetTimeout());
-    AddArgument("-timeout");
+    AddArgument("-idle-timeout");
     AddArgument(temp);
 
     //

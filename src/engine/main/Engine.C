@@ -1785,6 +1785,9 @@ Engine::ProcessInput()
 //    Mark C. Miller, Tue Sep 28 16:13:17 PDT 2010
 //    Added new name for '-timeout' option, '-idle-timeout' plus deprecation
 //    warning. Added '-exec-timeout' to control execution timeout option.
+//
+//    Mark C. Miller, Tue Oct 19 21:59:16 PDT 2010
+//    Predicated some cerr warnings about timeout on !PAR_Rank()
 // ****************************************************************************
 
 void
@@ -1871,7 +1874,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 {
                     if (strcmp(argv[i], "-timeout") == 0)
                     {
-                        cerr << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
+                        if (!PAR_Rank())
+                            cerr << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
                         debug1 << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
                         idleTimeoutMins = (int) to;
                     }
@@ -1882,14 +1886,16 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 }
                 else
                 {
-                    cerr << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
+                    if (!PAR_Rank())
+                        cerr << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
                     debug1 << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
                 }
                 i++;
             }
             else
             {
-                cerr << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
+                if (!PAR_Rank())
+                    cerr << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
                 debug1 << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
             }
         }
