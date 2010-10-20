@@ -505,13 +505,17 @@ dbg_4x4_matrix(const char *pfx, const GLfloat m[16])
 // Modifications:
 //   Tom Fogal, Thu Apr 23 14:48:21 MDT 2009
 //   Updated for recent change w.r.t. accessing debug streams.
+//
+//   Mark C. Miller, Tue Oct 19 20:24:35 PDT 2010
+//   Added test for debug level before calling cam's Print() method
 static void
 debug_view(const avtViewInfo &v)
 {
     vtkCamera *cam = vtkCamera::New();
     v.SetCameraFromView(cam);
 
-    cam->Print(DebugStream::Stream1());
+    if (DebugStream::Level1())
+        cam->Print(DebugStream::Stream1());
     debug5 << "imagepan: [" << v.imagePan[0] << ", " << v.imagePan[1] << "]"
            << std::endl << "imagezoom: " << v.imageZoom << std::endl;
 

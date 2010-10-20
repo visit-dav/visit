@@ -888,6 +888,8 @@ CommandMetaDataToCommandSpec(visit_handle h, avtSimulationCommandSpecification &
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Oct 19 20:23:57 PDT 2010
+//    Added test of debug level before calling MD's Print() method.
 // ****************************************************************************
 
 void
@@ -1127,7 +1129,8 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
     }
 
-    md->Print(DebugStream::Stream4());
+    if (DebugStream::Level4())
+        md->Print(DebugStream::Stream4());
 
     simv2_SimulationMetaData_free(h);
 #endif

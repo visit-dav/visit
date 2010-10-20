@@ -2501,6 +2501,9 @@ FileServerList::GetOpenFile() const
 //   of which plugin we used to open a given file.  So when we re-open
 //   it, we don't get it wrong.
 //
+//   Mark C. Miller, Tue Oct 19 17:19:48 PDT 2010
+//   Wrapped attempt to print MD in a TRY/CATCHALL block just to be safe. 
+//   Added test for debug level prior to calling Print() method.
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -2583,7 +2586,15 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
 
             if (key) *key = useKey;
             debug3 << "Caching metadata with key \"" << useKey << "\"" << endl;
-            newmd->Print(DebugStream::Stream3());
+            TRY
+            {
+                if (DebugStream::Level3())
+                    newmd->Print(DebugStream::Stream3());
+            }
+            CATCHALL
+            {
+            }
+            ENDTRY
             return fileMetaData[useKey];
         }
         else
@@ -2685,6 +2696,9 @@ FileServerList::GetCreateVectorMagnitudeExpressions() const
 //   Mark C. Miller, Tue Oct 19 17:19:48 PDT 2010
 //   Wrapped attempt to print SIL in a TRY/CATCHALL block as we discovered
 //   a case where avtSIL would through an exception causing GUI to die.
+//
+//   Mark C. Miller, Tue Oct 19 20:23:27 PDT 2010
+//   Added test for debug level before calling Print() method for SIL.
 // ****************************************************************************
 
 const avtSIL *
@@ -2754,7 +2768,8 @@ FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
             debug3 << "Caching SIL with key \"" << useKey << "\"" << endl;
             TRY
             {
-                newSIL->Print(DebugStream::Stream3());
+                if (DebugStream::Level3())
+                    newSIL->Print(DebugStream::Stream3());
             }
             CATCHALL
             {
