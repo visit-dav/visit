@@ -151,8 +151,6 @@ avtPoincareIC::CheckForTermination(avtIVPStep& step)
 void
 avtPoincareIC::SetIntersectionCriteria(vtkObject *obj, int maxInts)
 {
-  obj->Print(cerr);
-
     // Only plane supported for now.
     if (!obj->IsA("vtkPlane"))
         EXCEPTION1(ImproperUseException, "avtPoincareIC::SetIntersectionCriteria Only plane intersections are supported.");
