@@ -384,13 +384,11 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         intPlane->SetNormal( 0,0,1 );
     else if ( atts.GetPuncturePlane() == PoincareAttributes::Poloidal )
         intPlane->SetNormal( 0,1,0 );
-    intPlane->Delete();
     
     // Make the number of punctures 2x because the Poincare analysis
     // uses only the punctures in the same direction as the plane normal
     // while the streamline uses the plane regardless of the normal.
     poincareFilter->SetIntersectionCriteria(intPlane, 2*atts.GetMinPunctures());
-
     poincareFilter->SetIntegrationDirection(0);
 
     switch (atts.GetSourceType())
