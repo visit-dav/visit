@@ -2681,6 +2681,10 @@ FileServerList::GetCreateVectorMagnitudeExpressions() const
 //
 //   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //   Added use of treatAllDBsAsTimeVarying to GetSIL call to server.
+//
+//   Mark C. Miller, Tue Oct 19 17:19:48 PDT 2010
+//   Wrapped attempt to print SIL in a TRY/CATCHALL block as we discovered
+//   a case where avtSIL would through an exception causing GUI to die.
 // ****************************************************************************
 
 const avtSIL *
@@ -2748,7 +2752,14 @@ FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
 
             if (key) *key = useKey;
             debug3 << "Caching SIL with key \"" << useKey << "\"" << endl;
-            newSIL->Print(DebugStream::Stream3());
+            TRY
+            {
+                newSIL->Print(DebugStream::Stream3());
+            }
+            CATCHALL
+            {
+            }
+            ENDTRY
             return SILData[useKey];
         }
         else
