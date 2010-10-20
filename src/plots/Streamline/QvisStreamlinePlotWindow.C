@@ -1927,7 +1927,7 @@ QvisStreamlinePlotWindow::TurnOffSourceAttributes()
 
     TurnOff(pointList);
     TurnOff(pointListDelPoint);
-    TurnOff(pointListDelAllPoint);
+    TurnOff(pointListDelAllPoints);
     TurnOff(pointListAddPoint);
     TurnOff(pointListReadPoints);
 
@@ -2094,7 +2094,7 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     {
         TurnOn(pointList);
         TurnOn(pointListDelPoint);
-        TurnOn(pointListDelAllPoint);
+        TurnOn(pointListDelAllPoints);
         TurnOn(pointListAddPoint);
         TurnOn(pointListReadPoints);
     }
