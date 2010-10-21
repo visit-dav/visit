@@ -98,6 +98,9 @@ class avtICAlgorithm;
 //   Christoph Garth, Fri Jul 9 12:53:11 PDF 2010
 //   Replace vtkVisItCellLocator by avtCellLocator
 // 
+//   Hank Childs, Thu Oct 21 08:54:51 PDT 2010
+//   Add support for cases where we have an empty data set.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -147,6 +150,7 @@ class AVTFILTERS_API avtPICSFilter :
     virtual void              ReleaseData(void);
 
   protected:
+    bool   emptyDataset;
     double maxStepLength;
     double relTol;
     double absTol;
