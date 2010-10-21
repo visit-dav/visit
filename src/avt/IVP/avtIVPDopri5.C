@@ -506,6 +506,10 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //    Hank Childs, David Camp, and Christoph Garth, Fri Jul 23 14:31:57 PDT 2010
 //    Make sure we don't exceed the max step size.
 //
+//    Hank Childs and Christoph Garth, Thu Oct 21 14:34:37 PDT 2010
+//    Fix problem where stepsize can creep to infinity if no max step size is
+//    set.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -620,6 +624,12 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
         fac = std::max( 1.0/facr, std::min( 1.0/facl, fac/safe ) );
             
         h_new = h / fac;
+
+        if( h_new > std::numeric_limits<double>::max() )
+            h_new = std::numeric_limits<double>::max();
+        
+        if( h_new < -std::numeric_limits<double>::max() )
+            h_new = std::numeric_limits<double>::max();
 
         if( err <= 1.0 ) 
         {
