@@ -120,6 +120,9 @@ Consider the leaveDomains ICs and the balancing at the same time.
 //    Hank Childs, Mon Oct  4 14:50:01 PDT 2010
 //    Remove data members for termination.
 //
+//    Hank Childs, Thu Oct 21 08:54:51 PDT 2010
+//    Correctly initialize icAlgo.
+//
 // ****************************************************************************
 
 avtPICSFilter::avtPICSFilter()
@@ -129,7 +132,8 @@ avtPICSFilter::avtPICSFilter()
     seedTime0 = 0.0;
     pathlineNextTimeVar = "__pathlineNextTimeVar__";
     pathlineVar = "";
-    avtICAlgorithm *icAlgo = NULL;
+    icAlgo = NULL;
+    emptyDataset = false;
 
     maxStepLength = 0.;
     integrationDirection = VTK_INTEGRATE_FORWARD;
@@ -736,16 +740,26 @@ avtPICSFilter::CheckOnDemandViability(void)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //   
-//  Dave Pugmire, Tue Jul 13 09:24:57 EDT 2010
-//  Move icAlgo cleanup from Execute() to PostExecute(). The poincare plot
-//  analysis was using IC data after Execute() had been called.
+//   Dave Pugmire, Tue Jul 13 09:24:57 EDT 2010
+//   Move icAlgo cleanup from Execute() to PostExecute(). The poincare plot
+//   analysis was using IC data after Execute() had been called.
 //  
+//   Hank Childs, Thu Oct 21 08:54:51 PDT 2010
+//   Detect when we have an empty data set and issue a warning (not crash).
+//
 // ****************************************************************************
 
 void
 avtPICSFilter::Execute(void)
 {
     Initialize();
+    if (emptyDataset)
+    {
+        avtCallback::IssueWarning("There was no data to advect particles over.");
+        debug1 << "No data for PICS filter.  Bailing out early." << endl;
+        return;
+    }
+
     vector<avtIntegralCurve *> ics;
     GetIntegralCurvesFromInitialSeeds(ics);
     numSeedPts = ics.size();
@@ -886,11 +900,15 @@ AlgorithmToString(int algo)
 //   Hank Childs, Wed Sep 29 19:25:06 PDT 2010
 //   Add support for the "VisIt Selects" algorithm.
 //
+//   Hank Childs, Thu Oct 21 08:54:51 PDT 2010
+//   Detect when we have an empty data set and issue a warning (not crash).
+//
 // ****************************************************************************
 
 void
 avtPICSFilter::Initialize()
 {
+    emptyDataset = false;
     dataSpatialDimension = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
     std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
     ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
@@ -954,8 +972,18 @@ avtPICSFilter::Initialize()
             if (dataIsReplicated)
                 performCalculationsOverAllProcs = false;
             GetTypedInput()->RenumberDomainIDs(performCalculationsOverAllProcs);
-            intervalTree = GetTypedInput()->CalculateSpatialIntervalTree(
+            TRY
+            {
+                intervalTree = GetTypedInput()->CalculateSpatialIntervalTree(
                                                performCalculationsOverAllProcs);
+            }
+            CATCH(VisItException)
+            {
+                emptyDataset = true;
+                intervalTree = NULL;
+                return;
+            }
+            ENDTRY
         }
     }
     else
@@ -1972,9 +2000,12 @@ avtPICSFilter::PreExecute(void)
 //
 //  Modifications:
 //
-//  Dave Pugmire, Tue Jul 13 09:24:57 EDT 2010
-//  Move icAlgo cleanup from Execute() to PostExecute(). The poincare plot
-//  analysis was using IC data after Execute() had been called.
+//   Dave Pugmire, Tue Jul 13 09:24:57 EDT 2010
+//   Move icAlgo cleanup from Execute() to PostExecute(). The poincare plot
+//   analysis was using IC data after Execute() had been called.
+//
+//   Hank Childs, Thu Oct 21 08:54:51 PDT 2010
+//   Account for the case where there's not data to advect over. 
 //
 // ****************************************************************************
 
@@ -1989,12 +2020,18 @@ avtPICSFilter::PostExecute(void)
         solver = NULL;
     }
 
-    delete intervalTree;
-    intervalTree = NULL;
+    if (intervalTree != NULL)
+    {
+        delete intervalTree;
+        intervalTree = NULL;
+    }
 
-    icAlgo->PostExecute();
-    delete icAlgo;
-    icAlgo = NULL;
+    if (icAlgo != NULL)
+    {
+        icAlgo->PostExecute();
+        delete icAlgo;
+        icAlgo = NULL;
+    }
 }
 
 

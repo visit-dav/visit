@@ -109,6 +109,9 @@ class avtICAlgorithm;
 //   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
 //   Allow for multiple termination criterias.
 //
+//   Hank Childs, Thu Oct 21 08:54:51 PDT 2010
+//   Add support for cases where we have an empty data set.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -158,6 +161,7 @@ class AVTFILTERS_API avtPICSFilter :
     virtual void              UpdateDataObjectInfo(void);
 
   protected:
+    bool   emptyDataset;
     double maxStepLength;
     double relTol;
     double absTol;
