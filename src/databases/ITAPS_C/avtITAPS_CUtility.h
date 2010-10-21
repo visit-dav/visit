@@ -59,7 +59,7 @@ using std::vector;
 // size, N
 #define IMESH_ADEFN(TN,ON,N)                    \
     TN* ON = (TN*) malloc(N * sizeof(TN));      \
-    int ON ## _allocated = 1;                   \
+    int ON ## _allocated = N;                   \
     int ON ## _size = N;
 
 // Macro to simplify allocation of an iMesh 'array' of specific
@@ -135,6 +135,8 @@ using std::vector;
             if (!avtCallback::IssueWarning(supressMessage))                                     \
                 cerr << supressMessage << endl;                                                 \
         }                                                                                       \
+        ITAPSErrorCleanupHelper ARGS;                                                           \
+        throw (iBase_ErrorType) ERR;                                                            \
     }                                                                                           \
     else                                                                                        \
     {                                                                                           \
@@ -156,7 +158,7 @@ namespace avtITAPS_CUtility
     extern map<string, int> messageCounts;
     extern const char *supressMessage;
 
-    void ITAPSErrorCleanupHelper(int dummy, ...);
+    void ITAPSErrorCleanupHelper(void *first, ...);
     void InitDataTypeNames();
     string VisIt_iMesh_getTagName(iMesh_Instance theMesh, iBase_TagHandle theTag);
     int ITAPSEntityTopologyToVTKZoneType(int ztype);
