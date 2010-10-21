@@ -50,6 +50,9 @@
 #include <vtkVisItTubeFilter.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtIntervalTree.h>
+#include <avtMetaData.h>
+
 #include <ImproperUseException.h>
 
 
@@ -63,6 +66,7 @@
 
 avtTubeFilter::avtTubeFilter()
 {
+    scaleFactor = 1;
 }
 
 
@@ -181,6 +185,10 @@ avtTubeFilter::Equivalent(const AttributeGroup *a)
 //    We made a clone of the vtk tube filter to add support for
 //    cell-scalar based radius scaling.
 //
+//    Hank Childs, Thu Oct 21 06:32:59 PDT 2010
+//    Use "scaleFactor" for scaling, which may either come from an absolute
+//    value or from a fractino of the bounding box.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -237,7 +245,7 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     if (atts.GetScaleByVarFlag()==false &&
         tube->BuildConnectivityArrays())
     {
-        tube->SetRadius(atts.GetWidth());
+        tube->SetRadius(scaleFactor);
         tube->CreateNormalsOn();
         tube->SetNumberOfSides(atts.GetFineness());
         tube->SetCapping(atts.GetCapping() ? 1 : 0);
@@ -253,7 +261,7 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             vtktube->SetVaryRadius(VTK_VARY_RADIUS_BY_ABSOLUTE_SCALAR);
         else
             vtktube->SetVaryRadius(VTK_VARY_RADIUS_OFF);
-        vtktube->SetRadius(atts.GetWidth());
+        vtktube->SetRadius(scaleFactor);
         vtktube->SetUseDefaultNormal(1);
         vtktube->SetDefaultNormal(0.001, 0.001, 0.001);
         vtktube->SetNumberOfSides(atts.GetFineness());
@@ -295,3 +303,80 @@ avtTubeFilter::UpdateDataObjectInfo(void)
     outValidity.InvalidateZones();
     outValidity.SetNormalsAreInappropriate(true);
 }
+
+
+// ****************************************************************************
+//  Modify: avtTubeFilter::ModifyContract
+//
+//  Purpose:
+//      Figure out if we will need to do collective communication later on.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 20, 2010
+//
+// ****************************************************************************
+
+avtContract_p
+avtTubeFilter::ModifyContract(avtContract_p c)
+{
+    if (atts.GetScaleByVarFlag() == false &&
+        atts.GetTubeRadiusType() == TubeAttributes::FractionOfBBox)
+    {
+        avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
+        if (it == NULL)
+            c->NoStreaming();
+    }
+    return c;
+}
+
+
+// ****************************************************************************
+//  Method: avtTubeFilter::PreExecute
+//
+//  Purpose:
+//      Calculate the scale factor.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 20, 2010
+//
+// ****************************************************************************
+
+void
+avtTubeFilter::PreExecute(void)
+{
+    if (atts.GetScaleByVarFlag() == true)
+        return;
+    if (atts.GetTubeRadiusType() == TubeAttributes::Absolute)
+    {
+        scaleFactor = atts.GetRadiusAbsolute();
+    }
+    else
+    {
+        int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+        double bbox[6];
+        avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
+        if (it != NULL)
+            it->GetExtents(bbox);
+        else
+            GetSpatialExtents(bbox);
+
+        int numReal = 0;
+        double volume = 1.0;
+        for (int i = 0 ; i < dim ; i++)
+        {
+            if (bbox[2*i] != bbox[2*i+1])
+            {
+                numReal++;
+                volume *= (bbox[2*i+1]-bbox[2*i]);
+            }
+        }
+        if (volume < 0)
+            volume *= -1.;
+        if (numReal > 0)
+            scaleFactor = pow(volume, 1.0/numReal)*atts.GetRadiusFractionBBox();
+        else
+            scaleFactor = 1*atts.GetRadiusFractionBBox();
+    }
+}
+
+

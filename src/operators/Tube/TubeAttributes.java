@@ -59,36 +59,47 @@ import llnl.visit.Plugin;
 
 public class TubeAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 5;
+    private static int TubeAttributes_numAdditionalAtts = 7;
+
+    // Enum values
+    public final static int TUBERADIUSTYPE_FRACTIONOFBBOX = 0;
+    public final static int TUBERADIUSTYPE_ABSOLUTE = 1;
+
 
     public TubeAttributes()
     {
-        super(numAdditionalAttributes);
+        super(TubeAttributes_numAdditionalAtts);
 
         scaleByVarFlag = false;
-        width = 0.5f;
+        tubeRadiusType = TUBERADIUSTYPE_FRACTIONOFBBOX;
+        radiusFractionBBox = 0.01;
+        radiusAbsolute = 1;
         scaleVariable = new String("");
-        fineness = 3;
+        fineness = 5;
         capping = false;
     }
 
     public TubeAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(TubeAttributes_numAdditionalAtts + nMoreFields);
 
         scaleByVarFlag = false;
-        width = 0.5f;
+        tubeRadiusType = TUBERADIUSTYPE_FRACTIONOFBBOX;
+        radiusFractionBBox = 0.01;
+        radiusAbsolute = 1;
         scaleVariable = new String("");
-        fineness = 3;
+        fineness = 5;
         capping = false;
     }
 
     public TubeAttributes(TubeAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(TubeAttributes_numAdditionalAtts);
 
         scaleByVarFlag = obj.scaleByVarFlag;
-        width = obj.width;
+        tubeRadiusType = obj.tubeRadiusType;
+        radiusFractionBBox = obj.radiusFractionBBox;
+        radiusAbsolute = obj.radiusAbsolute;
         scaleVariable = new String(obj.scaleVariable);
         fineness = obj.fineness;
         capping = obj.capping;
@@ -103,14 +114,16 @@ public class TubeAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return TubeAttributes_numAdditionalAtts;
     }
 
     public boolean equals(TubeAttributes obj)
     {
         // Create the return value
         return ((scaleByVarFlag == obj.scaleByVarFlag) &&
-                (width == obj.width) &&
+                (tubeRadiusType == obj.tubeRadiusType) &&
+                (radiusFractionBBox == obj.radiusFractionBBox) &&
+                (radiusAbsolute == obj.radiusAbsolute) &&
                 (scaleVariable.equals(obj.scaleVariable)) &&
                 (fineness == obj.fineness) &&
                 (capping == obj.capping));
@@ -126,33 +139,47 @@ public class TubeAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
-    public void SetWidth(float width_)
+    public void SetTubeRadiusType(int tubeRadiusType_)
     {
-        width = width_;
+        tubeRadiusType = tubeRadiusType_;
         Select(1);
+    }
+
+    public void SetRadiusFractionBBox(double radiusFractionBBox_)
+    {
+        radiusFractionBBox = radiusFractionBBox_;
+        Select(2);
+    }
+
+    public void SetRadiusAbsolute(double radiusAbsolute_)
+    {
+        radiusAbsolute = radiusAbsolute_;
+        Select(3);
     }
 
     public void SetScaleVariable(String scaleVariable_)
     {
         scaleVariable = scaleVariable_;
-        Select(2);
+        Select(4);
     }
 
     public void SetFineness(int fineness_)
     {
         fineness = fineness_;
-        Select(3);
+        Select(5);
     }
 
     public void SetCapping(boolean capping_)
     {
         capping = capping_;
-        Select(4);
+        Select(6);
     }
 
     // Property getting methods
     public boolean GetScaleByVarFlag() { return scaleByVarFlag; }
-    public float   GetWidth() { return width; }
+    public int     GetTubeRadiusType() { return tubeRadiusType; }
+    public double  GetRadiusFractionBBox() { return radiusFractionBBox; }
+    public double  GetRadiusAbsolute() { return radiusAbsolute; }
     public String  GetScaleVariable() { return scaleVariable; }
     public int     GetFineness() { return fineness; }
     public boolean GetCapping() { return capping; }
@@ -163,12 +190,16 @@ public class TubeAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(0, buf))
             buf.WriteBool(scaleByVarFlag);
         if(WriteSelect(1, buf))
-            buf.WriteFloat(width);
+            buf.WriteInt(tubeRadiusType);
         if(WriteSelect(2, buf))
-            buf.WriteString(scaleVariable);
+            buf.WriteDouble(radiusFractionBBox);
         if(WriteSelect(3, buf))
-            buf.WriteInt(fineness);
+            buf.WriteDouble(radiusAbsolute);
         if(WriteSelect(4, buf))
+            buf.WriteString(scaleVariable);
+        if(WriteSelect(5, buf))
+            buf.WriteInt(fineness);
+        if(WriteSelect(6, buf))
             buf.WriteBool(capping);
     }
 
@@ -180,15 +211,21 @@ public class TubeAttributes extends AttributeSubject implements Plugin
             SetScaleByVarFlag(buf.ReadBool());
             break;
         case 1:
-            SetWidth(buf.ReadFloat());
+            SetTubeRadiusType(buf.ReadInt());
             break;
         case 2:
-            SetScaleVariable(buf.ReadString());
+            SetRadiusFractionBBox(buf.ReadDouble());
             break;
         case 3:
-            SetFineness(buf.ReadInt());
+            SetRadiusAbsolute(buf.ReadDouble());
             break;
         case 4:
+            SetScaleVariable(buf.ReadString());
+            break;
+        case 5:
+            SetFineness(buf.ReadInt());
+            break;
+        case 6:
             SetCapping(buf.ReadBool());
             break;
         }
@@ -198,7 +235,14 @@ public class TubeAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + boolToString("scaleByVarFlag", scaleByVarFlag, indent) + "\n";
-        str = str + floatToString("width", width, indent) + "\n";
+        str = str + indent + "tubeRadiusType = ";
+        if(tubeRadiusType == TUBERADIUSTYPE_FRACTIONOFBBOX)
+            str = str + "TUBERADIUSTYPE_FRACTIONOFBBOX";
+        if(tubeRadiusType == TUBERADIUSTYPE_ABSOLUTE)
+            str = str + "TUBERADIUSTYPE_ABSOLUTE";
+        str = str + "\n";
+        str = str + doubleToString("radiusFractionBBox", radiusFractionBBox, indent) + "\n";
+        str = str + doubleToString("radiusAbsolute", radiusAbsolute, indent) + "\n";
         str = str + stringToString("scaleVariable", scaleVariable, indent) + "\n";
         str = str + intToString("fineness", fineness, indent) + "\n";
         str = str + boolToString("capping", capping, indent) + "\n";
@@ -208,7 +252,9 @@ public class TubeAttributes extends AttributeSubject implements Plugin
 
     // Attributes
     private boolean scaleByVarFlag;
-    private float   width;
+    private int     tubeRadiusType;
+    private double  radiusFractionBBox;
+    private double  radiusAbsolute;
     private String  scaleVariable;
     private int     fineness;
     private boolean capping;

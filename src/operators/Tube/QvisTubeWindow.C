@@ -42,6 +42,8 @@
 #include <ViewerProxy.h>
 
 #include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
@@ -118,9 +120,10 @@ QvisTubeWindow::~QvisTubeWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   Jeremy Meredith, Wed May 26 14:55:13 EDT 2010
-//   Modified the tube filter to support cell-scalar radius scaling.
-//   
+//
+//   Hank Childs, Thu Oct 21 06:34:02 PDT 2010
+//   Customize interface beyond what xml2window provides.
+//
 // ****************************************************************************
 
 void
@@ -129,38 +132,54 @@ QvisTubeWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    scaleByVarFlag = new QCheckBox(tr("Scale width by variable?"), central);
+    QGroupBox *radiusGroup = new QGroupBox(central);
+    radiusGroup->setTitle(tr("Tube radius"));
+    mainLayout->addWidget(radiusGroup);
+    QGridLayout *radiusLayout = new QGridLayout(radiusGroup);
+
+    scaleByVarFlag = new QCheckBox(tr("Scale width by variable?  (Nodal variables work best)"), central);
     connect(scaleByVarFlag, SIGNAL(toggled(bool)),
             this, SLOT(scaleByVarFlagChanged(bool)));
-    mainLayout->addWidget(scaleByVarFlag, 0,0);
+    radiusLayout->addWidget(scaleByVarFlag, 0,0, 1, 3);
 
-    widthLabel = new QLabel(tr("Tube width (fixed)"), central);
-    mainLayout->addWidget(widthLabel,1,0);
-    width = new QLineEdit(central);
-    connect(width, SIGNAL(returnPressed()),
-            this, SLOT(widthProcessText()));
-    mainLayout->addWidget(width, 1,1);
-
-    scaleVariableLabel = new QLabel(tr("Tube width scaling variable"), central);
-    mainLayout->addWidget(scaleVariableLabel,2,0);
+    scaleVariableLabel = new QLabel(tr("Variable"), central);
+    radiusLayout->addWidget(scaleVariableLabel,1,0);
     int scaleVariableMask = QvisVariableButton::Scalars;
     scaleVariable = new QvisVariableButton(true, true, true, scaleVariableMask, central);
     connect(scaleVariable, SIGNAL(activated(const QString&)),
             this, SLOT(scaleVariableChanged(const QString&)));
-    mainLayout->addWidget(scaleVariable, 2,1);
+    radiusLayout->addWidget(scaleVariable, 1,1, 1, 2);
+
+    radiusLabel = new QLabel(tr("Radius"), central);
+    radiusLayout->addWidget(radiusLabel,2,0);
+    radius = new QLineEdit(central);
+    connect(radius, SIGNAL(returnPressed()),
+            this, SLOT(radiusProcessText()));
+    radiusLayout->addWidget(radius, 2,1);
+
+    radiusType = new QComboBox(radiusGroup);
+    radiusType->addItem("Fraction of Bounding Box");
+    radiusType->addItem("Absolute");
+    connect(radiusType, SIGNAL(activated(int)),
+            this, SLOT(radiusTypeChanged(int)));
+    radiusLayout->addWidget(radiusType, 2,2);
+
+    QGroupBox *formGroup = new QGroupBox(central);
+    formGroup->setTitle(tr("Tube form"));
+    mainLayout->addWidget(formGroup);
+    QGridLayout *formLayout = new QGridLayout(formGroup);
 
     finenessLabel = new QLabel(tr("Fineness of tube"), central);
-    mainLayout->addWidget(finenessLabel,3,0);
+    formLayout->addWidget(finenessLabel,0,0);
     fineness = new QLineEdit(central);
     connect(fineness, SIGNAL(returnPressed()),
             this, SLOT(finenessProcessText()));
-    mainLayout->addWidget(fineness, 3,1);
+    formLayout->addWidget(fineness, 0,1);
 
     capping = new QCheckBox(tr("Cap ends of the tubes"), central);
     connect(capping, SIGNAL(toggled(bool)),
             this, SLOT(cappingChanged(bool)));
-    mainLayout->addWidget(capping, 4,0);
-
+    formLayout->addWidget(capping, 1,0);
 }
 
 
@@ -177,11 +196,15 @@ QvisTubeWindow::CreateWindowContents()
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Oct 21 06:34:02 PDT 2010
+//   Customize interface beyond what xml2window provides.
+//
 // ****************************************************************************
 
 void
 QvisTubeWindow::UpdateWindow(bool doAll)
 {
+    int index = 0;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -196,36 +219,50 @@ QvisTubeWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case TubeAttributes::ID_scaleByVarFlag:
-            if (atts->GetScaleByVarFlag() == false)
-            {
-                width->setEnabled(true);
-                if(widthLabel)
-                    widthLabel->setEnabled(true);
-            }
-            else
-            {
-                width->setEnabled(false);
-                if(widthLabel)
-                    widthLabel->setEnabled(false);
-            }
             if (atts->GetScaleByVarFlag() == true)
             {
                 scaleVariable->setEnabled(true);
                 if(scaleVariableLabel)
                     scaleVariableLabel->setEnabled(true);
+                radiusLabel->setEnabled(false);
+                radius->setEnabled(false);
+                radiusType->setEnabled(false);
             }
             else
             {
                 scaleVariable->setEnabled(false);
                 if(scaleVariableLabel)
                     scaleVariableLabel->setEnabled(false);
+                radiusLabel->setEnabled(true);
+                radius->setEnabled(true);
+                radiusType->setEnabled(true);
             }
             scaleByVarFlag->blockSignals(true);
             scaleByVarFlag->setChecked(atts->GetScaleByVarFlag());
             scaleByVarFlag->blockSignals(false);
             break;
-          case TubeAttributes::ID_width:
-            width->setText(FloatToQString(atts->GetWidth()));
+          case TubeAttributes::ID_tubeRadiusType:
+            if (atts->GetTubeRadiusType() == TubeAttributes::FractionOfBBox)
+            {
+                radius->setText(DoubleToQString(atts->GetRadiusFractionBBox()));
+                index = 0; // First entry in combo box
+            }
+            else
+            {
+                radius->setText(DoubleToQString(atts->GetRadiusAbsolute()));
+                index = 1; // Second entry in combo box
+            }
+            radiusType->blockSignals(true);
+            radiusType->setCurrentIndex(index);
+            radiusType->blockSignals(false);
+            break;
+          case TubeAttributes::ID_radiusFractionBBox:
+            if (atts->GetTubeRadiusType() == TubeAttributes::FractionOfBBox)
+                radius->setText(DoubleToQString(atts->GetRadiusFractionBBox()));
+            break;
+          case TubeAttributes::ID_radiusAbsolute:
+            if (atts->GetTubeRadiusType() == TubeAttributes::Absolute)
+                radius->setText(DoubleToQString(atts->GetRadiusAbsolute()));
             break;
           case TubeAttributes::ID_scaleVariable:
             scaleVariable->blockSignals(true);
@@ -258,6 +295,9 @@ QvisTubeWindow::UpdateWindow(bool doAll)
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Oct 21 06:34:02 PDT 2010
+//   Customize interface beyond what xml2window provides.
+//
 // ****************************************************************************
 
 void
@@ -265,17 +305,37 @@ QvisTubeWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
 
-    // Do width
-    if(which_widget == TubeAttributes::ID_width || doAll)
+    // Do radiusFractionBBox
+    if(which_widget == TubeAttributes::ID_radiusFractionBBox || doAll)
     {
-        float val;
-        if(LineEditGetFloat(width, val))
-            atts->SetWidth(val);
-        else
+        double val;
+        if (atts->GetTubeRadiusType() == TubeAttributes::FractionOfBBox)
         {
-            ResettingError(tr("Tube width (fixed)"),
-                FloatToQString(atts->GetWidth()));
-            atts->SetWidth(atts->GetWidth());
+            if(LineEditGetDouble(radius, val))
+                atts->SetRadiusFractionBBox(val);
+            else
+            {
+                ResettingError(tr("Radius"),
+                    DoubleToQString(atts->GetRadiusFractionBBox()));
+                atts->SetRadiusFractionBBox(atts->GetRadiusFractionBBox());
+            }
+        }
+    }
+
+    // Do radiusAbsolute
+    if(which_widget == TubeAttributes::ID_radiusAbsolute || doAll)
+    {
+        double val;
+        if (atts->GetTubeRadiusType() == TubeAttributes::Absolute)
+        {
+            if(LineEditGetDouble(radius, val))
+                atts->SetRadiusAbsolute(val);
+            else
+            {
+                ResettingError(tr("Radius"),
+                    DoubleToQString(atts->GetRadiusAbsolute()));
+                atts->SetRadiusAbsolute(atts->GetRadiusAbsolute());
+            }
         }
     }
 
@@ -310,9 +370,28 @@ QvisTubeWindow::scaleByVarFlagChanged(bool val)
 
 
 void
-QvisTubeWindow::widthProcessText()
+QvisTubeWindow::radiusTypeChanged(int val)
 {
-    GetCurrentValues(TubeAttributes::ID_width);
+    TubeAttributes::TubeRadiusType t;
+
+    if (val == 0)
+        t = TubeAttributes::FractionOfBBox;
+    else
+        t = TubeAttributes::Absolute;
+
+    if(t != atts->GetTubeRadiusType())
+    {
+        atts->SetTubeRadiusType(t);
+        Apply();
+    }
+}
+
+
+void
+QvisTubeWindow::radiusProcessText()
+{
+    GetCurrentValues(TubeAttributes::ID_radiusFractionBBox);
+    GetCurrentValues(TubeAttributes::ID_radiusAbsolute);
     Apply();
 }
 
