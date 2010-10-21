@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: TubeAttributes
 //
@@ -59,13 +60,29 @@
 class TubeAttributes : public AttributeSubject
 {
 public:
+    enum TubeRadiusType
+    {
+        FractionOfBBox,
+        Absolute
+    };
+
+    // These constructors are for objects of this class
     TubeAttributes();
     TubeAttributes(const TubeAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    TubeAttributes(private_tmfs_t tmfs);
+    TubeAttributes(const TubeAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~TubeAttributes();
 
     virtual TubeAttributes& operator = (const TubeAttributes &obj);
     virtual bool operator == (const TubeAttributes &obj) const;
     virtual bool operator != (const TubeAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const TubeAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -78,14 +95,18 @@ public:
 
     // Property setting methods
     void SetScaleByVarFlag(bool scaleByVarFlag_);
-    void SetWidth(float width_);
+    void SetTubeRadiusType(TubeRadiusType tubeRadiusType_);
+    void SetRadiusFractionBBox(double radiusFractionBBox_);
+    void SetRadiusAbsolute(double radiusAbsolute_);
     void SetScaleVariable(const std::string &scaleVariable_);
     void SetFineness(int fineness_);
     void SetCapping(bool capping_);
 
     // Property getting methods
     bool              GetScaleByVarFlag() const;
-    float             GetWidth() const;
+    TubeRadiusType    GetTubeRadiusType() const;
+    double            GetRadiusFractionBBox() const;
+    double            GetRadiusAbsolute() const;
     const std::string &GetScaleVariable() const;
           std::string &GetScaleVariable();
     int               GetFineness() const;
@@ -95,6 +116,12 @@ public:
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
+    // Enum conversion functions
+    static std::string TubeRadiusType_ToString(TubeRadiusType);
+    static bool TubeRadiusType_FromString(const std::string &, TubeRadiusType &);
+protected:
+    static std::string TubeRadiusType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -106,21 +133,28 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_scaleByVarFlag = 0,
-        ID_width,
+        ID_tubeRadiusType,
+        ID_radiusFractionBBox,
+        ID_radiusAbsolute,
         ID_scaleVariable,
         ID_fineness,
-        ID_capping
+        ID_capping,
+        ID__LAST
     };
 
 private:
     bool        scaleByVarFlag;
-    float       width;
+    int         tubeRadiusType;
+    double      radiusFractionBBox;
+    double      radiusAbsolute;
     std::string scaleVariable;
     int         fineness;
     bool        capping;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define TUBEATTRIBUTES_TMFS "biddsib"
 
 #endif

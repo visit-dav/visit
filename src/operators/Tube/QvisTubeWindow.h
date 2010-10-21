@@ -46,6 +46,7 @@ class TubeAttributes;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
+class QComboBox;
 class QSpinBox;
 class QVBox;
 class QButtonGroup;
@@ -69,6 +70,9 @@ class QvisVariableButton;
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Oct 21 06:34:02 PDT 2010
+//   Customize interface beyond what xml2window provides.
+//
 // ****************************************************************************
 
 class QvisTubeWindow : public QvisOperatorWindow
@@ -87,17 +91,19 @@ class QvisTubeWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void scaleByVarFlagChanged(bool val);
-    void widthProcessText();
+    void radiusTypeChanged(int val);
+    void radiusProcessText();
     void scaleVariableChanged(const QString &varName);
     void finenessProcessText();
     void cappingChanged(bool val);
   private:
     QCheckBox *scaleByVarFlag;
-    QLineEdit *width;
+    QLineEdit *radius;
+    QComboBox *radiusType;
     QvisVariableButton *scaleVariable;
     QLineEdit *fineness;
     QCheckBox *capping;
-    QLabel *widthLabel;
+    QLabel *radiusLabel;
     QLabel *scaleVariableLabel;
     QLabel *finenessLabel;
 
