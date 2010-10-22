@@ -198,6 +198,10 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Tue Oct 19 13:52:00 EDT 2010
 //   Add a delete all points button for the point list seed option.
 // 
+//   Hank Childs, Fri Oct 22 09:22:18 PDT 2010
+//   Rename Adams-Bashforth's "Maximum step length" to "Step length" since
+//   it always takes the same size step.
+//
 // ****************************************************************************
 
 void
@@ -536,13 +540,13 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
-    integrationType->addItem(tr("M3D-C1 Integrator"));
+    integrationType->addItem(tr("M3D-C1 Integrator (M3D code only)"));
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationType, 0,1);
     
     // Create the step length text field.
-    maxStepLengthLabel = new QLabel(tr("Maximum step length"), integrationGroup);
+    maxStepLengthLabel = new QLabel(tr("Step length"), integrationGroup);
     maxStepLength = new QLineEdit(integrationGroup);
     connect(maxStepLength, SIGNAL(returnPressed()),
             this, SLOT(maxStepLengthProcessText()));
