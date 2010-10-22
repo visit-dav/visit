@@ -175,6 +175,8 @@
 #    Tom Fogal, Wed Sep 22 13:45:36 MDT 2010
 #    Fix HAVE_LIBGLEW definition.
 #
+#    Mark C. Miller, Fri Oct 22 12:28:25 PDT 2010
+#    Added missing LIBDEP support for ExodusII dependence on (its own) netcdf.
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -394,6 +396,7 @@ VISIT_3RDPARTY_VAR(VISIT_CFITSIO_DIR   "Path containing the CFITSIO library's in
 VISIT_3RDPARTY_VAR(VISIT_CGNS_DIR      "Path containing the CGNS library's include and lib" CGNS_DIR)
 VISIT_3RDPARTY_VAR(VISIT_CGNS_LIBDEP   "CGNS library dependencies" CGNS_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_EXODUSII_DIR  "Path containing the ExodusII library's include and lib" EXODUSII_DIR)
+VISIT_3RDPARTY_VAR(VISIT_EXODUSII_LIBDEP "ExodusII library dependencies" EXODUSII_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_FASTBIT_DIR   "Path containing the Fastbit library's include and lib" FASTBIT_DIR)
 VISIT_3RDPARTY_VAR(VISIT_GDAL_DIR      "Path containing the GDAL library's include and lib" GDAL_DIR)
 VISIT_3RDPARTY_VAR(VISIT_HDF4_DIR      "Path containing the HDF4 library's include and lib" HDF4_DIR)

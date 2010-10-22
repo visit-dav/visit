@@ -10,6 +10,9 @@
 #
 #     Mark C. Miller, Thu Sep 16 17:57:22 PDT 2010
 #     Updated Silo to 4.8
+#
+#     Mark C. Miller, Fri Oct 22 12:29:06 PDT 2010
+#     Added missing LIBDEP for ExodusII for (its own) netcdf
 
 ##
 ## Set the VISITHOME environment variable.
@@ -92,6 +95,7 @@ VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/2.4/${VISITARCH})
 ## Exodus
 ##
 VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR ${VISITHOME}/exodus/4.46/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP ${VISITHOME}/exodus/4.46/${VISITARCH}/lib netcdf)
 
 ##
 ## GDAL
