@@ -628,5 +628,21 @@ avtVarMetaData::Print(ostream &out, int indent) const
         Indent(out, indent);
         out << "The extents are not set." << endl;
     }
+
+    if (matRestricted.size())
+    {
+        Indent(out, indent);
+        out << "Restricted to material indices: " << matRestricted[0];
+        for (int i = 1; i < matRestricted.size(); i++)
+        {
+            out << ", " << matRestricted[i];
+            if (i%20 == 0)
+            {
+                out << endl;
+                Indent(out, indent);
+            }
+        }
+        out << endl;
+    }
 }
 
