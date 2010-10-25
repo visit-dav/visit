@@ -957,35 +957,42 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
 //   Hank Childs, Tue Jul 19 14:23:56 PDT 2005
 //   Added array var suppor.
 //
+//   Mark C. Miller, Mon Oct 25 16:48:46 PDT 2010
+//   Replaced if tests for each var type with HAS_VARS_OF_TYPE macro
+//   and included loop over expressions of equivalent type.
 // ****************************************************************************
+
+#define HAS_VARS_OF_TYPE(CAT, VEC, EXPR)                                \
+    if (varType & CAT)                                                  \
+    {                                                                   \
+        retval |= (VEC.Size() > 0);                                     \
+        for(i = 0; i < nexp && !retval; ++i)                            \
+        {                                                               \
+            const Expression &expr = cachedExpressionList[i];           \
+            if(!expr.GetHidden() && expr.GetType() == Expression::EXPR) \
+                retval |= true;                                         \
+        }                                                               \
+    }
 
 bool
 VariableMenuPopulator::ItemEnabled(int varType) const
 {
     bool retval = false;
+    int i, nexp = cachedExpressionList.GetNumExpressions();
 
-    if(varType & VAR_CATEGORY_MESH)
-       retval |= (meshVars.Size() > 0);
-    if(varType & VAR_CATEGORY_SCALAR)
-       retval |= (scalarVars.Size() > 0);
-    if(varType & VAR_CATEGORY_MATERIAL)
-       retval |= (subsetVars.Size() > 0);
-    if(varType & VAR_CATEGORY_VECTOR)
-       retval |= (vectorVars.Size() > 0);
-    if(varType & VAR_CATEGORY_SUBSET)
-       retval |= (subsetVars.Size() > 0);
-    if(varType & VAR_CATEGORY_SPECIES)
-       retval |= (speciesVars.Size() > 0);
-    if(varType & VAR_CATEGORY_CURVE)
-       retval |= (curveVars.Size() > 0);
-    if(varType & VAR_CATEGORY_TENSOR)
-       retval |= (tensorVars.Size() > 0);
-    if(varType & VAR_CATEGORY_SYMMETRIC_TENSOR)
-       retval |= (symmTensorVars.Size() > 0);
-    if(varType & VAR_CATEGORY_LABEL)
-       retval |= (labelVars.Size() > 0);
-    if(varType & VAR_CATEGORY_ARRAY)
-       retval |= (arrayVars.Size() > 0);
+    HAS_VARS_OF_TYPE(VAR_CATEGORY_MESH, meshVars, Mesh);
+    HAS_VARS_OF_TYPE(VAR_CATEGORY_SCALAR, scalarVars, ScalarMeshVar);
+    HAS_VARS_OF_TYPE(VAR_CATEGORY_MATERIAL, materialVars, Material);
+    HAS_VARS_OF_TYPE(VAR_CATEGORY_VECTOR, vectorVars, VectorMeshVar);
+    // no subset type expression variables
+    if(varType & VAR_CATEGORY_SUBSET) retval |= (subsetVars.Size() > 0);
+    HAS_VARS_OF_TYPE(VAR_CATEGORY_SPECIES, speciesVars, Species);
+    HAS_VARS_OF_TYPE(VAR_CATEGORY_CURVE, curveVars, CurveMeshVar);
+    HAS_VARS_OF_TYPE(VAR_CATEGORY_TENSOR, tensorVars, TensorMeshVar);
+    HAS_VARS_OF_TYPE(VAR_CATEGORY_SYMMETRIC_TENSOR, symmTensorVars, SymmetricTensorMeshVar);
+    // no label type expression variables
+    if(varType & VAR_CATEGORY_LABEL) retval |= (labelVars.Size() > 0);
+    HAS_VARS_OF_TYPE(VAR_CATEGORY_ARRAY, arrayVars, ArrayMeshVar);
 
     return retval;
 }
