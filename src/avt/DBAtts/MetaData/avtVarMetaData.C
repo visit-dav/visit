@@ -576,6 +576,8 @@ avtVarMetaData::UnsetExtents()
 //    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
 //    Added enumerated scalars.
 //
+//    Mark C. Miller, Thu Oct 21 17:15:46 PDT 2010
+//    Added mat-restricted information.
 // ****************************************************************************
 inline void
 Indent(ostream &out, int indent)
