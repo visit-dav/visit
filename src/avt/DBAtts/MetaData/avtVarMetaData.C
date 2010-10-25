@@ -576,6 +576,8 @@ avtVarMetaData::UnsetExtents()
 //    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
 //    Added enumerated scalars.
 //
+//    Mark C. Miller, Thu Oct 21 17:15:46 PDT 2010
+//    Added mat-restricted information.
 // ****************************************************************************
 inline void
 Indent(ostream &out, int indent)
@@ -627,6 +629,22 @@ avtVarMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "The extents are not set." << endl;
+    }
+
+    if (matRestricted.size())
+    {
+        Indent(out, indent);
+        out << "Restricted to material indices: " << matRestricted[0];
+        for (int i = 1; i < matRestricted.size(); i++)
+        {
+            out << ", " << matRestricted[i];
+            if (i%20 == 0)
+            {
+                out << endl;
+                Indent(out, indent);
+            }
+        }
+        out << endl;
     }
 }
 

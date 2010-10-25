@@ -72,15 +72,15 @@ const char *avtITAPS_CUtility::supressMessage = "further warnings regarding this
 // supports passing variable length list of void pointers that if non-zero
 // need to be free'd.
 void
-avtITAPS_CUtility::ITAPSErrorCleanupHelper(int dummy, ...)
+avtITAPS_CUtility::ITAPSErrorCleanupHelper(void *first, ...)
 {
    va_list ap;
-   va_start(ap, dummy);
+   va_start(ap, first);
+   if (first && first != EoL) free(first);
    void *ptr = va_arg(ap, void*);
    while (ptr != EoL)
    {
-       if (ptr)
-           free(ptr);
+       if (ptr) free(ptr);
        ptr = va_arg(ap, void*);
    }
    va_end(ap);

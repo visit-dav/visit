@@ -184,7 +184,6 @@ FUNCTION(CONFIGURE_ITAPS)
 
         # Build a list of the ITAPS_C source files
         FILE(GLOB ITAPS_ABS_FILES ${VISIT_SOURCE_DIR}/databases/ITAPS_C/*.[Ch]
-                              ${VISIT_SOURCE_DIR}/databases/ITAPS_C/ITAPS_C.xml
                               ${VISIT_SOURCE_DIR}/databases/ITAPS_C/CMakeLists.txt)
 
         UNSET(ITAPS_FILES)
@@ -204,14 +203,14 @@ FUNCTION(CONFIGURE_ITAPS)
             SET(defExt "")
             SET(allExts ${ITAPS_${IMPL}_FILE_PATTERNS})
             FOREACH(ext ${allExts})
-                SET(defExt "${defExt}defaultPatterns.push_back(\"${ext}\");")
+                SET(defExt "${defExt}defaultPatterns.push_back(\"${ext}\");\n")
             ENDFOREACH(ext)
             STRING(LENGTH "${defExt}" SLEN)
 
             STRING(REPLACE "ITAPS_C" ITAPS_${IMPL} NEWCONTENTS "${FILECONTENTS}")
             IF(${F} MATCHES "ITAPS_CPluginInfo.C")
                 IF(${SLEN} GREATER 0)
-                    STRING(REPLACE "defaultPatterns.push_back(\"cub\");" "${defExt}" EXTCONTENTS "${NEWCONTENTS}")
+                    STRING(REPLACE "defaultPatterns.push_back(\"*.cub\");" "${defExt}" EXTCONTENTS "${NEWCONTENTS}")
                     SET(NEWCONTENTS "${EXTCONTENTS}")
                     UNSET(EXTCONTENTS)
                 ENDIF(${SLEN} GREATER 0)

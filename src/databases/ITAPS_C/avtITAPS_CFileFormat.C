@@ -213,8 +213,11 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
              vmeshFileName[q-4] == 'u' && vmeshFileName[q-3] == 'b')
         tmpFileName = string(vmeshFileName, 0, q-4);
 
-    char dummyStr[32] = "";
-    iMesh_newMesh(dummyStr, &itapsMesh, &itapsError, 0);
+    string loadOptions;
+#ifdef ITAPS_GRUMMP
+    loadOptions = "silent";
+#endif
+    iMesh_newMesh("", &itapsMesh, &itapsError, 0);
     CheckITAPSError(itapsMesh, iMesh_newMesh, NoL);
     iMesh_getRootSet(itapsMesh, &rootSet, &itapsError);
     CheckITAPSError(itapsMesh, iMesh_getRootSet, NoL);
@@ -235,8 +238,8 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         CheckITAPSError(itapsMesh, iMeshP_getLocalParts, NoL);
         debug3 << "parts_size = " << parts_size << endl;
 #else
-        iMesh_load(itapsMesh, rootSet, tmpFileName.c_str(), dummyStr, &itapsError,
-            tmpFileName.length(), 0);
+        iMesh_load(itapsMesh, rootSet, tmpFileName.c_str(), loadOptions.c_str(), &itapsError,
+            tmpFileName.length(), loadOptions.length());
         CheckITAPSError(itapsMesh, iMesh_load, NoL);
 #endif
 
@@ -442,7 +445,7 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 int tagsOnOneEntity_size = 0;
                 iMesh_getAllTags(itapsMesh, oneEntity, &tagsOnOneEntity,
                     &tagsOnOneEntity_allocated, &tagsOnOneEntity_size, &itapsError);
-                CheckITAPSError(itapsMesh, iMesh_getAllTags, (0,tagsOnOneEntity,EoL));
+                CheckITAPSError(itapsMesh, iMesh_getAllTags, (tagsOnOneEntity,EoL));
 
                 // make a vector of the found handles and copy it
                 // to the saved list of primitive tag handles
@@ -528,17 +531,16 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
         }
     }
-    catch (iBase_Error TErr)
+    catch (iBase_ErrorType errType)
     {
         char msg[512];
         char desc[256];
         desc[0] = '\0';
-        int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
-        iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
+        int origError = (int) errType;
+        int tmpError = (int) errType;
+        iMesh_getDescription(itapsMesh, desc, &tmpError, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
-            "\nUnable to open file!", tmpError, desc); 
+            "\nUnable to open file!", origError, desc); 
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
     }
@@ -621,6 +623,152 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
             EXCEPTION1(ImproperUseException, msg);
         }
 
+#if 0
+        // Get all the entities in this entity set
+        int numEdges, numFaces, numRegns;
+        iMesh_getNumOfType(itapsMesh, theSet, iBase_EDGE, &numEdges, &itapsError);
+        iMesh_getNumOfType(itapsMesh, theSet, iBase_FACE, &numFaces, &itapsError);
+        iMesh_getNumOfType(itapsMesh, theSet, iBase_REGION, &numRegns, &itapsError);
+        int num123Ents = numEdges + numFaces + numRegns;
+
+        // Fill in a single array of handles via 3 successive calls to getEntities
+        // If implementation decided to free and realloc the setEnts_p, here
+        // we'd be in for trouble.
+        IMESH_ADEFN(iBase_EntityHandle, setEnts, num123Ents);
+        iBase_EntityHandle *setEnts_p = setEnts;
+
+        // Get edges
+        iMesh_getEntities(itapsMesh, theSet, iBase_EDGE, iMesh_ALL_TOPOLOGIES,
+            &setEnts_p, &setEnts_allocated, &setEnts_size, &itapsError);
+        CheckITAPSError(itapsMesh, iMesh_getEntities, (setEnts,EoL));
+
+        // Add faces
+        setEnts_p += numEdges;
+        setEnts_allocated -= numEdges;
+        setEnts_size -= numEdges;
+        iMesh_getEntities(itapsMesh, theSet, iBase_FACE, iMesh_ALL_TOPOLOGIES,
+            &setEnts_p, &setEnts_allocated, &setEnts_size, &itapsError);
+        CheckITAPSError(itapsMesh, iMesh_getEntities, (setEnts,EoL));
+
+        // Add regions
+        setEnts_p += numFaces;
+        setEnts_allocated -= numFaces;
+        setEnts_size -= numFaces;
+        iMesh_getEntities(itapsMesh, theSet, iBase_REGION, iMesh_ALL_TOPOLOGIES,
+            &setEnts_p, &setEnts_allocated, &setEnts_size, &itapsError);
+        CheckITAPSError(itapsMesh, iMesh_getEntities, (setEnts,EoL));
+         setEnts_size = num123Ents;
+
+        cerr << "For domain " << domain << " #entities = " << setEnts_size << endl;
+        if (setEnts_size == 0)
+            return 0;
+
+        // Get all the 'vertex' entities comprising these entities
+        iBase_EntityHandle *vertEnts = 0;
+        int vertEnts_allocated = 0, vertEnts_size = 0;
+        int *offsets = 0;
+        int offsets_allocated = 0, offsets_size;
+        iMesh_getEntArrAdj(itapsMesh, setEnts, setEnts_size, iBase_VERTEX,
+            &vertEnts, &vertEnts_allocated, &vertEnts_size,
+            &offsets, &offsets_allocated, &offsets_size, &itapsError);
+        CheckITAPSError(itapsMesh, iMesh_getEntArrAdj, (vertEnts,offsets,EoL));
+
+        cerr << "For domain " << domain << " #verticies = " << vertEnts_size << endl;
+        if (vertEnts_size == 0)
+            return 0;
+
+        // The above call does not yield UNIQUE vertex handles. Do that now.
+        map<iBase_EntityHandle, int> vertEntMap;
+        for (i = vertEnts_size-1 ; i >= 0; i--) // ensures smallest 'i' written last
+            vertEntMap[vertEnts[i]] = i;
+        free(vertEnts);
+
+        int uniqVerts_size = (int) vertEntMap.size();
+        cerr << "For domain " << domain << " #uniqe verticies = " << uniqVerts_size << endl;
+        map<iBase_EntityHandle, int>::const_iterator vertit;
+        iBase_EntityHandle *uniqVerts = (iBase_EntityHandle *)
+            malloc(uniqVerts_size * sizeof(iBase_EntityHandle));
+        for (i = 0, vertit = vertEntMap.begin(); vertit != vertEntMap.end(); i++, vertit++)
+            uniqVerts[i] = vertit->first;
+        vertEntMap.clear();
+        for (i = 0; i < uniqVerts_size; i++)
+            vertEntMap[uniqVerts[i]] = i;
+
+        //
+        // Get the coordinates for the vertex elements.
+        //
+        double *coords = 0; int coords_allocated = 0, coords_size;
+        iMesh_getVtxArrCoords(itapsMesh, uniqVerts, uniqVerts_size, iBase_INTERLEAVED,
+            &coords, &coords_allocated, &coords_size, &itapsError);
+        CheckITAPSError(itapsMesh, iMesh_getVtxArrCoords, (coords,EoL));
+
+        //
+        // If its a 1D or 2D mesh, the coords could be 3-tuples where
+        // the 'extra' values are always zero or they could be reduced
+        // dimensioned tuples. The ITAPS interface doesn't specify.
+        //
+        int tupleSize = coords_size / uniqVerts_size;
+
+        //
+        // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
+        //
+        vtkPoints *points  = vtkPoints::New();
+        points->SetNumberOfPoints(uniqVerts_size);
+        float *pts = (float *) points->GetVoidPointer(0);
+        for (i = 0; i < uniqVerts_size; i++)
+        {
+            for (j = 0; j < tupleSize; j++)
+                pts[i*3+j] = (float) coords[i*tupleSize+j];
+            for (j = tupleSize; j < 3; j++)
+                pts[i*3+j] = 0.0;
+        }
+        if (coords_allocated)
+            free(coords);
+
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+        ugrid->SetPoints(points);
+        points->Delete();
+
+        // Iterate over the entities
+        for (i = 0; i < setEnts_size; i++)
+        {
+            iBase_EntityHandle theEnt = setEnts[i];
+            int entTopo;
+            iMesh_getEntTopo(itapsMesh, theEnt, &entTopo, &itapsError);
+
+            int vtkZoneType = ITAPSEntityTopologyToVTKZoneType(entTopo);
+            if (vtkZoneType == -1)
+            {
+                debug3 << "Unsupported VTK zone type for iMesh entity " << i
+                       << " and topology type \"" << entTopologies[entTopo]
+                       << "\"" << endl;
+                continue;
+            }
+
+            iBase_EntityHandle *entVerts = 0;
+            int entVerts_allocated = 0, entVerts_size;
+            iMesh_getEntAdj(itapsMesh, setEnts[i], iBase_VERTEX,
+                &entVerts, &entVerts_allocated, &entVerts_size, &itapsError); 
+            CheckITAPSError(itapsMesh, iMesh_getEntAdj, (entVerts,EoL));
+
+            if (entVerts_size > 8)
+            {
+                debug3 << "Unsupported vert count " << entVerts_size
+                       << " for iMesh entity " << i << endl;
+                continue;
+            }
+
+            vtkIdType vertIds[8];
+            for (int j = 0; j < entVerts_size; j++)
+                vertIds[j] = vertEntMap[entVerts[j]];
+            free(entVerts);
+            ugrid->InsertNextCell(vtkZoneType, entVerts_size, vertIds);
+        }
+
+        free(setEnts);
+        free(offsets);
+#else
+
         // This call to iMesh_getAdjEntIndices is being used to obtain all the
         // vertex entities for the elements comprising this domain as well as
         // the list of vertices that comprise each element.
@@ -665,11 +813,11 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
             &offs_size,           // int* offset_size,
 
             &itapsError);         //int *err)
-        CheckITAPSError(itapsMesh, iMesh_getAdjEntIndices, (0,entHdls,adjHdls,adjInds,offs,EoL));
+        CheckITAPSError(itapsMesh, iMesh_getAdjEntIndices, (entHdls,adjHdls,adjInds,offs,EoL));
 
         if (entHdls_size <= 0 || adjHdls_size <= 0)
         {
-            ITAPSErrorCleanupHelper(0,entHdls,adjHdls,adjInds,offs,EoL);
+            ITAPSErrorCleanupHelper(entHdls,adjHdls,adjInds,offs,EoL);
             debug3 << "Mesh is empty" << endl;
             return 0;
         }
@@ -680,7 +828,7 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
         double *coords = 0; int coords_allocated = 0, coords_size;
         iMesh_getVtxArrCoords(itapsMesh, adjHdls, adjHdls_size, iBase_INTERLEAVED,
             &coords, &coords_allocated, &coords_size, &itapsError);
-        CheckITAPSError(itapsMesh, iMesh_getVtxArrCoords, (0,coords,EoL));
+        CheckITAPSError(itapsMesh, iMesh_getVtxArrCoords, (coords,EoL));
 
         //
         // If its a 1D or 2D mesh, the coords could be 3-tuples where
@@ -751,21 +899,21 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
             free(adjInds);
         if (offs_allocated)
             free(offs);
+#endif
 
         return ugrid;
 
     }
-    catch (iBase_Error TErr)
+    catch (iBase_ErrorType errType)
     {
         char msg[512];
         char desc[256];
         desc[0] = '\0';
-        int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
-        iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
+        int origError = (int) errType;
+        int tmpError = (int) errType;
+        iMesh_getDescription(itapsMesh, desc, &tmpError, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
-            "\nUnable to open file!", tmpError, desc); 
+            "\nUnable to open file!", origError, desc); 
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
         return 0;
@@ -883,7 +1031,7 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
                 &verts, &verts_allocated, &verts_size,
                 &adjInds, &adjInds_allocated, &adjInds_size,
                 &off, &off_allocated, &off_size, &itapsError);
-            CheckITAPSError(itapsMesh, iMesh_getAdjEntities, (0,verts,adjHdls,adjInds,off,EoL));
+            CheckITAPSError(itapsMesh, iMesh_getAdjEntities, (verts,adjHdls,adjInds,off,EoL));
             free(off);
             free(adjHdls);
             free(adjInds);
@@ -895,7 +1043,7 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
             }
             iMesh_getVtxArrCoords(itapsMesh, verts, verts_size, iBase_INTERLEAVED,
                                   &coords2, &coords2_allocated, &coords2_size, &itapsError);
-            CheckITAPSError(itapsMesh, iMesh_getVtxArrCoords, (0,coords2,EoL));
+            CheckITAPSError(itapsMesh, iMesh_getVtxArrCoords, (coords2,EoL));
             free(verts);
 
             int tupleSize = coords2_size / verts_size;
@@ -945,17 +1093,16 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
             free(coords2);
         }
     }
-    catch (iBase_Error TErr)
+    catch (iBase_ErrorType errType)
     {
         char msg[512];
         char desc[256];
         desc[0] = '\0';
-        int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
-        iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
+        int origError = (int) errType;
+        int tmpError = (int) errType;
+        iMesh_getDescription(itapsMesh, desc, &tmpError, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
-            "\nUnable to open file!", tmpError, desc); 
+            "\nUnable to open file!", origError, desc); 
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
         return 0;
@@ -1055,7 +1202,7 @@ tagFound:
         IMESH_ADEF(iBase_EntityHandle, varEnts);
         iMesh_getEntities(itapsMesh, domainSets[domain], entType,
             iMesh_ALL_TOPOLOGIES, IMESH_AARG(varEnts), &itapsError);
-        CheckITAPSError(itapsMesh, iMesh_getEntities, (0,varEnts,EoL));
+        CheckITAPSError(itapsMesh, iMesh_getEntities, (varEnts,EoL));
 
         //
         // Now, get the tag data and put it in an appropriate vtk data array 
@@ -1074,7 +1221,7 @@ tagFound:
                 int *intArray; int intArray_allocated = 0;
                 iMesh_getIntArrData(itapsMesh, varEnts, varEnts_size, tagToGet,
                     &intArray, &intArray_allocated, &arraySize, &itapsError); 
-                CheckITAPSError(itapsMesh, iMesh_getIntArrData, (0,intArray,EoL)); 
+                CheckITAPSError(itapsMesh, iMesh_getIntArrData, (intArray,EoL)); 
                 if (arraySize != varEnts_size * tagSizeValues)
                 {
                     char tmpMsg[256];
@@ -1097,7 +1244,7 @@ tagFound:
                 double *dblArray; int dblArray_allocated = 0;
                 iMesh_getDblArrData(itapsMesh, varEnts, varEnts_size, tagToGet,
                     &dblArray, &dblArray_allocated, &arraySize, &itapsError); 
-                CheckITAPSError(itapsMesh, iMesh_getDblArrData, (0,dblArray,EoL)); 
+                CheckITAPSError(itapsMesh, iMesh_getDblArrData, (dblArray,EoL)); 
                 if (arraySize != varEnts_size * tagSizeValues)
                 {
                     char tmpMsg[256];
@@ -1127,17 +1274,16 @@ tagFound:
 
         IMESH_AFREE(varEnts);
     }
-    catch (iBase_Error TErr)
+    catch (iBase_ErrorType errType)
     {
         char msg[512];
         char desc[256];
         desc[0] = '\0';
-        int tmpError = itapsError;
-#if !defined(ITAPS_GRUMMP)
-        iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
-#endif
+        int origError = (int) errType;
+        int tmpError = (int) errType;
+        iMesh_getDescription(itapsMesh, desc, &tmpError, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
-            "\nUnable to open file!", tmpError, desc); 
+            "\nUnable to open file!", origError, desc); 
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
         return 0;
