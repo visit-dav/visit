@@ -3,6 +3,7 @@
 H5F::H5F(){
         valid = false;
         status = 1;
+        H5Eset_auto(H5E_DEFAULT , 0, 0);
 }
 
 H5F::~H5F(){
