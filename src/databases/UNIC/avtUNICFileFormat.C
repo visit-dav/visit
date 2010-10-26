@@ -149,11 +149,14 @@ static int vtkCellType210NodeListLength[20]={
 //    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
 //    Close all open ids when returning an exception.
 //
+//    Mark C. Miller, Tue Oct 26 15:51:48 PDT 2010
+//    Added call to H5Eset_auto
 // ****************************************************************************
 
 avtUNICFileFormat::avtUNICFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1)
 {
+    H5Eset_auto(0, 0); // quiet HDF5 output on stderr
     file_handle = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
     if (file_handle < 0)
     {
