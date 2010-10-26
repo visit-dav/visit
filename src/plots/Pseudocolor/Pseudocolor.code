@@ -156,7 +156,7 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
     if(parentNode == 0)
         return;
 
-    DataNode *searchNode = parentNode->GetNode("MeshAttributes");
+    DataNode *searchNode = parentNode->GetNode("PseudocolorAttributes");
     if(searchNode == 0)
         return;
 
