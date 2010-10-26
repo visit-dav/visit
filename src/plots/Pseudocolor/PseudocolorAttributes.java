@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class PseudocolorAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 21;
+    private static int PseudocolorAttributes_numAdditionalAtts = 21;
 
     // Enum values
     public final static int CENTERING_NATURAL = 0;
@@ -85,7 +85,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
 
     public PseudocolorAttributes()
     {
-        super(numAdditionalAttributes);
+        super(PseudocolorAttributes_numAdditionalAtts);
 
         legendFlag = true;
         lightingFlag = true;
@@ -107,12 +107,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         pointSizePixels = 2;
         lineStyle = 0;
         lineWidth = 0;
-        opacityType = OPACITY_COLORTABLE;
+        opacityType = OPACITY_EXPLICIT;
     }
 
     public PseudocolorAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(PseudocolorAttributes_numAdditionalAtts + nMoreFields);
 
         legendFlag = true;
         lightingFlag = true;
@@ -134,12 +134,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         pointSizePixels = 2;
         lineStyle = 0;
         lineWidth = 0;
-        opacityType = OPACITY_COLORTABLE;
+        opacityType = OPACITY_EXPLICIT;
     }
 
     public PseudocolorAttributes(PseudocolorAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(PseudocolorAttributes_numAdditionalAtts);
 
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
@@ -173,7 +173,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return PseudocolorAttributes_numAdditionalAtts;
     }
 
     public boolean equals(PseudocolorAttributes obj)
