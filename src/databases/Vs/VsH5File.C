@@ -42,6 +42,9 @@ VsH5File::VsH5File(VsRegistry* r, std::string name, hid_t id):
   }
   */
   
+  /* quiet HDF5 stderr output */
+  H5Eset_auto(H5E_DEFAULT , 0, 0);
+  
   
 }
 
