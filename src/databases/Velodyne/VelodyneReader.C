@@ -17,9 +17,16 @@ using std::cout;
 
 #include <VelodyneReader.h>
 
+//
+// Modifications:
+//    Mark C. Miller, Mon Oct 25 17:17:50 PDT 2010
+//    Added call to H5Eset_auto to silence output on stderr.
+//
+
 int VelodyneReader::
 open( const char* filename ) 
 {
+  H5Eset_auto(H5E_DEFAULT , 0, 0);
   file_id = H5Fopen( filename, H5F_ACC_RDONLY, H5P_DEFAULT );
   if( file_id<0 ) {
     debug1 << "Failed to open Velodyne plot file: " << filename << ".\n";
