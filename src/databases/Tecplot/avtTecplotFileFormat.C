@@ -325,6 +325,9 @@ avtTecplotFileFormat::GetNextToken()
 //    Added support for cell-centered vars (through VARLOCATION).
 //    Renamed ParseNodes* to ParseArrays* to reflect this capability.
 //
+//    Jeremy Meredith, Tue Oct 26 17:13:39 EDT 2010
+//    Added support for comments.
+//
 // ****************************************************************************
 vtkPoints*
 avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
@@ -363,7 +366,15 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
             if (variableCellCentered[v] && doneWithCellCentered)
                 continue;
 
-            float val = atof(GetNextToken().c_str());
+            string tok = GetNextToken();
+            if (tok.length()>0 && tok[0]=='#')
+            {
+                while (!next_char_eol)
+                    tok = GetNextToken();
+                tok = GetNextToken();
+            }
+
+            float val = atof(tok.c_str());
             if (v==Xindex)
             {
                 pts[3*i + 0] = val;
@@ -406,6 +417,9 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
 //    Added support for cell-centered vars (through VARLOCATION).
 //    Renamed ParseNodes* to ParseArrays* to reflect this capability.
 //
+//    Jeremy Meredith, Tue Oct 26 17:13:39 EDT 2010
+//    Added support for comments.
+//
 // ****************************************************************************
 vtkPoints*
 avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
@@ -427,7 +441,17 @@ avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
         scalars->SetNumberOfTuples(numVals);
         float *ptr = (float *) scalars->GetVoidPointer(0);
         for (int i=0; i<numVals; i++)
-            ptr[i] = atof(GetNextToken().c_str());
+        {
+            string tok = GetNextToken();
+            if (tok.length()>0 && tok[0]=='#')
+            {
+                while (!next_char_eol)
+                    tok = GetNextToken();
+                tok = GetNextToken();
+            }
+
+            ptr[i] = atof(tok.c_str());
+        }
         vars[allVariableNames[v]].push_back(scalars);
 
         if (v==Xindex)
@@ -476,6 +500,10 @@ avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
 //    Jeremy Meredith, Fri Oct  9 16:22:40 EDT 2009
 //    Added new names for element types.
 //
+//    Jeremy Meredith, Tue Oct 26 11:03:35 EDT 2010
+//    Added a couple "FE" variants that were missing.
+//    Added support for comments.
+//
 // ****************************************************************************
 vtkUnstructuredGrid *
 avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
@@ -485,7 +513,7 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
     // construct the cell arrays
     int nelempts = -1;
     int idtype = -1;
-    if (elemType == "BRICK")
+    if (elemType == "BRICK" || elemType == "FEBRICK")
     {
         nelempts = 8;
         idtype = VTK_HEXAHEDRON;
@@ -509,7 +537,7 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
         idtype = VTK_TETRA;
         topologicalDimension = MAX(topologicalDimension, 3);
     }
-    else if (elemType == "POINT" || elemType == "")
+    else if (elemType == "POINT" || elemType == "FEPOINT" || elemType == "")
     {
         nelempts = 1;
         idtype = VTK_VERTEX;
@@ -541,7 +569,23 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
         *nl++ = nelempts;
         // 1-origin connectivity array
         for (int j=0; j<nelempts; j++)
-            *nl++ = idtype == VTK_VERTEX ?  c : atoi(GetNextToken().c_str())-1;
+        {
+            if (idtype == VTK_VERTEX)
+                *nl++ = c;
+            else
+            {
+                string tok = GetNextToken();
+                if (tok.length()>0 && tok[0]=='#')
+                {
+                    while (!next_char_eol)
+                        tok = GetNextToken();
+                    tok = GetNextToken();
+                }
+
+                int val = atoi(tok.c_str());
+                *nl++ = val - 1;
+            }
+        }
         
         *cl++ = offset;
         offset += nelempts+1;
@@ -854,6 +898,9 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Jeremy Meredith, Mon Sep 27 16:03:56 EDT 2010
 //    Accept "NODES" and "ELEMENTS" as aliases for "N" and "E" in ZONE records.
 //
+//    Jeremy Meredith, Tue Oct 26 17:13:39 EDT 2010
+//    Don't be quite to restrictive about what constitutes an FE-style ZONE.
+//
 // ****************************************************************************
 
 void
@@ -1141,8 +1188,15 @@ avtTecplotFileFormat::ReadFile()
             // adding a zonetype which starts with FE
             // (e.g. "FETETRAHEDRON"), switch to an FE
             // parsing mode.   Ugh.
-            if (elemType.length() > 2 && elemType.substr(0,2) == "FE")
+
+            // Let's make this simple.  Any element type which
+            // is specified and is not "ORDERED" will be assumed
+            // to make this a finite-element style zone.
+            if (elemType.length() > 0 && elemType != "ORDERED")
             {
+                // Below we use the format type keyword to determine
+                // which style to use, so fix it up to conform to what
+                // we were originally expecting.
                 if (format == "POINT")
                     format = "FEPOINT";
                 if (format == "BLOCK")
