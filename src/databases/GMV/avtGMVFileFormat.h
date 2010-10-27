@@ -35,51 +35,77 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef POLYHEDRAL_SPLIT_H
-#define POLYHEDRAL_SPLIT_H
-#include <vectortypes.h>
 
-class vtkDataArray;
+// ************************************************************************* //
+//                            avtGMVFileFormat.h                             //
+// ************************************************************************* //
+
+#ifndef AVT_GMV_FILE_FORMAT_H
+#define AVT_GMV_FILE_FORMAT_H
+
+#include <avtSTMDFileFormat.h>
+
+#include <vector>
+#include <map>
+
+#include <avtDatabaseMetaData.h>
+
+class gmvPolyhedralSplit;
 
 // ****************************************************************************
-// Class: PolyhedralSplit
+//  Class: avtGMVFileFormat
 //
-// Purpose:
-//   This class contains a list of polyhedral cells that were split into zoo
-//   cells and their split count. The class also contains methods for expanding
-//   data arrays to account for the cell splitting.
+//  Purpose:
+//      Reads in GMV files as a plugin to VisIt.
 //
-// Notes:      
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Oct 22 14:42:45 PST 2010
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 12 11:29:46 PST 2010
-//
-// Modifications:
-//   Brad Whitlock, Tue Oct 26 16:23:45 PDT 2010
-//   I turned polyhedralSplit into a vector so we could add polyhedral split
-//   information as we discover it.
-//   
 // ****************************************************************************
 
-class PolyhedralSplit
+class avtGMVFileFormat : public avtSTMDFileFormat
 {
 public:
-    PolyhedralSplit();
-    ~PolyhedralSplit();
+                       avtGMVFileFormat(const char *);
+    virtual           ~avtGMVFileFormat();
 
-    static void Destruct(void *);
+    virtual int         GetCycle(void);
+    virtual double      GetTime(void);
 
-    void AppendCellSplits(int cellid, int nsplits);
+    virtual const char    *GetType(void)   { return "GMV"; };
+    virtual void           FreeUpResources(void); 
 
-    void AppendPolyhedralNode(int);
+    virtual void           ActivateTimestep(void);
 
-    vtkDataArray *ExpandDataArray(vtkDataArray *input, bool zoneCent,
-                                  bool averageNodes=true) const;
-    vtkDataArray *CreateOriginalCells(int domain, int normalCellCount) const;
+    virtual vtkDataSet    *GetMesh(int, const char *);
+    virtual vtkDataArray  *GetVar(int, const char *);
+    virtual vtkDataArray  *GetVectorVar(int, const char *);
 
-private:
-    intVector polyhedralSplit;
-    intVector nodesForPolyhedralCells;
+    virtual void          *GetAuxiliaryData(const char *var, int domain,
+                                            const char *type, void *args, 
+                                            DestructorFunction &);
+protected:
+    void ReadData();
+    std::string GetMeshName(const std::string &initial) const;
+
+    struct MeshData
+    {
+        vtkDataSet         *dataset;
+        vtkDataArray       *material;
+        int                 materialCentering;
+        gmvPolyhedralSplit *polyhedralSplit;
+    };
+
+    // DATA MEMBERS
+    bool                            dataRead;
+    bool                            fileOpen;
+    std::map<std::string, MeshData> meshes;
+    avtDatabaseMetaData             md;
+    int                             probCycle;
+    double                          probTime;
+
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };
+
 
 #endif

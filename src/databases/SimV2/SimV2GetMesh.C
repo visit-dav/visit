@@ -915,6 +915,9 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 //   Brad Whitlock, Wed Sep  1 09:44:34 PDT 2010
 //   I fixed an off by 1 that was pointed out.
 //
+//   Brad Whitlock, Tue Oct 26 16:26:39 PDT 2010
+//   I changed the interface to PolyhedralSplit.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -991,8 +994,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
     PolyhedralSplit *polyhedralSplit = 0;
     if(polyhedralCellCount > 0)
     {
-        polyhedralSplit = new PolyhedralSplit(normalCellCount,
-            polyhedralCellCount);
+        polyhedralSplit = new PolyhedralSplit;
     }
 
     // Iterate over the connectivity and add the appropriate cell types
@@ -1011,7 +1013,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
             // Add a polyhedral cell as a collection of smaller normal cells.
             int nsplits = SimV2_Add_PolyhedralCell(ugrid, &cell, nRealPoints, 
                 phIndex, polyhedralSplit);
-            polyhedralSplit->SetCellSplits(phIndex, numCells, nsplits);
+            polyhedralSplit->AppendCellSplits(numCells, nsplits);
             phIndex++;
         }
         else if(celltype >= VISIT_CELL_BEAM && celltype <= VISIT_CELL_HEX)

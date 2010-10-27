@@ -48,6 +48,9 @@
 #   Brad Whitlock, Tue Aug 17 09:17:19 PDT 2010
 #   I added NETCDF_CXX_LIB.
 #
+#   Brad Whitlock, Wed Oct 27 14:12:19 PDT 2010
+#   Make sure that TESSELLATION_LIBRARY gets saved.
+#
 #****************************************************************************/
 
 ##
@@ -118,6 +121,14 @@ SET(MESA_LIBRARY_DIR ${VISIT_LIBRARY_DIR})
 SET(GLEW_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/glew/glew/include)
 SET(GLEW_LIBRARY_DIR ${VISIT_LIBRARY_DIR})
 SET(GLEW_LIB         @GLEW_LIB@)
+
+# Set up OpenGL
+SET(OPENGL_INCLUDE_DIR  @OPENGL_INCLUDE_DIR@)
+SET(OPENGL_gl_LIBRARY   @OPENGL_gl_LIBRARY@)
+SET(OPENGL_glu_LIBRARY  @OPENGL_glu_LIBRARY@)
+
+# Set up the tessellation library
+SET(TESSELLATION_LIBRARY @TESSELLATION_LIBRARY@)
 
 # Set up Qt
 SET(QT_INCLUDE_DIR           ${VISIT_INCLUDE_DIR}/qt/include)

@@ -39,6 +39,9 @@
 #include <PolyhedralSplit.h>
 #include <vtkDataArray.h>
 #include <vtkUnsignedIntArray.h>
+#include <map>
+
+#include <DebugStream.h>
 
 // ****************************************************************************
 // Method: PolyhedralSplit::PolyhedralSplit
@@ -47,22 +50,18 @@
 //   Constructor
 //
 // Arguments:
-//   nnorm : The number of normal cells.
-//   npoly : The number of polyhedral cells.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 15:16:41 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct 26 16:27:26 PDT 2010
+//   I removed the arguments and made polyhedralSplit into a vector.
+//
 // ****************************************************************************
 
-PolyhedralSplit::PolyhedralSplit(int nnorm, int npoly) : nodesForPolyhedralCells()
+PolyhedralSplit::PolyhedralSplit() : polyhedralSplit(), nodesForPolyhedralCells()
 {
-    polyhedralSplit = new int[2 * npoly];
-    polyhedralCellCount = npoly;
-    normalCellCount = nnorm;
-    memset(polyhedralSplit, 0, 2 * polyhedralCellCount * sizeof(int));
 }
 
 // ****************************************************************************
@@ -80,7 +79,6 @@ PolyhedralSplit::PolyhedralSplit(int nnorm, int npoly) : nodesForPolyhedralCells
 
 PolyhedralSplit::~PolyhedralSplit()
 {
-    delete [] polyhedralSplit;
 }
 
 // ****************************************************************************
@@ -107,13 +105,12 @@ PolyhedralSplit::Destruct(void *ptr)
 }
 
 // ****************************************************************************
-// Method: PolyhedralSplit::SetCellSplits
+// Method: PolyhedralSplit::AppendCellSplits
 //
 // Purpose: 
-//   Record the cellid and number of splits for the i'th polyhedral cell.
+//   Record the cellid and number of splits for the next polyhedral cell.
 //
 // Arguments:
-//   i       : The polyhedral cell index.
 //   cellid  : The original cell id of the polyhedral cell.
 //   nsplits : The number of splits for the polyhedral cell.
 //
@@ -125,10 +122,10 @@ PolyhedralSplit::Destruct(void *ptr)
 // ****************************************************************************
 
 void
-PolyhedralSplit::SetCellSplits(int i, int cellid, int nsplits)
+PolyhedralSplit::AppendCellSplits(int cellid, int nsplits)
 {
-    polyhedralSplit[2*i] = cellid;
-    polyhedralSplit[2*i+1] = nsplits;
+    polyhedralSplit.push_back(cellid);
+    polyhedralSplit.push_back(nsplits);
 }
 
 // ****************************************************************************
@@ -161,7 +158,10 @@ PolyhedralSplit::AppendPolyhedralNode(int id)
 //   replicated the appropriate number of times.
 //
 // Arguments:
-//   input : The input data array.
+//   input        : The input data array.
+//   zoneCent     : True if the data is zone centered.
+//   averageNodes : If true then average the node data for new polyhedral nodes.
+//                  If false, use the dominant value.
 //
 // Returns:    A new data array
 //
@@ -171,18 +171,36 @@ PolyhedralSplit::AppendPolyhedralNode(int id)
 // Creation:   Fri Mar 12 15:19:07 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct 26 16:23:45 PDT 2010
+//   I turned polyhedralSplit into a vector. Allow for the input to be returned
+//   in the case where there are now polyhedral cells. I also added a new case
+//   for figuring out the new nodal values for new polyhedral nodes so we can
+//   use the dominant value. This lets us handle nodal material data.
+//
 // ****************************************************************************
 
 vtkDataArray *
-PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent) const
+PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent, 
+    bool averageNodes) const
 {
-    vtkDataArray *output = input->NewInstance();
-    if(zoneCent)
+    const char *mName = "PolyhedralSplit::ExpandDataArray: ";
+    vtkDataArray *output = NULL;
+    int polyhedralCellCount = polyhedralSplit.size() / 2;
+
+    if(polyhedralCellCount == 0)
     {
+        debug4 << mName << "Returning input data array " << endl;
+        output = input;
+        output->Register(NULL);
+    }
+    else if(zoneCent)
+    {
+        debug4 << mName << "Expanding zonal data" << endl;
+        output = input->NewInstance();
         int bloat = 0;
-        for(int i = 0; i < polyhedralCellCount; ++i)
-           bloat += (polyhedralSplit[i*2+1] - 1);
+       
+        for(int i = 1; i < polyhedralSplit.size(); i += 2)
+           bloat += (polyhedralSplit[i] - 1);
         output->SetNumberOfTuples(input->GetNumberOfTuples() + bloat);
         output->SetName(input->GetName());
 
@@ -206,6 +224,7 @@ PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent) const
     }
     else
     {
+        output = input->NewInstance();
         output->SetNumberOfTuples(input->GetNumberOfTuples() + polyhedralCellCount);
         output->SetName(input->GetName());
         // Copy all of the original node data
@@ -214,24 +233,73 @@ PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent) const
             output->SetTuple(out++, input->GetTuple(nodeid));
 
         // Create average values for the new nodes.
-        double *avg = new double[input->GetNumberOfComponents()];
-        for(size_t i = 0; i < nodesForPolyhedralCells.size(); )
+        if(averageNodes ||
+           input->GetNumberOfComponents()>1/*For ease*/)
         {
-            int nnodes = nodesForPolyhedralCells[i++];
-            memset(avg, 0, input->GetNumberOfComponents() * sizeof(double));
-            for(int j = 0; j < nnodes; ++j)
+            debug4 << mName << "Expanding nodal data using averaging for the "
+                "new node values" << endl;
+            double *avg = new double[input->GetNumberOfComponents()];
+            for(size_t i = 0; i < nodesForPolyhedralCells.size(); )
             {
-                int nodeid = nodesForPolyhedralCells[i++];
-                double *val = input->GetTuple(nodeid);
+                int nnodes = nodesForPolyhedralCells[i++];
+                memset(avg, 0, input->GetNumberOfComponents() * sizeof(double));
+                for(int j = 0; j < nnodes; ++j)
+                {
+                    int nodeid = nodesForPolyhedralCells[i++];
+                    double *val = input->GetTuple(nodeid);
+                    for(int c = 0; c < input->GetNumberOfComponents(); ++c)
+                        avg[c] += val[c];
+                }
                 for(int c = 0; c < input->GetNumberOfComponents(); ++c)
-                    avg[c] += val[c];
+                    avg[c] /= double(nnodes);
+                output->SetTuple(out++, avg);
             }
-            for(int c = 0; c < input->GetNumberOfComponents(); ++c)
-                avg[c] /= double(nnodes);
-            output->SetTuple(out++, avg);
+            delete [] avg;
         }
-        delete [] avg;
+        else
+        {
+            debug4 << mName << "Expanding nodal data using dominant value for "
+                "the new node values" << endl;
+
+            // Just 1-component values for now.
+            for(size_t i = 0; i < nodesForPolyhedralCells.size(); )
+            {
+                int nnodes = nodesForPolyhedralCells[i++];
+                // Count up the unique values.
+                std::map<double,int> counts;
+                std::map<double,int>::iterator it;
+                for(int j = 0; j < nnodes; ++j)
+                {
+                    int nodeid = nodesForPolyhedralCells[i++];
+                    double val = input->GetTuple1(nodeid);
+                    it = counts.find(val);
+                    if(it == counts.end())
+                        counts[val] = 1;
+                    else
+                        counts[val]++;
+                }
+
+                // Figure out which is the most common value.
+                it = counts.begin();
+                int maxcount = it->second;
+                double mostCommon = it->first;
+                for(; it != counts.end(); ++it)
+                {
+                    if(it->second > maxcount)
+                    {
+                        maxcount = it->second;
+                        mostCommon = it->first;
+                    }
+                }
+
+                // Save the most common value as the new node value
+                output->SetTuple1(out++, mostCommon);
+            }
+        }
     }
+
+    debug4 << mName << "Output data has " << output->GetNumberOfTuples()
+           << " tuples" << endl;
 
     return output;  
 }
@@ -254,6 +322,8 @@ PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent) const
 // Creation:   Fri Mar 12 15:20:24 PST 2010
 //
 // Modifications:
+//   Brad Whitlock, Tue Oct 26 16:23:45 PDT 2010
+//   I turned polyhedralSplit into a vector.
 //   
 // ****************************************************************************
 
@@ -263,6 +333,7 @@ PolyhedralSplit::CreateOriginalCells(int domain, int normalCellCount) const
     vtkUnsignedIntArray *originalCells = vtkUnsignedIntArray::New();
     originalCells->SetNumberOfComponents(2);
     int bloat = 0;
+    int polyhedralCellCount = polyhedralSplit.size()/2;
     for(int i = 0; i < polyhedralCellCount; ++i)
         bloat += polyhedralSplit[i*2+1];
     originalCells->SetNumberOfTuples(normalCellCount + bloat);
