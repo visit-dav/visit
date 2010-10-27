@@ -85,6 +85,10 @@
 #
 #    Mark C. Miller, Sun Aug 29 23:35:37 PDT 2010
 #    Fixed support for DBIO-ONLY build.
+#
+#    Brad Whitlock, Fri Oct 22 15:06:17 PDT 2010
+#    I added a GMV reader.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -211,6 +215,7 @@ EnSight
 ExtrudedVol
 Fluent
 GGCM
+GMV
 GULP
 Gadget
 Image
