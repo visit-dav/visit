@@ -213,7 +213,7 @@ avtMDSplusFileFormat::GetMesh(int timestate, const char *meshname)
 
     if( (m_socket = MDS_Connect( m_host.c_str() )) < 0 )
     {
-      EXCEPTION1( NonCompliantException, "MDSplus server connection",
+      EXCEPTION2( NonCompliantException, "MDSplus server connection",
                   "Unable to connect to MDS server " + m_host );
     }
 
@@ -403,7 +403,7 @@ avtMDSplusFileFormat::GetVar(int timestate, const char *varname)
 
     if( (m_socket = MDS_Connect( m_host.c_str() )) < 0 )
     {
-      EXCEPTION1( NonCompliantException, "MDSplus server connection",
+      EXCEPTION2( NonCompliantException, "MDSplus server connection",
                   "Unable to connect to MDS server " + m_host );
     }
 
@@ -536,7 +536,7 @@ avtMDSplusFileFormat::LoadFile()
 
     if( (m_socket = MDS_Connect( m_host.c_str() )) < 0 )
     {
-      EXCEPTION1( NonCompliantException, "MDSplus server connection",
+      EXCEPTION2( NonCompliantException, "MDSplus server connection",
                   "Unable to connect to MDS server " + m_host );
     }
 

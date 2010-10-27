@@ -1463,11 +1463,28 @@ avtM3DC1FileFormat::LoadFile()
     H5open();
     H5Eset_auto( NULL, NULL, NULL );
 
+    // Check for a valid M3D C1 file
     if( H5Fis_hdf5( m_filename.c_str() ) < 0 )
         EXCEPTION1( InvalidFilesException, m_filename.c_str() );
 
-    m_fileID = H5Fopen( m_filename.c_str(), H5P_DEFAULT, H5P_DEFAULT );
+    if ( (m_fileID = H5Fopen( m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
+      EXCEPTION1( InvalidFilesException, m_filename.c_str() );
 
+    hid_t tempID = H5Gopen( m_fileID, "/equilibrium/mesh", H5P_DEFAULT);
+
+    if( tempID < 0 )
+    {
+        H5Fclose(m_fileID);
+        EXCEPTION1( InvalidFilesException, m_filename.c_str() );
+    }
+
+    H5Gclose(tempID);
+    H5Fclose(m_fileID);
+    m_fileID = -1;
+
+
+    // Open as normal
+    m_fileID = H5Fopen( m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
     if ( m_fileID < 0 )
     {
         EXCEPTION2( NonCompliantException, "M3DC1 File Open",

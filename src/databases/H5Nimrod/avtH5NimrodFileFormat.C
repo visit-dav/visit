@@ -126,19 +126,37 @@ static void dbg_string_attrib(hid_t id, const std::string &str)
 avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     avtMTSDFileFormat (&filename, 1)
 {
-    if( H5Fis_hdf5( filename ) < 0 )
-        EXCEPTION1( InvalidFilesException, filename );
-
     // INITIALIZE DATA MEMBERS
     fname = filename;
-    hid_t file;
-    hid_t root_id, group_id;
+    hid_t file_id, root_id, group_id;
     char *string_attrib;
     float time;
 
-    file = H5Fopen (filename, H5F_ACC_RDONLY, H5P_DEFAULT);
+    // Check for a valid H5NIMROD file
+    if( H5Fis_hdf5( filename ) < 0 )
+        EXCEPTION1( InvalidFilesException, filename );
 
-    if (file < 0)
+    if ((file_id = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
+      EXCEPTION1( InvalidFilesException, filename );
+
+    group_id = H5Gopen(file_id, "/GRID");
+    if (group_id < 0)
+    {
+      H5Fclose(file_id);
+      EXCEPTION1( InvalidFilesException, filename );
+    }
+
+    H5Gclose(group_id);
+    H5Fclose(file_id);
+
+    file_id = -1;
+    group_id = -1;
+
+
+    // Open as normal
+    file_id = H5Fopen (filename, H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    if (file_id < 0)
     {
       EXCEPTION2( NonCompliantException, "H5NIMROD File Open",
                   "File '" + string(filename) + "' can not be opened" );
@@ -147,11 +165,11 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     hsize_t i, npoints;
 
     // Read attributes
-    root_id = H5Gopen (file, "/");
+    root_id = H5Gopen (file_id, "/");
 
     if ( root_id < 0 )
     {
-        H5Fclose(file);        
+        H5Fclose(file_id);        
         EXCEPTION2( NonCompliantException, "H5NIMROD Group Open",
                     "The root group '/' was not found" );
     }
@@ -162,17 +180,17 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     if (H5NIMROD_read_attrib (root_id, "time", &time) == H5NIMROD_ERR)
     {
         H5Gclose(root_id);
-        H5Fclose(file);
+        H5Fclose(file_id);
         EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
                   "Attribute 'time' was not found or was the wrong type." );
     }
 
     debug5 << "time: " << time << std::endl;
-    hid_t grid_id = H5Gopen (file, "/GRID");
+    hid_t grid_id = H5Gopen (file_id, "/GRID");
     if (grid_id < 0)
     {
         H5Gclose(root_id);
-        H5Fclose(file);
+        H5Fclose(file_id);
         EXCEPTION2( NonCompliantException, "H5NIMROD Group Open",
                     "The group '/GRID' was not found" );
     }
@@ -187,7 +205,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             debug5 << "Cannot handle non cartesian coordinates" << std::endl;
             H5Gclose(root_id);
             H5Gclose(grid_id);
-            H5Fclose(file);
+            H5Fclose(file_id);
             EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
                   "Attribute 'Cartesian - XYZ' was not found or was the wrong type." );
         }
@@ -207,7 +225,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
         debug5 << "Cannot handle unstructured mesh" << std::endl;
         H5Gclose(root_id);
         H5Gclose(grid_id);
-        H5Fclose (file);
+        H5Fclose (file_id);
         EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
                     "Attribute 'Topology' was not found or not 'Structured'" );
     }
@@ -224,7 +242,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
         debug5 << "Cannot handle other than 3 dimensional data" << std::endl;
         H5Gclose(root_id);
         H5Gclose(grid_id);
-        H5Fclose (file);
+        H5Fclose (file_id);
         EXCEPTION2( NonCompliantException, "H5NIMROD Read Dimensions",
                     "Grid dataset 'X' does not have three dimensions" );
     }
@@ -267,7 +285,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             if (H5NIMROD_read_attrib (group_id, "Step number", &stepnumber) == H5NIMROD_ERR)
             {
               H5Gclose(group_id);
-              H5Fclose(file);
+              H5Fclose(file_id);
               EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
                           "Attribute 'Step number' was not found or wrong type" );
             }
@@ -279,7 +297,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             if (H5NIMROD_read_attrib (group_id, "time", &time) == H5NIMROD_ERR)
             {
               H5Gclose(group_id);
-              H5Fclose(file);
+              H5Fclose(file_id);
               EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
                           "Attribute 'time' was not found or wrong type" );
             }
@@ -327,7 +345,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     H5Gclose (group_id);
     H5Gclose (grid_id);
     H5Gclose (root_id);
-    H5Fclose (file);
+    H5Fclose (file_id);
 }
 
 
