@@ -156,6 +156,9 @@ avtVectorDecomposeExpression::GetVariableDimension(void)
 //    Hank Childs, Fri May  7 07:38:31 PDT 2004
 //    Fix bug with decomposing point tensors.
 //
+//    Hank Childs, Tue Oct 26 21:12:49 PDT 2010
+//    Fix bug with decomposing 2D tensor data.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -227,8 +230,8 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
             rv->SetNumberOfTuples(ntuples);
             for (int i = 0 ; i < ntuples ; i++)
             {
-                float val1 = arr->GetComponent(i, 2*which_comp);
-                float val2 = arr->GetComponent(i, 2*which_comp+1);
+                float val1 = arr->GetComponent(i, 3*which_comp);
+                float val2 = arr->GetComponent(i, 3*which_comp+1);
                 rv->SetTuple3(i, val1, val2, 0.);
             }
         }
