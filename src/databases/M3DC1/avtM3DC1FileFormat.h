@@ -123,7 +123,7 @@ class avtM3DC1FileFormat : public avtMTSDFileFormat
     std::vector<int>    m_cycles;
     std::vector<double> m_times;
 
-  public:
+public:
     std::vector<std::string> m_scalarVarNames;
     std::vector<std::string> m_fieldVarNames;
 

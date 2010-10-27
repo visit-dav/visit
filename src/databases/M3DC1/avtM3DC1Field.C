@@ -93,7 +93,7 @@ avtM3DC1Field::~avtM3DC1Field()
 // ****************************************************************************
 //  Method: findElementNeighbors
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -192,7 +192,7 @@ void avtM3DC1Field::findElementNeighbors()
 // ****************************************************************************
 //  Method: register_vert
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -221,7 +221,7 @@ void avtM3DC1Field::register_vert(v_entry *vlist, int *len,
 // ****************************************************************************
 //  Method: add_edge
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -254,7 +254,7 @@ void avtM3DC1Field::add_edge(edge *list, int *tri,
 // ****************************************************************************
 //  Method: get_tri_coords2D
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -282,7 +282,7 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout)
 // ****************************************************************************
 //  Method: get_tri_coords2D
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -367,7 +367,7 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, double *xout)
 // ****************************************************************************
 //  Method: interp basic interpolation
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -386,7 +386,7 @@ float avtM3DC1Field::interp(float *var, int el, double *lcoords)
 // ****************************************************************************
 //  Method: interpdR interpolation in dR
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -411,7 +411,7 @@ float avtM3DC1Field::interpdR(float *var, int el, double *lcoords)
 // ****************************************************************************
 //  Method: interpdz interpolation in dz
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -437,7 +437,7 @@ float avtM3DC1Field::interpdz(float *var, int el, double *lcoords)
 // ****************************************************************************
 //  Method: interpdR2 interpolation in dR2
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -467,7 +467,7 @@ float avtM3DC1Field::interpdR2(float *var, int el, double *lcoords)
 // ****************************************************************************
 //  Method: interpdz2 interpolation in dz2
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -497,7 +497,7 @@ float avtM3DC1Field::interpdz2(float *var, int el, double *lcoords)
 // ****************************************************************************
 //  Method: interpdR interpolation in dR
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
@@ -528,9 +528,10 @@ float avtM3DC1Field::interpdRdz(float *var, int el, double *lcoords)
 //  Method: interpBcomps
 //
 //  Simultaneously interpolate all three cylindrical components of
-//  magnetic field
+//  magnetic field - should not be used for calculating integral
+//  curves.
 //
-//  Creationist: Allen Sanderson
+//  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
 //
 // ****************************************************************************

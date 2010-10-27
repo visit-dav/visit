@@ -39,10 +39,6 @@
 
 #define MDS_PLUS_API
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef DTYPE_FS
 #undef DTYPE_FS
 #endif
@@ -67,6 +63,7 @@ int get_type( const char *signal );
 int get_dims( const char *signal, int **dims );
 char *get_name( const int nid );
 
+void *get_value( const char *prefix, const char *signal, int dtype);
 void *get_value( const char *signal, int dtype);
 void *get_values( const char *signal, int dtype );
 
@@ -79,12 +76,8 @@ double *get_slice_data( const char *name,
                   const char *node,
                   int **dims );
 unsigned int get_names( const char *signal, char **names,
-                  char recurse, char absolute, char type );
+                        bool recurse, bool absolute, bool type );
 unsigned int get_nids ( const char *signal,  int **nids  );
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 #endif  // MDS_PLUS_API
 

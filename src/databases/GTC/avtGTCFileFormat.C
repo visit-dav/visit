@@ -49,10 +49,11 @@
 #include <vtkFloatArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <avtDatabaseMetaData.h>
+
 #include <InvalidDBTypeException.h>
-
-
 #include <InvalidVariableException.h>
+#include <InvalidFilesException.h>
+#include <NonCompliantException.h>
 
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
@@ -149,6 +150,9 @@ avtGTCFileFormat::Initialize()
     if(initialized)
         return true;
 
+    if( H5Fis_hdf5( GetFilename() ) < 0 )
+      EXCEPTION1( InvalidFilesException, GetFilename() );
+
     // Turn off error message printing.
     H5Eset_auto(0,0);
     debug4 << mName << "Opening " << GetFilename() << endl;
@@ -157,8 +161,10 @@ avtGTCFileFormat::Initialize()
     
     if (fileHandle < 0)
     {
-        debug4 << mName << "Could not open " << GetFilename() << endl;
-        EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file since it is not even an HDF5 file.");
+      debug4 << mName << "Could not open " << GetFilename() << endl;
+
+      EXCEPTION2( NonCompliantException, "GTC File Open",
+                  "File '" + string(GetFilename()) + "' can not be opened" );
     }
 
     particleHandle = H5Dopen(fileHandle, "particle_data");
@@ -166,8 +172,8 @@ avtGTCFileFormat::Initialize()
     {
         debug4 << mName << "Could not open particle_data" << endl;
         H5Fclose(fileHandle);
-        EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file, "
-                   "since it is does not contain the dataset \"particle_data\"");
+        EXCEPTION2( NonCompliantException, "GTC Dataset Open",
+                  "Dataset 'particle_data' can not be opened" );
     }
 
     //Check variable's size.
@@ -181,7 +187,8 @@ avtGTCFileFormat::Initialize()
         H5Sclose(sid);
         H5Dclose(particleHandle);
         H5Fclose(fileHandle);
-        EXCEPTION1(InvalidDBTypeException, "The GTC file has an invalid number of dimensions");
+        EXCEPTION2( NonCompliantException, "GTC Dataset Extents",
+                    "Dataset 'particle_data' has an invalid extents");
     }
     
     debug4 << mName << "Determining variable size" << endl;
@@ -193,7 +200,8 @@ avtGTCFileFormat::Initialize()
         H5Sclose(sid);
         H5Dclose(particleHandle);
         H5Fclose(fileHandle);
-        EXCEPTION1(InvalidDBTypeException, "The GTC file has an insufficient number of variables");
+        EXCEPTION2( NonCompliantException, "GTC Dataset Extents",
+                    "Dataset 'particle_data' has an insufficient number of variables");
     }
     H5Sclose(dataspace);
 
@@ -902,6 +910,3 @@ parallelBuffer::AddElement( float *data )
 }
 
 #endif
-
-
-

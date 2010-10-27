@@ -47,7 +47,7 @@
 #include <vtkCellTypes.h>
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
+#include <vtkLine.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
@@ -55,9 +55,7 @@
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
 
-#include <InvalidVariableException.h>
-#include <InvalidFilesException.h>
-#include <UnexpectedValueException.h>
+#include <NonCompliantException.h>
 #include <DebugStream.h>
 
 #include "mdsPlusAPI.h"
@@ -149,7 +147,7 @@ void
 avtMDSplusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
     avtMeshMetaData *mmd;
-    avtMeshType mt = AVT_RECTILINEAR_MESH;
+    avtMeshType mt = AVT_UNSTRUCTURED_MESH;
     int nblocks = 1;
     int block_origin = 0;
     int cell_origin = 0;
@@ -163,10 +161,18 @@ avtMDSplusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
 //                         mt, extents, nblocks, block_origin,
 //                         spatial_dimension, topological_dimension );
 
-    mmd = new avtMeshMetaData(string("LinearGrid"),
+    mmd = new avtMeshMetaData(string("Signal"),
                               nblocks, block_origin,
                               cell_origin, group_origin,
                               spatial_dimension, topological_dimension, mt);
+    mmd->hideFromGUI = true;
+    md->Add(mmd);
+
+    mmd = new avtMeshMetaData(string("Experiment"),
+                              nblocks, block_origin,
+                              cell_origin, group_origin,
+                              spatial_dimension, topological_dimension, mt);
+
     mmd->hideFromGUI = true;
     md->Add(mmd);
 
@@ -175,8 +181,8 @@ avtMDSplusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
     for ( int i = 0; i < m_fieldVarNames.size(); ++i )
     {
       string varname = m_fieldVarNames[i];
-      string meshname("LinearGrid");
-      AddScalarVarToMetaData( md, varname, meshname, AVT_NODECENT );
+      AddScalarVarToMetaData( md, "Signals/"+varname, "Signal", AVT_NODECENT );
+      AddScalarVarToMetaData( md, "Experiment/"+varname, "Experiment", AVT_NODECENT );
     }
 }
 
@@ -203,15 +209,15 @@ avtMDSplusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
 vtkDataSet *
 avtMDSplusFileFormat::GetMesh(int timestate, const char *meshname)
 {
-    debug1 << "Attempting to connect to mdsplus host: " << m_host << endl;
-    cerr << "Attempting to connect to mdsplus host: " << m_host << endl;
+    debug1 << "Connecting to mdsplus host: " << m_host << endl;
 
     if( (m_socket = MDS_Connect( m_host.c_str() )) < 0 )
-        EXCEPTION1( InvalidFilesException, m_host.c_str() );
+    {
+      EXCEPTION1( NonCompliantException, "MDSplus server connection",
+                  "Unable to connect to MDS server " + m_host );
+    }
 
-    debug1 << "Attempting to connect to mdsplus tree: " << m_tree
-           << "  and shot: " << m_shot << endl;
-    cerr << "Attempting to connect to mdsplus tree: " << m_tree
+    debug1 << "Connecting to mdsplus tree: " << m_tree
            << "  and shot: " << m_shot << endl;
 
     if( MDS_Open( m_tree.c_str(), m_shot ) < 0 )
@@ -219,20 +225,18 @@ avtMDSplusFileFormat::GetMesh(int timestate, const char *meshname)
       char shotstr[16];
       sprintf( shotstr, "%d", m_shot );
 
-      EXCEPTION2( UnexpectedValueException,
-                  m_tree + string(" or ") + shotstr, "NOT FOUND" );
+      EXCEPTION2( NonCompliantException, "MDSplus open",
+                  m_tree + string(" or ") + shotstr + " was not found." );
     }
 
     bool valid = is_valid( m_signal.c_str() );
 
-    debug1 << "Attempting to find : '" << m_signal << "'  "
+    debug1 << "Retrieving mesh : '" << m_signal << "'  "
            << (valid ? "success" : "failed") << endl;
 
-    cerr << "Attempting to find : '" << m_signal << "'  "
-         << (valid ? "success" : "failed") << endl;
-
     if( !valid )
-      EXCEPTION2( UnexpectedValueException, m_signal, "NOT FOUND" );
+      EXCEPTION2( NonCompliantException, "MDSplus signal validation",
+                  "The signal " + m_signal + " was not found." );
 
     int type = get_type( m_signal.c_str() );
     int rank = get_rank( m_signal.c_str() );
@@ -242,15 +246,17 @@ avtMDSplusFileFormat::GetMesh(int timestate, const char *meshname)
 
     rank = get_dims( m_signal.c_str(), &dims );
 
-    cerr << "type  " << type << "  "
-         << "size  " << size << "  "
-         << "rank  " << rank << "  "
-         << "dims  ";
+    void *values = 0;
 
-    for( unsigned int i=0; i<rank; ++i )
-      cerr << dims[i] << "  ";
-    
-    cerr << endl;
+    // Get the true values via mdsplus
+    double origin[3] = {0,0,0};
+    double spacing[3] = {1,1,1};
+
+    if( strcmp(meshname, "Signal" ) == 0 )
+      values = get_values( m_signal.c_str(), type );
+    else //if( strcmp(meshname, "Experiment" ) == 0 )
+    {
+    }
 
     MDS_Disconnect();
 
@@ -262,41 +268,36 @@ avtMDSplusFileFormat::GetMesh(int timestate, const char *meshname)
         dims[i] = 1;
     }
 
-    // Get the true values via mdsplus
-    double origin[3] = {0,0,0};
-    double spacing[3] = {1,1,1};
+///////////////////
+//     // Create A VTK rectilinear mesh grid for the mesh.
+//    vtkFloatArray *coords[3] = {0, 0, 0};
 
-    vtkFloatArray *coords[3] = {0, 0, 0};
+//     for( unsigned int i=0; i<3; ++i )
+//     {
+//       // set each coordinate
+//       coords[i] = vtkFloatArray::New();
+//       coords[i]->SetNumberOfTuples(dims[i]);
+//       float *coordsPtr = (float *) coords[i]->GetVoidPointer(0);
 
-    for( unsigned int i=0; i<3; ++i )
-    {
-      // set each coordinate
-      coords[i] = vtkFloatArray::New();
-      coords[i]->SetNumberOfTuples(dims[i]);
-      float *coordsPtr = (float *) coords[i]->GetVoidPointer(0);
+//       for (int j=0; j<dims[i]; j++)
+//         coordsPtr[j] = origin[i] + j * spacing[i];
+//     }
 
-      for (int j=0; j<dims[i]; j++)
-        coordsPtr[j] = origin[i] + j * spacing[i];
-    }
+//     // create vtkRectilinearGrid objects + set dims and coords
+//     vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
+//     grid->SetDimensions( coords[0]->GetNumberOfTuples(),
+//                          coords[1]->GetNumberOfTuples(),
+//                          coords[2]->GetNumberOfTuples() );
 
-    // create vtkRectilinearGrid objects + set dims and coords
-    vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
-    grid->SetDimensions( coords[0]->GetNumberOfTuples(),
-                         coords[1]->GetNumberOfTuples(),
-                         coords[2]->GetNumberOfTuples() );
+//     grid->SetXCoordinates(coords[0]);
+//     grid->SetYCoordinates(coords[1]);
+//     grid->SetZCoordinates(coords[2]);
 
-    grid->SetXCoordinates(coords[0]);
-    grid->SetYCoordinates(coords[1]);
-    grid->SetZCoordinates(coords[2]);
+//     for( unsigned int i=0; i<3; ++i )
+//       coords[i]->Delete();
 
-    for( unsigned int i=0; i<3; ++i )
-      coords[i]->Delete();
-
-    free( dims );
-
-    return grid;
-
-//     // Create a VTK grid for the mesh.
+///////////////////
+//     // Create A VTK point mesh grid for the mesh.
 //     vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
 
 //     vtkPoints *vtkpoints = vtkPoints::New();
@@ -313,6 +314,10 @@ avtMDSplusFileFormat::GetMesh(int timestate, const char *meshname)
 //       vtkpoints->InsertPoint(i, pt);
 //     }
 
+//     grid->SetPoints(vtkpoints);
+
+//     vtkpoints->Delete();
+
 //     grid->Allocate(size);
 
 //     for( unsigned int i=0; i<size; ++i )
@@ -321,13 +326,55 @@ avtMDSplusFileFormat::GetMesh(int timestate, const char *meshname)
 //         grid->InsertNextCell(VTK_VERTEX, 1, &vertex);
 //     }
 
-//     grid->SetPoints(vtkpoints);
-
-//     vtkpoints->Delete();
-
-//     cerr << "dome with mesh creation" << endl;
-
 //     return grid;
+
+
+//     // Create a VTK grid for the mesh.
+    vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
+
+    vtkPoints *vtkpoints = vtkPoints::New();
+    vtkpoints->Allocate(size);
+    vtkpoints->SetNumberOfPoints((vtkIdType) size);
+
+    float pt[3];
+    pt[0] = pt[1] = pt[2] = 0;
+
+    for( unsigned int i=0; i<size; ++i )
+    {
+      pt[0] = origin[0] + i * spacing[0];
+
+      if( strcmp(meshname, "Signal" ) == 0 )
+        pt[1] = ((float *) values)[i];
+      else //if( strcmp(meshname, "Experiment" ) == 0 )
+      {
+        pt[1] =  origin[1] + i * spacing[1];
+        pt[2] =  origin[2] + i * spacing[2];
+      }
+
+      vtkpoints->InsertPoint(i, pt);
+    }
+
+    grid->SetPoints(vtkpoints);
+
+    vtkpoints->Delete();
+
+    grid->Allocate(size);
+
+    vtkLine *line = vtkLine::New();
+    for( int i=0; i<size-1; ++i )
+    {
+      line->GetPointIds()->SetId( 0, i   );
+      line->GetPointIds()->SetId( 1, i+1 );
+      
+      grid->InsertNextCell( line->GetCellType(), line->GetPointIds() );
+    }
+  
+    line->Delete();
+
+    free( dims );
+    free( values );
+
+    return grid;
 }
 
 
@@ -352,15 +399,15 @@ avtMDSplusFileFormat::GetMesh(int timestate, const char *meshname)
 vtkDataArray *
 avtMDSplusFileFormat::GetVar(int timestate, const char *varname)
 {
-    debug1 << "Attempting to connect to mdsplus host: " << m_host << endl;
-    cerr << "Attempting to connect to mdsplus host: " << m_host << endl;
+    debug1 << "Connecting to mdsplus host: " << m_host << endl;
 
     if( (m_socket = MDS_Connect( m_host.c_str() )) < 0 )
-        EXCEPTION1( InvalidFilesException, m_host.c_str() );
+    {
+      EXCEPTION1( NonCompliantException, "MDSplus server connection",
+                  "Unable to connect to MDS server " + m_host );
+    }
 
-    debug1 << "Attempting to connect to mdsplus tree: " << m_tree
-           << "  and shot: " << m_shot << endl;
-    cerr << "Attempting to connect to mdsplus tree: " << m_tree
+    debug1 << "Connecting to mdsplus tree: " << m_tree
            << "  and shot: " << m_shot << endl;
 
     if( MDS_Open( m_tree.c_str(), m_shot ) < 0 )
@@ -368,20 +415,18 @@ avtMDSplusFileFormat::GetVar(int timestate, const char *varname)
       char shotstr[16];
       sprintf( shotstr, "%d", m_shot );
 
-      EXCEPTION2( UnexpectedValueException,
-                  m_tree + string(" or ") + shotstr, "NOT FOUND" );
+      EXCEPTION2( NonCompliantException, "MDSplus tree open",
+                  m_tree + string(" or ") + shotstr + " was not found." );
     }
 
     bool valid = is_valid( m_signal.c_str() );
 
-    debug1 << "Attempting to find : '" << m_signal << "'  "
+    debug1 << "Retrieving var: '" << m_signal << "'  "
            << (valid ? "success" : "failed") << endl;
 
-    cerr << "Attempting to find : '" << m_signal << "'  "
-         << (valid ? "success" : "failed") << endl;
-
     if( !valid )
-      EXCEPTION2( UnexpectedValueException, m_signal, "NOT FOUND" );
+      EXCEPTION2( NonCompliantException, "MDSplus signal validation",
+                  "The signal " + m_signal + " was not found." );
 
     int type = get_type( m_signal.c_str() );
     int rank = get_rank( m_signal.c_str() );
@@ -390,16 +435,6 @@ avtMDSplusFileFormat::GetVar(int timestate, const char *varname)
     int *dims;
 
     rank = get_dims( m_signal.c_str(), &dims );
-
-    cerr << "type  " << type << "  "
-         << "size  " << size << "  "
-         << "rank  " << rank << "  "
-         << "dims  ";
-
-    for( unsigned int i=0; i<rank; ++i )
-      cerr << dims[i] << "  ";
-    
-    cerr << endl;
 
     void *values = get_values( m_signal.c_str(), type );
 
@@ -448,11 +483,11 @@ avtMDSplusFileFormat::GetVar(int timestate, const char *varname)
       break;
 
     default:
-      EXCEPTION2( UnexpectedValueException, m_signal,
-                  "Not found or wrong type" )
+      EXCEPTION2( NonCompliantException, "MDSplus signal read",
+                  "The signal " + m_signal + " was not found or wrong type." );
     }
 
-    cerr << "Done " << endl;
+    free( values );
 
     return var;
 }
@@ -497,16 +532,15 @@ avtMDSplusFileFormat::GetVectorVar(int timestate, const char *varname)
 void
 avtMDSplusFileFormat::LoadFile()
 {
-    debug1 << "Attempting to connect to mdsplus host: " << m_host << endl;
-    cerr << "Attempting to connect to mdsplus host: " << m_host << endl;
+    debug1 << "Connecting to mdsplus host: " << m_host << endl;
 
     if( (m_socket = MDS_Connect( m_host.c_str() )) < 0 )
-        EXCEPTION1( InvalidFilesException, m_host.c_str() );
+    {
+      EXCEPTION1( NonCompliantException, "MDSplus server connection",
+                  "Unable to connect to MDS server " + m_host );
+    }
 
-    debug1 << "Attempting to connect to mdsplus tree: " << m_tree
-           << "  and shot: " << m_shot << endl;
-
-    cerr << "Attempting to connect to mdsplus tree: " << m_tree
+    debug1 << "Connecting to mdsplus tree: " << m_tree
            << "  and shot: " << m_shot << endl;
 
     if( MDS_Open( m_tree.c_str(), m_shot ) < 0 )
@@ -514,20 +548,32 @@ avtMDSplusFileFormat::LoadFile()
       char shotstr[16];
       sprintf( shotstr, "%d", m_shot );
 
-      EXCEPTION2( UnexpectedValueException,
-                  m_tree + string(" or ") + shotstr, "NOT FOUND" );
+      EXCEPTION2( NonCompliantException, "MDSplus tree open",
+                  m_tree + string(" or ") + shotstr + " was not found." );
     }
 
     bool valid = is_valid( m_signal.c_str() );
 
-    debug1 << "Attempting to find : '" << m_signal << "'  "
+    char* units = (char *)
+      get_value( "units_of", m_signal.c_str(), DTYPE_CSTRING );
+
+    cerr << "units " << units << endl;
+
+    free( units );
+
+    double* dim = (double *)
+      get_value( "dim_of", m_signal.c_str(), DTYPE_DOUBLE );
+
+    cerr << "dim " << *dim << endl;
+
+    free( dim );
+
+    debug1 << "Validating signal : '" << m_signal << "'  "
            << (valid ? "success" : "failed") << endl;
 
-    cerr << "Attempting to find : '" << m_signal << "'  "
-         << (valid ? "success" : "failed") << endl;
-
     if( !valid )
-      EXCEPTION2( UnexpectedValueException, m_signal, "NOT FOUND" );
+      EXCEPTION2( NonCompliantException, "MDSplus signal validation",
+                  "The signal " + m_signal + " was not found." );
 
     MDS_Disconnect();
 

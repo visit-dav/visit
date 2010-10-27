@@ -51,10 +51,8 @@
 #include <avtDatabaseMetaData.h>
 
 #include <Expression.h>
-#include <BadIndexException.h>
+#include <NonCompliantException.h>
 #include <InvalidFilesException.h>
-#include <InvalidVariableException.h>
-#include <UnexpectedValueException.h>
 #include <vtkStructuredGrid.h>
 #include <vtkPoints.h>
 #include <vtkCellType.h>
@@ -128,21 +126,35 @@ static void dbg_string_attrib(hid_t id, const std::string &str)
 avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     avtMTSDFileFormat (&filename, 1)
 {
+    if( H5Fis_hdf5( filename ) < 0 )
+        EXCEPTION1( InvalidFilesException, filename );
+
     // INITIALIZE DATA MEMBERS
     fname = filename;
     hid_t file;
     hid_t root_id, group_id;
     char *string_attrib;
     float time;
+
     file = H5Fopen (filename, H5F_ACC_RDONLY, H5P_DEFAULT);
 
     if (file < 0)
-        EXCEPTION1 (InvalidFilesException, filename);
+    {
+      EXCEPTION2( NonCompliantException, "H5NIMROD File Open",
+                  "File '" + string(filename) + "' can not be opened" );
+    }
 
     hsize_t i, npoints;
 
     // Read attributes
     root_id = H5Gopen (file, "/");
+
+    if ( root_id < 0 )
+    {
+        H5Fclose(file);        
+        EXCEPTION2( NonCompliantException, "H5NIMROD Group Open",
+                    "The root group '/' was not found" );
+    }
 
     dbg_string_attrib(root_id, "Description");
     dbg_string_attrib(root_id, "Source");
@@ -151,7 +163,8 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     {
         H5Gclose(root_id);
         H5Fclose(file);
-        EXCEPTION1 (InvalidFilesException, filename);
+        EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
+                  "Attribute 'time' was not found or was the wrong type." );
     }
 
     debug5 << "time: " << time << std::endl;
@@ -160,7 +173,8 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     {
         H5Gclose(root_id);
         H5Fclose(file);
-        EXCEPTION1 (InvalidFilesException, filename);
+        EXCEPTION2( NonCompliantException, "H5NIMROD Group Open",
+                    "The group '/GRID' was not found" );
     }
 
     string_attrib = NULL;
@@ -174,8 +188,8 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             H5Gclose(root_id);
             H5Gclose(grid_id);
             H5Fclose(file);
-            EXCEPTION2(UnexpectedValueException, "Cartesian - XYZ",
-                       string_attrib);
+            EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
+                  "Attribute 'Cartesian - XYZ' was not found or was the wrong type." );
         }
         free(string_attrib);
     }
@@ -194,8 +208,8 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
         H5Gclose(root_id);
         H5Gclose(grid_id);
         H5Fclose (file);
-        EXCEPTION2 (UnexpectedValueException, "Structured",
-                    string_attrib ? string_attrib : "NULL");
+        EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
+                    "Attribute 'Topology' was not found or not 'Structured'" );
     }
     if(string_attrib)
     {
@@ -211,7 +225,8 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
         H5Gclose(root_id);
         H5Gclose(grid_id);
         H5Fclose (file);
-        EXCEPTION2 (UnexpectedValueException, 3, ndims);
+        EXCEPTION2( NonCompliantException, "H5NIMROD Read Dimensions",
+                    "Grid dataset 'X' does not have three dimensions" );
     }
     // points
     for (i = 0, npoints = 1; i < ndims; i++)
@@ -253,7 +268,8 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             {
               H5Gclose(group_id);
               H5Fclose(file);
-              EXCEPTION1 (InvalidFilesException, filename);
+              EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
+                          "Attribute 'Step number' was not found or wrong type" );
             }
 
             cycles.push_back( atoi(stepnumber) );
@@ -264,7 +280,8 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             {
               H5Gclose(group_id);
               H5Fclose(file);
-              EXCEPTION1 (InvalidFilesException, filename);
+              EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
+                          "Attribute 'time' was not found or wrong type" );
             }
 
             times.push_back( time );
@@ -448,7 +465,10 @@ avtH5NimrodFileFormat::GetMesh (int timestate, const char *meshname)
     hid_t file;
     file = H5Fopen (fname.c_str (), H5F_ACC_RDONLY, H5P_DEFAULT);
     if (file < 0)
-        EXCEPTION1 (InvalidFilesException, fname.c_str ());
+    {
+      EXCEPTION2( NonCompliantException, "H5NIMROD File Open",
+                  "File '" + fname + "' can not be opened" );
+    }
 
     hid_t grid_id = H5Gopen (file, "/GRID");
     vtkpoints->SetNumberOfPoints (npoints);
@@ -513,7 +533,10 @@ avtH5NimrodFileFormat::GetVar (int timestate, const char *varname)
     file = H5Fopen (fname.c_str (), H5F_ACC_RDONLY, H5P_DEFAULT);
 
     if (file < 0)
-        EXCEPTION1 (InvalidFilesException, fname.c_str ());
+    {
+      EXCEPTION2( NonCompliantException, "H5NIMROD File Open",
+                  "File '" + fname + "' can not be opened" );
+    }
 
     hid_t root_id, group_id;
     root_id = H5Gopen (file, "/");
@@ -570,7 +593,10 @@ avtH5NimrodFileFormat::GetVectorVar (int timestate, const char *varname)
     file = H5Fopen (fname.c_str (), H5F_ACC_RDONLY, H5P_DEFAULT);
 
     if (file < 0)
-        EXCEPTION1 (InvalidFilesException, fname.c_str ());
+    {
+      EXCEPTION2( NonCompliantException, "H5NIMROD File Open",
+                  "File '" + fname + "' can not be opened" );
+    }
 
     hid_t root_id, group_id;
     root_id = H5Gopen (file, "/");
@@ -652,13 +678,8 @@ avtH5NimrodFileFormat::GetVectorVar (int timestate, const char *varname)
 void avtH5NimrodFileFormat::GetCycles(std::vector<int> &c)
 {
     c = cycles;
-
-    metadata->SetCyclesAreAccurate(true);
-    metadata->SetCycles( cycles );
-
-    metadata->SetTimesAreAccurate(true);
-    metadata->SetTimes( times );
 }
+
 
 // ****************************************************************************
 //  Method: avtH5NimrodFileFormat::GetTimes
@@ -677,10 +698,4 @@ void avtH5NimrodFileFormat::GetCycles(std::vector<int> &c)
 void avtH5NimrodFileFormat::GetTimes(std::vector<double> &t)
 {
     t = times;
-
-    metadata->SetCyclesAreAccurate(true);
-    metadata->SetCycles( cycles );
-
-    metadata->SetTimesAreAccurate(true);
-    metadata->SetTimes( times );
 }

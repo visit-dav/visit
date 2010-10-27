@@ -15,8 +15,8 @@ MDSplusMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtMDSplusFileFormat.C
 avtMDSplusOptions.C
+mdsPlusAPI.C
 #mdsPlusReader.cc
-mdsPlusAPI.c
 )
 
 SET(LIBE_SOURCES
@@ -24,8 +24,8 @@ MDSplusEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtMDSplusFileFormat.C
 avtMDSplusOptions.C
+mdsPlusAPI.C
 #mdsPlusReader.cc
-mdsPlusAPI.c
 )
 
 INCLUDE_DIRECTORIES(
