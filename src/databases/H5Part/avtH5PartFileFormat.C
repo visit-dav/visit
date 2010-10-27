@@ -1170,6 +1170,7 @@ avtH5PartFileFormat::GetFieldMesh(int timestate, const char *meshname)
     coords[2]->Delete();
 
     visitTimer->StopTimer(t1, "H5PartFileFormat::GetFieldMesh()");
+
     return rgrid;
 }
 

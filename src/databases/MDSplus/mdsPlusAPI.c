@@ -173,7 +173,7 @@ int get_dims( const char *signal, int **dims ) {
   int rank = get_rank( signal );
 
   if( rank > 0 ) {
-    *dims = malloc( rank * sizeof( int ) );
+    *dims = (int *) malloc( rank * sizeof( int ) );
 
     /* Fetch the dimensions of the signal. */
     for( i=0; i<rank; i++ ) {
@@ -187,7 +187,18 @@ int get_dims( const char *signal, int **dims ) {
 }
 
 
-/*  Query the long value of the node - as in the number of slices. */
+/*  Query the value of the node. */
+void* get_value( const char *prefix, const char *signal, int dtype ) {
+
+  /* Local vars */
+  char buf[1024];                     /* Buffer for MDS+ exp */
+
+  sprintf(buf, "%s(%s)", prefix, signal);
+    
+  return (void*) get_value( buf, dtype );
+}
+
+/*  Query the value of the node - as in the number of slices. */
 void* get_value( const char *signal, int dtype ) {
 
   /* Local vars */
@@ -230,12 +241,14 @@ void* get_value( const char *signal, int dtype ) {
     memset(buf, 0, sizeof(buf));
     sprintf( buf, "SIZEOF(%s)", signal );
 
-    value = (void*) get_value( buf, DTYPE_LONG );
+    int *length = (int*) get_value( buf, DTYPE_LONG );
 
-    if( value )
-      size = (int) (*(int*) value) + 1;
+    if( length )
+      size = (int) (*(int*) length) + 1;
     else
       return NULL;
+
+    free( length);
 
     dtype = DTYPE_CSTRING;
     value = (void*) malloc( size * sizeof( char ) );
@@ -267,7 +280,7 @@ void* get_value( const char *signal, int dtype ) {
 
       /* Trim the white spaces off of the strings. */
       if( value ) {
-        char *name = value;
+        char *name = (char *) value;
 
         int i = size - 1;
         while (name[i] == ' ')
@@ -370,7 +383,7 @@ void* get_values( const char *signal, int dtype ) {
 
       /* Trim the white spaces off of the strings. */
       cc = 0;
-      char *names = values;
+      char *names = (char *) values;
 
       for( n=0; n<size; n++ ) {
         char *name = (char*) &(names[n*max_str]);
@@ -486,7 +499,8 @@ double *get_slice_data( const char *name,
 
 /*  Query the server for the child names of a signal. */
 unsigned int 
-get_names( const char *signal, char **names, char recurse, char absolute, char type )
+get_names( const char *signal, char **names,
+           bool recurse, bool absolute, bool type )
 {
   char buf[1024];                 /* buffer for MDS+ exp */
 
