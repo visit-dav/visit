@@ -945,6 +945,14 @@
 #
 #     Mark C. Miller, Mon Aug 30 17:57:47 PDT 2010
 #     Update ITAPS-FMDB tarball to something known to compile correctly.
+#
+#     Cyrus Harrison, Wed Oct 27 09:33:22 PDT 2010
+#     Added SVN_SOURCE_PATH, to allow us to tie a versioned build_visit
+#     release to a specific svn tag.
+#
+# *****************************************************************************
+
+
 # *****************************************************************************
 #                                                                             #
 # *************************************************************************** #
@@ -1219,13 +1227,31 @@ if [[ "$CXX_COMPILER" == "g++" ]] ; then
 fi
 
 
-export SVN_ANON_ROOT_PATH="http://portal.nersc.gov/svn/visit/"
+export SVN_ANON_ROOT_PATH="http://portal.nersc.gov/svn/visit"
 # Setup svn path: use SVN_NERSC_NAME if set
 if test -z "$SVN_NERSC_NAME" ; then
     export SVN_REPO_ROOT_PATH="svn+ssh://svn.nersc.gov/svn/visit"
 else
     export SVN_REPO_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@svn.nersc.gov/svn/visit"
 fi
+
+############################################################################
+# Path of VisIt src directory in svn.
+# For trunk use "trunk/src"
+# For versioned build_visit releases change this to point to the proper
+# release tag.
+############################################################################
+
+####
+# Trunk:
+####
+#export SVN_SOURCE_PATH="trunk/src"
+
+###
+# Release:
+###
+export SVN_SOURCE_PATH="tags/2.1.0/src"
+
 
 if [[ "$OPSYS" != "Darwin" ]]; then
     WGET_MINOR_VERSION=$(wget --version| head -n 1|cut -d. -f 2)
@@ -1986,15 +2012,15 @@ function check_visit_source_code
     # Check-out the latest svn sources, before building VisIt
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
         if [[ -d src ]] ; then
-           info "Found VisIt SVN src directory, using that . . ."
+           info "Found existing VisIt SVN src directory, using that . . ."
         else
            # Print a dialog screen
-           info "SVN check-out of VisIt . . ."
+           info "SVN check-out of VisIt ($SVN_ROOT_PATH/$SVN_SOURCE_PATH) . . ."
            if [[ "$DO_REVISION" == "yes" && "$SVNREVISION" != "" ]] ; then
                svn co --quiet --non-interactive --revision "$SVNREVISION" \
-                  $SVN_ROOT_PATH/trunk/src
+                  $SVN_ROOT_PATH/$SVN_SOURCE_PATH
            else
-               svn co --quiet --non-interactive $SVN_ROOT_PATH/trunk/src
+               svn co --quiet --non-interactive $SVN_ROOT_PATH/$SVN_SOURCE_PATH
            fi
            if [[ $? != 0 ]] ; then
                warn "Unable to build VisIt.  SVN download failed."
@@ -9028,10 +9054,10 @@ usage () {
   printf "%-11s <%s> %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
   printf "%s <%s> %s\n" "--svn" \
     "Obtain VisIt source code and third party libraries from the SVN server"
-  printf "\t%s\n" "    [svn co $SVN_REPO_ROOT_PATH/trunk/src]"
+  printf "\t%s\n" "    [svn co $SVN_REPO_ROOT_PATH/$SVN_SOURCE_PATH]"
   printf "%s <%s> %s\n" "--svn-anonymous" \
     "Obtain VisIt source code and third party libraries using the anonymous SVN mirror."
-  printf "\t%s\n" "    [svn co $SVN_ANON_ROOT_PATH/trunk/src]"
+  printf "\t%s\n" "    [svn co $SVN_ANON_ROOT_PATH/$SVN_SOURCE_PATH]"
   printf "%s <%s> %s\n" "--svn-revision" "revision" \
     "Specify the SVN revision of the VisIt source code and third party libraries to download.  Used in conjunction with --svn or --svn-anonymous."
   printf "%s <%s> %s [%s]\n" "--tarball" "file" "tarball to extract VisIt from" "$VISIT_FILE"
