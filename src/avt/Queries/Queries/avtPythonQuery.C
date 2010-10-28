@@ -243,6 +243,9 @@ avtPythonQuery::SetPythonArgs(const std::string &py_args)
 //    Cyrus Harrison,Wed Mar 17 12:32:40 PDT 2010
 //    Remove catch b/c it prevented script errors from being reported.
 //
+//    Cyrus Harrison, Thu Oct 28 13:14:22 PDT 2010
+//    Add more info to the empty dataset error message.
+//
 // ****************************************************************************
 void
 avtPythonQuery::PerformQuery(QueryAttributes *qatts)
@@ -294,8 +297,10 @@ avtPythonQuery::PerformQuery(QueryAttributes *qatts)
     else
     {
         queryAtts.SetResultsMessage(std::string(GetType()) +
-                    " was asked to execute on an empty data set.  The query "
-                    "produced the following message: " + resultMessage);
+                    " was asked to execute on an empty data set.\n"
+                    "This error condition will occur if you query an empty plot "
+                    "or if you request an invalid variable.\n"
+                    "The python query filter returned the following message: " + resultMessage);
                     queryAtts.SetResultsValue(resultValues);
     }
 
