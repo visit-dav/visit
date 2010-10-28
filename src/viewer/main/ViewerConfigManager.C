@@ -288,10 +288,14 @@ ViewerConfigManager::ReadConfigFile(const char *filename)
 //   Added code to unselect all fields in the AttributeSubjects so we have
 //   the option of later only sending the ones that changed.
 //
+//   Hank Childs, Thu Oct 28 11:11:33 PDT 2010
+//   Add an argument to specify whether we should process the plugin attributes.
+//
 // ****************************************************************************
 
 void
-ViewerConfigManager::ProcessConfigSettings(DataNode *node)
+ViewerConfigManager::ProcessConfigSettings(DataNode *node, 
+                                           bool processPluginAtts)
 {
     // Return if the config settings have not been read.
     if(node == 0)
@@ -334,6 +338,8 @@ ViewerConfigManager::ProcessConfigSettings(DataNode *node)
     debug4 << "ViewerConfigManager::ProcessConfigSettings" << endl;
     for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
     {
+        if (!processPluginAtts && (*pos)->TypeName()  == "PluginManagerAttributes")
+            continue;
         debug4 << "\t" << (*pos)->TypeName().c_str() << " setting from node" << endl;
         (*pos)->SetFromNode(defaultsNode);
     }
@@ -518,6 +524,13 @@ ViewerConfigManager::ExportEntireState(const std::string &filename)
 //   Brad Whitlock, Tue Apr 29 12:05:17 PDT 2008
 //   Support for internationalization.
 //
+//   Hank Childs, Thu Oct 28 11:11:33 PDT 2010
+//   Tell the ProcessConfigSettings not to load plugin attribute information.
+//   We've made our bed with respect to what plugins are loaded ... it is
+//   too late to change it, so we need to live with what we have.  Changing
+//   the attributes only gets things confused.  Note that if we ever can
+//   load plugins dynamically, then we should revisit this policy.
+//
 // ****************************************************************************
 
 void
@@ -536,7 +549,8 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
     if(node)
     {
         // Make the hooked up objects get their settings.
-        ProcessConfigSettings(node);
+        bool processPluginAtts = false;
+        ProcessConfigSettings(node, processPluginAtts);
 
         // Get the VisIt node.
         DataNode *visitRoot = node->GetNode("VisIt");

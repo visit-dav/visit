@@ -156,6 +156,11 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //    Allow for the -o command line option to take an optional ,<pluginID>
 //    suffix, e.g. "-o foobar,LAMMPS_1.0".
 //
+//    Hank Childs, Thu Oct 28 11:51:05 PDT 2010
+//    If an exception is uncaught, then print out the information to the screen
+//    and hang.  This hang will let folks using the CLI through GUI see the
+//    failure.
+//
 // ****************************************************************************
 
 int
@@ -410,8 +415,19 @@ main(int argc, char *argv[])
         delete[] argv3;
         
     }
-    CATCHALL
+    CATCH(VisItException &e)
     {
+        cerr << "A fatal exception occurred when trying to launch the CLI." << endl;
+        cerr << "The following information may help a VisIt developer debug the problem: " << endl;
+        cerr << "Message: " << e.Message() << endl;
+        cerr << "Type: " << e.GetExceptionType() << endl;
+        cerr << "Location: " << e.GetFilename() << ", " << e.GetLine() << endl;
+        cerr << "(You must press Ctrl-C to get the program to stop)" << endl;
+        // If the GUI launched the CLI, the user won't have a chance to see
+        // message ... the terminal will disappear when the program finishes.
+        //  So go in an infinite loop to make sure they see the message.
+        while (1)
+            ;
         retval = -1;
     }
     ENDTRY

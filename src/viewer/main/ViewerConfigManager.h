@@ -103,6 +103,9 @@ class ViewerSubject;
 //    Brad Whitlock, Mon Feb 12 18:01:20 PST 2007
 //    Use ViewerBase base class.
 //
+//    Hank Childs, Thu Oct 28 11:11:33 PDT 2010
+//    Add a Boolean that allows for plugin attributes to be skipped.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerConfigManager : public ViewerBase, public ConfigManager
@@ -113,7 +116,7 @@ public:
 
     virtual bool WriteConfigFile(const char *filename);
     virtual DataNode *ReadConfigFile(const char *filename);
-    void ProcessConfigSettings(DataNode *);
+    void ProcessConfigSettings(DataNode *, bool processPluginAtts = true);
     void Notify();
     void NotifyIfSelected();
     void ClearSubjects();
