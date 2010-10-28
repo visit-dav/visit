@@ -225,6 +225,9 @@
 #    Remove davinci profile.  Also change warning when we use /tmp to 
 #    untar files.
 #
+#    Hank Childs, Wed Oct 20 08:23:39 PDT 2010
+#    Change bank from prompt to false.
+#    
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -233,7 +236,7 @@ set beta = false
 set private = false
 set config = prompt
 set configSpecified = false
-set bank = prompt
+set bank = false
 set logging = false
 set group_ownership = none
 set dir_permission = 755
