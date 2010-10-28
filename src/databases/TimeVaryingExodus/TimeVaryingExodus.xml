@@ -9,6 +9,10 @@
     </Files>
     <CXXFLAGS>
       ${EXODUSII_INCLUDE_DIR}
+    <!-- Exodus is a bit unusual in that its dependence on NetCDF is exposed
+         to the application. For this reason, we need to tell our plugin where
+         to find the netcdf include file(s). -->
+      ${NETCDF_INCLUDE_DIR}
     </CXXFLAGS>
     <LDFLAGS>
       ${EXODUSII_LIBRARY_DIR}

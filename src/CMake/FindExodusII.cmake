@@ -38,22 +38,17 @@
 #   Kathleen Bonnell, Thu Dec  3 10:54:31 PST 2009
 #   Change the library name for windows.
 #
+#   Mark C. Miller, Wed Oct 27 19:21:10 PDT 2010
+#   Relocated explicit setting of LIBDEP to config-site files as different
+#   sites may have ExodusII installed differently.
 #****************************************************************************/
 
 # Use the EXODUSII_DIR hint from the config-site .cmake file 
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-# Take care of Exodus' NETCDF dependency
-IF(NOT NETCDF_FOUND)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNETCDF.cmake)
-ENDIF(NOT NETCDF_FOUND)
-
-VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NETCDF_LIBDEP})
-
 IF (WIN32)
   SET_UP_THIRD_PARTY(EXODUSII lib/${VISIT_MSVC_VERSION} include exodusII)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(EXODUSII lib inc exoIIv2c)
 ENDIF (WIN32)
-

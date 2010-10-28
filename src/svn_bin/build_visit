@@ -5852,11 +5852,54 @@ function build_hdf4
 
 # *************************************************************************** #
 #                         Function 8.4, build_netcdf                          #
+#                                                                             #
+# Mark C. Miller, Wed Oct 27 19:25:09 PDT 2010                                #
+# Added patch for exodusII. This way, a single netcdf installation should     #
+# work for 'normal' netcdf operations as well as for ExodusII.                #
 # *************************************************************************** #
+function apply_netcdf_patch_for_exodusii
+{
+    local retval=0
+    pushd $NETCDF_BUILD_DIR 1>/dev/null 2>&1
+    patch -p0 << \EOF
+*** libsrc/netcdf.h	Wed Oct 27 11:50:22 2010
+--- libsrc/netcdf.h.ex	Wed Oct 27 11:50:31 2010
+***************
+*** 141,151 ****
+   * applications and utilities.  However, nothing is statically allocated to
+   * these sizes internally.
+   */
+! #define NC_MAX_DIMS	1024	 /* max dimensions per file */
+! #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	8192	 /* max variables per file */
+! #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	NC_MAX_DIMS /* max per variable dimensions */
+  
+  /*
+   * The netcdf version 3 functions all return integer error status.
+--- 141,152 ----
+   * applications and utilities.  However, nothing is statically allocated to
+   * these sizes internally.
+   */
+! #define NC_MAX_DIMS     65536    /* max dimensions per file */
+! #define NC_MAX_ATTRS    8192     /* max global or per variable attributes */
+! #define NC_MAX_VARS     524288   /* max variables per file */
+! #define NC_MAX_NAME     256      /* max length of a name */
+! #define NC_MAX_VAR_DIMS 8        /* max per variable dimensions */
+! 
+  
+  /*
+   * The netcdf version 3 functions all return integer error status.
+EOF
+   retval=$?
+   popd 1>/dev/null 2>&1
+   return $retval
+}
 
 function apply_netcdf_patch
 {
-   return 0
+   apply_netcdf_patch_for_exodusii
+   return $?
 }
 
 function build_netcdf
@@ -6225,6 +6268,11 @@ EOF
 
 # *************************************************************************** #
 #                         Function 8.7, build_exodus                          #
+#                                                                             #
+#  Mark C. Miller, Wed Oct 27 19:26:16 PDT 2010                               #
+#  Removed copies of libnetcdf.a and netcdf.h. The header file dependence     #
+#  is handled via Exodus plugin's .xml file. The lib dependence is handled    #
+#  through LIBDEP.                                                            #
 # *************************************************************************** #
 
 function build_exodus
@@ -6287,10 +6335,6 @@ function build_exodus
         cp libexoIIv2c.${SO_EXT} \
            "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
         cp ../include/*.h "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
-        cp "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
-           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
-        cp "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.${SO_EXT}" \
-           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
     else
         ar -cr libexoIIv2c.a *.o
         if [[ $? != 0 ]] ; then
@@ -6302,10 +6346,6 @@ function build_exodus
            "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
         cp ../include/exodusII_ext.h \
            "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
-        cp "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
-           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
-        cp "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.a" \
-           "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
@@ -7645,6 +7685,10 @@ function build_mdsplus
 
 # *************************************************************************** #
 #                          Function 9, build_hostconf                         #
+#                                                                             #
+# Mark C. Miller, Wed Oct 27 19:29:19 PDT 2010                                #
+# Adjusted ordering of database lib variables to ensure LIBDEP gets processed #
+# correctly. Added comments to host conf file regarding ordering issue.       #
 # *************************************************************************** #
 
 function build_hostconf
@@ -7756,9 +7800,16 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "## Database reader plugin support libraries" >> $HOSTCONF
     echo "##" >> $HOSTCONF
+    echo "## For libraries with LIBDEP settings, order matters." >> $HOSTCONF
+    echo "## Libraries with LIBDEP settings that depend on other" >> $HOSTCONF
+    echo "## Library's LIBDEP settings must come after them." >> $HOSTCONF
     echo \
 "##############################################################" >> $HOSTCONF
 
+#
+# Although the code below originally ordered things alphabetically by library
+# name, that is NOT appropriate due to ordering dependency of LIBDEP processing.
+#
     if [[ "$DO_ADVIO" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -7815,16 +7866,6 @@ function build_hostconf
             "VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
             >> $HOSTCONF
         fi
-    fi
-
-    if [[ "$DO_EXODUS" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## Exodus" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR \${VISITHOME}/exodus/$EXODUS_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
     fi
 
     if [[ "$DO_GDAL" == "yes" ]] ; then
@@ -7890,6 +7931,7 @@ function build_hostconf
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## H5Part" >> $HOSTCONF
+        echo "## Must come AFTER HDF5 to ensure LIBDEP for H5Part gets hdf5 LIBDEPS" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR \${VISITHOME}/h5part/$H5PART_VERSION/\${VISITARCH})" \
@@ -7928,6 +7970,7 @@ function build_hostconf
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## NetCDF" >> $HOSTCONF
+        echo "## Must come AFTER HDF5 to ensure LIBDEP for NetCDF gets hdf5 LIBDEPS" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR \${VISITHOME}/netcdf/$NETCDF_VERSION/\${VISITARCH})" \
@@ -7937,6 +7980,20 @@ function build_hostconf
             "VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
             >> $HOSTCONF
         fi
+    fi
+
+    if [[ "$DO_EXODUS" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Exodus" >> $HOSTCONF
+        echo "## Must come AFTER netcdf to ensure LIBDEP for Exodus gets netcdf LIBDEPS" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR \${VISITHOME}/exodus/$EXODUS_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NETCDF_LIBDEP})" \
+        >> $HOSTCONF
     fi
 
     if [[ "$DO_SZIP" == "yes" ]] ; then
@@ -7953,6 +8010,7 @@ function build_hostconf
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## Silo" >> $HOSTCONF
+        echo "## Must come AFTER HDF5 to ensure LIBDEP for Silo gets hdf5 LIBDEPS" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_SILO_DIR \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH})" \
