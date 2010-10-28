@@ -128,7 +128,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
 {
     // INITIALIZE DATA MEMBERS
     fname = filename;
-    hid_t file_id, root_id, group_id;
+    hid_t file_id, root_id, group_id, dataset_id;
     char *string_attrib;
     float time;
 
@@ -139,29 +139,36 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     if ((file_id = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
       EXCEPTION1( InvalidFilesException, filename );
 
+    // Open a couple temporary groups/datasets to verify the file is
+    // really a H5Nimrod file.
     group_id = H5Gopen(file_id, "/GRID");
     if (group_id < 0)
     {
       H5Fclose(file_id);
       EXCEPTION1( InvalidFilesException, filename );
     }
-
-    H5Gclose(group_id);
-    H5Fclose(file_id);
-
-    file_id = -1;
-    group_id = -1;
-
-
-    // Open as normal
-    file_id = H5Fopen (filename, H5F_ACC_RDONLY, H5P_DEFAULT);
-
-    if (file_id < 0)
+    else
     {
-      EXCEPTION2( NonCompliantException, "H5NIMROD File Open",
-                  "File '" + string(filename) + "' can not be opened" );
+      H5Gclose(group_id);
+      group_id = -1;
     }
 
+    dataset_id = H5Dopen(file_id, "/GRID/phi");
+    if (dataset_id < 0)
+    {
+      H5Fclose(file_id);
+      EXCEPTION1( InvalidFilesException, filename );
+    }
+    else
+    {
+      H5Dclose(dataset_id);
+      dataset_id = -1;
+    }
+
+    // At this point consider the file to truly be a H5Nimrod file. If
+    // some other file NonCompliantExceptions will be thrown.
+
+    // Continue as normal reporting NonCompliantExceptions
     hsize_t i, npoints;
 
     // Read attributes

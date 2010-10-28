@@ -61,6 +61,7 @@
 #include <InvalidFilesException.h>
 #include <DebugStream.h>
 
+#include <InvalidVariableException.h>
 
 using namespace std;
 
@@ -1467,35 +1468,39 @@ avtM3DC1FileFormat::LoadFile()
     if( H5Fis_hdf5( m_filename.c_str() ) < 0 )
         EXCEPTION1( InvalidFilesException, m_filename.c_str() );
 
-    if ( (m_fileID = H5Fopen( m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
+    if ( (m_fileID =
+          H5Fopen( m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
       EXCEPTION1( InvalidFilesException, m_filename.c_str() );
 
+    // Open a couple temporary groups to verify the file is really an
+    // M3DC1 file.
     hid_t tempID = H5Gopen( m_fileID, "/equilibrium/mesh", H5P_DEFAULT);
-
     if( tempID < 0 )
     {
         H5Fclose(m_fileID);
         EXCEPTION1( InvalidFilesException, m_filename.c_str() );
     }
+    else
+      H5Gclose(tempID);
 
-    H5Gclose(tempID);
-    H5Fclose(m_fileID);
-    m_fileID = -1;
-
-
-    // Open as normal
-    m_fileID = H5Fopen( m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-    if ( m_fileID < 0 )
+    tempID = H5Gopen( m_fileID, "/equilibrium/fields", H5P_DEFAULT);
+    if( tempID < 0 )
     {
-        EXCEPTION2( NonCompliantException, "M3DC1 File Open",
-                  "File '" + m_filename + "' can not be opened" );
+        H5Fclose(m_fileID);
+        EXCEPTION1( InvalidFilesException, m_filename.c_str() );
     }
+    else
+      H5Gclose(tempID);
 
+    // At this point consider the file to truly be a M3DC1 file. If
+    // some other file NonCompliantExceptions will be thrown.
+
+    // Continue as normal reporting NonCompliantExceptions
     hid_t rootID = H5Gopen( m_fileID, "/", H5P_DEFAULT);
     if ( rootID < 0 )
     {
         H5Fclose(m_fileID);        
-        EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
+        EXCEPTION2( NonCompliantException, "M3dc1 Group Open",
                     "The root group '/' was not found" );
     }
 
