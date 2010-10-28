@@ -665,6 +665,9 @@ $0 = shift @ARGV;
 #    Hank Childs, Fri Oct 15 21:00:34 PDT 2010
 #    Pass along the the bank name for Eureka.
 #
+#    Hank Childs (on behalf of Stefan Kerkemeier), Wed Oct 20 08:21:08 PDT 2010
+#    Fix problem with bsub internallauncher
+#
 #    Brad Whitlock, Thu Oct 28 10:45:11 PDT 2010
 #    Print VISIT_MESA_LIB as part of the norun environment so plots will work
 #    when we run in an mxterm.
@@ -2760,7 +2763,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, "-q",  $part  if $part_set;
         push @parcmd, "-W" , $time  if $time_set;
         push @parcmd, $sublauncher;
-        push @parcmd, $sublaunchargs if $sublaunchargs_set;
+        push @parcmd, @sublaunchargs if $sublaunchargs_set;
         push @parcmd, @visitcmd;
         @printcmd = @parcmd;
         push @printcmd, ("\"".(pop @printcmd)."\"");
