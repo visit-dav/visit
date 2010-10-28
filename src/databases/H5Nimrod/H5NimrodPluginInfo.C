@@ -166,6 +166,7 @@ std::vector<std::string>
 H5NimrodGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
+    defaultPatterns.push_back("*.h5");
     defaultPatterns.push_back("*.h5nimrod");
 
     return defaultPatterns;

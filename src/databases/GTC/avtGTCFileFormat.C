@@ -161,43 +161,17 @@ avtGTCFileFormat::Initialize()
 
     if ((fileHandle = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
       EXCEPTION1( InvalidFilesException, GetFilename() );
-
-    particleHandle = H5Dopen(fileHandle, "particle_data");
-    if (particleHandle < 0)
+    
+    if ((particleHandle = H5Dopen(fileHandle, "particle_data")) < 0)
     {
       H5Fclose(fileHandle);
       EXCEPTION1( InvalidFilesException, GetFilename() );
     }
 
-    H5Dclose(particleHandle);
-    H5Fclose(fileHandle);
+    // At this point consider the file to truly be a GTC file. If
+    // some other file NonCompliantExceptions will be thrown.
 
-    fileHandle = -1;
-    particleHandle = -1;
-
-
-    // Open as normal
-    debug4 << mName << "Opening " << GetFilename() << endl;
-    fileHandle = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT);
-
-    if (fileHandle < 0)
-    {
-      debug4 << mName << "Could not open " << GetFilename() << endl;
-
-      EXCEPTION2( NonCompliantException, "GTC File Open",
-                  "File '" + string(GetFilename()) + "' can not be opened" );
-    }
-
-    particleHandle = H5Dopen(fileHandle, "particle_data");
-    if (particleHandle < 0)
-    {
-        debug4 << mName << "Could not open particle_data" << endl;
-        H5Fclose(fileHandle);
-        EXCEPTION2( NonCompliantException, "GTC Dataset Open",
-                  "Dataset 'particle_data' can not be opened" );
-    }
-
-
+    // Continue as normal reporting NonCompliantExceptions
 
     //Check variable's size.
     hid_t dataspace = H5Dget_space(particleHandle);
