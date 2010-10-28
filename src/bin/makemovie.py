@@ -421,6 +421,10 @@ def MovieClassSaveWindow():
 #    I changed it to instead use the explocit booleans we set during starttag,
 #    though a viable alternative would be to make dataName a stack of strings.
 #
+#    Brad Whitlock, Thu Oct 28 11:49:48 PDT 2010
+#    I added code to eliminate leading/trailing quotes from string data to
+#    work around a problem introduced in version 2.1.
+#
 ###############################################################################
 
 class EngineAttributesParser(XMLParser):
@@ -478,6 +482,15 @@ class EngineAttributesParser(XMLParser):
             for i in range(len(s)):
                 space = space + " "
             return s != space
+        def StripLeadingTrailingQuotes(s):
+            retval = s
+            if len(retval) > 0:
+                if retval[0] == '"':
+                    retval = retval[1:]
+            if len(retval) > 0:
+                if retval[-1] == '"':
+                    retval = retval[:-1]
+            return retval
         if (self.readingEngineProperties == 1 or self.readingMachineProfile)\
             and self.readingField == 1 and len(data) > 0:
             name = self.dataAtts["name"]
@@ -489,7 +502,7 @@ class EngineAttributesParser(XMLParser):
                 else:
                     value = 0
             elif type == "string":
-                value = data
+                value = StripLeadingTrailingQuotes(data)
             elif type == "stringVector":
                 fragments = string.split(data, "\"")
                 value = []

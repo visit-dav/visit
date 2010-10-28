@@ -38,6 +38,8 @@ SELinux-enabled systems.</LI>
 <li>A bug was fixed that prevented saving movies with old session files.</li>
 <li>If you run the Streamline plot on an empty data set, it no longer crashes.</li>
 <li>Expressions that extract vectors from tensor data now work correctly for 2D data.</li>
+<li>Making movies once again can obtain the engine launch parameters from a session file. This fixes the movie-making case where you want to use a new instance of VisIt or if you want VisIt to tell you the command to run.</li>
+<li>Quoting for string data in saved settings has been eliminated except for strings that contain spaces. This more closely matches VisIt's old behavior, improving compatibility with older versions of VisIt.</li>
 <li>Cracks Clipper operator works again.</li>
 <li>The embedded viewer example program now works on Windows.</li>
 <li>The Windows installer now checks for previous versions of VisIt in the PATH environment variable, and removes them if user so chooses.</li>

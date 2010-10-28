@@ -246,6 +246,9 @@ ConfigManager::WriteEscapedString(const std::string &str)
 //   Dave Pugmire, Wed Aug 18 09:54:43 EDT 2010
 //   Support variable names with leading and trailing spaces in sessionfiles.
 //
+//   Brad Whitlock, Thu Oct 28 12:16:40 PDT 2010
+//   Only quote single strings on write if they contain spaces.
+//
 // ****************************************************************************
 
 void
@@ -272,9 +275,14 @@ ConfigManager::WriteData(DataNode *node)
         fprintf(fp, "%g", node->AsDouble());
         break;
     case STRING_NODE:
-        fprintf(fp, "%s", "\"");
-        WriteEscapedString(node->AsString());
-        fprintf(fp, "%s", "\"");
+        { // new scope
+            bool hasSpaces = node->AsString().find(" ") != std::string::npos;
+            if(hasSpaces)
+                fprintf(fp, "%s", "\"");
+            WriteEscapedString(node->AsString());
+            if(hasSpaces)
+                fprintf(fp, "%s", "\"");
+        }
         break;
     case BOOL_NODE:
         if(node->AsBool())
