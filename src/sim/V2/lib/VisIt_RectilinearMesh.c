@@ -123,6 +123,15 @@ VisIt_RectilinearMesh_getBaseIndex(visit_handle obj, int base_index[3])
                     (*cb)(obj,base_index));
 }
 
+static int
+VisIt_RectilinearMesh_getNumDimensions(visit_handle obj)
+{
+    int ndims = 3;
+    visit_handle x,y,z;
+    VisIt_RectilinearMesh_getCoords(obj, &ndims, &x, &y, &z);
+    return ndims;
+}
+
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITRECTMESHALLOC             F77_ID(visitrectmeshalloc_,visitrectmeshalloc,VISITRECTMESHALLOC)
@@ -163,9 +172,11 @@ int
 F_VISITRECTMESHSETBASEINDEX(visit_handle *obj, int *base_index)
 {
     int tmp[3];
+    int ndims;
+    ndims = VisIt_RectilinearMesh_getNumDimensions(*obj);
     tmp[0] = base_index[0];
     tmp[1] = base_index[1];
-    tmp[2] = base_index[2];
+    tmp[2] = (ndims == 3) ? base_index[2] : 0;
     return VisIt_RectilinearMesh_setBaseIndex(*obj, tmp);
 }
 
@@ -173,12 +184,14 @@ int
 F_VISITRECTMESHSETREALINDICES(visit_handle *obj, int *mins, int *maxs)
 {
     int tmpMin[3], tmpMax[3];
+    int ndims;
+    ndims = VisIt_RectilinearMesh_getNumDimensions(*obj);
     tmpMin[0] = mins[0];
     tmpMin[1] = mins[1];
-    tmpMin[2] = mins[2];
+    tmpMin[2] = (ndims == 3) ? mins[2] : 0;
     tmpMax[0] = maxs[0];
     tmpMax[1] = maxs[1];
-    tmpMax[2] = maxs[2];
+    tmpMax[2] = (ndims == 3) ? maxs[2] : 0;
     return VisIt_RectilinearMesh_setRealIndices(*obj, tmpMin, tmpMax);
 }
 

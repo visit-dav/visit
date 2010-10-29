@@ -189,27 +189,41 @@ simv2_RectilinearMesh_setRealIndices(visit_handle h, int min[3], int max[3])
     VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_setRealIndices");
     if(obj != NULL)
     {
+        if(obj->ndims < 1)
+        {
+            VisItError("setRealIndices called before the rectilinear mesh has coordinates.");
+            return VISIT_ERROR;
+        }
+
         for(int i = 0; i < 3; ++i)
         {
-            if(min[i] < 0)
+            if(i < obj->ndims)
             {
-                VisItError("Min real index for a rectilinear mesh must be >= 0.");
-                return VISIT_ERROR;
-            }
-            if(max[i] < 0)
-            {
-                VisItError("Max real index for a rectilinear mesh must be >= 0.");
-                return VISIT_ERROR;
-            }
-            if(max[i] < min[i])
-            {
-                VisItError("Min real index for a rectilinear mesh must be less "
-                    "than max real index.");
-                return VISIT_ERROR;
-            }
+                if(min[i] < 0)
+                {
+                    VisItError("Min real index for a rectilinear mesh must be >= 0.");
+                    return VISIT_ERROR;
+                }
+                if(max[i] < 0)
+                {
+                    VisItError("Max real index for a rectilinear mesh must be >= 0.");
+                    return VISIT_ERROR;
+                }
+                if(max[i] < min[i])
+                {
+                    VisItError("Min real index for a rectilinear mesh must be less "
+                        "than max real index.");
+                    return VISIT_ERROR;
+                }
 
-            obj->minRealIndex[i] = min[i];
-            obj->maxRealIndex[i] = max[i];
+                obj->minRealIndex[i] = min[i];
+                obj->maxRealIndex[i] = max[i];
+            }
+            else
+            {
+                obj->minRealIndex[i] = 0;
+                obj->maxRealIndex[i] = -1;
+            }
         }
 
         retval = VISIT_OKAY;
@@ -224,14 +238,25 @@ simv2_RectilinearMesh_setBaseIndex(visit_handle h, int base_index[3])
     VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_setBaseIndex");
     if(obj != NULL)
     {
+        if(obj->ndims < 1)
+        {
+            VisItError("setBaseIndex called before the rectilinear mesh has coordinates.");
+            return VISIT_ERROR;
+        }
+
         for(int i = 0; i < 3; ++i)
         {
-            if(base_index[i] < 0)
+            if(i < obj->ndims)
             {
-                VisItError("Base index for a rectilinear mesh must be >= 0.");
-                return VISIT_ERROR;
+                if(base_index[i] < 0)
+                {
+                    VisItError("Base index for a rectilinear mesh must be >= 0.");
+                    return VISIT_ERROR;
+                }
+                obj->baseIndex[i] = base_index[i];
             }
-            obj->baseIndex[i] = base_index[i];
+            else
+                obj->baseIndex[i] = 0;
         }
 
         retval = VISIT_OKAY;
