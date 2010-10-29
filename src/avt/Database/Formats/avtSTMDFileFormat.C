@@ -41,9 +41,11 @@
 // ************************************************************************* //
 
 #include <avtSTMDFileFormat.h>
+#include <avtDatabaseMetaData.h>
 
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
+#include <DBYieldedNoDataException.h>
 
 #include <cstring>
 
@@ -243,5 +245,20 @@ avtSTMDFileFormat::GetVectorVar(int, const char *)
     EXCEPTION0(ImproperUseException);
 }
 
+// ****************************************************************************
+//  Method: avtSTMDFileFormat::SetDatabaseMetaData
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    28Oct10
+// ****************************************************************************
 
-
+void
+avtSTMDFileFormat::SetDatabaseMetaData(avtDatabaseMetaData *md)
+{
+    metadata = md;
+    PopulateDatabaseMetaData(metadata);
+    if (GetStrictMode() && metadata->Empty())
+    {
+        EXCEPTION1(DBYieldedNoDataException, filenames[0]);
+    }
+}

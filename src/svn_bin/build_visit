@@ -66,7 +66,7 @@
 #           Mili     1.10     mili-1.10a.tar.gz      --mili
 #           NetCDF   4.1,1    netcdf-4.1.1.tar.gz    --netcdf
 #           AdvIO    1.2.0    AdvIO-1.2.tar.gz       --advio
-#           Silo     4.7.2    silo-4.7.2.tar.gz      --silo
+#           Silo     4.8      silo-4.8.tar.gz        --silo
 #           szip     2.1      szip-2.1.tar.gz        --szip
 #
 #         Experimental (internal)
@@ -971,6 +971,8 @@
 #     Added SVN_SOURCE_PATH, to allow us to tie a versioned build_visit
 #     release to a specific svn tag.
 #
+#     Mark C. Miller, Fri Oct 29 10:02:58 PDT 2010
+#     Update to use Silo 4.8
 # *****************************************************************************
 
 
@@ -1404,9 +1406,9 @@ export CCMIO_VERSION=${CCMIO_VERSION:-"2.6.1"}
 export CCMIO_COMPATIBILITY_VERSION=${CCMIO_COMPATIBILITY_VERSION:-"2.0"}
 export CCMIO_BUILD_DIR=${CCMIO_BUILD_DIR:-"libccmio-2.6.1"}
 
-export SILO_VERSION=${SILO_VERSION:-"4.7.2"}
+export SILO_VERSION=${SILO_VERSION:-"4.8"}
 export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
-export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.7.2"}
+export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.8"}
 export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
 export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
 

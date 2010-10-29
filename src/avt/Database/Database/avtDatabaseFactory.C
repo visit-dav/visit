@@ -63,6 +63,7 @@
 #include <DBOptionsAttributes.h>
 
 #include <BadPermissionException.h>
+#include <DBYieldedNoDataException.h>
 #include <FileDoesNotExistException.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -285,6 +286,8 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    failure will at least be relevant (unlike the general case when we
 //    get that failure when guessing which plugin to use).
 //
+//    Mark C. Miller, Fri Oct 29 09:57:32 PDT 2010
+//    Added catch/rethrow of DBYieldedNoDataException
 // ****************************************************************************
 
 avtDatabase *
@@ -405,6 +408,11 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             rv = NULL;
             RETHROW;
         }
+        CATCH(DBYieldedNoDataException)
+        {
+            rv = NULL;
+            RETHROW;
+        }
         CATCH(ImproperUseException)
         {
             rv = NULL;
@@ -513,6 +521,11 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             rv = NULL;
             RETHROW;
         }
+        CATCH(DBYieldedNoDataException)
+        {
+            rv = NULL;
+            RETHROW;
+        }
         CATCHALL
         {
             rv = NULL;
@@ -586,6 +599,11 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 }
             }
             CATCH(NonCompliantFileException)
+            {
+                rv = NULL;
+                RETHROW;
+            }
+            CATCH(DBYieldedNoDataException)
             {
                 rv = NULL;
                 RETHROW;
@@ -696,6 +714,11 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                                treatAllDBsAsTimeVarying, true, times);
         }
         CATCH(NonCompliantFileException)
+        {
+            rv = NULL;
+            RETHROW;
+        }
+        CATCH(DBYieldedNoDataException)
         {
             rv = NULL;
             RETHROW;
