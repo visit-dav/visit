@@ -1554,6 +1554,10 @@ avtDatasetFileWriter::WritePOVRayTree(avtDataTree_p dt, int idx,
 //    Jeremy Meredith, Wed Feb  6 10:53:16 EST 2008
 //    Fixed coordinate handedness mismatch correctly.
 //
+//    Jeremy Meredith, Fri Oct 29 10:33:19 EDT 2010
+//    Check for degenerate cylinders (line segments with the same
+//    start and end points).  POV-Ray will bail if it encounters one.
+//
 // ****************************************************************************
 
 void
@@ -2045,65 +2049,67 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
         out << "    #declare pt_0=pts"<<idxstr<<"[id0];"<<endl;
         out << "    #declare pt_1=pts"<<idxstr<<"[id1];"<<endl;
         out << "    #declare pt_mid=(pt_0 + pt_1)/2.;"<<endl;
+        out << "    #if (vlength(pt_1-pt_0)!=0)"<<endl;
         if (ptscalars)
         {
-            out << "    object {"<<endl;
-            out << "        cylinder {pt_0,pt_mid,LineWidth}"<<endl;
-            out << "        #if (ConstantLineColor)" << endl;
-            out << "        pigment { LinePigment }" << endl;
-            out << "        #else" << endl;
-            out << "        pigment {"<<endl;
-            out << "            pigment_pattern {" << endl;
-            out << "                color ";
+            out << "      object {"<<endl;
+            out << "          cylinder {pt_0,pt_mid,LineWidth}"<<endl;
+            out << "          #if (ConstantLineColor)" << endl;
+            out << "          pigment { LinePigment }" << endl;
+            out << "          #else" << endl;
+            out << "          pigment {"<<endl;
+            out << "              pigment_pattern {" << endl;
+            out << "                  color ";
             out << "ScalarNormalize(ptscalars"<<idxstr<<"[id0])"<<endl;
-            out << "            }"<<endl;
-            out << "            color_map {colortable}"<<endl;
-            out << "        }"<<endl;
-            out << "        #end" << endl;
-            out << "        finish {LineFinish}" << endl;;
-            out << "    }"<<endl;
-            out << "    object {"<<endl;
-            out << "        cylinder {pt_mid,pt_1,LineWidth}"<<endl;
-            out << "        #if (ConstantLineColor)" << endl;
-            out << "        pigment { LinePigment }" << endl;
-            out << "        #else" << endl;
-            out << "        pigment {"<<endl;
-            out << "            pigment_pattern {" << endl;
-            out << "                color ";
+            out << "              }"<<endl;
+            out << "              color_map {colortable}"<<endl;
+            out << "          }"<<endl;
+            out << "          #end" << endl;
+            out << "          finish {LineFinish}" << endl;;
+            out << "      }"<<endl;
+            out << "      object {"<<endl;
+            out << "          cylinder {pt_mid,pt_1,LineWidth}"<<endl;
+            out << "          #if (ConstantLineColor)" << endl;
+            out << "          pigment { LinePigment }" << endl;
+            out << "          #else" << endl;
+            out << "          pigment {"<<endl;
+            out << "              pigment_pattern {" << endl;
+            out << "                  color ";
             out << "ScalarNormalize(ptscalars"<<idxstr<<"[id1])"<<endl;
-            out << "            }"<<endl;
-            out << "            color_map {colortable}"<<endl;
-            out << "        }"<<endl;
-            out << "        #end" << endl;
-            out << "        finish {LineFinish}" << endl;;
-            out << "    }"<<endl;
+            out << "              }"<<endl;
+            out << "              color_map {colortable}"<<endl;
+            out << "          }"<<endl;
+            out << "          #end" << endl;
+            out << "          finish {LineFinish}" << endl;;
+            out << "      }"<<endl;
         }
         else if (cellscalars)
         {
-            out << "    object {"<<endl;
-            out << "        cylinder {pt_0,pt_1,LineWidth}"<<endl;
-            out << "        #if (ConstantLineColor)" << endl;
-            out << "        pigment { LinePigment }" << endl;
-            out << "        #else" << endl;
-            out << "        pigment {"<<endl;
-            out << "            pigment_pattern {" << endl;
-            out << "                color ";
+            out << "      object {"<<endl;
+            out << "          cylinder {pt_0,pt_1,LineWidth}"<<endl;
+            out << "          #if (ConstantLineColor)" << endl;
+            out << "          pigment { LinePigment }" << endl;
+            out << "          #else" << endl;
+            out << "          pigment {"<<endl;
+            out << "              pigment_pattern {" << endl;
+            out << "                  color ";
             out << "ScalarNormalize(cellscalars"<<idxstr<<"[cellid])"<<endl;
-            out << "            }"<<endl;
-            out << "            color_map {colortable}"<<endl;
-            out << "        }"<<endl;
-            out << "        #end" << endl;
-            out << "        finish {LineFinish}" << endl;;
-            out << "    }"<<endl;
+            out << "              }"<<endl;
+            out << "              color_map {colortable}"<<endl;
+            out << "          }"<<endl;
+            out << "          #end" << endl;
+            out << "          finish {LineFinish}" << endl;;
+            out << "      }"<<endl;
         }
         else
         {
-            out << "    object {"<<endl;
-            out << "        cylinder {pt_0,pt_1,LineWidth}"<<endl;
-            out << "        pigment { LinePigment }"<<endl;
-            out << "        finish {LineFinish}" << endl;;
-            out << "    }"<<endl;
+            out << "      object {"<<endl;
+            out << "          cylinder {pt_0,pt_1,LineWidth}"<<endl;
+            out << "          pigment { LinePigment }"<<endl;
+            out << "          finish {LineFinish}" << endl;;
+            out << "      }"<<endl;
         }
+        out << "    #end" << endl;
         out << "#declare linectr = linectr+1;" << endl;
         out << "#end"<<endl;
         out << "};"<<endl;
