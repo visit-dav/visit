@@ -831,6 +831,8 @@ private:
     ViewStack       undoViewStack;
     ViewStack       redoViewStack;
 
+    StringStringMap cueRenaming;
+
     // Note: since these aren't stored in VisWindow, this seems like a fine
     // place to put them.  If the shading ever is stored in VisWindow, this
     // should be removed.
