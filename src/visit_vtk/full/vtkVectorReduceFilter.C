@@ -105,6 +105,9 @@ void vtkVectorReduceFilter::SetLimitToOriginal(bool lto)
 //    Added ability to limit to only one output vector per original
 //    cell/point.  Also, fixed cell-based vector algorithm bugs.
 //
+//    Hank Childs, Thu Oct 28 22:14:21 PDT 2010
+//    Don't output 0-magnitude vectors.
+//
 // ****************************************************************************
 
 void vtkVectorReduceFilter::Execute(void)
@@ -201,14 +204,18 @@ void vtkVectorReduceFilter::Execute(void)
         {
         nextToTake += actingStride;
 
-        double pt[3];
-        input->GetPoint(i, pt);
-        outpts->InsertNextPoint(pt);
-
         double v[3];
         inPvecs->GetTuple(i, v);
-        outVecs->InsertNextTuple(v);
-        outPd->CopyData(inPd, i, count++);
+
+        if (v[0] != 0. || v[1] != 0. || v[2] != 0.)
+          {
+            double pt[3];
+            input->GetPoint(i, pt);
+            outpts->InsertNextPoint(pt);
+    
+            outVecs->InsertNextTuple(v);
+            outPd->CopyData(inPd, i, count++);
+          }
         }
 
       if (foundcell)

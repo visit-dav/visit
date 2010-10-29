@@ -23,10 +23,24 @@ rendering mode.</li>
 <li>The <i>-viewer_geometry</i> argument works again, letting you tell VisIt where to place the viewer windows.</li>
 <LI>Position independent code is forced when building Mesa, as a workaround for build that appeared on 32bit
 SELinux-enabled systems.</LI>
-<LI>Some streamline plot memory corruption issues affecting
-    <A HREF="http://visitbugs.ornl.gov/issues/368">issue 368</A> have been
-    corrected.</LI>
+<li>The streamline plot:</li>
+<ul>
+   <li>now works properly on 2D curvilinear meshes.</li>
+   <li>now updates its legend properly when you change color tables.</li>
+   <li>no longer suffers from memory corruption issues like those described in
+    <A HREF="http://visitbugs.ornl.gov/issues/368">issue 368</A>.</li>
+   <li>no longer crashes when applied to an empty data set.</li>
+</ul>
+<li>The resample operator now correctly preserves vector data for all mesh types.  (Previously only rectilinear and AMR worked correctly.)</li>
+<li>The uniform placement option for the vector plot now:</li>
+<ul>
+  <li>works with the save window feature and in scalable rendering mode.</li>
+  <li>warns you when you have tried a configuration it can't succeed with (e.g. uniform placement over a surface in 3D).</li>
+  <li>does not produce gigantic vectors in regions where there is no data.</li>
+  <li>no longer scales your data when you look at non-rectilinear data.</li>
+</ul>
 <li>The <i>Reverse, Turn all on, Turn all off</i> buttons in the Subset window now take effect immediately when the <i>Auto apply</i> setting is enabled.</li>
+<li>The volume plot was incorrectly restricting the maximum number of samples per ray when ray casting.  This restriction has been lifted.</li>
 <li>The DataBinning operator now can be used in conjunction with the Contour plot and the Volume plot.</li>
 <li><i>Save Session</i> and <i>Save Settings</i> will now work correctly for the DataBinning, AMRStitchCell,
     DeformSphereGlyph, Delaunay, and Edge operators.</li>
@@ -36,7 +50,6 @@ SELinux-enabled systems.</LI>
 <li>An indexing problem for the SetWindowMode in the Python interface was corrected.</li>
 <li>The Label plot can now set text heights that are fractional percents.  Meaning 1.5% is now possible, where only 1% and 2% were possible through the GUI previously.</li>
 <li>A bug was fixed that prevented saving movies with old session files.</li>
-<li>If you run the Streamline plot on an empty data set, it no longer crashes.</li>
 <li>Expressions that extract vectors from tensor data now work correctly for 2D data.</li>
 <li>Making movies once again can obtain the engine launch parameters from a session file. This fixes the movie-making case where you want to use a new instance of VisIt or if you want VisIt to tell you the command to run.</li>
 <li>Quoting for string data in saved settings has been eliminated except for strings that contain spaces. This more closely matches VisIt's old behavior, improving compatibility with older versions of VisIt.</li>
@@ -50,6 +63,7 @@ SELinux-enabled systems.</LI>
 <p><b><font size="4">Enhancements in version 2.1.1</font></b></p>
 <ul>
 <li>Host profiles were added for the new LLNL machines aztec, edge and inca.</li>
+<li>Performance of vector plots with lots of zero-magnitude data has been improved.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version of VisIt: <a href="relnotes2.1.0.html">VisIt 2.1 Release Notes</a>.</p>
 </body>

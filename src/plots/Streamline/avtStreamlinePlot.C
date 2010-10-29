@@ -387,6 +387,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources.
 //
+//   Hank Childs, Thu Oct 28 20:24:12 PDT 2010
+//   Make sure the LUT is set up correctly before we tell the legend about it.
+//
 // ****************************************************************************
 
 void
@@ -474,6 +477,8 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
 
     UpdateMapperAndLegend();
 
+    SetColorTable(atts.GetColorTableName().c_str());
+
     if (atts.GetLegendFlag())
     {
         varLegend->LegendOn();
@@ -482,12 +487,11 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     else
         varLegend->LegendOff();
     
-    
     if (atts.GetColoringMethod() == StreamlineAttributes::Solid)
         avtLUT->SetLUTColors(atts.GetSingleColor().GetColor(), 1);
     else
         varLegend->SetLookupTable(avtLUT->GetLookupTable());
-
+    
     SetLighting(atts.GetLightingFlag());
 }
 

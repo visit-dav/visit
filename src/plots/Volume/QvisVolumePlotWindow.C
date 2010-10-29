@@ -782,6 +782,9 @@ QvisVolumePlotWindow::Create2DTransferFunctionGroup()
 //   curve shape power, and an optional max-grad-mag-value clamp useful both
 //   as an extra tweak and for making animations not have erratic lighting.
 //
+//   Hank Childs, Thu Oct 28 19:03:00 PDT 2010
+//   Increase the maximum number of samples per ray.
+//
 // ****************************************************************************
 
 QWidget *
@@ -884,8 +887,8 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     // Create the number of samples per ray.
     samplesPerRay = new QSpinBox(central);
     samplesPerRay->setMinimum(1);
-    samplesPerRay->setMaximum(1000);
-    samplesPerRay->setSingleStep(10);
+    samplesPerRay->setMaximum(25000);
+    samplesPerRay->setSingleStep(50);
     samplesPerRayLabel = new QLabel(tr("Samples per ray"), central);
     samplesPerRayLabel->setBuddy(samplesPerRay);
     connect(samplesPerRay, SIGNAL(valueChanged(int)), this,
