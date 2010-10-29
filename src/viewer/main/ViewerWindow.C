@@ -6959,7 +6959,9 @@ ViewerWindow::UpdateQuery(const Line *lineAtts)
 // Creation:   Thu Aug 26 17:05:12 PDT 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Oct 29 11:19:12 PDT 2010
+//   I rewrote it to use a map keyed off of the oldLabel.
+//
 // ****************************************************************************
 
 void
@@ -6967,13 +6969,26 @@ ViewerWindow::RenamePickLabel(const std::string &oldLabel, const std::string &ne
 {
     std::vector<const VisualCueInfo *> cues;
     visWindow->GetVisualCues(VisualCueInfo::PickPoint, cues);
+
+    // The oldLabel value will always be something like "A", "B", etc. We use
+    // that to see if we've redefined the label already. If we have then the current
+    // label will be set to something user-defined.
+    std::string currentLabel(oldLabel);
+    StringStringMap::iterator it = cueRenaming.find(oldLabel);
+    if(it != cueRenaming.end())
+    {
+        currentLabel = it->second;
+    }
+    cueRenaming[oldLabel] = newLabel;
+
+    // Try and find the currentLabel in the cue labels.
     for(size_t i = 0; i < cues.size(); ++i)
     {
-        if(cues[i]->GetLabel() == oldLabel)
+        if(cues[i]->GetLabel() == currentLabel)
         {
             VisualCueInfo newCue(*(cues[i]));
             newCue.SetLabel(newLabel);
-            visWindow->UpdateQuery(oldLabel, &newCue);
+            visWindow->UpdateQuery(currentLabel, &newCue);
             return;
         }
     }
