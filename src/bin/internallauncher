@@ -667,6 +667,11 @@ $0 = shift @ARGV;
 #    Print VISIT_MESA_LIB as part of the norun environment so plots will work
 #    when we run in an mxterm.
 #
+#    Eric Brugger, Fri Oct 29 09:44:21 PDT 2010
+#    I modified the script so that it would properly launch VisIt in
+#    parallel on aztec and inca at LLNL. I removed some unnecessary hacks
+#    for launching on some LLNL machines.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1832,14 +1837,14 @@ if ( $host =~ /^xchem.llnl.gov/ )
 }
 
 # ----
-# HACK for yana, alastor hopi @ LLNL
+# HACK for yana, alastor, hopi, aztec, inca  @ LLNL
 #
 # ----
 $UseTTC = 0;
-if ($host =~ /^yana\d+$/ or $host =~ /^alastor\d+$/ or $host =~ /^hopi\d+$/)
+if ($host =~ /^yana\d+$/ or $host =~ /^alastor\d+$/ or $host =~ /^hopi\d+$/ or
+    $host =~ /^aztec\d+$/ or $host =~ /^inca\d+$/)
 {
     $UseTTC = 1;
-    $ENV{LD_LIBRARY_PATH} = "/usr/local/tools/mvapich-gnu/lib/shared";
 }
 
 # ----
@@ -1850,18 +1855,6 @@ $UsePPN = 1;
 if ($host =~ /^graph\d+$/)
 {
     $UsePPN  = 0;
-    $ENV{LD_LIBRARY_PATH} = "/usr/local/tools/mvapich-gnu/lib/shared";
-}
-
-# ----
-# HACK for AMD Opteron clusters @ LLNL
-#
-# ----
-if ($host =~ /^atlas\d+$/ or $host =~ /^hera\d+$/ or $host =~ /^prism\d+$/ or
-    $host =~ /^zeus\d+$/ or $host =~ /^eos\d+$/ or $host =~ /^gauss\d+$/ or
-    $host =~ /^juno\d+$/ or $host =~ /^minos\d+$/ or $host =~ /^rhea\d+$/)
-{
-    $ENV{LD_LIBRARY_PATH} = "/usr/local/tools/mvapich-gnu/lib/shared";
 }
 
 # ----
