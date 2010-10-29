@@ -1410,14 +1410,15 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     masterfile << "#declare camera_at    = scene_origin;" << endl;
     masterfile << "#declare camera_pos   = scene_origin + z*ds_size*1.5;" << endl;
     masterfile << "#declare camera_up    = y;" << endl;
+    masterfile << "#declare viewangle    = 40;" << endl;
     masterfile << endl;
     masterfile << "// Set the camera/aspect from the given parameters" << endl;
     masterfile << "camera {" << endl;
     masterfile << "    location camera_pos" << endl;
-    masterfile << "    right    -x*aspect" << endl;
+    masterfile << "    right    -x*aspect  // left-handed coordinate system" << endl;
     masterfile << "    look_at  camera_at" << endl;
     masterfile << "    sky      camera_up" << endl;
-    masterfile << "    angle    40" << endl;
+    masterfile << "    angle    viewangle" << endl;
     masterfile << "}" << endl;
     masterfile << "" << endl;
     masterfile << "// Set the light source near the camera" << endl;
