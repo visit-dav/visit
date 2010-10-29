@@ -44,6 +44,8 @@
 #   Hank Childs, Thu Aug 19 12:26:29 PDT 2010
 #   Move DDF to DataBinning.
 #
+#   Mark C. Miller, Fri Oct 29 10:02:16 PDT 2010
+#   Added DBYieldedNoDataException
 #****************************************************************************/
 
 SET(COMM_SOURCES
@@ -68,6 +70,7 @@ ENDIF(WIN32)
 
 SET(EXCEPTION_SOURCES
 Exceptions/Database/BadPermissionException.C
+Exceptions/Database/DBYieldedNoDataException.C
 Exceptions/Database/FileDoesNotExistException.C
 Exceptions/Database/InvalidDBTypeException.C
 Exceptions/Database/InvalidFilesException.C

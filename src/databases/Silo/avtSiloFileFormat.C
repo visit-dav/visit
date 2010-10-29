@@ -1101,6 +1101,9 @@ avtSiloFileFormat::FreeUpResources(void)
 //    Error if we openend a file with nothing in it to prevent false
 //    positives when detecting Silo files.  Happens only in strict mode.
 //
+//    Mark C. Miller, Fri Oct 29 10:01:16 PDT 2010
+//    Removed logic looking for empty md and throwing invalid file exception.
+//    Thats handled by VisIt now in the format classes.
 // ****************************************************************************
 
 void
@@ -1140,16 +1143,6 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // To be nice to other functions, tell Silo to turn back on reading all
     // of the data.
     DBSetDataReadMask(DBAll);
-
-    // If we got nothing, it may be that this was a PDB file or
-    // an HDF5 file, for example, but not really a Silo file.
-    if (GetStrictMode() &&
-        md->GetNumMeshes() == 0 &&
-        md->GetNumCurves() == 0)
-    {
-        EXCEPTION1(InvalidFilesException, filenames[0]);
-    }
-        
 }
 
 // ****************************************************************************

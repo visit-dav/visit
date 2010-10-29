@@ -396,6 +396,7 @@ public:
     void AddDefaultSILRestrictionDescription(const std::string&);
     void         Add(avtSubsetsMetaData *);
     const intVector& GetRestrictedMatnos(const std::string&) const;
+    bool Empty() const;
 
     // IDs that can be used to identify fields in case statements
     enum {

@@ -3644,3 +3644,19 @@ const intVector& avtDatabaseMetaData::GetRestrictedMatnos(const std::string& var
     return dummy;
 }
 
+Function: Empty
+Declaration: bool Empty() const;
+Definition:
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Empty
+//
+//  Purpose: Return whether md object is empty (devoid of any objects) 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   28Oct10
+//
+// ****************************************************************************
+bool avtDatabaseMetaData::Empty() const
+{
+    return (GetNumMeshes() == 0 && GetNumCurves() == 0);
+}

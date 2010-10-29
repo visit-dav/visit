@@ -93,6 +93,8 @@ class     avtIOInformation;
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Removed ReturnsValidCycle/Time GetCycle/Time. Added SetDatabaseMetaData
 //
+//    Mark C. Miller, Fri Oct 29 09:58:43 PDT 2010
+//    Moved implementation of SetDatabaseMetaData to the .C file.
 // ****************************************************************************
 
 class DATABASE_API avtSTSDFileFormat : public avtFileFormat
@@ -116,8 +118,7 @@ class DATABASE_API avtSTSDFileFormat : public avtFileFormat
                                { avtFileFormat::ActivateTimestep(); };
     virtual void           PopulateIOInformation(avtIOInformation& ioInfo)
                                { avtFileFormat::PopulateIOInformation(ioInfo); };
-    virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md)
-                               { metadata = md; PopulateDatabaseMetaData(metadata); };
+    virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md);
 
   protected:
     char                  *filename;

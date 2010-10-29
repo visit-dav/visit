@@ -46,6 +46,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtMTSDFileFormat.h>
 
+#include <DBYieldedNoDataException.h>
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 
@@ -304,5 +305,23 @@ avtMTSDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
             "Please contact the plugin developer. This error cannot be corrected "
             "without changes to code", GetType());
         EXCEPTION1(ImproperUseException, msg);
+    }
+}
+
+// ****************************************************************************
+//  Method: avtSTMDFileFormat::SetDatabaseMetaData
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    28Oct10
+// ****************************************************************************
+
+void
+avtMTSDFileFormat::SetDatabaseMetaData(avtDatabaseMetaData *md, int ts)
+{
+    metadata = md;
+    PopulateDatabaseMetaData(metadata, ts);
+    if (GetStrictMode() && metadata->Empty())
+    {
+        EXCEPTION1(DBYieldedNoDataException, filenames[0]);
     }
 }

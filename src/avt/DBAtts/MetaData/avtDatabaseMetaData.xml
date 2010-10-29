@@ -251,6 +251,8 @@
     </Function>
     <Function name="GetRestrictedMatnos" user="true" member="true">
     </Function>
+    <Function name="Empty" user="true" member="true">
+    </Function>
     <Include file="header" quoted="false">
       Expression.h
     </Include>

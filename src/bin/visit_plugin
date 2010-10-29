@@ -93,8 +93,9 @@ cleanPluginDir () {
     pushd $1
     find . -type d -name .svn -exec rm -rf {} \;
     rm -f *.d .depend .pardepend .cmake.depend .cmake.state Makefile *.o findmerge*
+    rm -f cmake_install.cmake
+    rm -f CMakeFiles
     rm -f *.contrib* *.keep*
-#    rm -f *PluginInfo*.[Ch]
     chmod -R a+rX,g+w
     chgrp -R visit
     popd
