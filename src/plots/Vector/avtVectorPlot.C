@@ -44,6 +44,7 @@
 
 #include <vtkVectorGlyph.h>
 
+#include <avtCallback.h>
 #include <avtGhostZoneFilter.h>
 #include <avtLookupTable.h>
 #include <avtResampleFilter.h>
@@ -251,6 +252,10 @@ avtVectorPlot::GetMapper(void)
 //    Hank Childs, Wed Aug 25 09:42:13 PDT 2010
 //    Insert resample filter when we are doing uniform locations.
 //
+//    Hank Childs, Thu Oct 28 20:45:10 PDT 2010
+//    Don't apply uniform spacing if the topological dimension is less than
+//    the spatial dimension.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -261,8 +266,19 @@ avtVectorPlot::ApplyOperators(avtDataObject_p input)
     avtDataObject_p dob = ghostFilter->GetOutput();
     if (atts.GetGlyphLocation() == VectorAttributes::UniformInSpace)
     {
-        resampleFilter->SetInput(dob);
-        dob = resampleFilter->GetOutput();
+        avtDataAttributes &atts = dob->GetInfo().GetAttributes();
+        if (atts.GetTopologicalDimension() < atts.GetSpatialDimension())
+        {
+            avtCallback::IssueWarning("The option to place vector glyphs "
+              "uniformly in space only works when the spatial dimension "
+              "matches the topological dimension.  The glyph locations will "
+              "instead be a function of mesh resolution.");
+        }
+        else
+        {
+            resampleFilter->SetInput(dob);
+            dob = resampleFilter->GetOutput();
+        }
     }
     vectorFilter->SetInput(dob);
     vectorFilter->SetMagVarName(magVarName); 
@@ -448,6 +464,10 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Hank Childs, Wed Aug 25 09:42:13 PDT 2010
 //    Set attributes for resample filter.
 //
+//    Hank Childs, Thu Oct 28 22:14:21 PDT 2010
+//    Don't delete and recreate the resample filter ... it messes with SR mode.
+//    Also set the default value when resampling to be 0-magnitude.
+//
 // ****************************************************************************
 
 void
@@ -477,13 +497,21 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
     }
     vectorFilter->SetLimitToOriginal(atts.GetOrigOnly());
 
-    if (resampleFilter != NULL)
-        delete resampleFilter;
-    InternalResampleAttributes resatts;
-    resatts.SetUseTargetVal(true);
-    resatts.SetDistributedResample(true);
-    resatts.SetTargetVal(atts.GetNVectors());
-    resampleFilter = new avtResampleFilter(&resatts);
+    // If the resample filter is not NULL, then we are calling SetAtts
+    // for a second consecutive time.  The second call must be for SR
+    // mode.  If we ever allow for pipeline re-execution, this code
+    // will need to be changed and the resample filter will need to
+    // have a new method added that allows for its atts to be set.
+    // (They can only be set in the constructor right now.)
+    if (resampleFilter == NULL)
+    {
+        InternalResampleAttributes resatts;
+        resatts.SetUseTargetVal(true);
+        resatts.SetDefaultVal(0.);
+        resatts.SetDistributedResample(true);
+        resatts.SetTargetVal(atts.GetNVectors());
+        resampleFilter = new avtResampleFilter(&resatts);
+    }
 
     glyph->SetArrow(atts.GetGlyphType() == VectorAttributes::Arrow);
     
