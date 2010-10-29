@@ -59,6 +59,12 @@ struct avtInterpolationWeight
 typedef std::vector<avtInterpolationWeight> avtInterpolationWeights;
 
 // ************************************************************************* //
+//  Modifications:
+//
+//    Hank Childs, Fri Oct 29 12:13:07 PDT 2010
+//    Add new data members for efficient curvilinear location.
+//
+// ************************************************************************* //
 
 class IVP_API avtCellLocator
 {
@@ -91,6 +97,8 @@ protected:
     vtkIdType*     cellIdxPtr;
     vtkIdType*     cellLocPtr;
     int*           strDimPtr;
+    bool           normal2D;
+    bool           normal3D;
     float*         fCoordPtr;
     double*        dCoordPtr;
 };

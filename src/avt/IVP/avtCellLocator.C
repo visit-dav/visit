@@ -47,12 +47,20 @@
 #include <vtkDoubleArray.h>
 
 #include <DebugStream.h>
+#include <VisItException.h>
 #include <cstdlib>
 #include <cmath>
 #include <cassert>
 
 #include <vtkMath.h>
 
+//----------------------------------------------------------------------------
+//  Modifications:
+//
+//    Hank Childs, Fri Oct 29 12:13:07 PDT 2010
+//    Initialize new data members for curvilinear location.
+//    Remove assertion for 2D curvilinear data.
+//
 //----------------------------------------------------------------------------
 
 avtCellLocator::avtCellLocator( vtkDataSet* ds ) : dataSet(ds)
@@ -62,6 +70,8 @@ avtCellLocator::avtCellLocator( vtkDataSet* ds ) : dataSet(ds)
     cellIdxPtr = NULL;
     cellLocPtr = NULL;
     strDimPtr  = NULL;
+    normal2D = false;
+    normal3D = false;
 
     if( vtkUnstructuredGrid* ug = vtkUnstructuredGrid::SafeDownCast( dataSet ) )
     {
@@ -70,8 +80,11 @@ avtCellLocator::avtCellLocator( vtkDataSet* ds ) : dataSet(ds)
     }
     else if( vtkStructuredGrid* sg = vtkStructuredGrid::SafeDownCast( dataSet ) )
     {
-        assert( sg->GetDataDimension() == 3 );
         strDimPtr = sg->GetDimensions();
+        if (strDimPtr[0] > 1 && strDimPtr[0] > 1 && strDimPtr[2] == 1)
+            normal2D = true;
+        else if (strDimPtr[0] > 1 && strDimPtr[0] > 1 && strDimPtr[2] > 1)
+            normal3D = true;
     }
 
     fCoordPtr = NULL;
@@ -165,6 +178,12 @@ bool avtCellLocator::TestCell( vtkIdType cellid, const double pos[3],
 }
 
 // ---------------------------------------------------------------------------
+//  Modifications:
+//
+//    Hank Childs, Fri Oct 29 12:13:07 PDT 2010
+//    Add support for 2D curvilinear.
+//
+// ---------------------------------------------------------------------------
 
 void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids, 
                                double pts[][3] ) const
@@ -184,25 +203,70 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
     }
     else if( strDimPtr )
     {
-        int i = cellid % (strDimPtr[0] - 1);
-        int j = (cellid / (strDimPtr[0] - 1)) % (strDimPtr[1] - 1);
-        int k = cellid / ((strDimPtr[0] - 1) * (strDimPtr[1] - 1));
-
-        int idx = i + j*strDimPtr[0] + k*strDimPtr[0]*strDimPtr[1];
-        int d0 = strDimPtr[0];
-        int d1 = strDimPtr[0]*strDimPtr[1];
-
-        ids[0] = idx;
-        ids[1] = idx+1;
-        ids[2] = idx+1+d0;
-        ids[3] = idx+d0;
-        idx += d1;
-        ids[4] = idx;
-        ids[5] = idx+1;
-        ids[6] = idx+1+d0;
-        ids[7] = idx+d0;
-
-        npts = 8;
+        if (normal3D)
+        {
+            int i = cellid % (strDimPtr[0] - 1);
+            int j = (cellid / (strDimPtr[0] - 1)) % (strDimPtr[1] - 1);
+            int k = cellid / ((strDimPtr[0] - 1) * (strDimPtr[1] - 1));
+    
+            int idx = i + j*strDimPtr[0] + k*strDimPtr[0]*strDimPtr[1];
+            int d0 = strDimPtr[0];
+            int d1 = strDimPtr[0]*strDimPtr[1];
+    
+            ids[0] = idx;
+            ids[1] = idx+1;
+            ids[2] = idx+1+d0;
+            ids[3] = idx+d0;
+            idx += d1;
+            ids[4] = idx;
+            ids[5] = idx+1;
+            ids[6] = idx+1+d0;
+            ids[7] = idx+d0;
+    
+            npts = 8;
+        }
+        else if (normal2D)
+        {
+            int i = cellid % (strDimPtr[0] - 1);
+            int j = cellid / (strDimPtr[0] - 1);
+    
+            int idx = i + j*strDimPtr[0];
+            int d0 = strDimPtr[0];
+            ids[0] = idx;
+            ids[1] = idx+1;
+            ids[2] = idx+1+d0;
+            ids[3] = idx+d0;
+            npts = 4;
+        }
+        else
+        {
+            int idx, d0;
+            if (strDimPtr[0] == 1 && strDimPtr[1] > 1 && strDimPtr[2] > 1)
+            {
+                int j = cellid % (strDimPtr[1] - 1);
+                int k = cellid / (strDimPtr[1] - 1);
+        
+                idx = j + k*strDimPtr[1];
+                d0 = strDimPtr[1];
+            }
+            else if (strDimPtr[0] > 1 && strDimPtr[1] == 1 && strDimPtr[2] > 1)
+            {
+                int i = cellid % (strDimPtr[0] - 1);
+                int k = cellid / (strDimPtr[0] - 1);
+        
+                idx = i + k*strDimPtr[0];
+                d0 = strDimPtr[0];
+            }
+            else
+            {
+                EXCEPTION1(VisItException, "Unable to evaluate cells for particle advection");
+            }
+            ids[0] = idx;
+            ids[1] = idx+1;
+            ids[2] = idx+1+d0;
+            ids[3] = idx+d0;
+            npts = 4;
+        }
     }
     else
     {

@@ -134,6 +134,9 @@ avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
 //    Remove tightenClippingPlanes, as this functionality has been moved to
 //    avtRayTracer.
 //
+//    Hank Childs, Fri Oct 29 11:47:36 PDT 2010
+//    Do not transform vectors for this constructor as well.
+//
 // ****************************************************************************
 
 avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
@@ -149,6 +152,7 @@ avtWorldSpaceToImageSpaceTransform::avtWorldSpaceToImageSpaceTransform(
     view = vi;
     transform = vtkMatrix4x4::New();
     CalculateTransform(view, transform, scale, aspect);
+    transformVectors = false;
 }
 
 
