@@ -20,7 +20,13 @@
 <li>The molecule plot now correctly uses 'sphere imposters' in scalable
 rendering mode.</li>
 <li>The FVCOM reader can group files again.</li>
-<li>The <i>-viewer_geometry</i> argument works again, letting you tell VisIt where to place the viewer windows.</li>
+<li>The Tecplot reader understands additions to the Tecplot ASCII format, such as comments, NODES/ELEMENTS as aliases for N/E, and complex VARLOCATION specifications.</li>
+<li>The Tecplot writer adds extra spaces between elements to avoid cases where field widths were not sufficient to prevent overlap.</li>
+<li>The ThreeSlice operator now correctly handles data with mixed mesh types, such as unstructured and structured in different domains.</li>
+<li>The H5Part reader no erroneously longer assumes a timestep of 0 for some operations.</li>
+<li>The 3D view axis scaling behavior has received some usability improvements.</li>
+<li>The POV-Ray exporter now avoids POV-Ray errors on degenerate geometry.</li>
+<li>The <tt>-viewer_geometry</tt> argument works again, letting you tell VisIt where to place the viewer windows.</li>
 <LI>Position independent code is forced when building Mesa, as a workaround for build that appeared on 32bit
 SELinux-enabled systems.</LI>
 <li>The streamline plot:</li>
@@ -62,6 +68,7 @@ SELinux-enabled systems.</LI>
 </ul>
 <p><b><font size="4">Enhancements in version 2.1.1</font></b></p>
 <ul>
+<li>The -o command line option, and OpenDatabase Python command, to open files with a specific database reader plugin no longer requires a plugin version.  For example, <tt>visit -o myvtkfile,VTK</tt> now works as expected.</li>
 <li>Host profiles were added for the new LLNL machines aztec, edge and inca.</li>
 <li>Performance of vector plots with lots of zero-magnitude data has been improved.</li>
 </ul>
