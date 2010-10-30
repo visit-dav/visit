@@ -202,6 +202,12 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Rename Adams-Bashforth's "Maximum step length" to "Step length" since
 //   it always takes the same size step.
 //
+//   Hank Childs, Sat Oct 30 11:25:04 PDT 2010
+//   Initialize sample density.  Otherwise, atts set from the CLI gets overset,
+//   because we set the density based on the value of the text field, and we
+//   get a signal that causes us to use the default value before we ever set
+//   the field with the correct value.
+// 
 // ****************************************************************************
 
 void
@@ -444,10 +450,13 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     sampleDensity[2] = new QSpinBox(samplingGroup);
     sampleDensity[0]->setMinimum(1);
     sampleDensity[0]->setMaximum(10000000);
+    sampleDensity[0]->setValue(streamAtts->GetSampleDensity0());
     sampleDensity[1]->setMinimum(1);
     sampleDensity[1]->setMaximum(10000000);
+    sampleDensity[1]->setValue(streamAtts->GetSampleDensity1());
     sampleDensity[2]->setMinimum(1);
-    sampleDensity[1]->setMaximum(10000000);
+    sampleDensity[2]->setMaximum(10000000);
+    sampleDensity[2]->setValue(streamAtts->GetSampleDensity2());
     connect(sampleDensity[0], SIGNAL(valueChanged(int)), this, SLOT(sampleDensity0Changed(int)));
     connect(sampleDensity[1], SIGNAL(valueChanged(int)), this, SLOT(sampleDensity1Changed(int)));
     connect(sampleDensity[2], SIGNAL(valueChanged(int)), this, SLOT(sampleDensity2Changed(int)));

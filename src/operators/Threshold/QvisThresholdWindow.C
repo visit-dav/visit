@@ -576,10 +576,24 @@ QvisThresholdWindow::outputMeshTypeChanged(int buttonID)
 }
 
 
+// ****************************************************************************
+//  Modified:
+//
+//    Hank Childs, Fri Oct 29 20:26:17 PDT 2010
+//    Work around Qt bug on Mac where reading the text in a QTableWidgetItem
+//    cell does not match what the user has typed until you change focus to
+//    the next cell.  The work around is to manually set the focus to another
+//    cell and back.
+//
+// ****************************************************************************
+
 void
 QvisThresholdWindow::apply()
 {
-    threshVars->setCurrentCell(threshVars->currentRow(), 0);
+    int currentRow = threshVars->currentRow();
+    int currentCol = threshVars->currentColumn();
+    threshVars->setCurrentCell(currentRow, currentCol+1);
+    threshVars->setCurrentCell(currentRow, currentCol);
     QvisOperatorWindow::apply();
 }
 
