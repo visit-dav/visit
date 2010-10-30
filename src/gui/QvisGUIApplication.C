@@ -1920,6 +1920,10 @@ QvisGUIApplication::Exec()
 //    Gunther H. Weber, Fri Apr 23 11:24:19 PDT 2010
 //    Check for system wide visitrc file in addition to user visitrc file.
 //
+//    Hank Childs, Fri Oct 29 14:46:15 PDT 2010
+//    Don't prompt the user for whether they want to exit if we launched
+//    the CLI ourselves.
+//
 // ****************************************************************************
 
 void
@@ -1945,7 +1949,14 @@ QvisGUIApplication::Quit()
             // if the user does not have a visitrc file, or if we have 3 
             // or more clients ask user if they want to close all clients.
 
-            if(!have_visitrc || num_clients > 2)
+            bool shouldPrompt = (num_clients >= 2 ? true : false);
+            if (have_visitrc)
+                shouldPrompt = false;
+            if (interpreter != NULL)  // the other client is a CLI we launched
+                shouldPrompt = false;
+            if (num_clients == 2 && interpreter != NULL)
+                closeAllClients = true;
+            if(shouldPrompt)
             {
                 if(QMessageBox::information(mainWin,
                 "VisIt", tr("There is more than 1 VisIt client connected to the "
