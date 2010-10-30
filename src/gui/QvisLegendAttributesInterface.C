@@ -720,6 +720,12 @@ QvisLegendAttributesInterface::UpdateControls()
 //   Kathleen Bonnell, Thu Oct  1 14:49:42 PDT 2009
 //   Added code for ID_intAttribute2, ID_doubleVector1, ID_stringVector1.
 //
+//   Hank Childs, Fri Oct 29 20:33:06 PDT 2010
+//   Work around Qt bug on Mac where reading the text in a QTableWidgetItem
+//   cell does not match what the user has typed until you change focus to
+//   the next cell.  The work around is to manually set the focus to another
+//   cell and back.
+//
 // ****************************************************************************
 
 void
@@ -800,6 +806,14 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
         double d;
         QString txt; 
         int nRows = suppliedLabels->rowCount();
+
+        // Qt 4.6 on Mac doesn't update properly.  This trick tickles it
+        // into a good state.
+        int currentRow = suppliedLabels->currentRow();
+        int currentCol = suppliedLabels->currentColumn();
+        suppliedLabels->setCurrentCell(currentRow, (currentCol==0? 1 :0));
+        suppliedLabels->setCurrentCell(currentRow, currentCol);
+
         bool okay;
         for (int rowNum = 0; rowNum < nRows; ++rowNum)
         {
@@ -814,6 +828,14 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
     {
         stringVector temp;
         QString txt; 
+
+        // Qt 4.6 on Mac doesn't update properly.  This trick tickles it
+        // into a good state.
+        int currentRow = suppliedLabels->currentRow();
+        int currentCol = suppliedLabels->currentColumn();
+        suppliedLabels->setCurrentCell(currentRow, (currentCol==0? 1 :0));
+        suppliedLabels->setCurrentCell(currentRow, currentCol);
+
         int nRows = suppliedLabels->rowCount();
         bool allEmpty = true;
         for (int rowNum = 0; rowNum < nRows; ++rowNum)
