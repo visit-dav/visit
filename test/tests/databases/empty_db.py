@@ -9,7 +9,7 @@
 # ----------------------------------------------------------------------------
 import re
 
-OpenDatabase("../data/empty.silo")
+OpenDatabase("../data/silo_pdb_test_data/empty.silo")
 errStr = GetLastError()
 tmpType = re.search(",\nno data was found in the file for VisIt to work with.", errStr)
 msg = "UnknownException\n"
