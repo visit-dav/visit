@@ -172,6 +172,10 @@
 #    Tom Fogal, Wed Sep 22 13:45:36 MDT 2010
 #    Fix HAVE_LIBGLEW definition.
 #
+#    Brad Whitlock, Fri Oct 29 16:56:34 PDT 2010
+#    I added some more filtering when generating VisItLibraryDependencies.cmake
+#    so it does not include local path names for Qt and Python.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1689,7 +1693,10 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
             ENDIF(\"\${line}\" MATCHES \".*\${suppress}_LIB_DEPENDS.*\")
         ENDFOREACH(suppress)
         IF(\${outputLine} STREQUAL \"TRUE\")
-            FILE(APPEND \${filename} \"\${line}\\n\")
+            STRING(REPLACE \"${QT_LIBRARY_DIR}/\" \"\\\${VISIT_LIBRARY_DIR}/\" filteredline \"\${line}\")
+            STRING(REPLACE \"${VISIT_PYTHON_DIR}/lib/\" \"\\\${VISIT_LIBRARY_DIR}/\" filteredline2 \"\${filteredline}\")
+            STRING(REPLACE \"/libQtUiTools.a\" \"/../archives/libQtUiTools.a\" filteredline3 \"\${filteredline2}\")
+            FILE(APPEND \${filename} \"\${filteredline3}\\n\")
         ENDIF(\${outputLine} STREQUAL \"TRUE\")
     ENDFOREACH(line)
 ENDFUNCTION(FILTER_LIBRARY_DEPENDENCIES)
