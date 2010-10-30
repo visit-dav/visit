@@ -36,6 +36,7 @@ SELinux-enabled systems.</LI>
    <li>no longer suffers from memory corruption issues like those described in
     <A HREF="http://visitbugs.ornl.gov/issues/368">issue 368</A>.</li>
    <li>no longer crashes when applied to an empty data set.</li>
+   <li>handles sample densities more robustly when going from the CLI to the gui.</li>
 </ul>
 <li>The resample operator now correctly preserves vector data for all mesh types.  (Previously only rectilinear and AMR worked correctly.)</li>
 <li>The uniform placement option for the vector plot now:</li>
@@ -65,6 +66,8 @@ SELinux-enabled systems.</LI>
 <li>SimV2 can better deal with 2-element arrays when setting real indices and base indices for rectilinear meshes.</li>
 <li>The default number of cores per node to use was changed from 8 to 16 for the parallel interactive pdebug profile on hera.</li>
 <li>The new <i>RenamePickLabel</i> function has been changed so it can repeatedly use the pick letter as the old pick text.</li>
+<li>A Mac-specific bug was fixed where the Threshold operator was not correctly inputting ranges from the window in all occasions.</li>
+<li>A Mac-specific bug was fixed where legend annotation attributes were not correctly inputting labels in all occasions.</li>
 </ul>
 <p><b><font size="4">Enhancements in version 2.1.1</font></b></p>
 <ul>

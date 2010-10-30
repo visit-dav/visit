@@ -37,6 +37,16 @@
 *****************************************************************************/
 #include <Python.h>
 
+// get select
+#if defined(_WIN32)
+#include <winsock2.h>
+#else
+#include <strings.h>   // bzero by way of FD_ZERO
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 // The following 2 include lines are only for the MIPSpro 7.41 compiler.
 // There is some conflict between Python.h and Utility.h in including
 // those 2 files.  Remove once support for MIPSpro is dropped.
@@ -160,6 +170,9 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //    If an exception is uncaught, then print out the information to the screen
 //    and hang.  This hang will let folks using the CLI through GUI see the
 //    failure.
+//
+//    Hank Childs, Fri Oct 29 12:32:26 PDT 2010
+//    Change while (1) to select based on guidance from Sean Ahern.
 //
 // ****************************************************************************
 
@@ -426,8 +439,7 @@ main(int argc, char *argv[])
         // If the GUI launched the CLI, the user won't have a chance to see
         // message ... the terminal will disappear when the program finishes.
         //  So go in an infinite loop to make sure they see the message.
-        while (1)
-            ;
+        select(0,NULL,NULL,NULL,NULL);
         retval = -1;
     }
     ENDTRY
