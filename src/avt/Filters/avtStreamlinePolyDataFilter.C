@@ -182,6 +182,9 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(
 //   Christoph Garth, Wed Jul 14 13:48:11 PDT 2010
 //   Adapt to new storage scheme in avtStateRecorderIntegralCurve.
 //
+//   Hank Childs, Sun Oct 31 13:00:53 PST 2010
+//   Properly record arclength for cropping away portions of the streamline.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -230,8 +233,6 @@ avtStreamlinePolyDataFilter::GetVTKPolyData( avtIntegralCurve *sl2, int id )
     // unsigned int i = 0;
     // float val = 0.0, theta = 0.0, param = 0.0;
     // for(siter = sl->begin(); siter != sl->end(); ++siter, i++)
-
-    float arclength = 0.0;
 
     for( size_t i=0; i<size; ++i )
     {
@@ -284,7 +285,7 @@ avtStreamlinePolyDataFilter::GetVTKPolyData( avtIntegralCurve *sl2, int id )
             params->InsertTuple1( i, s.time );
             break;
         case avtIntegralCurve::TERMINATE_DISTANCE:
-            params->InsertTuple1( i, arclength );
+            params->InsertTuple1( i, s.arclength );
             break;
         case avtIntegralCurve::TERMINATE_STEPS:
             params->InsertTuple1( i, i );
