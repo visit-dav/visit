@@ -257,8 +257,8 @@ avtOpenGLStreamlineRenderer::SetLevelsLUT(avtLookupTable *lut)
 //    Removed the display list generation since Mesa 7.5 does not support
 //    shader calls inside display lists.
 //
-//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
-//  Pass in camera to do transparency sorting.
+//    Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//    Pass in camera to do transparency sorting.
 //
 // ****************************************************************************
 
@@ -371,7 +371,7 @@ avtOpenGLStreamlineRenderer::Render(vtkPolyData *data,
 }
 
 // ****************************************************************************
-//  Method:  avtOpenGLStreamlineRenderer::DrawStreamline
+//  Method:  avtOpenGLStreamlineRenderer::DrawStreamlines
 //
 //  Purpose:
 //    Call the appropriate rendering method, then display seeds if needed.
@@ -437,6 +437,10 @@ avtOpenGLStreamlineRenderer::DrawStreamlines(vtkPolyData *data)
 //   Dave Pugmire, Thu Mar 25 16:34:23 EDT 2010
 //   Fixed indexing problem.
 //
+//   Hank Childs, Sun Oct 31 13:04:54 PST 2010
+//   Add support for the end points being outside the range for a given
+//   streamline.
+//
 // ****************************************************************************
 
 void
@@ -466,12 +470,19 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
     for (int i=0; i<data->GetNumberOfLines(); i++)
     {
         int nPts = *segptr;
-        int idx0 = 0, idx1 = nPts;
+        int idx0 = 0, idx1 = nPts-1;
 
         segptr++; //Now segptr points at vtx0.
         
         double t0=0.0, t1=0.0;
         GetEndPoints(data, segptr, nPts, idx0, idx1, t0, t1);
+        if (idx0 > nPts || idx1 < 0)
+        {
+            // The display range doesn't overlap with the current streamline,
+            // so do some bookkeeping and return.
+            segptr += nPts;
+            continue;
+        }
 
         //cout<<"   Draw: "<<idx0<<" to "<<idx1<<" ["<<t0<<" "<<t1<<"]"<<endl;
 
@@ -616,6 +627,10 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
 //   Hank Childs, Thu Sep 30 01:11:03 PDT 2010
 //   Add an option for sizing based on a fraction of the bounding box.
 //
+//   Hank Childs, Sun Oct 31 13:04:54 PST 2010
+//   Add support for the end points being outside the range for a given
+//   streamline.
+//
 // ****************************************************************************
 
 void
@@ -650,8 +665,11 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
         {
             vtkPolyData *pd = MakeNewPolyline(data, segptr);
 
-            append->AddInput(pd);
-            pd->Delete();
+            if (pd != NULL)
+            {
+                append->AddInput(pd);
+                pd->Delete();
+            }
         }
         
         append->Update();
@@ -691,6 +709,10 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
 //   Hank Childs, Thu Sep 30 01:11:03 PDT 2010
 //   Add an option for sizing based on a fraction of the bounding box.
 //
+//   Hank Childs, Sun Oct 31 13:04:54 PST 2010
+//   Add support for the end points being outside the range for a given
+//   streamline.
+//
 // ****************************************************************************
 
 void
@@ -711,6 +733,8 @@ avtOpenGLStreamlineRenderer::DrawAsRibbons(vtkPolyData *data)
     for (int i=0; i<data->GetNumberOfLines(); i++)
     {
         vtkPolyData *pd = MakeNewPolyline(data, segptr);
+        if (pd == NULL)
+            continue;
         int nPts = pd->GetPointData()->GetNumberOfTuples();
 
         vtkIdList *ids = vtkIdList::New();
@@ -864,8 +888,8 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
 //
 //  Modifications:
 //
-//  Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
-//  Support for transparency sorting.
+//   Dave Pugmire, Fri Feb 12 14:02:57 EST 2010
+//   Support for transparency sorting.
 //
 //   Dave Pugmire, Tue Feb 16 09:08:32 EST 2010
 //   Add display head geom as cone.
@@ -878,6 +902,10 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
 //
 //   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
 //   Allow for display begin/end to be from distance/time/steps.
+//
+//   Hank Childs, Sun Oct 31 13:04:54 PST 2010
+//   Add support for the end points being outside the range for a given
+//   streamline.  Also re-arrange indexing.
 //
 // ****************************************************************************
 
@@ -909,23 +937,22 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
         int nPts = *segptr;
         segptr++; //Now segptr points at vtx0.
 
-        int idx0 = 0, idx1 = nPts;
+        int idx0 = 0, idx1 = nPts-1;
         double t0=0.0, t1=0.0;
         GetEndPoints(data, segptr, nPts, idx0, idx1, t0, t1);
+        if (idx0 > nPts || idx1 < 0)
+        {
+            // The display range doesn't overlap with the current streamline,
+            // so do some bookkeeping and return.
+            segptr += nPts;
+            continue;
+        }
         
-        
-        if (idx1 < nPts)
+        if (idx1 == nPts-1)
         {
             double next[3], pt[3];
-            points->GetPoint(segptr[idx1], pt);
-            points->GetPoint(segptr[idx1+1], next);
-            
-            endPt[0] = pt[0] + t1*(next[0]-pt[0]);
-            endPt[1] = pt[1] + t1*(next[1]-pt[1]);
-            endPt[2] = pt[2] + t1*(next[2]-pt[2]);
-            endPtPrev[0] = pt[0];
-            endPtPrev[1] = pt[1];
-            endPtPrev[2] = pt[2];
+            points->GetPoint(segptr[idx1-1], endPtPrev);
+            points->GetPoint(segptr[idx1], endPt);
             
             float  s0, s1;
             s0 = s[segptr[idx1-1]];
@@ -1018,6 +1045,11 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
 //   Dave Pugmire, Thu Mar 25 16:34:23 EDT 2010
 //   Fixed indexing problem.
 //
+//   Hank Childs, Sun Oct 31 13:04:54 PST 2010
+//   Add support for the end points being outside the range for a given
+//   streamline.  Also fix indexing problem (include last step) and make sure
+//   that we don't have points so close together that we can't tube.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -1034,7 +1066,19 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
         o = (float *)data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::opacityArrayName.c_str())->GetVoidPointer(0);
     
     int nPts = *segptr;
+    segptr++; //Now segptr points at vertex0.
     
+    double t0, t1, pt[3];
+    int idx0 = 0, idx1 = nPts-1;
+    GetEndPoints(data, segptr, nPts, idx0, idx1, t0, t1);
+    if (idx0 > nPts || idx1 < 0)
+    {
+        // The display range doesn't overlap with the current streamline,
+        // so do some bookkeeping and return.
+        segptr += nPts;
+        return NULL;
+    }
+
     vtkPoints *pts = vtkPoints::New();
     vtkCellArray *cells = vtkCellArray::New();
     vtkFloatArray *scalars = vtkFloatArray::New();
@@ -1054,19 +1098,63 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
         opacity = vtkFloatArray::New();
         opacity->SetName(avtStreamlinePolyDataFilter::opacityArrayName.c_str());
     }
-            
-    segptr++; //Now segptr points at vtx0.
 
-    double t0, t1, pt[3];
-    int idx0 = 0, idx1 = nPts;
-    GetEndPoints(data, segptr, nPts, idx0, idx1, t0, t1);
-
-
-    int nNewPts = idx1-idx0;
-    if (idx0 != 0)
-        nNewPts++;
-    if (idx1 != nPts)
-        nNewPts++;
+    int nNewPts = (idx1-idx0)+1;
+    bool makeStartPoint = false;
+    bool makeEndPoint = false;
+    
+    // Check to see if we need to (1) split the initial segment and (2) if
+    // the resulting segment is big enough to not hose the tube filter.
+    if (idx0 > 0)
+    {
+        double pt[3];
+        double prev[3];
+        points->GetPoint(segptr[idx0], pt);
+        points->GetPoint(segptr[idx0-1], prev);
+        
+        double pi[3];
+        pi[0] = prev[0] + t0*(pt[0]-prev[0]);
+        pi[1] = prev[1] + t0*(pt[1]-prev[1]);
+        pi[2] = prev[2] + t0*(pt[2]-prev[2]);
+        double dist = sqrt((pi[0]-pt[0])*(pi[0]-pt[0])+
+                           (pi[1]-pt[1])*(pi[1]-pt[1])+
+                           (pi[2]-pt[2])*(pi[2]-pt[2]));
+        makeStartPoint = true;
+        double tubeRadius = atts.GetTubeRadiusAbsolute();
+        if (atts.GetTubeSizeType() == StreamlineAttributes::FractionOfBBox)
+            tubeRadius = atts.GetTubeRadiusBBox() * GetBBoxSize();
+        if (atts.GetDisplayMethod() == StreamlineAttributes::Tubes &&
+            dist < 0.1*tubeRadius)
+            makeStartPoint = false;
+        if (makeStartPoint)
+            nNewPts++;
+    }
+    // Check to see if we need to (1) split the final segment and (2) if
+    // the resulting segment is big enough to not hose the tube filter.
+    if (idx1 < nPts)
+    {
+        double pt[3];
+        double next[3];
+        points->GetPoint(segptr[idx1], pt);
+        points->GetPoint(segptr[idx1+1], next);
+        
+        double pi[3];
+        pi[0] = pt[0] + t1*(next[0]-pt[0]);
+        pi[1] = pt[1] + t1*(next[1]-pt[1]);
+        pi[2] = pt[2] + t1*(next[2]-pt[2]);
+        double dist = sqrt((pi[0]-pt[0])*(pi[0]-pt[0])+
+                           (pi[1]-pt[1])*(pi[1]-pt[1])+
+                           (pi[2]-pt[2])*(pi[2]-pt[2]));
+        makeEndPoint = true;
+        double tubeRadius = atts.GetTubeRadiusAbsolute();
+        if (atts.GetTubeSizeType() == StreamlineAttributes::FractionOfBBox)
+            tubeRadius = atts.GetTubeRadiusBBox() * GetBBoxSize();
+        if (atts.GetDisplayMethod() == StreamlineAttributes::Tubes &&
+            dist < 0.1*tubeRadius)
+            makeEndPoint = false;
+        if (makeEndPoint)
+            nNewPts++;
+    }
     //cout<<"   Draw: "<<idx0<<" to "<<idx1<<" ["<<t0<<" "<<t1<<"]"<<" pts= "<<nNewPts<<endl;
 
     pts->Allocate(nNewPts);
@@ -1074,10 +1162,9 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
     params->Allocate(nNewPts);
     cells->InsertNextCell(nNewPts);
 
-
     int idx = 0;
     //If we have an interpolated start point, calculate it.
-    if (idx0 > 0)
+    if (makeStartPoint)
     {
         double prev[3];
         points->GetPoint(segptr[idx0-1], prev);
@@ -1122,7 +1209,7 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
     }
     
     //Add all the interior points.
-    for (int i = idx0; i < idx1; i++, idx++)
+    for (int i = idx0; i <= idx1; i++, idx++)
     {
         points->GetPoint(segptr[i], pt);
         
@@ -1139,7 +1226,7 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
     }
 
     //If we have an interpolated end point, calculate it.
-    if (idx1 < nPts && idx1 > 0)
+    if (makeEndPoint)
     {
         double next[3];
         points->GetPoint(segptr[idx1-1], pt);
@@ -1149,17 +1236,18 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
         pi[0] = pt[0] + t1*(next[0]-pt[0]);
         pi[1] = pt[1] + t1*(next[1]-pt[1]);
         pi[2] = pt[2] + t1*(next[2]-pt[2]);
+
         //cout<<"N"<<" "<<idx<<": "<<pt[0]<<" "<<pt[1]<<" "<<pt[2]<<endl;
         
         pts->InsertPoint(idx, pi[0], pi[1], pi[2]);
         cells->InsertCellPoint(idx);
-        
+    
         double v0, v1, v;
         v0 = s[segptr[idx1-1]];
         v1 = s[segptr[idx1]];
         v = v0 + t1*(v1-v0);
         scalars->InsertTuple1(idx, v);
-
+    
         v0 = p[segptr[idx1-1]];
         v1 = p[segptr[idx1]];
         v = v0 + t1*(v1-v0);
@@ -2013,6 +2101,10 @@ avtOpenGLStreamlineRenderer::GenerateSpherePolys(float x0,
 //   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
 //   Allow for display begin/end to be from distance/time/steps.
 //
+//   Hank Childs, Sun Oct 31 13:04:54 PST 2010
+//   Add support for the end points being outside the range for a given
+//   streamline.
+//
 // ****************************************************************************
 
 bool
@@ -2055,6 +2147,10 @@ avtOpenGLStreamlineRenderer::GetEndPoints(vtkPolyData *data,
                 break;
             }
         }
+        // This is a cue that the start of the streamline is past the end of
+        // the range.
+        if (nPts > 0 && (param->GetTuple1(segptr[nPts-1])<beg))
+           j0 = nPts+1;
     }
     
     float termination = 1000000;
@@ -2092,6 +2188,10 @@ avtOpenGLStreamlineRenderer::GetEndPoints(vtkPolyData *data,
                 break;
             }
         }
+        // This is a cue that the end of the streamline is before the start of
+        // the range.
+        if (nPts > 0 && (param->GetTuple1(segptr[0])>end))
+           j1 = -1;
     }
 
     return modifiedStartEnd;
