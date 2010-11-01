@@ -11,6 +11,7 @@ IF(WIN32)
         host_anl_cosmea.xml
         host_anl_eureka.xml
         host_anl_gadzooks.xml
+        host_anl_mcs_login.xml
         host_anl_teragrid.xml
         host_llnl_alastor.xml
         host_llnl_atlas.xml
@@ -69,6 +70,7 @@ ELSE(WIN32)
         host_anl_cosmea.xml
         host_anl_eureka.xml
         host_anl_gadzooks.xml
+        host_anl_mcs_login.xml
         host_anl_teragrid.xml
         host_llnl_alastor.xml
         host_llnl_atlas.xml

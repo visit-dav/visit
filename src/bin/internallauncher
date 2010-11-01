@@ -672,6 +672,9 @@ $0 = shift @ARGV;
 #    parallel on aztec and inca at LLNL. I removed some unnecessary hacks
 #    for launching on some LLNL machines.
 #
+#    Hank Childs, Sun Oct 31 22:43:25 CDT 2010
+#    Add support for ANL MCS nodes.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1886,7 +1889,14 @@ if ( ($parallel) and $exe_name eq "engine" and (($host =~ /login1/) and ($matche
     }
     else
     {
-        $remotehost = "login1-mgmt.eureka";
+        if ( $domain eq "mcs.anl.gov" )
+        {
+            # Don't need to set remotehost.
+        }
+        else
+        {
+            $remotehost = "login1-mgmt.eureka";
+        }
     }
 }
 
