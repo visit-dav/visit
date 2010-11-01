@@ -288,6 +288,14 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //
 //    Mark C. Miller, Fri Oct 29 09:57:32 PDT 2010
 //    Added catch/rethrow of DBYieldedNoDataException
+//
+//    Mark C. Miller, Mon Nov  1 11:28:33 PDT 2010
+//    Fixed handling of DBYieldedNoDataException. Re-throws only when format
+//    is specified. Otherwise, handled like any other exception. This ensures
+//    desired behavior, where empty db moves on to next candidate, occurs.
+//    Also, removed whole TRY/CATCH construct from the format!=NULL case as
+//    per Jeremy's advice that none of the exceptions in that case require
+//    special handling here.
 // ****************************************************************************
 
 avtDatabase *
@@ -396,38 +404,10 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 info->SetReadOptions(new DBOptionsAttributes(*opts));
             }
         }
-        TRY
-        {
-            plugins.push_back(info ? info->GetName(): "");
-            rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
-                               nBlocks, forceReadAllCyclesAndTimes,
-                               treatAllDBsAsTimeVarying, false, times);
-        }
-        CATCH(NonCompliantFileException)
-        {
-            rv = NULL;
-            RETHROW;
-        }
-        CATCH(DBYieldedNoDataException)
-        {
-            rv = NULL;
-            RETHROW;
-        }
-        CATCH(ImproperUseException)
-        {
-            rv = NULL;
-            RETHROW;
-        }
-        CATCH(InvalidFilesException)
-        {
-            rv = NULL;
-            RETHROW;
-        }
-        CATCHALL
-        {
-            rv = NULL;
-        }
-        ENDTRY
+        plugins.push_back(info ? info->GetName(): "");
+        rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
+                           nBlocks, forceReadAllCyclesAndTimes,
+                           treatAllDBsAsTimeVarying, false, times);
 
         if (rv == NULL)
         {
@@ -521,11 +501,6 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             rv = NULL;
             RETHROW;
         }
-        CATCH(DBYieldedNoDataException)
-        {
-            rv = NULL;
-            RETHROW;
-        }
         CATCHALL
         {
             rv = NULL;
@@ -599,11 +574,6 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 }
             }
             CATCH(NonCompliantFileException)
-            {
-                rv = NULL;
-                RETHROW;
-            }
-            CATCH(DBYieldedNoDataException)
             {
                 rv = NULL;
                 RETHROW;
@@ -714,11 +684,6 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                                treatAllDBsAsTimeVarying, true, times);
         }
         CATCH(NonCompliantFileException)
-        {
-            rv = NULL;
-            RETHROW;
-        }
-        CATCH(DBYieldedNoDataException)
         {
             rv = NULL;
             RETHROW;
