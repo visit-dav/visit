@@ -250,6 +250,10 @@ avtSTMDFileFormat::GetVectorVar(int, const char *)
 //
 //  Programmer:  Mark C. Miller
 //  Creation:    28Oct10
+//
+//  Modifications:
+//    Mark C. Miller, Mon Nov  1 12:19:02 PDT 2010
+//    Remove strict mode test.
 // ****************************************************************************
 
 void
@@ -257,7 +261,7 @@ avtSTMDFileFormat::SetDatabaseMetaData(avtDatabaseMetaData *md)
 {
     metadata = md;
     PopulateDatabaseMetaData(metadata);
-    if (GetStrictMode() && metadata->Empty())
+    if (metadata->Empty())
     {
         EXCEPTION1(DBYieldedNoDataException, filenames[0]);
     }
