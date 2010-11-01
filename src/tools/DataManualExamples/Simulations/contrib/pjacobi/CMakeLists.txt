@@ -1,0 +1,20 @@
+CMAKE_MINIMUM_REQUIRED( VERSION 2.8)
+PROJECT (PJACOBI Fortran)
+
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}")
+INCLUDE_DIRECTORIES(/local/apps/VisItSrc/src/sim/V2/lib)
+
+LINK_DIRECTORIES(/local/apps/VisIt/current/linux-x86_64/libsim/V2/lib)
+
+SET(F90_SRCS
+jacobi_module.f90
+pjacobi.f90
+)
+SET_SOURCE_FILES_PROPERTIES(${F90_SRCS} PROPERTIES COMPILE_FLAGS "-cpp")
+
+ADD_EXECUTABLE(pjacobi_visit simulationexamplev2.f ${F90_SRCS} PJacobi_InSitu.f)
+TARGET_LINK_LIBRARIES(pjacobi_visit simV2f.a simV2.a dl m)
+SET_PROPERTY(TARGET pjacobi_visit APPEND PROPERTY COMPILE_FLAGS "-D_VISIT_")
+
+ADD_EXECUTABLE(pjacobi ${F90_SRCS})
+
