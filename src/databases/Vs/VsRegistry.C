@@ -885,7 +885,9 @@ std::map<std::string, std::string>* VsRegistry::getAllExpressions() {
   return &allExpressions;
 }
 
-
+int VsRegistry::numExpressions() {
+  return allExpressions.size();
+}
 
 void VsRegistry::createComponents(bool useStride, std::vector<int> stride) {
   VsLog::debugLog() <<"VsRegistry::createComponents() - Entering" <<std::endl;
