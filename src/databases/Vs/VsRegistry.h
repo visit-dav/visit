@@ -109,6 +109,7 @@ public:
   void addExpression(std::string name, std::string value);
   void writeAllExpressions();
   std::map<std::string, std::string>* getAllExpressions();
+  int numExpressions();
 
   //Variable components
   void getComponentInfo(std::string componentName, NamePair* namePair);
@@ -125,7 +126,6 @@ public:
   double getStep() { return step; }
     
 private:
-
   /**
    * A boolean flag for when objects are being deleted.
    */

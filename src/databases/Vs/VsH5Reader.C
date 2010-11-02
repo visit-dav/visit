@@ -63,12 +63,6 @@ VsH5Reader::VsH5Reader(const std::string& nm, std::vector<int> strideSettings, V
     VsLog::errorLog() <<"VsH5Reader::VsH5Reader(" <<nm <<") - Unable to load metadata from file." <<std::endl;
     EXCEPTION1(InvalidFilesException, nm.c_str());
   }
-  
-  // Was this even a vizschema file?
-  if ((registry->numGroups() == 0) && (registry->numDatasets() == 0)) {
-    VsLog::errorLog() <<"VsH5Reader::VsH5Reader(" <<nm <<") - file format not recognized." <<std::endl;
-    EXCEPTION1(InvalidFilesException, nm.c_str());
-  }
 
   //debugging output
   registry->writeAllGroups();
@@ -92,6 +86,17 @@ VsH5Reader::VsH5Reader(const std::string& nm, std::vector<int> strideSettings, V
 
   //Do a third pass to create components
   registry->createComponents(useStride, stride);
+
+  // Was this even a vizschema file?
+  if ((registry->numMeshes() == 0) &&
+      (registry->numVariables() == 0) &&
+      (registry->numExpressions() == 0) &&
+      (registry->numVariablesWithMesh() == 0) &&
+      (registry->numMDMeshes() == 0) &&
+      (registry->numMDVariables() == 0)) {
+    VsLog::errorLog() <<"VsH5Reader::VsH5Reader(" <<nm <<") - file format not recognized." <<std::endl;
+    EXCEPTION1(InvalidFilesException, nm.c_str());
+  }
   
   VsLog::debugLog() <<"VsH5Reader::VsH5Reader(" <<nm <<") exiting." << std::endl;
 }
