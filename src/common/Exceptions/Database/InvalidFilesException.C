@@ -110,18 +110,23 @@ InvalidFilesException::InvalidFilesException(const char *filename,
     sprintf(str, "There was an error opening %s. It may be an "
             "invalid file.  VisIt tried using the following file format "
             "readers to open the file: ", filename);
-    for (size_t i = 0 ; i < plugins.size() ; i++)
-    {
-        if (i != plugins.size()-1)
-            sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
-        else
-            sprintf(strlen(str)+str, "%s", plugins[i].c_str());
-    }
-    if (plugins.size() == 0)
+
+    if (plugins.empty() )
     {
         sprintf(strlen(str)+str, "<No suitable plugins were identified>");
     }
-
+    else
+    {
+      for (size_t i = 0 ; i < plugins.size() ; i++)
+        {
+          if (i != plugins.size()-1)
+            sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
+          else
+            sprintf(strlen(str)+str, "%s", plugins[i].c_str());
+        }
+      sprintf(strlen(str)+str, "\n\nYou may want to try a specific format reader which will posiibly give more information on the exact error.");
+    }
+    
     msg = str;
 }
 
@@ -147,18 +152,22 @@ InvalidFilesException::InvalidFilesException(const char *filename,
     sprintf(str, "There was an error opening %s. It may be an "
             "invalid file.  VisIt tried using the following file format "
             "readers to open the file: ", filename);
-    for (size_t i = 0 ; i < plugins.size() ; i++)
-    {
-        if (i != plugins.size()-1)
-            sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
-        else
-            sprintf(strlen(str)+str, "%s", plugins[i].c_str());
-    }
-    if (plugins.size() == 0)
+
+    if (plugins.empty() )
     {
         sprintf(strlen(str)+str, "<No suitable plugins were identified>");
     }
-
+    else
+    {
+      for (size_t i = 0 ; i < plugins.size() ; i++)
+        {
+          if (i != plugins.size()-1)
+            sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
+          else
+            sprintf(strlen(str)+str, "%s", plugins[i].c_str());
+        }
+    }
+    
     //
     // Only append the plugin thrown by the file format if it gave a useful
     // message.  Otherwise, it is just redundant.

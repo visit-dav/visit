@@ -53,6 +53,7 @@
 #include <Expression.h>
 #include <NonCompliantException.h>
 #include <InvalidFilesException.h>
+#include <InvalidVariableException.h>
 #include <vtkStructuredGrid.h>
 #include <vtkPoints.h>
 #include <vtkCellType.h>
@@ -132,6 +133,10 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     char *string_attrib;
     float time;
 
+    // Init HDF5 and turn off error message printing.
+    H5open();
+    H5Eset_auto( NULL, NULL );
+
     // Check for a valid H5NIMROD file
     if( H5Fis_hdf5( filename ) < 0 )
         EXCEPTION1( InvalidFilesException, filename );
@@ -139,36 +144,6 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     if ((file_id = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
       EXCEPTION1( InvalidFilesException, filename );
 
-    // Open a couple temporary groups/datasets to verify the file is
-    // really a H5Nimrod file.
-    group_id = H5Gopen(file_id, "/GRID");
-    if (group_id < 0)
-    {
-      H5Fclose(file_id);
-      EXCEPTION1( InvalidFilesException, filename );
-    }
-    else
-    {
-      H5Gclose(group_id);
-      group_id = -1;
-    }
-
-    dataset_id = H5Dopen(file_id, "/GRID/phi");
-    if (dataset_id < 0)
-    {
-      H5Fclose(file_id);
-      EXCEPTION1( InvalidFilesException, filename );
-    }
-    else
-    {
-      H5Dclose(dataset_id);
-      dataset_id = -1;
-    }
-
-    // At this point consider the file to truly be a H5Nimrod file. If
-    // some other file NonCompliantExceptions will be thrown.
-
-    // Continue as normal reporting NonCompliantExceptions
     hsize_t i, npoints;
 
     // Read attributes
@@ -177,8 +152,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     if ( root_id < 0 )
     {
         H5Fclose(file_id);        
-        EXCEPTION2( NonCompliantException, "H5NIMROD Group Open",
-                    "The root group '/' was not found" );
+        EXCEPTION1( InvalidVariableException, "H5NIMROD Group Open - root group '/' was not found" );
     }
 
     dbg_string_attrib(root_id, "Description");
@@ -188,8 +162,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     {
         H5Gclose(root_id);
         H5Fclose(file_id);
-        EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
-                  "Attribute 'time' was not found or was the wrong type." );
+        EXCEPTION1( InvalidVariableException, "H5NIMROD Read Attribute - 'time' was not found or was the wrong type." );
     }
 
     debug5 << "time: " << time << std::endl;
@@ -198,8 +171,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     {
         H5Gclose(root_id);
         H5Fclose(file_id);
-        EXCEPTION2( NonCompliantException, "H5NIMROD Group Open",
-                    "The group '/GRID' was not found" );
+        EXCEPTION1( InvalidVariableException, "H5NIMROD Group Open - '/GRID' was not found" );
     }
 
     string_attrib = NULL;
@@ -213,8 +185,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             H5Gclose(root_id);
             H5Gclose(grid_id);
             H5Fclose(file_id);
-            EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
-                  "Attribute 'Cartesian - XYZ' was not found or was the wrong type." );
+            EXCEPTION1( InvalidVariableException, "H5NIMROD Read Attribute - 'Cartesian - XYZ' was not found or was the wrong type." );
         }
         free(string_attrib);
     }
@@ -233,8 +204,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
         H5Gclose(root_id);
         H5Gclose(grid_id);
         H5Fclose (file_id);
-        EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
-                    "Attribute 'Topology' was not found or not 'Structured'" );
+        EXCEPTION1( InvalidVariableException, "H5NIMROD Read Attribute - 'Topology' was not found or not 'Structured'" );
     }
     if(string_attrib)
     {
@@ -250,8 +220,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
         H5Gclose(root_id);
         H5Gclose(grid_id);
         H5Fclose (file_id);
-        EXCEPTION2( NonCompliantException, "H5NIMROD Read Dimensions",
-                    "Grid dataset 'X' does not have three dimensions" );
+        EXCEPTION1( InvalidVariableException, "H5NIMROD Read Dimensions - Grid dataset 'X' does not have three dimensions" );
     }
     // points
     for (i = 0, npoints = 1; i < ndims; i++)
@@ -293,8 +262,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             {
               H5Gclose(group_id);
               H5Fclose(file_id);
-              EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
-                          "Attribute 'Step number' was not found or wrong type" );
+              EXCEPTION1( InvalidVariableException, "H5NIMROD Read Attribute - 'Step number' was not found or wrong type" );
             }
 
             cycles.push_back( atoi(stepnumber) );
@@ -305,8 +273,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
             {
               H5Gclose(group_id);
               H5Fclose(file_id);
-              EXCEPTION2( NonCompliantException, "H5NIMROD Read Attribute",
-                          "Attribute 'time' was not found or wrong type" );
+              EXCEPTION1( InvalidVariableException, "H5NIMROD Read Attribute - 'time' was not found or wrong type" );
             }
 
             times.push_back( time );
