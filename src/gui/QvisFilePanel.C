@@ -826,6 +826,10 @@ QvisFilePanel::RepopulateFileList()
 //   Cyrus Harrison, Fri Mar 12 09:46:31 PST 2010
 //   Renamed from UpdateAnimationControls.
 //
+//   Hank Childs, Mon Nov  1 17:26:38 PDT 2010
+//   Catch an exception.  Will crash the GUI when restoring sessions from
+//   non-existent hosts otherwise.
+//
 // ****************************************************************************
 
 void
@@ -834,32 +838,39 @@ QvisFilePanel::UpdateWindowInfo(bool doAll)
     if(fileServer == 0 || windowInfo == 0)
         return;
 
-    //
-    // Try and find a correlation for the active time slider.
-    //
-    int activeTS = windowInfo->GetActiveTimeSlider();
-
-    // activeSource changed.  Update the file server.
-    if(windowInfo->IsSelected(WindowInformation::ID_activeSource) || doAll)
+    TRY
     {
-        OpenActiveSourceInFileServer();
+        //
+        // Try and find a correlation for the active time slider.
+        //
+        int activeTS = windowInfo->GetActiveTimeSlider();
+    
+        // activeSource changed.  Update the file server.
+        if(windowInfo->IsSelected(WindowInformation::ID_activeSource) || doAll)
+        {
+            OpenActiveSourceInFileServer();
+        }
+    
+        //
+        // If the active source, time slider, or time slider states change then
+        // we need to update the file selection. Note - without this code, the
+        // file selection never updates from what the user clicked.
+        //
+        if(windowInfo->IsSelected(WindowInformation::ID_activeSource) ||
+           windowInfo->IsSelected(WindowInformation::ID_activeTimeSlider) ||
+           windowInfo->IsSelected(WindowInformation::ID_timeSliderCurrentStates) ||
+           doAll)
+        {
+            ExpandDatabases();
+            // Highlight the selected file.
+            UpdateFileSelection();
+        }
     }
-
-    //
-    // If the active source, time slider, or time slider states change then
-    // we need to update the file selection. Note - without this code, the
-    // file selection never updates from what the user clicked.
-    //
-    if(windowInfo->IsSelected(WindowInformation::ID_activeSource) ||
-       windowInfo->IsSelected(WindowInformation::ID_activeTimeSlider) ||
-       windowInfo->IsSelected(WindowInformation::ID_timeSliderCurrentStates) ||
-       doAll)
+    CATCHALL
     {
-        ExpandDatabases();
-        // Highlight the selected file.
-        UpdateFileSelection();
+        debug1 << "Unable to update window info." << endl;
     }
-
+    ENDTRY
 }
 
 
