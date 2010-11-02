@@ -2478,6 +2478,9 @@ class MakeMovie:
     #   Brad Whitlock, Fri Jan 22 15:50:39 PST 2010
     #   Lower bitrate a little for ffmpeg.
     #
+    #   Kathleen Bonnell, Tue Nov  2 12:20:11 PDT 2010 
+    #   Executable is mpeg2encode.exe on Windows (since CMake overhaul). 
+    # 
     ###########################################################################
 
     def EncodeMPEGMovie(self, moviename, imageFormatString, xres, yres):
@@ -2597,7 +2600,7 @@ class MakeMovie:
                 if (sys.platform != "win32"):
                     command = "visit -v %s -mpeg2encode %s %s" % (Version(), paramFile, absMovieName)
                 else:
-                    command = "mpeg2enc.exe "  + '"' + paramFile + '" "' + absMovieName + '"'
+                    command = "mpeg2encode.exe "  + '"' + paramFile + '" "' + absMovieName + '"'
                 self.Debug(1, command)
                 # Function to print the mpeg2encode output
                 def print_mpeg_line_cb(line, this):
