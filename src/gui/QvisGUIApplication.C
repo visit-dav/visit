@@ -4779,6 +4779,9 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
 //   Kathleen Bonnell, Tue Oct 28 08:18:06 PDT 2008
 //   Set 'restoringSession' flag.
 //
+//   Kathleen Bonnell, Tue Nov 1 14:28:57 PDT 2010
+//   Don't prepend 'VisItUserDir' to guifilename on Windows.
+//
 // ****************************************************************************
 
 void
@@ -4800,6 +4803,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
 
         // If the file could not be opened then try and prepend the
         // VisIt directory to it.
+#ifndef WIN32
         if(node == 0)
         {
             if(guifilename[0] != VISIT_SLASH_CHAR)
@@ -4812,6 +4816,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
                 node = ReadConfigFile(guifilename.c_str());
             }
         }
+#endif
 
         if(node)
         {
@@ -7984,12 +7989,16 @@ MakeCodeSlashes(const QString &s)
 // Programmer: Hank Childs
 // Creation:   August 1, 2010
 //
+// Modifications:
+//   Kathleen Bonnell, Tue Nov 2, 12:56:32 PDT 2010
+//   Removed unnecessary ';' from end of first 'if'.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::SetupCMFE()
 {
-    if (setupCMFEWizard == NULL);
+    if (setupCMFEWizard == NULL)
         setupCMFEWizard = new QvisCMFEWizard(GetViewerState()->GetExpressionList(), 
                                              mainWin);
     setupCMFEWizard->SetGlobalAttributes(GetViewerState()->GetGlobalAttributes());
