@@ -235,7 +235,6 @@ herr_t VsFilter::visitAttrib(hid_t dId, const char* name,
     const H5A_info_t* ai, void* opdata) {
   RECURSION_DATA* data = static_cast< RECURSION_DATA* >(opdata);
   VsH5Object* parent = data->parent;
-  VsRegistry* registry = data->registry;
 
   VsLog::debugLog() << "VsFilter::visitAttrib(...): getting attribute '" <<
     name << "'." << std::endl;
