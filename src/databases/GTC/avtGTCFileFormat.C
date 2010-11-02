@@ -150,8 +150,9 @@ avtGTCFileFormat::Initialize()
     if(initialized)
         return true;
 
-    // Turn off error message printing.
-    H5Eset_auto(0,0);
+    // Init HDF5 and turn off error message printing.
+    H5open();
+    H5Eset_auto( NULL, NULL );
 
     bool err = false;
 
@@ -184,8 +185,7 @@ avtGTCFileFormat::Initialize()
         H5Sclose(sid);
         H5Dclose(particleHandle);
         H5Fclose(fileHandle);
-        EXCEPTION2( NonCompliantException, "GTC Dataset Extents",
-                    "Dataset 'particle_data' has an invalid extents");
+        EXCEPTION1( InvalidVariableException, "GTC Dataset Extents - Dataset 'particle_data' has an invalid extents");
     }
     
     debug4 << mName << "Determining variable size" << endl;
@@ -197,8 +197,7 @@ avtGTCFileFormat::Initialize()
         H5Sclose(sid);
         H5Dclose(particleHandle);
         H5Fclose(fileHandle);
-        EXCEPTION2( NonCompliantException, "GTC Dataset Extents",
-                    "Dataset 'particle_data' has an insufficient number of variables");
+        EXCEPTION1( InvalidVariableException, "GTC Dataset Extents - Dataset 'particle_data' has an insufficient number of variables");
     }
     H5Sclose(dataspace);
 

@@ -68,8 +68,6 @@ using namespace std;
 #define ELEMENT_SIZE 7
 #define SCALAR_SIZE 20
 
-#define TWO_PI 6.283185307179586476925286766559
-
 
 // ****************************************************************************
 //  Method: avtM3DC1FileFormat constructor
@@ -430,7 +428,7 @@ avtM3DC1FileFormat::GetMeshPoints(float *elements,
   // Create the mesh hat each requested plane 0-> 2 * Pi
   for( int p=0; p<poloidalPlanes; ++p ) 
   {
-    float phi = TWO_PI * (float) p / (float) poloidalPlanes;
+    float phi = 2.0*M_PI * (float) p / (float) poloidalPlanes;
 
     // Pointer for fast indexing through the elements.
     float *element = elements;
@@ -1460,7 +1458,7 @@ avtM3DC1FileFormat::LoadFile()
 {
     debug1 << "Attempting to open M3D C1 file " << m_filename << endl;
 
-    // Init HDF5.
+    // Init HDF5 and turn off error message printing.
     H5open();
     H5Eset_auto( NULL, NULL, NULL );
 
@@ -1472,36 +1470,13 @@ avtM3DC1FileFormat::LoadFile()
           H5Fopen( m_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
       EXCEPTION1( InvalidFilesException, m_filename.c_str() );
 
-    // Open a couple temporary groups to verify the file is really an
-    // M3DC1 file.
-    hid_t tempID = H5Gopen( m_fileID, "/equilibrium/mesh", H5P_DEFAULT);
-    if( tempID < 0 )
-    {
-        H5Fclose(m_fileID);
-        EXCEPTION1( InvalidFilesException, m_filename.c_str() );
-    }
-    else
-      H5Gclose(tempID);
-
-    tempID = H5Gopen( m_fileID, "/equilibrium/fields", H5P_DEFAULT);
-    if( tempID < 0 )
-    {
-        H5Fclose(m_fileID);
-        EXCEPTION1( InvalidFilesException, m_filename.c_str() );
-    }
-    else
-      H5Gclose(tempID);
-
-    // At this point consider the file to truly be a M3DC1 file. If
-    // some other file NonCompliantExceptions will be thrown.
-
-    // Continue as normal reporting NonCompliantExceptions
+    // Root group
     hid_t rootID = H5Gopen( m_fileID, "/", H5P_DEFAULT);
     if ( rootID < 0 )
     {
         H5Fclose(m_fileID);        
-        EXCEPTION2( NonCompliantException, "M3dc1 Group Open",
-                    "The root group '/' was not found" );
+        EXCEPTION1( InvalidVariableException,
+                    "M3DC1 Group Open - The root group '/' was not found" );
     }
 
     // HEADER
@@ -1512,8 +1487,7 @@ avtM3DC1FileFormat::LoadFile()
     {
         H5Gclose(rootID);
         H5Fclose(m_fileID);
-        EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                  "Attribute 'ntime' was not found or was the wrong type." );
+        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'ntime' was not found or was the wrong type." );
     }
 
     // Read in linear flag and ntor
@@ -1522,8 +1496,7 @@ avtM3DC1FileFormat::LoadFile()
     {
         H5Gclose(rootID);
         H5Fclose(m_fileID);
-        EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                  "Attribute 'linear' was not found or was the wrong type." );
+        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'linear' was not found or was the wrong type." );
     }
     
     m_scalarVarNames.push_back("header/linear");
@@ -1533,8 +1506,7 @@ avtM3DC1FileFormat::LoadFile()
     {
         H5Gclose(rootID);
         H5Fclose(m_fileID);
-        EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                  "Attribute 'ntor' was not found or was the wrong type." );
+        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'ntor' was not found or was the wrong type." );
     }
     
     m_scalarVarNames.push_back("header/ntor");
@@ -1545,8 +1517,7 @@ avtM3DC1FileFormat::LoadFile()
     {
         H5Gclose(rootID);
         H5Fclose(m_fileID);
-        EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                  "Attribute 'bzero' was not found or was the wrong type." );
+        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'bzero' was not found or was the wrong type." );
     }
 
     m_scalarVarNames.push_back("header/bzero");
@@ -1555,8 +1526,7 @@ avtM3DC1FileFormat::LoadFile()
     {
         H5Gclose(rootID);
         H5Fclose(m_fileID);
-        EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                  "Attribute 'rzero' was not found or was the wrong type." );
+        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'rzero' was not found or was the wrong type." );
     }
 
     m_scalarVarNames.push_back("header/rzero");
@@ -1570,13 +1540,11 @@ avtM3DC1FileFormat::LoadFile()
     if ( groupId < 0 )
     {
         H5Fclose(m_fileID);
-        EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
-                    "Group '/equilibrium/mesh' was not found" );
+        EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - '/equilibrium/mesh' was not found" );
     }
 
     if ( ! ReadAttribute( groupId, "nelms", &nelms ) )
-        EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                  "Attribute 'nelms' was not found or was the wrong type." );
+        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nelms' was not found or was the wrong type." );
 
     hid_t datasetId = H5Dopen(groupId, "elements", H5P_DEFAULT);
     hid_t spaceId = H5Dget_space(datasetId);
@@ -1591,8 +1559,7 @@ avtM3DC1FileFormat::LoadFile()
         sdim[0] != nelms ||
         sdim[1] != ELEMENT_SIZE )
     {
-      EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
-                  "The number of elements or the element size does not match" );
+      EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - number of elements or the element size does not match" );
     }
 
     H5Gclose( groupId );
@@ -1601,14 +1568,12 @@ avtM3DC1FileFormat::LoadFile()
     // Read in equilibrium field information.
     groupId = H5Gopen( m_fileID, "/equilibrium/fields", H5P_DEFAULT);
     if ( groupId < 0 )
-        EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
-                    "Group '/equilibrium/fields' was not found" );
+        EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - '/equilibrium/fields' was not found" );
 
     int nfields;
     
     if ( ! ReadAttribute( groupId, "nfields", &nfields ) )
-        EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                  "Attribute 'nfields' was not found or was the wrong type." );
+        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nfields' was not found or was the wrong type." );
 
     // Go through the field group and collect all of the field datasets
     H5Giterate(groupId, ".", NULL, groupIterator, this);
@@ -1616,8 +1581,7 @@ avtM3DC1FileFormat::LoadFile()
     H5Gclose( groupId );
 
     if( nfields != m_fieldVarNames.size() )
-        EXCEPTION2( NonCompliantException, "M3DC1 number of fields check",
-                    "Number of fields does not match the number of datasets founds." );
+        EXCEPTION1( InvalidVariableException, "M3DC1 number of fields check - of fields does not match the number of datasets founds." );
 
     // TIME STEPS
 
@@ -1629,14 +1593,12 @@ avtM3DC1FileFormat::LoadFile()
 
         hid_t groupID = H5Gopen( m_fileID, timeStep, H5P_DEFAULT);
         if ( groupID < 0 )
-          EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
-                      "Group 'timeStep' was not found" );
+          EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - 'timeStep' was not found" );
 
         // Read the time value
         double time;
         if ( ! ReadAttribute( groupID, "time", &time ) )
-          EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
-                      "Group 'time' was not found" );
+          EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - 'time' was not found" );
 
         m_times.push_back( time );
         m_cycles.push_back( t );
@@ -1644,24 +1606,20 @@ avtM3DC1FileFormat::LoadFile()
         // Read in the field information.
         hid_t fieldID = H5Gopen( groupID, "fields", H5P_DEFAULT);
         if ( fieldID < 0 )
-          EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
-                      "Group 'fields' was not found" );
+          EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - 'fields' was not found" );
 
         if ( ! ReadAttribute( fieldID, "nfields", &nfields ) )
-          EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                      "Attribute 'nfields' was not found" );
+          EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nfields' was not found" );
 
         if( nfields != m_fieldVarNames.size() )
-          EXCEPTION2( NonCompliantException, "M3DC1 Time Step Check",
-                      "The time step nfields does not match the equilibrium nfields" );
+          EXCEPTION1( InvalidVariableException, "M3DC1 Time Step Check - time step nfields does not match the equilibrium nfields" );
              
         for ( int i=0; i<m_fieldVarNames.size(); ++i )
         {
             hid_t datasetId =
               H5Dopen(fieldID, m_fieldVarNames[i].c_str(), H5P_DEFAULT);
             if ( datasetId < 0 )
-              EXCEPTION2( NonCompliantException, "M3DC1 Dataset Open",
-                          "Dataset '" + string(timeStep) + string("/fields/") +
+              EXCEPTION1( InvalidVariableException, "M3DC1 Dataset Open - '" + string(timeStep) + string("/fields/") +
                           m_fieldVarNames[i] + "' was not found" );
 
 
@@ -1677,8 +1635,7 @@ avtM3DC1FileFormat::LoadFile()
                 sdim[0] != nelms ||
                 sdim[1] != SCALAR_SIZE )
               {
-                EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
-                            "Dataset '" +
+                EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - Dataset '" +
                             string(timeStep) + string("/fields/") + m_fieldVarNames[i] +
                             "' the number of elements or the element size does not match" );
               }
@@ -1691,12 +1648,10 @@ avtM3DC1FileFormat::LoadFile()
 
         int nElements;
         if ( ! ReadAttribute( meshId, "nelms", &nElements ) )
-          EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                      "Attribute 'nelms' was not found" );
+          EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nelms' was not found" );
 
         if( nElements != nelms )
-          EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
-                      "Time step 'nelms' does not match equilibrium 'nelms'" );
+          EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - Time step 'nelms' does not match equilibrium 'nelms'" );
 
         hid_t datasetId = H5Dopen(meshId, "elements", H5P_DEFAULT);
         hid_t spaceId = H5Dget_space(datasetId);
@@ -1711,8 +1666,7 @@ avtM3DC1FileFormat::LoadFile()
             sdim[0] != nelms ||
             sdim[1] != ELEMENT_SIZE )
         {
-          EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
-                      "The number of elements or the element size does not match" );
+          EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - The number of elements or the element size does not match" );
         }
         
         H5Gclose( meshId );
