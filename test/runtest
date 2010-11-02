@@ -300,6 +300,9 @@
 #
 #    Mark C. Miller, Fri Jul 16 10:18:12 PDT 2010
 #    Allow just scalable or parallel to be parsed from VISIT_TEST_MODES
+#
+#    Mark C. Miller, Mon Nov  1 12:15:04 PDT 2010
+#    Pass '-exec-timeout' and '-idle-timeout' instead of just '-timeout'
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -326,7 +329,7 @@ doFiltering=0
 width=300
 height=300
 testcases=""
-timeLimit="-timeout 600"
+timeLimit="-exec-timeout 600 -idle-timeout 600"
 notrackMem=""
 skipList=""
 exepath="../src/bin/visit"
@@ -408,7 +411,7 @@ do
              echo "Expected an argument for $1"
              opterror=1
          else
-             timeLimit="-timeout $2"
+             timeLimit="-exec-timeout $2 -idle-timeout $2"
              shift 2
          fi
          ;;
