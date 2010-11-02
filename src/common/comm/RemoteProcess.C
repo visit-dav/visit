@@ -2210,6 +2210,9 @@ RemoteProcess::LaunchRemote(const stringVector &args)
 //   Brad Whitlock, Tue Jan 17 14:20:11 PST 2006
 //   Added debug logging.
 //
+//   Hank Childs, Mon Nov  1 18:05:11 PDT 2010
+//   Issue a print statement if we can't launch a program.
+//
 // ****************************************************************************
 
 void
@@ -2235,6 +2238,7 @@ RemoteProcess::LaunchLocal(const stringVector &args)
     signal(SIGCHLD, catch_dead_child);
 
     debug5 << mName << "Starting child process using fork" << endl;
+    int rv, i;
     switch (remoteProgramPid = fork())
     {
     case -1:
@@ -2249,7 +2253,15 @@ RemoteProcess::LaunchLocal(const stringVector &args)
             close(k);
         }
         // Execute the process on the local machine.
-        execvp(remoteProgram.c_str(), argv);
+        rv = execvp(remoteProgram.c_str(), argv);
+        if (rv < 0) // should only return from execvp if rv < 0
+        {
+            cerr << "Unable to launch program " << remoteProgram << endl;
+            cerr << "Command was: ";
+            for (i = 0 ; i < argc ; i++)
+                cerr << argv[i] << " ";
+            cerr << endl;
+        }
         exit(-1);
         break;   // OCD
     default:
