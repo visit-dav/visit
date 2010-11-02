@@ -2,7 +2,7 @@
 <Object name="MachineProfile">
     <Field name="host" type="string">jaguarpf.ccs.ornl.gov</Field>
     <Field name="hostNickname" type="string">ORNL JaguarPF</Field>
-    <Field name="directory" type="string">/lustre/widow1/sw/visit</Field>
+    <Field name="directory" type="string">/lustre/widow/sw/visit</Field>
     <Field name="hostAliases" type="string">jaguarpf*</Field>
     <Field name="tunnelSSH" type="bool">true</Field>
     <Object name="LaunchProfile">
