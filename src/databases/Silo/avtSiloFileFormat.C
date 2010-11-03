@@ -2492,8 +2492,9 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
                        << "\" got matno=" << matno; 
                 if (errno == 0 && regno == matno)
                 {
-                    restrictToMats->push_back(j);
                     debug3 << " matched" << endl;
+                    restrictToMats->push_back(j);
+                    break;
                 }
                 else
                 {
@@ -2521,6 +2522,7 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
                     {
                         debug3 << " matched" << endl;
                         restrictToMats->push_back(j);
+                        break;
                     }
                     else
                     {
@@ -2560,6 +2562,10 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
 //    Mark C. Miller, Thu Jun 18 20:56:08 PDT 2009
 //    Replaced DBtoc* arg. with list of object names. Also added logic to
 //    handle freeing of multivar during exceptions.
+//
+//    Mark C. Miller, Wed Nov  3 09:24:48 PDT 2010
+//    Don't call GetRestrictedMaterialIndices on individual blocks if we
+//    already have 'em from the multi-block.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
@@ -2666,7 +2672,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                         }
                         centering = (uv->centering == DB_ZONECENT ? AVT_ZONECENT 
                                                                   : AVT_NODECENT);
-                        if (uv->region_pnames)
+                        if (uv->region_pnames && !selectedMats.size())
                             valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
                                 meshname.c_str(), uv->region_pnames, &selectedMats);
                         nvals = uv->nvals;
@@ -2687,7 +2693,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                         }
                         centering = (qv->align[0] == 0. ? AVT_NODECENT 
                                                         : AVT_ZONECENT);
-                        if (qv->region_pnames)
+                        if (qv->region_pnames && !selectedMats.size())
                             valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
                                 meshname.c_str(), qv->region_pnames, &selectedMats);
                         nvals = qv->nvals;
@@ -2707,7 +2713,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                             valid_var = false;
                             break;
                         }
-                        if (pv->region_pnames)
+                        if (pv->region_pnames && !selectedMats.size())
                             valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
                                 meshname.c_str(), pv->region_pnames, &selectedMats);
                         nvals = pv->nvals;
@@ -2730,7 +2736,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                             valid_var = false;
                             break;
                         }
-                        if (csgv->region_pnames)
+                        if (csgv->region_pnames && !selectedMats.size())
                             valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
                                 meshname.c_str(), csgv->region_pnames, &selectedMats);
                         nvals = csgv->nvals;
