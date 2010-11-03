@@ -101,14 +101,19 @@ InvalidFilesException::InvalidFilesException(const char *filename)
 //  Programmer: Hank Childs
 //  Creation:   January 11, 2007
 //
+//  Modifications:
+//    Mark C. Miller, Wed Nov  3 08:22:34 PDT 2010
+//    Increased size of string to 2048, correct a typo and adjust text
+//    regardng trying a specific format reader.
+//
 // ****************************************************************************
 
 InvalidFilesException::InvalidFilesException(const char *filename,
                                              std::vector<std::string> &plugins)
 {
-    char str[1024];
+    char str[2048];
     sprintf(str, "There was an error opening %s. It may be an "
-            "invalid file.  VisIt tried using the following file format "
+            "invalid file.\nVisIt tried using the following file format "
             "readers to open the file: ", filename);
 
     if (plugins.empty() )
@@ -117,14 +122,19 @@ InvalidFilesException::InvalidFilesException(const char *filename,
     }
     else
     {
-      for (size_t i = 0 ; i < plugins.size() ; i++)
+        for (size_t i = 0 ; i < plugins.size() ; i++)
         {
-          if (i != plugins.size()-1)
-            sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
-          else
-            sprintf(strlen(str)+str, "%s", plugins[i].c_str());
+            if (i != plugins.size()-1)
+                sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
+            else
+                sprintf(strlen(str)+str, "%s", plugins[i].c_str());
         }
-      sprintf(strlen(str)+str, "\n\nYou may want to try a specific format reader which will posiibly give more information on the exact error.");
+        sprintf(strlen(str)+str,
+            "\n\nIf you know the specific format reader VisIt should use to\n"
+            "read this data, you can use Open As... (GUI) or\n"
+            "'-o <file>,<plugin> (CL arg.) and identify that specific reader\n"
+            "for VisIt to try. This will possibly give more information on\n"
+            "the exact error.");
     }
     
     msg = str;
@@ -159,12 +169,12 @@ InvalidFilesException::InvalidFilesException(const char *filename,
     }
     else
     {
-      for (size_t i = 0 ; i < plugins.size() ; i++)
+        for (size_t i = 0 ; i < plugins.size() ; i++)
         {
-          if (i != plugins.size()-1)
-            sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
-          else
-            sprintf(strlen(str)+str, "%s", plugins[i].c_str());
+            if (i != plugins.size()-1)
+                sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
+            else
+                sprintf(strlen(str)+str, "%s", plugins[i].c_str());
         }
     }
     
