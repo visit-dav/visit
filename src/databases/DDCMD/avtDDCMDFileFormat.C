@@ -2618,11 +2618,21 @@ avtDDCMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    I added the ability to read atom files, which required being able to
 //    read multiple files to get all the data.
 //
+//    Eric Brugger, Wed Nov  3 13:44:17 PDT 2010
+//    I added a check on the domain number matching the one in GetVar.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtDDCMDFileFormat::GetMesh(int domain, const char *meshname)
 {
+#ifdef PARALLEL
+    if (domain != PAR_Rank())
+#else
+    if (domain != 0)
+#endif
+        EXCEPTION1(InvalidVariableException, meshname);
+
     if (cgridFile)
         return GetRectilinearMesh();
     else
@@ -2656,12 +2666,21 @@ avtDDCMDFileFormat::GetMesh(int domain, const char *meshname)
 //    I added the ability to read atom files, which required being able to
 //    read multiple files to get all the data.
 //
+//    Eric Brugger, Wed Nov  3 13:44:17 PDT 2010
+//    I changed the check on the domain number to check that it matched the
+//    parallel rank when running in parallel instead of always expecting it
+//    to be zero.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtDDCMDFileFormat::GetVar(int domain, const char *varname)
 {
+#ifdef PARALLEL
+    if (domain != PAR_Rank())
+#else
     if (domain != 0)
+#endif
         EXCEPTION1(InvalidVariableException, varname);
 
     if (cgridFile)
