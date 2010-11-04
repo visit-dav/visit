@@ -137,8 +137,10 @@ void VsRegistry::buildGroupObjects() {
       VsMesh::buildObject(group);
     } else if (type == VsSchema::vsVarsKey) {
       buildExpressions(group);
-//    } else if (type == VsSchema::timeKey) {
-//      loadTime(group);
+    } else if (type == VsSchema::timeKey) {
+      loadTime(group);
+    } else if (type == VsSchema::runInfoKey) {
+      loadRunInfo(group);
     } else {
       VsLog::debugLog() <<"VsRegistry::buildGroupObjects - object is of unrecognized type " <<type <<std::endl;
     }
@@ -163,6 +165,7 @@ void VsRegistry::loadTime(VsH5Group* group) {
       VsLog::debugLog() <<"VsRegistry::loadTime(): Error " <<err <<" while trying to load time attribute." <<std::endl;
     } else {
       foundTime = in[0];
+      VsLog::debugLog() <<"VsRegistry::loadTime() - loaded time: " <<foundTime  <<std::endl;
     }
   }
 
@@ -176,6 +179,7 @@ void VsRegistry::loadTime(VsH5Group* group) {
       VsLog::debugLog() <<"VsRegistry::loadTime(): Error " <<err <<" while trying to load step attribute." <<std::endl;
     } else {
       foundStep = in[0];
+      VsLog::debugLog() <<"VsRegistry::loadTime() - loaded step: " <<foundStep <<std::endl;
     }
   }
  
@@ -183,19 +187,25 @@ void VsRegistry::loadTime(VsH5Group* group) {
   if ((foundTime != -1) && hasTime() && (foundTime != getTime())) {
     VsLog::warningLog() <<"VsRegistry::loadTime() - was asked to load time data again, but time data already exists." <<std::endl;
     VsLog::warningLog() <<"VsRegistry::loadTime() - and is in conflict: " <<foundTime <<" vs " <<getTime() <<std::endl;
-    return;
+  } else {
+    timeValue = foundTime;
   }
   
   if ((foundStep != -1) && hasStep() && (foundStep != getStep())) {
     VsLog::warningLog() <<"VsRegistry::loadTime() - was asked to load step data again, but step data already exists." <<std::endl;
     VsLog::warningLog() <<"VsRegistry::loadTime() - and is in conflict: " <<foundStep <<" vs " <<getStep() <<std::endl;
+  } else {
+    step = foundStep;
+  }
+}
+
+void VsRegistry::loadRunInfo(VsH5Group* group) {
+  if (!group) {
+    VsLog::debugLog() <<"VsRegistry::loadRunInfo() - Group is NULL?" <<std::endl;
     return;
   }
 
-  VsLog::debugLog() <<"VsRegistry::loadTime() - loaded time: " <<foundTime <<" and step " <<foundStep <<std::endl;
-
-  timeValue = foundTime;
-  step = foundStep;
+  VsLog::debugLog() <<"VsRegistry::loadRunInfo() - not loading any information at this time." <<std::endl;
 }
 
 /*********** VsH5Datasets***********/
