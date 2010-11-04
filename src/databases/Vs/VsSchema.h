@@ -106,6 +106,10 @@ struct VsSchema {
   static std::string timeAtt;
   static std::string stepAtt;
   static std::string timeGroupAtt;
+  
+  //run info
+  static std::string runInfoKey;
+  static std::string softwareAtt;
 };
 
 #endif

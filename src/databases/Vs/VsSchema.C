@@ -101,4 +101,8 @@ std::string VsSchema::timeKey = "time";
 std::string VsSchema::timeAtt = "vsTime";
 std::string VsSchema::stepAtt = "vsStep";
 std::string VsSchema::timeGroupAtt = "vsTimeGroup";
+
+//Run info
+std::string VsSchema::runInfoKey = "runInfo";
+std::string VsSchema::softwareAtt = "vsSoftware";
 #endif

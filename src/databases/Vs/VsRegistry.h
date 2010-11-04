@@ -55,6 +55,7 @@ public:
   int numGroups();
   void buildGroupObjects();
   void loadTime(VsH5Group* group);
+  void loadRunInfo(VsH5Group* group);
   
   //MESHES
   void add(VsMesh* mesh);
