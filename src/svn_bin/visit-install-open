@@ -20,6 +20,9 @@
 #   Hank Childs, Sat May  2 13:26:51 CDT 2009
 #   Change config file to "llnl_open".
 #
+#   Eric Brugger, Fri Nov  5 15:22:54 PDT 2010
+#   I replaced yana with aztec.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -56,7 +59,7 @@ esac
 #
 hoth=true
 up=true
-yana=true
+aztec=true
 xchem=false
 euclid=true
 ellipse=false
@@ -74,7 +77,7 @@ do
       -none)
          hoth=false
          up=false
-         yana=false
+         aztec=false
          xchem=false
          euclid=false
          ellipse=false
@@ -96,12 +99,12 @@ do
          up=true
          shift
          ;;
-      -yana)
-         yana=false
+      -aztec)
+         aztec=false
          shift
          ;;
-      +yana)
-         yana=true
+      +aztec)
+         aztec=true
          shift
          ;;
       -xchem)
@@ -237,24 +240,24 @@ then
    then
       scp up:/p/gup1/$user/up32/visitbuild/visit$ver2.ibm-aix-pwr.tar.gz .
       scp up:/p/gup1/$user/up64/visitbuild/visit$ver2.ibm-aix-pwr64.tar.gz .
-      scp visit$ver2.ibm-aix-pwr.tar.gz yana:visit$ver2.ibm-aix-pwr.tar.gz
-      scp visit$ver2.ibm-aix-pwr64.tar.gz yana:visit$ver2.ibm-aix-pwr64.tar.gz
-      scp visit-install yana:
-      scp up yana:up_install
-      ssh yana "chmod 750 up_install;./up_install"
+      scp visit$ver2.ibm-aix-pwr.tar.gz aztec:visit$ver2.ibm-aix-pwr.tar.gz
+      scp visit$ver2.ibm-aix-pwr64.tar.gz aztec:visit$ver2.ibm-aix-pwr64.tar.gz
+      scp visit-install aztec:
+      scp up aztec:up_install
+      ssh aztec "chmod 750 up_install;./up_install"
    fi
 fi
 
 #
-# Install on yana.
+# Install on aztec.
 #
-rm -f yana
-cat <<EOF > yana
+rm -f aztec
+cat <<EOF > aztec
 #!/bin/sh
 ./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on yana"            > resultlog 2>&1
-echo "       --------------------------"           >> resultlog 2>&1
+echo "        install of visit on aztec"           > resultlog 2>&1
+echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -266,18 +269,18 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): yana" $emailName < resultlog
+mail -s "VisIt install ($ver): aztec" $emailName < resultlog
 EOF
 
-if [ $yana = true ]
+if [ $aztec = true ]
 then
    if [ $test = no ]
    then
-      scp yana3:/usr/tmp/$user/yana/visitbuild/visit$ver2.linux-x86_64.tar.gz .
-      scp visit$ver2.linux-x86_64.tar.gz yana:visit$ver2.linux-x86_64.tar.gz
-      scp visit-install yana:
-      scp yana yana:yana_install
-      ssh yana "chmod 750 yana_install;./yana_install"
+      scp aztec3:/usr/tmp/$user/aztec/visitbuild/visit$ver2.linux-x86_64.tar.gz .
+      scp visit$ver2.linux-x86_64.tar.gz aztec:visit$ver2.linux-x86_64.tar.gz
+      scp visit-install aztec:
+      scp aztec aztec:aztec_install
+      ssh aztec "chmod 750 aztec_install;./aztec_install"
    fi
 fi
 
@@ -394,5 +397,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth up yana xchem euclid ellipse
+   rm -f hoth up aztec xchem euclid ellipse
 fi

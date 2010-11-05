@@ -51,6 +51,9 @@
 #   Added cyrush@llnl.gov to the email list & fixed problem with
 #   creating proper config-site.cmake on alastor.
 #
+#   Eric Brugger, Fri Nov  5 15:21:42 PDT 2010
+#   I replaced yana with aztec.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -93,7 +96,7 @@ esac
 #
 hoth=true
 up=true
-yana=true
+aztec=true
 alastor=false
 xchem=false
 euclid=true
@@ -112,7 +115,7 @@ do
       -none)
          hoth=false
          up=false
-         yana=false
+         aztec=false
          alastor=false
          xchem=false
          euclid=false
@@ -135,12 +138,12 @@ do
          up=true
          shift
          ;;
-      -yana)
-         yana=false
+      -aztec)
+         aztec=false
          shift
          ;;
-      +yana)
-         yana=true
+      +aztec)
+         aztec=true
          shift
          ;;
       -alastor)
@@ -191,7 +194,7 @@ then
    echo "Valid machine names:"
    echo "    hoth (B-Div, Linux),"
    echo "    up (LC, AIX),"
-   echo "    yana (LC, Linux, x86_64),"
+   echo "    aztec (LC, Linux, x86_64),"
    echo "    alastor (LC, Linux, x86_64),"
    echo "    xchem (HEAF, Linux),"
    echo "    euclid (LBNL, Linux, x86_64),"
@@ -361,21 +364,21 @@ then
 fi
 
 #
-# Build on yana.
+# Build on aztec.
 #
-rm -f yana
-cat <<EOF > yana
+rm -f aztec
+cat <<EOF > aztec
 #!/bin/sh
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
-if test ! -d /usr/tmp/$user/yana ; then
-   mkdir /usr/tmp/$user/yana
+if test ! -d /usr/tmp/$user/aztec ; then
+   mkdir /usr/tmp/$user/aztec
 fi
-rm -rf /usr/tmp/$user/yana/visitbuild
-mkdir /usr/tmp/$user/yana/visitbuild
-mv yana_$dist.tar.gz /usr/tmp/$user/yana/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/yana/visitbuild
+rm -rf /usr/tmp/$user/aztec/visitbuild
+mkdir /usr/tmp/$user/aztec/visitbuild
+mv aztec_$dist.tar.gz /usr/tmp/$user/aztec/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/aztec/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
@@ -387,8 +390,8 @@ make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on yana"         > resultlog 2>&1
-echo "       ------------------------"        >> resultlog 2>&1
+echo "        build of visit on aztec"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -398,17 +401,17 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): yana" $emailName < resultlog
+mail  -s "VisIt build ($dist): aztec" $emailName < resultlog
 EOF
 
-if [ $yana = true ]
+if [ $aztec = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on yana"
-      scp yana yana3:yana_buildit
-      scp $dist.tar.gz yana3:yana_$dist.tar.gz
-      ssh yana3 "chmod 750 yana_buildit;./yana_buildit" &
+      echo "Building on aztec"
+      scp aztec aztec3:aztec_buildit
+      scp $dist.tar.gz aztec3:aztec_$dist.tar.gz
+      ssh aztec3 "chmod 750 aztec_buildit;./aztec_buildit" &
    fi
 fi
 
@@ -433,7 +436,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-cp config-site/yana1.cmake config-site/\`hostname\`.cmake
+cp config-site/aztec1.cmake config-site/\`hostname\`.cmake
 /usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 12 >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
@@ -637,5 +640,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth up32 up64 yana alastor xchem euclid ellipse
+   rm -f hoth up32 up64 aztec alastor xchem euclid ellipse
 fi
