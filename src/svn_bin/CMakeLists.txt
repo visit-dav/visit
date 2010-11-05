@@ -15,16 +15,19 @@ IF(WIN32)
         host_anl_teragrid.xml
         host_llnl_alastor.xml
         host_llnl_atlas.xml
+        host_llnl_aztec.xml
         host_llnl_closed_eos.xml
         host_llnl_closed_gauss.xml
         host_llnl_closed_graph.xml
         host_llnl_closed_hopi.xml
+        host_llnl_closed_inca.xml
         host_llnl_closed_juno.xml
         host_llnl_closed_minos.xml
         host_llnl_closed_purple.xml
         host_llnl_closed_rhea.xml
         host_llnl_closed_tempest.xml
         host_llnl_closed_um.xml
+        host_llnl_edge.xml
         host_llnl_ellipse.xml
         host_llnl_hera.xml
         host_llnl_ilx.xml
