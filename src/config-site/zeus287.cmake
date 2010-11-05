@@ -1,1 +1,1 @@
-yana1.cmake
+aztec1.cmake
