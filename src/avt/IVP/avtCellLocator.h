@@ -92,6 +92,8 @@ protected:
                   avtInterpolationWeights* iw ) const; 
     bool TestHex( vtkIdType id, const double pos[3], 
                   avtInterpolationWeights* iw ) const; 
+    bool TestPrism( vtkIdType id, const double pos[3], 
+                    avtInterpolationWeights* iw ) const;
 
     vtkDataSet*    dataSet;
     vtkIdType*     cellIdxPtr;
