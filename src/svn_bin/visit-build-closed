@@ -33,6 +33,9 @@
 #   wrapper library. I commented out sunset since Qt4 does not build
 #   there.
 #
+#   Eric Brugger, Fri Nov  5 15:39:05 PDT 2010
+#   Replaced hopi with inca and removed pruple.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -43,8 +46,7 @@ user=`whoami`
 # Parse the execute line, providing default values for error checking.
 #
 termite=true
-purple=true
-hopi=true
+inca=true
 
 dist=undefined
 
@@ -58,8 +60,7 @@ do
    case $1 in
       -none)
          termite=false
-         purple=false
-         hopi=false
+         inca=false
          shift
          ;;
       -termite)
@@ -70,20 +71,12 @@ do
          termite=true
          shift
          ;;
-      -purple)
-         purple=false
+      -inca)
+         inca=false
          shift
          ;;
-      +purple)
-         purple=true
-         shift
-         ;;
-      -hopi)
-         hopi=false
-         shift
-         ;;
-      +hopi)
-         hopi=true
+      +inca)
+         inca=true
          shift
          ;;
       -d)
@@ -101,8 +94,7 @@ then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
    echo "    termite (B-Div, Linux),"
-   echo "    purple (LC, AIX),"
-   echo "    hopi (LC, x86_64)"
+   echo "    inca (LC, x86_64)"
    exit
 fi
 
@@ -164,121 +156,23 @@ then
 fi
 
 #
-# Build on purple, both 32 and 64 bit versions.
+# Build on inca.
 #
-rm -f purple32
-cat <<EOF > purple32
-#!/bin/sh
-PATH=/usr/local/bin:\$PATH
-if test ! -d /p/gscratch3/$user ; then
-   mkdir /p/gscratch3/$user
-fi
-if test ! -d /p/gscratch3/$user/purple32 ; then
-   mkdir /p/gscratch3/$user/purple32
-fi
-rm -rf /p/gscratch3/$user/purple32/visitbuild
-mkdir /p/gscratch3/$user/purple32/visitbuild
-mv purple32_$dist.tar.gz /p/gscratch3/$user/purple32/visitbuild/$dist.tar.gz
-cd /p/gscratch3/$user/purple32/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-OBJECT_MODE=32
-export OBJECT_MODE
-cp config-site/purple1441_32.cmake config-site/purple1441.cmake
-/usr/gapps/visit/cmake/2.8.0/aix_xlc_32/bin/cmake . -DCMAKE_BUILD_TYPE=Release-DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
-gmake -j 3 >> ../../buildlog 2>&1
-gmake -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.ibm-aix-pwr.tar.gz ../..
-cd ../..
-echo "        build of visit on purple"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "            32 bit build"               >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-rm -f purple64
-cat <<EOF > purple64
-#!/bin/sh
-PATH=/usr/local/bin:\$PATH
-if test ! -d /p/gscratch3/$user ; then
-   mkdir /p/gscratch3/$user
-fi
-if test ! -d /p/gscratch3/$user/purple64 ; then
-   mkdir /p/gscratch3/$user/purple64
-fi
-rm -rf /p/gscratch3/$user/purple64/visitbuild
-mkdir /p/gscratch3/$user/purple64/visitbuild
-mv purple64_$dist.tar.gz /p/gscratch3/$user/purple64/visitbuild/$dist.tar.gz
-cd /p/gscratch3/$user/purple64/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-OBJECT_MODE=64
-export OBJECT_MODE
-/usr/gapps/visit/cmake/2.8.0/aix_xlc_64/bin/cmake . -DCMAKE_BUILD_TYPE=Release-DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
-gmake -j 3 >> ../../buildlog 2>&1
-gmake -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.ibm-aix-pwr64.tar.gz ../..
-cd ../..
-echo "        build of visit on purple"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "            64 bit build"               >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $purple = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on purple"
-      scp purple32 purple:purple32_buildit
-      scp purple64 purple:purple64_buildit
-      scp $dist.tar.gz purple:purple32_$dist.tar.gz
-      scp $dist.tar.gz purple:purple64_$dist.tar.gz
-      ssh purple "chmod 750 purple32_buildit;./purple32_buildit" &
-      ssh purple "chmod 750 purple64_buildit;./purple64_buildit" &
-   fi
-fi
-
-#
-# Build on hopi.
-#
-rm -f hopi
-cat <<EOF > hopi
+rm -f inca
+cat <<EOF > inca
 #!/bin/sh
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
-if test ! -d /usr/tmp/$user/hopi ; then
-   mkdir /usr/tmp/$user/hopi
+if test ! -d /usr/tmp/$user/inca ; then
+   mkdir /usr/tmp/$user/inca
 fi
-rm -rf /usr/tmp/$user/hopi/visitbuild
-mkdir /usr/tmp/$user/hopi/visitbuild
-mv hopi_$dist.tar.gz /usr/tmp/$user/hopi/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/hopi/visitbuild
+rm -rf /usr/tmp/$user/inca/visitbuild
+mkdir /usr/tmp/$user/inca/visitbuild
+mv inca_$dist.tar.gz /usr/tmp/$user/inca/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/inca/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
@@ -289,7 +183,7 @@ make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on hopi"         > resultlog 2>&1
+echo "        build of visit on inca"         > resultlog 2>&1
 echo "       ------------------------"        >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
@@ -302,14 +196,14 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $hopi = true ]
+if [ $inca = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on hopi"
-      scp hopi hopi3:hopi_buildit
-      scp $dist.tar.gz hopi3:hopi_$dist.tar.gz
-      ssh hopi3 "chmod 750 hopi_buildit;./hopi_buildit" &
+      echo "Building on inca"
+      scp inca inca3:inca_buildit
+      scp $dist.tar.gz inca3:inca_$dist.tar.gz
+      ssh inca3 "chmod 750 inca_buildit;./inca_buildit" &
    fi
 fi
 
@@ -318,5 +212,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f termite purple32 purple64 hopi
+   rm -f termite inca
 fi
