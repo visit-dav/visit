@@ -91,6 +91,9 @@ using namespace std;
 //   Hank Childs, Tue Oct  5 18:41:35 PDT 2010
 //   Remove references to "termination", which now go in derived type.
 //
+//   Dave Pugmire, Fri Nov  5 15:34:49 EDT 2010
+//   Add counter to handle communication of ICs
+//
 // ****************************************************************************
 
 avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model, 
@@ -102,6 +105,7 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
 {
     ivp = model->Clone();
     ivp->Reset( t_start, p_start );
+    counter = 0;
 }
 
 
@@ -132,6 +136,9 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
 //   Hank Childs, Tue Oct  5 18:41:35 PDT 2010
 //   Remove references to "termination", which now go in derived type.
 //
+//   Dave Pugmire, Fri Nov  5 15:34:49 EDT 2010
+//   Add counter to handle communication of ICs
+//
 // ****************************************************************************
 
 avtIntegralCurve::avtIntegralCurve()
@@ -142,6 +149,7 @@ avtIntegralCurve::avtIntegralCurve()
     domain = -1;
     sortKey = 0;
     id = -1;
+    counter = 0;
 }
 
 
@@ -457,6 +465,9 @@ avtIntegralCurve::CurrentLocation(avtVector &end)
 //   Hank Childs, Tue Oct  5 18:41:35 PDT 2010
 //   Remove references to "termination", which now go in derived type.
 //
+//   Dave Pugmire, Fri Nov  5 15:34:49 EDT 2010
+//   Add counter to handle communication of ICs
+//
 // ****************************************************************************
 
 void
@@ -471,6 +482,7 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, direction);
     buff.io(mode, domain);
     buff.io(mode, status);
+    buff.io(mode, counter);
     
     if ( mode == MemStream::WRITE )
     {

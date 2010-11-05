@@ -214,6 +214,9 @@ class vtkAppendPolyData;
 //   Specify termination type at avtStreamlineFilter, not avtPICSFilter.
 //   Add data member for reference type for display.
 //
+//   Dave Pugmire, Fri Nov  5 15:38:33 EDT 2010
+//   Add GenerateAttributeFields method.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
@@ -307,6 +310,8 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     void                      GenerateSeedPointsFromBox(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromCircle(std::vector<avtVector> &pts);
     void                      GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
+
+    unsigned char             GenerateAttributeFields() const;
 
     virtual std::vector<avtVector> GetInitialLocations(void);
     virtual CommunicationPattern   GetCommunicationPattern(void)
