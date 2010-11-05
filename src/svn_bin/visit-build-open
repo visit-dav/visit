@@ -54,6 +54,9 @@
 #   Eric Brugger, Fri Nov  5 15:21:42 PDT 2010
 #   I replaced yana with aztec.
 #
+#   Eric Brugger, Fri Nov  5 16:06:28 PDT 2010
+#   I removed up.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -95,7 +98,6 @@ esac
 # Parse the execute line, providing default values for error checking.
 #
 hoth=true
-up=true
 aztec=true
 alastor=false
 xchem=false
@@ -114,7 +116,6 @@ do
    case $1 in
       -none)
          hoth=false
-         up=false
          aztec=false
          alastor=false
          xchem=false
@@ -128,14 +129,6 @@ do
          ;;
       +hoth)
          hoth=true
-         shift
-         ;;
-      -up)
-         up=false
-         shift
-         ;;
-      +up)
-         up=true
          shift
          ;;
       -aztec)
@@ -193,7 +186,6 @@ then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
    echo "    hoth (B-Div, Linux),"
-   echo "    up (LC, AIX),"
    echo "    aztec (LC, Linux, x86_64),"
    echo "    alastor (LC, Linux, x86_64),"
    echo "    xchem (HEAF, Linux),"
@@ -260,106 +252,6 @@ then
       scp hoth hoth:hoth_buildit
       scp $dist.tar.gz hoth:hoth_$dist.tar.gz
       ssh hoth "chmod 750 hoth_buildit;./hoth_buildit" &
-   fi
-fi
-
-#
-# Build on up, both 32 and 64 bit versions.
-#
-rm -f up32
-cat <<EOF > up32
-#!/bin/sh
-PATH=/usr/local/bin:\$PATH
-if test ! -d /p/gup1/$user ; then
-   mkdir /p/gup1/$user
-fi
-if test ! -d /p/gup1/$user/up32 ; then
-   mkdir /p/gup1/$user/up32
-fi
-rm -rf /p/gup1/$user/up32/visitbuild
-mkdir /p/gup1/$user/up32/visitbuild
-mv up32_$dist.tar.gz /p/gup1/$user/up32/visitbuild/$dist.tar.gz
-cd /p/gup1/$user/up32/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-OBJECT_MODE=32
-export OBJECT_MODE
-cp config-site/up041_32.cmake config-site/up041.cmake
-/usr/gapps/visit/cmake/2.8.0/aix_xlc_32/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
-gmake -j 3 >> ../../buildlog 2>&1
-gmake -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.ibm-aix-pwr.tar.gz ../..
-cd ../..
-echo "        build of visit on up"           > resultlog 2>&1
-echo "       ----------------------"          >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "            32 bit build"               >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): up32" $emailName < resultlog
-EOF
-
-rm -f up64
-cat <<EOF > up64
-#!/bin/sh
-PATH=/usr/local/bin:\$PATH
-if test ! -d /p/gup1/$user ; then
-   mkdir /p/gup1/$user
-fi
-if test ! -d /p/gup1/$user/up64 ; then
-   mkdir /p/gup1/$user/up64
-fi
-rm -rf /p/gup1/$user/up64/visitbuild
-mkdir /p/gup1/$user/up64/visitbuild
-mv up64_$dist.tar.gz /p/gup1/$user/up64/visitbuild/$dist.tar.gz
-cd /p/gup1/$user/up64/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-OBJECT_MODE=64
-export OBJECT_MODE
-/usr/gapps/visit/cmake/2.8.0/aix_xlc_64/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
-gmake -j 3 >> ../../buildlog 2>&1
-gmake -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.ibm-aix-pwr64.tar.gz ../..
-cd ../..
-echo "        build of visit on up"           > resultlog 2>&1
-echo "       ----------------------"          >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "            64 bit build"               >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): up64" $emailName < resultlog
-EOF
-
-if [ $up = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on up"
-      scp up32 up:up32_buildit
-      scp up64 up:up64_buildit
-      scp $dist.tar.gz up:up32_$dist.tar.gz
-      scp $dist.tar.gz up:up64_$dist.tar.gz
-      ssh up "chmod 750 up32_buildit;./up32_buildit" &
-      ssh up "chmod 750 up64_buildit;./up64_buildit" &
    fi
 fi
 
@@ -640,5 +532,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth up32 up64 aztec alastor xchem euclid ellipse
+   rm -f hoth aztec alastor xchem euclid ellipse
 fi
