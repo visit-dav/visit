@@ -129,6 +129,7 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
 {
     avtVector p = step.GetP(t);
     
+    /*
     //If the step is within tolerance of the previous step, just overwrite the last step
     //with this step.
     size_t nSamp = GetNumberOfSamples();
@@ -141,6 +142,7 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
             history.erase(m, history.end());
         }
     }
+    */
 
     if( historyMask & SAMPLE_TIME )
         history.push_back( t );

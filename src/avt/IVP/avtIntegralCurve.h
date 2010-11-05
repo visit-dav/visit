@@ -177,6 +177,9 @@ class IVP_API DomainType
 //   Hank Childs, Mon Oct  4 15:03:43 PDT 2010
 //   Remove termination code.  It now goes in derived types.
 //
+//   Dave Pugmire, Fri Nov  5 15:34:49 EDT 2010
+//   Add counter to handle communication of ICs
+//
 // ****************************************************************************
 
 class IVP_API avtIntegralCurve
@@ -246,6 +249,7 @@ class IVP_API avtIntegralCurve
     long long sortKey;
 
     long id;
+    int counter;
 
   protected:
 

@@ -715,24 +715,31 @@ avtParICAlgorithm::SendICs(int dst, std::vector<avtIntegralCurve*> &ics)
 //  Use the PICS filter to instantiate integral curves, as this is now
 //  an abstract type.
 //
+//   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
+//   Fix for unstructured meshes. Need to account for particles that are sent to domains
+//   that based on bounding box, and the particle does not lay in any cells.
+//
 // ****************************************************************************
 
 bool
-avtParICAlgorithm::RecvICs(list<avtIntegralCurve*> &recvICs)
+avtParICAlgorithm::RecvICs(list<avtIntegralCurve*> &recvICs,
+                           list<int> *ranks)
 {
     vector<MemStream *> buffers;
     while (RecvData(avtParICAlgorithm::STREAMLINE_TAG, buffers))
     {
         for (int i = 0; i < buffers.size(); i++)
         {
-            int num;
+            int num, sendRank;
+            buffers[i]->read(sendRank);
             buffers[i]->read(num);
             for (int j = 0; j < num; j++)
             {
                 avtIntegralCurve *ic = picsFilter->CreateIntegralCurve();
                 ic->Serialize(MemStream::READ, *buffers[i], GetSolver());
                 recvICs.push_back(ic);
-
+                if (ranks)
+                    ranks->push_back(sendRank);
             }
             delete buffers[i];
         }
@@ -759,6 +766,10 @@ avtParICAlgorithm::RecvICs(list<avtIntegralCurve*> &recvICs)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
+//   Fix for unstructured meshes. Need to account for particles that are sent to domains
+//   that based on bounding box, and the particle does not lay in any cells.
+//
 // ****************************************************************************
 
 bool
@@ -769,6 +780,8 @@ avtParICAlgorithm::DoSendICs(int dst,
         return false;
 
     MemStream *buff = new MemStream;
+    
+    buff->write(rank);
     int num = ics.size();
     buff->write(num);
     

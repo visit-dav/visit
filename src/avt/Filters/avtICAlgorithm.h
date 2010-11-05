@@ -182,12 +182,12 @@ class avtICAlgorithm
     virtual void              ReportCounters(ostream &os, bool totals);
 
     void                      PrintTiming(ostream &os,
-                                          char *str, 
+                                          const char *str, 
                                           const ICStatistics &s,
                                           const ICStatistics &t,
                                           bool total);
     void                      PrintCounter(ostream &os,
-                                           char *str,
+                                           const char *str,
                                            const ICStatistics &s,
                                            bool total);
 

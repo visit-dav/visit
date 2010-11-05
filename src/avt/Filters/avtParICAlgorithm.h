@@ -93,7 +93,11 @@ class MemStream;
 //   Rename method to make its communication pattern more clear.
 //
 //   Dave Pugmire, Fri Sep 10 13:36:58 EDT 2010
-//   Rewrite of most of this class.   
+//   Rewrite of most of this class.
+//
+//   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
+//   Fix for unstructured meshes. Need to account for particles that are sent to domains
+//   that based on bounding box, and the particle does not lay in any cells.
 //
 // ****************************************************************************
 
@@ -122,7 +126,7 @@ class avtParICAlgorithm : public avtICAlgorithm
 
     // Send/Recv Integral curves.
     void                      SendICs(int dst, std::vector<avtIntegralCurve*> &v);
-    bool                      RecvICs(std::list<avtIntegralCurve*> &v);
+    bool                      RecvICs(std::list<avtIntegralCurve*> &v, std::list<int> *ranks=NULL);
 
     // Send/Recv messages.
     void                      SendMsg(int dst, std::vector<int> &msg);

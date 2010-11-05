@@ -911,7 +911,7 @@ avtICAlgorithm::ReportCounters(ostream &os, bool totals)
 // ****************************************************************************
 void
 avtICAlgorithm::PrintTiming(ostream &os, 
-                            char *str, 
+                            const char *str, 
                             const ICStatistics &s,
                             const ICStatistics &t,
                             bool total)
@@ -963,7 +963,7 @@ avtICAlgorithm::PrintTiming(ostream &os,
 // ****************************************************************************
 void
 avtICAlgorithm::PrintCounter(ostream &os, 
-                             char *str, 
+                             const char *str, 
                              const ICStatistics &s,
                              bool total)
 {

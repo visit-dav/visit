@@ -68,7 +68,10 @@
 //    Hank Childs, Fri Oct  8 23:30:27 PDT 2010
 //    Refactor into an abstract type.  Remove all data members specific to
 //    streamlines or Poincare.
-//    
+//
+//   Dave Pugmire, Fri Nov  5 15:36:31 EDT 2010
+//   Make historyMask public.
+//
 // ****************************************************************************
 
 class IVP_API avtStateRecorderIntegralCurve : public avtIntegralCurve
@@ -140,11 +143,11 @@ public:
   public:
     unsigned long serializeFlags;
     long          sequenceCnt;
+    unsigned char      historyMask;
 
   protected:
     double distance;
 
-    unsigned char      historyMask;
     std::vector<float> history;
     static const double      epsilon;
 

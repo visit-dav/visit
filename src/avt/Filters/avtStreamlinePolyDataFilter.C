@@ -49,6 +49,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyLine.h>
+#include <vtkCleanPolyData.h>
 
 #include <avtCallback.h>
 #include <avtParallel.h>
@@ -115,7 +116,6 @@ void
 avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *> &ics)
 {
     debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
-
     int numICs = ics.size(), numPts = 0;
     if (numICs == 0)
         return;
@@ -292,6 +292,45 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
     if (opacity)
         opacity->Delete();
 
-    avtDataTree *dt = new avtDataTree(pd, 0);
+    vtkCleanPolyData *clean = vtkCleanPolyData::New();
+    clean->ConvertLinesToPointsOff();
+    clean->ConvertPolysToLinesOff();
+    clean->ConvertStripsToPolysOff();
+    clean->PointMergingOn();
+    clean->SetInput(pd);
+    clean->Update();
+    pd->Delete();
+
+    vtkPolyData *cleanPD = clean->GetOutput();
+
+    avtDataTree *dt = new avtDataTree(cleanPD, 0);
     SetOutputDataTree(dt);
+
+    clean->Delete();
+
+    /*
+    if (1)
+    {
+        char f[51];
+        sprintf(f, "streamlines_%03d.txt", PAR_Rank());
+        FILE *fp = fopen(f, "w");
+        for (int i = 0; i < numICs; i++)
+        {
+            avtStateRecorderIntegralCurve *ic = dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
+            size_t numSamps = (ic ? ic->GetNumberOfSamples() : 0);
+            if (numSamps == 0)
+                continue;
+
+            fprintf(fp, "%d\n", (int)numSamps);
+            for (int j = 0; j < numSamps; j++)
+            {
+                avtStateRecorderIntegralCurve::Sample s = ic->GetSample(j);
+                fprintf(fp, "%lf %lf %lf %lf %lf\n", s.position.x, s.position.y, s.position.z, s.time, s.scalar0);
+            
+            }
+        }
+        fflush(fp);
+        fclose(fp);
+    }
+    */
 }

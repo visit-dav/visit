@@ -47,6 +47,10 @@ using namespace std;
 
 #ifdef PARALLEL
 
+static const int PARTICLE_TERMINATE_COUNT = 0;
+static const int PARTICLE_USED = 1;
+static const int PARTICLE_NOT_USED = 2;
+
 // ****************************************************************************
 //  Method: avtParDomICAlgorithm::avtParDomICAlgorithm
 //
@@ -73,6 +77,7 @@ avtParDomICAlgorithm::avtParDomICAlgorithm(avtPICSFilter *icFilter,
     numICChange = 0;
     totalNumIntegralCurves = 0;
     maxCnt = maxCount;
+    sentICCounter = 0;
 }
 
 
@@ -124,8 +129,9 @@ avtParDomICAlgorithm::~avtParDomICAlgorithm()
 //   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
 //   Reflect change in name to InitializeBuffers method.
 //
-//   Dave Pugmire, Fri Sep 10 13:37:36 EDT 2010
-//   Initialize number of recv buffers for both msgs and ICs.
+//   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
+//   Fix for unstructured meshes. Need to account for particles that are sent to domains
+//   that based on bounding box, and the particle does not lay in any cells.
 //
 // ****************************************************************************
 
@@ -136,7 +142,7 @@ avtParDomICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
     if (numRecvs > 64)
         numRecvs = 64;
     
-    avtParICAlgorithm::InitializeBuffers(seedPts, 1, numRecvs, numRecvs);
+    avtParICAlgorithm::InitializeBuffers(seedPts, 3, numRecvs, numRecvs);
     numICChange = 0;
     AddIntegralCurves(seedPts);
 }
@@ -246,6 +252,13 @@ avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
 //    Rename data members to reflect the new emphasis in particle advection, as
 //    opposed to streamlines.
 //
+//   Dave Pugmire, Tue Oct 19 10:53:51 EDT 2010
+//   Fix for unstructured meshes.
+//
+//   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
+//   Fix for unstructured meshes. Need to account for particles that are sent to domains
+//   that based on bounding box, and the particle does not lay in any cells.
+//
 // ****************************************************************************
 
 void
@@ -254,9 +267,11 @@ avtParDomICAlgorithm::ExchangeTermination()
     // If I have terminations, send it out.
     if (numICChange != 0)
     {
-        vector<int> msg(1);
-        msg[0] = numICChange;
+        vector<int> msg(2);
+        msg[0] = PARTICLE_TERMINATE_COUNT;
+        msg[1] = numICChange;
         SendAllMsg(msg);
+        //debug5<<rank<<": SEND TERMINATE "<<numICChange<<endl;
         
         totalNumIntegralCurves += numICChange;
         numICChange = 0;
@@ -267,8 +282,47 @@ avtParDomICAlgorithm::ExchangeTermination()
     RecvMsg(msgs);
     for (int i = 0; i < msgs.size(); i++)
     {
-        debug2<<msgs[i][1]<<" icChange= "<<msgs[i][1]<<endl;
-        totalNumIntegralCurves += msgs[i][1];
+        int fromRank = msgs[i][0], msgType = msgs[i][1];
+        
+        if (msgType == PARTICLE_TERMINATE_COUNT)
+        {
+            totalNumIntegralCurves += msgs[i][2];
+            //debug5<<fromRank<<": RECV DECR"<<endl;
+        }
+        else
+        {
+            //Find the right entry.
+            int icID = msgs[i][2], icCnt = msgs[i][3];
+            pair<int,int> key(icID, icCnt);
+
+            sendICInfoIterator i = sendICInfo.find(key);
+            if (i == sendICInfo.end())
+            {
+                //debug5<<icID<<", "<<icCnt<<" not found in sendICInfo!!"<<endl;
+                continue;
+            }
+
+            list<int>::iterator li;
+            for (li = i->second.second.begin(); li != i->second.second.end(); li++)
+                if (*li == fromRank)
+                {
+                    i->second.second.erase(li);
+                    if (msgType == PARTICLE_USED)
+                        i->second.first++;
+                    break;
+                }
+
+            //Everyone has reported back.
+            if (i->second.second.empty())
+            {
+                //Nobody used it
+                if (i->second.first == 0)
+                    numICChange--;
+                else if (i->second.first > 1)
+                    numICChange += (i->second.first-1);
+                sendICInfo.erase(i);
+            }
+        }
     }
 }
 
@@ -324,6 +378,10 @@ avtParDomICAlgorithm::PreRunAlgorithm()
 //   Rename data members to reflect the new emphasis in particle advection, as
 //   opposed to streamlines.
 //
+//   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
+//   Fix for unstructured meshes. Need to account for particles that are sent to domains
+//   that based on bounding box, and the particle does not lay in any cells.
+//
 // ****************************************************************************
 
 void
@@ -331,10 +389,9 @@ avtParDomICAlgorithm::RunAlgorithm()
 {
     debug1<<"avtParDomICAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
-
+    
     while (totalNumIntegralCurves > 0)
     {
-        //debug4<<rank<<": total num SLs= "<<totalNumIntegralCurves<<" activeSLs= "<<activeICs.size()<<" terminated= "<<terminatedICs.size()<<endl;
         //Integrate upto maxCnt streamlines.
         list<avtIntegralCurve *>::iterator s;
         int cnt = 0;
@@ -346,18 +403,17 @@ avtParDomICAlgorithm::RunAlgorithm()
             AdvectParticle(s);
             if (s->status == avtIntegralCurve::STATUS_FINISHED)
             {
-                //debug5<<"TerminatedIC: "<<s->id<<endl;
+                debug5<<"TerminatedIC: "<<s->id<<endl;
                 terminatedICs.push_back(s);
                 numICChange--;
             }
             else
-                HandleOutOfBoundsIC(s);
-
+                HandleOOBIC(s);
+            
             cnt++;
         }
 
-        //Check for new ICs.
-        HandleIncomingICs();
+        HandleIncomingIC();
         ExchangeTermination();
         CheckPendingSendRequests();
     }
@@ -366,9 +422,48 @@ avtParDomICAlgorithm::RunAlgorithm()
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
 
+// ****************************************************************************
+// Method:  avtParDomICAlgorithm::HandleIncomingIC()
+//
+// Programmer:  Dave Pugmire
+// Creation:    November  5, 2010
+//
+// ****************************************************************************
+
+void
+avtParDomICAlgorithm::HandleIncomingIC()
+{
+    list<avtIntegralCurve *> incoming;
+    list<int> ranks;
+    RecvICs(incoming, &ranks);
+
+    list<avtIntegralCurve *>::iterator s;
+    list<int>::iterator r = ranks.begin();
+    for (s = incoming.begin(); s != incoming.end(); s++, r++)
+    {
+        vector<int> msg(3);
+        msg[0] = PARTICLE_USED;
+        msg[1] = (*s)->id;
+        msg[2] = (*s)->counter;
+
+        avtVector pt;
+        (*s)->CurrentLocation(pt);
+        if (PointInDomain(pt, (*s)->domain))
+        {
+            activeICs.push_back(*s);
+        }
+        else
+        {
+            msg[0] = PARTICLE_NOT_USED;
+            delete *s;
+        }
+        SendMsg(*r, msg);
+    }
+}
+
 
 // ****************************************************************************
-//  Method: avtParDomICAlgorithm::HandleOutOfBoundsIC
+//  Method: avtParDomICAlgorithm::HandleOOBIC
 //
 //  Purpose:
 //      Handle an out of bounds streamline.
@@ -394,29 +489,33 @@ avtParDomICAlgorithm::RunAlgorithm()
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
-//   Dave Pugmire, Mon Sep 20 14:50:13 EDT 2010
-//   Increment number of ICs if ICs are passed to multiple destinations.
+//   Dave Pugmire, Fri Sep 24 12:42:49 EDT 2010
+//   Handle case where single IC goes to multiple places. Increase number of ICs.
 //
-//   Dave Pugmire, Mon Sep 20 14:53:05 EDT 2010
-//   Rename method.
+//   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
+//   Fix for unstructured meshes. Need to account for particles that are sent to domains
+//   that based on bounding box, and the particle does not lay in any cells.
 //
 // ****************************************************************************
 
 void
-avtParDomICAlgorithm::HandleOutOfBoundsIC(avtIntegralCurve *s)
+avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 {
     // The integrated streamline could lie in multiple domains.
     // Duplicate the IC and send to the proper owner.
-    
     set<int> sentRanks;
     
     for (int i = 0; i < s->seedPtDomainList.size(); i++)
     {
-        int domRank = DomainToRank(s->seedPtDomainList[i]);
-        s->domain = s->seedPtDomainList[i];
+        // if i > 0, we create new streamlines.
+        //        if (i > 0)
+        //            numICChange++;
         
+        int domRank = DomainToRank(s->seedPtDomainList[i]);
         if (sentRanks.find(domRank) != sentRanks.end())
             continue;
+        
+        s->domain = s->seedPtDomainList[i];
         if (domRank == rank)
         {
             activeICs.push_back(s);
@@ -425,54 +524,31 @@ avtParDomICAlgorithm::HandleOutOfBoundsIC(avtIntegralCurve *s)
         else
         {
             vector<avtIntegralCurve *> ics;
+            s->counter = sentICCounter;
             ics.push_back(s);
-            //debug4<<"  send to "<<domRank<<endl;
             SendICs(domRank, ics);
             sentRanks.insert(domRank);
+            
+            //debug5<<"Handle OOB: id= "<<s->id<<" "<<s->domain<<" --> "<<domRank<<endl;
+
+            //Add it to the sendICInfo.
+            pair<int, int> key(s->id, s->counter);
+            sendICInfoIterator i = sendICInfo.find(key);
+
+            pair<int,list<int> > entry;
+            if (i == sendICInfo.end())
+            {
+                entry.first = 0;
+                entry.second.push_back(domRank);
+                sendICInfo[key] = entry;
+            }
+            else
+                i->second.second.push_back(domRank);
         }
     }
-    
-    int numRanksSent = sentRanks.size();
-    if (numRanksSent > 1)
-        numICChange += (numRanksSent-1);
+
+    sentICCounter++;
 }
-
-// ****************************************************************************
-// Class:  avtParDomICAlgorithm::HandleIncomingICs()
-//
-// Purpose:
-//   Process incoming streamlines.
-//
-// Programmer:  Dave Pugmire
-// Creation:    September 20, 2010
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtParDomICAlgorithm::HandleIncomingICs()
-{
-    list<avtIntegralCurve *> recvICs;
-    RecvICs(recvICs);
-
-    list<avtIntegralCurve *>::iterator s;
-    for (s = recvICs.begin(); s != recvICs.end(); s++)
-    {
-        avtVector pt;
-        (*s)->CurrentLocation(pt);
-
-        if (PointInDomain(pt, (*s)->domain))
-            activeICs.push_back(*s);
-        else
-        {
-            // Point not in domain. Toss it.
-            delete *s;
-            numICChange --;
-        }
-    }
-}
-
 
 // ****************************************************************************
 //  Method: avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute

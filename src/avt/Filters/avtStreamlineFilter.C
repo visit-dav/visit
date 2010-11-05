@@ -240,6 +240,64 @@ avtStreamlineFilter::~avtStreamlineFilter()
 }
 
 // ****************************************************************************
+// Method:  avtStreamlineFilter::GenerateAttributeFields() const
+//
+// Programmer:  Dave Pugmire
+// Creation:    November  5, 2010
+//
+// ****************************************************************************
+
+unsigned char
+avtStreamlineFilter::GenerateAttributeFields() const
+{
+
+    // need at least these three attributes
+    unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
+
+    if (storeVelocitiesForLighting)
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
+
+    switch (referenceTypeForDisplay)
+    {
+      case 0:  // Distance
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
+        break;
+      case 1:  // Time
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
+        break;
+      case 2:  // Steps
+        break;
+    }
+
+    // color scalars
+    switch( coloringMethod )
+    {
+      case STREAMLINE_COLOR_SPEED:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
+        break;
+      case STREAMLINE_COLOR_TIME:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
+        break;
+      case STREAMLINE_COLOR_VORTICITY:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_VORTICITY;
+        break;
+      case STREAMLINE_COLOR_ARCLENGTH:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
+        break;
+      case STREAMLINE_COLOR_VARIABLE:
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR0;
+        break;
+    }
+
+    // opacity scalar
+    if( !opacityVariable.empty() )
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR1;
+
+    return attr;
+}
+
+
+// ****************************************************************************
 //  Method: avtStreamlineFilter::CreateIntegralCurve
 //
 //  Purpose:
@@ -255,12 +313,18 @@ avtStreamlineFilter::~avtStreamlineFilter()
 //    Create an avtStreamline (not an avtStateRecorderIntegralCurve) and
 //    put the termination criteria into the signature.
 //
+//   Dave Pugmire, Fri Nov  5 15:38:33 EDT 2010
+//   Set maxSteps and historyMask.
+//
 // ****************************************************************************
 
 avtIntegralCurve *
-avtStreamlineFilter::CreateIntegralCurve() 
+avtStreamlineFilter::CreateIntegralCurve()
 {
-    return new avtStreamlineIC();
+    avtStreamlineIC *ic = new avtStreamlineIC();
+    ic->maxSteps = maxSteps;
+    ic->historyMask = GenerateAttributeFields();
+    return ic;
 }
 
 
@@ -311,47 +375,7 @@ avtStreamlineFilter::CreateIntegralCurve( const avtIVPSolver* model,
                                           const double& t_start,
                                           const avtVector &p_start, long ID ) 
 {
-    // need at least these three attributes
-    unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
-
-    if (storeVelocitiesForLighting)
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
-
-    switch (referenceTypeForDisplay)
-    {
-      case 0:  // Distance
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
-        break;
-      case 1:  // Time
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
-        break;
-      case 2:  // Steps
-        break;
-    }
-
-    // color scalars
-    switch( coloringMethod )
-    {
-      case STREAMLINE_COLOR_SPEED:
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
-        break;
-      case STREAMLINE_COLOR_TIME:
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
-        break;
-      case STREAMLINE_COLOR_VORTICITY:
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_VORTICITY;
-        break;
-      case STREAMLINE_COLOR_ARCLENGTH:
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
-        break;
-      case STREAMLINE_COLOR_VARIABLE:
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR0;
-        break;
-    }
-
-    // opacity scalar
-    if( !opacityVariable.empty() )
-        attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR1;
+    unsigned char attr = GenerateAttributeFields();
 
     avtStateRecorderIntegralCurve *rv = 
         new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, maxTime,
