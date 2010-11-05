@@ -18,22 +18,16 @@ IF(WIN32)
         host_llnl_closed_eos.xml
         host_llnl_closed_gauss.xml
         host_llnl_closed_graph.xml
-        host_llnl_closed_hopi.xml
         host_llnl_closed_inca.xml
         host_llnl_closed_juno.xml
         host_llnl_closed_minos.xml
-        host_llnl_closed_purple.xml
         host_llnl_closed_rhea.xml
         host_llnl_closed_tempest.xml
-        host_llnl_closed_um.xml
         host_llnl_edge.xml
         host_llnl_ellipse.xml
         host_llnl_hera.xml
-        host_llnl_ilx.xml
         host_llnl_prism.xml
-        host_llnl_up.xml
         host_llnl_xchem.xml
-        host_llnl_yana.xml
         host_llnl_zeus.xml
         host_nersc_franklin.xml
         host_nersc_hopper.xml
@@ -79,22 +73,16 @@ ELSE(WIN32)
         host_llnl_closed_eos.xml
         host_llnl_closed_gauss.xml
         host_llnl_closed_graph.xml
-        host_llnl_closed_hopi.xml
         host_llnl_closed_inca.xml
         host_llnl_closed_juno.xml
         host_llnl_closed_minos.xml
-        host_llnl_closed_purple.xml
         host_llnl_closed_rhea.xml
         host_llnl_closed_tempest.xml
-        host_llnl_closed_um.xml
         host_llnl_edge.xml
         host_llnl_ellipse.xml
         host_llnl_hera.xml
-        host_llnl_ilx.xml
         host_llnl_prism.xml
-        host_llnl_up.xml
         host_llnl_xchem.xml
-        host_llnl_yana.xml
         host_llnl_zeus.xml
         host_nersc_franklin.xml
         host_nersc_hopper.xml
