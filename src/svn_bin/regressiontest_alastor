@@ -176,9 +176,9 @@ fi
 # Build the code
 cd src
 export PATH=\$PATH:/usr/bin/X11
-ln -s yana1.cmake config-site/\`hostname\`.cmake
+ln -s aztec1.cmake config-site/\`hostname\`.cmake
 if test "$serial" = "true" ; then
-    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/yana1.cmake
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/aztec1.cmake
 fi
 /usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_BUILD_ALL_PLUGINS=1 -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON >> ../buildlog 2>&1
 make -j 12 >> ../buildlog 2>&1
