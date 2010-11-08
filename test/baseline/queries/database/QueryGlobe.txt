@@ -23,7 +23,7 @@ The original number of zones is 1200.
 The actual number of zones is 1269.
 
 MinMax Actual:
-vel -- Min = 0 (node 12 at coord <0, 0, -10>)
+vel -- Min = 4.17534e-31 (node 3 at coord <2.03636e-31, -3.64509e-31, 3.33333>)
 vel -- Max = 9.51057 (node 63 at coord <9.51057, 0, -3.09017>)
 
 
