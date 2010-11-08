@@ -254,6 +254,9 @@ avtSTMDFileFormat::GetVectorVar(int, const char *)
 //  Modifications:
 //    Mark C. Miller, Mon Nov  1 12:19:02 PDT 2010
 //    Remove strict mode test.
+//
+//    Mark C. Miller, Mon Nov  8 06:53:26 PST 2010
+//    Predicate on whether this is a simulation or not.
 // ****************************************************************************
 
 void
@@ -261,7 +264,7 @@ avtSTMDFileFormat::SetDatabaseMetaData(avtDatabaseMetaData *md)
 {
     metadata = md;
     PopulateDatabaseMetaData(metadata);
-    if (metadata->Empty())
+    if ((!metadata->GetIsSimulation()) && metadata->Empty())
     {
         EXCEPTION1(DBYieldedNoDataException, filenames[0]);
     }
