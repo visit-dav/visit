@@ -106,6 +106,9 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
     //  Programmer: Cyrus Harrison
     //  Creation:   January 23, 2007
     //
+    //  Modifications:
+    //   Use pointers for faster access.
+    //
     // ************************************************************************
     class UnionFind
     {
@@ -127,9 +130,14 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
       protected:
         std::vector<int>      ranks;
         std::vector<int>      parents;
-        std::vector<bool>     valid;
+        std::vector<int>      valid;
         std::vector<int>      finalLabels;
         int                   nFinalLabels;
+
+        int  *ranksPtr;
+        int  *parentsPtr;
+        int  *validPtr;
+        int  *finalLabelsPtr;
 
     };
 
