@@ -277,6 +277,9 @@
     <Field name="intArg3" label="intArg3" type="int">
       0
     </Field>
+    <Field name="intArg4" label="intArg4" type="int">
+      0
+    </Field>
     <Field name="stringArg1" label="stringArg1" type="string">
     </Field>
     <Field name="stringArg2" label="stringArg2" type="string">

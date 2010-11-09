@@ -4671,12 +4671,15 @@ ViewerMethods::SetWindowArea(int x, int y, int w, int h)
 //   Hank Childs, Mon Jul 10 17:37:14 PDT 2006
 //   Added two double arguments.
 //
+//   Dave Pugmire, Tue Nov  9 16:09:04 EST 2010
+//   Add dumpSteps for streamline info query.
+//
 // ****************************************************************************
 
 void
 ViewerMethods::DatabaseQuery(const std::string &queryName,
     const stringVector &vars, const bool bflag, const int arg1, const int arg2,
-    const bool globalFlag, const doubleVector &darg1, const doubleVector &darg2)
+    const bool globalFlag, const bool dumpStepsFlag, const doubleVector &darg1, const doubleVector &darg2)
 {
     //
     // Set the rpc type.
@@ -4688,6 +4691,7 @@ ViewerMethods::DatabaseQuery(const std::string &queryName,
     state->GetViewerRPC()->SetIntArg2(arg2);
     state->GetViewerRPC()->SetBoolFlag(bflag);
     state->GetViewerRPC()->SetIntArg3((int)globalFlag);
+    state->GetViewerRPC()->SetIntArg4((int)dumpStepsFlag);
     state->GetViewerRPC()->SetDoubleArg1(darg1);
     state->GetViewerRPC()->SetDoubleArg2(darg2);
 

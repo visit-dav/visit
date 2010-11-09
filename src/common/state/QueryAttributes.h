@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <visitstream.h>
 
 // ****************************************************************************
@@ -86,13 +87,23 @@ public:
         OriginalData
     };
 
+    // These constructors are for objects of this class
     QueryAttributes();
     QueryAttributes(const QueryAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    QueryAttributes(private_tmfs_t tmfs);
+    QueryAttributes(const QueryAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~QueryAttributes();
 
     virtual QueryAttributes& operator = (const QueryAttributes &obj);
     virtual bool operator == (const QueryAttributes &obj) const;
     virtual bool operator != (const QueryAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const QueryAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -134,6 +145,7 @@ public:
     void SetDarg2(const doubleVector &darg2_);
     void SetFloatFormat(const std::string &floatFormat_);
     void SetXmlResult(const std::string &xmlResult_);
+    void SetDumpSteps(bool dumpSteps_);
 
     // Property getting methods
     const std::string  &GetName() const;
@@ -167,6 +179,7 @@ public:
           std::string  &GetFloatFormat();
     const std::string  &GetXmlResult() const;
           std::string  &GetXmlResult();
+    bool               GetDumpSteps() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -221,7 +234,9 @@ public:
         ID_darg1,
         ID_darg2,
         ID_floatFormat,
-        ID_xmlResult
+        ID_xmlResult,
+        ID_dumpSteps,
+        ID__LAST
     };
 
 private:
@@ -244,9 +259,12 @@ private:
     doubleVector darg2;
     std::string  floatFormat;
     std::string  xmlResult;
+    bool         dumpSteps;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define QUERYATTRIBUTES_TMFS "ss*sDiid*iii*iibssd*d*ssb"
 
 #endif

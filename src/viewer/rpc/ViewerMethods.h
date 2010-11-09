@@ -136,6 +136,9 @@ class ViewerState;
 //   Brad Whitlock, Fri Aug 27 10:38:23 PDT 2010
 //   I added RenamePickLabel.
 //
+//   Dave Pugmire, Tue Nov  9 16:09:44 EST 2010
+//   Added dumpSteps for streamline info query.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -376,7 +379,7 @@ public:
     
     void DatabaseQuery(const std::string &queryName, const stringVector &vars,
                        const bool = false, const int arg1 = 0, 
-                       const int arg2 = 0, const bool = false,
+                       const int arg2 = 0, const bool = false, const bool = false,
                        const doubleVector &darg1 = doubleVector(),
                        const doubleVector &darg2 = doubleVector());
     void PointQuery(const std::string &queryName, const double pt[3],

@@ -74,6 +74,9 @@
     </Field>
     <Field name="xmlResult" label="xmlResult" type="string">
     </Field>
+    <Field name="dumpSteps" label="dumpSteps" type="bool">
+      false
+    </Field>
     <Function name="Reset" user="true" member="true">
     </Function>
     <Function name="PrintSelf" user="true" member="true">

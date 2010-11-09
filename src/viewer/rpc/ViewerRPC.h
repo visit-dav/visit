@@ -335,6 +335,7 @@ public:
     void SetIntArg1(int intArg1_);
     void SetIntArg2(int intArg2_);
     void SetIntArg3(int intArg3_);
+    void SetIntArg4(int intArg4_);
     void SetStringArg1(const std::string &stringArg1_);
     void SetStringArg2(const std::string &stringArg2_);
     void SetDoubleArg1(const doubleVector &doubleArg1_);
@@ -386,6 +387,7 @@ public:
     int                GetIntArg1() const;
     int                GetIntArg2() const;
     int                GetIntArg3() const;
+    int                GetIntArg4() const;
     const std::string  &GetStringArg1() const;
           std::string  &GetStringArg1();
     const std::string  &GetStringArg2() const;
@@ -443,6 +445,7 @@ public:
         ID_intArg1,
         ID_intArg2,
         ID_intArg3,
+        ID_intArg4,
         ID_stringArg1,
         ID_stringArg2,
         ID_doubleArg1,
@@ -481,6 +484,7 @@ private:
     int          intArg1;
     int          intArg2;
     int          intArg3;
+    int          intArg4;
     std::string  stringArg1;
     std::string  stringArg2;
     doubleVector doubleArg1;
@@ -491,6 +495,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEWERRPC_TMFS "iiiisssss*iiIiiisi*i*i*ssDDs*ibiiissd*d*i"
+#define VIEWERRPC_TMFS "iiiisssss*iiIiiisi*i*i*ssDDs*ibiiiissd*d*i"
 
 #endif

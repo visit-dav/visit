@@ -164,6 +164,7 @@ private slots:
     void clearResultText();
     void displayModeChanged(int);
     void useGlobalToggled(bool);
+    void dumpStepsToggled(bool);
     void saveResultText();
     void addVariable(const QString &);
     void addPyVariable(const QString &);
@@ -195,7 +196,7 @@ private:
     QGroupBox           *argPanel;
     QLabel              *labels[6];
     QLineEdit           *textFields[6];
-    QCheckBox           *useGlobal;
+    QCheckBox           *useGlobal, *dumpSteps;
     QvisVariableButton  *varsButton;
     QLineEdit           *varsLineEdit;
 

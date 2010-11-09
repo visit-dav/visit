@@ -256,6 +256,8 @@ QvisQueryWindow::CreateWindowContents()
 //   Eric Brugger, Fri Jul  2 15:54:23 PDT 2010
 //   I increased the number of text fields to support the x ray image query.
 //
+//   Dave Pugmire, Tue Nov  9 16:11:37 EST 2010
+//   Added streamline info query.
 // ****************************************************************************
 
 void
@@ -351,6 +353,12 @@ QvisQueryWindow::CreateStandardQueryWidget()
     dataOpts->addButton(actualData,1);
     dataOpts->button(0)->setChecked(true);
     sLayout->addWidget(actualData, 10, 0);
+
+    dumpSteps = new QCheckBox(tr("Dump Steps"), argPanel);
+    connect(dumpSteps, SIGNAL(toggled(bool)), this, 
+            SLOT(dumpStepsToggled(bool)));
+    dumpSteps->hide();
+    sLayout->addWidget(dumpSteps, 11, 0, 1, 2);
 
     // Add the time button to the argument panel.
     gLayout->addStretch(10);
@@ -884,6 +892,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     // reset a few defaults
     dataOpts->button(0)->setChecked(true);
     useGlobal->setChecked(0);
+    dumpSteps->setChecked(0);
     labels[0]->setEnabled(true);
     textFields[0]->setEnabled(true);
 
@@ -892,6 +901,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         bool showWidgets[6] = {false, false, false, false, false, false};
         bool showDataOptions = false;
         bool showGlobal = false;
+        bool showDumpSteps = false;
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
         bool showTime = queryMode[index] != QueryList::QueryOnly;
         bool showQuery = queryMode[index] != QueryList::TimeOnly;
@@ -1059,6 +1069,10 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[5]->setText("200 200");
             showWidgets[5] = true;
         }
+        else if (winT == QueryList::StreamlineInfo)
+        {
+            showDumpSteps = true;
+        }
 
         // hide and show the right text widgets.
         for(int i = 0; i < 6; ++i)
@@ -1092,6 +1106,10 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         {
             useGlobal->hide();
         }
+        if (showDumpSteps)
+            dumpSteps->show();
+        else
+            dumpSteps->hide();
 
         if (showDataOptions)
         {
@@ -1498,7 +1516,7 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
                 vmin[0] = min;
                 vmax[0] = max;
                 GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                    false, nLines, nBins, true, vmin, vmax);
+                                 false, nLines, nBins, true, false, vmin, vmax);
             }
         }
         else if (winT == QueryList::HohlraumFlux)
@@ -1540,7 +1558,7 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
             }
             if (noErrors)
                 GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                    doTime, nLines, divideEmisByAbsorb, true, pos,
+                    doTime, nLines, divideEmisByAbsorb, true, false, pos,
                     radiusThetaPhi);
         }
         else if (winT == QueryList::ConnCompSummary)
@@ -1578,7 +1596,7 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
 
             if(noErrors)
                 GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                                                    false, nmax,0,false,
+                                                  false, nmax,0,false, false,
                                                     dvec);
         }
         else if (winT == QueryList::XRayImage)
@@ -1645,8 +1663,26 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
             }
             if (noErrors)
                 GetViewerMethods()->DatabaseQuery(names[index], vars, 
-                    doTime, outputType, divideEmisByAbsorb, true, pos,
+                    doTime, outputType, divideEmisByAbsorb, true, false, pos,
                     darg2);
+        }
+        else if (winT == QueryList::StreamlineInfo)
+        {
+            if(!GetVars(vars))
+                noErrors = false;
+            if(noErrors)
+            {
+                if (t == QueryList::DatabaseQuery)
+                {
+                    GetViewerMethods()->DatabaseQuery(names[index], vars,
+                                                      doTime, 0, 0, false, dumpSteps->isChecked());
+                }
+                else 
+                {
+                    debug5 << "QueryWindow -- Attempted use BasicWindow "
+                           << "with non DatabaseQuery." << endl;
+                }
+            }
         }
 
         // Display a status message.
@@ -2045,6 +2081,22 @@ QvisQueryWindow::useGlobalToggled(bool val)
     labels[0]->setEnabled(!val);
     textFields[0]->setEnabled(!val);
 }
+
+
+// ****************************************************************************
+// Method:  QvisQueryWindow::dumpStepsToggled
+//
+// Programmer:  Dave Pugmire
+// Creation:    November  9, 2010
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::dumpStepsToggled(bool val)
+{
+    dumpSteps->setChecked(val);
+}
+
 
 // ****************************************************************************
 // Method: QvisQueryWindow::saveResultText
