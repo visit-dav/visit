@@ -61,6 +61,10 @@
 //   
 //    Mark C. Miller, Wed Aug 26 11:02:41 PDT 2009
 //    Added support for custom base class for derived state objects.
+//    
+//    Hank Childs, Mon Nov  8 21:26:55 PST 2010
+//    Make default persistent value be true.
+//
 // ****************************************************************************
 
 class AttributeBase
@@ -86,7 +90,7 @@ public:
                   const QString &bc = "AttributeSubject")
         : name(n),
           purpose(p), 
-          persistent(false),
+          persistent(true),
           keyframe(true),
           exportAPI(e),
           exportInclude(ei),
