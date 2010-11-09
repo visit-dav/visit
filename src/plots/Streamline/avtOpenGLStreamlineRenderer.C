@@ -438,6 +438,9 @@ avtOpenGLStreamlineRenderer::DrawStreamlines(vtkPolyData *data)
 //   Add support for the end points being outside the range for a given
 //   streamline.
 //
+//   Hank Childs, Mon Nov  8 19:54:09 PST 2010
+//   Fix some indexing errors with previous change.
+//
 // ****************************************************************************
 
 void
@@ -487,7 +490,7 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
         glBegin(GL_LINE_STRIP);
 
         //If we have an interpolated start point, calculate it.
-        if (idx0 > 0)
+        if (idx0 > 0 && idx0 < nPts)
         {
             double prev[3];
             points->GetPoint(segptr[idx0-1], prev);
@@ -528,7 +531,7 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
             glVertex3fv(p);
         }
         
-        for (int j = idx0; j < idx1; j++)
+        for (int j = idx0; j <= idx1; j++)
         {
             points->GetPoint(segptr[j], pt);
             float p[3] = {pt[0], pt[1], pt[2]};
@@ -549,11 +552,11 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
         }
 
         //If we have an interpolated end point, calculate it.
-        if (idx1 < nPts && idx1 > 0)
+        if (idx1 < nPts-1 && idx1 > 0)
         {
             double next[3];
-            points->GetPoint(segptr[idx1-1], pt);
-            points->GetPoint(segptr[idx1], next);
+            points->GetPoint(segptr[idx1], pt);
+            points->GetPoint(segptr[idx1+1], next);
             
             float p[3];
             p[0] = pt[0] + t1*(next[0]-pt[0]);
@@ -561,16 +564,16 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
             p[2] = pt[2] + t1*(next[2]-pt[2]);
 
             float  s0, s1, s, o;
-            s0 = scalar[segptr[idx1-1]];
-            s1 = scalar[segptr[idx1]];
+            s0 = scalar[segptr[idx1]];
+            s1 = scalar[segptr[idx1+1]];
             s = s0 + t1*(s1-s0);
             
             if (atts.GetOpacityType() == StreamlineAttributes::Ramp)
                 o = 1.0;
             else if (opacity)
             {
-                s0 = scalar[segptr[idx1-1]];
-                s1 = scalar[segptr[idx1]];
+                s0 = scalar[segptr[idx1]];
+                s1 = scalar[segptr[idx1+1]];
                 o = s0 + t1*(s1-s0);
             }
             
@@ -578,8 +581,8 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
             
             if (tangents)
             {
-                float* v0 = tangents + segptr[idx1-1];
-                float* v1 = tangents + segptr[idx1];
+                float* v0 = tangents + segptr[idx1];
+                float* v1 = tangents + segptr[idx1+1];
             
                 v[0] = v0[0] + t1*(v1[0]-v0[0]);
                 v[1] = v0[1] + t1*(v1[1]-v0[1]);
@@ -1007,6 +1010,9 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
 //   streamline.  Also fix indexing problem (include last step) and make sure
 //   that we don't have points so close together that we can't tube.
 //
+//   Hank Childs, Mon Nov  8 19:54:09 PST 2010
+//   Fix some indexing errors with previous change.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -1085,7 +1091,7 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
     }
     // Check to see if we need to (1) split the final segment and (2) if
     // the resulting segment is big enough to not hose the tube filter.
-    if (idx1 < nPts)
+    if (idx1 < nPts-1)
     {
         double pt[3];
         double next[3];
@@ -1180,8 +1186,8 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
     if (makeEndPoint)
     {
         double next[3];
-        points->GetPoint(segptr[idx1-1], pt);
-        points->GetPoint(segptr[idx1], next);
+        points->GetPoint(segptr[idx1], pt);
+        points->GetPoint(segptr[idx1+1], next);
         
         double pi[3];
         pi[0] = pt[0] + t1*(next[0]-pt[0]);
@@ -1194,27 +1200,27 @@ avtOpenGLStreamlineRenderer::MakeNewPolyline(vtkPolyData *data,
         cells->InsertCellPoint(idx);
     
         double v0, v1, v;
-        v0 = s[segptr[idx1-1]];
-        v1 = s[segptr[idx1]];
+        v0 = s[segptr[idx1]];
+        v1 = s[segptr[idx1+1]];
         v = v0 + t1*(v1-v0);
         scalars->InsertTuple1(idx, v);
     
-        v0 = p[segptr[idx1-1]];
-        v1 = p[segptr[idx1]];
+        v0 = p[segptr[idx1]];
+        v1 = p[segptr[idx1+1]];
         v = v0 + t1*(v1-v0);
         params->InsertTuple1(idx, v);
 
         if (t)
         {
-            v0 = t[segptr[idx1-1]];
-            v1 = t[segptr[idx1]];
+            v0 = t[segptr[idx1]];
+            v1 = t[segptr[idx1+1]];
             v = v0 + t1*(v1-v0);
             thetas->InsertTuple1(idx, v);
         }
         if (o)
         {
-            v0 = o[segptr[idx1-1]];
-            v1 = o[segptr[idx1]];
+            v0 = o[segptr[idx1]];
+            v1 = o[segptr[idx1+1]];
             v = v0 + t1*(v1-v0);
             opacity->InsertTuple1(idx, v);
         }
@@ -2040,6 +2046,14 @@ avtOpenGLStreamlineRenderer::GenerateSpherePolys(float x0,
 //  Purpose:
 //    If displayBegin and/or displayEnd is set, figure out the index of the nearest
 //    vertex (j0, j1) and the percentage between the neighboring point (t0, t1).
+//
+//  Arguments:
+//      j0    The first index within the range
+//      j1    The last index within the range
+//      t0    The proportion between j0-1 and j0 to cut the segment.  To be
+//            ignored if j0 == 0.
+//      t1    The proportion between j1 and j1+1 to cut the segment.  To be
+//            ignored if j1 == (nPts-1).
 //
 //  Programmer:  Dave Pugmire
 //  Creation:    December 29, 2009
