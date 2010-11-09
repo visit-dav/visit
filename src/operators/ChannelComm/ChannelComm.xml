@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Plugin name="ChannelComm" type="operator" label="ChannelComm" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false">
+    <Attribute name="ChannelCommAttributes" purpose="Attributes for ChannelComm operator" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ChannelComm.code">
+      <Field name="numInX" label="Number in X" type="int">
+        10
+      </Field>
+      <Field name="numInY" label="Number in Y" type="int">
+        10
+      </Field>
+      <Field name="velocity" label="velocity" type="variablename" vartypes="00010000000">
+      </Field>
+      <Function name="ChannelCommCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

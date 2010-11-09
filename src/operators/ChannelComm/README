@@ -1,0 +1,4 @@
+Purpose of ChannelComm: I am analyzing flow in a nuclear reactor assembly.  The dominant flow direction is z-oriented.  Of course particles move some in the x- and y-directions as well.  We are interested in the total x- and y- movement.
+
+So this operator places particles at Z=0 for X=-10 to X=+10 and Y=-10 to Y=+10.  Then it advects the particles and makes a new output mesh.  The output mesh is 2D and has a scalar field defined on it.  If you look at location (5,2), then the scalar value there is the x/y-movement for the particle starting at (5,2,0).  
+
