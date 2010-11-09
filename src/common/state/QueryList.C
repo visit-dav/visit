@@ -86,20 +86,21 @@ static const char *WindowType_strings[] = {
 "DomainNode", "DomainNodeVars", "DomainZone", 
 "DomainZoneVars", "ActualData", "ActualDataVars", 
 "LineDistribution", "HohlraumFlux", "ConnCompSummary", 
-"ShapeletsDecomp", "XRayImage"};
+"ShapeletsDecomp", "XRayImage", "StreamlineInfo"
+};
 
 std::string
 QueryList::WindowType_ToString(QueryList::WindowType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 14) index = 0;
+    if(index < 0 || index >= 15) index = 0;
     return WindowType_strings[index];
 }
 
 std::string
 QueryList::WindowType_ToString(int t)
 {
-    int index = (t < 0 || t >= 14) ? 0 : t;
+    int index = (t < 0 || t >= 15) ? 0 : t;
     return WindowType_strings[index];
 }
 
@@ -107,7 +108,7 @@ bool
 QueryList::WindowType_FromString(const std::string &s, QueryList::WindowType &val)
 {
     val = QueryList::Basic;
-    for(int i = 0; i < 14; ++i)
+    for(int i = 0; i < 15; ++i)
     {
         if(s == WindowType_strings[i])
         {

@@ -144,6 +144,7 @@ Queries/avtWeightedVariableSummationQuery.C
 Queries/avtXRayImageQuery.C
 Queries/avtZoneCenterQuery.C
 Queries/MinMaxInfo.C
+Queries/avtStreamlineInfoQuery.C
 )
 
 IF(VISIT_PYTHON_FILTERS)

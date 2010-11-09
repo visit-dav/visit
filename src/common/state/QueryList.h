@@ -82,7 +82,8 @@ public:
         HohlraumFlux,
         ConnCompSummary,
         ShapeletsDecomp,
-        XRayImage
+        XRayImage,
+        StreamlineInfo
     };
     enum Groups
     {

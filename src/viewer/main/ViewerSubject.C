@@ -7100,6 +7100,9 @@ ViewerSubject::CopyPlotsToWindow(int from, int to)
 //   Brad Whitlock, Wed Apr 30 09:27:08 PDT 2008
 //   Support for internationalization.
 //
+//   Dave Pugmire, Tue Nov  9 16:07:50 EST 2010
+//   Added dumpStates for streamline info query.
+//
 // ****************************************************************************
 
 void
@@ -7115,7 +7118,8 @@ ViewerSubject::DatabaseQuery()
     qm->DatabaseQuery(vw, GetViewerState()->GetViewerRPC()->GetQueryName(), GetViewerState()->GetViewerRPC()->GetQueryVariables(),
                       GetViewerState()->GetViewerRPC()->GetBoolFlag(), 
                       GetViewerState()->GetViewerRPC()->GetIntArg1(), GetViewerState()->GetViewerRPC()->GetIntArg2(),
-                      (bool)GetViewerState()->GetViewerRPC()->GetIntArg3(), GetViewerState()->GetViewerRPC()->GetDoubleArg1(),
+                      (bool)GetViewerState()->GetViewerRPC()->GetIntArg3(),(bool)GetViewerState()->GetViewerRPC()->GetIntArg4(),
+                      GetViewerState()->GetViewerRPC()->GetDoubleArg1(),
                       GetViewerState()->GetViewerRPC()->GetDoubleArg2());
 
     // Clear the status

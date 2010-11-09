@@ -235,6 +235,9 @@ typedef struct {
 //    Cyrus Harrison, Tue Sep 18 11:01:57 PDT 2007
 //    Added floatFormat 
 //
+//   Dave Pugmire, Tue Nov  9 14:57:53 EST 2010
+//   Added dumpSteps for StreamlineInfo query.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager : public ViewerBase
@@ -249,6 +252,7 @@ class VIEWER_API ViewerQueryManager : public ViewerBase
                             const bool doTimeQuery,
                             const int arg1, const int arg2,
                             const bool elementIsGlobal,
+                            const bool dumpSteps,
                             const doubleVector darg1, const doubleVector darg2);
     bool            VerifySingleInputQuery(ViewerPlotList *, const int,
                             const std::string &,

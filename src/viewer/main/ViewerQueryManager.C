@@ -1062,6 +1062,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    case the query involves expressions that have not been sent to the engine
 //    yet.
 //
+//   Dave Pugmire, Tue Nov  9 16:08:30 EST 2010
+//   Add dumpSteps for streamline info query.
+//
 // ****************************************************************************
 
 void         
@@ -1069,6 +1072,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                             const stringVector &vars, const bool doTimeQuery,
                             const int arg1, const int arg2,
                             const bool elementIsGlobal,
+                            const bool dumpSteps,
                             const doubleVector darg1, const doubleVector darg2)
 {
     queryClientAtts->SetResultsMessage("");
@@ -1182,6 +1186,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     qa.SetFloatFormat(floatFormat);
     qa.SetName(qName);
     qa.SetUseGlobalId(elementIsGlobal);
+    qa.SetDumpSteps(dumpSteps);
 
     // Right now, use of Element and DataType are mutually
     // exclusive, and we don't necessarily have to know thich one
@@ -3814,6 +3819,7 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::WindowType ccls_wt = QueryList::ConnCompSummary;
     QueryList::WindowType shp_wt  = QueryList::ShapeletsDecomp;
     QueryList::WindowType xri  = QueryList::XRayImage;
+    QueryList::WindowType sli  = QueryList::StreamlineInfo;
 
     QueryList::QueryMode qo = QueryList::QueryOnly;
     QueryList::QueryMode qt = QueryList::QueryAndTime;
@@ -3904,6 +3910,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Memory Usage", dq, misc_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Sample Statistics", dq, vr, ad, 1, 0, qo);
     queryTypes->AddQuery("Population Statistics", dq, vr, ad, 1, 0, qo);
+
+    queryTypes->AddQuery("Streamline Info", dq, misc_r, sli, 1, 0, qo);
     queryTypes->SelectAll();
 }
 

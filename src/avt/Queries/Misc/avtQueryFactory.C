@@ -100,6 +100,7 @@
 #include <avtWeightedVariableSummationQuery.h>
 #include <avtXRayImageQuery.h>
 #include <avtZoneCenterQuery.h>
+#include <avtStreamlineInfoQuery.h>
 
 #include <visit-python-config.h>
 #ifdef VISIT_PYTHON_FILTERS
@@ -297,6 +298,9 @@ avtQueryFactory::Instance()
 //
 //    Cyrus Harrison, Tue Sep 21 11:12:17 PDT 2010
 //    Added explicit passing of args to the python filter query.
+//
+//   Dave Pugmire, Tue Nov  9 14:57:20 EST 2010
+//   Add Streamline Info query.
 //
 // ****************************************************************************
 
@@ -695,6 +699,12 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
                       "Cannot execute Python Filter Query because "
                       "VisIt was build without Python Filter support.");
 #endif
+    }
+    else if (qname == "Streamline Info")
+    {
+        avtStreamlineInfoQuery *slq = new avtStreamlineInfoQuery();
+        slq->SetDumpSteps(qa->GetDumpSteps());
+        query = slq;
     }
 
     if (query == NULL && !foundAQuery)

@@ -181,6 +181,7 @@ void ViewerRPC::Init()
     intArg1 = 0;
     intArg2 = 0;
     intArg3 = 0;
+    intArg4 = 0;
     doubleArg1.push_back(0);
     doubleArg2.push_back(0);
     toolUpdateMode = 1;
@@ -242,6 +243,7 @@ void ViewerRPC::Copy(const ViewerRPC &obj)
     intArg1 = obj.intArg1;
     intArg2 = obj.intArg2;
     intArg3 = obj.intArg3;
+    intArg4 = obj.intArg4;
     stringArg1 = obj.stringArg1;
     stringArg2 = obj.stringArg2;
     doubleArg1 = obj.doubleArg1;
@@ -448,6 +450,7 @@ ViewerRPC::operator == (const ViewerRPC &obj) const
             (intArg1 == obj.intArg1) &&
             (intArg2 == obj.intArg2) &&
             (intArg3 == obj.intArg3) &&
+            (intArg4 == obj.intArg4) &&
             (stringArg1 == obj.stringArg1) &&
             (stringArg2 == obj.stringArg2) &&
             (doubleArg1 == obj.doubleArg1) &&
@@ -625,6 +628,7 @@ ViewerRPC::SelectAll()
     Select(ID_intArg1,           (void *)&intArg1);
     Select(ID_intArg2,           (void *)&intArg2);
     Select(ID_intArg3,           (void *)&intArg3);
+    Select(ID_intArg4,           (void *)&intArg4);
     Select(ID_stringArg1,        (void *)&stringArg1);
     Select(ID_stringArg2,        (void *)&stringArg2);
     Select(ID_doubleArg1,        (void *)&doubleArg1);
@@ -842,6 +846,13 @@ ViewerRPC::SetIntArg3(int intArg3_)
 {
     intArg3 = intArg3_;
     Select(ID_intArg3, (void *)&intArg3);
+}
+
+void
+ViewerRPC::SetIntArg4(int intArg4_)
+{
+    intArg4 = intArg4_;
+    Select(ID_intArg4, (void *)&intArg4);
 }
 
 void
@@ -1147,6 +1158,12 @@ ViewerRPC::GetIntArg3() const
     return intArg3;
 }
 
+int
+ViewerRPC::GetIntArg4() const
+{
+    return intArg4;
+}
+
 const std::string &
 ViewerRPC::GetStringArg1() const
 {
@@ -1372,6 +1389,7 @@ ViewerRPC::GetFieldName(int index) const
     case ID_intArg1:           return "intArg1";
     case ID_intArg2:           return "intArg2";
     case ID_intArg3:           return "intArg3";
+    case ID_intArg4:           return "intArg4";
     case ID_stringArg1:        return "stringArg1";
     case ID_stringArg2:        return "stringArg2";
     case ID_doubleArg1:        return "doubleArg1";
@@ -1430,6 +1448,7 @@ ViewerRPC::GetFieldType(int index) const
     case ID_intArg1:           return FieldType_int;
     case ID_intArg2:           return FieldType_int;
     case ID_intArg3:           return FieldType_int;
+    case ID_intArg4:           return FieldType_int;
     case ID_stringArg1:        return FieldType_string;
     case ID_stringArg2:        return FieldType_string;
     case ID_doubleArg1:        return FieldType_doubleVector;
@@ -1488,6 +1507,7 @@ ViewerRPC::GetFieldTypeName(int index) const
     case ID_intArg1:           return "int";
     case ID_intArg2:           return "int";
     case ID_intArg3:           return "int";
+    case ID_intArg4:           return "int";
     case ID_stringArg1:        return "string";
     case ID_stringArg2:        return "string";
     case ID_doubleArg1:        return "doubleVector";
@@ -1677,6 +1697,11 @@ ViewerRPC::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_intArg3:
         {  // new scope
         retval = (intArg3 == obj.intArg3);
+        }
+        break;
+    case ID_intArg4:
+        {  // new scope
+        retval = (intArg4 == obj.intArg4);
         }
         break;
     case ID_stringArg1:

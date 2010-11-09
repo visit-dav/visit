@@ -20,6 +20,7 @@
       ConnCompSummary
       ShapeletsDecomp
       XRayImage
+      StreamlineInfo
     </Enum>
     <Enum name="Groups">
       CurveRelated

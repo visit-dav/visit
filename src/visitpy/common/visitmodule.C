@@ -10545,6 +10545,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Eric Brugger, Wed Jun 30 14:17:49 PDT 2010
 //   I added support for parsing the x ray image query.
 //
+//   Dave Pugmire, Tue Nov  9 16:11:06 EST 2010
+//   Added streamline info query.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -10685,7 +10688,20 @@ visit_Query(PyObject *self, PyObject *args)
         qname = qname.substr(pos1+1);
         doGlobal = true;
     }
-
+    
+    // Check for dump steps flag.
+    bool dumpSteps = false;
+#if defined(_WIN32)
+    if (_strnicmp(queryName, "DumpSteps ", 10) == 0)
+#else
+    if (strncasecmp(queryName, "DumpSteps ", 10) == 0)
+#endif
+    {
+        std::string::size_type pos1 = 0;
+        pos1 = qname.find_first_of(' ', pos1);
+        qname = qname.substr(pos1+1);
+        dumpSteps = true;
+    }
     // Check the tuple argument.
     stringVector vars;
     GetStringVectorFromPyObject(tuple, vars);
@@ -10712,7 +10728,7 @@ visit_Query(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        GetViewerMethods()->DatabaseQuery(qname, vars, false, arg1, arg2, doGlobal,
+    GetViewerMethods()->DatabaseQuery(qname, vars, false, arg1, arg2, doGlobal, dumpSteps,
                               darg1, darg2);
     MUTEX_UNLOCK();
 
