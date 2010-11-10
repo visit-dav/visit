@@ -10558,6 +10558,7 @@ visit_Query(PyObject *self, PyObject *args)
     char *output_name = NULL;
     int arg1 = 0, arg2 = 0;
     doubleVector darg1(3), darg2(3);
+    bool dumpSteps = false;
     PyObject *tuple = NULL;
     
     bool parse_success = false;
@@ -10594,6 +10595,21 @@ visit_Query(PyObject *self, PyObject *args)
             else if (strcmp(imageType, "rawfloats") == 0)
                 arg1 = 4;
         }
+    }
+
+    if (!parse_success)
+    {
+        //streamline info
+        PyErr_Clear();
+        char *dump = NULL;
+        parse_success = PyArg_ParseTuple(args, "ss|O", &queryName, &dump);
+        if (parse_success && 
+            (strcmp(dump, "DumpSteps") == 0 ||
+             strcmp(dump, "dumpSteps") == 0))
+        {
+            dumpSteps = true;
+        }
+
     }
 
     if(!parse_success)
@@ -10673,7 +10689,7 @@ visit_Query(PyObject *self, PyObject *args)
     // we could not parse the args!
     if(!parse_success)
         return NULL;
-    
+
     // Check for global flag.
     std::string qname(queryName);
     bool doGlobal = false;
@@ -10689,19 +10705,6 @@ visit_Query(PyObject *self, PyObject *args)
         doGlobal = true;
     }
     
-    // Check for dump steps flag.
-    bool dumpSteps = false;
-#if defined(_WIN32)
-    if (_strnicmp(queryName, "DumpSteps ", 10) == 0)
-#else
-    if (strncasecmp(queryName, "DumpSteps ", 10) == 0)
-#endif
-    {
-        std::string::size_type pos1 = 0;
-        pos1 = qname.find_first_of(' ', pos1);
-        qname = qname.substr(pos1+1);
-        dumpSteps = true;
-    }
     // Check the tuple argument.
     stringVector vars;
     GetStringVectorFromPyObject(tuple, vars);
