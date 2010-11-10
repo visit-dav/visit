@@ -1976,6 +1976,9 @@ QvisStreamlinePlotWindow::TurnOffSourceAttributes()
 //   Hank Childs, Sat May  2 22:05:56 PDT 2009
 //   Add support for point lists.
 //
+//   Dave Pugmire, Wed Nov 10 09:21:17 EST 2010
+//   Allow box sampling min to be 1.
+//
 // ****************************************************************************
 
 void
@@ -2096,7 +2099,7 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
             sampleDensityLabel[1]->setText(tr("Samples in Y:"));
             sampleDensityLabel[2]->setText(tr("Samples in Z:"));
             for (int i = 0; i < 3; i++)
-                sampleDensity[i]->setMinimum(2);
+                sampleDensity[i]->setMinimum(1);
         }
 
         enableRandom = true;
