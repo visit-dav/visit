@@ -920,7 +920,10 @@ randMinus1_1()
 //  Modifications:
 //
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
-//   New seed sources. 
+//   New seed sources.
+//
+//   Dave Pugmire, Wed Nov 10 09:20:06 EST 2010
+//   Handle 2D datasets better.
 //
 // ****************************************************************************
 
@@ -947,6 +950,14 @@ avtStreamlineFilter::GetInitialLocations(void)
         GenerateSeedPointsFromCircle(seedPts);
     else if(sourceType == STREAMLINE_SOURCE_POINT_LIST)
         GenerateSeedPointsFromPointList(seedPts);
+
+    //Check for 2D input.
+    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
+    {
+        vector<avtVector>::iterator it;
+        for (it = seedPts.begin(); it != seedPts.end(); it++)
+            (*it)[2] = 0.0f;
+    }
 
     return seedPts;
 }
@@ -1340,6 +1351,9 @@ avtStreamlineFilter::GenerateSeedPointsFromSphere(std::vector<avtVector> &pts)
 //   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
 //   New seed sources.
 //
+//   Dave Pugmire, Wed Nov 10 09:20:32 EST 2010
+//   If box sampling is 1, use the mid value.
+//
 // ****************************************************************************
 
 void
@@ -1408,9 +1422,17 @@ avtStreamlineFilter::GenerateSeedPointsFromBox(std::vector<avtVector> &pts)
     }
     else
     {
-        diff.x /= (sampleDensity[0]-1);
-        diff.y /= (sampleDensity[1]-1);
-        diff.z /= (sampleDensity[2]-1);
+        // If sample density is 1, sample at the mid point.
+        diff.x /= (sampleDensity[0] == 1 ? 2.0 : (sampleDensity[0]-1));
+        diff.y /= (sampleDensity[1] == 1 ? 2.0 : (sampleDensity[1]-1));
+        diff.z /= (sampleDensity[2] == 1 ? 2.0 : (sampleDensity[2]-1));
+
+        if (sampleDensity[0] == 1)
+            points[0].x += diff.x;
+        if (sampleDensity[1] == 1)
+            points[0].y += diff.y;
+        if (sampleDensity[2] == 1)
+            points[0].z += diff.z;
 
         if (fill)
         {
