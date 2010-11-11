@@ -205,6 +205,7 @@ avtExpressionEvaluatorFilter::Execute(void)
                        lastUsedSpec->GetCalculateVariableExtentsList());
         contract->SetCalculateMeshExtents(lastUsedSpec->ShouldCalculateMeshExtents());
         contract->SetOnDemandStreaming(onDemandProcessing);
+        contract->SetReplicateSingleDomainOnAllProcessors(replicateSingleDomainOnAllProcessors);
         bottom->Update(contract);
         GetOutput()->Copy(*(bottom->GetOutput()));
     } else {
@@ -906,6 +907,7 @@ avtExpressionEvaluatorFilter::ExamineContract(avtContract_p contract)
 {
     currentTimeState = contract->GetDataRequest()->GetTimestep();
     onDemandProcessing = contract->DoingOnDemandStreaming();
+    replicateSingleDomainOnAllProcessors = contract->ReplicateSingleDomainOnAllProcessors();
 }
 
 // ****************************************************************************

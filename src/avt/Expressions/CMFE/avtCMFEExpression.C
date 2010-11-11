@@ -425,6 +425,7 @@ avtCMFEExpression::Execute()
     spec->SetOnDemandStreaming(onDemandProcessing);
     spec->SetCalculateMeshExtents(calculateMeshExtents);
     spec->SetCalculateVariableExtentsList(varExtentsList);
+    spec->SetReplicateSingleDomainOnAllProcessors(replicateSingleDomainOnAllProcessors);
     for (int i = 0 ; i < dataSels.size() ; i++)
         spec->GetDataRequest()->AddDataSelectionRefPtr(dataSels[i]);
 
@@ -675,6 +676,7 @@ avtCMFEExpression::ExamineContract(avtContract_p spec)
     onDemandProcessing = spec->DoingOnDemandStreaming();
     calculateMeshExtents = spec->ShouldCalculateMeshExtents();
     varExtentsList = spec->GetCalculateVariableExtentsList();
+    replicateSingleDomainOnAllProcessors = spec->ReplicateSingleDomainOnAllProcessors();
 }
 
 

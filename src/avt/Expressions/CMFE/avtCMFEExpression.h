@@ -120,6 +120,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     avtSILRestriction_p       firstDBSIL;
     avtGhostDataType          ghostNeeds;
     bool                      onDemandProcessing;
+    bool                      replicateSingleDomainOnAllProcessors;
     std::vector<avtDataSelection_p> dataSels;
     std::string               argument_expression;
     int                       varDim;
