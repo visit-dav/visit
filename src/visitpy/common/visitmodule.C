@@ -10603,13 +10603,14 @@ visit_Query(PyObject *self, PyObject *args)
         PyErr_Clear();
         char *dump = NULL;
         parse_success = PyArg_ParseTuple(args, "ss|O", &queryName, &dump);
-        if (parse_success && 
+        if (parse_success && strcmp(queryName, "Streamline Info") == 0 &&
             (strcmp(dump, "DumpSteps") == 0 ||
              strcmp(dump, "dumpSteps") == 0))
         {
             dumpSteps = true;
         }
-
+        else
+            parse_success = false;
     }
 
     if(!parse_success)
