@@ -181,6 +181,7 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
   private:
     int                          currentTimeState;
     bool                         onDemandProcessing;
+    bool                         replicateSingleDomainOnAllProcessors;
 
     void                         VerifyVariableTypes(void);
 };
