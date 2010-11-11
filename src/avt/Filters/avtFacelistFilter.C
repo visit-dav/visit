@@ -788,6 +788,9 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
 //    Jeremy Meredith, Thu Mar 12 12:39:30 EDT 2009
 //    Tessellate quadratic triangles and quads.
 //
+//    Kathleen Bonnell, Thu Nov 11 10:41:51 PST 2010
+//    Added support for VTK_QUADRATIC_EDGE.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -923,6 +926,7 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
             int cellType = ug->GetCellType(i);
             switch (cellType)
             {
+              case VTK_QUADRATIC_EDGE:     noutcells += 1; break;
               case VTK_QUADRATIC_TRIANGLE: noutcells += 4; break;
               case VTK_QUADRATIC_QUAD:     noutcells += 6; break;
               default:                     noutcells++;    break;
@@ -941,7 +945,16 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
             int newid;
             ug->GetCellPoints(i, idlist);
             int cellType = ug->GetCellType(i);
-            if (cellType == VTK_QUADRATIC_TRIANGLE)
+            if (cellType == VTK_QUADRATIC_EDGE)
+            {
+                idlist_cor->SetNumberOfIds(3);
+                idlist_cor->SetId(0, idlist->GetId(0));
+                idlist_cor->SetId(1, idlist->GetId(1));
+                idlist_cor->SetId(2, idlist->GetId(2));
+                newid = out_ds->InsertNextCell(VTK_POLY_LINE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+            }
+            else if (cellType == VTK_QUADRATIC_TRIANGLE)
             {
                 idlist_cor->SetNumberOfIds(3);
                 idlist_cor->SetId(0, idlist->GetId(0));
