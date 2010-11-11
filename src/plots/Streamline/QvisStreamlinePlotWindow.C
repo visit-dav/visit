@@ -529,13 +529,6 @@ QvisStreamlinePlotWindow::CreateWindowContents()
             this, SLOT(directionTypeChanged(int)));
     terminationLayout->addWidget(directionType, 3,2);
 
-    /*pathlineFlag = new QCheckBox(tr("Pathlines"), central);
-    connect(pathlineFlag, SIGNAL(toggled(bool)),
-            this, SLOT(pathlineFlagChanged(bool)));
-    terminationLayout->addWidget(pathlineFlag, 4,0);
-    */
-
-
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
     integrationGroup->setTitle(tr("Integration"));
@@ -1034,6 +1027,7 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     algoGrp->setTitle(tr("Parallel streamline options"));
     advGLayout->addWidget(algoGrp, 0, 0, 1, 4);
 
+
     // Algorithm group.
     QGridLayout *algoGLayout = new QGridLayout(algoGrp);
     algoGLayout->setSpacing(10);
@@ -1041,9 +1035,9 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     slAlgoLabel = new QLabel(tr("Parallelize across"), algoGrp);
     slAlgo = new QComboBox(algoGrp);
-    slAlgo->addItem(tr("Streamlines"));
+    slAlgo->addItem(tr("Particles"));
     slAlgo->addItem(tr("Domains"));
-    slAlgo->addItem(tr("Streamlines and Domains"));
+    slAlgo->addItem(tr("Particles and Domains"));
     slAlgo->addItem(tr("Have VisIt select the best algorithm"));
     connect(slAlgo, SIGNAL(activated(int)),
             this, SLOT(streamlineAlgorithmChanged(int)));
@@ -1077,10 +1071,71 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     algoGLayout->addWidget( workGroupSizeLabel, 4,0);
     algoGLayout->addWidget( workGroupSize, 4,1);
 
+
+    // Pathline Advance Group.
+    QGroupBox *icGrp = new QGroupBox(pageAdvanced);
+    icGrp->setTitle(tr("Pathlines vs Streamlines"));
+    advGLayout->addWidget(icGrp, 1, 0, 1, 4);
+
+    QGridLayout *icGrpLayout = new QGridLayout(icGrp);
+    icGrpLayout->setSpacing(10);
+    icGrpLayout->setColumnStretch(1,10);
+
+    icButtonGroup = new QButtonGroup(icGrp);
+    QRadioButton *streamlineButton = new QRadioButton(tr("Streamline\n    Compute particle trajectories in an (instantaneous) snapshot\n    of the vector field. Uses and loads only velocity field from current time slice."), icGrp);
+    QRadioButton *pathlineButton = new QRadioButton(tr("Pathline    \n    Compute trajectories in the time-varying vector field.\n    Uses and loads velocity data from all relevant time slices"), icGrp);
+    streamlineButton->setChecked(true);
+    icButtonGroup->addButton(streamlineButton, 0);
+    icButtonGroup->addButton(pathlineButton, 1);
+    icGrpLayout->addWidget(streamlineButton, 1, 0);
+    icGrpLayout->addWidget(pathlineButton, 2, 0);
+    connect(icButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+
+    // Pathline Options
+    QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
+    pathlineOptionsGrp->setTitle(tr("Pathlines Options"));
+    icGrpLayout->addWidget(pathlineOptionsGrp, 3, 0);
+
+    QGridLayout *pathlineOptionsGrpLayout = new QGridLayout(pathlineOptionsGrp);
+    pathlineOptionsGrpLayout->setSpacing(10);
+    pathlineOptionsGrpLayout->setColumnStretch(1,10);
+
+    pathlineOverrideStartingTimeFlag = new QCheckBox(tr("Override Starting Time"), pathlineOptionsGrp);
+    connect(pathlineOverrideStartingTimeFlag, SIGNAL(toggled(bool)),
+            this, SLOT(pathlineOverrideStartingTimeFlagChanged(bool)));
+    pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTimeFlag, 1, 0);
+
+    QLabel *pathlineOverrideStartingTimeLabel = new QLabel(tr("Time"), pathlineOptionsGrp);
+    pathlineOverrideStartingTimeLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTimeLabel, 1, 1);
+    pathlineOverrideStartingTime = new QLineEdit(pathlineOptionsGrp);
+    connect(pathlineOverrideStartingTime, SIGNAL(returnPressed()),
+            this, SLOT(pathlineOverrideStartingTimeProcessText()));
+    pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTime, 1, 2);
+
+    QGroupBox *cmfeOptionsGrp = new QGroupBox(pathlineOptionsGrp);
+    cmfeOptionsGrp->setTitle(tr("How to perform interpolation over time"));
+    pathlineOptionsGrpLayout->addWidget(cmfeOptionsGrp, 2, 0);
+
+    QGridLayout *cmfeOptionsGrpLayout = new QGridLayout(cmfeOptionsGrp);
+    cmfeOptionsGrpLayout->setSpacing(10);
+    cmfeOptionsGrpLayout->setColumnStretch(1,10);
+
+    pathlineCMFEButtonGroup = new QButtonGroup(cmfeOptionsGrp);
+    QRadioButton *connButton = new QRadioButton(tr("Mesh is static over time (fast, but special purpose)"), cmfeOptionsGrp);
+    QRadioButton *posButton = new QRadioButton(tr("Mesh changes over time (slow, but robust)"), cmfeOptionsGrp);
+    posButton->setChecked(true);
+    pathlineCMFEButtonGroup->addButton(connButton, 0);
+    pathlineCMFEButtonGroup->addButton(posButton, 1);
+    cmfeOptionsGrpLayout->addWidget(connButton, 2, 0);
+    cmfeOptionsGrpLayout->addWidget(posButton, 3, 0);
+    connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+
+
     // Warnings group.
     QGroupBox *warningsGrp = new QGroupBox(pageAdvanced);
     warningsGrp->setTitle(tr("Warnings"));
-    advGLayout->addWidget(warningsGrp, 1, 0, 1, 4);
+    advGLayout->addWidget(warningsGrp, 2, 0, 1, 4);
 
     QGridLayout *warningsGLayout = new QGridLayout(warningsGrp);
     warningsGLayout->setSpacing(10);
@@ -1739,13 +1794,31 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             workGroupSize->blockSignals(false);
             break;
         case StreamlineAttributes::ID_pathlines:
-          /*
-            pathlineFlag->blockSignals(true);
-            pathlineFlag->setChecked(streamAtts->GetPathlines());
-            pathlineFlag->blockSignals(false);
-          */
+            icButtonGroup->blockSignals(true);
+            icButtonGroup->button(streamAtts->GetPathlines()?1:0)->setChecked(true);
+            pathlineOverrideStartingTimeFlag->setEnabled(streamAtts->GetPathlines());
+            if( pathlineOverrideStartingTimeFlag->isChecked() && ! icButtonGroup->button(1)->isChecked() )
+                pathlineOverrideStartingTimeFlag->setChecked(false);
+            pathlineOverrideStartingTime->setEnabled(streamAtts->GetPathlines() && streamAtts->GetPathlinesOverrideStartingTimeFlag());
+            pathlineCMFEButtonGroup->button(0)->setEnabled(streamAtts->GetPathlines());
+            pathlineCMFEButtonGroup->button(1)->setEnabled(streamAtts->GetPathlines());
+            icButtonGroup->blockSignals(false);
             break;
-            
+        case StreamlineAttributes::ID_pathlinesOverrideStartingTimeFlag:
+            pathlineOverrideStartingTimeFlag->blockSignals(true);
+            pathlineOverrideStartingTimeFlag->setChecked(streamAtts->GetPathlinesOverrideStartingTimeFlag());
+            pathlineOverrideStartingTime->setEnabled(streamAtts->GetPathlines() && streamAtts->GetPathlinesOverrideStartingTimeFlag());
+            pathlineOverrideStartingTimeFlag->blockSignals(false);
+            break;
+        case StreamlineAttributes::ID_pathlinesOverrideStartingTime:
+            temp.setNum(streamAtts->GetPathlinesOverrideStartingTime());
+            pathlineOverrideStartingTime->setText(temp);
+            break;
+        case StreamlineAttributes::ID_pathlinesCMFE:
+            pathlineCMFEButtonGroup->blockSignals(true);
+            pathlineCMFEButtonGroup->button(streamAtts->GetPathlinesCMFE())->setChecked(true);
+            pathlineCMFEButtonGroup->blockSignals(false);
+            break;
           case StreamlineAttributes::ID_legendMinFlag:
             legendMinToggle->blockSignals(true);
             legendMinToggle->setChecked(streamAtts->GetLegendMinFlag());
@@ -2365,6 +2438,19 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetTermDistance(streamAtts->GetTermDistance());
         }
     }
+    if(which_widget == StreamlineAttributes::ID_pathlinesOverrideStartingTime || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(pathlineOverrideStartingTime, val))
+            streamAtts->SetPathlinesOverrideStartingTime(val);
+        else
+        {
+            ResettingError(tr("Pathlines Override Starting Time"),
+                DoubleToQString(streamAtts->GetPathlinesOverrideStartingTime()));
+            streamAtts->SetPathlinesOverrideStartingTime(streamAtts->GetPathlinesOverrideStartingTime());
+        }
+    }
+
 
     // Do relTol
     if(which_widget == StreamlineAttributes::ID_relTol || doAll)
@@ -3340,10 +3426,38 @@ QvisStreamlinePlotWindow::lightingFlagChanged(bool val)
 }
 
 void
-QvisStreamlinePlotWindow::pathlineFlagChanged(bool val)
+QvisStreamlinePlotWindow::icButtonGroupChanged(int val)
 {
-    streamAtts->SetPathlines(val);
-    SetUpdate(false);
+    switch( val )
+    {
+        case 0: // Streamline
+            streamAtts->SetPathlines(false);
+            break;
+        case 1: // Pathline
+            streamAtts->SetPathlines(true);
+            break;
+    }
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::pathlineOverrideStartingTimeFlagChanged(bool val)
+{
+    streamAtts->SetPathlinesOverrideStartingTimeFlag(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::pathlineOverrideStartingTimeProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_pathlinesOverrideStartingTime);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::pathlineCMFEButtonGroupChanged(int val)
+{
+    streamAtts->SetPathlinesCMFE((StreamlineAttributes::PathlinesCMFE)val);
     Apply();
 }
 

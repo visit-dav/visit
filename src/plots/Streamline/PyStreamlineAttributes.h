@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define STREAMLINEATTRIBUTES_NMETH 172
+#define STREAMLINEATTRIBUTES_NMETH 178
 void           PyStreamlineAttributes_StartUp(StreamlineAttributes *subj, void *data);
 void           PyStreamlineAttributes_CloseDown();
 PyMethodDef *  PyStreamlineAttributes_GetMethodTable(int *nMethods);

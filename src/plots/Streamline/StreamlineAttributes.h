@@ -136,6 +136,11 @@ public:
         Absolute,
         FractionOfBBox
     };
+    enum PathlinesCMFE
+    {
+        CONN_CMFE,
+        POS_CMFE
+    };
 
     // These constructors are for objects of this class
     StreamlineAttributes();
@@ -216,6 +221,9 @@ public:
     void SetMaxDomainCacheSize(int maxDomainCacheSize_);
     void SetWorkGroupSize(int workGroupSize_);
     void SetPathlines(bool pathlines_);
+    void SetPathlinesOverrideStartingTimeFlag(bool pathlinesOverrideStartingTimeFlag_);
+    void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_);
+    void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetColoringVariable(const std::string &coloringVariable_);
     void SetLegendMinFlag(bool legendMinFlag_);
     void SetLegendMaxFlag(bool legendMaxFlag_);
@@ -314,6 +322,9 @@ public:
     int                  GetMaxDomainCacheSize() const;
     int                  GetWorkGroupSize() const;
     bool                 GetPathlines() const;
+    bool                 GetPathlinesOverrideStartingTimeFlag() const;
+    double               GetPathlinesOverrideStartingTime() const;
+    PathlinesCMFE        GetPathlinesCMFE() const;
     const std::string    &GetColoringVariable() const;
           std::string    &GetColoringVariable();
     bool                 GetLegendMinFlag() const;
@@ -423,6 +434,11 @@ public:
 protected:
     static std::string SizeType_ToString(int);
 public:
+    static std::string PathlinesCMFE_ToString(PathlinesCMFE);
+    static bool PathlinesCMFE_FromString(const std::string &, PathlinesCMFE &);
+protected:
+    static std::string PathlinesCMFE_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -475,6 +491,9 @@ public:
         ID_maxDomainCacheSize,
         ID_workGroupSize,
         ID_pathlines,
+        ID_pathlinesOverrideStartingTimeFlag,
+        ID_pathlinesOverrideStartingTime,
+        ID_pathlinesCMFE,
         ID_coloringVariable,
         ID_legendMinFlag,
         ID_legendMaxFlag,
@@ -564,6 +583,9 @@ private:
     int            maxDomainCacheSize;
     int            workGroupSize;
     bool           pathlines;
+    bool           pathlinesOverrideStartingTimeFlag;
+    double         pathlinesOverrideStartingTime;
+    int            pathlinesCMFE;
     std::string    coloringVariable;
     bool           legendMinFlag;
     bool           legendMaxFlag;
@@ -615,6 +637,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibb"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdisbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibb"
 
 #endif

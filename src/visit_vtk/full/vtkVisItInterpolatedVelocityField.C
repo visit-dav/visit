@@ -126,12 +126,9 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
         debug1 <<" vtkVisItInterpolatedVelocityField::No data set to evaluate!" << endl;
         return false;
     }
-    vtkDataArray *vectors =  ds->GetPointData()->GetVectors();
-    vtkDataArray *vectors2 =  NULL;
-    if (doPathlines)
-        vectors2 = ds->GetPointData()->GetArray(nextTimeName.c_str());
 
     bool nodeCenteredVector = true;
+    vtkDataArray *vectors =  ds->GetPointData()->GetVectors();
     if (vectors == NULL)
     {
         vectors = ds->GetCellData()->GetVectors();
@@ -141,13 +138,29 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
             return false;
         }
         nodeCenteredVector = false;
-        if (doPathlines)
-            vectors2 = ds->GetCellData()->GetArray(nextTimeName.c_str());
     }
-    if (doPathlines && vectors2 == NULL)
+
+    vtkDataArray *vectors2 =  NULL;
+    if (doPathlines)
     {
-        debug1 <<" vtkVisItInterpolatedVelocityField::Can't locate vectors to interpolate" << endl;
-        return false;
+        if (nodeCenteredVector)
+        {
+            vectors2 = ds->GetPointData()->GetArray(nextTimeName.c_str());
+        }
+        else
+        {
+            vectors2 = ds->GetCellData()->GetArray(nextTimeName.c_str());
+        }
+
+        if (vectors2 == NULL)
+        {
+            debug1 <<" vtkVisItInterpolatedVelocityField::Can't locate vectors to interpolate" << endl;
+            return false;
+        }
+        if (vectors == vectors2)
+        {
+            debug1 << "vtkVisItInterpolatedVelocityField::Evaluate - Problem: The two vector fields are the same." << endl;
+        }
     }
     
     int cell = -1;

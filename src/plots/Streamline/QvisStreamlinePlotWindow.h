@@ -222,7 +222,10 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void singleColorChanged(const QColor &color);
     void legendFlagChanged(bool val);
     void lightingFlagChanged(bool val);
-    void pathlineFlagChanged(bool val);
+    void icButtonGroupChanged(int val);
+    void pathlineOverrideStartingTimeFlagChanged(bool val);
+    void pathlineOverrideStartingTimeProcessText();
+    void pathlineCMFEButtonGroupChanged(int val);
     void useWholeBoxChanged(bool val);
     void coloringVariableChanged(const QString &var);
     void opacityTypeChanged(int val);
@@ -340,7 +343,10 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *singleColorLabel;
     QCheckBox *legendFlag;
     QCheckBox *lightingFlag;
-    QCheckBox *pathlineFlag;
+    QButtonGroup *icButtonGroup;
+    QCheckBox *pathlineOverrideStartingTimeFlag;
+    QLineEdit *pathlineOverrideStartingTime;
+    QButtonGroup *pathlineCMFEButtonGroup;
     QComboBox *integrationType;
     QLabel    *slAlgoLabel;
     QComboBox *slAlgo;

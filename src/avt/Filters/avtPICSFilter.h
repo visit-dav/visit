@@ -146,7 +146,7 @@ class AVTFILTERS_API avtPICSFilter :
 
     // Methods to set the filter's attributes.
     void                      SetMaxStepLength(double len);
-    void                      SetPathlines(bool pathlines, double time0=0.0);
+    void                      SetPathlines(bool pathlines, bool overrideTime, double time0, int _pathlineCMFE);
     void                      SetIntegrationType(int algo);
     void                      SetStreamlineAlgorithm(int algo, int maxCnt,
                                                      int domainCache,
@@ -174,8 +174,9 @@ class AVTFILTERS_API avtPICSFilter :
     avtContract_p lastContract;
 
     std::vector<std::vector<double> > domainTimeIntervals;
-    std::string pathlineVar, pathlineNextTimeVar;
     bool   doPathlines;
+    bool   pathlineOverrideTime;
+    int    pathlineCMFE;
     double seedTime0;
     int    seedTimeStep0;
 
@@ -193,7 +194,10 @@ class AVTFILTERS_API avtPICSFilter :
     // Data retrieved from contract
     int activeTimeStep;
 
-    //Timings helpers.
+    // Time slice currently read and being processed
+    int curTimeSlice;
+
+    // Timings helpers.
     int                       numSeedPts, MaxID;
     int                       method;
     int                       maxCount, workGroupSz;
@@ -231,6 +235,8 @@ class AVTFILTERS_API avtPICSFilter :
                                                     = 0;
     void                      GetTerminatedIntegralCurves(vector<avtIntegralCurve *> &ics);
 
+    virtual void              GetPathlineVelocityMeshVariables(avtDataRequest_p &dataRequest, std::string &velocity, std::string &mesh);
+
     // Helper functions.
     bool                      PointInDomain(avtVector &pt, DomainType &domain);
     int                       DomainToRank(DomainType &domain);
@@ -249,7 +255,5 @@ class AVTFILTERS_API avtPICSFilter :
     friend class avtICAlgorithm;
 };
 
-
 #endif
-
 

@@ -466,7 +466,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
         break;
     }
 
-    streamlineFilter->SetPathlines(atts.GetPathlines());
+    streamlineFilter->SetPathlines(atts.GetPathlines(), atts.GetPathlinesOverrideStartingTimeFlag(), atts.GetPathlinesOverrideStartingTime(), atts.GetPathlinesCMFE());
 
     streamlineFilter->SetIntegrationType(atts.GetIntegrationType());
     streamlineFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
