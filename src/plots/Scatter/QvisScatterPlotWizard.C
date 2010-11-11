@@ -146,6 +146,8 @@ QvisScatterPlotWizard::validateCurrentPage()
 // Creation:   Wed Aug 18 16:44:47 PDT 2010
 //
 // Modifications:
+//   Cyrus Harrison, Thu Aug 19 13:28:53 PDT 2010
+//   Use color table mode if color var is selected.
 //
 // ****************************************************************************
 void
@@ -172,6 +174,7 @@ QvisScatterPlotWizard::SetScatterAttributes()
     {
         scatterAtts->SetVar4(vars[3]);
         scatterAtts->SetVar4Role(ScatterAttributes::Color);
+        scatterAtts->SetColorType(ScatterAttributes::ColorByColorTable);
     }
     else
     {
