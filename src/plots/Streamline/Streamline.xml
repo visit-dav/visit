@@ -89,6 +89,10 @@
         Absolute
         FractionOfBBox
       </Enum>
+      <Enum name="PathlinesCMFE">
+        CONN_CMFE
+        POS_CMFE
+      </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
       </Field>
@@ -189,13 +193,13 @@
         false
       </Field>
       <Field name="termDistance" label="Distance for Termination" type="double" enabler="terminateByDistance:true">
-        1.000000
+        10.000000
       </Field>
       <Field name="terminateByTime" label="Use the time criteria for termination" type="bool">
         false
       </Field>
       <Field name="termTime" label="Time Elapsed for Particle Before Termination" type="double" enabler="terminateByTime:true">
-        1.000000
+        10.000000
       </Field>
       <Field name="maxStepLength" label="maximum step length" type="double">
         0.100000
@@ -235,6 +239,15 @@
       </Field>
       <Field name="pathlines" label="Do pathlines" type="bool">
         false
+      </Field>
+      <Field name="pathlinesOverrideStartingTimeFlag" label="Override Starting Time" type="bool" enabler="pathlines:true">
+        false
+      </Field>
+      <Field name="pathlinesOverrideStartingTime" label="Starting Time" type="double" enabler="pathlines:true">
+        0.000000
+      </Field>
+      <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
+        POS_CMFE
       </Field>
       <Field name="coloringVariable" label="unnamed1" type="string">
       </Field>
@@ -346,13 +359,13 @@
         Medium
       </Field>
       <Field name="sampleDistance0" label="sampleDistance0" type="double">
-        1.000000
+        10.000000
       </Field>
       <Field name="sampleDistance1" label="sampleDistance1" type="double">
-        1.000000
+        10.000000
       </Field>
       <Field name="sampleDistance2" label="sampleDistance2" type="double">
-        1.000000
+        10.000000
       </Field>
       <Field name="fillInterior" label="fillInterior" type="bool">
         true

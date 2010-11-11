@@ -439,6 +439,28 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%spathlines = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetPathlinesOverrideStartingTimeFlag())
+        SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTimeFlag = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%spathlinesOverrideStartingTime = %g\n", prefix, atts->GetPathlinesOverrideStartingTime());
+    str += tmpStr;
+    const char *pathlinesCMFE_names = "CONN_CMFE, POS_CMFE";
+    switch (atts->GetPathlinesCMFE())
+    {
+      case StreamlineAttributes::CONN_CMFE:
+          SNPRINTF(tmpStr, 1000, "%spathlinesCMFE = %sCONN_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::POS_CMFE:
+          SNPRINTF(tmpStr, 1000, "%spathlinesCMFE = %sPOS_CMFE  # %s\n", prefix, prefix, pathlinesCMFE_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     SNPRINTF(tmpStr, 1000, "%scoloringVariable = \"%s\"\n", prefix, atts->GetColoringVariable().c_str());
     str += tmpStr;
     if(atts->GetLegendMinFlag())
@@ -2045,6 +2067,87 @@ StreamlineAttributes_GetPathlines(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+StreamlineAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the pathlinesOverrideStartingTimeFlag in the object.
+    obj->data->SetPathlinesOverrideStartingTimeFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetPathlinesOverrideStartingTimeFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the pathlinesOverrideStartingTime in the object.
+    obj->data->SetPathlinesOverrideStartingTime(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesOverrideStartingTime());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the pathlinesCMFE in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetPathlinesCMFE(StreamlineAttributes::PathlinesCMFE(ival));
+    else
+    {
+        fprintf(stderr, "An invalid pathlinesCMFE value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "CONN_CMFE, POS_CMFE.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetPathlinesCMFE()));
+    return retval;
+}
+
+/*static*/ PyObject *
 StreamlineAttributes_SetColoringVariable(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
@@ -3311,6 +3414,12 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetWorkGroupSize", StreamlineAttributes_GetWorkGroupSize, METH_VARARGS},
     {"SetPathlines", StreamlineAttributes_SetPathlines, METH_VARARGS},
     {"GetPathlines", StreamlineAttributes_GetPathlines, METH_VARARGS},
+    {"SetPathlinesOverrideStartingTimeFlag", StreamlineAttributes_SetPathlinesOverrideStartingTimeFlag, METH_VARARGS},
+    {"GetPathlinesOverrideStartingTimeFlag", StreamlineAttributes_GetPathlinesOverrideStartingTimeFlag, METH_VARARGS},
+    {"SetPathlinesOverrideStartingTime", StreamlineAttributes_SetPathlinesOverrideStartingTime, METH_VARARGS},
+    {"GetPathlinesOverrideStartingTime", StreamlineAttributes_GetPathlinesOverrideStartingTime, METH_VARARGS},
+    {"SetPathlinesCMFE", StreamlineAttributes_SetPathlinesCMFE, METH_VARARGS},
+    {"GetPathlinesCMFE", StreamlineAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetColoringVariable", StreamlineAttributes_SetColoringVariable, METH_VARARGS},
     {"GetColoringVariable", StreamlineAttributes_GetColoringVariable, METH_VARARGS},
     {"SetLegendMinFlag", StreamlineAttributes_SetLegendMinFlag, METH_VARARGS},
@@ -3567,6 +3676,17 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetWorkGroupSize(self, NULL);
     if(strcmp(name, "pathlines") == 0)
         return StreamlineAttributes_GetPathlines(self, NULL);
+    if(strcmp(name, "pathlinesOverrideStartingTimeFlag") == 0)
+        return StreamlineAttributes_GetPathlinesOverrideStartingTimeFlag(self, NULL);
+    if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
+        return StreamlineAttributes_GetPathlinesOverrideStartingTime(self, NULL);
+    if(strcmp(name, "pathlinesCMFE") == 0)
+        return StreamlineAttributes_GetPathlinesCMFE(self, NULL);
+    if(strcmp(name, "CONN_CMFE") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::CONN_CMFE));
+    if(strcmp(name, "POS_CMFE") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::POS_CMFE));
+
     if(strcmp(name, "coloringVariable") == 0)
         return StreamlineAttributes_GetColoringVariable(self, NULL);
     if(strcmp(name, "legendMinFlag") == 0)
@@ -3808,6 +3928,12 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetWorkGroupSize(self, tuple);
     else if(strcmp(name, "pathlines") == 0)
         obj = StreamlineAttributes_SetPathlines(self, tuple);
+    else if(strcmp(name, "pathlinesOverrideStartingTimeFlag") == 0)
+        obj = StreamlineAttributes_SetPathlinesOverrideStartingTimeFlag(self, tuple);
+    else if(strcmp(name, "pathlinesOverrideStartingTime") == 0)
+        obj = StreamlineAttributes_SetPathlinesOverrideStartingTime(self, tuple);
+    else if(strcmp(name, "pathlinesCMFE") == 0)
+        obj = StreamlineAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "coloringVariable") == 0)
         obj = StreamlineAttributes_SetColoringVariable(self, tuple);
     else if(strcmp(name, "legendMinFlag") == 0)

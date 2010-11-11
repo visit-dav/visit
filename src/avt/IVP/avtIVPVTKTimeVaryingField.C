@@ -40,48 +40,105 @@
 //                        avtIVPVTKTimeVaryingField.C                        //
 // ************************************************************************* //
 
-#include <ImproperUseException.h>
 #include <avtIVPVTKTimeVaryingField.h>
 #include <iostream>
-#include <vtkCell.h>
+#include <limits>
+
+#include <vtkUnsignedCharArray.h>
 #include <vtkDataSet.h>
-#include <vtkCellData.h>
-#include <vtkVisItInterpolatedVelocityField.h>
-#include <vtkDoubleArray.h>
 #include <vtkPointData.h>
+#include <vtkCellData.h>
+#include <vtkGenericCell.h>
 #include <DebugStream.h>
+
+//const char* avtIVPVTKTimeVaryingField::NextTimePrefix = "__nextTimePrefix_";
+const char* avtIVPVTKTimeVaryingField::NextTimePrefix = "__pathlineNextTimeVar__";
 
 // ****************************************************************************
 //  Method: avtIVPVTKTimeVaryingField constructor
 //
-//  Programmer:  Dave Pugmire (on behalf of Hank Childs)
-//  Creation:    Tue Feb 24 09:24:49 EST 2009
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
+//
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
 //
 // ****************************************************************************
 
-avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkVisItInterpolatedVelocityField *velocity,
-                                                      double t1,
-                                                      double t2)
+avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkDataSet* dataset, 
+                                                      avtCellLocator* locator,
+                                                      double _t0, double _t1 ) 
+    : ds(dataset), loc(locator), t0(_t0), t1(_t1)
 {
-    iv = velocity;
-    iv->Register( NULL );
-    time1 = t1;
-    time2 = t2;
-    normalized = false;
-}
+    if( ds )
+        ds->Register( NULL );
 
+    if( velData[0] = ds->GetPointData()->GetVectors() )
+    {
+        velCellBased = false;
+
+        velData[1] = 
+            ds->GetPointData()
+            ->GetArray( NextTimePrefix );
+    }
+    else if( velData[0] = ds->GetCellData()->GetVectors() )
+    {
+        velCellBased = true;
+
+        velData[1] = 
+            ds->GetCellData()
+            ->GetArray( NextTimePrefix );
+    }
+    else 
+    {
+        velData[0] = velData[1] = NULL;
+        EXCEPTION1( ImproperUseException, 
+                    "avtIVPVTKTimeVaryingField: Can't locate vectors to interpolate." );
+    }
+
+    if( velData[1] == NULL )
+    {
+        EXCEPTION1( ImproperUseException, 
+                    "avtIVPVTKTimeVaryingField: Can't locate second pair of vectors to interpolate." );
+    }
+
+    // Cache a raw pointer to the ghost zone flags
+    vtkUnsignedCharArray* ghostData = 
+        vtkUnsignedCharArray::SafeDownCast( ds->GetCellData()->GetArray( "avtGhostZones" ) );
+
+    ghostPtr = ghostData ? ghostData->GetPointer(0) : NULL;
+
+    lastCell = -1;
+    lastPos.x = lastPos.y = lastPos.z =
+        std::numeric_limits<double>::quiet_NaN();
+
+    std::fill( sclData[0], sclData[0]+256, (vtkDataArray*)NULL );
+    std::fill( sclData[1], sclData[1]+256, (vtkDataArray*)NULL );
+    std::fill( sclCellBased, sclCellBased+256, false );
+
+    sclDataName.resize( 256 );
+}
 
 // ****************************************************************************
 //  Method: avtIVPVTKTimeVaryingField destructor
 //
-//  Programmer:  Dave Pugmire (on behalf of Hank Childs)
-//  Creation:    Tue Feb 24 09:24:49 EST 2009
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
+//
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
 //
 // ****************************************************************************
 
 avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
 {
-    iv->Delete();
+    if( ds )
+        ds->Delete();
 }
 
 // ****************************************************************************
@@ -95,12 +152,15 @@ avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
 //
 //  Modifications:
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//
 // ****************************************************************************
 
 bool
 avtIVPVTKTimeVaryingField::HasGhostZones() const
 {
-    return (iv->GetDataSet()->GetCellData()->GetArray("avtGhostZones") != NULL);
+    return ghostPtr != NULL; 
 }
 
 // ****************************************************************************
@@ -114,15 +174,49 @@ avtIVPVTKTimeVaryingField::HasGhostZones() const
 //
 //  Modifications:
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//
 // ****************************************************************************
 
 void
-avtIVPVTKTimeVaryingField::GetExtents(double *extents) const
+avtIVPVTKTimeVaryingField::GetExtents( double extents[6] ) const
 {
-    iv->GetDataSet()->GetBounds(extents);
+    ds->GetBounds(extents);
 }
 
+// ****************************************************************************
+//  Method: avtIVPVTKTimeVaryingField::FindCell
+//
+//  Purpose:
+//      Find the cell containing a given position. Does nothing
+//      if this coincides with the position of the last lookup.
+//      Returns true if a cell was found, false otherwise.
+//
+//  Programmer: Christoph Garth
+//  Creation:   July 12, 2010
+//
+// ****************************************************************************
 
+bool
+avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) const
+{
+    if( pos != lastPos )
+    {
+        lastPos  = pos;
+        
+        if( -1 == (lastCell = loc->FindCell( &pos.x, &lastWeights )) )
+            return false;
+
+        if( ghostPtr && ghostPtr[lastCell] & 0xfc )
+        {
+            lastCell = -1;
+            return false;
+        }
+    }       
+
+    return lastCell != -1;
+}
 
 // ****************************************************************************
 //  Method: avtIVPVTKTimeVaryingField::operator
@@ -130,62 +224,63 @@ avtIVPVTKTimeVaryingField::GetExtents(double *extents) const
 //  Purpose:
 //      Evaluates a point location by consulting a VTK grid.
 //
-//  Programmer:  Dave Pugmire (on behalf of Hank Childs)
-//  Creation:    Tue Feb 24 09:24:49 EST 2009
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
 //
 //  Modifications:
 //
-//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//    Check time bounds and throw execption.
-//
-//    Hank Childs, Thu Apr  2 16:36:50 PDT 2009
-//    Update to use vtkVisItInterpolatedVelocityField, not 
-//    vtkInterpolatedVelocityField.
-//
-//    Hank Childs, Tue Apr  7 08:52:59 CDT 2009
-//    Use a single vtkVisItInterpolatedVelocityField, which saves on
-//    computation.
-//
-//    Hank Childs, Fri Apr 10 23:31:22 CDT 2009
-//    Put if statements in front of debug's.  The generation of strings to
-//    output to debug was doubling the total integration time.
-//
-//    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
-//    Changed interface to DebugStream to obtain current debug level.
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
 //
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//
 // ****************************************************************************
 
 avtVector
-avtIVPVTKTimeVaryingField::operator()(const double &t, const avtVector &pt) const
+avtIVPVTKTimeVaryingField::operator()( const double &t, const avtVector &p ) const
 {
-    // Check for inclusion in this time boundary.
-    if (t < time1 || t > time2)
-    {
+    if( t < t0 || t > t1 || !FindCell( t, p ) )
         throw Undefined();
-    }
 
-    // Evaluate the field at both timesteps.
-    double vec[3], param[4] = {pt.x, pt.y, pt.z, t};
-    if ( ! iv->Evaluate(param, vec, t))
+    avtVector vel( 0.0, 0.0, 0.0 );
+
+    if( velCellBased )
     {
-        throw Undefined();
-    }
-    
-    avtVector v(vec[0], vec[1], vec[2]);
+        double v0[3], v1[3];
 
-    if ( normalized )
+        velData[0]->GetTuple( lastCell, v0 );
+        velData[1]->GetTuple( lastCell, v1 );
+
+        vel.x = (t-t0)/(t1-t0) * v1[0] + (t1-t)/(t1-t0) * v0[0];
+        vel.y = (t-t0)/(t1-t0) * v1[1] + (t1-t)/(t1-t0) * v0[1];
+        vel.z = (t-t0)/(t1-t0) * v1[2] + (t1-t)/(t1-t0) * v0[2];
+    }
+    else
     {
-        double len = v.length();
-        if ( len > 0.0 )
-            v /= len;
+        double v0[3], v1[3];
+
+        for( avtInterpolationWeights::const_iterator wi=lastWeights.begin();
+             wi!=lastWeights.end(); ++wi )
+        {
+            velData[0]->GetTuple( wi->i, v0 );
+            velData[1]->GetTuple( wi->i, v1 );
+
+            v0[0] = (t-t0)/(t1-t0) * v1[0] + (t1-t)/(t1-t0) * v0[0];
+            v0[1] = (t-t0)/(t1-t0) * v1[1] + (t1-t)/(t1-t0) * v0[1];
+            v0[2] = (t-t0)/(t1-t0) * v1[2] + (t1-t)/(t1-t0) * v0[2];
+
+            vel.x += wi->w * v0[0];
+            vel.y += wi->w * v0[1];
+            vel.z += wi->w * v0[2];
+        }
     }
 
-    return v;
+    return vel;
 }
-
 
 // ****************************************************************************
 //  Method: avtIVPVTKTimeVaryingField::ComputeVorticity
@@ -193,75 +288,68 @@ avtIVPVTKTimeVaryingField::operator()(const double &t, const avtVector &pt) cons
 //  Purpose:
 //      Computes the vorticity at a point.
 //
-//  Programmer:  Dave Pugmire (on behalf of Hank Childs)
-//  Creation:    Tue Feb 24 09:24:49 EST 2009
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
 //
 //  Modifications:
 //
-//    Hank Childs, Thu Apr  2 16:36:50 PDT 2009
-//    Update to use vtkVisItInterpolatedVelocityField, not 
-//    vtkInterpolatedVelocityField.
+//    Hank Childs, Tue Aug 19 16:59:16 PDT 2008
+//    Increase the size of the "w" (weights) variable to prevent stack 
+//    overwrites.
+//
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
 //
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//    Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//    Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField, and
+//    use vtkGenericCell for thread safety.
+//
 // ****************************************************************************
 
 double
-avtIVPVTKTimeVaryingField::ComputeVorticity( const double &t, const avtVector &pt ) const
+avtIVPVTKTimeVaryingField::ComputeVorticity( const double& t, const avtVector &pt ) const
 {
-    return( 0.0 );
-//EXCEPTION0(ImproperUseException); // didn't do this.
-/*
-    avtVec y( x.dim() );
-    avtVec param = pad(x,t);
-    
-    int result = iv->Evaluate( param.values(), y.values() );
-    
-    if( !result )
-        throw Undefined();
+#if 0
+    if( velCellBased )
+        return 0.0;
 
-    vtkDataSet *ds = iv->GetDataSet();
-    vtkIdType cellID = iv->GetLastCell();
-    vtkCell *cell = ds->GetCell( cellID );
-    
-    vtkDoubleArray *cellVectors;
-    cellVectors = vtkDoubleArray::New();
-    cellVectors->SetNumberOfComponents(3);
-    cellVectors->Allocate(3*VTK_CELL_SIZE);
-        
-    vtkPointData *pd = ds->GetPointData();
-    vtkDataArray *inVectors = pd->GetVectors();
+    avtVector y = this->operator()( t, pt );
 
-    double derivs[9];
-    inVectors->GetTuples( cell->PointIds, cellVectors );
+    double ylen = y.length();
 
-    double *cellVel = cellVectors->GetPointer(0);
-    double *w = iv->GetLastWeights();
-    double *pcoords = iv->GetLastPCoords();
-    cell->Derivatives( 0, pcoords, cellVel, 3, derivs);
-    //cout<<"pcoords= "<<pcoords[0]<<" "<<pcoords[1]<<" "<<pcoords[2]<<endl;
+    if( ylen == 0.0 )
+        return 0.0;
 
-    cellVectors->Delete();
-    double vort[3];
-    vort[0] = derivs[7] - derivs[5];
-    vort[1] = derivs[2] - derivs[6];
-    vort[2] = derivs[3] - derivs[1];
-    //cout<<"id= "<<cellID<<" p= "<<x<<" ";
-    //cout<<"y= "<<y<<" ";
-    //cout<<" vort["<<vort[0]<<" "<<vort[1]<<" "<<vort[2]<<"] ";
-    double omega = 0.0;
-    
-    double len = y.length();
-    if ( len > 0.0 )
-        omega = (
-                  vort[0] * y.values()[0] + vort[1] * y.values()[1] 
-                  + vort[2] * y.values()[2]
-                ) / len;
-    //cout<<"omega= "<<omega<<endl;
+    double derivs[9], *vel = new double[3*lastWeights.size()];
 
-    return omega;
-*/
+    for( unsigned int i=0; i<lastWeights.size(); ++i )
+        velData->GetTuple( lastWeights[i].i, vel + 3*i );
+         
+    vtkGenericCell *cell = vtkGenericCell::New();
+    ds->GetCell( lastCell, cell );
+
+    {
+        double tmp1[2], pcoord[3], dist2, w[1024];
+        int subid;
+
+        cell->EvaluatePosition( (double*)&pt.x, tmp1, subid, pcoord, dist2, w );
+        cell->Derivatives( 0, pcoord, vel, 3, derivs );
+    }
+
+    delete[] vel;
+    cell->Delete();
+
+    avtVector vort( derivs[7]-derivs[5],
+                    derivs[2]-derivs[6],
+                    derivs[3]-derivs[1] );
+
+    return (vort * y) / ylen;
+#else
+    return 0.0;
+#endif
 }
 
 // ****************************************************************************
@@ -281,15 +369,120 @@ avtIVPVTKTimeVaryingField::ComputeVorticity( const double &t, const avtVector &p
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Generalize the compute scalar variable.
 //
+//   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//
 // ****************************************************************************
 
 double
-avtIVPVTKTimeVaryingField::ComputeScalarVariable(const std::string &var,
-                                                 const double &t,
+avtIVPVTKTimeVaryingField::ComputeScalarVariable(unsigned char index,
+                                                 const double& t,
                                                  const avtVector &pt) const
 {
-    return( 0.0 );
-    //EXCEPTION0(ImproperUseException); // didn't do this.
+    vtkDataArray* data0 = sclData[0][index];
+    vtkDataArray* data1 = sclData[1][index];
+
+// TODO. Not all of the scalar fields have the data from the second data set.
+// Do we want to limit our selfs, that you must have both data values?
+// Currently the color only has the one value.
+    //if( data0 == NULL || data1 == NULL )
+    if( data0 == NULL )
+        return 0.0;
+
+    if( !FindCell( t, pt ) )
+        throw Undefined();
+
+    double result = 0.0, tmp0, tmp1;
+
+    if( !sclCellBased[index] )
+    {
+        for( avtInterpolationWeights::const_iterator wi=lastWeights.begin();
+             wi!=lastWeights.end(); ++wi )
+        {
+            data0->GetTuple( wi->i, &tmp0 );
+// TODO. Look if we want this code.
+            if( data1 )
+            {
+                data1->GetTuple( wi->i, &tmp1 );
+
+                result += wi->w * ((t-t0)/(t1-t0)*tmp1 + (t1-t)/(t1-t0)*tmp0);
+            }
+            else
+            {
+                result += wi->w * tmp0;
+            }
+        }
+    }
+    else
+    {
+        data0->GetTuple( lastCell, &tmp0 );
+// TODO. Look if we want this code.
+        if( data1 )
+        {
+            data1->GetTuple( lastCell, &tmp1 );
+
+            result = (t-t0)/(t1-t0)*tmp1 + (t1-t)/(t1-t0)*tmp0;
+        }
+        else
+        {
+           result = tmp0;
+        }
+    }
+
+    return result;
+}
+
+// ****************************************************************************
+//  Method: avtIVPVTKTimeVaryingField::SetScalarVariable
+//
+//  Purpose:
+//      Set up a scalar variable for query through ComputeScalarVariable().
+//
+//  Programmer: Christoph Garth
+//  Creation:   July 13, 2010
+//
+// ****************************************************************************
+
+void
+avtIVPVTKTimeVaryingField::SetScalarVariable(unsigned char index, const std::string& name)
+{
+    vtkDataArray* data[2] = { NULL, NULL };
+    bool cellBased;
+
+    if( data[0] = ds->GetPointData()->GetScalars( name.c_str() ) )
+    {
+        cellBased = false;
+        data[1] = 
+            ds->GetPointData()->GetArray( (NextTimePrefix+name).c_str() );
+    }
+    else if( data[0] = ds->GetCellData()->GetScalars( name.c_str() ) )
+    {
+        cellBased = true;
+        data[1] = 
+            ds->GetCellData()->GetArray( (NextTimePrefix+name).c_str() );
+    }
+    else
+        EXCEPTION1( ImproperUseException, 
+                    "avtIVPVTKTimeVaryingField: Can't locate scalar \"" + name + 
+                    "\" to interpolate." );
+
+/* TODO. not sure we want all data to have a second value
+    if( data[1] == NULL )
+        EXCEPTION1( ImproperUseException, 
+                    "avtIVPVTKTimeVaryingField: Can't locate next scalar \"" + name + 
+                    "\" to interpolate." );
+*/
+
+    if( data[0]->GetNumberOfComponents() != 1 || 
+        (data[1] && data[1]->GetNumberOfComponents() != 1) )
+        EXCEPTION1( ImproperUseException,
+                    "avtIVPVTKTimeVaryingField: Given variable \"" + name +
+                    "\" is not scalar." );
+        
+    sclDataName[index] = name;
+    sclData[0][index] = data[0];
+    sclData[1][index] = data[1];
+    sclCellBased[index] = cellBased;
 }
 
 // ****************************************************************************
@@ -298,30 +491,27 @@ avtIVPVTKTimeVaryingField::ComputeScalarVariable(const std::string &var,
 //  Purpose:
 //      Determines if a point is inside a field.
 //
-//  Programmer:  Dave Pugmire (on behalf of Hank Childs)
-//  Creation:    Tue Feb 24 09:24:49 EST 2009
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
 //
 //  Modifications:
 //
-//    Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//    Check time bounds.
-//
-//    Hank Childs, Fri Apr 10 23:31:22 CDT 2009
-//    Make sure to pass time along to the VTK module, as it now uses it.
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
 //
 //    Dave Pugmire, Tue Dec  1 11:50:18 EST 2009
 //    Switch from avtVec to avtVector.
 //
+//    Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
+//    Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//
 // ****************************************************************************
 
 bool
-avtIVPVTKTimeVaryingField::IsInside( const double &t, const avtVector &pt ) const
+avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVector &pt ) const
 {
-    double vec[3], param[4] = {pt.x, pt.y, pt.z, t};
-
-    return (t >= time1 && t <= time2 && iv->Evaluate(param, vec, t));
+    return FindCell( t, pt );
 }
-
 
 // ****************************************************************************
 //  Method: avtIVPVTKTimeVaryingField::GetDimension
@@ -329,16 +519,14 @@ avtIVPVTKTimeVaryingField::IsInside( const double &t, const avtVector &pt ) cons
 //  Purpose:
 //      Gets the dimension.
 //
-//  Programmer:  Dave Pugmire (on behalf of Hank Childs)
-//  Creation:    Tue Feb 24 09:24:49 EST 2009
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
 //
 //  Modifications:
 //
-//    Hank Childs, Thu Apr  2 16:36:50 PDT 2009
-//    Update to use vtkVisItInterpolatedVelocityField, not 
-//    vtkInterpolatedVelocityField.
-//    (Hard code "3", since that is what the old implementation was doing
-//    anyways...)
+//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
+//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
+//    (The old method was just returning 0 anyways...)
 //
 // ****************************************************************************
 
@@ -354,32 +542,31 @@ avtIVPVTKTimeVaryingField::GetDimension() const
 //  Purpose:
 //      Sets field normalization.
 //
-//  Programmer:  Dave Pugmire (on behalf of Hank Childs)
-//  Creation:    Tue Feb 24 09:24:49 EST 2009
+//  Programmer: Dave Pugmire
+//  Creation:   August 6, 2008
 //
 // ****************************************************************************
 
 void
 avtIVPVTKTimeVaryingField::SetNormalized( bool v )
 {
-    normalized = v;
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::GetValidTimeRange
+//  Method: avtIVPVTKTimeVaryingField::GetTimeRange
 //
 //  Purpose:
-//      Return the time boundaries.
+//      Returns temporal extent of the field.
 //
-//  Programmer:  Dave Pugmire
-//  Creation:    Tue Mar 10 2009
+//  Programmer: Dave Pugmire
+//  Creation:   August 6, 2008
 //
 // ****************************************************************************
 
-bool
-avtIVPVTKTimeVaryingField::GetValidTimeRange(double range[]) const
+void
+avtIVPVTKTimeVaryingField::GetTimeRange( double range[2] ) const
 {
-    range[0] = time1;
-    range[1] = time2;
-    return true;
+    range[0] = t0;
+    range[1] = t1;
 }
+
