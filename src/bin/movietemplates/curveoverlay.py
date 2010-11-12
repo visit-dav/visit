@@ -42,6 +42,9 @@ def Sequence1Frames_set_timeslider(i, cbdata):
 #   Brad Whitlock, Wed Apr 16 16:45:24 PDT 2008
 #   Changed calculation of t so that it can be non-uniform.
 #
+#   Brad Whitlock, Thu Nov 11 15:21:21 PST 2010
+#   We have to DrawPlots after setting operator options now.
+#
 ###############################################################################
 
 def Sequence2Frames_clip_cb(i, cbdata):
@@ -56,6 +59,7 @@ def Sequence2Frames_clip_cb(i, cbdata):
     newX = t * (xmax - xmin) + xmin
     clip.plane1Origin = (newX, 0, 0)
     ret = SetOperatorOptions(clip)
+    DrawPlots()
     SetViewCurve(vc)
     return ret
 
@@ -130,11 +134,10 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
         annot.databaseInfoFlag = 0
         annot.legendInfoFlag = 0
         # Set the axis names
-        annot.xAxisUserTitle2D = options["XAXIS_TEXT"]
-        annot.yAxisUserTitle2D = options["YAXIS_TEXT"]
-        annot.xAxisUserTitleFlag2D = 1
-        annot.yAxisUserTitleFlag2D = 1
-
+        annot.axes2D.xAxis.title.title = options["XAXIS_TEXT"]
+        annot.axes2D.yAxis.title.title = options["YAXIS_TEXT"]
+        annot.axes2D.xAxis.title.userTitle = 1
+        annot.axes2D.yAxis.title.userTitle = 1
         SetAnnotationAttributes(annot)
 
         # Change the viewport
@@ -185,6 +188,9 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
     #   Brad Whitlock, Wed Apr 16 16:47:11 PDT 2008
     #   Pass the databaseTimes to the sequence 2 callback.
     #
+    #   Brad Whitlock, Thu Nov 11 15:25:51 PST 2010
+    #   Fix annotation function calls that were deprecated.
+    #
     ###########################################################################
 
     def Sequence2Frames(self, formats, percents):
@@ -209,6 +215,7 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
         # Get the Curve plot extents
         Query("SpatialExtents")
         extents = GetQueryOutputValue()
+        self.Debug(5, "extents=" + str(extents))
         AddOperator("Clip")
         clip = ClipAttributes()
         clip.funcType = clip.Plane
@@ -219,7 +226,8 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
         clip.plane1Normal = (1, 0, 0)
         clip.planeInverse = 0
         SetOperatorOptions(clip)
-       
+        DrawPlots()
+
         # Set the background color.
         annot = GetAnnotationAttributes()
         annot.backgroundMode = annot.Solid
@@ -229,10 +237,10 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
         annot.userInfoFlag = 0
         annot.databaseInfoFlag = 0
         annot.legendInfoFlag = 0
-        annot.xAxisLabels2D = 0
-        annot.yAxisLabels2D = 0
-        annot.xAxisTitle2D = 0
-        annot.yAxisTitle2D = 0
+        annot.axes2D.xAxis.title.visible = 0
+        annot.axes2D.yAxis.title.visible = 0
+        annot.axes2D.xAxis.label.visible = 0
+        annot.axes2D.yAxis.label.visible = 0
         SetAnnotationAttributes(annot)
 
         title = CreateAnnotationObject("Text2D")

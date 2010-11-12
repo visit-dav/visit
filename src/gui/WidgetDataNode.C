@@ -853,9 +853,9 @@ InitializeWidgetFromDataNode(QWidget *ui, DataNode *node)
                 QvisDialogLineEdit *co = (QvisDialogLineEdit *)obj;
                 co->setText(DataNodeToQString(objValues));
             }
-            else if(obj->inherits("QvisVariableButton"))
+            else if(obj->inherits("QvisBaseVariableButton"))
             {
-                QvisVariableButton *co = (QvisVariableButton *)obj;
+                QvisBaseVariableButton *co = (QvisBaseVariableButton *)obj;
                 co->setVariable(DataNodeToQString(objValues));
             }
             else
@@ -974,9 +974,9 @@ InitializeDataNodeFromWidget(QWidget *ui, DataNode *node)
                 node->RemoveNode(objectName);
                 node->AddNode(new DataNode(objectName, text.toStdString()));
             }
-            else if(obj->inherits("QvisVariableButton"))
+            else if(obj->inherits("QvisBaseVariableButton"))
             {
-                QvisVariableButton *co = (QvisVariableButton *)obj;
+                QvisBaseVariableButton *co = (QvisBaseVariableButton *)obj;
                 QString text(co->getVariable());
 
                 // Change values by deleting and inserting a node.

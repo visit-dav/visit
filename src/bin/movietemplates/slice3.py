@@ -112,6 +112,8 @@ class Slice3MovieTemplate(VisItMovieTemplate):
     # Creation:   Thu Nov 16 11:46:31 PDT 2006
     #
     # Modifications:
+    #   Brad Whitlock, Thu Nov 11 15:37:17 PST 2010
+    #   Update deprectated annotation functions.
     #
     ###########################################################################
 
@@ -139,17 +141,17 @@ class Slice3MovieTemplate(VisItMovieTemplate):
         annot.databaseInfoFlag = 0
         annot.legendInfoFlag = 0
         # Set the axis names
-        annot.xAxisUserTitle = options["XAXIS_TEXT"]
-        annot.yAxisUserTitle = options["YAXIS_TEXT"]
-        annot.zAxisUserTitle = options["ZAXIS_TEXT"]
-        annot.xAxisUserTitleFlag = 1
-        annot.yAxisUserTitleFlag = 1
-        annot.zAxisUserTitleFlag = 1
+        annot.axes3D.xAxis.title.title = options["XAXIS_TEXT"]
+        annot.axes3D.yAxis.title.title = options["YAXIS_TEXT"]
+        annot.axes3D.zAxis.title.title = options["YAXIS_TEXT"]
+        annot.axes3D.xAxis.title.userTitle = 1
+        annot.axes3D.yAxis.title.userTitle = 1
+        annot.axes3D.zAxis.title.userTitle = 1
         # Turn on axes
-        annot.bboxFlag = 1
-        annot.triadFlag = 1
-        annot.axesType = annot.ClosestTriad
-        annot.axesFlag = 1
+        annot.axes3D.bboxFlag = 1
+        annot.axes3D.triadFlag = 1
+        annot.axes3D.axesType = annot.axes3D.ClosestTriad
+        annot.axes3D.visible = 1
         SetAnnotationAttributes(annot)
 
         # Rotate the view a little.

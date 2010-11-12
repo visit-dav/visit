@@ -33,6 +33,8 @@ def Sequence1Frames_set_timeslider(i, cbdata):
 # Creation:   Thu Nov 16 11:46:31 PDT 2006
 #
 # Modifications:
+#   Brad Whitlock, Thu Nov 11 15:33:13 PST 2010
+#   We now have to DrawPlots after setting operator options.
 #
 ###############################################################################
 
@@ -46,6 +48,7 @@ def Sequence2Frames_clip_cb(i, cbdata):
     newX = t * (xmax - xmin) + xmin
     clip.plane1Origin = (newX, 0, 0)
     ret = SetOperatorOptions(clip)
+    DrawPlots()
     SetViewCurve(vc)
     return ret
 
@@ -81,6 +84,8 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
     # Creation:   Thu Nov 16 11:46:31 PDT 2006
     #
     # Modifications:
+    #   Brad Whitlock, Thu Nov 11 15:44:20 PST 2010
+    #   I fixed some deprectated annotations and made reflect work again.
     #
     ###########################################################################
 
@@ -117,11 +122,13 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
             if AddPlot("Pseudocolor", options["PLOT_VAR2"]) == 0:
                 raise self.error("The Pseudocolor plot could not be created for "
                             "sequence 1.")
-        AddOperator("Reflect", 0)
+        SetActivePlots(1)
+        AddOperator("Reflect")
         refl = ReflectAttributes()
         refl.reflections = (0,0,1,0,0,0,0,0)
         SetOperatorOptions(refl)
         DrawPlots()
+        ResetView()
 
         # If the databases are not the same then create a database correlation
         # so we can get a new time slider to use. In any case, keep track
@@ -145,11 +152,10 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
         annot.databaseInfoFlag = 0
         annot.legendInfoFlag = 0
         # Set the axis names
-        annot.xAxisUserTitle2D = options["XAXIS_TEXT"]
-        annot.yAxisUserTitle2D = options["YAXIS_TEXT"]
-        annot.xAxisUserTitleFlag2D = 1
-        annot.yAxisUserTitleFlag2D = 1
-
+        annot.axes2D.xAxis.title.title = options["XAXIS_TEXT"]
+        annot.axes2D.yAxis.title.title = options["YAXIS_TEXT"]
+        annot.axes2D.xAxis.title.userTitle = 1
+        annot.axes2D.yAxis.title.userTitle = 1
         SetAnnotationAttributes(annot)
 
         # Change the viewport
@@ -229,7 +235,8 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
         clip.plane1Normal = (1, 0, 0)
         clip.planeInverse = 0
         SetOperatorOptions(clip)
-       
+        DrawPlots()
+
         # Set the background color.
         annot = GetAnnotationAttributes()
         annot.backgroundMode = annot.Solid
@@ -239,10 +246,10 @@ class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
         annot.userInfoFlag = 0
         annot.databaseInfoFlag = 0
         annot.legendInfoFlag = 0
-        annot.xAxisLabels2D = 0
-        annot.yAxisLabels2D = 0
-        annot.xAxisTitle2D = 0
-        annot.yAxisTitle2D = 0
+        annot.axes2D.xAxis.title.visible = 0
+        annot.axes2D.yAxis.title.visible = 0
+        annot.axes2D.xAxis.label.visible = 0
+        annot.axes2D.yAxis.label.visible = 0
         SetAnnotationAttributes(annot)
 
         title = CreateAnnotationObject("Text2D")

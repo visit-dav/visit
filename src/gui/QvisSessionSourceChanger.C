@@ -137,6 +137,9 @@ QvisSessionSourceChanger::~QvisSessionSourceChanger()
 //   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Thu Nov 11 12:14:31 PST 2010
+//   Account for zero items.
+//
 // ****************************************************************************
 
 void
@@ -153,7 +156,8 @@ QvisSessionSourceChanger::setSources(const stringVector &keys,
     sourceList->clear();
     for(size_t i = 0; i < keys.size(); ++i)
         sourceList->addItem(keys[i].c_str());
-    sourceList->item(0)->setSelected(true);
+    if(sourceList->count() > 0)
+        sourceList->item(0)->setSelected(true);
     sourceList->blockSignals(false);
 
     updateControls(0);
