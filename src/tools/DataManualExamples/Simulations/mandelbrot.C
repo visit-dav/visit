@@ -533,8 +533,8 @@ int main(int argc, char **argv)
     VisItSetupEnvironment();
 
     /* Write out .sim2 file that VisIt uses to connect. */
-    VisItInitializeSocketAndDumpSimFile("amr",
-        "Demonstrates creating an AMR mesh",
+    VisItInitializeSocketAndDumpSimFile("mandelbrot",
+        "Demonstrates creating an AMR mesh of mandelbrot set",
         "/path/to/where/sim/was/started",
         NULL, NULL, NULL);
 
