@@ -850,6 +850,9 @@ static int CreateEngineAndConnectToViewer(void)
 *  Brad Whitlock, Fri Jul 25 14:41:30 PDT 2008
 *  Trace information.
 *
+*  Brad Whitlock, Fri Nov 12 23:40:23 PST 2010
+*  I added an extra layer of gethostbyname to match RemoteProcess.
+*
 *******************************************************************************/
 static int GetLocalhostName(void)
 {
@@ -866,17 +869,33 @@ static int GetLocalhostName(void)
                          "gethostname failed. return=%d", FALSE);
         return FALSE;
     }
+    LIBSIM_MESSAGE1("gethostname returned %s\n", localhostStr);
 
     LIBSIM_MESSAGE("Calling gethostbyname");
     localhostEnt = gethostbyname(localhostStr);
     if (localhostEnt == NULL)
     {
         /* Couldn't get the full host entry; it's probably invalid */
-        LIBSIM_API_LEAVE1(GetLocalhostName, 
-                         "gethostbyname failed. return %d", FALSE);
-        return FALSE;
+        LIBSIM_MESSAGE("gethostbyname failed. call gethostbyname(localhost)");
+        
+        strcpy(localhostStr, "localhost");
+        localhostEnt = gethostbyname(localhostStr);
+        if(localhostEnt != NULL)
+        {
+            sprintf(localhost, "%s", localhostEnt->h_name);
+            LIBSIM_MESSAGE1("Using return value of gethostbyname: %s", localhost);
+        }
+        else
+        {
+            LIBSIM_MESSAGE("Use \"localhost\" as the host name.");
+            strcpy(localhost, "localhost");
+        }
     }
-    sprintf(localhost, "%s", localhostEnt->h_name);
+    else
+    {
+        sprintf(localhost, "%s", localhostEnt->h_name);
+        LIBSIM_MESSAGE1("Using return value of gethostbyname: %s", localhost);
+    }
     LIBSIM_API_LEAVE1(GetLocalhostName, "return %s", localhost);
 
     return TRUE;
@@ -1554,7 +1573,7 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
                                         const char *guifile,
                                         const char *absoluteFilename)
 {
-    FILE *file;
+    FILE *file = NULL;
     LIBSIM_API_ENTER(VisItInitializeSocketAndDumpSimFile)
     LIBSIM_MESSAGE1("name=%s", name);
     LIBSIM_MESSAGE1("comment=%s", comment);
@@ -1576,6 +1595,18 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
          snprintf(simulationFileName, 255, "%s", absoluteFilename);
     }
 
+    if (!GetLocalhostName())
+    {
+        LIBSIM_API_LEAVE1(VisItInitializeSocketAndDumpSimFile, "return %d", FALSE);
+        return FALSE;
+    }
+
+    if (!StartListening())
+    {
+        LIBSIM_API_LEAVE1(VisItInitializeSocketAndDumpSimFile, "return %d", FALSE);
+        return FALSE;
+    }
+
     LIBSIM_MESSAGE1("Opening sime file %s", simulationFileName);  
     file = fopen(simulationFileName, "wt");
     if (!file)
@@ -1585,20 +1616,6 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
     }
 
     atexit(RemoveSimFile);
-
-    if (!GetLocalhostName())
-    {
-        fclose(file);
-        LIBSIM_API_LEAVE1(VisItInitializeSocketAndDumpSimFile, "return %d", FALSE);
-        return FALSE;
-    }
-
-    if (!StartListening())
-    {
-        fclose(file);
-        LIBSIM_API_LEAVE1(VisItInitializeSocketAndDumpSimFile, "return %d", FALSE);
-        return FALSE;
-    }
 
     fprintf(file, "host %s\n", localhost);
     fprintf(file, "port %d\n", listenPort);
@@ -1633,7 +1650,16 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
 *   left in during an old debugging exercise.
 *
 *******************************************************************************/
-int  VisItDetectInput(int blocking, int consoleFileDescriptor)
+
+int
+VisItDetectInput(int blocking, int consoleFileDescriptor)
+{
+    return VisItDetectInputWithTimeout(blocking, 0, consoleFileDescriptor);
+}
+
+int
+VisItDetectInputWithTimeout(int blocking, int timeoutVal,
+    int consoleFileDescriptor)
 {
    /*  RETURN CODES:
       -5: Logic error (fell through all cases)
@@ -1652,8 +1678,10 @@ int  VisItDetectInput(int blocking, int consoleFileDescriptor)
 
    fd_set readSet;
    int status = 0;
-   struct timeval ZeroTimeout = {0,0};
-   struct timeval *timeout = (blocking ? NULL : &ZeroTimeout);
+   struct timeval TimeoutValue = {0,0};
+   struct timeval *timeout = (blocking ? NULL : &TimeoutValue);
+   TimeoutValue.tv_sec = timeoutVal / 1000000;
+   TimeoutValue.tv_usec = timeoutVal - (TimeoutValue.tv_sec * 1000000);
 
    LIBSIM_API_ENTER2(VisItDetectInput, "blocking=%d, consoleFile=%d",
                      blocking, consoleFileDescriptor);

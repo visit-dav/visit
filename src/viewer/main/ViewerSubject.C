@@ -4112,13 +4112,16 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
     std::string hdb(entireDBName), host, db;
     ViewerFileServer *fs = ViewerFileServer::Instance();
     fs->ExpandDatabaseName(hdb, host, db);
-    
+    debug1 << mName << "ExpandDatabaseName(" << hdb << ") -> host=" << host
+           << ", db=" << db << endl;
 
     //
     // Get the number of time states and set that information into the
     // active animation. The mdserver will clamp the time state that it
     // uses to open the database if timeState is out of range at this point.
     //
+    debug1 << mName << "Calling GetMetaDataForState(" << host << ", " << db
+           << ", " << timeState << ", " << forcedFileType << ")" << endl;
     const avtDatabaseMetaData *md = fs->GetMetaDataForState(host, db,
                                                             timeState,
                                                             forcedFileType);
@@ -4223,6 +4226,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         //
         // Create an engine key, used to index and start engines
         //
+        debug1 << mName << "Creating engine key from host=" << host << ", sim=" << sim << endl;
         EngineKey ek(host, sim);
 
         //

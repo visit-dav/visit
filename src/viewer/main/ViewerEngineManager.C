@@ -715,6 +715,15 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
                                 int simPort,
                                 const string &simSecurityKey)
 {
+    debug1 << "ConnectSim: ek.hostname=" << ek.HostName()
+           << " ek.originalhostname=" << ek.OriginalHostName()
+           << " ek.SimName=" << ek.SimName();
+    debug1 << " args={";
+    for(int i = 0; i < args.size(); ++i)
+        debug1 << args[i] << ", ";
+    debug1 << "} simHost=" << simHost << " simPort=" << simPort
+           << " simSecurityKey=" << simSecurityKey << endl;
+
     //
     // Check if an engine already exists for the host.
     //
