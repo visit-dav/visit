@@ -285,6 +285,7 @@ int   VisItInitializeSocketAndDumpSimFile(const char *name,
  *              
  * ****************************************************************************/
 int   VisItDetectInput(int blocking, int consoledesc);
+int   VisItDetectInputWithTimeout(int blocking, int timeout_usec, int consoledesc);
 
 /******************************************************************************
  * Function: VisItAttemptToCompleteConnection

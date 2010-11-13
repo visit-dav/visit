@@ -217,6 +217,7 @@ calculate_amr(patch_t *patch, int level, int max_levels, int ratio)
 
 #define SIM_STOPPED       0
 #define SIM_RUNNING       1
+#define SIM_RUNNING_SLOW  2
 
 struct simulation_data
 {
@@ -228,6 +229,7 @@ struct simulation_data
     int     refinement_ratio;
     int     savingFiles;
     int     saveCounter;
+    bool    autoupdate;
     patch_t patch;
 };
 
@@ -242,6 +244,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->refinement_ratio = 4;
     sim->savingFiles = 0;
     sim->saveCounter = 0;
+    sim->autoupdate = false;
     patch_ctor(&sim->patch);
 }
 
@@ -251,7 +254,7 @@ simulation_data_dtor(simulation_data *sim)
     patch_dtor(&sim->patch);
 }
 
-const char *cmd_names[] = {"halt", "step", "run", "update"};
+const char *cmd_names[] = {"halt", "step", "run", "update", "toggleupdates"};
 
 /******************************************************************************
  *
@@ -303,10 +306,12 @@ simulate_one_timestep(simulation_data *sim)
     if(VisItIsConnected())
     {
         VisItTimeStepChanged();
-        if(sim->savingFiles)
-        {
+
+        if(sim->savingFiles || sim->autoupdate)
             VisItUpdatePlots();
 
+        if(sim->savingFiles)
+        {
             char filename[100];
             sprintf(filename, "amr%04d.jpg", sim->saveCounter++);
             if(VisItSaveWindow(filename, 480, 480, VISIT_IMAGEFORMAT_JPEG) == VISIT_OKAY)
@@ -329,6 +334,8 @@ simulate_one_timestep(simulation_data *sim)
  * Date:       Thu Mar 19 12:14:23 PDT 2009
  *
  * Modifications:
+ *   Brad Whitlock, Fri Nov 12 16:34:14 PST 2010
+ *   I added "toggle updates" command.
  *
  *****************************************************************************/
 
@@ -351,11 +358,17 @@ ProcessConsoleCommand(simulation_data *sim)
     if(strcmp(cmd, "quit") == 0)
         sim->done = 1;
     else if(strcmp(cmd, "halt") == 0)
+    {
         sim->runMode = SIM_STOPPED;
+        VisItTimeStepChanged();
+    }
     else if(strcmp(cmd, "step") == 0)
         simulate_one_timestep(sim);
     else if(strcmp(cmd, "run") == 0)
+    {
         sim->runMode = SIM_RUNNING;
+        VisItTimeStepChanged();
+    }
     else if(strcmp(cmd, "update") == 0)
     {
         VisItTimeStepChanged();
@@ -383,6 +396,29 @@ ProcessConsoleCommand(simulation_data *sim)
         sscanf(cmd+5+1, "%d", &ratio);
         if(ratio > 1 && ratio < 10)
             sim->refinement_ratio = ratio;
+    }
+    else if(strcmp(cmd, "toggleupdates") == 0)
+    {
+        sim->autoupdate = !sim->autoupdate;
+        if(sim->autoupdate)
+        {
+            VisItTimeStepChanged();
+            VisItUpdatePlots();
+        } 
+    }
+    else if(strcmp(cmd, "help") == 0)
+    {
+        printf("Commands:\n");
+        printf("   quit           Quit the simulation\n");
+        printf("   halt           Halt the simulation\n");
+        printf("   run            Let the simulation run\n");
+        printf("   update         Tell VisIt to update the plots with new data\n");
+        printf("   saveon         Turn on image saving\n");
+        printf("   saveoff        Turn off image saving\n");
+        printf("   reset          Reset the simulation to its initial settings\n");
+        printf("   levels num     Set the number of levels allowed for AMR\n");
+        printf("   ratio  num     Set the AMR refinement ratio\n");
+        printf("   toggleupdates  Toggle whether the sim automatically updates plots\n");
     }
 }
 
@@ -416,6 +452,15 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
         VisItTimeStepChanged();
         VisItUpdatePlots();
     }
+    else if(strcmp(cmd, "toggleupdates") == 0)
+    {
+        sim->autoupdate = !sim->autoupdate;
+        if(sim->autoupdate)
+        {
+            VisItTimeStepChanged();
+            VisItUpdatePlots();
+        }
+    }
 }
 
 void read_input_deck(void) { }
@@ -433,7 +478,7 @@ void read_input_deck(void) { }
 
 void mainloop(void)
 {
-    int blocking, visitstate, err = 0;
+    int blocking, visitstate, timeout, err = 0;
 
     // Set up some simulation data.
     simulation_data sim;
@@ -450,9 +495,10 @@ void mainloop(void)
     fflush(stderr);
     do
     {
-        blocking = (sim.runMode == SIM_RUNNING) ? 0 : 1;
+        blocking = (sim.runMode == SIM_STOPPED) ? 1 : 0;
+        timeout = (sim.runMode == SIM_RUNNING_SLOW) ? 500000 : 0;
         /* Get input from VisIt or timeout so the simulation can run. */
-        visitstate = VisItDetectInput(blocking, fileno(stdin));
+        visitstate = VisItDetectInputWithTimeout(blocking, timeout, fileno(stdin));
 
         /* Do different things depending on the output from VisItDetectInput. */
         if(visitstate >= -5 && visitstate <= -1)
@@ -470,7 +516,7 @@ void mainloop(void)
             /* VisIt is trying to connect to sim. */
             if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
-                sim.runMode = SIM_STOPPED;
+                sim.runMode = SIM_RUNNING_SLOW;
                 fprintf(stderr, "VisIt connected\n");
                 VisItSetCommandCallback(ControlCommandCallback, (void*)&sim);
 
@@ -526,7 +572,7 @@ void mainloop(void)
 
 int main(int argc, char **argv)
 {
-    VisItOpenTraceFile("amr_trace.txt");
+    VisItOpenTraceFile("mandelbrot_trace.txt");
 
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
@@ -534,7 +580,7 @@ int main(int argc, char **argv)
 
     /* Write out .sim2 file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("mandelbrot",
-        "Demonstrates creating an AMR mesh of mandelbrot set",
+        "Demonstrates creating the Mandelbrot set on an AMR mesh",
         "/path/to/where/sim/was/started",
         NULL, NULL, NULL);
 

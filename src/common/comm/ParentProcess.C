@@ -543,6 +543,12 @@ ParentProcess::GetHostName() const
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 30, 2008
 //
+//  Modifications:
+//    Brad Whitlock, Fri Nov 12 23:35:34 PST 2010
+//    I added an extra layer of gethostbyname using localhost to match what's
+//    done in parent process. This helps on machines where the returned host
+//    name is not considered to be valid.
+//
 // ****************************************************************************
 
 const std::string &
@@ -566,7 +572,11 @@ ParentProcess::GetApparentHostName()
                 }
                 else
                 {
-                    apparentHostName = std::string(localHostStr);
+                    localHostEnt = gethostbyname("localhost");
+                    if(localHostEnt != NULL)
+                        apparentHostName = std::string(localHostEnt->h_name);
+                    else
+                        apparentHostName = std::string(localHostStr);
                 }
             }
         }
