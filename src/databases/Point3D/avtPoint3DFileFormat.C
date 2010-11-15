@@ -309,6 +309,11 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Only do extra ascii checks in strict mode, and never read too many
 //    lines if we're in the mdserver, even in strict mode.
 //
+//    Eric Brugger, Mon Nov 15 14:19:32 PST 2010
+//    Corrected a bug where the last point was being ignored.  Previously,
+//    there was code to decrement the number of points read by one, but this
+//    was no longer necessary because of Jeremy's change on Jan 20, 2010.
+//
 // ****************************************************************************
 
 void
@@ -415,8 +420,6 @@ avtPoint3DFileFormat::ReadData(void)
     }
 
     int npts = var1.size();
-    // The EOF logic always seems to get an extra point. Take off the last one.
-    npts -= 1;
 
     column1 = vtkFloatArray::New();
     column1->SetNumberOfTuples(npts);
