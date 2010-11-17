@@ -48,9 +48,6 @@
 #include <avtCallback.h>
 
 #include <avtOpenGLSpreadsheetTraceRenderer.h>
-#ifdef VTK_USE_MANGLED_MESA
-#include <avtMesaSpreadsheetTraceRenderer.h>
-#endif
 
 // ****************************************************************************
 // Method: avtSpreadsheetRenderer::avtSpreadsheetRenderer
@@ -213,6 +210,10 @@ avtSpreadsheetRenderer::SetForegroundColor(const double *fg)
 //   Brad Whitlock, Wed Jun 10 14:10:34 PST 2009
 //   I made Mesa suport be conditional.
 //
+//   Kathleen Bonnell, Tue Nov 16 10:14:35 PST 2010
+//   The distinction between Mesa and OpenGL no longer exists at the plot 
+//   level.
+//
 // ****************************************************************************
 
 void
@@ -235,12 +236,7 @@ avtSpreadsheetRenderer::RenderTracePlane(vtkDataSet *ds)
     {
         if(rendererImplementation == 0)
         {
-#ifdef VTK_USE_MANGLED_MESA
-            if(avtCallback::GetSoftwareRendering())
-                rendererImplementation = new avtMesaSpreadsheetTraceRenderer;
-            else
-#endif
-                rendererImplementation = new avtOpenGLSpreadsheetTraceRenderer;
+            rendererImplementation = new avtOpenGLSpreadsheetTraceRenderer;
         }
          
         if(rendererImplementation != 0)

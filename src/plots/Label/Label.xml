@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
   <Plugin name="Label" type="plot" label="Label" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="mesh,scalar,vector,material,subset,tensor,symmetrictensor,label,array" iconFile="Label.xpm">
+    <CXXFLAGS>
+      ${GLEW_INCLUDE_DIR}
+    </CXXFLAGS>
     <Files components="V">
       avtLabelFilter.C
       avtLabelSubsetsFilter.C
       avtLabelsMapper.C
       avtLabelRenderer.C
-      avtMesaLabelRenderer.C
       avtOpenGLLabelRenderer.C
     </Files>
     <Files components="E">
@@ -13,7 +15,6 @@
       avtLabelSubsetsFilter.C
       avtLabelsMapper.C
       avtLabelRenderer.C
-      avtMesaLabelRenderer.C
       avtOpenGLLabelRenderer.C
     </Files>
     <Attribute name="LabelAttributes" purpose="This class contains the fields that we need to set the attributes for the Label plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LabelAttributes.code">
