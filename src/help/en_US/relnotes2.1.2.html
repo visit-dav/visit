@@ -17,11 +17,13 @@ bug fix release to release 2.1.1. It fixes additional bugs in release
 list of changes in release 2.1.1.</p>
 
 <p><b><font size="4">Bugs fixed in version 2.1.1</font></b></p>
-<UL>
-<LI>A bug was fixed which caused VisIt to crash if the
-<TT>GetTimeSliderNStates</TT> python function was called when there was
-no active time slider.</LI>
-</UL>
+<ul>
+<li>A bug was fixed that caused VisIt to crash if the
+<tt>GetTimeSliderNStates</tt> python function was called when there was
+no active time slider.</li>
+<li>A bug was corrected that caused a parallel compute engine started with msub or qsub to silently fail when the user started VisIt in a directory that they didn't have write permission in.</li>
+<li>A bug was corrected in the Point3D database reader that caused the last point to be ignored.</li>
+</ul>
 
 <p><b><font size="4">Enhancements in version 2.1.1</font></b></p>
 <ul>
