@@ -2126,6 +2126,9 @@ visit_GetTimeSliders(PyObject *self, PyObject *args)
 //   I added support for getting the number of states when we're in keyframing
 //   mode.
 //
+//   Tom Fogal, Tue Nov 16 17:27:48 MST 2010
+//   I provided a sensible error path if there is no time slider available.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -2138,6 +2141,12 @@ visit_TimeSliderGetNStates(PyObject *self, PyObject *args)
     // Get the number of states for the active time slider.
     //
     WindowInformation *wi = GetViewerState()->GetWindowInformation();
+    int active = wi->GetActiveTimeSlider();
+    if(-1 == active)
+    {
+        debug1 << "No active time slider!\n";
+        return PyLong_FromLong(static_cast<long>(0));
+    }
     const std::string &ts = wi->GetTimeSliders()[wi->GetActiveTimeSlider()];
     int nStates = 1;
     if(GetViewerState()->GetKeyframeAttributes()->GetEnabled() && ts == "Keyframe animation")
