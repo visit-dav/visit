@@ -677,6 +677,11 @@ $0 = shift @ARGV;
 #    parallel on aztec and inca at LLNL. I removed some unnecessary hacks
 #    for launching on some LLNL machines.
 #
+#    Eric Brugger, Wed Nov 17 12:42:30 PST 2010
+#    I added logic to redirect standard error and standard out to /dev/null
+#    for a msub or qsub job if the user does not have write permission in
+#    the directory where visit was started.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2964,6 +2969,17 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 }
             }
 
+            # Dump the standard error and standard output to /dev/null if
+            # the user does not have write permission in the current directory.
+            if (! -w $cwd)
+            {
+                print "\n                                WARNING:\n";
+                print "The directory you started VisIt in does ";
+                print "not have write permission. Using\n";
+                print "/dev/null for the batch job standard error and ";
+                print "standard output streams.\n\n";
+                push @parcmd, "-e", "/dev/null", "-o", "/dev/null";
+            }
 
             # Add the env variables.
             if (! $IsRunningOnRanger_TACC)
