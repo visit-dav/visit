@@ -59,6 +59,9 @@
 #   Brad Whitlock, Thu Sep  9 15:04:03 PDT 2010
 #   Allow .doc,.odt,.odm files to contain tabs.
 #
+#   Kathleen Bonnell, Wed Nov 17 10:02:46 PST 2010
+#   Add vendor_branches to skip list.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -99,6 +102,9 @@ while read fline; do
             continue
             ;;
         *xpm)
+            continue
+            ;;
+        */vendor_branches/*)
             continue
             ;;
     esac
