@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="Curve" type="plot" label="Curve" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="curve" iconFile="Curve.xpm">
     <CXXFLAGS>
-      -I${GLEW_INCLUDE_DIR}
+      ${GLEW_INCLUDE_DIR}
     </CXXFLAGS>
     <Files components="V">
       avtCurveFilter.C

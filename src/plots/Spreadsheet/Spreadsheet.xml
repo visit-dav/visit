@@ -1,12 +1,14 @@
 <?xml version="1.0"?>
   <Plugin name="Spreadsheet" type="plot" label="Spreadsheet" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar" iconFile="Spreadsheet.xpm">
+    <CXXFLAGS>
+      ${GLEW_INCLUDE_DIR}
+    </CXXFLAGS>
     <Files components="V">
       avtSpreadsheetFilter.C
       avtSpreadsheetRenderer.C
       avtSpreadsheetRenderer_Viewer.C
       avtSpreadsheetTraceRenderer.C
       avtOpenGLSpreadsheetTraceRenderer.C
-      avtMesaSpreadsheetTraceRenderer.C
       SpreadsheetViewer.C
       SpreadsheetCurveViewer.C
       SpreadsheetTable.C
@@ -18,7 +20,6 @@
       avtSpreadsheetRenderer_Engine.C
       avtSpreadsheetTraceRenderer.C
       avtOpenGLSpreadsheetTraceRenderer.C
-      avtMesaSpreadsheetTraceRenderer.C
     </Files>
     <Files components="VW">
       SpreadsheetViewer.h

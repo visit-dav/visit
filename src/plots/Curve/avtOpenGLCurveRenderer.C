@@ -36,11 +36,7 @@
 *
 *****************************************************************************/
 
-#ifndef avtOpenGLCurveRenderer
 #include <avtOpenGLCurveRenderer.h>
-#else
-#include <VisItInit.h>
-#endif
 
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>

@@ -97,6 +97,10 @@
 //    Add ENGINE target definition for operators if they contain 
 //    engine-specific code.
 //
+//    Kathleen Bonnell, Tue Nov 16 16:26:47 PST 2010
+//    Remove logic for mesa.  Add newline after each extraInclude for 
+//    legibility in the CMakeLists.txt files.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -166,11 +170,19 @@ class CMakeGeneratorPlugin : public Plugin
     }
 
     QString
-    ToString(const vector<QString> &vec) const
+    ToString(const vector<QString> &vec, bool withNewline=false) const
     {
         QString s;
-        for(size_t i = 0; i < vec.size(); ++i)
-            s += (ConvertDollarParenthesis(vec[i]) + " ");
+        if (withNewline)
+        {
+            for(size_t i = 0; i < vec.size(); ++i)
+                s += (ConvertDollarParenthesis(vec[i]) + "\n");
+        }
+        else 
+        {
+            for(size_t i = 0; i < vec.size(); ++i)
+                s += (ConvertDollarParenthesis(vec[i]) + " ");
+        }
         return s;
     }
 
@@ -246,10 +258,9 @@ class CMakeGeneratorPlugin : public Plugin
         out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
         out << "${VTK_INCLUDE_DIRS} " << endl;
         out << "${PYTHON_INCLUDE_PATH} " << endl;
-        out << VisItIncludeDir() << "/visitpy/visitpy ";
+        out << VisItIncludeDir() << "/visitpy/visitpy " << endl;
         if(extraIncludes.size() > 0)
-            out << ToString(extraIncludes);
-        out << endl;
+            out << ToString(extraIncludes, true);
         out << ")" << endl;
     }
 
@@ -326,12 +337,10 @@ class CMakeGeneratorPlugin : public Plugin
         out << ")" << endl;
         out << endl;
 
-        // Special rules for OpenGL and Mesa sources.
-        std::set<QString> openglFiles, mesaFiles;
+        // Special rules for OpenGL sources.
+        std::set<QString> openglFiles;
         GetFilesWith("OpenGL", customvfiles ? vfiles : defaultvfiles, openglFiles);
         GetFilesWith("OpenGL", customefiles ? efiles : defaultefiles, openglFiles);
-        GetFilesWith("Mesa", customvfiles ? vfiles : defaultvfiles, mesaFiles);
-        GetFilesWith("Mesa", customefiles ? efiles : defaultefiles, mesaFiles);
         if(openglFiles.size() > 0)
         {
             out << "IF (NOT WIN32)" << endl;
@@ -345,18 +354,6 @@ class CMakeGeneratorPlugin : public Plugin
             out << "        COMPILE_FLAGS \"-I ${OPENGL_INCLUDE_DIR}\"" << endl;
             out << "    )" << endl;
             out << "ENDIF (NOT WIN32)" << endl;
-        }
-        if(mesaFiles.size() > 0)
-        {
-            out << "SET_SOURCE_FILES_PROPERTIES(";
-            for(std::set<QString>::iterator it = mesaFiles.begin();
-                it != mesaFiles.end(); ++it)
-            {
-                 out << *it << " ";
-            }
-            out << "\n    PROPERTIES" << endl;
-            out << "    COMPILE_FLAGS \"-I ${MESA_INCLUDE_DIR}\"" << endl;
-            out << ")" << endl;
         }
 
         WriteCMake_PlotOperator_Includes(out, false);
@@ -378,7 +375,7 @@ class CMakeGeneratorPlugin : public Plugin
 #endif
 
         out << endl;
-        out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})" << endl;
+        out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})" << endl;
         out << endl;
         out << "ADD_LIBRARY(I"<<name<<"Plot ${LIBI_SOURCES})" << endl;
         out << "TARGET_LINK_LIBRARIES(I"<<name<<"Plot visitcommon)" << endl;
@@ -534,7 +531,7 @@ class CMakeGeneratorPlugin : public Plugin
 #endif
 
         out << endl;
-        out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})" << endl;
+        out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})" << endl;
         out << endl;
         out << "ADD_LIBRARY(I"<<name<<"Operator ${LIBI_SOURCES})" << endl;
         out << "TARGET_LINK_LIBRARIES(I"<<name<<"Operator visitcommon)" << endl;
@@ -695,7 +692,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "INCLUDE_DIRECTORIES(" << endl;
         out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
         if(extraIncludes.size() > 0)
-            out << ToString(extraIncludes) << endl;
+            out << ToString(extraIncludes, true) ;
         out << "${VISIT_COMMON_INCLUDES}" << endl;
         out << VisItIncludeDir() << "/avt/DBAtts/MetaData" << endl;
         out << VisItIncludeDir() << "/avt/DBAtts/SIL" << endl;

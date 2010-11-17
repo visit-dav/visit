@@ -51,9 +51,6 @@
 #include <avtLabelSubsetsFilter.h>
 
 #include <vtkToolkits.h>
-#ifdef VTK_USE_MANGLED_MESA
-#include <avtMesaLabelRenderer.h>
-#endif
 #include <avtOpenGLLabelRenderer.h>
 #include <vtkLookupTable.h>
 #include <avtUserDefinedMapper.h>
@@ -78,6 +75,10 @@
 //   Brad Whitlock, Wed Jun 10 14:03:23 PST 2009
 //   I made Mesa support be conditional.
 //
+//   Tom Fogal, Mon Aug 2 11:18:57 MDT 2010
+//   The distinction between Mesa and OpenGL no longer exists at the plot
+//   level.
+//
 // ****************************************************************************
 
 avtLabelPlot::avtLabelPlot() : avtSurfaceDataPlot()
@@ -88,12 +89,7 @@ avtLabelPlot::avtLabelPlot() : avtSurfaceDataPlot()
     normalFilter = NULL;
     labelSubsetsFilter = NULL;
 
-#ifdef VTK_USE_MANGLED_MESA
-    if (avtCallback::GetSoftwareRendering())
-        renderer = new avtMesaLabelRenderer;
-    else
-#endif
-        renderer = new avtOpenGLLabelRenderer;
+    renderer = new avtOpenGLLabelRenderer;
 
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Label");

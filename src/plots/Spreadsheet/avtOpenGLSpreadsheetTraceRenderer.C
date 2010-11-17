@@ -39,6 +39,7 @@
 
 #include <float.h>
 
+#include <avtGLEWInitializer.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
@@ -47,17 +48,6 @@
 
 #include <DebugStream.h>
 
-// Include OpenGL
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-    #if defined(_WIN32)
-       #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-  #endif
-#endif
 
 // ****************************************************************************
 // Class: avtOpenGLSpreadsheetTraceRenderer::avtOpenGLSpreadsheetTraceRenderer

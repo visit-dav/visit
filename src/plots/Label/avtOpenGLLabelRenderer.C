@@ -36,12 +36,10 @@
 *
 *****************************************************************************/
 
-#ifndef avtOpenGLLabelRenderer
 #include <avtOpenGLLabelRenderer.h>
-#else
-#include <VisItInit.h>
-#endif
 #include <arial.h>
+
+#include <avtGLEWInitializer.h>
 
 #include <vtkCamera.h>
 #include <vtkCellData.h>
@@ -58,17 +56,6 @@
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
-
-#ifndef VTK_IMPLEMENT_MESA_CXX
-  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
-    #include <OpenGL/gl.h>
-  #else
-  #if defined(_WIN32)
-    #include <windows.h>
-  #endif
-    #include <GL/gl.h>
-  #endif
-#endif
 
 #define ZBUFFER_USE_PROVIDED 0
 #define ZBUFFER_QUERY        1
@@ -570,12 +557,15 @@ avtOpenGLLabelRenderer::DrawLabel2(const double *screenPoint, const char *label)
 //   I removed the code to set the colors because I moved it into the new
 //   SetColor method.
 //
-//    Jeremy Meredith, Thu Aug 21 16:00:11 EDT 2008
-//    For 3D, only disable *testing* against the Z buffer, don't disable
-//    *writing* to the Z buffer.  This fixes SR mode compositing, as well
-//    as rendering labels with translucent geometry.
-//    Also, restore lighting and depth testing to its true old value;
-//    don't just guess.
+//   Jeremy Meredith, Thu Aug 21 16:00:11 EDT 2008
+//   For 3D, only disable *testing* against the Z buffer, don't disable
+//   *writing* to the Z buffer.  This fixes SR mode compositing, as well
+//   as rendering labels with translucent geometry.
+//   Also, restore lighting and depth testing to its true old value;
+//   don't just guess.
+//
+//   Tom Fogal, Mon Aug  2 11:35;12 MDT 2010
+//   Remove special-case mesa code.
 //
 // ****************************************************************************
 
@@ -646,12 +636,10 @@ avtOpenGLLabelRenderer::RenderLabels()
     glDisable(GL_TEXTURE_2D);
 #endif
 
-#ifdef avtOpenGLLabelRenderer
     //
-    // Free up graphics resources if using the Mesa renderer.
+    // Free up graphics resources.
     //
     ClearCharacterDisplayLists();
-#endif
 }
 
 // ****************************************************************************
@@ -1924,6 +1912,8 @@ avtOpenGLLabelRenderer::ClearZBuffer()
 // Creation:   Tue Aug 9 09:52:56 PDT 2005
 //
 // Modifications:
+//   Tom Fogal, Mon Aug  2 11:34:52 MDT 2010
+//   Replaced Mesa compile-time check with a runtime check.
 //   
 // ****************************************************************************
 
@@ -1944,78 +1934,82 @@ avtOpenGLLabelRenderer::InitializeZBuffer(bool haveNodeData,
         zBufferWidth  = VTKRen->GetVTKWindow()->GetSize()[0];
         zBufferHeight = VTKRen->GetVTKWindow()->GetSize()[1];
 
-#ifdef avtOpenGLLabelRenderer
-        // If we're using Mesa then let's just query since we already have
-        // the zbuffer in memory.
-        zBufferMode = ZBUFFER_QUERY;
-        zBuffer = 0;
-#else
-        bool readZBuffer = false;
-        if(atts.GetDepthTestMode() == LabelAttributes::LABEL_DT_ALWAYS)
+        if (VTKRen->GetVTKWindow()->IsA("vtkMesaRenderWindow"))
         {
-            readZBuffer = true;
+            // If we're using Mesa then let's just query since we already have
+            // the zbuffer in memory.
+            zBufferMode = ZBUFFER_QUERY;
+            zBuffer = 0;
         }
-        else // LABEL_DT_AUTO
+        else
         {
-            if(haveNodeData && haveCellData)
+            bool readZBuffer = false;
+            if(atts.GetDepthTestMode() == LabelAttributes::LABEL_DT_ALWAYS)
             {
-                if(input->GetNumberOfCells() + 
-                   input->GetNumberOfPoints() < ZBUFFER_QUERY_CUTOFF)
+                readZBuffer = true;
+            }
+            else // LABEL_DT_AUTO
+            {
+                if(haveNodeData && haveCellData)
                 {
-                    zBufferMode = ZBUFFER_QUERY;
-                }
-            }
-            else if(haveNodeData)
-            {
-                if(input->GetNumberOfPoints() < ZBUFFER_QUERY_CUTOFF)
-                    zBufferMode = ZBUFFER_QUERY;
-            }
-            else if(haveCellData)
-            {
-                if(input->GetNumberOfCells() < ZBUFFER_QUERY_CUTOFF)
-                    zBufferMode = ZBUFFER_QUERY;
-            }
-
-            // If we're not going to try and query the zbuffer later then
-            // read the whole thing now if we're direct.
-            if(zBufferMode == ZBUFFER_DONT_USE)
-            {
-                if(VTKRen->GetVTKWindow()->IsA("vtkRenderWindow"))
-                {
-                    vtkRenderWindow *renWin = (vtkRenderWindow*)VTKRen->GetVTKWindow();
-                    if(renWin->IsDirect())
-                        readZBuffer = true;
-                    else if(!zBufferWarningIssued)
+                    if(input->GetNumberOfCells() + 
+                       input->GetNumberOfPoints() < ZBUFFER_QUERY_CUTOFF)
                     {
-                        zBufferWarningIssued = true;
-                        avtCallback::IssueWarning("VisIt is not running on a direct "
-                           "display so the z-buffer will not be read back to aid in "
-                           "depth testing to determine which labels should not be "
-                           "drawn. If you want to enable depth testing, set the "
-                           "Label plot's depth test flag to Always.");
+                        zBufferMode = ZBUFFER_QUERY;
+                    }
+                }
+                else if(haveNodeData)
+                {
+                    if(input->GetNumberOfPoints() < ZBUFFER_QUERY_CUTOFF)
+                        zBufferMode = ZBUFFER_QUERY;
+                }
+                else if(haveCellData)
+                {
+                    if(input->GetNumberOfCells() < ZBUFFER_QUERY_CUTOFF)
+                        zBufferMode = ZBUFFER_QUERY;
+                }
+
+                // If we're not going to try and query the zbuffer later then
+                // read the whole thing now if we're direct.
+                if(zBufferMode == ZBUFFER_DONT_USE)
+                {
+                    if(VTKRen->GetVTKWindow()->IsA("vtkRenderWindow"))
+                    {
+                        vtkRenderWindow *renWin = (vtkRenderWindow*)VTKRen->GetVTKWindow();
+                        if(renWin->IsDirect())
+                            readZBuffer = true;
+                        else if(!zBufferWarningIssued)
+                        {
+                            zBufferWarningIssued = true;
+                            avtCallback::IssueWarning("VisIt is not running on "
+                                "a direct display so the z-buffer will not be "
+                                "read back to aid in depth testing to "
+                                "determine which labels should not be drawn. "
+                                "If you want to enable depth testing, set the "
+                                "Label plot's depth test flag to Always.");
+                        }
                     }
                 }
             }
-        }
 
-        // Read the z-buffer.
-        if(readZBuffer)
-        {
-            int getZ = visitTimer->StartTimer();
-            int zBufferSize = zBufferWidth * zBufferHeight;
-
-            debug4 << mName << "Allocated z-buffer" << endl;
-            zBuffer = new float[zBufferSize];
-            if(zBuffer != 0)
+            // Read the z-buffer.
+            if(readZBuffer)
             {
-                glReadPixels(0, 0, zBufferWidth, zBufferHeight,
-                             GL_DEPTH_COMPONENT, GL_FLOAT,
-                             (GLvoid*)zBuffer);
-                zBufferMode = ZBUFFER_USE_PROVIDED;
+                int getZ = visitTimer->StartTimer();
+                int zBufferSize = zBufferWidth * zBufferHeight;
+
+                debug4 << mName << "Allocated z-buffer" << endl;
+                zBuffer = new float[zBufferSize];
+                if(zBuffer != 0)
+                {
+                    glReadPixels(0, 0, zBufferWidth, zBufferHeight,
+                                 GL_DEPTH_COMPONENT, GL_FLOAT,
+                                 (GLvoid*)zBuffer);
+                    zBufferMode = ZBUFFER_USE_PROVIDED;
+                }
+                visitTimer->StopTimer(getZ, "Reading back Z-buffer");
             }
-            visitTimer->StopTimer(getZ, "Reading back Z-buffer");
         }
-#endif
  
         //
         // Set zTolerance using the projection matrix. We have to do this
