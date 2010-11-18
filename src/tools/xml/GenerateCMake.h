@@ -101,6 +101,9 @@
 //    Remove logic for mesa.  Add newline after each extraInclude for 
 //    legibility in the CMakeLists.txt files.
 //
+//    David Camp, Wed Nov 17 14:54:02 PST 2010
+//    Added the LIBS libraries to the Plot and Operators, did the samething
+//    the database code was doing. Also added the link dirs from the ldflags.
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -375,7 +378,16 @@ class CMakeGeneratorPlugin : public Plugin
 #endif
 
         out << endl;
-        out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})" << endl;
+        // Extract extra link directories from LDFLAGS if they have ${},$(),-L
+        vector<QString> linkDirs;
+        for (size_t i=0; i<ldflags.size(); i++)
+        {
+            if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))
+                 linkDirs.push_back(ldflags[i]);
+            else if(ldflags[i].startsWith("-L"))
+                 linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
+        }
+        out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} " << ToString(linkDirs) << ")" << endl;
         out << endl;
         out << "ADD_LIBRARY(I"<<name<<"Plot ${LIBI_SOURCES})" << endl;
         out << "TARGET_LINK_LIBRARIES(I"<<name<<"Plot visitcommon)" << endl;
@@ -385,10 +397,10 @@ class CMakeGeneratorPlugin : public Plugin
         out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
 
         out << "    ADD_LIBRARY(G"<<name<<"Plot ${LIBG_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(G"<<name<<"Plot visitcommon gui " << ToString(glibs) << ")" << endl;
+        out << "    TARGET_LINK_LIBRARIES(G"<<name<<"Plot visitcommon gui " << ToString(libs) << ToString(glibs) << ")" << endl;
         out << endl;
         out << "    ADD_LIBRARY(V"<<name<<"Plot ${LIBV_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(V"<<name<<"Plot visitcommon viewer "<< ToString(vlibs) << ")" << endl;
+        out << "    TARGET_LINK_LIBRARIES(V"<<name<<"Plot visitcommon viewer " << ToString(libs) << ToString(vlibs) << ")" << endl;
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<"Plot V"<<name<<"Plot)" << endl;
         out << endl;
         // libS sources
@@ -425,13 +437,13 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
 
         out << "ADD_LIBRARY(E"<<name<<"Plot_ser ${LIBE_SOURCES})" << endl;
-        out << "TARGET_LINK_LIBRARIES(E"<<name<<"Plot_ser visitcommon avtplotter_ser avtpipeline_ser "<< ToString(elibsSer) << ")" << endl;
+        out << "TARGET_LINK_LIBRARIES(E"<<name<<"Plot_ser visitcommon avtplotter_ser avtpipeline_ser " << ToString(libs) << ToString(elibsSer) << ")" << endl;
         out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Plot_ser)" << endl;
         out << "ADD_TARGET_DEFINITIONS(E"<<name<<"Plot_ser ENGINE)" << endl;
         out << endl;
         out << "IF(VISIT_PARALLEL)" << endl;
         out << "    ADD_PARALLEL_LIBRARY(E"<<name<<"Plot_par ${LIBE_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Plot_par visitcommon avtplotter_par avtpipeline_par "<< ToString(elibsPar) << ")" << endl;
+        out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Plot_par visitcommon avtplotter_par avtpipeline_par " << ToString(libs) << ToString(elibsPar) << ")" << endl;
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Plot_par)" << endl;
         out << "    ADD_TARGET_DEFINITIONS(E"<<name<<"Plot_par ENGINE)" << endl;
         out << "ENDIF(VISIT_PARALLEL)" << endl;
@@ -531,7 +543,16 @@ class CMakeGeneratorPlugin : public Plugin
 #endif
 
         out << endl;
-        out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})" << endl;
+        // Extract extra link directories from LDFLAGS if they have ${},$(),-L
+        vector<QString> linkDirs;
+        for (size_t i=0; i<ldflags.size(); i++)
+        {
+            if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))
+                 linkDirs.push_back(ldflags[i]);
+            else if(ldflags[i].startsWith("-L"))
+                 linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
+        }
+        out << "LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} " << ToString(linkDirs) << ")" << endl;
         out << endl;
         out << "ADD_LIBRARY(I"<<name<<"Operator ${LIBI_SOURCES})" << endl;
         out << "TARGET_LINK_LIBRARIES(I"<<name<<"Operator visitcommon)" << endl;
@@ -541,10 +562,10 @@ class CMakeGeneratorPlugin : public Plugin
         out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
 
         out << "    ADD_LIBRARY(G"<<name<<"Operator ${LIBG_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(G"<<name<<"Operator visitcommon gui " << ToString(glibs) << ")" << endl;
+        out << "    TARGET_LINK_LIBRARIES(G"<<name<<"Operator visitcommon gui " << ToString(libs) << ToString(glibs) << ")" << endl;
         out << endl;
         out << "    ADD_LIBRARY(V"<<name<<"Operator ${LIBV_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(V"<<name<<"Operator visitcommon viewer "<< ToString(vlibs) << ")" << endl;
+        out << "    TARGET_LINK_LIBRARIES(V"<<name<<"Operator visitcommon viewer "<< ToString(libs) << ToString(vlibs) << ")" << endl;
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<"Operator V"<<name<<"Operator)" << endl;
         out << endl;
         // libS sources
@@ -581,14 +602,14 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
 
         out << "ADD_LIBRARY(E"<<name<<"Operator_ser ${LIBE_SOURCES})" << endl;
-        out << "TARGET_LINK_LIBRARIES(E"<<name<<"Operator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser "<< ToString(elibsSer) << ")" << endl;
+        out << "TARGET_LINK_LIBRARIES(E"<<name<<"Operator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser " << ToString(libs) << ToString(elibsSer) << ")" << endl;
         out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Operator_ser)" << endl;
         if (hasEngineSpecificCode)
             out << "ADD_TARGET_DEFINITIONS(E"<<name<<"Operator_ser ENGINE)" << endl;
         out << endl;
         out << "IF(VISIT_PARALLEL)" << endl;
         out << "    ADD_PARALLEL_LIBRARY(E"<<name<<"Operator_par ${LIBE_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Operator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par "<< ToString(elibsPar) << ")" << endl;
+        out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Operator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par " << ToString(libs) << ToString(elibsPar) << ")" << endl;
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Operator_par)" << endl;
         if (hasEngineSpecificCode)
             out << "    ADD_TARGET_DEFINITIONS(E"<<name<<"Operator_par ENGINE)" << endl;
@@ -793,7 +814,7 @@ class CMakeGeneratorPlugin : public Plugin
             if (customwmfiles)
                 out << "     ${LIBM_WIN32_SOURCES}";
             out << "    )" << endl;
-            out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser "<< ToString(libs) << ToString(mlibs) << ")" << endl;
+            out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser " << ToString(libs) << ToString(mlibs) << ")" << endl;
             out << "    ADD_TARGET_DEFINITIONS(M"<<name<<"Database MDSERVER)" << endl;
             out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} M"<<name<<"Database)" << endl;
             out << "ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
@@ -805,13 +826,13 @@ class CMakeGeneratorPlugin : public Plugin
             if (customwefiles)
                 out << " ${LIBE_WIN32_SOURCES}";
             out << ")" << endl;
-            out << "TARGET_LINK_LIBRARIES(E"<<name<<"Database_ser visitcommon avtdatabase_ser avtpipeline_ser "<< ToString(libs) << ToString(elibsSer) << ")" << endl;
+            out << "TARGET_LINK_LIBRARIES(E"<<name<<"Database_ser visitcommon avtdatabase_ser avtpipeline_ser " << ToString(libs) << ToString(elibsSer) << ")" << endl;
             out << "ADD_TARGET_DEFINITIONS(E"<<name<<"Database_ser ENGINE)" << endl;
             out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Database_ser)" << endl;
             out << endl;
             out << "IF(VISIT_PARALLEL)" << endl;
             out << "    ADD_PARALLEL_LIBRARY(E"<<name<<"Database_par ${LIBE_SOURCES})" << endl;
-            out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Database_par visitcommon avtdatabase_par avtpipeline_par "<< ToString(libs) << ToString(elibsPar) << ")" << endl;
+            out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Database_par visitcommon avtdatabase_par avtpipeline_par " << ToString(libs) << ToString(elibsPar) << ")" << endl;
             out << "    ADD_TARGET_DEFINITIONS(E"<<name<<"Database_par ENGINE)" << endl;
             out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Database_par)" << endl;
             out << "ENDIF(VISIT_PARALLEL)" << endl;
