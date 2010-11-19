@@ -2128,6 +2128,7 @@ visit_GetTimeSliders(PyObject *self, PyObject *args)
 //
 //   Tom Fogal, Tue Nov 16 17:27:48 MST 2010
 //   I provided a sensible error path if there is no time slider available.
+//   Match what happens for other invalid cases.
 //
 // ****************************************************************************
 
@@ -2145,9 +2146,9 @@ visit_TimeSliderGetNStates(PyObject *self, PyObject *args)
     if(-1 == active)
     {
         debug1 << "No active time slider!\n";
-        return PyLong_FromLong(static_cast<long>(0));
+        return PyLong_FromLong(static_cast<long>(1));
     }
-    const std::string &ts = wi->GetTimeSliders()[wi->GetActiveTimeSlider()];
+    const std::string &ts = wi->GetTimeSliders()[active];
     int nStates = 1;
     if(GetViewerState()->GetKeyframeAttributes()->GetEnabled() && ts == "Keyframe animation")
         nStates = GetViewerState()->GetKeyframeAttributes()->GetNFrames();
