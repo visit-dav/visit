@@ -84,6 +84,10 @@ class avtSimulationCommandSpecification;
 //   Brad Whitlock, Wed Apr  9 11:49:49 PDT 2008
 //   QString for caption, shortName.
 //
+//   Brad Whitlock, Fri Nov 19 12:34:22 PST 2010
+//   I made more methods private and added consts. I added some other methods
+//   to help unify how we create engine keys and update information.
+//
 // ****************************************************************************
 
 class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
@@ -101,29 +105,34 @@ public:
     virtual void CreateWindowContents();
     virtual void Update(Subject *TheChangedSubject);
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
-    
-    void UpdateUIComponent(QWidget *window,avtSimulationCommandSpecification *cmd);
+
     void ConnectStatusAttributes(StatusAttributes *s);
     void SetNewMetaData(const QualifiedFilename &qf,
                         const avtDatabaseMetaData *md);
-    void SpecialWidgetUpdate(avtSimulationCommandSpecification *cmd);
-    //void setMinMaxStripChartDataDisplay (double minY, double maxY);
 private:
+    QString MakeKey(const std::string &host, const std::string &sim) const;
+    int GetEngineListIndex(const QString &key) const;
+
     void UpdateWindow(bool doAll);
-    void UpdateCustomUI(avtDatabaseMetaData *md);
-    void UpdateSimulationUI (avtDatabaseMetaData *md);
     void UpdateStatusArea();
-    void UpdateInformation(int index);
-    void UpdateInformation(const QString &key);
-    void AddStatusEntry(const QString &key);
+    void UpdateInformation();
+
+    void AddStatusEntry(const QString &key, const StatusAttributes &);
     void RemoveStatusEntry(const QString &key);
-    void UpdateStatusEntry(const QString &key);
-    void AddMetaDataEntry(const QString &key);
+    void UpdateStatusEntry(const QString &key, const StatusAttributes &);
+
+    void AddMetaDataEntry(const QString &key, const avtDatabaseMetaData &);
     void RemoveMetaDataEntry(const QString &key);
-    void UpdateMetaDataEntry(const QString &key);
-    void CreateCommandUI();
+    void UpdateMetaDataEntry(const QString &key, const avtDatabaseMetaData &);
+
     QString GetUIFileDirectory() const;
-    QString GetUIFile() const;
+    QString GetUIFile(const QString &key) const;
+    void CreateCommandUI();
+    void UpdateCustomUI(const avtDatabaseMetaData *md);
+    void UpdateSimulationUI(const avtDatabaseMetaData *md);
+    void UpdateUIComponent(QWidget *window, const avtSimulationCommandSpecification *cmd);
+    void SpecialWidgetUpdate(const avtSimulationCommandSpecification *cmd);
+
     void ViewerSendCMD ( int simIndex, QString cmd);
     QColor getColor(const QString &color) const;
 private slots:
@@ -140,7 +149,7 @@ private slots:
     void zoomOut();
     void zoomIn();
     void focus();
-    
+
 private:
     EngineList           *engines;
     StatusAttributes     *statusAtts;
