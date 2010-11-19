@@ -49,6 +49,7 @@
 #include <snprintf.h>
 
 #include <vtkUnsignedCharArray.h>
+#include <vtkFieldData.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
@@ -249,6 +250,9 @@ avtBOVFileFormat::ActivateTimestep(void)
 //    Make sure coords on the edges of domains actually abut (avoid
 //    fp errors setting them explicty).
 //
+//    Hank Childs, Fri Nov 19 09:55:22 PST 2010
+//    Add a base_index so index select will work.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -386,6 +390,15 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     x->Delete();
     y->Delete();
     z->Delete();
+
+    vtkIntArray *arr = vtkIntArray::New();
+    arr->SetNumberOfTuples(3);
+    arr->SetValue(0, x_off*bricklet_size[0]);
+    arr->SetValue(1, y_off*bricklet_size[1]);
+    arr->SetValue(2, z_off*bricklet_size[2]);
+    arr->SetName("base_index");
+    rv->GetFieldData()->AddArray(arr);
+    arr->Delete();
 
     return rv;
 }
