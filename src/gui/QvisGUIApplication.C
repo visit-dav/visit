@@ -6959,6 +6959,9 @@ QvisGUIApplication::UpdateMetaDataAttributes(Subject *subj, void *data)
 //    Jeremy Meredith, Thu Aug  7 15:39:55 EDT 2008
 //    Removed unused var.
 //
+//    Brad Whitlock, Fri Nov 19 10:18:23 PST 2010
+//    Use metadata directly when setting new metadata in sim window.
+//
 // ****************************************************************************
 
 void
@@ -7000,9 +7003,7 @@ QvisGUIApplication::HandleMetaDataUpdate()
         const QualifiedFilename &qf = fileServer->GetOpenFile();
         QvisSimulationWindow *simWin =
             (QvisSimulationWindow*)otherWindows[simWinName];
-        simWin->SetNewMetaData(qf, fileServer->GetMetaData(qf,GetStateForSource(qf),
-                                                           !FileServerList::ANY_STATE,
-                                                           !FileServerList::GET_NEW_MD));
+        simWin->SetNewMetaData(qf, GetViewerState()->GetDatabaseMetaData());
     }
 }
 
