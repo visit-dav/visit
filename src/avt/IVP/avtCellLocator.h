@@ -64,6 +64,9 @@ typedef std::vector<avtInterpolationWeight> avtInterpolationWeights;
 //    Hank Childs, Fri Oct 29 12:13:07 PDT 2010
 //    Add new data members for efficient curvilinear location.
 //
+//    Hank Childs, Fri Nov 19 14:45:53 PST 2010
+//    Add support for voxels.
+//
 // ************************************************************************* //
 
 class IVP_API avtCellLocator
@@ -93,6 +96,8 @@ protected:
     bool TestHex( vtkIdType id, const double pos[3], 
                   avtInterpolationWeights* iw ) const; 
     bool TestPrism( vtkIdType id, const double pos[3], 
+                    avtInterpolationWeights* iw ) const;
+    bool TestVoxel( vtkIdType id, const double pos[3], 
                     avtInterpolationWeights* iw ) const;
 
     vtkDataSet*    dataSet;

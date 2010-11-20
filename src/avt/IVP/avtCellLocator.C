@@ -122,6 +122,9 @@ avtCellLocator::~avtCellLocator()
 //   must be a constant whose value can be determined at compile time, or
 //   VisualStudio complains.
 //
+//   Hank Childs, Fri Nov 19 14:45:53 PST 2010
+//   Added TestVoxel.
+//
 //----------------------------------------------------------------------------
 
 bool avtCellLocator::TestCell( vtkIdType cellid, const double pos[3],
@@ -136,6 +139,8 @@ bool avtCellLocator::TestCell( vtkIdType cellid, const double pos[3],
         return TestHex( cellid, pos, weights );
     case VTK_WEDGE:
         return TestPrism( cellid, pos, weights );
+    case VTK_VOXEL:
+        return TestVoxel( cellid, pos, weights );
     default:
         break;
     }
@@ -302,6 +307,59 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
         for( int i=0; i<npts; ++i )
             dataSet->GetPoint( ids[i], pts[i] );
     }
+}
+
+bool avtCellLocator::TestVoxel( vtkIdType cellid, const double pos[3],
+                              avtInterpolationWeights* weights ) const
+{
+    vtkIdType ids[8];
+    double pts[8][3];
+
+    CopyCell( cellid, ids, pts );
+    
+    // bounding box test
+
+    if (pos[0] < pts[0][0] || pos[0] > pts[7][0])
+        return false;
+    if (pos[1] < pts[0][1] || pos[1] > pts[7][1])
+        return false;
+    if (pos[2] < pts[0][2] || pos[2] > pts[7][2])
+        return false;
+
+    double xl = pts[7][0]-pts[0][0];
+    double xp = 0.;
+    if (xl > 0.)
+        xp = (pos[0]-pts[0][0]) / xl;
+    double yl = pts[7][1]-pts[0][1];
+    double yp = 0.;
+    if (yl > 0.)
+        yp = (pos[1]-pts[0][1]) / yl;
+    double zl = pts[7][2]-pts[0][2];
+    double zp = 0.;
+    if (zl > 0.)
+        zp = (pos[2]-pts[0][2]) / zl;
+    double c[3] = { xp, yp, zp };
+
+    if( weights )
+    {
+        weights->resize( 8 );
+
+        const double d[3] = { 1.0-c[0], 1.0-c[1], 1.0-c[2] };
+
+        for( unsigned int i=0; i<8; ++i )
+            (*weights)[i].i = ids[i];
+
+        (*weights)[0].w = d[0]*d[1]*d[2];
+        (*weights)[1].w = c[0]*d[1]*d[2];
+        (*weights)[2].w = d[0]*c[1]*d[2];
+        (*weights)[3].w = c[0]*c[1]*d[2];
+        (*weights)[4].w = d[0]*d[1]*c[2];
+        (*weights)[5].w = c[0]*d[1]*c[2];
+        (*weights)[6].w = d[0]*c[1]*c[2];
+        (*weights)[7].w = c[0]*c[1]*c[2];
+    }
+
+    return true;
 }
 
 // ---------------------------------------------------------------------------
