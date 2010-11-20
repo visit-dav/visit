@@ -117,6 +117,9 @@ class QObject;
 //   Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
 //   Add argument to PopulateVariableLists for expressions from operators.
 //
+//   Brad Whitlock, Fri Nov 19 15:56:34 PST 2010
+//   I separated code into the new GetOperatorCreatedExpressions method.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -191,6 +194,9 @@ private:
     void GetRelevantExpressions(ExpressionList &newExpressionList,
                                 const avtDatabaseMetaData *md,
                                 const ExpressionList &exprList);
+    void GetOperatorCreatedExpressions(ExpressionList &newExpressionList,
+                                       const avtDatabaseMetaData *md,
+                                       OperatorPluginManager *oPm);
     void ClearGroupingInfo();
 
     // Keep track of the name of the database for which we have variables.

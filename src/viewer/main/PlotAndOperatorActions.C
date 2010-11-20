@@ -906,6 +906,10 @@ AddPlotAction::~AddPlotAction()
 //   Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
 //   Put expressions from operators into the pipeline.
 //
+//   Brad Whitlock, Fri Nov 19 15:05:34 PST 2010
+//   I changed the code so it deletes and recreates the menu since clearing
+//   it did not free memory.
+//
 // ****************************************************************************
 
 void
@@ -950,7 +954,9 @@ AddPlotAction::Update()
                 bool menuEnabled = false;
                 for(int i = 0; i < pluginEntries.size(); ++i)
                 {
-                    pluginEntries[i].varMenu->clear();
+                    DeletePlotMenu(i);
+                    CreatePlotMenu(i);
+
                     int varCount = menuPopulator.UpdateSingleVariableMenu(
                         pluginEntries[i].varMenu,
                         pluginEntries[i].varTypes, this, 
@@ -1054,6 +1060,62 @@ AddPlotAction::ChoiceEnabled(int i) const
 }
 
 // ****************************************************************************
+// Method: AddPlotAction::CreatePlotMenu
+//
+// Purpose: 
+//   This method creates the i'th plot menu.
+//
+// Arguments:
+//   i : The index of the plot menu we're creating.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 19 15:09:34 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddPlotAction::CreatePlotMenu(int i)
+{
+    // Create the menu for the plot.
+    pluginEntries[i].varMenu = new QvisVariablePopupMenu(i, 0);
+    pluginEntries[i].varMenu->setIcon(children[i]->icon());
+    pluginEntries[i].varMenu->setTitle(children[i]->text());
+    connect(pluginEntries[i].varMenu, SIGNAL(activated(int, const QString &)),
+            this, SLOT(addPlot(int, const QString &)));
+
+    // Set the variable menu into the action
+    children[i]->setMenu(pluginEntries[i].varMenu);
+}
+
+// ****************************************************************************
+// Method: AddPlotAction::DeletePlotMenu
+//
+// Purpose: 
+//   This method deletes the i'th plot menu.
+//
+// Arguments:
+//   i : The index of the plot menu we're deleting.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 19 15:09:34 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AddPlotAction::DeletePlotMenu(int i)
+{
+    if(pluginEntries[i].varMenu != 0)
+    {
+        delete pluginEntries[i].varMenu;
+        pluginEntries[i].varMenu = 0;
+    }
+}
+
+// ****************************************************************************
 // Method: AddPlotAction::ConstructMenu
 //
 // Purpose: 
@@ -1080,14 +1142,7 @@ AddPlotAction::ConstructMenu(QMenu *menu)
     for(int i = 0; i < pluginEntries.size(); ++i)
     {
         // Create the menu for the plot.
-        pluginEntries[i].varMenu = new QvisVariablePopupMenu(i, 0);
-        pluginEntries[i].varMenu->setIcon(children[i]->icon());
-        pluginEntries[i].varMenu->setTitle(children[i]->text());
-        connect(pluginEntries[i].varMenu, SIGNAL(activated(int, const QString &)),
-            this, SLOT(addPlot(int, const QString &)));
-
-        // Set the variable menu into the action
-        children[i]->setMenu(pluginEntries[i].varMenu);
+        CreatePlotMenu(i);
 
         // Add the action into the actionMenu
         actionMenu->addAction(children[i]);
