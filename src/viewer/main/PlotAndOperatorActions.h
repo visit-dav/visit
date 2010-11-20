@@ -239,6 +239,9 @@ public:
 //   Brad Whitlock, Thu May 29 16:42:43 PDT 2008
 //   Removed menu and a slot.
 //
+//   Brad Whitlock, Fri Nov 19 15:05:34 PST 2010
+//   I added CreatePlotMenu and DeletePlotMenu.
+//
 // ****************************************************************************
 
 class AddPlotAction : public ViewerMultipleAction
@@ -269,6 +272,8 @@ private slots:
     void addPlot(int, const QString &);
     void changeMenuIconSize(bool);
 private:
+    void CreatePlotMenu(int);
+    void DeletePlotMenu(int);
     int                   maxPixmapWidth, maxPixmapHeight;
     PluginEntryVector     pluginEntries;
     VariableMenuPopulator menuPopulator;

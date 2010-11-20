@@ -53,7 +53,7 @@
 #include <QObject>
 
 #include <set>
-
+#include <DebugStream.h>
 //#define DEBUG_PRINT
 #ifdef DEBUG_PRINT
 #include <DebugStream.h>
@@ -332,6 +332,10 @@ VariableMenuPopulator::ClearGroupingInfo()
 //    Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
 //    Add operator variables to the variable list.
 //
+//    Brad Whitlock, Fri Nov 19 16:00:34 PST 2010
+//    I changed the code to recover the better caching behavior we had prior
+//    to operator expressions.
+//
 // ****************************************************************************
 
 bool
@@ -350,9 +354,11 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     // a database that is not the database specified by dbName. To combat
     // this problem, we only use the user-defined expressions from the
     // passed in exprList and we supplement it with any database expressions
-    // that are contained in the metadata md.
+    // that are contained in the metadata md. We also separately add expressions
+    // that are defined by operator plugins.
     ExpressionList newExpressionList;
     GetRelevantExpressions(newExpressionList, md, *exprList);
+    GetOperatorCreatedExpressions(newExpressionList, md, oPM);
     visitTimer->StopTimer(id, "GetRelevantExpressions");
 
     //
@@ -367,6 +373,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     if(dbName == cachedDBName && expressionsSame && !variableMetaData &&
        !treatAllDBsAsTimeVarying)
     {
+        debug5 << "PopulateVariableLists: early return. update required = false" << endl;
         visitTimer->StopTimer(total, mName);
         return false;
     }
@@ -412,10 +419,6 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     ClearGroupingInfo();
     visitTimer->StopTimer(id, "Clearing vectors and grouping info");
 
-    ExpressionList *fromOperators;
-    ExpressionList *adder = ParsingExprList::Instance()->GetList();
-    bool needExpr;
-
     // Do stuff with the metadata
     id = visitTimer->StartTimer(); 
     int i;
@@ -423,36 +426,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     {
         const avtMeshMetaData &mmd = md->GetMeshes(i);
         if (!mmd.hideFromGUI)
-        {
             meshVars.AddVariable(mmd.name, mmd.validVariable);
-            if(oPM != NULL)
-            {
-                for(int j = 0; j < oPM->GetNEnabledPlugins(); j++)
-                {
-                    std::string id(oPM->GetEnabledID(j));
-                    CommonOperatorPluginInfo *ComInfo = oPM->GetCommonPluginInfo(id);
-                    fromOperators = ComInfo->GetCreatedExpressions(mmd.name.c_str());
-                    if(fromOperators != NULL)
-                    {
-                        for(int k = 0; k < fromOperators->GetNumExpressions(); k++)
-                        {
-                            needExpr = true;
-                            const Expression &expr = fromOperators->GetExpressions(k);
-                            for(int l = 0; l < adder->GetNumExpressions(); l++)
-                                if(expr.GetName() == adder->GetExpressions(l).GetName())
-                                    needExpr = false;
-                            if(needExpr)
-                            {
-                                Expression *e = new Expression(expr);
-                                adder->AddExpressions(*e);
-                                delete(e);
-                            }
-                            cachedExpressionList.AddExpressions(expr);
-                        }
-                    }
-                }
-            }
-       }
     }
     if (md->GetUseCatchAllMesh())
     {
@@ -627,6 +601,8 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
 
     visitTimer->StopTimer(id, "Adding expressions");
     visitTimer->StopTimer(total, mName);
+    debug5 << "PopulateVariableLists: update required: "
+           << (populationWillCauseUpdate?"true":"false") << endl;
 
     return populationWillCauseUpdate;
 }
@@ -720,7 +696,9 @@ VariableMenuPopulator::AddExpression(const Expression &expr)
 // Creation:   Fri Feb 18 11:36:26 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Nov 19 15:48:34 PST 2010
+//   Exclude the operator-produced expressions from the user-defined list.
+//
 // ****************************************************************************
 
 void
@@ -733,7 +711,7 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
     for(i = 0; i < exprList.GetNumExpressions(); ++i)
     {
         const Expression &e = exprList[i];
-        if(!e.GetHidden() && !e.GetFromDB())
+        if(!e.GetHidden() && !e.GetFromDB() && !e.GetFromOperator())
             newExpressionList.AddExpressions(e);
     }
 
@@ -743,6 +721,72 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
         const Expression *e = md->GetExpression(i);
         if(e != 0 && !e->GetHidden())
             newExpressionList.AddExpressions(*e);
+    }
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::GetOperatorCreatedExpressions
+//
+// Purpose: 
+//   Gets the list of operator-created expressions that come on meshes declared
+//   in the metadata.
+//
+// Arguments:
+//   newExpressionList : The new expression list.
+//   md                : The metadata that we're searching for expressions.
+//   oPM               : The operator plugin manager.
+//
+// Programmer: Rob Sisneros & Brad Whitlock
+// Creation:   Fri Nov 19 15:56:34 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VariableMenuPopulator::GetOperatorCreatedExpressions(ExpressionList &newExpressionList,
+    const avtDatabaseMetaData *md, OperatorPluginManager *oPM)
+{
+    if(oPM == NULL || md == NULL)
+        return;
+
+    // Iterate over the meshes in the metadata and add operator-created expressions
+    // for each relevant mesh.
+    for (int i = 0; i < md->GetNumMeshes(); ++i)
+    {
+        const avtMeshMetaData &mmd = md->GetMeshes(i);
+        if (!mmd.hideFromGUI)
+        {
+            for(int j = 0; j < oPM->GetNEnabledPlugins(); j++)
+            {
+                std::string id(oPM->GetEnabledID(j));
+                CommonOperatorPluginInfo *ComInfo = oPM->GetCommonPluginInfo(id);
+                ExpressionList *fromOperators = ComInfo->GetCreatedExpressions(mmd.name.c_str());
+                if(fromOperators != NULL)
+                {
+                    for(int k = 0; k < fromOperators->GetNumExpressions(); k++)
+                    {
+                        const Expression &opExpr = fromOperators->GetExpressions(k);
+                        newExpressionList.AddExpressions(opExpr);
+
+                        // Now, since the operator created the expression, it's
+                        // entirely possible that the expression has not made it
+                        // into the expression list yet. So, as a side effect let's
+                        // add the expression into the list if it's not already there.
+                        ExpressionList *globalExpr = ParsingExprList::Instance()->GetList();
+                        Expression *e = globalExpr->operator[](opExpr.GetName().c_str());
+                        if(e == 0)
+                        {
+                            debug1 << "GetOperatorCreatedExpressions: Adding "
+                                      "operator-created expression " << opExpr.GetName()
+                                   << " to the global expression list." << endl;
+                            globalExpr->AddExpressions(opExpr);
+                        }
+                    }
+                    delete fromOperators;
+                }
+            }
+        }
     }
 }
 
