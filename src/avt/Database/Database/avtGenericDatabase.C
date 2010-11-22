@@ -478,6 +478,13 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    domains could be read in double precision before any one domain is
 //    converted to float) to inside ReadDataset. Doh! Why didn't I think
 //    of that before.
+//
+//    Hank Childs, Mon Nov 22 10:47:22 PST 2010
+//    Call PopulateDataObjectInfo at the beginning of the method as well ...
+//    this makes sure the variable list is up-to-date when we calculate
+//    extents ... and this extents calculation happens before the PopDBObjInfo
+//    at the end.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -486,7 +493,17 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 {
     int timerHandle = visitTimer->StartTimer();
     int timeStep = spec->GetTimestep();
+    avtDataObject_p dob = src->GetOutput();
     avtDatabaseMetaData *md = GetMetaData(timeStep);
+
+    //
+    // We call PopDataObjInfo twice in this method.  This time we do it so 
+    // that the variable list can be updated.  We need that so that MergeExtents
+    // will be right.
+    //
+    vector<bool> dummy;
+    PopulateDataObjectInformation(dob, spec->GetVariable(), timeStep, 
+                                  dummy, spec);
 
     UpdateInternalState(timeStep);
 
@@ -808,7 +825,6 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     // like may have changed slightly (we may have decided it had ghost zones
     // for example), so call this again.
     //
-    avtDataObject_p dob = src->GetOutput();
     if (nDomains == 0)
         dob->GetInfo().GetValidity().SetHasEverOwnedAnyDomain(false);
     if (didSimplifiedNesting)

@@ -789,6 +789,10 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
 //    Be more aggressive in setting back extents.  Also set it correctly
 //    with the input ... not with the output (wrong).
 //
+//    Hank Childs, Sun Nov 21 12:14:19 PST 2010
+//    Allow for input extents to be used in more cases for non-active 
+//    variables.
+//
 // ****************************************************************************
 
 void
@@ -804,13 +808,23 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
 
     bool hadThemAlready = false;
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    if (varname == NULL || 
-        (atts.ValidActiveVariable() && atts.GetVariableName() == varname))
+    bool checkExtents = false;
+    if (varname != NULL)
     {
-        avtExtents *exts = atts.GetThisProcsOriginalDataExtents();
+        if (atts.ValidVariable(varname))
+            checkExtents = true;
+    }
+    else
+    {
+        if (atts.ValidActiveVariable())
+            checkExtents = true;
+    }
+    if (checkExtents)
+    {
+        avtExtents *exts = atts.GetThisProcsOriginalDataExtents(varname);
         if (exts->HasExtents())
         {
-            atts.GetThisProcsOriginalDataExtents()->CopyTo(outexts);
+            atts.GetThisProcsOriginalDataExtents(varname)->CopyTo(outexts);
             hadThemAlready = true;
         }
     }

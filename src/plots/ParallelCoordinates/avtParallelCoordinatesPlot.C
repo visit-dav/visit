@@ -445,6 +445,9 @@ avtParallelCoordinatesPlot::CustomizeMapper(avtDataObjectInformation &info)
 //    Renamed orderedAxisNames to scalarAxisNames to distinguish these
 //    as names of actual scalars instead of just display names.
 //
+//    Hank Childs, Wed Nov 17 17:19:34 PST 2010
+//    Calculate the extents of secondary variables.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -518,7 +521,8 @@ avtParallelCoordinatesPlot::EnhanceSpecification(avtContract_p in_spec)
 
         if (curSecVNum >= curSecondaryVars.size())
         {
-          outSpec->GetDataRequest()->AddSecondaryVariable(needSecondaryVar);
+            outSpec->GetDataRequest()->AddSecondaryVariable(needSecondaryVar);
+            outSpec->SetCalculateVariableExtents(needSecondaryVar, true);
         }
     }
 
@@ -535,7 +539,7 @@ avtParallelCoordinatesPlot::EnhanceSpecification(avtContract_p in_spec)
 
         if (needSecVNum >= needSecondaryVars.size())
         {
-          outSpec->GetDataRequest()->RemoveSecondaryVariable(curSecondaryVar);
+            outSpec->GetDataRequest()->RemoveSecondaryVariable(curSecondaryVar);
         }
     }
 
