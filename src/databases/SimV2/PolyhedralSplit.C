@@ -177,6 +177,9 @@ PolyhedralSplit::AppendPolyhedralNode(int id)
 //   for figuring out the new nodal values for new polyhedral nodes so we can
 //   use the dominant value. This lets us handle nodal material data.
 //
+//   Brad Whitlock, Mon Nov 22 14:14:16 PST 2010
+//   Set the component count so it works on vector data too.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -201,6 +204,7 @@ PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent,
        
         for(int i = 1; i < polyhedralSplit.size(); i += 2)
            bloat += (polyhedralSplit[i] - 1);
+        output->SetNumberOfComponents(input->GetNumberOfComponents());
         output->SetNumberOfTuples(input->GetNumberOfTuples() + bloat);
         output->SetName(input->GetName());
 
@@ -225,6 +229,7 @@ PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent,
     else
     {
         output = input->NewInstance();
+        output->SetNumberOfComponents(input->GetNumberOfComponents());
         output->SetNumberOfTuples(input->GetNumberOfTuples() + polyhedralCellCount);
         output->SetName(input->GetName());
         // Copy all of the original node data
