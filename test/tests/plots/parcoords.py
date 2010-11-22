@@ -26,6 +26,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Hank Childs, Mon Nov 22 11:12:28 PST 2010
+#    Add tests that include the Threshold operator, which test whether or not
+#    extents are maintained.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -152,5 +157,36 @@ Test("parcoords_11")
 p.unifyAxisExtents = 1
 SetPlotOptions(p)
 Test("parcoords_12")
+
+DeleteAllPlots()
+ActivateDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+AddPlot("ParallelCoordinates", "hardyglobal")
+p = ParallelCoordinatesAttributes()
+p.scalarAxisNames = ("hardyglobal", "shepardglobal")
+p.visualAxisNames = p.scalarAxisNames # unnecessary, but strictly correct
+p.extentMinima = (-1e+37, -1e+37)
+p.extentMaxima = (+1e+37, +1e+37)
+p.drawFocusAs = p.IndividualLines
+p.drawContext = 0
+p.drawLinesOnlyIfExtentsOn = 0
+SetPlotOptions(p)
+DefineScalarExpression("zoneid", "zoneid(Mesh)")
+AddOperator("Threshold")
+t = ThresholdAttributes()
+t.listedVarNames = ("zoneid")
+t.zonePortions = (1)
+t.lowerBounds = (100000.5)
+t.upperBounds = (100001.5)
+t.defaultVarName = "hardyglobal"
+t.defaultVarIsScalar = 1
+SetOperatorOptions(t)
+DrawPlots()
+ResetView()
+Test("parcoords_13")
+
+# Now have multiple cells
+t.upperBounds = (100005.5)
+SetOperatorOptions(t)
+Test("parcoords_14")
 
 Exit()
