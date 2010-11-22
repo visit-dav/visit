@@ -146,11 +146,13 @@ avtStreamlineInfoQuery::PostExecute()
         {
             if (counts[i] > 0)
             {
-                std::vector<float> vals;
-                vals.resize(counts[i]);
+                float *vals = new float[counts[i]];
                 void *ptr = (void *)&vals[0];
                 MPI_Recv(ptr, counts[i], MPI_FLOAT, i, tag, VISIT_MPI_COMM, &stat);
-                slData.insert(slData.begin(), vals.begin(), vals.end());
+
+                for (int j = 0; j < counts[i]; j++)
+                    slData.push_back(vals[j]);
+                delete [] vals;
             }
         }
     }
