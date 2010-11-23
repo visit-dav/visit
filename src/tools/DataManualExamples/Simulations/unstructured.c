@@ -149,6 +149,7 @@ void simulate_one_timestep(simulation_data *sim)
     sim->time += 0.0134;
     printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
     sleep(1);
+    VisItTimeStepChanged();
 }
 
 /******************************************************************************
@@ -334,9 +335,9 @@ SimGetMetaData(void *cbdata)
 }
 
 /* Global variables. */
-float umx[] = {0.,2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,1.,2.,4.,4.};
-float umy[] = {0.,0.,0.,0.,2.,2.,2.,2.,4.,4.,4.,4.,6.,0.,0.,0.};
-float umz[] = {2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,0.,1.,4.,2.,0.};
+double umx[] = {0.,2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,1.,2.,4.,4.};
+double umy[] = {0.,0.,0.,0.,2.,2.,2.,2.,4.,4.,4.,4.,6.,0.,0.,0.};
+double umz[] = {2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,0.,1.,4.,2.,0.};
 /* Connectivity */
 int connectivity[] = {
     VISIT_CELL_HEX,   0,1,2,3,4,5,6,7,    /* hex,     zone 1 */
@@ -374,9 +375,9 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             VisIt_VariableData_alloc(&x);
             VisIt_VariableData_alloc(&y);
             VisIt_VariableData_alloc(&z);
-            VisIt_VariableData_setDataF(x, VISIT_OWNER_SIM, 1, umnnodes, umx);
-            VisIt_VariableData_setDataF(y, VISIT_OWNER_SIM, 1, umnnodes, umy);
-            VisIt_VariableData_setDataF(z, VISIT_OWNER_SIM, 1, umnnodes, umz);
+            VisIt_VariableData_setDataD(x, VISIT_OWNER_SIM, 1, umnnodes, umx);
+            VisIt_VariableData_setDataD(y, VISIT_OWNER_SIM, 1, umnnodes, umy);
+            VisIt_VariableData_setDataD(z, VISIT_OWNER_SIM, 1, umnnodes, umz);
 
             VisIt_VariableData_alloc(&conn);
             VisIt_VariableData_setDataI(conn, VISIT_OWNER_SIM, 1, 
