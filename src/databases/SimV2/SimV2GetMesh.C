@@ -214,7 +214,9 @@ GetQuadGhostZones(int nnodes, int ndims,
 // Creation:   Thu Feb 25 11:14:01 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Nov 22 16:46:15 PST 2010
+//   Fix cut & paste error that caused z coordinates to be zero for doubles.
+//
 // ****************************************************************************
 
 static vtkPoints *
@@ -316,11 +318,12 @@ SimV2_CreatePoints(int ndims, int coordMode,
                 double *dest = (double *)points->GetVoidPointer(0);
                 double *x_src = (double*)data[0];
                 double *y_src = (double*)data[1];
+                double *z_src = (double*)data[2];
                 for(int i = 0; i < nTuples; ++i)
                 {
                     *dest++ = *x_src++;
                     *dest++ = *y_src++;
-                    *dest++ = 0.;
+                    *dest++ = *z_src++;
                 }
             }
             else
