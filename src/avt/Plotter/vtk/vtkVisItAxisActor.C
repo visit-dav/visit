@@ -430,6 +430,9 @@ int vtkVisItAxisActor::RenderOpaqueGeometry(vtkViewport *viewport)
 //   Eric Brugger, Tue Oct 21 12:02:53 PDT 2008
 //   Added support for specifying tick mark locations.
 //
+//   Kathleen Bonnell, Wed Nov 24 11:08:03 PST 2010
+//   Fix minor memory leak with NewTitleProperty.
+// 
 // **************************************************************************
 
 void vtkVisItAxisActor::BuildAxis(vtkViewport *viewport, bool force)
@@ -466,8 +469,10 @@ void vtkVisItAxisActor::BuildAxis(vtkViewport *viewport, bool force)
       this->TitleTextProperty->GetMTime() > this->BuildTime.GetMTime()
       )
     {
-    this->TitleActor->SetProperty(this->NewTitleProperty());
+    vtkProperty *newProp = this->NewTitleProperty();
+    this->TitleActor->SetProperty(newProp);
     this->AxisActor->SetProperty(this->GetProperty());
+    newProp->Delete();
     }
 
   //
@@ -534,6 +539,9 @@ void vtkVisItAxisActor::BuildAxis(vtkViewport *viewport, bool force)
 //   Eric Brugger, Tue Oct 21 12:02:53 PDT 2008
 //   Added support for specifying tick mark locations.
 //
+//   Kathleen Bonnell, Wed Nov 24 11:10:51 PST 2010
+//   Fixed minor memory leak due to use of NewLabelProperty.
+//
 // ****************************************************************
 
 void
@@ -548,6 +556,8 @@ vtkVisItAxisActor::BuildLabels(vtkViewport *viewport, bool force)
     this->LabelActors[i]->SetCamera(this->Camera);
     this->LabelActors[i]->SetProperty(newProp);
     }
+
+  newProp->Delete();
 
   if (force || this->BuildTime.GetMTime() <  this->BoundsTime.GetMTime() || 
       this->LastAxisPosition != this->AxisPosition ||
@@ -1314,6 +1324,9 @@ void vtkVisItAxisActor::GetBounds(double b[6])
 //   Brad Whitlock, Wed Mar 26 16:28:24 PDT 2008
 //   Changed to a new property created by NewLabelProperty.
 //
+//   Kathleen Bonnell, Wed Nov 24 11:11:25 PST 2010
+//   Fixed minor memory leak due to use of NewLabelProperty.
+//
 // *********************************************************************
 
 double
@@ -1339,6 +1352,7 @@ vtkVisItAxisActor::ComputeMaxLabelLength(const double center[3])
     this->LabelActors[i]->SetPosition(pos);
     this->LabelActors[i]->SetScale(scale);
     }
+  newProp->Delete();
   return maxLength;
 }
 
@@ -1365,6 +1379,9 @@ vtkVisItAxisActor::ComputeMaxLabelLength(const double center[3])
 //   Brad Whitlock, Wed Mar 26 16:28:24 PDT 2008
 //   Changed to a new property created by NewTitleProperty.
 //
+//   Kathleen Bonnell, Wed Nov 24 11:09:39 PST 2010
+//   Fix minor memory leak due to use of NewTitleProperty.
+//
 // *********************************************************************
 
 double
@@ -1375,7 +1392,9 @@ vtkVisItAxisActor::ComputeTitleLength(const double center[3])
   scale = this->TitleActor->GetScale()[0];
   this->TitleVector->SetText(this->Title);
   this->TitleActor->SetCamera(this->Camera);
-  this->TitleActor->SetProperty(this->NewTitleProperty());
+  vtkProperty *newProp = this->NewTitleProperty();
+  this->TitleActor->SetProperty(newProp);
+  newProp->Delete();
   this->TitleActor->SetPosition(center[0], center[1] , center[2]);
   this->TitleActor->SetScale(1.);
   len = this->TitleActor->GetLength();
