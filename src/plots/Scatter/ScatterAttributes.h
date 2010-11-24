@@ -119,8 +119,8 @@ public:
     void SelectVar2();
     void SelectVar3();
     void SelectVar4();
-    void SelectColorTableName();
     void SelectSingleColor();
+    void SelectColorTableName();
 
     // Property setting methods
     void SetVar1(const std::string &var1_);
@@ -159,9 +159,9 @@ public:
     void SetPointSizePixels(int pointSizePixels_);
     void SetPointType(PointType pointType_);
     void SetScaleCube(bool scaleCube_);
-    void SetColorTableName(const std::string &colorTableName_);
-    void SetSingleColor(const ColorAttribute &singleColor_);
     void SetColorType(ColoringMethod colorType_);
+    void SetSingleColor(const ColorAttribute &singleColor_);
+    void SetColorTableName(const std::string &colorTableName_);
     void SetLegendFlag(bool legendFlag_);
 
     // Property getting methods
@@ -205,11 +205,11 @@ public:
     int                  GetPointSizePixels() const;
     PointType            GetPointType() const;
     bool                 GetScaleCube() const;
-    const std::string    &GetColorTableName() const;
-          std::string    &GetColorTableName();
+    ColoringMethod       GetColorType() const;
     const ColorAttribute &GetSingleColor() const;
           ColorAttribute &GetSingleColor();
-    ColoringMethod       GetColorType() const;
+    const std::string    &GetColorTableName() const;
+          std::string    &GetColorTableName();
     bool                 GetLegendFlag() const;
 
     // Persistence methods
@@ -285,9 +285,9 @@ public:
         ID_pointSizePixels,
         ID_pointType,
         ID_scaleCube,
-        ID_colorTableName,
-        ID_singleColor,
         ID_colorType,
+        ID_singleColor,
+        ID_colorTableName,
         ID_legendFlag,
         ID__LAST
     };
@@ -329,15 +329,15 @@ private:
     int            pointSizePixels;
     int            pointType;
     bool           scaleCube;
-    std::string    colorTableName;
-    ColorAttribute singleColor;
     int            colorType;
+    ColorAttribute singleColor;
+    std::string    colorTableName;
     bool           legendFlag;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SCATTERATTRIBUTES_TMFS "sibbddidisbbddidisbbddidisbbddiddiibsaib"
+#define SCATTERATTRIBUTES_TMFS "sibbddidisbbddidisbbddidisbbddiddiibiasb"
 
 #endif

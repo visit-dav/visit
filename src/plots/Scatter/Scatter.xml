@@ -149,8 +149,8 @@
       <Field name="scaleCube" label="Scale to cube" type="bool">
         true
       </Field>
-      <Field name="colorTableName" label="Color table" type="colortable">
-        hot
+      <Field name="colorType" label="Color source" type="enum" subtype="ColoringMethod">
+        ColorByColorTable
       </Field>
       <Field name="singleColor" label="Single color" type="color" length="4">
         255
@@ -158,8 +158,8 @@
         0
         255
       </Field>
-      <Field name="colorType" label="colorType" type="enum" subtype="ColoringMethod">
-        ColorByForegroundColor
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
       </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true

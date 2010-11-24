@@ -244,7 +244,7 @@ void ScatterAttributes::Init()
     pointSizePixels = 1;
     pointType = Point;
     scaleCube = true;
-    colorType = ColorByForegroundColor;
+    colorType = ColorByColorTable;
     legendFlag = true;
 
     ScatterAttributes::SelectAll();
@@ -303,9 +303,9 @@ void ScatterAttributes::Copy(const ScatterAttributes &obj)
     pointSizePixels = obj.pointSizePixels;
     pointType = obj.pointType;
     scaleCube = obj.scaleCube;
-    colorTableName = obj.colorTableName;
-    singleColor = obj.singleColor;
     colorType = obj.colorType;
+    singleColor = obj.singleColor;
+    colorTableName = obj.colorTableName;
     legendFlag = obj.legendFlag;
 
     ScatterAttributes::SelectAll();
@@ -333,7 +333,7 @@ const AttributeGroup::private_tmfs_t ScatterAttributes::TmfsStruct = {SCATTERATT
 
 ScatterAttributes::ScatterAttributes() : 
     AttributeSubject(ScatterAttributes::TypeMapFormatString),
-    colorTableName("hot"), singleColor(255, 0, 0)
+    singleColor(255, 0, 0), colorTableName("Default")
 {
     ScatterAttributes::Init();
 }
@@ -355,7 +355,7 @@ ScatterAttributes::ScatterAttributes() :
 
 ScatterAttributes::ScatterAttributes(private_tmfs_t tmfs) : 
     AttributeSubject(tmfs.tmfs),
-    colorTableName("hot"), singleColor(255, 0, 0)
+    singleColor(255, 0, 0), colorTableName("Default")
 {
     ScatterAttributes::Init();
 }
@@ -502,9 +502,9 @@ ScatterAttributes::operator == (const ScatterAttributes &obj) const
             (pointSizePixels == obj.pointSizePixels) &&
             (pointType == obj.pointType) &&
             (scaleCube == obj.scaleCube) &&
-            (colorTableName == obj.colorTableName) &&
-            (singleColor == obj.singleColor) &&
             (colorType == obj.colorType) &&
+            (singleColor == obj.singleColor) &&
+            (colorTableName == obj.colorTableName) &&
             (legendFlag == obj.legendFlag));
 }
 
@@ -685,9 +685,9 @@ ScatterAttributes::SelectAll()
     Select(ID_pointSizePixels, (void *)&pointSizePixels);
     Select(ID_pointType,       (void *)&pointType);
     Select(ID_scaleCube,       (void *)&scaleCube);
-    Select(ID_colorTableName,  (void *)&colorTableName);
-    Select(ID_singleColor,     (void *)&singleColor);
     Select(ID_colorType,       (void *)&colorType);
+    Select(ID_singleColor,     (void *)&singleColor);
+    Select(ID_colorTableName,  (void *)&colorTableName);
     Select(ID_legendFlag,      (void *)&legendFlag);
 }
 
@@ -937,10 +937,10 @@ ScatterAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
         node->AddNode(new DataNode("scaleCube", scaleCube));
     }
 
-    if(completeSave || !FieldsEqual(ID_colorTableName, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_colorType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("colorTableName", colorTableName));
+        node->AddNode(new DataNode("colorType", ColoringMethod_ToString(colorType)));
     }
 
         DataNode *singleColorNode = new DataNode("singleColor");
@@ -951,10 +951,10 @@ ScatterAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
         }
         else
             delete singleColorNode;
-    if(completeSave || !FieldsEqual(ID_colorType, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_colorTableName, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("colorType", ColoringMethod_ToString(colorType)));
+        node->AddNode(new DataNode("colorTableName", colorTableName));
     }
 
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
@@ -1197,10 +1197,6 @@ ScatterAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("scaleCube")) != 0)
         SetScaleCube(node->AsBool());
-    if((node = searchNode->GetNode("colorTableName")) != 0)
-        SetColorTableName(node->AsString());
-    if((node = searchNode->GetNode("singleColor")) != 0)
-        singleColor.SetFromNode(node);
     if((node = searchNode->GetNode("colorType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1217,6 +1213,10 @@ ScatterAttributes::SetFromNode(DataNode *parentNode)
                 SetColorType(value);
         }
     }
+    if((node = searchNode->GetNode("singleColor")) != 0)
+        singleColor.SetFromNode(node);
+    if((node = searchNode->GetNode("colorTableName")) != 0)
+        SetColorTableName(node->AsString());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
 }
@@ -1478,10 +1478,10 @@ ScatterAttributes::SetScaleCube(bool scaleCube_)
 }
 
 void
-ScatterAttributes::SetColorTableName(const std::string &colorTableName_)
+ScatterAttributes::SetColorType(ScatterAttributes::ColoringMethod colorType_)
 {
-    colorTableName = colorTableName_;
-    Select(ID_colorTableName, (void *)&colorTableName);
+    colorType = colorType_;
+    Select(ID_colorType, (void *)&colorType);
 }
 
 void
@@ -1492,10 +1492,10 @@ ScatterAttributes::SetSingleColor(const ColorAttribute &singleColor_)
 }
 
 void
-ScatterAttributes::SetColorType(ScatterAttributes::ColoringMethod colorType_)
+ScatterAttributes::SetColorTableName(const std::string &colorTableName_)
 {
-    colorType = colorType_;
-    Select(ID_colorType, (void *)&colorType);
+    colorTableName = colorTableName_;
+    Select(ID_colorTableName, (void *)&colorTableName);
 }
 
 void
@@ -1749,16 +1749,10 @@ ScatterAttributes::GetScaleCube() const
     return scaleCube;
 }
 
-const std::string &
-ScatterAttributes::GetColorTableName() const
+ScatterAttributes::ColoringMethod
+ScatterAttributes::GetColorType() const
 {
-    return colorTableName;
-}
-
-std::string &
-ScatterAttributes::GetColorTableName()
-{
-    return colorTableName;
+    return ColoringMethod(colorType);
 }
 
 const ColorAttribute &
@@ -1773,10 +1767,16 @@ ScatterAttributes::GetSingleColor()
     return singleColor;
 }
 
-ScatterAttributes::ColoringMethod
-ScatterAttributes::GetColorType() const
+const std::string &
+ScatterAttributes::GetColorTableName() const
 {
-    return ColoringMethod(colorType);
+    return colorTableName;
+}
+
+std::string &
+ScatterAttributes::GetColorTableName()
+{
+    return colorTableName;
 }
 
 bool
@@ -1814,15 +1814,15 @@ ScatterAttributes::SelectVar4()
 }
 
 void
-ScatterAttributes::SelectColorTableName()
-{
-    Select(ID_colorTableName, (void *)&colorTableName);
-}
-
-void
 ScatterAttributes::SelectSingleColor()
 {
     Select(ID_singleColor, (void *)&singleColor);
+}
+
+void
+ScatterAttributes::SelectColorTableName()
+{
+    Select(ID_colorTableName, (void *)&colorTableName);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1885,9 +1885,9 @@ ScatterAttributes::GetFieldName(int index) const
     case ID_pointSizePixels: return "pointSizePixels";
     case ID_pointType:       return "pointType";
     case ID_scaleCube:       return "scaleCube";
-    case ID_colorTableName:  return "colorTableName";
-    case ID_singleColor:     return "singleColor";
     case ID_colorType:       return "colorType";
+    case ID_singleColor:     return "singleColor";
+    case ID_colorTableName:  return "colorTableName";
     case ID_legendFlag:      return "legendFlag";
     default:  return "invalid index";
     }
@@ -1949,9 +1949,9 @@ ScatterAttributes::GetFieldType(int index) const
     case ID_pointSizePixels: return FieldType_int;
     case ID_pointType:       return FieldType_enum;
     case ID_scaleCube:       return FieldType_bool;
-    case ID_colorTableName:  return FieldType_colortable;
-    case ID_singleColor:     return FieldType_color;
     case ID_colorType:       return FieldType_enum;
+    case ID_singleColor:     return FieldType_color;
+    case ID_colorTableName:  return FieldType_colortable;
     case ID_legendFlag:      return FieldType_bool;
     default:  return FieldType_unknown;
     }
@@ -2013,9 +2013,9 @@ ScatterAttributes::GetFieldTypeName(int index) const
     case ID_pointSizePixels: return "int";
     case ID_pointType:       return "enum";
     case ID_scaleCube:       return "bool";
-    case ID_colorTableName:  return "colortable";
-    case ID_singleColor:     return "color";
     case ID_colorType:       return "enum";
+    case ID_singleColor:     return "color";
+    case ID_colorTableName:  return "colortable";
     case ID_legendFlag:      return "bool";
     default:  return "invalid index";
     }
@@ -2223,9 +2223,9 @@ ScatterAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (scaleCube == obj.scaleCube);
         }
         break;
-    case ID_colorTableName:
+    case ID_colorType:
         {  // new scope
-        retval = (colorTableName == obj.colorTableName);
+        retval = (colorType == obj.colorType);
         }
         break;
     case ID_singleColor:
@@ -2233,9 +2233,9 @@ ScatterAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (singleColor == obj.singleColor);
         }
         break;
-    case ID_colorType:
+    case ID_colorTableName:
         {  // new scope
-        retval = (colorType == obj.colorType);
+        retval = (colorTableName == obj.colorTableName);
         }
         break;
     case ID_legendFlag:

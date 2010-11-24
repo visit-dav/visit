@@ -124,9 +124,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         pointSizePixels = 1;
         pointType = POINTTYPE_POINT;
         scaleCube = true;
-        colorTableName = new String("hot");
+        colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
         singleColor = new ColorAttribute(255, 0, 0);
-        colorType = COLORINGMETHOD_COLORBYFOREGROUNDCOLOR;
+        colorTableName = new String("Default");
         legendFlag = true;
     }
 
@@ -170,9 +170,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         pointSizePixels = 1;
         pointType = POINTTYPE_POINT;
         scaleCube = true;
-        colorTableName = new String("hot");
+        colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
         singleColor = new ColorAttribute(255, 0, 0);
-        colorType = COLORINGMETHOD_COLORBYFOREGROUNDCOLOR;
+        colorTableName = new String("Default");
         legendFlag = true;
     }
 
@@ -216,9 +216,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         pointSizePixels = obj.pointSizePixels;
         pointType = obj.pointType;
         scaleCube = obj.scaleCube;
-        colorTableName = new String(obj.colorTableName);
-        singleColor = new ColorAttribute(obj.singleColor);
         colorType = obj.colorType;
+        singleColor = new ColorAttribute(obj.singleColor);
+        colorTableName = new String(obj.colorTableName);
         legendFlag = obj.legendFlag;
 
         SelectAll();
@@ -273,9 +273,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
                 (pointSizePixels == obj.pointSizePixels) &&
                 (pointType == obj.pointType) &&
                 (scaleCube == obj.scaleCube) &&
-                (colorTableName.equals(obj.colorTableName)) &&
-                (singleColor == obj.singleColor) &&
                 (colorType == obj.colorType) &&
+                (singleColor == obj.singleColor) &&
+                (colorTableName.equals(obj.colorTableName)) &&
                 (legendFlag == obj.legendFlag));
     }
 
@@ -499,9 +499,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         Select(35);
     }
 
-    public void SetColorTableName(String colorTableName_)
+    public void SetColorType(int colorType_)
     {
-        colorTableName = colorTableName_;
+        colorType = colorType_;
         Select(36);
     }
 
@@ -511,9 +511,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         Select(37);
     }
 
-    public void SetColorType(int colorType_)
+    public void SetColorTableName(String colorTableName_)
     {
-        colorType = colorType_;
+        colorTableName = colorTableName_;
         Select(38);
     }
 
@@ -560,9 +560,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     public int            GetPointSizePixels() { return pointSizePixels; }
     public int            GetPointType() { return pointType; }
     public boolean        GetScaleCube() { return scaleCube; }
-    public String         GetColorTableName() { return colorTableName; }
-    public ColorAttribute GetSingleColor() { return singleColor; }
     public int            GetColorType() { return colorType; }
+    public ColorAttribute GetSingleColor() { return singleColor; }
+    public String         GetColorTableName() { return colorTableName; }
     public boolean        GetLegendFlag() { return legendFlag; }
 
     // Write and read methods.
@@ -641,11 +641,11 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(35, buf))
             buf.WriteBool(scaleCube);
         if(WriteSelect(36, buf))
-            buf.WriteString(colorTableName);
+            buf.WriteInt(colorType);
         if(WriteSelect(37, buf))
             singleColor.Write(buf);
         if(WriteSelect(38, buf))
-            buf.WriteInt(colorType);
+            buf.WriteString(colorTableName);
         if(WriteSelect(39, buf))
             buf.WriteBool(legendFlag);
     }
@@ -763,14 +763,14 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
             SetScaleCube(buf.ReadBool());
             break;
         case 36:
-            SetColorTableName(buf.ReadString());
+            SetColorType(buf.ReadInt());
             break;
         case 37:
             singleColor.Read(buf);
             Select(37);
             break;
         case 38:
-            SetColorType(buf.ReadInt());
+            SetColorTableName(buf.ReadString());
             break;
         case 39:
             SetLegendFlag(buf.ReadBool());
@@ -900,8 +900,6 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
             str = str + "POINTTYPE_SPHERE";
         str = str + "\n";
         str = str + boolToString("scaleCube", scaleCube, indent) + "\n";
-        str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
-        str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
         str = str + indent + "colorType = ";
         if(colorType == COLORINGMETHOD_COLORBYFOREGROUNDCOLOR)
             str = str + "COLORINGMETHOD_COLORBYFOREGROUNDCOLOR";
@@ -910,6 +908,8 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         if(colorType == COLORINGMETHOD_COLORBYCOLORTABLE)
             str = str + "COLORINGMETHOD_COLORBYCOLORTABLE";
         str = str + "\n";
+        str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
+        str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         return str;
     }
@@ -952,9 +952,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     private int            pointSizePixels;
     private int            pointType;
     private boolean        scaleCube;
-    private String         colorTableName;
-    private ColorAttribute singleColor;
     private int            colorType;
+    private ColorAttribute singleColor;
+    private String         colorTableName;
     private boolean        legendFlag;
 }
 
