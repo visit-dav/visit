@@ -179,6 +179,7 @@ QvisScatterPlotWizard::SetScatterAttributes()
     else
     {
         scatterAtts->SetVar4Role(ScatterAttributes::None);
+        scatterAtts->SetColorType(ScatterAttributes::ColorByForegroundColor);
     }
 }
 

@@ -150,7 +150,7 @@
         true
       </Field>
       <Field name="colorType" label="Color source" type="enum" subtype="ColoringMethod">
-        ColorByColorTable
+        ColorByForegroundColor
       </Field>
       <Field name="singleColor" label="Single color" type="color" length="4">
         255
