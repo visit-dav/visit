@@ -699,7 +699,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     rb = new QRadioButton(tr("Foreground Color"), colorGroup);
     colorModeButtons->addButton(rb, 0);
     colorLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton(tr("Single"), colorGroup);
+    rb = new QRadioButton(tr("Single color"), colorGroup);
     colorModeButtons->addButton(rb, 1);
     colorLayout->addWidget(rb, 1, 0);
     colorTableRadioButton =
@@ -1113,12 +1113,16 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
                 label = label + var;
             }
 
+            // if the role is color (3) then check to see if there is
+            // a variable and enable the coloring options accordingly.
             if( role == 3)
             {
               colorTableRadioButton->setEnabled( haveVar );
 
-              if( atts->GetColorType() ==
-                  ScatterAttributes::ColorByColorTable )
+              // If no variable turn off the color by table otherwise
+              // leave the settings as is.
+              if( !haveVar &&
+                  atts->GetColorType() == ScatterAttributes::ColorByColorTable )
               {
                 colorModeButtons->blockSignals(true);
                 colorModeButtons->button(0)->setChecked(true);
@@ -1857,7 +1861,7 @@ QvisScatterPlotWindow::colorModeChanged(int index)
         atts->SetColorType(ScatterAttributes::ColorBySingleColor);
     else if(index == 2)
         atts->SetColorType(ScatterAttributes::ColorByColorTable);
-
+    SetUpdate(false);
     Apply();
 }
 
