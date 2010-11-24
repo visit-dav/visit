@@ -244,7 +244,7 @@ void ScatterAttributes::Init()
     pointSizePixels = 1;
     pointType = Point;
     scaleCube = true;
-    colorType = ColorByColorTable;
+    colorType = ColorByForegroundColor;
     legendFlag = true;
 
     ScatterAttributes::SelectAll();

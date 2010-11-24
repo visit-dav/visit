@@ -124,7 +124,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         pointSizePixels = 1;
         pointType = POINTTYPE_POINT;
         scaleCube = true;
-        colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
+        colorType = COLORINGMETHOD_COLORBYFOREGROUNDCOLOR;
         singleColor = new ColorAttribute(255, 0, 0);
         colorTableName = new String("Default");
         legendFlag = true;
@@ -170,7 +170,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         pointSizePixels = 1;
         pointType = POINTTYPE_POINT;
         scaleCube = true;
-        colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
+        colorType = COLORINGMETHOD_COLORBYFOREGROUNDCOLOR;
         singleColor = new ColorAttribute(255, 0, 0);
         colorTableName = new String("Default");
         legendFlag = true;
