@@ -977,6 +977,16 @@
 #     Eric Brugger, Tue Nov  2 14:06:10 PDT 2010
 #     I set the VisIt version number to 2.1.1.
 #
+#     Hank Childs, Fri Nov 26 09:20:50 EST 2010
+#     (1) Make sure optimizations are set for Linux x86_64.
+#     (2) Pass optimization flags along to Mesa
+#     (3) Patch Mesa for old gcc
+#     (4) Indicate ITAPS & MDSPlus is not available by default.
+#     (5) Don't have Qt build libjpeg support.
+#     (6) Split third party libs that must be downloaded separately into their
+#         own category
+#     (7) Tweak names of various options in dialog.
+#
 # *****************************************************************************
 
 
@@ -1040,7 +1050,13 @@ elif [[ "$OPSYS" == "Linux" ]]; then
       export MESA_TARGET=${MESA_TARGET:-"linux"}
    elif [[ "$(uname -m)" == "x86_64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
+      if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
+          C_OPT_FLAGS="$C_OPT_FLAGS -O2"
+      fi
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -m64 -fPIC"
+      if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
+          CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
+      fi
 ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86-64"} # Mesa-6.x
       export MESA_TARGET=${MESA_TARGET:-"linux"}
       QT_PLATFORM="linux-g++-64"
@@ -1053,13 +1069,25 @@ elif [[ "$OPSYS" == "Linux" ]]; then
           QT_PLATFORM="linux-xlc" #aix-xlc"
       else
           C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
+          if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
+              C_OPT_FLAGS="$C_OPT_FLAGS -O2"
+          fi
           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
+          if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
+              CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
+          fi
           export MESA_TARGET=${MESA_TARGET-"linux"}
           QT_PLATFORM="linux-g++"
       fi
    elif [[ "$(uname -m)" == "ia64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
+      if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
+          C_OPT_FLAGS="$C_OPT_FLAGS -O2"
+      fi
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
+      if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
+          CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
+      fi
       QT_PLATFORM="linux-g++"
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
@@ -1106,12 +1134,24 @@ else
    export SO_EXT="so"
    if [[ "$(uname -m)" == "x86_64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
+      if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
+          C_OPT_FLAGS="$C_OPT_FLAGS -O2"
+      fi
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -m64 -fPIC"
+      if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
+          CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
+      fi
       QT_PLATFORM="linux-g++-64"
    fi
    if [[ "$(uname -m)" == "ia64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
+      if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
+          C_OPT_FLAGS="$C_OPT_FLAGS -O2"
+      fi
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
+      if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
+          CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
+      fi
       QT_PLATFORM="linux-g++-64"
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
@@ -1239,6 +1279,8 @@ verify="no"
 ON_verify="off"
 export DO_OPTIONAL="yes"
 export ON_OPTIONAL="on"
+export DO_OPTIONAL2="no"
+export ON_OPTIONAL2="off"
 export DO_MORE="no"
 export ON_MORE="off"
 export DO_DBIO_ONLY="no"
@@ -2943,6 +2985,89 @@ diff -c a/src/mesa/drivers/osmesa/osmesa.c Mesa-7.8.2/src/mesa/drivers/osmesa/os
 EOF
 }
 
+function apply_mesa_782_patch_2
+{
+   patch -p1 <<\EOF
+From cc32ff741c5d32a66531a586b1f9268b94846c58 Mon Sep 17 00:00:00 2001
+From: Tom Fogal <tfogal@alumni.unh.edu>
+Date: Sun, 26 Sep 2010 18:57:59 -0600
+Subject: [PATCH] Implement x86_64 atomics for compilers w/o intrinsics.
+
+Really old gcc's (3.3, at least) don't have support for the
+intrinsics we need.  This implements a fallback for that case.
+---
+ src/gallium/auxiliary/util/u_atomic.h |   47 +++++++++++++++++++++++++++++++++
+ 1 files changed, 47 insertions(+), 0 deletions(-)
+
+diff --git a/src/gallium/auxiliary/util/u_atomic.h b/Mesa-7.8.2/src/gallium/auxiliary/util/u_atomic.h
+index a156823..8434491 100644
+--- a/src/gallium/auxiliary/util/u_atomic.h
++++ b/Mesa-7.8.2/src/gallium/auxiliary/util/u_atomic.h
+@@ -29,6 +29,8 @@
+ #define PIPE_ATOMIC_ASM_MSVC_X86                
+ #elif (defined(PIPE_CC_GCC) && defined(PIPE_ARCH_X86))
+ #define PIPE_ATOMIC_ASM_GCC_X86
++#elif (defined(PIPE_CC_GCC) && defined(PIPE_ARCH_X86_64))
++#define PIPE_ATOMIC_ASM_GCC_X86_64
+ #elif defined(PIPE_CC_GCC) && (PIPE_CC_GCC_VERSION >= 401)
+ #define PIPE_ATOMIC_GCC_INTRINSIC
+ #else
+@@ -36,6 +38,51 @@
+ #endif
+ 
+ 
++#if defined(PIPE_ATOMIC_ASM_GCC_X86_64)
++#define PIPE_ATOMIC "GCC x86_64 assembly"
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define p_atomic_set(_v, _i) (*(_v) = (_i))
++#define p_atomic_read(_v) (*(_v))
++
++static INLINE boolean
++p_atomic_dec_zero(int32_t *v)
++{
++   unsigned char c;
++
++   __asm__ __volatile__("lock; decl %0; sete %1":"+m"(*v), "=qm"(c)
++			::"memory");
++
++   return c != 0;
++}
++
++static INLINE void
++p_atomic_inc(int32_t *v)
++{
++   __asm__ __volatile__("lock; incl %0":"+m"(*v));
++}
++
++static INLINE void
++p_atomic_dec(int32_t *v)
++{
++   __asm__ __volatile__("lock; decl %0":"+m"(*v));
++}
++
++static INLINE int32_t
++p_atomic_cmpxchg(int32_t *v, int32_t old, int32_t _new)
++{
++   return __sync_val_compare_and_swap(v, old, _new);
++}
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* PIPE_ATOMIC_ASM_GCC_X86_64 */
++
+ 
+ #if defined(PIPE_ATOMIC_ASM_GCC_X86)
+ 
+-- 
+1.7.0.2
+EOF
+}
 
 function apply_mesa_patch
 {
@@ -2966,6 +3091,7 @@ function apply_mesa_patch
       fi
    elif [[ ${MESA_VERSION} == "7.8.2" ]] ; then
       apply_mesa_782_patch_1
+      apply_mesa_782_patch_2
       if [[ $? != 0 ]] ; then
         return 1
       fi
@@ -3050,8 +3176,8 @@ function build_mesa
     ./configure \
       CC="${C_COMPILER}" \
       CXX="${CXX_COMPILER}" \
-      CFLAGS="${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
-      CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
+      CFLAGS="${C_OPT_FLAGS} ${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
+      CXXFLAGS="${CXX_OPT_FLAGS} ${CXXFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
       --prefix=${PF}               \
       --without-demos              \
       --disable-gallium            \
@@ -3106,8 +3232,8 @@ function build_mesa
     ./configure \
       CC="${C_COMPILER}" \
       CXX="${CXX_COMPILER}" \
-      CFLAGS="${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
-      CXXFLAGS="${CXXFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
+      CFLAGS="${C_OPT_FLAGS} ${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
+      CXXFLAGS="${CXX_OPT_FLAGS} ${CXXFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
       --prefix=${PF}                    \
       --without-demos                   \
       --with-driver=osmesa              \
@@ -3444,6 +3570,7 @@ function build_qt
     qt_flags="${qt_flags} -no-sql-sqlite2 -no-sql-tds"
     qt_flags="${qt_flags} -no-xmlpatterns"
     qt_flags="${qt_flags} -no-libtiff"
+    qt_flags="${qt_flags} -no-libjpeg"
     qt_flags="${qt_flags} -no-webkit"
     if [[ ${QT_VERSION} == 4.6.1 ]] ; then
         qt_flags="${qt_flags} -no-javascript-jit"
@@ -8486,6 +8613,7 @@ usage () {
   printf "%-15s %s [%s]\n" "--itaps" "Build ITAPS" "${DO_ITAPS}"
   printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
   printf "%-15s %s [%s]\n" "--mdsplus" "Build MDSplus" "${DO_MDSPLUS}"
+  printf "\t\t%15s\n" "NOTE: not available for download from web"
   printf "%-15s %s [%s]\n" "--mesa" "Build Mesa" "built by default unless --no-thirdparty flag is used"
   printf "%-15s %s [%s]\n" "--mili" "Build Mili" "$DO_MILI"
   printf "\t\t%15s\n" "NOTE: not available for download from web"
@@ -8934,15 +9062,16 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
 "Note that you can build a parallel version of VisIt by "\
 "specifying the location of your MPI installation when prompted.\n\n"\
 "Select the build options:" 0 0 0 \
-           "Optional"   "select optional 3rd party libraries"  $ON_OPTIONAL\
-           "SVN"        "get sources from SVN server"          $ON_SVN\
+           "Optional"    "select optional 3rd party libraries"  $ON_OPTIONAL\
+           "AdvDownload" "use libs that cannot be downloaded from web"  $ON_OPTIONAL2\
+           "SVN"        "get sources from SVN server"     $ON_SVN\
            "Tarball"    "specify VisIt tarball name"      $ON_USE_VISIT_FILE\
            "Parallel"   "specify parallel build flags"    $ON_parallel\
            "Python"     "enable VisIt python module"      $ON_MODULE\
            "Java"       "enable java client library"      $ON_JAVA\
-           "SLIVR"      "enable SLIVR rendering library"  $ON_SLIVR\
-           "Variables"  "specify build variable values"   $ON_verify\
-           "More"       "select more options"             $ON_MORE  2> tmp$$
+           "SLIVR"      "enable SLIVR volume rendering library"  $ON_SLIVR\
+           "EnvVars"     "specify build environment var values"   $ON_verify\
+           "Advanced"   "display advanced options"        $ON_MORE  2> tmp$$
     retval=$?
 
     # Remove the extra quoting, new dialog has --single-quoted
@@ -8950,6 +9079,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
     case $retval in
       0)
         DO_OPTIONAL="no"
+        DO_OPTIONAL2="no"
         DO_SVN="no"
         USE_VISIT_FILE="no"
         parallel="no"
@@ -8963,6 +9093,8 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
             case $OPTION in
               Optional)
                  DO_OPTIONAL="yes";;
+              AdvDownload)
+                 DO_OPTIONAL2="yes";;
               SVN)
                  DO_SVN="yes";DO_SVN_ANON="yes";export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;
               Tarball)
@@ -8979,9 +9111,9 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  DO_JAVA="yes";;
               SLIVR)
                  DO_SLIVR="yes";;
-              Variables)
+              EnvVars)
                  verify="yes";;
-              More)
+              Advanced)
                  DO_MORE="yes";;
             esac
         done
@@ -9005,7 +9137,6 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     --checklist \
 "Select the optional 3rd party libraries "\
 "to be built and installed:" 0 0 0 \
-           "AdvIO"    "$ADVIO_VERSION    $ADVIO_FILE (not available from the web)"      $ON_ADVIO \
            "Boxlib"   "$BOXLIB_VERSION    $BOXLIB_FILE"    $ON_BOXLIB \
            "CCMIO"    "$CCMIO_VERSION  $CCMIO_FILE"     $ON_CCMIO \
            "CFITSIO"  "$CFITSIO_VERSION   $CFITSIO_FILE"   $ON_CFITSIO \
@@ -9017,21 +9148,17 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "HDF4"     "$HDF4_VERSION  $HDF4_FILE"      $ON_HDF4 \
            "HDF5"     "$HDF5_VERSION  $HDF5_FILE"      $ON_HDF5 \
            "IceT"     "$ICET_VERSION  $ICET_FILE"      $ON_ICET \
-           "ITAPS"    "Jun-2010 Versions of MOAB, FMDB, GRUMMP"    $ON_ITAPS \
-           "MDSplus"  "$MDSPLUS_VERSION  $MDSPLUS_FILE"    $ON_MDSPLUS \
-           "Mili"     "$MILI_VERSION $MILI_FILE (not available from the web)"      $ON_MILI \
            "NetCDF"   "$NETCDF_VERSION  $NETCDF_FILE"    $ON_NETCDF \
-           "TCMALLOC" "$TCMALLOC_VERSION   $TCMALLOC_FILE (not available from the web)"      $ON_TCMALLOC \
            "Silo"     "$SILO_VERSION    $SILO_FILE"      $ON_SILO \
            "SZip"     "$SZIP_VERSION    $SZIP_FILE"      $ON_SZIP \
-           "Xdmf"     "$XDMF_VERSION  $XDMF_FILE"    $ON_XDMF 2> tmp$$
+           "Xdmf"     "$XDMF_VERSION  $XDMF_FILE"    $ON_XDMF  \
+            2> tmp$$
     retval=$?
 
     # Remove the extra quoting, new dialog has --single-quoted
     choice="$(cat tmp$$ | sed 's/"//g' )"
     case $retval in
       0)
-        DO_ADVIO="no"
         DO_BOXLIB="no"
         DO_CCMIO="no"
         DO_CFITSIO="no"
@@ -9043,18 +9170,13 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         DO_HDF4="no"
         DO_HDF5="no"
         DO_ICET="no"
-        DO_MDSPLUS="no"
-        DO_MILI="no"
         DO_NETCDF="no"
         DO_SILO="no"
         DO_SZIP="no"
-        DO_ITAPS="no"
         DO_XDMF="no"
         for OPTION in $choice
         do
             case $OPTION in
-              AdvIO)
-                 DO_ADVIO="yes";;
               Boxlib)
                  DO_BOXLIB="yes";;
               CCMIO)
@@ -9082,21 +9204,66 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
                  DO_HDF5="yes";;
               IceT)
                  DO_ICET="yes";;
-              MDSplus)
-                 DO_MDSPLUS="yes";;
-              Mili)
-                 DO_MILI="yes";;
               NetCDF)
                  DO_NETCDF="yes";;
               Silo)
                  DO_SILO="yes";;
               SZip)
                  DO_SZIP="yes";;
-              ITAPS)
-                 DO_ITAPS="yes";;
               Xdmf)
                  DO_XDMF="yes"
                  DO_HDF5="yes";;
+            esac
+        done
+        ;;
+      1)
+        warn "Cancel pressed."
+        exit 1;;
+      255)
+        warn "ESC pressed.";;
+      *)
+        warn "Unexpected return code: $retval";;
+    esac
+fi
+if [[ -e "tmp$$" ]] ; then
+    rm tmp$$
+fi
+
+if [[ "$DO_OPTIONAL2" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
+    $DLG --backtitle "$DLG_BACKTITLE" \
+    --title "Select 3rd party libraries" \
+    --checklist \
+"Third party libs build_visit can't download "\
+"(you must download these prior to running build_visit):" 0 0 0  \
+           "AdvIO"    "$ADVIO_VERSION    $ADVIO_FILE"      $ON_ADVIO \
+           "ITAPS"    "Jun-2010 Versions of MOAB, FMDB, GRUMMP"    $ON_ITAPS \
+           "MDSplus"  "$MDSPLUS_VERSION  $MDSPLUS_FILE"    $ON_MDSPLUS \
+           "Mili"     "$MILI_VERSION $MILI_FILE"      $ON_MILI \
+           "TCMALLOC" "$TCMALLOC_VERSION   $TCMALLOC_FILE"      $ON_TCMALLOC \
+            2> tmp$$
+    retval=$?
+    # Remove the extra quoting, new dialog has --single-quoted
+    choice="$(cat tmp$$ | sed 's/"//g' )"
+    case $retval in
+      0)
+        DO_ADVIO="no"
+        DO_MDSPLUS="no"
+        DO_MILI="no"
+        DO_TCMALLOC="no"
+        DO_ITAPS="no"
+        for OPTION in $choice
+        do
+            case $OPTION in
+              AdvIO)
+                 DO_ADVIO="yes";;
+              ITAPS)
+                 DO_ITAPS="yes";;
+              MDSplus)
+                 DO_MDSPLUS="yes";;
+              Mili)
+                 DO_MILI="yes";;
+              TCMALLOC)
+                 DO_TCMALLOC="yes";;
             esac
         done
         ;;
