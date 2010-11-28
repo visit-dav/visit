@@ -63,6 +63,7 @@ class   avtDatabaseMetaData;
 class   avtDataValidity;
 class   avtDataObjectSource;
 class   avtSIL;
+class   avtVariableCache;
 class   PickAttributes;
 class   PickVarInfo;
 
@@ -294,6 +295,10 @@ typedef struct {
 //    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
 //    Added ability to turn on stricter file format error checking.
 //
+//    Hank Childs, Fri Nov 26 15:52:25 PST 2010
+//    Make cache available externally so filters from the pipeline can cache
+//    their data structures.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -325,6 +330,7 @@ class DATABASE_API avtDatabase
     virtual void                PopulateIOInformation(int stateIndex,
                                     avtIOInformation& ioInfo) {;};
 
+    virtual avtVariableCache   *GetCache(void) { return NULL; };
     virtual void                ClearCache(void);
     virtual void                FreeUpResources(void);
     virtual bool                MetaDataIsInvariant(void);

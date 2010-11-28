@@ -45,6 +45,8 @@
 
 #include <pipeline_exports.h>
 
+class     vtkObject;
+
 #include <avtFilter.h>
 #include <avtDatasetSink.h>
 
@@ -71,6 +73,9 @@
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Hank Childs, Sun Nov 28 06:19:25 PST 2010
+//    Add methods for caching VTK objects in the database.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetToDataObjectFilter
@@ -90,6 +95,11 @@ class PIPELINE_API avtDatasetToDataObjectFilter
     void               InputSetActiveVariable(const char *);
     virtual void       SearchDataForDataExtents(double *, const char *);
     virtual void       PreExecute(void);
+
+    vtkObject         *FetchArbitraryVTKObject(int dependencies, const char *name, int dom, 
+                                               int ts, const char *type);
+    void               StoreArbitraryVTKObject(int dependencies, const char *name, int dom, 
+                                               int ts, const char *type, vtkObject *);
 };
 
 

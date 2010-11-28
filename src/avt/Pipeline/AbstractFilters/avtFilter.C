@@ -1533,3 +1533,192 @@ avtFilter::CreateNamedSelection(avtContract_p c, const std::string &selname)
 }
 
 
+// ****************************************************************************
+//  Method: avtFilter::FetchArbitraryRefPtr
+//
+//  Purpose:
+//      Checks to see if a void_ref_ptr was cached in the pipeline and fetches
+//      it if so.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+void_ref_ptr
+avtFilter::FetchArbitraryRefPtr(int dependencies, const char *name, int dom, 
+                                int ts, const char *type)
+{
+    // If we can't cache it, then there's something in the pipeline that
+    // subset the cells, transforms the data, etc.
+    // So, even if there is something in the cache, we can't use it ... it 
+    // might be appropriate for a different pipeline, but not ours.
+    bool canUse = CheckDependencies(dependencies);
+    if (! canUse)
+    {
+        void_ref_ptr vrp;
+        return vrp;
+    }
+
+    avtOriginatingSource *source = GetInput()->GetOriginatingSource();
+    return source->FetchArbitraryRefPtr(name, dom, ts, type);
+}
+
+
+// ****************************************************************************
+//  Method: avtFilter::StoreArbitraryRefPtr
+//
+//  Purpose:
+//      Stores a ref_ptr in the database cache.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+void
+avtFilter::StoreArbitraryRefPtr(int dependencies, const char *name, int dom, 
+                                int ts, const char *type, void_ref_ptr vrp)
+{
+    bool canUse = CheckDependencies(dependencies);
+    if (! canUse)
+    {
+        debug5 << "Cannot cache " << type << " for " << name << " because "
+               << "dependencies were not satisfied.\n"
+               << "This is an informational message, not an error." << endl;
+        return;
+    }
+
+    avtOriginatingSource *source = GetInput()->GetOriginatingSource();
+    source->StoreArbitraryRefPtr(name, dom, ts, type, vrp);
+}
+
+
+// ****************************************************************************
+//  Method: avtFilter::CheckDependencies
+//
+//  Purpose:
+//      Checks to see if the dependencies are satisfied for caching.
+//
+//  Arguments:
+//     dependencies    A bit vector of CacheItemDependences
+//
+//  Returns:
+//     true if you can use the cache, false if the dependencies are violated.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+bool
+avtFilter::CheckDependencies(int dependencies)
+{
+    if ((dependencies & DATA_DEPENDENCE) && (! CanCacheDataItem()))
+        return false;
+    if ((dependencies & SPATIAL_DEPENDENCE) && (! CanCacheSpatialItem()))
+        return false;
+    if ((dependencies & CONNECTIVITY_DEPENDENCE) && (! CanCacheConnectivityItem()))
+        return false;
+    
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtFilter::CanCacheDataItem
+//
+//  Purpose:
+//      Determines whether or not a data item can be cached.  If the scalar
+//      field has been modified, then it should not be cached.  This typically
+//      only happens when we commandeer variables (i.e. we take some existing
+//      variable and overwrite it for our own purposes).  And we don't do that
+//      very often.
+//
+//      So this method just checks to see if the zones haven't been modified, 
+//      etc.
+//
+//  Returns:   true if items that have a data dependence can be cached.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+bool
+avtFilter::CanCacheDataItem(void)
+{
+    avtDataValidity &validity = GetInput()->GetInfo().GetValidity();
+    if (! validity.GetDataMetaDataPreserved())
+       return false;
+    if (! validity.GetZonesPreserved())
+       return false;
+    if (! validity.GetNodesPreserved())
+       return false;
+    if (! validity.GetOriginalZonesIntact())
+       return false;
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtFilter::CanCacheSpatialItem
+//
+//  Purpose:
+//      Determines whether or not a spatial item can be cached. 
+//
+//  Returns:   true if items that have a spatial dependence can be cached.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+bool
+avtFilter::CanCacheSpatialItem(void)
+{
+    avtDataValidity &validity = GetInput()->GetInfo().GetValidity();
+    if (! validity.GetSpatialMetaDataPreserved())
+       return false;
+    if (! validity.GetZonesPreserved())
+       return false;
+    if (! validity.GetNodesPreserved())
+       return false;
+    if (! validity.GetOriginalZonesIntact())
+       return false;
+    if (! validity.GetPointsWereTransformed())
+       return false;
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtFilter::CanCacheConnectivityItem
+//
+//  Purpose:
+//      Determines if a mesh connectivity item can be cached.
+//
+//  Returns:   true if items that have a mesh dependence can be cached.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+bool
+avtFilter::CanCacheConnectivityItem(void)
+{
+    avtDataValidity &validity = GetInput()->GetInfo().GetValidity();
+    if (! validity.GetZonesPreserved())
+       return false;
+    if (! validity.GetNodesPreserved())
+       return false;
+    if (! validity.GetOriginalZonesIntact())
+       return false;
+
+    return true;
+}
+
+

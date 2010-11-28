@@ -659,6 +659,8 @@ avtDataValidity::DebugDump(avtWebpage *webpage)
                             YesOrNo(originalZonesIntact));
     webpage->AddTableEntry2("Is the spatial meta data preserved?", 
                             YesOrNo(spatialMetaDataPreserved));
+    webpage->AddTableEntry2("Is the data meta data preserved?", 
+                            YesOrNo(dataMetaDataPreserved));
     webpage->AddTableEntry2("Has an operation failed?",
                             YesOrNo(operationFailed));
     webpage->AddTableEntry2("The pipeline is using all of the data",

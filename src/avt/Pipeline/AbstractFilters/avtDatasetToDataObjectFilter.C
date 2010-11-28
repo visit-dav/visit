@@ -44,6 +44,9 @@
 
 #include <avtCommonDataFunctions.h>
 #include <avtDatasetExaminer.h>
+#include <avtOriginatingSource.h>
+
+#include <DebugStream.h>
 
 
 // ****************************************************************************
@@ -164,6 +167,7 @@ avtDatasetToDataObjectFilter::SearchDataForDataExtents(double *extents,
 //  Creation:    February 15, 2007
 //
 // ****************************************************************************
+
 void
 avtDatasetToDataObjectFilter::PreExecute(void)
 {
@@ -193,3 +197,68 @@ avtDatasetToDataObjectFilter::PreExecute(void)
         outatts.SetRectilinearGridHasTransform(false);
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtDatasetToDataObjectFilter::FetchArbitraryVTKObject
+//
+//  Purpose:
+//      Checks to see if a vtkObject was cached in the pipeline and fetches
+//      it if so.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+vtkObject *
+avtDatasetToDataObjectFilter::FetchArbitraryVTKObject(int dependencies,
+                                             const char *name, int dom, int ts,
+                                             const char *type)
+{
+    // If we can't cache it, then there's something in the pipeline that
+    // subset the cells, transforms the data, etc.
+    // So, even if there is something in the cache, we can't use it ... it
+    // might be appropriate for a different pipeline, but not ours.
+    bool canUse = CheckDependencies(dependencies);
+    if (! canUse)
+        return NULL;
+
+    avtOriginatingSource *source = GetInput()->GetOriginatingSource();
+    return source->FetchArbitraryVTKObject(name, dom, ts, type);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatasetToDataObjectFilter::StoreArbitraryVTKObject
+//
+//  Purpose:
+//      Stores a ref_ptr in the database cache.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+void
+avtDatasetToDataObjectFilter::StoreArbitraryVTKObject(int dependencies,
+                                           const char *name, int dom, int ts, 
+                                           const char *type, vtkObject *obj)
+{
+    bool canUse = CheckDependencies(dependencies);
+    if (! canUse)
+    {
+        cerr << "Cannot cache " << type << " for " << name << " because "
+               << "dependencies were not satisfied.\n"
+               << "This is an informational message, not an error." << endl;
+        debug5 << "Cannot cache " << type << " for " << name << " because "
+               << "dependencies were not satisfied.\n"
+               << "This is an informational message, not an error." << endl;
+        return;
+    }
+
+    avtOriginatingSource *source = GetInput()->GetOriginatingSource();
+    source->StoreArbitraryVTKObject(name, dom, ts, type, obj);
+}
+
+
