@@ -109,6 +109,7 @@
 #include <SyncAttributes.h>
 #include <QueryOverTimeAttributes.h>
 #include <Utility.h>
+#include <VariableMenuPopulator.h>
 #include <ViewerRPC.h>
 #include <Xfer.h>
 
@@ -4085,6 +4086,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    I added a call to ClearCache for simulations to force this method to
 //    block until metadata and SIL have come back from the simulation.
 //
+//    Hank Childs, Fri Nov 26 10:31:34 PST 2010
+//    Set up expressions from operators when we open a file.
+//
 // ****************************************************************************
 
 int
@@ -4215,6 +4219,9 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         // Update the expression list.
         //
         plotList->UpdateExpressionList(false);
+        ExpressionList *adder = ParsingExprList::Instance()->GetList();
+        VariableMenuPopulator::GetOperatorCreatedExpressions(*adder, md, 
+                                                    GetOperatorPluginManager());
 
         //
         // Determine the name of the simulation

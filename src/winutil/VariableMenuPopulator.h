@@ -120,6 +120,10 @@ class QObject;
 //   Brad Whitlock, Fri Nov 19 15:56:34 PST 2010
 //   I separated code into the new GetOperatorCreatedExpressions method.
 //
+//   Hank Childs, Sat Nov 27 16:46:07 PST 2010
+//   Make GetOperatorCreatedExpressions be a static method, so the viewer can
+//   make use of it any time, even if there is no VariableMenuPopulator.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -139,6 +143,10 @@ public:
                                  int varTypes,
                                  QObject *receiver = 0,
                                  const char *slot = 0);
+
+    static void GetOperatorCreatedExpressions(ExpressionList &newExpressionList,
+                                       const avtDatabaseMetaData *md,
+                                       OperatorPluginManager *oPm);
 
     bool ItemEnabled(int varType) const;
     void ClearDatabaseName();
@@ -194,9 +202,6 @@ private:
     void GetRelevantExpressions(ExpressionList &newExpressionList,
                                 const avtDatabaseMetaData *md,
                                 const ExpressionList &exprList);
-    void GetOperatorCreatedExpressions(ExpressionList &newExpressionList,
-                                       const avtDatabaseMetaData *md,
-                                       OperatorPluginManager *oPm);
     void ClearGroupingInfo();
 
     // Keep track of the name of the database for which we have variables.
