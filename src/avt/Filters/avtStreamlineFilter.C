@@ -1530,6 +1530,10 @@ avtStreamlineFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &pts
 //   Hank Childs, Sat Jun  5 19:01:55 CDT 2010
 //   Strip out the pieces that belong in PICS.
 //
+//   Hank Childs, Sun Nov 28 05:37:44 PST 2010
+//   Always add necessary secondary variables, regardless of whether there
+//   is "colorVar" in the contract.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1546,13 +1550,15 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract0)
         // The avtStreamlinePlot requested "colorVar", so remove that from the
         // contract now.
         out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
-
-        if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
-            out_dr->AddSecondaryVariable(coloringVariable.c_str());
-
-        if (opacityVariable != "")
-            out_dr->AddSecondaryVariable(opacityVariable.c_str());
     }
+    else
+        out_dr = new avtDataRequest(in_dr);
+
+    if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
+        out_dr->AddSecondaryVariable(coloringVariable.c_str());
+
+    if (opacityVariable != "")
+        out_dr->AddSecondaryVariable(opacityVariable.c_str());
 
     avtContract_p out_contract;
     if ( *out_dr )
