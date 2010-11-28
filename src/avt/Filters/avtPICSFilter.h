@@ -112,6 +112,11 @@ class avtICAlgorithm;
 //   Hank Childs, Thu Oct 21 08:54:51 PDT 2010
 //   Add support for cases where we have an empty data set.
 //
+//   Hank Childs, Sat Nov 27 16:52:12 PST 2010
+//   Add method for updating progress.  This method exists in the base class, 
+//   but is protected.  The purpose of this method is to make it public to the
+//   IC algorithms.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -156,6 +161,8 @@ class AVTFILTERS_API avtPICSFilter :
     void                      SetIntegrationDirection(int dir);
 
     void                      InitializeLocators(void);
+    void                      UpdateProgress(int amt, int total)
+                                 { avtFilter::UpdateProgress(amt, total); };
 
     virtual void              ReleaseData(void);
     virtual void              UpdateDataObjectInfo(void);

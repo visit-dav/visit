@@ -214,6 +214,9 @@ avtSerialICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
 //   Rename several methods that reflect the new emphasis in particle 
 //   advection, as opposed to streamlines.
 //
+//   Hank Childs, Sat Nov 27 16:52:12 PST 2010
+//   Add progress reporting.
+//
 // ****************************************************************************
 
 void
@@ -230,6 +233,8 @@ avtSerialICAlgorithm::RunAlgorithm()
         GetDomain(s);
     }
 
+    int numParticlesTotal = activeICs.size();
+    int numParticlesResolved = 0;
     while (1)
     {
         // Integrate all loaded domains.
@@ -254,6 +259,9 @@ avtSerialICAlgorithm::RunAlgorithm()
                 if( s->status != avtIntegralCurve::STATUS_OK )
                 {
                     terminatedICs.push_back(s);
+                    numParticlesResolved++;
+                    picsFilter->UpdateProgress(numParticlesResolved,
+                                               numParticlesTotal);
                 }
                 else
                 {
