@@ -48,6 +48,8 @@
 #include <vtkType.h>
 #include <vector>
 
+#include <ref_ptr.h>
+
 class vtkDataSet;
 
 struct avtInterpolationWeight
@@ -67,23 +69,24 @@ typedef std::vector<avtInterpolationWeight> avtInterpolationWeights;
 //    Hank Childs, Fri Nov 19 14:45:53 PST 2010
 //    Add support for voxels.
 //
+//    Hank Childs, Sun Nov 28 11:34:04 PST 2010
+//    Add support for caching cell locators via void_ref_ptr.
+//
 // ************************************************************************* //
 
 class IVP_API avtCellLocator
 {
-public:
+  public:
+                    avtCellLocator( vtkDataSet* );
+    virtual        ~avtCellLocator();
 
-    avtCellLocator( vtkDataSet* );
-    virtual ~avtCellLocator();
-
-    // ---
-
-    vtkDataSet* GetDataSet() { return dataSet; }
+    vtkDataSet     *GetDataSet() { return dataSet; }
 
     virtual vtkIdType FindCell( const double pos[3], 
                                 avtInterpolationWeights* iw ) const = 0;
+    static void     Destruct(void *);
 
-protected:
+  protected:
 
     void CopyCell( vtkIdType cellid, vtkIdType* ids, 
                    double pts[][3] ) const;
@@ -110,4 +113,8 @@ protected:
     double*        dCoordPtr;
 };
 
+typedef ref_ptr<avtCellLocator> avtCellLocator_p;
+
 #endif
+
+

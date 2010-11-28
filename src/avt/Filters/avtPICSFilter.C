@@ -163,17 +163,22 @@ avtPICSFilter::avtPICSFilter()
 //   Christoph Garth, Fri Jul 9 12:53:11 PDF 2010
 //   Replace vtkVisItCellLocator by avtCellLocator.
 // 
+//   Hank Childs, Sun Nov 28 12:39:26 PST 2010
+//   Make cell locator be reference counted so it can be cached at the database
+//   level.
+//
 // ****************************************************************************
 
 avtPICSFilter::~avtPICSFilter()
 {
-    std::map<DomainType, avtCellLocator*>::const_iterator it;
+    std::map<DomainType, avtCellLocator_p>::iterator it;
 
     for ( it = domainToCellLocatorMap.begin(); it != domainToCellLocatorMap.end(); it++ )
     {
-        if (it->second)
-            delete it->second;
+        if (*(it->second))
+            it->second = NULL;
     }
+    domainToCellLocatorMap.clear();
 }
 
 
@@ -1207,7 +1212,7 @@ avtPICSFilter::InitializeLocators(void)
         dom.timeStep = seedTimeStep0;
         if (OwnDomain(dom))
         {
-            std::map<DomainType,avtCellLocator*>::iterator cli = 
+            std::map<DomainType,avtCellLocator_p>::iterator cli = 
                 domainToCellLocatorMap.find( dom );
 
             if( cli == domainToCellLocatorMap.end() )
@@ -1281,28 +1286,57 @@ avtPICSFilter::UpdateDataObjectInfo(void)
 //   Replace vtkVisItCellLocator by avtCellLocator. Return cached locator
 //   or create one for this domain.
 // 
+//   Hank Childs, Sun Nov 28 12:39:26 PST 2010
+//   Make cell locator be reference counted so it can be cached at the database
+//   level.
+//
 // ****************************************************************************
 
-avtCellLocator *
+avtCellLocator_p
 avtPICSFilter::SetupLocator( const DomainType &domain, vtkDataSet *ds )
 {
-    avtCellLocator *locator = NULL;
+    avtCellLocator_p locator;
 
-    std::map<DomainType, avtCellLocator*>::iterator it = 
+    std::map<DomainType, avtCellLocator_p>::iterator it = 
         domainToCellLocatorMap.find( domain );
     
     if( it == domainToCellLocatorMap.end() )
     {
         int timer = visitTimer->StartTimer();
 
-        switch( ds->GetDataObjectType() )
+        if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
-        case VTK_RECTILINEAR_GRID:
             locator = new avtCellLocatorRect( ds );
-            break;
-        default:
-            locator = new avtCellLocatorBIH( ds );
-            break;
+        }
+        else
+        {
+            std::string velocityName, meshName;
+            if (CacheLocators())
+            {
+                avtDataRequest_p dr = lastContract->GetDataRequest();
+                GetPathlineVelocityMeshVariables(dr, velocityName, meshName);
+
+                void_ref_ptr vrp = FetchArbitraryRefPtr(SPATIAL_DEPENDENCE,
+                                           velocityName.c_str(), domain.domain, 
+                                           curTimeSlice, "BIH_CELL_LOCATOR");
+                if (*vrp != NULL)
+                    locator = ref_ptr<avtCellLocator>((avtCellLocator*) (*vrp),
+                                                      vrp.GetN());
+            }
+
+            // If it wasn't in the cache, we have to build it.
+            if (*locator == NULL)
+            {
+                locator = new avtCellLocatorBIH( ds );
+                if (CacheLocators())
+                {
+                    void_ref_ptr vrp(*locator, avtCellLocator::Destruct, 
+                                     locator.GetN());
+                    StoreArbitraryRefPtr(SPATIAL_DEPENDENCE,
+                                         velocityName.c_str(), domain.domain,
+                                         curTimeSlice, "BIH_CELL_LOCATOR", vrp);
+                }
+            }
         }
 
         domainToCellLocatorMap[domain] = locator;
@@ -1324,20 +1358,32 @@ avtPICSFilter::SetupLocator( const DomainType &domain, vtkDataSet *ds )
 //  Programmer: Christoph Garth
 //  Creation:   July 13, 2010
 //
+//  Modifications:
+//
+//   Hank Childs, Sun Nov 28 12:39:26 PST 2010
+//   Make cell locator be reference counted so it can be cached at the database
+//   level.
+//
 // ****************************************************************************
 
 avtIVPField* 
 avtPICSFilter::GetFieldForDomain( const DomainType &domain, vtkDataSet *ds )
 {
-    avtCellLocator *locator = SetupLocator( domain, ds );
+    avtCellLocator_p locator = SetupLocator( domain, ds );
 
     if (doPathlines)
-        return new avtIVPVTKTimeVaryingField( ds, locator, domainTimeIntervals[curTimeSlice][0], domainTimeIntervals[curTimeSlice][1] );
+    {
+        return new avtIVPVTKTimeVaryingField(ds, *locator, 
+                                         domainTimeIntervals[curTimeSlice][0], 
+                                         domainTimeIntervals[curTimeSlice][1]);
+    }
     else
+    {
         if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR)
-            return new avtIVPM3DC1Field( ds, locator );
+            return new avtIVPM3DC1Field(ds, *locator);
         else
-            return new avtIVPVTKField( ds, locator );
+            return new avtIVPVTKField(ds, *locator);
+    }
 }
 
 // ****************************************************************************
@@ -1387,6 +1433,10 @@ avtPICSFilter::GetFieldForDomain( const DomainType &domain, vtkDataSet *ds )
 //
 //   Christoph Garth, Fri Jul 9 12:53:11 PDF 2010
 //   Replace vtkVisItCellLocator by avtCellLocator
+//
+//   Hank Childs, Sun Nov 28 12:39:26 PST 2010
+//   Make cell locator be reference counted so it can be cached at the database
+//   level.
 //
 // ****************************************************************************
 
@@ -1439,7 +1489,7 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
     }
 
     // check if we have a locator
-    std::map<DomainType,avtCellLocator*>::iterator cli = 
+    std::map<DomainType,avtCellLocator_p>::iterator cli = 
         domainToCellLocatorMap.find( domain );
 
     if( cli != domainToCellLocatorMap.end() && specifyPoint )
@@ -1453,12 +1503,12 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
             // We are getting data in a point based way and the point changed
             // and now we have a new "domain 0".  Remove the locator for the
             // old one.
-            delete cli->second;
+            cli->second = NULL;
             domainToCellLocatorMap.erase( domain );
         }
     }
 
-    avtCellLocator* locator = SetupLocator( domain, ds );
+    avtCellLocator_p locator = SetupLocator( domain, ds );
     
     vtkIdType cell = locator->FindCell( &pt.x, NULL );
 
@@ -2497,4 +2547,34 @@ avtPICSFilter::GetPathlineVelocityMeshVariables(avtDataRequest_p &dataRequest, s
     mesh = dataRequest->GetVariable();
     velocity = mesh;
 }
+
+
+// ****************************************************************************
+//  Method: avtPICSFilter::CacheLocators
+//
+//  Purpose:
+//      Determines whether or not locators we calculate should be cached in
+//      the database.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+bool
+avtPICSFilter::CacheLocators(void)
+{
+#ifdef PARALLEL
+    if (OperatingOnDemand())
+        return false;
+    if (method == STREAMLINE_PARALLEL_STATIC_DOMAINS)
+        return true;
+
+    return false;
+#else
+    // Always true for serial.
+    return true;
+#endif
+}
+
 

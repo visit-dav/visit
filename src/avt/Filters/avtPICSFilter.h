@@ -43,6 +43,7 @@
 #ifndef AVT_PICS_FILTER_H
 #define AVT_PICS_FILTER_H
 
+#include <avtCellLocator.h>
 #include <avtIntegralCurve.h>
 #include <avtDatasetOnDemandFilter.h>
 #include <avtDatasetToDatasetFilter.h>
@@ -56,7 +57,6 @@
 #include <mpi.h>
 #endif
 
-class avtCellLocator;
 class DomainType;
 class avtICAlgorithm;
 
@@ -116,6 +116,9 @@ class avtICAlgorithm;
 //   Add method for updating progress.  This method exists in the base class, 
 //   but is protected.  The purpose of this method is to make it public to the
 //   IC algorithms.
+//
+//   Hank Childs, Sun Nov 28 12:20:12 PST 2010
+//   Add support for caching locators in the database.
 //
 // ****************************************************************************
 
@@ -194,7 +197,7 @@ class AVTFILTERS_API avtPICSFilter :
     int numDomains, numTimeSteps, cacheQLen;
     std::vector<int> domainToRank;
     std::vector<vtkDataSet*>dataSets;
-    std::map<DomainType, avtCellLocator*> domainToCellLocatorMap;
+    std::map<DomainType, avtCellLocator_p> domainToCellLocatorMap;
 
     std::vector<double> pointList;
 
@@ -255,8 +258,9 @@ class AVTFILTERS_API avtPICSFilter :
                                               std::vector<int> &ranks,
                                               std::vector<int> &doms );
     double                    GetLengthScale(void);
+    bool                      CacheLocators(void);
 
-    avtCellLocator           *SetupLocator(const DomainType &, vtkDataSet *);
+    avtCellLocator_p          SetupLocator(const DomainType &, vtkDataSet *);
     virtual avtIVPField      *GetFieldForDomain(const DomainType&, vtkDataSet*);
 
     friend class avtICAlgorithm;
