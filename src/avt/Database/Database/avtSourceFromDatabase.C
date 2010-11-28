@@ -52,6 +52,7 @@
 #include <avtDataset.h>
 #include <avtSILRestriction.h>
 #include <avtSILRestrictionTraverser.h>
+#include <avtVariableCache.h>
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
@@ -761,5 +762,88 @@ avtSourceFromDatabase::CanDoStreaming(avtContract_p contract)
 {
     return database->CanDoStreaming(contract->GetDataRequest());
 }
+
+
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::StoreArbitraryVTKObject
+//
+//  Purpose:
+//      Stores an arbitrary VTK object in the cache.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 26, 2010
+//
+// ****************************************************************************
+
+void
+avtSourceFromDatabase::StoreArbitraryVTKObject(const char *name, int domain,
+                                              int ts, const char *type,
+                                              vtkObject *obj)
+{
+    avtVariableCache *cache = database->GetCache();
+    cache->CacheVTKObject(name, type, ts, domain, "", obj);
+}
+
+
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::FetchArbitraryVTKObject
+//
+//  Purpose:
+//      Fetches an arbitrary VTK object from the cache.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 26, 2010
+//
+// ****************************************************************************
+
+vtkObject *
+avtSourceFromDatabase::FetchArbitraryVTKObject(const char *name, int domain,
+                                              int ts, const char *type)
+{
+    avtVariableCache *cache = database->GetCache();
+    return cache->GetVTKObject(name, type, ts, domain, "");
+}
+
+
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::StoreArbitraryRefPtr
+//
+//  Purpose:
+//      Stores an arbitrary ref_ptr object in the cache.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 26, 2010
+//
+// ****************************************************************************
+
+void
+avtSourceFromDatabase::StoreArbitraryRefPtr(const char *name, int domain,
+                                              int ts, const char *type,
+                                              void_ref_ptr obj)
+{
+    avtVariableCache *cache = database->GetCache();
+    cache->CacheVoidRef(name, type, ts, domain, obj);
+}
+
+
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::FetchArbitraryRefPtr
+//
+//  Purpose:
+//      Fetches an arbitrary ref_ptr object from the cache.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 26, 2010
+//
+// ****************************************************************************
+
+void_ref_ptr
+avtSourceFromDatabase::FetchArbitraryRefPtr(const char *name, int domain,
+                                              int ts, const char *type)
+{
+    avtVariableCache *cache = database->GetCache();
+    return cache->GetVoidRef(name, type, ts, domain);
+}
+
 
 

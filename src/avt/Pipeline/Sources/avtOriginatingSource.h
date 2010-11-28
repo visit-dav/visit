@@ -51,6 +51,7 @@
 #include <avtDataRequest.h>
 #include <avtContract.h>
 
+class     vtkObject;
 
 class     avtInlinePipelineSource;
 class     avtMetaData;
@@ -125,6 +126,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Hank Childs, Thu Aug 26 16:57:24 PDT 2010
 //    Add data member for the last contract.
 //
+//    Hank Childs, Fri Nov 26 16:26:55 PST 2010
+//    Add support for caching of arbitrary objects.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
@@ -150,6 +154,21 @@ class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
     void                           GetSpeciesAuxiliaryData(const char *type,
                                        void *args, avtContract_p,
                                        VoidRefList &);
+
+    virtual vtkObject             *FetchArbitraryVTKObject(const char *name,
+                                                           int dom, int ts,
+                                                           const char *type);
+    virtual void                   StoreArbitraryVTKObject(const char *name,
+                                                           int dom, int ts,
+                                                           const char *type,
+                                                           vtkObject *);
+    virtual void_ref_ptr           FetchArbitraryRefPtr(const char *name,
+                                                        int dom, int ts,
+                                                        const char *type);
+    virtual void                   StoreArbitraryRefPtr(const char *name,
+                                                        int dom, int ts,
+                                                        const char *type,
+                                                        void_ref_ptr);
 
     virtual bool                   Update(avtContract_p);
     virtual bool                   CanDoStreaming(avtContract_p) {return true;}

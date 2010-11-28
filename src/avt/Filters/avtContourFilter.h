@@ -126,6 +126,7 @@ class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
 
     int                        nnodes;
     int                        current_node;
+    int                        timeslice_index;
 
     virtual avtContract_p
                                ModifyContract(avtContract_p);

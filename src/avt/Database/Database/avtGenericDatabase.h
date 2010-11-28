@@ -339,6 +339,10 @@ class     vtkUnstructuredGrid;
 //    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
 //    Added ability to turn on stricter file format error checking.
 //
+//    Hank Childs, Fri Nov 26 15:52:25 PST 2010
+//    Make cache available externally so filters from the pipeline can cache
+//    their data structures.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -370,6 +374,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                     const int dom, std::string &);
 
     virtual void               SetStrictMode(bool);
+
+    virtual avtVariableCache  *GetCache(void) { return &cache; };
 
   protected:
     avtFileFormatInterface    *Interface;

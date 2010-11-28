@@ -126,6 +126,9 @@ class  PickAttributes;
 //    Hank Childs, Thu Jun 12 16:13:52 PDT 2008
 //    Added method CanDoStreaming.
 //
+//    Hank Childs, Fri Nov 26 16:26:55 PST 2010
+//    Add support for caching of arbitrary objects.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
@@ -143,6 +146,21 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
                             void *args, avtDataRequest_p, VoidRefList &);
     virtual void        FetchSpeciesAuxiliaryData(const char *type, 
                             void *args, avtDataRequest_p, VoidRefList &);
+
+    virtual vtkObject    *FetchArbitraryVTKObject(const char *name,
+                                                  int dom, int ts,
+                                                  const char *type);
+    virtual void          StoreArbitraryVTKObject(const char *name,
+                                                  int dom, int ts,
+                                                  const char *type,
+                                                  vtkObject *);
+    virtual void_ref_ptr  FetchArbitraryRefPtr(const char *name,
+                                               int dom, int ts,
+                                               const char *type);
+    virtual void          StoreArbitraryRefPtr(const char *name,
+                                               int dom, int ts,
+                                               const char *type,
+                                               void_ref_ptr);
 
     avtSIL             *GetSIL(int stateIndex);
 

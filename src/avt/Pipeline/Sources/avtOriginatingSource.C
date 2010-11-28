@@ -753,3 +753,92 @@ avtOriginatingSource::NumStagesForFetch(avtDataRequest_p)
 }
 
 
+// ****************************************************************************
+//  Method: avtOriginatingSource::StoreArbitraryVTKObject
+//
+//  Purpose:
+//      Stores an arbitrary VTK object in the cache.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 26, 2010
+//
+// ****************************************************************************
+
+void
+avtOriginatingSource::StoreArbitraryVTKObject(const char *name, int domain,
+                                              int ts, const char *type,
+                                              vtkObject *obj)
+{
+    debug1 << "Asked to store object, but don't know how to do that." << endl;
+    debug1 << "This means caching will not work; this case is not expected"
+           << endl;
+}
+
+
+// ****************************************************************************
+//  Method: avtOriginatingSource::FetchArbitraryVTKObject
+//
+//  Purpose:
+//      Fetches an arbitrary VTK object from the cache.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 26, 2010
+//
+// ****************************************************************************
+
+vtkObject *
+avtOriginatingSource::FetchArbitraryVTKObject(const char *name, int domain,
+                                              int ts, const char *type)
+{
+    debug1 << "Asked to fetch object, but don't know how to do that." << endl;
+    debug1 << "This means caching will not work; this case is not expected"
+           << endl;
+    return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtOriginatingSource::StoreArbitraryRefPtr
+//
+//  Purpose:
+//      Stores an arbitrary ref_ptr object in the cache.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 26, 2010
+//
+// ****************************************************************************
+
+void
+avtOriginatingSource::StoreArbitraryRefPtr(const char *name, int domain,
+                                              int ts, const char *type,
+                                              void_ref_ptr obj)
+{
+    debug1 << "Asked to store object, but don't know how to do that." << endl;
+    debug1 << "This means caching will not work; this case is not expected"
+           << endl;
+}
+
+
+// ****************************************************************************
+//  Method: avtOriginatingSource::FetchArbitraryRefPtr
+//
+//  Purpose:
+//      Fetches an arbitrary ref_ptr object from the cache.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 26, 2010
+//
+// ****************************************************************************
+
+void_ref_ptr
+avtOriginatingSource::FetchArbitraryRefPtr(const char *name, int domain,
+                                              int ts, const char *type)
+{
+    debug1 << "Asked to fetch object, but don't know how to do that." << endl;
+    debug1 << "This means caching will not work; this case is not expected"
+           << endl;
+    void_ref_ptr vrp;
+    return vrp;
+}
+
+
