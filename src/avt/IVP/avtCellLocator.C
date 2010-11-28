@@ -115,6 +115,27 @@ avtCellLocator::~avtCellLocator()
     dataSet->Delete();
 }
 
+
+// ****************************************************************************
+//  Method: avtCellLocator::Destruct
+//
+//  Purpose:
+//      A routine that a void_ref_ptr can call to cleanly destruct a cell 
+//      locator.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+void
+avtCellLocator::Destruct(void *p)
+{
+    avtCellLocator *cl = (avtCellLocator *) p;
+    delete cl;
+}
+
+
 //----------------------------------------------------------------------------
 // Modifications:
 //   Kathleen Bonnell, Fri Aug 13 08:20:15 MST 2010

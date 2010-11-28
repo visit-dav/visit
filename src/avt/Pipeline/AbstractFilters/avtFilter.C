@@ -1673,6 +1673,11 @@ avtFilter::CanCacheDataItem(void)
 //  Programmer: Hank Childs
 //  Creation:   November 28, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Nov 28 12:34:06 PST 2010
+//    Fix up goof in initial implementation.
+//
 // ****************************************************************************
 
 bool
@@ -1687,7 +1692,7 @@ avtFilter::CanCacheSpatialItem(void)
        return false;
     if (! validity.GetOriginalZonesIntact())
        return false;
-    if (! validity.GetPointsWereTransformed())
+    if (validity.GetPointsWereTransformed())
        return false;
 
     return true;
