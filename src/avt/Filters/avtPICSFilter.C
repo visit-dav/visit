@@ -2289,6 +2289,9 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 //   Hank Childs, Tue Sep  7 23:29:40 PDT 2010
 //   Fix problem with previous change regarding removing the color variable.
 //
+//   Hank Childs, Fri Nov 26 15:14:46 PST 2010
+//   More robust test for removing the presence of "colorVar".
+//
 // ****************************************************************************
 
 avtContract_p
@@ -2308,13 +2311,10 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
 
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
 
-    // If we are part of a plot, the avtPICSPlot requested "colorVar", so remove that from the
-    // contract now.
-    bool removeColorVar = false;
-    if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR || doPathlines)
-        removeColorVar = true;
+    // If we are part of a plot, the avtStreamlinePlot requested "colorVar", so 
+    // remove that from the contract now.
     avtDataRequest_p out_dr = NULL;
-    if (removeColorVar)
+    if (strcmp(in_dr->GetVariable(), "colorVar") == 0)
         out_dr = new avtDataRequest(in_dr, in_dr->GetOriginalVariable());
     else
         out_dr = new avtDataRequest(in_dr);
