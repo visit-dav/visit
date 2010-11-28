@@ -92,6 +92,10 @@
 //   Dave Pugmire, Tue Oct 19 10:53:51 EDT 2010
 //   Fix for unstructured meshes.
 //
+//   Hank Childs, Fri Nov 26 14:39:43 PST 2010
+//   Add data member (origNumIntegralCurves) to keep track of the starting
+//   number of integral curves.  This is for progress updates.
+//
 // ****************************************************************************
 
 class avtParDomICAlgorithm : public avtParICAlgorithm
@@ -113,6 +117,7 @@ class avtParDomICAlgorithm : public avtParICAlgorithm
     void                      HandleIncomingIC();
     
     int                       numICChange, totalNumIntegralCurves;
+    int                       origNumIntegralCurves;
     int                       sentICCounter;
 
     std::list<avtIntegralCurve *> activeICs;

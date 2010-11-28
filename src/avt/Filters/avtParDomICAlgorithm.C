@@ -214,6 +214,7 @@ avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
 
     totalNumIntegralCurves = activeICs.size();
     SumIntAcrossAllProcessors(totalNumIntegralCurves);
+    origNumIntegralCurves = totalNumIntegralCurves;
     /*
     debug5<<"Init_totalNumIntegralCurves= "<<totalNumIntegralCurves<<endl;
     debug5<<"My ICs: "<<endl;
@@ -259,6 +260,9 @@ avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
 //   Fix for unstructured meshes. Need to account for particles that are sent to domains
 //   that based on bounding box, and the particle does not lay in any cells.
 //
+//   Hank Childs, Fri Nov 26 14:39:43 PST 2010
+//   Add progress updates based on number of particles completed.
+//
 // ****************************************************************************
 
 void
@@ -274,6 +278,9 @@ avtParDomICAlgorithm::ExchangeTermination()
         //debug5<<rank<<": SEND TERMINATE "<<numICChange<<endl;
         
         totalNumIntegralCurves += numICChange;
+        picsFilter->UpdateProgress(
+                       origNumIntegralCurves-totalNumIntegralCurves,
+                       origNumIntegralCurves);
         numICChange = 0;
     }
 
