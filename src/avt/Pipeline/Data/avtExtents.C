@@ -109,6 +109,25 @@ avtExtents::~avtExtents()
 
 
 // ****************************************************************************
+//  Method: avtExtents::Destruct
+//
+//  Purpose:
+//      A destructor function that is compatible with void_ref_ptr.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 28, 2010
+//
+// ****************************************************************************
+
+void
+avtExtents::Destruct(void *p)
+{
+    avtExtents *e = (avtExtents *) p;
+    delete e;
+}
+
+
+// ****************************************************************************
 //  Method: avtExtents::Print
 //
 //  Purpose:

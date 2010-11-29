@@ -216,10 +216,14 @@ avtOriginatingDatasetSource::FetchData(avtDataRequest_p spec)
 //    Hank Childs, Thu Aug 26 16:57:24 PDT 2010
 //    Don't calculate extents we don't want.
 //
+//    Hank Childs, Sun Nov 28 16:51:28 PST 2010
+//    Cache extents when possible.
+//
 // ****************************************************************************
 
 void
-avtOriginatingDatasetSource::MergeExtents(vtkDataSet *ds)
+avtOriginatingDatasetSource::MergeExtents(vtkDataSet *ds, int dom, int ts, 
+                                          const char *meshname)
 {
     if (ds == NULL)
     {
@@ -249,7 +253,20 @@ avtOriginatingDatasetSource::MergeExtents(vtkDataSet *ds)
         }
         else
         {
-            ds->GetBounds(bounds);
+            void_ref_ptr ptr = FetchArbitraryRefPtr(meshname,dom,ts,"EXTENTS");
+            if (*ptr != NULL)
+            {
+                avtExtents *e = (avtExtents *) *ptr;
+                e->CopyTo(bounds);
+            }
+            else
+            {
+                ds->GetBounds(bounds);
+                avtExtents *e = new avtExtents(3);
+                e->Set(bounds);
+                void_ref_ptr vrp(e, avtExtents::Destruct);
+                StoreArbitraryRefPtr(meshname, dom, ts, "EXTENTS", vrp);
+            }
         }
 
         double dbounds[6];
@@ -283,8 +300,22 @@ avtOriginatingDatasetSource::MergeExtents(vtkDataSet *ds)
         if (! lastContract->ShouldCalculateVariableExtents(vname))
             continue;
 
-        bool ignoreGhost = true;
-        GetDataRange(ds, dextents, vname, true);
+        void_ref_ptr ptr = FetchArbitraryRefPtr(vname,dom,ts,"EXTENTS");
+        if (*ptr != NULL)
+        {
+            avtExtents *e = (avtExtents *) *ptr;
+            e->CopyTo(dextents);
+        }
+        else
+        {
+            bool ignoreGhost = true;
+            GetDataRange(ds, dextents, vname, ignoreGhost);
+            avtExtents *e = new avtExtents(1);
+            e->Set(dextents);
+            void_ref_ptr vrp(e, avtExtents::Destruct);
+            StoreArbitraryRefPtr(vname, dom, ts, "EXTENTS", vrp);
+        }
+
         atts.GetThisProcsOriginalDataExtents(vname)->Merge(dextents);
 
         if (atts.GetVariableType(vname) == AVT_ARRAY_VAR)

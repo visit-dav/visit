@@ -485,6 +485,10 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    extents ... and this extents calculation happens before the PopDBObjInfo
 //    at the end.
 //
+//    Hank Childs, Sun Nov 28 16:51:28 PST 2010
+//    Pass meshname and time step to MergeExtents ... this gives it enough
+//    information to cache.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -1107,7 +1111,8 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
     // Make sure that every domain we read has its extents merged into the
     // extents for all the dataset.
     //
-    src->MergeExtents(rv);
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    src->MergeExtents(rv, domain, ts, meshname.c_str());
 
     return rv;
 }
