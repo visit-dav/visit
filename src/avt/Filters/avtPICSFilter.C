@@ -458,7 +458,7 @@ avtPICSFilter::GetDomain(const DomainType &domain,
 // ****************************************************************************
 
 int
-avtPICSFilter::GetTimeStep(double &t) const
+avtPICSFilter::GetTimeStep(double t) const
 {
     if (doPathlines)
     {

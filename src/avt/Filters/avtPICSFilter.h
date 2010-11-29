@@ -228,7 +228,7 @@ class AVTFILTERS_API avtPICSFilter :
                                               double *extents,
                                               int maxSteps=-1);
     virtual vtkDataSet        *GetDomain(const DomainType &, double = 0.0, double = 0.0, double = 0.0);
-    virtual int               GetTimeStep(double &t) const;
+    virtual int               GetTimeStep(double t) const;
     virtual bool              DomainLoaded(DomainType &) const;
 
     void                      SetZToZero(vtkPolyData *) const;

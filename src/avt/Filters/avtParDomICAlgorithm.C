@@ -575,6 +575,9 @@ avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 //   Rename this method to reflect the new emphasis in particle advection, as
 //   opposed to streamlines.
 //
+//   Dave Pugmire, Mon Nov 29 09:28:07 EST 2010
+//   Need to synchronize to get number of total streamlines after continuation.
+//
 // ****************************************************************************
 
 void
@@ -586,10 +589,10 @@ avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute()
         terminatedICs.pop_front();
         
         activeICs.push_back(s);
-        numICChange++;
     }
-
-    ExchangeTermination();
+    
+    totalNumIntegralCurves = activeICs.size();
+    SumIntAcrossAllProcessors(totalNumIntegralCurves);
 }
 
 #endif

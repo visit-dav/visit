@@ -99,6 +99,9 @@ class MemStream;
 //   Fix for unstructured meshes. Need to account for particles that are sent to domains
 //   that based on bounding box, and the particle does not lay in any cells.
 //
+//   Dave Pugmire, Mon Nov 29 09:23:01 EST 2010
+//   Add optional tag argument to CleanupRequests.
+//
 // ****************************************************************************
 
 class avtParICAlgorithm : public avtICAlgorithm
@@ -121,7 +124,7 @@ class avtParICAlgorithm : public avtICAlgorithm
     virtual void              PostRunAlgorithm();
 
     //Manage communication.
-    void                      CleanupRequests();
+    void                      CleanupRequests(int tag=-1);
     void                      CheckPendingSendRequests();
 
     // Send/Recv Integral curves.
