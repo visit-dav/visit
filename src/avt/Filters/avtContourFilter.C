@@ -701,6 +701,8 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
              StoreArbitraryVTKObject(DATA_DEPENDENCE, contourVar, domain, ts,
                                      "SCALAR_TREE", tree);
          }
+         else
+             tree->Register(NULL); // to account for later dereference
     }
 
     UpdateProgress(current_node*total + 2*nLevels+2, total*nnodes);
