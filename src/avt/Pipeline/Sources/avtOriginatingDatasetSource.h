@@ -76,7 +76,7 @@ class PIPELINE_API avtOriginatingDatasetSource
                               avtOriginatingDatasetSource();
     virtual                  ~avtOriginatingDatasetSource();
 
-    void                      MergeExtents(vtkDataSet *);
+    void                      MergeExtents(vtkDataSet *, int dom, int ts, const char *);
 
   protected:
     avtDatasetVerifier        verifier;
