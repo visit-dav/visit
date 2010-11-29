@@ -180,7 +180,7 @@ avtParICAlgorithm::InitializeBuffers(vector<avtIntegralCurve *> &seeds,
 }
 
 // ****************************************************************************
-//  Method: avtParICAlgorithm::CleanupAsynchronous
+//  Method: avtParICAlgorithm::CleanupRequests
 //
 //  Purpose:
 //      Claenup the buffers used when doing asynchronous processing.
@@ -188,21 +188,28 @@ avtParICAlgorithm::InitializeBuffers(vector<avtIntegralCurve *> &seeds,
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//   Dave Pugmire, Mon Nov 29 09:23:01 EST 2010
+//   Add optional tag argument to CleanupRequests.
+//
 // ****************************************************************************
 
 void
-avtParICAlgorithm::CleanupRequests()
+avtParICAlgorithm::CleanupRequests(int tag)
 {
     for (bufferIterator i = recvBuffers.begin(); i != recvBuffers.end(); i++)
     {
+        if (tag != -1 && tag != i->first.second)
+            continue;
+        
         MPI_Request r = i->first.first;
         if (r != MPI_REQUEST_NULL)
             MPI_Cancel(&r);
         if (i->second != NULL)
             delete [] i->second;
+        
+        recvBuffers.erase(i);
     }
-    
-    recvBuffers.clear();
 }
 
 // ****************************************************************************
@@ -966,6 +973,9 @@ CountIDs(list<avtIntegralCurve *> &l, int id)
 //   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
 //   Rename method, as we plan to add more communication methods.
 //
+//   Dave Pugmire, Mon Nov 29 09:23:01 EST 2010
+//   Cleanup only the STREAMLINE_TAG requests.
+//
 // ****************************************************************************
 
 void
@@ -976,7 +986,7 @@ avtParICAlgorithm::RestoreIntegralCurveSequence()
           <<" terminatedICs: "<<terminatedICs.size()<<endl;
 
     //Create larger streamline buffers.
-    CleanupRequests();
+    CleanupRequests(avtParICAlgorithm::STREAMLINE_TAG);
     messageTagInfo[avtParICAlgorithm::STREAMLINE_TAG] = std::pair<int,int>(numSLRecvs, 512*1024);
     for (int i = 0; i < numSLRecvs; i++)
         PostRecv(avtParICAlgorithm::STREAMLINE_TAG);
