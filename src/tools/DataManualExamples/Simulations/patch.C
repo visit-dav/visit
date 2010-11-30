@@ -498,7 +498,7 @@ void
 patch_refine(patch_t *patch, int refinement_ratio, 
     void (*maskcb)(patch_t *, image_t *))
 {
-    int i, j, index;
+    int i, j;
 
     /* Call the maskcb callback to flag the cells in the patch that need
      * to be refined.

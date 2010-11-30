@@ -101,7 +101,7 @@ int csg_bound_types[] = {
     VISIT_CSG_PLANE_PN
 };
 
-float csg_bound_coeffs[] = {
+double csg_bound_coeffs[] = {
     0.,  0., 0.,  8.,          /* sphere 1*/
     0.,  0., 0., 10.,          /* sphere 2*/
     0.,  2., 0.,  0., -1., 0., /* plane 1 point, normal*/
@@ -225,7 +225,6 @@ ProcessConsoleCommand(simulation_data *sim)
 }
 
 /* SIMULATE ONE TIME STEP */
-#include <unistd.h>
 void simulate_one_timestep(simulation_data *sim)
 {
     ++sim->cycle;
@@ -257,7 +256,7 @@ void simulate_one_timestep(simulation_data *sim)
     csg_bound_coeffs[PLANE4_COEFF+5] = sinA;
     }
 
-    sleep(1);
+    sim_sleep(1);
 }
 
 /******************************************************************************
@@ -479,7 +478,7 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             VisIt_CSGMesh_setBoundaryTypes(h, boundaryTypes);
 
             VisIt_VariableData_alloc(&boundaryCoeffs);
-            VisIt_VariableData_setDataF(boundaryCoeffs, VISIT_OWNER_SIM, 
+            VisIt_VariableData_setDataD(boundaryCoeffs, VISIT_OWNER_SIM, 
                 1, csg_num_bound_coeffs, csg_bound_coeffs);
             VisIt_CSGMesh_setBoundaryCoeffs(h, boundaryCoeffs);
 

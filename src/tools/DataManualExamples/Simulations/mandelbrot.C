@@ -272,21 +272,21 @@ simulate_one_timestep(simulation_data *sim)
 {
     printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
 
-    const float window0[] = {-1.6, 0.6, -1.1, 1.1};
-#define ORIGINX -1.5
-#define ORIGINY -0.5
-#define WSIZE 0.5
+    const float window0[] = {-1.6f, 0.6f, -1.1f, 1.1f};
+#define ORIGINX -1.5f
+#define ORIGINY -0.5f
+#define WSIZE 0.5f
     const float window1[] = {ORIGINX, ORIGINX + WSIZE, ORIGINY, ORIGINY + WSIZE};
 #define NX 256
 #define NY 256
 
     /* oscillate between 2 windows */
     float window[4];
-    float t = 0.5 * sin(sim->time) + 0.5;
-    window[0] = (1. - t)*window0[0] + t*window1[0];
-    window[1] = (1. - t)*window0[1] + t*window1[1];
-    window[2] = (1. - t)*window0[2] + t*window1[2];
-    window[3] = (1. - t)*window0[3] + t*window1[3];
+    float t = 0.5f * sin(sim->time) + 0.5f;
+    window[0] = (1.f - t)*window0[0] + t*window1[0];
+    window[1] = (1.f - t)*window0[1] + t*window1[1];
+    window[2] = (1.f - t)*window0[2] + t*window1[2];
+    window[3] = (1.f - t)*window0[3] + t*window1[3];
 
     /* Blow away the previous patch data and calculate. */
     patch_dtor(&sim->patch);
@@ -725,7 +725,7 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             for(i = 0; i < (patch->nx+1); ++i)
             {
                 float t = float(i) / float(patch->nx);
-                coordX[i] = (1.-t)*x0 + t*x1;
+                coordX[i] = (1.f-t)*x0 + t*x1;
             }
             /* Initialize Y coords. */
             float *coordY = (float *)malloc(sizeof(float) * (patch->ny+1));
@@ -735,7 +735,7 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             for(i = 0; i < (patch->ny+1); ++i)
             {
                 float t = float(i) / float(patch->ny);
-                coordY[i] = (1.-t)*y0 + t*y1;
+                coordY[i] = (1.f-t)*y0 + t*y1;
             }
 
             /* Give the mesh some coordinates it can use. */

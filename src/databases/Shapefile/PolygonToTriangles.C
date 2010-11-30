@@ -137,7 +137,7 @@ public:
     ~PolygonToTriangles()
     {
         // Free all of the vertices that we allocated for the tessellator.
-        for(int i = 0; i < vertexAllocs.size(); ++i)
+        for(size_t i = 0; i < vertexAllocs.size(); ++i)
             free(vertexAllocs[i]);
         vertexAllocs.clear();
 
@@ -192,7 +192,7 @@ public:
     bool GetTriangle(int t, int &a, int &b, int &c) const
     {
         bool ret;
-        if((ret = (t >= 0 && t < triangles.size())) == true)
+        if((ret = (t >= 0 && t < (int)triangles.size())) == true)
         {
             a = triangles[t*3];
             b = triangles[t*3+1];

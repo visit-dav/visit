@@ -67,4 +67,39 @@ SimulationArguments(int argc, char **argv)
     }
 }
 
+/*****************************************************************************
+ * Method: sim_sleep
+ *
+ * Purpose: 
+ *   This helper function lets simulation examples sleep so it looks like they
+ *   are busy.
+ *
+ * Arguments:
+ *   sec : The number of seconds
+ *
+ * Returns:    None
+ *
+ * Programmer: Brad Whitlock
+ * Creation:   Tue Feb 16 16:22:24 PST 2010
+ *
+ * Modifications:
+ *   
+ ****************************************************************************/
+
+#ifdef _WIN32
+#include <Windows.h>
+void
+sim_sleep(int sec)
+{
+    Sleep(sec * 1000);
+}
+#else
+#include <unistd.h>
+void
+sim_sleep(int sec)
+{
+    sleep(sec);
+}
+#endif
+
 #endif

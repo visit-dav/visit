@@ -805,7 +805,6 @@ void
 MeshCache_add_mesh(parsim_map_t *mesh_cache, const char *name, int domain, 
     MeshAndMetaData m_mmd)
 {
-    void *mesh_copy;
     parsim_mesh_record_t *mesh_entry;
 
     /* Look for an entry in the map with the same mesh name. */
@@ -826,12 +825,13 @@ MeshCache_add_mesh(parsim_map_t *mesh_cache, const char *name, int domain,
     }
     else
     {
+        void *domain_mesh = NULL;
         /* Replace the existing metadata. */
         SimMeshMetaData_free(mesh_entry->metadata);
         mesh_entry->metadata = m_mmd.metadata;
 
         /* We found a mesh with the given name. Look for the specified domain. */
-        void *domain_mesh = parsim_map_get(&mesh_entry->domain_meshes, 
+        domain_mesh = parsim_map_get(&mesh_entry->domain_meshes, 
             (void*)&domain, key_compare_ints);
 
         if(domain_mesh == NULL)
@@ -966,12 +966,14 @@ VarCache_add_var(parsim_map_t *var_cache, const char *name, int domain,
     }
     else
     {
+        void *domain_var = NULL;
+
         /* Replace the metadata. */
         SimVariableMetaData_free(var_entry->metadata);
         var_entry->metadata = metadata;
 
         /* We found a var with the given name. Look for the specified domain. */
-        void *domain_var = parsim_map_get(&var_entry->domain_vars, 
+        domain_var = parsim_map_get(&var_entry->domain_vars, 
             (void*)&domain, key_compare_ints);
 
         if(domain_var == NULL)
@@ -1273,7 +1275,7 @@ SimGetDomainList(const char *name, void *cbdata)
     if(VisIt_DomainList_alloc(&h) != VISIT_ERROR)
     {
         visit_handle hdl;
-        int i, *iptr = NULL;
+        int *iptr = NULL;
         simulation_data *sim = (simulation_data *)cbdata;
 
         iptr = (int *)malloc(sizeof(int));
@@ -1508,7 +1510,7 @@ CreateRectMesh(int domain, SimRectilinearMesh **rmesh, SimDataArray **dist)
     for(i = 0; i < dims[0]-1; ++i)
     {
         distvar[k*(dims[1]-1)*(dims[0]-1) + j*(dims[0]-1) + i] = 
-           sqrt(x[i]*x[i] + y[j]*y[j] + z[k]*z[k]);
+           (float)sqrt(x[i]*x[i] + y[j]*y[j] + z[k]*z[k]);
     }
     *dist = (SimDataArray *)malloc(sizeof(SimDataArray));
     (*dist)->data = (void *)distvar;
@@ -1650,7 +1652,7 @@ static void BroadcastSlaveCommand(int *command)
 }
 
 /* Callback involved in command communication. */
-void SlaveProcessCallback()
+void SlaveProcessCallback(void)
 {
    int command = VISIT_COMMAND_PROCESS;
    BroadcastSlaveCommand(&command);

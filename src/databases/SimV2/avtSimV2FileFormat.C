@@ -143,18 +143,18 @@ avtSimV2FileFormat::avtSimV2FileFormat(const char *filename)
     char buff[256];
     while (in >> buff)
     {
-        if (strcasecmp(buff, "host")==0)
+        if (strcmp(buff, "host")==0)
         {
             in >> buff;
             simInfo.SetHost(buff);
         }
-        else if (strcasecmp(buff, "port")==0)
+        else if (strcmp(buff, "port")==0)
         {
             int port;
             in >> port;
             simInfo.SetPort(port);
         }
-        else if (strcasecmp(buff, "key")==0)
+        else if (strcmp(buff, "key")==0)
         {
             in >> buff;
             simInfo.SetSecurityKey(buff);
@@ -1217,7 +1217,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
             break;
         }
     }
-    CATCH2(VisItException, e)
+    CATCH(VisItException)
     {
         delete phSplit;
         simv2_FreeObject(h);

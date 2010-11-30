@@ -192,7 +192,7 @@ static void BroadcastSlaveCommand(int *command)
 }
 
 /* Callback involved in command communication. */
-void SlaveProcessCallback()
+void SlaveProcessCallback(void)
 {
    int command = VISIT_COMMAND_PROCESS;
    BroadcastSlaveCommand(&command);
@@ -593,24 +593,24 @@ SimGetMesh(int domain, const char *name, void *cbdata)
         if(VisIt_RectilinearMesh_alloc(&h) != VISIT_ERROR)
         {
             int i, minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0};
-            float *rmesh_x, *rmesh_y;
+            double *rmesh_x, *rmesh_y;
             visit_handle hx, hy;
 
             maxRealIndex[0] = rmesh_dims[0]-1;
             maxRealIndex[1] = rmesh_dims[1]-1;
             maxRealIndex[2] = rmesh_dims[2]-1;
 
-            rmesh_x = (float *)malloc(sizeof(float) * RNX);
+            rmesh_x = (double *)malloc(sizeof(double) * RNX);
             for(i = 0; i < RNX; ++i)
-                rmesh_x[i] = ((float)i / (float)(RNX-1)) * 5. - 2.5 + 5 * domain;
-            rmesh_y = (float *)malloc(sizeof(float) * RNY);
+                rmesh_x[i] = ((double)i / (double)(RNX-1)) * 5. - 2.5 + 5. * domain;
+            rmesh_y = (double *)malloc(sizeof(double) * RNY);
             for(i = 0; i < RNY; ++i)
-                rmesh_y[i] = ((float)i / (float)(RNY-1)) * 5. - 2.5;
+                rmesh_y[i] = ((double)i / (double)(RNY-1)) * 5. - 2.5;
 
             VisIt_VariableData_alloc(&hx);
             VisIt_VariableData_alloc(&hy);
-            VisIt_VariableData_setDataF(hx, VISIT_OWNER_VISIT, 1, RNX, rmesh_x);
-            VisIt_VariableData_setDataF(hy, VISIT_OWNER_VISIT, 1, RNY, rmesh_y);
+            VisIt_VariableData_setDataD(hx, VISIT_OWNER_VISIT, 1, RNX, rmesh_x);
+            VisIt_VariableData_setDataD(hy, VISIT_OWNER_VISIT, 1, RNY, rmesh_y);
             VisIt_RectilinearMesh_setCoordsXY(h, hx, hy);
             VisIt_RectilinearMesh_setRealIndices(h, minRealIndex, maxRealIndex);
         }
@@ -638,8 +638,9 @@ SimGetVariable(int domain, const char *name, void *cbdata)
 
     if(strcmp(name, "zonal") == 0)
     {
-        float angle, xpos, ypos, cellX, cellY, dX, dY, tx, ty, *zoneptr;
-        float sx, ex, sy, ey, *rmesh_zonal;
+        double angle;
+        double xpos, ypos, cellX, cellY, dX, dY, tx, ty, *zoneptr;
+        double sx, ex, sy, ey, *rmesh_zonal;
         int i, j, nTuples;
 
         sx = -2.5  + domain * 5.;
@@ -648,19 +649,19 @@ SimGetVariable(int domain, const char *name, void *cbdata)
         ey = sy + 5.;
 
         /* Calculate a zonal variable that moves around. */
-        rmesh_zonal = (float*)malloc(sizeof(float) * (RNX-1) * (RNY-1));
+        rmesh_zonal = (double*)malloc(sizeof(double) * (RNX-1) * (RNY-1));
         zoneptr = rmesh_zonal;
         angle = sim->time;
         xpos = 2.5 * cos(angle);
         ypos = 2.5 * sin(angle);
         for(j = 0; j < rmesh_dims[1]-1; ++j)
         {
-            ty = (float)j / (float)(rmesh_dims[1]-1-1);
+            ty = (double)j / (double)(rmesh_dims[1]-1-1);
             cellY = (1.-ty)*sy + ey*ty;
             dY = cellY - ypos;
             for(i = 0; i < rmesh_dims[0]-1; ++i)
             {
-                tx = (float)i / (float)(rmesh_dims[0]-1-1);
+                tx = (double)i / (double)(rmesh_dims[0]-1-1);
                 cellX = (1.-tx)*sx + ex*tx;
                 dX = cellX - xpos;
                 *zoneptr++ = sqrt(dX * dX + dY * dY);
@@ -669,7 +670,7 @@ SimGetVariable(int domain, const char *name, void *cbdata)
 
         nTuples = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
         VisIt_VariableData_alloc(&h);
-        VisIt_VariableData_setDataF(h, VISIT_OWNER_VISIT, 1,
+        VisIt_VariableData_setDataD(h, VISIT_OWNER_VISIT, 1,
             nTuples, rmesh_zonal);
     }
 
@@ -701,13 +702,13 @@ SimGetCurve(const char *name, void *cbdata)
         {
             visit_handle hxc, hyc;
             int i;
-            float *x = NULL, *y = NULL;
-            x = (float*)malloc(200 * sizeof(float));
-            y = (float*)malloc(200 * sizeof(float));
+            double *x = NULL, *y = NULL;
+            x = (double*)malloc(200 * sizeof(double));
+            y = (double*)malloc(200 * sizeof(double));
         
             for(i = 0; i < 200; ++i)
             {
-                float angle = sim->time + ((float)i / (float)(200-1)) * 4. * M_PI;
+                double angle = sim->time + ((double)i / (double)(200-1)) * 4. * M_PI;
                 x[i] = angle;
                 y[i] = sin(x[i]);
             }
@@ -715,8 +716,8 @@ SimGetCurve(const char *name, void *cbdata)
             /* Give the arrays to VisIt. VisIt will free them. */
             VisIt_VariableData_alloc(&hxc);
             VisIt_VariableData_alloc(&hyc);
-            VisIt_VariableData_setDataF(hxc, VISIT_OWNER_VISIT, 1, 200, x);
-            VisIt_VariableData_setDataF(hyc, VISIT_OWNER_VISIT, 1, 200, y);
+            VisIt_VariableData_setDataD(hxc, VISIT_OWNER_VISIT, 1, 200, x);
+            VisIt_VariableData_setDataD(hyc, VISIT_OWNER_VISIT, 1, 200, y);
             VisIt_CurveData_setCoordsXY(h, hxc, hyc);
         }
     }
@@ -742,7 +743,7 @@ SimGetDomainList(const char *name, void *cbdata)
     if(VisIt_DomainList_alloc(&h) != VISIT_ERROR)
     {
         visit_handle hdl;
-        int i, *iptr = NULL;
+        int *iptr = NULL;
         simulation_data *sim = (simulation_data *)cbdata;
 
         iptr = (int *)malloc(sizeof(int));

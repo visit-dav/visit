@@ -44,6 +44,7 @@
 #include <VisIt_CommandMetaData.h>
 #include <VisIt_CurveMetaData.h>
 #include <VisIt_ExpressionMetaData.h>
+#include <VisIt_NameList.h>
 #include <VisIt_MaterialMetaData.h>
 #include <VisIt_MeshMetaData.h>
 #include <VisIt_SimulationMetaData.h>

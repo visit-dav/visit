@@ -74,10 +74,14 @@ FUNCTION(ADD_EXPORT_DYNAMIC_LINK_FLAGS target)
     )
 ENDFUNCTION(ADD_EXPORT_DYNAMIC_LINK_FLAGS)
 
-# We need more libraries on Linux
-IF(NOT APPLE)
-    SET(EXTRA_SIM_LIBS dl m)
-ENDIF(NOT APPLE)
+# We need more libraries on Linux and Windows
+IF(WIN32)
+    SET(EXTRA_SIM_LIBS ws2_32)
+ELSE(WIN32)
+    IF(NOT APPLE)
+        SET(EXTRA_SIM_LIBS dl m)
+    ENDIF(NOT APPLE)
+ENDIF(WIN32)
 
 ##
 ## SimV1 functions

@@ -38,5 +38,8 @@
 #
 #****************************************************************************/
 
-ADD_SUBDIRECTORY(V1)
+IF(UNIX)
+    ADD_SUBDIRECTORY(V1)
+ENDIF(UNIX)
+
 ADD_SUBDIRECTORY(V2)

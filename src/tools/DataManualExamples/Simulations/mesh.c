@@ -142,13 +142,12 @@ ProcessConsoleCommand(simulation_data *sim)
 }
 
 /* SIMULATE ONE TIME STEP */
-#include <unistd.h>
 void simulate_one_timestep(simulation_data *sim)
 {
     ++sim->cycle;
     sim->time += 0.0134;
     printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
-    sleep(1);
+    sim_sleep(1);
 }
 
 /******************************************************************************
@@ -348,8 +347,8 @@ SimGetMetaData(void *cbdata)
 }
 
 /* Rectilinear mesh */
-float rmesh_x[] = {0., 1., 2.5, 5.};
-float rmesh_y[] = {0., 2., 2.25, 2.55,  5.};
+float rmesh_x[] = {0.f, 1.f, 2.5f, 5.f};
+float rmesh_y[] = {0.f, 2.f, 2.25f, 2.55f,  5.f};
 int   rmesh_dims[] = {4, 5, 1};
 int   rmesh_ndims = 2;
 

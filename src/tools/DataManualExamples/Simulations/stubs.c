@@ -37,7 +37,11 @@
 *****************************************************************************/
 
 /* DUMMY IMPLEMENTATIONS */
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <unistd.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,10 +52,8 @@ typedef struct
     double  time;
     int     runMode;
     int     done;
-#ifdef PARALLEL
     int     par_rank;
     int     par_size;
-#endif
 } simulation_data;
 
 void
@@ -61,10 +63,8 @@ simulation_data_ctor(simulation_data *sim)
     sim->time = 0.;
     sim->runMode = 1; /* VISIT_SIMMODE_RUNNING */
     sim->done = 0;
-#ifdef PARALLEL
     sim->par_rank = 0;
     sim->par_size = 1;
-#endif
 }
 
 void
@@ -84,7 +84,11 @@ void simulate_one_timestep(simulation_data *sim)
 #else
     printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);    printf("Simulating time step\n");
 #endif
+#ifdef _WIN32
+    Sleep(1000);
+#else
     sleep(1);
+#endif
 }
 
 void read_input_deck(simulation_data *sim)
