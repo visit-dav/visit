@@ -69,7 +69,7 @@
 #ifdef _WIN32
 #define SNPRINTF _snprintf
 #else
-#define SNPRINTF sprintf
+#define SNPRINTF snprintf
 #endif
 
 /* ****************************************************************************
