@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <math.h>
 #ifdef PARALLEL
 #include <mpi.h>
@@ -128,7 +127,7 @@ life_data_allocate(life_data *life, int par_rank, int par_size)
 void
 life_data_simulate(life_data *life, int par_rank, int par_size)
 {
-    int nsum, i, j, JPNN, JNN, JMNN, source, dest;
+    int nsum, i, j, JPNN, JNN, JMNN, dest;
     int *true_life = NULL, *working_life = NULL;
 #ifdef PARALLEL
     MPI_Status status;
@@ -436,7 +435,7 @@ static void BroadcastSlaveCommand(int *command)
 }
 
 /* Callback involved in command communication. */
-void SlaveProcessCallback()
+void SlaveProcessCallback(void)
 {
    int command = VISIT_COMMAND_PROCESS;
    BroadcastSlaveCommand(&command);
@@ -771,13 +770,14 @@ SimGetMesh(int domain, const char *name, void *cbdata)
     {
         if(VisIt_RectilinearMesh_alloc(&h) != VISIT_ERROR)
         {
+            visit_handle hxc, hyc;
             int minRealIndex[3], maxRealIndex[3];
             minRealIndex[0] = minRealIndex[1] = minRealIndex[2] = 0;
       
             maxRealIndex[0] = sim->life.rmesh_dims[0]-1;
             maxRealIndex[1] = sim->life.rmesh_dims[1]-1;
             maxRealIndex[2] = 0;
-            visit_handle hxc, hyc;
+
             VisIt_VariableData_alloc(&hxc);
             VisIt_VariableData_alloc(&hyc);
             VisIt_VariableData_setDataF(hxc, VISIT_OWNER_SIM, 1, sim->life.rmesh_dims[0], sim->life.rmesh_x);

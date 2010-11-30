@@ -721,8 +721,6 @@ avtSimV2Writer::WritePolyDataMesh(vtkPolyData *ds, int chunk, visit_handle vmmd)
     debug1 << "avtSimV2Writer::WritePolyDataMesh(chunk=" << chunk << ")\n";
 
     // Build up an unstructured mesh from the types of data in the polydata.
-    vtkIdType pts[100];
-
     debug1 << "polydata npts   = " << ds->GetNumberOfPoints() << endl;
     debug1 << "polydata nverts = " << ds->GetVerts()->GetNumberOfCells() << endl;
     debug1 << "polydata nlines = " << ds->GetLines()->GetNumberOfCells() << endl;

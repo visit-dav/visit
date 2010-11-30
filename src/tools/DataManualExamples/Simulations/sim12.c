@@ -38,6 +38,7 @@
 
 /* SIMPLE SIMULATION SKELETON */
 #include <VisItControlInterface_V2.h>
+#include <VisItDataInterface_V2.h>
 #include <stdio.h>
 
 #include "SimulationExample.h"

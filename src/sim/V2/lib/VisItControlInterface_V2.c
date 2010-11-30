@@ -40,26 +40,37 @@
 #include "SimV2Tracing.h"
 #include "DeclareDataCallbacks.h"
 
+#ifdef _WIN32
+#include <winsock2.h>
+#include <direct.h>
+#else
 #include <dlfcn.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <netdb.h>
+#include <unistd.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <pwd.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#endif
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
-#include <unistd.h>
 #include <stdarg.h>
 
 #include <visit-config.h> /* For HAVE_SOCKLEN_T */
+
+#ifdef _WIN32
+#define SNPRINTF _snprintf
+#else
+#define SNPRINTF sprintf
+#endif
 
 /* ****************************************************************************
  *  File:  VisItControlInterface.c
@@ -136,6 +147,22 @@ typedef struct
 static visit_callback_t *callbacks = NULL;
 
 /* Internal Variables */
+#ifdef _WIN32
+#define VISIT_SOCKET         SOCKET
+#define VISIT_INVALID_SOCKET INVALID_SOCKET
+
+static HMODULE     dl_handle;
+static SOCKET      listenSocket = VISIT_INVALID_SOCKET;
+static SOCKET      engineSocket = VISIT_INVALID_SOCKET;
+#else
+#define VISIT_SOCKET         int
+#define VISIT_INVALID_SOCKET -1
+
+static void       *dl_handle = NULL;
+static int         listenSocket = VISIT_INVALID_SOCKET;
+static int         engineSocket = VISIT_INVALID_SOCKET;
+#endif
+
 static int       (*BroadcastInt_internal)(int *value, int sender) = NULL;
 static int       (*BroadcastString_internal)(char *str, int len, int sender) = NULL;
 static char       *visit_directory = NULL;
@@ -147,12 +174,9 @@ static char        simulationFileName[1024];
 static char        securityKey[17];
 static char        localhost[256];
 static int         listenPort = -1;
-static int         listenSocket = -1;
 struct sockaddr_in listenSockAddr;
-static int         engineSocket = -1;
 static int         isParallel = FALSE;
 static int         parallelRank = 0;
-static void       *dl_handle;
 static char        lastError[1024] = "";
 static int           visit_sync_enabled = 1;
 static SyncCallback *visit_sync_callbacks = NULL;
@@ -169,6 +193,159 @@ static void         *visit_command_callback_data = NULL;
  *******************************************************************************
  *******************************************************************************
  ******************************************************************************/
+#ifdef _WIN32
+/*******************************************************************************
+* UTILITY FUNCTIONS
+*******************************************************************************/
+static int
+ReadKeyFromRoot(HKEY which_root, const char *ver, const char *key,
+    char **keyval)
+{
+    int  readSuccess = 0;
+    char regkey[100];
+    HKEY hkey;
+
+    /* Try and read the key from the system registry. */
+    sprintf(regkey, "VISIT%s", ver);
+    *keyval = (char *)malloc(500);
+    if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
+    {
+        DWORD keyType, strSize = 500;
+        if(RegQueryValueEx(hkey, key, NULL, &keyType,
+           (unsigned char *)*keyval, &strSize) == ERROR_SUCCESS)
+        {
+            readSuccess = 1;
+        }
+
+        RegCloseKey(hkey);
+    }
+
+    return readSuccess;
+}
+
+static int
+ReadKey(const char *ver, const char *key, char **keyval)
+{
+    int retval = 0;
+
+    if((retval = ReadKeyFromRoot(HKEY_CLASSES_ROOT, ver, key, keyval)) == 0)
+        retval = ReadKeyFromRoot(HKEY_CURRENT_USER, ver, key, keyval);
+    
+    return retval;     
+}
+
+static void
+GetVisItDirectory(char *visitdir, int maxlen)
+{
+    char *visitpath = 0;
+    char visitversion[10];
+    int major, minor, patch;
+    int haveVISITHOME = 0;
+
+    /* Iterate through a few probable versions and keep the most up to date one */
+    for(major = 2; major <= 4; ++major)
+        for(minor = (major==2?2:0); minor <= 12; ++minor)
+            for(patch = 0; patch < 5; ++patch)
+            {
+                char curversion[10], *path = NULL;
+                SNPRINTF(curversion, 10, "%d.%d.%d", major, minor, patch);
+                if(ReadKey(curversion, "VISITHOME", &path))
+                {
+                    strcpy(visitversion, curversion);
+                    if(visitpath != NULL)
+                        free(visitpath);
+                    visitpath = path;
+                    haveVISITHOME = 1;
+                }
+            }
+    if(haveVISITHOME)
+    {
+        SNPRINTF(visitdir, maxlen, "%s", visitpath);
+        free(visitpath);
+    }
+    else if(visit_directory != NULL)
+    {
+        SNPRINTF(visitdir, maxlen, "%s", visit_directory);
+    }
+    else
+    {
+        visitdir[0] = '\0';
+    }
+}
+#else
+/* UNIX */
+/*******************************************************************************
+*
+* Name: ReadEnvironmentFromCommand
+*
+* Purpose: Read the output of "visit -env" using the specified VisIt command.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
+*   Eric Brugger, Thu Sep 14 12:53:46 PDT 2006
+*   Changed the routine to read at most ENV_BUF_SIZE bytes of output from
+*   the execution of the command.
+*
+*   Brad Whitlock, Fri Jul 25 12:11:16 PDT 2008
+*   Changed some types to remove warnings. Added trace information.
+*
+*******************************************************************************/
+#define ENV_BUF_SIZE 10000
+
+static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
+{
+   /* VisIt will tell us what variables to set. */
+   /* (redirect stderr so it won't complain if it can't find visit) */
+   ssize_t n;
+   size_t  lbuf;
+   char command[1024];
+   char *ptr;
+   FILE *file;
+
+   LIBSIM_API_ENTER1(ReadEnvironmentFromCommand, "visitpath=%s", visitpath);
+
+#ifdef VISIT_COMPILER
+#define STR(s) STR2(s)
+#define STR2(s) #s
+   SNPRINTF(command, 1024, "%s -compiler %s %s -env -engine 2>/dev/null",
+           visitpath, STR(VISIT_COMPILER), visit_options ? visit_options : "");
+#else
+   SNPRINTF(command, 1024, "%s %s -env -engine 2>/dev/null",
+           visitpath, visit_options ? visit_options : "");
+#endif
+
+   LIBSIM_MESSAGE1("command=%s", command);
+
+   file = popen(command, "r");
+   ptr = output;
+   lbuf = ENV_BUF_SIZE;
+   while ((n = read(fileno(file), (void*)ptr, lbuf)) > 0)
+   {
+      ptr += n;
+      lbuf -= n;
+   }
+   *ptr = '\0';
+
+   LIBSIM_MESSAGE1("Output=%s", output);
+
+   LIBSIM_API_LEAVE1(ReadEnvironmentFromCommand, "return %d", (int)(ptr-output));
+   return (ptr - output);
+}
+
+#endif
+
+static void
+VisItMkdir(const char *dir, int permissions)
+{
+#ifdef _WIN32
+    _mkdir(dir);
+#else
+    mkdir(dir, permissions);
+#endif
+}
+
+
 
 /******************************************************************************
 *
@@ -209,7 +386,7 @@ visit_get_sync(void)
 
         /* resize */
         ptr = (SyncCallback *)calloc(visit_sync_callbacks_size+20, sizeof(SyncCallback));
-        memcpy(ptr, visit_sync_callbacks, visit_sync_callbacks_size * sizeof(SyncCallback));
+        memcpy((void*)ptr, (void*)visit_sync_callbacks, visit_sync_callbacks_size * sizeof(SyncCallback));
         free(visit_sync_callbacks);
         visit_sync_callbacks = ptr;
         retval = &visit_sync_callbacks[visit_sync_callbacks_size];
@@ -458,7 +635,7 @@ static void CreateRandomSecurityKey(void)
 *   Changed some assignments to NULL to remove warnings.
 *
 *******************************************************************************/
-static void ReceiveSingleLineFromSocket(char *buffer, size_t maxlen, int desc)
+static void ReceiveSingleLineFromSocket(char *buffer, size_t maxlen, VISIT_SOCKET desc)
 {
     char *buf = buffer;
     char *ptr = buffer;
@@ -500,7 +677,7 @@ static void ReceiveSingleLineFromSocket(char *buffer, size_t maxlen, int desc)
 *   Changed some assignments to NULL to remove warnings.
 *   
 *******************************************************************************/
-static char *ReceiveContinuousLineFromSocket(char *buffer, size_t maxlen, int desc)
+static char *ReceiveContinuousLineFromSocket(char *buffer, size_t maxlen, VISIT_SOCKET desc)
 {
     char *buf = buffer;
     char *ptr = buffer;
@@ -539,7 +716,7 @@ static char *ReceiveContinuousLineFromSocket(char *buffer, size_t maxlen, int de
 *  Trace information.
 *
 *******************************************************************************/
-static int SendStringOverSocket(char *buffer, int desc)
+static int SendStringOverSocket(char *buffer, VISIT_SOCKET desc)
 {
     size_t      nleft, nwritten;
     const char *sptr;
@@ -653,7 +830,7 @@ BroadcastString(char *str, int len, int sender)
 *  Added casts to eliminate warnings. Added trace information.
 *
 *******************************************************************************/
-static int VerifySecurityKeys(int desc)
+static int VerifySecurityKeys(VISIT_SOCKET desc)
 {
    int securityKeyLen;
    int offeredKeyLen;
@@ -724,7 +901,7 @@ static int VerifySecurityKeys(int desc)
 *   Trace information.
 *
 *******************************************************************************/
-static int GetConnectionParameters(int desc)
+static int GetConnectionParameters(VISIT_SOCKET desc)
 {
    char buf[2000] = "";
    char *tmpbuf;
@@ -955,7 +1132,7 @@ static int StartListening(void)
     if (!portFound)
     {
         /* Cannot find unused port. */
-       listenSocket = -1;
+       listenSocket = VISIT_INVALID_SOCKET;
        LIBSIM_API_LEAVE1(StartListening, "port not found. return %d", FALSE);
        return FALSE;
     }
@@ -964,7 +1141,7 @@ static int StartListening(void)
     err = listen(listenSocket, 5);
     if (err)
     {
-       listenSocket = -1;
+       listenSocket = VISIT_INVALID_SOCKET;
        LIBSIM_API_LEAVE1(StartListening, "listen() failed. return %d", FALSE);
        return FALSE;
     }
@@ -986,9 +1163,9 @@ static int StartListening(void)
 *  Trace information.
 *
 *******************************************************************************/
-static int AcceptConnection(void)
+static VISIT_SOCKET AcceptConnection(void)
 {
-    int desc = -1;
+    VISIT_SOCKET desc = VISIT_INVALID_SOCKET;
     int opt = 1;
 
     LIBSIM_API_ENTER(AcceptConnection);
@@ -1009,7 +1186,11 @@ static int AcceptConnection(void)
         LIBSIM_MESSAGE("Calling accept()");
         desc = accept(listenSocket, (struct sockaddr *)&listenSockAddr, &len);
     }
-    while (desc == -1 && errno != EWOULDBLOCK);
+    while (desc == VISIT_INVALID_SOCKET
+#ifndef _WIN32
+           && errno != EWOULDBLOCK
+#endif
+           );
 
     /* Disable Nagle algorithm. */
 #if defined(_WIN32)
@@ -1036,6 +1217,9 @@ static int AcceptConnection(void)
 *******************************************************************************/
 static const char *GetHomeDirectory(void)
 {
+#ifdef _WIN32
+    return "C:/Users/Brad";
+#else
     struct passwd *users_passwd_entry = NULL;
 
     LIBSIM_API_ENTER(GetHomeDirectory);
@@ -1044,6 +1228,7 @@ static const char *GetHomeDirectory(void)
                      users_passwd_entry->pw_dir);
 
     return users_passwd_entry->pw_dir;
+#endif
 }
 
 /*******************************************************************************
@@ -1064,12 +1249,12 @@ static void EnsureSimulationDirectoryExists(void)
     char str[1024];
     LIBSIM_API_ENTER(EnsureSimulationDirectoryExists);
 
-    snprintf(str, 1024, "%s/.visit", GetHomeDirectory());
-    mkdir(str, 7*64 + 7*8 + 7);
+    SNPRINTF(str, 1024, "%s/.visit", GetHomeDirectory());
+    VisItMkdir(str, 7*64 + 7*8 + 7);
     LIBSIM_MESSAGE1("mkdir %s", str);
 
-    snprintf(str, 1024, "%s/.visit/simulations", GetHomeDirectory());
-    mkdir(str, 7*64 + 7*8 + 7);
+    SNPRINTF(str, 1024, "%s/.visit/simulations", GetHomeDirectory());
+    VisItMkdir(str, 7*64 + 7*8 + 7);
     LIBSIM_MESSAGE1("mkdir %s", str);
 
     LIBSIM_API_LEAVE(EnsureSimulationDirectoryExists);
@@ -1098,31 +1283,17 @@ static void RemoveSimFile(void)
 
 /*******************************************************************************
 *
-* Name: dlsym_function
+* Name: visit_get_runtime_function
 *
-* Purpose: Call dlsym and cast the result to a function pointer.
-*          Basically, this exists because the OSF compiler won't let you
-*          cast from void* to void(*)() without a warning, and I can at
-*          least contain it to a single warning by creating this function.
+* Purpose: Get the function pointer from the runtime library
 *
-* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+* Author: Brad Whitlock
 *
 * Modifications:
-*  Brad Whitlock, Fri Jul 25 15:00:20 PDT 2008
-*  Trace information.
+*   Brad Whitlock, Thu Nov 25 23:26:23 PST 2010
+*   Ported to Windows.
 *
 *******************************************************************************/
-
-typedef void (*function_pointer)();
-static function_pointer dlsym_function(void *h, const char *n)
-{
-    function_pointer f = NULL;
-
-    LIBSIM_API_ENTER2(dlsym_function, "handle=%p, name=%s", h, n);
-    f = (function_pointer)dlsym(h,n);
-    LIBSIM_API_LEAVE1(dlsym_function, "func=%p", (void*)f);
-    return f;
-}
 
 void *
 visit_get_runtime_function(const char *name)
@@ -1130,10 +1301,14 @@ visit_get_runtime_function(const char *name)
     void *f = NULL;
 
     LIBSIM_API_ENTER2(visit_get_runtime_function, "handle=%p, name=%s", dl_handle, name);
+#ifdef _WIN32
+    f = GetProcAddress(dl_handle, name);
+#else
     f = dlsym(dl_handle, name);
+#endif
     if(f == NULL)
     {
-        fprintf(stderr, "Function %s could not be located in the runtime.\n", name);
+        sprintf(lastError, "Function %s could not be located in the runtime.\n", name);
     }
     LIBSIM_API_LEAVE1(visit_get_runtime_function, "func=%p", (void*)f);
     return f;
@@ -1141,39 +1316,59 @@ visit_get_runtime_function(const char *name)
 
 /*******************************************************************************
 *
-* Name: LoadVisItLibrary
+* Name: LoadVisItLibrary_XXX
 *
-* Purpose: Load the DLL/SO of the VisIt Engine and get the needed function
-*          pointers from it.
+* Purpose: Loads the Visit runtime library, setting dl_handle and lastError.
 *
-* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+* Author: Brad Whitlock
 *
 * Modifications:
-*   Brad Whitlock, Thu Jan 25 14:58:26 PST 2007
-*   Added update plots and execute_command.
-*
-*   Jeremy Meredith, Fri Nov  2 18:06:42 EDT 2007
-*   Use dylib as the extension for OSX.
-*
-*   Brad Whitlock, Fri Feb 13 09:54:47 PST 2009
-*   I added code to get data callback setting functions from the library.
-*
-*   Brad Whitlock, Tue Feb 16 15:09:52 PST 2010
-*   Try a list of libraries in the library path.
 *
 *******************************************************************************/
-static int LoadVisItLibrary(void)
+
+#ifdef _WIN32
+static int LoadVisItLibrary_Windows(void)
+{
+    char visitpath[1024], lib[1024];
+
+    LIBSIM_API_ENTER(LoadVisItLibrary_Windows);
+    GetVisItDirectory(visitpath, 1024);
+
+    /* load library */
+    if (isParallel)
+    {
+        SNPRINTF(lib, 256, "%s\\simV2runtime_par.dll", visitpath);
+    }
+    else
+    {
+        SNPRINTF(lib, 256, "%s\\simV2runtime_ser.dll", visitpath);
+    }
+
+    LIBSIM_MESSAGE1("Loading runtime: %s", lib);
+    SetErrorMode(0);
+    dl_handle = LoadLibrary(lib);
+
+    if (dl_handle == NULL)
+    {
+        WCHAR msg[1024];
+        va_list *va = 0;
+LIBSIM_MESSAGE1("Error: %d", GetLastError());
+LIBSIM_MESSAGE1("Error: %x", GetLastError());
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(), 0,
+                      msg, 1024, va);
+        wprintf(L"Formatted message: %s\n", msg);
+
+        /*SNPRINTF(lastError, 1024, "Failed to open the VisIt library: %s\n", msg);*/
+    }
+
+    LIBSIM_API_LEAVE(LoadVisItLibrary_Windows);
+
+    return (dl_handle != NULL) ? VISIT_OKAY : VISIT_ERROR;
+}
+#else
+static int LoadVisItLibrary_UNIX(void)
 {
     char lib[256];
-
-    /* For a while, something was hanging if you tried to re-use the same
-       engine library for a second connection.  Things seem better now, so
-       there's no need to enable this next line of code.  It is left in as
-       a reminder that we may run into the same issue on other platforms.
-
-     if (dl_handle)
-         return;
-    */
 
     /* load library */
 #ifdef __APPLE__
@@ -1183,10 +1378,6 @@ static int LoadVisItLibrary(void)
     const char *extension = "so";
     const char *LD_LIBRARY_PATH = "LD_LIBRARY_PATH";
 #endif
-    LIBSIM_API_ENTER(LoadVisItLibrary);
-
-    callbacks = (visit_callback_t *)malloc(sizeof(visit_callback_t));
-    memset(callbacks, 0, sizeof(visit_callback_t));
 
     if (isParallel)
     {
@@ -1239,23 +1430,97 @@ static int LoadVisItLibrary(void)
             } while(dl_handle == NULL && *libpath != '\0');
             free(start);
         }
-   }
-   if (!dl_handle)
-   {
-      sprintf(lastError, "Failed to open the VisIt library: %s\n", dlerror());
-      LIBSIM_API_LEAVE2(LoadVisItLibrary, "%s: return %d", lastError, FALSE);
-      return FALSE;
-   }
+    }
+
+    if (dl_handle == NULL)
+        sprintf(lastError, "Failed to open the VisIt library: %s\n", dlerror());
+    
+    return (dl_handle != NULL) ? VISIT_OKAY : VISIT_ERROR;
+}
+#endif
+
+/*******************************************************************************
+*
+* Name: CloseVisItLibrary
+*
+* Purpose: Closes the Visit runtime library, setting dl_handle.
+*
+* Author: Brad Whitlock
+*
+* Modifications:
+*
+*******************************************************************************/
+
+static void CloseVisItLibrary(void)
+{
+#ifdef _WIN32
+    if(dl_handle != NULL)
+    {
+        FreeLibrary(dl_handle);
+        dl_handle = NULL;
+    }
+#else
+    /* Call dlclose(dl_handle) ???*/
+    dl_handle = NULL;
+#endif
+}
+
+/*******************************************************************************
+*
+* Name: LoadVisItLibrary
+*
+* Purpose: Load the DLL/SO of the VisIt Engine and get the needed function
+*          pointers from it.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
+*   Brad Whitlock, Thu Jan 25 14:58:26 PST 2007
+*   Added update plots and execute_command.
+*
+*   Jeremy Meredith, Fri Nov  2 18:06:42 EDT 2007
+*   Use dylib as the extension for OSX.
+*
+*   Brad Whitlock, Fri Feb 13 09:54:47 PST 2009
+*   I added code to get data callback setting functions from the library.
+*
+*   Brad Whitlock, Tue Feb 16 15:09:52 PST 2010
+*   Try a list of libraries in the library path.
+*
+*   Brad Whitlock, Thu Nov 25 23:03:23 PST 2010
+*   I moved the code to load libraries into helper functions to separate out
+*   some Windows-only logic.
+*
+*******************************************************************************/
+
+static int LoadVisItLibrary(void)
+{
+    int status = VISIT_ERROR;
+    LIBSIM_API_ENTER(LoadVisItLibrary);
+
+    /* Load the library */
+#ifdef _WIN32
+    status = LoadVisItLibrary_Windows();
+#else
+    status = LoadVisItLibrary_UNIX();
+#endif
+    if (status == VISIT_ERROR)
+    {
+        LIBSIM_API_LEAVE2(LoadVisItLibrary, "%s: return %d", lastError, FALSE);
+        return FALSE;
+    }
+
+    callbacks = (visit_callback_t *)malloc(sizeof(visit_callback_t));
+    memset(callbacks, 0, sizeof(visit_callback_t));
 
 #define SAFE_DLSYM(D,F,T,N,DECORATE) \
-   callbacks->D.F = (DECORATE(T))dlsym_function(dl_handle, N); \
-   if (!callbacks->D.F) \
-   { \
-      sprintf(lastError, "Failed to open the VisIt library: "\
-              "couldn't find symbol '%s': %s\n", N, dlerror()); \
-      dl_handle = NULL; LIBSIM_API_LEAVE2(LoadVisItLibrary, "%s: return %d", lastError, FALSE); \
-      return FALSE; \
-   }
+    callbacks->D.F = (DECORATE(T))visit_get_runtime_function(N); \
+    if (!callbacks->D.F) \
+    { \
+        CloseVisItLibrary();\
+        LIBSIM_API_LEAVE2(LoadVisItLibrary, "%s: return %d", lastError, FALSE); \
+        return FALSE; \
+    }
 #define NO_DECORATE(A) A
 #define SET_DECORATE(A) void (*)(A,void*)
 #define QUOTED(A) #A
@@ -1286,65 +1551,6 @@ static int LoadVisItLibrary(void)
 
    LIBSIM_API_LEAVE1(LoadVisItLibrary, "return %d", TRUE);
    return TRUE;
-}
-
-/*******************************************************************************
-*
-* Name: ReadEnvironmentFromCommand
-*
-* Purpose: Read the output of "visit -env" using the specified VisIt command.
-*
-* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
-*
-* Modifications:
-*   Eric Brugger, Thu Sep 14 12:53:46 PDT 2006
-*   Changed the routine to read at most ENV_BUF_SIZE bytes of output from
-*   the execution of the command.
-*
-*   Brad Whitlock, Fri Jul 25 12:11:16 PDT 2008
-*   Changed some types to remove warnings. Added trace information.
-*
-*******************************************************************************/
-#define ENV_BUF_SIZE 10000
-
-static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
-{
-   /* VisIt will tell us what variables to set. */
-   /* (redirect stderr so it won't complain if it can't find visit) */
-   ssize_t n;
-   size_t  lbuf;
-   char command[1024];
-   char *ptr;
-   FILE *file;
-
-   LIBSIM_API_ENTER1(ReadEnvironmentFromCommand, "visitpath=%s", visitpath);
-
-#ifdef VISIT_COMPILER
-#define STR(s) STR2(s)
-#define STR2(s) #s
-   snprintf(command, 1024, "%s -compiler %s %s -env -engine 2>/dev/null",
-           visitpath, STR(VISIT_COMPILER), visit_options ? visit_options : "");
-#else
-   snprintf(command, 1024, "%s %s -env -engine 2>/dev/null",
-           visitpath, visit_options ? visit_options : "");
-#endif
-
-   LIBSIM_MESSAGE1("command=%s", command);
-
-   file = popen(command, "r");
-   ptr = output;
-   lbuf = ENV_BUF_SIZE;
-   while ((n = read(fileno(file), (void*)ptr, lbuf)) > 0)
-   {
-      ptr += n;
-      lbuf -= n;
-   }
-   *ptr = '\0';
-
-   LIBSIM_MESSAGE1("Output=%s", output);
-
-   LIBSIM_API_LEAVE1(ReadEnvironmentFromCommand, "return %d", (int)(ptr-output));
-   return (ptr - output);
 }
 
 /*******************************************************************************
@@ -1496,9 +1702,37 @@ void VisItSetOptions(char *o)
 *   Brad Whitlock, Fri Jul 25 15:37:05 PDT 2008
 *   Trace information.
 *
+*   Brad Whitlock, Thu Nov 25 23:40:34 PST 2010
+*   Windows port.
+*
 *******************************************************************************/
 int VisItSetupEnvironment(void)
 {
+#ifdef _WIN32
+    WORD wVersionRequested;
+    WSADATA wsaData;
+    char visitpath[1024], tmp[1024];
+
+    LIBSIM_API_ENTER(VisItSetupEnvironment);
+    GetVisItDirectory(visitpath, 1024);
+
+    /* Tell Windows that we want to get DLLs from this path */
+    SetDllDirectory(visitpath);
+
+    /* Set the VisIt home dir. */
+    SNPRINTF(tmp, 1024, "VISITHOME=%s", visitpath);
+    LIBSIM_MESSAGE(tmp);
+    putenv(tmp);
+
+    /* Set the plugin dir. */
+    SNPRINTF(tmp, 1024, "VISITPLUGINDIR=%s", visitpath);
+    LIBSIM_MESSAGE(tmp);
+    putenv(tmp);
+
+    // Initiate the use of a Winsock DLL (WS2_32.DLL), necessary for sockets.
+    wVersionRequested = MAKEWORD(2,2);
+    WSAStartup(wVersionRequested, &wsaData);
+#else
    char *new_env = (char*)(malloc(ENV_BUF_SIZE));
    int done = 0;
    char *ptr;
@@ -1546,6 +1780,7 @@ int VisItSetupEnvironment(void)
       ptr += i+1;
    }
    /* free(new_env); <--- NO!  You are not supposed to free this memory! */
+#endif
    LIBSIM_API_LEAVE1(VisItSetupEnvironment, "return %d", TRUE);
    return TRUE;
 }
@@ -1587,12 +1822,12 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
     
     if ( !absoluteFilename )
     {
-        snprintf(simulationFileName, 255, "%s/.visit/simulations/%012d.%s.sim2",
+        SNPRINTF(simulationFileName, 255, "%s/.visit/simulations/%012d.%s.sim2",
                  GetHomeDirectory(), (int)time(NULL), name);
     }
     else
     {
-         snprintf(simulationFileName, 255, "%s", absoluteFilename);
+        SNPRINTF(simulationFileName, 255, "%s", absoluteFilename);
     }
 
     if (!GetLocalhostName())
@@ -1607,7 +1842,7 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
         return FALSE;
     }
 
-    LIBSIM_MESSAGE1("Opening sime file %s", simulationFileName);  
+    LIBSIM_MESSAGE1("Opening sim file %s", simulationFileName);  
     file = fopen(simulationFileName, "wt");
     if (!file)
     {
@@ -1657,6 +1892,307 @@ VisItDetectInput(int blocking, int consoleFileDescriptor)
     return VisItDetectInputWithTimeout(blocking, 0, consoleFileDescriptor);
 }
 
+#ifdef _WIN32
+static int inputThreadsStarted = 0;
+static HANDLE stdinevent = 0;
+static WSAEVENT listenevent = 0;
+static HANDLE engineevent = 0;
+static HANDLE listeneventCB = 0;
+static HANDLE engineeventCB = 0;
+
+DWORD WINAPI
+stdin_thread(LPVOID param)
+{
+    while(1)
+    {
+        WaitForSingleObject(GetStdHandle(STD_INPUT_HANDLE), INFINITE);
+        fprintf(stderr, "stdin thread signaling input\n");
+        SetEvent(stdinevent);
+    }
+
+    return 0;
+}
+
+#define SELECT_ENGINE_SOCKET
+
+static void
+VLogWindowsSocketError()
+{
+    switch(WSAGetLastError())
+    {
+    case WSANOTINITIALISED:
+        fprintf(stderr,"WSAENOTINITIALISED: WSAStartup() must be called before using this API.");
+        break;
+    case WSAENETDOWN:
+        fprintf(stderr,"WSAENETDOWN: The network subsystem or the associated service provider has failed.");
+        break;
+    case WSAEAFNOSUPPORT:
+        fprintf(stderr,"WSAEAFNOSUPPORT: The specified address family is not supported.");
+        break;
+    case WSAEINPROGRESS:
+        fprintf(stderr,"WSAEINPROGRESS: A blocking Winsock 1.1 call is in progress, or the service provider is still processing a callback function.");
+        break;
+    case WSAEFAULT:
+        fprintf(stderr,"WSAEFAULT:");
+        break;
+    case WSAEINTR:
+        fprintf(stderr,"WSAEINTR: A blocking WinSock 1.1 call was canceled via WSACancelBlockingCall.");
+        break;
+    case WSAEMFILE:
+        fprintf(stderr,"WSAEMFILE: No more socket descriptors are available.");
+        break;
+    case WSAENOBUFS:
+        fprintf(stderr,"WSAENOBUFS: No buffer space is available. The socket cannot be created.");
+        break;
+    case WSAEPROTONOSUPPORT:
+        fprintf(stderr,"WSAEPROTONOSUPPORT: The specified protocol is not supported.");
+        break;
+    case WSAEPROTOTYPE:
+        fprintf(stderr,"WSAEPROTOTYPE: The specified protocol is the wrong type for this socket.");
+        break;
+    case WSAESOCKTNOSUPPORT:
+        fprintf(stderr,"WSAESOCKTNOSUPPORT: The specified socket type is not supported in this address family.");
+        break;
+    case WSAHOST_NOT_FOUND:
+        fprintf(stderr,"WSAHOST_NOT_FOUND: Authoratiative Answer Host not found.");
+        break;
+    case WSATRY_AGAIN:
+        fprintf(stderr,"WSATRY_AGAIN: Non-Authoratative Host not found, or server failure.");
+        break;
+    case WSANO_RECOVERY:
+        fprintf(stderr,"WSANO_RECOVERY: Non-recoverable error occurred.");
+        break;
+    case WSANO_DATA:
+        fprintf(stderr,"WSANO_DATA: Valid name, no data record of requested type.");
+        break;
+    case WSAEINVAL:
+        fprintf(stderr,"WSAEINVAL: See documentation for: ");
+        break;
+    case WSAENETRESET:
+        fprintf(stderr,"WSAENETRESET: The connection has been broken due to keep-alive activity detecting a failure while the operation was in progress.");
+        break;
+    case WSAENOPROTOOPT:
+        fprintf(stderr,"WSAENOPROTOOPT: The option is unknown or unsupported for the specified provider or socket.");
+        break;
+    case WSAENOTCONN:
+        fprintf(stderr,"WSAENOTCONN: Connection has been reset when SO_KEEPALIVE is set.");
+        break;
+    case WSAENOTSOCK:
+        fprintf(stderr,"WSAENOTSOCK: The descriptor is not a socket.");
+        break;
+    case WSAEADDRINUSE:
+        fprintf(stderr,"WSAEADDRINUSE: The socket's local address space is already in use and the socket was not marked to allow address reuse.");
+        break;
+    case WSAEALREADY:
+        fprintf(stderr,"WSAEALREADY: A non-blocking connect() call is in progress or the service provider is still processing a callback function.");
+        break;
+    case WSAEADDRNOTAVAIL:
+        fprintf(stderr,"WSAADDRNOTAVAIL: The remote address is not valid (e.g. ADDR_ANY).");
+        break;
+    case WSAECONNREFUSED:
+        fprintf(stderr,"WSAECONNREFUSED: The attempt to connect was forcefully rejected.");
+        break;
+    case WSAEISCONN:
+        fprintf(stderr,"WSAEISCONN: The socket is already connected.");
+        break;
+    case WSAENETUNREACH:
+        fprintf(stderr,"WSAENETUNREACH: The network can't be reached from this host at this time.");
+        break;
+    case WSAETIMEDOUT:
+        fprintf(stderr,"WSAETIMEDOUT: Attempt to connect timed out without establishing a connection.");
+        break;
+    case WSAEWOULDBLOCK:
+        fprintf(stderr,"WSAEWOULDBLOCK: The socket it marked as non-blocking and the connection cannot be completed immediately.");
+        break;
+    case WSAEACCES:
+        fprintf(stderr,"WSAEACCES: Attempt to connect datagram socket to broadcast address failed.");
+        break;
+    case WSAEOPNOTSUPP:
+        fprintf(stderr,"WSAENOTSUPP: The referenced socket is not of a type that supports listen().");
+        break;
+    default:
+        fprintf(stderr, "WSA error: %d", WSAGetLastError());
+    }
+    fprintf(stderr, "\n");
+}
+
+DWORD WINAPI
+select_thread(LPVOID param)
+{
+    while(engineSocket != VISIT_INVALID_SOCKET ||
+          listenSocket != VISIT_INVALID_SOCKET)
+    {
+        fd_set readSet;
+        int    ignored = 0, status = 0;
+        struct timeval SmallTimeout = {0, 50000};
+
+        FD_ZERO(&readSet);
+
+        /* If we're connected, select on the control socket */
+#ifdef SELECT_ENGINE_SOCKET
+        if(engineSocket != VISIT_INVALID_SOCKET)
+        {
+            FD_SET(engineSocket, &readSet);
+            fprintf(stderr, "select_thread: selecting engine control socket\n");
+        }
+#endif
+
+        /* If we're connected, do *not* select on the listen socket */
+        /* This forces us to have only one client at a time. */
+        if (engineSocket == VISIT_INVALID_SOCKET &&
+            listenSocket != VISIT_INVALID_SOCKET)
+        {
+            FD_SET(listenSocket, &readSet);
+            fprintf(stderr, "select_thread: selecting listen socket for inbound connections\n");
+        }
+
+        fprintf(stderr, "select_thread: calling select\n");
+        status = select(ignored, &readSet, (fd_set*)NULL, 
+                        (fd_set*)NULL, NULL);
+
+//haveEngineSocket ? &SmallTimeout : NULL);
+
+        if(status == SOCKET_ERROR)
+        {
+            fprintf(stderr, "SOCKET_ERROR\n");
+            VLogWindowsSocketError();
+        }
+        else if(status == 0)
+        {
+            // timed out
+//fprintf(stderr, "timed out!\n");
+        }
+        else if(status > 0)
+        {
+             if (listenSocket != VISIT_INVALID_SOCKET &&
+                 FD_ISSET(listenSocket, &readSet))
+             {
+//               fprintf(stderr, "Send a listen event!\n");
+                 SetEvent(listenevent);
+                 // wait for it to be done.
+                 WaitForSingleObject(listeneventCB, INFINITE);
+             }
+#ifdef SELECT_ENGINE_SOCKET
+             else if (engineSocket != VISIT_INVALID_SOCKET &&
+                      FD_ISSET(engineSocket, &readSet))
+             {
+//               fprintf(stderr, "Send an engine event!\n");
+                 SetEvent(engineevent);
+
+                 // wait for it to be done.
+                 WaitForSingleObject(engineeventCB, INFINITE);
+             }
+#endif
+        }
+        else
+        {
+            // error
+        }
+    }
+
+    return 0;
+}
+
+int
+VisItDetectInputWithTimeout(int blocking, int timeoutVal,
+    int consoleFileDescriptor)
+{
+    HANDLE handles[3];
+    int n, msec;
+
+    LIBSIM_API_ENTER2(VisItDetectInput, "blocking=%d, consoleFile=%d",
+                      blocking, consoleFileDescriptor);
+
+    msec = timeoutVal / 1000;
+
+    if(!inputThreadsStarted)
+    {
+        DWORD stdin_threadid, select_threadid;
+
+        stdinevent  = CreateEvent(NULL, FALSE, FALSE, NULL);
+        listenevent = CreateEvent(NULL, FALSE, FALSE, NULL);
+        engineevent = CreateEvent(NULL, FALSE, FALSE, NULL);
+        listeneventCB = CreateEvent(NULL, FALSE, FALSE, NULL);
+        engineeventCB = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+#if 0
+        fprintf(stderr, "Creating stdin thread\n");
+        if(!CreateThread(NULL, 0, stdin_thread,
+                         NULL, 0, &stdin_threadid))
+        {
+            LIBSIM_API_LEAVE1(VisItDetectInput,
+                              "Unable to create console input thread. return %d",
+                              -4);
+            return -4;
+        }
+#endif
+
+        fprintf(stderr, "Creating socket input thread\n");
+        if(!CreateThread(NULL, 0, select_thread,
+                         NULL, 0, &select_threadid))
+        {
+            LIBSIM_API_LEAVE1(VisItDetectInput,
+                              "Unable to create socket input thread. return %d",
+                              -4);
+            return -4;
+        }
+
+        inputThreadsStarted = 1;
+    }
+
+    // Wait for any of these events to occur.
+    handles[0] = listenevent;
+    handles[1] = engineevent;
+    //handles[2] = GetStdHandle(STD_INPUT_HANDLE);
+    n = WaitForMultipleObjects(2, handles, FALSE, blocking ? INFINITE : msec);
+
+    //fprintf(stderr, "MsgWaitForMultipleObjects: returned %d\n", n);
+
+    if(n == WAIT_TIMEOUT)
+    {
+        LIBSIM_API_LEAVE1(VisItDetectInput,
+                          "Okay - Timed out. return %d",
+                          0);
+        return 0;
+    }
+    else if(n == WAIT_OBJECT_0)
+    {
+        // we received an event on the listen socket. If it's an event
+        // indicating that there's input then tell the user it's okay
+        // to read from the listen socket.
+        LIBSIM_API_LEAVE1(VisItDetectInput,
+                          "WAIT_OBJECT_0: Listen  socket input. return %d",
+                          1);
+//        SetEvent(listeneventCB);
+        return 1;
+    }
+    else if(n == WAIT_OBJECT_0+1)
+    {
+        // we received an event for the engine socket. If it's an event
+        // indicating that there's input then tell the user it's okay
+        // to read from the engine socket.
+        LIBSIM_API_LEAVE1(VisItDetectInput,
+                          "WAIT_OBJECT_0+1: Engine socket input. return %d",
+                          2);
+        return 2;
+    }
+    else if(n == WAIT_OBJECT_0+2)
+    {
+        // we received a stdin event. Tell the client that it's
+        // okay to read from the console.
+        LIBSIM_API_LEAVE1(VisItDetectInput,
+                          "WAIT_OBJECT_0+2: Console socket input. return %d",
+                          3);
+        fprintf(stderr, "WAIT_OBJECT_0+2\n");
+        return 3;
+    }
+
+    LIBSIM_API_LEAVE1(VisItDetectInput,
+                      "Unspecified error. return %d",
+                      -5);
+    return -5;
+}
+#else
 int
 VisItDetectInputWithTimeout(int blocking, int timeoutVal,
     int consoleFileDescriptor)
@@ -1687,8 +2223,8 @@ VisItDetectInputWithTimeout(int blocking, int timeoutVal,
                      blocking, consoleFileDescriptor);
 
    if (consoleFileDescriptor < 0 &&
-       engineSocket < 0 &&
-       listenSocket < 0)
+       engineSocket <= VISIT_INVALID_SOCKET &&
+       listenSocket <= VISIT_INVALID_SOCKET)
    {
       if (blocking)
       {
@@ -1790,6 +2326,7 @@ VisItDetectInputWithTimeout(int blocking, int timeoutVal,
    }
    /*return -5; Compilers complain because this line cannot be reached */
 }
+#endif
 
 /*******************************************************************************
 *
@@ -1808,10 +2345,13 @@ VisItDetectInputWithTimeout(int blocking, int timeoutVal,
 *   Brad Whitlock, Thu Mar 26 13:38:50 PDT 2009
 *   Install our command callback handler.
 *
+*   Brad Whitlock, Fri Nov 26 00:23:34 PDT 2010
+*   Add Windows code
+*
 *******************************************************************************/
 int VisItAttemptToCompleteConnection(void)
 {
-    int socket;
+    VISIT_SOCKET socket;
 
     LIBSIM_API_ENTER(VisItAttemptToCompleteConnection);
 
@@ -1866,6 +2406,12 @@ int VisItAttemptToCompleteConnection(void)
         LIBSIM_MESSAGE("Calling visit_getdescriptor");
         engineSocket = callbacks->control.get_descriptor(engine);
         LIBSIM_MESSAGE1("visit_getdescriptor returned %d", (int)engineSocket);
+#ifdef _WIN32
+#ifndef SELECT_ENGINE_SOCKET
+        WSAEventSelect(engineSocket, engineevent, FD_READ);
+#endif
+        SetEvent(listeneventCB);
+#endif
     }
 
     /* Install our local command callback handler so we can monitor the
@@ -1893,11 +2439,11 @@ int VisItAttemptToCompleteConnection(void)
 *   Trace information.
 *
 *******************************************************************************/
-void VisItSetSlaveProcessCallback(void (*spic)())
+void VisItSetSlaveProcessCallback(void (*spic)(void))
 {
     LIBSIM_API_ENTER1(VisItSetSlaveProcessCallback, "spic=%p", (void*)spic);
     LIBSIM_MESSAGE("Calling visit_set_slave_process_callback");
-    if(callbacks->control.set_slave_process_callback)
+    if(callbacks != NULL && callbacks->control.set_slave_process_callback)
         (*callbacks->control.set_slave_process_callback)(spic);
     LIBSIM_API_LEAVE(VisItSetSlaveProcessCallback);
 }
@@ -1939,6 +2485,9 @@ void VisItSetCommandCallback(void (*scc)(const char*,const char*,void*),
 *  Brad Whitlock, Fri Jul 25 15:56:41 PDT 2008
 *  Trace information.
 *
+*  Brad Whitlock, Fri Nov 26 00:25:24 PDT 2010
+*  Add Windows code.
+*
 *******************************************************************************/
 int VisItProcessEngineCommand(void)
 {
@@ -1947,13 +2496,19 @@ int VisItProcessEngineCommand(void)
     if (!engine)
     {
         LIBSIM_MESSAGE("engine == NULL");
+        retval = VISIT_OKAY;
     }
-    else
+    else if (callbacks != NULL)
     {
         LIBSIM_MESSAGE("Calling visit_processinput");
         retval = ((*callbacks->control.process_input)(engine) == 1) ?
             VISIT_OKAY : VISIT_ERROR;
+        LIBSIM_MESSAGE1("visit_processinput returned: %d", retval);
     }
+#ifdef _WIN32
+    if(parallelRank == 0)
+        SetEvent(engineeventCB);
+#endif
     LIBSIM_API_LEAVE1(VisItProcessEngineCommand, "return %d", retval);
     return retval;
 }
@@ -1975,7 +2530,7 @@ void VisItTimeStepChanged(void)
 {
     LIBSIM_API_ENTER(VisItTimeStepChanged);
     /* Make sure the function exists before using it. */
-    if (engine && callbacks->control.time_step_changed)
+    if (engine && callbacks != NULL && callbacks->control.time_step_changed)
     {
         LIBSIM_MESSAGE("Calling visit_time_step_changed");
         (*callbacks->control.time_step_changed)(engine);
@@ -2001,7 +2556,7 @@ void VisItUpdatePlots(void)
     LIBSIM_API_ENTER(VisItUpdatePlots);
 
     /* Make sure the function exists before using it. */
-    if (engine && callbacks->control.execute_command)
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         LIBSIM_MESSAGE("Calling visit_execute_command: UpdatePlots");
         (*callbacks->control.execute_command)(engine, "UpdatePlots");
@@ -2029,7 +2584,7 @@ void VisItExecuteCommand(const char *command)
 {
     LIBSIM_API_ENTER(VisItExecuteCommand);
     /* Make sure the function exists before using it. */
-    if (engine && callbacks->control.execute_command)
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         char *cmd2 = NULL;
         LIBSIM_MESSAGE("Calling visit_execute_command");
@@ -2064,13 +2619,20 @@ void VisItDisconnect(void)
 {
     LIBSIM_API_ENTER(VisItDisconnect);
     LIBSIM_MESSAGE("Calling visit_disconnect");
-    if(callbacks->control.disconnect)
-        (*callbacks->control.disconnect)();
-    engineSocket = -1;
-    engine = 0;
     if(callbacks != NULL)
+    {
+        if(callbacks->control.disconnect)
+            (*callbacks->control.disconnect)();
+
         free(callbacks);
-    callbacks = NULL;
+        callbacks = NULL;
+    }
+    engineSocket = VISIT_INVALID_SOCKET;
+    engine = NULL;
+#ifdef _WIN32
+    inputThreadsStarted = 0;
+#endif
+    CloseVisItLibrary();
     LIBSIM_API_LEAVE(VisItDisconnect);
 }
 
@@ -2106,7 +2668,7 @@ int VisItSaveWindow(const char *filename, int w, int h, int format)
     int ret = VISIT_ERROR;
     LIBSIM_API_ENTER(VisItSaveWindow);
     /* Make sure the function exists before using it. */
-    if (engine && callbacks->control.save_window)
+    if (engine && callbacks != NULL && callbacks->control.save_window)
     {
         LIBSIM_MESSAGE("Calling visit_save_window");
         ret = (*callbacks->control.save_window)(engine, filename, w, h, format);
@@ -2192,7 +2754,7 @@ int VisItSet##F(T, void *cbdata) \
 { \
     int retval = VISIT_ERROR; \
     LIBSIM_API_ENTER(VisIt##F);\
-    if (engine && callbacks->data.set_##F)\
+    if (engine && callbacks != NULL && callbacks->data.set_##F)\
     {\
         LIBSIM_MESSAGE("Calling VisIt"#F);\
         (*callbacks->data.set_##F)(cb, cbdata);\
@@ -2335,7 +2897,7 @@ VisItDebug##N(const char *format, ...)\
     va_start(args, format); \
     vsnprintf(buffer, DBG_BUFFER_SIZE, format, args);\
     va_end(args);\
-    if(engine && callbacks->control.debug_logs != NULL)\
+    if(engine && callbacks != NULL && callbacks->control.debug_logs != NULL)\
         (*callbacks->control.debug_logs)(N, buffer);\
 }
 

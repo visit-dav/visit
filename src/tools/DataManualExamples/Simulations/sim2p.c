@@ -39,7 +39,6 @@
 /* SIMPLE PARALLEL SIMULATION SKELETON */
 #include <VisItControlInterface_V2.h>
 #include <stdio.h>
-#include <mpi.h>
 
 #include "SimulationExample.h"
 
@@ -47,6 +46,8 @@
 
 /* CHANGE 1 */
 #ifdef PARALLEL
+#include <mpi.h>
+
 static int visit_broadcast_int_callback(int *value, int sender)
 {
     return MPI_Bcast(value, 1, MPI_INT, sender, MPI_COMM_WORLD);

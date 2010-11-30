@@ -662,11 +662,14 @@ simv2_ObjectType(visit_handle h)
 int
 simv2_FreeObject(visit_handle h)
 {
+    int retval = VISIT_ERROR;
     VisIt_ObjectBase *obj = VisItGetPointer(h);
     if(obj != NULL)
     {
         // Rely on the virtual destructor
         delete obj;
         VisItFreePointer(h);
+        retval = VISIT_OKAY;
     }
+    return retval;
 }

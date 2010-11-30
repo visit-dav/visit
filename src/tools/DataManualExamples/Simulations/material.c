@@ -87,13 +87,12 @@ const char *cmd_names[] = {"halt", "step", "run", "update"};
 void read_input_deck(void) { }
 
 /* SIMULATE ONE TIME STEP */
-#include <unistd.h>
 void simulate_one_timestep(simulation_data *sim)
 {
     ++sim->cycle;
     sim->time += 0.0134;
     printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
-    sleep(1);
+    sim_sleep(1);
 }
 
 /******************************************************************************

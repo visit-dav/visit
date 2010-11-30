@@ -88,13 +88,12 @@ const char *cmd_names[] = {"halt", "step", "run", "update"};
 void read_input_deck(void) { }
 
 /* SIMULATE ONE TIME STEP */
-#include <unistd.h>
 void simulate_one_timestep(simulation_data *sim)
 {
     ++sim->cycle;
     sim->time += 0.0134;
     printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
-    sleep(1);
+    sim_sleep(1);
 }
 
 /******************************************************************************
@@ -318,9 +317,9 @@ int matlist[NY-1][NX-1][3] = {
  * found in a cell.
  */
 float mat_vf[NY-1][NX-1][3] = {
-    {{1.,0.,0.},{0.75,0.25,0.},  {0.8125,0.1875, 0.},{1.,0.,0.}},
-    {{1.,0.,0.},{0.625,0.375,0.},{0.5625,0.4375,0.}, {1.,0.,0.}},
-    {{1.,0.,0.},{0.3,0.7,0.},    {0.2,0.4,0.4},      {0.55,0.45,0.}}
+    {{1.f,0.f,0.f},{0.75f,0.25f,0.f},  {0.8125f,0.1875f, 0.f},{1.f,0.f,0.f}},
+    {{1.f,0.f,0.f},{0.625f,0.375f,0.f},{0.5625f,0.4375f,0.f}, {1.f,0.f,0.f}},
+    {{1.f,0.f,0.f},{0.3f,0.7f,0.f},    {0.2f,0.4f,0.4f},      {0.55f,0.45f,0.f}}
 };
 
 /* Species data. */

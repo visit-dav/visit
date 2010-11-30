@@ -41,5 +41,6 @@
 IF(NOT WIN32)
     ADD_SUBDIRECTORY(CreatingCompatible)
     ADD_SUBDIRECTORY(CreatingCompatibleAdvanced)
-    ADD_SUBDIRECTORY(Simulations)
 ENDIF(NOT WIN32)
+ADD_SUBDIRECTORY(Simulations)
+

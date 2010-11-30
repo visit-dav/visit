@@ -1,3 +1,7 @@
+IF(WIN32)
+MESSAGE(STATUS "Skipping Linux configs")
+INCLUDE(config-site/windows.cmake)
+ELSE(WIN32)
 #/home/brad/Development/thirdparty_shared/cmake/2.8.0/linux-x86_64_gcc-4.4/bin/cmake
 ##
 ## ./build_visit generated host.cmake
@@ -141,3 +145,4 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
+ENDIF(WIN32)

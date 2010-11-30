@@ -583,7 +583,7 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     //
     int ndims = 0, dims[3]={0,0,0};
     int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0}, baseIndex[3]={0,0,0};
-    visit_handle x,y,z,c;   
+    visit_handle x,y,z;   
     if(simv2_RectilinearMesh_getCoords(h, &ndims, &x, &y, &z) == VISIT_ERROR ||
        simv2_RectilinearMesh_getRealIndices(h, minRealIndex, maxRealIndex) == VISIT_ERROR ||
        simv2_RectilinearMesh_getBaseIndex(h, baseIndex) == VISIT_ERROR)
