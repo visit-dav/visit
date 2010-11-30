@@ -79,6 +79,9 @@
 //    Hank Childs, Sat Apr 24 18:21:42 PDT 2010
 //    Add proper support for time.
 //
+//    Hank Childs, Tue Nov 30 11:41:44 PST 2010
+//    Only overset the time if we know if it is accurate.
+//
 // ****************************************************************************
 
 class avtBOVFileFormat : public avtSTMDFileFormat
@@ -123,7 +126,9 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     char                      *path;
     std::string                file_pattern;
     int                        cycle;
+    bool                       cycleIsAccurate;
     double                     dtime;
+    bool                       timeIsAccurate;
     long long                  full_size[3];
     long long                  bricklet_size[3];
     long long                  byteOffset;

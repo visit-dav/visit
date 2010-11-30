@@ -115,6 +115,9 @@ static bool fillSpace = true;
 //    Hank Childs, Thu Apr 24 13:24:51 PDT 2008
 //    Change initializations of char *'s that have been converted to strings.
 //
+//    Hank Childs, Tue Nov 30 11:41:44 PST 2010
+//    Initialize members for whether or not the time or cycle is accurate.
+//
 // ****************************************************************************
 
 avtBOVFileFormat::avtBOVFileFormat(const char *fname)
@@ -151,7 +154,9 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     //
     file_pattern = "";
     cycle = 0;
+    cycleIsAccurate = false;
     dtime = 0.;
+    timeIsAccurate = false;
     full_size[0] = 0;
     full_size[1] = 0;
     full_size[2] = 0;
@@ -213,6 +218,11 @@ avtBOVFileFormat::~avtBOVFileFormat()
 //  Programmer: Hank Childs
 //  Creation:   March 4, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 30 11:41:44 PST 2010
+//    Only overset the time if we know if it is accurate.
+//
 // ****************************************************************************
 
 void
@@ -220,9 +230,11 @@ avtBOVFileFormat::ActivateTimestep(void)
 {
     ReadTOC();
     if (metadata != NULL)
-        metadata->SetCycle(timestep, cycle);
+        if (cycleIsAccurate)
+            metadata->SetCycle(timestep, cycle);
     if (metadata != NULL)
-        metadata->SetTime(timestep, dtime);
+        if (timeIsAccurate)
+            metadata->SetTime(timestep, dtime);
 }
 
 
@@ -1396,6 +1408,9 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Hank Childs, Sat Apr 24 18:21:42 PDT 2010
 //    Add proper support for time.
 //
+//    Hank Childs, Tue Nov 30 11:41:44 PST 2010
+//    Only overset the time if we know if it is accurate.
+//
 // ****************************************************************************
 
 void
@@ -1576,8 +1591,10 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                << size << ", rss=" << rss << endl;
     }
 
-    md->SetCycle(timestep, cycle);
-    md->SetTime(timestep, dtime);
+    if (cycleIsAccurate)
+        md->SetCycle(timestep, cycle);
+    if (timeIsAccurate)
+        md->SetTime(timestep, dtime);
 }
 
 
@@ -1623,6 +1640,9 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Hank Childs, Sat Apr 24 18:21:42 PDT 2010
 //    Add proper support for time.
+//
+//    Hank Childs, Tue Nov 30 11:41:44 PST 2010
+//    Add members for whether or not the time or cycle is accurate.
 //
 // ****************************************************************************
 
@@ -1672,11 +1692,13 @@ avtBOVFileFormat::ReadTOC(void)
             {
                 line += strlen("TIME:") + 1;
                 dtime = atof(line);
+                timeIsAccurate = true;
             }
             else if (strcmp(line, "CYCLE:") == 0)
             {
                 line += strlen("CYCLE:") + 1;
                 cycle = atoi(line);
+                cycleIsAccurate = true;
             }
             else if (strcmp(line, "DATA_FILE:") == 0)
             {
@@ -1857,7 +1879,7 @@ avtBOVFileFormat::ReadTOC(void)
         // Note that the "Broadcast<Type>" calls serve to both
         // send from processor 0 and receive on other processors
         // simultaneously.
-        vector<int> vals(16);
+        vector<int> vals(18);
         vals[0]  = cycle;
         vals[1]  = full_size[0];
         vals[2]  = full_size[1];
@@ -1874,6 +1896,8 @@ avtBOVFileFormat::ReadTOC(void)
         vals[13] = (int) nodalCentering;
         vals[14] = byteOffset;
         vals[15] = (int) divideBrick;
+        vals[16] = (int) cycleIsAccurate;
+        vals[17] = (int) timeIsAccurate;
         BroadcastIntVector(vals, PAR_Rank());
         cycle             = vals[0];
         full_size[0]      = vals[1];
@@ -1891,6 +1915,8 @@ avtBOVFileFormat::ReadTOC(void)
         nodalCentering    = (bool) vals[13];
         byteOffset        = vals[14];
         divideBrick       = (bool) vals[15];
+        cycleIsAccurate   = (bool) vals[16];
+        timeIsAccurate    = (bool) vals[17];
 
         bool hasExtents = false;
         if (var_brick_min.size() > 0)
