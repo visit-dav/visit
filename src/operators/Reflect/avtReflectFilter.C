@@ -447,6 +447,10 @@ avtReflectFilter::ModifyContract(avtContract_p spec)
 //    Hank Childs, Fri Jan 13 09:58:47 PST 2006
 //    Invalidate spatial meta-data.
 //
+//    Hank Childs, Tue Nov 30 11:56:13 PST 2010
+//    Indicate that the zones have been invalidated.  If we do a rectilinear 
+//    reflection, then we re-order the cells.  
+//
 // ****************************************************************************
  
 void
@@ -459,6 +463,11 @@ avtReflectFilter::UpdateDataObjectInfo(void)
     //
     GetOutput()->GetInfo().GetAttributes().SetCanUseInvTransform(false);
     GetOutput()->GetInfo().GetAttributes().SetCanUseTransform(false);
+
+    // Rectilinear reflect reorders the cells.
+    avtMeshType mt = GetInput()->GetInfo().GetAttributes().GetMeshType();
+    if (mt == AVT_RECTILINEAR_MESH || mt == AVT_AMR_MESH)
+        GetOutput()->GetInfo().GetValidity().InvalidateZones();
 
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 }
