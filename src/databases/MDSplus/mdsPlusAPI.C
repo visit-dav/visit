@@ -237,6 +237,7 @@ void* get_value( const char *signal, int dtype ) {
     break;
 
   case DTYPE_CSTRING:
+    {
     /* Put SIZEOF() TDI function around signal name */
     memset(buf, 0, sizeof(buf));
     sprintf( buf, "SIZEOF(%s)", signal );
@@ -252,6 +253,7 @@ void* get_value( const char *signal, int dtype ) {
 
     dtype = DTYPE_CSTRING;
     value = (void*) malloc( size * sizeof( char ) );
+    }
     break;
 
   default:
