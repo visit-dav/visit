@@ -82,6 +82,10 @@
 //    Hank Childs, Tue Nov 30 11:41:44 PST 2010
 //    Only overset the time if we know if it is accurate.
 //
+//    Hank Childs, Tue Nov 30 13:43:49 PST 2010
+//    Return INVALID_CYCLE and INVALID_TIME if we don't know them.  This 
+//    prevents oversetting elsewhere.
+//
 // ****************************************************************************
 
 class avtBOVFileFormat : public avtSTMDFileFormat
@@ -101,8 +105,8 @@ class avtBOVFileFormat : public avtSTMDFileFormat
 
     virtual void               PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
-    virtual int                GetCycle(void) { return cycle; };
-    virtual double             GetTime(void) { return dtime; };
+    virtual int                GetCycle(void) { return (cycleIsAccurate ? cycle : INVALID_CYCLE); };
+    virtual double             GetTime(void) { return (timeIsAccurate ? dtime : INVALID_TIME); };
     virtual bool               ReturnsValidCycle(void) { return haveReadTOC; };
     void                       ActivateTimestep(void);
 
