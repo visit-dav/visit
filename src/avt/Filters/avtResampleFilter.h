@@ -82,6 +82,9 @@
 //    Tom Fogal, Tue Jun 23 20:28:01 MDT 2009
 //    Added GetBounds method.
 //
+//    Hank Childs, Tue Nov 30 21:54:43 PST 2010
+//    Remove const qualification for GetBounds.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
@@ -109,7 +112,7 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
 
     void                  GetDimensions(int &, int &, int &, const double *,
                                         bool);
-    bool                  GetBounds(double[6]) const;
+    bool                  GetBounds(double[6]);
     bool                  InputNeedsNoResampling(void);
     void                  ResampleInput(void);
     void                  BypassResample(void);

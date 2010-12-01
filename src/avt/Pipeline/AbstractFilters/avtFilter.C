@@ -923,10 +923,13 @@ avtFilter::TrySpatialExtents(double *outexts) const
 //    Hank Childs, Thu Aug 26 13:02:28 PDT 2010
 //    Change named of extents object.
 //
+//    Hank Childs, Tue Nov 30 20:38:36 PST 2010
+//    Better support for getting extents when extents aren't known a priori.
+//
 // ****************************************************************************
 
 void
-avtFilter::GetSpatialExtents(double *newexts) const
+avtFilter::GetSpatialExtents(double *newexts)
 {
     if (TrySpatialExtents(newexts))
     {
@@ -937,7 +940,10 @@ avtFilter::GetSpatialExtents(double *newexts) const
     }
 
     const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    atts.GetThisProcsOriginalSpatialExtents()->CopyTo(newexts);
+    if (atts.GetThisProcsOriginalSpatialExtents()->HasExtents())
+        atts.GetThisProcsOriginalSpatialExtents()->CopyTo(newexts);
+    else
+        SearchDataForSpatialExtents(newexts);
 
     UnifyMinMax(newexts, atts.GetSpatialDimension()*2, 6);
 
@@ -1276,6 +1282,26 @@ avtFilter::RegisterDynamicAttribute(avtDynamicAttribute *da)
 
 void
 avtFilter::SearchDataForDataExtents(double *, const char *)
+{
+    EXCEPTION0(ImproperUseException);
+}
+
+
+// ****************************************************************************
+//  Method: avtFilter::SearchDataForSpatialExtents
+//
+//  Purpose:
+//      This should search through the actual data to find the spatial extents.
+//      Since this class does not know what type of data it has, it will
+//      throw an exception.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 30, 2010
+//
+// ****************************************************************************
+
+void
+avtFilter::SearchDataForSpatialExtents(double *)
 {
     EXCEPTION0(ImproperUseException);
 }

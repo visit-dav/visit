@@ -898,8 +898,11 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Hank Childs, Tue Nov 30 21:54:43 PST 2010
+//    Remove const qualification.
+//
 // ****************************************************************************
-bool avtResampleFilter::GetBounds(double bounds[6]) const
+bool avtResampleFilter::GetBounds(double bounds[6])
 {
     bool is3D = true;
     if (atts.GetUseBounds())

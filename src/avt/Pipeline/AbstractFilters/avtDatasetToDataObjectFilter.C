@@ -155,6 +155,25 @@ avtDatasetToDataObjectFilter::SearchDataForDataExtents(double *extents,
 
 
 // ****************************************************************************
+//  Method: avtDatasetToDataObjectFilter::SearchDataForSpatialExtents
+//
+//  Purpose:
+//      Searches the dataset for the spatial extents.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 30, 2010
+//
+// ****************************************************************************
+
+void
+avtDatasetToDataObjectFilter::SearchDataForSpatialExtents(double *extents)
+{
+    avtDataset_p input = GetTypedInput();
+    avtDatasetExaminer::GetSpatialExtents(input, extents);
+}
+
+
+// ****************************************************************************
 //  Method:  avtDatasetToDataObjectFilter::PreExecute
 //
 //  Purpose:
