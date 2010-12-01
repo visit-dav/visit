@@ -25,6 +25,21 @@
 
 #include "CommandParser.h"
 
+QWidget *
+create_application_main_window(VisItViewer *v)
+{
+    return new SimpleVisApp(v);
+}
+
+void
+show_application_main_window(QWidget *w)
+{
+    // Do it like this since virtual show isn't working...
+    SimpleVisApp *app = (SimpleVisApp *)w;
+    app->show();
+    app->raise();
+}
+
 vtkQtRenderWindow *
 SimpleVisApp::ReturnVisWin(void *data)
 {
@@ -156,10 +171,6 @@ SimpleVisApp::resetWindow()
     viewer->Methods()->DeleteActivePlots();
 }
 
-//
-// Qt slots
-//
-
 void
 SimpleVisApp::show()
 {
@@ -172,6 +183,10 @@ SimpleVisApp::show()
 
     QMainWindow::show();
 }
+
+//
+// Qt slots
+//
 
 // ****************************************************************************
 // Method: SimpleVisApp::selectFile

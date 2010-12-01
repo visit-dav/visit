@@ -43,7 +43,10 @@
 #include <VisItViewer.h>
 #include <VisItException.h>
 
-#include <SimpleVisApp.h>
+#include <QWidget>
+
+extern QWidget *create_application_main_window(VisItViewer *v);
+extern void show_application_main_window(QWidget *w);
 
 // ****************************************************************************
 //  Method: main
@@ -63,6 +66,9 @@
 //    I recoded the logic that sets VISITHOME so it is more tolerant of where
 //    the executable gets placed in the VisIt build tree. I think it only works
 //    for UNIX in-source builds though. A real app would do something better.
+//
+//    Brad Whitlock, Tue Nov 30 11:09:15 PST 2010
+//    Get the window from an external routine so we can reuse main.C
 //
 // ****************************************************************************
 
@@ -116,7 +122,7 @@ main(int argc, char *argv[])
         // Create our visualization app. We have to do it before the call to Setup()
         // since we're embedding vis windows.
         //
-        SimpleVisApp *visapp = new SimpleVisApp(&viewer);
+        QWidget *visapp = create_application_main_window(&viewer);
 
         //
         // Now that we've created the QApplication, let's call the viewer's
@@ -127,8 +133,7 @@ main(int argc, char *argv[])
         //
         // Show our app's main window
         //
-        visapp->show();
-        visapp->raise();
+        show_application_main_window(visapp);
 
         //
         // Execute the viewer.
