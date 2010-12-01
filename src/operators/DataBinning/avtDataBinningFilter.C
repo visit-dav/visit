@@ -157,6 +157,10 @@ avtDataBinningFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Sun Oct 17 09:45:44 PDT 2010
 //    Change the name of the variable we create.
 //
+//    Hank Childs, Tue Nov 30 20:13:43 PST 2010
+//    Set the spatial extents of the output.  Otherwise downstream filters might
+//    get confused.
+//
 // ****************************************************************************
 
 void
@@ -220,6 +224,12 @@ avtDataBinningFilter::Execute(void)
     else
         SetOutputDataTree(new avtDataTree());
  
+    avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
+    int dim = ( (atts.GetNumDimensions() == DataBinningAttributes::One) ? 1
+              : ((atts.GetNumDimensions() == DataBinningAttributes::Two) ? 2 : 3));
+    dataAtts.GetThisProcsOriginalSpatialExtents()->Set(&bb[0]);
+    dataAtts.GetOriginalSpatialExtents()->Set(&bb[0]);
+
     delete d;
 }
 
@@ -400,6 +410,7 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
     dataAtts.SetSpatialDimension(dim);
     dataAtts.GetThisProcsOriginalSpatialExtents()->Clear();
     dataAtts.GetOriginalSpatialExtents()->Clear();
+    dataAtts.GetDesiredSpatialExtents()->Clear();
     dataAtts.AddVariable(varname);
     dataAtts.SetActiveVariable(varname.c_str());
     dataAtts.SetVariableDimension(1);
