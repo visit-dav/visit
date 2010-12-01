@@ -1855,13 +1855,15 @@ QvisSaveMovieWizard::NumSequencePages() const
 //
 // Returns:    The id of the next wizard page.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 14 09:22:38 PDT 2008
 //
 // Modifications:
-//   
+//  Cyrus Harrison, Wed Dec  1 15:38:19 PST 2010
+//  Proper state transition into custom pages for create/edit template cases. 
+//
 // ****************************************************************************
 
 int
@@ -1890,7 +1892,9 @@ QvisSaveMovieWizard::nextId() const
         StringMovieTemplateDataMap::const_iterator it = 
             templateTitleToInfo.find(currentMovieTemplate);
         if(it == templateTitleToInfo.end())
+        {
             id = Page_TemplateSources;
+        }
         else
         {
             if(it->second.info.usesSessionFile)
@@ -1934,7 +1938,22 @@ QvisSaveMovieWizard::nextId() const
         id = Page_Sequences;
         break;
     case Page_Sequences:
-        id = Page_SaveTemplate;
+        {
+            // If there are custom pages then tell the wizard to go there.
+                if(NumSequencePages() > 0)
+                    id = Page_Custom0;
+                else
+                {
+                    if(decision_templateUsage != Template_Use)
+                    {
+                        id = Page_SaveTemplate;
+                    }
+                    else
+                    {
+                        id = Page_Formats;
+                    }
+                }
+        }
         break;
     case Page_SaveTemplate:
         if(decision_saveTemplate)
@@ -3335,6 +3354,9 @@ QvisSaveMovieWizard::UpdateDefaultValuesFromCustomPages()
 //   Brad Whitlock, Wed Oct 15 09:22:33 PDT 2008
 //   Qt 4.
 //
+//  Cyrus Harrison, Wed Dec  1 15:38:19 PST 2010
+//  Proper state transition into custom pages for create/edit template cases.
+//
 // ****************************************************************************
 
 bool
@@ -3467,8 +3489,15 @@ QvisSaveMovieWizard::AddSequencePages()
             // Set up the page ordering for the custom pages.
             if(i < nsp-1)
                 nid = Page_Custom0 + i + 1;
-            else
+            else if(decision_templateUsage != Template_Use)
+            {
+                // we are creating/editing a template, ask user if we want to save.
+                nid = Page_SaveTemplate;
+            }
+            else // we are using a template, go to the encoding formats page.
+            {
                 nid = Page_Formats;
+            }
             debug3 << "Setting custom page " << i << "'s nextId to " << nid << endl;
             sequencePages[i].page->setNextId(nid);
             sequencePages[i].page->setSubTitle(tr("%1 sequence").arg(sequencePages[i].name.c_str()));
