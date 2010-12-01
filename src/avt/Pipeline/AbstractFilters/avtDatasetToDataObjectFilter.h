@@ -76,6 +76,9 @@ class     vtkObject;
 //    Hank Childs, Sun Nov 28 06:19:25 PST 2010
 //    Add methods for caching VTK objects in the database.
 //
+//    Hank Childs, Tue Nov 30 20:38:36 PST 2010
+//    Add method SearchDataForSpatialExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetToDataObjectFilter
@@ -94,6 +97,7 @@ class PIPELINE_API avtDatasetToDataObjectFilter
 
     void               InputSetActiveVariable(const char *);
     virtual void       SearchDataForDataExtents(double *, const char *);
+    virtual void       SearchDataForSpatialExtents(double *);
     virtual void       PreExecute(void);
 
     vtkObject         *FetchArbitraryVTKObject(int dependencies, const char *name, int dom, 

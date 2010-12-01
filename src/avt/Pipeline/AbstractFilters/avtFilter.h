@@ -121,6 +121,9 @@ class     avtWebpage;
 //    Hank Childs, Sun Nov 28 06:19:25 PST 2010
 //    Add support for caching arbitrary data structures in the database.
 //
+//    Hank Childs, Tue Nov 30 20:38:36 PST 2010
+//    Add method SearchDataForSpatialExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -188,13 +191,14 @@ class PIPELINE_API avtFilter
     void                                GetDataExtents(double *,
                                                        const char * = NULL);
     bool                                TrySpatialExtents(double *) const;
-    void                                GetSpatialExtents(double *) const;
+    void                                GetSpatialExtents(double *);
     bool                                TryActualDataExtents(double *);
     void                                GetActualDataExtents(double *);
     bool                                TryActualSpatialExtents(double *);
     void                                GetActualSpatialExtents(double *);
     virtual void                        SearchDataForDataExtents(double *,
                                                                  const char *);
+    virtual void                        SearchDataForSpatialExtents(double *);
 
     void                                RegisterDynamicAttribute(
                                                         avtDynamicAttribute *);
