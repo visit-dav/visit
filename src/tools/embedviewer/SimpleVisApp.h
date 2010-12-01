@@ -37,6 +37,7 @@ public:
 
 public slots:
     virtual void show();
+
 private slots:
     void selectFile();
     void openFile(const QString &);
