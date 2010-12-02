@@ -443,6 +443,8 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
         
         lowerBoundText = threshVars->item(rowNum,1)->text().simplified();
         upperBoundText = threshVars->item(rowNum,2)->text().simplified();
+
+        cout << "lb = " << lowerBoundText.toStdString()  << " ub = " << upperBoundText.toStdString() <<endl; 
         
         if (lowerBoundText == QString(tr("min"))) lowerBound = -1e+37;
         else

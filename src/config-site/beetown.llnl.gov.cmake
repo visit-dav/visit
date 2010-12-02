@@ -26,7 +26,7 @@ VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0d/${VISITARCH}/lib/vtk-
 ## Specify the Qt4 binary dir. 
 ## (qmake us used to locate & setup Qt4 dependencies)
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN /home/harrison37/apps/Trolltech/Qt-4.6.1/bin)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN /scratch/harrison37/apps/Trolltech/Qt-4.7.0-rc1/bin)
 
 ##
 ## Specify the location of the python.

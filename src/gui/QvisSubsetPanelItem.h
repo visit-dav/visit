@@ -49,7 +49,7 @@ typedef enum {NotChecked, PartiallyChecked, CompletelyChecked, Unset} CheckedSta
 // ****************************************************************************
 // Class: QvisSubsetPanelItem
 //
-// Purpose: 
+// Purpose:
 //   This class is a tree viewitem that has a tri-state checkbox and 
 //   contains an integer that represents a set or collection id.
 //
@@ -60,6 +60,8 @@ typedef enum {NotChecked, PartiallyChecked, CompletelyChecked, Unset} CheckedSta
 // Creation:   June 26, 2008
 //
 // Modifications:
+//  Cyrus Harrison, Wed Dec  1 16:24:41 PST 2010
+//  Change critera for isOn to FullyChecked.
 //
 // ****************************************************************************
 
@@ -70,7 +72,7 @@ public:
                         const QString &text,
                         CheckedState s = NotChecked,
                         int id = 0);
-                           
+
     QvisSubsetPanelItem(QTreeWidgetItem *parent,
                         const QString &text,
                         int id = 0);
@@ -79,15 +81,15 @@ public:
 
     void         setCheckable(bool val);
     bool         getCheckable() const;
-    
+
     void         setState(CheckedState s);
     CheckedState getState() const;
-    
+
     void         toggleState();
-    
+
     int          id() const;
     void         setId(int id);
-    bool         isOn() const { return state != NotChecked; }
+    bool         isOn() const { return state == CompletelyChecked; }
 
 private:
     static void  InitIcons();
@@ -95,7 +97,7 @@ private:
     static QIcon iconChecked;
     static QIcon iconMixed;
     static QIcon iconUnchecked;
-    
+
 
     CheckedState state;
     int          itemId;
