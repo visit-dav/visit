@@ -1474,7 +1474,7 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         GetMemorySize(size, rss);
         debug5 << "Memory size before creating domain boundaries object: "
                << size << ", rss=" << rss << endl;
-        if(false)//nodalCentering)
+        if(nodalCentering)
         {
             avtNekDomainBoundaries *db = new avtNekDomainBoundaries;
             int nb = (int)nbricks;
@@ -1484,7 +1484,6 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             bs[2] = (int)bricklet_size[2];
             db->SetDomainInfo(nb, bs);
 
-            cout << "use nek dbs" <<endl;
             void_ref_ptr vr = void_ref_ptr(db, avtNekDomainBoundaries::Destruct);
             cache->CacheVoidRef("any_mesh",
                            AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
