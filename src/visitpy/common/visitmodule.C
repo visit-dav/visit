@@ -1443,7 +1443,7 @@ visit_GetDebugLevel(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
-// Function: visit_GetDebugLevel
+// Function: visit_GetLastError
 //
 // Purpose:
 //   Returns the last error that VisIt sent back to the cli.
