@@ -578,6 +578,9 @@ avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 //   Dave Pugmire, Mon Nov 29 09:28:07 EST 2010
 //   Need to synchronize to get number of total streamlines after continuation.
 //
+//   Dave Pugmire, Tue Nov 30 13:24:26 EST 2010
+//   Change IC status when ic to not-terminated.
+//
 // ****************************************************************************
 
 void
@@ -589,10 +592,41 @@ avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute()
         terminatedICs.pop_front();
         
         activeICs.push_back(s);
+        s->status = avtIntegralCurve::STATUS_OK;
     }
     
     totalNumIntegralCurves = activeICs.size();
     SumIntAcrossAllProcessors(totalNumIntegralCurves);
+}
+
+// ****************************************************************************
+// Method:  avtParDomICAlgorithm::CheckNextTimeStepNeeded
+//
+// Purpose: Is the next time slice required to continue?
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    December  2, 2010
+//
+// ****************************************************************************
+
+
+bool
+avtParDomICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
+{
+    int val = 0;
+    list<avtIntegralCurve *>::const_iterator it;
+    for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
+    {
+        if ((*it)->domain.domain != -1 && (*it)->domain.timeStep > curTimeSlice)
+        {
+            val = 1;
+            break;
+        }
+    }
+    
+    SumIntAcrossAllProcessors(val);
+    return val > 0;
 }
 
 #endif

@@ -306,6 +306,9 @@ avtSerialICAlgorithm::RunAlgorithm()
 //   Rename this method to reflect the new emphasis in particle advection, as 
 //   opposed to streamlines.
 //
+//   Dave Pugmire, Tue Nov 30 13:24:26 EST 2010
+//   Change IC status when ic to not-terminated.
+//
 // ****************************************************************************
 
 void
@@ -317,5 +320,33 @@ avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute()
         terminatedICs.pop_front();
         
         activeICs.push_back(s);
+        s->status = avtIntegralCurve::STATUS_OK;
     }
+}
+
+
+// ****************************************************************************
+// Method:  avtParDomICAlgorithm::CheckNextTimeStepNeeded
+//
+// Purpose: Is the next time slice required to continue?
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    December  2, 2010
+//
+// ****************************************************************************
+
+bool
+avtSerialICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
+{
+    list<avtIntegralCurve *>::const_iterator it;
+    for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
+    {
+        if ((*it)->domain.domain != -1 && (*it)->domain.timeStep > curTimeSlice)
+        {
+            return true;
+        }
+    }
+    
+    return false;
 }

@@ -84,6 +84,9 @@ class SlaveInfo;
 //   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
 //   as opposed to streamlines.
 //
+//   Dave Pugmire, Thu Dec  2 11:21:06 EST 2010
+//   Add CheckNextTimeStepNeeded.
+//
 // ****************************************************************************
 
 class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
@@ -97,6 +100,7 @@ class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
     virtual const char*       AlgoName() const {return "MasterSlave";}
     
     virtual void              ResetIntegralCurvesForContinueExecute();
+    virtual bool              CheckNextTimeStepNeeded(int curTimeSlice) { return true; }
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics);
 
     static avtMasterSlaveICAlgorithm* Create(avtPICSFilter *picsFilter,

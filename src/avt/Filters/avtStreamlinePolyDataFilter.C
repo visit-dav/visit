@@ -110,6 +110,9 @@ std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 //   Hank Childs, Fri Oct  8 14:57:13 PDT 2010
 //   Check to see if any curves terminated because of the steps criteria.
 //
+//   Dave Pugmire, Thu Dec  2 12:49:33 EST 2010
+//   Can't early return until after collective communication.
+//
 // ****************************************************************************
 
 void
@@ -117,9 +120,6 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
 {
     debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
     int numICs = ics.size(), numPts = 0;
-    if (numICs == 0)
-        return;
-
     int numEarlyTerminators = 0;
 
     //See how many pts, ics we have so we can preallocate everything.
@@ -155,6 +155,8 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
             avtCallback::IssueWarning(str);
         }
     }
+    if (numICs == 0)
+        return;
 
     //Make a polydata.
     vtkPoints     *points   = vtkPoints::New();

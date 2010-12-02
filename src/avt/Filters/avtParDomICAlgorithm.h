@@ -96,6 +96,9 @@
 //   Add data member (origNumIntegralCurves) to keep track of the starting
 //   number of integral curves.  This is for progress updates.
 //
+//   Dave Pugmire, Thu Dec  2 11:21:06 EST 2010
+//   Add CheckNextTimeStepNeeded.
+//
 // ****************************************************************************
 
 class avtParDomICAlgorithm : public avtParICAlgorithm
@@ -107,6 +110,7 @@ class avtParDomICAlgorithm : public avtParICAlgorithm
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &sls);
     virtual void              ResetIntegralCurvesForContinueExecute();
+    virtual bool              CheckNextTimeStepNeeded(int curTimeSlice);
     virtual const char*       AlgoName() const {return "ParallelStaticDomains";}
 
   protected:
