@@ -288,6 +288,10 @@ avtImageFileWriter::FileHasExtension(const char *filename, const char *ext) cons
 //   Brad Whitlock, Mon Mar 6 17:39:39 PST 2006
 //   Added code to reset nFilesWritten if the file base changes.
 //
+//   Andreas Schafer, Thu Dec  2 09:22:34 PST 2010
+//   Fixed a problem that caused the file base from being ignored when files
+//   did not have an extension.
+//
 // ****************************************************************************
 
 char *
@@ -331,7 +335,7 @@ avtImageFileWriter::CreateFilename(const char *base, bool family,
 
         if(!FileHasExtension(base, extensions[(int)format]))
         {
-            sprintf(str, "%s%s", str, extensions[(int)format]);
+            sprintf(str, "%s%s", base, extensions[(int)format]);
         }
     }
 
