@@ -132,6 +132,9 @@ avtSimulationCommandSpecification::CommandArgumentType_FromString(const std::str
 
 void avtSimulationCommandSpecification::Init()
 {
+    argumentType = CmdArgNone;
+    enabled = true;
+    isOn = true;
 
     avtSimulationCommandSpecification::SelectAll();
 }
