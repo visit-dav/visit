@@ -49,6 +49,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkPointData.h>
 
+#include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
 #include <avtVariableCache.h>
@@ -411,6 +412,9 @@ avtExodusFileFormat::GetNTimesteps(void)
 //    Eric Brugger, Fri Mar  9 14:43:07 PST 2007
 //    Added support for element block names.
 //
+//    Hank Childs, Thu Dec  2 08:45:31 PST 2010
+//    No longer sort the block names.  It creates indexing issues later.
+//
 // ****************************************************************************
 
 void
@@ -449,28 +453,16 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     md->Add(mesh);
 
     //
-    // Sort the block ids so the user thinks we know what we are doing.
-    //
-    vector<int> sortedBlockIds = blockId;
-    sort(sortedBlockIds.begin(), sortedBlockIds.end());
-
-    //
     // Set up the material.
     //
     string materialName = "ElementBlock";
     vector<string> matNames;
     if (numBlocks > 0 && blockName[0] == "")
     {
-        //
-        // Sort the block ids so the user thinks we know what we are doing.
-        //
-        vector<int> sortedBlockIds = blockId;
-        sort(sortedBlockIds.begin(), sortedBlockIds.end());
-
         for (i = 0 ; i < numBlocks ; i++)
         {
             char name[128];
-            sprintf(name, "%d", sortedBlockIds[i]);
+            sprintf(name, "%d", blockId[i]);
             matNames.push_back(name);
         }
     }
@@ -853,12 +845,17 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
 //    Eric Brugger, Fri Mar  9 14:43:07 PST 2007
 //    Added support for element block names.
 //
+//    Hank Childs, Thu Dec  2 08:45:31 PST 2010
+//    Fix problem with establishing material IDs.  There are two possible 
+//    conventions and we were following the wrong one.  I confirmed with Greg
+//    Sjaardema of Sandia that this new code follows the correct convention.
+//
 // ****************************************************************************
 
 void *
 avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts, 
-                                    const char * type, void *,
-                                    DestructorFunction &df)
+                                      const char * type, void *,
+                                      DestructorFunction &df)
 {
     int   i;
 
@@ -879,13 +876,10 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         std::vector<std::string> mats(numBlocks);
         if (numBlocks > 0 && blockName[0] == "")
         {
-            vector<int> sortedBlockIds = blockId;
-            sort(sortedBlockIds.begin(), sortedBlockIds.end());
-
             for (i = 0 ; i < numBlocks ; i++)
             {
                 char num[1024];
-                sprintf(num, "%d", sortedBlockIds[i]);
+                sprintf(num, "%d", blockId[i]);
                 mats[i] = num;
             }
         }
@@ -899,8 +893,26 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
 
         int *mat_0 = new int[nzones];
         int *ptr = (int *) arr->GetVoidPointer(0);
+        bool issuedDebug = false;
         for (i = 0 ; i < nzones ; i++)
-            mat_0[i] = ptr[i]-1;
+        {
+            mat_0[i] = -1; // in case it didn't find a match.
+            for (int j = 0 ; j < numBlocks ; j++)
+                if (ptr[i] == blockId[j])
+                    mat_0[i] = j;
+            if (mat_0[i] == -1)
+            {
+                mat_0[i] = 0;
+                if (!issuedDebug)
+                {
+                    avtCallback::IssueWarning("Some of the materials in your file "
+                      "could not be matched up with an element block ID.  These "
+                      "elements will be assigned to the first element block.");
+                     issuedDebug = true;
+                 }
+            }
+        }
+
         avtMaterial *mat = new avtMaterial(numBlocks, mats, nzones, mat_0,
                                            0, NULL, NULL, NULL, NULL);
         delete [] mat_0;
