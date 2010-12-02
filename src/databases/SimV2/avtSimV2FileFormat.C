@@ -252,6 +252,9 @@ avtSimV2FileFormat::ActivateTimestep()
 //   I fixed an error where the wrong mesh metadata was used for domain 
 //   piece name.
 //
+//   Brad Whitlock, Thu Dec  2 14:41:13 PST 2010
+//   I fixed a problem where a freed units string was being referenced.
+//
 // ****************************************************************************
 
 void
@@ -267,7 +270,7 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
         char *meshName = NULL;
         if(simv2_MeshMetaData_getName(h, &meshName) == VISIT_OKAY)
         {
-            int tdim, sdim;
+            int tdim = 0, sdim = 0;
             if(simv2_MeshMetaData_getTopologicalDimension(h, &tdim)
                == VISIT_OKAY &&
                simv2_MeshMetaData_getSpatialDimension(h, &sdim)
@@ -322,14 +325,14 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
     char *domainTitle = NULL;
     if(simv2_MeshMetaData_getDomainTitle(h, &domainTitle) == VISIT_OKAY)
     {
-        mesh->blockTitle = domainTitle;
+        mesh->blockTitle = std::string(domainTitle);
         free(domainTitle);
     }
 
     char *domainPieceName = NULL;
     if(simv2_MeshMetaData_getDomainPieceName(h, &domainPieceName) == VISIT_OKAY)
     {
-        mesh->blockPieceName = domainPieceName;
+        mesh->blockPieceName = std::string(domainPieceName);
         free(domainPieceName);
     }
 
@@ -357,7 +360,7 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
     if(nGroups > 0 &&
        simv2_MeshMetaData_getGroupTitle(h, &groupTitle) == VISIT_OKAY)
     {
-        mesh->groupTitle = groupTitle;
+        mesh->groupTitle = std::string(groupTitle);
         free(groupTitle);
     }
 
@@ -365,7 +368,7 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
     if(nGroups > 0 &&
        simv2_MeshMetaData_getGroupPieceName(h, &groupPieceName) == VISIT_OKAY)
     {
-        mesh->groupPieceName = groupPieceName;
+        mesh->groupPieceName = std::string(groupPieceName);
         free(groupPieceName);
     }
  
@@ -383,17 +386,17 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
     char *xLabel = NULL, *yLabel = NULL, *zLabel = NULL;
     if(simv2_MeshMetaData_getXLabel(h, &xLabel) == VISIT_OKAY)
     {
-        mesh->xLabel = xLabel;
+        mesh->xLabel = std::string(xLabel);
         free(xLabel);
     }
     if(simv2_MeshMetaData_getYLabel(h, &yLabel) == VISIT_OKAY)
     {
-        mesh->yLabel = yLabel;
+        mesh->yLabel = std::string(yLabel);
         free(yLabel);
     }
     if(simv2_MeshMetaData_getZLabel(h, &zLabel) == VISIT_OKAY)
     {
-        mesh->zLabel = xLabel;
+        mesh->zLabel = std::string(zLabel);
         free(zLabel);
     }
 
@@ -401,17 +404,17 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
     char *xUnits = NULL, *yUnits = NULL, *zUnits = NULL;
     if(simv2_MeshMetaData_getXUnits(h, &xUnits) == VISIT_OKAY)
     {
-        mesh->xUnits = xUnits;
+        mesh->xUnits = std::string(xUnits);
         free(xUnits);
     }
     if(simv2_MeshMetaData_getYUnits(h, &yUnits) == VISIT_OKAY)
     {
-        mesh->yUnits = yUnits;
+        mesh->yUnits = std::string(yUnits);
         free(yUnits);
     }
     if(simv2_MeshMetaData_getZUnits(h, &zUnits) == VISIT_OKAY)
     {
-        mesh->zUnits = xUnits;
+        mesh->zUnits = std::string(zUnits);
         free(zUnits);
     }
 
@@ -455,7 +458,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                 if(simv2_VariableMetaData_getUnits(h, &u) == VISIT_OKAY)
                 {
                     units = u;
-                    hasUnits = units.size() > 0;
+                    hasUnits = !units.empty();
                     free(u);
                 }
 
