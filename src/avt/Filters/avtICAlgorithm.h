@@ -99,6 +99,9 @@
 //   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
 //   as opposed to streamlines.
 //
+//   Dave Pugmire, Thu Dec  2 11:21:06 EST 2010
+//   Add CheckNextTimeStepNeeded.
+//
 // ****************************************************************************
 
 class avtICAlgorithm
@@ -111,6 +114,7 @@ class avtICAlgorithm
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     void                      Execute();
     virtual void              ResetIntegralCurvesForContinueExecute() = 0;
+    virtual bool              CheckNextTimeStepNeeded(int curTimeSlice) = 0;
     virtual void              PostExecute();
     virtual void              GetTerminatedICs(vector<avtIntegralCurve *> &v);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics) = 0;

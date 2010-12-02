@@ -228,10 +228,9 @@ class AVTFILTERS_API avtPICSFilter :
                                               double *extents,
                                               int maxSteps=-1);
     virtual vtkDataSet        *GetDomain(const DomainType &, double = 0.0, double = 0.0, double = 0.0);
+    bool                      LoadNextTimeSlice();
     virtual int               GetTimeStep(double t) const;
     virtual bool              DomainLoaded(DomainType &) const;
-
-    void                      SetZToZero(vtkPolyData *) const;
 
     int                       GetNextCurveID(){ int id = MaxID; MaxID++; return id;}
     void                      CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
