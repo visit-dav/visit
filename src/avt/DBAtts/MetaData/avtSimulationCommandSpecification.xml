@@ -14,14 +14,17 @@
     <Field name="name" label="name" type="string">
     </Field>
     <Field name="argumentType" label="argumentType" type="enum" subtype="CommandArgumentType">
+      CmdArgNone
     </Field>
     <Field name="className" label="className" type="string">
     </Field>
     <Field name="enabled" label="enabled" type="bool">
+      true
     </Field>
     <Field name="parent" label="parent" type="string">
     </Field>
     <Field name="isOn" label="isOn" type="bool">
+      true
     </Field>
     <Field name="signal" label="signal" type="string">
     </Field>

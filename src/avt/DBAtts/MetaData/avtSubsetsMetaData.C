@@ -132,10 +132,13 @@ avtSubsetsMetaData::DecompMode_FromString(const std::string &s, avtSubsetsMetaDa
 
 void avtSubsetsMetaData::Init()
 {
+    catCount = 0;
     isChunkCat = false;
     isMaterialCat = false;
     isUnionOfChunks = false;
     hasPartialCells = false;
+    decompMode = None;
+    maxTopoDim = 0;
 
     avtSubsetsMetaData::SelectAll();
 }

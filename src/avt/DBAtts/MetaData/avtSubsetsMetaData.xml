@@ -13,6 +13,7 @@
     <Field name="catName" label="Name (singular form) of category of subsets" type="string">
     </Field>
     <Field name="catCount" label="Number of sets in this category" type="int">
+      0
     </Field>
     <Field name="nameScheme" label="Namescheme for how members of this group of sets are named" type="att" subtype="NameschemeAttributes">
     </Field>
@@ -35,8 +36,10 @@
       false
     </Field>
     <Field name="decompMode" label="Indicates if/how union of all sets in this category covers the whole mesh" type="enum" subtype="DecompMode" access="public">
+      None
     </Field>
     <Field name="maxTopoDim" label="Maximum topological dimension of the subset" type="int" access="public">
+      0
     </Field>
     <Function name="Print" user="true" member="true">
     </Function>
