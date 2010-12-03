@@ -2515,7 +2515,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
             WindingPair windingPair = offsetWindingPairs[i];
             
-            windingPair.stat = sqrt(j*j+k*k);
+            windingPair.stat = sqrt((double) (j*j+k*k));
             windingPair.ranking = 0;
 
             periodWindingPairs.push_back( windingPair );
@@ -2583,7 +2583,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     {
       WindingPair windingPair = offsetWindingPairs[i];
 
-      windingPair.stat = sqrt(ii*ii+jj*jj+kk*kk);
+      windingPair.stat = sqrt((double)(ii*ii+jj*jj+kk*kk));
       windingPair.ranking = 0;
             
       mergedWindingPairs.push_back( windingPair );
