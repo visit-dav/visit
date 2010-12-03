@@ -32,6 +32,8 @@ no active time slider.</li>
 <li>build_visit now correctly builds optimized libraries and executables with 64 bit Linux machines.</li>
 <li>A bug was corrected that caused VisIt's save movie routines to save out files with names that contained only the file extension.</li>
 <li>A bug was corrected with the Exodus reader for setting up element blocks with non-consecutive numbers.</li>
+<li>A bug was corrected where data-level comparisons on vector data would return the value of the first vector component for all three components,
+when using the "pos_cmfe" option, running in parallel, and working on rectilinear grids.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.1.2</font></b></p>
