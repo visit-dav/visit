@@ -103,10 +103,10 @@ using std::vector;
 
 avtDataTree_p
 avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
-                                  avtDataTree_p mesh_to_be_sampled,
-                                  const std::string &invar,
-                                  const std::string &default_var,
-                                  const std::string &outvar)
+                                 avtDataTree_p mesh_to_be_sampled,
+                                 const std::string &invar,
+                                 const std::string &default_var,
+                                 const std::string &outvar)
 {
     int   i, j;
 
@@ -1115,6 +1115,10 @@ avtPosCMFEAlgorithm::DesiredPoints::RelocatePointsUsingPartition(
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Hank Childs, Fri Dec  3 11:57:37 PST 2010
+//    Fix problem with vector data on rectilinear grids.
+//
 // ****************************************************************************
 
 void
@@ -1270,7 +1274,7 @@ avtPosCMFEAlgorithm::DesiredPoints::UnRelocatePoints(
                         int valIDX = z*realNX*realNY + y*realNX + x;
                         float *p = (float *) recvmessages[procId[j]];
                         for (k = 0 ; k < nComps ; k++)
-                            vals[idx + nComps*valIDX + k] = *p;
+                            vals[idx + nComps*valIDX + k] = *p++;
                         recvmessages[procId[j]] += sizeof(float)*nComps;
                     }
         }
