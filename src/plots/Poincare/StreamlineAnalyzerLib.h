@@ -230,7 +230,7 @@ public:
   void
   fieldlineProperties( vector< Point > &ptList,
                        FieldlineProperties &fi,
-                       unsigned int override,
+                       unsigned int overrideToroidalWinding,
                        unsigned int maxToroidalWinding,
                        double windingPairConfidence,
                        double periodicityConsistency,

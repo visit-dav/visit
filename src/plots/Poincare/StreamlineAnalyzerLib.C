@@ -968,7 +968,7 @@ poloidalWindingCheck( vector< unsigned int > &poloidalWindingCounts,
       ++ic;
     }
 
-    double confidence = (double) nMatches / (double) (nsets-toroidalWinding);
+    double consistency = (double) nMatches / (double) (nsets-toroidalWinding);
 
     unsigned int t = toroidalWinding;
     unsigned int p = poloidalWinding;
@@ -1000,11 +1000,11 @@ poloidalWindingCheck( vector< unsigned int > &poloidalWindingCounts,
         {
           lowOrder = true;
 
-          // If the confidence happens to be higher for the higher
+          // If the consistency happens to be higher for the higher
           // order keep it instead. Typically the lower order math is
           // better.
-          if( windingPairs[i].stat < confidence )
-            windingPairs[i].stat = confidence;
+          if( windingPairs[i].stat < consistency )
+            windingPairs[i].stat = consistency;
           
           break;
         }
@@ -1017,7 +1017,7 @@ poloidalWindingCheck( vector< unsigned int > &poloidalWindingCounts,
       WindingPair windingPair;
       windingPair.toroidal = t;
       windingPair.poloidal = p;
-      windingPair.stat = confidence;
+      windingPair.stat = consistency;
       windingPair.ranking = 0;
 
       windingPairs.push_back( windingPair );
@@ -1811,7 +1811,7 @@ islandChecks( vector< Point >& points,
 void
 FieldlineLib::fieldlineProperties( vector< Point > &ptList,
                                    FieldlineProperties &fi,
-                                   unsigned int override,
+                                   unsigned int overrideToroidalWinding,
                                    unsigned int maxToroidalWinding,
                                    double windingPairConfidence,
                                    double periodicityConsistency,
@@ -2457,59 +2457,6 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
          << "  winding pairs have the same ranking of "
          << maxSimilarRank << endl;
   
-
-  // The user has set the toroidal winding get the poloidal winding
-  // based on the data found.
-  if( override ) 
-  {
-    toroidalWinding = override;
-
-    // Get the average value of the poloidal winding.
-    double poloidalWindingAve = 0;
-
-    unsigned int npts = poloidalWindingCounts.size();
-
-    for( unsigned int i=0; i<npts-toroidalWinding; ++i)
-      poloidalWindingAve += (poloidalWindingCounts[i+toroidalWinding] -
-                             poloidalWindingCounts[i]);
-
-    poloidalWindingAve =
-      (float) poloidalWindingAve / (float) (npts-toroidalWinding);
-      
-    // Round the average value to the nearest integer value.
-    poloidalWinding = (poloidalWindingAve + 0.5);
-
-    // Count the number of times the poloidal winding matches the
-    // windings between puncture points (i.e. the poloidal winding
-    // set).
-    unsigned int nMatches = 0;
-
-    for( unsigned int i=0; i<npts-toroidalWinding; ++i)
-    {
-      if( poloidalWinding ==
-          poloidalWindingCounts[i+toroidalWinding] - poloidalWindingCounts[i] )
-        ++nMatches;
-    }
-
-    double local_safetyFactor =
-      (double) toroidalWinding / (double) poloidalWinding;
-
-    double consistency = (double) nMatches / (double) (npts-toroidalWinding);
-
-    windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
-
-    if( verboseFlag )
-      cerr << "overriding" << endl
-           << "**using**   winding pair "
-           << toroidalWinding << "/"
-           << poloidalWinding << "  ("
-           << local_safetyFactor << " - "
-           << fabs(safetyFactor - local_safetyFactor) << ")  "
-           << "consistency "
-           << 100.0 * consistency
-           << " %" << endl;
-  }
-
   vector< pair< unsigned int, double > > poloidalStats;
   vector< pair< unsigned int, double > > toroidalStats;
 
@@ -3330,6 +3277,74 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     }
   }
 
+  // The user has set the toroidal winding get the poloidal winding
+  // based on the data found.
+  if( overrideToroidalWinding ) 
+  {
+    toroidalWinding = overrideToroidalWinding;
+
+    unsigned int nsets = poloidalWindingCounts.size();
+
+    map< int, int > differenceCount;
+    map< int, int >::iterator ic;
+
+    // Find all the differences and count each one.
+    for( unsigned int i=0; i<nsets-toroidalWinding; ++i)
+    {
+      // Get the poloidal winding between two counts.
+      poloidalWinding =
+        poloidalWindingCounts[i+toroidalWinding] - poloidalWindingCounts[i];
+
+      // Find this difference in the list.
+      ic = differenceCount.find( poloidalWinding );
+
+      // Not found, new difference.
+      if( ic == differenceCount.end() )
+        differenceCount.insert( pair<int, int>( poloidalWinding, 1) );
+      // Found this difference, increment the count.
+      else (*ic).second++;
+    }
+
+    // Find the difference that occurs most often.
+    unsigned int nMatches = 0;
+    
+    ic = differenceCount.begin();
+    
+    while( ic != differenceCount.end() )
+    {
+      if( nMatches < (*ic).second )
+      {
+        poloidalWinding = (*ic).first;
+        nMatches = (*ic).second;
+      }
+
+      ++ic;
+    }
+
+    double consistency = (double) nMatches / (double) (nsets-toroidalWinding);
+
+    double local_safetyFactor =
+      (double) toroidalWinding / (double) poloidalWinding;
+
+    windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
+
+    toroidalPeriod = toroidalWinding;
+    poloidalPeriod = poloidalWinding;
+
+    nnodes = poloidal_puncture_pts.size() / toroidalWinding;
+
+    if( verboseFlag )
+      cerr << "overriding" << endl
+           << "**using**   winding pair "
+           << toroidalWinding << "/"
+           << poloidalWinding << "  ("
+           << local_safetyFactor << " - "
+           << fabs(safetyFactor - local_safetyFactor) << ")  "
+           << "consistency "
+           << 100.0 * consistency
+           << " %" << endl;
+  }
+
   // Receord the analysis.
   fi.analysisState = analysisState;
 
@@ -3341,7 +3356,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   fi.islands = islands;
   fi.nnodes  = nnodes;
 
-  fi.confidence        = confidence;
+  fi.confidence       = confidence;
 
   fi.nPuncturesNeeded = nPuncturesNeeded;
   fi.toroidalPeriod   = toroidalPeriod;
