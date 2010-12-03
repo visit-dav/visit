@@ -166,7 +166,8 @@ class avtPoincareFilter : public avtStreamlineFilter
                           vector< vector < vector < Point > > > &nodes,
                           unsigned int nnodes,
                           unsigned int color,
-                          double color_value );
+                          double color_value,
+                          bool modulo = false);
   
   virtual void loadSurface( avtDataTree *dt,
                             vector< vector < vector < Point > > > &nodes,
@@ -174,7 +175,8 @@ class avtPoincareFilter : public avtStreamlineFilter
                             unsigned int islands,
                             unsigned int skip,
                             unsigned int color,
-                            double color_value);
+                            double color_value,
+                            bool modulo = false);
 
   virtual void loadPoints( avtDataTree *dt,
                            vector < Point  > &nodes,
