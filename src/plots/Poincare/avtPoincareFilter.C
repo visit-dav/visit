@@ -1175,7 +1175,7 @@ avtPoincareFilter::CreatePoincareOutput()
                 type == FieldlineProperties::CHAOTIC )
               nnodes = puncturePts[p][0].size();
 
-            else if( type == FieldlineProperties::IRRATIONAL )
+            else if( type == FieldlineProperties::FLUX_SURFACE )
             {
                 if( overlaps == 1 || overlaps == 3 )
                     FLlib.removeOverlap( puncturePts[p], nnodes,
@@ -1786,8 +1786,8 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
 
               unsigned int npts = ceil((nodes[p][j].size()-n) / (float) nnodes);
             
-              cells->InsertNextCell(npts+fabs(offset));
-              scalars->Allocate    (npts+fabs(offset));
+              cells->InsertNextCell(npts+abs(offset));
+              scalars->Allocate    (npts+abs(offset));
             
               unsigned int cc = 0;
 
