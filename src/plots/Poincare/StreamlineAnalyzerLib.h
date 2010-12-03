@@ -56,6 +56,12 @@ typedef avtVector Vector;
 
 using namespace std;
 
+struct WindingPair {
+  unsigned int toroidal;
+  unsigned int poloidal;
+  double stat;
+  int ranking;
+};
 
 class FieldlineProperties {
 
@@ -87,8 +93,10 @@ enum FieldlineType { UNKNOWN_TYPE  = 0,
                      X_POINT  = 13,
                      
                      QUASI_PERIODIC = 20,
+                     IRRATIONAL     = 20,
                      FLUX_SURFACE   = 21,
                      ISLAND_CHAIN   = 22,
+                     ISLANDS_WITHIN_ISLANDS = 23,
                      
                      CHAOTIC = 30 };
   
@@ -126,7 +134,7 @@ public:
   float confidence;
   float ridgelineVariance;
 
-
+  unsigned int maxPunctures;
   unsigned int nPuncturesNeeded;
 
   std::vector< Point > OPoints;
@@ -161,6 +169,9 @@ public:
 
   unsigned int GCD( unsigned int a, unsigned int b );
 
+  unsigned int GCD( vector< unsigned int > values,
+                    unsigned int minGCD = 1 );
+
   Point circle(Point &pt1, Point &pt2, Point &pt3);
 
   bool IsPerpendicular(Point &pt1, Point &pt2, Point &pt3);
@@ -174,24 +185,29 @@ public:
                             unsigned int poloidalWinding,
                             unsigned int offset = 1 );
 
-  void poloidalWindingCheck( vector< unsigned int > &poloidalWindingset,
-                             vector< pair < pair<unsigned int, unsigned int >,
-                                            double > > &windingSetList );
+  
+  void rotationalSumStats( vector< double > &rotationalSums,
+                           double &averageRotationalSum,
+                           double &stdDev );
+  template< class TYPE >
+  void safetyFactorStats( vector< TYPE > &poloidalWindingCounts,
+                          double &averageSafetyFactor,
+                          double &stdDev );
 
-  unsigned int
+  void SortWindingPairs( vector< WindingPair > &windingPairs,
+                         bool reverse = false );
+
+  void RankWindingPairs( vector< WindingPair > &windingPairs,
+                         bool LT = true );
+
+  void poloidalWindingCheck( vector< unsigned int > &poloidalWindingset,
+                             vector< WindingPair > &windingSetList );
+
+  void
   periodicityStats( vector< Point >& points,
                     vector< pair< unsigned int, double > >& stats,
-                    unsigned int max_period,
-                    unsigned int min_gcd );
+                    unsigned int max_period );
 
-
-  unsigned int
-  periodicityChecks( vector< Point >& points,
-                     vector< pair< unsigned int, double > >& stats,
-                     double &consistency,
-                     unsigned int max_period,
-                     unsigned int min_gcd,
-                     bool useBest );
 
   double
   calculateSumOfSquares( vector< Point >& poloidalWinding_points,

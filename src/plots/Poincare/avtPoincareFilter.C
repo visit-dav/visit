@@ -316,11 +316,11 @@ avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic)
 
         if( iter == fieldlines.end() )
         {
-          ICHelper ichelper;
+          ICHelper icHelper;
 
-          ichelper.id = sric->id;
+          icHelper.id = sric->id;
 
-          fieldlines[ sric->id ] = ichelper;
+          fieldlines[ sric->id ] = icHelper;
 
           iter = fieldlines.find( sric->id );
         }
@@ -403,8 +403,13 @@ avtPoincareFilter::ContinueExecute()
       while( iter != fieldlines.end() )
       {
         // For Island Chains add in the O Points.
-        if( 0 && iter->second.properties.type ==
-            FieldlineProperties::ISLAND_CHAIN &&
+        if( 0 && 
+
+            (iter->second.properties.type ==
+             FieldlineProperties::ISLAND_CHAIN && showOPoints ||
+             iter->second.properties.type ==
+             FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
+
             iter->second.properties.analysisState ==
             FieldlineProperties::ADD_O_POINTS)
         {
@@ -523,6 +528,8 @@ avtPoincareFilter::ClassifyStreamlines()
           ++iter;
           continue;
         }
+
+        iter->second.properties.maxPunctures = maxPunctures;
 
         FLlib.fieldlineProperties( iter->second.points,
                                    iter->second.properties,
@@ -717,6 +724,7 @@ avtPoincareFilter::CreatePoincareOutput()
                << "< " << iter->second.points[0].x << " "
                << iter->second.points[0].y << " "
                << iter->second.points[0].z << " >  "
+               << toroidalPeriod << ":" << poloidalPeriod << "  "
                << toroidalWinding << ":" << poloidalWinding << " ("
                << (double) toroidalWinding / (double) poloidalWinding << ")  ";
 
@@ -729,6 +737,9 @@ avtPoincareFilter::CreatePoincareOutput()
           else if( type == FieldlineProperties::ISLAND_CHAIN )
             cerr << islands << " island chain  ";
 
+          else if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
+            cerr << islands << " islands within islands  ";
+
           else if( type == FieldlineProperties::CHAOTIC )
             cerr << "chaotic  ";
 
@@ -740,7 +751,9 @@ avtPoincareFilter::CreatePoincareOutput()
                << "confidence " << confidence
                << endl;
 
-          if( type == FieldlineProperties::ISLAND_CHAIN && islands != toroidalWinding ) 
+          if( (type == FieldlineProperties::ISLAND_CHAIN && showOPoints ||
+               type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
+              islands != toroidalWinding ) 
             cerr << "WARNING - The island count does not match the toroidalWinding count" << endl;
         }
     
@@ -768,7 +781,6 @@ avtPoincareFilter::CreatePoincareOutput()
                    << " SKIPPING UNKNOWN TYPE " << endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
-            //      topology.push_back(topo);
             
             ++iter;
             continue;
@@ -781,7 +793,6 @@ avtPoincareFilter::CreatePoincareOutput()
                    << " SKIPPING TOROIDALWINDING OF 0" << endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
-            //      topology.push_back(topo);
             
             ++iter;
             continue;
@@ -884,8 +895,6 @@ avtPoincareFilter::CreatePoincareOutput()
                         
                         puncturePts[p][bin].push_back( point );
                         
-                        bin = (bin + 1) % toroidalWinding;
-
                         if( p == 0 && puncturePts[p][bin].size() > 1 )
                         {
                           int ic = puncturePts[p][bin].size()-2;
@@ -897,6 +906,9 @@ avtPoincareFilter::CreatePoincareOutput()
                                                     0,
                                                     len) );
                         }
+
+                        bin = (bin + 1) % toroidalWinding;
+
                     }
                 }
             }
@@ -1163,7 +1175,7 @@ avtPoincareFilter::CreatePoincareOutput()
                 type == FieldlineProperties::CHAOTIC )
               nnodes = puncturePts[p][0].size();
 
-            else if( type != FieldlineProperties::RATIONAL )
+            else if( type == FieldlineProperties::IRRATIONAL )
             {
                 if( overlaps == 1 || overlaps == 3 )
                     FLlib.removeOverlap( puncturePts[p], nnodes,
@@ -1177,6 +1189,13 @@ avtPoincareFilter::CreatePoincareOutput()
                     FLlib.smoothCurve( puncturePts[p], nnodes,
                                        toroidalWinding, poloidalWinding,
                                        windingGroupOffset, islands );
+            }
+            else if( type == FieldlineProperties::ISLAND_CHAIN )
+            {
+              if( overlaps != 0 )
+                FLlib.removeOverlap( puncturePts[p], nnodes,
+                                     toroidalWinding, poloidalWinding,
+                                     windingGroupOffset, islands );
             }
             
             bool VALID = true;
@@ -1210,14 +1229,10 @@ avtPoincareFilter::CreatePoincareOutput()
         }
 
 
-        // Record the topology.
-        //std::pair< unsigned int, unsigned int >
-        //  topo( toroidalWinding, poloidalWinding );
-        
-        //    topology.push_back(topo);
-
         if( !showIslands ||
-            (showIslands && type == FieldlineProperties::ISLAND_CHAIN) ) 
+            (showIslands &&
+             (type == FieldlineProperties::ISLAND_CHAIN ||
+              type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS)) )
         {
             double color_value;
             
@@ -1235,19 +1250,15 @@ avtPoincareFilter::CreatePoincareOutput()
             else if( dataValue == DATA_RidgelineVariance )
               color_value = ridgelineVariance;
             else
-                color_value = 0;
+              color_value = 0;
 
             // Currently the surface mesh is a structquad so set the dims - it
             // really should be and unstructured surface so multiple surface
             // can be generated.
             if( is_curvemesh ) 
             {
-              if( type == FieldlineProperties::RATIONAL ) 
-                loadCurve( dt, puncturePts, nnodes, islands, windingGroupOffset,
-                           dataValue, color_value );
-
-              else if( type == FieldlineProperties::UNKNOWN_TYPE ||
-                       type == FieldlineProperties::CHAOTIC )
+              if( type == FieldlineProperties::UNKNOWN_TYPE ||
+                  type == FieldlineProperties::CHAOTIC )
               {
                 bool tmpLines  = showLines;
                 bool tmpPoints = showPoints;
@@ -1260,10 +1271,25 @@ avtPoincareFilter::CreatePoincareOutput()
                 showLines  = tmpLines;
                 showPoints = tmpPoints;
               }
-              else
-                loadCurve( dt, puncturePts, nnodes, dataValue, color_value );
+              else if( type == FieldlineProperties::RATIONAL )
+              {
+                loadCurve( dt, puncturePts, nnodes, islands, windingGroupOffset,
+                           dataValue, color_value );
+              }
+              else if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
+              {
+                loadCurve( dt, puncturePts, nnodes, dataValue, color_value,
+                           true );
+              }
+              else if( type & FieldlineProperties::IRRATIONAL )
+              {
+                loadCurve( dt, puncturePts, nnodes, dataValue, color_value,
+                           dataValue == DATA_WindingPointOrderModulo );
+              }
 
-              if( type == FieldlineProperties::ISLAND_CHAIN && showOPoints )
+              if( (type == FieldlineProperties::ISLAND_CHAIN && showOPoints ||
+                   type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
+                  showOPoints )
                 findIslandCenter( dt, puncturePts, dataValue, color_value );
 //              drawPoints( dt, OPoints );
             }
@@ -1474,7 +1500,7 @@ avtPoincareFilter::CreatePoincareOutput()
 // ****************************************************************************
 //  Method: avtPoincareFilter::loadCurve
 //
-//  Purpose: This method is for rational surfaces.
+//  Purpose: This method is for RATIONAL surfaces.
 //           Creates a curve from the puncture points. Each curve
 //           represents one toroidal winding group. 
 //
@@ -1545,9 +1571,9 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
             if( color == DATA_PointIndex )
               color_value = (i*toroidalWindings+j)*nplanes + p;
             else if( color == DATA_WindingPointOrder )
-              color_value =  i;
+              color_value = i;
             else if( color == DATA_WindingPointOrderModulo )
-              color_value =  i % nnodes;
+              color_value = i % nnodes;
                 
             scalars->InsertTuple1(j, color_value);
         }
@@ -1590,7 +1616,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     else if( color == DATA_WindingPointOrder )
                       color_value = i;
                     else if( color == DATA_WindingPointOrderModulo )
-                      color_value =  i % nnodes;
+                      color_value = i % nnodes;
                     
                     vtkPolyData *ball = CreateSphere(color_value, pt);
                     
@@ -1670,7 +1696,7 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     else if( color == DATA_WindingPointOrder )
                       color_value = i;
                     else if( color == DATA_WindingPointOrderModulo )
-                      color_value =  i % nnodes;
+                      color_value = i % nnodes;
                     
                     scalars->InsertTuple1(i, color_value);
                 }
@@ -1722,7 +1748,8 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                               vector< vector < vector < Point > > > &nodes,
                               unsigned int nnodes,
                               unsigned int color,
-                              double color_value ) 
+                              double color_value,
+                              bool modulo ) 
 {
     vtkAppendPolyData *append = vtkAppendPolyData::New();
     
@@ -1731,8 +1758,14 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
 
     if (showLines)
     {
-      if( color == DATA_WindingPointOrderModulo )
+      if( modulo )
       {
+        Vector intraVec = Vector( nodes[0][0][0]-nodes[0][0][nnodes]);
+        Vector interVec = Vector( nodes[0][0][0]-nodes[0][0][1]);
+
+        int offset = Dot( intraVec, interVec ) ? 1 : -1;
+        offset = 0;
+
         // Loop through each plane
         for( unsigned int p=0; p<nplanes; ++p ) 
         {
@@ -1742,6 +1775,8 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
           // Loop through each toroidial group
           for( unsigned int j=0; j<toroidalWindings; ++j ) 
           {
+//          unsigned int bb = 0;
+
             for( unsigned int n=0; n<nnodes; ++n ) 
             {
               //Create groups that represent the toroidial groups.
@@ -1751,12 +1786,9 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
 
               unsigned int npts = ceil((nodes[p][j].size()-n) / (float) nnodes);
             
-              cells->InsertNextCell(npts);
-              scalars->Allocate    (npts);
+              cells->InsertNextCell(npts+fabs(offset));
+              scalars->Allocate    (npts+fabs(offset));
             
-              if( color == DATA_WindingOrder )
-                color_value = j;
-
               unsigned int cc = 0;
 
               // Loop through each point in toroidial group
@@ -1772,9 +1804,36 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                 if( color == DATA_PointIndex )
                   color_value = (i*toroidalWindings+j)*nplanes + p;
                 else if( color == DATA_WindingPointOrder )
-                  color_value =  i;
+                  color_value = i;
                 else if( color == DATA_WindingPointOrderModulo )
-                  color_value =  i % nnodes;
+                  color_value = i % nnodes;
+                
+//              color_value = bb++;
+                
+                scalars->InsertTuple1(cc++, color_value);
+              }
+
+              if( offset )
+              {
+                // Add one point in from the previous neighbor to create
+                // a complete boundary.
+                unsigned int i = (n+offset+nnodes) % nnodes;
+                
+                points->InsertPoint(cc,
+                                    nodes[p][j][i].x,
+                                    nodes[p][j][i].y,
+                                    nodes[p][j][i].z);
+                
+                cells->InsertCellPoint(cc);
+                
+                if( color == DATA_PointIndex )
+                  color_value = (i*toroidalWindings+j)*nplanes + p;
+                else if( color == DATA_WindingPointOrder )
+                  color_value = i;
+                else if( color == DATA_WindingPointOrderModulo )
+                  color_value = i % nnodes;
+
+//              color_value = bb++;
                 
                 scalars->InsertTuple1(cc++, color_value);
               }
@@ -1830,9 +1889,9 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                   if( color == DATA_PointIndex )
                     color_value = (i*toroidalWindings+j)*nplanes + p;
                   else if( color == DATA_WindingPointOrder )
-                    color_value =  i;
+                    color_value = i;
                   else if( color == DATA_WindingPointOrderModulo )
-                    color_value =  i % nnodes;
+                    color_value = i % nnodes;
                 
                   scalars->InsertTuple1(i, color_value);
               }
@@ -1920,9 +1979,9 @@ avtPoincareFilter::loadCurve( avtDataTree *dt,
                     if( color == DATA_PointIndex )
                       color_value = (i*toroidalWindings+j)*nplanes + p;
                     else if( color == DATA_WindingPointOrder )
-                      color_value =  i;
+                      color_value = i;
                     else if( color == DATA_WindingPointOrderModulo )
-                      color_value =  i % nnodes;
+                      color_value = i % nnodes;
                   
                     scalars->InsertTuple1(i, color_value);
                 }
@@ -2402,7 +2461,8 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
                                 unsigned int islands,
                                 unsigned int offset,
                                 unsigned int color,
-                                double color_value) 
+                                double color_value,
+                                bool modulo ) 
 {
     unsigned int nplanes = nodes.size();
     unsigned int toroidalWindings = nodes[0].size();
@@ -2480,9 +2540,9 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
                 if( color == DATA_PointIndex )
                     color_value = (i*toroidalWindings+j)*nplanes + p;
                 else if( color == DATA_WindingPointOrder )
-                    color_value =  i;
+                    color_value = i;
                 else if( color == DATA_WindingPointOrderModulo )
-                  color_value =  i % nnodes;
+                    color_value = i % nnodes;
                 
                 scalars->InsertTuple1(n1, color_value);
 
@@ -2518,9 +2578,9 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
             if( color == DATA_PointIndex )
               color_value = (i*toroidalWindings+j)*nplanes + p;
             else if( color == DATA_WindingPointOrder )
-              color_value =  i;
+              color_value = i;
             else if( color == DATA_WindingPointOrderModulo )
-              color_value =  i % nnodes;
+              color_value = i % nnodes;
             
             scalars->InsertTuple1(n1, color_value);
         }
@@ -2583,9 +2643,9 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
         if( color == DATA_PointIndex )
             color_value = (i*toroidalWindings+j)*nplanes + p;
         else if( color == DATA_WindingPointOrder )
-          color_value =  i;
+          color_value = i;
         else if( color == DATA_WindingPointOrderModulo )
-          color_value =  i % nnodes;
+          color_value = i % nnodes;
         
         scalars->InsertTuple1(n1, color_value);
     }
@@ -2611,9 +2671,9 @@ avtPoincareFilter::loadSurface( avtDataTree *dt,
     if( color == DATA_PointIndex )
       color_value = (i*toroidalWindings+j)*nplanes + p;
     else if( color == DATA_WindingPointOrder )
-      color_value =  i;
+      color_value = i;
     else if( color == DATA_WindingPointOrderModulo )
-      color_value =  i % nnodes;
+      color_value = i % nnodes;
     
     scalars->InsertTuple1(n1, color_value);
 
@@ -2696,7 +2756,7 @@ avtPoincareFilter::loadPoints( avtDataTree *dt,
       else if( color == DATA_WindingPointOrder )
         color_value = i % poloidalWindings;
       else if( color == DATA_WindingPointOrderModulo )
-        color_value =  (i % poloidalWindings) % nnodes;
+        color_value = (i % poloidalWindings) % nnodes;
           
       scalars->InsertTuple1(cc, color_value);
         
@@ -2739,7 +2799,7 @@ avtPoincareFilter::loadPoints( avtDataTree *dt,
       else if( color == DATA_WindingPointOrder )
         color_value = i % poloidalWindings;
       else if( color == DATA_WindingPointOrderModulo )
-        color_value =  (i % poloidalWindings) % nnodes;
+        color_value = (i % poloidalWindings) % nnodes;
 
       if( colorMax < color_value )
         colorMax = color_value;
@@ -2779,7 +2839,7 @@ avtPoincareFilter::loadPoints( avtDataTree *dt,
       else if( color == DATA_WindingPointOrder )
         color_value = i % poloidalWindings;
       else if( color == DATA_WindingPointOrderModulo )
-        color_value =  (i % poloidalWindings) % nnodes;
+        color_value = (i % poloidalWindings) % nnodes;
 
       if( colorMax < color_value )
         colorMax = color_value;
@@ -2899,5 +2959,3 @@ avtPoincareFilter::SetIntersectionCriteria(vtkObject *obj, int mi)
     }
     maxIntersections = mi;
 }
-
-

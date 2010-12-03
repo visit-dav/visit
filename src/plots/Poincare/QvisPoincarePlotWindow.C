@@ -313,7 +313,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     analysisButtonGroup->addButton(analysisTypeNone,0);
     analysisTypeLayout->addWidget(analysisTypeNone);
     QRadioButton *analysisTypeNormal =
-      new QRadioButton(tr("Normal"), analysis);
+      new QRadioButton(tr("Full"), analysis);
     analysisButtonGroup->addButton(analysisTypeNormal,1);
     analysisTypeLayout->addWidget(analysisTypeNormal);
     connect(analysisButtonGroup, SIGNAL(buttonClicked(int)),
