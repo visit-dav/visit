@@ -132,6 +132,9 @@ avtGradientExpression::~avtGradientExpression()
 //    Hank Childs, Fri Jan  9 15:59:41 PST 2009
 //    Added support for the fast gradient.
 //
+//    Hank Childs, Sat Dec  4 11:30:22 PST 2010
+//    Use the enumerated type gradientAlgo, instead of using an int.
+//
 // ****************************************************************************
 
 void
@@ -181,17 +184,14 @@ avtGradientExpression::ProcessArguments(ArgsExpr *args,
         // check for arg passed as integer
         if((second_type == "IntegerConst"))
         {
-            gradientAlgo =
-                       dynamic_cast<IntegerConstExpr*>(second_tree)->GetValue();
-
-            if(gradientAlgo < 0 || gradientAlgo > 3)
+            int gt = dynamic_cast<IntegerConstExpr*>(second_tree)->GetValue();
+            if(gt < 0 || gt > 3)
             {
-
                 EXCEPTION2(ExpressionException, outputVariableName,
                 "avtGradientExpression: Invalid second argument.\n"
                 " Valid options are: 0,1,2,3 or \"sample\",\"logical\",\"nzqh\",\"fast\"");
-
             }
+            gradientAlgo = (GradientAlgorithmType) gt;
         }
         // check for arg passed as string
         else if((second_type == "StringConst"))
@@ -249,7 +249,6 @@ void
 avtGradientExpression::PreExecute(void)
 {
     avtSingleInputExpressionFilter::PreExecute();
-    haveIssuedWarning = false;
 
     static bool issuedWarningAboutPointMeshes = false;
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
@@ -319,6 +318,10 @@ avtGradientExpression::PreExecute(void)
 //    Hank Childs, Fri Jan  9 15:59:41 PST 2009
 //    Add support for fast gradients.
 //
+//    Hank Childs, Sat Dec  4 11:30:22 PST 2010
+//    Split most of this routine off into a static function that can be called 
+//    from other modules.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -336,15 +339,45 @@ avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
         return results;
     }
 
+    return CalculateGradient(in_ds, outputVariableName, gradientAlgo);
+}
+
+
+// ****************************************************************************
+//  Method: avtGradientExpression::CalculateGradient
+//
+//  Purpose:
+//      Calculates a gradient for a single VTK data set.  This is a static 
+//      function, meaning it can be called from other modules.
+//
+//  Arguments:
+//      in_ds                The dataset to calculate a gradient for.  The field
+//                           to calculate the gradient of should be the active 
+//                           variable.
+//      outputVariableName   The name to assign to the output variable.
+//      gradientAlgo         The flavor of gradient algorithm to use.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 4, 2010
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
+                                         const char *outputVariableName, 
+                                         GradientAlgorithmType gradientAlgo)
+{
     if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        return RectilinearGradient((vtkRectilinearGrid *) in_ds);
+        return RectilinearGradient((vtkRectilinearGrid *) in_ds,
+                                   outputVariableName);
     }
 
     if (gradientAlgo == LOGICAL)
     {
         if (in_ds->GetDataObjectType() != VTK_STRUCTURED_GRID)
         {
+            static bool haveIssuedWarning = false;
             if (!haveIssuedWarning)
                 avtCallback::IssueWarning("You can only do logical gradients "
                                           "on structured grids.");
@@ -363,12 +396,13 @@ avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
             return rv;
         }
 
-        return LogicalGradient((vtkStructuredGrid *) in_ds);
+        return LogicalGradient((vtkStructuredGrid *) in_ds, outputVariableName);
     }
     else if (gradientAlgo == NODAL_TO_ZONAL_QUAD_HEX)
     {
         if (in_ds->GetDataObjectType() != VTK_STRUCTURED_GRID)
         {
+            static bool haveIssuedWarning = false;
             if (!haveIssuedWarning)
                 avtCallback::IssueWarning("You can only do nzqh gradients "
                                           "on structured grids.");
@@ -387,11 +421,12 @@ avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
             return rv;
         }
 
-        return NodalToZonalQuadHexGrad((vtkStructuredGrid *) in_ds);
+        return NodalToZonalQuadHexGrad((vtkStructuredGrid *) in_ds,
+                                        outputVariableName);
     }
     else if (gradientAlgo == FAST)
     {
-        vtkDataArray *rv = FastGradient(in_ds);
+        vtkDataArray *rv = FastGradient(in_ds, outputVariableName);
         if (rv != NULL)
             return rv;
         // else fall thru to normal gradient processing.
@@ -426,13 +461,6 @@ avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
     
     for (int nodeId = 0 ; nodeId < nPoints; nodeId++)
     {
-        if (nodeId % 10000 == 0)
-        {
-            int nsteps = (nPoints / 10000) + 1;
-            UpdateProgress(currentNode*nsteps + nodeId/10000, 
-                           totalNodes*nsteps);
-        }
-
         float xDELTA=1e6, yDELTA=1e6, zDELTA=1e6;
        
         double nodeCoords[3]; 
@@ -724,10 +752,15 @@ float avtGradientExpression::EvaluateValue(float x, float y, float z,
 //    Hank Childs, Mon Feb 13 16:12:23 PST 2006
 //    Removed misleading comment.
 //
+//    Hank Childs, Sat Dec  4 11:30:22 PST 2010
+//    Add an argument for the output variable name, since this is now a static
+//    function.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg)
+avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg, 
+                                           const char *outputVariableName)
 {
     int i, j, k;
 
@@ -918,10 +951,15 @@ avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg)
 //    Hank Childs / Cyrus Harrison, Wed May 16 11:37:53 PDT 2007
 //    Fix memory leak.
 //
+//    Hank Childs, Sat Dec  4 11:30:22 PST 2010
+//    Added a static method for calculating expressions.  This allows for other
+//    places in VisIt to access a gradient without instantiating the filter.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtGradientExpression::LogicalGradient(vtkStructuredGrid *sg)
+avtGradientExpression::LogicalGradient(vtkStructuredGrid *sg,
+                                       const char *outputVariableName)
 {
     int i, j, k;
 
@@ -1175,40 +1213,47 @@ avtGradientExpression::LogicalGradient(vtkStructuredGrid *sg)
 //  Programmer: Cyrus Harrison
 //  Creation:   August 8, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Dec  4 11:30:22 PST 2010
+//    Add an argument for the output variable name, since this is now a static
+//    function.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtGradientExpression::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds)
+avtGradientExpression::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds,
+                                               const char *outputVariableName)
 {
-    int topo_dim = -1;
+    int topo_dim = 3;
+    int dims[3];
+    in_ds->GetDimensions(dims);
+    if (dims[0] == 1)
+        topo_dim--;
+    if (dims[1] == 1)
+        topo_dim--;
+    if (dims[2] == 1)
+        topo_dim--;
 
-    if ( *(GetInput()) != NULL )
-    {
-        avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-        topo_dim = atts.GetTopologicalDimension();
-
-    }
-
-    const char *var = activeVariable;
     bool own_values_array = false;
     // get input value
-    vtkDataArray *val = in_ds->GetPointData()->GetArray(var);
+    vtkDataArray *val = in_ds->GetPointData()->GetScalars();
 
     if( val == NULL || val->GetNumberOfComponents() != 1 )
     {
         // nzqh only supports nodal data
         // we may have zonal data, if so recenter
-        val = in_ds->GetCellData()->GetArray(var);
+        val = in_ds->GetCellData()->GetScalars();
         if( val != NULL)
         {
             vtkDataSet *new_ds = (vtkDataSet*) in_ds->NewInstance();
             new_ds->CopyStructure(in_ds);
-            new_ds->GetCellData()->AddArray(
-                                      in_ds->GetCellData()->GetArray(var));
+            char *name = val->GetName();
+            new_ds->GetCellData()->AddArray(val);
             vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
             cd2pd->SetInput(new_ds);
             cd2pd->Update();
-            val = cd2pd->GetOutput()->GetPointData()->GetArray(var);
+            val = cd2pd->GetOutput()->GetPointData()->GetArray(name);
             val->Register(NULL);
             own_values_array =true;
             new_ds->Delete();
@@ -1512,10 +1557,17 @@ avtGradientExpression::CalculateNodalToZonalHexGrad(vtkDataSet *ds,
 //  Programmer: Hank Childs
 //  Creation:   January 9, 2009
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Dec  4 11:30:22 PST 2010
+//    Add an argument for the output variable name, since this is now a static
+//    function.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtGradientExpression::FastGradient(vtkDataSet *in_ds)
+avtGradientExpression::FastGradient(vtkDataSet *in_ds,
+                                    const char *outputVariableName)
 {
     int  i;
 
