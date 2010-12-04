@@ -84,8 +84,12 @@ class     vtkStructuredGrid;
 //    Added IsPointVariable() to deal with NZQH centering change.
 //
 //    Hank Childs, Fri Jan  9 17:56:00 CST 2009
-//    Addded the approximate gradient option, to be used with ray casted
+//    Added the approximate gradient option, to be used with ray casted
 //    volume rendering.
+//
+//    Hank Childs, Sat Dec  4 11:30:22 PST 2010
+//    Added a static method for calculating expressions.  This allows for other
+//    places in VisIt to access a gradient without instantiating the filter.
 //
 // ****************************************************************************
 
@@ -104,7 +108,7 @@ class EXPRESSION_API avtGradientExpression : public avtSingleInputExpressionFilt
                               avtGradientExpression();
     virtual                  ~avtGradientExpression();
 
-    void                      SetAlgorithm(int algo)
+    void                      SetAlgorithm(GradientAlgorithmType algo)
                                {gradientAlgo = algo;}
 
     virtual const char       *GetType(void)   { return "avtGradientExpression"; };
@@ -114,36 +118,39 @@ class EXPRESSION_API avtGradientExpression : public avtSingleInputExpressionFilt
     virtual void              PreExecute(void);
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
 
+    static vtkDataArray      *CalculateGradient(vtkDataSet *, const char *,
+                                                GradientAlgorithmType=SAMPLE);
+
   protected:
-    bool                      haveIssuedWarning;
-    int                       gradientAlgo;
+    GradientAlgorithmType     gradientAlgo;
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual int               GetVariableDimension() { return 3; }
     virtual bool              IsPointVariable(void);
     
-    float                     EvaluateComponent(float, float, float, float,
-                                                float, float, float,
-                                                vtkDataSet *, vtkDataArray *,
-                                                vtkIdList *);
-    float                     EvaluateValue(float, float, float, vtkDataSet *,
-                                            vtkDataArray *,vtkIdList *,bool &);
-    vtkDataArray             *RectilinearGradient(vtkRectilinearGrid *);
-    vtkDataArray             *LogicalGradient(vtkStructuredGrid *);
-    
-    vtkDataArray             *NodalToZonalQuadHexGrad(vtkStructuredGrid *);
-    vtkDataArray             *FastGradient(vtkDataSet *);
-    void                      CalculateNodalToZonalQuadGrad(vtkDataSet *,
+    virtual avtContract_p     ModifyContract(avtContract_p);
+
+    static vtkDataArray      *RectilinearGradient(vtkRectilinearGrid *, 
+                                                  const char *);
+    static vtkDataArray      *LogicalGradient(vtkStructuredGrid *, 
+                                              const char *);
+    static vtkDataArray      *NodalToZonalQuadHexGrad(vtkStructuredGrid *, 
+                                                      const char *);
+    static vtkDataArray      *FastGradient(vtkDataSet *, const char *);
+    static void               CalculateNodalToZonalQuadGrad(vtkDataSet *,
                                                             vtkDataArray *,
                                                             int ,
                                                             double *);
-
-    void                      CalculateNodalToZonalHexGrad(vtkDataSet *,
+    static void               CalculateNodalToZonalHexGrad(vtkDataSet *,
                                                            vtkDataArray *,
                                                            int ,
                                                            double *);
-    virtual avtContract_p
-                               ModifyContract(avtContract_p);
+    static float              EvaluateComponent(float, float, float, float,
+                                                float, float, float,
+                                                vtkDataSet *, vtkDataArray *,
+                                                vtkIdList *);
+    static float              EvaluateValue(float, float, float, vtkDataSet *,
+                                            vtkDataArray *,vtkIdList *,bool &);
 };
 
 
