@@ -788,20 +788,40 @@ Point FieldlineLib::CalcCircle(Point &pt1, Point &pt2, Point &pt3)
 
 bool
 FieldlineLib::
-IntersectCheck( vector< Point >& points, unsigned int nbins ) {
+IntersectCheck( vector< Point >& points,
+                unsigned int nbins,
+                unsigned int offset )
+{
+  Vector v0 = (Vector) points[ nbins] - (Vector) points[0];
+  Vector v1 = (Vector) points[offset] - (Vector) points[0];
 
-  for( unsigned int i=0, j=nbins; i<nbins && j<points.size(); i++, j++ ) {
+  // If the offset and point ordering have the same directions then
+  // the next group is the offset. Otherwise if they are in the
+  // opposite direction then nbins-offset is the next group.
+  //int offsetDir = Dot( v0, v1 ) > 0.0 ? 1 : -1;
+  for( unsigned int i=0, j=nbins; i<nbins && j<points.size(); ++i, ++j )
+  {
     Point l0_p0 = points[i];
     Point l0_p1 = points[j];
 
-    for( unsigned int k=i+1, l=j+1; k<nbins && l<points.size(); k++, l++ ) {
+    // The neighbor groups
+    unsigned int skipNext     = (i + offset + nbins) % nbins;
+    unsigned int skipPrevious = (i - offset + nbins) % nbins;
+
+    for( unsigned int k=0, l=nbins; k<nbins && l<points.size(); ++k, ++l )
+    {
+      // Do not check the segment against itself or its immediate
+      // neighbors.
+      if( k == i || k == skipNext || k == skipPrevious )
+        continue;
+
       Point l1_p0 = points[k];
       Point l1_p1 = points[l];
 
-//       cerr << nbins
-//         << "   " << i << "  " << j << "  " << k << "  " << l << endl;
+//       cerr << nbins << "  " << offsetDir << "    "
+//         << i << "  " << j << "  " << k << "  " << l << endl;
 
-      if( j != k && intersect( l0_p0, l0_p1, l1_p0, l1_p1 ) == 1)
+      if( intersect( l0_p0, l0_p1, l1_p0, l1_p1 ) == 1)
         return false;
     }
   }
@@ -2327,8 +2347,12 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     if( poloidalWindingMax < offsetWindingPairs[i].poloidal )
       poloidalWindingMax = offsetWindingPairs[i].poloidal;
 
+    windingGroupOffset = Blankinship( offsetWindingPairs[i].toroidal,
+                                      offsetWindingPairs[i].poloidal );
+
     if( IntersectCheck( poloidal_puncture_pts,
-                        offsetWindingPairs[i].toroidal ) )
+                        offsetWindingPairs[i].toroidal,
+                        windingGroupOffset ) )
     {
       if( windingNumberMatchIndex == -1 )
         windingNumberMatchIndex = i;
@@ -2601,8 +2625,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
   for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
   {
+    windingGroupOffset = Blankinship( mergedWindingPairs[i].toroidal,
+                                      mergedWindingPairs[i].poloidal );
+
     bool drawable = IntersectCheck( poloidal_puncture_pts,
-                                    mergedWindingPairs[i].toroidal );
+                                    mergedWindingPairs[i].toroidal,
+                                    windingGroupOffset );
+
 
     if( verboseFlag & i<10 )
       cerr << (drawable ? "Drawable " : "Rejected ") 
@@ -3591,14 +3620,14 @@ surfaceOverlapCheck( vector< vector< Point > > &bins,
     }
   }
 
-  if( toroidalWinding == 1 || nnodes <= 2 )
+  if( toroidalWinding == 1 || nnodes == 1 )
     return nnodes;
 
-  Vector v0 = (Vector) bins[0   ][1] - (Vector) bins[0][0];
+  Vector v0 = (Vector) bins[     0][1] - (Vector) bins[0][0];
   Vector v1 = (Vector) bins[offset][0] - (Vector) bins[0][0];
 
-  // If the offset and point ordering are opposite in directions then the
-  // previous group is the offset. Otherwise is they have the same
+  // If the offset and point ordering are opposite in directions then
+  // the previous group is the offset. Otherwise if they have the same
   // direction then toroidalWinding-offset is the previous group.
   int offsetDir;
 

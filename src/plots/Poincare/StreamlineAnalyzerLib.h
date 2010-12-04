@@ -179,7 +179,9 @@ public:
   Point CalcCircle(Point &pt1, Point &pt2, Point &pt3);
 
   bool
-  IntersectCheck( vector< Point >& points, unsigned int nbins );
+  IntersectCheck( vector< Point >& points,
+                  unsigned int nbins,
+                  unsigned int skip  );
 
   unsigned int Blankinship( unsigned int toroidalWinding,
                             unsigned int poloidalWinding,
