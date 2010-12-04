@@ -98,6 +98,10 @@ using namespace std;
 //    Brad Whitlock, Thu Feb 28 09:47:50 PDT 2008
 //    Changed init to a map so there can be inits for many targets.
 //
+//    Kathleen Bonnell, Thu Dec 2 15:55:06 MST 2010 
+//    Changed how vartypes is parsed to fix a variable scoping issue on 
+//    Windows. 
+//
 // ****************************************************************************
 
 
@@ -1183,14 +1187,13 @@ class VariableName : public virtual Field
             }
             else
             {
-                const char *val = v.toStdString().c_str();
                 int m = 1;
                 varTypes = 0;
                 for(int i = 0; i < v.length(); ++i)
                 {
-                    if(val[i] == '1')
+                    if(v[i] == '1')
                         varTypes |= m;
-                    else if(val[i] != '0')
+                    else if(v[i] != '0')
                         cOut << "Bad character in vartypes attribute!" << Endl;
                     m = m << 1;
                 }

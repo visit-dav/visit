@@ -49,6 +49,9 @@
 #   Change how python wrappers are handled on windows, due to different
 #   VTK directory structure.
 #
+#   Kathleen Bonnell,  Thu Dec 2 15:30:05 MST 2010
+#   Add .lib files for Install on Windows.
+# 
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -114,12 +117,19 @@ FOREACH(VTKLIB vtkCommon
 )
     IF(WIN32)
         SET(LIBNAME ${VTK_RUNTIME_DIRS}/${VTKLIB}.${SO_EXT})
+        IF(EXISTS ${LIBNAME})
+            THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
+        ENDIF(EXISTS ${LIBNAME})
+        SET(LIBNAME ${VTK_LIBRARY_DIRS}/${VTKLIB}.lib)
+        IF(EXISTS ${LIBNAME})
+            THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
+        ENDIF(EXISTS ${LIBNAME})
     ELSE(WIN32)
         SET(LIBNAME ${VTK_LIBRARY_DIRS}/lib${VTKLIB}.${SO_EXT})
+        IF(EXISTS ${LIBNAME})
+            THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
+        ENDIF(EXISTS ${LIBNAME})
     ENDIF(WIN32)
-    IF(EXISTS ${LIBNAME})
-        THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
-    ENDIF(EXISTS ${LIBNAME})
 ENDFOREACH(VTKLIB)  
 
 # Add install targets for VTK headers too -- but just the vtk-5.0 dir.

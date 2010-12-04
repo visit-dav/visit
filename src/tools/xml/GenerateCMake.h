@@ -104,6 +104,12 @@
 //    David Camp, Wed Nov 17 14:54:02 PST 2010
 //    Added the LIBS libraries to the Plot and Operators, did the samething
 //    the database code was doing. Also added the link dirs from the ldflags.
+//
+//    Kathleen Bonnell, Fri Sep 24 11:25:32 MST 2010 
+//    Fix windows issues with viewer and gui libs building against an 
+//    installed version of VisIt.  Convert Windows paths to CMake paths 
+//    since we are creating a CMake file.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -154,7 +160,8 @@ class CMakeGeneratorPlugin : public Plugin
     }
 
     void
-    GetFilesWith(const QString &name, const vector<QString> &input, std::set<QString> &output)
+    GetFilesWith(const QString &name, const vector<QString> &input, 
+                 std::set<QString> &output)
     {
          for(size_t i = 0; i < input.size(); ++i)
          {
@@ -194,6 +201,18 @@ class CMakeGeneratorPlugin : public Plugin
     {
         return using_dev ? "${VISIT_INCLUDE_DIR}" : "${VISIT_INCLUDE_DIR}/visit";
     }
+
+#ifdef _WIN32
+    QString
+    ToCMakePath(const QString &s) const
+    {
+        char exppath[MAX_PATH];
+        ExpandEnvironmentStrings(s.toStdString().c_str(), exppath, MAX_PATH);
+        QString retval(exppath);
+        retval = retval.replace("\\", "/");
+        return retval; 
+    }
+#endif
 
     void WriteCMake_PlotOperator_Includes(QTextStream &out, bool isOperator)
     {
@@ -267,7 +286,9 @@ class CMakeGeneratorPlugin : public Plugin
         out << ")" << endl;
     }
 
-    void WriteCMake_Plot(QTextStream &out)
+    void WriteCMake_Plot(QTextStream &out, 
+                         const QString &guilibname, 
+                         const QString &viewerlibname)
     {
         out << "PROJECT(" << name<< ")" << endl;
         out << endl;
@@ -301,7 +322,8 @@ class CMakeGeneratorPlugin : public Plugin
             for (size_t i=0; i<wfiles.size(); i++)
                 out << wfiles[i] << endl;
         out << ")" << endl;
-        out << "QT_WRAP_CPP(G"<<name<<"Plot LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
+        out << "QT_WRAP_CPP(G" << name 
+            << "Plot LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
         out << endl;
 
         // libV sources
@@ -322,7 +344,8 @@ class CMakeGeneratorPlugin : public Plugin
             for (size_t i=0; i<vwfiles.size(); i++)
                 out << vwfiles[i] << endl;
             out << ")" << endl;
-            out << "QT_WRAP_CPP(V"<<name<<"Plot LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
+            out << "QT_WRAP_CPP(V" << name
+                << "Plot LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
         }
         out << endl;
 
@@ -397,10 +420,15 @@ class CMakeGeneratorPlugin : public Plugin
         out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
 
         out << "    ADD_LIBRARY(G"<<name<<"Plot ${LIBG_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(G"<<name<<"Plot visitcommon gui " << ToString(libs) << ToString(glibs) << ")" << endl;
+        out << "    TARGET_LINK_LIBRARIES(G" << name << "Plot visitcommon "
+            << guilibname << " " << ToString(libs) << ToString(glibs) 
+            << ")" << endl;
         out << endl;
         out << "    ADD_LIBRARY(V"<<name<<"Plot ${LIBV_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(V"<<name<<"Plot visitcommon viewer " << ToString(libs) << ToString(vlibs) << ")" << endl;
+        out << "    TARGET_LINK_LIBRARIES(V" << name << "Plot visitcommon "
+            << viewerlibname << " " << ToString(libs) << ToString(vlibs) 
+            << ")" << endl;
+        out << endl;
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<"Plot V"<<name<<"Plot)" << endl;
         out << endl;
         // libS sources
@@ -417,8 +445,10 @@ class CMakeGeneratorPlugin : public Plugin
         out << "            ${COMMON_SOURCES}" << endl;
         out << "        )" << endl;
         out << "        ADD_LIBRARY(S"<<name<<"Plot ${LIBS_SOURCES})" << endl;
-        out << "        TARGET_LINK_LIBRARIES(S"<<name<<"Plot visitcommon visitpy ${PYTHON_LIBRARY})" << endl;
-        out << "        SET(INSTALLTARGETS ${INSTALLTARGETS} S"<<name<<"Plot)" << endl;
+        out << "        TARGET_LINK_LIBRARIES(S" << name
+            << "Plot visitcommon visitpy ${PYTHON_LIBRARY})" << endl;
+        out << "        SET(INSTALLTARGETS ${INSTALLTARGETS} S" << name
+            << "Plot)" << endl;
         out << "    ENDIF(VISIT_PYTHON_SCRIPTING)" << endl;
         out << endl;
         // Java sources
@@ -453,7 +483,9 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
     }
 
-    void WriteCMake_Operator(QTextStream &out)
+    void WriteCMake_Operator(QTextStream &out, 
+                             const QString guilibname, 
+                             const QString viewerlibname)
     {
         out << "PROJECT(" << name<< ")" << endl;
         out << endl;
@@ -562,10 +594,14 @@ class CMakeGeneratorPlugin : public Plugin
         out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
 
         out << "    ADD_LIBRARY(G"<<name<<"Operator ${LIBG_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(G"<<name<<"Operator visitcommon gui " << ToString(libs) << ToString(glibs) << ")" << endl;
+        out << "    TARGET_LINK_LIBRARIES(G" << name << "Operator visitcommon "
+            << guilibname << " " << ToString(libs) << ToString(glibs) 
+            << ")" << endl;
         out << endl;
         out << "    ADD_LIBRARY(V"<<name<<"Operator ${LIBV_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(V"<<name<<"Operator visitcommon viewer "<< ToString(libs) << ToString(vlibs) << ")" << endl;
+        out << "    TARGET_LINK_LIBRARIES(V" << name << "Operator visitcommon "
+            << viewerlibname << " " << ToString(libs) << ToString(vlibs) 
+            << ")" << endl;
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<"Operator V"<<name<<"Operator)" << endl;
         out << endl;
         // libS sources
@@ -846,72 +882,107 @@ class CMakeGeneratorPlugin : public Plugin
     {
         const char *visithome = getenv("VISITARCHHOME");
         if (!visithome && !using_dev)
-            throw QString().sprintf("Please set the VISITARCHHOME environment variable.\n"
+            throw QString().sprintf("Please set the VISITARCHHOME "
+                                    "environment variable.\n"
                                     "You may have it set automatically "
                                     "using 'visit -xml2cmake'.");
-#if 0
-        const char *visitplugdir = getenv("VISITPLUGININST");
-        if (!visitplugdir)
-            throw QString().sprintf("Please set the VISITPLUGININST environment variable.\n"
-                                    "You may have it set automatically "
-                                    "using 'visit -xml2cmake'.");
-#endif
+
         const char *visitplugdirpub = getenv("VISITPLUGININSTPUB");
         if (!visitplugdirpub && installpublic)
-            throw QString().sprintf("Please set the VISITPLUGININSTPUB environment variable.\n"
+            throw QString().sprintf("Please set the VISITPLUGININSTPUB "
+                                    "environment variable.\n"
                                     "You may have it set automatically "
                                     "using 'visit -xml2cmake'.");
+
         const char *visitplugdirpri = getenv("VISITPLUGININSTPRI");
         if (!visitplugdirpri)
         {
            if ((using_dev && installprivate) || !using_dev)
-            throw QString().sprintf("Please set the VISITPLUGININSTPRI environment variable.\n"
+            throw QString().sprintf("Please set the VISITPLUGININSTPRI "
+                                    "environment variable.\n"
                                     "You may have it set automatically "
                                     "using 'visit -xml2cmake'.");
         }
 
-        out << "# DO NOT EDIT THIS FILE! THIS FILE IS AUTOMATICALLY GENERATED BY xml2cmake" << endl;
+        out << "# DO NOT EDIT THIS FILE! THIS FILE IS AUTOMATICALLY GENERATED "
+            << "BY xml2cmake" << endl;
 
-        // If we're not using a development version then we need to always include 
-        // something in the generated output.
+        QString qvisithome(visithome);
+        QString qvisitplugdirpub(visitplugdirpub);
+        QString qvisitplugdirpri(visitplugdirpri);
+#ifdef _WIN32
+        qvisithome       = ToCMakePath(qvisithome);
+        qvisitplugdirpub = ToCMakePath(qvisitplugdirpub);
+        qvisitplugdirpri = ToCMakePath(qvisitplugdirpri);
+#endif
+        // If we're not using a development version then we need to always 
+        // include something in the generated output.
         if(!using_dev)
         {
-            out << "CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4 FATAL_ERROR)" << endl;
-            out << "SET(VISIT_INCLUDE_DIR " << visithome << "/include)" << endl;
-            out << "SET(VISIT_LIBRARY_DIR " << visithome << "/lib)" << endl;
-            out << "SET(VISIT_BINARY_DIR " << visithome << "/bin)" << endl;
-            out << "SET(VISIT_ARCHIVE_DIR " << visithome << "/archives)" << endl;
+            out << "CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)" << endl;
+            out << "SET(VISIT_INCLUDE_DIR \"" << qvisithome 
+                << "/include\")" << endl;
+            out << "SET(VISIT_LIBRARY_DIR \"" << qvisithome 
+                << "/lib\")" << endl;
+#ifdef _WIN32
+            // There is no 'bin' dir for installed VisIt on Windows
+            out << "SET(VISIT_BINARY_DIR \""  << qvisithome 
+                << "\")" << endl;
+#else
+            out << "SET(VISIT_BINARY_DIR \""  << qvisithome 
+                << "/bin\")" << endl;
+#endif
+            out << "SET(VISIT_ARCHIVE_DIR \"" << qvisithome 
+                << "/archives\")" << endl;
             if(installpublic)
             {
-                out << "SET(VISIT_PLUGIN_DIR " << visitplugdirpub << ")" << endl;
+                out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub 
+                    << "\")" << endl;
             }
             else // installprivate or default
             {
-                out << "SET(VISIT_PLUGIN_DIR " << visitplugdirpri << ")" << endl;
+                out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpri 
+                    << "\")" << endl;
             }
 
-            out << "INCLUDE(" << visithome << "/include/PluginVsInstall.cmake)" << endl;
-            out << "INCLUDE(" << visithome << "/include/VisItLibraryDependencies.cmake)" << endl;
+            out << "INCLUDE(\"" << qvisithome 
+                << "/include/PluginVsInstall.cmake\")" << endl;
+            out << "INCLUDE(\"" << qvisithome 
+                << "/include/VisItLibraryDependencies.cmake\")" << endl;
             out << endl;
         }
         else
         {
-            // We're using a development version but we're installing public or private.
+            // We're using a development version but we're installing public 
+            // or private.
             if(installpublic)
             {
-                out << "SET(VISIT_PLUGIN_DIR " << visitplugdirpub << ")" << endl;
+               out << "SET(VISIT_PLUGIN_DIR " << visitplugdirpub << ")" << endl;
             }
 
             if(installprivate)
             {
-                out << "SET(VISIT_PLUGIN_DIR " << visitplugdirpri << ")" << endl;
+               out << "SET(VISIT_PLUGIN_DIR " << visitplugdirpri << ")" << endl;
             }
         }
 
+        QString guilibname("gui");
+        QString viewerlibname("viewer");
+#ifdef WIN32
+        if (! using_dev)
+        {
+            // when calling from an installed version, cmake doesn't know that
+            // the gui and viewer lib targets have been renamed to guilib and
+            // viewer lib (to prevent conflicts with the exe targets), so they 
+            // must be explictily listed by the name of the actual lib created.
+            guilibname    = "guilib";
+            viewerlibname = "viewerlib";
+        }
+#endif
         if(type == "plot")
-            WriteCMake_Plot(out);
+            WriteCMake_Plot(out, guilibname, viewerlibname);
         else if(type == "operator")
-            WriteCMake_Operator(out);
+            WriteCMake_Operator(out, guilibname, viewerlibname);
         else if(type == "database")
             WriteCMake_Database(out);
     }
