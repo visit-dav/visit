@@ -208,6 +208,10 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   get a signal that causes us to use the default value before we ever set
 //   the field with the correct value.
 // 
+//   Hank Childs, Sun Dec  5 09:52:44 PST 2010
+//   Add support for disabling warnings for stiffness and critical points.
+//   Also add description of tolerances.
+//
 // ****************************************************************************
 
 void
@@ -569,32 +573,39 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationLayout->addWidget(maxTimeStepLabel, 3,0);
     integrationLayout->addWidget(maxTimeStep, 3,1);
 
-    // Create the relative tolerance text field.
-    relTolLabel = new QLabel(tr("Relative tolerance"), integrationGroup);
-    relTol = new QLineEdit(integrationGroup);
-    connect(relTol, SIGNAL(returnPressed()),
-            this, SLOT(relTolProcessText()));
-    integrationLayout->addWidget(relTolLabel, 4,0);
-    integrationLayout->addWidget(relTol, 4, 1);
-
-    // Create the absolute tolerance text field.
-    absTolLabel = new QLabel(tr("Absolute tolerance"), integrationGroup);
-    absTol = new QLineEdit(integrationGroup);
-    connect(absTol, SIGNAL(returnPressed()), this, SLOT(absTolProcessText()));
-    integrationLayout->addWidget(absTolLabel, 5,0);
-    integrationLayout->addWidget(absTol, 5, 1);
-
-    absTolSizeType = new QComboBox(integrationGroup);
-    absTolSizeType->addItem(tr("Absolute"), 0);
-    absTolSizeType->addItem(tr("Fraction of Bounding Box"), 1);
-    connect(absTolSizeType, SIGNAL(activated(int)), this, SLOT(absTolSizeTypeChanged(int)));
-    integrationLayout->addWidget(absTolSizeType, 5, 2);
-
     forceNodalLabel = new QLabel(tr("Force node centering"), integrationGroup);
     forceNodal = new QCheckBox(integrationGroup);
     connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
-    integrationLayout->addWidget(forceNodalLabel, 6,0);
-    integrationLayout->addWidget(forceNodal, 6, 1);
+    integrationLayout->addWidget(forceNodalLabel, 4,0);
+    integrationLayout->addWidget(forceNodal, 4, 1);
+
+    QGroupBox *toleranceGroup = new QGroupBox(central);
+    toleranceGroup->setTitle(tr("Tolerances: max error for step < max(abstol, reltol*velocity_i) for each component i"));
+    integrationLayout->addWidget(toleranceGroup, 5, 0, 1, 3);
+    QGridLayout *toleranceLayout = new QGridLayout(toleranceGroup);
+    toleranceLayout->setMargin(5);
+    toleranceLayout->setSpacing(10);
+
+    // Create the relative tolerance text field.
+    relTolLabel = new QLabel(tr("Relative tolerance"), toleranceGroup);
+    relTol = new QLineEdit(toleranceGroup);
+    connect(relTol, SIGNAL(returnPressed()),
+            this, SLOT(relTolProcessText()));
+    toleranceLayout->addWidget(relTolLabel, 0, 0);
+    toleranceLayout->addWidget(relTol, 0, 1);
+
+    // Create the absolute tolerance text field.
+    absTolLabel = new QLabel(tr("Absolute tolerance"), toleranceGroup);
+    absTol = new QLineEdit(toleranceGroup);
+    connect(absTol, SIGNAL(returnPressed()), this, SLOT(absTolProcessText()));
+    toleranceLayout->addWidget(absTolLabel, 1, 0);
+    toleranceLayout->addWidget(absTol, 1, 1);
+
+    absTolSizeType = new QComboBox(toleranceGroup);
+    absTolSizeType->addItem(tr("Absolute"), 0);
+    absTolSizeType->addItem(tr("Fraction of Bounding Box"), 1);
+    connect(absTolSizeType, SIGNAL(activated(int)), this, SLOT(absTolSizeTypeChanged(int)));
+    toleranceLayout->addWidget(absTolSizeType, 1, 2);
 
     // ----------------------------------------------------------------------
     // Appearance tab
@@ -1013,6 +1024,9 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
 // 
+//   Hank Childs, Sun Dec  5 05:31:57 PST 2010
+//   Add additional warning controls.
+//
 // ****************************************************************************
 
 void
@@ -1025,19 +1039,19 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
     algoGrp->setTitle(tr("Parallel streamline options"));
-    advGLayout->addWidget(algoGrp, 0, 0, 1, 4);
-
+    //advGLayout->addWidget(algoGrp, 0, 0, 1, 4);
+    advGLayout->addWidget(algoGrp, 0, 0);
 
     // Algorithm group.
     QGridLayout *algoGLayout = new QGridLayout(algoGrp);
     algoGLayout->setSpacing(10);
     algoGLayout->setColumnStretch(1,10);
 
-    slAlgoLabel = new QLabel(tr("Parallelize across"), algoGrp);
+    slAlgoLabel = new QLabel(tr("Parallelization"), algoGrp);
     slAlgo = new QComboBox(algoGrp);
-    slAlgo->addItem(tr("Particles"));
-    slAlgo->addItem(tr("Domains"));
-    slAlgo->addItem(tr("Particles and Domains"));
+    slAlgo->addItem(tr("Parallelize Over Particles"));
+    slAlgo->addItem(tr("Parallelize Over Domains"));
+    slAlgo->addItem(tr("Parallelize Over Particles and Domains"));
     slAlgo->addItem(tr("Have VisIt select the best algorithm"));
     connect(slAlgo, SIGNAL(activated(int)),
             this, SLOT(streamlineAlgorithmChanged(int)));
@@ -1075,7 +1089,8 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     // Pathline Advance Group.
     QGroupBox *icGrp = new QGroupBox(pageAdvanced);
     icGrp->setTitle(tr("Pathlines vs Streamlines"));
-    advGLayout->addWidget(icGrp, 1, 0, 1, 4);
+    //advGLayout->addWidget(icGrp, 1, 0, 1, 4);
+    advGLayout->addWidget(icGrp, 1, 0);
 
     QGridLayout *icGrpLayout = new QGridLayout(icGrp);
     icGrpLayout->setSpacing(10);
@@ -1131,11 +1146,11 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     cmfeOptionsGrpLayout->addWidget(posButton, 3, 0);
     connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
 
-
     // Warnings group.
     QGroupBox *warningsGrp = new QGroupBox(pageAdvanced);
     warningsGrp->setTitle(tr("Warnings"));
-    advGLayout->addWidget(warningsGrp, 2, 0, 1, 4);
+    //advGLayout->addWidget(warningsGrp, 2, 0, 1, 4);
+    advGLayout->addWidget(warningsGrp, 2, 0);
 
     QGridLayout *warningsGLayout = new QGridLayout(warningsGrp);
     warningsGLayout->setSpacing(10);
@@ -1145,8 +1160,36 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     connect(issueWarningForMaxSteps, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForMaxStepsChanged(bool)));
     warningsGLayout->addWidget(issueWarningForMaxSteps, 0, 0);
-    QLabel *warningsLabel = new QLabel(tr("Issue warnings when the maximum number of steps is reached"), warningsGrp);
-    warningsGLayout->addWidget(warningsLabel, 0, 1, 1, 4);
+    QLabel *maxStepsLabel = new QLabel(tr("Issue warning when the maximum number of steps is reached"), warningsGrp);
+    warningsGLayout->addWidget(maxStepsLabel, 0, 1, 1, 2);
+
+    issueWarningForStiffness = new QCheckBox(central);
+    connect(issueWarningForStiffness, SIGNAL(toggled(bool)),
+            this, SLOT(issueWarningForStiffnessChanged(bool)));
+    warningsGLayout->addWidget(issueWarningForStiffness, 1, 0);
+    QLabel *stiffnessLabel = new QLabel(tr("Issue warning when stiffness is detected"), warningsGrp);
+    warningsGLayout->addWidget(stiffnessLabel, 1, 1, 1, 2);
+    QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
+    warningsGLayout->addWidget(stiffnessDescLabel1, 2, 1, 1, 2);
+    QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
+    warningsGLayout->addWidget(stiffnessDescLabel2, 3, 1, 1, 2);
+    
+    issueWarningForCriticalPoints = new QCheckBox(central);
+    connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
+            this, SLOT(issueWarningForCriticalPointsChanged(bool)));
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 4, 0);
+    QLabel *critPointLabel = new QLabel(tr("Issue warning when a particle doesn't terminate at a critical point"), warningsGrp);
+    warningsGLayout->addWidget(critPointLabel, 4, 1, 1, 2);
+    QLabel *critPointDescLabel = new QLabel(tr("(Meaning it circles round and round the critical point without stopping.)"), warningsGrp);
+    warningsGLayout->addWidget(critPointDescLabel, 5, 1, 1, 2);
+    criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
+    criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 6, 1);
+    criticalPointThreshold = new QLineEdit(warningsGrp);
+    criticalPointThreshold->setAlignment(Qt::AlignLeft);
+    connect(criticalPointThreshold, SIGNAL(returnPressed()),
+            this, SLOT(criticalPointThresholdProcessText()));
+    warningsGLayout->addWidget(criticalPointThreshold, 6, 2);
 }
 
 // ****************************************************************************
@@ -1243,6 +1286,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
 // 
+//   Hank Childs, Sun Dec  5 09:52:44 PST 2010
+//   Add support for disabling warnings for stiffness and critical points.
+//
 // ****************************************************************************
 
 void
@@ -1987,6 +2033,24 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
               issueWarningForMaxSteps->setChecked(streamAtts->GetIssueTerminationWarnings());
               issueWarningForMaxSteps->blockSignals(false);
               break;
+
+            case StreamlineAttributes::ID_issueCriticalPointsWarnings:
+              issueWarningForCriticalPoints->blockSignals(true);
+              issueWarningForCriticalPoints->setChecked(streamAtts->GetIssueCriticalPointsWarnings());
+              criticalPointThreshold->setEnabled(streamAtts->GetIssueCriticalPointsWarnings());
+              criticalPointThresholdLabel->setEnabled(streamAtts->GetIssueCriticalPointsWarnings());
+              issueWarningForCriticalPoints->blockSignals(false);
+              break;
+
+            case StreamlineAttributes::ID_issueStiffnessWarnings:
+              issueWarningForStiffness->blockSignals(true);
+              issueWarningForStiffness->setChecked(streamAtts->GetIssueStiffnessWarnings());
+              issueWarningForStiffness->blockSignals(false);
+              break;
+            case StreamlineAttributes::ID_criticalPointThreshold:
+              temp.setNum(streamAtts->GetCriticalPointThreshold());
+              criticalPointThreshold->setText(temp);
+              break;
         }
     }
 }
@@ -2365,6 +2429,9 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
 // 
+//   Hank Childs, Sun Dec  5 09:52:44 PST 2010
+//   Add support for disabling warnings for stiffness and critical points.
+//
 // ****************************************************************************
 
 void
@@ -2919,7 +2986,20 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetOpacityVarMax(streamAtts->GetOpacityVarMax());
         }
     }
-    
+
+    // criticalPointThreshold
+    if(which_widget == StreamlineAttributes::ID_criticalPointThreshold || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(criticalPointThreshold, val))
+            streamAtts->SetCriticalPointThreshold(val);
+        else
+        {
+            ResettingError(tr("Speed cutoff for critical points"),
+                DoubleToQString(streamAtts->GetCriticalPointThreshold()));
+            streamAtts->SetCriticalPointThreshold(streamAtts->GetCriticalPointThreshold());
+        }
+    }
 }
 
 
@@ -3599,6 +3679,27 @@ void
 QvisStreamlinePlotWindow::issueWarningForMaxStepsChanged(bool val)
 {
     streamAtts->SetIssueTerminationWarnings(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::issueWarningForStiffnessChanged(bool val)
+{
+    streamAtts->SetIssueStiffnessWarnings(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::issueWarningForCriticalPointsChanged(bool val)
+{
+    streamAtts->SetIssueCriticalPointsWarnings(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::criticalPointThresholdProcessText(void)
+{
+    GetCurrentValues(StreamlineAttributes::ID_criticalPointThreshold);
     Apply();
 }
 

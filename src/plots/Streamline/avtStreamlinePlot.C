@@ -404,6 +404,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Hank Childs, Mon Oct  4 14:38:20 PDT 2010
 //   Add support for varying termination criteria.
 //
+//   Hank Childs, Sun Dec  5 11:43:46 PST 2010
+//   Pass along attributes for issuing warnings.
+//
 // ****************************************************************************
 
 void
@@ -498,6 +501,8 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
                                      atts.GetTermTime());
     streamlineFilter->SetDisplayMethod(atts.GetDisplayMethod());
     streamlineFilter->IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
+    streamlineFilter->IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
+    streamlineFilter->IssueWarningForCriticalPoints(atts.GetIssueCriticalPointsWarnings(), atts.GetCriticalPointThreshold());
 
     streamlineFilter->SetIntegrationDirection(atts.GetStreamlineDirection());
 

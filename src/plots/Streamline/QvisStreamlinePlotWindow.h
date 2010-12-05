@@ -140,6 +140,9 @@ class StreamlineAttributes;
 //   Hank Childs, Wed Oct  6 20:27:09 PDT 2010
 //   Add options for different termination types.
 //
+//   Hank Childs, Sun Dec  5 04:59:00 PST 2010
+//   Add new data members for warnings for stiffness and critical points.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -262,6 +265,9 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void tubeSizeTypeChanged(int);
     void ribbonSizeTypeChanged(int);
     void issueWarningForMaxStepsChanged(bool);
+    void issueWarningForStiffnessChanged(bool);
+    void issueWarningForCriticalPointsChanged(bool);
+    void criticalPointThresholdProcessText();
 
   private:
     int plotType;
@@ -319,7 +325,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *fillLabel;
     QButtonGroup *fillButtonGroup;
     QRadioButton *fillButtons[2];
-
 
     QComboBox *displayMethod;
     QCheckBox *showSeeds, *showHeads;
@@ -382,9 +387,15 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QComboBox *geomDisplayQuality;
 
     QCheckBox *issueWarningForMaxSteps;
+    QCheckBox *issueWarningForStiffness;
+    QCheckBox *issueWarningForCriticalPoints;
+    QLineEdit *criticalPointThreshold;
+    QLabel    *criticalPointThresholdLabel;
+
     StreamlineAttributes *streamAtts;
 };
 
 
-
 #endif
+
+

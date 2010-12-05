@@ -383,6 +383,15 @@
       <Field name="issueTerminationWarnings" label="Issue Warning When Termination Criteria Is Not Met" type="bool">
         true
       </Field>
+      <Field name="issueStiffnessWarnings" label="Issue warnings when stiffness is encountered" type="bool">
+        true
+      </Field>
+      <Field name="issueCriticalPointsWarnings" label="Issue warnings when critical points are reached" type="bool">
+        true
+      </Field>
+      <Field name="criticalPointThreshold" label="criticalPointThreshold" type="double" enabler="issueCriticalPointsWarnings:true">
+        0.001000
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">

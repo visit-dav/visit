@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int StreamlineAttributes_numAdditionalAtts = 88;
+    private static int StreamlineAttributes_numAdditionalAtts = 91;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -250,6 +250,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         numberOfRandomSamples = 1;
         forceNodeCenteredData = false;
         issueTerminationWarnings = true;
+        issueStiffnessWarnings = true;
+        issueCriticalPointsWarnings = true;
+        criticalPointThreshold = 0.001;
     }
 
     public StreamlineAttributes(int nMoreFields)
@@ -380,6 +383,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         numberOfRandomSamples = 1;
         forceNodeCenteredData = false;
         issueTerminationWarnings = true;
+        issueStiffnessWarnings = true;
+        issueCriticalPointsWarnings = true;
+        criticalPointThreshold = 0.001;
     }
 
     public StreamlineAttributes(StreamlineAttributes obj)
@@ -513,6 +519,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         numberOfRandomSamples = obj.numberOfRandomSamples;
         forceNodeCenteredData = obj.forceNodeCenteredData;
         issueTerminationWarnings = obj.issueTerminationWarnings;
+        issueStiffnessWarnings = obj.issueStiffnessWarnings;
+        issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
+        criticalPointThreshold = obj.criticalPointThreshold;
 
         SelectAll();
     }
@@ -668,7 +677,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (randomSeed == obj.randomSeed) &&
                 (numberOfRandomSamples == obj.numberOfRandomSamples) &&
                 (forceNodeCenteredData == obj.forceNodeCenteredData) &&
-                (issueTerminationWarnings == obj.issueTerminationWarnings));
+                (issueTerminationWarnings == obj.issueTerminationWarnings) &&
+                (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
+                (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
+                (criticalPointThreshold == obj.criticalPointThreshold));
     }
 
     public String GetName() { return "Streamline"; }
@@ -1274,6 +1286,24 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(87);
     }
 
+    public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
+    {
+        issueStiffnessWarnings = issueStiffnessWarnings_;
+        Select(88);
+    }
+
+    public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
+    {
+        issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
+        Select(89);
+    }
+
+    public void SetCriticalPointThreshold(double criticalPointThreshold_)
+    {
+        criticalPointThreshold = criticalPointThreshold_;
+        Select(90);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double[]       GetPointSource() { return pointSource; }
@@ -1363,6 +1393,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public int            GetNumberOfRandomSamples() { return numberOfRandomSamples; }
     public boolean        GetForceNodeCenteredData() { return forceNodeCenteredData; }
     public boolean        GetIssueTerminationWarnings() { return issueTerminationWarnings; }
+    public boolean        GetIssueStiffnessWarnings() { return issueStiffnessWarnings; }
+    public boolean        GetIssueCriticalPointsWarnings() { return issueCriticalPointsWarnings; }
+    public double         GetCriticalPointThreshold() { return criticalPointThreshold; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1543,6 +1576,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(forceNodeCenteredData);
         if(WriteSelect(87, buf))
             buf.WriteBool(issueTerminationWarnings);
+        if(WriteSelect(88, buf))
+            buf.WriteBool(issueStiffnessWarnings);
+        if(WriteSelect(89, buf))
+            buf.WriteBool(issueCriticalPointsWarnings);
+        if(WriteSelect(90, buf))
+            buf.WriteDouble(criticalPointThreshold);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1814,6 +1853,15 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         case 87:
             SetIssueTerminationWarnings(buf.ReadBool());
             break;
+        case 88:
+            SetIssueStiffnessWarnings(buf.ReadBool());
+            break;
+        case 89:
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            break;
+        case 90:
+            SetCriticalPointThreshold(buf.ReadDouble());
+            break;
         }
     }
 
@@ -2028,6 +2076,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + intToString("numberOfRandomSamples", numberOfRandomSamples, indent) + "\n";
         str = str + boolToString("forceNodeCenteredData", forceNodeCenteredData, indent) + "\n";
         str = str + boolToString("issueTerminationWarnings", issueTerminationWarnings, indent) + "\n";
+        str = str + boolToString("issueStiffnessWarnings", issueStiffnessWarnings, indent) + "\n";
+        str = str + boolToString("issueCriticalPointsWarnings", issueCriticalPointsWarnings, indent) + "\n";
+        str = str + doubleToString("criticalPointThreshold", criticalPointThreshold, indent) + "\n";
         return str;
     }
 
@@ -2121,5 +2172,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private int            numberOfRandomSamples;
     private boolean        forceNodeCenteredData;
     private boolean        issueTerminationWarnings;
+    private boolean        issueStiffnessWarnings;
+    private boolean        issueCriticalPointsWarnings;
+    private double         criticalPointThreshold;
 }
 

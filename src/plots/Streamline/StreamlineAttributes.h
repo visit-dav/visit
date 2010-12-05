@@ -270,6 +270,9 @@ public:
     void SetNumberOfRandomSamples(int numberOfRandomSamples_);
     void SetForceNodeCenteredData(bool forceNodeCenteredData_);
     void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
+    void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
+    void SetIssueCriticalPointsWarnings(bool issueCriticalPointsWarnings_);
+    void SetCriticalPointThreshold(double criticalPointThreshold_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -373,6 +376,9 @@ public:
     int                  GetNumberOfRandomSamples() const;
     bool                 GetForceNodeCenteredData() const;
     bool                 GetIssueTerminationWarnings() const;
+    bool                 GetIssueStiffnessWarnings() const;
+    bool                 GetIssueCriticalPointsWarnings() const;
+    double               GetCriticalPointThreshold() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -540,6 +546,9 @@ public:
         ID_numberOfRandomSamples,
         ID_forceNodeCenteredData,
         ID_issueTerminationWarnings,
+        ID_issueStiffnessWarnings,
+        ID_issueCriticalPointsWarnings,
+        ID_criticalPointThreshold,
         ID__LAST
     };
 
@@ -632,11 +641,14 @@ private:
     int            numberOfRandomSamples;
     bool           forceNodeCenteredData;
     bool           issueTerminationWarnings;
+    bool           issueStiffnessWarnings;
+    bool           issueCriticalPointsWarnings;
+    double         criticalPointThreshold;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdisbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibb"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdisbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbd"
 
 #endif
