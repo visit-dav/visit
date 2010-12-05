@@ -629,6 +629,9 @@ void StreamlineAttributes::Init()
     numberOfRandomSamples = 1;
     forceNodeCenteredData = false;
     issueTerminationWarnings = true;
+    issueStiffnessWarnings = true;
+    issueCriticalPointsWarnings = true;
+    criticalPointThreshold = 0.001;
 
     StreamlineAttributes::SelectAll();
 }
@@ -762,6 +765,9 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     numberOfRandomSamples = obj.numberOfRandomSamples;
     forceNodeCenteredData = obj.forceNodeCenteredData;
     issueTerminationWarnings = obj.issueTerminationWarnings;
+    issueStiffnessWarnings = obj.issueStiffnessWarnings;
+    issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
+    criticalPointThreshold = obj.criticalPointThreshold;
 
     StreamlineAttributes::SelectAll();
 }
@@ -1048,7 +1054,10 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (randomSeed == obj.randomSeed) &&
             (numberOfRandomSamples == obj.numberOfRandomSamples) &&
             (forceNodeCenteredData == obj.forceNodeCenteredData) &&
-            (issueTerminationWarnings == obj.issueTerminationWarnings));
+            (issueTerminationWarnings == obj.issueTerminationWarnings) &&
+            (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
+            (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
+            (criticalPointThreshold == obj.criticalPointThreshold));
 }
 
 // ****************************************************************************
@@ -1393,6 +1402,9 @@ StreamlineAttributes::SelectAll()
     Select(ID_numberOfRandomSamples,             (void *)&numberOfRandomSamples);
     Select(ID_forceNodeCenteredData,             (void *)&forceNodeCenteredData);
     Select(ID_issueTerminationWarnings,          (void *)&issueTerminationWarnings);
+    Select(ID_issueStiffnessWarnings,            (void *)&issueStiffnessWarnings);
+    Select(ID_issueCriticalPointsWarnings,       (void *)&issueCriticalPointsWarnings);
+    Select(ID_criticalPointThreshold,            (void *)&criticalPointThreshold);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1955,6 +1967,24 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("issueTerminationWarnings", issueTerminationWarnings));
     }
 
+    if(completeSave || !FieldsEqual(ID_issueStiffnessWarnings, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("issueStiffnessWarnings", issueStiffnessWarnings));
+    }
+
+    if(completeSave || !FieldsEqual(ID_issueCriticalPointsWarnings, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("issueCriticalPointsWarnings", issueCriticalPointsWarnings));
+    }
+
+    if(completeSave || !FieldsEqual(ID_criticalPointThreshold, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("criticalPointThreshold", criticalPointThreshold));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -2391,6 +2421,12 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetForceNodeCenteredData(node->AsBool());
     if((node = searchNode->GetNode("issueTerminationWarnings")) != 0)
         SetIssueTerminationWarnings(node->AsBool());
+    if((node = searchNode->GetNode("issueStiffnessWarnings")) != 0)
+        SetIssueStiffnessWarnings(node->AsBool());
+    if((node = searchNode->GetNode("issueCriticalPointsWarnings")) != 0)
+        SetIssueCriticalPointsWarnings(node->AsBool());
+    if((node = searchNode->GetNode("criticalPointThreshold")) != 0)
+        SetCriticalPointThreshold(node->AsDouble());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3028,6 +3064,27 @@ StreamlineAttributes::SetIssueTerminationWarnings(bool issueTerminationWarnings_
     Select(ID_issueTerminationWarnings, (void *)&issueTerminationWarnings);
 }
 
+void
+StreamlineAttributes::SetIssueStiffnessWarnings(bool issueStiffnessWarnings_)
+{
+    issueStiffnessWarnings = issueStiffnessWarnings_;
+    Select(ID_issueStiffnessWarnings, (void *)&issueStiffnessWarnings);
+}
+
+void
+StreamlineAttributes::SetIssueCriticalPointsWarnings(bool issueCriticalPointsWarnings_)
+{
+    issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
+    Select(ID_issueCriticalPointsWarnings, (void *)&issueCriticalPointsWarnings);
+}
+
+void
+StreamlineAttributes::SetCriticalPointThreshold(double criticalPointThreshold_)
+{
+    criticalPointThreshold = criticalPointThreshold_;
+    Select(ID_criticalPointThreshold, (void *)&criticalPointThreshold);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -3638,6 +3695,24 @@ StreamlineAttributes::GetIssueTerminationWarnings() const
     return issueTerminationWarnings;
 }
 
+bool
+StreamlineAttributes::GetIssueStiffnessWarnings() const
+{
+    return issueStiffnessWarnings;
+}
+
+bool
+StreamlineAttributes::GetIssueCriticalPointsWarnings() const
+{
+    return issueCriticalPointsWarnings;
+}
+
+double
+StreamlineAttributes::GetCriticalPointThreshold() const
+{
+    return criticalPointThreshold;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -3832,6 +3907,9 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_numberOfRandomSamples:             return "numberOfRandomSamples";
     case ID_forceNodeCenteredData:             return "forceNodeCenteredData";
     case ID_issueTerminationWarnings:          return "issueTerminationWarnings";
+    case ID_issueStiffnessWarnings:            return "issueStiffnessWarnings";
+    case ID_issueCriticalPointsWarnings:       return "issueCriticalPointsWarnings";
+    case ID_criticalPointThreshold:            return "criticalPointThreshold";
     default:  return "invalid index";
     }
 }
@@ -3944,6 +4022,9 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_numberOfRandomSamples:             return FieldType_int;
     case ID_forceNodeCenteredData:             return FieldType_bool;
     case ID_issueTerminationWarnings:          return FieldType_bool;
+    case ID_issueStiffnessWarnings:            return FieldType_bool;
+    case ID_issueCriticalPointsWarnings:       return FieldType_bool;
+    case ID_criticalPointThreshold:            return FieldType_double;
     default:  return FieldType_unknown;
     }
 }
@@ -4056,6 +4137,9 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_numberOfRandomSamples:             return "int";
     case ID_forceNodeCenteredData:             return "bool";
     case ID_issueTerminationWarnings:          return "bool";
+    case ID_issueStiffnessWarnings:            return "bool";
+    case ID_issueCriticalPointsWarnings:       return "bool";
+    case ID_criticalPointThreshold:            return "double";
     default:  return "invalid index";
     }
 }
@@ -4560,6 +4644,21 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_issueTerminationWarnings:
         {  // new scope
         retval = (issueTerminationWarnings == obj.issueTerminationWarnings);
+        }
+        break;
+    case ID_issueStiffnessWarnings:
+        {  // new scope
+        retval = (issueStiffnessWarnings == obj.issueStiffnessWarnings);
+        }
+        break;
+    case ID_issueCriticalPointsWarnings:
+        {  // new scope
+        retval = (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings);
+        }
+        break;
+    case ID_criticalPointThreshold:
+        {  // new scope
+        retval = (criticalPointThreshold == obj.criticalPointThreshold);
         }
         break;
     default: retval = false;

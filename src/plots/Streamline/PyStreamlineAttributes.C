@@ -730,6 +730,18 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetIssueStiffnessWarnings())
+        SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetIssueCriticalPointsWarnings())
+        SNPRINTF(tmpStr, 1000, "%sissueCriticalPointsWarnings = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sissueCriticalPointsWarnings = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%scriticalPointThreshold = %g\n", prefix, atts->GetCriticalPointThreshold());
+    str += tmpStr;
     return str;
 }
 
@@ -3332,6 +3344,78 @@ StreamlineAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+StreamlineAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the issueStiffnessWarnings in the object.
+    obj->data->SetIssueStiffnessWarnings(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetIssueStiffnessWarnings(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIssueStiffnessWarnings()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the issueCriticalPointsWarnings in the object.
+    obj->data->SetIssueCriticalPointsWarnings(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIssueCriticalPointsWarnings()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the criticalPointThreshold in the object.
+    obj->data->SetCriticalPointThreshold(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetCriticalPointThreshold(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetCriticalPointThreshold());
+    return retval;
+}
+
 
 
 PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
@@ -3512,6 +3596,12 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetForceNodeCenteredData", StreamlineAttributes_GetForceNodeCenteredData, METH_VARARGS},
     {"SetIssueTerminationWarnings", StreamlineAttributes_SetIssueTerminationWarnings, METH_VARARGS},
     {"GetIssueTerminationWarnings", StreamlineAttributes_GetIssueTerminationWarnings, METH_VARARGS},
+    {"SetIssueStiffnessWarnings", StreamlineAttributes_SetIssueStiffnessWarnings, METH_VARARGS},
+    {"GetIssueStiffnessWarnings", StreamlineAttributes_GetIssueStiffnessWarnings, METH_VARARGS},
+    {"SetIssueCriticalPointsWarnings", StreamlineAttributes_SetIssueCriticalPointsWarnings, METH_VARARGS},
+    {"GetIssueCriticalPointsWarnings", StreamlineAttributes_GetIssueCriticalPointsWarnings, METH_VARARGS},
+    {"SetCriticalPointThreshold", StreamlineAttributes_SetCriticalPointThreshold, METH_VARARGS},
+    {"GetCriticalPointThreshold", StreamlineAttributes_GetCriticalPointThreshold, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -3836,6 +3926,12 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetForceNodeCenteredData(self, NULL);
     if(strcmp(name, "issueTerminationWarnings") == 0)
         return StreamlineAttributes_GetIssueTerminationWarnings(self, NULL);
+    if(strcmp(name, "issueStiffnessWarnings") == 0)
+        return StreamlineAttributes_GetIssueStiffnessWarnings(self, NULL);
+    if(strcmp(name, "issueCriticalPointsWarnings") == 0)
+        return StreamlineAttributes_GetIssueCriticalPointsWarnings(self, NULL);
+    if(strcmp(name, "criticalPointThreshold") == 0)
+        return StreamlineAttributes_GetCriticalPointThreshold(self, NULL);
 
     return Py_FindMethod(PyStreamlineAttributes_methods, self, name);
 }
@@ -4026,6 +4122,12 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetForceNodeCenteredData(self, tuple);
     else if(strcmp(name, "issueTerminationWarnings") == 0)
         obj = StreamlineAttributes_SetIssueTerminationWarnings(self, tuple);
+    else if(strcmp(name, "issueStiffnessWarnings") == 0)
+        obj = StreamlineAttributes_SetIssueStiffnessWarnings(self, tuple);
+    else if(strcmp(name, "issueCriticalPointsWarnings") == 0)
+        obj = StreamlineAttributes_SetIssueCriticalPointsWarnings(self, tuple);
+    else if(strcmp(name, "criticalPointThreshold") == 0)
+        obj = StreamlineAttributes_SetCriticalPointThreshold(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
