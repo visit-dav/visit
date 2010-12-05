@@ -751,6 +751,9 @@ QvisQueryWindow::UpdateQueryList()
 //   Cyrus Harrison, Tue Jun 24 16:21:00 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Hank Childs, Sun Dec  5 15:43:32 PST 2010
+//   Make the focus of the query window be at the bottom of the window.
+//
 // ****************************************************************************
 
 void
@@ -761,7 +764,7 @@ QvisQueryWindow::UpdateResults(bool)
         string str;
         pickAtts->CreateOutputString(str);
         resultText->append(str.c_str());
-        resultText->moveCursor(QTextCursor::Up,QTextCursor::MoveAnchor);
+        resultText->moveCursor(QTextCursor::Down,QTextCursor::MoveAnchor);
         //resultText->setCursorPosition(resultText->numLines() - 1, 0);
     }
     else if (SelectedSubject() == queryAtts)
@@ -769,7 +772,7 @@ QvisQueryWindow::UpdateResults(bool)
         string str;
         str = queryAtts->GetResultsMessage();
         resultText->append(str.c_str());
-        resultText->moveCursor(QTextCursor::Up,QTextCursor::MoveAnchor);
+        resultText->moveCursor(QTextCursor::Down,QTextCursor::MoveAnchor);
     }
 }
 
