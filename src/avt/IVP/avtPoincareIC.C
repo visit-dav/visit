@@ -115,10 +115,15 @@ avtPoincareIC::~avtPoincareIC()
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Dec  5 10:18:13 PST 2010
+//    Add avtIVPField argument.
+//
 // ****************************************************************************
 
 bool
-avtPoincareIC::CheckForTermination(avtIVPStep& step)
+avtPoincareIC::CheckForTermination(avtIVPStep& step, avtIVPField *)
 {
     if( IntersectPlane( step.GetP0(), step.GetP1() ) )
     {

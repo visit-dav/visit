@@ -183,6 +183,9 @@ static float random_11()
 //   Dave Pugmire, Fri Jun 11 15:12:04 EDT 2010
 //   Remove seed densities.
 //
+//   Hank Childs, Sun Dec  5 10:43:57 PST 2010
+//   Initialize data members for warnings.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
@@ -205,6 +208,9 @@ avtStreamlineFilter::avtStreamlineFilter()
 
     storeVelocitiesForLighting = false;
     issueWarningForMaxStepsTermination = true;
+    issueWarningForStiffness = true;
+    issueWarningForCriticalPoints = true;
+    criticalPointThreshold = 1e-3;
 }
 
 

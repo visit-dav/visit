@@ -113,6 +113,9 @@ std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 //   Dave Pugmire, Thu Dec  2 12:49:33 EST 2010
 //   Can't early return until after collective communication.
 //
+//   Hank Childs, Sun Dec  5 10:43:57 PST 2010
+//   Issue warnings for more problems.
+//
 // ****************************************************************************
 
 void
@@ -121,6 +124,8 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
     debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
     int numICs = ics.size(), numPts = 0;
     int numEarlyTerminators = 0;
+    int numStiff = 0;
+    int numCritPts = 0;
 
     //See how many pts, ics we have so we can preallocate everything.
     for (int i = 0; i < numICs; i++)
@@ -131,7 +136,14 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
             numPts += numSamps;
 
         if (ic->TerminatedBecauseOfMaxSteps())
-            numEarlyTerminators++;
+        {
+            if (ic->SpeedAtTermination() <= criticalPointThreshold)
+                numCritPts++;
+            else
+                numEarlyTerminators++;
+        }
+        if (ic->EncounteredNumericalProblems())
+            numStiff++;
     }
 
     if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
@@ -155,6 +167,40 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
             avtCallback::IssueWarning(str);
         }
     }
+    if (issueWarningForCriticalPoints)
+    {
+        SumIntAcrossAllProcessors(numCritPts);
+        if (numCritPts > 0)
+        {
+            char str[1024];
+            SNPRINTF(str, 1024, 
+               "%d of your streamlines circled round and round a critical point (a zero"
+               " velocity location).  Normally, VisIt is able to advect the particle "
+               "to the critical point location and terminate.  However, VisIt was not able "
+               "to do this for these particles due to numerical issues.  In all likelihood, "
+               "additional steps will _not_ help this problem and only cause execution to "
+               "take longer.  If you want to disable this message, you can do this under "
+               "the Advanced tab of the streamline plot.", numCritPts);
+            avtCallback::IssueWarning(str);
+        }
+    }
+    if (issueWarningForStiffness)
+    {
+        SumIntAcrossAllProcessors(numStiff);
+        if (numStiff > 0)
+        {
+            char str[1024];
+            SNPRINTF(str, 1024, 
+               "%d of your streamlines were unable to advect because of \"stiffness\".  "
+               "When one component of a velocity field varies quickly and another stays "
+               "relatively constant, then it is not possible to choose step sizes that "
+               "remain within tolerances.  This condition is referred to as stiffness and "
+               "VisIt stops advecting in this case.  If you want to disable this message, "
+               "you can do this under the Advanced tab of the streamline plot.", numStiff);
+            avtCallback::IssueWarning(str);
+        }
+    }
+
     if (numICs == 0)
         return;
 

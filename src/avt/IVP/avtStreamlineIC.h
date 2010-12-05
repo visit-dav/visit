@@ -55,6 +55,12 @@
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Dec  5 10:18:13 PST 2010
+//    Add avtIVPField argument to CheckForTermination.  Also add data members
+//    to help determine if a warning should be issued.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamlineIC : public avtStateRecorderIntegralCurve
@@ -77,13 +83,15 @@ public:
 
     bool            TerminatedBecauseOfMaxSteps(void) 
                                  { return terminatedBecauseOfMaxSteps; };
+    double          SpeedAtTermination(void) 
+                                 { return speedAtTermination; };
 
   protected:
     avtStreamlineIC( const avtStreamlineIC& );
     avtStreamlineIC& operator=( const avtStreamlineIC& );
     
   public:
-    virtual bool CheckForTermination(avtIVPStep& step);
+    virtual bool     CheckForTermination(avtIVPStep& step, avtIVPField *);
 
     unsigned int     numSteps;
     unsigned int     maxSteps;
@@ -92,6 +100,7 @@ public:
     bool             doTime;
     double           maxTime;
     bool             terminatedBecauseOfMaxSteps;
+    double           speedAtTermination;
 };
 
 

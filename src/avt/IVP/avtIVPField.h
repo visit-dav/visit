@@ -81,6 +81,9 @@
 //   Christoph Garth, July 13 16:49:12 PDT 2010
 //   Compute scalars by index instead of by name.
 //
+//   Hank Childs, Sun Dec  5 10:18:13 PST 2010
+//   Add a boolean for whether or not the velocity field is instantaneous.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPField
@@ -115,6 +118,7 @@ class IVP_API avtIVPField
     virtual void         GetTimeRange( double range[2] ) const = 0;
     virtual void         GetExtents( double  extents[6] ) const = 0;
     virtual bool         HasGhostZones() const = 0;
+    virtual bool         VelocityIsInstantaneous(void) { return true; };
 };
 
 #endif

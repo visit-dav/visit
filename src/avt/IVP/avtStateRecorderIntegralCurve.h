@@ -69,8 +69,11 @@
 //    Refactor into an abstract type.  Remove all data members specific to
 //    streamlines or Poincare.
 //
-//   Dave Pugmire, Fri Nov  5 15:36:31 EDT 2010
-//   Make historyMask public.
+//    Dave Pugmire, Fri Nov  5 15:36:31 EDT 2010
+//    Make historyMask public.
+//
+//    Hank Childs, Sun Dec  5 10:18:13 PST 2010
+//    Add an avtIVPField as an argument to CheckForTermination.
 //
 // ****************************************************************************
 
@@ -132,7 +135,7 @@ public:
     size_t  GetNumberOfSamples() const;
     Sample  GetSample( size_t n ) const;
     
-    virtual bool CheckForTermination(avtIVPStep &step) = 0;
+    virtual bool CheckForTermination(avtIVPStep &step, avtIVPField *) = 0;
 
   protected:
     avtStateRecorderIntegralCurve( const avtStateRecorderIntegralCurve& );

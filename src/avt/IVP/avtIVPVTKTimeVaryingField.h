@@ -84,6 +84,9 @@ class vtkDataArray;
 //   Christoph Garth, July 13 16:49:12 PDT 2010
 //   Compute scalars by index instead of by name.
 //
+//   Hank Childs, Sun Dec  5 10:18:13 PST 2010
+//   Indicate the velocity is not instantaneous.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
@@ -111,6 +114,7 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     virtual bool   HasGhostZones() const;
     virtual void   GetExtents( double extents[6] ) const;
     virtual void   GetTimeRange( double range[2] ) const;
+    virtual bool   VelocityIsInstantaneous(void) { return false; };
 
     static const char* NextTimePrefix;
 
