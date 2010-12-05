@@ -217,6 +217,9 @@ class vtkAppendPolyData;
 //   Dave Pugmire, Fri Nov  5 15:38:33 EDT 2010
 //   Add GenerateAttributeFields method.
 //
+//   Hank Childs, Sun Dec  5 10:43:57 PST 2010
+//   Add new data members for warnings.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
@@ -267,6 +270,11 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
                                                { referenceTypeForDisplay = d; };
     void                      IssueWarningForMaxStepsTermination(bool v) 
                                       { issueWarningForMaxStepsTermination = v; };
+    void                      IssueWarningForStiffness(bool v) 
+                                      { issueWarningForStiffness = v; };
+    void                      IssueWarningForCriticalPoints(bool v, double speed) 
+                                      { issueWarningForCriticalPoints = v;
+                                        criticalPointThreshold = speed; };
 
     virtual avtIVPField      *GetFieldForDomain(const DomainType&, vtkDataSet*);
 
@@ -299,7 +307,11 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     int       randomSeed;
     bool      fill, useBBox;
     bool      storeVelocitiesForLighting;
+
     bool      issueWarningForMaxStepsTermination;
+    bool      issueWarningForStiffness;
+    bool      issueWarningForCriticalPoints;
+    double    criticalPointThreshold;
 
     std::string             SeedInfoString() const;
 

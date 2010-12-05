@@ -55,6 +55,11 @@
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Dec  5 10:18:13 PST 2010
+//    Add avtIVPField to CheckForTermination.
+//
 // ****************************************************************************
 
 class IVP_API avtPoincareIC : public avtStateRecorderIntegralCurve
@@ -79,7 +84,7 @@ public:
     bool      IntersectPlane(const avtVector &p0, const avtVector &p1);
 
   public:
-    virtual bool CheckForTermination(avtIVPStep& step);
+    virtual bool CheckForTermination(avtIVPStep& step, avtIVPField *);
 
     // Intersection points.
     bool   intersectionsSet;

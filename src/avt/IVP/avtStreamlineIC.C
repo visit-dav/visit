@@ -59,6 +59,11 @@
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Dec  5 10:18:13 PST 2010
+//    Initialize new data members for issuing warnings.
+//
 // ****************************************************************************
 
 avtStreamlineIC::avtStreamlineIC(
@@ -74,7 +79,6 @@ avtStreamlineIC::avtStreamlineIC(
     const avtVector &p_start, int ID) :
     avtStateRecorderIntegralCurve(mask, model, dir, t_start, p_start, ID)
 {
-    terminatedBecauseOfMaxSteps = false;
     numSteps = 0;
 
     maxSteps = maxSteps_;
@@ -85,6 +89,9 @@ avtStreamlineIC::avtStreamlineIC(
     maxTime = maxTime_;
     if (dir == DIRECTION_BACKWARD)
         maxTime = -maxTime;
+
+    terminatedBecauseOfMaxSteps  = false;
+    speedAtTermination = 0.;
 }
 
 
@@ -94,11 +101,15 @@ avtStreamlineIC::avtStreamlineIC(
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Dec  5 10:18:13 PST 2010
+//    Initialize new data members for issuing warnings.
+//
 // ****************************************************************************
 
 avtStreamlineIC::avtStreamlineIC() : avtStateRecorderIntegralCurve()
 {
-    terminatedBecauseOfMaxSteps = false;
     numSteps = 0;
 
     maxSteps = 0;
@@ -106,6 +117,9 @@ avtStreamlineIC::avtStreamlineIC() : avtStateRecorderIntegralCurve()
     maxDistance = 0.;
     doTime = false;
     maxTime = 0.;
+
+    terminatedBecauseOfMaxSteps = false;
+    speedAtTermination = 0.;
 }
 
 
@@ -131,10 +145,18 @@ avtStreamlineIC::~avtStreamlineIC()
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Dec  5 10:18:13 PST 2010
+//    Add avtIVPField argument.  Only terminate at critical points when we
+//    are advecting over an instantaneous velocity field.  Otherwise, with
+//    pathlines, we might have zero vel for a while that picks up later in
+//    time.
+//
 // ****************************************************************************
 
 bool
-avtStreamlineIC::CheckForTermination(avtIVPStep& step)
+avtStreamlineIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 {
     bool shouldTerminate = false;
 
@@ -155,26 +177,30 @@ avtStreamlineIC::CheckForTermination(avtIVPStep& step)
             step.ClampToLength( Ltogo );
             shouldTerminate = true;
         }
-        else if( Lstep / std::abs(step.t1 - step.t0) < 1e-8 )
+        else if (field->VelocityIsInstantaneous() &&
+                 (Lstep / std::abs(step.t1 - step.t0) < 1e-8))
         {
-            // Above condition ensures that the curve makes progress 
-            // w.r.t. distance to avoid infinite integration into a 
-            // critical point.
-            //
-            // FIXME: I don't like the above hardcoded threshold -
-            // this should probably be something like 
-            // Lstep / Lmax < 1e-6 ?
-            //
-            // FIXME: Also, this should only be tested in the stationary 
-            // case, since in a time-varying scenario, the critical point
-            // might move.
-            shouldTerminate = true;
+            {
+                // Above condition ensures that the curve makes progress 
+                // w.r.t. distance to avoid infinite integration into a 
+                // critical point.
+                //
+                // FIXME: I don't like the above hardcoded threshold -
+                // this should probably be something like 
+                // Lstep / Lmax < 1e-6 ?
+                //
+                // FIXME: Also, this should only be tested in the stationary 
+                // case, since in a time-varying scenario, the critical point
+                // might move.
+                shouldTerminate = true;
+            }
         }
     }
 
     if( !shouldTerminate && numSteps >= maxSteps )
     {
         terminatedBecauseOfMaxSteps = true;
+        speedAtTermination = step.GetV(step.GetT1()).length();
         shouldTerminate = true;
     }
 
@@ -197,6 +223,11 @@ avtStreamlineIC::CheckForTermination(avtIVPStep& step)
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Dec  5 11:43:46 PST 2010
+//    Communicate new data members.
+//
 // ****************************************************************************
 
 void
@@ -208,6 +239,7 @@ avtStreamlineIC::Serialize(MemStream::Mode mode, MemStream &buff,
 
     buff.io(mode, numSteps);
     buff.io(mode, terminatedBecauseOfMaxSteps);
+    buff.io(mode, speedAtTermination);
 }
 
 

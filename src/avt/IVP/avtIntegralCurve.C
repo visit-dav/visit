@@ -94,6 +94,9 @@ using namespace std;
 //   Dave Pugmire, Fri Nov  5 15:34:49 EDT 2010
 //   Add counter to handle communication of ICs
 //
+//   Hank Childs, Sun Dec  5 11:43:46 PST 2010
+//   Initialize encounteredNumericalProblems.
+//
 // ****************************************************************************
 
 avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model, 
@@ -106,6 +109,7 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
     ivp = model->Clone();
     ivp->Reset( t_start, p_start );
     counter = 0;
+    encounteredNumericalProblems = false;
 }
 
 
@@ -139,6 +143,9 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
 //   Dave Pugmire, Fri Nov  5 15:34:49 EDT 2010
 //   Add counter to handle communication of ICs
 //
+//   Hank Childs, Sun Dec  5 11:43:46 PST 2010
+//   Initialize encounteredNumericalProblems.
+//
 // ****************************************************************************
 
 avtIntegralCurve::avtIntegralCurve()
@@ -150,6 +157,7 @@ avtIntegralCurve::avtIntegralCurve()
     sortKey = 0;
     id = -1;
     counter = 0;
+    encounteredNumericalProblems = false;
 }
 
 
@@ -205,6 +213,9 @@ avtIntegralCurve::~avtIntegralCurve()
 //
 //    Christoph Garth, Wed Jul 21, 09:27:01 PDT 2010
 //    Rolled DoAdvance into this method since all it did was call it.
+//
+//    Hank Childs, Sun Dec  5 11:43:46 PST 2010
+//    Indicate when we have a numerical problem.
 //
 // ****************************************************************************
 
@@ -358,6 +369,7 @@ void avtIntegralCurve::Advance( avtIVPField* field )
             if( DebugStream::Level5() )
                 debug5 << "avtIntegralCurve::Advance(): "
                        << "error during step, finished\n";
+            encounteredNumericalProblems = true;
 
             status = STATUS_FINISHED;
         }
@@ -468,6 +480,9 @@ avtIntegralCurve::CurrentLocation(avtVector &end)
 //   Dave Pugmire, Fri Nov  5 15:34:49 EDT 2010
 //   Add counter to handle communication of ICs
 //
+//   Hank Childs, Sun Dec  5 11:43:46 PST 2010
+//   Send encounteredNumericalProblems.
+//
 // ****************************************************************************
 
 void
@@ -483,6 +498,7 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, domain);
     buff.io(mode, status);
     buff.io(mode, counter);
+    buff.io(mode, encounteredNumericalProblems);
     
     if ( mode == MemStream::WRITE )
     {

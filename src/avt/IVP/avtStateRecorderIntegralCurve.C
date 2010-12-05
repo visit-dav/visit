@@ -189,6 +189,9 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
 //    Hank Childs, Fri Oct  8 23:30:27 PDT 2010
 //    Move termination criteria into derived types.
 //
+//    Hank Childs, Sun Dec  5 10:18:13 PST 2010
+//    Pass the avtIVPField to CheckForTermination.
+//
 // ****************************************************************************
 
 void
@@ -201,7 +204,7 @@ avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step,
     // Possibly need this for state we record.
     distance += step.GetLength();
 
-    if (CheckForTermination(step))
+    if (CheckForTermination(step, field))
     {
         status = STATUS_FINISHED;
         RecordStep( field, step, step.GetT1() );

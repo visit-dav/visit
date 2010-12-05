@@ -180,6 +180,9 @@ class IVP_API DomainType
 //   Dave Pugmire, Fri Nov  5 15:34:49 EDT 2010
 //   Add counter to handle communication of ICs
 //
+//   Hank Childs, Sun Dec  5 11:43:46 PST 2010
+//   Added data member for tracking when we encounter numerical problems.
+//
 // ****************************************************************************
 
 class IVP_API avtIntegralCurve
@@ -226,8 +229,11 @@ class IVP_API avtIntegralCurve
     virtual bool      SameCurve(avtIntegralCurve *ic)
                                { return id == ic->id; };
 
-    static bool DomainCompare(const avtIntegralCurve *slA,
-                              const avtIntegralCurve *slB);
+    static bool       DomainCompare(const avtIntegralCurve *slA,
+                                    const avtIntegralCurve *slB);
+
+    bool              EncounteredNumericalProblems(void)
+                             { return encounteredNumericalProblems; };
 
   protected:
     avtIntegralCurve( const avtIntegralCurve& );
@@ -251,6 +257,7 @@ class IVP_API avtIntegralCurve
     long id;
     int counter;
 
+    bool   encounteredNumericalProblems;
   protected:
 
     avtIVPSolver*       ivp;
