@@ -413,6 +413,9 @@ CGetNumberOfZones(avtDataRepresentation &data, void *sum, bool &)
 //    Hank Childs, Thu Jul 29 17:24:40 PDT 2004
 //    Copy over field data as well.
 //
+//    Hank Childs, Sat Dec  4 17:35:02 PST 2010
+//    Check for the case where we can't do the conversion.
+//
 // ****************************************************************************
 
 void
@@ -437,6 +440,25 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
         for (int i = 0 ; i < ncells ; i++)
         {
             int celltype = ugrid->GetCellType(i);
+            if (celltype == VTK_HEXAHEDRON || celltype == VTK_VOXEL || 
+                celltype == VTK_WEDGE || celltype == VTK_TETRA ||
+                celltype == VTK_PYRAMID)
+            {
+                static bool issuedWarning = false;
+                if (!issuedWarning)
+                {
+                    avtCallback::IssueWarning("The data sets has "
+                          "a topologically three dimensional cell even "
+                          "thought it supposedly is topologically 2D."
+                          "  This occurs most often when there is an error in "
+                          "the file format reader.  Your 3D cells are being "
+                          "discarded.  Please contact a VisIt developer to "
+                          "resolve this issue.  (This warning will only be "
+                          "issued once per session.)");
+                    issuedWarning = true;
+                }
+                continue;
+            }
             vtkIdType *pts;
             int npts;
             ugrid->GetCellPoints(i, npts, pts);
