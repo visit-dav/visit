@@ -37,15 +37,15 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtTruecolorPlot.C                                 //
+//                          avtTruecolorPlot.C                               //
 // ************************************************************************* //
 
 #include <avtTruecolorPlot.h>
 
 #include <avtTruecolorFilter.h>
 
-#include <vtkDataSetMapper.h>
 #include <avtVariableMapper.h>
+
 
 // ****************************************************************************
 //  Method: avtTruecolorPlot constructor
@@ -54,6 +54,7 @@
 //  Creation:   Monday, June 15 2004
 //
 //  Modifications:
+//
 //    Brad Whitlock, Tue Apr 24 16:05:14 PST 2007
 //    Call SetColorTexturingFlagAllowed method on the mapper.
 //
@@ -62,7 +63,7 @@
 avtTruecolorPlot::avtTruecolorPlot()
 {
     TruecolorFilter = new avtTruecolorFilter();
-    myMapper   = new avtVariableMapper();
+    myMapper        = new avtVariableMapper();
     myMapper->SetColorTexturingFlagAllowed(false);
 }
 
@@ -169,7 +170,8 @@ avtTruecolorPlot::ApplyOperators(avtDataObject_p input)
 //  Modifications:
 //
 //     Chris Wojtan Mon Jun 21 15:47 2004
-//     Set the TruecolorFilter's variable name before sending the data through the filter
+//     Set the TruecolorFilter's variable name before sending the data through 
+//     the filter.
 //
 // ****************************************************************************
 
@@ -188,8 +190,8 @@ avtTruecolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Method: avtTruecolorPlot::CustomizeBehavior
 //
 //  Purpose:
-//      Customizes the behavior as appropriate for a Truecolor plot.  This includes
-//      behavior like shifting towards or away from the screen.
+//      Customizes the behavior as appropriate for a Truecolor plot.  This
+//      includes behavior like shifting towards or away from the screen.
 //
 //  Programmer: Chris Wojtan
 //  Creation:   Monday, June 15 2004
@@ -201,13 +203,13 @@ avtTruecolorPlot::CustomizeBehavior(void)
 {
     if (atts.GetOpacity() < 1.)
     {
-       behavior->SetRenderOrder(MUST_GO_LAST);
-       behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
+        behavior->SetRenderOrder(MUST_GO_LAST);
+        behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
     }
     else
     {
-       behavior->SetRenderOrder(DOES_NOT_MATTER);
-       behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+        behavior->SetRenderOrder(DOES_NOT_MATTER);
+        behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
     }
 }
 
@@ -282,13 +284,13 @@ avtTruecolorPlot::SetOpacity(float opacity)
     myMapper->SetOpacity(opacity);
     if (opacity < 1.)
     {
-       behavior->SetRenderOrder(MUST_GO_LAST);
-       behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
+        behavior->SetRenderOrder(MUST_GO_LAST);
+        behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
     }
     else
     {
-       behavior->SetRenderOrder(DOES_NOT_MATTER);
-       behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+        behavior->SetRenderOrder(DOES_NOT_MATTER);
+        behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
     }
 }
 
