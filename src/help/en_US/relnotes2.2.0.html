@@ -33,7 +33,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 2.2</font></b></p>
 <ul>
    <li>The Selection window was enhanced so users can load selections from a file and save selections to a file. This lets users use precomputed selections for analyses without having to recreate selections from a plot.</li>
-   <li></li>
+   <li>VisIt's filters can now cache intermediate results for later use.  Contours and streamlines should be faster after the first execution.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -67,7 +67,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
    <li>The options for the Streamline plot have been significantly modified.  We apologize for any inconvenience regarding backwards compatibility.  Previously, the defaults were such that many users experienced infinite hangs, had inappropriate glyph sizes, etc.  The new options are aimed at making streamline work robustly by default.</li>
    <li>The Streamline plot now reports progress as it executes.</li>
-   <li></li>
+   <li>The Streamline plot now has a pathline option that allows the velocity field to vary over time.</li>
    <li></li>
    <li></li>
    <li></li>
@@ -105,6 +105,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.2</font></b></p>
 <ul>
+   <li>The query window now keeps focus at the bottom of the window so that new queries are always visible.</li>
    <li>The <i>Streamline Info</i> query has beed added to VisIt. It reports seed locations, arc length, and each step (optional) for a Streamline plot.</li>
    <li></li>
    <li></li>
