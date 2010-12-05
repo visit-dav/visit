@@ -4288,6 +4288,9 @@ vtkVisItOpenGLPolyDataMapper::UsesPointData(vtkDataSet *input, int scalarMode,
 //   Jeremy Meredith, Tue Jun 24 17:40:19 EDT 2008
 //   Check for NULL version string before scanf.
 //
+//   Hank Childs, Sat Dec  4 18:00:17 PST 2010
+//   Fix small memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -4424,7 +4427,6 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
     if(saveColors)
     {
         SetLookupTable(LUT_src);
-        LUT_src->Delete();
 
 #ifdef GL_VERSION_1_2
         // Figure out the OpenGL version.
@@ -4445,6 +4447,7 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
         }
 #endif
     }
+    LUT_src->Delete();
 
     return saveColors;
 }
