@@ -51,6 +51,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtPICSFilter.h>
 #include "avtSerialICAlgorithm.h"
 #include "avtParDomICAlgorithm.h"
+#include "avtCommOnDemandICAlgorithm.h"
 #include "avtMasterSlaveICAlgorithm.h"
 #include <math.h>
 #include <visitstream.h>
@@ -735,7 +736,7 @@ bool
 avtPICSFilter::CheckOnDemandViability(void)
 {
     // If we don't want on demand, don't provide it.
-    if (method == STREAMLINE_PARALLEL_STATIC_DOMAINS)
+    if (method == STREAMLINE_PARALLEL_OVER_DOMAINS)
     {
         debug1 << "avtPICSFilter::CheckOnDemandViability(): = " << 0 <<endl;
         return false;
@@ -818,11 +819,13 @@ avtPICSFilter::Execute(void)
     SetMaxQueueLength(cacheQLen);
 
 #ifdef PARALLEL
-    if (method == STREAMLINE_LOAD_ONDEMAND)
+    if (method == STREAMLINE_SERIAL)
         icAlgo = new avtSerialICAlgorithm(this);
-    else if (method == STREAMLINE_PARALLEL_STATIC_DOMAINS)
+    else if (method == STREAMLINE_PARALLEL_OVER_DOMAINS)
         icAlgo = new avtParDomICAlgorithm(this, maxCount);
-    else if (method == STREAMLINE_MASTER_SLAVE)
+    else if (method == STREAMLINE_PARALLEL_COMM_DOMAINS)
+        icAlgo = new avtCommOnDemandICAlgorithm(this);
+    else if (method == STREAMLINE_PARALLEL_MASTER_SLAVE)
     {
         icAlgo = avtMasterSlaveICAlgorithm::Create(this,
                                                    maxCount,
@@ -880,19 +883,24 @@ avtPICSFilter::Execute(void)
 const char *
 AlgorithmToString(int algo)
 {
-    if (algo == STREAMLINE_PARALLEL_STATIC_DOMAINS)
+    if (algo == STREAMLINE_PARALLEL_OVER_DOMAINS)
     {
-        static const char *s = "Parallel Static Domains";
+        static const char *s = "Parallelize over domains";
         return s;
     }
-    if (algo == STREAMLINE_MASTER_SLAVE)
+    if (algo == STREAMLINE_PARALLEL_COMM_DOMAINS)
+    {
+        static const char *s = "Communicate domains";
+        return s;
+    }
+    if (algo == STREAMLINE_PARALLEL_MASTER_SLAVE)
     {
         static const char *s = "Master Slave";
         return s;
     }
-    if (algo == STREAMLINE_LOAD_ONDEMAND)
+    if (algo == STREAMLINE_SERIAL)
     {
-        static const char *s = "Load On-Demand";
+        static const char *s = "Serial";
         return s;
     }
     if (algo == STREAMLINE_VISIT_SELECTS)
@@ -1119,19 +1127,19 @@ avtPICSFilter::Initialize()
     // If not operating on demand, the method *has* to be parallel static domains.
     int actualMethod = method;
     if (actualMethod == STREAMLINE_VISIT_SELECTS)
-        actualMethod = STREAMLINE_MASTER_SLAVE;
+        actualMethod = STREAMLINE_PARALLEL_MASTER_SLAVE;
     
     if ( ! OperatingOnDemand() )
     {
         debug1 << "Can only use parallel static domains because we can't operate on demand" << endl;
-        actualMethod = STREAMLINE_PARALLEL_STATIC_DOMAINS;
+        actualMethod = STREAMLINE_PARALLEL_OVER_DOMAINS;
     }
 
     // Parallel and one domains, use the serial algorithm.
     if (numDomains == 1)
     {
         debug1 << "Forcing load-on-demand since there is only one domain." << endl;
-        actualMethod = STREAMLINE_LOAD_ONDEMAND;
+        actualMethod = STREAMLINE_SERIAL;
     }
 
     if ((method != STREAMLINE_VISIT_SELECTS) && (method != actualMethod))
@@ -1145,7 +1153,7 @@ avtPICSFilter::Initialize()
     method = actualMethod;
 #else
     // for serial, it's all load on demand.
-    method = STREAMLINE_LOAD_ONDEMAND;
+    method = STREAMLINE_SERIAL;
 #endif
 
     if (DebugStream::Level5())
@@ -2545,7 +2553,7 @@ avtPICSFilter::CacheLocators(void)
 #ifdef PARALLEL
     if (OperatingOnDemand())
         return false;
-    if (method == STREAMLINE_PARALLEL_STATIC_DOMAINS)
+    if (method == STREAMLINE_PARALLEL_OVER_DOMAINS)
         return true;
 
     return false;

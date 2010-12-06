@@ -72,12 +72,15 @@ int avtParICAlgorithm::DATASET_TAG = 420003;
 //
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Limit the number of async recvs outstanding.
+//
+//   Dave Pugmire, Mon Dec  6 14:42:45 EST 2010
+//   Fixes for SendDS, and RecvDS
 //   
 // ****************************************************************************
 
 avtParICAlgorithm::avtParICAlgorithm(avtPICSFilter *icFilter)
     : avtICAlgorithm(icFilter),
-      CommTime("comT"), MsgCnt("msgC"), ICCommCnt("iccC"), BytesCnt("byteC")
+      CommTime("comT"), MsgCnt("msgC"), ICCommCnt("iccC"), BytesCnt("byteC"), DSCnt("dsC")
 {
     nProcs = PAR_Size();
     rank = PAR_Rank();
@@ -239,7 +242,7 @@ avtParICAlgorithm::PostRecv(int tag, int sz)
     memset(buff, 0, sz);
     
     MPI_Request req;
-    MPI_Irecv(buff, sz, MPI_BYTE, MPI_ANY_SOURCE, tag,VISIT_MPI_COMM, &req);
+    MPI_Irecv(buff, sz, MPI_BYTE, MPI_ANY_SOURCE, tag, VISIT_MPI_COMM, &req);
     
     RequestTagPair entry(req, tag);
     recvBuffers[entry] = buff;
@@ -808,10 +811,15 @@ avtParICAlgorithm::DoSendICs(int dst,
 // Programmer:  Dave Pugmire
 // Creation:    September 10, 2010
 //
+// Modifications:
+//
+//   Dave Pugmire, Mon Dec  6 14:42:45 EST 2010
+//   Fixes for SendDS, and RecvDS
+//
 // ****************************************************************************
 
 void
-avtParICAlgorithm::SendDS(int dst, std::vector<vtkDataSet *> &ds)
+avtParICAlgorithm::SendDS(int dst, std::vector<vtkDataSet *> &ds, std::vector<DomainType> &doms)
 {
     //Serialize the data sets.
     for (int i = 0; i < ds.size(); i++)
@@ -822,17 +830,23 @@ avtParICAlgorithm::SendDS(int dst, std::vector<vtkDataSet *> &ds)
         writer->SetInput(ds[i]);
         writer->Write();
         int dsLen = writer->GetOutputStringLength();
+        int totalLen = dsLen + sizeof(DomainType) + sizeof(dsLen);
         
         MemStream *buff0 = new MemStream(2*sizeof(int));
         buff0->write(rank);
-        buff0->write(dsLen);
+        buff0->write(totalLen);
         SendData(dst, avtParICAlgorithm::DATASET_PREP_TAG, buff0);
 
-        MemStream *buff1 = new MemStream(dsLen, writer->GetBinaryOutputString());
-        messageTagInfo[avtParICAlgorithm::DATASET_TAG] = std::pair<int,int>(1, dsLen+sizeof(avtParICAlgorithm::Header));
+        MemStream *buff1 = new MemStream(totalLen);
+        buff1->write(doms[i]);
+        buff1->write(dsLen);
+        buff1->write(writer->GetBinaryOutputString(), dsLen);
+        messageTagInfo[avtParICAlgorithm::DATASET_TAG] = std::pair<int,int>(1, totalLen+sizeof(avtParICAlgorithm::Header));
         SendData(dst, avtParICAlgorithm::DATASET_TAG, buff1);
         messageTagInfo.erase(messageTagInfo.find(avtParICAlgorithm::DATASET_TAG));
         writer->Delete();
+
+        DSCnt.value++;
     }
 }
 
@@ -840,18 +854,19 @@ avtParICAlgorithm::SendDS(int dst, std::vector<vtkDataSet *> &ds)
 // Method:  avtParICAlgorithm::RecvDS
 //
 // Purpose: Check for incoming vtk datasets.
-//   
-//
-// Arguments:
-//   
 //
 // Programmer:  Dave Pugmire
 // Creation:    September 10, 2010
 //
+// Modifications:
+//
+//   Dave Pugmire, Mon Dec  6 14:42:45 EST 2010
+//   Fixes for SendDS, and RecvDS
+//
 // ****************************************************************************
 
 bool
-avtParICAlgorithm::RecvDS(std::vector<vtkDataSet *> &ds)
+avtParICAlgorithm::RecvDS(std::vector<vtkDataSet *> &ds, std::vector<DomainType> &doms)
 {
     ds.resize(0);
     vector<MemStream *> buffers;
@@ -860,15 +875,23 @@ avtParICAlgorithm::RecvDS(std::vector<vtkDataSet *> &ds)
     {
         for (int i = 0; i < buffers.size(); i++)
         {
+            DomainType dom;
+            int dsLen;
+            buffers[i]->read(dom);
+            buffers[i]->read(dsLen);
+            doms.push_back(dom);
+            
             vtkDataSetReader *reader = vtkDataSetReader::New();
             reader->ReadFromInputStringOn();
+
             const char *data = (const char *)&buffers[i]->data()[buffers[i]->pos()];
-            reader->SetBinaryInputString(data, buffers[i]->capacity()-sizeof(avtParICAlgorithm::Header));
+            reader->SetBinaryInputString(data, dsLen);
             reader->Update();
             vtkDataSet *d = reader->GetOutput();
-            ds.push_back(d);
-
+            d->Register(NULL);
             reader->Delete();
+            
+            ds.push_back(d);
             delete buffers[i];
         }
     }
@@ -880,10 +903,8 @@ avtParICAlgorithm::RecvDS(std::vector<vtkDataSet *> &ds)
             int sendRank, dsLen;
             buffers[i]->read(sendRank);
             buffers[i]->read(dsLen);
-            messageTagInfo[avtParICAlgorithm::DATASET_TAG] = std::pair<int,int>(1, dsLen);
 
-            messageTagInfo.erase(messageTagInfo.find(avtParICAlgorithm::DATASET_TAG));
-            PostRecv(avtParICAlgorithm::DATASET_TAG);
+            PostRecv(avtParICAlgorithm::DATASET_TAG, dsLen);
             delete buffers[i];
         }
     }
@@ -1229,6 +1250,7 @@ avtParICAlgorithm::CompileCounterStatistics()
     ComputeStatistic(MsgCnt);
     ComputeStatistic(ICCommCnt);
     ComputeStatistic(BytesCnt);
+    ComputeStatistic(DSCnt);
 }
 
 // ****************************************************************************
@@ -1289,6 +1311,7 @@ avtParICAlgorithm::ReportCounters(ostream &os, bool totals)
 
     PrintCounter(os, "MsgCount", MsgCnt, totals);
     PrintCounter(os, "ICComCnt", ICCommCnt, totals);
+    PrintCounter(os, "DSCommCnt", DSCnt, totals);
     PrintCounter(os, "ComBytes", BytesCnt, totals);
 }
 

@@ -55,6 +55,7 @@
 
 SET(AVTFILTERS_SOURCES
 avtActualExtentsFilter.C
+avtCommOnDemandICAlgorithm.C
 avtCondenseDatasetFilter.C
 avtContourFilter.C
 avtCoordSystemConvert.C

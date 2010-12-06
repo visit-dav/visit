@@ -69,10 +69,13 @@ class avtICAlgorithm;
 #define STREAMLINE_INTEGRATE_ADAMS_BASHFORTH 1
 #define STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR 2
 
-#define STREAMLINE_LOAD_ONDEMAND 0
-#define STREAMLINE_PARALLEL_STATIC_DOMAINS 1
-#define STREAMLINE_MASTER_SLAVE 2
-#define STREAMLINE_VISIT_SELECTS 3
+#define STREAMLINE_SERIAL                0
+#define STREAMLINE_PARALLEL_OVER_DOMAINS 1
+#define STREAMLINE_PARALLEL_MASTER_SLAVE 2
+#define STREAMLINE_VISIT_SELECTS         3
+
+
+#define STREAMLINE_PARALLEL_COMM_DOMAINS 4
 
 
 // ****************************************************************************
@@ -196,7 +199,9 @@ class AVTFILTERS_API avtPICSFilter :
 
     int numDomains, numTimeSteps, cacheQLen;
     std::vector<int> domainToRank;
+  public:
     std::vector<vtkDataSet*>dataSets;
+  protected:
     std::map<DomainType, avtCellLocator_p> domainToCellLocatorMap;
 
     std::vector<double> pointList;
