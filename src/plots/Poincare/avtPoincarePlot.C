@@ -421,7 +421,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     // Set the streamline attributes.
     poincareFilter->SetIntegrationType(atts.GetIntegrationType());
 
-    poincareFilter->SetStreamlineAlgorithm(STREAMLINE_PARALLEL_STATIC_DOMAINS,
+    poincareFilter->SetStreamlineAlgorithm(STREAMLINE_PARALLEL_OVER_DOMAINS,
                                            10, 3, 1);
     poincareFilter->SetMaxStepLength(atts.GetMaxStepLength());
     poincareFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol(), false);
