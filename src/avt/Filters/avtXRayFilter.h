@@ -65,6 +65,11 @@
 //    I modified the filter to handle the case where some of the processors
 //    didn't have any data sets when executing in parallel.
 //
+//    Eric Brugger, Mon Dec  6 12:33:59 PST 2010
+//    I modified the view information stored internally to correspond more
+//    closely to an avtView3D structure instead of having it match the
+//    parameters to SetImageProperty.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
@@ -89,13 +94,13 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     virtual void                    SetInitialLine(int iLine)
                                        { initialLine = iLine; };
 
-    virtual void                    SetImageProperties(float *pos_,
-                                                       float  theta_,
-                                                       float  phi_,
-                                                       float  dx_,
-                                                       float  dy_,
-                                                       int    nx_,
-                                                       int    ny_);
+    virtual void                    SetImageProperties(float *pos,
+                                                       float  theta,
+                                                       float  phi,
+                                                       float  dx,
+                                                       float  dy,
+                                                       int    nx,
+                                                       int    ny);
 
   protected:
     std::string                     absVarName;
@@ -108,10 +113,13 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     int                             currentNode;
     int                             totalNodes;
 
-    avtVector                       pos;
-    float                           theta, phi;
-    float                           dx, dy;
-    int                             nx, ny;
+    double                          normal[3], focus[3], viewUp[3];
+    double                          viewAngle;
+    double                          parallelScale;
+    double                          nearPlane, farPlane;
+    double                          imagePan[2], imageZoom;
+    bool                            perspective;
+    int                             imageSize[2];
 
     virtual void                    Execute(void);
 
