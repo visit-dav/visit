@@ -262,6 +262,10 @@ static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Mon Dec  6 12:37:40 PST 2010
+//    I modified the view information stored internally to correspond more
+//    closely to an avtView3D structure instead of having it match the
+//    parameters to SetImageProperty.
 //
 // ****************************************************************************
 
@@ -271,11 +275,25 @@ avtXRayFilter::avtXRayFilter()
     initialLine = 0;
     lines  = NULL;
 
-    pos.x  = 0.0f;
-    pos.y  = 0.0f;
-    pos.z  = 0.0f;
-    theta  = 0.0f;
-    phi    = 0.0f;
+    normal[0] = 0;
+    normal[1] = 0;
+    normal[2] = 1;
+    focus[0] = 0;
+    focus[1] = 0;
+    focus[2] = 0;
+    viewUp[0] = 0;
+    viewUp[1] = 1;
+    viewUp[2] = 0;
+    viewAngle = 30;
+    parallelScale = 0.5;
+    nearPlane = -0.5;
+    farPlane = 0.5;
+    imagePan[0] = 0;
+    imagePan[1] = 0;
+    imageZoom = 1;
+    perspective = false;
+    imageSize[0] = 200;
+    imageSize[1] = 200;
 }
 
 
@@ -356,22 +374,44 @@ avtXRayFilter::SetNumberOfLines(int nl)
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Mon Dec  6 12:37:40 PST 2010
+//    I modified the view information stored internally to correspond more
+//    closely to an avtView3D structure instead of having it match the
+//    parameters to SetImageProperty.
 //
 // ****************************************************************************
 
 void
-avtXRayFilter::SetImageProperties(float *pos_, float  theta_, float  phi_,
-    float  dx_, float  dy_, int nx_, int ny_)
+avtXRayFilter::SetImageProperties(float *pos, float  theta, float  phi,
+    float  dx, float  dy, int nx, int ny)
 {
-    pos.x = pos_[0];
-    pos.y = pos_[1];
-    pos.z = pos_[2];
-    theta = theta_;
-    phi = phi_;
-    dx = dx_;
-    dy = dy_;
-    nx = nx_;
-    ny = ny_;
+    double cosT = cos(theta);
+    double sinT = sin(theta);
+    double cosP = cos(phi);
+    double sinP = sin(phi);
+
+    normal[0] = sinT*cosP;
+    normal[1] = sinT*sinP;
+    normal[2] = cosT;
+    focus[0] = pos[0];
+    focus[1] = pos[1];
+    focus[2] = pos[2];
+    viewUp[0] = -sinP;
+    viewUp[1] = cosP;
+    viewUp[2] = 0;
+    viewAngle = 30;
+    parallelScale = dy / 2.;
+    // The 10 below is to get the results to match previous results more
+    // closely. In theory this constant multiplier shouldn't matter, but
+    // it matters along zone boundaries.
+    nearPlane = -10 * dy;
+    farPlane = 10 * dy;
+    imagePan[0] = 0;
+    imagePan[1] = 0;
+    imageZoom = 1;
+    perspective = false;
+    imageSize[0] = nx;
+    imageSize[1] = ny;
 }
 
 
@@ -489,6 +529,11 @@ avtXRayFilter::Execute(void)
 //    I removed the requirement that a 2d spatial mesh must be an RZ mesh,
 //    and had it assume that it was.
 //
+//    Eric Brugger, Mon Dec  6 12:37:40 PST 2010
+//    I modified the view information stored internally to correspond more
+//    closely to an avtView3D structure instead of having it match the
+//    parameters to SetImageProperty.
+//
 // ****************************************************************************
 
 void
@@ -500,13 +545,6 @@ avtXRayFilter::PreExecute(void)
         delete [] lines;
     lines = new double[6*nLines];
 
-    int spatDim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-
-    double extents[6];
-    avtDataset_p input = GetTypedInput();
-    avtDatasetExaminer::GetSpatialExtents(input, extents);
-    UnifyMinMax(extents, 6);
-
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
     {
         if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() != AVT_RZ)
@@ -514,74 +552,90 @@ avtXRayFilter::PreExecute(void)
             avtCallback::IssueWarning("Encountered a 2D mesh that was not an "
                 "RZ mesh, assuming it is an RZ mesh.");
         }
-        spatDim = 3;
-        extents[4] = extents[0];
-        extents[5] = extents[1];
-        double max1 = fabs(extents[2]);
-        double max2 = fabs(extents[3]);
-        double max = (max1 > max2 ? max1 : max2);
-        extents[0] = -max;
-        extents[1] = +max;
-        extents[2] = -max;
-        extents[3] = +max;
     }
-    double length = sqrt((extents[1]-extents[0])*(extents[1]-extents[0])+
-                         (extents[3]-extents[2])*(extents[3]-extents[2])+
-                         (extents[5]-extents[4])*(extents[5]-extents[4]));
-    length = (length / 2.) * 1.01;
-    double origin[3];
-    origin[0] = (extents[0]+extents[1])/2.;
-    origin[1] = (extents[2]+extents[3])/2.;
-    origin[2] = (extents[4]+extents[5])/2.;
 
-    if (spatDim == 3)
+    double viewSide[3];
+    viewSide[0] = viewUp[1] * normal[2] - viewUp[2] * normal[1];
+    viewSide[1] = -viewUp[0] * normal[2] + viewUp[2] * normal[0];
+    viewSide[2] = viewUp[0] * normal[1] - viewUp[1] * normal[0];
+
+    //
+    // Calculate the width and height in the near plane, view plane and
+    // far plane.
+    //
+    double nearHeight, viewHeight, farHeight;
+    double nearWidth, viewWidth, farWidth;
+
+    viewHeight = parallelScale;
+    viewWidth  = (imageSize[1] / imageSize[0]) * viewHeight;
+    if (perspective)
     {
-        double cosT = cos(theta);
-        double sinT = sin(theta);
-        double cosP = cos(phi);
-        double sinP = sin(phi);
+        double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);
+        double nearDist = viewDist + nearPlane;
+        double farDist  = viewDist + farPlane;
 
-        avtVector dir(sinT*cosP, sinT*sinP, cosT);
-
-        double m11 = cosT*cosP;
-        double m12 = cosT*sinP;
-        double m13 = -sinT;
-        double m21 = -sinP;
-        double m22 = cosP;
-        double m23 = 0;
-        double m31 = sinT*cosP;
-        double m32 = sinT*sinP;
-        double m33 = cosT;
-
-        // Assumes (nLines % nx) == 0.
-        double ddx = dx / nx;
-        double ddy = dy / ny;
-        int jstart = initialLine / nx;
-        int jend = jstart + (nLines / nx);
-        double y = - (dy / 2.) + ddy / 2. + jstart * ddy;
-        int ii = 0;
-        for (int j = jstart; j < jend; j++)
-        {
-            double x = - (dx / 2.) + ddx / 2.;
-            for (int i = 0; i < nx; i++)
-            {
-                avtVector pixelLoc(x*m11+y*m21, x*m12+y*m22, x*m13+y*m23);
-
-                lines[6*ii+0] = pos.x + pixelLoc.x - 2.0*length*dir.x;
-                lines[6*ii+1] = pos.x + pixelLoc.x + 2.0*length*dir.x;
-                lines[6*ii+2] = pos.y + pixelLoc.y - 2.0*length*dir.y;
-                lines[6*ii+3] = pos.y + pixelLoc.y + 2.0*length*dir.y;
-                lines[6*ii+4] = pos.z + pixelLoc.z - 2.0*length*dir.z;
-                lines[6*ii+5] = pos.z + pixelLoc.z + 2.0*length*dir.z;
-
-                x += ddx;
-                ii++;
-            }
-            y += ddy;
-        }
+        nearHeight = (nearDist * viewHeight) / viewDist;
+        nearWidth  = (nearDist * viewWidth) / viewDist;
+        farHeight  = (farDist * viewHeight) / viewDist;
+        farWidth   = (farDist * viewWidth) / viewDist;
     }
     else
     {
+        nearHeight = viewHeight;
+        nearWidth  = viewWidth;
+        farHeight  = viewHeight;
+        farWidth   = viewWidth;
+    }
+
+    // Adjust for the image zoom.
+    nearHeight = nearHeight / imageZoom;
+    nearWidth  = nearWidth  / imageZoom;
+    farHeight  = farHeight  / imageZoom;
+    farWidth   = farWidth   / imageZoom;
+
+    // Calculate the center of the image in the near and far planes.
+    double nearOrigin[3], farOrigin[3];
+    nearOrigin[0] = focus[0] + nearPlane * normal[0];
+    nearOrigin[1] = focus[1] + nearPlane * normal[1];
+    nearOrigin[2] = focus[2] + nearPlane * normal[2];
+    farOrigin[0]  = focus[0] + farPlane  * normal[0];
+    farOrigin[1]  = focus[1] + farPlane  * normal[1];
+    farOrigin[2]  = focus[2] + farPlane  * normal[2];
+
+    double nearDx, nearDy, farDx, farDy;
+    nearDx = (2. * nearWidth)  / imageSize[0];
+    nearDy = (2. * nearHeight) / imageSize[1];
+    farDx = (2. * farWidth)   / imageSize[0];
+    farDy = (2. * farHeight)  / imageSize[1];
+
+    int jstart = initialLine / imageSize[0];
+    int jend = jstart + (nLines / imageSize[0]);
+    double y2 = - (2. * imagePan[1] * imageZoom + 1) * nearHeight +
+                nearDy / 2. + jstart * nearDy;
+    double y3 = - (2. * imagePan[1] * imageZoom + 1) * farHeight +
+                farDy / 2.  + jstart * farDy;
+    int ii = 0;
+    for (int j = jstart; j < jend; j++)
+    {
+        double x2 = - (2. * imagePan[0] * imageZoom + 1) * nearWidth +
+                    nearDx / 2.;
+        double x3 = - (2. * imagePan[0] * imageZoom + 1) * farWidth +
+                    farDx / 2.;
+        for (int i = 0; i < imageSize[0]; i++)
+        {
+            lines[6*ii+0] = nearOrigin[0] + x2 * viewSide[0] + y2 * viewUp[0];
+            lines[6*ii+1] = farOrigin[0]  + x3 * viewSide[0] + y3 * viewUp[0];
+            lines[6*ii+2] = nearOrigin[1] + x2 * viewSide[1] + y2 * viewUp[1];
+            lines[6*ii+3] = farOrigin[1]  + x3 * viewSide[1] + y3 * viewUp[1];
+            lines[6*ii+4] = nearOrigin[2] + x2 * viewSide[2] + y2 * viewUp[2];
+            lines[6*ii+5] = farOrigin[2]  + x3 * viewSide[2] + y3 * viewUp[2];
+
+            x2 += nearDx;
+            x3 += farDx;
+            ii++;
+        }
+        y2 += nearDy;
+        y3 += farDy;
     }
 }
 
