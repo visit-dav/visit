@@ -131,5 +131,6 @@ class avtParDomICAlgorithm : public avtParICAlgorithm
     typedef std::map<std::pair<int,int>, std::pair<int, std::list<int> > >::iterator sendICInfoIterator;
 };
 
+
 #endif
 #endif

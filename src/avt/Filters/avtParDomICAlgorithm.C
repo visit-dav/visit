@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtParDomICAlgorithm.h                       //
+//                              avtParDomICAlgorithm.C                       //
 // ************************************************************************* //
 
 #include "avtParDomICAlgorithm.h"
@@ -628,5 +628,6 @@ avtParDomICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
     SumIntAcrossAllProcessors(val);
     return val > 0;
 }
+
 
 #endif

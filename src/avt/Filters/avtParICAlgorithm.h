@@ -102,6 +102,9 @@ class MemStream;
 //   Dave Pugmire, Mon Nov 29 09:23:01 EST 2010
 //   Add optional tag argument to CleanupRequests.
 //
+//   Dave Pugmire, Mon Dec  6 14:42:45 EST 2010
+//   Fixes for SendDS, and RecvDS
+//
 // ****************************************************************************
 
 class avtParICAlgorithm : public avtICAlgorithm
@@ -137,8 +140,8 @@ class avtParICAlgorithm : public avtICAlgorithm
     bool                      RecvMsg(std::vector<std::vector<int> > &msgs);
 
     // Send/Recv datasets.
-    void                      SendDS(int dst, std::vector<vtkDataSet *> &ds);
-    bool                      RecvDS(std::vector<vtkDataSet *> &ds);
+    void                      SendDS(int dst, std::vector<vtkDataSet *> &ds, std::vector<DomainType> &doms);
+    bool                      RecvDS(std::vector<vtkDataSet *> &ds, std::vector<DomainType> &doms);
 
 
     void                      RestoreIntegralCurveSequence();
@@ -153,7 +156,7 @@ class avtParICAlgorithm : public avtICAlgorithm
 
     //Timers/Counters.
     ICStatistics              CommTime;
-    ICStatistics              MsgCnt, ICCommCnt, BytesCnt;
+    ICStatistics              MsgCnt, ICCommCnt, BytesCnt, DSCnt;
     
   private:
     void                      PostRecv(int tag);
