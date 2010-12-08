@@ -65,7 +65,7 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-#include <InvalidDBTypeException.h>
+#include <NonCompliantFileException.h>
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
@@ -125,28 +125,44 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     // Here we only open the file broiefly to ensure that it is really an
     // H5Part file
     file = H5PartOpenFile(filename, H5PART_READ);
-    if (!file) EXCEPTION1(InvalidFilesException, filename);
+    if (!file)
+        EXCEPTION1(InvalidFilesException, filename);
 
     // This function was once supported by H5Part and will be again in the new
     // release. Until it is widely available, comment it out.
     if (H5PartFileIsValid(file) != H5PART_SUCCESS)
     {
-        EXCEPTION1(InvalidDBTypeException, "File is not a valid H5Part file.");
+        debug1 << "avtH5PartFileFormat::avtH5PartFileFormat(): ";
+        debug1 << "H5PartFileIsValid check failed." << std::endl;
+        EXCEPTION1(InvalidFilesException, filename);
     }
 
     // Get number of time steps in file
     numTimestepsInFile = H5PartGetNumSteps(file);
 
+    // The following should be equivalent to testing the presence of a group
+    // named "Group #0".
+    if (numTimestepsInFile <= 0)
+    {
+        debug1 << "avtH5PartFileFormat::avtH5PartFileFormat(): ";
+        debug1 << "File contains " << numTimestepsInFile << " <= 0 time steps.";
+        debug1 << std::endl;
+        EXCEPTION1(InvalidFilesException, filename);
+    }
+
     // Activate first time step
     activeTimeStep = 0;
-    H5PartSetStep(file, activeTimeStep);
+    if (H5PartSetStep(file, activeTimeStep) != H5PART_SUCCESS)
+    {
+        EXCEPTION1(InvalidFilesException, "Cannot activate time step 0.");
+    }
 
     // Iterate over particle var names
     h5part_int64_t nPointVars = H5PartGetNumDatasets(file);
     if (nPointVars < 0)
     {
-        EXCEPTION1(InvalidFilesException,
-                "Could not read number of particle variables.");
+        EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
+                "Could not obtain number of particle variables.");
     }
 
     // Get information about particle variables
@@ -160,15 +176,15 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
         if (H5PartGetDatasetInfo(file, i, varName, maxVarNameLen, &type, &nElem)
                 != H5PART_SUCCESS)
         {
-            EXCEPTION1(InvalidFilesException,
-                    "Could not read particle data set information.");
+            EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
+                    "Could not obtain particle data set information.");
         }
 
         // Store information about type in map so that we can access it in GetVar()
         if (particleVarNameToTypeMap.find(varName) != particleVarNameToTypeMap.end())
         {
-            EXCEPTION1(InvalidFilesException,
-                    "Particle data has two variables with the same name.");
+            EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
+                    "Particle data contains two variables with the same name.");
         }
         else 
             particleVarNameToTypeMap[varName] = type;
@@ -219,7 +235,8 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     h5part_int64_t nFieldVars = H5BlockGetNumFields(file);
     if (nFieldVars < 0)
     {
-        EXCEPTION1(InvalidFilesException, "Could not read number of field variables.");
+        EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
+                "Could not read number of field variables.");
     }
     else if (nFieldVars > 0)
     {
@@ -234,15 +251,16 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
             if (H5BlockGetFieldInfo (file, idx, varName, maxVarNameLen,
                         &gridRank, gridDims, &fieldDims, &type) != H5PART_SUCCESS ) 
             {
-                EXCEPTION1(InvalidFilesException, "Could not read field information.");
+                EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
+                        "Could not read field information.");
             }
 
             if (fieldDims == 1)
             {
                 if (fieldScalarVarNameToTypeMap.find(varName) != fieldScalarVarNameToTypeMap.end())
                 {
-                    EXCEPTION1(InvalidFilesException,
-                            "Field data has two scalar variables with the same name.");
+                    EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
+                            "Field data contains two scalar variables with the same name.");
                 }
                 else 
                 {
@@ -253,8 +271,8 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
             {
                 if (fieldVectorVarNameToTypeMap.find(varName) != fieldVectorVarNameToTypeMap.end())
                 {
-                    EXCEPTION1(InvalidFilesException,
-                            "Field data has two vector variables with the same name.");
+                    EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
+                            "Field data contains two vector variables with the same name.");
                 }
                 else 
                 {
@@ -347,8 +365,7 @@ avtH5PartFileFormat::GetAuxiliaryData(const char *var, int ts, const char *type,
         visitTimer->StopTimer(t1, "H5PartFileFormat::GetAuxiliaryData() [Histogram]");
         return NULL;
     }
-
-    if (strcmp(type, AUXILIARY_DATA_IDENTIFIERS) == 0)
+    else if (strcmp(type, AUXILIARY_DATA_IDENTIFIERS) == 0)
     {
         debug5 << "H5Part trying to get auxiliary data for identifiers " << std::endl;
 
@@ -438,7 +455,6 @@ avtH5PartFileFormat::FreeUpResources(void)
     visitTimer->StopTimer(t1, "H5PartFileFormat::FreeUpResources()");
 }
 
-#ifdef HAVE_LIBFASTBIT
 
 // ****************************************************************************
 //  Method: avtH5PartFileFormat::DoubleToString
@@ -460,6 +476,7 @@ std::string inline avtH5PartFileFormat::DoubleToString(double x)
     return o.str();
 }
 
+#ifdef HAVE_LIBFASTBIT
 
 // ****************************************************************************
 //  Method: avtH5PartFileFormat::RegisterDataSelections
@@ -702,7 +719,7 @@ avtH5PartFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
 //
 // ****************************************************************************
 
-    void
+void
 avtH5PartFileFormat::SelectParticlesToRead()
 {
     int t1 = visitTimer->StartTimer();
@@ -931,7 +948,7 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
             (particleNSpatialDims > 2) &&
             coordValType != particleVarNameToTypeMap[coordNames[coordType][2]]) 
     {
-        EXCEPTION1(InvalidFilesException,
+        EXCEPTION2(NonCompliantFileException, "H5Part GetParticleMesh",
                 "Coordinate data sets do not have the same value type (double, float, ...).");
     }
 
@@ -961,11 +978,16 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
         }
         else
         {
-            EXCEPTION1(InvalidFilesException, "Unsupported value type for coordinates.");
+            EXCEPTION2(NonCompliantFileException, "H5Part GetParticleMesh",
+                    "Unsupported value type for coordinates. "
+                    "(Supported tyes are FLOAT64, FLOAT32 and INT64.)");
         }
 
         if (status != H5PART_SUCCESS)
-            EXCEPTION1(InvalidFilesException, "Could not read coordinates");
+        {
+            EXCEPTION2(NonCompliantFileException, "H5Part GetParticleMesh",
+                    "Could not read coordinates.");
+        }
     }
 
     // Reset view
@@ -1027,7 +1049,9 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
     }
     else
     {
-        EXCEPTION1(InvalidFilesException, "Unsupported value type for coordinates.");
+        EXCEPTION2(NonCompliantFileException, "H5Part GetParticleMesh",
+                "Unsupported value type for coordinates. "
+                "(Supported types are FLOAT64. FLOAT32 and INT64.)");
     }
 
     for (int i=0; i <particleNSpatialDims; ++i) free(coordsRead[i]);
@@ -1078,7 +1102,7 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
 //
 // ****************************************************************************
 
-    vtkDataSet *
+vtkDataSet *
 avtH5PartFileFormat::GetFieldMesh(int timestate, const char *meshname)
 {
     int t1 = visitTimer->StartTimer();
@@ -1095,7 +1119,8 @@ avtH5PartFileFormat::GetFieldMesh(int timestate, const char *meshname)
     h5part_int64_t type;
     if (H5BlockGetFieldInfo (file, 0, fieldName, maxVarNameLen,
                 &gridRank, gridDims, &fieldDims, &type) != H5PART_SUCCESS)
-        EXCEPTION1(InvalidFilesException, "Could not read field information");
+        EXCEPTION2(NonCompliantFileException, "H5Part GetFieldMesh",
+                "Could not read field information.");
 
     // Determine which data portion we need to construct a mesh for
     h5part_int64_t subBlockDims[6];
@@ -1108,7 +1133,8 @@ avtH5PartFileFormat::GetFieldMesh(int timestate, const char *meshname)
     if (H5Block3dGetFieldOrigin(file, fieldName,
                 &xOrigin, &yOrigin, &zOrigin) != H5PART_SUCCESS)
     {
-        EXCEPTION1(InvalidFilesException, "Could not read field origin.");
+        EXCEPTION2(NonCompliantFileException, "H5Part GetFieldMesh",
+                "Could not read field origin.");
     }
 
     debug5 << "xOrigin: " << xOrigin << "\n";
@@ -1122,7 +1148,8 @@ avtH5PartFileFormat::GetFieldMesh(int timestate, const char *meshname)
     if (H5Block3dGetFieldSpacing (file, fieldName,
                 &xSpacing, &ySpacing, &zSpacing) != H5PART_SUCCESS)
     {
-        EXCEPTION1(InvalidFilesException, "Could not read field spacing.");
+        EXCEPTION2(NonCompliantFileException, "H5Part GetFieldMesh", 
+                "Could not read field spacing.");
     }
 
     debug5 << "xSpacing: " << xSpacing << "\n";
@@ -1266,7 +1293,9 @@ avtH5PartFileFormat::GetVar(int timestate, const char *varname)
     }
     else
     {
-        EXCEPTION1(InvalidVariableException, varname);
+        EXCEPTION2(NonCompliantFileException, "H5Part GetVar", std::string("Variable ")
+                + varname + std::string(" uses an unsupported value type. (Supported ")
+                + std::string("types are FLOAT64, FLOAT32 and INT64.)"));
     }
 
     // Reset view
@@ -1335,7 +1364,7 @@ avtH5PartFileFormat::GetFieldVar(int timestate, const char* varname)
     if(H5BlockDefine3DFieldLayout(file, subBlockDims[0], subBlockDims[1], 
                 subBlockDims[2], subBlockDims[3], 
                 subBlockDims[4], subBlockDims[5]) != H5PART_SUCCESS)
-        EXCEPTION1(InvalidVariableException, "Could not set field layout");
+        EXCEPTION1(VisItException, "Could not set field layout.");
 
     // read data
     int nValues = (subBlockDims[1] - subBlockDims[0] + 1) *
@@ -1383,6 +1412,12 @@ avtH5PartFileFormat::GetFieldVar(int timestate, const char* varname)
             ptr[i] = float(idvar[i]);
         }
         delete[] idvar;
+    }
+    else
+    {
+        EXCEPTION2(NonCompliantFileException, "H5Part GetVar", std::string("Variable ")
+                + varname + std::string(" uses an unsupported value type. (Supported ")
+                + std::string("types are FLOAT64, FLOAT32 and INT64.)"));
     }
 
     visitTimer->StopTimer(t1, "H5PartFileFormat::GetFieldVar()");
@@ -1492,9 +1527,11 @@ avtH5PartFileFormat::GetVectorVar(int timestate, const char *varname)
     }
     else
     {
-        EXCEPTION1(InvalidFilesException, "Unsupported value type for vector variable.");
+        EXCEPTION2(NonCompliantFileException, "H5Part GetVectorVar",
+                std::string("Vector variable ") + varname + std::string(" uses an ") +
+                std::string("unsupported value type. (Supported types are ") +
+                std::string("FLOAT64, FLOAT32 and INT64.)"));
     }
-
 
     // Store data in VTK object
     vtkDataArray *array;
@@ -1555,9 +1592,12 @@ avtH5PartFileFormat::GetVectorVar(int timestate, const char *varname)
     }
     else
     {
-        EXCEPTION1(InvalidFilesException, "Unsupported value type for coordinates.");
+        EXCEPTION2(NonCompliantFileException, "H5Part GetVectorVar",
+                std::string("Vector variable ") + varname + std::string(" uses an ") +
+                std::string("unsupported value type. (Supported types are ") +
+                std::string("FLOAT64, FLOAT32 and INT64.)"));
     }
-
+ 
     for (int i=0; i <3; ++i) free(vecsRead[i]);
 
     visitTimer->StopTimer(t1, "H5PartFileFormat::GetVectorVar()");
@@ -1612,7 +1652,14 @@ avtH5PartFileFormat::ActivateTimestep(int ts)
         debug5 << "avtH5PartFileFormat::ActivateTimestep(): Activating time ";
         debug5 << "step " << ts << std::endl;
 
-        H5PartSetStep(file, ts);
+        if (H5PartSetStep(file, ts) != H5PART_SUCCESS)
+        {
+            debug1 << "avtH5PartFileFormat::ActivateTimestep(): Cannot ";
+            debug1 << "activate time step " << ts << std::endl;
+            EXCEPTION2(NonCompliantFileException, "H5Part AcitvateTimestep",
+                    "Cannot activate time step " + DoubleToString(ts) +
+                    std::string("."));
+        }
 
 #ifdef HAVE_LIBFASTBIT
         // New time step -> Need to update query results.
@@ -1620,7 +1667,7 @@ avtH5PartFileFormat::ActivateTimestep(int ts)
 #endif
     }
     // Check if the open file branch was successful
-    if (!file) EXCEPTION1(InvalidFilesException, "Could not open file.");
+    if (!file) EXCEPTION1(InvalidFilesException, "Cannot open file.");
 
     // Update global time step information
     activeTimeStep = ts;
@@ -1827,7 +1874,7 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
         {
             debug5 << method << " Histogram Spec variable list does not match bounds ";
             debug5 << " list size " << std::endl;
-            EXCEPTION1(ImproperUseException, "Variable bounds list mismatch");
+            EXCEPTION1(ImproperUseException, "Variable bounds list mismatch.");
         }
     }
 
@@ -1906,7 +1953,7 @@ avtH5PartFileFormat::ConstructHistogram(avtHistogramSpecification *spec)
             {
                 debug5 << method << "Warning:: data type min/max not yet supported!";
                 debug5 << std::endl;
-                EXCEPTION1(ImproperUseException,
+                EXCEPTION2(NonCompliantFileException, "H5Part ConstructHistogram",
                         "Data type not supported for histogram computation.");
             }
 
@@ -2221,6 +2268,12 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
                 delete[] idList;
             }
         }
+    }
+    else
+    {
+        EXCEPTION2(NonCompliantFileException, "H5Part GetVar", std::string("Variable ")
+                + idVariableName + std::string(" uses an unsupported value type. ")
+                + std::string("(Supported types are FLOAT64, FLOAT32 and INT64.)"));
     }
 
     avtIdentifierSelection *rv = new avtIdentifierSelection();
