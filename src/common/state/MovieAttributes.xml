@@ -49,6 +49,9 @@
     <Field name="endIndex" label="endIndex" type="int">
       1000000000
     </Field>
+    <Field name="stride" label="stride" type="int">
+      1
+    </Field>
     <Function name="ValidateFormats" user="true" member="true">
     </Function>
   </Attribute>

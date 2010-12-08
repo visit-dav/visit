@@ -1398,7 +1398,7 @@ class MakeMovie:
                     try:
                         self.fps = int(commandLine[i+1])
                         if(self.fps < 1):
-                            self.frameStep = 10
+                            self.fps = 10
                     except ValueError:
                         self.fps = 10
                         print "A bad value was provided for frames per second.  Using 10."

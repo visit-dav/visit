@@ -44,8 +44,13 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -g -Wno-deprecated -fvisibilit
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDARG_H=1 -DUSE_STDARG=1 -DMALLOC_RET_VOID=1 -I/usr/gapps/visit/thirdparty_shared/mpich/1.2.7p1/linux-x86_64_gcc-4.1/include")
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   "-DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDARG_H=1 -DUSE_STDARG=1 -DMALLOC_RET_VOID=1 -I/usr/gapps/visit/thirdparty_shared/mpich/1.2.7p1/linux-x86_64_gcc-4.1/include")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/gapps/visit/thirdparty_shared/mpich/1.2.7p1/linux-x86_64_gcc-4.1/lib")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS   mpich)
+
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/mpich/1.2.7p1/linux-x86_64_gcc-4.1/bin/mpicxx)
+#VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/mpich/1.2.7p1/linux-x86_64_gcc-4.1/bin/mpicxx)
 
 ##############################################################
 ##

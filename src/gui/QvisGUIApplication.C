@@ -7725,6 +7725,9 @@ QuoteSpaces(const std::string &s)
 //   Brad Whitlock, Fri Oct 20 12:14:38 PDT 2006
 //   Added support for multiple stereos.
 //
+//   Brad Whitlock, Mon Dec  6 16:18:03 PST 2010
+//   I added stride.
+//
 // ****************************************************************************
 
 void
@@ -7806,6 +7809,13 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     args.push_back("-start");
     SNPRINTF(tmp, 100, "%d", movieAtts->GetStartIndex());
     args.push_back(tmp);
+
+    if(movieAtts->GetStride() > 1)
+    {
+        SNPRINTF(tmp, 100, "%d", movieAtts->GetStride());
+        args.push_back("-framestep");
+        args.push_back(tmp);
+    }
 
     if (movieAtts->GetEndIndex() != 1000000000)
     {
@@ -8086,6 +8096,9 @@ QvisGUIApplication::SaveMovie()
 //   Brad Whitlock, Fri Oct 17 09:34:38 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Wed Dec  8 11:38:05 PST 2010
+//   Add a stride for saving movies.
+//
 // ****************************************************************************
 
 void
@@ -8212,6 +8225,9 @@ QvisGUIApplication::SaveMovieMain()
                 tmp.sprintf("%d", movieAtts->GetEndIndex());
                 code += "    movie.frameEnd = " + tmp + "\n";
             }
+
+            tmp.sprintf("%d", movieAtts->GetStride());
+            code += "    movie.frameStep = " + tmp + "\n";
 
             // If we want e-mail notification, add that info here.
             if(movieAtts->GetSendEmailNotification())
