@@ -597,11 +597,18 @@ VisItUnlockPythonInterpreter(PyThreadState *myThreadState)
 //
 // VisIt module functions that are written in Python.
 //
+// Modifications:
+//   Cyrus Harrison, Wed Dec  8 09:15:26 PST 2010
+//   Beffer error message: raise 'ValueError' instead of a string.
+//
 static const char visit_EvalCubicSpline[] =
 "def EvalCubicSpline(t, allX, allY):\n"
 "    n = len(allY)\n"
 "    if((allX[0] > t) or (allX[n-1] < t)):\n"
-"        raise 't must be in the range between the first and last X'\n"
+"        emsg  = 't must be in the range between the first and last X\\n'\n"
+"        emsg += 'Passed arguments t=%s, first X=%s, last X=%s'\n"
+"        emsg  = emsg % (str(t),str(allX[0]),str(allX[n-1]))\n"
+"        raise ValueError(emsg)\n"
 "    for i in range(1, n):\n"
 "        if(allX[i] >= t):\n"
 "            break\n"
