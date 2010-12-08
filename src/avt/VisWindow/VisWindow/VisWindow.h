@@ -735,6 +735,7 @@ protected:
 
                          VisWindow(bool);
     void                 Initialize(VisWinRendering *);
+    virtual void         CreateToolColleague();
     void                 ChangeMode(WINDOW_MODE);
     void                 Start2DMode();
     void                 Start3DMode();

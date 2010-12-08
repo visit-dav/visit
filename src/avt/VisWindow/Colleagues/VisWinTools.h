@@ -113,7 +113,7 @@ class vtkHighlightActor2D;
 class VISWINDOW_API VisWinTools : public VisWinColleague
 {
   public:
-                     VisWinTools(VisWindowColleagueProxy &);
+                     VisWinTools(VisWindowColleagueProxy &, bool createTools);
     virtual         ~VisWinTools();
 
     virtual void     SetBackgroundColor(double r, double g, double b);

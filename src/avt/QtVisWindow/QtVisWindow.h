@@ -76,6 +76,8 @@ class QTVISWINDOW_API QtVisWindow : public VisWindow
 
     static void SetWindowCreationCallback(vtkQtRenderWindow *(*wcc)(void*), void *wccdata);
   protected:
+    virtual void CreateToolColleague();
+
     static vtkQtRenderWindow* (*windowCreationCallback)(void *);
     static void                *windowCreationData;
 };

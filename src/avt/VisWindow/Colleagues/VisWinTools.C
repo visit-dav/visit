@@ -148,10 +148,13 @@ protected:
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Reorder the icons (2.0 interface changes).
 //
+//   Brad Whitlock, Tue Dec 7 15:58:24 PST 2010
+//   Only create the tools sometimes.
+//
 // ****************************************************************************
 
-VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
-    toolProxy(v)
+VisWinTools::VisWinTools(VisWindowColleagueProxy &v, bool createTools) :
+    VisWinColleague(v), toolProxy(v)
 {
     highlightActor = NULL;
     highlightAdded = false;
@@ -161,25 +164,37 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
         tools[i] = NULL;
     numTools = 0;
 
-    // Create the tools.
-    pointTool = new VisitPointTool(toolProxy);
-    lineTool = new VisitLineTool(toolProxy);
-    planeTool = new VisitPlaneTool(toolProxy);
-    boxTool = new VisitBoxTool(toolProxy);
-    sphereTool = new VisitSphereTool(toolProxy);
-    axisRestrictionTool = new VisitAxisRestrictionTool(toolProxy);
+    if(createTools)
+    {
+        // Create the tools.
+        pointTool = new VisitPointTool(toolProxy);
+        lineTool = new VisitLineTool(toolProxy);
+        planeTool = new VisitPlaneTool(toolProxy);
+        boxTool = new VisitBoxTool(toolProxy);
+        sphereTool = new VisitSphereTool(toolProxy);
+        axisRestrictionTool = new VisitAxisRestrictionTool(toolProxy);
 
-    // Add the tools to the tools array. The ordering of the tools
-    // will define the ordering of the icons in viewer.
+        // Add the tools to the tools array. The ordering of the tools
+        // will define the ordering of the icons in viewer.
 
-    // When adding new tools please use a logical ordering even
-    // if means putting it beween two existing tools.
-    tools[numTools++] = pointTool;
-    tools[numTools++] = lineTool;
-    tools[numTools++] = planeTool;
-    tools[numTools++] = boxTool;
-    tools[numTools++] = sphereTool;
-    tools[numTools++] = axisRestrictionTool;
+        // When adding new tools please use a logical ordering even
+        // if means putting it beween two existing tools.
+        tools[numTools++] = pointTool;
+        tools[numTools++] = lineTool;
+        tools[numTools++] = planeTool;
+        tools[numTools++] = boxTool;
+        tools[numTools++] = sphereTool;
+        tools[numTools++] = axisRestrictionTool;
+    }
+    else
+    {
+        pointTool = NULL;
+        lineTool = NULL;
+        planeTool = NULL;
+        boxTool = NULL;
+        sphereTool = NULL;
+        axisRestrictionTool = NULL;
+    }
 }
 
 // ****************************************************************************

@@ -44,6 +44,7 @@
 
 #include <VisWinRenderingWithWindow.h>
 #include <vtkQtRenderWindow.h>
+#include <VisWinTools.h>
 
 vtkQtRenderWindow* (*QtVisWindow::windowCreationCallback)(void *) = 0;
 void                *QtVisWindow::windowCreationData = 0;
@@ -103,4 +104,30 @@ QtVisWindow::SetWindowCreationCallback(vtkQtRenderWindow *(*wcc)(void*), void *w
 {
     windowCreationCallback = wcc;
     windowCreationData = wccdata;
+}
+
+// ****************************************************************************
+// Method: QtVisWindow::CreateToolColleague
+//
+// Purpose: 
+//   Create tools colleague with tool geometry.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 7 16:56:07 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QtVisWindow::CreateToolColleague()
+{
+    tools = new VisWinTools(colleagueProxy, true);
+    AddColleague(tools);
 }
