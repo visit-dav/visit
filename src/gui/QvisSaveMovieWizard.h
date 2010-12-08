@@ -98,6 +98,9 @@ class MovieTemplateConfig;
 //   Brad Whitlock, Tue Oct  7 13:08:01 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Mon Dec  6 16:04:47 PST 2010
+//   I added time step stride controls.
+//
 // ****************************************************************************
 
 class QvisSaveMovieWizard : public QvisWizard
@@ -177,6 +180,7 @@ private slots:
     void page10_fpsChanged(const QString &s);
     void page10_startIndexChanged(const QString &s);
     void page10_endIndexChanged(const QString &s);
+    void page10_strideChanged(int);
 
     void page11_processOutputDirectoryText(const QString &);
     void page11_selectOutputDirectory();
@@ -403,6 +407,8 @@ private:
     QLineEdit              *page10_startIndexLineEdit;
     QLabel                 *page10_endIndexLabel;
     QLineEdit              *page10_endIndexLineEdit;
+    QLabel                 *page10_strideLabel;
+    QSpinBox               *page10_strideSpinBox;
 
     // Choose filenames
     QWizardPage            *page11;

@@ -1506,6 +1506,9 @@ QvisSaveMovieWizard::CreateFormatPage()
 //   Brad Whitlock, Wed Oct  8 16:38:07 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Mon Dec  6 16:04:47 PST 2010
+//   I added time step stride controls.
+//
 // ****************************************************************************
 
 void
@@ -1546,7 +1549,17 @@ QvisSaveMovieWizard::CreateNumFramesPage()
     page10_endIndexLineEdit = new QLineEdit(page10);
     gLayout->addWidget(page10_endIndexLineEdit, 2, 1);
     connect(page10_endIndexLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page10_endIndexChanged(const QString &)));    
+            this, SLOT(page10_endIndexChanged(const QString &)));
+
+    page10_strideLabel = new QLabel(tr("Frame stride"), page10);
+    gLayout->addWidget(page10_strideLabel, 3, 0);
+
+    page10_strideSpinBox = new QSpinBox(page10);
+    page10_strideSpinBox->setMinimum(1);
+    page10_strideSpinBox->setMaximum(100);
+    gLayout->addWidget(page10_strideSpinBox, 3, 1);
+    connect(page10_strideSpinBox, SIGNAL(valueChanged(int)),
+            this, SLOT(page10_strideChanged(int)));
 
     // Add the page.
     setPage(Page_NumFrames, page10);
@@ -1554,7 +1567,7 @@ QvisSaveMovieWizard::CreateNumFramesPage()
 
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateFilenamePage
-//
+//     
 // Purpose: 
 //   Creates page 11.
 //
@@ -2096,6 +2109,9 @@ QvisSaveMovieWizard::validateCurrentPage()
 //   Brad Whitlock, Tue Oct 14 09:17:59 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Mon Dec  6 16:18:03 PST 2010
+//   I added stride.
+//
 // ****************************************************************************
 
 void
@@ -2181,6 +2197,10 @@ QvisSaveMovieWizard::initializePage(int pageId)
         page10_fpsLineEdit->blockSignals(true);
         page10_fpsLineEdit->setText(QString("%1").arg(movieAtts->GetFps()));
         page10_fpsLineEdit->blockSignals(false);
+
+        page10_strideSpinBox->blockSignals(true);
+        page10_strideSpinBox->setValue(movieAtts->GetStride());
+        page10_strideSpinBox->blockSignals(false);
 
         page10_UpdateStartEndIndex();
         break;
@@ -4538,6 +4558,22 @@ QvisSaveMovieWizard::page10_endIndexChanged(const QString &s)
         movieAtts->SetEndIndex(default_num_frames - 1);
 }
 
+// ****************************************************************************
+// Method: QvisSaveMovieWizard::page10_strideChanged
+//
+// Purpose: 
+//   This is a Qt slot function invoked when any change occurs in the stride field
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec  6 16:11:48 PST 2010
+//
+// ****************************************************************************
+
+void
+QvisSaveMovieWizard::page10_strideChanged(int stride)
+{
+    movieAtts->SetStride(stride);
+}
 
 //
 // Page 11 slots

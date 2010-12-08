@@ -60,7 +60,7 @@ import java.lang.Double;
 
 public class MovieAttributes extends AttributeSubject
 {
-    private static int MovieAttributes_numAdditionalAtts = 16;
+    private static int MovieAttributes_numAdditionalAtts = 17;
 
     // Enum values
     public final static int MOVIETYPEENUM_SIMPLE = 0;
@@ -91,6 +91,7 @@ public class MovieAttributes extends AttributeSubject
         fps = 10;
         startIndex = 0;
         endIndex = 1000000000;
+        stride = 1;
     }
 
     public MovieAttributes(int nMoreFields)
@@ -113,6 +114,7 @@ public class MovieAttributes extends AttributeSubject
         fps = 10;
         startIndex = 0;
         endIndex = 1000000000;
+        stride = 1;
     }
 
     public MovieAttributes(MovieAttributes obj)
@@ -167,6 +169,7 @@ public class MovieAttributes extends AttributeSubject
         fps = obj.fps;
         startIndex = obj.startIndex;
         endIndex = obj.endIndex;
+        stride = obj.stride;
 
         SelectAll();
     }
@@ -255,7 +258,8 @@ public class MovieAttributes extends AttributeSubject
                 (emailAddress.equals(obj.emailAddress)) &&
                 (fps == obj.fps) &&
                 (startIndex == obj.startIndex) &&
-                (endIndex == obj.endIndex));
+                (endIndex == obj.endIndex) &&
+                (stride == obj.stride));
     }
 
     // Property setting methods
@@ -355,6 +359,12 @@ public class MovieAttributes extends AttributeSubject
         Select(15);
     }
 
+    public void SetStride(int stride_)
+    {
+        stride = stride_;
+        Select(16);
+    }
+
     // Property getting methods
     public int     GetGenerationMethod() { return generationMethod; }
     public int     GetMovieType() { return movieType; }
@@ -372,6 +382,7 @@ public class MovieAttributes extends AttributeSubject
     public int     GetFps() { return fps; }
     public int     GetStartIndex() { return startIndex; }
     public int     GetEndIndex() { return endIndex; }
+    public int     GetStride() { return stride; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -408,6 +419,8 @@ public class MovieAttributes extends AttributeSubject
             buf.WriteInt(startIndex);
         if(WriteSelect(15, buf))
             buf.WriteInt(endIndex);
+        if(WriteSelect(16, buf))
+            buf.WriteInt(stride);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -462,6 +475,9 @@ public class MovieAttributes extends AttributeSubject
         case 15:
             SetEndIndex(buf.ReadInt());
             break;
+        case 16:
+            SetStride(buf.ReadInt());
+            break;
         }
     }
 
@@ -496,6 +512,7 @@ public class MovieAttributes extends AttributeSubject
         str = str + intToString("fps", fps, indent) + "\n";
         str = str + intToString("startIndex", startIndex, indent) + "\n";
         str = str + intToString("endIndex", endIndex, indent) + "\n";
+        str = str + intToString("stride", stride, indent) + "\n";
         return str;
     }
 
@@ -517,5 +534,6 @@ public class MovieAttributes extends AttributeSubject
     private int     fps;
     private int     startIndex;
     private int     endIndex;
+    private int     stride;
 }
 
