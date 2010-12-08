@@ -245,6 +245,9 @@ VisWindow::VisWindow(bool callInit)
 //    Hank Childs, Fri Aug 27 15:27:25 PDT 2010
 //    Initialize 3D axis scaling options.
 //
+//    Brad Whitlock, Tue Dec 7 16:01:12 PST 2010
+//    Delegate tool colleague creation into virtual method.
+//
 // ****************************************************************************
 
 void
@@ -336,8 +339,7 @@ VisWindow::Initialize(VisWinRendering *ren)
     windowBackground = new VisWinBackground(colleagueProxy);
     AddColleague(windowBackground);
 
-    tools        = new VisWinTools(colleagueProxy);
-    AddColleague(tools);
+    CreateToolColleague();
 
     legends      = new VisWinLegends(colleagueProxy);
     AddColleague(legends);
@@ -360,6 +362,31 @@ VisWindow::Initialize(VisWinRendering *ren)
     pickForIntersectionOnly = false;
 }
 
+// ****************************************************************************
+// Method: VisWindow::CreateToolColleague
+//
+// Purpose: 
+//   Create the tools colleague without tool geometry.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 7 16:01:44 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::CreateToolColleague()
+{
+    tools = new VisWinTools(colleagueProxy, false);
+    AddColleague(tools);
+}
 
 // ****************************************************************************
 //  Method: VisWindow destructor
