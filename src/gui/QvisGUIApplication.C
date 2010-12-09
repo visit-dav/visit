@@ -8473,6 +8473,10 @@ QvisGUIApplication::RestoreCrashRecoveryFile()
             debug1 << "Restoring a crash recovery file: "
                    << filename.toStdString() << endl;
             RestoreSessionFile(filename, files);
+
+            sessionFile = QString(""); // Make sure the session file name is
+            // null as it was used for the recovery which forces a
+            // Save Session As to occur if the user does a Save Session
         }
 
         // Remove the crash recovery file since we've consumed it. Note that
