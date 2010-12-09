@@ -1827,6 +1827,11 @@ static std::string log_SetQueryFloatFormatRPC(ViewerRPC *rpc)
     return std::string(str);
 }
 
+static std::string log_SetPlotFollowsTimeRPC(ViewerRPC *rpc)
+{
+    return std::string("SetPlotFollowsTime()\n");
+}
+
 static std::string log_CreateNamedSelectionRPC(ViewerRPC *rpc)
 {
     return std::string("CreateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
@@ -2453,6 +2458,9 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::SetQueryFloatFormatRPC:
         str = log_SetQueryFloatFormatRPC(rpc);
+        break;
+    case ViewerRPC::SetPlotFollowsTimeRPC:
+        str = log_SetPlotFollowsTimeRPC(rpc);
         break;
     case ViewerRPC::CreateNamedSelectionRPC:
         str = log_CreateNamedSelectionRPC(rpc);
