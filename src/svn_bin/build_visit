@@ -963,11 +963,15 @@
 #         own category
 #     (7) Tweak names of various options in dialog.
 #
+#     Hank Childs, Thu Dec  9 05:00:42 PST 2010
+#     Add environment variables for CFLAGS and CXXFLAGS.  They were previously
+#     being put in the C_OPT_FLAGS and CXX_OPT_FLAGS.  When we wanted to start
+#     using CMake's Release option, this was a problem.
+#     Also, add --all-io flag, which enables all I/O libraries.
+#
 # *****************************************************************************
 
 
-# *****************************************************************************
-#                                                                             #
 # *************************************************************************** #
 #                       Section 1, setting up inputs                          #
 # --------------------------------------------------------------------------- #
@@ -1011,8 +1015,10 @@ if [[ "$OPSYS" == "Darwin" ]]; then
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}
-   export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2 -fno-common -fexceptions"}
-   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2 -fno-common -fexceptions"}
+   export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
+   export CFLAGS=${CFLAGS:-"-fno-common -fexceptions"}
+   export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
+   export CXXFLAGS=${CXXFLAGS:-"-fno-common -fexceptions"}
    export MESA_TARGET=${MESA_TARGET:-"darwin"}
    export QT_PLATFORM=${QT_PLATFORM:-"macx-g++"}
 elif [[ "$OPSYS" == "Linux" ]]; then
@@ -1025,11 +1031,11 @@ elif [[ "$OPSYS" == "Linux" ]]; then
 ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86"} # Mesa-6.x
       export MESA_TARGET=${MESA_TARGET:-"linux"}
    elif [[ "$(uname -m)" == "x86_64" ]] ; then
-      C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
+      CFLAGS="$CFLAGS -m64 -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
-      CXX_OPT_FLAGS="$CXX_OPT_FLAGS -m64 -fPIC"
+      CXXFLAGS="$CXXFLAGS -m64 -fPIC"
       if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
       fi
@@ -1038,17 +1044,17 @@ elif [[ "$OPSYS" == "Linux" ]]; then
       QT_PLATFORM="linux-g++-64"
    elif [[ "$(uname -m)" == "ppc64" ]] ; then
       if [[ "$C_COMPILER" == "xlc" ]] ; then
-          C_OPT_FLAGS="$C_OPT_FLAGS -qpic"
-          CXX_OPT_FLAGS="$CXX_OPT_FLAGS -qpic"
+          CFLAGS="$CFLAGS -qpic"
+          CXXFLAGS="$CXXFLAGS -qpic"
           export CXX_COMPILER=${CXX_COMPILER-"xlC"}
           export MESA_TARGET=${MESA_TARGET-"linux"}
           QT_PLATFORM="linux-xlc" #aix-xlc"
       else
-          C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
+          CFLAGS="$CFLAGS -fPIC"
           if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
               C_OPT_FLAGS="$C_OPT_FLAGS -O2"
           fi
-          CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
+          CXXFLAGS="$CXXFLAGS -fPIC"
           if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
               CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
           fi
@@ -1056,11 +1062,11 @@ elif [[ "$OPSYS" == "Linux" ]]; then
           QT_PLATFORM="linux-g++"
       fi
    elif [[ "$(uname -m)" == "ia64" ]] ; then
-      C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
+      CFLAGS="$CFLAGS -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
-      CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
+      CXXFLAGS="$CXXFLAGS -fPIC"
       if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
       fi
@@ -1109,22 +1115,22 @@ else
    export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
    export SO_EXT="so"
    if [[ "$(uname -m)" == "x86_64" ]] ; then
-      C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
+      CFLAGS="$CFLAGS -m64 -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
-      CXX_OPT_FLAGS="$CXX_OPT_FLAGS -m64 -fPIC"
+      CXXFLAGS="$CXXFLAGS -m64 -fPIC"
       if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
       fi
       QT_PLATFORM="linux-g++-64"
    fi
    if [[ "$(uname -m)" == "ia64" ]] ; then
-      C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
+      CFLAGS="$CFLAGS -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
-      CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
+      CXXFLAGS="$CXXFLAGS -fPIC"
       if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
       fi
@@ -1172,6 +1178,8 @@ export DO_VTK="no"
 export ON_VTK="off"
 export DO_HOSTCONF="yes"
 export ON_HOSTCONF="on"
+
+export ON_ALLIO="off"
 
 export DO_HDF4="no"
 export ON_HDF4="off"
@@ -2658,7 +2666,8 @@ function check_variables
 "OPSYS: the default value returned from 'uname -s'\n"\
 "ARCH: architecure info (Darwin, linux, aix, irix64, ...)\n"\
 "C_COMPILER and CXX_COMPILER: the C and C++ compiler, respectively\n"\
-"C_OPT_FLAGS and CXX_OPT_FLAGS: the CFLAGS and CXXFLAGS to use\n"\
+"CFLAGS and CXXFLAGS: the flags to use for all compiles (e.g. -fPIC)\n"\
+"C_OPT_FLAGS and CXX_OPT_FLAGS: the optimization flags to use for C and C++\n"\
 "VISITARCH: unique architecture info, appended to library path installation\n"\
 "REVISION: checkout a cwspecific SVN revision using supplied argument\n\n"\
 "Select the variables you wish to modify:" 28 $DLG_WIDTH 8 \
@@ -2666,6 +2675,8 @@ function check_variables
            "ARCH"             "$ARCH"              "off" \
            "C_COMPILER"       "$C_COMPILER"        "off" \
            "CXX_COMPILER"     "$CXX_COMPILER"      "off" \
+           "CFLAGS"           "$CFLAGS"       "off" \
+           "CXXFLAGS"         "$CXXFLAGS"     "off" \
            "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "off" \
            "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "off" \
            "VISITARCH"        "$VISITARCHTMP"      "off" \
@@ -2702,6 +2713,18 @@ function check_variables
                            --no-cancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CXX_COMPILER" 2> tmp$$
                         CXX_COMPILER="$(cat tmp$$)"
+                        ;;
+                     CFLAGS)
+                        $DLG --backtitle "$DLG_BACKTITLE" \
+                           --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CFLAGS" 2> tmp$$
+                        CFLAGS="$(cat tmp$$)"
+                        ;;
+                     CXXFLAGS)
+                        $DLG --backtitle "$DLG_BACKTITLE" \
+                           --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CXXFLAGS" 2> tmp$$
+                        CXXFLAGS="$(cat tmp$$)"
                         ;;
                      C_OPT_FLAGS)
                         $DLG --backtitle "$DLG_BACKTITLE" \
@@ -3797,9 +3820,10 @@ function build_vtk
             -DUSE_ANSI_STD_LIB:BOOL=ON\
             -DVTK_USE_MANGLED_MESA:BOOL=ON\
             -DVTK_USE_HYBRID:BOOL=ON\
-            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+            -DCMAKE_BUILD_TYPE=Release\
+            -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
             -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-            -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+            -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
             -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
             -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
             -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
@@ -3824,9 +3848,10 @@ function build_vtk
             -DUSE_ANSI_STD_LIB:BOOL=ON\
             -DVTK_USE_MANGLED_MESA:BOOL=ON\
             -DVTK_USE_HYBRID:BOOL=ON\
-            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+            -DCMAKE_BUILD_TYPE=Release\
+            -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
             -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-            -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+            -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
             -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
             -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
             -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
@@ -3851,9 +3876,10 @@ function build_vtk
             -DUSE_ANSI_STD_LIB:BOOL=ON\
             -DVTK_USE_MANGLED_MESA:BOOL=ON\
             -DVTK_USE_HYBRID:BOOL=ON\
-            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+            -DCMAKE_BUILD_TYPE=Release\
+            -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
             -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-            -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+            -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
             -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
             -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names\
             -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
@@ -3866,16 +3892,17 @@ function build_vtk
             .
     fi
     elif [[ "$OPSYS" == "IRIX64" ]]; then
-    ${CMAKE_BIN} \
+      ${CMAKE_BIN} \
         -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/vtk/${VTK_VERSION}/${VISITARCH}"\
         -DBUILD_SHARED_LIBS:BOOL=${VTK_SHARED_LIBS}\
         -DBUILD_TESTING:BOOL=OFF\
         -DUSE_ANSI_STD_LIB:BOOL=ON\
         -DVTK_USE_MANGLED_MESA:BOOL=ON\
         -DVTK_USE_HYBRID:BOOL=ON\
-        -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS} -LANG:std -64"\
+        -DCMAKE_BUILD_TYPE=Release\
+        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} -LANG:std -64"\
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}" \
+        -DCMAKE_C_FLAGS:STRING="${CFLAGS}" \
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
         -DCMAKE_EXE_LINKER_FLAGS:STRING=-LANG:std -64\
         -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
@@ -3902,9 +3929,10 @@ function build_vtk
                -DUSE_ANSI_STD_LIB:BOOL=ON\
                -DVTK_USE_MANGLED_MESA:BOOL=OFF\
                -DVTK_USE_HYBRID:BOOL=ON\
-               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+               -DCMAKE_BUILD_TYPE=Release\
+               -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
                -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-               -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+               -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
                -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
                -DVTK_USE_TK:BOOL=OFF\
                -DTK_INCLUDE_PATH:FILEPATH=""\
@@ -3925,9 +3953,10 @@ function build_vtk
                -DUSE_ANSI_STD_LIB:BOOL=ON\
                -DVTK_USE_MANGLED_MESA:BOOL=ON\
                -DVTK_USE_HYBRID:BOOL=ON\
-               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+               -DCMAKE_BUILD_TYPE=Release\
+               -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
                -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-               -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+               -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
                -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
                -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
                -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${LIBEXT}"\
@@ -3945,9 +3974,10 @@ function build_vtk
                -DUSE_ANSI_STD_LIB:BOOL=ON\
                -DVTK_USE_MANGLED_MESA:BOOL=ON\
                -DVTK_USE_HYBRID:BOOL=ON\
-               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+               -DCMAKE_BUILD_TYPE=Release\
+               -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
                -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-               -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+               -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
                -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
                -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
                -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
@@ -4180,14 +4210,14 @@ function build_python
     # Call configure
     #
     cCompiler="${C_COMPILER}"
-    cFlags="${C_OPT_FLAGS}"
+    cFlags="${CFLAGS} ${C_OPT_FLAGS}"
     cxxCompiler="${CXX_COMPILER}"
-    cxxFlags="${CXX_OPT_FLAGS}"
+    cxxFlags="{$CXXFLAGS} ${CXX_OPT_FLAGS}"
     if [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
         cCompiler="gxlc"
         cxxCompiler="gxlC"
-        cFlags=`echo ${C_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
-        cxxFlags=`echo ${CXX_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
+        cFlags=`echo ${CFLAGS} ${C_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
+        cxxFlags=`echo $CXXFLAGS} ${CXX_OPT_FLAGS} | sed "s/-qpic/-fPIC/g"`
     fi
     PYTHON_OPT="$cFlags"
     PYTHON_LDFLAGS=""
@@ -4409,13 +4439,13 @@ function build_silo
     fi
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         \"$WITHHDF5ARG\" \"$WITHSZIPARG\" \"$WITHSILOQTARG\" \
         --without-readline --disable-fortran"
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/silo/$SILO_VERSION/$VISITARCH" \
         "$WITHHDF5ARG" "$WITHSZIPARG" "$WITHSILOQTARG" \
         --without-readline --disable-fortran
@@ -4531,11 +4561,11 @@ function build_szip
     info "Invoking command to configure SZIP"
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" LIBS=\"-lm\" \
-        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         --prefix=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\""
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" LIBS="-lm" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
 
     if [[ $? != 0 ]] ; then
@@ -4643,12 +4673,12 @@ function build_hdf5
     fi
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
         ${cf_szip}"
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" \
         ${cf_szip} ${cf_darwin}
     if [[ $? != 0 ]] ; then
@@ -4785,7 +4815,7 @@ function build_mili
 
     info "Invoking command to configure Mili"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
        warn "Mili configure failed.  Giving up"
@@ -4799,7 +4829,7 @@ function build_mili
 
     cd MILI-$OPSYS-*
     cd src
-    $C_COMPILER $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
+    $C_COMPILER $CFLAGS $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
         mili.c direc.c param.c io.c util.c dep.c svar.c \
         srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c \
         sarray.c gahl.c util.c partition.c ti.c tidirc.c
@@ -5847,7 +5877,7 @@ function build_hdf4
     if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
         ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" \
         CPPFLAGS="-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities \
         -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg" \
         --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
@@ -5862,7 +5892,7 @@ function build_hdf4
     else
         export LD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
         ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" LIBS="-lm" --disable-fortran \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" LIBS="-lm" --disable-fortran \
         --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
         --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         if [[ $? != 0 ]] ; then
@@ -6041,7 +6071,7 @@ function build_netcdf
         EXTRA_FLAGS=""
     fi
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         FC="" $EXTRA_FLAGS \
         --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
@@ -6111,7 +6141,7 @@ function build_cgns
     cd $CGNS_BUILD_DIR || error "Can't cd to CGNS build dir."
     info "Invoking command to configure CGNS"
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
        ./configure --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
        warn "CGNS configure failed.  Giving up"
@@ -6265,8 +6295,8 @@ EOF
         fi
     fi
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
-       CFLAGS="$C_OPT_FLAGS -DH5_USE_16_API" \
-       CXXFLAGS="$CXX_OPT_FLAGS -DH5_USE_16_API" \
+       CFLAGS="$CFLAGS $C_OPT_FLAGS -DH5_USE_16_API" \
+       CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS -DH5_USE_16_API" \
        --prefix="$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH" \
        --with-libtiff=internal --with-gif=internal \
        --with-png=internal --with-jpeg=internal \
@@ -6353,7 +6383,7 @@ function build_exodus
     cd cbind/src
     export NETCDFLIB="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib"
     export NETCDFINC="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
-    ${C_COMPILER} $C_OPT_FLAGS -I../include -I"$NETCDFINC" -c *.c
+    ${C_COMPILER} $CFLAGS $C_OPT_FLAGS -I../include -I"$NETCDFINC" -c *.c
     if [[ $? != 0 ]] ; then
         warn "Exodus build failed.  Giving up"
         return 1
@@ -7025,7 +7055,7 @@ function build_boxlib
        cp ../mk/Make.FreeBSD ../mk/Make.Darwin
     fi
     $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CCFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS"
+       CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS"
     if [[ $? != 0 ]] ; then
        warn "Boxlib build failed.  Giving up"
        return 1
@@ -7086,7 +7116,7 @@ function build_boxlib
        cp ../mk/Make.FreeBSD ../mk/Make.Darwin
     fi
     $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CCFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" 
+       CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" 
     if [[ $? != 0 ]] ; then
        warn "Boxlib build failed.  Giving up"
        return 1
@@ -7165,7 +7195,7 @@ function build_cfitsio
     cd $CFITSIO_BUILD_DIR || error "Can't cd to cfits IO build dir."
 
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
        ./configure \
        --prefix="$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
@@ -7282,7 +7312,7 @@ $LD_LIBRARY_PATH
     fi
     info "Invoking command to configure H5Part"
     ./configure ${WITHHDF5ARG} ${OPTIONAL} CXX="$CXX_COMPILER" \
-       CC="$C_COMPILER" CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
        --prefix="$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
        warn "H5Part configure failed.  Giving up"
@@ -7601,10 +7631,10 @@ function build_ccmio
 
     if [[ "$OPSYS" == "Darwin" ]]; then
         env RELEASE=1 SHARED=1 $MAKE CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-           CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS"
+           CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS"
     else
         env RELEASE=1 STATIC=1 $MAKE CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-           CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS"
+           CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS"
     fi
     if [[ $? != 0 ]] ; then
        echo "CCMIO build failed.  Giving up"
@@ -7798,7 +7828,7 @@ function build_icet
         -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
         -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-        -DCMAKE_C_FLAGS:STRING="-DUSE_MGL_NAMESPACE ${C_OPT_FLAGS}"\
+        -DCMAKE_C_FLAGS:STRING="-DUSE_MGL_NAMESPACE ${CFLAGS} ${C_OPT_FLAGS}"\
         -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
         -DMPI_LIBRARY:FILEPATH="./fakempi.${LIBEXT}"\
         -DBUILD_TESTING:BOOL=OFF\
@@ -7874,7 +7904,7 @@ function build_fastbit
     echo "Invoking command to configure FastBit"
     ./configure \
        CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
        --prefix="$VISITDIR/fastbit/$FASTBIT_VERSION/$VISITARCH" \
        --disable-shared
     if [[ $? != 0 ]] ; then
@@ -7947,7 +7977,7 @@ function build_itaps_moab
        WITHNETCDFARG="--without-netcdf"
     fi
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/itaps/MOAB/$ITAPS_MOAB_VERSION/$VISITARCH" \
         --with-zlib \
         $WITHHDF5ARG "$WITHSZIPARG" "$WITHNETCDFARG"
@@ -8016,7 +8046,7 @@ function build_itaps_fmdb
     cd $ITAPS_FMDB_BUILD_DIR || error "Cannot cd to $ITAPS_FMDB_BUILD_DIR build dir."
     info "Invoking command to configure ITAPS_FMDB"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH" \
         --enable-iMesh
     if [[ $? != 0 ]] ; then
@@ -8084,7 +8114,7 @@ function build_itaps_grummp
     cd $ITAPS_GRUMMP_BUILD_DIR || error "Cannot cd to $ITAPS_GRUMMP_BUILD_DIR build dir."
     info "Invoking command to configure ITAPS_GRUMMP"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH" \
         --enable-itaps
     if [[ $? != 0 ]] ; then
@@ -8160,7 +8190,7 @@ function build_advio
         ADVIO_DARWIN="--host=darwin"
     fi
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
        ./configure --prefix="$VISITDIR/AdvIO/$ADVIO_VERSION/$VISITARCH" --disable-gtktest $ADVIO_DARWIN
     if [[ $? != 0 ]] ; then
        warn "AdvIO configure failed.  Giving up"
@@ -8249,9 +8279,9 @@ function build_xdmf
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
         -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
-        -DCMAKE_CXX_FLAGS:STRING="${CXX_OPT_FLAGS}"\
+        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}"\
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING="${C_OPT_FLAGS}"\
+        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}"\
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
         -DBUILD_TESTING:BOOL=OFF \
         -DXDMF_BUILD_MPI:BOOL=OFF \
@@ -8331,7 +8361,7 @@ function build_mdsplus
     cd $MDSPLUS_BUILD_DIR || error "Can't cd to mdsplus build dir."
     info "Invoking command to configure MDSplus"
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-       CC="$C_COMPILER" CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
        --prefix="$VISITDIR/mdsplus/$MDSPLUS_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
        warn "MDSplus configure failed.  Giving up"
@@ -8375,8 +8405,6 @@ function build_hostconf
     # Set up environment variables for the configure step.
     #
     PARFLAGS=""
-    CXXFLAGS="$CXX_OPT_FLAGS"
-    CFLAGS="$C_OPT_FLAGS"
     if [[ "$parallel" == "yes" ]] ; then
        PARFLAGS="--enable-parallel"
     fi
@@ -8434,13 +8462,14 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(VISIT_C_COMPILER $C_COMPILER)">> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER $CXX_COMPILER)" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release)" >> $HOSTCONF
 
     if [[ "$USE_VISIBILITY_HIDDEN" == "yes" ]] ; then
-            echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS -fvisibility=hidden\")" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS -fvisibility=hidden\")" >> $HOSTCONF
-        else
-            echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS\")" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\")" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS -fvisibility=hidden\")" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS -fvisibility=hidden\")" >> $HOSTCONF
+    else
+        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS\")" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\")" >> $HOSTCONF
     fi
 
     if [[ "$parallel" == "yes" ]] ; then
@@ -8792,10 +8821,9 @@ function build_visit
     # Set up environment variables for the configure step.
     #
     PARFLAGS=""
-    CXXFLAGS="$CXX_OPT_FLAGS"
     if [[ "$parallel" == "yes" ]] ; then
        PARFLAGS="--enable-parallel"
-       CXXFLAGS="$CXX_OPT_FLAGS $PAR_INCLUDE"
+       CXXFLAGS="$CXXFLAGS $PAR_INCLUDE"
     fi
 
     #
@@ -8952,6 +8980,8 @@ printvariables () {
 
   printf "%s%s\n" "C_COMPILER=" "${C_COMPILER}"
   printf "%s%s\n" "CXX_COMPILER=" "${CXX_COMPILER}"
+  printf "%s%s\n" "CFLAGS=" "${CFLAGS}"
+  printf "%s%s\n" "CXXFLAGS=" "${CXXFLAGS}"
   printf "%s%s\n" "C_OPT_FLAGS=" "${C_OPT_FLAGS}"
   printf "%s%s\n" "CXX_OPT_FLAGS=" "${CXX_OPT_FLAGS}"
   printf "%s%s\n" "PAR_INCLUDE=" "${PAR_INCLUDE}"
@@ -9109,6 +9139,7 @@ usage () {
   printf "\n\n"
   printf "BOOLEAN FLAGS\n"
   printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
+  printf "%-15s %s [%s]\n" "--all-io"  "Build all available I/O libraries" "$DO_ALLIO"
   printf "%-15s %s [%s]\n" "--advio"   "Build AdvIO" "$DO_ADVIO"
   printf "%-15s %s [%s]\n" "--boxlib"  "Build Boxlib" "$DO_BOXLIB"
   printf "%-15s %s [%s]\n" "--ccmio"   "Build Star-CD support" "$DO_CCMIO"
@@ -9349,6 +9380,7 @@ for arg in "${arguments[@]}" ; do
     fi
     case $arg in
         --absolute) ABS_PATH="yes"; ON_ABS_PATH="on";;
+        --all-io) DO_ALLIO="yes";;
         --advio) DO_ADVIO="yes"; ON_ADVIO="on";;
         --arch) next_arg="arch";;
         --boxlib) DO_BOXLIB="yes"; ON_BOXLIB="on";;
@@ -9474,43 +9506,39 @@ fi
 # As a temporary convenience, for a dbio-only build, we turn on almost all
 # of the 3rd party I/O libs used by database plugins.
 #
-if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
-    DO_HDF4="yes"
-    ON_HDF4="on"
-    DO_HDF5="yes"
-    ON_HDF5="on"
+if [[ "$DO_DBIO_ONLY" == "yes" || "$DO_ALLIO" == "yes" ]]; then
+    DO_ADVIO="yes"
+    ON_ADVIO="on"
     DO_BOXLIB="yes"
     ON_BOXLIB="on"
     DO_CGNS="yes"
     ON_CGNS="on"
-    DO_EXODUS="yes"
-    ON_EXODUS="on"
     DO_CFITSIO="yes"
     ON_CFITSIO="on"
+    DO_CCMIO="yes"
+    ON_CCMIO="on"
+    DO_EXODUS="yes"
+    ON_EXODUS="on"
+    DO_FASTBIT="yes"
+    ON_FASTBIT="on"
     DO_GDAL="yes"
     ON_GDAL="on"
+    DO_HDF4="yes"
+    ON_HDF4="on"
+    DO_HDF5="yes"
+    ON_HDF5="on"
+    DO_ITAPS="yes"
+    ON_ITAPS="on"
     DO_NETCDF="yes"
     ON_NETCDF="on"
     DO_H5PART="yes"
     ON_H5PART="on"
-    DO_MDSPLUS="yes"
-    ON_MDSPLUS="on"
     DO_SZIP="yes"
     ON_SZIP="on"
-    DO_CCMIO="yes"
-    ON_CCMIO="on"
-    DO_ITAPS="yes"
-    ON_ITAPS="on"
     DO_SILO="yes"
     ON_SILO="on"
     DO_XDMF="yes"
     ON_XDMF="on"
-
-    #
-    # Any plugin for this yet?
-    #
-#    DO_FASTBIT="yes"
-#    ON_FASTBIT="on"
 
     #
     # Releasibility of these libs is not yet understood
@@ -9519,6 +9547,8 @@ if [[ "$DO_DBIO_ONLY" == "yes" ]]; then
 #    ON_MILI="on"
 #    DO_VISUS="yes"
 #    ON_VISUS="on"
+#    DO_MDSPLUS="yes"
+#    ON_MDSPLUS="on"
 fi
 
 #

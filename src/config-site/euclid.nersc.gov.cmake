@@ -1,24 +1,19 @@
-#/project/projectdirs/visit/visit_3rdparty_euclid/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake
+#/project/projectdirs/visit/visit_3rdparty_euclid_opt/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake
 ##
-## ../visit_svn/2.1RC_trunk/src/svn_bin/build_visit generated host.cmake
-## created: Fri Oct 22 14:14:57 PDT 2010
-## system: Linux euclid.nersc.gov 2.6.18-194.11.3-bsd-prf #1 SMP Fri Sep 17 13:56:15 PDT 2010 x86_64 x86_64 x86_64 GNU/Linux
-## by: ghweber
+## ./build_visit generated host.cmake
+## created: Mon Dec  6 13:28:25 PST 2010
+## system: Linux euclid.nersc.gov 2.6.18.194.17.4.el5-x86_64-bsdv3-prf #1 SMP Thu Oct 28 17:44:14 PDT 2010 x86_64 x86_64 x86_64 GNU/Linux
+## by: hrchilds
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /project/projectdirs/visit/visit_3rdparty_euclid)
+SET(VISITHOME /project/projectdirs/visit/visit_3rdparty_euclid_opt)
+SET(VISITHOME2 /project/projectdirs/visit/visit_3rdparty_euclid)
 SET(VISITARCH linux-x86_64_gcc-4.1)
 VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /usr/common/graphics/visit)
 VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON)
-VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release)
 VISIT_OPTION_DEFAULT(VISIT_VERBOSE_MAKEFILE TRUE)
-
-##
-## Do not build Tuvok
-##
-#VISIT_OPTION_DEFAULT(VISIT_TUVOK OFF)
 
 ##
 ## Specify the location of the mesa.
@@ -46,6 +41,7 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
+VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden")
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden")
 
@@ -73,8 +69,8 @@ VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB2D_DIR ${VISITHOME}/boxlib/2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB3D_DIR ${VISITHOME}/boxlib/2.5/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB2D_DIR ${VISITHOME2}/boxlib/2.5/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB3D_DIR ${VISITHOME2}/boxlib/2.5/${VISITARCH})
 
 ##
 ## CCMIO
@@ -104,8 +100,7 @@ VISIT_OPTION_DEFAULT(VISIT_FASTBIT_DIR ${VISITHOME}/fastbit/1.0.9/${VISITARCH})
 ##
 ## GDAL
 ##
-VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.7.2/${VISITARCH})
-
+VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME2}/gdal/1.7.2/${VISITARCH})
 
 ##
 ## HDF4
@@ -122,7 +117,7 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ##
 ## H5Part
 ##
-VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME2}/h5part/1.6.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 ##
@@ -170,4 +165,6 @@ ITAPS_INCLUDE_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/GRUMMP/0.5.0-03Jun10/${VISIT
 ITAPS_FILE_PATTERNS(GRUMMP *.bdry *.smesh *.vmesh)
 ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_base SUMAAlog_lite OptMS vtkGraphics)
 ITAPS_LINK_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/GRUMMP/0.5.0-03Jun10/${VISITARCH}/lib)
+
+
 
