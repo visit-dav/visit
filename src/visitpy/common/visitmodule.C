@@ -7404,6 +7404,87 @@ visit_SetPlotDescription(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Method: visit_SetPlotFollowsTime
+//
+// Purpose: 
+//   Sets the followsTime flag on the active plots.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec  8 16:02:51 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetPlotFollowsTime(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool setPL = true;
+    int ifollowsTime = -1;
+    if (!PyArg_ParseTuple(args, "i", &ifollowsTime))
+    {
+        // We're just going to toggle the values.
+        NO_ARGUMENTS();
+        PyErr_Clear();
+        setPL = false;
+    }
+
+    intVector curAP, newAP;
+    int retval = 0;
+    if(setPL)
+    {
+        // We're going to try and set all active plots to a specific follows time
+        // value.
+        bool followsTime = (ifollowsTime != 0) ? true : false;
+
+        // Get the current list of active plots and the list of active plots
+        // whose follow time does not match what we're setting.
+        retval = Synchronize();
+
+        PlotList *pL = GetViewerState()->GetPlotList();
+        for(int i = 0; i < pL->GetNumPlots(); ++i)
+        { 
+            if(pL->GetPlots(i).GetActiveFlag())
+            {
+                curAP.push_back(i);
+
+                if(pL->GetPlots(i).GetFollowsTime() != followsTime)
+                    newAP.push_back(i);
+            }
+        }
+    }
+ 
+    if(setPL && newAP.empty())
+    {
+        // There were no plots that needed to be updated.
+        ;
+    }
+    else
+    {
+        MUTEX_LOCK();
+       
+        if(!newAP.empty())
+            GetViewerMethods()->SetActivePlots(newAP);
+
+        // Toggle the "follows time" flag on the plots that did not match
+        // the desired setting.
+        GetViewerMethods()->SetPlotFollowsTime();
+
+        if(!newAP.empty())
+            GetViewerMethods()->SetActivePlots(curAP);
+
+        MUTEX_UNLOCK();
+
+        retval = Synchronize();
+    }
+
+    // Return the success value.
+    return IntReturnValue(retval);
+}
+
+// ****************************************************************************
 // Function: visit_MovePlotOrderTowardLast
 //
 // Purpose:
@@ -14656,6 +14737,9 @@ AddMethod(const char *methodName,
 //   Brad Whitlock, Fri Aug 27 10:37:20 PDT 2010
 //   I added RenamePickLabel.
 //
+//   Brad Whitlock, Wed Dec  8 16:04:37 PST 2010
+//   I exposed SetPlotFollowsTime.
+//
 // ****************************************************************************
 
 static void
@@ -14974,6 +15058,7 @@ AddDefaultMethods()
     AddMethod("SetPlotDatabaseState", visit_SetPlotDatabaseState,
                                                visit_SetPlotDatabaseState_doc);
     AddMethod("SetPlotDescription", visit_SetPlotDescription, NULL /*DOCUMENT ME*/);
+    AddMethod("SetPlotFollowsTime", visit_SetPlotFollowsTime, NULL /*DOCUMENT ME*/);
     AddMethod("SetPlotFrameRange", visit_SetPlotFrameRange,
                                                   visit_SetPlotFrameRange_doc);
     AddMethod("SetPlotOptions", visit_SetPlotOptions,visit_SetPlotOptions_doc);
