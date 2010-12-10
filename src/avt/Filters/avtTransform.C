@@ -154,7 +154,7 @@ void vtkVisItMatrixToHomogeneousTransform::TransformPointsNormalsVectors(vtkPoin
     
          // apply homogeneous correction: note that the f we are using
          // is the one we calculated in the point transformation
-            outVec[0] = (outVec[0]-w*outPnt[0])*f;
+         outVec[0] = (outVec[0]-w*outPnt[0])*f;
          outVec[1] = (outVec[1]-w*outPnt[1])*f;
          outVec[2] = (outVec[2]-w*outPnt[2])*f;
     
@@ -834,6 +834,12 @@ TransformVecAsDisplacement(vtkMatrixToLinearTransform *t,
 }
 
 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Thu Dec  9 14:49:04 PST 2010
+//    Normalize the vector before transform.
+//
+// ****************************************************************************
 
 void
 TransformVecAsDirection(vtkMatrixToLinearTransform *t,
@@ -857,8 +863,20 @@ TransformVecAsDirection(vtkMatrixToLinearTransform *t,
                 inPt[1] = y->GetComponent(j,0);
                 inPt[2] = z->GetComponent(k,0);
                 
-                double vec[3], vec2[3];
+                double vec[3],  vec2[3];
                 inVecs->GetTuple(index, vec);
+                double mag = sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
+                if (mag == 0.)
+                {
+                    vec[0] = vec[1] = vec[2] = 0.;
+                }
+                else 
+                {
+                    vec[0] = vec[0] / mag;
+                    vec[1] = vec[1] / mag;
+                    vec[2] = vec[2] / mag;
+                }
+
                 vec[0] = instantEps*vec[0] + inPt[0];
                 vec[1] = instantEps*vec[1] + inPt[1];
                 vec[2] = instantEps*vec[2] + inPt[2];
@@ -866,9 +884,9 @@ TransformVecAsDirection(vtkMatrixToLinearTransform *t,
 
                 double outPt[3];
                 pts->GetPoint(index, outPt);
-                vec2[0] = (vec2[0]-outPt[0]) * instantEpsInv;
-                vec2[1] = (vec2[1]-outPt[1]) * instantEpsInv;
-                vec2[2] = (vec2[2]-outPt[2]) * instantEpsInv;
+                vec2[0] = (vec2[0]-outPt[0]) * instantEpsInv *mag;
+                vec2[1] = (vec2[1]-outPt[1]) * instantEpsInv *mag;
+                vec2[2] = (vec2[2]-outPt[2]) * instantEpsInv *mag;
 
                 outVecs->SetTuple(index, vec2);
                 index++;

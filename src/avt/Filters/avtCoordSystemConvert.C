@@ -254,6 +254,10 @@ CylindricalToSphericalPoint(double *newpt, const double *pt)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August  7, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Dec  9 14:53:18 PST 2010
+//    Normalize the vector before projection in the AsDirection case.
+//
 // ****************************************************************************
 
 inline static void 
@@ -288,13 +292,22 @@ TransformSingleVector(avtCoordSystemConvert::VectorTransformMethod method,
         break;
       case avtCoordSystemConvert::AsDirection:
         {
-        double tmpvec[3] = {instantEps*vec[0] + pt[0],
-                            instantEps*vec[1] + pt[1],
-                            instantEps*vec[2] + pt[2]};
+        double tmpvec[3] = {0., 0., 0.};
+        double mag = sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
+        if (mag != 0.)
+        {
+            tmpvec[0] = vec[0]/mag;
+            tmpvec[1] = vec[1]/mag;
+            tmpvec[2] = vec[2]/mag;
+        }
+        tmpvec[0] = instantEps*tmpvec[0] + pt[0];
+        tmpvec[1] = instantEps*tmpvec[1] + pt[1];
+        tmpvec[2] = instantEps*tmpvec[2] + pt[2];
+
         xf(newvec, tmpvec);
-        newvec[0] = (newvec[0] - newpt[0]) * instantEpsInv;
-        newvec[1] = (newvec[1] - newpt[1]) * instantEpsInv;
-        newvec[2] = (newvec[2] - newpt[2]) * instantEpsInv;
+        newvec[0] = (newvec[0] - newpt[0]) * instantEpsInv *mag;
+        newvec[1] = (newvec[1] - newpt[1]) * instantEpsInv *mag;
+        newvec[2] = (newvec[2] - newpt[2]) * instantEpsInv *mag;
         }
         break;
     }
