@@ -4826,7 +4826,7 @@ ViewerMethods::LineQuery(const std::string &queryName, const double pt1[3],
 // ****************************************************************************
 
 void
-ViewerMethods::Pick(int x, int y, const stringVector &vars)
+ViewerMethods::ZonePick(int x, int y, const stringVector &vars)
 {
     double pt[3];
     pt[0] = (double)x;
@@ -4856,9 +4856,9 @@ ViewerMethods::Pick(int x, int y, const stringVector &vars)
 // ****************************************************************************
 
 void
-ViewerMethods::Pick(double xyz[3], const stringVector &vars)
+ViewerMethods::ZonePick(double xyz[3], const stringVector &vars)
 {
-    PointQuery("Pick", xyz, vars);
+    PointQuery("ZonePick", xyz, vars);
 }
 
 // ****************************************************************************
