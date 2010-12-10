@@ -389,8 +389,8 @@ public:
     void LineQuery(const std::string &queryName, const double pt1[3],
                    const double pt2[3], const stringVector &vars,
                    const int samples, const bool forceSampling = false);
-    void Pick(int x, int y, const stringVector &vars);
-    void Pick(double xyz[3], const stringVector &vars);
+    void ZonePick(int x, int y, const stringVector &vars);
+    void ZonePick(double xyz[3], const stringVector &vars);
     void NodePick(int x, int y, const stringVector &vars);
     void NodePick(double xyz[3], const stringVector &vars);
     void Lineout(const double p0[3], const double p1[3],

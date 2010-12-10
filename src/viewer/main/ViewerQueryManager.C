@@ -3275,7 +3275,7 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         }
         win->Pick((int)pt[0], (int)pt[1], NODE_PICK);
     }
-    else if (qName == "Pick" || qName == "ZonePick (aka Pick)" || 
+    else if (qName == "ZonePick" || 
              qName == "NodePick" || qName == "PointPick (aka NodePick)")
     {
         if (!vars.empty())
@@ -3284,7 +3284,7 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         }
 
         INTERACTION_MODE imode  = win->GetInteractionMode();
-        if (qName == "Pick" || qName == "ZonePick (aka Pick)")
+        if (qName == "ZonePick")
             win->SetInteractionMode(ZONE_PICK);
         else
             win->SetInteractionMode(NODE_PICK);
@@ -3867,8 +3867,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, qt);
     queryTypes->AddQuery("Watertight", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, qt);
-    queryTypes->AddQuery("Pick", pq, pr, sp, 1, 0, qt);
-    queryTypes->AddQuery("ZonePick (aka Pick)", pq, pr, sp, 1, 0, qt);
+    queryTypes->AddQuery("ZonePick", pq, pr, sp, 1, 0, qt);
     queryTypes->AddQuery("NodePick", pq, pr, sp, 1, 0, qt);
     queryTypes->AddQuery("PointPick (aka NodePick)", pq, pr, sp, 1, 0, qt);
 
