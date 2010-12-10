@@ -545,6 +545,9 @@ avtProjectFilter::ProjectPointSet(vtkPointSet *in_ds)
 //    Jeremy Meredith, Thu Apr  1 14:43:48 EDT 2010
 //    Took into account various ways one might want to transform a vector.
 //
+//    Kathleen Bonnell, Thu Dec  9 14:49:04 PST 2010
+//    Normalize the vector before projection in the AsDirection case.
+//
 // ****************************************************************************
 void
 avtProjectFilter::ProjectVectors(vtkDataSet *old_ds, 
@@ -611,15 +614,23 @@ avtProjectFilter::ProjectVectors(vtkDataSet *old_ds,
 
           case ProjectAttributes::AsDirection:
             {
-            double x = oldpt[0] + u*instantEps;
-            double y = oldpt[1] + v*instantEps;
-            double z = oldpt[2] + w*instantEps;
+            double mag = sqrt(u*u+v*v+w*w);
+            double nu = 0., nv = 0., nw = 0.;
+            if (mag != 0.)
+            {
+                nu = u/mag;
+                nv = v/mag;
+                nw = w/mag;
+            }
+            double x = oldpt[0] + nu*instantEps;
+            double y = oldpt[1] + nv*instantEps;
+            double z = oldpt[2] + nw*instantEps;
 
             ProjectPoint(x,y,z);
 
-            outptr[i*3+0] = (x - newpt[0])*instantEpsInv;
-            outptr[i*3+1] = (y - newpt[1])*instantEpsInv;
-            outptr[i*3+2] = (z - newpt[2])*instantEpsInv;
+            outptr[i*3+0] = (x - newpt[0])*instantEpsInv*mag;
+            outptr[i*3+1] = (y - newpt[1])*instantEpsInv*mag;
+            outptr[i*3+2] = (z - newpt[2])*instantEpsInv*mag;
             }
             break;
         }
