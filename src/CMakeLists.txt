@@ -189,6 +189,9 @@
 #    adding headers.  Add VisItGenerator.cmake file for plugin development
 #    against an Installed VisIt on Windows.
 #
+#    Kathleen Bonnell, Fri Dec 10 14:37:15 PST 2010 
+#    Add VISIT_3RDPARTY_VAR(VISIT_ZLIB_DIR for windows.
+#    
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -425,6 +428,9 @@ VISIT_3RDPARTY_VAR(VISIT_VISUS_DIR     "Path containing the ViSUS library's incl
 VISIT_3RDPARTY_VAR(VISIT_XDMF_DIR      "Path containing the Xdmf library's include and lib" XDMF_DIR)
 VISIT_3RDPARTY_VAR(VISIT_XDMF_LIBDEP   "Xdmf library dependencies" XDMF_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_MDSPLUS_DIR   "Path containing the MDSplus library's include and lib" MDSPLUS_DIR)
+IF(WIN32)
+  VISIT_3RDPARTY_VAR(VISIT_ZLIB_DIR   "Path containing the zlib library's include and lib" ZLIB_DIR)
+ENDIF(WIN32)
 #-----------------------------------------------------------------------------
 # Read the version
 #-----------------------------------------------------------------------------
