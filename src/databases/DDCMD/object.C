@@ -487,10 +487,19 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
         nv++;
         size += element_size;
         trim(tail);
-        if (*tail == (char)'"') sep = "\"";
-        else
-            sep = " ";
-        vptr = strtok_r(NULL, sep, &tail);
+        /*
+         Cyrus Harrison, Fri Dec 10 11:50:00 PST 2010
+         Added guard against bad tail pointer.
+         (This was causing a crash on OSX)
+        */
+        if(tail != NULL)
+        {
+            if (*tail == (char)'"')
+                sep = "\"";
+            else
+                sep = " ";
+            vptr = strtok_r(NULL, sep, &tail);
+        }
     }
     f.n = nv;
     f.v = v.v;
