@@ -35,8 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
-#   Kathleen Bonnell, Tue Apr 20 19:11:27 MST 2010
-#   Change lib name on windows from cgnslib to cgnsdll.
+#   Kathleen Bonnell, Fri Dec 10 14:36:52 PST 2010
+#   Set ZLIB_LIB to full path.
 #
 #****************************************************************************/
 
@@ -46,5 +46,9 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
   SET_UP_THIRD_PARTY(ZLIB lib/${VISIT_MSVC_VERSION} include zlib1)
+  IF (ZLIB_FOUND)
+      # use full path here, instead of just lib file.
+      SET(ZLIB_LIB "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
+  ENDIF (ZLIB_FOUND)
 ENDIF (WIN32)
 
