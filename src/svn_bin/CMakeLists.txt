@@ -20,6 +20,7 @@ IF(WIN32)
         host_llnl_closed_inca.xml
         host_llnl_closed_juno.xml
         host_llnl_closed_minos.xml
+        host_llnl_closed_muir.xml
         host_llnl_closed_rhea.xml
         host_llnl_closed_tempest.xml
         host_llnl_edge.xml
@@ -72,6 +73,7 @@ ELSE(WIN32)
         host_llnl_closed_inca.xml
         host_llnl_closed_juno.xml
         host_llnl_closed_minos.xml
+        host_llnl_closed_muir.xml
         host_llnl_closed_rhea.xml
         host_llnl_closed_tempest.xml
         host_llnl_edge.xml
