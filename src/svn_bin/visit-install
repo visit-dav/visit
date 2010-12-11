@@ -227,7 +227,7 @@
 #
 #    Hank Childs, Wed Oct 20 08:23:39 PDT 2010
 #    Change bank from prompt to false.
-#    
+#
 #    Eric Brugger, Fri Oct 29 09:40:23 PDT 2010
 #    Added the profiles for aztec, edge and inca.
 #
@@ -239,6 +239,9 @@
 #
 #    Eric Brugger, Fri Dec 10 16:25:23 PST 2010
 #    Deleted the profiles for gauss, ellipse and xchem.
+#
+#    Cyrus Harrison, Fri Dec 10 16:50:44 PST 2010
+#    Added profile for muir.
 #
 #-----------------------------------------------------------------------
 
