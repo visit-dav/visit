@@ -969,6 +969,9 @@
 #     using CMake's Release option, this was a problem.
 #     Also, add --all-io flag, which enables all I/O libraries.
 #
+#     Eric Brugger, Fri Dec 10 16:23:51 PST 2010
+#     I set the VisIt version number to 2.1.2.
+#
 # *****************************************************************************
 
 
@@ -1303,7 +1306,7 @@ fi
 ###
 # Release:
 ###
-export SVN_SOURCE_PATH="tags/2.1.1/src"
+export SVN_SOURCE_PATH="tags/2.1.2/src"
 
 
 if [[ "$OPSYS" != "Darwin" ]]; then
@@ -1324,7 +1327,7 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION:-"2.1.1"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.1.2"}
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE:-"vtk-5.0.0g.tar.gz"}

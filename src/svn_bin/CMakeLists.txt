@@ -17,7 +17,6 @@ IF(WIN32)
         host_llnl_atlas.xml
         host_llnl_aztec.xml
         host_llnl_closed_eos.xml
-        host_llnl_closed_gauss.xml
         host_llnl_closed_graph.xml
         host_llnl_closed_inca.xml
         host_llnl_closed_juno.xml
@@ -25,10 +24,8 @@ IF(WIN32)
         host_llnl_closed_rhea.xml
         host_llnl_closed_tempest.xml
         host_llnl_edge.xml
-        host_llnl_ellipse.xml
         host_llnl_hera.xml
         host_llnl_prism.xml
-        host_llnl_xchem.xml
         host_llnl_zeus.xml
         host_nersc_franklin.xml
         host_nersc_hopper.xml
@@ -73,7 +70,6 @@ ELSE(WIN32)
         host_llnl_atlas.xml
         host_llnl_aztec.xml
         host_llnl_closed_eos.xml
-        host_llnl_closed_gauss.xml
         host_llnl_closed_graph.xml
         host_llnl_closed_inca.xml
         host_llnl_closed_juno.xml
@@ -81,10 +77,8 @@ ELSE(WIN32)
         host_llnl_closed_rhea.xml
         host_llnl_closed_tempest.xml
         host_llnl_edge.xml
-        host_llnl_ellipse.xml
         host_llnl_hera.xml
         host_llnl_prism.xml
-        host_llnl_xchem.xml
         host_llnl_zeus.xml
         host_nersc_franklin.xml
         host_nersc_hopper.xml

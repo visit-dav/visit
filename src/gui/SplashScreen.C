@@ -152,6 +152,9 @@
 //    Patch from Andreas Kloeckner to tell Qt we've got a splash screen window,
 //    instead of just a window without a frame.
 //
+//    Eric Brugger, Fri Dec 10 16:28:59 PST 2010
+//    Changed the date on the splash screen.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) 
@@ -276,7 +279,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 11;
+    int currentMonth = 12;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2010", this));
 
