@@ -229,10 +229,13 @@
 #    Change bank from prompt to false.
 #    
 #    Eric Brugger, Fri Oct 29 09:40:23 PDT 2010
-#    Added profiles for aztec, edge and inca.
+#    Added the profiles for aztec, edge and inca.
 #
 #    Eric Brugger, Fri Nov  5 16:13:21 PDT 2010
-#    Deleted profiles for hopi, purple, um, ilx, up and yana.
+#    Deleted the profiles for hopi, purple, um, ilx, up and yana.
+#
+#    Eric Brugger, Fri Dec 10 16:25:23 PST 2010
+#    Deleted the profiles for gauss, ellipse and xchem.
 #
 #-----------------------------------------------------------------------
 
@@ -616,7 +619,6 @@ if ($config == anl) then
 else if ($config == llnl_closed) then
    ln -s visit-config-llnl_closed.ini "$dir"/$version+/.visit/config
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_eos.xml     "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_gauss.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_graph.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_inca.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_juno.xml    "$dir"/$version+/.visit/hosts/
@@ -630,10 +632,8 @@ else if ($config == llnl_open) then
    cp "$dir"/$version+/.visit/allhosts/host_llnl_atlas.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_aztec.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_edge.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_ellipse.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_hera.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_prism.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_xchem.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_zeus.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml     "$dir"/$version+/.visit/hosts/
 else if ($config == nersc) then
