@@ -1518,6 +1518,10 @@ FileServerList::CloseFile()
 //
 //   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL.
+//
+//   Brad Whitlock, Mon Dec 13 10:35:24 PST 2010
+//   Call the "Ex" versions of GetMetaData and GetSIL.
+//
 // ****************************************************************************
 
 void
@@ -1526,7 +1530,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
 {
     // If the metadata has been seen before, indicate that we have it.
     // Otherwise, read it from the MetaData Server.
-    if (GetMetaData(filename, timeState, !ANY_STATE, !GET_NEW_MD))
+    if (GetMetaData(filename, timeState, !ANY_STATE, !GET_NEW_MD) != 0)
     {
         // The metadata has been read previously.
         fileAction = action;
@@ -1562,12 +1566,12 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
 
             TRY
             {
-                // Do a GetMetaData RPC on the MD Server.
+                // Do a GetMetaData RPC on the MD Server. Let it throw exceptions
                 const avtDatabaseMetaData *newMetaData =
-                    GetMetaData(filename, timeState, !ANY_STATE, GET_NEW_MD);
+                    GetMetaDataEx(filename, timeState, !ANY_STATE, GET_NEW_MD);
 
                 const avtSIL *newSIL = 
-                    GetSIL(filename, timeState, !ANY_STATE, GET_NEW_MD);
+                    GetSILEx(filename, timeState, !ANY_STATE, GET_NEW_MD);
 
                 readFileFailed = false;
 
@@ -2483,14 +2487,66 @@ FileServerList::GetOpenFile() const
 // ****************************************************************************
 // Method: FileServerList::GetMetaData
 //
+// Purpose: 
+//   This method wraps GetMetaDataEx in a layer of exception handling so the
+//   method will return 0 when it can't get metadata instead of throwing an
+//   exception.
+//
+// Arguments:
+//   filename   : The name of the file for which we want metadata.
+//   timeState  : The desired time state
+//   anyStateOk : If true then metadata for any time state is okay.
+//   dontGetNew : Prevent VisIt from requesting the metadata if not found.
+//   key        :
+//   
+// Returns:    Metadata or 0 if we can't get it.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 13 10:00:52 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const avtDatabaseMetaData *
+FileServerList::GetMetaData(const QualifiedFilename &filename,
+    int timeState, bool anyStateOk, bool dontGetNew, string *key)
+{
+    const avtDatabaseMetaData *md = 0;
+    TRY
+    {
+        md = GetMetaDataEx(filename, timeState, anyStateOk, dontGetNew, key);
+    }
+    CATCH(VisItException)
+    {
+    }
+    ENDTRY
+
+    return md;
+}
+  
+// ****************************************************************************
+// Method: FileServerList::GetMetaDataEx
+//
 // Purpose: Get metadata for specified file and time state. First, tries to
 //          find it in the cache by either filename key only or filename+state
 //          key. If it can't find it in the cache, requests it from the MD
 //          server unless dontGetNew is set to true.
 //
+// Arguments:
+//   filename   : The name of the file for which we want metadata.
+//   timeState  : The desired time state
+//   anyStateOk : If true then metadata for any time state is okay.
+//   dontGetNew : Prevent VisIt from requesting the metadata if not found.
+//   key        :
+//   
 // Programmer: Mark C. Miller (totally re-wrote)
 // Creation:   July 25, 2006 
 //
+// Note: IF YOU CALL THIS METHOD THEN YOU MUST CATCH GetMetaDataException!
+//   
 // Modifications:
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Send flags for creation of MeshQuality and TimeDerivative expressions
@@ -2504,10 +2560,11 @@ FileServerList::GetOpenFile() const
 //   Mark C. Miller, Tue Oct 19 17:19:48 PDT 2010
 //   Wrapped attempt to print MD in a TRY/CATCHALL block just to be safe. 
 //   Added test for debug level prior to calling Print() method.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
-FileServerList::GetMetaData(const QualifiedFilename &filename,
+FileServerList::GetMetaDataEx(const QualifiedFilename &filename,
     int timeState, bool anyStateOk, bool dontGetNew, string *key)
 {
     // build set of keys for cached metadata
@@ -2668,20 +2725,68 @@ FileServerList::GetCreateVectorMagnitudeExpressions() const
     return createVectorMagnitudeExpressions;
 }
 
-
 // ****************************************************************************
 // Method: FileServerList::GetSIL
+//
+// Purpose: 
+//   Return a pointer for the SIL for a given filename.
+//
+// Arguments:
+//   filename   : The name of the file for which we want a sil.
+//   timeState  : The desired time state
+//   anyStateOk : If true then metadata for any time state is okay.
+//   dontGetNew : Prevent VisIt from requesting the metadata if not found.
+//   key        :
+//   
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 13 10:18:41 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const avtSIL *
+FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
+    bool anyStateOk, bool dontGetNew, string *key)
+{
+    const avtSIL *sil = 0;
+
+    TRY
+    {
+        sil = GetSILEx(filename, timeState, anyStateOk, dontGetNew, key);
+    }
+    CATCH(VisItException)
+    {
+    }
+    ENDTRY
+
+    return sil;
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetSILEx
 //
 // Purpose: 
 //   Returns a pointer to a SIL for the given filename.
 //
 // Arguments:
 //   filename : The filename for which we will try and read a SIL.
+//   timeState  : The desired time state
+//   anyStateOk : If true then metadata for any time state is okay.
+//   dontGetNew : Prevent VisIt from requesting the metadata if not found.
+//   key        :
 //
 // Returns:    A pointer to a the SIL or NULL if the filename is bad.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 5 09:53:57 PDT 2001
+//
+// Note: IF YOU CALL THIS METHOD, YOU MUST CATCH VisItException.
 //
 // Modifications:
 //   Eric Brugger, Thu Nov 29 12:02:21 PST 2001
@@ -2695,14 +2800,18 @@ FileServerList::GetCreateVectorMagnitudeExpressions() const
 //
 //   Mark C. Miller, Tue Oct 19 17:19:48 PDT 2010
 //   Wrapped attempt to print SIL in a TRY/CATCHALL block as we discovered
-//   a case where avtSIL would through an exception causing GUI to die.
+//   a case where avtSIL would throw an exception causing GUI to die.
 //
 //   Mark C. Miller, Tue Oct 19 20:23:27 PDT 2010
 //   Added test for debug level before calling Print() method for SIL.
+//
+//   Brad Whitlock, Mon Dec 13 10:12:10 PST 2010
+//   Added checks for metadata==NULL.
+//
 // ****************************************************************************
 
 const avtSIL *
-FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
+FileServerList::GetSILEx(const QualifiedFilename &filename, int timeState,
     bool anyStateOk, bool dontGetNew, string *key)
 {
     // build set of keys for cached SIL
@@ -2756,10 +2865,15 @@ FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
 
             // decide on the right key
             string useKey = mdKeys[0]; // non-state-qualified key
-            if (treatAllDBsAsTimeVarying ||
-                GetMetaData(filename, timeState, ANY_STATE, !GET_NEW_MD, 0)->
-                    GetMustRepopulateOnStateChange())
+            if (treatAllDBsAsTimeVarying)
                 useKey = mdKeys[1];    // state-qualified key
+            else
+            {
+                const avtDatabaseMetaData *md = 
+                    GetMetaData(filename, timeState, ANY_STATE, !GET_NEW_MD, 0);
+                if(md != 0 && md->GetMustRepopulateOnStateChange())
+                    useKey = mdKeys[1];    // state-qualified key
+            }
 
             // cache it. Note MRU handles deletion
             SILData[useKey] = newSIL;
