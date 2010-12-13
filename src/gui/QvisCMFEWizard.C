@@ -1216,6 +1216,9 @@ QvisCMFEWizard::UpdateTargetMesh(void)
 //   Cyrus Harrison, Mon Aug 30 11:59:25 PDT 2010
 //   Simplify wizard & add ability to open new databases.
 //
+//   Brad Whitlock, Mon Dec 13 10:46:08 PST 2010
+//   Check for metadata==NULL.
+//
 // ****************************************************************************
 
 Expression::ExprType
@@ -1241,16 +1244,18 @@ QvisCMFEWizard::GetVarType(const std::string &str)
                                  GetStateForSource(filename),
                                 !FileServerList::ANY_STATE,
                                  FileServerList::GET_NEW_MD);
-    avtVarType vt = AVT_UNKNOWN_TYPE;
-    TRY
+    avtVarType vt = AVT_SCALAR_VAR;
+    if(md != 0)
     {
-        vt = md->DetermineVarType(str, true);
+        TRY
+        {
+            vt = md->DetermineVarType(str, true);
+        }
+        CATCH (VisItException)
+        {
+        }
+        ENDTRY
     }
-    CATCH (VisItException)
-    {
-        vt = AVT_SCALAR_VAR;
-    }
-    ENDTRY
 
     return avtVarType_To_ExprType(vt);
 }
@@ -1269,6 +1274,9 @@ QvisCMFEWizard::GetVarType(const std::string &str)
 // Modifications:
 //   Cyrus Harrison, Mon Aug 30 11:59:25 PDT 2010
 //   Simplify wizard & add ability to open new databases.
+//
+//   Brad Whitlock, Mon Dec 13 10:48:26 PST 2010
+//   Check for NULL metadata.
 //
 // ****************************************************************************
 
@@ -1296,10 +1304,10 @@ QvisCMFEWizard::GetMeshForTargetDatabase(void)
                                  GetStateForSource(filename),
                                 !FileServerList::ANY_STATE,
                                  FileServerList::GET_NEW_MD);
-    int nMeshes = md->GetNumMeshes();
-    if (nMeshes != 1)
-        return "";
-    return md->GetMeshes(0).name;
+    std::string mesh;
+    if(md != 0 && md->GetNumMeshes() == 1)
+        mesh = md->GetMeshes(0).name;
+    return mesh;
 }
 
 

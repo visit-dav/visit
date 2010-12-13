@@ -29,6 +29,11 @@
 #   "common/Exceptions/VisWindow" no longer exists, removed it from the python
 #   module build.
 #
+#   Brad Whitlock, Mon Dec 13 11:02:58 PST 2010
+#   I changed the build so it works again. Unfortunately, it won't work with
+#   plugins anymore since we link plugins against dependent libs now. This
+#   module was always kind of a hack anyway.
+#
 ###############################################################################
 
 from distutils.core import setup, Extension
@@ -51,7 +56,7 @@ def RemoveFileFromList(filelist, rm):
     return ret
 
 # Get all of the VisIt sources that we need to build the VisIt module.
-srcdirs = ("../../common/comm",
+srcdirs = ["../../common/comm",
 "../../common/state",
 "../../common/misc",
 "../../common/utility",
@@ -67,7 +72,7 @@ srcdirs = ("../../common/comm",
 "../../viewer/proxy",
 ".",
 "../visitpy",
-"../common")
+"../common"]
 visitmod_sources = []
 for d in srcdirs:
    visitmod_sources = visitmod_sources + GetCXXFilesInDirectory(d)
@@ -102,7 +107,7 @@ ver = string.replace(lines[0], "\n", "")
 visitmod = Extension("visitmodule",
     language="c++",
     #extra_compile_args="-Wno-deprecated",
-    include_dirs=['.', "../visitpy", "../common", "../../include", "../../include/visit"],
+    include_dirs=srcdirs + ["../../include"],
     sources = visitmod_sources)
 setup(name = "visit",
       version = ver,

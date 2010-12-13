@@ -1185,6 +1185,9 @@ QvisTimeSliderControlWidget::sliderChange(int val)
 //   Changed set of time field text to use SetTimeFieldText to make sure
 //   long time values remain visible.
 //
+//   Brad Whitlock, Mon Dec 13 10:39:28 PST 2010
+//   Return early if we get NULL metadata.
+//
 // ****************************************************************************
 
 void
@@ -1200,6 +1203,11 @@ QvisTimeSliderControlWidget::processTimeText()
                                         GetStateForSource(fileServer->GetOpenFile()),
                                         FileServerList::ANY_STATE,
                                        !FileServerList::GET_NEW_MD);
+    if(md == 0)
+    {
+        SetTimeFieldText("");
+        return;
+    }
 
     int  index = 0;
     bool okay = false;

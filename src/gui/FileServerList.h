@@ -213,6 +213,9 @@ class MessageAttributes;
 //   Jeremy Meredith, Tue Mar 30 15:54:17 EDT 2010
 //   Add way for GUI to pre-set a plugin we intend to use for a file.
 //
+//   Brad Whitlock, Mon Dec 13 10:37:33 PST 2010
+//   I added "Ex" versions of GetMetaData and GetSIL.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -301,8 +304,6 @@ public:
     const avtDatabaseMetaData *GetMetaData(const QualifiedFilename &filename,
                                            int timeState, bool anyStateOk,
                                            bool dontGetNew, string *key = 0);
-    const avtDatabaseMetaData *GetCachedMetaData(const QualifiedFilename &filename,
-                                                 int timeState) const;
     char GetSeparator();
     char GetSeparator(const string &host);
     string GetSeparatorString();
@@ -351,6 +352,13 @@ public:
 
 private:
     virtual void SelectAll();
+    const avtSIL *GetSILEx(const QualifiedFilename &f,
+                         int timeState, bool anyStateOk,
+                         bool dontGetNew, string *key = 0);
+    const avtDatabaseMetaData *GetMetaDataEx(const QualifiedFilename &filename,
+                                           int timeState, bool anyStateOk,
+                                           bool dontGetNew, string *key = 0);
+
     void StartServer(const string &host);
     void CloseServer(const string &host);
     void OpenAndGetMetaData(const QualifiedFilename &filename, int timeState,
