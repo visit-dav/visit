@@ -2653,11 +2653,16 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Cache domain2proc.
 //
+//    Hank Childs, Tue Dec 14 10:23:35 PST 2010
+//    Fix indexing issue that caused 2D data sets to have Z positions that
+//    used uninitialized memory (and thus be rendered outside the clipping
+//    planes).
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
-avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
-                                            vector<vtkDataSet*> meshes)
+avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
+                                             vector<vtkDataSet*> meshes)
 {
     if (domain2proc.size() == 0)
     {
@@ -2716,7 +2721,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
                 int   num_off = (bi->oldnextents[0]-id);
                 newx[i] = oldx[0] - last_dist*num_off;
             }
-            else if (id >= bi->oldnextents[1])
+            else if (id > bi->oldnextents[1])
             {
                 float last_dist = (oldx[bi->oldndims[0]-1] - 
                                    oldx[bi->oldndims[0]-2]);
@@ -2741,7 +2746,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
                 int   num_off = (bi->oldnextents[2]-id);
                 newy[i] = oldy[0] - last_dist*num_off;
             }
-            else if (id >= bi->oldnextents[3])
+            else if (id > bi->oldnextents[3])
             {
                 float last_dist = (oldy[bi->oldndims[1]-1] - 
                                    oldy[bi->oldndims[1]-2]);
@@ -2766,7 +2771,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
                 int   num_off = (bi->oldnextents[4]-id);
                 newz[i] = oldz[0] - last_dist*num_off;
             }
-            else if (id >= bi->oldnextents[5])
+            else if (id > bi->oldnextents[5])
             {
                 float last_dist = (oldz[bi->oldndims[2]-1] - 
                                    oldz[bi->oldndims[2]-2]);
