@@ -102,7 +102,7 @@ aztec=true
 alastor=false
 xchem=false
 euclid=true
-ellipse=false
+ellipse=true
 
 dist=undefined
 
@@ -496,7 +496,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/home/brugger/visit/cmake/2.8.0/linux-i686-gcc-3.4.6/bin/cmake . -DCMAKE_BUILD_TYPE=Release >> ../../buildlog 2>&1
+/home/brugger/visit/cmake/2.8.0/linux-rhel4-ia32_gcc-3.4/bin/cmake . -DCMAKE_BUILD_TYPE=Release >> ../../buildlog 2>&1
 make -j 2 >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
