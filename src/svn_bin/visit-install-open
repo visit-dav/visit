@@ -58,11 +58,10 @@ esac
 # Parse the execute line, providing default values for error checking.
 #
 hoth=true
-up=true
 aztec=true
 xchem=false
 euclid=true
-ellipse=false
+ellipse=true
 
 ver=undefined
 
@@ -76,7 +75,6 @@ do
    case $1 in
       -none)
          hoth=false
-         up=false
          aztec=false
          xchem=false
          euclid=false
@@ -89,14 +87,6 @@ do
          ;;
       +hoth)
          hoth=true
-         shift
-         ;;
-      -up)
-         up=false
-         shift
-         ;;
-      +up)
-         up=true
          shift
          ;;
       -aztec)
@@ -192,59 +182,6 @@ then
       scp visit-install hoth:
       scp hoth hoth:hoth_install
       ssh hoth "chmod 750 hoth_install;./hoth_install"
-   fi
-fi
-
-#
-# Install on up.
-#
-rm -f up
-cat <<EOF > up
-#!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver ibm-aix-pwr /usr/gapps/visit > installlog 2>&1
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver ibm-aix-pwr64 /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                            > resultlog 2>&1
-echo "        install of visit on up"              >> resultlog 2>&1
-echo "       ------------------------"             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "            32 bit version"                  >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/ibm-aix-pwr/bin       >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/ibm-aix-pwr/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/ibm-aix-pwr\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "            64 bit version"                  >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/ibm-aix-pwr64/bin     >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/ibm-aix-pwr64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/ibm-aix-pwr64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): up" $emailName < resultlog
-EOF
-
-if [ $up = true ]
-then
-   if [ $test = no ]
-   then
-      scp up:/p/gup1/$user/up32/visitbuild/visit$ver2.ibm-aix-pwr.tar.gz .
-      scp up:/p/gup1/$user/up64/visitbuild/visit$ver2.ibm-aix-pwr64.tar.gz .
-      scp visit$ver2.ibm-aix-pwr.tar.gz aztec:visit$ver2.ibm-aix-pwr.tar.gz
-      scp visit$ver2.ibm-aix-pwr64.tar.gz aztec:visit$ver2.ibm-aix-pwr64.tar.gz
-      scp visit-install aztec:
-      scp up aztec:up_install
-      ssh aztec "chmod 750 up_install;./up_install"
    fi
 fi
 
@@ -362,7 +299,7 @@ fi
 rm -f ellipse
 cat <<EOF > ellipse
 #!/bin/sh
-./visit-install -private -c llnl_open -b bdivp $ver linux-ellipse visit > installlog 2>&1
+./visit-install -private -c llnl_open -b bdivp $ver linux-rhel4 visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on ellipse"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
@@ -384,8 +321,8 @@ if [ $ellipse = true ]
 then
    if [ $test = no ]
    then
-      scp ellipse.uchicago.edu:tmp/$user/ellipse/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-ellipse.tar.gz
-      scp visit$ver2.linux-ellipse.tar.gz ellipse.uchicago.edu:
+      scp ellipse.uchicago.edu:tmp/$user/ellipse/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-rhel4.tar.gz
+      scp visit$ver2.linux-rhel4.tar.gz ellipse.uchicago.edu:
       scp visit-install ellipse.uchicago.edu:
       scp ellipse ellipse.uchicago.edu:ellipse_install
       ssh ellipse.uchicago.edu "chmod 750 ellipse_install;./ellipse_install"
@@ -397,5 +334,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth up aztec xchem euclid ellipse
+   rm -f hoth aztec xchem euclid ellipse
 fi
