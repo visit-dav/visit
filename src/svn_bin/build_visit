@@ -996,6 +996,9 @@
 #     Eric Brugger, Fri Dec 10 16:23:51 PST 2010
 #     I set the VisIt version number to 2.1.2.
 #
+#     Cyrus Harrison, Tue Dec 14 13:46:33 PST 2010
+#     Added patch allow PIL's setup to search for libs in /usr/lib64/.
+#
 # *****************************************************************************
 
 
@@ -4348,6 +4351,39 @@ function build_python
     return 0
 }
 
+
+# *************************************************************************** #
+# The PIL module's detection logic doesn't include /usr/lib64/                #
+# On some systems zlib & libjpeg only exist in /usr/lib64, so we patch the    #
+# module build script to add /usr/lib64.
+# *************************************************************************** #
+function apply_python_pil_patch
+{
+   info "Patching PIL: Add /usr/lib64/ to lib search path."
+   patch -p0 << \EOF
+diff -c Imaging-1.1.6.orig/setup.py Imaging-1.1.6/setup.py
+*** Imaging-1.1.6.orig/setup.py Sun Dec  3 03:37:29 2006
+--- Imaging-1.1.6/setup.py      Tue Dec 14 13:39:39 2010
+***************
+*** 196,201 ****
+--- 196,204 ----
+          add_directory(library_dirs, "/usr/local/lib")
+          add_directory(include_dirs, "/usr/local/include")
+
++         add_directory(library_dirs, "/usr/lib64")
++         add_directory(include_dirs, "/usr/include")
++
+          add_directory(library_dirs, "/usr/lib")
+          add_directory(include_dirs, "/usr/include")
+EOF
+   if [[ $? != 0 ]] ; then
+      warn "Python PIL patch adding /usr/lib64/ to lib search path failed."
+      return 1
+   fi
+
+   return 0
+}
+
 # *************************************************************************** #
 #                            Function 7.1, build_pil                          #
 # *************************************************************************** #
@@ -4368,6 +4404,12 @@ function build_pil
             warn "Could not extract ${PIL_FILE}"
             return 1
         fi
+    fi
+
+    # apply PIL patches
+    apply_python_pil_patch
+    if [[ $? != 0 ]] ; then
+            warn "Patch failed, but continuing."
     fi
 
     PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
