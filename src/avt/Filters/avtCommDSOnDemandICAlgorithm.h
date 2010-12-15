@@ -37,17 +37,17 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtCommOnDemandICAlgorithm.h                 //
+//                              avtCommDSOnDemandICAlgorithm.h                 //
 // ************************************************************************* //
 
-#ifndef AVT_COMM_ON_DEMAND_IC_ALGORITHM_H
-#define AVT_COMM_ON_DEMAND_IC_ALGORITHM_H
+#ifndef AVT_COMM_DS_ON_DEMAND_IC_ALGORITHM_H
+#define AVT_COMM_DS_ON_DEMAND_IC_ALGORITHM_H
 
 #ifdef PARALLEL
 #include <avtParICAlgorithm.h>
 
 // ****************************************************************************
-// Class: avtCommOnDemandICAlgorithm
+// Class: avtCommDSOnDemandICAlgorithm
 //
 // Purpose: Communicate domains on demand algorithm.
 //   
@@ -57,19 +57,21 @@
 //
 // ****************************************************************************
 
-class avtCommOnDemandICAlgorithm : public avtParICAlgorithm
+class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
 {
   public:
-    avtCommOnDemandICAlgorithm(avtPICSFilter *picsFilter);
-    virtual ~avtCommOnDemandICAlgorithm();
+    avtCommDSOnDemandICAlgorithm(avtPICSFilter *picsFilter, int cacheSize);
+    virtual ~avtCommDSOnDemandICAlgorithm();
 
-    virtual const char*       AlgoName() const {return "CommOnDemand";}
+    virtual const char*       AlgoName() const {return "CommDSOnDemand";}
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     virtual void              ResetIntegralCurvesForContinueExecute();
     virtual bool              CheckNextTimeStepNeeded(int curTimeSlice);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics);
 
   protected:
+    vtkDataSet               *GetDataset(const DomainType &dom);
+
     virtual void              RunAlgorithm();
     virtual void              HandleOOBIC(avtIntegralCurve *s);
     virtual void              RequestDataset(DomainType &d);
@@ -77,6 +79,12 @@ class avtCommOnDemandICAlgorithm : public avtParICAlgorithm
     
     std::list<avtIntegralCurve *> activeICs, oobICs;
     std::set<int>             pendingDomRequests;
+
+    //Communicated domain cache.
+    virtual vtkDataSet       *GetDSFromDomainCache(const DomainType &dom);
+    virtual void              AddDSToDomainCache(const DomainType &dom, vtkDataSet *ds);
+    std::list<std::pair<DomainType, vtkDataSet *> > domainCache;
+    int domainCacheSizeLimit;
 };
 
 

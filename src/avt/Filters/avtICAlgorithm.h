@@ -135,6 +135,7 @@ class avtICAlgorithm
     virtual bool              PointInDomain(avtVector &pt, DomainType &dom)
     { return picsFilter->avtPICSFilter::PointInDomain(pt, dom); }
     virtual void              AdvectParticle(avtIntegralCurve *ic);
+    virtual void              AdvectParticle(avtIntegralCurve *ic, vtkDataSet *ds);
     vtkDataSet               *GetDomain(avtIntegralCurve *ic);
     vtkDataSet               *GetDomain(const DomainType &dom,
                                         double X=0, double Y=0, double Z=0);

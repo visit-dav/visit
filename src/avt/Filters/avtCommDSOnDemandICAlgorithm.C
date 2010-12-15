@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtCommOnDemandICAlgorithm.C                 //
+//                              avtCommDSOnDemandICAlgorithm.C                 //
 // ************************************************************************* //
 
-#include <avtCommOnDemandICAlgorithm.h>
+#include <avtCommDSOnDemandICAlgorithm.h>
 #include <TimingsManager.h>
 
 #ifdef PARALLEL
@@ -50,17 +50,57 @@ using namespace std;
 static const int DONE = 0;
 static const int DATASET_REQUEST = 1;
 
-avtCommOnDemandICAlgorithm::avtCommOnDemandICAlgorithm(avtPICSFilter *picsFilter)
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::avtCommDSOnDemandICAlgorithm
+//
+// Purpose: ctor.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
+avtCommDSOnDemandICAlgorithm::avtCommDSOnDemandICAlgorithm(avtPICSFilter *picsFilter,
+                                                       int cacheSize)
     : avtParICAlgorithm(picsFilter)
 {
+    domainCacheSizeLimit = cacheSize;
 }
 
-avtCommOnDemandICAlgorithm::~avtCommOnDemandICAlgorithm()
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::~avtCommDSOnDemandICAlgorithm
+//
+// Purpose: dtor.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
+avtCommDSOnDemandICAlgorithm::~avtCommDSOnDemandICAlgorithm()
 {
+    list<pair<DomainType, vtkDataSet *> >::iterator it;
+
+    // Cleanup cache memory.
+    for (it = domainCache.begin(); it != domainCache.end(); it++)
+        (*it).second->Delete();
+    
+    domainCache.resize(0);
 }
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::Initialize
+//
+// Purpose: Initialize things.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
 
 void
-avtCommOnDemandICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
+avtCommDSOnDemandICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
 {
     int numRecvs = nProcs-1;
     if (numRecvs > 64)
@@ -71,8 +111,18 @@ avtCommOnDemandICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
     AddIntegralCurves(seedPts);
 }
 
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::AddIntegralCurves
+//
+// Purpose: Assign ICs.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
 void
-avtCommOnDemandICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
+avtCommDSOnDemandICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
 {
     int nSeeds = ics.size();
     int i0 = 0, i1 = nSeeds;
@@ -122,10 +172,20 @@ avtCommOnDemandICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
 }
 
 
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::RunAlgorithm
+//
+// Purpose: Run the algorithm.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
 void
-avtCommOnDemandICAlgorithm::RunAlgorithm()
+avtCommDSOnDemandICAlgorithm::RunAlgorithm()
 {
-    debug1<<"avtCommOnDemandICAlgorithm::RunAlgorithm()\n";
+    debug1<<"avtCommDSOnDemandICAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
 
     //Sort the streamlines and load the first domain.
@@ -147,9 +207,10 @@ avtCommOnDemandICAlgorithm::RunAlgorithm()
             avtIntegralCurve *s = activeICs.front();
             activeICs.pop_front();
 
-            if (picsFilter->dataSets[s->domain.domain] != NULL)
+            vtkDataSet *ds = GetDataset(s->domain);
+            if (ds != NULL)
             {
-                AdvectParticle(s);
+                AdvectParticle(s, ds);
                 if (s->status != avtIntegralCurve::STATUS_OK)
                 {
                     terminatedICs.push_back(s);
@@ -185,23 +246,45 @@ avtCommOnDemandICAlgorithm::RunAlgorithm()
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
 
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::HandleOOBIC
+//
+// Purpose: Handle ICs that exit a domain.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
 void
-avtCommOnDemandICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
+avtCommDSOnDemandICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 {
     //See if we already have the data.
-    if (picsFilter->dataSets[s->domain.domain] != NULL)
+    if (GetDataset(s->domain) != NULL)
     {
         activeICs.push_back(s);
         return;
     }
 
-    //Otherwise, request it, and put it in the OOB list.
+    //Otherwise, request the DS, and put it in the OOB list.
     RequestDataset(s->domain);
     oobICs.push_back(s);
 }
 
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::RequestDataset
+//
+// Purpose: Post a request to the owner of the data.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
 void
-avtCommOnDemandICAlgorithm::RequestDataset(DomainType &d)
+avtCommDSOnDemandICAlgorithm::RequestDataset(DomainType &d)
 {
     //See if request already made.
     set<int>::iterator it = pendingDomRequests.find(d.domain);
@@ -218,8 +301,19 @@ avtCommOnDemandICAlgorithm::RequestDataset(DomainType &d)
     pendingDomRequests.insert(d.domain);
 }
 
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::HandleMessages
+//
+// Purpose: Process incoming messages.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
 void
-avtCommOnDemandICAlgorithm::HandleMessages(int &numDone)
+avtCommDSOnDemandICAlgorithm::HandleMessages(int &numDone)
 {
     vector<vector<int> > msgs;
     if (RecvMsg(msgs))
@@ -235,12 +329,20 @@ avtCommOnDemandICAlgorithm::HandleMessages(int &numDone)
             else if (msgType == DATASET_REQUEST)
             {
                 int dom = msgs[i][2];
-                vtkDataSet *d = picsFilter->dataSets[dom];
-                vector<vtkDataSet *> ds;
-                vector<DomainType> doms;
-                doms.push_back(DomainType(dom, 0));
-                ds.push_back(d);
-                SendDS(sendRank, ds, doms);
+                vtkDataSet *d = GetDomain(dom);
+                if (d)
+                {
+                    vector<vtkDataSet *> ds;
+                    vector<DomainType> doms;
+                    doms.push_back(DomainType(dom, 0));
+                    ds.push_back(d);
+                    SendDS(sendRank, ds, doms);
+                }
+                else
+                {
+                    //Why am I being asked for a domain I don't own?
+                    EXCEPTION0(ImproperUseException);
+                }
             }
         }
     }
@@ -252,11 +354,10 @@ avtCommOnDemandICAlgorithm::HandleMessages(int &numDone)
     {
         for (int i = 0; i < ds.size(); i++)
         {
-            debug2<<"RECV a DS "<<doms[i]<<endl;
-            
             vtkDataSet *d = ds[i];
             DomainType dom = doms[i];
-            picsFilter->dataSets[dom.domain] = d;
+            AddDSToDomainCache(dom, d);
+            d->Delete();
 
             set<int>::iterator it = pendingDomRequests.find(dom.domain);
             pendingDomRequests.erase(it);
@@ -269,7 +370,7 @@ avtCommOnDemandICAlgorithm::HandleMessages(int &numDone)
         {
             avtIntegralCurve *ic = oobICs.front();
             oobICs.pop_front();
-            if (picsFilter->dataSets[ic->domain.domain] != NULL)
+            if (GetDataset(ic->domain))
             {
                 debug5<<"Activate "<<ic->id<<" dom= "<<ic->domain<<endl;
                 activeICs.push_back(ic);
@@ -282,12 +383,20 @@ avtCommOnDemandICAlgorithm::HandleMessages(int &numDone)
     }
 }
 
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::ResetIntegralCurvesForContinueExecute
+//
+// Purpose: Reset ICs.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
 void
-avtCommOnDemandICAlgorithm::ResetIntegralCurvesForContinueExecute()
+avtCommDSOnDemandICAlgorithm::ResetIntegralCurvesForContinueExecute()
 {
-    EXCEPTION0(ImproperUseException);
-    
-    /*
     while (! terminatedICs.empty())
     {
         avtIntegralCurve *s = terminatedICs.front();
@@ -296,15 +405,21 @@ avtCommOnDemandICAlgorithm::ResetIntegralCurvesForContinueExecute()
         activeICs.push_back(s);
         s->status = avtIntegralCurve::STATUS_OK;
     }
-    */
 }
 
-bool
-avtCommOnDemandICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
-{
-    EXCEPTION0(ImproperUseException);
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::CheckNextTimeStepNeeded
+//
+// Purpose: See if next time slice is needed.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
 
-    /*
+bool
+avtCommDSOnDemandICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
+{
     list<avtIntegralCurve *>::const_iterator it;
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
@@ -313,10 +428,98 @@ avtCommOnDemandICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
             return true;
         }
     }
-    */
     
     return false;
 
+}
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::GetDataset
+//
+// Purpose: Get dataset, if possible. Could come from static assignment, or cache.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtCommDSOnDemandICAlgorithm::GetDataset(const DomainType &dom)
+{
+    //See if the PICS filter has it.
+    vtkDataSet *ds = avtICAlgorithm::GetDomain(dom);
+    if (ds)
+        return ds;
+
+    //See if the cache has it.
+    ds = GetDSFromDomainCache(dom);
+    if (ds)
+        return ds;
+
+    return NULL;
+}
+
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::GetDSFromDomainCache
+//
+// Purpose: Get dataset from cache.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtCommDSOnDemandICAlgorithm::GetDSFromDomainCache(const DomainType &dom)
+{
+    list<pair<DomainType, vtkDataSet *> >::iterator it;
+
+    for (it = domainCache.begin(); it != domainCache.end(); it++)
+    {
+        if (it->first == dom)
+        {
+            vtkDataSet *ds = it->second;
+            
+            //Move it to the front of the list.
+            pair<DomainType, vtkDataSet *> entry = *it;
+            domainCache.erase(it);
+            domainCache.push_front(entry);
+            
+            return ds;
+        }
+    }
+    return NULL;
+}
+
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::AddDSToDomainCache
+//
+// Purpose: Add new datset to cache.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 15, 2010
+//
+// ****************************************************************************
+
+void
+avtCommDSOnDemandICAlgorithm::AddDSToDomainCache(const DomainType &dom, vtkDataSet *ds)
+{
+    pair<DomainType, vtkDataSet *> entry(dom, ds);
+
+    domainCache.push_front(entry);
+    ds->Register(NULL);
+    
+    // Purge cache, as needed.
+    if (domainCache.size() > domainCacheSizeLimit)
+    {
+        entry = domainCache.back();
+        
+        entry.second->Delete();
+        domainCache.pop_back();
+        DomPurgeCnt.value++;
+    }
 }
 
 #endif
