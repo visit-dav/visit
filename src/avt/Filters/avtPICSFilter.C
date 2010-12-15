@@ -51,7 +51,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtPICSFilter.h>
 #include "avtSerialICAlgorithm.h"
 #include "avtParDomICAlgorithm.h"
-#include "avtCommOnDemandICAlgorithm.h"
+#include "avtCommDSOnDemandICAlgorithm.h"
 #include "avtMasterSlaveICAlgorithm.h"
 #include <math.h>
 #include <visitstream.h>
@@ -824,7 +824,7 @@ avtPICSFilter::Execute(void)
     else if (method == STREAMLINE_PARALLEL_OVER_DOMAINS)
         icAlgo = new avtParDomICAlgorithm(this, maxCount);
     else if (method == STREAMLINE_PARALLEL_COMM_DOMAINS)
-        icAlgo = new avtCommOnDemandICAlgorithm(this);
+        icAlgo = new avtCommDSOnDemandICAlgorithm(this, cacheQLen);
     else if (method == STREAMLINE_PARALLEL_MASTER_SLAVE)
     {
         icAlgo = avtMasterSlaveICAlgorithm::Create(this,
@@ -1822,23 +1822,18 @@ avtPICSFilter::IntegrateDomain(avtIntegralCurve *ic,
                                int maxSteps )
 {
     int t0 = visitTimer->StartTimer();
-    
-    avtDataAttributes &a = GetInput()->GetInfo().GetAttributes();
-
     if (DebugStream::Level4())
         debug4<<"avtPICSFilter::IntegrateDom(dom= "<<ic->domain<<")"<<endl;
 
-    if( ic->status == avtIntegralCurve::STATUS_OK )
+    if (ic->status == avtIntegralCurve::STATUS_OK)
     {
-        avtIVPField* field = GetFieldForDomain( ic->domain, ds );
-
+        avtIVPField* field = GetFieldForDomain(ic->domain, ds);
         ic->Advance( field );
-        
         delete field;
     }
 
     //Particle exited this domain.
-    if( ic->status == avtIntegralCurve::STATUS_OK )
+    if (ic->status == avtIntegralCurve::STATUS_OK)
     {
         DomainType oldDomain = ic->domain;
         SetDomain(ic);
@@ -1864,7 +1859,7 @@ avtPICSFilter::IntegrateDomain(avtIntegralCurve *ic,
 
 
 // ****************************************************************************
-//  Method: avtPICSFilter::IntegrateCurves
+//  Method: avtPICSFilter::AdvectParticle
 //
 //  Purpose:
 //      The toplevel routine that actually integrates a streamline.
@@ -1902,56 +1897,36 @@ avtPICSFilter::IntegrateDomain(avtIntegralCurve *ic,
 // ****************************************************************************
 
 void
-avtPICSFilter::AdvectParticle( avtIntegralCurve *ic,
-                               int maxSteps )
+avtPICSFilter::AdvectParticle(avtIntegralCurve *ic, int maxSteps)
 {
-    if( ic->status != avtIntegralCurve::STATUS_OK )
-    {
-        debug4 << "avtPICSFilter::AdvectParticle(): curve status is " << ic->status
-               << ", returning\n";
+    if (ic->status != avtIntegralCurve::STATUS_OK)
         return;
-    }
 
-    int t1 = visitTimer->StartTimer();
-    
     //Get the required domain.
     avtVector pt;
-    ic->CurrentLocation( pt );
+    ic->CurrentLocation(pt);
 
-    vtkDataSet *ds = GetDomain( ic->domain, pt.x, pt.y, pt.z );
-
-    debug4 << "avtPICSFilter::AdvectParticle(" << pt << " " << ic->domain << ")\n";
-
-    if( ds == NULL )
-    {
-        // no matching domain? then the curve is done
-        ic->status = avtIntegralCurve::STATUS_FINISHED;
-    }
-    else
-    {
-        double extents[6] = { 0., 0., 0., 0., 0., 0. };
-        intervalTree->GetElementExtents( ic->domain.domain, extents );
-
-        IntegrateDomain(ic, ds, extents, maxSteps);
-
-        // IC exited this domain.
-        if( ic->status == avtIntegralCurve::STATUS_OK )
-        {
-            if( DebugStream::Level5() )
-                debug5<<"OOB: call set domain\n";
-            SetDomain(ic);
-        }
-        else
-        {
-            if (DebugStream::Level5()) debug5<<"Terminate!\n";
-        }
-    }
+    vtkDataSet *ds = GetDomain(ic->domain, pt.x, pt.y, pt.z);
     
-    if(DebugStream::Level4())
-        debug4 << "AdvectParticle DONE: status = "<<ic->status<<" doms= "<<ic->seedPtDomainList<<endl;
-
-    visitTimer->StopTimer(t1, "AdvectParticle");
+    if (ds == NULL) //No domain? curve is done.
+        ic->status = avtIntegralCurve::STATUS_FINISHED;
+    else
+        AdvectParticle(ic, ds, maxSteps);
 }
+
+void
+avtPICSFilter::AdvectParticle(avtIntegralCurve *ic, vtkDataSet *ds, int maxSteps)
+{
+    double extents[6] = { 0., 0., 0., 0., 0., 0. };
+    intervalTree->GetElementExtents( ic->domain.domain, extents );
+
+    IntegrateDomain(ic, ds, extents, maxSteps);
+
+    // IC exited this domain.
+    if (ic->status == avtIntegralCurve::STATUS_OK)
+        SetDomain(ic);
+}
+
 
 // ****************************************************************************
 //  Method: avtPICSFilter::GetLengthScale

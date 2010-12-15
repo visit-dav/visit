@@ -890,7 +890,6 @@ avtParICAlgorithm::RecvDS(std::vector<vtkDataSet *> &ds, std::vector<DomainType>
             vtkDataSet *d = reader->GetOutput();
             d->Register(NULL);
             reader->Delete();
-            
             ds.push_back(d);
             delete buffers[i];
         }

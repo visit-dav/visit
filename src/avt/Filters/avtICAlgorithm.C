@@ -195,6 +195,17 @@ avtICAlgorithm::AdvectParticle(avtIntegralCurve *s)
     IntegrateCnt.value++;
 }
 
+
+void
+avtICAlgorithm::AdvectParticle(avtIntegralCurve *s, vtkDataSet *ds)
+{
+    int timerHandle = visitTimer->StartTimer();
+
+    picsFilter->AdvectParticle(s, ds);
+    IntegrateTime.value += visitTimer->StopTimer(timerHandle, "AdvectParticle()");
+    IntegrateCnt.value++;
+}
+
 // ****************************************************************************
 //  Method: avtICAlgorithm::Initialize
 //

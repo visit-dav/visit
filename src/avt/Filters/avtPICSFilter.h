@@ -199,9 +199,7 @@ class AVTFILTERS_API avtPICSFilter :
 
     int numDomains, numTimeSteps, cacheQLen;
     std::vector<int> domainToRank;
-  public:
     std::vector<vtkDataSet*>dataSets;
-  protected:
     std::map<DomainType, avtCellLocator_p> domainToCellLocatorMap;
 
     std::vector<double> pointList;
@@ -228,6 +226,7 @@ class AVTFILTERS_API avtPICSFilter :
     virtual bool              CheckOnDemandViability(void);
 
     void                      AdvectParticle(avtIntegralCurve *ic, int maxSteps=-1);
+    void                      AdvectParticle(avtIntegralCurve *ic, vtkDataSet *ds, int maxSteps=-1);
     void                      IntegrateDomain(avtIntegralCurve *ic, 
                                               vtkDataSet *ds,
                                               double *extents,
