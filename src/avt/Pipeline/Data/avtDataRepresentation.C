@@ -953,6 +953,10 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Hank Childs, Sun Jun  6 11:15:23 CDT 2010
 //    Account for NULL vtkPoints objects. 
 //
+//    Kathleen Bonnell, Tue Dec 14 12:31:40 PST 2010
+//    std::string doesn't like assignment to a NULL const char *, so don't
+//    assume array->GetName() doesn't return NULL.
+//
 // ****************************************************************************
 
 const char *
@@ -1018,7 +1022,9 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         for(int i = 0; i < nfield; i++)
         {
             vtkDataArray *arr = newDS->GetFieldData()->GetArray(i);
-            string cur_name = arr->GetName();
+            string cur_name("");
+            if (arr->GetName() != NULL);
+                cur_name = arr->GetName();
             string dmp_name = cur_name;
             orig_names.push_back(cur_name);
             if( cur_name.find("avt") == 0 )
@@ -1034,7 +1040,9 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         for(int i = 0; i < npt; i++)
         {
             vtkDataArray *arr = newDS->GetPointData()->GetArray(i);
-            string cur_name = arr->GetName();
+            string cur_name(""); 
+            if (arr->GetName() != NULL)
+                cur_name = arr->GetName();
             string dmp_name = cur_name;
             orig_names.push_back(cur_name);
             if( cur_name.find("avt") == 0 )
@@ -1050,7 +1058,9 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         for(int i = 0; i < ncell; i++)
         {
             vtkDataArray *arr = newDS->GetCellData()->GetArray(i);
-            string cur_name = arr->GetName();
+            string cur_name(""); 
+            if (arr->GetName() != NULL)
+                cur_name = arr->GetName();
             string dmp_name = cur_name;
             orig_names.push_back(cur_name);
             if( cur_name.find("avt") == 0 )
