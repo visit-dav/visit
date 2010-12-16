@@ -76,6 +76,11 @@ PyConnectedComponentsAttributes_ToString(const ConnectedComponentsAttributes *at
     std::string str; 
     char tmpStr[1000]; 
 
+    if(atts->GetEnableGhostNeighborsOptimization())
+        SNPRINTF(tmpStr, 1000, "%sEnableGhostNeighborsOptimization = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sEnableGhostNeighborsOptimization = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -88,10 +93,36 @@ ConnectedComponentsAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+/*static*/ PyObject *
+ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization(PyObject *self, PyObject *args)
+{
+    ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the EnableGhostNeighborsOptimization in the object.
+    obj->data->SetEnableGhostNeighborsOptimization(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ConnectedComponentsAttributes_GetEnableGhostNeighborsOptimization(PyObject *self, PyObject *args)
+{
+    ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetEnableGhostNeighborsOptimization()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyConnectedComponentsAttributes_methods[CONNECTEDCOMPONENTSATTRIBUTES_NMETH] = {
     {"Notify", ConnectedComponentsAttributes_Notify, METH_VARARGS},
+    {"SetEnableGhostNeighborsOptimization", ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization, METH_VARARGS},
+    {"GetEnableGhostNeighborsOptimization", ConnectedComponentsAttributes_GetEnableGhostNeighborsOptimization, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -120,6 +151,8 @@ ConnectedComponentsAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyConnectedComponentsAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "EnableGhostNeighborsOptimization") == 0)
+        return ConnectedComponentsAttributes_GetEnableGhostNeighborsOptimization(self, NULL);
 
     return Py_FindMethod(PyConnectedComponentsAttributes_methods, self, name);
 }
@@ -134,6 +167,8 @@ PyConnectedComponentsAttributes_setattr(PyObject *self, char *name, PyObject *ar
     Py_INCREF(args);
     PyObject *obj = NULL;
 
+    if(strcmp(name, "EnableGhostNeighborsOptimization") == 0)
+        obj = ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

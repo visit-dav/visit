@@ -127,6 +127,11 @@ QvisConnectedComponentsWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
+    EnableGhostNeighborsOptimization = new QCheckBox(tr("Use Ghosts Zone Neighbors for connectivity between Domains"), central);
+    connect(EnableGhostNeighborsOptimization, SIGNAL(toggled(bool)),
+            this, SLOT(EnableGhostNeighborsOptimizationChanged(bool)));
+    mainLayout->addWidget(EnableGhostNeighborsOptimization, 0,0);
+
 }
 
 
@@ -161,6 +166,11 @@ QvisConnectedComponentsWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
+          case ConnectedComponentsAttributes::ID_EnableGhostNeighborsOptimization:
+            EnableGhostNeighborsOptimization->blockSignals(true);
+            EnableGhostNeighborsOptimization->setChecked(atts->GetEnableGhostNeighborsOptimization());
+            EnableGhostNeighborsOptimization->blockSignals(false);
+            break;
         }
     }
 }
@@ -190,5 +200,14 @@ QvisConnectedComponentsWindow::GetCurrentValues(int which_widget)
 //
 // Qt Slot functions
 //
+
+
+void
+QvisConnectedComponentsWindow::EnableGhostNeighborsOptimizationChanged(bool val)
+{
+    atts->SetEnableGhostNeighborsOptimization(val);
+    SetUpdate(false);
+    Apply();
+}
 
 

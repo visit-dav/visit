@@ -59,24 +59,27 @@ import llnl.visit.Plugin;
 
 public class ConnectedComponentsAttributes extends AttributeSubject implements Plugin
 {
-    private static int ConnectedComponentsAttributes_numAdditionalAtts = 0;
+    private static int ConnectedComponentsAttributes_numAdditionalAtts = 1;
 
     public ConnectedComponentsAttributes()
     {
         super(ConnectedComponentsAttributes_numAdditionalAtts);
 
+        EnableGhostNeighborsOptimization = true;
     }
 
     public ConnectedComponentsAttributes(int nMoreFields)
     {
         super(ConnectedComponentsAttributes_numAdditionalAtts + nMoreFields);
 
+        EnableGhostNeighborsOptimization = true;
     }
 
     public ConnectedComponentsAttributes(ConnectedComponentsAttributes obj)
     {
         super(ConnectedComponentsAttributes_numAdditionalAtts);
 
+        EnableGhostNeighborsOptimization = obj.EnableGhostNeighborsOptimization;
 
         SelectAll();
     }
@@ -94,31 +97,43 @@ public class ConnectedComponentsAttributes extends AttributeSubject implements P
     public boolean equals(ConnectedComponentsAttributes obj)
     {
         // Create the return value
-        return (true);
+        return ((EnableGhostNeighborsOptimization == obj.EnableGhostNeighborsOptimization));
     }
 
     public String GetName() { return "ConnectedComponents"; }
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
+    public void SetEnableGhostNeighborsOptimization(boolean EnableGhostNeighborsOptimization_)
+    {
+        EnableGhostNeighborsOptimization = EnableGhostNeighborsOptimization_;
+        Select(0);
+    }
+
     // Property getting methods
+    public boolean GetEnableGhostNeighborsOptimization() { return EnableGhostNeighborsOptimization; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
+        if(WriteSelect(0, buf))
+            buf.WriteBool(EnableGhostNeighborsOptimization);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
     {
+        SetEnableGhostNeighborsOptimization(buf.ReadBool());
     }
 
     public String toString(String indent)
     {
         String str = new String();
+        str = str + boolToString("EnableGhostNeighborsOptimization", EnableGhostNeighborsOptimization, indent) + "\n";
         return str;
     }
 
 
     // Attributes
+    private boolean EnableGhostNeighborsOptimization;
 }
 
