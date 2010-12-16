@@ -196,7 +196,10 @@ void
 avtSpreadsheetPlot::CustomizeBehavior(void)
 {
     behavior->SetRenderOrder(MUST_GO_LAST);
-    behavior->GetInfo().GetAttributes().SetAdaptsToAnyWindowMode(true);
+    if(behavior->GetInfo().GetAttributes().GetTopologicalDimension() == 1)
+        behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_CURVE);
+    else
+        behavior->GetInfo().GetAttributes().SetAdaptsToAnyWindowMode(true);
 }
 
 

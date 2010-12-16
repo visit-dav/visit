@@ -44,6 +44,7 @@
 #include <vtkDataArray.h>
 
 class avtLookupTable;
+class vtkRectilinearGrid;
 
 // ****************************************************************************
 // Class: SpreadsheetTable
@@ -70,13 +71,16 @@ class avtLookupTable;
 //   Brad Whitlock, Fri May  8 12:07:49 PDT 2009
 //   I added functions to return the vtkIdTypes for a row and col.
 //
+//   Brad Whitlock, Wed Dec  1 16:40:44 PST 2010
+//   I added setCurveData.
+//
 // ****************************************************************************
 
 class SpreadsheetTable : public QTableView
 {
     Q_OBJECT
 public:
-    typedef enum {SliceX, SliceY, SliceZ, UCDCell, UCDNode} DisplayMode;
+    typedef enum {SliceX, SliceY, SliceZ, UCDCell, UCDNode, CurveData} DisplayMode;
 
     SpreadsheetTable(QWidget *parent = 0);
     virtual ~SpreadsheetTable();
@@ -84,6 +88,8 @@ public:
     void setLUT(avtLookupTable *);
     void setRenderInColor(bool);
     void setFormatString(const QString &);
+
+    void setCurveData(vtkRectilinearGrid *rgrid);
 
     void setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
                       int d[3], DisplayMode dm, int sliceindex,

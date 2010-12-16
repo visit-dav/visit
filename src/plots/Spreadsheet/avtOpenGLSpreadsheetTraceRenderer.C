@@ -126,7 +126,7 @@ avtOpenGLSpreadsheetTraceRenderer::Render(vtkDataSet *ds, vtkDataArray *bounds,
 
 
 // ****************************************************************************
-// Method: avtOpenGLSpreadsheetTraceRenderer::RenderRectilinearGrid
+// Method: avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid
 //
 // Purpose: 
 //   Draws the input dataset as a rectilinear grid.
@@ -151,6 +151,9 @@ avtOpenGLSpreadsheetTraceRenderer::Render(vtkDataSet *ds, vtkDataArray *bounds,
 //   Brad Whitlock, Tue May 26 10:25:49 PDT 2009
 //   We already have the cellId from the pick if it's a zone pick.
 //
+//   Brad Whitlock, Thu Dec 16 11:40:21 PST 2010
+//   I added curve-specific rendering.
+//
 // ****************************************************************************
 
 void
@@ -170,16 +173,60 @@ avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid
 
     if(dims[2] < 2)
     {
+        double ext[4] = {0., 0., 0., 0.};
         if (atts.GetShowTracerPlane())
         {
-            // Draw the tracer plane.
-            glBegin(GL_QUADS);
-            glColor4ubv(atts.GetTracerColor().GetColor());
-            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), 0.);
-            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), 0.);
-            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
-            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);         
-            glEnd();
+            if(dims[1] < 2)
+            {
+                // The data are 1D so draw as a curve.
+                vtkDataArray *x = rgrid->GetXCoordinates();
+                vtkDataArray *y = rgrid->GetPointData()->GetScalars();
+                int nnodes = (x->GetNumberOfTuples() < y->GetNumberOfTuples()) ? 
+                     x->GetNumberOfTuples() : y->GetNumberOfTuples();
+                // find minY.
+                double minY = 0., maxY = 0.;
+                for(int i = 0; i < nnodes-1; ++i)
+                {
+                    double yval = y->GetTuple1(i);
+                    if(i == 0 || yval < minY)
+                        minY = yval;
+                    if(i == 0 || yval > maxY)
+                        maxY = yval;
+                }
+                if(minY > 0.)
+                    minY = 0.;
+                glBegin(GL_QUADS);
+                glColor4ubv(atts.GetTracerColor().GetColor());
+                for(int i = 0; i < nnodes-1; ++i)
+                {
+                    glVertex3d(x->GetTuple1(i),   minY,              0.);
+                    glVertex3d(x->GetTuple1(i+1), minY,              0.);
+                    glVertex3d(x->GetTuple1(i+1), y->GetTuple1(i+1), 0.);
+                    glVertex3d(x->GetTuple1(i),   y->GetTuple1(i),   0.);
+                }
+                glEnd();
+
+                ext[0] = bounds->GetTuple1(0);
+                ext[1] = bounds->GetTuple1(1);
+                ext[2] = minY;
+                ext[3] = maxY;
+            }
+            else
+            {
+                ext[0] = bounds->GetTuple1(0);
+                ext[1] = bounds->GetTuple1(1);
+                ext[2] = bounds->GetTuple1(2);
+                ext[3] = bounds->GetTuple1(3);
+
+                // Draw the tracer plane.
+                glBegin(GL_QUADS);
+                glColor4ubv(atts.GetTracerColor().GetColor());
+                glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), 0.);
+                glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), 0.);
+                glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
+                glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);         
+                glEnd();
+            }
         }
 
         if (atts.GetShowPatchOutline())
@@ -188,10 +235,10 @@ avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid
             glColor3dv(fgColor);
             glLineWidth(2.);
             glBegin(GL_LINE_LOOP);
-            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), 0.);
-            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), 0.);
-            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
-            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);
+            glVertex3d(ext[0], ext[2], 0.);
+            glVertex3d(ext[1], ext[2], 0.);
+            glVertex3d(ext[1], ext[3], 0.);
+            glVertex3d(ext[0], ext[3], 0.);
             glEnd();
         }
 
