@@ -2164,7 +2164,7 @@ vtkVisItScalarBarActor::GetCalculatedLabels(stringVector &v)
         char labelString[1024];
         for (size_t i = 0; i < definedDoubleLabels.size(); ++i)
         {
-            sprintf(labelString, "%f", definedDoubleLabels[i]);
+            sprintf(labelString, "%g", definedDoubleLabels[i]);
             v.push_back(labelString);
         }
     }

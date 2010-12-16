@@ -1108,6 +1108,10 @@ avtContourFilter::CreateNIsoValues(double min, double max)
 //    Change print format to "%f" to preserve precision .. allows users to
 //    change the format of legend labels at will.
 //
+//    Kathleen Bonnell, Wed Dec 15 16:13:02 PST 2010
+//    Change print format to "%g", don't know what I was thinking using
+//    "%f".
+//
 // ****************************************************************************
 
 void
@@ -1127,7 +1131,7 @@ avtContourFilter::CreateLabels()
 
     for (int i = 0; i < isoValues.size(); i++)
     {
-        sprintf(temp, "%f", isoValues[i]);
+        sprintf(temp, "%g", isoValues[i]);
         isoLabels.push_back(temp);
     }
 }
