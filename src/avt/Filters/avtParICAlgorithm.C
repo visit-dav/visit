@@ -100,6 +100,19 @@ avtParICAlgorithm::avtParICAlgorithm(avtPICSFilter *icFilter)
 
 avtParICAlgorithm::~avtParICAlgorithm()
 {
+    if( ! sendBuffers.empty() )
+    {
+        bufferIterator it;
+
+        fprintf( stderr, "!!! Still has data in sendBuffers - size: %d\n", (int)sendBuffers.size() );
+        for (it = sendBuffers.begin(); it != sendBuffers.end(); it++)
+        {
+            MPI_Request r = it->first.first;
+            if (r != MPI_REQUEST_NULL)
+                MPI_Cancel(&r);
+           delete [] it->second;
+        }
+    }
 }
 
 // ****************************************************************************
@@ -204,13 +217,13 @@ avtParICAlgorithm::CleanupRequests(int tag)
     {
         if (tag != -1 && tag != i->first.second)
             continue;
-        
+
         MPI_Request r = i->first.first;
         if (r != MPI_REQUEST_NULL)
             MPI_Cancel(&r);
         if (i->second != NULL)
             delete [] i->second;
-        
+
         recvBuffers.erase(i);
     }
 }
@@ -309,7 +322,7 @@ avtParICAlgorithm::CheckPendingSendRequests()
             sendBuffers.erase(entry);
         }
     }
-    
+
     delete [] indices;
     delete [] status;
 }
@@ -468,7 +481,11 @@ avtParICAlgorithm::RecvData(int tag, vector<MemStream *> &buffers)
     MPI_Testsome(req.size(), &req[0], &num, indices, status);
 
     if (num == 0)
+    {
+        delete [] status;
+        delete [] indices;
         return false;
+    }
 
     vector<unsigned char *> incomingBuffers(num);
     for (int i = 0; i < num; i++)
@@ -476,12 +493,19 @@ avtParICAlgorithm::RecvData(int tag, vector<MemStream *> &buffers)
         RequestTagPair entry(copy[indices[i]], tag);
         bufferIterator it = recvBuffers.find(entry);
         if ( it == recvBuffers.end())
+        {
+            delete [] status;
+            delete [] indices;
             EXCEPTION0(ImproperUseException);
+        }
 
         incomingBuffers[i] = it->second;
 
         recvBuffers.erase(it);
     }
+
+    delete [] status;
+    delete [] indices;
 
     ProcessReceivedBuffers(tag, incomingBuffers, buffers);
     
