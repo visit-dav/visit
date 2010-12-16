@@ -514,16 +514,19 @@ avtConnComponentsExpression::Execute()
 //    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
 //    Added timing info.
 //
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Loosen the check for valid ghost zones.
+//
 // ****************************************************************************
 bool
 avtConnComponentsExpression::CheckForProperGhostZones(vtkDataSet **sets,
                                                       int nsets)
 {
     int t0 = visitTimer->StartTimer();
-    bool found_ghosts = false;
-    bool valid = true;
+
+    int found_ghosts = 0;
     int total_ncells = 0;
-    for(int i=0; i < nsets && valid; i++)
+    for(int i=0; i < nsets && found_ghosts == 0; i++)
     {
         int ncells = sets[i]->GetNumberOfCells();
         total_ncells += ncells;
@@ -532,32 +535,25 @@ avtConnComponentsExpression::CheckForProperGhostZones(vtkDataSet **sets,
         if(gz_array)
         {
             unsigned char *gz_ptr = (unsigned char *)gz_array->GetPointer(0);
-            for(int j=0; j < ncells && valid; j++)
+            for(int j=0; j < ncells && found_ghosts == 0; j++)
             {
-                if(gz_ptr[j] & 1)
-                    found_ghosts = true;
-                if(gz_ptr[j] > 1)
-                    valid = false;
+                if(gz_ptr[j] & 1) // Bit 0 == DUPLICATED_ZONE_INTERNAL_TO_PROBLEM
+                    found_ghosts = 1;
             }
-        }
-        else
-        {
-            valid = false;
         }
     }
 
-    // if we have more procs than domains, make sure procs with no data remain 
-    // neutral. 
+    //
+    // If we found a single instance of a proper ghost zone
+    // we want to try to use the ghost zone neighbors optimization.
+    // Note: It would be better if the data attributes simply told
+    // us that the proper type of ghost zones were generated ...
+    //
 
-    if(nsets == 0 || total_ncells == 0)
-        valid = true;
-    else
-        valid = valid && found_ghosts;
+    found_ghosts = UnifyMaximumValue(found_ghosts);
 
-    int val = (int) (valid);
-    val = UnifyMinimumValue(val);
     visitTimer->StopTimer(t0,"Check For Proper Ghost Zones");
-    return (val == 1);
+    return (found_ghosts == 1);
 }
 
 // ****************************************************************************
@@ -576,6 +572,9 @@ avtConnComponentsExpression::CheckForProperGhostZones(vtkDataSet **sets,
 //  Modifications:
 //    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
 //    Added timing info.
+//
+//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
+//    Explicit check for DUPLICATED_ZONE_INTERNAL_TO_PROBLEM.
 //
 // ****************************************************************************
 void
@@ -607,7 +606,7 @@ avtConnComponentsExpression::LabelGhostNeighbors(vtkDataSet *data_set)
     for ( i=0; i < ncells; i++)
     {
         // if this cell has ghost zones, label it's neighbors
-        if(gz_ptr[i])
+        if(gz_ptr[i] & 1) // Bit 0 == DUPLICATED_ZONE_INTERNAL_TO_PROBLEM
         {
             // get cell neighbors
             vtkIdList *gcell_pts = data_set->GetCell(i)->GetPointIds();
