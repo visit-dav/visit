@@ -56,11 +56,15 @@
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Feb 6 12:08:42 PDT 2007
 //
+//  Modifications:
+//    Brad Whitlock, Thu Dec 16 11:52:11 PST 2010
+//    I added PostExecute.
+//
 // ****************************************************************************
 
 class avtSpreadsheetFilter : public avtDatasetToDatasetFilter
 {
-  public:
+public:
                               avtSpreadsheetFilter();
     virtual                  ~avtSpreadsheetFilter();
 
@@ -69,11 +73,12 @@ class avtSpreadsheetFilter : public avtDatasetToDatasetFilter
     virtual const char       *GetDescription(void)
                                   { return "Performing Visual spreadsheet"; };
 
-  protected:
+protected:
     SpreadsheetAttributes      atts;
 
     virtual avtContract_p     ModifyContract(avtContract_p);
     virtual void              Execute(void);
+    virtual void              PostExecute(void);
 };
 
 

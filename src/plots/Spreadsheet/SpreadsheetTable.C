@@ -47,6 +47,9 @@
 
 #include <avtLookupTable.h>
 #include <vtkLookupTable.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
 
 #define GetDataRole  1000
 
@@ -79,6 +82,9 @@ bool operator < (const QSize &a, const QSize &b)
 //   Brad Whitlock, Mon May 11 11:08:53 PDT 2009
 //   I added rowColFromIndex.
 //
+//   Brad Whitlock, Wed Dec  1 16:27:02 PST 2010
+//   Add rgrid.
+//
 // ****************************************************************************
 
 class DataArrayModel : public QAbstractItemModel
@@ -86,6 +92,8 @@ class DataArrayModel : public QAbstractItemModel
 public:
     DataArrayModel(QObject *parent=0);
     virtual ~DataArrayModel() { }
+
+    void setCurveData(vtkRectilinearGrid *rgrid);
 
     void setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
                       int d[3], SpreadsheetTable::DisplayMode dm, int sliceindex,
@@ -112,6 +120,7 @@ public:
 private:
     int                           nRows;
     int                           nColumns;
+    vtkRectilinearGrid           *rgrid;
     vtkDataArray                 *dataArray;
     vtkDataArray                 *ghostArray;
     int                           dims[3];
@@ -135,7 +144,9 @@ private:
 // Creation:   Thu Aug 28 14:45:01 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec  1 16:26:54 PST 2010
+//   Add rgrid.
+//
 // ****************************************************************************
 
 DataArrayModel::DataArrayModel(QObject *parent) : QAbstractItemModel(parent),
@@ -143,12 +154,60 @@ DataArrayModel::DataArrayModel(QObject *parent) : QAbstractItemModel(parent),
 {
     nRows = 0;
     nColumns = 0;
+    rgrid = 0;
     dataArray = 0;
     ghostArray = 0;
     dims[0] = dims[1] = dims[2] = 0;
     base_index[0] = base_index[1] = base_index[2] = 0;
     displayMode = SpreadsheetTable::SliceZ;
     sliceIndex = 0;
+}
+
+// ****************************************************************************
+// Method: DataArrayModel::setCurveData
+//
+// Purpose: 
+//   Set curve data into the model.
+//
+// Arguments:
+//   grid : The rectilinear grid that contains the curve data.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec  1 16:25:54 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+DataArrayModel::setCurveData(vtkRectilinearGrid *grid)
+{
+    rgrid = grid;
+    dataArray = 0;
+    ghostArray = 0;
+
+    int tmpdims[3];
+    rgrid->GetDimensions(tmpdims);
+
+    dims[0] = 2;
+    dims[1] = tmpdims[0];
+    dims[2] = 1;
+
+    base_index[0] = 0;
+    base_index[1] = 0;
+    base_index[2] = 0;
+
+    displayMode = SpreadsheetTable::CurveData;
+    sliceIndex = 0;
+
+    nColumns = 2;
+    nRows = tmpdims[0];
+
+    reset();
 }
 
 // ****************************************************************************
@@ -187,6 +246,7 @@ DataArrayModel::setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
     int d[3], SpreadsheetTable::DisplayMode dm, int sliceindex, int baseIndex[3])
 {
     // The data arrays.
+    rgrid = 0;
     dataArray = arr;
     ghostArray = ghosts;
 
@@ -248,7 +308,9 @@ DataArrayModel::setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
 // Creation:   Thu Aug 28 16:22:16 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec  1 16:26:41 PST 2010
+//   Add rgrid.
+//
 // ****************************************************************************
 
 void
@@ -257,6 +319,7 @@ DataArrayModel::clearDataArray()
     dims[0] = dims[1] = dims[2] = 0;
     nColumns = 0;
     nRows = 0;
+    rgrid = 0;
     dataArray = 0;
     ghostArray = 0;
     reset();
@@ -408,6 +471,9 @@ DataArrayModel::rowCount(const QModelIndex &) const
 //   Use internalId() instead of internalPointer() to obtain global index of a
 //   spreadsheet element since latter does not work on Linux systems. 
 //
+//   Brad Whitlock, Wed Dec  1 16:39:13 PST 2010
+//   I added support for showing curve data.
+//
 // ****************************************************************************
 
 QVariant
@@ -416,9 +482,7 @@ DataArrayModel::data(const QModelIndex &index, int role) const
     if(role == Qt::DisplayRole)
     {
         // This role returns the string that is displayed in the cells.
-        if(dataArray == 0)
-            return QVariant();
-        else
+        if(dataArray != 0)
         {
             vtkIdType id = index.internalId();
             double value = 0.;
@@ -433,13 +497,29 @@ DataArrayModel::data(const QModelIndex &index, int role) const
                 s = it.value() + QString("=") + s;
             return QVariant(s);
         }
+        else if(rgrid != 0)
+        {
+            vtkIdType id = index.row();
+            vtkDataArray *arr = rgrid->GetPointData()->GetScalars();
+            if(arr == 0)
+                arr = rgrid->GetCellData()->GetScalars();
+
+            double value = 0.;
+            if(index.column() == 0)
+                value = rgrid->GetXCoordinates()->GetTuple1(id);
+            else
+                value = arr->GetTuple1(id);
+
+            QString s; s.sprintf(formatString.toStdString().c_str(), value);
+            return QVariant(s);
+        }
+        else
+            return QVariant();
     }
     else if(role == GetDataRole)
     {
         // This role returns the actual data so we can use it in various operations.
-        if(dataArray == 0)
-            return QVariant();
-        else
+        if(dataArray != 0)
         {
             vtkIdType id = index.internalId();
             double value = 0.;
@@ -447,6 +527,23 @@ DataArrayModel::data(const QModelIndex &index, int role) const
                 value = dataArray->GetTuple1(id);
             return QVariant(value);
         }
+        else if(rgrid != 0)
+        {
+            vtkIdType id = index.row();
+            vtkDataArray *arr = rgrid->GetPointData()->GetScalars();
+            if(arr == 0)
+                arr = rgrid->GetCellData()->GetScalars();
+
+            double value = 0.;
+            if(index.column() == 0)
+                value = rgrid->GetXCoordinates()->GetTuple1(id);
+            else
+                value = arr->GetTuple1(id);
+
+            return QVariant(value);
+        }
+        else
+            return QVariant();
     }
     else if(role == Qt::BackgroundRole)
     {
@@ -488,7 +585,9 @@ DataArrayModel::data(const QModelIndex &index, int role) const
 // Creation:   Thu Aug 28 16:25:59 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec  1 16:44:43 PST 2010
+//   I added a CurveData display mode.
+//
 // ****************************************************************************
 
 QVariant
@@ -532,6 +631,18 @@ DataArrayModel::headerData(int section, Qt::Orientation orientation, int role) c
                 label = tr("node value");
             else
                 label.sprintf("%d", section + base_index[0]);
+        }
+        else if(displayMode == SpreadsheetTable::CurveData)
+        {
+            if(orientation == Qt::Horizontal)
+            {
+                if(section == 0)
+                    label = tr("X");
+                else
+                    label = tr("Y");
+            }
+            else
+                label.sprintf("%d", section);
         }
 
         return QVariant(label);
@@ -860,6 +971,30 @@ SpreadsheetTable::setFormatString(const QString &fmt)
         updateColumnWidths();
         update();
     }
+}
+
+// ****************************************************************************
+// Method: SpreadsheetTable::setCurveData
+//
+// Purpose: 
+//   Set the curve data into the model.
+//
+// Arguments:
+//   rgrid : The rectilinear grid to use as model input.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec  6 14:19:38 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetTable::setCurveData(vtkRectilinearGrid *rgrid)
+{
+    MODEL->setCurveData(rgrid);
+    updateColumnWidths();
+    update();
 }
 
 // ****************************************************************************

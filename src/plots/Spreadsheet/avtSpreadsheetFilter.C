@@ -48,6 +48,7 @@
 #include <InvalidSetException.h>
 #include <InvalidVariableException.h>
 
+#include <avtExtents.h>
 #include <avtSILRestrictionTraverser.h>
 #include <DebugStream.h>
 
@@ -210,6 +211,9 @@ avtSpreadsheetFilter::ModifyContract(avtContract_p spec)
     adTypes.push_back(VTK_DOUBLE);
     rv->GetDataRequest()->UpdateAdmissibleDataTypes(adTypes);
 
+    rv->SetCalculateMeshExtents(true);
+    rv->SetCalculateVariableExtents(rv->GetDataRequest()->GetVariable(), true);
+
     return rv;
 }
 
@@ -236,5 +240,46 @@ avtSpreadsheetFilter::Execute(void)
 {
     avtDataObject_p input = GetInput();
     GetOutput()->Copy(*input);
+}
+
+// ****************************************************************************
+//  Method: avtCurveFilter::ModifyContract
+//
+//  Purpose:
+//      Allows the filter to change its output's data object information, which
+//      is a description of the data object.
+//
+//  Notes: We use this routine to force the curve extents to be present in
+//         the data attributes when we have curve data. I tried doing this
+//         as UpdateDataObjectInfo but it never was honored.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Thu Dec 16 10:13:12 PST 2010
+//
+// ****************************************************************************
+
+void
+avtSpreadsheetFilter::PostExecute(void)
+{
+    if(GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 1)
+    {
+        // Set the mesh's extents to 2D
+        double extents[6] = {0.,0.,0.,0.,0.,0.};
+        GetOutput()->GetInfo().GetAttributes().GetThisProcsOriginalSpatialExtents()->CopyTo(extents);
+        TRY
+        {
+            const std::string &v = GetOutput()->GetInfo().GetAttributes().GetVariableName();
+            GetOutput()->GetInfo().GetAttributes().GetOriginalDataExtents(v.c_str())->
+                CopyTo(extents+2);
+        }
+        CATCH(VisItException)
+        {
+            extents[3] = 1.;
+        }
+        ENDTRY
+        GetOutput()->GetInfo().GetAttributes().SetSpatialDimension(2);
+        GetOutput()->GetInfo().GetAttributes().GetThisProcsOriginalSpatialExtents()->Set(extents);
+        GetOutput()->GetInfo().GetAttributes().SetCanUseThisProcsAsOriginalOrActual(true);
+   }
 }
 

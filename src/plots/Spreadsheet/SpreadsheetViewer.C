@@ -1047,6 +1047,9 @@ SpreadsheetViewer::GetBaseIndexFromMetaData(int *base_index) const
 //   Set the mesh's base index differently if there are no base_index or 
 //   realDims field data arrays. We use the mesh's cell and node origins.
 //
+//   Brad Whitlock, Mon Dec  6 14:29:41 PST 2010
+//   Handle curve data specially.
+//
 // ****************************************************************************
 
 void
@@ -1147,6 +1150,10 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
             dMode = SpreadsheetTable::SliceZ;
         }
 
+        // Detect whether we have a 1D curve.
+        bool isCurve = (dims[1] == 1 && dims[2] == 1 && 
+                        input->IsA("vtkRectilinearGrid"));
+
         // Make sure that each table can access the VTK data.
 #ifndef SINGLE_TAB_WINDOW
         int offset = 0;
@@ -1159,8 +1166,13 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
 
             // Tell the table about our data so it can display it 
             // appropriately.
-            tables[t]->setDataArray(arr, ghostArray, dims, 
-                dMode, offset + t, base_index);
+            if(isCurve)
+                tables[t]->setCurveData((vtkRectilinearGrid *)input);
+            else
+            {
+                tables[t]->setDataArray(arr, ghostArray, dims, 
+                    dMode, offset + t, base_index);
+            }
             tables[t]->setFormatString(plotAtts->GetFormatString().c_str());
             tables[t]->setRenderInColor(plotAtts->GetUseColorTable());
 
