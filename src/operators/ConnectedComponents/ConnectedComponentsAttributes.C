@@ -56,6 +56,7 @@
 
 void ConnectedComponentsAttributes::Init()
 {
+    EnableGhostNeighborsOptimization = true;
 
     ConnectedComponentsAttributes::SelectAll();
 }
@@ -77,6 +78,7 @@ void ConnectedComponentsAttributes::Init()
 
 void ConnectedComponentsAttributes::Copy(const ConnectedComponentsAttributes &obj)
 {
+    EnableGhostNeighborsOptimization = obj.EnableGhostNeighborsOptimization;
 
     ConnectedComponentsAttributes::SelectAll();
 }
@@ -234,7 +236,7 @@ bool
 ConnectedComponentsAttributes::operator == (const ConnectedComponentsAttributes &obj) const
 {
     // Create the return value
-    return (true);
+    return ((EnableGhostNeighborsOptimization == obj.EnableGhostNeighborsOptimization));
 }
 
 // ****************************************************************************
@@ -378,15 +380,29 @@ ConnectedComponentsAttributes::NewInstance(bool copy) const
 void
 ConnectedComponentsAttributes::SelectAll()
 {
+    Select(ID_EnableGhostNeighborsOptimization, (void *)&EnableGhostNeighborsOptimization);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
 
+void
+ConnectedComponentsAttributes::SetEnableGhostNeighborsOptimization(bool EnableGhostNeighborsOptimization_)
+{
+    EnableGhostNeighborsOptimization = EnableGhostNeighborsOptimization_;
+    Select(ID_EnableGhostNeighborsOptimization, (void *)&EnableGhostNeighborsOptimization);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+bool
+ConnectedComponentsAttributes::GetEnableGhostNeighborsOptimization() const
+{
+    return EnableGhostNeighborsOptimization;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
@@ -412,6 +428,7 @@ ConnectedComponentsAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
+    case ID_EnableGhostNeighborsOptimization: return "EnableGhostNeighborsOptimization";
     default:  return "invalid index";
     }
 }
@@ -436,6 +453,7 @@ ConnectedComponentsAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
+    case ID_EnableGhostNeighborsOptimization: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -460,6 +478,7 @@ ConnectedComponentsAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
+    case ID_EnableGhostNeighborsOptimization: return "bool";
     default:  return "invalid index";
     }
 }
@@ -486,6 +505,11 @@ ConnectedComponentsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs
     bool retval = false;
     switch (index_)
     {
+    case ID_EnableGhostNeighborsOptimization:
+        {  // new scope
+        retval = (EnableGhostNeighborsOptimization == obj.EnableGhostNeighborsOptimization);
+        }
+        break;
     default: retval = false;
     }
 

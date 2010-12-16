@@ -86,7 +86,9 @@ class QvisConnectedComponentsWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
+    void EnableGhostNeighborsOptimizationChanged(bool val);
   private:
+    QCheckBox *EnableGhostNeighborsOptimization;
 
     ConnectedComponentsAttributes *atts;
 };

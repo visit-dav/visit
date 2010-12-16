@@ -184,6 +184,10 @@ avtConnectedComponentsFilter::InferVariableNameFromContract(avtContract_p c)
 //  Programmer: Hank Childs
 //  Creation:   September 24, 2010
 //
+//  Modifications:
+//  Cyrus Harrison, Thu Dec 16 09:24:31 PST 2010
+//  Support explicit enable/disable of the ghost zone neighbors optimization.
+//
 // ****************************************************************************
 
 void
@@ -194,7 +198,10 @@ avtConnectedComponentsFilter::GetCustomExpressions(std::vector<Expression> &elis
     SNPRINTF(fullname, 1024, "operators/ConnectedComponents/%s", varname.c_str());
     exp.SetName(fullname);
     char defn[1024];
-    SNPRINTF(defn, 1024, "conn_components(%s)", varname.c_str());
+    string gzopt = "\"true\"";
+    if (!atts.GetEnableGhostNeighborsOptimization())
+        gzopt  = "\"false\"";
+    SNPRINTF(defn, 1024, "conn_components(%s,%s)", varname.c_str(),gzopt.c_str());
     exp.SetDefinition(defn);
     exp.SetType(Expression::ScalarMeshVar);
     elist.push_back(exp);

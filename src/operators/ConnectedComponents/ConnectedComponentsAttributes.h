@@ -85,6 +85,12 @@ public:
     // Property selection methods
     virtual void SelectAll();
 
+    // Property setting methods
+    void SetEnableGhostNeighborsOptimization(bool EnableGhostNeighborsOptimization_);
+
+    // Property getting methods
+    bool GetEnableGhostNeighborsOptimization() const;
+
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -93,12 +99,19 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
 
+    // IDs that can be used to identify fields in case statements
+    enum {
+        ID_EnableGhostNeighborsOptimization = 0,
+        ID__LAST
+    };
 
 private:
+    bool EnableGhostNeighborsOptimization;
+
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define CONNECTEDCOMPONENTSATTRIBUTES_TMFS ""
+#define CONNECTEDCOMPONENTSATTRIBUTES_TMFS "b"
 
 #endif
