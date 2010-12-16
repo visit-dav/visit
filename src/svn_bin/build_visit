@@ -999,6 +999,10 @@
 #     Cyrus Harrison, Tue Dec 14 13:46:33 PST 2010
 #     Added patch allow PIL's setup to search for libs in /usr/lib64/.
 #
+#     Eric Brugger, Thu Dec 16 09:48:56 PST 2010
+#     I disabled PostgreSQL and curl support in GDAL. These were causing
+#     linking errors at runtime on older Linux systems.
+#
 # *****************************************************************************
 
 
@@ -6417,6 +6421,7 @@ EOF
        --with-libtiff=internal --with-gif=internal \
        --with-png=internal --with-jpeg=internal \
        --with-libz=internal --with-netcdf=no \
+       --with-pg=no --with-curl=no \
        --without-jasper --without-python
     if [[ $? != 0 ]] ; then
        warn "GDAL configure failed.  Giving up"
