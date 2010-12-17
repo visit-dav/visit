@@ -183,6 +183,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
 
            maximumToroidalWinding != obj.maximumToroidalWinding ||
            overrideToroidalWinding != obj.overrideToroidalWinding ||
+           overridePoloidalWinding != obj.overridePoloidalWinding ||
            windingPairConfidence != obj.windingPairConfidence ||
            periodicityConsistency != obj.periodicityConsistency ||
 

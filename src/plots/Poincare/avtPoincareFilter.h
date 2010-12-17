@@ -105,6 +105,8 @@ class avtPoincareFilter : public avtStreamlineFilter
       maximumToroidalWinding = value; };
     void SetOverrideToroidalWinding( unsigned int value) {
       overrideToroidalWinding = value; }
+    void SetOverridePoloidalWinding( unsigned int value) {
+      overridePoloidalWinding = value; }
 
     void SetWindingPairConfidence( double val ) { windingPairConfidence = val; }
     void SetPeriodicityConsistency( double val ) { periodicityConsistency = val; }
@@ -154,22 +156,25 @@ class avtPoincareFilter : public avtStreamlineFilter
                                  unsigned int color,
                                  double color_value );
 
-  virtual void loadCurve( avtDataTree *dt,
-                          vector< vector < vector < Point > > > &nodes,
-                          unsigned int nnodes,
-                          unsigned int islands,
-                          unsigned int skip,
-                          unsigned int color,
-                          double color_value );
+  virtual void drawRationalCurve( avtDataTree *dt,
+                                  vector< vector < vector < Point > > > &nodes,
+                                  unsigned int nnodes,
+                                  unsigned int islands,
+                                  unsigned int skip,
+                                  unsigned int color,
+                                  double color_value );
   
-  virtual void loadCurve( avtDataTree *dt,
-                          vector< vector < vector < Point > > > &nodes,
-                          unsigned int nnodes,
-                          unsigned int color,
-                          double color_value,
-                          bool modulo = false);
+  virtual void drawIrrationalCurve( avtDataTree *dt,
+                                    vector< vector < vector < Point > > > &nodes,
+                                    unsigned int nnodes,
+                                    unsigned int islands,
+                                    unsigned int skip,
+                                    unsigned int color,
+                                    double color_value,
+                                    bool connect = false,
+                                    bool modulo = false);
   
-  virtual void loadSurface( avtDataTree *dt,
+  virtual void drawSurface( avtDataTree *dt,
                             vector< vector < vector < Point > > > &nodes,
                             unsigned int nnodes,
                             unsigned int islands,
@@ -178,15 +183,15 @@ class avtPoincareFilter : public avtStreamlineFilter
                             double color_value,
                             bool modulo = false);
 
-  virtual void loadPoints( avtDataTree *dt,
-                           vector < Point  > &nodes,
-                           unsigned int period,
-                           unsigned int nnodes,
-                           unsigned int islands,
-                           unsigned int poloidalWindings,
-                           unsigned int color,
-                           double color_value,
-                           bool ptFlag );
+  virtual void drawPeriodicity( avtDataTree *dt,
+                                vector < Point  > &nodes,
+                                unsigned int period,
+                                unsigned int nnodes,
+                                unsigned int islands,
+                                unsigned int poloidalWindings,
+                                unsigned int color,
+                                double color_value,
+                                bool ptFlag );
 
     // Poincare filter methods.
     bool                      ClassifyStreamlines();
@@ -204,6 +209,7 @@ class avtPoincareFilter : public avtStreamlineFilter
 
     unsigned int maximumToroidalWinding;
     unsigned int overrideToroidalWinding;
+    unsigned int overridePoloidalWinding;
 
     double windingPairConfidence;
     double periodicityConsistency;
