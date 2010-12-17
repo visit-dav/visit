@@ -1543,10 +1543,8 @@ avtStreamlineFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &pts
 // ****************************************************************************
 
 avtContract_p
-avtStreamlineFilter::ModifyContract(avtContract_p in_contract0)
+avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
 {
-    avtContract_p in_contract = avtPICSFilter::ModifyContract(in_contract0);
-
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
     avtDataRequest_p out_dr = NULL;
 
@@ -1572,7 +1570,7 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract0)
     else
         out_contract = new avtContract(in_contract);
 
-    return out_contract;
+    return avtPICSFilter::ModifyContract(out_contract);
 }
 
 
