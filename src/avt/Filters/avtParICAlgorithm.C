@@ -43,6 +43,7 @@
 #include "avtParICAlgorithm.h"
 #include <vtkDataSetWriter.h>
 #include <vtkDataSetReader.h>
+#include <vtkCharArray.h>
 
 #include <avtStateRecorderIntegralCurve.h>
 
@@ -100,19 +101,6 @@ avtParICAlgorithm::avtParICAlgorithm(avtPICSFilter *icFilter)
 
 avtParICAlgorithm::~avtParICAlgorithm()
 {
-    if( ! sendBuffers.empty() )
-    {
-        bufferIterator it;
-
-        fprintf( stderr, "!!! Still has data in sendBuffers - size: %d\n", (int)sendBuffers.size() );
-        for (it = sendBuffers.begin(); it != sendBuffers.end(); it++)
-        {
-            MPI_Request r = it->first.first;
-            if (r != MPI_REQUEST_NULL)
-                MPI_Cancel(&r);
-           delete [] it->second;
-        }
-    }
 }
 
 // ****************************************************************************
@@ -860,6 +848,7 @@ avtParICAlgorithm::SendDS(int dst, std::vector<vtkDataSet *> &ds, std::vector<Do
         buff0->write(rank);
         buff0->write(totalLen);
         SendData(dst, avtParICAlgorithm::DATASET_PREP_TAG, buff0);
+        MsgCnt.value++;
 
         MemStream *buff1 = new MemStream(totalLen);
         buff1->write(doms[i]);
@@ -887,6 +876,9 @@ avtParICAlgorithm::SendDS(int dst, std::vector<vtkDataSet *> &ds, std::vector<Do
 //   Dave Pugmire, Mon Dec  6 14:42:45 EST 2010
 //   Fixes for SendDS, and RecvDS
 //
+//   Dave Pugmire, Fri Dec 17 12:15:04 EST 2010
+//   Use vtkCharArray to be more memory efficient.
+//
 // ****************************************************************************
 
 bool
@@ -907,14 +899,19 @@ avtParICAlgorithm::RecvDS(std::vector<vtkDataSet *> &ds, std::vector<DomainType>
             
             vtkDataSetReader *reader = vtkDataSetReader::New();
             reader->ReadFromInputStringOn();
-
-            const char *data = (const char *)&buffers[i]->data()[buffers[i]->pos()];
-            reader->SetBinaryInputString(data, dsLen);
+            
+            vtkCharArray *array = vtkCharArray::New();
+            char *data = (char *)&buffers[i]->data()[buffers[i]->pos()];
+            array->SetArray(data, dsLen, 1);
+            reader->SetInputArray(array);
             reader->Update();
+            
             vtkDataSet *d = reader->GetOutput();
             d->Register(NULL);
-            reader->Delete();
             ds.push_back(d);
+            
+            array->Delete();
+            reader->Delete();
             delete buffers[i];
         }
     }
@@ -956,6 +953,7 @@ avtParICAlgorithm::RecvDS(std::vector<vtkDataSet *> &ds, std::vector<DomainType>
 void
 avtParICAlgorithm::PostRunAlgorithm()
 {
+
     // We are enumerating the possible communication styles and then just
     // calling the correct one.  This is an okay solution if there are a small
     // number of styles (which there are right now).  That said, it would be

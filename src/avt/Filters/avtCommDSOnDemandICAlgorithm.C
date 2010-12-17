@@ -246,7 +246,6 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
 
-
 // ****************************************************************************
 // Method:  avtCommDSOnDemandICAlgorithm::HandleOOBIC
 //
@@ -309,6 +308,10 @@ avtCommDSOnDemandICAlgorithm::RequestDataset(DomainType &d)
 //   
 // Programmer:  Dave Pugmire
 // Creation:    December 15, 2010
+//
+// Modifications:
+//   Dave Pugmire, Fri Dec 17 12:15:04 EST 2010
+//   Fix memory leaks by adding CheckPendingSendRequests().
 //
 // ****************************************************************************
 
@@ -381,6 +384,8 @@ avtCommDSOnDemandICAlgorithm::HandleMessages(int &numDone)
 
         oobICs.insert(oobICs.begin(), tmp.begin(), tmp.end());
     }
+
+    CheckPendingSendRequests();
 }
 
 

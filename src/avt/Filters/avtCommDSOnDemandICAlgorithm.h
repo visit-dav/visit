@@ -55,6 +55,11 @@
 // Programmer:  Dave Pugmire
 // Creation:    December  6, 2010
 //
+// Modifications:
+//
+//   Dave Pugmire, Fri Dec 17 12:15:04 EST 2010
+//   Override PostRunAlgorithm as a no-op.
+//
 // ****************************************************************************
 
 class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
@@ -73,6 +78,7 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
     vtkDataSet               *GetDataset(const DomainType &dom);
 
     virtual void              RunAlgorithm();
+    virtual void              PostRunAlgorithm() {}
     virtual void              HandleOOBIC(avtIntegralCurve *s);
     virtual void              RequestDataset(DomainType &d);
     virtual void              HandleMessages(int &numDone);
