@@ -2308,7 +2308,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 avtContract_p
 avtPICSFilter::ModifyContract(avtContract_p in_contract)
 {
-    //See if we can set pathlines.
+    // See if we can set pathlines.
     if (doPathlines)
     {
         std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
@@ -2320,15 +2320,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
             doPathlines = false;
     }
 
-    avtDataRequest_p in_dr = in_contract->GetDataRequest();
-
-    // If we are part of a plot, the avtStreamlinePlot requested "colorVar", so 
-    // remove that from the contract now.
-    avtDataRequest_p out_dr = NULL;
-    if (strcmp(in_dr->GetVariable(), "colorVar") == 0)
-        out_dr = new avtDataRequest(in_dr, in_dr->GetOriginalVariable());
-    else
-        out_dr = new avtDataRequest(in_dr);
+    avtDataRequest_p out_dr = new avtDataRequest(in_contract->GetDataRequest());
     out_dr->SetVelocityFieldMustBeContinuous(true);
 
     if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR )
