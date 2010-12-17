@@ -1307,21 +1307,22 @@ islandChecks( vector< Point >& points,
 
   globalCentroid /= (float) points.size();
 
-  if( toroidalWinding == 1 ) {
-
+  if( toroidalWinding == 1 )
+  {
     // Check to see if it overlaps itself - it should or more points
     // need to be obtained.
     npts = points.size() / toroidalWinding;
 
     for( unsigned int j=toroidalWinding, k=j+toroidalWinding;
          k<points.size();
-         j+=toroidalWinding, k+=toroidalWinding ) {
-      
+         j+=toroidalWinding, k+=toroidalWinding )
+    {     
       // See if the test point is between the first secton.
       Vector v0 = (Vector) points[0] - (Vector) points[k];
       Vector v1 = (Vector) points[1] - (Vector) points[k];
         
-      if( Dot( v0, v1 ) < 0.0 ) {
+      if( Dot( v0, v1 ) < 0.0 )
+      {
         npts = k / toroidalWinding;
         complete = true;
         break;
@@ -1331,15 +1332,16 @@ islandChecks( vector< Point >& points,
       v0 = (Vector) points[0] - (Vector) points[j];
       v1 = (Vector) points[0] - (Vector) points[k];
       
-      if( Dot( v0, v1 ) < 0.0) {
+      if( Dot( v0, v1 ) < 0.0)
+      {
         npts = k / toroidalWinding;
         complete = true;
         break;
       }
     }
-
-  } else {
-
+  }
+  else
+  {
     npts = toroidalWinding;
   }
 
@@ -1832,17 +1834,16 @@ void
 FieldlineLib::fieldlineProperties( vector< Point > &ptList,
                                    FieldlineProperties &fi,
                                    unsigned int overrideToroidalWinding,
+                                   unsigned int overridePoloidalWinding,
                                    unsigned int maxToroidalWinding,
                                    double windingPairConfidence,
                                    double periodicityConsistency,
                                    bool findIslandCenters )
 {
   vector< Point > poloidal_puncture_pts;
-  vector< Point > toroidal_puncture_pts;
   vector< Point > ridgeline_points;
 
   poloidal_puncture_pts.clear();
-  toroidal_puncture_pts.clear();
   ridgeline_points.clear();
 
   vector< double > rotationalSums;
@@ -1850,12 +1851,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   vector< unsigned int > poloidalWindingCounts;
   poloidalWindingCounts.clear();
 
-  bool haveFirstIntersection = false;
-  double maxZ = 0;
-
   float delta = 0.0;
 
-  Point lastPt, currPt = ptList[0];
+  Point currPt = ptList[0], nextPt = ptList[1];
   Vector planePt( 0, 0, 0 );
 
   if( verboseFlag )
@@ -1867,163 +1865,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
          << endl;
   }
 
-  // Get the approximate magnetic plane normal.
-  vector< Point > centroids;
-
-  unsigned int nPlanes = 3;
-  for( unsigned int p=0; p<nPlanes; ++p ) 
-  {
-    Point centroid(0,0,0);
-    unsigned int cc = 0;
-
-
-    Vector planeN = Vector( cos( 2.0 * M_PI * (double) p / (double) nPlanes ),
-                            sin( 2.0 * M_PI * (double) p / (double) nPlanes ),
-                            0 );
-    Vector planePt(0,0,0);
-
-    // Set up the plane equation.
-    double plane[4];
-    
-    plane[0] = planeN.x;
-    plane[1] = planeN.y;
-    plane[2] = planeN.z;
-    plane[3] = planePt.dot(planeN);
-
-    currPt = ptList[0];
-    double lastDist, currDist = Dot(planeN, currPt) - plane[3];
-
-    for( unsigned int i=1; i<ptList.size(); ++i)
-    {    
-      lastPt = currPt;
-      currPt = ptList[i];
-
-      // Poloidal plane distances.
-      lastDist = currDist;
-      currDist = Dot( planeN, currPt ) - plane[3];
-
-      // First look at only points that intersect the poloidal plane.
-      if( SIGN(lastDist) != SIGN(currDist) ) 
-      {
-        Vector dir(currPt-lastPt);
-        
-        double dot = Dot(planeN, dir);
-        
-        // If the segment is in the same direction as the poloidal plane
-        // then find where it intersects the plane.
-        if( dot > 0.0 )
-        {
-          Vector w = (Vector) lastPt - planePt;
-          
-          double t = -Dot(planeN, w ) / dot;
-          
-          centroid += Point(lastPt + dir * t);
-          ++cc;
-        }
-      }
-    }
-
-    centroids.push_back(centroid/(double)cc);
-  }
-
-  Vector magneticPlane = Cross( (centroids[0]-centroids[1]),
-                                (centroids[2]-centroids[1]) );
-
-  if( magneticPlane.z < 0 ) magneticPlane *= -1.0;
-  centroids.clear();
-
-  map< int, Point > magneticAxis;
-  map< int, Point >::iterator axisIter;
-
-  // Now get the magnetic axis
-  nPlanes = 360;
-  for( unsigned int p=0; p<nPlanes; ++p ) 
-  {
-    Point centroid(0,0,0);
-    unsigned int cc = 0;
-
-    Vector planeN = Vector( cos( 2.0 * M_PI * (double) p / (double) nPlanes ),
-                            sin( 2.0 * M_PI * (double) p / (double) nPlanes ),
-                            0 );
-    Vector planePt(0,0,0);
-
-    // Set up the plane equation.
-    double plane[4];
-    
-    plane[0] = planeN.x;
-    plane[1] = planeN.y;
-    plane[2] = planeN.z;
-    plane[3] = planePt.dot(planeN);
-
-    currPt = ptList[0];
-    double lastDist, currDist = Dot(planeN, currPt) - plane[3];
-
-    for( unsigned int i=1; i<ptList.size(); ++i)
-    {    
-      lastPt = currPt;
-      currPt = ptList[i];
-
-      // Poloidal plane distances.
-      lastDist = currDist;
-      currDist = Dot( planeN, currPt ) - plane[3];
-
-      // First look at only points that intersect the poloidal plane.
-      if( SIGN(lastDist) != SIGN(currDist) ) 
-      {
-        Vector dir(currPt-lastPt);
-        
-        double dot = Dot(planeN, dir);
-        
-        // If the segment is in the same direction as the poloidal plane
-        // then find where it intersects the plane.
-        if( dot > 0.0 )
-        {
-          Vector w = (Vector) lastPt - planePt;
-          
-          double t = -Dot(planeN, w ) / dot;
-          
-          centroid += Point(lastPt + dir * t);
-          ++cc;
-        }
-      }
-    }
-
-    centroid /= (double) cc;
-
-    double angle = (180.0 * atan2(centroid.y,centroid.x) / M_PI);
-
-    if( angle < 0.0 )
-      angle += 360.0;
-
-    Point pt( sqrt(centroid.x*centroid.x+centroid.y*centroid.y),
-              (int) (angle + 0.5),
-              centroid.z );
-
-    magneticAxis.insert( pair< int, Point >((int) pt.y, pt) );
-
-    if( (int) (angle + 0.5) == 360.0 )
-      magneticAxis.insert( pair< int, Point >(0, pt) );
-  }
-
-  // Get the average R and Z value.
-  Point magneticCentroid(0,0,0);
-
-  double R = 0;
-  double Z = 0;
-
-  for( unsigned int i=0; i<ptList.size(); ++i)
-  {
-    magneticCentroid += ptList[i];
-    R += sqrt(ptList[i][0]*ptList[i][0] + ptList[i][1]*ptList[i][1]);
-  }
-
-  magneticCentroid /= (double) ptList.size();
-
-  R /= (double) ptList.size();
-  Z /= magneticCentroid.z;
-
-  // Set up the Y plane equation as the base analysis takes place in
-  // the X-Z plane.
+  // Set up the Y plane equation as the base poloidal puncture
+  // analysis takes place in the X-Z plane.
   Vector planeNY( 0, 1, 0 );
   double planeY[4];
 
@@ -2032,53 +1875,50 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   planeY[2] = planeNY.z;
   planeY[3] = Dot( planePt, planeNY );
 
-  currPt = ptList[0];
-  double lastDistY, currDistY = Dot(planeNY, currPt) - planeY[3];
-
-//  Vector planeNZ(0, 0, 1);
-  Vector planeNZ = magneticPlane;
-  double planeZ[4];
-      
-  planeZ[0] = planeNZ.x;
-  planeZ[1] = planeNZ.y;
-  planeZ[2] = planeNZ.z;
-//planeZ[3] = Dot(planePt, planeNZ);
-  planeZ[3] = Dot(magneticCentroid, planeNZ);
-
-  double lastDistZ, currDistZ = Dot(planeNZ, currPt) - planeZ[3];
+  double currDistY, nextDistY = Dot(planeNY, nextPt) - planeY[3];
 
   // Rotational sum
-  double angle = (180.0 * atan2(currPt.y,currPt.x) / M_PI);
-  if( angle < 0.0 )
-    angle += 360.0;
-  axisIter = magneticAxis.find( (int) (angle+0.5) );
-        
-  Point axisPt;
-  if( axisIter == magneticAxis.end() )
-  {
-    cerr << "Can not find magnetic axis for phi = " << angle << endl;
-    axisPt = Point(R, 0, Z);
-  }
-  else
-    axisPt = (*axisIter).second;
+  double currR = sqrt(currPt.x*currPt.x+currPt.y*currPt.y);
+  double currZ = currPt[2];
 
-  double lastR, currR = sqrt(currPt[0]*currPt[0]+currPt[1]*currPt[1]);
-  double lastZ, currZ = currPt[2];
+  double nextR = sqrt(nextPt.x*nextPt.x+nextPt.y*nextPt.y);
+  double nextZ = nextPt[2];
+
+  double dAngle = 0;
+  double rotationalSum = 0;
+  double ridgelineRotationalSum = 0;
+
+  double deltaR = nextR - currR;
+  double deltaZ = nextZ - currZ;
+
+  double prevAngle=0, currAngle = atan2(deltaZ, deltaR);
+  if (currAngle < 0) currAngle += (2*M_PI);
+        
+  bool zeroAngle = false;
+  if( deltaR == 0 && deltaZ == 0 )
+    zeroAngle = true;
+  
+  double maxZ = currPt.z;
+  double maxZrotationalSum = 0;
+  bool   maxZset = false;
 
   // Now collect the points.
   unsigned int npts = 0;
 
-  double rotaionalSum = 0;
-  double localRotaionalSum = 0;
-
-  for( unsigned int i=1; i<ptList.size(); ++i)
+  for( unsigned int i=2; i<ptList.size(); ++i)
   {    
-    lastPt = currPt;
-    currPt = ptList[i];
+    currPt = nextPt;
+    nextPt = ptList[i];
+
+    if( maxZ < currPt.z )
+    {
+      maxZ = currPt.z;
+      maxZrotationalSum = rotationalSum;
+    }
 
     // Save the distance between points to use for finding periodic
     // fieldlines (i.e. rational surfaces and re-connection).
-    Vector s = (Vector) lastPt - (Vector) currPt;
+    Vector s = (Vector) nextPt - (Vector) currPt;
 
     double ds = s.length();
 
@@ -2086,13 +1926,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     ++npts;
 
     // Poloidal plane distances.
-    lastDistY = currDistY;
-    currDistY = Dot( planeNY, currPt ) - planeY[3];
+    currDistY = nextDistY;
+    nextDistY = Dot( planeNY, nextPt ) - planeY[3];
 
     // First look at only points that intersect the poloidal plane.
-    if( SIGN(lastDistY) != SIGN(currDistY) ) 
+    if( SIGN(currDistY) != SIGN(nextDistY) ) 
     {
-      Vector dir(currPt-lastPt);
+      Vector dir(nextPt-currPt);
       
       double dot = Dot(planeNY, dir);
       
@@ -2100,100 +1940,81 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       // then find where it intersects the plane.
       if( dot > 0.0 )
       {
-        Vector w = (Vector) lastPt - planePt;
+        Vector w = (Vector) currPt - planePt;
         
         double t = -Dot(planeNY, w ) / dot;
         
-        Point point = Point(lastPt + dir * t);
+        Point point = Point(currPt + dir * t);
         
         poloidal_puncture_pts.push_back( point );
 
-        poloidalWindingCounts.push_back( toroidal_puncture_pts.size() );
+        poloidalWindingCounts.push_back( fabs(rotationalSum) / (2.0*M_PI) );
 
-        rotaionalSum += localRotaionalSum;
-        localRotaionalSum = 0;
+        cerr << poloidalWindingCounts.size() << "  " 
+             << fabs(rotationalSum) / (2.0*M_PI) << endl;
 
-        if( poloidal_puncture_pts.size() > 1 )
-        {
-          rotationalSums.push_back( fabs(rotaionalSum) );
-        }
+        rotationalSums.push_back( fabs(rotationalSum) );
       }
     }
 
     // Values for the rotational transform summation.
-    lastR = currR;
-    lastZ = currZ;
-    
-    double angle = (180.0 * atan2(currPt.y,currPt.x) / M_PI);
-    if( angle < 0 )
-      angle += 360.0;
-    axisIter = magneticAxis.find( (int) (angle+0.5) );
-        
-    Point axisPt;
-    if( axisIter == magneticAxis.end() )
+    currR = nextR;
+    currZ = nextZ;
+      
+    nextR = sqrt(nextPt.x*nextPt.x+nextPt.y*nextPt.y);
+    nextZ = nextPt.z;
+
+    // Calculate the rotational transform summation.
+    deltaR = nextR - currR;
+    deltaZ = nextZ - currZ;
+
+    // Check for a zero angle coming in on the right.
+    if( !zeroAngle )
     {
-      cerr << "Can not find magnetic axis for phi = " << angle << endl;
-      axisPt = Point(R, 0, Z);
+      prevAngle = currAngle;
+
+      if( deltaR == 0 && deltaZ == 0 )
+        zeroAngle = true;
+    }
+
+    // In zero mode so look for a good angle coming in on the right.
+    else if( zeroAngle && (deltaR != 0 || deltaZ != 0) )
+    {
+      zeroAngle = false;
+    }
+
+    if( !zeroAngle )
+    {
+      currAngle = atan2(deltaZ, deltaR);
+      if (currAngle < 0) currAngle += (2*M_PI);
+        
+      dAngle = currAngle - prevAngle;
+
+      if (dAngle > M_PI)
+        dAngle -= (2*M_PI);
+        
+      else if (dAngle < -M_PI)
+        dAngle += (2*M_PI);
     }
     else
-      axisPt = (*axisIter).second;
+      dAngle = 0;
 
-    currR = sqrt(currPt[0]*currPt[0]+currPt[1]*currPt[1]);
-    currZ = currPt[2];
+    rotationalSum += dAngle;
+    ridgelineRotationalSum += dAngle;
 
-    // Poloidal plane distances.
-    lastDistZ = currDistZ;
-    currDistZ = Dot( planeNZ, currPt ) - planeZ[3];
-    
-    // Find the positive zero crossings which indicate a poloidal
-    // winding. Do this check after the first toroidal puncture.
-    if( !poloidal_puncture_pts.empty() )
+    if( fabs(ridgelineRotationalSum) >= 2.0 * M_PI )
     {
-//    Calculate the rotational transform summation.
-      localRotaionalSum += ((currR-axisPt.x)*(currZ-lastZ) -
-                            (currZ-axisPt.z)*(currR-lastR)) /
-        ((currR-axisPt.x)*(currR-axisPt.x) +
-         (currZ-axisPt.z)*(currZ-axisPt.z));
+      ridgelineRotationalSum -= 2.0 * M_PI * SIGN(ridgelineRotationalSum);
 
-      // First look at only points that intersect the toroiadal plane.
-      if( SIGN(lastDistZ) != SIGN(currDistZ) ) 
-      {
-        Vector dir(currPt-lastPt);
-      
-        double dot = Dot(planeNZ, dir);
-      
-        // If the segment is in the same direction as the toroidal plane
-        // then find where it intersects the plane.
-        if( dot > 0.0 )
-        {
-//        Vector w = (Vector) lastPt - planePt;
-          Vector w = (Vector) lastPt - magneticCentroid;
-        
-          double t = -Dot(planeNZ, w ) / dot;
-        
-          Point point = Point(lastPt + dir * t);
-        
-          toroidal_puncture_pts.push_back( point );
-
-          if( haveFirstIntersection )
-            ridgeline_points.push_back( Point( (float) ridgeline_points.size(),
-                                               0,
-                                               maxZ) );
-          else
-            haveFirstIntersection = true;
-
-          maxZ = 0;
-        }
-      }
+      ridgeline_points.push_back( Point( (float) ridgeline_points.size(),
+                                         0,
+                                         maxZ) );
+      maxZ = 0;
     }
-
-    if( maxZ < currPt.z )
-      maxZ = currPt.z;
   }
 
   if( ptList.empty() ||
       poloidal_puncture_pts.empty() ||
-      toroidal_puncture_pts.empty() ||
       ridgeline_points.empty() )
   {
     fi.type = FieldlineProperties::UNKNOWN_TYPE;
@@ -2230,7 +2051,6 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   // have been found.
     if( verboseFlag )
       cerr << poloidal_puncture_pts.size() << " poloidal puncture pts, "
-           << toroidal_puncture_pts.size() << " toroidal puncture pts, and "
            << ridgeline_points.size() << " ridgeline pts " << endl;
 
   // Get the average distance between puncture points for finding
@@ -2247,12 +2067,12 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     (float) poloidalWindingCounts[poloidalWindingCounts.size()-1];
 
   double LRS_SafetyFactor = (2.0 * M_PI * poloidal_puncture_pts.size()) /
-    fabs(rotaionalSum);
+    fabs(rotationalSum);
 
   if( verboseFlag )
-    cerr << "Limit        Rotational Sum Safety Factor    "
+    cerr << "Limit Rotational Sum Safety Factor    "
          << LRS_SafetyFactor << endl
-         << "Limit        Winding Count  Safety Factor    "
+         << "Limit Rotational Sum2 Safety Factor   "
          << LWC_SafetyFactor << "   "
          << "Difference  "
          << fabs(LRS_SafetyFactor-LWC_SafetyFactor)
@@ -2260,7 +2080,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
 
   // Average Estimation
-  double averageRotationalSum, averageSafetyFactor;
+  double averageRotationalSum, averageRotationalSum2, averageSafetyFactor;
   double stdDev;
 
   safetyFactorStats( poloidalWindingCounts, averageSafetyFactor, stdDev );
@@ -2271,25 +2091,24 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   if( verboseFlag )
     cerr << "Average Rotational Sum Safety Factor         "
          << averageRotationalSum << endl 
-         << "Average Winding Count  Safety Factor         "
+         << "Average Rotational Sum2 Safety Factor        "
          << averageSafetyFactor << "   "
          << "Difference  "
-         << fabs(averageSafetyFactor-averageRotationalSum)
+         << fabs(averageRotationalSum-averageSafetyFactor)
          << endl;
 
 
   // Least Squares Estimation
-  double LSWC_SafetyFactor, LSRS_SafetyFactor;
+  double LSWC_SafetyFactor, LSRS_SafetyFactor, LSRS2_SafetyFactor;
 
   least_square_fit( poloidalWindingCounts, LSWC_SafetyFactor);
   least_square_fit( rotationalSums, LSRS_SafetyFactor);
-
   LSRS_SafetyFactor *= 2.0 * M_PI;
 
   if( verboseFlag )
     cerr << "Least Square Rotational Sum Safety Factor    "
          << LSRS_SafetyFactor << endl 
-         << "Least Square Winding Count  Safety Factor    "
+         << "Least Square Rotational Sum2 Safety Factor   "
          << LSWC_SafetyFactor << "   "
          << "Difference  "
          << fabs(LSRS_SafetyFactor-LSWC_SafetyFactor)
@@ -2311,6 +2130,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
   unsigned int toroidalGCD = 0;
   unsigned int poloidalGCD = 0;
+  unsigned int periodGCD = 0;
 
   unsigned int windingNumberMatchIndex = -1;
   unsigned int toroidalMatchIndex = -1;
@@ -2359,7 +2179,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         
       if( verboseFlag )
         cerr << "Drawable   winding pair "
-             << offsetWindingPairs[i].toroidal << "/"
+             << offsetWindingPairs[i].toroidal << ","
              << offsetWindingPairs[i].poloidal << "  ("
              << local_safetyFactor << " - "
              << fabs(safetyFactor - local_safetyFactor) << ")  "
@@ -2372,7 +2192,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       // Debug info
       if( verboseFlag )
         cerr << "Undrawable winding pair "
-             << offsetWindingPairs[i].toroidal << "/"
+             << offsetWindingPairs[i].toroidal << ","
              << offsetWindingPairs[i].poloidal << "  ("
              << local_safetyFactor << " - "
              << fabs(safetyFactor - local_safetyFactor) << ")  "
@@ -2390,19 +2210,25 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     if( verboseFlag )
       cerr << "Poor consistency - probably chaotic" << endl;
 
+    if( overrideToroidalWinding && overridePoloidalWinding )
+      windingGroupOffset = Blankinship( overrideToroidalWinding,
+                                      overridePoloidalWinding );
+    else
+      windingGroupOffset = 0;
+
     fi.analysisState = FieldlineProperties::UNKNOWN_STATE;
     fi.type = FieldlineProperties::CHAOTIC;
 
-    fi.toroidalWinding = 0;
-    fi.poloidalWinding = 0;
-    fi.windingGroupOffset = 0;
+    fi.toroidalWinding = overrideToroidalWinding;
+    fi.poloidalWinding = overridePoloidalWinding;
+    fi.windingGroupOffset = windingGroupOffset;
     fi.islands = 0;
     fi.nnodes  = 0;
 
     fi.confidence        = 0;
     fi.nPuncturesNeeded  = 0;
-    fi.toroidalPeriod    = 0;
-    fi.poloidalPeriod    = 0;
+    fi.toroidalPeriod    = overrideToroidalWinding;
+    fi.poloidalPeriod    = overridePoloidalWinding;
     fi.ridgelineVariance = 0;
 
     return;
@@ -2462,7 +2288,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       // Debug info
       if( verboseFlag )
         cerr << "winding pair "
-             << approximateWindingPairs[i].toroidal << "/"
+             << approximateWindingPairs[i].toroidal << ","
              << approximateWindingPairs[i].poloidal << "  ("
              << local_safetyFactor << ")  "
              << "Difference  " << approximateWindingPairs[i].stat << "  "
@@ -2633,8 +2459,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
                                     windingGroupOffset );
 
 
-    if( verboseFlag & i<10 )
-      cerr << (drawable ? "Drawable " : "Rejected ") 
+    if( verboseFlag && (drawable || i<10) )
+      cerr << "Final "
+           << (drawable ? "Drawable " : "Rejected ") 
            << "winding pair:  " 
            << mergedWindingPairs[i].toroidal << ","
            << mergedWindingPairs[i].poloidal << "  "
@@ -2651,16 +2478,19 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         // Keep only those that are drawable.
         drawable )
     {
-      if( drawableRank == -1 )
+      drawableIndexs.push_back( i );
+
+      // If a tie take the higher order winding.
+      if( toroidalWinding < mergedWindingPairs[i].toroidal )
       {
+        toroidalWinding = mergedWindingPairs[i].toroidal;
+
         drawableRank = mergedWindingPairs[i].ranking;
         drawableIndex = i;
       }
-
-      drawableIndexs.push_back( i );
     }
 
-    if( verboseFlag & i<10 )
+    if( verboseFlag && (drawable || i<10) )
       cerr << endl;
   }
 
@@ -2689,23 +2519,33 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
   values.resize( mergedWindingPairs.size() );
 
-  for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
-    values[i] = mergedWindingPairs[i].toroidal;
+  if( approximateWindingPairs.size() > 1 )
+  {
+    for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
+      values[i] = mergedWindingPairs[i].toroidal;
+    
+    toroidalGCD = GCD( values );
+    
+    for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
+      values[i] = mergedWindingPairs[i].poloidal;
 
-  toroidalGCD = GCD( values );
+    poloidalGCD = GCD( values );
 
-  for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
-    values[i] = mergedWindingPairs[i].poloidal;
-
-  poloidalGCD = GCD( values );
-
-  unsigned int periodGCD = GCD( toroidalGCD, poloidalGCD );
+    periodGCD = GCD( toroidalGCD, poloidalGCD );
+  }
+  else
+  {
+    toroidalGCD = 1;
+    poloidalGCD = 1;
+    periodGCD = 1;
+  }
 
   if( verboseFlag )
-    cerr << "Winding GCD = " << windingGCD << "  "
-         << "Toroial, Poloidal GCD = "
+    cerr << "Winding Pair " << toroidalWinding << "," << poloidalWinding << "  "
+         << "GCD = " << windingGCD << "   "
+         << "Period Toroial, Poloidal GCD = "
          << toroidalGCD << "," << poloidalGCD << "  "
-         << "Period GCD = " << periodGCD << "  "
+         << "Combined GCD = " << periodGCD
          << endl;
 
   // Check for islands within islands.
@@ -2724,7 +2564,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
     if( verboseFlag )
       cerr << "Islands within Islands match between with GCD = "
-           << toroidalPeriod << "," << poloidalPeriod << "  ";
+           << toroidalWinding << "," << poloidalWinding << "  ";
 
     // When the "only" drawable winding pair is the base winding pair
     // the winding GCD will equal the period GCD.
@@ -2742,22 +2582,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       toroidalPeriod = mergedWindingPairs[0].toroidal;
       poloidalPeriod = mergedWindingPairs[0].poloidal;
 
-      // Check to see if the fieldline is periodic. I.e. on a rational
-      // surface.  If within "delta" of the distance the fieldline is
-      // probably on a rational surface.
-      if( rationalCheck( poloidal_puncture_pts, toroidalWinding,
-                         nnodes, delta*0.1 ) ) 
+      if( poloidal_puncture_pts.size() == fi.maxPunctures )
       {
-        type = FieldlineProperties::O_POINT;
-        analysisState = FieldlineProperties::COMPLETED;
-        
-        if( verboseFlag )
-          cerr << "Appears to be an O point " << delta*0.1 << endl;
-      }
-
-      else if( poloidal_puncture_pts.size() == fi.maxPunctures )
-      {
-        analysisState = FieldlineProperties::COMPLETED;
+        analysisState = FieldlineProperties::TERMINATED;
 
         if( verboseFlag )
           cerr << "Potentially withn the chaotic regime." << endl;
@@ -2807,16 +2634,16 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       }
       // Get enough points so that the full toroidal and poloidal
       // periods can be analyzed.
-      else if( poloidal_puncture_pts.size() <= 2*toroidalPeriod ||
-               ridgeline_points.size()      <= 2*poloidalPeriod )
+      else if( poloidal_puncture_pts.size() < 2*(toroidalPeriod+2) ||
+               ridgeline_points.size()      < 2*(poloidalPeriod+2) )
       {
         analysisState = FieldlineProperties::ADDING_POINTS;
 
         // For the toroidal period allow for one more possible period
         // to be exaimed.
-        if( nPuncturesNeeded < 2.0 * (toroidalPeriod+1) )
+        if( nPuncturesNeeded < 2.0 * (toroidalPeriod+2) )
         {
-          nPuncturesNeeded = 2.0 * (toroidalPeriod+1);
+          nPuncturesNeeded = 2.0 * (toroidalPeriod+2);
         
           if( verboseFlag )
             cerr << "Not enough puncture points; "
@@ -2851,6 +2678,19 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         analysisState = FieldlineProperties::COMPLETED;
     }
 
+    // Check to see if the fieldline is periodic. I.e. on a rational
+    // surface.  If within "delta" of the distance the fieldline is
+    // probably on a rational surface.
+    if( rationalCheck( poloidal_puncture_pts, toroidalWinding,
+                       nnodes, delta*0.1 ) ) 
+    {
+      type = FieldlineProperties::O_POINT;
+      analysisState = FieldlineProperties::COMPLETED;
+      
+      if( verboseFlag )
+        cerr << "Appears to be an O point " << delta*0.1 << endl;
+    }
+
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
   }
 
@@ -2870,11 +2710,11 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
     if( verboseFlag )
       cerr << "Island match between with GCD = " << windingGCD << "  "
-           << toroidalPeriod << "," << poloidalPeriod << "  ";
+           << toroidalWinding << "," << poloidalWinding << "  ";
     
     // When the "only" drawable winding pair is the base winding pair
     // the winding GCD will be 1.
-    if( windingGCD == 1 )
+    if( windingGCD <= 1 )
     {
       // The best guestimate of number of nodes will be the GCD of the
       // best winding pair. If there is a tie it does not matter as it
@@ -2888,22 +2728,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       toroidalPeriod = mergedWindingPairs[0].toroidal;
       poloidalPeriod = mergedWindingPairs[0].poloidal;
 
-      // Check to see if the fieldline is periodic. I.e. on a rational
-      // surface.  If within "delta" of the distance the fieldline is
-      // probably on a rational surface.
-      if( rationalCheck( poloidal_puncture_pts, toroidalWinding,
-                         nnodes, delta*0.1 ) ) 
+      if( poloidal_puncture_pts.size() == fi.maxPunctures )
       {
-        type = FieldlineProperties::O_POINT;
-        analysisState = FieldlineProperties::COMPLETED;
-        
-        if( verboseFlag )
-          cerr << "Appears to be an O point " << delta*0.1 << endl;
-      }
-
-      else if( poloidal_puncture_pts.size() == fi.maxPunctures )
-      {
-        analysisState = FieldlineProperties::COMPLETED;
+        analysisState = FieldlineProperties::TERMINATED;
 
         if( verboseFlag )
           cerr << "Potentially withn the chaotic regime." << endl;
@@ -2937,22 +2764,41 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
       nnodes = windingGCD;
 
+      // For a 1:1 island the nnodes will get stuck in a local minimum
+      // of 1,2, or 3. At least that is our observation. As such, add
+      // points to see if the analysis can get out of the local
+      // minimum.
+      if( toroidalWinding == 1 && poloidalWinding == 1 && nnodes <= 5 )
+      {
+        nnodes = poloidal_puncture_pts.size() / toroidalWinding / 2;
+
+        analysisState = FieldlineProperties::ADDING_POINTS;
+
+        nPuncturesNeeded = poloidal_puncture_pts.size() + 4;
+
+        if( verboseFlag )
+          cerr << "Local minimum, not enough puncture points; "
+               << "have " << poloidal_puncture_pts.size() << " "
+               << "asking for " << nPuncturesNeeded << " puncture points"
+               << endl;
+      }
+
       // Get enough points so that the full toroidal and poloidal
       // periods can be analyzed.
-      if( poloidal_puncture_pts.size() <= 2*toroidalPeriod ||
-          ridgeline_points.size()      <= 2*poloidalPeriod )
+      else if( poloidal_puncture_pts.size() < 2*(toroidalPeriod+2) ||
+               ridgeline_points.size()      < 2*(poloidalPeriod+2) )
       {
         analysisState = FieldlineProperties::ADDING_POINTS;
 
         // For the toroidal period allow for one more possible period
         // to be exaimed.
-        if( nPuncturesNeeded < 2.0 * (toroidalPeriod+1) )
+        if( nPuncturesNeeded < 2.0 * (toroidalPeriod+2) )
         {
-          nPuncturesNeeded = 2.0 * (toroidalPeriod+1);
+          nPuncturesNeeded = 2.0 * (toroidalPeriod+2);
         
           if( verboseFlag )
             cerr << "Not enough puncture points; "
-                 << "need " << 2*(toroidalPeriod+1) << " "
+                 << "need " << 2*(toroidalPeriod+2) << " "
                  << "have " << poloidal_puncture_pts.size() << " "
                  << "asking for " << nPuncturesNeeded << " puncture points"
                  << endl;
@@ -2966,7 +2812,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
           nPuncturesNeeded = 2.0 * (poloidalPeriod+2) * local_safetyFactor + 0.5;
           if( verboseFlag )
             cerr << "Not enough ridgeline points; "
-                 << "need " << 2*(poloidalPeriod+1) << " "
+                 << "need " << 2*(poloidalPeriod+2) << " "
                  << "have " << ridgeline_points.size() << " "
                  << "asking for " << nPuncturesNeeded << " puncture points"
                  << endl;
@@ -2981,6 +2827,19 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       }
       else
         analysisState = FieldlineProperties::COMPLETED;
+    }
+
+    // Check to see if the fieldline is periodic. I.e. on a rational
+    // surface.  If within "delta" of the distance the fieldline is
+    // probably on a rational surface.
+    if( rationalCheck( poloidal_puncture_pts, toroidalWinding,
+                       nnodes, delta*0.1 ) ) 
+    {
+      type = FieldlineProperties::O_POINT;
+      analysisState = FieldlineProperties::COMPLETED;
+      
+      if( verboseFlag )
+          cerr << "Appears to be an O point " << delta*0.1 << endl;
     }
 
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
@@ -3308,7 +3167,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
   // The user has set the toroidal winding get the poloidal winding
   // based on the data found.
-  if( overrideToroidalWinding ) 
+  if( overrideToroidalWinding )
   {
     toroidalWinding = overrideToroidalWinding;
 
@@ -3350,7 +3209,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       ++ic;
     }
 
+
     double consistency = (double) nMatches / (double) (nsets-toroidalWinding);
+
+    if( overridePoloidalWinding )
+    {
+      poloidalWinding = overridePoloidalWinding;
+    }
 
     double local_safetyFactor =
       (double) toroidalWinding / (double) poloidalWinding;
@@ -3365,7 +3230,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     if( verboseFlag )
       cerr << "overriding" << endl
            << "**using**   winding pair "
-           << toroidalWinding << "/"
+           << toroidalWinding << ","
            << poloidalWinding << "  ("
            << local_safetyFactor << " - "
            << fabs(safetyFactor - local_safetyFactor) << ")  "
@@ -3387,7 +3252,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
   fi.confidence       = confidence;
 
-  fi.nPuncturesNeeded = nPuncturesNeeded;
+  fi.nPuncturesNeeded = nPuncturesNeeded + (nPuncturesNeeded ? 1 : 0);
   fi.toroidalPeriod   = toroidalPeriod;
   fi.poloidalPeriod   = poloidalPeriod;
   fi.ridgelineVariance = ridgelineVariance;
@@ -3586,7 +3451,7 @@ unsigned int
 FieldlineLib::
 surfaceOverlapCheck( vector< vector< Point > > &bins,
                      unsigned int toroidalWinding,
-                     unsigned int offset,
+                     unsigned int windingGroupOffset,
                      unsigned int &nnodes )
 {
   nnodes = bins[0].size();
@@ -3623,24 +3488,21 @@ surfaceOverlapCheck( vector< vector< Point > > &bins,
   if( toroidalWinding == 1 || nnodes == 1 )
     return nnodes;
 
-  Vector v0 = (Vector) bins[     0][1] - (Vector) bins[0][0];
-  Vector v1 = (Vector) bins[offset][0] - (Vector) bins[0][0];
-
   // If the offset and point ordering are opposite in directions then
-  // the previous group is the offset. Otherwise if they have the same
-  // direction then toroidalWinding-offset is the previous group.
-  int offsetDir;
+  // the previous group is the windingGroupOffset. Otherwise if they
+  // have the same direction then -windingGroupOffset is the previous
+  // group.
+  Vector intra = (Vector) bins[                 0][1] - (Vector) bins[0][0];
+  Vector inter = (Vector) bins[windingGroupOffset][0] - (Vector) bins[0][0];
 
-  if( Dot( v0, v1 ) < 0.0 )
-    offsetDir = 1;
-  else
-    offsetDir = -1;
+  int offset = (Dot( intra, inter ) < 0.0) ?
+    windingGroupOffset : toroidalWinding-windingGroupOffset;
 
   // Second make sure none of the groups overlap each other.
-  for( unsigned int i=0; i<toroidalWinding; i++ ) {
-
+  for( unsigned int i=0; i<toroidalWinding; i++ )
+  {
     // The previous group
-    unsigned int j = (i + offsetDir*offset + toroidalWinding) % toroidalWinding;
+    unsigned int j = (i + offset) % toroidalWinding;
 
     // Check for a point in the previous group being between the first
     // two points in the current group.
@@ -3679,8 +3541,8 @@ FieldlineLib::
 surfaceGroupCheck( vector< vector< Point > > &bins,
                    unsigned int i,
                    unsigned int j,
-                   unsigned int nnodes ) {
-
+                   unsigned int nnodes )
+{
   unsigned int nodes = nnodes;
 
   while( nodes < bins[i].size() ) {
@@ -3706,7 +3568,7 @@ removeOverlap( vector< vector < Point > > &bins,
                unsigned int &nnodes,
                unsigned int toroidalWinding,
                unsigned int poloidalWinding,
-               unsigned int offset,
+               unsigned int windingGroupOffset,
                unsigned int island )
 {
   Vector globalCentroid = Vector(0,0,0);;
@@ -3717,11 +3579,14 @@ removeOverlap( vector< vector < Point > > &bins,
   
   globalCentroid /= (toroidalWinding*nnodes);
     
-  if( island && nnodes == 1 ) {
-
-  } else if( island ) {
-
-    for( unsigned int i=0; i<toroidalWinding; i++ ) {
+  if( island && nnodes == 1 )
+  {
+  }
+  else if( island )
+  {
+    // Loop through each island.
+    for( unsigned int i=0; i<toroidalWinding; i++ )
+    {
       unsigned int nodes = 0;
       bool completeIsland = false;
 
@@ -3731,11 +3596,11 @@ removeOverlap( vector< vector < Point > > &bins,
         unsigned int i = 0;
 
         // See if the first point overlaps another section.
-        for( unsigned int  j=nnodes/2; j<bins[i].size(); j++ ) {
+        for( unsigned int  j=nnodes/2; j<bins[i].size(); j++ )
+        {
           if( Dot( (Vector) bins[i][j  ] - (Vector) bins[i][0],
-                   (Vector) bins[i][j-1] - (Vector) bins[i][0] )
-              < 0.0 ) {
-
+                   (Vector) bins[i][j-1] - (Vector) bins[i][0] ) < 0.0 )
+          {
             nodes = j;
         
             completeIsland = true;
@@ -3744,12 +3609,13 @@ removeOverlap( vector< vector < Point > > &bins,
         }
 
         // See if a point overlaps the first section.
-        if( nodes == 0 ) {
-          for( unsigned int j=nnodes/2; j<bins[i].size(); j++ ) {
+        if( nodes == 0 )
+        {
+          for( unsigned int j=nnodes/2; j<bins[i].size(); j++ )
+          {
             if( Dot( (Vector) bins[i][0] - (Vector) bins[i][j],
-                     (Vector) bins[i][1] - (Vector) bins[i][j] )
-                < 0.0 ) {
-
+                     (Vector) bins[i][1] - (Vector) bins[i][j] ) < 0.0 )
+            {
               nodes = j;
 
               completeIsland = true;
@@ -3778,16 +3644,17 @@ removeOverlap( vector< vector < Point > > &bins,
         if( islandProperties( points, globalCentroid,
                               startIndex, middleIndex, stopIndex, nodes ) == 3 )
         */
-          completeIsland = true;
+        completeIsland = true;
 
         nodes = nnodes;
-
       }
 
       if( nodes == 0 )
       {
         if( verboseFlag )
-          cerr << "removeOverlap - Island properties returned ZERO NODES for island " << i << endl;
+          cerr << "removeOverlap - "
+               << "Island properties returned ZERO NODES for island "
+               << i << endl;
 
         nodes = bins[i].size();
       }
@@ -3808,36 +3675,55 @@ removeOverlap( vector< vector < Point > > &bins,
         bins[i].push_back( bins[i][0] );
     }
 
-  } else {  // Surface
+  }
 
+  // Surface
+  else // if( !islands )
+  {
     // This gives the minimal number of nodes for each group.
-
-    surfaceOverlapCheck( bins, toroidalWinding, offset, nnodes );
+    surfaceOverlapCheck( bins, toroidalWinding, windingGroupOffset, nnodes );
     
-    if( nnodes == 0 ) {
-
+    if( nnodes == 0 )
+    {
       if( verboseFlag )
-          cerr << "removeOverlap - Surface properties returned ZERO NODES for island " << endl;
+          cerr << "removeOverlap - "
+               << "Surface properties returned ZERO NODES for surface "
+               << endl;
 
       nnodes = bins[0].size();
 
-      for( unsigned int i=1; i<toroidalWinding; i++ ) {
+      for( unsigned int i=1; i<toroidalWinding; i++ )
+      {
         if( nnodes > bins[i].size())
           nnodes = bins[i].size();
       }
     }
 
-    for( unsigned int i=0; i<toroidalWinding; i++ ) {
+    // If the offset and point ordering are opposite in directions
+    // then the next group is the -windingGroupOffset. Otherwise if
+    // they have the same direction then windingGroupOffset is the
+    // next group.
+    Vector intra = (Vector) bins[                 0][1] - (Vector) bins[0][0];
+    Vector inter = (Vector) bins[windingGroupOffset][0] - (Vector) bins[0][0];
+
+    int offset = (Dot( intra, inter ) < 0.0) ?
+      toroidalWinding-windingGroupOffset : windingGroupOffset;
+
+    for( unsigned int i=0; i<toroidalWinding; i++ )
+    {
+      // The next group
+      unsigned int j = (i + offset) % toroidalWinding;
 
       // Add back in any nodes that may not overlap.
-      unsigned int nodes =
-        surfaceGroupCheck( bins, i, (i+offset)%toroidalWinding, nnodes );
+      unsigned int nodes = surfaceGroupCheck( bins, i, j, nnodes );
 
       // No more than one point should be added.
       if( nodes > nnodes+1 )
+      {
         if( verboseFlag )
           cerr << "removeOverlap - Surface " << i
              << " nnodes mismatch " << nnodes << "  " << nodes << endl;
+      }
 
       // Erase all of the overlapping points.
       bins[i].erase( bins[i].begin()+nodes, bins[i].end() );
@@ -4074,7 +3960,7 @@ mergeOverlap( vector< vector < Point > > &bins,
               unsigned int &nnodes,
               unsigned int toroidalWinding,
               unsigned int poloidalWinding,
-              unsigned int offset,
+              unsigned int windingGroupOffset,
               unsigned int island )
 {
   Vector globalCentroid = Vector(0,0,0);;
@@ -4307,7 +4193,7 @@ mergeOverlap( vector< vector < Point > > &bins,
     vector<vector < Point > > tmp_bins(toroidalWinding);
 
     // This gives the minimal number of nodes for each group.
-    surfaceOverlapCheck( bins, toroidalWinding, offset, nnodes );
+    surfaceOverlapCheck( bins, toroidalWinding, windingGroupOffset, nnodes );
 
     if( nnodes == 0 ) {
 
@@ -4317,11 +4203,23 @@ mergeOverlap( vector< vector < Point > > &bins,
       }
     }
 
-    for( unsigned int i=0; i<toroidalWinding; i++ ) {
+    // If the offset and point ordering are opposite in directions
+    // then the next group is the -windingGroupOffset. Otherwise if
+    // they have the same direction then windingGroupOffset is the
+    // next group.
+    Vector intra = (Vector) bins[                 0][1] - (Vector) bins[0][0];
+    Vector inter = (Vector) bins[windingGroupOffset][0] - (Vector) bins[0][0];
+
+    int offset = (Dot( intra, inter ) < 0.0) ?
+      toroidalWinding-windingGroupOffset : windingGroupOffset;
+
+    for( unsigned int i=0; i<toroidalWinding; i++ )
+    {
+      // The next group
+      unsigned int j = (i + offset) % toroidalWinding;
 
       // Add back in any nodes that may not overlap.
-      unsigned int nodes =
-        surfaceGroupCheck( bins, i, (i+offset)%toroidalWinding, nnodes );
+      unsigned int nodes = surfaceGroupCheck( bins, i, j, nnodes );
 
       // No more than one point should added.
       if( nodes > nnodes+1 )

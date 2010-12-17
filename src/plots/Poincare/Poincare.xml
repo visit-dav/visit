@@ -127,6 +127,9 @@
       <Field name="overrideToroidalWinding" label="Override Toroidal Winding" type="int">
         0
       </Field>
+      <Field name="overridePoloidalWinding" label="Override Poloidal Winding" type="int">
+        0
+      </Field>
       <Field name="windingPairConfidence" label="Winding Pair Confidence" type="double">
         0.900000
       </Field>

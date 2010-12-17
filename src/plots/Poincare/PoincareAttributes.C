@@ -498,6 +498,7 @@ void PoincareAttributes::Init()
     analysis = Normal;
     maximumToroidalWinding = 0;
     overrideToroidalWinding = 0;
+    overridePoloidalWinding = 0;
     windingPairConfidence = 0.9;
     periodicityConsistency = 0.8;
     adjustPlane = -1;
@@ -579,6 +580,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     analysis = obj.analysis;
     maximumToroidalWinding = obj.maximumToroidalWinding;
     overrideToroidalWinding = obj.overrideToroidalWinding;
+    overridePoloidalWinding = obj.overridePoloidalWinding;
     windingPairConfidence = obj.windingPairConfidence;
     periodicityConsistency = obj.periodicityConsistency;
     adjustPlane = obj.adjustPlane;
@@ -807,6 +809,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (analysis == obj.analysis) &&
             (maximumToroidalWinding == obj.maximumToroidalWinding) &&
             (overrideToroidalWinding == obj.overrideToroidalWinding) &&
+            (overridePoloidalWinding == obj.overridePoloidalWinding) &&
             (windingPairConfidence == obj.windingPairConfidence) &&
             (periodicityConsistency == obj.periodicityConsistency) &&
             (adjustPlane == obj.adjustPlane) &&
@@ -1029,6 +1032,7 @@ PoincareAttributes::SelectAll()
     Select(ID_analysis,                  (void *)&analysis);
     Select(ID_maximumToroidalWinding,    (void *)&maximumToroidalWinding);
     Select(ID_overrideToroidalWinding,   (void *)&overrideToroidalWinding);
+    Select(ID_overridePoloidalWinding,   (void *)&overridePoloidalWinding);
     Select(ID_windingPairConfidence,     (void *)&windingPairConfidence);
     Select(ID_periodicityConsistency,    (void *)&periodicityConsistency);
     Select(ID_adjustPlane,               (void *)&adjustPlane);
@@ -1198,6 +1202,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("overrideToroidalWinding", overrideToroidalWinding));
+    }
+
+    if(completeSave || !FieldsEqual(ID_overridePoloidalWinding, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("overridePoloidalWinding", overridePoloidalWinding));
     }
 
     if(completeSave || !FieldsEqual(ID_windingPairConfidence, &defaultObject))
@@ -1564,6 +1574,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetMaximumToroidalWinding(node->AsInt());
     if((node = searchNode->GetNode("overrideToroidalWinding")) != 0)
         SetOverrideToroidalWinding(node->AsInt());
+    if((node = searchNode->GetNode("overridePoloidalWinding")) != 0)
+        SetOverridePoloidalWinding(node->AsInt());
     if((node = searchNode->GetNode("windingPairConfidence")) != 0)
         SetWindingPairConfidence(node->AsDouble());
     if((node = searchNode->GetNode("periodicityConsistency")) != 0)
@@ -1851,6 +1863,13 @@ PoincareAttributes::SetOverrideToroidalWinding(int overrideToroidalWinding_)
 {
     overrideToroidalWinding = overrideToroidalWinding_;
     Select(ID_overrideToroidalWinding, (void *)&overrideToroidalWinding);
+}
+
+void
+PoincareAttributes::SetOverridePoloidalWinding(int overridePoloidalWinding_)
+{
+    overridePoloidalWinding = overridePoloidalWinding_;
+    Select(ID_overridePoloidalWinding, (void *)&overridePoloidalWinding);
 }
 
 void
@@ -2236,6 +2255,12 @@ PoincareAttributes::GetOverrideToroidalWinding() const
     return overrideToroidalWinding;
 }
 
+int
+PoincareAttributes::GetOverridePoloidalWinding() const
+{
+    return overridePoloidalWinding;
+}
+
 double
 PoincareAttributes::GetWindingPairConfidence() const
 {
@@ -2545,6 +2570,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_analysis:                  return "analysis";
     case ID_maximumToroidalWinding:    return "maximumToroidalWinding";
     case ID_overrideToroidalWinding:   return "overrideToroidalWinding";
+    case ID_overridePoloidalWinding:   return "overridePoloidalWinding";
     case ID_windingPairConfidence:     return "windingPairConfidence";
     case ID_periodicityConsistency:    return "periodicityConsistency";
     case ID_adjustPlane:               return "adjustPlane";
@@ -2623,6 +2649,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_analysis:                  return FieldType_enum;
     case ID_maximumToroidalWinding:    return FieldType_int;
     case ID_overrideToroidalWinding:   return FieldType_int;
+    case ID_overridePoloidalWinding:   return FieldType_int;
     case ID_windingPairConfidence:     return FieldType_double;
     case ID_periodicityConsistency:    return FieldType_double;
     case ID_adjustPlane:               return FieldType_int;
@@ -2701,6 +2728,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_analysis:                  return "enum";
     case ID_maximumToroidalWinding:    return "int";
     case ID_overrideToroidalWinding:   return "int";
+    case ID_overridePoloidalWinding:   return "int";
     case ID_windingPairConfidence:     return "double";
     case ID_periodicityConsistency:    return "double";
     case ID_adjustPlane:               return "int";
@@ -2862,6 +2890,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_overrideToroidalWinding:
         {  // new scope
         retval = (overrideToroidalWinding == obj.overrideToroidalWinding);
+        }
+        break;
+    case ID_overridePoloidalWinding:
+        {  // new scope
+        retval = (overridePoloidalWinding == obj.overridePoloidalWinding);
         }
         break;
     case ID_windingPairConfidence:
@@ -3150,6 +3183,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
 
            maximumToroidalWinding != obj.maximumToroidalWinding ||
            overrideToroidalWinding != obj.overrideToroidalWinding ||
+           overridePoloidalWinding != obj.overridePoloidalWinding ||
            windingPairConfidence != obj.windingPairConfidence ||
            periodicityConsistency != obj.periodicityConsistency ||
 

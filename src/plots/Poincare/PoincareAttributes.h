@@ -185,6 +185,7 @@ public:
     void SetAnalysis(AnalysisType analysis_);
     void SetMaximumToroidalWinding(int maximumToroidalWinding_);
     void SetOverrideToroidalWinding(int overrideToroidalWinding_);
+    void SetOverridePoloidalWinding(int overridePoloidalWinding_);
     void SetWindingPairConfidence(double windingPairConfidence_);
     void SetPeriodicityConsistency(double periodicityConsistency_);
     void SetAdjustPlane(int adjustPlane_);
@@ -244,6 +245,7 @@ public:
     AnalysisType         GetAnalysis() const;
     int                  GetMaximumToroidalWinding() const;
     int                  GetOverrideToroidalWinding() const;
+    int                  GetOverridePoloidalWinding() const;
     double               GetWindingPairConfidence() const;
     double               GetPeriodicityConsistency() const;
     int                  GetAdjustPlane() const;
@@ -375,6 +377,7 @@ public:
         ID_analysis,
         ID_maximumToroidalWinding,
         ID_overrideToroidalWinding,
+        ID_overridePoloidalWinding,
         ID_windingPairConfidence,
         ID_periodicityConsistency,
         ID_adjustPlane,
@@ -433,6 +436,7 @@ private:
     int            analysis;
     int            maximumToroidalWinding;
     int            overrideToroidalWinding;
+    int            overridePoloidalWinding;
     double         windingPairConfidence;
     double         periodicityConsistency;
     int            adjustPlane;
@@ -475,6 +479,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidddiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidddiiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
 
 #endif

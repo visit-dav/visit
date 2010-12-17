@@ -120,6 +120,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void analysisChanged(int val);
     void maximumToroidalWindingChanged(int val);
     void overrideToroidalWindingChanged(int val);
+    void overridePoloidalWindingChanged(int val);
     void windingPairConfidenceProcessText();
     void periodicityConsistencyProcessText();
     void adjustPlaneChanged(int val);
@@ -181,6 +182,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QButtonGroup *analysisButtonGroup;
     QSpinBox *maximumToroidalWinding;
     QSpinBox *overrideToroidalWinding;
+    QSpinBox *overridePoloidalWinding;
     QLineEdit *windingPairConfidence;
     QLineEdit *periodicityConsistency;
     QWidget      *overlaps;
@@ -238,6 +240,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *analysisLabel;
     QLabel *maximumToroidalWindingLabel;
     QLabel *overrideToroidalWindingLabel;
+    QLabel *overridePoloidalWindingLabel;
     QLabel *windingPairConfidenceLabel;
     QLabel *periodicityConsistencyLabel;
     QLabel *adjustPlaneLabel;

@@ -226,6 +226,8 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%soverrideToroidalWinding = %d\n", prefix, atts->GetOverrideToroidalWinding());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%soverridePoloidalWinding = %d\n", prefix, atts->GetOverridePoloidalWinding());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%swindingPairConfidence = %g\n", prefix, atts->GetWindingPairConfidence());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%speriodicityConsistency = %g\n", prefix, atts->GetPeriodicityConsistency());
@@ -1041,6 +1043,30 @@ PoincareAttributes_GetOverrideToroidalWinding(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOverrideToroidalWinding()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetOverridePoloidalWinding(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the overridePoloidalWinding in the object.
+    obj->data->SetOverridePoloidalWinding((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetOverridePoloidalWinding(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOverridePoloidalWinding()));
     return retval;
 }
 
@@ -2090,6 +2116,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetMaximumToroidalWinding", PoincareAttributes_GetMaximumToroidalWinding, METH_VARARGS},
     {"SetOverrideToroidalWinding", PoincareAttributes_SetOverrideToroidalWinding, METH_VARARGS},
     {"GetOverrideToroidalWinding", PoincareAttributes_GetOverrideToroidalWinding, METH_VARARGS},
+    {"SetOverridePoloidalWinding", PoincareAttributes_SetOverridePoloidalWinding, METH_VARARGS},
+    {"GetOverridePoloidalWinding", PoincareAttributes_GetOverridePoloidalWinding, METH_VARARGS},
     {"SetWindingPairConfidence", PoincareAttributes_SetWindingPairConfidence, METH_VARARGS},
     {"GetWindingPairConfidence", PoincareAttributes_GetWindingPairConfidence, METH_VARARGS},
     {"SetPeriodicityConsistency", PoincareAttributes_SetPeriodicityConsistency, METH_VARARGS},
@@ -2255,6 +2283,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetMaximumToroidalWinding(self, NULL);
     if(strcmp(name, "overrideToroidalWinding") == 0)
         return PoincareAttributes_GetOverrideToroidalWinding(self, NULL);
+    if(strcmp(name, "overridePoloidalWinding") == 0)
+        return PoincareAttributes_GetOverridePoloidalWinding(self, NULL);
     if(strcmp(name, "windingPairConfidence") == 0)
         return PoincareAttributes_GetWindingPairConfidence(self, NULL);
     if(strcmp(name, "periodicityConsistency") == 0)
@@ -2450,6 +2480,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetMaximumToroidalWinding(self, tuple);
     else if(strcmp(name, "overrideToroidalWinding") == 0)
         obj = PoincareAttributes_SetOverrideToroidalWinding(self, tuple);
+    else if(strcmp(name, "overridePoloidalWinding") == 0)
+        obj = PoincareAttributes_SetOverridePoloidalWinding(self, tuple);
     else if(strcmp(name, "windingPairConfidence") == 0)
         obj = PoincareAttributes_SetWindingPairConfidence(self, tuple);
     else if(strcmp(name, "periodicityConsistency") == 0)

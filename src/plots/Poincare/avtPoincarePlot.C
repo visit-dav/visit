@@ -438,6 +438,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
     poincareFilter->SetMaximumToroidalWinding( atts.GetMaximumToroidalWinding() );
     poincareFilter->SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
+    poincareFilter->SetOverridePoloidalWinding( atts.GetOverridePoloidalWinding() );
     poincareFilter->SetWindingPairConfidence( atts.GetWindingPairConfidence() );
     poincareFilter->SetPeriodicityConsistency( atts.GetPeriodicityConsistency() );
     poincareFilter->SetOverlaps( atts.GetOverlaps() );

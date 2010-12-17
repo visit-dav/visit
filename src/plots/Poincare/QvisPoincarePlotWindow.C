@@ -350,21 +350,31 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(overrideToroidalWindingChanged(int)));
     analysisLayout->addWidget(overrideToroidalWinding, 1, 1);
 
+    overridePoloidalWindingLabel =
+      new QLabel(tr("Override poloidal winding"), secondTab);
+    analysisLayout->addWidget(overridePoloidalWindingLabel, 2, 0);
+    overridePoloidalWinding = new QSpinBox(secondTab);
+    overridePoloidalWinding->setMinimum(0);
+    overridePoloidalWinding->setMaximum(1000);
+    connect(overridePoloidalWinding, SIGNAL(valueChanged(int)),
+            this, SLOT(overridePoloidalWindingChanged(int)));
+    analysisLayout->addWidget(overridePoloidalWinding, 2, 1);
+
     windingPairConfidenceLabel =
       new QLabel(tr("Winding pair confidence"), secondTab);
-    analysisLayout->addWidget(windingPairConfidenceLabel, 2, 0);
+    analysisLayout->addWidget(windingPairConfidenceLabel, 3, 0);
     windingPairConfidence = new QLineEdit(secondTab);
     connect(windingPairConfidence, SIGNAL(returnPressed()),
             this, SLOT(windingPairConfidenceProcessText()));
-    analysisLayout->addWidget(windingPairConfidence, 2, 1);
+    analysisLayout->addWidget(windingPairConfidence, 3, 1);
 
     periodicityConsistencyLabel =
       new QLabel(tr("Periodicity consistency"), secondTab);
-    analysisLayout->addWidget(periodicityConsistencyLabel, 3, 0);
+    analysisLayout->addWidget(periodicityConsistencyLabel, 4, 0);
     periodicityConsistency = new QLineEdit(secondTab);
     connect(periodicityConsistency, SIGNAL(returnPressed()),
             this, SLOT(periodicityConsistencyProcessText()));
-    analysisLayout->addWidget(periodicityConsistency, 3, 1);
+    analysisLayout->addWidget(periodicityConsistency, 4, 1);
 
    // Create the O/X Point group box.
     QGroupBox *criticalPointGroup = new QGroupBox(secondTab);
@@ -910,6 +920,11 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             overrideToroidalWinding->blockSignals(true);
             overrideToroidalWinding->setValue(atts->GetOverrideToroidalWinding());
             overrideToroidalWinding->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_overridePoloidalWinding:
+            overridePoloidalWinding->blockSignals(true);
+            overridePoloidalWinding->setValue(atts->GetOverridePoloidalWinding());
+            overridePoloidalWinding->blockSignals(false);
             break;
           case PoincareAttributes::ID_windingPairConfidence:
             windingPairConfidence->setText(DoubleToQString(atts->GetWindingPairConfidence()));
@@ -1685,6 +1700,14 @@ void
 QvisPoincarePlotWindow::overrideToroidalWindingChanged(int val)
 {
     atts->SetOverrideToroidalWinding(val);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::overridePoloidalWindingChanged(int val)
+{
+    atts->SetOverridePoloidalWinding(val);
     Apply();
 }
 
