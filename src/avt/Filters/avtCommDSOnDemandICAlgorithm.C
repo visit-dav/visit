@@ -51,6 +51,12 @@ static const int DONE = 0;
 static const int DATASET_REQUEST = 1;
 
 
+static bool icDomainCompare(const avtIntegralCurve *icA,
+                            const avtIntegralCurve *icB)
+{
+    return icA->domain.domain < icB->domain.domain;
+}
+
 // ****************************************************************************
 // Method:  avtCommDSOnDemandICAlgorithm::avtCommDSOnDemandICAlgorithm
 //
@@ -168,7 +174,7 @@ avtCommDSOnDemandICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
         else
             oobICs.push_back(s);
     }
-    debug5<<"My seeds. Active: "<<activeICs.size()<<" OOB: "<<oobICs.size()<<endl;
+    debug1<<"My seeds. Active: "<<activeICs.size()<<" OOB: "<<oobICs.size()<<endl;
 }
 
 
@@ -203,13 +209,19 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
         //Do work, if we have it....
         if (!activeICs.empty())
         {
-            debug5<<"activeICs.size()= "<<activeICs.size()<<endl;
             avtIntegralCurve *s = activeICs.front();
             activeICs.pop_front();
 
             vtkDataSet *ds = GetDataset(s->domain);
             if (ds != NULL)
             {
+                //Latency hiding. Request DS before advecting last IC.
+                if (activeICs.empty() && !oobICs.empty())
+                {
+                    SortIntegralCurves(oobICs);
+                    RequestDataset(oobICs.front()->domain);
+                }
+
                 AdvectParticle(s, ds);
                 if (s->status != avtIntegralCurve::STATUS_OK)
                 {
@@ -221,6 +233,8 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
                 else
                     HandleOOBIC(s);
             }
+            else
+                HandleOOBIC(s);
         }
 
         HandleMessages(numDone);
@@ -243,6 +257,7 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
         }
     }
 
+    debug1<<"All done. terminated sz= "<<terminatedICs.size()<<endl;
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
 
@@ -525,6 +540,28 @@ avtCommDSOnDemandICAlgorithm::AddDSToDomainCache(const DomainType &dom, vtkDataS
         domainCache.pop_back();
         DomPurgeCnt.value++;
     }
+}
+
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::SortIntegralCurves
+//
+// Purpose: Sort on domain.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    December 17, 2010
+//
+// ****************************************************************************
+
+void
+avtCommDSOnDemandICAlgorithm::SortIntegralCurves(list<avtIntegralCurve *> &ics)
+{
+    int timerHandle = visitTimer->StartTimer();
+    
+    ics.sort(icDomainCompare);
+
+    SortTime.value += visitTimer->StopTimer(timerHandle, "SortIntegralCurves()");
 }
 
 #endif

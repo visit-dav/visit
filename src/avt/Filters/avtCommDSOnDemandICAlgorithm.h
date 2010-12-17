@@ -79,6 +79,7 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
 
     virtual void              RunAlgorithm();
     virtual void              PostRunAlgorithm() {}
+    virtual void              SortIntegralCurves(std::list<avtIntegralCurve *> &);
     virtual void              HandleOOBIC(avtIntegralCurve *s);
     virtual void              RequestDataset(DomainType &d);
     virtual void              HandleMessages(int &numDone);
