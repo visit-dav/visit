@@ -395,6 +395,23 @@ avtICAlgorithm::SortIntegralCurves(vector<avtIntegralCurve *> &ic)
 }
 
 // ****************************************************************************
+// Method:  avtICAlgorithm::Sleep
+//
+// Purpose: Sleep for a spell.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    December 20, 2010
+//
+// ****************************************************************************
+
+void
+avtICAlgorithm::Sleep(long nanoSec) const
+{
+    struct timespec ts = {0, nanoSec};
+    nanosleep(&ts, 0);
+}
+
+// ****************************************************************************
 //  Method: avtICAlgorithm::GetTerminatedICs
 //
 //  Purpose:

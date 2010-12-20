@@ -102,6 +102,9 @@
 //   Dave Pugmire, Thu Dec  2 11:21:06 EST 2010
 //   Add CheckNextTimeStepNeeded.
 //
+//   Dave Pugmire, Mon Dec 20 15:01:14 EST 2010
+//   Added Sleep() method.
+//
 // ****************************************************************************
 
 class avtICAlgorithm
@@ -151,6 +154,8 @@ class avtICAlgorithm
     //Utility functions.
     virtual void              SortIntegralCurves(std::list<avtIntegralCurve *> &);
     virtual void              SortIntegralCurves(std::vector<avtIntegralCurve *> &);
+    void                      Sleep(long nanoSec=10) const;
+    
     //Statistics and timers.
     class ICStatistics
     {
