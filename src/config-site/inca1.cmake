@@ -1,25 +1,25 @@
-#/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1.2/bin/cmake
+#/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake
 ##
-## ./build_visit generated host.cmake
-## created: Wed Mar 24 13:48:54 PDT 2010
-## system: Linux hopi4 2.6.18-76chaos #1 SMP Fri Aug 14 13:22:06 EDT 2009 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_1_2 generated host.cmake
+## created: Thu Dec 16 15:58:28 PST 2010
+## system: Linux inca3 2.6.18-103chaos #1 SMP Tue Oct 19 16:43:10 EDT 2010 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
 SET(VISITHOME /usr/gapps/visit)
-SET(VISITARCH linux-x86_64_gcc-4.1.2)
+SET(VISITARCH linux-x86_64_gcc-4.1)
 
 ##
 ## Specify the location of the mesa.
 ##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.5/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 
 ##
 ## Specify the location of the vtk.
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0e/${VISITARCH}/lib/vtk-5.0/)
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0g/${VISITARCH}/lib/vtk-5.0/)
 
 ##
 ## Specify the Qt4 binary dir. 
@@ -33,6 +33,15 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.6.1/${VISITARCH}/bin)
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
 ##
+## Compiler flags.
+##
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
+VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -Wno-deprecated -m64 -fPIC -fvisibility=hidden")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -Wno-deprecated -m64 -fPIC -fvisibility=hidden")
+
+##
 ## Add parallel arguments.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
@@ -41,12 +50,6 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/local/tools/mvapich-gnu/include)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/local/tools/mvapich-gnu/lib/shared -L/usr/local/tools/mvapich-gnu/lib -Wl,-rpath=/usr/local/tools/mvapich-gnu/lib/shared")
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/local/tools/mvapich-gnu/lib/shared")
-
-##
-## Turn off warnings for deprecated features on g++
-##
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-Wno-deprecated -fPIC -fvisibility=hidden")
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-Wno-deprecated -fPIC -fvisibility=hidden")
 
 ##############################################################
 ##
@@ -101,6 +104,7 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ## H5Part
 ##
 VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 ##
 ## Mili
@@ -122,4 +126,10 @@ VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
+
+##
+## Xdmf
+##
+VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
