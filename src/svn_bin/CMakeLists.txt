@@ -1,105 +1,69 @@
-# Install the visit config files
+#*****************************************************************************
+#
+# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Produced at the Lawrence Livermore National Laboratory
+# LLNL-CODE-400142
+# All rights reserved.
+#
+# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+# full copyright notice is contained in the file COPYRIGHT located at the root
+# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+#
+# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+# modification, are permitted provided that the following conditions are met:
+#
+#  - Redistributions of  source code must  retain the above  copyright notice,
+#    this list of conditions and the disclaimer below.
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+#    documentation and/or other materials provided with the distribution.
+#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+#    be used to endorse or promote products derived from this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#
+#
+#
+# Modifications:
+#  Cyrus Harrison, Mon Dec 20 09:26:12 PST 2010
+#  Use glob to find all host profiles & ini files we want to install
+#  from svn_bin.
+#
+
+## find all host profiles to install using a glob
+FILE(GLOB HPROF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/host_*.xml")
+## find all ini files to install using a glob
+FILE(GLOB INI_FILES   "${CMAKE_CURRENT_SOURCE_DIR}/visit-*.ini")
+
+## provide proper install structure windows vs other:
 IF(WIN32)
-    INSTALL(FILES 
-        visit-config-llnl_closed.ini
-        visit-config-llnl_open.ini
-        visit-config-princeton.ini
-        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-    )
-    INSTALL(FILES 
-        host_anl_cosmea.xml
-        host_anl_eureka.xml
-        host_anl_gadzooks.xml
-        host_anl_teragrid.xml
-        host_llnl_alastor.xml
-        host_llnl_atlas.xml
-        host_llnl_aztec.xml
-        host_llnl_closed_eos.xml
-        host_llnl_closed_graph.xml
-        host_llnl_closed_inca.xml
-        host_llnl_closed_juno.xml
-        host_llnl_closed_minos.xml
-        host_llnl_closed_muir.xml
-        host_llnl_closed_rhea.xml
-        host_llnl_closed_tempest.xml
-        host_llnl_edge.xml
-        host_llnl_hera.xml
-        host_llnl_prism.xml
-        host_llnl_zeus.xml
-        host_nersc_franklin.xml
-        host_nersc_hopper.xml
-        host_nersc_euclid.xml
-        host_ornl_ewok.xml
-        host_ornl_jaguarpf.xml
-        host_ornl_jaguar.xml
-        host_ornl_lens.xml
-        host_ornl_photon.xml
-        host_princeton_artemis.xml
-        host_princeton_hecate.xml
-        host_princeton_tigressdata.xml
-        host_slac_red.xml
-        host_snl_closed_redrose.xml
-        host_tacc_longhorn.xml
-        host_tacc_ranger_vnc.xml
-        host_tacc_ranger.xml
-        host_tacc_spur.xml
-        host_umich_flux.xml
-        host_umich_nyx.xml
-        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/allhosts
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-    )
+    SET(INI_DEST   ${VISIT_INSTALLED_VERSION_BIN})
+    SET(HPROF_DEST ${VISIT_INSTALLED_VERSION_BIN}/allhosts)
 ELSE(WIN32)
-    INSTALL(FILES 
-        visit-config-anag.ini
-        visit-config-llnl_closed.ini
-        visit-config-llnl_open.ini
-        visit-config-princeton.ini
-        visit-guiconfig-anag.ini
-        visit-visitrc-anag.ini
-        DESTINATION ${VISIT_VERSION}/.visit
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-    )
-    INSTALL(FILES 
-        host_anl_cosmea.xml
-        host_anl_eureka.xml
-        host_anl_gadzooks.xml
-        host_anl_teragrid.xml
-        host_llnl_alastor.xml
-        host_llnl_atlas.xml
-        host_llnl_aztec.xml
-        host_llnl_closed_eos.xml
-        host_llnl_closed_graph.xml
-        host_llnl_closed_inca.xml
-        host_llnl_closed_juno.xml
-        host_llnl_closed_minos.xml
-        host_llnl_closed_muir.xml
-        host_llnl_closed_rhea.xml
-        host_llnl_closed_tempest.xml
-        host_llnl_edge.xml
-        host_llnl_hera.xml
-        host_llnl_prism.xml
-        host_llnl_zeus.xml
-        host_nersc_franklin.xml
-        host_nersc_hopper.xml
-        host_nersc_euclid.xml
-        host_ornl_ewok.xml
-        host_ornl_jaguarpf.xml
-        host_ornl_jaguar.xml
-        host_ornl_lens.xml
-        host_ornl_photon.xml
-        host_princeton_artemis.xml
-        host_princeton_hecate.xml
-        host_princeton_tigressdata.xml
-        host_slac_red.xml
-        host_snl_closed_redrose.xml
-        host_tacc_longhorn.xml
-        host_tacc_ranger_vnc.xml
-        host_tacc_ranger.xml
-        host_tacc_spur.xml
-        host_umich_flux.xml
-        host_umich_nyx.xml
-        DESTINATION ${VISIT_VERSION}/.visit/allhosts
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-    )
+    SET(INI_DEST   ${VISIT_VERSION}/.visit)
+    SET(HPROF_DEST ${VISIT_VERSION}/.visit/allhosts)
 ENDIF(WIN32)
+
+# Install the visit config files
+INSTALL(FILES ${INI_FILES}
+        DESTINATION ${INI_DEST}
+        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+)
+
+# Install the host profile files
+INSTALL(FILES ${HPROF_FILES}
+        DESTINATION ${HPROF_DEST}
+        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+)
