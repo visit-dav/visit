@@ -185,7 +185,10 @@
 #
 #    Kathleen Bonnell, Fri Dec 10 14:37:15 PST 2010 
 #    Add VISIT_3RDPARTY_VAR(VISIT_ZLIB_DIR for windows.
-#    
+#
+#    Cyrus Harrison, Mon Dec 20 10:50:29 PST 2010
+#    Use FORCE when setting various install paths.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -468,19 +471,19 @@ ELSE(WIN32)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/DetermineVisItArchitecture.cmake)
     DETERMINE_VISIT_ARCHITECTURE(VISIT_INSTALL_PLATFORM)
     SET(VISIT_INSTALLED_VERSION ${VISIT_VERSION}/${VISIT_INSTALL_PLATFORM} 
-        CACHE PATH "VisIt install directory")
+        CACHE PATH "VisIt install directory" FORCE)
     SET(VISIT_INSTALLED_VERSION_BIN ${VISIT_INSTALLED_VERSION}/bin 
-        CACHE PATH "VisIt bin install directory")
+        CACHE PATH "VisIt bin install directory" FORCE)
     SET(VISIT_INSTALLED_VERSION_LIB ${VISIT_INSTALLED_VERSION}/lib 
-        CACHE PATH "VisIt lib install directory")
+        CACHE PATH "VisIt lib install directory" FORCE)
     SET(VISIT_INSTALLED_VERSION_INCLUDE ${VISIT_INSTALLED_VERSION}/include 
-        CACHE PATH "VisIt include install directory")
+        CACHE PATH "VisIt include install directory" FORCE)
     SET(VISIT_INSTALLED_VERSION_HELP ${VISIT_INSTALLED_VERSION}/help 
-        CACHE PATH "VisIt help install directory")
+        CACHE PATH "VisIt help install directory" FORCE)
     SET(VISIT_INSTALLED_VERSION_PLUGINS ${VISIT_INSTALLED_VERSION}/plugins 
-        CACHE PATH "VisIt plugins install directory")
+        CACHE PATH "VisIt plugins install directory" FORCE)
     SET(VISIT_INSTALLED_VERSION_ARCHIVES ${VISIT_INSTALLED_VERSION}/archives 
-        CACHE PATH "3rd party I/O archives install directory")
+        CACHE PATH "3rd party I/O archives install directory" FORCE)
 
     IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
         SET(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
