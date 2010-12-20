@@ -240,6 +240,9 @@
 #    Cyrus Harrison, Fri Dec 10 16:50:44 PST 2010
 #    Added profile for muir.
 #
+#    Cyrus Harrison, Fri Dec 17 11:25:51 PST 2010
+#    Added profile for sierra.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -635,9 +638,10 @@ else if ($config == llnl_open) then
    cp "$dir"/$version+/.visit/allhosts/host_llnl_alastor.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_atlas.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_aztec.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_edge.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_edge.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_hera.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_prism.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_sierra.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_zeus.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml     "$dir"/$version+/.visit/hosts/
 else if ($config == nersc) then
