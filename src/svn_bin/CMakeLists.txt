@@ -47,9 +47,6 @@ FILE(GLOB HPROF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/host_*.xml")
 ## find all ini files to install using a glob
 FILE(GLOB INI_FILES   "${CMAKE_CURRENT_SOURCE_DIR}/visit-*.ini")
 
-MESSAGE(STATUS ${HPROF_FILES})
-MESSAGE(STATUS ${INI_FILES})
-
 ## provide proper install structure windows vs other:
 IF(WIN32)
     SET(INI_DEST   ${VISIT_INSTALLED_VERSION_BIN})
