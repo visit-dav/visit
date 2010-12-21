@@ -115,6 +115,9 @@ else
 fi
 
 skipList_for_Alastor="\
+    alastor,serial:tests/plots/streamline_geom.py:streamline_geom_07,streamline_geom_08,streamline_geom_09 \
+    alastor,parallel:tests/plots/streamline_geom.py:streamline_geom_07,streamline_geom_08,streamline_geom_09 \
+    alastor,scalable,parallel,icet:tests/plots/streamline_geom.py:streamline_geom_07,streamline_geom_08,streamline_geom_09 \
     alastor,serial:tests/operators/persistent_particles.py \
     alastor,parallel:tests/operators/persistent_particles.py \
     alastor,scalable,parallel,icet:tests/operators/persistent_particles.py \
