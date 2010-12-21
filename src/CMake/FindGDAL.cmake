@@ -39,6 +39,9 @@
 #   Tom Fogal, Thu Mar 25 14:24:49 MDT 2010
 #   Fix GDAL library naming convention on OS X.
 #
+#   Kathleen Bonnell, Tue Dec 21 14:45:51 MST 2010
+#   Update gdal version to 1.7 on Windows.
+#
 #****************************************************************************/
 
 # Use the GDAL_DIR hint from the config-site .cmake file 
@@ -46,19 +49,19 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(GDAL lib/${VISIT_MSVC_VERSION} include gdal_i libjpeg libpng13)
+  SET_UP_THIRD_PARTY(GDAL lib/${VISIT_MSVC_VERSION} include gdal_i)
   # normally handled in InstallThirdParty.cmake, but gdal has a weird
   # naming convention on windows
-  IF(EXISTS ${GDAL_LIBRARY_DIR}/gdal13.dll)
+  IF(EXISTS ${GDAL_LIBRARY_DIR}/gdal17.dll)
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
-      ${GDAL_LIBRARY_DIR}/gdal13.dll
+      ${GDAL_LIBRARY_DIR}/gdal17.dll
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-    INSTALL(FILES ${GDAL_LIBRARY_DIR}/gdal13.dll
+    INSTALL(FILES ${GDAL_LIBRARY_DIR}/gdal17.dll
       DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
       PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
       CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
       )
-  ENDIF(EXISTS ${GDAL_LIBRARY_DIR}/gdal13.dll)
+  ENDIF(EXISTS ${GDAL_LIBRARY_DIR}/gdal17.dll)
 ELSEIF(APPLE)
   SET_UP_THIRD_PARTY(GDAL lib include gdal.1)
 ELSE (WIN32)
