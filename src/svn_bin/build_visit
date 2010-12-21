@@ -7861,7 +7861,7 @@ function build_mdsplus
     info "Configuring MDSplus . . ."
     cd $MDSPLUS_BUILD_DIR || error "Can't cd to mdsplus build dir."
     info "Invoking command to configure MDSplus"
-    ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
+    ./configure ${OPTIONAL} --disable-java CXX="$CXX_COMPILER" \
        CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
        --prefix="$VISITDIR/mdsplus/$MDSPLUS_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
@@ -8684,7 +8684,6 @@ usage () {
   printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
   printf "%-15s %s [%s]\n" "--gdal" "Build GDAL" "$DO_GDAL"
   printf "%-15s %s [%s]\n" "--group" "Group name of installed libraries" "$GROUP"
-  printf "%-15s %s [%s]\n" "--mdsplus" "Build MDSplus" "$DO_MDSPLUS"
   printf "%-15s %s [%s]\n" "--h5part" "Build H5Part" "$DO_H5PART"
   printf "%-15s %s [%s]\n" "--hdf4" "Build HDF4" "${DO_HDF4}"
   printf "%-15s %s [%s]\n" "--hdf5" "Build HDF5" "${DO_HDF5}"
