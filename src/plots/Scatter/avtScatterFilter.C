@@ -407,6 +407,10 @@ debug4 << "avtScatterFilter::ExecuteData" << endl;
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Hank Childs, Tue Dec 21 11:26:45 PST 2010
+//    Set the active variable to be the color variable, where before it only
+//    worked if the 4th variable was the color variable.
+//
 // ****************************************************************************
 
 void
@@ -415,13 +419,20 @@ avtScatterFilter::PostExecute(void)
     avtDataTreeIterator::PostExecute();
     avtDataAttributes &out_datts = GetOutput()->GetInfo().GetAttributes();
 
-    if(atts.GetVar4Role() != ScatterAttributes::None)
+    string color_var = "";
+    if (atts.GetVar1Role() == ScatterAttributes::Color)
+        color_var = atts.GetVar1();
+    if (atts.GetVar2Role() == ScatterAttributes::Color)
+        color_var = atts.GetVar2();
+    if (atts.GetVar3Role() == ScatterAttributes::Color)
+        color_var = atts.GetVar3();
+    if (atts.GetVar4Role() == ScatterAttributes::Color)
+        color_var = atts.GetVar4();
+    if (color_var == "default")
+        color_var = pipelineVariable;
+
+    if (color_var != "")
     {
-        string color_var = atts.GetVar1();
-        // Determine the name of the 4th variable.
-        std::string var4name(atts.GetVar4());
-        if(var4name != "default")
-            color_var = var4name;
         //
         // Remove all of the variables that are not the color variable.
         //
@@ -444,13 +455,11 @@ avtScatterFilter::PostExecute(void)
         out_datts.GetThisProcsOriginalDataExtents()->Set(colorExtents);
     }
 
-    // correclty set the proper thisProcs spatial extents
+    // correctly set the proper thisProcs spatial extents
     out_datts.GetThisProcsOriginalSpatialExtents()->Clear();
     out_datts.GetOriginalSpatialExtents()->Clear();
 
-
-
-    if(NeedSpatialExtents())
+    if (NeedSpatialExtents())
     {
         // make sure all procs have the proper spatial extents
         // (unify here b/c processors that didn't have chunks may have invalid
@@ -469,9 +478,8 @@ avtScatterFilter::PostExecute(void)
                << thisProcsSpatialExtents[4] << ", "
                << thisProcsSpatialExtents[5]<< "]" << endl;
     }
-
-
 }
+
 
 // ****************************************************************************
 //  Method: avtScatterFilter::PointMeshFromVariables
