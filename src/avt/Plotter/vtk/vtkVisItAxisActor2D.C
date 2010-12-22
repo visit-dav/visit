@@ -498,6 +498,9 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Brad Whitlock, Thu Mar 27 11:32:02 PDT 2008
 //   Changed the properties used for the title actor.
 //
+//   Hank Childs, Wed Dec 22 11:17:32 PST 2010
+//   Support for vertical text.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -826,6 +829,14 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         titleTprop->SetColor(this->GetProperty()->GetColor());
     titleTprop->SetFontSize((int)(this->TitleFontHeight*size[1]));
 
+    bool verticalOrientation = (UseOrientationAngle && OrientationAngle != 0);
+    if (verticalOrientation)
+      {
+      // Note: current implementation in VTK only allow for 0 and non-0, with
+      // non-0 treated as 90.
+      titleTprop->SetOrientation(90);
+      }
+
     if ( this->TitleAtEnd )
       {
       if ( this->EndStringReverseOrientation)
@@ -855,9 +866,15 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       }
 
     this->TitleMapper->GetSize(viewport, stringSize);
+    int stringSizeReal[2] = { stringSize[0], stringSize[1] };
+    if (verticalOrientation)
+      {
+      stringSizeReal[0] = stringSize[1];
+      stringSizeReal[1] = stringSize[0];
+      }
     this->SetOffsetPosition(xTick,
       (this->EndStringReverseOrientation && this->TitleAtEnd) ? -theta : theta,
-                            stringSize[0], stringSize[1], 
+                            stringSizeReal[0], stringSizeReal[1], 
                             static_cast<int>(offset), this->TitleActor, 
                             this->TitleAtEnd,
                             this->EndStringHOffsetFactor,
