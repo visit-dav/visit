@@ -128,6 +128,9 @@ avtConnComponentsSummaryQuery::
 //    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
 //    Added support for per component bounding box info.
 //
+//    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
+//    Added output of the number of processors each component spans.
+//
 // ****************************************************************************
 
 void
@@ -140,22 +143,23 @@ avtConnComponentsSummaryQuery::PreExecute(void)
 
     // cell count
     nCellsPerComp.resize(nComps);
+    nProcsPerComp.resize(nComps);
 
     // centroid vectors
     xCentroidPerComp.resize(nComps);
     yCentroidPerComp.resize(nComps);
     zCentroidPerComp.resize(nComps);
-    
+
     // bounding box vectors
     xMinPerComp.resize(nComps);
     xMaxPerComp.resize(nComps);
-    
+
     yMinPerComp.resize(nComps);
     yMaxPerComp.resize(nComps);
-    
+
     zMinPerComp.resize(nComps);
     zMaxPerComp.resize(nComps);
-    
+
     // area & volume vectors
     if(findArea)
         areaPerComp.resize(nComps);
@@ -170,19 +174,20 @@ avtConnComponentsSummaryQuery::PreExecute(void)
     for(int i=0;i<nComps;i++)
     {
         nCellsPerComp[i] = 0;
+        nProcsPerComp[i] = 0;
 
         xCentroidPerComp[i] = 0;
         yCentroidPerComp[i] = 0;
         zCentroidPerComp[i] = 0;
-    
+
         xMinPerComp[i] =  DBL_MAX;
         yMinPerComp[i] =  DBL_MAX;
-        zMinPerComp[i] =  DBL_MAX;        
-        
+        zMinPerComp[i] =  DBL_MAX;
+
         xMaxPerComp[i] = -DBL_MAX;
         yMaxPerComp[i] = -DBL_MAX;
         zMaxPerComp[i] = -DBL_MAX;
-        
+
         if(findArea)
             areaPerComp[i] = 0;
         if(findVolume)
@@ -199,7 +204,7 @@ avtConnComponentsSummaryQuery::PreExecute(void)
 //
 //  Purpose:
 //      This is called after all of the domains are executed to collect
-//      info from all processors and finalize component sums. 
+//      info from all processors and finalize component sums.
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   March 1, 2007
@@ -211,6 +216,9 @@ avtConnComponentsSummaryQuery::PreExecute(void)
 //    Cyrus Harrison, Tue Mar 31 08:26:51 PDT 2009
 //    Only set results on the root processor.
 //
+//    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
+//    Added output of the number of processors each component spans.
+//
 // ****************************************************************************
 
 void
@@ -221,11 +229,15 @@ avtConnComponentsSummaryQuery::PostExecute(void)
     // temp arrays for sum results
     int    *sum_res_int = new int[nComps];
     double *sum_res_dbl = new double[nComps];
-    
+
 
     // get # of cells per component (from all processors)
     SumIntArrayAcrossAllProcessors(&nCellsPerComp[0], sum_res_int, nComps);
     memcpy(&nCellsPerComp[0],sum_res_int,nComps * sizeof(int));
+
+    // get # of procs per component (from all processors)
+    SumIntArrayAcrossAllProcessors(&nProcsPerComp[0], sum_res_int, nComps);
+    memcpy(&nProcsPerComp[0],sum_res_int,nComps * sizeof(int));
 
     // get centroid values (from all processors)
 
@@ -271,28 +283,28 @@ avtConnComponentsSummaryQuery::PostExecute(void)
     SumDoubleArrayAcrossAllProcessors(&wsumPerComp[0], sum_res_dbl, nComps);
     memcpy(&wsumPerComp[0],sum_res_dbl,nComps * sizeof(double));
 
-    
+
     // per component bounding box reduce
     // bb min values
     UnifyMinimumDoubleArrayAcrossAllProcessors(&xMinPerComp[0],sum_res_dbl,nComps);
     memcpy(&xMinPerComp[0],sum_res_dbl,nComps * sizeof(double));
-    
+
     UnifyMinimumDoubleArrayAcrossAllProcessors(&yMinPerComp[0],sum_res_dbl,nComps);
     memcpy(&yMinPerComp[0],sum_res_dbl,nComps * sizeof(double));
-    
+
     UnifyMinimumDoubleArrayAcrossAllProcessors(&zMinPerComp[0],sum_res_dbl,nComps);
     memcpy(&zMinPerComp[0],sum_res_dbl,nComps * sizeof(double));
-    
+
     // bb max values
     UnifyMaximumDoubleArrayAcrossAllProcessors(&xMaxPerComp[0],sum_res_dbl,nComps);
     memcpy(&xMaxPerComp[0],sum_res_dbl,nComps * sizeof(double));
-    
+
     UnifyMaximumDoubleArrayAcrossAllProcessors(&yMaxPerComp[0],sum_res_dbl,nComps);
     memcpy(&yMaxPerComp[0],sum_res_dbl,nComps * sizeof(double));
-    
+
     UnifyMaximumDoubleArrayAcrossAllProcessors(&zMaxPerComp[0],sum_res_dbl,nComps);
     memcpy(&zMaxPerComp[0],sum_res_dbl,nComps * sizeof(double));
-    
+
     delete [] sum_res_int;
     delete [] sum_res_dbl;
 
@@ -306,7 +318,7 @@ avtConnComponentsSummaryQuery::PostExecute(void)
         yCentroidPerComp[i] /= n_comp_cells;
         zCentroidPerComp[i] /= n_comp_cells;
     }
-    
+
     if(PAR_Rank() == 0)
     {
         // make sure we got a valid output file name (not simply the var name)
@@ -323,7 +335,7 @@ avtConnComponentsSummaryQuery::PostExecute(void)
         {SNPRINTF(buff,2048,"Found %d connected components.\n",nComps);}
 
         msg += buff;
-    
+
         msg += "Component summary information saved to " + outputFileName;
         msg += ", which can be imported into VisIt";
 
@@ -332,7 +344,7 @@ avtConnComponentsSummaryQuery::PostExecute(void)
 
         // save results to output okc file
         SaveComponentResults(outputFileName);
-        
+
         // pack results
         vector<double> results;
         PrepareComponentResults(results);
@@ -359,6 +371,9 @@ avtConnComponentsSummaryQuery::PostExecute(void)
 //  Modifications:
 //    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
 //    Added support for per component bounding box info.
+//
+//    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
+//    Added output of the number of processors each component spans.
 //
 // ****************************************************************************
 
@@ -423,6 +438,9 @@ avtConnComponentsSummaryQuery::Execute(vtkDataSet *ds, const int dom)
 
         // increment # of cells per component
         nCellsPerComp[comp_id]++;
+        // if the compoment exists on this processor
+        // set to 1 (mpi sum will give the total number of processors)
+        nProcsPerComp[comp_id] = 1;
 
         // get the cell center
          vtkVisItUtility::GetCellCenter(cell, pt_val);
@@ -431,7 +449,7 @@ avtConnComponentsSummaryQuery::Execute(vtkDataSet *ds, const int dom)
         xCentroidPerComp[comp_id]+= pt_val[0];
         yCentroidPerComp[comp_id]+= pt_val[1];
         zCentroidPerComp[comp_id]+= pt_val[2];
-        
+
         // get the bounding box of the cell
         cell->GetBounds(bounds);
 
@@ -439,12 +457,12 @@ avtConnComponentsSummaryQuery::Execute(vtkDataSet *ds, const int dom)
         if(xMinPerComp[comp_id] > bounds[0])  xMinPerComp[comp_id] = bounds[0];
         if(yMinPerComp[comp_id] > bounds[2])  yMinPerComp[comp_id] = bounds[2];
         if(zMinPerComp[comp_id] > bounds[4])  zMinPerComp[comp_id] = bounds[4];
-        
+
         // update bb max vals
         if(xMaxPerComp[comp_id] < bounds[1])  xMaxPerComp[comp_id] = bounds[1];
         if(yMaxPerComp[comp_id] < bounds[3])  yMaxPerComp[comp_id] = bounds[3];
         if(zMaxPerComp[comp_id] < bounds[5])  zMaxPerComp[comp_id] = bounds[5];
-        
+
         // update sum value
         double val    = (double) values->GetTuple1(i);
         sumPerComp[comp_id] += val;
@@ -458,7 +476,7 @@ avtConnComponentsSummaryQuery::Execute(vtkDataSet *ds, const int dom)
             // update area
             areaPerComp[comp_id] += weight;
         }
-        
+
         if(findVolume)
         {
             // check for volume result first
@@ -524,7 +542,7 @@ avtConnComponentsSummaryQuery::ApplyFilters(avtDataObject_p inData)
         {
             debug5 << "ConnComponentsSummary query using "
                    << "RevolvedVolume for weighted sum" << endl;
-        
+
             // add area and revolved volume filter
             revolvedVolumeFilter->SetInput(dob); 
             dob = revolvedVolumeFilter->GetOutput();
@@ -593,6 +611,9 @@ avtConnComponentsSummaryQuery::VerifyInput(void)
 //    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
 //    Added support for per component bounding box info.
 //
+//    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
+//    Added output of the number of processors each component spans.
+//
 // ****************************************************************************
 
 void
@@ -616,20 +637,20 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
     }
 
     // write Xmdv header
-    
+
     //
-    // write # of cols and # of rows 
+    // write # of cols and # of rows
     //
 
     int nrows = nComps;
-    int ncols = 13;
+    int ncols = 14;
 
     // inc # of columns if we are including area and/or volume
     if(findArea)
         ncols++;
     if(findVolume)
         ncols++;
-    
+
     outs << ncols << " " << nrows << " 1" << endl;
 
     // write column names
@@ -640,32 +661,36 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
 
     outs << "comp_label" << endl;
     outs << "comp_num_cells" << endl;
+    outs << "comp_num_procs" << endl;
 
     if(findArea)
         outs << "comp_area" << endl;
-   
+
     if(findVolume)
         outs << "comp_volume" << endl;
-   
+
     outs << "comp_sum" << endl;
     outs << "comp_weighted_sum" << endl;
-    
+
     outs << "comp_bb_x_min" << endl;
     outs << "comp_bb_x_max" << endl;
-    
+
     outs << "comp_bb_y_min" << endl;
     outs << "comp_bb_y_max" << endl;
-    
+
     outs << "comp_bb_z_min" << endl;
     outs << "comp_bb_z_max" << endl;
-   
+
     // find component ranges
     int ncells_min    =  INT_MAX;
     int ncells_max    =  0;
-    
+
+    int nprocs_min    =  INT_MAX;
+    int nprocs_max    =  0;
+
     double cent_x_min =  DBL_MAX;
     double cent_x_max = -DBL_MAX;
-   
+
     double cent_y_min =  DBL_MAX;
     double cent_y_max = -DBL_MAX;
 
@@ -682,8 +707,8 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
     double sum_max    = -DBL_MAX;
 
     double wsum_min   =  DBL_MAX;
-    double wsum_max   = -DBL_MAX;    
-    
+    double wsum_max   = -DBL_MAX;
+ 
     double comp_bb_min[6]  = {DBL_MAX,DBL_MAX,DBL_MAX,DBL_MAX,DBL_MAX,DBL_MAX};
     double comp_bb_max[6]  = {-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX,-DBL_MAX};
 
@@ -691,8 +716,11 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
     {
         //  update # of cells range
         if(ncells_min > nCellsPerComp[i]) ncells_min = nCellsPerComp[i];
-
         if(ncells_max < nCellsPerComp[i]) ncells_max = nCellsPerComp[i];
+
+        //  update # of procs range
+        if(nprocs_min > nProcsPerComp[i]) nprocs_min = nProcsPerComp[i];
+        if(nprocs_max < nProcsPerComp[i]) nprocs_max = nProcsPerComp[i];
 
         //  update x centroid range
         if(cent_x_min > xCentroidPerComp[i]) cent_x_min = xCentroidPerComp[i];
@@ -705,7 +733,7 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
         //  update z centroid range
         if(cent_z_min > yCentroidPerComp[i]) cent_z_min = yCentroidPerComp[i];
         if(cent_z_max < zCentroidPerComp[i]) cent_z_max = zCentroidPerComp[i];
-        
+
         if(findArea)
         {
             // update area range
@@ -727,7 +755,7 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
         // update weighted var sum
         if(wsum_min > wsumPerComp[i]) wsum_min = wsumPerComp[i];
         if(wsum_max < wsumPerComp[i]) wsum_max = wsumPerComp[i];
-        
+
         // min range over bb values    
         if(xMinPerComp[i] < comp_bb_min[0]) comp_bb_min[0] = xMinPerComp[i];
         if(xMaxPerComp[i] < comp_bb_min[1]) comp_bb_min[1] = xMaxPerComp[i];
@@ -735,7 +763,7 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
         if(yMaxPerComp[i] < comp_bb_min[3]) comp_bb_min[3] = yMaxPerComp[i];
         if(zMinPerComp[i] < comp_bb_min[4]) comp_bb_min[4] = zMinPerComp[i];
         if(zMaxPerComp[i] < comp_bb_min[5]) comp_bb_min[5] = zMaxPerComp[i];
-        
+
         // max range over bb values
         if(xMinPerComp[i] > comp_bb_max[0]) comp_bb_max[0] = xMinPerComp[i];
         if(xMaxPerComp[i] > comp_bb_max[1]) comp_bb_max[1] = xMaxPerComp[i];
@@ -755,25 +783,27 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
     // label range
     outs << 0 << " " << nrows -1 << "\t10"<< endl;
     // # of cells range
-    outs << ncells_min << "\t" << ncells_max<< "\t10"<< endl;
-    
+    outs << ncells_min << "\t" << ncells_max << "\t10"<< endl;
+    // # of procs range
+    outs << nprocs_min << "\t" << nprocs_max << "\t10"<< endl;
+
     // area range
     if(findArea)
         outs << area_min << "\t" << area_max << "\t10"<< endl;
 
     // area range
     if(findVolume)
-        outs << volume_min << "\t" << volume_max  << "\t10"<< endl;        
-    
+        outs << volume_min << "\t" << volume_max  << "\t10"<< endl;
+
     // var sum range
     outs << sum_min << "\t" << sum_max << "\t10"<< endl;
 
     // weighted var sum range
     outs << wsum_min << "\t" << wsum_max << "\t10"<< endl;
-    
+
     // bounding box ranges
     for(i=0; i < 6; i++)
-        outs << comp_bb_min[i] << "\t" << comp_bb_max[i] << "\t10"<< endl;    
+        outs << comp_bb_min[i] << "\t" << comp_bb_max[i] << "\t10"<< endl;
 
     // write each component as a line
     for( i = 0; i < nrows; i++)
@@ -787,28 +817,31 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
         outs << i << "\t";
 
         // # of cells
-        outs << nCellsPerComp[i] << "\t";    
+        outs << nCellsPerComp[i] << "\t";
 
-        // area 
+        // # of procs
+        outs << nProcsPerComp[i] << "\t";
+
+        // area
         if(findArea)
-            outs << areaPerComp[i] << "\t";    
+            outs << areaPerComp[i] << "\t";
 
         // volume 
         if(findVolume)
             outs << volPerComp[i] << "\t";
 
         // var sum
-        outs << sumPerComp[i] << "\t";         
+        outs << sumPerComp[i] << "\t";
 
         // weighted var sum
-        outs << wsumPerComp[i] << "\t"; 
-        
+        outs << wsumPerComp[i] << "\t";
+
         // bounding box values
         outs  << xMinPerComp[i] <<"\t" << xMaxPerComp[i] << "\t";
         outs  << yMinPerComp[i] <<"\t" << yMaxPerComp[i] << "\t";
         outs  << zMinPerComp[i] <<"\t" << zMaxPerComp[i] << "\t";
 
-        outs << endl;        
+        outs << endl;
     }
 
 
@@ -828,6 +861,9 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
 //    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
 //    Added support for per component bounding box info.
 //
+//    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
+//    Added output of the number of processors each component spans.
+//
 // ****************************************************************************
 
 void
@@ -840,7 +876,7 @@ avtConnComponentsSummaryQuery::PrepareComponentResults(vector<double> &results)
     // They are set to zero if vals do not exist
     //
 
-    results.resize(nComps *15);
+    results.resize(nComps *16);
 
     // loop index
     int i;
@@ -860,6 +896,9 @@ avtConnComponentsSummaryQuery::PrepareComponentResults(vector<double> &results)
         // number of cells
         results[idx++] = nCellsPerComp[i];
 
+        // number of procs
+        results[idx++] = nProcsPerComp[i];
+
         // area
         if(findArea)
             results[idx++] = areaPerComp[i];
@@ -877,7 +916,7 @@ avtConnComponentsSummaryQuery::PrepareComponentResults(vector<double> &results)
 
         // var weighted sum
         results[idx++] = wsumPerComp[i];
-        
+
         // bounding box vals
         results[idx++] = xMinPerComp[i];
         results[idx++] = xMaxPerComp[i];
