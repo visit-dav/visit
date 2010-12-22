@@ -124,6 +124,10 @@ avtDatasetToDatasetFilter::~avtDatasetToDatasetFilter()
 //    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
 //    Call inherited PreExecute before everything else.
 //
+//    Hank Childs, Wed Dec 22 01:25:47 PST 2010
+//    Allow for filters that don't want to automatically make the pipeline
+//    variable be active.
+//
 // ****************************************************************************
 
 void
@@ -140,7 +144,8 @@ avtDatasetToDatasetFilter::PreExecute(void)
     else if (atts.ValidActiveVariable() &&
              atts.GetVariableName() != pipelineVariable)
     {
-        InputSetActiveVariable(pipelineVariable);
+        if (AutomaticallyMakePipelineVariableActive())
+            InputSetActiveVariable(pipelineVariable);
     }
 }
 
