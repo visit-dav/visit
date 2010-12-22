@@ -93,6 +93,10 @@ class   avtFacelistFilter;
 //    Jeremy Meredith, Tue Oct 14 15:42:56 EDT 2008
 //    Changed interface to SetMustCreatePolyData to allow either t/f setting.
 //
+//    Hank Childs, Wed Dec 22 01:27:33 PST 2010
+//    Implement virtual method to tell base class that we don't want to 
+//    change the active variable.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
@@ -116,6 +120,8 @@ class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
     void                  SetMustCreatePolyData(bool val=true);
 
     virtual void          ReleaseData(void);
+    virtual bool          AutomaticallyMakePipelineVariableActive(void)
+                                  { return false; };
 
   protected:
     avtGhostZoneFilter   *ghostFilter;

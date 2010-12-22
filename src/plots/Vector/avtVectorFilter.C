@@ -235,6 +235,26 @@ avtVectorFilter::PreExecute()
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtVectorFilter::PostExecute
+//
+//  Purpose:
+//      Sets the active variable to be the magnitude of the vector.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 22, 2010
+//
+// ****************************************************************************
+
+void
+avtVectorFilter::PostExecute(void)
+{
+    if (magVarName != "")
+        OutputSetActiveVariable(magVarName.c_str());
+}
+
+
 // ****************************************************************************
 //  Method: avtVectorFilter::Equivalent
 //
@@ -423,7 +443,6 @@ avtVectorFilter::SetMagVarName(const string &mname)
 {
     magVarName = mname;
 }
-
 
 // ****************************************************************************
 //  Method: avtVectorFilter::ModifyContract
