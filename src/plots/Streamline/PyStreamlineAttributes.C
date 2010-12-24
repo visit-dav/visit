@@ -386,7 +386,7 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
-    const char *integrationType_names = "DormandPrince, AdamsBashforth, M3DC1Integrator";
+    const char *integrationType_names = "DormandPrince, AdamsBashforth, M3DC1Integrator, NIMRODIntegrator";
     switch (atts->GetIntegrationType())
     {
       case StreamlineAttributes::DormandPrince:
@@ -399,6 +399,10 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
       case StreamlineAttributes::M3DC1Integrator:
           SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC1Integrator  # %s\n", prefix, prefix, integrationType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::NIMRODIntegrator:
+          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sNIMRODIntegrator  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       default:
@@ -461,6 +465,27 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
+    const char *coordinateSystem_names = "AsIs, CylindricalToCartesian, CartesianToCylindrical";
+    switch (atts->GetCoordinateSystem())
+    {
+      case StreamlineAttributes::AsIs:
+          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sAsIs  # %s\n", prefix, prefix, coordinateSystem_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::CylindricalToCartesian:
+          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCylindricalToCartesian  # %s\n", prefix, prefix, coordinateSystem_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::CartesianToCylindrical:
+          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCartesianToCylindrical  # %s\n", prefix, prefix, coordinateSystem_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sphiFactor = %g\n", prefix, atts->GetPhiFactor());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scoloringVariable = \"%s\"\n", prefix, atts->GetColoringVariable().c_str());
     str += tmpStr;
     if(atts->GetLegendMinFlag())
@@ -1926,14 +1951,14 @@ StreamlineAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the integrationType in the object.
-    if(ival >= 0 && ival < 3)
+    if(ival >= 0 && ival < 4)
         obj->data->SetIntegrationType(StreamlineAttributes::IntegrationType(ival));
     else
     {
         fprintf(stderr, "An invalid integrationType value was given. "
-                        "Valid values are in the range of [0,2]. "
+                        "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
-                        "DormandPrince, AdamsBashforth, M3DC1Integrator.");
+                        "DormandPrince, AdamsBashforth, M3DC1Integrator, NIMRODIntegrator.");
         return NULL;
     }
 
@@ -2156,6 +2181,63 @@ StreamlineAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPathlinesCMFE()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the coordinateSystem in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetCoordinateSystem(StreamlineAttributes::CoordinateSystem(ival));
+    else
+    {
+        fprintf(stderr, "An invalid coordinateSystem value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "AsIs, CylindricalToCartesian, CartesianToCylindrical.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCoordinateSystem()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetPhiFactor(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the phiFactor in the object.
+    obj->data->SetPhiFactor(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetPhiFactor(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPhiFactor());
     return retval;
 }
 
@@ -3504,6 +3586,10 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetPathlinesOverrideStartingTime", StreamlineAttributes_GetPathlinesOverrideStartingTime, METH_VARARGS},
     {"SetPathlinesCMFE", StreamlineAttributes_SetPathlinesCMFE, METH_VARARGS},
     {"GetPathlinesCMFE", StreamlineAttributes_GetPathlinesCMFE, METH_VARARGS},
+    {"SetCoordinateSystem", StreamlineAttributes_SetCoordinateSystem, METH_VARARGS},
+    {"GetCoordinateSystem", StreamlineAttributes_GetCoordinateSystem, METH_VARARGS},
+    {"SetPhiFactor", StreamlineAttributes_SetPhiFactor, METH_VARARGS},
+    {"GetPhiFactor", StreamlineAttributes_GetPhiFactor, METH_VARARGS},
     {"SetColoringVariable", StreamlineAttributes_SetColoringVariable, METH_VARARGS},
     {"GetColoringVariable", StreamlineAttributes_GetColoringVariable, METH_VARARGS},
     {"SetLegendMinFlag", StreamlineAttributes_SetLegendMinFlag, METH_VARARGS},
@@ -3746,6 +3832,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(StreamlineAttributes::AdamsBashforth));
     if(strcmp(name, "M3DC1Integrator") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::M3DC1Integrator));
+    if(strcmp(name, "NIMRODIntegrator") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::NIMRODIntegrator));
 
     if(strcmp(name, "streamlineAlgorithmType") == 0)
         return StreamlineAttributes_GetStreamlineAlgorithmType(self, NULL);
@@ -3777,6 +3865,17 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "POS_CMFE") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::POS_CMFE));
 
+    if(strcmp(name, "coordinateSystem") == 0)
+        return StreamlineAttributes_GetCoordinateSystem(self, NULL);
+    if(strcmp(name, "AsIs") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::AsIs));
+    if(strcmp(name, "CylindricalToCartesian") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::CylindricalToCartesian));
+    if(strcmp(name, "CartesianToCylindrical") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::CartesianToCylindrical));
+
+    if(strcmp(name, "phiFactor") == 0)
+        return StreamlineAttributes_GetPhiFactor(self, NULL);
     if(strcmp(name, "coloringVariable") == 0)
         return StreamlineAttributes_GetColoringVariable(self, NULL);
     if(strcmp(name, "legendMinFlag") == 0)
@@ -4030,6 +4129,10 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetPathlinesOverrideStartingTime(self, tuple);
     else if(strcmp(name, "pathlinesCMFE") == 0)
         obj = StreamlineAttributes_SetPathlinesCMFE(self, tuple);
+    else if(strcmp(name, "coordinateSystem") == 0)
+        obj = StreamlineAttributes_SetCoordinateSystem(self, tuple);
+    else if(strcmp(name, "phiFactor") == 0)
+        obj = StreamlineAttributes_SetPhiFactor(self, tuple);
     else if(strcmp(name, "coloringVariable") == 0)
         obj = StreamlineAttributes_SetColoringVariable(self, tuple);
     else if(strcmp(name, "legendMinFlag") == 0)

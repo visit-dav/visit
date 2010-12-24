@@ -511,6 +511,9 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetVelocitiesForLighting(atts.GetLightingFlag());
     streamlineFilter->SetReferenceTypeForDisplay(atts.GetReferenceTypeForDisplay());
 
+    streamlineFilter->SetCoordinateSystem(atts.GetCoordinateSystem());
+    streamlineFilter->SetPhiFactor(atts.GetPhiFactor());
+
     if (atts.GetOpacityType() == StreamlineAttributes::VariableRange)
         streamlineFilter->SetOpacityVariable(atts.GetOpacityVariable());
 #endif

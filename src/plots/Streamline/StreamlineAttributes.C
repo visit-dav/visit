@@ -125,6 +125,44 @@ StreamlineAttributes::ColoringMethod_FromString(const std::string &s, Streamline
 }
 
 //
+// Enum conversion methods for StreamlineAttributes::CoordinateSystem
+//
+
+static const char *CoordinateSystem_strings[] = {
+"AsIs", "CylindricalToCartesian", "CartesianToCylindrical"
+};
+
+std::string
+StreamlineAttributes::CoordinateSystem_ToString(StreamlineAttributes::CoordinateSystem t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return CoordinateSystem_strings[index];
+}
+
+std::string
+StreamlineAttributes::CoordinateSystem_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return CoordinateSystem_strings[index];
+}
+
+bool
+StreamlineAttributes::CoordinateSystem_FromString(const std::string &s, StreamlineAttributes::CoordinateSystem &val)
+{
+    val = StreamlineAttributes::AsIs;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == CoordinateSystem_strings[i])
+        {
+            val = (CoordinateSystem)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for StreamlineAttributes::DisplayMethod
 //
 
@@ -281,21 +319,21 @@ StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, S
 //
 
 static const char *IntegrationType_strings[] = {
-"DormandPrince", "AdamsBashforth", "M3DC1Integrator"
-};
+"DormandPrince", "AdamsBashforth", "M3DC1Integrator", 
+"NIMRODIntegrator"};
 
 std::string
 StreamlineAttributes::IntegrationType_ToString(StreamlineAttributes::IntegrationType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 4) index = 0;
     return IntegrationType_strings[index];
 }
 
 std::string
 StreamlineAttributes::IntegrationType_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 4) ? 0 : t;
     return IntegrationType_strings[index];
 }
 
@@ -303,7 +341,7 @@ bool
 StreamlineAttributes::IntegrationType_FromString(const std::string &s, StreamlineAttributes::IntegrationType &val)
 {
     val = StreamlineAttributes::DormandPrince;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 4; ++i)
     {
         if(s == IntegrationType_strings[i])
         {
@@ -585,6 +623,8 @@ void StreamlineAttributes::Init()
     pathlinesOverrideStartingTimeFlag = false;
     pathlinesOverrideStartingTime = 0;
     pathlinesCMFE = POS_CMFE;
+    coordinateSystem = AsIs;
+    phiFactor = 0;
     legendMinFlag = false;
     legendMaxFlag = false;
     legendMin = 0;
@@ -719,6 +759,8 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     pathlinesOverrideStartingTimeFlag = obj.pathlinesOverrideStartingTimeFlag;
     pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
     pathlinesCMFE = obj.pathlinesCMFE;
+    coordinateSystem = obj.coordinateSystem;
+    phiFactor = obj.phiFactor;
     coloringVariable = obj.coloringVariable;
     legendMinFlag = obj.legendMinFlag;
     legendMaxFlag = obj.legendMaxFlag;
@@ -1009,6 +1051,8 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag) &&
             (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
+            (coordinateSystem == obj.coordinateSystem) &&
+            (phiFactor == obj.phiFactor) &&
             (coloringVariable == obj.coloringVariable) &&
             (legendMinFlag == obj.legendMinFlag) &&
             (legendMaxFlag == obj.legendMaxFlag) &&
@@ -1356,6 +1400,8 @@ StreamlineAttributes::SelectAll()
     Select(ID_pathlinesOverrideStartingTimeFlag, (void *)&pathlinesOverrideStartingTimeFlag);
     Select(ID_pathlinesOverrideStartingTime,     (void *)&pathlinesOverrideStartingTime);
     Select(ID_pathlinesCMFE,                     (void *)&pathlinesCMFE);
+    Select(ID_coordinateSystem,                  (void *)&coordinateSystem);
+    Select(ID_phiFactor,                         (void *)&phiFactor);
     Select(ID_coloringVariable,                  (void *)&coloringVariable);
     Select(ID_legendMinFlag,                     (void *)&legendMinFlag);
     Select(ID_legendMaxFlag,                     (void *)&legendMaxFlag);
@@ -1689,6 +1735,18 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     {
         addToParent = true;
         node->AddNode(new DataNode("pathlinesCMFE", PathlinesCMFE_ToString(pathlinesCMFE)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_coordinateSystem, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("coordinateSystem", CoordinateSystem_ToString(coordinateSystem)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_phiFactor, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("phiFactor", phiFactor));
     }
 
     if(completeSave || !FieldsEqual(ID_coloringVariable, &defaultObject))
@@ -2149,7 +2207,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 4)
                 SetIntegrationType(IntegrationType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -2203,6 +2261,24 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
                 SetPathlinesCMFE(value);
         }
     }
+    if((node = searchNode->GetNode("coordinateSystem")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetCoordinateSystem(CoordinateSystem(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            CoordinateSystem value;
+            if(CoordinateSystem_FromString(node->AsString(), value))
+                SetCoordinateSystem(value);
+        }
+    }
+    if((node = searchNode->GetNode("phiFactor")) != 0)
+        SetPhiFactor(node->AsDouble());
     if((node = searchNode->GetNode("coloringVariable")) != 0)
         SetColoringVariable(node->AsString());
     if((node = searchNode->GetNode("legendMinFlag")) != 0)
@@ -2740,6 +2816,20 @@ StreamlineAttributes::SetPathlinesCMFE(StreamlineAttributes::PathlinesCMFE pathl
 {
     pathlinesCMFE = pathlinesCMFE_;
     Select(ID_pathlinesCMFE, (void *)&pathlinesCMFE);
+}
+
+void
+StreamlineAttributes::SetCoordinateSystem(StreamlineAttributes::CoordinateSystem coordinateSystem_)
+{
+    coordinateSystem = coordinateSystem_;
+    Select(ID_coordinateSystem, (void *)&coordinateSystem);
+}
+
+void
+StreamlineAttributes::SetPhiFactor(double phiFactor_)
+{
+    phiFactor = phiFactor_;
+    Select(ID_phiFactor, (void *)&phiFactor);
 }
 
 void
@@ -3407,6 +3497,18 @@ StreamlineAttributes::GetPathlinesCMFE() const
     return PathlinesCMFE(pathlinesCMFE);
 }
 
+StreamlineAttributes::CoordinateSystem
+StreamlineAttributes::GetCoordinateSystem() const
+{
+    return CoordinateSystem(coordinateSystem);
+}
+
+double
+StreamlineAttributes::GetPhiFactor() const
+{
+    return phiFactor;
+}
+
 const std::string &
 StreamlineAttributes::GetColoringVariable() const
 {
@@ -3861,6 +3963,8 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_pathlinesOverrideStartingTimeFlag: return "pathlinesOverrideStartingTimeFlag";
     case ID_pathlinesOverrideStartingTime:     return "pathlinesOverrideStartingTime";
     case ID_pathlinesCMFE:                     return "pathlinesCMFE";
+    case ID_coordinateSystem:                  return "coordinateSystem";
+    case ID_phiFactor:                         return "phiFactor";
     case ID_coloringVariable:                  return "coloringVariable";
     case ID_legendMinFlag:                     return "legendMinFlag";
     case ID_legendMaxFlag:                     return "legendMaxFlag";
@@ -3976,6 +4080,8 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_pathlinesOverrideStartingTimeFlag: return FieldType_bool;
     case ID_pathlinesOverrideStartingTime:     return FieldType_double;
     case ID_pathlinesCMFE:                     return FieldType_enum;
+    case ID_coordinateSystem:                  return FieldType_enum;
+    case ID_phiFactor:                         return FieldType_double;
     case ID_coloringVariable:                  return FieldType_string;
     case ID_legendMinFlag:                     return FieldType_bool;
     case ID_legendMaxFlag:                     return FieldType_bool;
@@ -4091,6 +4197,8 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_pathlinesOverrideStartingTimeFlag: return "bool";
     case ID_pathlinesOverrideStartingTime:     return "double";
     case ID_pathlinesCMFE:                     return "enum";
+    case ID_coordinateSystem:                  return "enum";
+    case ID_phiFactor:                         return "double";
     case ID_coloringVariable:                  return "string";
     case ID_legendMinFlag:                     return "bool";
     case ID_legendMaxFlag:                     return "bool";
@@ -4416,6 +4524,16 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (pathlinesCMFE == obj.pathlinesCMFE);
         }
         break;
+    case ID_coordinateSystem:
+        {  // new scope
+        retval = (coordinateSystem == obj.coordinateSystem);
+        }
+        break;
+    case ID_phiFactor:
+        {  // new scope
+        retval = (phiFactor == obj.phiFactor);
+        }
+        break;
     case ID_coloringVariable:
         {  // new scope
         retval = (coloringVariable == obj.coloringVariable);
@@ -4723,6 +4841,8 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         termTime != obj.termTime ||
         streamlineDirection != obj.streamlineDirection ||
         integrationType != obj.integrationType ||
+        coordinateSystem != obj.coordinateSystem ||
+        phiFactor != obj.phiFactor ||
         maxStepLength != obj.maxStepLength ||
         maxTimeStep != obj.maxTimeStep ||
         limitMaximumTimestep != obj.limitMaximumTimestep ||

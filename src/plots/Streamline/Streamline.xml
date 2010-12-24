@@ -41,6 +41,11 @@
         ColorBySeedPointID
         ColorByVariable
       </Enum>
+      <Enum name="CoordinateSystem">
+        AsIs
+        CylindricalToCartesian
+        CartesianToCylindrical
+      </Enum>
       <Enum name="DisplayMethod">
         Lines
         Tubes
@@ -66,6 +71,7 @@
         DormandPrince
         AdamsBashforth
         M3DC1Integrator
+        NIMRODIntegrator
       </Enum>
       <Enum name="OpacityType">
         FullyOpaque
@@ -246,6 +252,12 @@
       </Field>
       <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
         POS_CMFE
+      </Field>
+      <Field name="coordinateSystem" label="coordinateSystem" type="enum" subtype="CoordinateSystem">
+        AsIs
+      </Field>
+      <Field name="phiFactor" label="Phi Factor" type="double">
+        0.0
       </Field>
       <Field name="coloringVariable" label="unnamed1" type="string">
       </Field>
