@@ -81,6 +81,12 @@ public:
         ColorBySeedPointID,
         ColorByVariable
     };
+    enum CoordinateSystem
+    {
+        AsIs,
+        CylindricalToCartesian,
+        CartesianToCylindrical
+    };
     enum DisplayMethod
     {
         Lines,
@@ -110,7 +116,8 @@ public:
     {
         DormandPrince,
         AdamsBashforth,
-        M3DC1Integrator
+        M3DC1Integrator,
+        NIMRODIntegrator
     };
     enum OpacityType
     {
@@ -224,6 +231,8 @@ public:
     void SetPathlinesOverrideStartingTimeFlag(bool pathlinesOverrideStartingTimeFlag_);
     void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
+    void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
+    void SetPhiFactor(double phiFactor_);
     void SetColoringVariable(const std::string &coloringVariable_);
     void SetLegendMinFlag(bool legendMinFlag_);
     void SetLegendMaxFlag(bool legendMaxFlag_);
@@ -328,6 +337,8 @@ public:
     bool                 GetPathlinesOverrideStartingTimeFlag() const;
     double               GetPathlinesOverrideStartingTime() const;
     PathlinesCMFE        GetPathlinesCMFE() const;
+    CoordinateSystem     GetCoordinateSystem() const;
+    double               GetPhiFactor() const;
     const std::string    &GetColoringVariable() const;
           std::string    &GetColoringVariable();
     bool                 GetLegendMinFlag() const;
@@ -394,6 +405,11 @@ public:
     static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
 protected:
     static std::string ColoringMethod_ToString(int);
+public:
+    static std::string CoordinateSystem_ToString(CoordinateSystem);
+    static bool CoordinateSystem_FromString(const std::string &, CoordinateSystem &);
+protected:
+    static std::string CoordinateSystem_ToString(int);
 public:
     static std::string DisplayMethod_ToString(DisplayMethod);
     static bool DisplayMethod_FromString(const std::string &, DisplayMethod &);
@@ -500,6 +516,8 @@ public:
         ID_pathlinesOverrideStartingTimeFlag,
         ID_pathlinesOverrideStartingTime,
         ID_pathlinesCMFE,
+        ID_coordinateSystem,
+        ID_phiFactor,
         ID_coloringVariable,
         ID_legendMinFlag,
         ID_legendMaxFlag,
@@ -595,6 +613,8 @@ private:
     bool           pathlinesOverrideStartingTimeFlag;
     double         pathlinesOverrideStartingTime;
     int            pathlinesCMFE;
+    int            coordinateSystem;
+    double         phiFactor;
     std::string    coloringVariable;
     bool           legendMinFlag;
     bool           legendMaxFlag;
@@ -649,6 +669,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdisbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbd"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdiidsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbd"
 
 #endif

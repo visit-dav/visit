@@ -547,6 +547,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationType->addItem(tr("M3D-C1 Integrator (M3D code only)"));
+    integrationType->addItem(tr("NIMROD Integrator (NIMROD code only)"));
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationType, 0,1);
@@ -607,7 +608,41 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     connect(absTolSizeType, SIGNAL(activated(int)), this, SLOT(absTolSizeTypeChanged(int)));
     toleranceLayout->addWidget(absTolSizeType, 1, 2);
 
-    // ----------------------------------------------------------------------
+    // Create the coordinate group
+    QGroupBox *coordinateGrp = new QGroupBox(central);
+    coordinateGrp->setTitle(tr("Coordinate System"));
+    mainLayout->addWidget(coordinateGrp);
+
+    QGridLayout *coordinateLayout = new QGridLayout(coordinateGrp);
+    coordinateLayout->setMargin(5);
+    coordinateLayout->setSpacing(10);
+    coordinateLayout->setColumnStretch(2,10);
+
+    coordinateButtonGroup = new QButtonGroup(coordinateGrp);
+    QRadioButton *asIsButton = new QRadioButton(tr("As generated"), coordinateGrp);
+    QRadioButton *toCartesianButton = new QRadioButton(tr("Cylindrical to Cartesian"), coordinateGrp);
+    QRadioButton *toCylindricalButton = new QRadioButton(tr("Cartesian to Cylindrical"), coordinateGrp);
+    coordinateButtonGroup->addButton(asIsButton, 0);
+    coordinateButtonGroup->addButton(toCartesianButton, 1);
+    coordinateButtonGroup->addButton(toCylindricalButton, 2);
+
+    coordinateLayout->addWidget(asIsButton, 0, 0);
+    coordinateLayout->addWidget(toCartesianButton, 0, 1);
+    coordinateLayout->addWidget(toCylindricalButton, 0, 2);
+
+    connect(coordinateButtonGroup, SIGNAL(buttonClicked(int)), this,
+            SLOT(coordinateButtonGroupChanged(int)));
+
+    // Create the widgets that specify a phi factor.
+    phiFactor = new QLineEdit(coordinateGrp);
+    connect(pointSource, SIGNAL(returnPressed()),
+            this, SLOT(phiFactorProcessText()));
+    phiFactorLabel = new QLabel(tr("Phi factor"), coordinateGrp);
+    phiFactorLabel->setBuddy(phiFactor);
+    coordinateLayout->addWidget(phiFactorLabel, 0, 3);
+    coordinateLayout->addWidget(phiFactor, 0, 4);
+
+// ----------------------------------------------------------------------
     // Appearance tab
     // ----------------------------------------------------------------------
     QWidget *appearanceTab = new QWidget(central);
@@ -1824,6 +1859,16 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             slAlgo->setCurrentIndex(streamAtts->GetStreamlineAlgorithmType());
             slAlgo->blockSignals(false);
             break;
+        case StreamlineAttributes::ID_coordinateSystem:
+            coordinateButtonGroup->blockSignals(true);
+            coordinateButtonGroup->button(streamAtts->GetCoordinateSystem())->setChecked(true);
+            phiFactor->setEnabled(streamAtts->GetCoordinateSystem()==2);
+            phiFactorLabel->setEnabled(streamAtts->GetCoordinateSystem()==2);
+            coordinateButtonGroup->blockSignals(false);
+            break;
+        case StreamlineAttributes::ID_phiFactor:
+            phiFactor->setText(DoubleToQString(streamAtts->GetPhiFactor()));
+            break;
         case StreamlineAttributes::ID_maxStreamlineProcessCount:
             maxSLCount->blockSignals(true);
             maxSLCount->setValue(streamAtts->GetMaxStreamlineProcessCount());
@@ -2325,6 +2370,7 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
 
     case StreamlineAttributes::AdamsBashforth:
     case StreamlineAttributes::M3DC1Integrator:
+    case StreamlineAttributes::NIMRODIntegrator:
         maxStepLength->show();
         maxStepLengthLabel->show();
         absTol->show();
@@ -2828,7 +2874,20 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetWorkGroupSize(val);
     }
     
-    // Legend min
+    if(which_widget == StreamlineAttributes::ID_phiFactor || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(phiFactor, val))
+            streamAtts->SetPhiFactor(val);
+        else
+        {
+            ResettingError(tr("phi factor"),
+                DoubleToQString(streamAtts->GetPhiFactor()));
+            streamAtts->SetPhiFactor(streamAtts->GetPhiFactor());
+        }
+    }
+
+     // Legend min
     if(which_widget == StreamlineAttributes::ID_legendMin || doAll)
     {
         double val;
@@ -3519,6 +3578,33 @@ QvisStreamlinePlotWindow::icButtonGroupChanged(int val)
     }
     Apply();
 }
+
+void
+QvisStreamlinePlotWindow::coordinateButtonGroupChanged(int val)
+{
+    switch( val )
+    {
+        case 0:
+          streamAtts->SetCoordinateSystem(StreamlineAttributes::AsIs);
+          break;
+        case 1:
+          streamAtts->SetCoordinateSystem(StreamlineAttributes::CylindricalToCartesian);
+          break;
+        case 2:
+          streamAtts->SetCoordinateSystem(StreamlineAttributes::CartesianToCylindrical);
+          break;
+    }
+    Apply();
+}
+
+
+void
+QvisStreamlinePlotWindow::phiFactorProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_phiFactor);
+    Apply();
+}
+
 
 void
 QvisStreamlinePlotWindow::pathlineOverrideStartingTimeFlagChanged(bool val)
