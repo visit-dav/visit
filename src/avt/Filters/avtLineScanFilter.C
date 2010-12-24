@@ -1189,7 +1189,7 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
             int nInter = 0;
             if (det > 0)
             {
-                double soln1 = (-B + sqrt(det)) / (2*A);
+                 double soln1 = (-B + sqrt(det)) / (2*A);
                 double soln2 = (-B - sqrt(det)) / (2*A);
                 inter[nInter++] = soln1;
                 inter[nInter++] = soln2;

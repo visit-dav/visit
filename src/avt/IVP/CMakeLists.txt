@@ -55,6 +55,8 @@ avtIVPDopri5.C
 avtIVPSolver.C
 avtIVPM3DC1Field.C
 avtIVPM3DC1Integrator.C
+avtIVPNIMRODField.C
+avtIVPNIMRODIntegrator.C
 avtIVPVTKField.C
 avtIVPVTKTimeVaryingField.C
 avtPoincareIC.C

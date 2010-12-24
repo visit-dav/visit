@@ -444,7 +444,10 @@ class avtIVPSolver
     virtual void    PutState(const avtIVPState&);
             
     virtual avtIVPSolver* Clone() const = 0;
-            
+
+    bool convertToCartesian;
+    avtVector CylindricalToCartesian(const avtVector& pt) const;
+
 protected:
     virtual void    AcceptStateVisitor(avtIVPStateHelper& sv) = 0;
 };

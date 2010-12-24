@@ -87,6 +87,8 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPAdamsBashforth.h>
 #include <avtIVPM3DC1Integrator.h>
 #include <avtIVPM3DC1Field.h>
+#include <avtIVPNIMRODIntegrator.h>
+#include <avtIVPNIMRODField.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
@@ -150,6 +152,8 @@ avtPICSFilter::avtPICSFilter()
     InitialDomLoads = 0;
     activeTimeStep = -1;
     MaxID = 0;
+
+    convertToCartesian = false;
 }
 
 
@@ -1434,6 +1438,8 @@ avtPICSFilter::GetFieldForDomain( const DomainType &domain, vtkDataSet *ds )
     {
         if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR)
             return new avtIVPM3DC1Field(ds, *locator);
+        else if (integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR)
+            return new avtIVPNIMRODField(ds, *locator);
         else
             return new avtIVPVTKField(ds, *locator);
     }
@@ -2031,6 +2037,14 @@ avtPICSFilter::PreExecute(void)
         solver->SetMaximumStepSize(maxStepLength);
         solver->SetTolerances(relTol, absTolToUse);
     }
+    else if (integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR)
+    {
+        solver = new avtIVPAdamsBashforth;
+        solver->SetMaximumStepSize(maxStepLength);
+        solver->SetTolerances(relTol, absTolToUse);
+    }
+
+    solver->convertToCartesian = convertToCartesian;
 }
 
 
@@ -2214,8 +2228,8 @@ avtPICSFilter::AddSeedpoints(std::vector<avtVector> &pts,
 
 void
 avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
-                                                std::vector<avtIntegralCurve *> &curves,
-                                                std::vector<std::vector<int> > &ids)
+                                             std::vector<avtIntegralCurve *> &curves,
+                                             std::vector<std::vector<int> > &ids)
 {
     for (int i = 0; i < pts.size(); i++)
     {
@@ -2229,14 +2243,25 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         for (int j = 0; j < dl.size(); j++)
         {
             DomainType dom(dl[j], seedTimeStep0);
-            
+
+            avtVector seedPt;
+
+            if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR )
+            {
+              seedPt.x = sqrt(pts[i].x*pts[i].x+pts[i].y*pts[i].y);
+              seedPt.y = atan2( pts[i].y, pts[i].x );
+              seedPt.z = pts[i].z;
+            }
+            else
+              seedPt = pts[i];
+
             if (integrationDirection == VTK_INTEGRATE_FORWARD ||
                 integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
             {
                 avtIntegralCurve *ic = 
                     CreateIntegralCurve(solver,
                                         avtIntegralCurve::DIRECTION_FORWARD,
-                                        seedTime0, pts[i], 
+                                        seedTime0, seedPt, 
                                         GetNextCurveID());
 
                 ic->domain = dom;
@@ -2251,7 +2276,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                 avtIntegralCurve *ic = 
                     CreateIntegralCurve(solver,
                                         avtIntegralCurve::DIRECTION_BACKWARD,
-                                        seedTime0, pts[i], 
+                                        seedTime0, seedPt, 
                                         GetNextCurveID());
                 ic->domain = dom;
             
@@ -2324,6 +2349,33 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
     out_dr->SetVelocityFieldMustBeContinuous(true);
 
     if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR )
+    {
+        // Add in the other fields that the M3D Interpolation needs
+        // for doing their Newton's Metod.
+
+        // Assume the user has selected B as the primary variable.
+        // Which is ignored.
+
+        // Single variables stored as attributes on the header
+        out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
+        out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
+        
+        out_dr->AddSecondaryVariable("hidden/header/bzero");    // /bzero
+        out_dr->AddSecondaryVariable("hidden/header/rzero");    // /rzero
+
+        // The mesh - N elements x 7
+        out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
+
+        // Variables on the mesh - N elements x 20
+        out_dr->AddSecondaryVariable("hidden/equilibrium/f");  // /equilibrium/fields/f
+        out_dr->AddSecondaryVariable("hidden/equilibrium/psi");// /equilibrium/fields/psi
+
+        out_dr->AddSecondaryVariable("hidden/f");      // /time_XXX/fields/f
+        out_dr->AddSecondaryVariable("hidden/f_i");    // /time_XXX/fields/f_i
+        out_dr->AddSecondaryVariable("hidden/psi");    // /time_XXX/fields/psi
+        out_dr->AddSecondaryVariable("hidden/psi_i");  // /time_XXX/fields/psi_i
+    }
+    else if ( integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR )
     {
         // Add in the other fields that the M3D Interpolation needs
         // for doing their Newton's Metod.
@@ -2529,5 +2581,3 @@ avtPICSFilter::CacheLocators(void)
     return true;
 #endif
 }
-
-

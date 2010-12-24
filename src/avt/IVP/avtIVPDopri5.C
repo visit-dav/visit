@@ -104,6 +104,8 @@ avtIVPDopri5::avtIVPDopri5()
      
      h_max = 0.0;
      nonsti = 0;
+
+     convertToCartesian = false;
 }
 
 
@@ -685,13 +687,28 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             {
                 ivpstep->resize(5);
 
-                (*ivpstep)[0] = y;
-                (*ivpstep)[1] = y + (h*k1/4.);
-                (*ivpstep)[2] = (y + y_new)/2 + h*( (d1+1)*k1 + d3*k3 + d4*k4 
-                              + d5*k5 + d6*k6 + (d7-1)*k7 )/6.;
-                (*ivpstep)[3] = y_new - h*k7/4;
-                (*ivpstep)[4] = y_new;
-        
+                if( convertToCartesian )
+                {
+                  (*ivpstep)[0] = CylindricalToCartesian( y );
+                  (*ivpstep)[1] = CylindricalToCartesian( y + (h*k1/4.) );
+                  (*ivpstep)[2] = CylindricalToCartesian( (y + y_new)/2 +
+                                                          h*( (d1+1)*k1 +
+                                                              d3*k3 + d4*k4 +
+                                                              d5*k5 + d6*k6 +
+                                                              (d7-1)*k7 )/6. );
+                  (*ivpstep)[3] = CylindricalToCartesian( y_new - h*k7/4 );
+                  (*ivpstep)[4] = CylindricalToCartesian( y_new );
+                }
+                else
+                {
+                  (*ivpstep)[0] = y;
+                  (*ivpstep)[1] = y + (h*k1/4.);
+                  (*ivpstep)[2] = (y + y_new)/2 + h*( (d1+1)*k1 + d3*k3 + d4*k4 
+                                                      + d5*k5 + d6*k6 + (d7-1)*k7 )/6.;
+                  (*ivpstep)[3] = y_new - h*k7/4;
+                  (*ivpstep)[4] = y_new;
+                }
+
                 ivpstep->t0 = t;
                 ivpstep->t1 = t + h;
             }

@@ -85,4 +85,19 @@ avtIVPSolver::PutState(const avtIVPState& state)
     this->AcceptStateVisitor(aiss);
 }
 
+// ****************************************************************************
+//  Method: avtIVPSolver::PutState
+//
+//  Purpose:
+//      Sets the state of the IVP solver.
+//
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
+//
+// ****************************************************************************
 
+avtVector 
+avtIVPSolver::CylindricalToCartesian(const avtVector& pt) const
+{
+  return avtVector(pt[0]*cos(pt[1]), pt[0]*sin(pt[1]), pt[2] );
+}

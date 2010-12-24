@@ -96,8 +96,14 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
     static                    std::string thetaArrayName;
     static                    std::string tangentsArrayName;
 
+    void                      SetCoordinateSystem(int c) {coordinateSystem = c;}
+    void                      SetPhiFactor(double pf) {phiFactor = pf;}
+
   protected:
-    void                      CreateIntegralCurveOutput(vector<avtIntegralCurve *> &streamlines );
+    void                      CreateIntegralCurveOutput(vector<avtIntegralCurve *> &streamlines);
+
+    int    coordinateSystem;
+    double phiFactor;
 };
 
 

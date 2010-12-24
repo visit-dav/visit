@@ -552,9 +552,10 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         }
         if (times.size() != nTotalTimesteps)
             timesLookGood = false;
-        if (timesLookGood == false)
+        if (0 && timesLookGood == false)
         {
             vector<double> timesFromMassCall = times;
+
             times.clear();
             for (i = 0; i < nTotalTimesteps; i++)
             {

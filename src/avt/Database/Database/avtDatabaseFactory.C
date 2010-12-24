@@ -69,6 +69,7 @@
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 #include <InvalidDBTypeException.h>
+#include <NonCompliantException.h>
 #include <NonCompliantFileException.h>
 #include <TimingsManager.h>
 
@@ -496,6 +497,11 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                                nBlocks, forceReadAllCyclesAndTimes,
                                treatAllDBsAsTimeVarying, true, times);
         }
+        CATCH(NonCompliantException)
+        {
+            rv = NULL;
+            RETHROW;
+        }
         CATCH(NonCompliantFileException)
         {
             rv = NULL;
@@ -572,6 +578,11 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                     else
                         delete dbtmp;
                 }
+            }
+            CATCH(NonCompliantException)
+            {
+                rv = NULL;
+                RETHROW;
             }
             CATCH(NonCompliantFileException)
             {
@@ -682,6 +693,11 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                                timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
                                treatAllDBsAsTimeVarying, true, times);
+        }
+        CATCH(NonCompliantException)
+        {
+            rv = NULL;
+            RETHROW;
         }
         CATCH(NonCompliantFileException)
         {
