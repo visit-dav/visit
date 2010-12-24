@@ -15,6 +15,11 @@
         DormandPrince
         AdamsBashforth
         M3DC1Integrator
+        NIMRODIntegrator
+      </Enum>
+      <Enum name="CoordinateSystem">
+        Cartesian
+        Cylindrical
       </Enum>
       <Enum name="OverlapType">
         Raw
@@ -108,6 +113,9 @@
       </Field>
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         AdamsBashforth
+      </Field>
+      <Field name="coordinateSystem" label="coordinateSystem" type="enum" subtype="CoordinateSystem">
+        Cartesian
       </Field>
       <Field name="maxStepLength" label="maximum step length" type="double">
         0.100000

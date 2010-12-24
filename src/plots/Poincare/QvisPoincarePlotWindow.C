@@ -214,6 +214,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     integrationTypeCombo->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationTypeCombo->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationTypeCombo->addItem(tr("M3D-C1 Integrator"));
+    integrationTypeCombo->addItem(tr("NIMROD Integrator"));
     connect(integrationTypeCombo, SIGNAL(activated(int)),
            this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationTypeCombo, 0, 1);
@@ -245,10 +246,32 @@ QvisPoincarePlotWindow::CreateWindowContents()
     integrationLayout->addWidget(forceNodalLabel, 4,0);
     integrationLayout->addWidget(forceNodal, 4, 1);
 
+
+    // Create the coordinate group
+//     QGroupBox *coordinateGroup = new QGroupBox(firstTab);
+//     coordinateGroup->setTitle(tr("Coordinate System"));
+//     mainLayout->addWidget(coordinateGroup, 2, 0);
+
+//     QGridLayout *coordinateLayout = new QGridLayout(coordinateGroup);
+//     coordinateLayout->setMargin(5);
+//     coordinateLayout->setSpacing(10);
+
+//     coordinateButtonGroup = new QButtonGroup(coordinateGroup);
+//     QRadioButton *cartesianButton = new QRadioButton(tr("Cartesian"), coordinateGroup);
+//     QRadioButton *cylindricalButton = new QRadioButton(tr("Cylindrical"), coordinateGroup);
+//     coordinateButtonGroup->addButton(cartesianButton, 0);
+//     coordinateButtonGroup->addButton(cylindricalButton, 1);
+
+//     coordinateLayout->addWidget(cartesianButton, 0, 0);
+//     coordinateLayout->addWidget(cylindricalButton, 0, 1);
+
+//     connect(coordinateButtonGroup, SIGNAL(buttonClicked(int)), this,
+//          SLOT(coordinateButtonGroupChanged(int)));
+
     // Create the punctures group box.
     QGroupBox *puncturesGroup = new QGroupBox(firstTab);
     puncturesGroup->setTitle(tr("Punctures"));
-    mainLayout->addWidget(puncturesGroup, 2, 0);
+    mainLayout->addWidget(puncturesGroup, 3, 0);
 //    mainLayout->setStretchFactor(puncturesGroup, 100);
 
     QGridLayout *puncturesLayout = new QGridLayout(puncturesGroup);
@@ -902,6 +925,11 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
           case PoincareAttributes::ID_absTol:
             absTol->setText(DoubleToQString(atts->GetAbsTol()));
             break;
+          case PoincareAttributes::ID_coordinateSystem:
+//          coordinateButtonGroup->blockSignals(true);
+//             coordinateButtonGroup->button(atts->GetCoordinateSystem())->setChecked(true);;
+//             coordinateButtonGroup->blockSignals(false);
+            break;
           case PoincareAttributes::ID_analysis:
             analysisButtonGroup->blockSignals(true);
             if(analysisButtonGroup->button((int)atts->GetAnalysis()) != 0)
@@ -1379,6 +1407,7 @@ QvisPoincarePlotWindow::UpdateIntegrationAttributes()
 
     case PoincareAttributes::AdamsBashforth:
     case PoincareAttributes::M3DC1Integrator:
+    case PoincareAttributes::NIMRODIntegrator:
         maxStepLength->show();
         maxStepLengthLabel->show();
         maxStepLengthLabel->setText(tr("Step length"));
@@ -1676,6 +1705,21 @@ QvisPoincarePlotWindow::absTolProcessText()
     Apply();
 }
 
+
+void
+QvisPoincarePlotWindow::coordinateButtonGroupChanged(int val)
+{
+//     switch( val )
+//     {
+//         case 0:
+//        atts->SetCoordinateSystem(PoincareAttributes::Cartesian);
+//        break;
+//         case 1:
+//        atts->SetCoordinateSystem(PoincareAttributes::Cylindrical);
+//        break;
+//     }
+//     Apply();
+}
 
 void
 QvisPoincarePlotWindow::analysisChanged(int val)

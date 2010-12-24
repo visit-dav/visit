@@ -182,7 +182,7 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     }
     SNPRINTF(tmpStr, 1000, "%spointDensity = %d\n", prefix, atts->GetPointDensity());
     str += tmpStr;
-    const char *integrationType_names = "DormandPrince, AdamsBashforth, M3DC1Integrator";
+    const char *integrationType_names = "DormandPrince, AdamsBashforth, M3DC1Integrator, NIMRODIntegrator";
     switch (atts->GetIntegrationType())
     {
       case PoincareAttributes::DormandPrince:
@@ -195,6 +195,25 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           break;
       case PoincareAttributes::M3DC1Integrator:
           SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC1Integrator  # %s\n", prefix, prefix, integrationType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::NIMRODIntegrator:
+          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sNIMRODIntegrator  # %s\n", prefix, prefix, integrationType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *coordinateSystem_names = "Cartesian, Cylindrical";
+    switch (atts->GetCoordinateSystem())
+    {
+      case PoincareAttributes::Cartesian:
+          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCartesian  # %s\n", prefix, prefix, coordinateSystem_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::Cylindrical:
+          SNPRINTF(tmpStr, 1000, "%scoordinateSystem = %sCylindrical  # %s\n", prefix, prefix, coordinateSystem_names);
           str += tmpStr;
           break;
       default:
@@ -870,14 +889,14 @@ PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the integrationType in the object.
-    if(ival >= 0 && ival < 3)
+    if(ival >= 0 && ival < 4)
         obj->data->SetIntegrationType(PoincareAttributes::IntegrationType(ival));
     else
     {
         fprintf(stderr, "An invalid integrationType value was given. "
-                        "Valid values are in the range of [0,2]. "
+                        "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
-                        "DormandPrince, AdamsBashforth, M3DC1Integrator.");
+                        "DormandPrince, AdamsBashforth, M3DC1Integrator, NIMRODIntegrator.");
         return NULL;
     }
 
@@ -890,6 +909,39 @@ PoincareAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the coordinateSystem in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetCoordinateSystem(PoincareAttributes::CoordinateSystem(ival));
+    else
+    {
+        fprintf(stderr, "An invalid coordinateSystem value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Cartesian, Cylindrical.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCoordinateSystem()));
     return retval;
 }
 
@@ -2104,6 +2156,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetPointDensity", PoincareAttributes_GetPointDensity, METH_VARARGS},
     {"SetIntegrationType", PoincareAttributes_SetIntegrationType, METH_VARARGS},
     {"GetIntegrationType", PoincareAttributes_GetIntegrationType, METH_VARARGS},
+    {"SetCoordinateSystem", PoincareAttributes_SetCoordinateSystem, METH_VARARGS},
+    {"GetCoordinateSystem", PoincareAttributes_GetCoordinateSystem, METH_VARARGS},
     {"SetMaxStepLength", PoincareAttributes_SetMaxStepLength, METH_VARARGS},
     {"GetMaxStepLength", PoincareAttributes_GetMaxStepLength, METH_VARARGS},
     {"SetRelTol", PoincareAttributes_SetRelTol, METH_VARARGS},
@@ -2265,6 +2319,15 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PoincareAttributes::AdamsBashforth));
     if(strcmp(name, "M3DC1Integrator") == 0)
         return PyInt_FromLong(long(PoincareAttributes::M3DC1Integrator));
+    if(strcmp(name, "NIMRODIntegrator") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::NIMRODIntegrator));
+
+    if(strcmp(name, "coordinateSystem") == 0)
+        return PoincareAttributes_GetCoordinateSystem(self, NULL);
+    if(strcmp(name, "Cartesian") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Cartesian));
+    if(strcmp(name, "Cylindrical") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Cylindrical));
 
     if(strcmp(name, "maxStepLength") == 0)
         return PoincareAttributes_GetMaxStepLength(self, NULL);
@@ -2468,6 +2531,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetPointDensity(self, tuple);
     else if(strcmp(name, "integrationType") == 0)
         obj = PoincareAttributes_SetIntegrationType(self, tuple);
+    else if(strcmp(name, "coordinateSystem") == 0)
+        obj = PoincareAttributes_SetCoordinateSystem(self, tuple);
     else if(strcmp(name, "maxStepLength") == 0)
         obj = PoincareAttributes_SetMaxStepLength(self, tuple);
     else if(strcmp(name, "relTol") == 0)

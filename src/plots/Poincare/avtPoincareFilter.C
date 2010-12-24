@@ -335,7 +335,7 @@ avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic)
         (*iter).second.points.resize( sric->GetNumberOfSamples() );
 
         for( size_t p=0; p<(*iter).second.points.size(); ++p )
-            (*iter).second.points[p] = sric->GetSample( p ).position;
+          (*iter).second.points[p] = sric->GetSample( p ).position;
     }
 }
 
