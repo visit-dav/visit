@@ -432,7 +432,10 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
                                            atts.GetMaxDomainCacheSize(),
                                            atts.GetWorkGroupSize());
 
-    poincareFilter->ConvertToCartesian( atts.GetCoordinateSystem() );
+    if (atts.GetIntegrationType() == PoincareAttributes::NIMRODIntegrator )
+      poincareFilter->ConvertToCartesian( true );
+    else
+      poincareFilter->ConvertToCartesian( false );
 
     // Poincare specific attributes.
     poincareFilter->SetPuncturePlane( atts.GetPuncturePlane() );
