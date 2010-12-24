@@ -259,12 +259,29 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
 
         float theta = 0.0, prevT = 0.0;
         avtVector lastPos;
-        
+
+        cerr << phiFactor << "  " << (phiFactor == 0.0) << endl;
+
         for (int j = 0; j < numSamps; j++)
         {
             avtStateRecorderIntegralCurve::Sample s = ic->GetSample(j);
             line->GetPointIds()->SetId(j, pIdx);
-            points->InsertPoint(pIdx, s.position.x, s.position.y, s.position.z);
+
+            if( coordinateSystem == 0 )
+              points->InsertPoint(pIdx, s.position.x, s.position.y, s.position.z);
+            else if( coordinateSystem == 1 )
+              points->InsertPoint(pIdx, 
+                                  s.position.x*cos(s.position.y),
+                                  s.position.x*sin(s.position.y),
+                                  s.position.z);
+            else if( coordinateSystem == 2 )
+              points->InsertPoint(pIdx, 
+                                  sqrt(s.position.x*s.position.x+
+                                       s.position.y*s.position.y),
+                                  (phiFactor == 0.0 ?
+                                   atan2( s.position.y, s.position.x ) :
+                                   (double) (j) / phiFactor),
+                                  s.position.z);
             
             float speed = s.velocity.length();
             if (speed > 0)

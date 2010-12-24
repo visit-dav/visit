@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtIVPM3DC1Field.C                            //
+//                             avtIVPNIMRODField.C                            //
 // ************************************************************************* //
 
-#include "avtIVPM3DC1Field.h"
+#include "avtIVPNIMRODField.h"
 
 #include <DebugStream.h>
 
@@ -48,11 +48,13 @@
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 
+#include <math.h>
+
 #define ELEMENT_SIZE 7
 #define SCALAR_SIZE 20
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Field constructor
+//  Method: avtIVPNIMRODField constructor
 //
 //  Creationist: Allen Sanderson
 //  Creation:   20 November 2009
@@ -65,7 +67,7 @@
 //
 // ****************************************************************************
 
-avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset, 
+avtIVPNIMRODField::avtIVPNIMRODField( vtkDataSet* dataset, 
                                     avtCellLocator* locator ) : 
     avtIVPVTKField( dataset, locator )
 {
@@ -124,14 +126,14 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
 }
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Field constructor
+//  Method: avtIVPNIMRODField constructor
 //
 //  Creationist: Allen Sanderson
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
 
-avtIVPM3DC1Field::avtIVPM3DC1Field( float *elementsPtr, int nelements ) 
+avtIVPNIMRODField::avtIVPNIMRODField( float *elementsPtr, int nelements ) 
     : avtIVPVTKField(NULL, NULL), elements( elementsPtr), neighbors(0),
     psi0(0), f0(0), psinr(0), psini(0), fnr(0), fni(0), nelms(nelements)
 {
@@ -140,14 +142,14 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( float *elementsPtr, int nelements )
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Field destructor
+//  Method: avtIVPNIMRODField destructor
 //
 //  Creationist: Allen Sanderson
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
 
-avtIVPM3DC1Field::~avtIVPM3DC1Field()
+avtIVPNIMRODField::~avtIVPNIMRODField()
 {
   if( neighbors ) free(neighbors);
   if( trigtable ) free(trigtable);
@@ -163,7 +165,7 @@ avtIVPM3DC1Field::~avtIVPM3DC1Field()
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Field destructor
+//  Method: avtIVPNIMRODField destructor
 //
 //  Creationist: Allen Sanderson
 //  Creation:   20 November 2009
@@ -171,7 +173,7 @@ avtIVPM3DC1Field::~avtIVPM3DC1Field()
 // ****************************************************************************
 
 template< class type >
-type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
+type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
                                         const type var,
                                         const char* varname,
                                         const int ntuples,
@@ -267,7 +269,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
   }
   else
   {
-    debug1 << "avtIVPM3DC1Field::SetDataPointer "
+    debug1 << "avtIVPNIMRODField::SetDataPointer "
            << "Variable " << varname
            << " is not of type float - can not safely down cast"
            << endl;
@@ -278,11 +280,11 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Field::operator
+//  Method: avtIVPNIMRODField::operator
 //
-//  Purpose:
-//      Evaluates a point location by consulting a M3D C1 grid.
-//      Gets the B field components directly
+//  Purpose: Evaluates a point location by consulting a M3D C1 grid.
+//      Gets the B field components directly - should not be used for
+//      calculating integral curves.
 //
 //  THIS CODE SHOULD NOT BE USED FOR FIELDLINE INTEGRATION!!!!
 //      
@@ -295,10 +297,14 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 // ****************************************************************************
 
 avtVector
-avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
+avtIVPNIMRODField::operator()( const double &t, const avtVector &p ) const
 {
   // NOTE: Assumes the point is in cylindrical coordiantes.
   double pt[3] = { p[0], p[1], p[2] };
+
+  pt[0] = p[0];
+  pt[1] = p[1];
+  pt[2] = p[2];
 
   /* Find the element containing the point; get local coords xi,eta */
   double xieta[2];
@@ -313,15 +319,20 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
     float B[3];
 
     interpBcomps(B, pt, element, xieta);
-    
+
     // The B value is in cylindrical coordiantes
-    return avtVector( B[0], B[0], B[2] );
+    return avtVector( B[0], B[1], B[2] );
   }
+
+  //  converstion to a right hand system.
+//    avtVector( B[0] * cos(pt[1]) - B[1] * sin(pt[1]),
+//               B[0] * sin(pt[1]) + B[1] * cos(pt[1]),
+//               B[2] );
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Field IsInside
+//  Method: avtIVPNIMRODField IsInside
 //
 //  Creationist: Allen Sanderson
 //  Creation:   16 April 2010
@@ -333,7 +344,7 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
 //
 //  ****************************************************************************
 
-bool avtIVPM3DC1Field::IsInside(const double& t, const avtVector& x) const
+bool avtIVPNIMRODField::IsInside(const double& t, const avtVector& x) const
 {
   double xin[3], xout[3];
 
@@ -352,7 +363,7 @@ bool avtIVPM3DC1Field::IsInside(const double& t, const avtVector& x) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DC1Field::findElementNeighbors()
+void avtIVPNIMRODField::findElementNeighbors()
 {
   v_entry *vert_list = 0;
   edge    *edge_list = 0;
@@ -451,7 +462,7 @@ void avtIVPM3DC1Field::findElementNeighbors()
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DC1Field::register_vert(v_entry *vlist, int *len,
+void avtIVPNIMRODField::register_vert(v_entry *vlist, int *len,
                                      double x, double y, int *index)
 {
   const double tol=2.5e-13;
@@ -480,7 +491,7 @@ void avtIVPM3DC1Field::register_vert(v_entry *vlist, int *len,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DC1Field::add_edge(edge *list, int *tri,
+void avtIVPNIMRODField::add_edge(edge *list, int *tri,
                                 int side, int el, int *nlist)
 {
   int  i, v1, v2, vo;
@@ -513,7 +524,7 @@ void avtIVPM3DC1Field::add_edge(edge *list, int *tri,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-int avtIVPM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
+int avtIVPNIMRODField::get_tri_coords2D(double *xin, int el, double *xout) const
 {
   float     *tri;
   double     co, sn, rrel, zrel;
@@ -541,7 +552,7 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
+int avtIVPNIMRODField::get_tri_coords2D(double *xin, double *xout) const
 {
   static int el=0;
   float     *tri;
@@ -626,7 +637,7 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interp(float *var, int el, double *lcoords) const
+float avtIVPNIMRODField::interp(float *var, int el, double *lcoords) const
 {
   float *a = var + SCALAR_SIZE*el;
   double xi = *lcoords, eta = lcoords[1];
@@ -645,7 +656,7 @@ float avtIVPM3DC1Field::interp(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdR(float *var, int el, double *lcoords) const
+float avtIVPNIMRODField::interpdR(float *var, int el, double *lcoords) const
 {
   float *a = var + SCALAR_SIZE*el;
   double xi = lcoords[0], eta = lcoords[1], xicoef, etacoef;
@@ -670,7 +681,7 @@ float avtIVPM3DC1Field::interpdR(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdz(float *var, int el, double *lcoords) const
+float avtIVPNIMRODField::interpdz(float *var, int el, double *lcoords) const
 {
   float *a = var + SCALAR_SIZE*el;
   double xi = lcoords[0], eta = lcoords[1], xicoef, etacoef;
@@ -696,7 +707,7 @@ float avtIVPM3DC1Field::interpdz(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdR2(float *var, int el, double *lcoords) const
+float avtIVPNIMRODField::interpdR2(float *var, int el, double *lcoords) const
 {
   float *a = var + SCALAR_SIZE*el;
   double co=trigtable[2*el], sn=trigtable[2*el + 1];
@@ -726,7 +737,7 @@ float avtIVPM3DC1Field::interpdR2(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdz2(float *var, int el, double *lcoords) const
+float avtIVPNIMRODField::interpdz2(float *var, int el, double *lcoords) const
 {
   float *a = var + SCALAR_SIZE*el;
   double co=trigtable[2*el], sn=trigtable[2*el + 1];
@@ -756,7 +767,7 @@ float avtIVPM3DC1Field::interpdz2(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdRdz(float *var, int el, double *lcoords) const
+float avtIVPNIMRODField::interpdRdz(float *var, int el, double *lcoords) const
 {
   float *a = var + SCALAR_SIZE*el;
   double co=trigtable[2*el], sn=trigtable[2*el + 1];
@@ -790,7 +801,7 @@ float avtIVPM3DC1Field::interpdRdz(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DC1Field::interpBcomps(float *B, double *x,
+void avtIVPNIMRODField::interpBcomps(float *B, double *x,
                                     int element, double *xieta) const
 {
   float *B_R   = &(B[0]);

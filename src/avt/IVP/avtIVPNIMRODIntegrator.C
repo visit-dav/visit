@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtIVPM3DC1Integrator.C                      //
+//                              avtIVPNIMRODIntegrator.C                      //
 // ************************************************************************* //
 
-#include <avtIVPM3DC1Integrator.h>
+#include <avtIVPNIMRODIntegrator.h>
 #include <avtIVPStateHelper.h>
 #include <DebugStream.h>
 
-#include <avtIVPM3DC1Field.h>
+#include <avtIVPNIMRODField.h>
 
 #include <limits>
 #include <cmath>
@@ -60,14 +60,14 @@ static inline double sign( const double& a, const double& b )
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator constructor
+//  Method: avtIVPNIMRODIntegrator constructor
 //
 //  Programmer: Allen Sanderson
 //  Creation:   October 24, 2009
 //
 // ****************************************************************************
 
-avtIVPM3DC1Integrator::avtIVPM3DC1Integrator()
+avtIVPNIMRODIntegrator::avtIVPNIMRODIntegrator()
 {
     // set (somewhat) reasonable defaults
     tol = 1e-8;
@@ -80,7 +80,7 @@ avtIVPM3DC1Integrator::avtIVPM3DC1Integrator()
 }
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator destructor
+//  Method: avtIVPNIMRODIntegrator destructor
 //
 //  Programmer: Allen Sanderson
 //  Creation:   October 24, 2009
@@ -88,13 +88,13 @@ avtIVPM3DC1Integrator::avtIVPM3DC1Integrator()
 // ****************************************************************************
 
 
-avtIVPM3DC1Integrator::~avtIVPM3DC1Integrator()
+avtIVPNIMRODIntegrator::~avtIVPNIMRODIntegrator()
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::SetCurrentT
+//  Method: avtIVPNIMRODIntegrator::SetCurrentT
 //
 //  Purpose:
 //      Sets the current T.
@@ -105,14 +105,14 @@ avtIVPM3DC1Integrator::~avtIVPM3DC1Integrator()
 // ****************************************************************************
 
 void
-avtIVPM3DC1Integrator::SetCurrentT(double newT)
+avtIVPNIMRODIntegrator::SetCurrentT(double newT)
 {
     t = newT;
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::GetCurrentT
+//  Method: avtIVPNIMRODIntegrator::GetCurrentT
 //
 //  Purpose:
 //      Gets the current T.
@@ -123,14 +123,14 @@ avtIVPM3DC1Integrator::SetCurrentT(double newT)
 // ****************************************************************************
 
 double 
-avtIVPM3DC1Integrator::GetCurrentT() const 
+avtIVPNIMRODIntegrator::GetCurrentT() const 
 {
     return t;
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::SetCurrentY
+//  Method: avtIVPNIMRODIntegrator::SetCurrentY
 //
 //  Purpose:
 //      Sets the current Y.
@@ -146,14 +146,14 @@ avtIVPM3DC1Integrator::GetCurrentT() const
 // ****************************************************************************
 
 void
-avtIVPM3DC1Integrator::SetCurrentY(const avtVector &newY)
+avtIVPNIMRODIntegrator::SetCurrentY(const avtVector &newY)
 {
     yCur = newY;
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::GetCurrentY
+//  Method: avtIVPNIMRODIntegrator::GetCurrentY
 //
 //  Purpose:
 //      Gets the current Y.
@@ -169,14 +169,14 @@ avtIVPM3DC1Integrator::SetCurrentY(const avtVector &newY)
 // ****************************************************************************
 
 avtVector 
-avtIVPM3DC1Integrator::GetCurrentY() const
+avtIVPNIMRODIntegrator::GetCurrentY() const
 {
     return yCur;
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::SetNextStepSize
+//  Method: avtIVPNIMRODIntegrator::SetNextStepSize
 //
 //  Purpose:
 //      Sets the step size for the next step.
@@ -187,14 +187,14 @@ avtIVPM3DC1Integrator::GetCurrentY() const
 // ****************************************************************************
 
 void 
-avtIVPM3DC1Integrator::SetNextStepSize(const double& newH)
+avtIVPNIMRODIntegrator::SetNextStepSize(const double& newH)
 {
     h = newH;
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::GetNextStepSize
+//  Method: avtIVPNIMRODIntegrator::GetNextStepSize
 //
 //  Purpose:
 //      Gets the step size for the next step.
@@ -205,14 +205,14 @@ avtIVPM3DC1Integrator::SetNextStepSize(const double& newH)
 // ****************************************************************************
 
 double 
-avtIVPM3DC1Integrator::GetNextStepSize() const
+avtIVPNIMRODIntegrator::GetNextStepSize() const
 {
     return h;
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::SetMaximumStepSize
+//  Method: avtIVPNIMRODIntegrator::SetMaximumStepSize
 //
 //  Purpose:
 //      Sets the maximum step size for the next step.
@@ -223,13 +223,13 @@ avtIVPM3DC1Integrator::GetNextStepSize() const
 // ****************************************************************************
 
 void
-avtIVPM3DC1Integrator::SetMaximumStepSize(const double& maxH)
+avtIVPNIMRODIntegrator::SetMaximumStepSize(const double& maxH)
 {
     h_max = maxH;
 }
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::GetMaximumStepSize
+//  Method: avtIVPNIMRODIntegrator::GetMaximumStepSize
 //
 //  Purpose:
 //      Gets the maximum step size for the next step.
@@ -240,13 +240,13 @@ avtIVPM3DC1Integrator::SetMaximumStepSize(const double& maxH)
 // ****************************************************************************
 
 double
-avtIVPM3DC1Integrator::GetMaximumStepSize() const
+avtIVPNIMRODIntegrator::GetMaximumStepSize() const
 {
     return h_max;
 }
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::SetMaximumDegenerateIterations
+//  Method: avtIVPNIMRODIntegrator::SetMaximumDegenerateIterations
 //
 //  Purpose:
 //      Sets the maximum number of degenerate steps allowed
@@ -257,14 +257,14 @@ avtIVPM3DC1Integrator::GetMaximumStepSize() const
 // ****************************************************************************
 
 void
-avtIVPM3DC1Integrator::SetMaximumDegenerateIterations( const unsigned int& max )
+avtIVPNIMRODIntegrator::SetMaximumDegenerateIterations( const unsigned int& max )
 {
     max_degenerate_iterations = max;
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::SetTolerances
+//  Method: avtIVPNIMRODIntegrator::SetTolerances
 //
 //  Purpose:
 //      Sets the tolerance.
@@ -275,14 +275,14 @@ avtIVPM3DC1Integrator::SetMaximumDegenerateIterations( const unsigned int& max )
 // ****************************************************************************
 
 void
-avtIVPM3DC1Integrator::SetTolerances(const double& relt, const double& abst)
+avtIVPNIMRODIntegrator::SetTolerances(const double& relt, const double& abst)
 {
     tol = abst;
     stiffness_eps = tol / 1000.0;
 }
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::Reset
+//  Method: avtIVPNIMRODIntegrator::Reset
 //
 //  Purpose:
 //      Resets data members.  Called by the constructors.
@@ -293,7 +293,7 @@ avtIVPM3DC1Integrator::SetTolerances(const double& relt, const double& abst)
 // ****************************************************************************
 
 void 
-avtIVPM3DC1Integrator::Reset(const double& t_start, const avtVector& y_start)
+avtIVPNIMRODIntegrator::Reset(const double& t_start, const avtVector& y_start)
 {
     t = t_start;
     d = 0.0;
@@ -306,7 +306,7 @@ avtIVPM3DC1Integrator::Reset(const double& t_start, const avtVector& y_start)
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::OnExitDomain
+//  Method: avtIVPNIMRODIntegrator::OnExitDomain
 //
 //  Purpose:
 //      Post processing tasks after domain exit.
@@ -317,13 +317,13 @@ avtIVPM3DC1Integrator::Reset(const double& t_start, const avtVector& y_start)
 // ****************************************************************************
 
 void
-avtIVPM3DC1Integrator::OnExitDomain()
+avtIVPNIMRODIntegrator::OnExitDomain()
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::Step
+//  Method: avtIVPNIMRODIntegrator::Step
 //
 //  Purpose:
 //      Take a step and return the result.
@@ -339,7 +339,7 @@ avtIVPM3DC1Integrator::OnExitDomain()
 // ****************************************************************************
 
 avtIVPSolver::Result 
-avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
+avtIVPNIMRODIntegrator::Step(avtIVPField* field, double t_max,
                             avtIVPStep* ivpstep)
 {
     const double direction = sign( 1.0, t_max - t );
@@ -357,15 +357,13 @@ avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
     avtIVPSolver::Result res;
     avtVector yNew = yCur;
 
-    // This call begins the M3D code.
+    // This call begins the NIMROD code.
     res = vpstep(field, yCur, h, yNew);
 
     if( res == avtIVPSolver::OK )
     {
-        ivpstep->resize( 2 );
+        ivpstep->resize( 4 );
 
-        // The integration is done in cylindrical coordinates so
-        // convert to cartesian coordinates. M3D C1 uses right hand coordinats.
         avtVector yCurCart,  yNewCart;
 
         yCurCart[0] = yCur[0] * cos(yCur[1]);
@@ -377,7 +375,9 @@ avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
         yNewCart[2] = yNew[2];
         
         (*ivpstep)[0] = yCurCart;
-        (*ivpstep)[1] = yNewCart;
+        (*ivpstep)[1] = (*ivpstep)[0] + getBfield(field,yCur) * h/3.0;
+        (*ivpstep)[2] = (*ivpstep)[3] - getBfield(field,yNew) * h/3.0;
+        (*ivpstep)[3] = yNewCart;
 
         ivpstep->t0 = t;
         ivpstep->t1 = t + h;
@@ -393,7 +393,7 @@ avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
 }
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::vpstep
+//  Method: avtIVPNIMRODIntegrator::vpstep
 //
 //  Purpose:
 //      Take a step and return the result.
@@ -403,7 +403,7 @@ avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
 //
 // ****************************************************************************
 avtIVPSolver::Result 
-avtIVPM3DC1Integrator::vpstep(const avtIVPField* field,
+avtIVPNIMRODIntegrator::vpstep(const avtIVPField* field,
                               avtVector &yCur, double h, avtVector &yNew)
 {
   avtIVPSolver::Result res;
@@ -428,7 +428,7 @@ avtIVPM3DC1Integrator::vpstep(const avtIVPField* field,
 }
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::partial_step
+//  Method: avtIVPNIMRODIntegrator::partial_step
 //
 //  Purpose:
 //      Take a partial step and return the result.
@@ -444,7 +444,7 @@ const int flowtable[3][2] = {{1,2},{0,2},{0,1}};
 
 
 avtIVPSolver::Result 
-avtIVPM3DC1Integrator::partial_step(const avtIVPField* field,
+avtIVPNIMRODIntegrator::partial_step(const avtIVPField* field,
                                     double *xin, int iflow, double h, double *xout)
 {
   double Bval, dummy;
@@ -476,7 +476,7 @@ avtIVPM3DC1Integrator::partial_step(const avtIVPField* field,
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::advance
+//  Method: avtIVPNIMRODIntegrator::advance
 //
 //  Purpose:
 //      Advance and return the result.
@@ -487,7 +487,7 @@ avtIVPM3DC1Integrator::partial_step(const avtIVPField* field,
 // ****************************************************************************
 
 int
-avtIVPM3DC1Integrator::advance(const avtIVPField* field,
+avtIVPNIMRODIntegrator::advance(const avtIVPField* field,
                                double *x, int iflow, int icomp, double h, double xacc)
 {
   double Bval, Bprime, xold, dx;
@@ -516,7 +516,7 @@ avtIVPM3DC1Integrator::advance(const avtIVPField* field,
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::getBfield
+//  Method: avtIVPNIMRODIntegrator::getBfield
 //
 //  Purpose:
 //      Gets the B field components directly
@@ -530,11 +530,11 @@ avtIVPM3DC1Integrator::advance(const avtIVPField* field,
 // ****************************************************************************
 
 avtVector
-avtIVPM3DC1Integrator::getBfield(const avtIVPField* field, avtVector y)
+avtIVPNIMRODIntegrator::getBfield(const avtIVPField* field, avtVector y)
 {
   // FIX THIS CODE - It would be preferable to use a dynamic cast but
   // because the field is passd down as a const it can not be used.
-  avtIVPM3DC1Field *m3dField = (avtIVPM3DC1Field *)(field);
+  avtIVPNIMRODField *m3dField = (avtIVPNIMRODField *)(field);
 
   double pt[3];
 
@@ -561,7 +561,7 @@ avtIVPM3DC1Integrator::getBfield(const avtIVPField* field, avtVector y)
 }
    
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::getBfield
+//  Method: avtIVPNIMRODIntegrator::getBfield
 //
 //  Purpose:
 //      Returns the B field needed for fieldline integration
@@ -573,13 +573,13 @@ avtIVPM3DC1Integrator::getBfield(const avtIVPField* field, avtVector y)
 // ****************************************************************************
 
 int
-avtIVPM3DC1Integrator::getBfield(const avtIVPField* field,
+avtIVPNIMRODIntegrator::getBfield(const avtIVPField* field,
                                  double *x, int iflow, int icomp, double *Bout,
                                  int dflag, double *Bpout)
 {
   // FIX THIS CODE - It would be preferable to use a dynamic cast but
   // because the field is passd down as a const it can not be used.
-  avtIVPM3DC1Field *m3dField = (avtIVPM3DC1Field *)(field);
+  avtIVPNIMRODField *m3dField = (avtIVPNIMRODField *)(field);
 
   if (m3dField->linflag)
     return getBfield2(field, x, iflow, icomp, Bout, dflag, Bpout);
@@ -589,7 +589,7 @@ avtIVPM3DC1Integrator::getBfield(const avtIVPField* field,
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::getBfield1
+//  Method: avtIVPNIMRODIntegrator::getBfield1
 //
 //  Purpose:
 //      Axisymmetric equilibrium only
@@ -599,7 +599,7 @@ avtIVPM3DC1Integrator::getBfield(const avtIVPField* field,
 //
 // ****************************************************************************
 int
-avtIVPM3DC1Integrator::getBfield1(const avtIVPField* field,
+avtIVPNIMRODIntegrator::getBfield1(const avtIVPField* field,
                                   double *x, int iflow, int icomp, double *Bout,
                                   int dflag, double *Bpout)
 {
@@ -608,7 +608,7 @@ avtIVPM3DC1Integrator::getBfield1(const avtIVPField* field,
 
   // FIX THIS CODE - It would be preferable to use a dynamic cast but
   // because the field is passd down a const it can not be used.
-  avtIVPM3DC1Field *m3dField = (avtIVPM3DC1Field *)(field);
+  avtIVPNIMRODField *m3dField = (avtIVPNIMRODField *)(field);
 
   /* Find the element containing the point x; get local coords xi,eta */
   if ((element = m3dField->get_tri_coords2D(x, xieta)) < 0) return 1;
@@ -644,8 +644,7 @@ avtIVPM3DC1Integrator::getBfield1(const avtIVPField* field,
   case 2: /* B3 = curl A_z */
     if (icomp) { /* phi: d^2f/dR^2 + (1/R)df/dR + F0/R^2 */
       *Bout = m3dField->interpdR2(m3dField->f0, element, xieta) +
-        (m3dField->interpdR(m3dField->f0, element, xieta) +
-         m3dField->F0/x[0])/ x[0];
+        (m3dField->interpdR(m3dField->f0, element, xieta) + m3dField->F0/x[0])/ x[0];
       if (dflag) { /* dB3/dphi = d^2f'/dR^2 + (1/R)df'/dR */
         *Bpout = 0.0;
       }
@@ -666,7 +665,7 @@ avtIVPM3DC1Integrator::getBfield1(const avtIVPField* field,
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::getBfield2
+//  Method: avtIVPNIMRODIntegrator::getBfield2
 //
 //  Purpose:
 //      Equilibrium plus mode n perturbation
@@ -676,7 +675,7 @@ avtIVPM3DC1Integrator::getBfield1(const avtIVPField* field,
 //
 // ****************************************************************************
 int
-avtIVPM3DC1Integrator::getBfield2(const avtIVPField* field,
+avtIVPNIMRODIntegrator::getBfield2(const avtIVPField* field,
                                   double *x, int iflow, int icomp, double *Bout,
                                   int dflag, double *Bpout)
 {
@@ -685,8 +684,8 @@ avtIVPM3DC1Integrator::getBfield2(const avtIVPField* field,
   int    element;
 
   // FIX THIS CODE - It would be preferable to use a dynamic cast but
-  // because the field is passd down as a const it can not be used.
-  avtIVPM3DC1Field *m3dField = (avtIVPM3DC1Field *)(field);
+  // because the field is passd down a const it can not be used.
+  avtIVPNIMRODField *m3dField = (avtIVPNIMRODField *)(field);
 
   /* Find the element containing the point x; get local coords xi,eta */
   if ((element = m3dField->get_tri_coords2D(x, xieta)) < 0) return 1;
@@ -770,7 +769,7 @@ avtIVPM3DC1Integrator::getBfield2(const avtIVPField* field,
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::AcceptStateVisitor
+//  Method: avtIVPNIMRODIntegrator::AcceptStateVisitor
 //
 //  Purpose:
 //      Loads the state into the state helper.
@@ -788,7 +787,7 @@ avtIVPM3DC1Integrator::getBfield2(const avtIVPField* field,
 //
 // ****************************************************************************
 void
-avtIVPM3DC1Integrator::AcceptStateVisitor(avtIVPStateHelper& aiss)
+avtIVPNIMRODIntegrator::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
     aiss.Accept(numStep)
         .Accept(tol)

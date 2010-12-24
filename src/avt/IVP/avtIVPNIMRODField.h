@@ -37,11 +37,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtIVPM3DC1Field.h                             //
+//                            avtIVPNIMRODField.h                             //
 // ************************************************************************* //
 
-#ifndef AVT_IVP_M3D_FIELD_H
-#define AVT_IVP_M3D_FIELD_H
+#ifndef AVT_IVP_NIMROD_FIELD_H
+#define AVT_IVP_NIMROD_FIELD_H
 
 #include "avtIVPVTKField.h"
 
@@ -52,7 +52,7 @@
 
 
 // ****************************************************************************
-//  Class:  avtIVPM3DC1Field
+//  Class:  avtIVPNIMRODField
 //
 //  Purpose:
 //    A wrapper class to allow the use of vtkDataSets as IVP fields for 
@@ -64,7 +64,7 @@
 //
 // ****************************************************************************
 
-class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
+class IVP_API avtIVPNIMRODField: public avtIVPVTKField
 {
  protected:
 /* Local typedefs */
@@ -82,10 +82,12 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   } edge;
   
   public:
-  avtIVPM3DC1Field( vtkDataSet* ds, avtCellLocator* loc ); 
-    avtIVPM3DC1Field( float *elementsPtr, int nelements );
+  avtIVPNIMRODField( vtkDataSet* ds, avtCellLocator* loc ); 
+    avtIVPNIMRODField( float *elementsPtr, int nelements );
 
-    ~avtIVPM3DC1Field();
+    ~avtIVPNIMRODField();
+
+    avtVector operator()( const double &t, const avtVector &p ) const;
 
     virtual bool IsInside(const double& t, const avtVector& x) const;
 
@@ -96,8 +98,6 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
 
     int get_tri_coords2D(double *x, double *xout) const;
     int get_tri_coords2D(double *x, int el, double *xout) const;
-
-    avtVector operator()( const double &t, const avtVector &v ) const;
 
     float interp    (float *var, int el, double *lcoords) const;
     float interpdR  (float *var, int el, double *lcoords) const;

@@ -68,6 +68,7 @@ class avtICAlgorithm;
 #define STREAMLINE_INTEGRATE_DORMAND_PRINCE 0
 #define STREAMLINE_INTEGRATE_ADAMS_BASHFORTH 1
 #define STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR 2
+#define STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR 3
 
 #define STREAMLINE_SERIAL                0
 #define STREAMLINE_PARALLEL_OVER_DOMAINS 1
@@ -173,15 +174,20 @@ class AVTFILTERS_API avtPICSFilter :
     virtual void              ReleaseData(void);
     virtual void              UpdateDataObjectInfo(void);
 
+    void                      ConvertToCartesian(bool val) { convertToCartesian = val; };
+
+
   protected:
     bool   emptyDataset;
     double maxStepLength;
     double relTol;
     double absTol;
     bool   absTolIsFraction;
-    int integrationType;
+    int    integrationType;
     int    integrationDirection;
     int    dataSpatialDimension;
+    bool   convertToCartesian;
+
     avtICAlgorithm *icAlgo;
 
     avtContract_p lastContract;
@@ -244,8 +250,7 @@ class AVTFILTERS_API avtPICSFilter :
     void                      AddSeedpoints(std::vector<avtVector> &pts,
                                             std::vector<std::vector<int> > &ids);
     void                      DeleteIntegralCurves(std::vector<int> &icIDs);
-    virtual void              CreateIntegralCurveOutput(vector<avtIntegralCurve *> &ics)
-                                                    = 0;
+    virtual void              CreateIntegralCurveOutput(vector<avtIntegralCurve *> &ics) = 0;
     void                      GetTerminatedIntegralCurves(vector<avtIntegralCurve *> &ics);
 
     virtual void              GetPathlineVelocityMeshVariables(avtDataRequest_p &dataRequest, std::string &velocity, std::string &mesh);

@@ -158,7 +158,7 @@ avtPoincareIC::SetIntersectionCriteria(vtkObject *obj, int maxInts)
 {
     // Only plane supported for now.
     if (!obj->IsA("vtkPlane"))
-        EXCEPTION1(ImproperUseException, "avtPoincareIC::SetIntersectionCriteria Only plane intersections are supported.");
+        EXCEPTION1(ImproperUseException, "Can not SetIntersectionCriteria in avtPoincare, the Poincare plot only supports plane intersections.");
 
 
     intersectionsSet = true;
