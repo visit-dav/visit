@@ -179,7 +179,9 @@ Definition:
 bool
 PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const
 {
-    return analysis != obj.analysis ||
+    return coordinateSystem != obj.coordinateSystem ||
+ 
+           analysis != obj.analysis ||
 
            maximumToroidalWinding != obj.maximumToroidalWinding ||
            overrideToroidalWinding != obj.overrideToroidalWinding ||

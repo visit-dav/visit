@@ -432,6 +432,8 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
                                            atts.GetMaxDomainCacheSize(),
                                            atts.GetWorkGroupSize());
 
+    poincareFilter->ConvertToCartesian( atts.GetCoordinateSystem() );
+
     // Poincare specific attributes.
     poincareFilter->SetPuncturePlane( atts.GetPuncturePlane() );
     poincareFilter->SetAnalysis( atts.GetAnalysis() );
@@ -895,4 +897,3 @@ avtPoincarePlot::EnhanceSpecification(avtContract_p in_contract)
     avtContract_p out_contract = new avtContract(in_contract, out_dr);
     return out_contract;
 }
-

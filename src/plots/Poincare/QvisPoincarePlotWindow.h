@@ -117,6 +117,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void maxStepLengthProcessText();
     void relTolProcessText();
     void absTolProcessText();
+    void coordinateButtonGroupChanged(int val);
     void analysisChanged(int val);
     void maximumToroidalWindingChanged(int val);
     void overrideToroidalWindingChanged(int val);
@@ -178,6 +179,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLineEdit *maxStepLength;
     QLineEdit *relTol;
     QLineEdit *absTol;
+    QButtonGroup *coordinateButtonGroup;
     QWidget      *analysis;
     QButtonGroup *analysisButtonGroup;
     QSpinBox *maximumToroidalWinding;
@@ -272,7 +274,4 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
 
     PoincareAttributes *atts;
 };
-
-
-
 #endif

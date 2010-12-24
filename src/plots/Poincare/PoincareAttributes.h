@@ -70,7 +70,13 @@ public:
     {
         DormandPrince,
         AdamsBashforth,
-        M3DC1Integrator
+        M3DC1Integrator,
+        NIMRODIntegrator
+    };
+    enum CoordinateSystem
+    {
+        Cartesian,
+        Cylindrical
     };
     enum OverlapType
     {
@@ -179,6 +185,7 @@ public:
     void SetLineEnd(const double *lineEnd_);
     void SetPointDensity(int pointDensity_);
     void SetIntegrationType(IntegrationType integrationType_);
+    void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
     void SetMaxStepLength(double maxStepLength_);
     void SetRelTol(double relTol_);
     void SetAbsTol(double absTol_);
@@ -239,6 +246,7 @@ public:
           double         *GetLineEnd();
     int                  GetPointDensity() const;
     IntegrationType      GetIntegrationType() const;
+    CoordinateSystem     GetCoordinateSystem() const;
     double               GetMaxStepLength() const;
     double               GetRelTol() const;
     double               GetAbsTol() const;
@@ -300,6 +308,11 @@ public:
     static bool IntegrationType_FromString(const std::string &, IntegrationType &);
 protected:
     static std::string IntegrationType_ToString(int);
+public:
+    static std::string CoordinateSystem_ToString(CoordinateSystem);
+    static bool CoordinateSystem_FromString(const std::string &, CoordinateSystem &);
+protected:
+    static std::string CoordinateSystem_ToString(int);
 public:
     static std::string OverlapType_ToString(OverlapType);
     static bool OverlapType_FromString(const std::string &, OverlapType &);
@@ -371,6 +384,7 @@ public:
         ID_lineEnd,
         ID_pointDensity,
         ID_integrationType,
+        ID_coordinateSystem,
         ID_maxStepLength,
         ID_relTol,
         ID_absTol,
@@ -430,6 +444,7 @@ private:
     double         lineEnd[3];
     int            pointDensity;
     int            integrationType;
+    int            coordinateSystem;
     double         maxStepLength;
     double         relTol;
     double         absTol;
@@ -479,6 +494,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidddiiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiiidddiiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
 
 #endif
