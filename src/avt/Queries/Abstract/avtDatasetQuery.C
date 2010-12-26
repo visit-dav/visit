@@ -132,6 +132,10 @@ avtDatasetQuery::~avtDatasetQuery()
 //    Cyrus Harrison, Wed Dec 19 15:11:36 PST 2007
 //    Added set of query xml result.
 //
+//    Hank Childs, Sun Dec 26 09:47:15 PST 2010
+//    Don't worry about whether other processors have error conditions when we
+//    are parallelizing over time.
+//
 // ****************************************************************************
 
 void
@@ -184,7 +188,8 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     ENDTRY
     PostExecute();
 
-    validInputTree = UnifyMaximumValue(validInputTree);
+    if (! ParallelizingOverTime())
+        validInputTree = UnifyMaximumValue(validInputTree);
 
     if (!hadError)
     {

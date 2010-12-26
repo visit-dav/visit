@@ -299,6 +299,27 @@ avtFileFormatInterface::CanDoStreaming(void)
     return true;
 }
 
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::DoingStreaming
+//
+//  Purpose:
+//      Tells the file format whether or not we are streaming.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 22, 2010
+//
+// ****************************************************************************
+
+void
+avtFileFormatInterface::DoingStreaming(bool v)
+{
+    int nFormats = GetNumberOfFileFormats();
+    for (int i = 0 ; i < nFormats ; i++)
+        GetFormat(i)->DoingStreaming(v);
+}
+
+
 // ****************************************************************************
 //  Method: avtFileFormatInterface::HasInvariantMetaData
 //

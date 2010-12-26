@@ -693,13 +693,25 @@ avtOriginatingSource::GetFullDataRequest(void)
 //  Programmer: Hank Childs
 //  Creation:   June 6, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Dec 22 12:56:36 PST 2010
+//    Make a "general" contract use the same values for streaming.
+//
 // ****************************************************************************
 
 avtContract_p
 avtOriginatingSource::GetGeneralContract(void)
 {
     avtDataRequest_p data = GetFullDataRequest();
-    return new avtContract(data, 0);
+    avtContract_p rv = new avtContract(data, 0);
+    if (*lastContract != NULL)
+    {
+        rv->SetOnDemandStreaming(lastContract->DoingOnDemandStreaming());
+        rv->UseLoadBalancing(lastContract->ShouldUseLoadBalancing());
+    }
+
+    return rv;
 }
 
 

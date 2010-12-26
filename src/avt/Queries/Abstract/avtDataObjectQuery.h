@@ -116,6 +116,8 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Added timeCurveSpecs MapNode, changed TetTimecurveSpecs signature
 //    to return this map node.
 //
+//    Hank Childs, Fri Dec 24 17:48:48 PST 2010
+//    Add method QuerySupportsTimeParallelization.
 //
 // ****************************************************************************
 
@@ -148,6 +150,13 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     void                    SetUnits(const std::string &_units) 
                                 { units = _units;}
 
+    virtual bool            QuerySupportsTimeParallelization(void)
+                                { return false; };
+    void                    SetParallelizingOverTime(bool v)
+                                { parallelizingOverTime = v; };
+    bool                    ParallelizingOverTime(void)
+                                { return parallelizingOverTime; };
+
   protected:
     static InitializeProgressCallback
                                   initializeProgressCallback;
@@ -164,6 +173,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
 
     std::string                   units;
     bool                          timeVarying;
+    bool                          parallelizingOverTime;
     avtSILRestriction_p           querySILR;
     MapNode                       timeCurveSpecs;
 };

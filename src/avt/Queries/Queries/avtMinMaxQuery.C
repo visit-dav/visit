@@ -552,9 +552,61 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 }
 
 
-
 // ****************************************************************************
 //  Method: avtMinMaxQuery::PostExecute
+//
+//  Purpose:
+//      The "PostExecute" method.  This calls a specialized PostExecute for 
+//      the time-varying and non-time-varying cases.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 26, 2010
+// 
+// ****************************************************************************
+
+void
+avtMinMaxQuery::PostExecute(void)
+{
+    if (! timeVarying)
+    {
+        StandardPostExecute();
+    }
+    else
+    {
+        TimeVaryingPostExecute();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMinMaxQuery::TimeVaryingPostExecute
+//
+//  Purpose:
+//      The "PostExecute" method for when we are doing a time-varying minmax.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 26, 2010
+// 
+// ****************************************************************************
+
+void
+avtMinMaxQuery::TimeVaryingPostExecute(void)
+{
+    doubleVector resVals;
+    if (nodeCentered && doMax)
+        resVals.push_back(maxInfo1.GetValue());
+    else if (!nodeCentered && doMax)
+        resVals.push_back(maxInfo2.GetValue());
+    if (nodeCentered && doMin)
+        resVals.push_back(minInfo1.GetValue());
+    else if (!nodeCentered && doMin)
+        resVals.push_back(minInfo2.GetValue());
+    SetResultValues(resVals);
+}
+
+
+// ****************************************************************************
+//  Method: avtMinMaxQuery::StandardPostExecute
 //
 //  Purpose:
 //    This is called after all of the domains are executed.
@@ -579,10 +631,13 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 //    Cyrus Harrison, 
 //    Added use of MapNode to create structured XML query output.
 // 
+//    Hank Childs, Sun Dec 26 12:13:19 PST 2010
+//    Renamed method to StandardPostExecute.
+//
 // ****************************************************************************
 
-void
-avtMinMaxQuery::PostExecute(void)
+void 
+avtMinMaxQuery::StandardPostExecute(void)
 {
     int hasMin1 = 0, hasMax1 = 0; 
     int hasMin2 = 0, hasMax2 = 0; 

@@ -44,6 +44,7 @@
 
 #include <avtCallback.h>
 #include <avtOriginatingSource.h>
+#include <avtParallel.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -62,6 +63,9 @@
 //    Changed inital values of time-loop vars to -1, so they could be set
 //    individually by user.
 //
+//    Hank Childs, Wed Dec 15 14:30:42 PST 2010
+//    Initialize parallelizingOverTime.
+//
 // ****************************************************************************
 
 avtTimeLoopFilter::avtTimeLoopFilter()
@@ -71,6 +75,7 @@ avtTimeLoopFilter::avtTimeLoopFilter()
     stride = -1; 
     nFrames = 0;
     actualEnd = 0;
+    parallelizingOverTime = false;
 }
 
 
@@ -135,6 +140,9 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Wed Dec 15 14:30:42 PST 2010
+//    Add support for parallelizing over time.
+//
 // ****************************************************************************
 
 bool
@@ -144,6 +152,8 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     bool modified = false;
     avtDataRequest_p orig_DS = spec->GetDataRequest();
     avtSILRestriction_p orig_SILR = orig_DS->GetRestriction();
+
+    parallelizingOverTime = CanDoTimeParallelization();
 
     FinalizeTimeLoop();
 
@@ -155,8 +165,17 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     avtOriginatingSource *src = GetOriginatingSource();
     src->SetNumberOfExecutions(numIters);
 
+    int curIter = 0;
     for (i = startTime; i < actualEnd; i+= stride)
     {
+        bool shouldDoThisTimeSlice = true;
+        if (parallelizingOverTime)
+            if ((curIter % PAR_Size()) != PAR_Rank())
+                shouldDoThisTimeSlice = false;
+        curIter++;
+        if (!shouldDoThisTimeSlice)
+            continue;
+             
         if (i < endTime)
            currentTime = i; 
         else 
@@ -185,7 +204,13 @@ avtTimeLoopFilter::Update(avtContract_p spec)
 
         avtContract_p contract = 
             new avtContract(newDS, spec->GetPipelineIndex());
-        contract->NoStreaming();
+        if (parallelizingOverTime)
+        {
+            contract->SetOnDemandStreaming(true);
+            contract->UseLoadBalancing(false);
+        }
+        else
+            contract->NoStreaming();
 
         modified |= avtFilter::Update(contract);
         
@@ -211,12 +236,69 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     CreateFinalOutput();
     UpdateDataObjectInfo();
 
+    // This barrier is basically for debugging to make sure we don't have
+    // a parallel synchronization issue.
+    Barrier();
+
     //
     // Ensure the pipeline is in the same state as when we began.
     //
-    GetInput()->GetQueryableSource()->GetOutput()->Update(spec);
+    GetInput()->Update(spec);
+    
+    // 
+    // Set the time information to be the time from the input, not from the
+    // last execution.  This is particularly important when we parallelize
+    // over time, since each MPI task will have a different cycle/time and then
+    // we would get an improper merge exception.  Note that we don't just want
+    // to copy the attributes over, since they may have been modified by the
+    // filter.
+    //
+    GetOutput()->GetInfo().GetAttributes().SetCycle(
+                             GetInput()->GetInfo().GetAttributes().GetCycle());
+    GetOutput()->GetInfo().GetAttributes().SetTime(
+                             GetInput()->GetInfo().GetAttributes().GetTime());
 
     return modified;
+}
+
+
+// ****************************************************************************
+//  Method: avtTimeLoopFilter::CanDoTimeParallelization
+//
+//  Purpose:
+//      Determines if we can do time parallelization. 
+//
+//  Programmer: Hank Childs
+//  Creation:   December 22, 2010
+//
+// ****************************************************************************
+
+bool
+avtTimeLoopFilter::CanDoTimeParallelization(void)
+{
+    return DataCanBeParallelizedOverTime() &&
+           FilterSupportsTimeParallelization();
+}
+
+
+// ****************************************************************************
+//  Method: avtTimeLoopFilter::DataCanBeParallelizedOverTime
+//
+//  Purpose:
+//      Determines if data set can be processed over time in parallel.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 22, 2010
+//
+// ****************************************************************************
+
+bool
+avtTimeLoopFilter::DataCanBeParallelizedOverTime(void)
+{
+    // This test should ultimately be enhanced to detect new attributes that
+    // indicate whether the data is small enough that it can be processed by
+    // a single MPI task.  The infrastructure doesn't exist yet.
+    return false;
 }
 
 

@@ -94,6 +94,9 @@ class vtkRectilinearGrid;
 //    Kathleen Bonnell, Tue Jul  8 15:48:11 PDT 2008
 //    Add useVarForYAxis.
 //
+//    Hank Childs, Fri Dec 24 17:59:02 PST 2010
+//    Add method FilterSupportsTimeParallelization.
+//
 // ****************************************************************************
 
 class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
@@ -109,6 +112,7 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
     virtual const char   *GetDescription(void) { return "Querying over Time"; };
 
     void                  SetSILAtts(const SILRestrictionAttributes *silAtts);
+    virtual bool          FilterSupportsTimeParallelization(void);
 
   protected:
     QueryOverTimeAttributes   atts;

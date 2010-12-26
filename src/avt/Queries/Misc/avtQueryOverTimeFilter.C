@@ -72,7 +72,6 @@
 using std::string;
 
 
-
 // ****************************************************************************
 //  Method: avtQueryOverTimeFilter constructor
 //
@@ -103,6 +102,7 @@ using std::string;
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
 // ****************************************************************************
 
 avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
@@ -220,6 +220,10 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Hank Childs, Sun Dec 26 12:13:19 PST 2010
+//    Add support for parallelizing over time.
+//
 // ****************************************************************************
 
 void
@@ -242,7 +246,8 @@ avtQueryOverTimeFilter::Execute(void)
         errorMessage = GetInput()->GetInfo().GetValidity().GetErrorMessage();
         hadError = 1;
     }
-    hadError = UnifyMaximumValue(hadError);
+    if (! ParallelizingOverTime())
+        hadError = UnifyMaximumValue(hadError);
     if (hadError)
     {
         SetOutputDataTree(dummy);
@@ -258,6 +263,10 @@ avtQueryOverTimeFilter::Execute(void)
     avtDataObjectQuery *query = avtQueryFactory::Instance()->
         CreateQuery(&qatts);
     query->SetInput(GetInput());
+    if (ParallelizingOverTime())
+    {
+        query->SetParallelizingOverTime(true);
+    }
 
     if (strncmp(query->GetType(), "avtVariableByNodeQuery",22) == 0)
     {
@@ -346,6 +355,30 @@ avtQueryOverTimeFilter::Execute(void)
     }
     for (int i = 0; i < nResultsToStore; i++)
         qRes.push_back(results[i]);
+}
+
+
+// ****************************************************************************
+//  Method: avtQueryOverTimeFilter::FilterSupportsTimeParallelization
+//
+//  Purpose:
+//      Declares whether or not this filter supports time parallelization.
+//      This filter does support time parallelization, provided the underlying
+//      query supports time parallelization.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 24, 2010
+//
+// ****************************************************************************
+
+bool
+avtQueryOverTimeFilter::FilterSupportsTimeParallelization(void)
+{
+    QueryAttributes qatts = atts.GetQueryAtts();
+    qatts.SetTimeStep(currentTime);
+    avtDataObjectQuery *query = avtQueryFactory::Instance()->
+        CreateQuery(&qatts);
+    return query->QuerySupportsTimeParallelization();
 }
 
 
@@ -472,11 +505,68 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 //    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
 //    Curves now represented as 1D RectilinearGrid.
 //
+//    Hank Childs, Fri Dec 24 21:01:29 PST 2010
+//    Add support for parallelization over time.
+//
 // ****************************************************************************
 
 void
 avtQueryOverTimeFilter::CreateFinalOutput()
 {
+    if (ParallelizingOverTime())
+    {
+        double *totalQRes;
+        int    *qResMsgs;
+        CollectDoubleArraysOnRootProc(totalQRes, qResMsgs, 
+                                      &(qRes[0]), qRes.size());
+        double *totalTimes;
+        int    *timesMsgs;
+        CollectDoubleArraysOnRootProc(totalTimes, timesMsgs, 
+                                      &(times[0]), times.size());
+        if (PAR_Rank() == 0)
+        {
+            int i;
+            int nResults = 0;
+            int maxIterations = 0;
+            for (i = 0 ; i < PAR_Size() ; i++)
+            {
+                nResults += timesMsgs[i];
+                maxIterations = (timesMsgs[i] > maxIterations ? timesMsgs[i] 
+                                                              : maxIterations);
+            }
+
+            vector<double> finalQRes(nResults, 0.);
+            vector<double> finalTimes(nResults, 0.);
+            int index = 0;
+            for (int j = 0 ; j < maxIterations ; j++)
+            {
+                int loc = 0;
+                for (i = 0 ; i < PAR_Size() ; i++)
+                {
+                    if (timesMsgs[i] > j)
+                    {
+                        finalQRes[index]  = totalQRes[loc+j];
+                        finalTimes[index] = totalTimes[loc+j];
+                        index++;
+                    }
+                    loc += timesMsgs[i];
+                }
+            }
+            qRes = finalQRes;
+            times = finalTimes;
+            delete [] totalQRes;
+            delete [] qResMsgs;
+            delete [] totalTimes;
+            delete [] timesMsgs;
+        }
+        else
+        {
+            SetOutputDataTree(new avtDataTree());
+            finalOutputCreated = true;
+            return;
+        }
+    }
+
     if (qRes.size() == 0)
     {
         debug4 << "Query failed at all timesteps" << endl;

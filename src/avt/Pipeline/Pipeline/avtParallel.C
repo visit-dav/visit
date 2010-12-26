@@ -1722,6 +1722,81 @@ CollectIntArraysOnRootProc(int *&receiveBuf, int *&receiveCounts,
 #endif
 }
 
+
+// ****************************************************************************
+//  Function: CollectDoubleArraysOnRootProc
+//
+//  Purpose:
+//      Collects a collection of arrays from all the processors on the root
+//      process.  The arrays can be of different sizes.  The receiveBuf and
+//      receiveCounts are allocated in this routine and must be deleted by
+//      the caller.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 26, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+CollectDoubleArraysOnRootProc(double *&receiveBuf, int *&receiveCounts,
+                              double *sendBuf, int sendCount)
+{
+#ifdef PARALLEL
+    int rank = PAR_Rank();
+    int nProc = PAR_Size();
+
+    // Determine the receive counts.
+    receiveCounts = NULL;
+    if (rank == 0)
+    {
+        receiveCounts = new int[nProc];
+    }
+    MPI_Gather(&sendCount, 1, MPI_INT, receiveCounts, 1, MPI_INT,
+               0, VISIT_MPI_COMM);
+
+    // Determine the processor offsets.
+    int *procOffset = NULL;
+    if (rank == 0)
+    {
+        procOffset = new int[nProc];
+        procOffset[0] = 0;
+        for (int i = 1; i < nProc; i++)
+            procOffset[i] = procOffset[i-1] + receiveCounts[i-1];
+    }
+
+    // Allocate the receive buffer.
+    receiveBuf = NULL;
+    if (rank == 0)
+    {
+        // Determine the size of the receive buffer.
+        int nReceiveBuf = 0;
+        for (int i  = 0 ; i < nProc; i++)
+            nReceiveBuf += receiveCounts[i];
+
+        // Allocate it.
+        receiveBuf = new double[nReceiveBuf];
+    }
+
+    MPI_Gatherv(sendBuf, sendCount, MPI_DOUBLE, receiveBuf,
+                receiveCounts, procOffset, MPI_DOUBLE, 0, VISIT_MPI_COMM);
+
+    if (rank == 0)
+    {
+        delete [] procOffset;
+    }
+#else
+    receiveCounts = new int[1];
+    receiveCounts[0] = sendCount;
+
+    receiveBuf = new double[sendCount];
+    for (int i = 0; i < sendCount; i++)
+        receiveBuf[i] = sendBuf[i];
+#endif
+}
+
+
 // ****************************************************************************
 //  Function: GetUniqueMessageTag
 //

@@ -4426,12 +4426,25 @@ avtSiloFileFormat::FindDecomposedMeshType(DBfile *dbfile)
 //    Added call to FindDecomposedMeshType() to help with creating the 
 //    correct type of domain boundries object.
 //
+//    Hank Childs, Wed Dec 22 15:14:33 PST 2010
+//    Early return when we are streaming.
+//
 // ****************************************************************************
 
 void
 avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile, 
                                                       bool force)
 {
+    //
+    // This routine is not implemented for streaming.  We declared earlier that
+    // the Silo format can never do streaming.  And yet here we are doing
+    // streaming.  This means we are likely pulling out a single chunk of 
+    // data.  If that's the case, we don't need the conn and group info.  
+    // So just return.
+    //
+    if (doingStreaming)
+        return;
+
     int ts = (connectivityIsTimeVarying || force) ? timestep : -1;
 
     void_ref_ptr vr = cache->GetVoidRef("any_mesh",

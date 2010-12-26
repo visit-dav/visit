@@ -130,6 +130,9 @@ avtOriginalDataMinMaxQuery::~avtOriginalDataMinMaxQuery()
 //    Kathleen Bonnell, Tue Jun 29 08:14:35 PDT 2004 
 //    Removed condense filter. 
 //
+//    Hank Childs, Wed Dec 22 15:33:59 PST 2010
+//    Set up the contract differently if we are parallelizing over time.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -151,6 +154,12 @@ avtOriginalDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
 
     avtContract_p contract =
         new avtContract(dataRequest, queryAtts.GetPipeIndex()); 
+    if (ParallelizingOverTime())
+    {
+        // Make sure we set up our request to do streaming.
+        contract->SetOnDemandStreaming(true);
+        contract->UseLoadBalancing(false);
+    }
 
     avtDataObject_p temp;
     CopyTo(temp, inData);
@@ -159,4 +168,5 @@ avtOriginalDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
     retObj->Update(contract);
     return retObj;
 }
+
 

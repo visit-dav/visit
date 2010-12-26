@@ -71,6 +71,9 @@
 //    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005
 //    Added SetStartTime, SetEndTime, SetStride and FinalizeTimeLoop.
 //  
+//    Hank Childs, Wed Dec 15 14:30:42 PST 2010
+//    Add support for parallelizing over time.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
@@ -103,13 +106,43 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
     virtual void                        CreateFinalOutput(void) = 0;
     virtual bool                        ExecutionSuccessful(void) = 0;
 
+
   private:
     int                                 startTime;
     int                                 endTime;
     int                                 stride;
     int                                 nFrames;
     int                                 actualEnd;
+    bool                                parallelizingOverTime;
+
     void                                FinalizeTimeLoop(void);
+
+  protected:
+    // Asks whether we have decided to do time parallelization.  This 
+    // is for derived types to understand what mode we're in.
+    bool                                ParallelizingOverTime(void)
+                                          { return parallelizingOverTime; };
+
+    // Asks whether the derived type supports time parallelization.
+    // If a filter does support time parallelization, it should re-implement
+    // this method to return true.
+    virtual bool                        FilterSupportsTimeParallelization(void)
+                                          { return false; };
+
+    // Asks whether the filter needs to look at the entire data set to
+    // perform its function when parallelizing over time.  For example, some
+    // picks can parallelize over time by only reading one domain.
+    virtual bool                        OperationNeedsAllData(void) 
+                                          { return true; };
+
+  private:
+    // Asks whether it is possible to do parallelization over time.
+    // This is for internal decision making.
+    bool                                CanDoTimeParallelization(void);
+
+    // Asks whether the data can be parallelized over time.  Currently 
+    // unimplemented and always returns false.
+    bool                                DataCanBeParallelizedOverTime(void);
 };
 
 

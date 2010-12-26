@@ -216,6 +216,9 @@ class    avtVariableCache;
 //    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
 //    Added ability to turn on stricter file format error checking.
 //
+//    Hank Childs, Wed Dec 22 15:11:13 PST 2010
+//    Added method for telling file format that the pipeline is streaming.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -247,6 +250,8 @@ class DATABASE_API avtFileFormatInterface
     bool                    CanCacheVariable(const char *);
 
     bool                    CanDoStreaming(void);
+    void                    DoingStreaming(bool);
+
     const char             *GetType(void);
     bool                    HasVarsDefinedOnSubMeshes(void);
     bool                    PerformsMaterialSelection(void);
