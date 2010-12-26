@@ -68,6 +68,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Tue Jun 29 08:14:35 PDT 2004 
 //    Removed condense filter. 
 //
+//    Hank Childs, Wed Dec 22 15:14:33 PST 2010
+//    Add QuerySupportsTimeParallelization.
+//
 // ****************************************************************************
 
 class QUERY_API avtOriginalDataMinMaxQuery : public avtMinMaxQuery
@@ -78,6 +81,8 @@ class QUERY_API avtOriginalDataMinMaxQuery : public avtMinMaxQuery
     virtual                      ~avtOriginalDataMinMaxQuery();
 
     virtual bool                  OriginalData(void) { return true; };
+    virtual bool                  QuerySupportsTimeParallelization(void)
+                                         { return true; };
 
   protected:
     virtual avtDataObject_p       ApplyFilters(avtDataObject_p);   
@@ -88,3 +93,5 @@ class QUERY_API avtOriginalDataMinMaxQuery : public avtMinMaxQuery
 };
 
 #endif
+
+

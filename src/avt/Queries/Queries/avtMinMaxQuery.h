@@ -77,6 +77,10 @@ class vtkDataSet;
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Hank Childs, Sun Dec 26 12:13:19 PST 2010
+//    Add support for time parallelization.
+//
 // ****************************************************************************
 
 class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
@@ -95,6 +99,8 @@ class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
     virtual void            Execute(vtkDataSet *, const int);
     virtual void            PreExecute(void);
     virtual void            PostExecute(void);
+            void            StandardPostExecute(void);
+            void            TimeVaryingPostExecute(void);
     virtual void            VerifyInput(void);   
             void            Preparation(avtDataObject_p);   
 

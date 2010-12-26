@@ -124,6 +124,9 @@ class     avtVariableCache;
 //    Jeremy Meredith, Fri Jan  8 16:15:02 EST 2010
 //    Added ability to turn on stricter file format error checking.
 //
+//    Hank Childs, Wed Dec 22 14:55:05 PST 2010
+//    Add a data member to indicate whether or not we are doing streaming.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -157,8 +160,8 @@ class DATABASE_API avtFileFormat
 
     virtual bool          CanCacheVariable(const char *) { return true; };
 
-    bool                  CanDoStreaming(void)
-                              { return canDoStreaming; };
+    void                  DoingStreaming(bool v) { doingStreaming = v; };
+    bool                  CanDoStreaming(void) { return canDoStreaming; };
 
     virtual void          RegisterVariableList(const char *,
                                           const std::vector<CharStrRef> &) {;};
@@ -212,11 +215,17 @@ class DATABASE_API avtFileFormat
     avtVariableCache     *cache;
     avtDatabaseMetaData  *metadata;
     bool                  doMaterialSelection;
-    bool                  canDoStreaming;
     bool                  closingFile;
     char                 *materialName;
     std::vector<int>      fileIndicesForDescriptorManager;
     bool                  strictMode;
+
+    // reflects the ability of the format to operate in a streaming setting
+    // this is an output to the database & pipeline
+    bool                  canDoStreaming;
+    // reflects whether or not the pipeline is doing streaming.
+    // this is an input from the database & pipeline
+    bool                  doingStreaming;
 
     // This data member is for file formats that do their 
     // own domain decomposition.

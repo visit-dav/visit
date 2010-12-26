@@ -168,6 +168,9 @@ avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 //    Hank Childs, Mon Mar 23 11:02:55 CDT 2009
 //    Set contract with whether we are doing "onDemandProcessing".
 //
+//    Hank Childs, Wed Dec 22 12:56:36 PST 2010
+//    More passing along of contract data members to honor streaming.
+//
 // ****************************************************************************
 
 void
@@ -205,6 +208,7 @@ avtExpressionEvaluatorFilter::Execute(void)
                        lastUsedSpec->GetCalculateVariableExtentsList());
         contract->SetCalculateMeshExtents(lastUsedSpec->ShouldCalculateMeshExtents());
         contract->SetOnDemandStreaming(onDemandProcessing);
+        contract->UseLoadBalancing(lastUsedSpec->ShouldUseLoadBalancing());
         contract->SetReplicateSingleDomainOnAllProcessors(replicateSingleDomainOnAllProcessors);
         bottom->Update(contract);
         GetOutput()->Copy(*(bottom->GetOutput()));

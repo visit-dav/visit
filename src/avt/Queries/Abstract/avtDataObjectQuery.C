@@ -74,11 +74,15 @@ void                *avtDataObjectQuery::initializeProgressCallbackArgs=NULL;
 //    Kathleen Bonnell, Tue Jul  8 18:03:40 PDT 2008
 //    Set default values for timeCurveSpecs.
 //
+//    Hank Childs, Fri Dec 24 17:52:28 PST 2010
+//    Initialize parallelizingOverTime.
+//
 // ****************************************************************************
 
 avtDataObjectQuery::avtDataObjectQuery()
 {
     timeVarying = false;
+    parallelizingOverTime = false;
     querySILR = NULL;
 
     // derived classes should overide these as necessary 

@@ -489,12 +489,19 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Pass meshname and time step to MergeExtents ... this gives it enough
 //    information to cache.
 //
+//    Hank Childs, Wed Dec 22 15:14:33 PST 2010
+//    Tell the file formats whether or not we are streaming.
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtGenericDatabase::GetOutput(avtDataRequest_p spec,
                               avtSourceFromDatabase *src)
 {
+    avtDataValidity &validity = src->GetOutput()->GetInfo().GetValidity();
+    bool canDoCollectiveCommunication = !validity.AreWeStreaming();
+    Interface->DoingStreaming(validity.AreWeStreaming());
+
     int timerHandle = visitTimer->StartTimer();
     int timeStep = spec->GetTimestep();
     avtDataObject_p dob = src->GetOutput();
@@ -624,8 +631,6 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     }
     ENDTRY
 
-    avtDataValidity &validity = src->GetOutput()->GetInfo().GetValidity();
-    bool canDoCollectiveCommunication = !validity.AreWeStreaming();
 #ifdef PARALLEL
     int t1 = visitTimer->StartTimer();
     if (canDoCollectiveCommunication)
