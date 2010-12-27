@@ -121,7 +121,7 @@ const char *AUXILIARY_DATA_POLYHEDRAL_SPLIT = "POLYHEDRAL_SPLIT";
 #endif
 
 // ****************************************************************************
-//  Method: avtSimV1 constructor
+//  Method: avtSimV2 constructor
 //
 //  Programmer: Brad Whitlock
 //  Creation:   March 17, 2005
@@ -1391,9 +1391,10 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
 
     // Try and read mixed scalar data (unless we're splitting cells).
     if(phSplit == 0)
-        h = VISIT_INVALID_HANDLE;
-    else
         h = simv2_invoke_GetMixedVariable(domain, varname);
+    else
+        h = VISIT_INVALID_HANDLE;
+
     if (h != VISIT_INVALID_HANDLE)
     {
         err = simv2_VariableData_getData(h, owner, dataType, nComponents, 
@@ -1406,7 +1407,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
         {
             int mixlen = nTuples * nComponents;
             float *mixvar = new float[mixlen];
-            debug1 << "SimV1 copying mixvar data: " << mixlen
+            debug1 << "SimV2 copying mixvar data: " << mixlen
                    << " values" << endl;
             if(dataType == VISIT_DATATYPE_DOUBLE)
             {
@@ -1425,7 +1426,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
             void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
             cache->CacheVoidRef(varname, AUXILIARY_DATA_MIXED_VARIABLE, 
                                 this->timestep, domain, vr);
-            debug1 << "SimV1 cached mixvar data for " << varname
+            debug1 << "SimV2 cached mixvar data for " << varname
                    << " domain " << domain << endl;
 
             delete [] mixvar;
