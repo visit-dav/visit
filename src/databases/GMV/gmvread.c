@@ -100,7 +100,7 @@ void swapbytes(void *from, int size, int nitems),
      gmvrdmemerr(), ioerrtst(FILE *gmvin), endfromfile();
 static FILE *gmvin, *gmvin_sav;
 
-
+static char *file_path = NULL;
 
 int binread(void* ptr, int size, int type, long nitems, FILE* stream);
 int word2int(unsigned wordin);
@@ -109,22 +109,52 @@ int word2int(unsigned wordin);
 
 int gmvread_checkfile(char *filnam)
 {
-  /*                           */
-  /*  Check a GMV input file.  */
-  /*                           */
-  int chkend;
-  char magic[9], filetype[9];
-  FILE *gmvchk;
+   /*                           */
+   /*  Check a GMV input file.  */
+   /*                           */
+   int chkend;
+   char magic[9], filetype[9];
+   FILE *gmvchk;
+   char* slash;
 
-  int chk_gmvend(FILE *gmvin);
+   int chk_gmvend(FILE *gmvchk);
 
-   gmvchk = fopen(filnam,"r");
-
-   if (gmvchk == NULL)
-     {
-      fprintf(stderr,"GMV cannot open file %s\n",filnam);
-      return 1;
-     }
+   /* check for the path - if include open and save if not append */
+#ifdef _WIN32
+   slash = strrchr( filnam,  '\\' );
+#else
+   slash = strrchr( filnam,  '/' );
+#endif
+   if( file_path != NULL && slash == NULL )
+      {
+       /* append the path and check again*/
+       size_t len = strlen(file_path) + strlen(filnam) + 1;
+       char *temp = (char*)malloc(len *sizeof(char));
+       strcpy(temp, file_path);
+       strcat(temp, filnam);
+       free( filnam );
+       filnam = (char*)malloc(len *sizeof(char));
+       strcpy(filnam, temp);
+       free(temp);       
+      }
+   else if( file_path == NULL && slash != NULL)
+      {
+       size_t pos = slash - filnam + 1;
+       file_path = (char*) malloc ( (pos+1) *sizeof(char));
+       strncpy( file_path, filnam, pos );
+       file_path[pos] = 0;
+      }
+   else if( file_path == NULL && slash == NULL )
+      {
+          fprintf(stderr,"Error with the path");
+          return 1;
+      }
+   gmvchk = fopen(filnam, "r");
+   if(gmvchk == NULL)
+      {
+       fprintf(stderr,"GMV cannot open file %s\n",filnam);
+       return 1;
+      }
     
    /*  Read header. */
    binread(magic,charsize, CHAR, (long)8, gmvchk);
@@ -136,6 +166,7 @@ int gmvread_checkfile(char *filnam)
      }
 
    /*  Check that gmv input file has "endgmv".  */
+#ifdef BEFORE_TERRY_JORDAN_WINDOWS_CHANGES
    if (strncmp(magic,"gmvinput",8) == 0)
      {
       chkend = chk_gmvend(gmvchk);
@@ -146,6 +177,7 @@ int gmvread_checkfile(char *filnam)
          return 3;
         }
      }
+#endif
 
    /*  Read file type and set ftype: 0-ieee binary, 1-ascii text,  */
    /*  0-ieeei4r4 binary, 2-ieeei4r8 binary, 3-ieeei8r4 binary,    */
@@ -210,24 +242,53 @@ int gmvread_checkfile(char *filnam)
 
 int gmvread_open(char *filnam)
 {
-  /*                                    */
-  /*  Open and check a GMV input file.  */
-  /*                                    */
-  int chkend, ilast, i, isize;
-  char magic[9], filetype[9];
+   /*                                    */
+   /*  Open and check a GMV input file.  */
+   /*                                    */
+   int chkend, ilast, i, isize;
+   char magic[9], filetype[9];
+   char* slash;
 
-  int chk_gmvend(FILE *gmvin);
-
-   gmvin = fopen(filnam,"r");
-
-   if (gmvin == NULL)
+   int chk_gmvend(FILE *gmvin);
+    
+   /* check for the path - if include open and save if not append */
+#ifdef _WIN32
+   slash = strrchr( filnam,  '\\' );
+#else
+   slash = strrchr( filnam,  '/' );
+#endif
+   if( file_path != NULL && slash == NULL )
+      {
+       /* append the path and check again*/
+       size_t len = strlen(file_path) + strlen(filnam) + 1;
+       char *temp = (char*)malloc(len *sizeof(char));
+       strcpy(temp, file_path);
+       strcat(temp, filnam);
+       free( filnam );
+       filnam = (char*)malloc(len *sizeof(char));
+       strcpy(filnam, temp);
+       free(temp);
+      }
+   else if( file_path == NULL && slash != NULL)
+      {
+       size_t pos = slash - filnam + 1;
+       file_path = (char*) malloc ( (pos+1) *sizeof(char));
+       strncpy( file_path, filnam, pos );
+       file_path[pos] = 0;
+      }
+   else if( file_path == NULL && slash == NULL )
+      {
+          fprintf(stderr,"Error with the path");
+          return 1;
+      }
+   gmvin = fopen(filnam, "r");
+   if(gmvin == NULL)
       {
        fprintf(stderr,"GMV cannot open file %s\n",filnam);
        return 1;
       }
     
    /*  Read header. */
-
    binread(magic,charsize, CHAR, (long)8, gmvin);
    if (strncmp(magic,"gmvinput",8) != 0)
       {
@@ -236,6 +297,7 @@ int gmvread_open(char *filnam)
       }
 
    /*  Check that gmv input file has "endgmv".  */
+#ifdef BEFORE_TERRY_JORDAN_WINDOWS_CHANGES
    if (strncmp(magic,"gmvinput",8) == 0)
       {
        chkend = chk_gmvend(gmvin);
@@ -245,6 +307,7 @@ int gmvread_open(char *filnam)
           return 3;
          }
       }
+#endif
 
    /*  Read file type and set ftype: 0-ieee binary, 1-ascii text,  */
    /*  0-ieeei4r4 binary, 2-ieeei4r8 binary, 3-ieeei8r4 binary,    */
@@ -308,7 +371,21 @@ int gmvread_open(char *filnam)
         }
      }
 
+#ifdef BEFORE_TERRY_JORDAN_WINDOWS_CHANGES
    rewind(gmvin);
+#endif
+
+   /*re-open the file with the proper translation mode*/
+   fclose(gmvin);
+   if( ftype != ASCII)
+   {
+    gmvin = fopen(filnam,"rb");
+   }
+   else
+   {
+    gmvin = fopen(filnam,"rt");
+   }
+
    if (ftype != ASCII)
      {
       binread(magic,charsize,CHAR,(long)8,gmvin);
@@ -6351,17 +6428,48 @@ void readrayids(FILE* gmvrayin, int ftype);
 
 int gmvrayread_open(char *filnam)
 {
-  /*                                        */
-  /*  Open and check a GMV ray input file.  */
-  /*                                        */
-  int chkend;
-  char magic[9], filetype[9];
+   /*                                        */
+   /*  Open and check a GMV ray input file.  */
+   /*                                        */
+   int chkend;
+   char magic[9], filetype[9];
+   char * slash;
 
-  int chk_rayend(FILE *gmvrayin);
+   int chk_rayend(FILE *gmvrayin);
 
-   gmvrayin = fopen(filnam,"r");
-
-   if (gmvrayin == NULL)
+   /* check for the path - if include open and save if not append */
+#ifdef _WIN32
+   slash = strrchr( filnam,  '\\' );
+#else
+   slash = strrchr( filnam,  '/' );
+#endif
+   if( file_path != NULL && slash == NULL )
+      {
+       /* append the path and check again*/
+       size_t len = strlen(file_path) + strlen(filnam) + 1;
+       char *temp = (char*)malloc(len *sizeof(char));
+       strcpy(temp, file_path);
+       strcat(temp, filnam);
+       free( filnam );
+       filnam = (char*)malloc(len *sizeof(char));
+       strcpy(filnam, temp);
+       free(temp);
+      }
+   else if( file_path == NULL && slash != NULL)
+      {
+       size_t pos = slash - filnam + 1;
+       file_path = (char*) malloc ( (pos+1) *sizeof(char));
+       strncpy( file_path, filnam, pos );
+       file_path[pos] = 0;
+      }
+   else if( file_path == NULL && slash == NULL )
+      {
+          fprintf(stderr,"Error with the path");
+          return 1;
+      }
+   
+   gmvrayin = fopen(filnam, "r");
+   if(gmvrayin == NULL)
       {
        fprintf(stderr,"GMV cannot open file %s\n",filnam);
        return 1;
@@ -6448,7 +6556,20 @@ int gmvrayread_open(char *filnam)
         }
      }
 
+#ifdef BEFORE_TERRY_JORDAN_WINDOWS_CHANGES
    rewind(gmvrayin);
+#endif
+   /*re-open the file with the proper translation mode*/
+   fclose(gmvrayin);
+   if( ftype != ASCII)
+   {
+    gmvrayin = fopen(filnam,"rb");
+   }
+   else
+   {
+    gmvrayin = fopen(filnam,"rt");
+   }
+
    if (ftype != ASCII)
      {
       binread(magic,charsize,CHAR,(long)8,gmvrayin);
