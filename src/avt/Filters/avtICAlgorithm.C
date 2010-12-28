@@ -402,13 +402,19 @@ avtICAlgorithm::SortIntegralCurves(vector<avtIntegralCurve *> &ic)
 // Programmer:  Dave Pugmire
 // Creation:    December 20, 2010
 //
+// Modifications:
+//   Kathleen Bonnell, Tue Dec 28, 14:19:27 MST 2010
+//   Work-around compile issue on Windows.
+//
 // ****************************************************************************
 
 void
 avtICAlgorithm::Sleep(long nanoSec) const
 {
+#ifndef _WIN32
     struct timespec ts = {0, nanoSec};
     nanosleep(&ts, 0);
+#endif
 }
 
 // ****************************************************************************
