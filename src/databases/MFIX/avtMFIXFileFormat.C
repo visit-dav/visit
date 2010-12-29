@@ -40,29 +40,47 @@
 //                            avtMFIXFileFormat.C                            //
 // ************************************************************************* //
 
-#include <avtMFIXFileFormat.h>
+#include <sys/param.h>
 
 #include <string>
+#include <cstring>
+#include <math.h>
 
-#include <vtkMFIXReader.h>
-#include <vtkExecutive.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDemandDrivenPipeline.h>
+#include <vtkDoubleArray.h>
+#include <vtkExecutive.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkIntArray.h>
+#include <vtkLongLongArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkUnstructuredGrid.h>
+#include <vtkStringArray.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
+#include <avtMFIXFileFormat.h>
+#include <avtMFIXOptions.h>
+#include <avtMaterial.h>
+#include <avtVariableCache.h>
+
+#ifdef PARALLEL
+#include <avtParallel.h>
+#endif
+
 #include <DBOptionsAttributes.h>
-#include <visit-config.h> // for WORDS_BIGENDIAN
-
+#include <DebugStream.h>
+#include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
+#include <UnexpectedValueException.h>
 
+#include <visit-config.h> // for WORDS_BIGENDIAN
 
 // ****************************************************************************
 //  Method: avtMFIX constructor
@@ -73,34 +91,93 @@
 //  Modifications:
 //    Kathleen Bonnell, Wed Oct 22 17:11:35 PDT 2008
 //    Reworked to use vtkMFIXReader for bulk of work, and to have read options
-//    so user can specify endianness of the data. 
+//    so user can specify endianness of the data.
 //
 // ****************************************************************************
 
-avtMFIXFileFormat::avtMFIXFileFormat(const char *filename, 
+avtMFIXFileFormat::avtMFIXFileFormat(const char *filename,
     DBOptionsAttributes *rdopts)
-    : avtMTMDFileFormat(filename)
+: avtMTMDFileFormat(filename)
 {
     strcpy(this->RestartFileName, filename);
-    readInData = false; 
-    readInformation = false; 
-    reader = NULL;
+    readInData = false;
+    readInformation = false;
     fileBigEndian = true;
-    for (int i = 0; rdopts != 0 && i < rdopts->GetNumberOfOptions(); ++i)
-    {
+    setupCompleteFlag = false;
+    numDomainsPerProc = DEF_N_DOMAINS_PER_PROC;
+    GSB_currentFname = NULL;
+    GSB_file = NULL;
+    for (int i = 0; rdopts != 0 && i < rdopts->GetNumberOfOptions(); ++i) {
         if (rdopts->GetName(i) == "Big Endian")
-        {
             fileBigEndian = rdopts->GetBool("Big Endian");
-        }
+        else if (rdopts->GetName(i) == N_DOMAINS_PER_PROC)
+            numDomainsPerProc = rdopts->GetInt(N_DOMAINS_PER_PROC);
     }
+
+    this->numXDomains= this->numYDomains= this->numZDomains= 0; // initialize once array dims are known
+
+    // The following is imported from vtkMFIXReader.
+
+    // Time support:
+    this->TimeStep = 0; // By default the file does not have timestep
+    this->TimeStepRange[0] = 0;
+    this->TimeStepRange[1] = 0;
+    this->NumberOfTimeSteps = 0;
+    this->MaximumTimestep = 0;
+    this->TimeSteps = 0;
+    this->CurrentTimeStep = 0;
+    this->TimeStepWasReadOnce = 0;
+    this->VersionNumber = 0;
+    this->DimensionIc = 5;
+    this->DimensionBc = 5;
+    this->DimensionC = 5;
+    this->DimensionIs = 5;
+    this->NumberOfSPXFilesUsed = 9;
+    this->NumberOfScalars = 0;
+    this->NumberOfReactionRates = 0;
+    this->BkEpsilon = false;
+    this->FlagFilename[0] = 0;
+    this->FlagFieldOffset = (streampos)0;
+
+#ifdef WORDS_BIGENDIAN
+    if (fileBigEndian)
+        thisSwapByteOrder = false;
+    else
+        this->SwapByteOrder = true;
+#else
+    if (fileBigEndian)
+        this->SwapByteOrder = true;
+    else
+        this->SwapByteOrder = false;
+#endif
+
+    this->NMax = vtkIntArray::New();
+    this->C = vtkDoubleArray::New();
+    this->Dx = vtkDoubleArray::New();
+    this->Lx = vtkDoubleArray::New();
+    this->Dy = vtkDoubleArray::New();
+    this->Ly = vtkDoubleArray::New();
+    this->Dz = vtkDoubleArray::New();
+    this->Lz = vtkDoubleArray::New();
+    this->TempD = vtkDoubleArray::New();
+    this->TempI = vtkIntArray::New();
+    this->SpxFileExists = vtkIntArray::New();
+    this->VariableNames = vtkStringArray::New();
+    this->VariableComponents = vtkIntArray::New();
+    this->VariableIndexToSPX = vtkIntArray::New();
+    this->VariableTimesteps = vtkIntArray::New();
+    this->VariableTimestepTable = vtkIntArray::New();
+    this->VariableToSkipTable = vtkIntArray::New();
+    this->SPXToNVarTable = vtkIntArray::New();
+    this->SPXTimestepIndexTable = vtkLongLongArray::New();
 }
 
 
 // ****************************************************************************
 //  Method: avtMFIX destructor
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 22, 2008 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 22, 2008
 //
 //  Modifications:
 //
@@ -108,11 +185,31 @@ avtMFIXFileFormat::avtMFIXFileFormat(const char *filename,
 
 avtMFIXFileFormat::~avtMFIXFileFormat()
 {
-    if (reader != NULL)
-    {
-        reader->Delete();
-        reader = NULL;
-    }
+    this->NMax->Delete();
+    this->C->Delete();
+    this->Dx->Delete();
+    this->Lx->Delete();
+    this->Dy->Delete();
+    this->Ly->Delete();
+    this->Dz->Delete();
+    this->Lz->Delete();
+    this->TempD->Delete();
+    this->TempI->Delete();
+    this->SpxFileExists->Delete();
+
+    if (GSB_file)
+        fclose(GSB_file);
+    if (GSB_currentFname)
+        free(GSB_currentFname);
+
+    this->VariableNames->Delete();
+    this->VariableComponents->Delete();
+    this->VariableIndexToSPX->Delete();
+    this->VariableTimesteps->Delete();
+    this->VariableTimestepTable->Delete();
+    this->VariableToSkipTable->Delete();
+    this->SPXToNVarTable->Delete();
+    this->SPXTimestepIndexTable->Delete();
 }
 
 
@@ -137,7 +234,7 @@ avtMFIXFileFormat::GetNTimesteps(void)
     if (!readInformation)
         ReadInformation();
 
-    return reader->GetNumberOfTimeSteps();
+    return this->NumberOfTimeSteps;
 }
 
 
@@ -156,14 +253,15 @@ avtMFIXFileFormat::GetNTimesteps(void)
 // ****************************************************************************
 
 void
-avtMFIXFileFormat::FreeUpResources()
+avtMFIXFileFormat::FreeUpResources(void)
 {
 }
+
 
 // ****************************************************************************
 // Method: avtMFIXFileFormat::GetTimes
 //
-// Purpose: 
+// Purpose:
 //   Returns the times.
 //
 // Arguments:
@@ -188,6 +286,51 @@ avtMFIXFileFormat::GetTimes(doubleVector &t)
 }
 
 
+void
+avtMFIXFileFormat::CalcDomainBreakdown2D(long targetDomains,
+    int cellsX, int cellsY, int* nX, int* nY)
+{
+    long totalCells= cellsX*cellsY;
+    double approxCellsPerDomain= (double)totalCells/targetDomains;
+    double approxCellsPerEdge= sqrt(approxCellsPerDomain);
+    if (approxCellsPerEdge>cellsX) approxCellsPerEdge= (double)cellsX;
+    if (approxCellsPerEdge>cellsY) approxCellsPerEdge= (double)cellsY;
+    if (cellsX>=cellsY) {
+        *nY= (int)rint(cellsY/approxCellsPerEdge);
+        *nX= (int)rint((double)targetDomains/(*nY));
+    }
+    else {
+        *nX= (int)rint(cellsX/approxCellsPerEdge);
+        *nY= (int)rint((double)targetDomains/(*nX));
+    }
+}
+
+void
+avtMFIXFileFormat::CalcDomainBreakdown3D(long targetDomains,
+    int cellsX, int cellsY, int cellsZ, int* nX, int* nY, int* nZ)
+{
+    long totalCells= cellsX*cellsY*cellsZ;
+    double approxCellsPerDomain= (double)totalCells/targetDomains;
+    debug5 << "Calculating domain sizes in 3D" << endl;
+    debug5 << "cellsX " << cellsX << " cellsY " << cellsY << " cellsZ " << cellsZ << " totalCells " << totalCells << endl;
+    double approxCellsPerEdge= cbrt(approxCellsPerDomain);
+    debug5 << "approxCellsPerDomain " << approxCellsPerDomain << " approxCellsPerEdge " << approxCellsPerEdge << endl;
+    int zTargetDomains= (int)rint((double)cellsZ/approxCellsPerEdge);
+    debug5 << "zTargetDomains " << zTargetDomains << endl;
+    if (zTargetDomains<1) zTargetDomains= 1;
+    int inPlaneTargetDomains= (int)rint((double)targetDomains/(double)zTargetDomains);
+    debug5 << "inPlaneTargetDomains " << inPlaneTargetDomains << endl;
+    CalcDomainBreakdown2D(inPlaneTargetDomains, cellsX, cellsY, nX, nY);
+    debug5 << "nX " << *nX << " nY " << *nY << endl;
+    *nZ= (int)rint((double)targetDomains/(*nX * *nY));
+    debug5 << "initial nZ " << *nZ << endl;
+    if (*nZ<1) *nZ= 1;
+    if (*nZ>cellsZ) *nZ= cellsZ;
+    debug5 << "nZ " << *nZ << endl;
+
+}
+
+
 // ****************************************************************************
 //  Method: avtMFIXFileFormat::PopulateDatabaseMetaData
 //
@@ -206,37 +349,251 @@ avtMFIXFileFormat::GetTimes(doubleVector &t)
 // ****************************************************************************
 
 void
-avtMFIXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, 
-                                            int timeState)
+avtMFIXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+    int timeState)
 {
     if (!readInformation)
         ReadInformation();
 
+#ifdef PARALLEL
+    par_size = PAR_Size();
+    par_rank = PAR_Rank();
+#else
+    par_size = 1;
+    par_rank = 0;
+#endif
+
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "Mesh";
-    mesh->meshType = AVT_UNSTRUCTURED_MESH;
-    mesh->topologicalDimension = 3;
-    mesh->spatialDimension = 3;
-    mesh->numBlocks = 4;
-    mesh->blockNames.push_back("Fluid");
-    mesh->blockNames.push_back("Inlet");
-    mesh->blockNames.push_back("Outlet");
-    mesh->blockNames.push_back("Walls");
+    if (!strcmp(this->CoordinateSystem, "CARTESIAN"))
+        mesh->meshType = AVT_RECTILINEAR_MESH;
+    else
+        mesh->meshType = AVT_CURVILINEAR_MESH;
+    if (this->KMaximum2==1) {
+        mesh->topologicalDimension = 2;
+        mesh->spatialDimension = 2;
+        CalcDomainBreakdown2D(this->numDomainsPerProc * par_size,
+            this->IMaximum2, this->JMaximum2,
+            &(this->numXDomains), &(this->numYDomains));
+        this->numZDomains= 1;
+        mesh->numBlocks = this->numXDomains * this->numYDomains;
+    }
+    else {
+        mesh->topologicalDimension = 3;
+        mesh->spatialDimension = 3;
+        CalcDomainBreakdown3D(this->numDomainsPerProc * par_size,
+            this->IMaximum2, this->JMaximum2, this->KMaximum2,
+            &(this->numXDomains), &(this->numYDomains), &(this->numZDomains));
+        mesh->numBlocks =
+        this->numXDomains * this->numYDomains * this->numZDomains;
+    }
+    mesh->blockOrigin = 0;
+    mesh->blockTitle = "blocks";
+    mesh->blockPieceName = "block";
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
 
-    for (int i=0; i < reader->GetNumberOfCellArrays(); ++i)
-    {
-        const char *name = reader->GetCellArrayName(i);
-        if (reader->GetCellArrayNumComponents(i) == 1)
-        {
+    // The 'flag' data will become a VisIt 'material'
+    avtMaterialMetaData *matmd = new avtMaterialMetaData;
+    matmd->name = "flagclass";
+    matmd->meshName = "Mesh";
+    matmd->numMaterials = 5;
+    matmd->materialNames.push_back("Fluid");
+    matmd->materialNames.push_back("Inlet");
+    matmd->materialNames.push_back("Outlet");
+    matmd->materialNames.push_back("Obstruction");
+    matmd->materialNames.push_back("Other");
+    md->Add(matmd);
+
+    // Dirty trick: provide space to return the domain number
+    // parallel rank and cell type flag as if they were data.
+    AddScalarVarToMetaData(md, "domain", "Mesh", AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "par_rank", "Mesh", AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "flagclass_var", "Mesh", AVT_ZONECENT);
+
+    // The actual variables go here
+    for (int i =0; i < this->VariableNames->GetMaxId(); ++i) {
+        const char *name = this->VariableNames->GetValue(i);
+        if (this->VariableComponents->GetValue(i) == 1)
             AddScalarVarToMetaData(md, name, "Mesh", AVT_ZONECENT);
-        }
-        else
-        {
+        else if (this->VariableComponents->GetValue(i) == 3)
             AddVectorVarToMetaData(md, name, "Mesh", AVT_ZONECENT);
-        }
+        else
+            EXCEPTION1(InvalidVariableException, name);
     }
+}
+
+void
+avtMFIXFileFormat::decompose_domains(int dom, int *xd, int *yd, int *zd)
+{
+    *zd = dom / (numXDomains * numYDomains);
+    dom -= *zd * (numXDomains * numYDomains);
+    *yd = dom / numXDomains;
+    dom -= *yd * numXDomains;
+    *xd = dom;
+}
+
+void
+avtMFIXFileFormat::get_limit(int max, int dom, int num_domains,
+    vtkDoubleArray *l, int *pwidth, int *poff, double **larr)
+{
+    // assert( (max - 2) / num_domains - (int)( (max - 2) / num_domains) == 0)
+    // these are the unghosted cell index limits
+    int width = (max - 2) / num_domains;
+    int iCellLow = dom * width;
+    int iCellHigh = iCellLow + width - 1;
+    if (dom == num_domains - 1)
+        iCellHigh = max - 3; // get leftovers
+    *pwidth = iCellHigh + 1 - iCellLow;
+    *poff = iCellLow;
+    *larr = (double *)l->GetVoidPointer(0);
+}
+
+// ****************************************************************************
+//  Method: avtMFIXFileFormat::GetAuxiliaryData
+
+//  Purpose:
+//      Gets the auxiliary data specified.
+//
+//  Arguments:
+//      var        The variable of interest.
+//      timestep   The timestep of interest.
+//      domain     The domain of interest.
+//      type       The type of auxiliary data.
+//      args       The arguments for that type.
+//
+//  Returns:    The auxiliary data.
+//
+//  Programmer: Joel Welling
+//  Creation:   July 1, 2010
+//
+// ****************************************************************************
+void *
+avtMFIXFileFormat::GetAuxiliaryData(const char * var,
+    int timestep, int domain, const char *type, void *args,
+    DestructorFunction &df)
+{
+    void *retval = NULL;
+
+    if (!readInformation)
+        ReadInformation();
+
+    // Decompose the domain
+    int xDomain, yDomain, zDomain;
+    decompose_domains(domain, &xDomain, &yDomain, &zDomain);
+
+    // these are the unghosted cell index limits
+    int widths[3];
+    int offsets[3];
+    double *larrays[3];
+
+    get_limit(IMaximum2, xDomain, numXDomains, Lx,
+        &widths[0], &offsets[0], &larrays[0]);
+    get_limit(JMaximum2, yDomain, numYDomains, Ly,
+        &widths[1], &offsets[1], &larrays[1]);
+    get_limit(KMaximum2, zDomain, numZDomains, Lz,
+        &widths[2], &offsets[2], &larrays[2]);
+
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0) {
+        avtMaterial *mat = NULL;
+        void_ref_ptr vrTmp = cache->GetVoidRef(var,
+            AUXILIARY_DATA_MATERIAL, timestep, domain);
+        int nzvals= 0;
+        if (*vrTmp != 0) {
+            mat = (avtMaterial*)*vrTmp;
+            df = avtMaterial::Destruct;
+            retval = (void *)mat;
+        } else {
+            int dims[3] = {1,1,1}, ndims = 1;
+            if ( !strcmp(this->CoordinateSystem,"CARTESIAN") ) {
+                ndims = 3;
+                dims[0] = widths[0]+2;
+                dims[1] = widths[1]+2;
+                if (this->KMaximum2 == 1)
+                    dims[2]= nzvals= 1;
+                else
+                    dims[2]= nzvals= widths[2]+2;
+            } else {
+                ndims = 1;
+                if (this->KMaximum2 == 1) {
+                    dims[0] = (widths[0]+2)*(widths[1]+2);
+                    nzvals= 1;
+                } else {
+                    dims[0] = (widths[0]+2)*(widths[1]+2)*(widths[2]+2);
+                    nzvals= widths[2]+2;
+                }
+            }
+
+            // Read the matlist array, which tells what the material
+            // is for each zone in the mesh.
+            int nzones = dims[0] * dims[1] * dims[2];
+            int *matlist = NULL;
+            int *matnos = NULL;
+            int nmats = 0;
+            char** names = NULL;
+            if (!strcmp(var,"flagclass")) {
+                nmats = 5;
+                matnos = new int[nmats];
+                for (int i =0; i<nmats; i++)
+                    matnos[i] = i+1; // numbers are 1-based
+                names = new char*[5];
+                names[0] = strdup("Fluid");
+                names[1] = strdup("Inlet");
+                names[2] = strdup("Outlet");
+                names[3] = strdup("Obstruction");
+                names[4] = strdup("Other");
+                matlist = new int[nzones];
+                GetSubBlock(matlist, this->FlagFilename,
+                    DATATYPE_INT,
+                    this->FlagFieldOffset,
+                    ((((this->JMaximum2*offsets[2])
+                       +offsets[1])*this->IMaximum2) +offsets[0]),
+                    widths[0]+2, this->IMaximum2,
+                    widths[1]+2, this->JMaximum2,
+                    nzvals);
+                // Convert from flag to flag class
+                for (int i = 0; i < nzones; i++) {
+                    if (matlist[i] < 10)
+                        matlist[i] = 1; // fluid
+                    else if (matlist[i] == 10 || matlist[i] == 20)
+                        matlist[i] = 2; // inlet
+                    else if (matlist[i] == 11 || matlist[i] == 21 || matlist[i] == 31)
+                        matlist[i] = 3; // outlet
+                    else if (matlist[i] >= 100)
+                        matlist[i] = 4; // obstruction
+                    else
+                        matlist[i] = 5; // other
+                }
+            } else
+                EXCEPTION1(InvalidVariableException, var);
+            mat = new avtMaterial(nmats, matnos, names, ndims,
+                                  dims, 0, matlist,
+                                  0, // length of mix arrays
+                                  0, // mix_mat array
+                                  0, // mix_next array
+                                  0, // mix_zone array
+                                  0 // mix_vf array
+                                  );
+
+            // Save it for possible reuse
+            //cache->CacheVoidRef(var, AUXILIARY_DATA_MATERIAL, timestep,
+            //           domain,
+            //          void_ref_ptr((void*)mat,
+            //                   avtMaterial::Destruct));
+
+            // Clean up.
+            delete [] matlist;
+            delete [] matnos;
+            for(int i = 0; i < nmats; ++i)
+              delete [] names[i];
+            delete [] names;
+            // Set the return values.
+            retval = (void *)mat;
+            df = avtMaterial::Destruct;
+          }
+    }
+
+    return retval;
 }
 
 
@@ -272,20 +629,48 @@ avtMFIXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 vtkDataSet *
 avtMFIXFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
-    if (!readInData)
-        ReadInData();
+    if (!readInformation)
+        ReadInformation();
 
-    reader->SetTimeStep(timestate);
-    reader->Update();
+    // Mesh does not depend on time.  There is only one mesh,
+    // so we need not check its name.
 
-    vtkUnstructuredGrid *dataset = vtkUnstructuredGrid::New();
-    vtkDataObject *dob = reader->GetOutputDataObject(domain);
+    // Decompose the domain
+    int xDomain, yDomain, zDomain;
+    decompose_domains(domain, &xDomain, &yDomain, &zDomain);
 
-    dataset->DeepCopy(vtkUnstructuredGrid::SafeDownCast(dob));
-
-    return dataset;
+    return BuildMesh(xDomain,yDomain,zDomain);
 }
 
+int
+avtMFIXFileFormat::get_var_index(const char *varname)
+{
+    for (int i = 0; i < this->VariableNames->GetMaxId(); ++i)
+        if (strcmp(VariableNames->GetValue(i), varname) == 0)
+            return (i);
+    EXCEPTION1(InvalidVariableException, varname);
+}
+
+void
+avtMFIXFileFormat::make_fn(char *fn, int spx)
+{
+    char *p;
+
+    strncpy(fn, RestartFileName, NAME_MAX);
+    fn[NAME_MAX] = '\0';
+    p = strrchr(fn, '.');
+    if (p == NULL)
+        EXCEPTION1(InvalidVariableException, fn);
+
+    /* XXX XXX XXX add bound checks */
+    p++;
+    *p++ = 'S';
+    *p++ = 'P';
+    if (spx < 10)
+        *p++ = '0' + spx;
+    else *p++ = 'A' + (spx-10);
+    *p++ = '\0';
+}
 
 // ****************************************************************************
 //  Method: avtMFIXFileFormat::GetVar
@@ -318,37 +703,86 @@ avtMFIXFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 vtkDataArray *
 avtMFIXFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
-    if (!readInData)
-        ReadInData();
+    if (!readInformation)
+        ReadInformation();
 
-    reader->SetTimeStep(timestate);
-    reader->Update();
+    // Decompose the domain
+    int xDomain, yDomain, zDomain;
+    decompose_domains(domain, &xDomain, &yDomain, &zDomain);
 
-    vtkDataArray *v = NULL;
-    if (domain == 0)
-    {
-        v = reader->GetOutput()->GetPointData()->GetArray(varname);
-        if (v == NULL)
-            v = reader->GetOutput()->GetCellData()->GetArray(varname);
-        if (v == NULL)
-            EXCEPTION1(InvalidVariableException, varname);
+    // these are the unghosted cell index limits
+    int widths[3];
+    int offsets[3];
+    double *larrays[3];
 
-        v->Register(NULL);
+    get_limit(IMaximum2, xDomain, numXDomains, Lx, &widths[0], &offsets[0], &larrays[0]);
+    get_limit(JMaximum2, yDomain, numYDomains, Ly, &widths[1], &offsets[1], &larrays[1]);
+    get_limit(KMaximum2, zDomain, numZDomains, Lz, &widths[2], &offsets[2], &larrays[2]);
+
+    vtkFloatArray *arr = vtkFloatArray::New();
+    int totCells= 0;
+    int nzvals= 0;
+    if (this->KMaximum2==1) {
+        // 2D case
+        totCells = (widths[0]+2) * (widths[1]+2);
+        nzvals= 1;
     }
-    else 
-    {
-        v = vtkFloatArray::New();
-        vtkDataSet *ds = vtkDataSet::SafeDownCast(
-                              reader->GetOutputDataObject(domain));
-        int nc = ds->GetNumberOfCells();
-        for (int i = 0; i< nc; i++)
-        {
-          v->InsertTuple1(i, 0);
+    else {
+        // 3D case
+        totCells = (widths[0]+2) * (widths[1]+2) * (widths[2]+2);
+        nzvals= (widths[2]+2);
+    }
+
+    arr->SetNumberOfTuples(totCells);
+    float *data = (float*)arr->GetVoidPointer(0);
+
+    if (!strcmp(varname, "domain")) {
+        for (int i = 0; i < totCells; i++)
+            data[i] = domain;
+    } else if (!strcmp(varname, "par_rank")) {
+        for (int i = 0; i < totCells; i++)
+            data[i] = (float)this->par_rank;
+    } else if (!strcmp(varname, "flagclass_var")) {
+        int* buf= new int[totCells];
+        GetSubBlock(buf, this->FlagFilename,
+                    DATATYPE_INT,
+                    this->FlagFieldOffset,
+                    ((((this->JMaximum2*offsets[2])
+                    +offsets[1])*this->IMaximum2) +offsets[0]),
+                    widths[0]+2, this->IMaximum2,
+                    widths[1]+2, this->JMaximum2,
+                    nzvals);
+        for (int i=0; i<totCells; i++) {
+            if (buf[i]<10)
+                data[i] = 1.0; // fluid
+            else if (buf[i] ==10 || buf[i] ==20)
+                data[i] = 2.0; // inlet
+            else if (buf[i] ==11 || buf[i] ==21 || buf[i] ==31)
+                data[i] = 3.0; // outlet
+            else if (buf[i]>=100)
+                data[i] = 4.0; // obstruction
+            else
+                data[i] = 5.0; // other
         }
-    }
-    return v;
-}
+        delete [] buf;
+    } else {
+        int vidx = get_var_index(varname);
+        char fn[NAME_MAX + 1];
+        int index = (vidx * MaximumTimestep) + timestate;
+        long long nBytesSkip = SPXTimestepIndexTable->GetValue(index);
 
+        make_fn(fn, VariableIndexToSPX->GetValue(vidx));
+        GetSubBlock(data, fn, DATATYPE_FLOAT,
+                    nBytesSkip,
+                    ((((this->JMaximum2*offsets[2])
+                    +offsets[1])*this->IMaximum2) +offsets[0]),
+                    widths[0]+2, this->IMaximum2,
+                    widths[1]+2, this->JMaximum2,
+                    nzvals);
+    }
+
+    return arr;
+}
 
 // ****************************************************************************
 //  Method: avtMFIXFileFormat::GetVectorVar
@@ -379,47 +813,107 @@ avtMFIXFileFormat::GetVar(int timestate, int domain, const char *varname)
 // ****************************************************************************
 
 vtkDataArray *
-avtMFIXFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
+avtMFIXFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 {
-    if (!readInData)
-        ReadInData();
+    if (!readInformation)
+        ReadInformation();
 
-    reader->SetTimeStep(timestate);
-    reader->Update();
+    // Decompose the domain
+    int xDomain, yDomain, zDomain;
+    decompose_domains(domain, &xDomain, &yDomain, &zDomain);
 
-    vtkDataArray *v = NULL;
-    if (domain == 0)
-    {
-        v = reader->GetOutput()->GetPointData()->GetArray(varname);
-        if (v == NULL)
-            v = reader->GetOutput()->GetCellData()->GetArray(varname);
-        if (v == NULL)
-            EXCEPTION1(InvalidVariableException, varname);
+    // these are the unghosted cell index limits
+    int widths[3];
+    int offsets[3];
+    double *larrays[3];
 
-        v->Register(NULL);
+    get_limit(IMaximum2, xDomain, numXDomains, Lx, &widths[0], &offsets[0], &larrays[0]);
+    get_limit(JMaximum2, yDomain, numYDomains, Ly, &widths[1], &offsets[1], &larrays[1]);
+    get_limit(KMaximum2, zDomain, numZDomains, Lz, &widths[2], &offsets[2], &larrays[2]);
+
+    vtkFloatArray *arr = vtkFloatArray::New();
+    int totCells= 0;
+    int nzvals= 0;
+    if (this->KMaximum2==1) {
+        // 2D case
+        totCells = (widths[0]+2) * (widths[1]+2);
+        nzvals= 1;
     }
-    else 
-    {
-        v = vtkFloatArray::New();
-        v->SetNumberOfComponents(3);
-        vtkDataSet *ds = vtkDataSet::SafeDownCast(
-                         reader->GetOutputDataObject(domain));
-        int nc = ds->GetNumberOfCells();
-        for (int i = 0; i < nc; i++)
-        {
-            v->InsertComponent(i, 0, 0);
-            v->InsertComponent(i, 1, 0);
-            v->InsertComponent(i, 2, 0);
+    else {
+        // 3D case
+        totCells = (widths[0]+2) * (widths[1]+2) * (widths[2]+2);
+        nzvals= (widths[2]+2);
+    }
+    arr->SetNumberOfComponents(3);
+    arr->SetNumberOfTuples(totCells);
+    float *data = (float *)arr->GetVoidPointer(0);
+
+    int vidx = get_var_index(varname);
+
+    vtkDataArray *xarr = GetVar(timestate, domain, VariableNames->GetValue(vidx - 3));
+    vtkDataArray *yarr = GetVar(timestate, domain, VariableNames->GetValue(vidx - 2));
+    vtkDataArray *zarr = GetVar(timestate, domain, VariableNames->GetValue(vidx - 1));
+    float *xdata = (float *)xarr->GetVoidPointer(0);
+    float *ydata = (float *)yarr->GetVoidPointer(0);
+    float *zdata = (float *)zarr->GetVoidPointer(0);
+
+    float *runner = data;
+    if (!strcmp(CoordinateSystem, "CARTESIAN")) {
+        for (int i = 0; i < totCells; i++) {
+            *runner++ = xdata[i];
+            *runner++ = ydata[i];
+            *runner++ = zdata[i];
         }
-    }
-    return v;
+    } else if (!strcmp(CoordinateSystem, "CYLINDRICAL")) {
+        if (nzvals==1) {
+            // 2D case
+            long arrayOff = 0;
+            double theta = 0.0; // cell center
+            for (int j=0; j<widths[1]+2; j++) {
+                for (int i=0; i<widths[0]+2; i++) {
+                    float vx = (xdata[arrayOff]*cos(theta))-(zdata[i]*sin(theta));
+                    float vy = ydata[arrayOff];
+                    float vz = (xdata[arrayOff]*sin(theta))+(zdata[i]*cos(theta));
+                    *runner++ = vx;
+                    *runner++ = vy;
+                    *runner++ = vz;
+                    arrayOff += 1;
+                }
+            }
+        } else {
+            // 3D case
+            long arrayOff = 0;
+            for (int k=0; k<widths[2]+2; k++) {
+                double thetaLow = larrays[2][k+offsets[2]];
+                double thetaHigh = larrays[2][k+1+offsets[2]];
+                double theta = 0.5*(thetaLow+thetaHigh); // cell center
+                for (int j=0; j<widths[1]+2; j++) {
+                    for (int i=0; i<widths[0]+2; i++) {
+                        float vx = (xdata[arrayOff]*cos(theta))-(zdata[i]*sin(theta));
+                        float vy = ydata[arrayOff];
+                        float vz = (xdata[arrayOff]*sin(theta))+(zdata[i]*cos(theta));
+                        *runner++ = vx;
+                        *runner++ = vy;
+                        *runner++ = vz;
+                        arrayOff += 1;
+                    }
+                }
+            }
+        }
+    } else
+        EXCEPTION1(InvalidVariableException, this->CoordinateSystem);
+
+    xarr->Delete();
+    yarr->Delete();
+    zarr->Delete();
+
+    return arr;
 }
 
-
 // ****************************************************************************
-//  Method: avtMFIXFileFormat::SetUpReader
+//  Method: avtMFIXFileFormat::SetUp
 //
-//  Purpose:  Sets up the vtk reader.
+//  Purpose:  Sets up the internal reader state.
 //
 //  Programmer:  Kathleen Bonnell
 //  Creation:    October 22, 2008
@@ -429,46 +923,13 @@ avtMFIXFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
 // ****************************************************************************
 
 void
-avtMFIXFileFormat::SetUpReader()
+avtMFIXFileFormat::SetUp()
 {
-    if (reader == NULL)
-    {
-        reader = vtkMFIXReader::New();
-        reader->SetFileName(this->RestartFileName);
-#ifdef WORDS_BIGENDIAN
-        if (fileBigEndian)
-            reader->SetSwapByteOrder(false);
-        else 
-            reader->SetSwapByteOrder(true);
-#else
-        if (fileBigEndian)
-            reader->SetSwapByteOrder(true);
-        else 
-            reader->SetSwapByteOrder(false);
-#endif
+    if (!setupCompleteFlag) {
+        ReadRestartFile();
+        setupCompleteFlag = true;
     }
 }
-
-// ****************************************************************************
-//  Method: avtMFIXFileFormat::ReadInData
-//
-//  Purpose:  Has the vtk reader read in all the information
-//
-//  Programmer:  Kathleen Bonnell
-//  Creation:    October 22, 2008
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtMFIXFileFormat::ReadInData()
-{
-    SetUpReader();
-    reader->Update();
-    readInData = true;
-}
-
 
 // ****************************************************************************
 //  Method: avtMFIXFileFormat::ReadInInformation
@@ -482,24 +943,1663 @@ avtMFIXFileFormat::ReadInData()
 //
 // ****************************************************************************
 
-void 
+void
 avtMFIXFileFormat::ReadInformation()
 {
-    SetUpReader();
+    SetUp();
 
-    // Tell the reader to read in only the meta data (information) 
-    vtkExecutive *e = reader->GetExecutive();
-    vtkInformation *request = vtkInformation::New();
-    request->Set(vtkDemandDrivenPipeline::REQUEST_INFORMATION());
-    reader->ProcessRequest(request, e->GetInputInformation(),
-                               e->GetOutputInformation());
-
-    // Get time step information  
-    vtkInformation *info = e->GetOutputInformation()->GetInformationObject(0); 
-    int len = info->Length(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
-    double *t = info->Get(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
-    for (int i = 0; i < len; i++)
-        times.push_back(t[i]);
+    // ReadRestartFile(); unnecessary since SetUp does it
+    this->CreateVariableNames();
+    this->GetTimeSteps();
+    this->CalculateMaxTimeStep();
+    this->MakeTimeStepTable(VariableNames->GetMaxId()+1);
+    this->GetNumberOfVariablesInSPXFiles();
+    this->MakeSPXTimeStepIndexTable(VariableNames->GetMaxId()+1);
+    this->NumberOfTimeSteps = this->MaximumTimestep;
+    this->GetAllTimesTweaked();
 
     readInformation = true;
+}
+
+// ******************************************************************
+//
+// The file-parsing and mesh-building code which follows has been
+// imported from vtkMFIXReader.c, an MFIX-to-ParaView reader written
+// by Phil Nicoletti and Brian Dotson of NETL.  The code was taken
+// from revision 1.2 of vtkMFIXReader.  The original code produces
+// several unstructured meshes; it has been modified to produce a
+// structured mesh plus VisIt-style subsetting information.
+//
+// ******************************************************************
+
+void avtMFIXFileFormat::ReadRestartFile()
+{
+    int dimensionUsr = 5;
+
+#ifdef _WIN32
+    ifstream in(this->RestartFileName,ios::binary);
+#else
+    ifstream in(this->RestartFileName);
+#endif
+
+    if (!in) {
+        //cout << "could not open file" << endl;
+        EXCEPTION1(InvalidFilesException,this->RestartFileName);
+    }
+
+    this->DataBuffer[512] = '\0';
+
+    // version : record 1
+    memset(this->DataBuffer,0,513);
+    in.read(this->DataBuffer,512);
+    this->RestartVersionNumber(this->DataBuffer);
+
+    // skip 2 linesline : records 2 and 3
+    in.read(this->DataBuffer,512);
+    in.read(this->DataBuffer,512);
+
+    // IMinimum1 etc : record 4
+    memset(this->DataBuffer,0,513);
+
+    if (strcmp(this->Version, "RES = 01.00") == 0)
+    {
+        this->GetInt(in,this->IMinimum1);
+        this->GetInt(in,this->JMinimum1);
+        this->GetInt(in,this->KMinimum1);
+        this->GetInt(in,this->IMaximum);
+        this->GetInt(in,this->JMaximum);
+        this->GetInt(in,this->KMaximum);
+        this->GetInt(in,this->IMaximum1);
+        this->GetInt(in,this->JMaximum1);
+        this->GetInt(in,this->KMaximum1);
+        this->GetInt(in,this->IMaximum2);
+        this->GetInt(in,this->JMaximum2);
+        this->GetInt(in,this->KMaximum2);
+        this->GetInt(in,this->IJMaximum2);
+        this->GetInt(in,this->IJKMaximum2);
+        this->GetInt(in,this->MMAX);
+        this->GetDouble(in,this->DeltaTime);
+        this->GetDouble(in,this->XLength);
+        this->GetDouble(in,this->YLength);
+        this->GetDouble(in,this->ZLength);
+
+        // 15 ints ... 4 doubles = 92 bytes
+        this->SkipBytes(in,420);
+    }
+    else if (strcmp(this->Version, "RES = 01.01") == 0 ||
+        strcmp(this->Version, "RES = 01.02") == 0)
+    {
+        this->GetInt(in,this->IMinimum1);
+        this->GetInt(in,this->JMinimum1);
+        this->GetInt(in,this->KMinimum1);
+        this->GetInt(in,this->IMaximum);
+        this->GetInt(in,this->JMaximum);
+        this->GetInt(in,this->KMaximum);
+        this->GetInt(in,this->IMaximum1);
+        this->GetInt(in,this->JMaximum1);
+        this->GetInt(in,this->KMaximum1);
+        this->GetInt(in,this->IMaximum2);
+        this->GetInt(in,this->JMaximum2);
+        this->GetInt(in,this->KMaximum2);
+        this->GetInt(in,this->IJMaximum2);
+        this->GetInt(in,this->IJKMaximum2);
+        this->GetInt(in,this->MMAX);
+        this->GetInt(in,this->DimensionIc);
+        this->GetInt(in,this->DimensionBc);
+        this->GetDouble(in,this->DeltaTime);
+        this->GetDouble(in,this->XLength);
+        this->GetDouble(in,this->YLength);
+        this->GetDouble(in,this->ZLength);
+
+        // 17 ints ... 4 doubles = 100 bytes
+        this->SkipBytes(in,412);
+    }
+    else if(strcmp(this->Version, "RES = 01.03") == 0)
+    {
+        this->GetInt(in,this->IMinimum1);
+        this->GetInt(in,this->JMinimum1);
+        this->GetInt(in,this->KMinimum1);
+        this->GetInt(in,this->IMaximum);
+        this->GetInt(in,this->JMaximum);
+        this->GetInt(in,this->KMaximum);
+        this->GetInt(in,this->IMaximum1);
+        this->GetInt(in,this->JMaximum1);
+        this->GetInt(in,this->KMaximum1);
+        this->GetInt(in,this->IMaximum2);
+        this->GetInt(in,this->JMaximum2);
+        this->GetInt(in,this->KMaximum2);
+        this->GetInt(in,this->IJMaximum2);
+        this->GetInt(in,this->IJKMaximum2);
+        this->GetInt(in,this->MMAX);
+        this->GetInt(in,this->DimensionIc);
+        this->GetInt(in,this->DimensionBc);
+        this->GetDouble(in,this->DeltaTime);
+        this->GetDouble(in,this->XMinimum);
+        this->GetDouble(in,this->XLength);
+        this->GetDouble(in,this->YLength);
+        this->GetDouble(in,this->ZLength);
+
+        // 17 ints ... 5 doubles = 108 bytes
+        this->SkipBytes(in,404);
+    }
+    else if(strcmp(this->Version, "RES = 01.04") == 0)
+    {
+        this->GetInt(in,this->IMinimum1);
+        this->GetInt(in,this->JMinimum1);
+        this->GetInt(in,this->KMinimum1);
+        this->GetInt(in,this->IMaximum);
+        this->GetInt(in,this->JMaximum);
+        this->GetInt(in,this->KMaximum);
+        this->GetInt(in,this->IMaximum1);
+        this->GetInt(in,this->JMaximum1);
+        this->GetInt(in,this->KMaximum1);
+        this->GetInt(in,this->IMaximum2);
+        this->GetInt(in,this->JMaximum2);
+        this->GetInt(in,this->KMaximum2);
+        this->GetInt(in,this->IJMaximum2);
+        this->GetInt(in,this->IJKMaximum2);
+        this->GetInt(in,this->MMAX);
+        this->GetInt(in,this->DimensionIc);
+        this->GetInt(in,this->DimensionBc);
+        this->GetInt(in,this->DimensionC);
+        this->GetDouble(in,this->DeltaTime);
+        this->GetDouble(in,this->XMinimum);
+        this->GetDouble(in,this->XLength);
+        this->GetDouble(in,this->YLength);
+        this->GetDouble(in,this->ZLength);
+
+        // 18 ints ... 5 doubles = 112 bytes
+        this->SkipBytes(in,400);
+    }
+    else if(strcmp(this->Version, "RES = 01.05") == 0)
+    {
+        this->GetInt(in,this->IMinimum1);
+        this->GetInt(in,this->JMinimum1);
+        this->GetInt(in,this->KMinimum1);
+        this->GetInt(in,this->IMaximum);
+        this->GetInt(in,this->JMaximum);
+        this->GetInt(in,this->KMaximum);
+        this->GetInt(in,this->IMaximum1);
+        this->GetInt(in,this->JMaximum1);
+        this->GetInt(in,this->KMaximum1);
+        this->GetInt(in,this->IMaximum2);
+        this->GetInt(in,this->JMaximum2);
+        this->GetInt(in,this->KMaximum2);
+        this->GetInt(in,this->IJMaximum2);
+        this->GetInt(in,this->IJKMaximum2);
+        this->GetInt(in,this->MMAX);
+        this->GetInt(in,this->DimensionIc);
+        this->GetInt(in,this->DimensionBc);
+        this->GetInt(in,this->DimensionC);
+        this->GetInt(in,this->DimensionIs);
+        this->GetDouble(in,this->DeltaTime);
+        this->GetDouble(in,this->XMinimum);
+        this->GetDouble(in,this->XLength);
+        this->GetDouble(in,this->YLength);
+        this->GetDouble(in,this->ZLength);
+
+        // 19 ints ... 5 doubles = 116 bytes
+        this->SkipBytes(in,396);
+    }
+    else
+    {
+        this->GetInt(in,this->IMinimum1);
+        this->GetInt(in,this->JMinimum1);
+        this->GetInt(in,this->KMinimum1);
+        this->GetInt(in,this->IMaximum);
+        this->GetInt(in,this->JMaximum);
+        this->GetInt(in,this->KMaximum);
+        this->GetInt(in,this->IMaximum1);
+        this->GetInt(in,this->JMaximum1);
+        this->GetInt(in,this->KMaximum1);
+        this->GetInt(in,this->IMaximum2);
+        this->GetInt(in,this->JMaximum2);
+        this->GetInt(in,this->KMaximum2);
+        this->GetInt(in,this->IJMaximum2);
+        this->GetInt(in,this->IJKMaximum2);
+        this->GetInt(in,this->MMAX);
+        this->GetInt(in,this->DimensionIc);
+        this->GetInt(in,this->DimensionBc);
+        this->GetInt(in,this->DimensionC);
+        this->GetInt(in,this->DimensionIs);
+        this->GetDouble(in,this->DeltaTime);
+        this->GetDouble(in,this->XMinimum);
+        this->GetDouble(in,this->XLength);
+        this->GetDouble(in,this->YLength);
+        this->GetDouble(in,this->ZLength);
+        this->GetDouble(in,this->Ce);
+        this->GetDouble(in,this->Cf);
+        this->GetDouble(in,this->Phi);
+        this->GetDouble(in,this->PhiW);
+
+        // 19 ints ... 9 doubles = 148 bytes
+        this->SkipBytes(in,364);
+    }
+
+    const int numberOfFloatsInBlock = 512/sizeof(float);
+
+    if ( this->IJKMaximum2%numberOfFloatsInBlock == 0)
+        this->SPXRecordsPerTimestep = this->IJKMaximum2/numberOfFloatsInBlock;
+    else
+        this->SPXRecordsPerTimestep = 1 + this->IJKMaximum2/numberOfFloatsInBlock;
+
+    // C , C_name and nmax
+
+    this->NMax->Resize(this->MMAX+1);
+    for (int lc =0; lc<this->MMAX+1; ++lc)
+        this->NMax->InsertValue(lc, 1);
+
+    this->C->Resize(this->DimensionC);
+
+    if (this->VersionNumber > 1.04)
+    {
+        this->GetBlockOfDoubles (in, this->C, this->DimensionC);
+
+        for (int lc =0; lc<DimensionC; ++lc)
+            in.read(this->DataBuffer,512);  // c_name[]
+
+        if (this->VersionNumber < 1.12)
+            this->GetBlockOfInts(in, this->NMax,this->MMAX+1);
+        else {
+            // what is the diff between this and above ???
+            for (int lc =0; lc<this->MMAX+1; ++lc) {
+                int temp;
+                this->GetInt(in,temp);
+                this->NMax->InsertValue(lc, temp);
+            }
+            this->SkipBytes(in,512-(this->MMAX+1)*sizeof(int));
+        }
+    }
+
+    this->Dx->Resize(this->IMaximum2);
+    this->Dy->Resize(this->JMaximum2);
+    this->Dz->Resize(this->KMaximum2);
+
+    this->GetBlockOfDoubles(in, this->Dx,this->IMaximum2);
+    this->GetBlockOfDoubles(in, this->Dy,this->JMaximum2);
+    this->GetBlockOfDoubles(in, this->Dz,this->KMaximum2);
+
+    this->Lx->Resize(this->IMaximum2+1);
+    this->Ly->Resize(this->JMaximum2+1);
+    this->Lz->Resize(this->KMaximum2+1);
+
+    double v = -Dx->GetValue(0);
+    for (int i = 0; i < IMaximum2; i++, v += Dx->GetValue(i))
+        Lx->SetValue(i, v);
+    Lx->SetValue(IMaximum2, v);
+
+    v = -Dy->GetValue(0);
+    for (int i = 0; i < JMaximum2; i++, v += Dy->GetValue(i))
+        Ly->SetValue(i, v);
+    Ly->SetValue(JMaximum2, v);
+
+    v = -Dz->GetValue(0);
+    for (int i = 0; i < KMaximum2; i++, v += Dz->GetValue(i))
+        Lz->SetValue(i, v);
+    Lz->SetValue(KMaximum2, v);
+
+    // RunName etc.
+
+    memset(this->Units,0,17);
+    memset(this->CoordinateSystem,0,17);
+
+    in.read(this->DataBuffer,120);      // run_name , description
+    in.read(this->Units,16);        // Units
+    in.read(this->DataBuffer,16);       // run_type
+    in.read(this->CoordinateSystem,16);  // CoordinateSystem
+
+    this->SkipBytes(in,512-168);
+
+    char tempCharArray[17];
+
+    // Why is this block here?  It does nothing.  JSW 20100628
+    //   memset(tempCharArray,0,17);
+    //   int ic = 0;
+    //   for (int i =0; i<17; ++i)
+    //     {
+    //     if (this->Units[i] != ' ')
+    //       {
+    //       tempCharArray[ic++] = this->Units[i];
+    //       }
+    //     }
+
+    memset(tempCharArray,0,17);
+
+    int ic = 0;
+    for (int i =0; i<17; ++i) {
+        if (this->CoordinateSystem[i] != ' ')
+            tempCharArray[ic++] = this->CoordinateSystem[i];
+    }
+    strcpy(this->CoordinateSystem,tempCharArray);
+
+    if (this->VersionNumber >= 1.04) {
+        this->TempD->Resize(this->NMax->GetValue(0));
+        this->GetBlockOfDoubles(in, this->TempD, this->NMax->GetValue(0)); // MW_g
+        for (int i =0; i<this->MMAX; ++i)
+            in.read(this->DataBuffer,512);  // MW_s
+    }
+
+    in.read(this->DataBuffer,512);  // D_p etc.
+
+    // read in the "DimensionIc" variables (and ignore ... not used by ani_mfix)
+    this->TempI->Resize(this->DimensionIc);
+    this->TempD->Resize(this->DimensionIc);
+
+    this->GetBlockOfDoubles(in, this->TempD,this->DimensionIc);  // ic_x_w
+    this->GetBlockOfDoubles(in, this->TempD,this->DimensionIc);  // ic_x_e
+    this->GetBlockOfDoubles(in, this->TempD,this->DimensionIc);  // ic_y_s
+    this->GetBlockOfDoubles(in, this->TempD,this->DimensionIc);  // ic_y_n
+    this->GetBlockOfDoubles(in, this->TempD,this->DimensionIc);  // ic_z_b
+    this->GetBlockOfDoubles(in, this->TempD,this->DimensionIc);  // ic_z_t
+
+    this->GetBlockOfInts(in, this->TempI,this->DimensionIc);  // ic_i_w
+    this->GetBlockOfInts(in, this->TempI,this->DimensionIc);  // ic_i_e
+    this->GetBlockOfInts(in, this->TempI,this->DimensionIc);  // ic_j_s
+    this->GetBlockOfInts(in, this->TempI,this->DimensionIc);  // ic_j_n
+    this->GetBlockOfInts(in, this->TempI,this->DimensionIc);  // ic_k_b
+    this->GetBlockOfInts(in, this->TempI,this->DimensionIc);  // ic_k_t
+
+    this->GetBlockOfDoubles(in, this->TempD,this->DimensionIc);  // ic_ep_g
+    this->GetBlockOfDoubles(in, this->TempD,this->DimensionIc);  // ic_p_g
+    this->GetBlockOfDoubles(in, this->TempD,this->DimensionIc);  // ic_t_g
+
+    if (this->VersionNumber < 1.15)
+    {
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc);  // ic_t_s(1,1)
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc);  // ic_t_s(1,2)
+        // or ic_tmp
+    }
+
+    if (this->VersionNumber >= 1.04)
+        for (int i =0; i<this->NMax->GetValue(0); ++i)
+            this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_x_g
+
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_u_g
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_v_g
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_w_g
+
+    for (int lc =0; lc<this->MMAX; ++lc)
+    {
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_rop_s
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_u_s
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_v_s
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_w_s
+
+        if (this->VersionNumber >= 1.15)
+            this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_t_s
+
+        if (this->VersionNumber >= 1.04)
+            for (int n =0; n<this->NMax->GetValue(lc+1); ++n)
+                this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_x_s
+    }
+
+    // read in the "DimensionBc" variables (and ignore ... not used by ani_mfix)
+    this->TempI->Resize(this->DimensionBc);
+    this->TempD->Resize(this->DimensionBc);
+
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_x_w
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_x_e
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc y s
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc y n
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc z b
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc);  // bc z t
+    this->GetBlockOfInts(in,this->TempI,this->DimensionBc);  // bc i w
+    this->GetBlockOfInts(in,this->TempI,this->DimensionBc); // bc i e
+    this->GetBlockOfInts(in,this->TempI,this->DimensionBc); // bc j s
+    this->GetBlockOfInts(in,this->TempI,this->DimensionBc); // bc j n
+    this->GetBlockOfInts(in,this->TempI,this->DimensionBc); // bc k b
+    this->GetBlockOfInts(in,this->TempI,this->DimensionBc); // bc k t
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc ep g
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc p g
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc t g
+
+    if (VersionNumber < 1.15)
+    {
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_t_s(1,1)
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_t_s(1,1)
+        // or bc_tmp
+    }
+
+    if (VersionNumber >= 1.04)
+        for (int i =0; i<this->NMax->GetValue(0); ++i)
+            this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_x_g
+
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc u g
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc v g
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc w g
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc ro g
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_rop_g
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc volflow g
+    this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc massflow g
+
+    for (int lc =0; lc<this->MMAX; ++lc)
+    {
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc rop s
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc u s
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc v s
+
+        if (this->VersionNumber >= 1.04)
+        {
+            this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc w s
+
+            if (this->VersionNumber >= 1.15)
+                this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc t s
+            for (int n =0; n<this->NMax->GetValue(lc+1); ++n)
+                this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc x s
+        }
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc volflow s
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc massflow s
+    }
+
+    if (strcmp(this->Version,"RES = 01.00") == 0)
+    {
+        for (int lc =0; lc<10; ++lc)
+            in.read(this->DataBuffer,512); // BC TYPE
+    } else {
+        for (int lc =0; lc<this->DimensionBc; ++lc)
+            in.read(this->DataBuffer,512); // BC TYPE
+    }
+
+    // Rather than read the entire flag volume now, we're going to
+    // just skip over it and read only a single domain at a time
+    // later on.
+    //this->Flag->Resize(this->IJKMaximum2);
+    //this->GetBlockOfInts(in, this->Flag,this->IJKMaximum2);
+    strncpy(this->FlagFilename, this->RestartFileName,
+        sizeof(this->FlagFilename));
+    this->FlagFieldOffset = in.tellg();
+    this->SkipBlockOfInts(in, this->IJKMaximum2);
+
+    // DimensionIs varibles (not needed by ani_mfix)
+    this->TempI->Resize(this->DimensionIs);
+    this->TempD->Resize(this->DimensionIs);
+
+    if (this->VersionNumber >= 1.04)
+    {
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIs); // is x w
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIs); // is x e
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIs); // is y s
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIs); // is y n
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIs); // is z b
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIs); // is z t
+        this->GetBlockOfInts(in,this->TempI,this->DimensionIs); // is i w
+        this->GetBlockOfInts(in,this->TempI,this->DimensionIs); // is i e
+        this->GetBlockOfInts(in,this->TempI,this->DimensionIs); // is j s
+        this->GetBlockOfInts(in,this->TempI,this->DimensionIs); // is j n
+        this->GetBlockOfInts(in,this->TempI,this->DimensionIs); // is k b
+        this->GetBlockOfInts(in,this->TempI,this->DimensionIs); // is k t
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIs);  // is_pc(1,1)
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIs);  // is_pc(1,2)
+
+        if (this->VersionNumber >= 1.07)
+            for (int i =0; i<this->MMAX; ++i)
+                this->GetBlockOfDoubles(in,this->TempD,this->DimensionIs);//is_vel_s
+
+        for (int lc =0; lc<this->DimensionIs; ++lc)
+            in.read(this->DataBuffer,512); // is_type
+    }
+
+    if (this->VersionNumber >= 1.08)
+        in.read(this->DataBuffer,512);
+
+    if (this->VersionNumber >= 1.09)
+    {
+        in.read(this->DataBuffer,512);
+
+        if (this->VersionNumber >= 1.5)
+        {
+            this->GetInt(in,this->NumberOfSPXFilesUsed);
+            this->SkipBytes(in,508);
+        }
+
+        for (int lc =0; lc< this->NumberOfSPXFilesUsed; ++lc)
+        {
+            in.read(this->DataBuffer,512); // spx_dt
+        }
+
+        for (int lc =0; lc<this->MMAX+1; ++lc)
+        {
+            in.read(this->DataBuffer,512);    // species_eq
+        }
+
+        this->TempD->Resize(dimensionUsr);
+
+        this->GetBlockOfDoubles(in,this->TempD,dimensionUsr); // usr_dt
+        this->GetBlockOfDoubles(in,this->TempD,dimensionUsr); // usr x w
+        this->GetBlockOfDoubles(in,this->TempD,dimensionUsr); // usr x e
+        this->GetBlockOfDoubles(in,this->TempD,dimensionUsr); // usr y s
+        this->GetBlockOfDoubles(in,this->TempD,dimensionUsr); // usr y n
+        this->GetBlockOfDoubles(in,this->TempD,dimensionUsr); // usr z b
+        this->GetBlockOfDoubles(in,this->TempD,dimensionUsr); // usr z t
+
+        for (int lc =0; lc<dimensionUsr; ++lc)
+        {
+            in.read(this->DataBuffer,512);    // usr_ext etc.
+        }
+
+        this->TempD->Resize(this->DimensionIc);
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_p_star
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_l_scale
+        for (int lc =0; lc<this->DimensionIc; ++lc)
+        {
+            in.read(this->DataBuffer,512);    // ic_type
+        }
+
+        this->TempD->Resize(DimensionBc);
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_dt_0
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_jet_g0
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_dt_h
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_jet_gh
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_dt_l
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_jet_gl
+    }
+
+    if (this->VersionNumber >= 1.1)
+    {
+        in.read(this->DataBuffer,512);  // mu_gmax
+    }
+
+    if (this->VersionNumber >= 1.11)
+    {
+        in.read(this->DataBuffer,512);  // x_ex , model_b
+    }
+
+    if (this->VersionNumber >= 1.12)
+    {
+        in.read(this->DataBuffer,512);   // p_ref , etc.
+        in.read(this->DataBuffer,512);   // leq_it , leq_method
+
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_hw_g
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_uw_g
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_vw_g
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_ww_g
+
+        for (int lc =0; lc<this->MMAX; ++lc)
+        {
+            this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_hw_s
+            this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_uw_s
+            this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_vw_s
+            this->GetBlockOfDoubles(in,this->TempD,this->DimensionBc); // bc_ww_s
+        }
+    }
+
+    if (this->VersionNumber >= 1.13)
+    {
+        in.read(this->DataBuffer,512);    // momentum_x_eq , etc.
+    }
+
+    if (this->VersionNumber >= 1.14)
+    {
+        in.read(this->DataBuffer,512);    // detect_small
+    }
+
+    if (this->VersionNumber >= 1.15)
+    {
+        in.read(this->DataBuffer,512);    // k_g0 , etc.
+
+        this->TempD->Resize(this->DimensionIc);
+
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_gama_rg
+        this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_t_rg
+
+        for (int lc =0; lc<this->MMAX; ++lc)
+        {
+            this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_gama_rs
+            this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc); // ic_t_rs
+        }
+    }
+
+    if (this->VersionNumber >= 1.2)
+    {
+        in.read(this->DataBuffer,512); // norm_g , norm_s
+    }
+
+    if (this->VersionNumber >= 1.3)
+    {
+        this->GetInt(in,this->NumberOfScalars);
+        this->SkipBytes(in,sizeof(double)); // tol_resid_scalar
+
+        int DIM_tmp;
+        this->GetInt(in,DIM_tmp);
+        this->SkipBytes(in,512-sizeof(double)-2*sizeof(int));
+
+        this->TempI->Resize(DIM_tmp);
+        this->GetBlockOfInts(in,this->TempI,DIM_tmp);  // Phase4Scalar;
+    }
+
+    if (this->VersionNumber >= 1.5)
+    {
+        this->GetInt(in,this->NumberOfReactionRates);
+        this->SkipBytes(in,508);
+    }
+
+    if (this->VersionNumber >= 1.5999)
+    {
+        int tmp;
+        this->GetInt(in,tmp);
+        this->SkipBytes(in,508);
+
+        if (tmp != 0)
+        {
+            this->BkEpsilon = true;
+        }
+    }
+}
+
+vtkDataSet *
+avtMFIXFileFormat::BuildMesh(int xDomain, int yDomain, int zDomain)
+{
+    // We'll be using these to mark ghost zones
+    unsigned char vInternalGhost = 0;
+    avtGhostData::AddGhostZoneType(vInternalGhost,
+        DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+    unsigned char vExternalGhost = 0;
+    avtGhostData::AddGhostZoneType(vExternalGhost, ZONE_EXTERIOR_TO_PROBLEM);
+
+    // these are the unghosted cell index limits
+    int widths[3];
+    int offsets[3];
+    double* larrays[3];
+
+    get_limit(IMaximum2, xDomain, numXDomains, Lx, &widths[0], &offsets[0], &larrays[0]);
+    get_limit(JMaximum2, yDomain, numYDomains, Ly, &widths[1], &offsets[1], &larrays[1]);
+    get_limit(KMaximum2, zDomain, numZDomains, Lz, &widths[2], &offsets[2], &larrays[2]);
+
+    //  Cartesian type mesh
+    if ( !strcmp(this->CoordinateSystem,"CARTESIAN") && (this->KMaximum2 != 1))
+    {
+        // 3-D cartesian grid
+        vtkDoubleArray *coords[3] = {NULL,NULL,NULL};
+
+        for (int iCoord =0; iCoord<3; iCoord++) {
+            coords[iCoord] = vtkDoubleArray::New();
+            coords[iCoord]->SetNumberOfTuples(widths[iCoord]+3);
+            double* varray = (double*)(coords[iCoord]->GetVoidPointer(0));
+            double* larray = larrays[iCoord];
+            for (int i =0; i<widths[iCoord]+3; i++)
+              varray[i] = larray[i+offsets[iCoord]];
+        }
+
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+        rgrid->SetDimensions(widths[0]+3,widths[1]+3,widths[2]+3);
+        rgrid->SetXCoordinates(coords[0]);
+        coords[0]->Delete();
+        rgrid->SetYCoordinates(coords[1]);
+        coords[1]->Delete();
+        rgrid->SetZCoordinates(coords[2]);
+        coords[2]->Delete();
+
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+        ghostCells->SetName("avtGhostZones");
+        ghostCells->SetNumberOfComponents(1);
+        int totCells = (widths[0]+2)*(widths[1]+2)*(widths[2]+2);
+        ghostCells->SetNumberOfTuples(totCells);
+        unsigned char *buf = ghostCells->GetPointer(0);
+        int xLeftGhost = (xDomain ==0 ? vExternalGhost:vInternalGhost);
+        int xRightGhost = (xDomain ==numXDomains-1 ?
+            vExternalGhost:vInternalGhost);
+        int yLeftGhost = (yDomain ==0 ? vExternalGhost:vInternalGhost);
+        int yRightGhost = (yDomain ==numYDomains-1 ?
+            vExternalGhost:vInternalGhost);
+        int zLeftGhost = (zDomain ==0 ? vExternalGhost:vInternalGhost);
+        int zRightGhost = (zDomain ==numZDomains-1 ?
+            vExternalGhost:vInternalGhost);
+        for (int i =0; i<totCells; i++) buf[i] = 0;
+
+        for (int k =0; k<widths[2]+2; k++)
+            for (int j =0; j<widths[1]+2; j++) {
+                int i = 0;
+                int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                buf[index] = xLeftGhost;
+                i = widths[0]+1;
+                index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                buf[index] = xRightGhost;
+            }
+
+        for (int k =0; k<widths[2]+2; k++)
+            for (int i =0; i<widths[0]+2; i++) {
+                int j = 0;
+                int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                if (buf[index]!=vExternalGhost) buf[index] = yLeftGhost;
+                j = widths[1]+1;
+                index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                if (buf[index]!=vExternalGhost) buf[index] = yRightGhost;
+            }
+
+        for (int j =0; j<widths[1]+2; j++)
+            for (int i =0; i<widths[0]+2; i++) {
+                int k = 0;
+                int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                if (buf[index]!=vExternalGhost) buf[index] = zLeftGhost;
+                k = widths[2]+1;
+                index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                if (buf[index]!=vExternalGhost) buf[index] = zRightGhost;
+            }
+        rgrid->GetCellData()->AddArray(ghostCells);
+        ghostCells->Delete(); // held alive by ref count
+        rgrid->SetUpdateGhostLevel(0);
+
+        return rgrid;
+
+    }
+    else if (!strcmp(this->CoordinateSystem,"CARTESIAN") &&
+        (this->KMaximum2 == 1)) {
+        // 2-D cartesian grid
+
+        vtkDoubleArray *coords[3] = {NULL,NULL,NULL};
+
+        for (int iCoord =0; iCoord<2; iCoord++) {
+            coords[iCoord] = vtkDoubleArray::New();
+            coords[iCoord]->SetNumberOfTuples(widths[iCoord]+3);
+            double* varray = (double*)(coords[iCoord]->GetVoidPointer(0));
+            double* larray = larrays[iCoord];
+            for (int i =0; i<widths[iCoord]+3; i++)
+                varray[i] = larray[i+offsets[iCoord]];
+        }
+        coords[2]= vtkDoubleArray::New();
+        coords[2]->SetNumberOfTuples(1);
+        coords[2]->SetValue(0,0.0);
+
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+        rgrid->SetDimensions(widths[0]+3,widths[1]+3,1);
+        rgrid->SetXCoordinates(coords[0]);
+        coords[0]->Delete();
+        rgrid->SetYCoordinates(coords[1]);
+        coords[1]->Delete();
+        rgrid->SetZCoordinates(coords[2]);
+        coords[2]->Delete();
+
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+        ghostCells->SetName("avtGhostZones");
+        ghostCells->SetNumberOfComponents(1);
+        int totCells = (widths[0]+2)*(widths[1]+2);
+        ghostCells->SetNumberOfTuples(totCells);
+        unsigned char *buf = ghostCells->GetPointer(0);
+        int xLeftGhost = (xDomain ==0 ? vExternalGhost:vInternalGhost);
+        int xRightGhost = (xDomain ==numXDomains-1 ?
+            vExternalGhost:vInternalGhost);
+        int yLeftGhost = (yDomain ==0 ? vExternalGhost:vInternalGhost);
+        int yRightGhost = (yDomain ==numYDomains-1 ?
+            vExternalGhost:vInternalGhost);
+        for (int i =0; i<totCells; i++) buf[i] = 0;
+
+        for (int j =0; j<widths[1]+2; j++) {
+            int i = 0;
+            int index = (j)*(widths[0]+2)+i;
+            buf[index] = xLeftGhost;
+            i = widths[0]+1;
+            index = (j)*(widths[0]+2)+i;
+            buf[index] = xRightGhost;
+        }
+
+        for (int i =0; i<widths[0]+2; i++) {
+            int j = 0;
+            int index = (j)*(widths[0]+2)+i;
+            if (buf[index]!=vExternalGhost) buf[index] = yLeftGhost;
+            j = widths[1]+1;
+            index = (j)*(widths[0]+2)+i;
+            if (buf[index]!=vExternalGhost) buf[index] = yRightGhost;
+        }
+
+        rgrid->GetCellData()->AddArray(ghostCells);
+        ghostCells->Delete(); // held alive by ref count
+        rgrid->SetUpdateGhostLevel(0);
+
+        return rgrid;
+    }
+    else if (!strcmp(this->CoordinateSystem,"CYLINDRICAL") &&
+         (this->KMaximum2 == 1)) {
+        // 2-D cylindrical grid
+        vtkDoubleArray *coords[3] = {NULL,NULL,NULL};
+
+        for (int iCoord =0; iCoord<2; iCoord++) {
+            coords[iCoord] = vtkDoubleArray::New();
+            coords[iCoord]->SetNumberOfTuples(widths[iCoord]+3);
+            double* varray = (double*)(coords[iCoord]->GetVoidPointer(0));
+            double* larray = larrays[iCoord];
+            for (int i =0; i<widths[iCoord]+3; i++)
+                varray[i] = larray[i+offsets[iCoord]];
+        }
+        coords[2]= vtkDoubleArray::New();
+        coords[2]->SetNumberOfTuples(1);
+        coords[2]->SetValue(0,0.0);
+
+        vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+        vtkPoints *points = vtkPoints::New();
+        sgrid->SetPoints(points);
+        sgrid->SetDimensions(widths[0]+3,widths[1]+3,1);
+        points->Delete();
+        points->SetNumberOfPoints((widths[0]+3)*(widths[1]+3));
+        float *pts = (float*)points->GetVoidPointer(0);
+        for (int j =0; j<widths[1]+3; j++)
+            for (int i =0; i<widths[0]+3; i++) {
+                double r = coords[0]->GetValue(i);
+                double y = coords[1]->GetValue(j);
+                double theta = coords[2]->GetValue(0);
+                double x = r*cos(theta);
+                double z = -r*sin(theta);
+                *pts++= (float)x;
+                *pts++= (float)y;
+                *pts++= (float)z;
+            }
+        for (int iCoord =0; iCoord<3; iCoord++) coords[iCoord]->Delete();
+
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+        ghostCells->SetName("avtGhostZones");
+        ghostCells->SetNumberOfComponents(1);
+        int totCells = (widths[0]+2)*(widths[1]+2);
+        ghostCells->SetNumberOfTuples(totCells);
+        unsigned char *buf = ghostCells->GetPointer(0);
+        int xLeftGhost = vInternalGhost;
+        int xRightGhost = (xDomain ==numXDomains-1 ?
+            vExternalGhost:vInternalGhost);
+        int yLeftGhost = (yDomain ==0 ? vExternalGhost:vInternalGhost);
+        int yRightGhost = (yDomain ==numYDomains-1 ?
+            vExternalGhost:vInternalGhost);
+        for (int i =0; i<totCells; i++) buf[i] = 0;
+
+        for (int j =0; j<widths[1]+2; j++) {
+            int i = 0;
+            int index = (j)*(widths[0]+2)+i;
+            buf[index] = xLeftGhost;
+            i = widths[0]+1;
+            index = (j)*(widths[0]+2)+i;
+            buf[index] = xRightGhost;
+        }
+
+        for (int i =0; i<widths[0]+2; i++) {
+            int j = 0;
+            int index = (j)*(widths[0]+2)+i;
+            if (buf[index]!=vExternalGhost) buf[index] = yLeftGhost;
+            j = widths[1]+1;
+            index = (j)*(widths[0]+2)+i;
+            if (buf[index]!=vExternalGhost) buf[index] = yRightGhost;
+        }
+
+        sgrid->GetCellData()->AddArray(ghostCells);
+        ghostCells->Delete(); // held alive by ref count
+        sgrid->SetUpdateGhostLevel(0);
+
+        return sgrid;
+    } else {
+        // 3-D cylindrical grid
+        vtkDoubleArray *coords[3] = {NULL,NULL,NULL};
+
+        for (int iCoord =0; iCoord<3; iCoord++) {
+            coords[iCoord] = vtkDoubleArray::New();
+            coords[iCoord]->SetNumberOfTuples(widths[iCoord]+3);
+            double* varray = (double*)(coords[iCoord]->GetVoidPointer(0));
+            double* larray = larrays[iCoord];
+            for (int i =0; i<widths[iCoord]+3; i++)
+                varray[i] = larray[i+offsets[iCoord]];
+        }
+
+        vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+        vtkPoints *points = vtkPoints::New();
+        sgrid->SetPoints(points);
+        sgrid->SetDimensions(widths[0]+3,widths[1]+3,widths[2]+3);
+        points->Delete();
+        points->SetNumberOfPoints((widths[0]+3)*(widths[1]+3)*(widths[2]+3));
+        float *pts = (float*)points->GetVoidPointer(0);
+        for (int k =0; k<widths[2]+3; k++)
+            for (int j =0; j<widths[1]+3; j++)
+                for (int i =0; i<widths[0]+3; i++) {
+                    double r = coords[0]->GetValue(i);
+                    double y = coords[1]->GetValue(j);
+                    double theta = coords[2]->GetValue(k);
+                    double x = r*cos(theta);
+                    double z = -r*sin(theta);
+                    *pts++= (float)x;
+                    *pts++= (float)y;
+                    *pts++= (float)z;
+                }
+        for (int iCoord =0; iCoord<3; iCoord++) coords[iCoord]->Delete();
+
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+        ghostCells->SetName("avtGhostZones");
+        ghostCells->SetNumberOfComponents(1);
+        int totCells = (widths[0]+2)*(widths[1]+2)*(widths[2]+2);
+        ghostCells->SetNumberOfTuples(totCells);
+        unsigned char *buf = ghostCells->GetPointer(0);
+        int xLeftGhost = vInternalGhost;
+        int xRightGhost = (xDomain ==numXDomains-1 ?
+            vExternalGhost:vInternalGhost);
+        int yLeftGhost = (yDomain ==0 ? vExternalGhost:vInternalGhost);
+        int yRightGhost = (yDomain ==numYDomains-1 ?
+            vExternalGhost:vInternalGhost);
+        int zLeftGhost = vInternalGhost;
+        int zRightGhost = vInternalGhost;
+        for (int i =0; i<totCells; i++) buf[i] = 0;
+
+        for (int k =0; k<widths[2]+2; k++)
+            for (int j =0; j<widths[1]+2; j++) {
+                int i = 0;
+                int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                buf[index] = xLeftGhost;
+                i = widths[0]+1;
+                index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                buf[index] = xRightGhost;
+            }
+
+        for (int k =0; k<widths[2]+2; k++)
+            for (int i =0; i<widths[0]+2; i++) {
+                int j = 0;
+                int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                if (buf[index]!=vExternalGhost) buf[index] = yLeftGhost;
+                j = widths[1]+1;
+                index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                if (buf[index]!=vExternalGhost) buf[index] = yRightGhost;
+            }
+
+        for (int j =0; j<widths[1]+2; j++)
+            for (int i =0; i<widths[0]+2; i++) {
+                int k = 0;
+                int index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                if (buf[index]!=vExternalGhost) buf[index] = zLeftGhost;
+                k = widths[2]+1;
+                index = (k*(widths[1]+2)+j)*(widths[0]+2)+i;
+                if (buf[index]!=vExternalGhost) buf[index] = zRightGhost;
+            }
+        sgrid->GetCellData()->AddArray(ghostCells);
+        ghostCells->Delete(); // held alive by ref count
+        sgrid->SetUpdateGhostLevel(0);
+
+        return sgrid;
+    }
+}
+
+void avtMFIXFileFormat::RestartVersionNumber(const char* buffer)
+{
+    char s1[512];
+    char s2[512];
+    sscanf(buffer,"%s %s %f", s1, s2, &this->VersionNumber);
+    strncpy(this->Version, buffer, 100);
+}
+
+void avtMFIXFileFormat::GetInt(istream& in, int &val)
+{
+    in.read( (char*)&val,sizeof(int));
+    this->SwapInt(val);
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::SwapInt(int &value)
+{
+    if (this->SwapByteOrder) {
+        static char Swapped[4];
+        int * Addr = &value;
+        Swapped[0] =*((char*)Addr+3);
+        Swapped[1] =*((char*)Addr+2);
+        Swapped[2] =*((char*)Addr+1);
+        Swapped[3] =*((char*)Addr  );
+        value = *(reinterpret_cast<int*>(Swapped));
+    }
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::SwapDouble(double &value)
+{
+    if (this->SwapByteOrder) {
+        static char Swapped[8];
+        double * Addr = &value;
+
+        Swapped[0] =*((char*)Addr+7);
+        Swapped[1] =*((char*)Addr+6);
+        Swapped[2] =*((char*)Addr+5);
+        Swapped[3] =*((char*)Addr+4);
+        Swapped[4] =*((char*)Addr+3);
+        Swapped[5] =*((char*)Addr+2);
+        Swapped[6] =*((char*)Addr+1);
+        Swapped[7] =*((char*)Addr  );
+        value = *(reinterpret_cast<double*>(Swapped));
+    }
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::SwapFloat(float &value)
+{
+    if (this->SwapByteOrder) {
+        static char Swapped[4];
+        float * Addr = &value;
+
+        Swapped[0] =*((char*)Addr+3);
+        Swapped[1] =*((char*)Addr+2);
+        Swapped[2] =*((char*)Addr+1);
+        Swapped[3] =*((char*)Addr  );
+        value = *(reinterpret_cast<float*>(Swapped));
+    }
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::GetDouble(istream& in, double& val)
+{
+    in.read( (char*)&val,sizeof(double));
+    this->SwapDouble(val);
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::SkipBytes(istream& in, int n)
+{
+    in.read(this->DataBuffer,n); // maybe seekg instead
+}
+
+// Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:23:40 EST 2010
+//   Make sure we don't hit EOF prematurely.
+//
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::GetBlockOfDoubles(istream& in, vtkDoubleArray *v, int n)
+{
+    const int numberOfDoublesInBlock = 512/sizeof(double);
+    double tempArray[numberOfDoublesInBlock];
+    int numberOfRecords;
+
+    if ( n%numberOfDoublesInBlock == 0)
+        numberOfRecords = n/numberOfDoublesInBlock;
+    else
+        numberOfRecords = 1 + n/numberOfDoublesInBlock;
+
+    int c = 0;
+    for (int i =0; i<numberOfRecords; ++i) {
+        in.read( (char*)&tempArray , 512 );
+        if (!in)
+            EXCEPTION1(InvalidFilesException, "unknown");
+        for (int j =0; j<numberOfDoublesInBlock; ++j) {
+            if (c < n) {
+                double temp = tempArray[j];
+                this->SwapDouble(temp);
+                v->InsertValue( c, temp);
+                ++c;
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+// Modifications:
+//   Jeremy Meredith, Thu Jan  7 12:23:40 EST 2010
+//   Make sure we don't hit EOF prematurely.
+//
+void avtMFIXFileFormat::GetBlockOfInts(istream& in, vtkIntArray *v, int n)
+{
+    const int numberOfIntsInBlock = 512/sizeof(int);
+    int tempArray[numberOfIntsInBlock];
+    int numberOfRecords;
+
+    if ( n%numberOfIntsInBlock == 0)
+        numberOfRecords = n/numberOfIntsInBlock;
+    else
+        numberOfRecords = 1 + n/numberOfIntsInBlock;
+
+    int c = 0;
+    for (int i = 0; i < numberOfRecords; ++i) {
+        in.read( (char*)&tempArray , 512 );
+        if (!in)
+            EXCEPTION1(InvalidFilesException, "unknown");
+        for (int j =0; j<numberOfIntsInBlock; ++j) {
+            if (c < n) {
+                int temp = tempArray[j];
+                this->SwapInt(temp);
+                v->InsertValue( c, temp);
+                ++c;
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+// Added by Joel Welling 20100629.  GetBlockOfInts was being used
+// to skip over file space; better to avoid the IO.
+//   Jeremy Meredith, Thu Jan  7 12:23:40 EST 2010
+//   Make sure we don't hit EOF prematurely.
+//
+void avtMFIXFileFormat::SkipBlockOfInts(istream& in, int n)
+{
+    const int numberOfIntsInBlock = 512/sizeof(int);
+    int tempArray[numberOfIntsInBlock];
+    int numberOfRecords;
+
+    if ( n%numberOfIntsInBlock == 0)
+        numberOfRecords = n/numberOfIntsInBlock;
+    else
+        numberOfRecords = 1 + n/numberOfIntsInBlock;
+    in.seekg(512*numberOfRecords,ios::cur);
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::CreateVariableNames()
+{
+    char fileName[256];
+    int cnt = 0;
+    char uString[120];
+    char vString[120];
+    char wString[120];
+    char svString[120];
+    char tempString[120];
+    char ropString[120];
+    char temperatureString[120];
+    char variableString[120];
+
+    for (int i =0; i<this->NumberOfSPXFilesUsed; ++i) {
+        make_fn(fileName, i + 1);
+
+#ifdef _WIN32
+        ifstream in(fileName,ios::binary);
+#else
+        ifstream in(fileName);
+#endif
+        if (in) // file exists
+        {
+            this->SpxFileExists->InsertValue(i, 1);
+
+            switch (i+1) {
+
+            case 1:
+                this->VariableNames->InsertValue(cnt++,"EP_g");
+                this->VariableIndexToSPX->InsertValue(cnt-1, 1);
+                this->VariableComponents->InsertValue(cnt-1, 1);
+                break;
+
+            case 2:
+                this->VariableNames->InsertValue(cnt++,"P_g");
+                this->VariableIndexToSPX->InsertValue(cnt-1, 2);
+                this->VariableComponents->InsertValue(cnt-1, 1);
+                this->VariableNames->InsertValue(cnt++,"P_star");
+                this->VariableIndexToSPX->InsertValue(cnt-1, 2);
+                this->VariableComponents->InsertValue(cnt-1, 1);
+                break;
+
+            case 3:
+                this->VariableNames->InsertValue(cnt++,"U_g");
+                this->VariableIndexToSPX->InsertValue(cnt-1, 3);
+                this->VariableComponents->InsertValue(cnt-1, 1);
+                this->VariableNames->InsertValue(cnt++,"V_g");
+                this->VariableIndexToSPX->InsertValue(cnt-1, 3);
+                this->VariableComponents->InsertValue(cnt-1, 1);
+                this->VariableNames->InsertValue(cnt++,"W_g");
+                this->VariableIndexToSPX->InsertValue(cnt-1, 3);
+                this->VariableComponents->InsertValue(cnt-1, 1);
+                this->VariableNames->InsertValue(cnt++,"Gas Velocity");
+                this->VariableIndexToSPX->InsertValue(cnt-1, 3);
+                this->VariableComponents->InsertValue(cnt-1, 3);
+                break;
+
+            case 4:
+                for (int j =0; j<this->MMAX; ++j) {
+                    for(int k =0;k<(int)sizeof(uString);k++)
+                        uString[k] =0;
+                    for(int k =0;k<(int)sizeof(vString);k++)
+                        vString[k] =0;
+                    for(int k =0;k<(int)sizeof(wString);k++)
+                        wString[k] =0;
+                    for(int k =0;k<(int)sizeof(svString);k++)
+                        svString[k] =0;
+                    strcpy(uString, "U_s_");
+                    strcpy(vString, "V_s_");
+                    strcpy(wString, "W_s_");
+                    strcpy(svString, "Solids_Velocity_");
+                    sprintf(tempString, "%d", j+1);
+                    strcat(uString, tempString);
+                    strcat(vString, tempString);
+                    strcat(wString, tempString);
+                    strcat(svString, tempString);
+                    this->VariableNames->InsertValue(cnt++, uString);
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 4);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+
+                    this->VariableNames->InsertValue(cnt++, vString);
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 4);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+
+                    this->VariableNames->InsertValue(cnt++, wString);
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 4);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+
+                    this->VariableNames->InsertValue(cnt++, svString);
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 4);
+                    this->VariableComponents->InsertValue(cnt-1, 3);
+                }
+                break;
+
+            case 5:
+                for (int j =0; j<this->MMAX; ++j) {
+                    for(int k =0;k<(int)sizeof(ropString);k++)
+                        ropString[k] =0;
+                    strcpy(ropString, "ROP_s_");
+                    sprintf(tempString, "%d", j+1);
+                    strcat(ropString, tempString);
+                    this->VariableNames->InsertValue(cnt++, ropString);
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 5);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+                }
+                break;
+
+            case 6:
+                this->VariableNames->InsertValue(cnt++, "T_g");
+                this->VariableIndexToSPX->InsertValue(cnt-1, 6);
+                this->VariableComponents->InsertValue(cnt-1, 1);
+
+                if (this->VersionNumber <= 1.15) {
+                    this->VariableNames->InsertValue(cnt++, "T_s_1");
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 6);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+
+                    if (this->MMAX > 1) {
+                        this->VariableNames->InsertValue(cnt++, "T_s_2");
+                        this->VariableIndexToSPX->InsertValue(cnt-1, 6);
+                        this->VariableComponents->InsertValue(cnt-1, 1);
+                    } else {
+                        this->VariableNames->InsertValue(cnt++, "T_s_2_not_used");
+                        this->VariableIndexToSPX->InsertValue(cnt-1, 6);
+                        this->VariableComponents->InsertValue(cnt-1, 1);
+                    }
+                } else {
+                    for (int j =0; j<this->MMAX; ++j) {
+                        for(int k =0;k<(int)sizeof(temperatureString);k++)
+                            temperatureString[k] =0;
+                        strcpy(temperatureString, "T_s_");
+                        sprintf(tempString, "%d", j+1);
+                        strcat(temperatureString, tempString);
+                        this->VariableNames->InsertValue(cnt++, temperatureString);
+                        this->VariableIndexToSPX->InsertValue(cnt-1, 6);
+                        this->VariableComponents->InsertValue(cnt-1, 1);
+                    }
+                }
+                break;
+
+            case 7:
+                for (int j =0; j<this->NMax->GetValue(0); ++j) {
+                    for (int k =0;k<(int)sizeof(variableString);k++)
+                        variableString[k] =0;
+                    strcpy(variableString, "X_g_");
+                    sprintf(tempString, "%d", j+1);
+                    strcat(variableString, tempString);
+                    this->VariableNames->InsertValue(cnt++, variableString);
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 7);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+                }
+
+                for (int m =1; m<=this->MMAX; ++m) {
+                    for (int j =0; j<this->NMax->GetValue(m); ++j) {
+                        char tempString1[120];
+                        char tempString2[120];
+                        for (int k =0;k<(int)sizeof(variableString);k++)
+                            variableString[k] =0;
+                        strcpy(variableString, "X_s_");
+                        sprintf(tempString1, "%d", m);
+                        sprintf(tempString2, "%d", j+1);
+                        strcat(variableString, tempString1);
+                        strcat(variableString, "_");
+                        strcat(variableString, tempString2);
+                        this->VariableNames->InsertValue(cnt++, variableString);
+                        this->VariableIndexToSPX->InsertValue(cnt-1, 7);
+                        this->VariableComponents->InsertValue(cnt-1, 1);
+                    }
+                }
+                break;
+
+            case 8:
+                for (int j =0; j<MMAX; ++j) {
+                    for (int k =0;k<(int)sizeof(variableString);k++)
+                        variableString[k] =0;
+                    strcpy(variableString, "Theta_m_");
+                    sprintf(tempString, "%d", j+1);
+                    strcat(variableString, tempString);
+                    this->VariableNames->InsertValue(cnt++, variableString);
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 8);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+                }
+                break;
+
+            case 9:
+                for (int j =0; j<this->NumberOfScalars; ++j) {
+                    for(int k =0;k<(int)sizeof(variableString);k++)
+                        variableString[k] =0;
+                    strcpy(variableString, "Scalar_");
+                    sprintf(tempString, "%d", j+1);
+                    strcat(variableString, tempString);
+                    this->VariableNames->InsertValue(cnt++, variableString);
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 9);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+                }
+                break;
+
+            case 10:
+                for (int j =0; j<this->NumberOfReactionRates; ++j) {
+                    for (int k =0;k<(int)sizeof(variableString);k++)
+                        variableString[k] =0;
+                    strcpy(variableString, "RRates_");
+                    sprintf(tempString, "%d", j+1);
+                    strcat(variableString, tempString);
+                    this->VariableNames->InsertValue(cnt++, variableString);
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 10);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+                }
+                break;
+
+            case 11:
+                if (BkEpsilon) {
+                    this->VariableNames->InsertValue(cnt++, "k_turb_g");
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 11);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+                    this->VariableNames->InsertValue(cnt++, "e_turb_g");
+                    this->VariableIndexToSPX->InsertValue(cnt-1, 11);
+                    this->VariableComponents->InsertValue(cnt-1, 1);
+                }
+                break;
+            default:
+                cout << "unknown SPx file : " << i << "\n";
+                break;
+            }
+        }
+        else
+        {
+            this->SpxFileExists->InsertValue(i, 0);
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::GetTimeSteps()
+{
+    int nextRecord, numberOfRecords;
+    char fileName[256];
+    int cnt = 0;
+
+    for (int i = 0; i < this->NumberOfSPXFilesUsed; ++i) {
+        make_fn(fileName, i + 1);
+
+#ifdef _WIN32
+        ifstream in(fileName , ios::binary);
+#else
+        ifstream in(fileName);
+#endif
+
+        int numberOfVariables =0;
+        if (in) // file exists
+        {
+            in.clear();
+            in.seekg( 1024, ios::beg );
+            in.read( (char*)&nextRecord,sizeof(int) );
+            this->SwapInt(nextRecord);
+            in.read( (char*)&numberOfRecords,sizeof(int) );
+            this->SwapInt(numberOfRecords);
+
+            switch (i+1) {
+            case 1:
+                numberOfVariables = 1;
+                break;
+            case 2:
+                numberOfVariables = 2;
+                break;
+            case 3:
+                numberOfVariables = 4;
+                break;
+            case 4:
+                numberOfVariables = 4*this->MMAX;
+                break;
+            case 5:
+                numberOfVariables = this->MMAX;
+                break;
+            case 6:
+                if (this->VersionNumber <= 1.15)
+                    numberOfVariables = 3;
+                else
+                    numberOfVariables = this->MMAX + 1;
+                break;
+            case 7:
+                numberOfVariables = this->NMax->GetValue(0);
+                for (int m =1; m<=this->MMAX; ++m)
+                    numberOfVariables += this->NMax->GetValue(m);
+                break;
+            case 8:
+                numberOfVariables = this->MMAX;
+                break;
+            case 9:
+                numberOfVariables = this->NumberOfScalars;
+                break;
+            case 10:
+                numberOfVariables = this->NumberOfReactionRates;
+                break;
+            case 11:
+                if (this->BkEpsilon)
+                    numberOfVariables = 2;
+                break;
+            }
+
+            for(int j =0; j<numberOfVariables; j++) {
+                this->VariableTimesteps->InsertValue(cnt,
+                    (nextRecord-4)/numberOfRecords);
+                cnt++;
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::CalculateMaxTimeStep()
+{
+    this->MaximumTimestep = 0;
+    for ( int i =0; i <= this->VariableNames->GetMaxId(); i++ )
+        if (this->VariableTimesteps->GetValue(i) > this->MaximumTimestep)
+            this->MaximumTimestep = this->VariableTimesteps->GetValue(i);
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::MakeTimeStepTable(int numberOfVariables)
+{
+    this->VariableTimestepTable->SetNumberOfComponents(numberOfVariables);
+
+    for(int i =0; i<numberOfVariables; i++) {
+        int timestepIncrement = (int)((float)this->MaximumTimestep/
+            (float)this->VariableTimesteps->GetValue(i) + 0.5);
+        int timestep = 1;
+        for (int j =0; j<this->MaximumTimestep; j++) {
+            this->VariableTimestepTable->InsertComponent(j, i, timestep);
+            timestepIncrement--;
+            if (timestepIncrement <= 0) {
+                timestepIncrement = (int)((float)this->MaximumTimestep/
+                    (float)this->VariableTimesteps->GetValue(i) + 0.5);
+                timestep++;
+            }
+            if (timestep > this->VariableTimesteps->GetValue(i))
+                timestep = this->VariableTimesteps->GetValue(i);
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::GetNumberOfVariablesInSPXFiles()
+{
+    int NumberOfVariablesInSPX = 0;
+    int skip = 0;
+
+    //initialize VariablesToSkipTable to 0
+    //for windows
+    for(int i =0;i<this->VariableNames->GetMaxId()+1;i++) {
+        this->VariableToSkipTable->InsertValue(i,0);
+    }
+
+    for (int j =1; j<this->NumberOfSPXFilesUsed; j++) {
+        for(int i =0;i<this->VariableNames->GetMaxId()+1;i++) {
+            if ((this->VariableIndexToSPX->GetValue(i) == j)
+                && (this->VariableComponents->GetValue(i) == 1)) {
+                NumberOfVariablesInSPX++;
+                this->VariableToSkipTable->InsertValue(i,skip);
+                skip++;
+            }
+        }
+        this->SPXToNVarTable->InsertValue(j, NumberOfVariablesInSPX);
+        NumberOfVariablesInSPX = 0;
+        skip = 0;
+    }
+}
+
+//----------------------------------------------------------------------------
+void avtMFIXFileFormat::MakeSPXTimeStepIndexTable(int nvars)
+{
+
+    int timestep;
+    int spx;
+    int NumberOfVariablesInSPX;
+
+    for (int i =0; i<nvars; i++) {
+        for (int j =0; j<this->MaximumTimestep; j++) {
+            timestep = (int) this->VariableTimestepTable->GetComponent(j, i);
+            spx = this->VariableIndexToSPX->GetValue(i);
+            NumberOfVariablesInSPX = this->SPXToNVarTable->GetValue(spx);
+            int skip = this->VariableToSkipTable->GetValue(i);
+            long long index = ((long long)3*(long long)512)
+                + ((long long)timestep-(long long)1) *
+                (((long long)NumberOfVariablesInSPX
+                  *(long long)this->SPXRecordsPerTimestep*(long long)512)
+                 +(long long)512)
+                +(long long)512
+                + ((long long)skip
+                *(long long)this->SPXRecordsPerTimestep*(long long)512);
+            int ind = (i*this->MaximumTimestep) + j;
+            SPXTimestepIndexTable->InsertValue(ind, index);
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+//  Modifications:
+//    Jeremy Meredith, Thu Jan  7 13:42:21 EST 2010
+//    Added an error check.
+//
+void avtMFIXFileFormat::GetAllTimesTweaked(void)
+{
+    int max = 0;
+    int maxVar = 0;
+
+    for(int j =0; j<=this->VariableNames->GetMaxId(); j++) {
+        int n = this->VariableTimesteps->GetValue(j);
+        if (n > max) {
+            max = n;
+            maxVar = j;
+        }
+    }
+
+    char fileName[256];
+    make_fn(fileName, maxVar + 1);
+
+#ifdef _WIN32
+    FILE* tfile = fopen(fileName,"rb");
+#else
+    ifstream tfile(fileName);
+#endif
+
+    if (this->VariableIndexToSPX->GetNumberOfTuples() <= maxVar)
+        EXCEPTION1(InvalidFilesException, this->RestartFileName);
+
+    int tmpval = this->VariableIndexToSPX->GetValue(maxVar);
+    if (this->SPXToNVarTable->GetNumberOfTuples() <= tmpval)
+        EXCEPTION1(InvalidFilesException, this->RestartFileName);
+
+    int numberOfVariablesInSPX = this->SPXToNVarTable->GetValue(tmpval);
+
+    int offset = 512-(int)sizeof(float) +
+        512*(numberOfVariablesInSPX*SPXRecordsPerTimestep);
+#ifdef _WIN32
+    fseek( tfile, 3*512, SEEK_SET ); // first time
+#else
+    tfile.seekg( 3*512, ios::beg ); // first time
+#endif
+    float time;
+
+    for (int i = 0; i < this->NumberOfTimeSteps; i++) {
+#ifdef _WIN32
+        fread( (char*)&time , sizof(float) , 1 , tfile );
+#else
+        tfile.read( (char*)&time,sizeof(float) );
+#endif
+        SwapFloat(time);
+        times.push_back(time);
+#ifdef _WIN32
+        _fseeki64(tfile,offset,SEEK_CUR);
+#else
+        tfile.seekg(offset,ios::cur);
+#endif
+    }
+
+#ifdef _WIN32
+    fclose( tfile );
+#else
+    tfile.close();
+#endif
+}
+
+void
+avtMFIXFileFormat::GetSubBlock(void *buf, const char *fname, DataType datatype,
+    long long startOffsetBytes, int startSkipVals,
+    int xVals, int xStrideVals, int yVals, int yStrideVals, int zVals)
+{
+    if (!this->GSB_file || strcmp(fname,this->GSB_currentFname)) {
+        if (this->GSB_file) {
+            fclose(this->GSB_file);
+            this->GSB_file = NULL;
+            free(this->GSB_currentFname);
+            this->GSB_currentFname = NULL;
+        }
+        this->GSB_file = fopen(fname,"r");
+        if (!this->GSB_file)
+            EXCEPTION1(InvalidFilesException,fname);
+        this->GSB_currentFname = strdup(fname);
+    }
+
+    int wordSize = 0;
+    switch (datatype)
+    {
+    case DATATYPE_INT: wordSize = sizeof(int); break;
+    case DATATYPE_FLOAT: wordSize = sizeof(float); break;
+    case DATATYPE_DOUBLE: wordSize = sizeof(double); break;
+    case DATATYPE_CHAR: wordSize = sizeof(char); break;
+    default: EXCEPTION2(UnexpectedValueException,"datatype",(int)datatype);
+    }
+
+    fseek( this->GSB_file,
+           startOffsetBytes + wordSize*startSkipVals,
+           SEEK_SET );
+
+
+    void* runner = buf;
+    for (int k =0; k<zVals; k++) {
+        for (int j =0; j<yVals; j++) {
+            fread(runner, wordSize, xVals, this->GSB_file);
+            runner = (void*)((char*)runner + wordSize*xVals);
+            fseek( this->GSB_file, (xStrideVals-xVals)*wordSize, SEEK_CUR );
+        }
+        fseek( this->GSB_file, (yStrideVals-yVals)*xStrideVals*wordSize,
+            SEEK_CUR );
+    }
+
+    if (this->SwapByteOrder)
+        switch (datatype) {
+        case DATATYPE_INT: {
+            int* p = (int*)buf;
+            for (int i =0; i<xVals*yVals*zVals; i++)
+                SwapInt(p[i]);
+            break;
+            }
+        case DATATYPE_FLOAT: {
+            float* p = (float*)buf;
+            for (int i =0; i<xVals*yVals*zVals; i++)
+                SwapFloat(p[i]);
+            break;
+        }
+        case DATATYPE_DOUBLE: {
+            double* p = (double*)buf;
+            for (int i =0; i<xVals*yVals*zVals; i++)
+                SwapDouble(p[i]);
+            break;
+        }
+        case DATATYPE_CHAR: {
+            // do nothing
+            break;
+        }
+        default:
+            EXCEPTION2(UnexpectedValueException,"datatype",(int)datatype);
+        }
 }

@@ -49,7 +49,12 @@
 #include <vectortypes.h>
 
 class DBOptionsAttributes;
+class vtkDoubleArray;
+class vtkFloatArray;
+class vtkIntArray;
+class vtkLongLongArray;
 class vtkMFIXReader;
+class vtkStringArray;
 class vtkUnstructuredGrid;
 
 // ****************************************************************************
@@ -72,41 +77,202 @@ class vtkUnstructuredGrid;
 
 class avtMFIXFileFormat : public avtMTMDFileFormat
 {
-  public:
-                       avtMFIXFileFormat(const char *, DBOptionsAttributes *);
-    virtual           ~avtMFIXFileFormat();
+ public:
+     avtMFIXFileFormat(const char *, DBOptionsAttributes *);
+     virtual               ~avtMFIXFileFormat();
 
-    virtual int            GetNTimesteps(void);
+     virtual int            GetNTimesteps(void);
 
-    virtual void           GetTimes(doubleVector &_times);
+     virtual void           GetTimes(doubleVector &_times);
 
-    virtual const char    *GetType(void)   { return "MFIX"; };
-    virtual void           FreeUpResources(void); 
+     virtual const char    *GetType(void)   { return "MFIX"; };
+     virtual void           FreeUpResources(void);
 
-    virtual vtkDataSet    *GetMesh(int, int, const char *);
-    virtual vtkDataArray  *GetVar(int, int, const char *);
-    virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+     virtual vtkDataSet    *GetMesh(int, int, const char *);
+     virtual vtkDataArray  *GetVar(int, int, const char *);
+     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+     virtual void          *GetAuxiliaryData(const char *, int, int,
+                                const char *, void *, DestructorFunction &);
 
+     int                    get_var_index(const char *);
+     void                   make_fn(char *, int);
 
+ protected:
 
-  protected:
+     enum DataType {
+         DATATYPE_INT,
+         DATATYPE_FLOAT,
+         DATATYPE_DOUBLE,
+         DATATYPE_CHAR
+     };
 
-    virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+     virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
-  private:
+ private:
+     void               ReadInformation(void);
+     void               SetUp(void);
+     void               ReadRestartFile(void);
+     vtkDataSet*        BuildMesh(int xDomain, int yDomain, int zDomain);
+     void               RestartVersionNumber(const char* buffer);
+     void               GetInt(istream& in, int &val);
+     void               GetDouble(istream& in, double& val);
+     void               SkipBytes(istream& in, int n);
+     void               SwapDouble(double &value);
+     void               SwapFloat(float &value);
+     void               SwapInt(int &value);
+     void               GetBlockOfDoubles(istream& in, vtkDoubleArray *v, int n);
+     void               GetBlockOfInts(istream& in, vtkIntArray *v, int n);
+     void               SkipBlockOfInts(istream& in, int n);
+     void               CreateVariableNames(void);
+     void               GetTimeSteps(void);
+     void               CalculateMaxTimeStep(void);
+     void               MakeTimeStepTable(int nvars);
+     void               GetNumberOfVariablesInSPXFiles(void);
+     void               MakeSPXTimeStepIndexTable(int nvars);
+     void               GetAllTimesTweaked(void);
+     void               GetSubBlock(void * buf, const char *fname,
+                            DataType dataType,
+                            long long startOffsetBytes,
+                            int startSkipVals,
+                            int xVals, int xStrideVals,
+                            int yVals, int yStrideVals,
+                            int zVals);
 
-    void                 ReadInData(void);
-    void                 ReadInformation(void);
-    void                 SetUpReader(void);
+     void               CalcDomainBreakdown2D(long targetDomains,
+                            int cellsX, int cellsY, int* nX, int* nY);
+     void               CalcDomainBreakdown3D(long targetDomains,
+                            int cellsX, int cellsY, int cellsZ,
+                            int* nX, int* nY, int* nZ);
+     void               decompose_domains(int, int *, int *, int *);
+     void               get_limit(int, int, int, vtkDoubleArray *,
+                            int *, int *, double **);
 
-    char                 RestartFileName[256];
-    doubleVector         times;
-    stringVector         variables;
-    bool                 readInData;
-    bool                 readInformation;
-    bool                 fileBigEndian;
+     char*              GSB_currentFname;
+     FILE*              GSB_file;
+     int                SwapByteOrder;
+     char               RestartFileName[256];
+     doubleVector       times;
+     stringVector       variables;
+     bool               readInData;
+     bool               readInformation;
+     bool               fileBigEndian;
+     bool               setupCompleteFlag;
+     int                numDomainsPerProc;
+     int                numXDomains;
+     int                numYDomains;
+     int                numZDomains;
 
-    vtkMFIXReader *reader;
+     int                par_rank;
+     int                par_size;
+
+     // The following have been incorporated from vtkMFIXReader.
+     char               DataBuffer[513];
+     char               Version[120];
+     float              VersionNumber;
+     int                IMinimum1;
+     int                JMinimum1;
+     int                KMinimum1;
+     int                IMaximum;
+     int                JMaximum;
+     int                KMaximum;
+     int                IMaximum1;
+     int                JMaximum1;
+     int                KMaximum1;
+     int                IMaximum2;
+     int                JMaximum2;
+     int                KMaximum2;
+     int                IJMaximum2;
+     int                IJKMaximum2;
+     int                MMAX;
+     int                TimeStep;
+     //int ActualTimeStep;
+     int                CurrentTimeStep;
+     int                NumberOfTimeSteps;
+     int               *TimeSteps;
+     int                TimeStepRange[2];
+     int                TimeStepWasReadOnce;
+     double             DeltaTime;
+     double             XMinimum;
+     double             XLength;
+     double             YLength;
+     double             ZLength;
+     int                DimensionIc;
+     int                DimensionBc;
+     int                DimensionC;
+     int                DimensionIs;
+     double             Ce;
+     double             Cf;
+     double             Phi;
+     double             PhiW;
+     char               CoordinateSystem[17];
+     char               Units[17];
+     int                NumberOfSPXFilesUsed;
+     int                NumberOfScalars;
+     int                NumberOfReactionRates;
+     bool               BkEpsilon;
+     int                MaximumTimestep;       // maximum timesteps amongst
+                                               // the variables
+     int                SPXRecordsPerTimestep; // number of records in a single
+                                               // timestep for a variable
+     char               FlagFilename[256];     // What file are the flags in?
+     streampos          FlagFieldOffset;       // Where in the flag file is
+                                               // that array?
+
+     vtkIntArray       *NMax;                  // Array to hold number of
+                                               // species per phase
+     vtkDoubleArray    *C;                     // Array used to parse restart
+                                               // file
+     vtkDoubleArray    *Dx;                    // Cell widths in x axis
+     vtkDoubleArray    *Lx;                    // Integral of Dx
+     vtkDoubleArray    *Dy;                    // Cell widths in y axis
+     vtkDoubleArray    *Ly;                    // Integral of Ly
+     vtkDoubleArray    *Dz;                    // Cell widths in z axis
+     vtkDoubleArray    *Lz;                    // Integral of Lz
+     vtkDoubleArray    *TempD;                 // Array used to parse restart
+                                               // file
+     vtkIntArray       *TempI;                 // Array used to parse restart
+                                               // file
+     vtkIntArray       *SpxFileExists;         // Array for keeping track of
+                                               // what spx files exist.
+     vtkStringArray    *VariableNames;
+     vtkIntArray       *VariableComponents;
+     vtkIntArray       *VariableIndexToSPX;    // This gives the spx file number
+                                               // for the particular variable.
+     vtkIntArray       *VariableTimesteps;     // number of timesteps for each
+                                               // variable
+     vtkIntArray       *VariableTimestepTable; // Since the number of timesteps
+                                               // vary between variables
+                                               //  this is a table that looks
+                                               //  up the appropriate timestep
+                                               // for the particular variable.
+     vtkIntArray       *VariableToSkipTable;   // skip value for each variable,
+                                               // this is needed in spx files
+                                               // with more than one variable.
+     vtkIntArray       *SPXToNVarTable;        // number of variables in each
+                                               // spx file
+     vtkLongLongArray  *SPXTimestepIndexTable; // This a table look up for the
+                                               //  index into a file for a
+                                               //  certain variable.
+
+#if 0
+     void                 ReadInData(void);
+     void                 GetBlockOfFloats(istream& in, vtkFloatArray *v,
+         int n);
+     vtkIntArray *Flag;            // Cell Flag array
+     vtkFloatArray **CellDataArray; // Arrays for variables that will
+     //attach to mesh
+     vtkPoints *Points;            // Points array for building grid
+     vtkUnstructuredGrid *FluidMesh;    // Unstructured Grid
+     vtkUnstructuredGrid *InletMesh;    // Unstructured Grid
+     vtkUnstructuredGrid *OutletMesh;    // Unstructured Grid
+     vtkUnstructuredGrid *ObstructionMesh;    // Unstructured Grid
+     vtkHexahedron *AHexahedron;   // Hexahedron type cell
+     vtkWedge *AWedge;             // Wedge type cell
+     vtkQuad *AQuad;               // Quad type cell
+
+     char FileExtension[15];
+     char RunName[256]; */
+#endif
 };
 
 

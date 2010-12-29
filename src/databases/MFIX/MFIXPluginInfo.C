@@ -166,7 +166,7 @@ std::vector<std::string>
 MFIXGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("*.RES");
+    defaultPatterns.push_back(".RES");
 
     return defaultPatterns;
 }
