@@ -267,12 +267,15 @@ static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
 //    closely to an avtView3D structure instead of having it match the
 //    parameters to SetImageProperty.
 //
+//    Eric Brugger, Tue Dec 28 14:22:48 PST 2010
+//    I modified the filter to return a set of images instead of a collection
+//    of line segments representing the intersections of a collection of lines
+//    with the cells in the dataset.
+//
 // ****************************************************************************
 
 avtXRayFilter::avtXRayFilter()
 {
-    nLines = 1000;
-    initialLine = 0;
     lines  = NULL;
 
     normal[0] = 0;
@@ -294,6 +297,14 @@ avtXRayFilter::avtXRayFilter()
     perspective = false;
     imageSize[0] = 200;
     imageSize[1] = 200;
+
+    divideEmisByAbsorb = false;
+
+    numPixels = imageSize[0] * imageSize[1];
+    numPixelsPerIteration = 4000;
+
+    radBins = NULL;
+    numBins = 1;
 }
 
 
@@ -302,8 +313,6 @@ avtXRayFilter::avtXRayFilter()
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
-//
-//  Modifications:
 //
 // ****************************************************************************
 
@@ -341,26 +350,6 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 
     outAtts.SetTopologicalDimension(1);
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
-}
-
-
-// ****************************************************************************
-//  Method: avtXRayFilter::SetNumberOfLines
-//
-//  Purpose:
-//      Sets the number of lines to process in this pass.
-//
-//  Programmer: Eric Brugger
-//  Creation:   June 30, 2010
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtXRayFilter::SetNumberOfLines(int nl)
-{
-    nLines = nl;
 }
 
 
@@ -412,6 +401,27 @@ avtXRayFilter::SetImageProperties(float *pos, float  theta, float  phi,
     perspective = false;
     imageSize[0] = nx;
     imageSize[1] = ny;
+
+    numPixels = nx * ny;
+}
+
+
+// ****************************************************************************
+//  Method: avtXRayFilter::SetDivideEmisByAbsorb
+//
+//  Purpose:
+//    Set the flag that controls if the emissivity divided by the absorbtivity
+//    is used in place of the emissivity.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 28, 2010
+//
+// ****************************************************************************
+
+void
+avtXRayFilter::SetDivideEmisByAbsorb(bool flag)
+{
+    divideEmisByAbsorb = flag;
 }
 
 
@@ -419,7 +429,7 @@ avtXRayFilter::SetImageProperties(float *pos, float  theta, float  phi,
 //  Method: avtXRayFilter::Execute
 //
 //  Purpose:
-//      Processes a single domain.
+//    Processes all the domains.
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
@@ -433,11 +443,48 @@ avtXRayFilter::SetImageProperties(float *pos, float  theta, float  phi,
 //    I removed the requirement that a 2d spatial mesh must be an RZ mesh,
 //    and had it assume that it was.
 //
+//    Eric Brugger, Tue Dec 28 14:22:48 PST 2010
+//    I modified the filter to return a set of images instead of a collection
+//    of line segments representing the intersections of a collection of lines
+//    with the cells in the dataset.
+//
 // ****************************************************************************
 
 void
 avtXRayFilter::Execute(void)
 {
+    avtDataset_p input = GetTypedInput();
+
+    //
+    // Process the pixels in multiple iterations.
+    //
+    actualPixelsPerIteration = (numPixelsPerIteration / imageSize[0]) *
+        imageSize[0];
+
+    pixelsForFirstPass = actualPixelsPerIteration;
+    pixelsForLastPass = ((numPixels % actualPixelsPerIteration) == 0) ?
+        actualPixelsPerIteration : numPixels % actualPixelsPerIteration;
+
+    pixelsForFirstPassFirstProc = pixelsForFirstPass / PAR_Size() + 1;
+    pixelsForFirstPassLastProc =
+        ((pixelsForFirstPass % pixelsForFirstPassFirstProc) == 0) ?
+        pixelsForFirstPassFirstProc :
+        pixelsForFirstPass % pixelsForFirstPassFirstProc;
+    pixelsForLastPassFirstProc = pixelsForLastPass / PAR_Size() + 1;
+    pixelsForLastPassLastProc =
+        ((pixelsForLastPass % pixelsForLastPassFirstProc) == 0) ?
+        pixelsForLastPassFirstProc :
+        pixelsForLastPass % pixelsForLastPassFirstProc;
+
+    int numPasses = numPixels / actualPixelsPerIteration;
+    if (numPixels % actualPixelsPerIteration != 0)
+        numPasses++;
+
+    iFragment = 0;
+    nImageFragments = numPasses;
+    imageFragmentSizes = new int[nImageFragments];
+    imageFragments = new float*[nImageFragments];
+
     //
     // Get the input data tree to obtain the data sets.
     //
@@ -449,45 +496,198 @@ avtXRayFilter::Execute(void)
     vtkDataSet **dataSets = tree->GetAllLeaves(totalNodes);
 
     //
+    // Check that the data sets are valid.
+    //
+    CheckDataSets(totalNodes, dataSets);
+
+    lineOffset = 0;
+    for (int iPass = 0; iPass < numPasses; iPass++)
+    {
+        int pixelsForThisPass = (iPass == numPasses - 1) ?
+            pixelsForLastPass : pixelsForFirstPass;
+
+        linesForThisPass = pixelsForThisPass;
+
+        int pixelsForThisProc = pixelsForThisPass / PAR_Size() + 1;
+        if (PAR_Rank() == PAR_Size() - 1)
+            if (pixelsForThisPass % pixelsForThisProc != 0)
+                pixelsForThisProc = pixelsForThisPass % pixelsForThisProc;
+
+        imageFragmentSizes[iPass] = pixelsForThisProc;
+
+        int nPts, *lineIds;
+        double *dists;
+        float **cellData;
+        ImageStripExecute(totalNodes, dataSets, nPts, lineIds, dists, cellData);
+
+        int pixelOffset = (iPass == (numPasses - 1)) ?
+            PAR_Rank() * pixelsForLastPassFirstProc :
+            PAR_Rank() * pixelsForFirstPassFirstProc;
+
+        IntegrateLines(pixelOffset, nPts, lineIds, dists,
+            cellData[0], cellData[1]);
+
+        delete [] lineIds;
+        delete [] dists;
+        delete [] cellData[0];
+        delete [] cellData[1];
+        delete [] cellData;
+
+        int extraMsg = 100;
+        int totalProg = numPasses * extraMsg;
+        UpdateProgress(extraMsg*iPass, totalProg);
+
+        lineOffset += pixelsForThisPass;
+    }
+
+    //
+    // Collect all the images on the root processor.
+    //
+    int t1;
+    if (PAR_Size() > 1)
+    {
+        //
+        // Collect the images.
+        //
+        t1 = visitTimer->StartTimer();
+        float *image = CollectImages(0, nImageFragments, imageFragmentSizes,
+            imageFragments);
+        visitTimer->StopTimer(t1, "avtXRayImageQuery::CollectImages");
+
+        //
+        // Swap out the current imageFragments and replace them with the
+        // unified one.
+        //
+        for (int i = 0; i < nImageFragments; i++)
+            delete [] imageFragments[i];
+        nImageFragments = 1;
+        imageFragmentSizes[0] = numPixels;
+        imageFragments[0] = image;
+    }
+
+    //
+    // Merge all the images together.
+    //
+    if (PAR_Rank() == 0)
+    {
+        vtkDataSet **pdarray = new vtkDataSet*[numBins];
+        int        *indarray = new int[numBins];
+
+        for (int iBin = 0; iBin < numBins; iBin++)
+        {
+            vtkFloatArray *imageArray = vtkFloatArray::New();
+            imageArray->SetName("Image");
+            imageArray->SetNumberOfComponents(1);
+            imageArray->SetNumberOfTuples(imageSize[0]*imageSize[1]);
+            float *ibuf = imageArray->GetPointer(0);
+
+            for (int i = 0; i < nImageFragments; i++)
+            {
+                float *currentImageFragment = imageFragments[i];
+                for (int j = 0; j < imageFragmentSizes[i]; j++)
+                {
+                    *ibuf = currentImageFragment[j*numBins+iBin];
+                    ibuf++;
+                }
+            }
+
+            vtkDataSet *outDataSet = vtkPolyData::New();
+            outDataSet->GetPointData()->AddArray(imageArray);
+            outDataSet->GetPointData()->CopyFieldOn("Image");
+
+            pdarray[iBin] = outDataSet;
+            indarray[iBin] = iBin;
+        }
+
+        //
+        // Create an avtDataTree to return the results in.
+        //
+        avtDataTree_p newtree = new avtDataTree(numBins, pdarray, indarray);
+        SetOutputDataTree(newtree);
+        for (int iBin = 0; iBin < numBins; iBin++)
+        {
+            pdarray[iBin]->Delete();
+        }
+
+        delete [] pdarray;
+        delete [] indarray;
+    }
+    else
+    {
+        avtDataTree_p newtree = new avtDataTree(NULL, -1);
+        SetOutputDataTree(newtree);
+    }
+
+    //
+    // Clean up temporary arrays.
+    //
+    for (int i = 0; i < nImageFragments; i++)
+        delete [] imageFragments[i];
+    delete [] imageFragmentSizes;
+    delete [] imageFragments;
+}
+   
+
+// ****************************************************************************
+//  Method:  avtXRayFilter::ImageStripExecute
+//
+//  Purpose:
+//    Processes a strip of the image.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 28, 2010
+//
+// ****************************************************************************
+
+void
+avtXRayFilter::ImageStripExecute(int nDataSets, vtkDataSet **dataSets,
+    int &nPts, int *&outLineIds, double *&outDists, float **&outCellData)
+{
+    //
+    // Calculate the lines for this image strip.
+    //
+    CalculateLines();
+
+    //
     // Intersect the data sets with the lines.
     //
-    int *nLinesPerDataset = new int[totalNodes];
-    vector<double> *dists = new vector<double>[totalNodes];
-    vector<int> *line_ids = new vector<int>[totalNodes];
-    float ***cellData = new float**[totalNodes];
+    int *nLinesPerDataset = new int[nDataSets];
+    vector<double> *dists = new vector<double>[nDataSets];
+    vector<int> *lineIds = new vector<int>[nDataSets];
+    float ***cellData = new float**[nDataSets];
 
     int t1 = visitTimer->StartTimer();
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
     {
-        for (currentNode = 0; currentNode < totalNodes; currentNode++)
+        for (currentNode = 0; currentNode < nDataSets; currentNode++)
             CylindricalExecute(dataSets[currentNode],
                 nLinesPerDataset[currentNode], dists[currentNode],
-                line_ids[currentNode], cellData[currentNode]);
+                lineIds[currentNode], cellData[currentNode]);
     }
     else
     {
-        for (currentNode = 0; currentNode < totalNodes; currentNode++)
+        for (currentNode = 0; currentNode < nDataSets; currentNode++)
             CartesianExecute(dataSets[currentNode],
                 nLinesPerDataset[currentNode], dists[currentNode],
-                line_ids[currentNode], cellData[currentNode]);
+                lineIds[currentNode], cellData[currentNode]);
     }
     visitTimer->StopTimer(t1, "avtXRayFilter::CartesianExecute");
-
 
     //
     // Redistribute the line segments to processors that own them.
     //
     t1 = visitTimer->StartTimer();
-    int     nCellArrays = 2;
-    int     nComponentsPerCellArray = 0;
-    if (totalNodes > 0)
+
+    int nComponentsPerCellArray = 0;
+    if (nDataSets > 0)
     {
         nComponentsPerCellArray = dataSets[0]->GetCellData()->
             GetArray(absVarName.c_str())->GetNumberOfComponents();
     }
-    string cellArrayNames[2] = {absVarName, emisVarName};
-    RedistributeLines(totalNodes, nLinesPerDataset, dists, line_ids,
-        nCellArrays, cellArrayNames, nComponentsPerCellArray, cellData);
+    RedistributeLines(nDataSets, nLinesPerDataset, dists, lineIds,
+        nComponentsPerCellArray, cellData, nPts, outLineIds, outDists,
+        outCellData);
+
     visitTimer->StopTimer(t1, "avtXRayFilter::RedistributeLines");
 
     //
@@ -495,11 +695,11 @@ avtXRayFilter::Execute(void)
     //
     delete [] nLinesPerDataset;
     delete [] dists;
-    delete [] line_ids;
-    for (int i = 0; i < totalNodes; i++)
+    delete [] lineIds;
+    for (int i = 0; i < nDataSets; i++)
     {
         float **cellDataI = cellData[i];
-        for (int j = 0; j < nCellArrays; j++)
+        for (int j = 0; j < 2; j++)
         {
             float *vals = cellDataI[j];
             delete [] vals;
@@ -514,8 +714,8 @@ avtXRayFilter::Execute(void)
 //  Method: avtXRayFilter::PreExecute
 //
 //  Purpose:
-//      This is called before all of the domains are executed.  This defines
-//      the lines that will be intersected with the cells.
+//    This is called before all of the domains are executed.  This defines
+//    the lines that will be intersected with the cells.
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
@@ -534,16 +734,20 @@ avtXRayFilter::Execute(void)
 //    closely to an avtView3D structure instead of having it match the
 //    parameters to SetImageProperty.
 //
+//    Eric Brugger, Tue Dec 21 15:54:04 PST 2010
+//    I moved the code that defines the lines into the method CalculateLines.
+//
+//    Eric Brugger, Tue Dec 28 14:22:48 PST 2010
+//    I modified the filter to return a set of images instead of a collection
+//    of line segments representing the intersections of a collection of lines
+//    with the cells in the dataset.
+//
 // ****************************************************************************
 
 void
 avtXRayFilter::PreExecute(void)
 {
     avtDatasetToDatasetFilter::PreExecute();
-
-    if (lines != NULL)
-        delete [] lines;
-    lines = new double[6*nLines];
 
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
     {
@@ -553,90 +757,6 @@ avtXRayFilter::PreExecute(void)
                 "RZ mesh, assuming it is an RZ mesh.");
         }
     }
-
-    double viewSide[3];
-    viewSide[0] = viewUp[1] * normal[2] - viewUp[2] * normal[1];
-    viewSide[1] = -viewUp[0] * normal[2] + viewUp[2] * normal[0];
-    viewSide[2] = viewUp[0] * normal[1] - viewUp[1] * normal[0];
-
-    //
-    // Calculate the width and height in the near plane, view plane and
-    // far plane.
-    //
-    double nearHeight, viewHeight, farHeight;
-    double nearWidth, viewWidth, farWidth;
-
-    viewHeight = parallelScale;
-    viewWidth  = (imageSize[1] / imageSize[0]) * viewHeight;
-    if (perspective)
-    {
-        double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);
-        double nearDist = viewDist + nearPlane;
-        double farDist  = viewDist + farPlane;
-
-        nearHeight = (nearDist * viewHeight) / viewDist;
-        nearWidth  = (nearDist * viewWidth) / viewDist;
-        farHeight  = (farDist * viewHeight) / viewDist;
-        farWidth   = (farDist * viewWidth) / viewDist;
-    }
-    else
-    {
-        nearHeight = viewHeight;
-        nearWidth  = viewWidth;
-        farHeight  = viewHeight;
-        farWidth   = viewWidth;
-    }
-
-    // Adjust for the image zoom.
-    nearHeight = nearHeight / imageZoom;
-    nearWidth  = nearWidth  / imageZoom;
-    farHeight  = farHeight  / imageZoom;
-    farWidth   = farWidth   / imageZoom;
-
-    // Calculate the center of the image in the near and far planes.
-    double nearOrigin[3], farOrigin[3];
-    nearOrigin[0] = focus[0] + nearPlane * normal[0];
-    nearOrigin[1] = focus[1] + nearPlane * normal[1];
-    nearOrigin[2] = focus[2] + nearPlane * normal[2];
-    farOrigin[0]  = focus[0] + farPlane  * normal[0];
-    farOrigin[1]  = focus[1] + farPlane  * normal[1];
-    farOrigin[2]  = focus[2] + farPlane  * normal[2];
-
-    double nearDx, nearDy, farDx, farDy;
-    nearDx = (2. * nearWidth)  / imageSize[0];
-    nearDy = (2. * nearHeight) / imageSize[1];
-    farDx = (2. * farWidth)   / imageSize[0];
-    farDy = (2. * farHeight)  / imageSize[1];
-
-    int jstart = initialLine / imageSize[0];
-    int jend = jstart + (nLines / imageSize[0]);
-    double y2 = - (2. * imagePan[1] * imageZoom + 1) * nearHeight +
-                nearDy / 2. + jstart * nearDy;
-    double y3 = - (2. * imagePan[1] * imageZoom + 1) * farHeight +
-                farDy / 2.  + jstart * farDy;
-    int ii = 0;
-    for (int j = jstart; j < jend; j++)
-    {
-        double x2 = - (2. * imagePan[0] * imageZoom + 1) * nearWidth +
-                    nearDx / 2.;
-        double x3 = - (2. * imagePan[0] * imageZoom + 1) * farWidth +
-                    farDx / 2.;
-        for (int i = 0; i < imageSize[0]; i++)
-        {
-            lines[6*ii+0] = nearOrigin[0] + x2 * viewSide[0] + y2 * viewUp[0];
-            lines[6*ii+1] = farOrigin[0]  + x3 * viewSide[0] + y3 * viewUp[0];
-            lines[6*ii+2] = nearOrigin[1] + x2 * viewSide[1] + y2 * viewUp[1];
-            lines[6*ii+3] = farOrigin[1]  + x3 * viewSide[1] + y3 * viewUp[1];
-            lines[6*ii+4] = nearOrigin[2] + x2 * viewSide[2] + y2 * viewUp[2];
-            lines[6*ii+5] = farOrigin[2]  + x3 * viewSide[2] + y3 * viewUp[2];
-
-            x2 += nearDx;
-            x3 += farDx;
-            ii++;
-        }
-        y2 += nearDy;
-        y3 += farDy;
-    }
 }
 
 
@@ -644,12 +764,16 @@ avtXRayFilter::PreExecute(void)
 //  Method: avtXRayFilter::PostExecute
 //
 //  Purpose:
-//      This is called after all of the domains are executed.
+//    This is called after all of the domains are executed.
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
 //
 //  Modifications:
+//    Eric Brugger, Tue Dec 28 14:22:48 PST 2010
+//    I modified the filter to return a set of images instead of a collection
+//    of line segments representing the intersections of a collection of lines
+//    with the cells in the dataset.
 //
 // ****************************************************************************
 
@@ -664,7 +788,7 @@ avtXRayFilter::PostExecute(void)
 //  Method: avtXRayFilter::CartesianExecute
 //
 //  Purpose:
-//      Finds line intersections in cartesian space.
+//    Finds line intersections in cartesian space.
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
@@ -680,6 +804,11 @@ avtXRayFilter::PostExecute(void)
 //    Eric Brugger, Thu Jul 29 14:21:50 PDT 2010
 //    I put in optimizations for tets, pyramids, wedges, and hexes in
 //    unstructured grids.
+//
+//    Eric Brugger, Tue Dec 28 14:22:48 PST 2010
+//    I modified the filter to return a set of images instead of a collection
+//    of line segments representing the intersections of a collection of lines
+//    with the cells in the dataset.
 //
 // ****************************************************************************
 
@@ -723,12 +852,6 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
     //
     // Loop over the lines.
     //
-    int extraMsg = 100;
-    int amtPerMsg = nLines / extraMsg + 1;
-    int totalProg = totalNodes * extraMsg;
-    UpdateProgress(extraMsg*currentNode, totalProg);
-    int lastMilestone = 0;
-
     vector<int> cells_matched;
 
     if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
@@ -756,7 +879,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         int nz2 = zdims[2];
         int nxy2 = nx2 * ny2;
 
-        for (i = 0 ; i < nLines ; i++)
+        for (i = 0 ; i < linesForThisPass ; i++)
         {
             double pt1[3];
             pt1[0] = lines[6*i];
@@ -838,14 +961,6 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                     dist.push_back(inter[1]*lineLength);
                     line_id.push_back(i);
                 }
-
-                int currentMilestone = (int)(((float) i) / amtPerMsg);
-                if (currentMilestone > lastMilestone)
-                {
-                    UpdateProgress(extraMsg*currentNode+currentMilestone, 
-                                   extraMsg*totalNodes);
-                    lastMilestone = currentMilestone;
-                }
             }
         }
     }
@@ -864,7 +979,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         unsigned char *ct = cellTypes->GetPointer(0);
         int *cl = cellLocations->GetPointer(0);
 
-        for (i = 0 ; i < nLines ; i++)
+        for (i = 0 ; i < linesForThisPass ; i++)
         {
             double pt1[3];
             pt1[0] = lines[6*i];
@@ -1041,20 +1156,12 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                     dist.push_back(inter[1]*lineLength);
                     line_id.push_back(i);
                 }
-
-                int currentMilestone = (int)(((float) i) / amtPerMsg);
-                if (currentMilestone > lastMilestone)
-                {
-                    UpdateProgress(extraMsg*currentNode+currentMilestone, 
-                                   extraMsg*totalNodes);
-                    lastMilestone = currentMilestone;
-                }
             }
         }
     }
     else
     {
-        for (i = 0 ; i < nLines ; i++)
+        for (i = 0 ; i < linesForThisPass ; i++)
         {
             //
             // Determine which cells intersect the line.
@@ -1156,14 +1263,6 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                     // exception, we can just continue.
                     continue;
                 }
-
-                int currentMilestone = (int)(((float) i) / amtPerMsg);
-                if (currentMilestone > lastMilestone)
-                {
-                    UpdateProgress(extraMsg*currentNode+currentMilestone, 
-                                   extraMsg*totalNodes);
-                    lastMilestone = currentMilestone;
-                }
             }
         }
     }
@@ -1200,8 +1299,6 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         }
     }
     visitTimer->StopTimer(t1, "avtXRayFilter::CopyCellData");
-
-    UpdateProgress(extraMsg*(currentNode+1), extraMsg*totalNodes);
 }
 
 
@@ -1209,7 +1306,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 //  Method: avtXRayFilter::CylindricalExecute
 //
 //  Purpose:
-//      Finds line intersections in cylindrical space.
+//    Finds line intersections in cylindrical space.
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
@@ -1218,6 +1315,11 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 //    Eric Brugger, Wed Aug 18 14:58:47 PDT 2010
 //    I corrected a bug copying the cell data.
 //  
+//    Eric Brugger, Tue Dec 28 14:22:48 PST 2010
+//    I modified the filter to return a set of images instead of a collection
+//    of line segments representing the intersections of a collection of lines
+//    with the cells in the dataset.
+//
 // ****************************************************************************
 
 void
@@ -1246,15 +1348,9 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
     //
     // Loop over the lines.
     //
-    int extraMsg = 100;
-    int amtPerMsg = nLines / extraMsg + 1;
-    int totalProg = totalNodes * extraMsg;
-    UpdateProgress(extraMsg*currentNode, totalProg);
-    int lastMilestone = 0;
-
     vector<int> cells_matched;
 
-    for (i = 0 ; i < nLines ; i++)
+    for (i = 0 ; i < linesForThisPass ; i++)
     {
         //
         // Determine which cells intersect the line.
@@ -1335,14 +1431,6 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 // exception, we can just continue.
                 continue;
             }
-
-            int currentMilestone = (int)(((float) i) / amtPerMsg);
-            if (currentMilestone > lastMilestone)
-            {
-                UpdateProgress(extraMsg*currentNode+currentMilestone, 
-                               extraMsg*totalNodes);
-                lastMilestone = currentMilestone;
-            }
         }
     }
 
@@ -1375,8 +1463,6 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
             cellData[i] = outVals;
         }
     }
-
-    UpdateProgress(extraMsg*(currentNode+1), extraMsg*totalNodes);
 }
 
 
@@ -1397,7 +1483,7 @@ AssignToProc(int val, int nlines)
 //  Method: avtXRayFilter::RedistributeLines
 //
 //  Purpose:
-//      Redistribute the lines to the processors.
+//    Redistribute the lines to the processors.
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
@@ -1407,12 +1493,18 @@ AssignToProc(int val, int nlines)
 //    I modified the filter to handle the case where some of the processors
 //    didn't have any data sets when executing in parallel.
 //
+//    Eric Brugger, Tue Dec 28 14:22:48 PST 2010
+//    I modified the filter to return a set of images instead of a collection
+//    of line segments representing the intersections of a collection of lines
+//    with the cells in the dataset.
+//
 // ****************************************************************************
 
-void
+void 
 avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
-    vector<double> *dists, vector<int> *line_ids, int nCellArrays,
-    string *cellArrayNames, int nComponentsPerCellArray, float ***cellData)
+    vector<double> *dists, vector<int> *line_ids,
+    int nComponentsPerCellArray, float ***cellData,
+    int &nPts, int *&outLineIds, double *&outDists, float **&outCellData)
 {
 #ifdef PARALLEL
     //
@@ -1426,7 +1518,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     {
         vector<int> inLineIds = line_ids[i];
         for (int j = 0; j < nLinesPerDataset[i]; j++)
-            sendCounts[AssignToProc(inLineIds[j], nLines)]++;
+            sendCounts[AssignToProc(inLineIds[j], linesForThisPass)]++;
     }
 
     //
@@ -1441,8 +1533,8 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     //
     int *sendLineIds = new int[nLinesSend];
     double *sendDists = new double[2*nLinesSend];
-    float **sendCellData = new float*[nCellArrays];
-    for (int i = 0; i < nCellArrays; i++)
+    float **sendCellData = new float*[2];
+    for (int i = 0; i < 2; i++)
         sendCellData[i] = new float[nComponentsPerCellArray*nLinesSend];
     
     //
@@ -1460,12 +1552,12 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
         float **inCellData = cellData[i];
         for (int j = 0; j < nLinesPerDataset[i]; j++)
         {
-            int iProc = AssignToProc(inLineIds[j], nLines);
+            int iProc = AssignToProc(inLineIds[j], linesForThisPass);
             int iOffset = sendOffsets[iProc];
             sendLineIds[iOffset] = inLineIds[j];
             sendDists[iOffset*2] = inDists[j*2];
             sendDists[iOffset*2+1] = inDists[j*2+1];
-            for (int k = 0; k < nCellArrays; k++)
+            for (int k = 0; k < 2; k++)
             {
                 float *inVar = inCellData[k];
                 float *sendVar = sendCellData[k];
@@ -1501,27 +1593,23 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     //
     // Create the output arrays.
     //
-    vtkIntArray *outLineIdsArray = vtkIntArray::New();
-    outLineIdsArray->SetName("LineIds");
-    outLineIdsArray->SetNumberOfComponents(1);
-    outLineIdsArray->SetNumberOfTuples(nLinesRecv);
-    int *outLineIds = outLineIdsArray->GetPointer(0);
+    nPts = nLinesRecv;
+    outLineIds = new int[nLinesRecv];
+    for (int i = 0; i < nLinesRecv; i++)
+        outLineIds[i] = 0;
 
-    vtkDoubleArray *outDistsArray = vtkDoubleArray::New();
-    outDistsArray->SetName("Dists");
-    outDistsArray->SetNumberOfComponents(2);
-    outDistsArray->SetNumberOfTuples(nLinesRecv);
-    double *outDists = outDistsArray->GetPointer(0);
+    outDists = new double[nLinesRecv*2];
+    for (int i = 0; i < nLinesRecv*2; i++)
+        outDists[i] = 0.;
 
-    float **outCellData = new float*[nCellArrays];
-    vtkFloatArray **outCellDataArrays = new vtkFloatArray*[nCellArrays];
-    for (int i = 0; i < nCellArrays; i++)
+    outCellData = new float*[2];
+    outCellData[0] = new float[nLinesRecv*nComponentsPerCellArrayRecv];
+    outCellData[1] = new float[nLinesRecv*nComponentsPerCellArrayRecv];
+    for (int j = 0; j < 2; j++)
     {
-        outCellDataArrays[i] = vtkFloatArray::New();
-        outCellDataArrays[i]->SetName(cellArrayNames[i].c_str());
-        outCellDataArrays[i]->SetNumberOfComponents(nComponentsPerCellArrayRecv);
-        outCellDataArrays[i]->SetNumberOfTuples(nLinesRecv);
-        outCellData[i] = outCellDataArrays[i]->GetPointer(0);
+        float *buf = outCellData[j];
+        for (int i = 0; i < nLinesRecv*nComponentsPerCellArrayRecv; i++)
+            buf[i] = 0.;
     }
 
     //
@@ -1575,7 +1663,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
         sendCounts[i] /= 2;
     for (int i = 0; i < nProcs; i++)
         recvCounts[i] /= 2;
-    for (int i = 0; i < nCellArrays; i++)
+    for (int i = 0; i < 2; i++)
     {
         //
         // Calculate the send and receive offsets for the data.
@@ -1610,6 +1698,11 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     }
 
     //
+    // Set numBins for use with the integration coding.
+    //
+    numBins = nComponentsPerCellArrayRecv;
+
+    //
     // Clean up memory.
     //
     delete [] sendCounts;
@@ -1620,7 +1713,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 
     delete [] sendLineIds;
     delete [] sendDists;
-    for (int i = 0; i < nCellArrays; i++)
+    for (int i = 0; i < 2; i++)
         delete [] sendCellData[i];
     delete [] sendCellData;
 #else
@@ -1628,33 +1721,19 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     for (int i = 0; i < nLeaves; i++)
         nLinesTotal += nLinesPerDataset[i];
 
-    vtkIntArray *outLineIdsArray = vtkIntArray::New();
-    outLineIdsArray->SetName("LineIds");
-    outLineIdsArray->SetNumberOfComponents(1);
-    outLineIdsArray->SetNumberOfTuples(nLinesTotal);
-    int *outLineIds = outLineIdsArray->GetPointer(0);
+    nPts = nLinesTotal;
+    outLineIds = new int[nLinesTotal];
 
-    vtkDoubleArray *outDistsArray = vtkDoubleArray::New();
-    outDistsArray->SetName("Dists");
-    outDistsArray->SetNumberOfComponents(2);
-    outDistsArray->SetNumberOfTuples(nLinesTotal);
-    double *outDists = outDistsArray->GetPointer(0);
+    outDists = new double[nLinesTotal*2];
 
-    float **outCellData = new float*[nCellArrays];
-    vtkFloatArray **outCellDataArrays = new vtkFloatArray*[nCellArrays];
-    for (int i = 0; i < nCellArrays; i++)
-    {
-        outCellDataArrays[i] = vtkFloatArray::New();
-        outCellDataArrays[i]->SetName(cellArrayNames[i].c_str());
-        outCellDataArrays[i]->SetNumberOfComponents(nComponentsPerCellArray);
-        outCellDataArrays[i]->SetNumberOfTuples(nLinesTotal);
-        outCellData[i] = outCellDataArrays[i]->GetPointer(0);
-    }
+    outCellData = new float*[2];
+    outCellData[0] = new float[nLinesTotal*nComponentsPerCellArray];
+    outCellData[1] = new float[nLinesTotal*nComponentsPerCellArray];
 
     int iLines = 0;
     int iPoints = 0;
-    int *iCellStart = new int[nCellArrays];
-    for (int i = 0; i < nCellArrays; i++)
+    int *iCellStart = new int[2];
+    for (int i = 0; i < 2; i++)
         iCellStart[i] = 0;
     for (int i = 0; i < nLeaves; i++)
     {
@@ -1668,7 +1747,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
         }
 
         float **inCellData = cellData[i];
-        for (int j = 0; j < nCellArrays; j++)
+        for (int j = 0; j < 2; j++)
         {
             int iCell = iCellStart[j];
             float *inVar = inCellData[j];
@@ -1678,30 +1757,503 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
             iCellStart[j] = iCell;
         }
     }
+
+    //
+    // Set numBins for use with the integration coding.
+    //
+    numBins = nComponentsPerCellArray;
 #endif
+}
+
+
+// ****************************************************************************
+//  Method: avtXRayFilter::CalculateLines
+//
+//  Purpose:
+//    This defines the lines that will be intersected with the cells.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 28, 2010
+//
+// ****************************************************************************
+
+void
+avtXRayFilter::CalculateLines(void)
+{
+    if (lines != NULL)
+        delete [] lines;
+    lines = new double[6*linesForThisPass];
+
+    double viewSide[3];
+    viewSide[0] = viewUp[1] * normal[2] - viewUp[2] * normal[1];
+    viewSide[1] = -viewUp[0] * normal[2] + viewUp[2] * normal[0];
+    viewSide[2] = viewUp[0] * normal[1] - viewUp[1] * normal[0];
 
     //
-    // Create a vtkPolyData set with no polydata to hold the fields.
+    // Calculate the width and height in the near plane, view plane and
+    // far plane.
     //
-    vtkDataSet *outDataSet = vtkPolyData::New();
-    outDataSet->GetPointData()->AddArray(outLineIdsArray);
-    outDataSet->GetPointData()->CopyFieldOn("LineIds");
-    outDataSet->GetPointData()->AddArray(outDistsArray);
-    outDataSet->GetPointData()->CopyFieldOn("Dists");
-    for (int i = 0; i < nCellArrays; i++)
+    double nearHeight, viewHeight, farHeight;
+    double nearWidth, viewWidth, farWidth;
+
+    viewHeight = parallelScale;
+    viewWidth  = (imageSize[1] / imageSize[0]) * viewHeight;
+    if (perspective)
     {
-        outDataSet->GetCellData()->AddArray(outCellDataArrays[i]);
-        outDataSet->GetCellData()->CopyFieldOn(cellArrayNames[i].c_str());
-        outCellDataArrays[i]->Delete();
+        double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);
+        double nearDist = viewDist + nearPlane;
+        double farDist  = viewDist + farPlane;
+
+        nearHeight = (nearDist * viewHeight) / viewDist;
+        nearWidth  = (nearDist * viewWidth) / viewDist;
+        farHeight  = (farDist * viewHeight) / viewDist;
+        farWidth   = (farDist * viewWidth) / viewDist;
     }
-    outLineIdsArray->Delete();
-    outDistsArray->Delete();
+    else
+    {
+        nearHeight = viewHeight;
+        nearWidth  = viewWidth;
+        farHeight  = viewHeight;
+        farWidth   = viewWidth;
+    }
 
-    avtDataTree_p newtree = new avtDataTree(outDataSet, -1);
-    SetOutputDataTree(newtree);
-    outDataSet->Delete();
+    // Adjust for the image zoom.
+    nearHeight = nearHeight / imageZoom;
+    nearWidth  = nearWidth  / imageZoom;
+    farHeight  = farHeight  / imageZoom;
+    farWidth   = farWidth   / imageZoom;
 
-    delete [] outCellData;
+    // Calculate the center of the image in the near and far planes.
+    double nearOrigin[3], farOrigin[3];
+    nearOrigin[0] = focus[0] + nearPlane * normal[0];
+    nearOrigin[1] = focus[1] + nearPlane * normal[1];
+    nearOrigin[2] = focus[2] + nearPlane * normal[2];
+    farOrigin[0]  = focus[0] + farPlane  * normal[0];
+    farOrigin[1]  = focus[1] + farPlane  * normal[1];
+    farOrigin[2]  = focus[2] + farPlane  * normal[2];
+
+    double nearDx, nearDy, farDx, farDy;
+    nearDx = (2. * nearWidth)  / imageSize[0];
+    nearDy = (2. * nearHeight) / imageSize[1];
+    farDx = (2. * farWidth)   / imageSize[0];
+    farDy = (2. * farHeight)  / imageSize[1];
+
+    int jstart = lineOffset / imageSize[0];
+    int jend = jstart + (linesForThisPass / imageSize[0]);
+    double y2 = - (2. * imagePan[1] * imageZoom + 1) * nearHeight +
+                nearDy / 2. + jstart * nearDy;
+    double y3 = - (2. * imagePan[1] * imageZoom + 1) * farHeight +
+                farDy / 2.  + jstart * farDy;
+    int ii = 0;
+    for (int j = jstart; j < jend; j++)
+    {
+        double x2 = - (2. * imagePan[0] * imageZoom + 1) * nearWidth +
+                    nearDx / 2.;
+        double x3 = - (2. * imagePan[0] * imageZoom + 1) * farWidth +
+                    farDx / 2.;
+        for (int i = 0; i < imageSize[0]; i++)
+        {
+            lines[6*ii+0] = nearOrigin[0] + x2 * viewSide[0] + y2 * viewUp[0];
+            lines[6*ii+1] = farOrigin[0]  + x3 * viewSide[0] + y3 * viewUp[0];
+            lines[6*ii+2] = nearOrigin[1] + x2 * viewSide[1] + y2 * viewUp[1];
+            lines[6*ii+3] = farOrigin[1]  + x3 * viewSide[1] + y3 * viewUp[1];
+            lines[6*ii+4] = nearOrigin[2] + x2 * viewSide[2] + y2 * viewUp[2];
+            lines[6*ii+5] = farOrigin[2]  + x3 * viewSide[2] + y3 * viewUp[2];
+
+            x2 += nearDx;
+            x3 += farDx;
+            ii++;
+        }
+        y2 += nearDy;
+        y3 += farDy;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtXRayFilter::CheckDataSets
+//
+//  Purpose:
+//    This routine performs some error checks on the input data sets.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 28, 2010
+//
+// ****************************************************************************
+
+void
+avtXRayFilter::CheckDataSets(int nDataSets, vtkDataSet **dataSets)
+{
+    int numBins;
+    for (int i = 0; i < nDataSets; i++)
+    {
+        vtkDataArray *abs  = dataSets[i]->GetCellData()->GetArray(absVarName.c_str());
+        vtkDataArray *emis = dataSets[i]->GetCellData()->GetArray(emisVarName.c_str());
+
+        if (abs == NULL)
+        {
+            char msg[256];
+            if (dataSets[i]->GetPointData()->GetArray(absVarName.c_str())
+                != NULL)
+            {
+                SNPRINTF(msg,256, "Failure: variable %s is node-centered, but "
+                                  "it must be zone-centered for this query.",
+                                  absVarName.c_str());
+            }
+            else
+                SNPRINTF(msg,256, "Variable %s not found.",
+                                  absVarName.c_str());
+            EXCEPTION1(VisItException, msg);
+        }
+        if (emis == NULL)
+        {
+            char msg[256];
+            if (dataSets[i]->GetPointData()->GetArray(emisVarName.c_str())
+                != NULL)
+            {
+                SNPRINTF(msg,256, "Failure: variable %s is node-centered, but "
+                                  "it must be zone-centered for this query.",
+                                  emisVarName.c_str());
+            }
+            else
+                SNPRINTF(msg,256, "Variable %s not found.",
+                                  emisVarName.c_str());
+            EXCEPTION1(VisItException, msg);
+        }
+
+        if (abs->GetNumberOfComponents() != emis->GetNumberOfComponents())
+        {
+            EXCEPTION1(VisItException, "Number of bins for absorption and "
+                                       "emission did not match.");
+        }
+
+        if (i == 0)
+        {
+            numBins = abs->GetNumberOfComponents();
+        }
+        else
+        {
+            if (numBins != abs->GetNumberOfComponents())
+            {
+                EXCEPTION1(VisItException, "Number of bins across chunks "
+                                           "did not match.");
+            }
+        }
+
+        if (abs->GetDataType() != VTK_FLOAT ||
+            emis->GetDataType() != VTK_FLOAT)
+        {
+            EXCEPTION1(VisItException, "The absorption and emission must "
+                                       "be float data.");
+        }
+    }
+}
+
+
+typedef struct
+{
+    int lineId;
+    int ptId;
+    double dist;
+}  IdPoint;
+
+
+// ****************************************************************************
+//  Function: IdPointSorter
+//
+//  Purpose:
+//    Comparison routine used to sort the line segments.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 30, 2010
+//
+// ****************************************************************************
+
+static int
+IdPointSorter(const void *arg1, const void *arg2)
+{
+    const IdPoint *r1 = (const IdPoint *) arg1;
+    const IdPoint *r2 = (const IdPoint *) arg2;
+
+    if (r1->lineId > r2->lineId)
+        return 1;
+    else if (r1->lineId < r2->lineId)
+        return -1;
+
+    if (r1->dist > r2->dist)
+        return 1;
+    else if (r1->dist < r2->dist)
+        return -1;
+
+    return 0;
+}
+
+
+// ****************************************************************************
+//  Function: SortSegments
+//
+//  Purpose:
+//    Sort the line segments by pixel id and distance.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 30, 2010
+//
+// ****************************************************************************
+
+static int *
+SortSegments(int nLines, int *lineId, double *dists)
+{
+    //
+    // Sort the distances for each line segment.
+    //
+    for (int i = 0; i < nLines; i++)
+    {
+        if (dists[i*2] > dists[i*2+1])
+        {
+            double tmp = dists[i*2];
+            dists[i*2] = dists[i*2+1];
+            dists[i*2+1] = tmp;
+        }
+    }
+
+    //
+    // Sort the segments by line id and distance.
+    //
+    IdPoint *idPoints = new IdPoint[nLines];
+    for (int i = 0 ; i < nLines; i++)
+    {
+        idPoints[i].lineId = lineId[i]; // See assumption above
+        idPoints[i].ptId = i;
+        idPoints[i].dist = dists[i*2];
+    }
+    qsort(idPoints, nLines, sizeof(IdPoint), IdPointSorter);
+
+    //
+    // Form the output array.
+    //
+    int *compositeOrder = new int[nLines];
+    for (int i = 0; i < nLines; i++)
+        compositeOrder[i] = idPoints[i].ptId;
+
+    delete [] idPoints;
+
+    return compositeOrder;
+}
+
+
+// ****************************************************************************
+//  Method: avtXRayFilter::IntegrateLines
+//
+//  Purpose:
+//    Integrate the line segments using the order specified by segmentOrder.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 30, 2010
+//
+//  Modifications:
+//    Eric Brugger, Tue Dec 28 14:22:48 PST 2010
+//    I modified the filter to return a set of images instead of a collection
+//    of line segments representing the intersections of a collection of lines
+//    with the cells in the dataset.
+//
+// ****************************************************************************
+
+void
+avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
+    double *dist, float *absorbtivity, float *emissivity)
+{
+    //
+    // Determine the order to do the compositing.
+    //
+    int *segmentOrder = SortSegments(nPts, lineId, dist);
+
+    //
+    // Do the integration.
+    //
+    if (radBins == NULL)
+    {
+        radBins = new double[numBins];
+    }
+    for (int i = 0 ; i < numBins ; i++)
+    {
+        radBins[i] = 0.;
+    }
+
+    int prevLineId = -1;
+
+    imageFragments[iFragment] = new float[imageFragmentSizes[iFragment]*numBins];
+    float *currentImageFragment = imageFragments[iFragment];
+    for (int j = 0; j < imageFragmentSizes[iFragment]*numBins; j++)
+        currentImageFragment[j] = 0.;
+    iFragment++;
+
+    for (int i = 0; i < nPts; i++)
+    {
+        int iPt = segmentOrder[i];
+
+        if (lineId[iPt] != prevLineId)
+        {
+            if (prevLineId != -1)
+            {
+                for (int j = 0; j < numBins; j++)
+                    currentImageFragment[(prevLineId-pixelOffset)*numBins+j] =
+                        radBins[j];
+            }
+
+            for (int j = 0; j < numBins; j++)
+            {
+                radBins[j] = 0.;
+            }
+            prevLineId = lineId[iPt];
+        }
+
+        double segLength = dist[iPt*2+1] - dist[iPt*2];
+        float *a = &(absorbtivity[iPt*numBins]);
+        float *e = &(emissivity[iPt*numBins]);
+
+        if (divideEmisByAbsorb)
+        {
+            for (int j = 0 ; j < numBins ; j++)
+            {
+                double tmp = exp(-a[j]*segLength);
+                radBins[j] = radBins[j] * tmp + (e[j] / a[j]) * (1.0 - tmp);
+            }
+        }
+        else
+        {
+            for (int j = 0 ; j < numBins ; j++)
+            {
+                double tmp = exp(-a[j]*segLength);
+                radBins[j] = radBins[j] * tmp + e[j] * (1.0 - tmp);
+            }
+        }
+    }
+
+    if (prevLineId != -1)
+    {
+        for (int j = 0; j < numBins; j++)
+            currentImageFragment[(prevLineId-pixelOffset)*numBins+j] =
+                radBins[j];
+    }
+
+    delete [] segmentOrder;
+}
+
+
+// ****************************************************************************
+//  Method: avtXRayFilter::CollectImages
+//
+//  Purpose:
+//    Collect the images on the first processor.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 30, 2010
+//
+//  Modifications:
+//    Eric Brugger, Tue Dec 28 14:22:48 PST 2010
+//    I modified the filter to return a set of images instead of a collection
+//    of line segments representing the intersections of a collection of lines
+//    with the cells in the dataset.
+//
+// ****************************************************************************
+
+float *
+avtXRayFilter::CollectImages(int root, int nImageFragments,
+    int *imageFragmentSizes, float **imageFragments)
+{
+#ifdef PARALLEL
+    int nProcs = PAR_Size();
+
+    //
+    // Set up the send information.
+    //
+    int sendCount = 0;
+    for (int i = 0; i < nImageFragments; i++)
+        sendCount += imageFragmentSizes[i]*numBins;
+
+    float *sendBuf = new float[sendCount];
+    for (int i = 0, ndx = 0; i < nImageFragments; i++)
+    {
+        float *currentImageFragment = imageFragments[i];
+        for (int j = 0; j < imageFragmentSizes[i]*numBins; j++)
+        {
+            sendBuf[ndx] = currentImageFragment[j];
+            ndx++;
+        }
+    }
+
+    //
+    // Set up the receive information.
+    //
+    int *recvCounts = new int[nProcs];
+    int *displs = new int[nProcs];
+
+    recvCounts[0] = ((nImageFragments - 1) * pixelsForFirstPassFirstProc +
+        pixelsForLastPassFirstProc) * numBins;
+    displs[0] = 0;
+    for (int i = 1; i < nProcs-1; i++)
+    {
+        recvCounts[i] = ((nImageFragments - 1) * pixelsForFirstPassFirstProc +
+            pixelsForLastPassFirstProc) * numBins;
+        displs[i] = displs[i-1] + recvCounts[i-1];
+    }
+    recvCounts[nProcs-1] = ((nImageFragments - 1) * pixelsForFirstPassLastProc +
+        pixelsForLastPassLastProc) * numBins;
+    displs[nProcs-1] = displs[nProcs-1-1] + recvCounts[nProcs-1-1];
+
+    float *recvBuf = new float[numPixels * numBins];
+
+    MPI_Gatherv(sendBuf, sendCount, MPI_FLOAT, recvBuf, recvCounts,
+        displs, MPI_FLOAT, root, VISIT_MPI_COMM);
+
+    //
+    // Reorganize the receive buffer in the correct order.
+    //
+    float *image = new float[numPixels * numBins];
+    int ii = 0;
+    for (int i = 0; i < nImageFragments-1; i++)
+    {
+        for (int j = 0; j < nProcs-1; j++)
+        {
+            for (int k = 0; k < pixelsForFirstPassFirstProc*numBins; k++)
+            {
+                image[ii] = recvBuf[displs[j]];
+                ii++;
+                displs[j]++;
+            }
+        }
+        int j = nProcs - 1;
+        for (int k = 0; k < pixelsForFirstPassLastProc*numBins; k++)
+        {
+            image[ii] = recvBuf[displs[j]];
+            ii++;
+            displs[j]++;
+        }
+    }
+    int i = nImageFragments - 1;
+    for (int j = 0; j < nProcs-1; j++)
+    {
+        for (int k = 0; k < pixelsForLastPassFirstProc*numBins; k++)
+        {
+            image[ii] = recvBuf[displs[j]];
+            ii++;
+            displs[j]++;
+        }
+    }
+    int j = nProcs - 1;
+    for (int k = 0; k < pixelsForLastPassLastProc*numBins; k++)
+    {
+        image[ii] = recvBuf[displs[j]];
+        ii++;
+        displs[j]++;
+    }
+
+    delete [] recvBuf;
+
+    return image;
+#else
+    return 0;
+#endif
 }
 
 
@@ -1709,16 +2261,16 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Method: avtIntersectionTests::IntersectLineWithRevolvedSegment
 //
 //  Purpose:
-//      Takes a segment that is in cylindrical coordinates and revolves it
-//      into three-dimensional Cartesian space and finds the intersections
-//      with a line.  The number of intersections can be 1, 2, or 4.
+//    Takes a segment that is in cylindrical coordinates and revolves it
+//    into three-dimensional Cartesian space and finds the intersections
+//    with a line.  The number of intersections can be 1, 2, or 4.
 //
 //  Arguments:
-//      line_pt    A point on the line (Cartesian)
-//      line_dir   The direction of the line (Cartesian)
-//      seg_1      One endpoint of the segment (Cylindrical)
-//      seg_2      The other endpoint of the segment (Cylindrical)
-//      inter      The intersections found.  Output value.  They are 
+//    line_pt    A point on the line (Cartesian)
+//    line_dir   The direction of the line (Cartesian)
+//    seg_1      One endpoint of the segment (Cylindrical)
+//    seg_2      The other endpoint of the segment (Cylindrical)
+//    inter      The intersections found.  Output value.  They are 
 //                 represented distances along line_dir from line_pt.
 //
 //  Returns:       The number of intersections

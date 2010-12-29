@@ -44,18 +44,19 @@
 #define AVT_XRAY_FILTER_H
 
 
-#include <avtDatasetToDatasetFilter.h>
-#include <avtVector.h>
-#include <filters_exports.h>
 #include <string>
 
+#include <filters_exports.h>
+#include <avtDatasetToDatasetFilter.h>
+#include <avtVector.h>
+
+#include <vtkPolyData.h>
 
 // ****************************************************************************
 //  Class: avtXRayFilter
 //
 //  Purpose:
-//      This should really be a query, not a filter.  It creates an x ray
-//      image using an absorbtivity and emissivity.
+//      It creates an x ray image using an absorbtivity and emissivity.
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
@@ -69,6 +70,11 @@
 //    I modified the view information stored internally to correspond more
 //    closely to an avtView3D structure instead of having it match the
 //    parameters to SetImageProperty.
+//
+//    Eric Brugger, Tue Dec 28 14:18:09 PST 2010
+//    I modified the filter to return a set of images instead of a collection
+//    of line segments representing the intersections of a collection of lines
+//    with the cells in the dataset.
 //
 // ****************************************************************************
 
@@ -89,29 +95,25 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                        { absVarName = abs;
                                          emisVarName = emis; };
 
-    void                            SetNumberOfLines(int);
-
-    virtual void                    SetInitialLine(int iLine)
-                                       { initialLine = iLine; };
-
-    virtual void                    SetImageProperties(float *pos,
+    void                            SetImageProperties(float *pos,
                                                        float  theta,
                                                        float  phi,
                                                        float  dx,
                                                        float  dy,
                                                        int    nx,
                                                        int    ny);
+    void                            SetDivideEmisByAbsorb(bool);
 
   protected:
     std::string                     absVarName;
     std::string                     emisVarName;
 
-    int                             nLines;
-    int                             initialLine;
+    int                             linesForThisPass;
+    int                             lineOffset;
     double                         *lines;
 
-    int                             currentNode;
-    int                             totalNodes;
+    int                             currentNode; //Index of current vtk dataset
+    int                             totalNodes; //Total number of vtk datasets
 
     double                          normal[3], focus[3], viewUp[3];
     double                          viewAngle;
@@ -120,6 +122,30 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     double                          imagePan[2], imageZoom;
     bool                            perspective;
     int                             imageSize[2];
+
+    bool                            divideEmisByAbsorb;
+
+    int                             numPixels;
+    int                             numPixelsPerIteration;
+
+    double                         *radBins;
+
+    int                             numBins;    //Used for radiation bins.
+                                                //Number is obtained from the
+                                                //mesh, not set by the user
+
+    int                             iFragment;
+    int                             nImageFragments;
+    int                            *imageFragmentSizes;
+    float                         **imageFragments;
+
+    int                             actualPixelsPerIteration;
+    int                             pixelsForFirstPass;
+    int                             pixelsForLastPass;
+    int                             pixelsForFirstPassFirstProc;
+    int                             pixelsForFirstPassLastProc;
+    int                             pixelsForLastPassFirstProc;
+    int                             pixelsForLastPassLastProc;
 
     virtual void                    Execute(void);
 
@@ -133,9 +159,22 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                         vector<double>&, vector<int>&,
                                         float **&);
 
+  private:
+    void                            ImageStripExecute(int, vtkDataSet **,
+                                        int &, int *&, double *&, float **&);
+
     void                            RedistributeLines(int, int *,
                                         vector<double> *, vector<int> *,
-                                        int, string *, int,  float ***);
+                                        int,  float ***, int &, int *&,
+                                        double *&, float **&);
+
+    void                            CalculateLines(void);
+
+    void                            CheckDataSets(int, vtkDataSet **);
+
+    void                            IntegrateLines(int, int, int *, double *,
+                                        float *, float *);
+    float                          *CollectImages(int, int, int*, float **);
 
 };
 
