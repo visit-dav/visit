@@ -195,6 +195,11 @@
 #    Cyrus Harrison, Mon Dec 20 10:50:29 PST 2010
 #    Use FORCE when setting various install paths.
 #
+#    Kathleen Bonnell, Tue Dec 28 17:06:41 MST 2010 
+#    Add VISIT_3RDPARTY_VAR for VISIT_SZIP_DIR and VISIT_JPEG_DIR for Windows,
+#    and VISIT_H5PART_LIBDEP for all platforms. Call find for szip, zlib and
+#    jpeg before Finds for any libs that may have dependencies on them.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -397,6 +402,13 @@ VISIT_3RDPARTY_VAR(VISIT_MESA_DIR   "Path containing the Mesa library's include 
 VISIT_3RDPARTY_VAR(VISIT_ICET_DIR   "Path containing the Ice-T library's include and lib" ICET_DIR)
 VISIT_3RDPARTY_VAR(VISIT_TCMALLOC_DIR   "Path containing the tcmalloc library's include and lib" TCMALLOC_DIR)
 
+# Libraries some third-parties are dependent upon
+IF(WIN32)
+  VISIT_3RDPARTY_VAR(VISIT_JPEG_DIR   "Path containing the jpeg library's include and lib" JPEG_DIR)
+  VISIT_3RDPARTY_VAR(VISIT_SZIP_DIR   "Path containing the szip library's include and lib" SZIP_DIR)
+  VISIT_3RDPARTY_VAR(VISIT_ZLIB_DIR   "Path containing the zlib library's include and lib" ZLIB_DIR)
+ENDIF(WIN32)
+
 # Define the options that let us pick I/O library installation locations. When 
 # the library option is defined then we also define the variable name passed as
 # the 3rd argument. That variable is what is used in our various Find routines.
@@ -422,6 +434,7 @@ VISIT_3RDPARTY_DEP(VISIT_HDF4_LIBDEP   "HDF4 library dependencies" HDF4_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_HDF5_DIR      "Path containing the HDF5 library's include and lib" HDF5_DIR)
 VISIT_3RDPARTY_DEP(VISIT_HDF5_LIBDEP   "HDF5 library dependencies" HDF5_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_H5PART_DIR    "Path containing the H5Part library's include and lib" H5PART_DIR)
+VISIT_3RDPARTY_VAR(VISIT_H5PART_LIBDEP "H5Part library dependencies" H5PART_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_MILI_DIR      "Path containing the Mili library's include and lib" MILI_DIR)
 VISIT_3RDPARTY_VAR(VISIT_NETCDF_DIR    "Path containing the NETCDF library's include and lib" NETCDF_DIR)
 VISIT_3RDPARTY_VAR(VISIT_NETCDF_LIBDEP "NETCDF library dependencies" NETCDF_LIBDEP)
@@ -431,9 +444,6 @@ VISIT_3RDPARTY_VAR(VISIT_VISUS_DIR     "Path containing the ViSUS library's incl
 VISIT_3RDPARTY_VAR(VISIT_XDMF_DIR      "Path containing the Xdmf library's include and lib" XDMF_DIR)
 VISIT_3RDPARTY_VAR(VISIT_XDMF_LIBDEP   "Xdmf library dependencies" XDMF_LIBDEP)
 VISIT_3RDPARTY_VAR(VISIT_MDSPLUS_DIR   "Path containing the MDSplus library's include and lib" MDSPLUS_DIR)
-IF(WIN32)
-  VISIT_3RDPARTY_VAR(VISIT_ZLIB_DIR   "Path containing the zlib library's include and lib" ZLIB_DIR)
-ENDIF(WIN32)
 #-----------------------------------------------------------------------------
 # Read the version
 #-----------------------------------------------------------------------------
@@ -813,6 +823,24 @@ ENDIF(VISIT_PARALLEL)
 # Include TCMALLOC support if we can.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
 
+# zlib, szip and jpeg
+IF(CMAKE_HOST_UNIX)
+  SET(ZLIB_LIB z)
+  SET(DL_LIB dl)
+  ADD_DEFINITIONS(-D_LARGEFILE64_SOURCE)
+ELSE(CMAKE_HOST_UNIX)
+  IF(WIN32)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
+    IF(NOT ZLIB_FOUND)
+        SET(ZLIB_LIB vtkzlib)
+    ENDIF(NOT ZLIB_FOUND)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
+  ELSE(WIN32)
+      SET(ZLIB_LIB vtkzlib)
+  ENDIF(WIN32)
+ENDIF(CMAKE_HOST_UNIX)
+
 # Configure HDF5 support. Do it before the other libraries since many can depend on it.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF5.cmake)
 IF(HDF5_FOUND)
@@ -933,21 +961,6 @@ IF(MDSPLUS_FOUND)
     SET(HAVE_LIBMDSPLUS 1)
 ENDIF(MDSPLUS_FOUND)
 
-
-IF(CMAKE_HOST_UNIX)
-  SET(ZLIB_LIB z)
-  SET(DL_LIB dl)
-  ADD_DEFINITIONS(-D_LARGEFILE64_SOURCE)
-ELSE(CMAKE_HOST_UNIX)
-  IF(WIN32)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
-    IF(NOT ZLIB_FOUND)
-        SET(ZLIB_LIB vtkzlib)
-    ENDIF(NOT ZLIB_FOUND)
-  ELSE(WIN32)
-      SET(ZLIB_LIB vtkzlib)
-  ENDIF(WIN32)
-ENDIF(CMAKE_HOST_UNIX)
 
 IF (WIN32)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNSIS.cmake)

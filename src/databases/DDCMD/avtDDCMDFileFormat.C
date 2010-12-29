@@ -2219,7 +2219,7 @@ avtDDCMDFileFormat::avtDDCMDFileFormat(const char *filename)
     // only cgrid files were supported and the file was a zero length
     // file.
     //
-    int       maxlen, lbuf;
+    int       maxlen, lbuf=0;
     char      str[1024], *buf, *b;
     FILE     *file;
 
