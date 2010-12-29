@@ -143,6 +143,7 @@ private slots:
     void legendToggled(bool val);
 private:
     int plotType;
+    bool haveColorRole;
     static const char *roleNames[5];
 
     QComboBox *var1Role;
