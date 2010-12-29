@@ -41,6 +41,10 @@
 #   Mark C. Miller, Wed Oct 27 19:21:10 PDT 2010
 #   Relocated explicit setting of LIBDEP to config-site files as different
 #   sites may have ExodusII installed differently.
+#
+#   Kathleen Bonnell, Mon Dec 27 18:47:01 MST 2010
+#   Change the library name for windows.
+#
 #****************************************************************************/
 
 # Use the EXODUSII_DIR hint from the config-site .cmake file 
@@ -48,7 +52,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(EXODUSII lib/${VISIT_MSVC_VERSION} include exodusII)
+  SET_UP_THIRD_PARTY(EXODUSII lib/${VISIT_MSVC_VERSION} include exoIIc)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(EXODUSII lib inc exoIIv2c)
 ENDIF (WIN32)
