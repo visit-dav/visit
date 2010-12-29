@@ -103,6 +103,9 @@ QvisScatterPlotWindow::QvisScatterPlotWindow(const int type,
     var2Scaling = 0;
     var3Scaling = 0;
     var4Scaling = 0;
+
+    haveColorRole = (atts->GetVar1Role() == 3 || atts->GetVar2Role() == 3 || 
+                     atts->GetVar3Role() == 3 || atts->GetVar4Role() == 3);
 }
 
 
@@ -1026,6 +1029,12 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
           else if( atts->GetColorType() ==
                   ScatterAttributes::ColorByColorTable) 
             colorModeButtons->button(2)->setChecked(true);
+
+          singleColor->setEnabled(atts->GetColorType() ==
+                                  ScatterAttributes::ColorBySingleColor);
+
+          colorTableName->setEnabled(atts->GetColorType() ==
+                                     ScatterAttributes::ColorByColorTable);
             break;
         case ScatterAttributes::ID_colorTableName:
             colorTableName->setColorTable(atts->GetColorTableName().c_str());
@@ -1065,8 +1074,9 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
     //
     if(rolesChanged || varsChanged)
     {
-        QLabel *roleLabels[] = {xCoordRoleLabel, yCoordRoleLabel, 
-            zCoordRoleLabel, colorRoleLabel, 0};
+        QLabel *roleLabels[] = { xCoordRoleLabel, yCoordRoleLabel, 
+                                 zCoordRoleLabel, colorRoleLabel, 0 };
+
         for(int role = 0; role < 4; ++role)
         {
             QString label(roleNames[role]);
@@ -1083,6 +1093,7 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
                 roleVar = atts->GetVar4().c_str();
 
             bool haveVar = !roleVar.isEmpty();
+
             if(haveVar)
             {
                 QString var(roleVar);
@@ -1113,36 +1124,41 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
                 label = label + var;
             }
 
-            // if the role is color (3) then check to see if there is
-            // a variable and enable the coloring options accordingly.
-            if( role == 3)
-            {
-              colorTableRadioButton->setEnabled( haveVar );
-
-              // If no variable turn off the color by table otherwise
-              // leave the settings as is.
-              if( !haveVar &&
-                  atts->GetColorType() == ScatterAttributes::ColorByColorTable )
-              {
-                colorModeButtons->blockSignals(true);
-                colorModeButtons->button(0)->setChecked(true);
-                colorModeButtons->blockSignals(false);
-                colorModeChanged(0);
-              }
-
-            }
-
             roleLabels[role]->setText(label);
             roleLabels[role]->setEnabled(haveVar);
         }
+
+        // Look for a state change
+        if( haveColorRole !=
+            (atts->GetVar1Role() == 3 || atts->GetVar2Role() == 3 || 
+             atts->GetVar3Role() == 3 || atts->GetVar4Role() == 3) )
+        {
+          haveColorRole = (atts->GetVar1Role() == 3 ||
+                           atts->GetVar2Role() == 3 || 
+                           atts->GetVar3Role() == 3 ||
+                           atts->GetVar4Role() == 3);
+
+          // If a state change and have a color var then
+          // assume the user wants a color table.
+          if( haveColorRole )
+          {
+            colorModeButtons->blockSignals(true);
+            colorModeButtons->button(2)->setChecked(true);
+            colorModeButtons->blockSignals(false);
+            colorModeChanged(2);
+          }
+        
+          // If no color role turn off the color by table
+          else if( !haveColorRole &&
+                   atts->GetColorType() == ScatterAttributes::ColorByColorTable )
+          {
+            colorModeButtons->blockSignals(true);
+            colorModeButtons->button(0)->setChecked(true);
+            colorModeButtons->blockSignals(false);
+            colorModeChanged(0);
+          }
+        }
     }
-
-    singleColor->setEnabled(atts->GetColorType() ==
-        ScatterAttributes::ColorBySingleColor);
-
-    colorTableName->setEnabled(atts->GetColorType() ==
-        ScatterAttributes::ColorByColorTable);
-
 }
 
 
@@ -1861,7 +1877,7 @@ QvisScatterPlotWindow::colorModeChanged(int index)
         atts->SetColorType(ScatterAttributes::ColorBySingleColor);
     else if(index == 2)
         atts->SetColorType(ScatterAttributes::ColorByColorTable);
-    SetUpdate(false);
+
     Apply();
 }
 
