@@ -1236,7 +1236,7 @@ periodicityStats( vector< Point >& points,
       }
 
       cutoffIndex = i;
-//      stats.resize(i);
+      stats.resize(i);
       
       break;
     }
@@ -1950,8 +1950,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
         poloidalWindingCounts.push_back( fabs(rotationalSum) / (2.0*M_PI) );
 
-        cerr << poloidalWindingCounts.size() << "  " 
-             << fabs(rotationalSum) / (2.0*M_PI) << endl;
+//         cerr << poloidalWindingCounts.size() << "  " 
+//              << fabs(rotationalSum) / (2.0*M_PI) << endl;
 
         rotationalSums.push_back( fabs(rotationalSum) );
       }
@@ -2396,15 +2396,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
   // Merge the three measures together again based on the index
   // Euclidian distance.
-  int ii, jj, kk;
-
   for( unsigned int i=0; i<offsetWindingPairs.size(); ++i )
   {
-    ii = offsetWindingPairs[i].ranking;
+    int ii = offsetWindingPairs[i].ranking;
 
     // Search for the same sibling pair in the period based winding
     // pair list.
-    kk = -1;
+    int kk = -1;
     for( unsigned int k=0; k<approximateWindingPairs.size(); ++k )
     {
       if( offsetWindingPairs[i].toroidal == approximateWindingPairs[k].toroidal &&
@@ -2417,8 +2415,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
     // Search for the same sibling pair in the best rational
     // approximation winding pair list.
-    jj = -1;
-    for( unsigned int j=0; j<offsetWindingPairs.size(); ++j )
+    int jj = -1;
+    for( unsigned int j=0; j<periodWindingPairs.size(); ++j )
     {
       if( offsetWindingPairs[i].toroidal == periodWindingPairs[j].toroidal &&
           offsetWindingPairs[i].poloidal == periodWindingPairs[j].poloidal )
