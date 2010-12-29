@@ -47,8 +47,6 @@
 #include <avtDatasetQuery.h>
 #include <avtXRayFilter.h>
 
-#include <vtkPolyData.h>
-
 // ****************************************************************************
 //  Class: avtXRayImageQuery
 //
@@ -63,6 +61,10 @@
 //    I added logic to detect RZ meshes with negative R values up front
 //    before any processing to avoid more complex error handling during
 //    pipeline execution.
+//
+//    Eric Brugger, Tue Dec 28 14:38:47 PST 2010
+//    I moved all the logic for doing the ray integration and creating the
+//    image in chunks to avtXRayFilter.
 //
 // ****************************************************************************
 
@@ -95,32 +97,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
 
     std::string               absVarName;  //e.g. "absorbtivity"
     std::string               emisVarName; //e.g. "emissivity"
-    double *                  radBins;
 
-    int                       numBins;    //Used for radiation bins.
-                                          //Number is obtained from the mesh,
-                                          //not set by the user
     int                       numPixels;
-    int                       numPixelsPerIteration;
-    std::string               varname;
-
-    int                       iPass;
-    int                       numPasses;
-
-    int                       iFragment;
-    int                       nImageFragments;
-    int                      *imageFragmentSizes;
-    float                   **imageFragments;
-
-    bool                      invalidRZMesh;
-
-    int                       actualPixelsPerIteration;
-    int                       pixelsForFirstPass;
-    int                       pixelsForLastPass;
-    int                       pixelsForFirstPassFirstProc;
-    int                       pixelsForFirstPassLastProc;
-    int                       pixelsForLastPassFirstProc;
-    int                       pixelsForLastPassLastProc;
 
     virtual void              Execute(vtkDataSet *, const int);
 
@@ -128,14 +106,9 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
 
   private:
     virtual void              Execute(avtDataTree_p);
-    virtual void              ExecuteTree(avtDataTree_p);
-    virtual void              PreExecute(void);
-    virtual void              PostExecute(void);
 
-    void                      IntegrateLines(vtkPolyData *, int*);
-    float                    *CollectImages(int, int, int*, float **);
-    void                      WriteImage(int, int, int*, float**);
-    void                      WriteFloats(int, int, int*, float**);
+    void                      WriteImage(int, int, float*);
+    void                      WriteFloats(int, int, float*);
 };
 
 
