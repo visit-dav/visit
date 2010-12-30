@@ -40,7 +40,7 @@
 //                            avtMFIXFileFormat.C                            //
 // ************************************************************************* //
 
-#include <sys/param.h>
+#include <limits.h>
 
 #include <string>
 #include <cstring>
