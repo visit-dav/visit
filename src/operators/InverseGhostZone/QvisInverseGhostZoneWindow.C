@@ -132,22 +132,35 @@ QvisInverseGhostZoneWindow::CreateWindowContents()
             this, SLOT(requestGhostZonesChanged(bool)));
     mainLayout->addWidget(requestGhostZones, 0,0);
 
-    showTypeLabel = new QLabel(tr("Zones to Display:"), central);
-    mainLayout->addWidget(showTypeLabel,1,0);
-    showType = new QWidget(central);
-    showTypeButtonGroup= new QButtonGroup(showType);
-    QHBoxLayout *showTypeLayout = new QHBoxLayout(showType);
-    showTypeLayout->setMargin(0);
-    showTypeLayout->setSpacing(10);
-    QRadioButton *showTypeShowTypeGhostZonesOnly = new QRadioButton(tr("GhostZonesOnly"), showType);
-    showTypeButtonGroup->addButton(showTypeShowTypeGhostZonesOnly,0);
-    showTypeLayout->addWidget(showTypeShowTypeGhostZonesOnly);
-    QRadioButton *showTypeShowTypeGhostZonesAndRealZones = new QRadioButton(tr("GhostZonesAndRealZones"), showType);
-    showTypeButtonGroup->addButton(showTypeShowTypeGhostZonesAndRealZones,1);
-    showTypeLayout->addWidget(showTypeShowTypeGhostZonesAndRealZones);
-    connect(showTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(showTypeChanged(int)));
-    mainLayout->addWidget(showType, 1,1);
+    showDuplicated = new QCheckBox(tr("Show Zones That Are Duplicated At Domain Boundaries"), central);
+    connect(showDuplicated, SIGNAL(toggled(bool)),
+            this, SLOT(showDuplicatedChanged(bool)));
+    mainLayout->addWidget(showDuplicated, 1,0);
+
+    showEnhancedConnectivity = new QCheckBox(tr("Show Enhanced Connectivity Zones"), central);
+    connect(showEnhancedConnectivity, SIGNAL(toggled(bool)),
+            this, SLOT(showEnhancedConnectivityChanged(bool)));
+    mainLayout->addWidget(showEnhancedConnectivity, 2,0);
+
+    showReducedConnectivity = new QCheckBox(tr("Show Reduced Connectivity Zones"), central);
+    connect(showReducedConnectivity, SIGNAL(toggled(bool)),
+            this, SLOT(showReducedConnectivityChanged(bool)));
+    mainLayout->addWidget(showReducedConnectivity, 3,0);
+
+    showAMRRefined = new QCheckBox(tr("Show zones refined out by finer patches (AMR)"), central);
+    connect(showAMRRefined, SIGNAL(toggled(bool)),
+            this, SLOT(showAMRRefinedChanged(bool)));
+    mainLayout->addWidget(showAMRRefined, 4,0);
+
+    showExterior = new QCheckBox(tr("Show cells on exterior of data set"), central);
+    connect(showExterior, SIGNAL(toggled(bool)),
+            this, SLOT(showExteriorChanged(bool)));
+    mainLayout->addWidget(showExterior, 5,0);
+
+    showNotApplicable = new QCheckBox(tr("Show zones deemed not applicable to problem"), central);
+    connect(showNotApplicable, SIGNAL(toggled(bool)),
+            this, SLOT(showNotApplicableChanged(bool)));
+    mainLayout->addWidget(showNotApplicable, 6,0);
 
 }
 
@@ -188,11 +201,35 @@ QvisInverseGhostZoneWindow::UpdateWindow(bool doAll)
             requestGhostZones->setChecked(atts->GetRequestGhostZones());
             requestGhostZones->blockSignals(false);
             break;
-          case InverseGhostZoneAttributes::ID_showType:
-            showTypeButtonGroup->blockSignals(true);
-            if(showTypeButtonGroup->button((int)atts->GetShowType()) != 0)
-                showTypeButtonGroup->button((int)atts->GetShowType())->setChecked(true);
-            showTypeButtonGroup->blockSignals(false);
+          case InverseGhostZoneAttributes::ID_showDuplicated:
+            showDuplicated->blockSignals(true);
+            showDuplicated->setChecked(atts->GetShowDuplicated());
+            showDuplicated->blockSignals(false);
+            break;
+          case InverseGhostZoneAttributes::ID_showEnhancedConnectivity:
+            showEnhancedConnectivity->blockSignals(true);
+            showEnhancedConnectivity->setChecked(atts->GetShowEnhancedConnectivity());
+            showEnhancedConnectivity->blockSignals(false);
+            break;
+          case InverseGhostZoneAttributes::ID_showReducedConnectivity:
+            showReducedConnectivity->blockSignals(true);
+            showReducedConnectivity->setChecked(atts->GetShowReducedConnectivity());
+            showReducedConnectivity->blockSignals(false);
+            break;
+          case InverseGhostZoneAttributes::ID_showAMRRefined:
+            showAMRRefined->blockSignals(true);
+            showAMRRefined->setChecked(atts->GetShowAMRRefined());
+            showAMRRefined->blockSignals(false);
+            break;
+          case InverseGhostZoneAttributes::ID_showExterior:
+            showExterior->blockSignals(true);
+            showExterior->setChecked(atts->GetShowExterior());
+            showExterior->blockSignals(false);
+            break;
+          case InverseGhostZoneAttributes::ID_showNotApplicable:
+            showNotApplicable->blockSignals(true);
+            showNotApplicable->setChecked(atts->GetShowNotApplicable());
+            showNotApplicable->blockSignals(false);
             break;
         }
     }
@@ -235,14 +272,56 @@ QvisInverseGhostZoneWindow::requestGhostZonesChanged(bool val)
 
 
 void
-QvisInverseGhostZoneWindow::showTypeChanged(int val)
+QvisInverseGhostZoneWindow::showDuplicatedChanged(bool val)
 {
-    if(val != atts->GetShowType())
-    {
-        atts->SetShowType(InverseGhostZoneAttributes::ShowType(val));
-        SetUpdate(false);
-        Apply();
-    }
+    atts->SetShowDuplicated(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisInverseGhostZoneWindow::showEnhancedConnectivityChanged(bool val)
+{
+    atts->SetShowEnhancedConnectivity(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisInverseGhostZoneWindow::showReducedConnectivityChanged(bool val)
+{
+    atts->SetShowReducedConnectivity(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisInverseGhostZoneWindow::showAMRRefinedChanged(bool val)
+{
+    atts->SetShowAMRRefined(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisInverseGhostZoneWindow::showExteriorChanged(bool val)
+{
+    atts->SetShowExterior(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisInverseGhostZoneWindow::showNotApplicableChanged(bool val)
+{
+    atts->SetShowNotApplicable(val);
+    SetUpdate(false);
+    Apply();
 }
 
 

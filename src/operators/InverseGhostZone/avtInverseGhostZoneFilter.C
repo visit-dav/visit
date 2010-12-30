@@ -44,7 +44,11 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
+#include <vtkThreshold.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
 
 // ****************************************************************************
@@ -160,6 +164,10 @@ avtInverseGhostZoneFilter::Equivalent(const AttributeGroup *a)
 //    Sean Ahern, Thu Aug 21 14:25:51 EDT 2008
 //    When there are no ghost zones, the inverse is a NULL mesh.
 //
+//    Hank Childs, Wed Dec 29 18:04:21 PST 2010
+//    Reimplement routine to allow for selecting individual types of ghost 
+//    cells.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -174,34 +182,88 @@ avtInverseGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     // Make an output that is identical to the input.
     //
-    vtkDataSet *out_ds = (vtkDataSet *) in_ds->NewInstance();
-    out_ds->ShallowCopy(in_ds);
+    vtkDataSet *temp_ds = (vtkDataSet *) in_ds->NewInstance();
+    temp_ds->ShallowCopy(in_ds);
+    temp_ds->GetCellData()->RemoveArray("avtGhostZones");
 
-    if (atts.GetShowType() == InverseGhostZoneAttributes::GhostZonesOnly)
+    unsigned int mask = 0;
+    if (atts.GetShowDuplicated())
     {
-        int nCells = in_ds->GetNumberOfCells();
-        unsigned char *gza = ((vtkUnsignedCharArray*)gz)->GetPointer(0);
-        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetName("avtGhostZones");
-        ghostZones->Allocate(nCells);
-        for (int i = 0 ; i < nCells ; i++)
-        {
-            unsigned char ghost = (gza[i] == 0 ? 1 : 0);
-            ghostZones->InsertNextValue(ghost);
-        }
-        out_ds->GetCellData()->RemoveArray("avtGhostZones");
-        if (out_ds->GetFieldData()->GetArray("avtRealDims") != NULL)
-            out_ds->GetFieldData()->RemoveArray("avtRealDims");
-        out_ds->GetCellData()->AddArray(ghostZones);
-        ghostZones->Delete();
+        int m = 1;
+        for (int i = 0 ; i < DUPLICATED_ZONE_INTERNAL_TO_PROBLEM ; i++)
+            m *= 2;
+        mask |= m;
     }
-    else
+    if (atts.GetShowEnhancedConnectivity())
     {
-        out_ds->GetCellData()->RemoveArray("avtGhostZones");
+        int m = 1;
+        for (int i = 0 ; i < ENHANCED_CONNECTIVITY_ZONE ; i++)
+            m *= 2;
+        mask |= m;
+    }
+    if (atts.GetShowReducedConnectivity())
+    {
+        int m = 1;
+        for (int i = 0 ; i < REDUCED_CONNECTIVITY_ZONE ; i++)
+            m *= 2;
+        mask |= m;
+    }
+    if (atts.GetShowAMRRefined())
+    {
+        int m = 1;
+        for (int i = 0 ; i < REFINED_ZONE_IN_AMR_GRID ; i++)
+            m *= 2;
+        mask |= m;
+    }
+    if (atts.GetShowExterior())
+    {
+        int m = 1;
+        for (int i = 0 ; i < ZONE_EXTERIOR_TO_PROBLEM ; i++)
+            m *= 2;
+        mask |= m;
+    }
+    if (atts.GetShowNotApplicable())
+    {
+        int m = 1;
+        for (int i = 0 ; i < ZONE_NOT_APPLICABLE_TO_PROBLEM ; i++)
+            m *= 2;
+        mask |= m;
     }
 
+    int nCells = in_ds->GetNumberOfCells();
+    unsigned char *gza = ((vtkUnsignedCharArray*)gz)->GetPointer(0);
+    vtkFloatArray *retainThese = vtkFloatArray::New();
+    retainThese->SetName("avtRetainThese");
+    retainThese->Allocate(nCells);
+    for (int i = 0 ; i < nCells ; i++)
+    {
+        retainThese->InsertNextValue(gza[i] & mask ? 1.0 : 0.0);
+    }
+    temp_ds->GetCellData()->RemoveArray("avtGhostZones");
+    if (temp_ds->GetFieldData()->GetArray("avtRealDims") != NULL)
+        temp_ds->GetFieldData()->RemoveArray("avtRealDims");
+    temp_ds->GetCellData()->AddArray(retainThese);
+    temp_ds->GetCellData()->SetActiveScalars("avtRetainThese");
+    
+    vtkThreshold *t = vtkThreshold::New();
+    t->ThresholdBetween(0.5, 1.5);
+    t->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_CELLS,
+                              "avtRetainThese");
+    t->SetInput(temp_ds);
+    vtkDataSet *out_ds = t->GetOutput();
+    out_ds->Update();
+    out_ds->GetCellData()->RemoveArray("avtRetainThese");
+    if (in_ds->GetCellData()->GetScalars() != NULL)
+        out_ds->GetCellData()->SetActiveScalars(
+                                in_ds->GetCellData()->GetScalars()->GetName());
+    if (in_ds->GetPointData()->GetScalars() != NULL)
+        out_ds->GetPointData()->SetActiveScalars(
+                                in_ds->GetPointData()->GetScalars()->GetName());
+    retainThese->Delete();
     ManageMemory(out_ds);
-    out_ds->Delete();
+    t->Delete();
+    if (out_ds->GetNumberOfCells() == 0)
+        return NULL;
     return out_ds;
 }
 

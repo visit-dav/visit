@@ -59,19 +59,19 @@ import llnl.visit.Plugin;
 
 public class InverseGhostZoneAttributes extends AttributeSubject implements Plugin
 {
-    private static int InverseGhostZoneAttributes_numAdditionalAtts = 2;
-
-    // Enum values
-    public final static int SHOWTYPE_GHOSTZONESONLY = 0;
-    public final static int SHOWTYPE_GHOSTZONESANDREALZONES = 1;
-
+    private static int InverseGhostZoneAttributes_numAdditionalAtts = 7;
 
     public InverseGhostZoneAttributes()
     {
         super(InverseGhostZoneAttributes_numAdditionalAtts);
 
         requestGhostZones = true;
-        showType = SHOWTYPE_GHOSTZONESONLY;
+        showDuplicated = true;
+        showEnhancedConnectivity = true;
+        showReducedConnectivity = true;
+        showAMRRefined = true;
+        showExterior = true;
+        showNotApplicable = true;
     }
 
     public InverseGhostZoneAttributes(int nMoreFields)
@@ -79,7 +79,12 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
         super(InverseGhostZoneAttributes_numAdditionalAtts + nMoreFields);
 
         requestGhostZones = true;
-        showType = SHOWTYPE_GHOSTZONESONLY;
+        showDuplicated = true;
+        showEnhancedConnectivity = true;
+        showReducedConnectivity = true;
+        showAMRRefined = true;
+        showExterior = true;
+        showNotApplicable = true;
     }
 
     public InverseGhostZoneAttributes(InverseGhostZoneAttributes obj)
@@ -87,7 +92,12 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
         super(InverseGhostZoneAttributes_numAdditionalAtts);
 
         requestGhostZones = obj.requestGhostZones;
-        showType = obj.showType;
+        showDuplicated = obj.showDuplicated;
+        showEnhancedConnectivity = obj.showEnhancedConnectivity;
+        showReducedConnectivity = obj.showReducedConnectivity;
+        showAMRRefined = obj.showAMRRefined;
+        showExterior = obj.showExterior;
+        showNotApplicable = obj.showNotApplicable;
 
         SelectAll();
     }
@@ -106,7 +116,12 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
     {
         // Create the return value
         return ((requestGhostZones == obj.requestGhostZones) &&
-                (showType == obj.showType));
+                (showDuplicated == obj.showDuplicated) &&
+                (showEnhancedConnectivity == obj.showEnhancedConnectivity) &&
+                (showReducedConnectivity == obj.showReducedConnectivity) &&
+                (showAMRRefined == obj.showAMRRefined) &&
+                (showExterior == obj.showExterior) &&
+                (showNotApplicable == obj.showNotApplicable));
     }
 
     public String GetName() { return "InverseGhostZone"; }
@@ -119,15 +134,50 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
         Select(0);
     }
 
-    public void SetShowType(int showType_)
+    public void SetShowDuplicated(boolean showDuplicated_)
     {
-        showType = showType_;
+        showDuplicated = showDuplicated_;
         Select(1);
+    }
+
+    public void SetShowEnhancedConnectivity(boolean showEnhancedConnectivity_)
+    {
+        showEnhancedConnectivity = showEnhancedConnectivity_;
+        Select(2);
+    }
+
+    public void SetShowReducedConnectivity(boolean showReducedConnectivity_)
+    {
+        showReducedConnectivity = showReducedConnectivity_;
+        Select(3);
+    }
+
+    public void SetShowAMRRefined(boolean showAMRRefined_)
+    {
+        showAMRRefined = showAMRRefined_;
+        Select(4);
+    }
+
+    public void SetShowExterior(boolean showExterior_)
+    {
+        showExterior = showExterior_;
+        Select(5);
+    }
+
+    public void SetShowNotApplicable(boolean showNotApplicable_)
+    {
+        showNotApplicable = showNotApplicable_;
+        Select(6);
     }
 
     // Property getting methods
     public boolean GetRequestGhostZones() { return requestGhostZones; }
-    public int     GetShowType() { return showType; }
+    public boolean GetShowDuplicated() { return showDuplicated; }
+    public boolean GetShowEnhancedConnectivity() { return showEnhancedConnectivity; }
+    public boolean GetShowReducedConnectivity() { return showReducedConnectivity; }
+    public boolean GetShowAMRRefined() { return showAMRRefined; }
+    public boolean GetShowExterior() { return showExterior; }
+    public boolean GetShowNotApplicable() { return showNotApplicable; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -135,7 +185,17 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
         if(WriteSelect(0, buf))
             buf.WriteBool(requestGhostZones);
         if(WriteSelect(1, buf))
-            buf.WriteInt(showType);
+            buf.WriteBool(showDuplicated);
+        if(WriteSelect(2, buf))
+            buf.WriteBool(showEnhancedConnectivity);
+        if(WriteSelect(3, buf))
+            buf.WriteBool(showReducedConnectivity);
+        if(WriteSelect(4, buf))
+            buf.WriteBool(showAMRRefined);
+        if(WriteSelect(5, buf))
+            buf.WriteBool(showExterior);
+        if(WriteSelect(6, buf))
+            buf.WriteBool(showNotApplicable);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -146,7 +206,22 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
             SetRequestGhostZones(buf.ReadBool());
             break;
         case 1:
-            SetShowType(buf.ReadInt());
+            SetShowDuplicated(buf.ReadBool());
+            break;
+        case 2:
+            SetShowEnhancedConnectivity(buf.ReadBool());
+            break;
+        case 3:
+            SetShowReducedConnectivity(buf.ReadBool());
+            break;
+        case 4:
+            SetShowAMRRefined(buf.ReadBool());
+            break;
+        case 5:
+            SetShowExterior(buf.ReadBool());
+            break;
+        case 6:
+            SetShowNotApplicable(buf.ReadBool());
             break;
         }
     }
@@ -155,18 +230,23 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
     {
         String str = new String();
         str = str + boolToString("requestGhostZones", requestGhostZones, indent) + "\n";
-        str = str + indent + "showType = ";
-        if(showType == SHOWTYPE_GHOSTZONESONLY)
-            str = str + "SHOWTYPE_GHOSTZONESONLY";
-        if(showType == SHOWTYPE_GHOSTZONESANDREALZONES)
-            str = str + "SHOWTYPE_GHOSTZONESANDREALZONES";
-        str = str + "\n";
+        str = str + boolToString("showDuplicated", showDuplicated, indent) + "\n";
+        str = str + boolToString("showEnhancedConnectivity", showEnhancedConnectivity, indent) + "\n";
+        str = str + boolToString("showReducedConnectivity", showReducedConnectivity, indent) + "\n";
+        str = str + boolToString("showAMRRefined", showAMRRefined, indent) + "\n";
+        str = str + boolToString("showExterior", showExterior, indent) + "\n";
+        str = str + boolToString("showNotApplicable", showNotApplicable, indent) + "\n";
         return str;
     }
 
 
     // Attributes
     private boolean requestGhostZones;
-    private int     showType;
+    private boolean showDuplicated;
+    private boolean showEnhancedConnectivity;
+    private boolean showReducedConnectivity;
+    private boolean showAMRRefined;
+    private boolean showExterior;
+    private boolean showNotApplicable;
 }
 
