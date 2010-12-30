@@ -81,21 +81,36 @@ PyInverseGhostZoneAttributes_ToString(const InverseGhostZoneAttributes *atts, co
     else
         SNPRINTF(tmpStr, 1000, "%srequestGhostZones = 0\n", prefix);
     str += tmpStr;
-    const char *showType_names = "GhostZonesOnly, GhostZonesAndRealZones";
-    switch (atts->GetShowType())
-    {
-      case InverseGhostZoneAttributes::GhostZonesOnly:
-          SNPRINTF(tmpStr, 1000, "%sshowType = %sGhostZonesOnly  # %s\n", prefix, prefix, showType_names);
-          str += tmpStr;
-          break;
-      case InverseGhostZoneAttributes::GhostZonesAndRealZones:
-          SNPRINTF(tmpStr, 1000, "%sshowType = %sGhostZonesAndRealZones  # %s\n", prefix, prefix, showType_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
+    if(atts->GetShowDuplicated())
+        SNPRINTF(tmpStr, 1000, "%sshowDuplicated = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowDuplicated = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetShowEnhancedConnectivity())
+        SNPRINTF(tmpStr, 1000, "%sshowEnhancedConnectivity = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowEnhancedConnectivity = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetShowReducedConnectivity())
+        SNPRINTF(tmpStr, 1000, "%sshowReducedConnectivity = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowReducedConnectivity = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetShowAMRRefined())
+        SNPRINTF(tmpStr, 1000, "%sshowAMRRefined = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowAMRRefined = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetShowExterior())
+        SNPRINTF(tmpStr, 1000, "%sshowExterior = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowExterior = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetShowNotApplicable())
+        SNPRINTF(tmpStr, 1000, "%sshowNotApplicable = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowNotApplicable = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -133,7 +148,7 @@ InverseGhostZoneAttributes_GetRequestGhostZones(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-InverseGhostZoneAttributes_SetShowType(PyObject *self, PyObject *args)
+InverseGhostZoneAttributes_SetShowDuplicated(PyObject *self, PyObject *args)
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
 
@@ -141,27 +156,138 @@ InverseGhostZoneAttributes_SetShowType(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the showType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetShowType(InverseGhostZoneAttributes::ShowType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid showType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "GhostZonesOnly, GhostZonesAndRealZones.");
-        return NULL;
-    }
+    // Set the showDuplicated in the object.
+    obj->data->SetShowDuplicated(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-InverseGhostZoneAttributes_GetShowType(PyObject *self, PyObject *args)
+InverseGhostZoneAttributes_GetShowDuplicated(PyObject *self, PyObject *args)
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetShowType()));
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowDuplicated()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+InverseGhostZoneAttributes_SetShowEnhancedConnectivity(PyObject *self, PyObject *args)
+{
+    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showEnhancedConnectivity in the object.
+    obj->data->SetShowEnhancedConnectivity(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+InverseGhostZoneAttributes_GetShowEnhancedConnectivity(PyObject *self, PyObject *args)
+{
+    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowEnhancedConnectivity()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+InverseGhostZoneAttributes_SetShowReducedConnectivity(PyObject *self, PyObject *args)
+{
+    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showReducedConnectivity in the object.
+    obj->data->SetShowReducedConnectivity(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+InverseGhostZoneAttributes_GetShowReducedConnectivity(PyObject *self, PyObject *args)
+{
+    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowReducedConnectivity()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+InverseGhostZoneAttributes_SetShowAMRRefined(PyObject *self, PyObject *args)
+{
+    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showAMRRefined in the object.
+    obj->data->SetShowAMRRefined(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+InverseGhostZoneAttributes_GetShowAMRRefined(PyObject *self, PyObject *args)
+{
+    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowAMRRefined()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+InverseGhostZoneAttributes_SetShowExterior(PyObject *self, PyObject *args)
+{
+    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showExterior in the object.
+    obj->data->SetShowExterior(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+InverseGhostZoneAttributes_GetShowExterior(PyObject *self, PyObject *args)
+{
+    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowExterior()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+InverseGhostZoneAttributes_SetShowNotApplicable(PyObject *self, PyObject *args)
+{
+    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showNotApplicable in the object.
+    obj->data->SetShowNotApplicable(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+InverseGhostZoneAttributes_GetShowNotApplicable(PyObject *self, PyObject *args)
+{
+    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowNotApplicable()?1L:0L);
     return retval;
 }
 
@@ -171,8 +297,18 @@ PyMethodDef PyInverseGhostZoneAttributes_methods[INVERSEGHOSTZONEATTRIBUTES_NMET
     {"Notify", InverseGhostZoneAttributes_Notify, METH_VARARGS},
     {"SetRequestGhostZones", InverseGhostZoneAttributes_SetRequestGhostZones, METH_VARARGS},
     {"GetRequestGhostZones", InverseGhostZoneAttributes_GetRequestGhostZones, METH_VARARGS},
-    {"SetShowType", InverseGhostZoneAttributes_SetShowType, METH_VARARGS},
-    {"GetShowType", InverseGhostZoneAttributes_GetShowType, METH_VARARGS},
+    {"SetShowDuplicated", InverseGhostZoneAttributes_SetShowDuplicated, METH_VARARGS},
+    {"GetShowDuplicated", InverseGhostZoneAttributes_GetShowDuplicated, METH_VARARGS},
+    {"SetShowEnhancedConnectivity", InverseGhostZoneAttributes_SetShowEnhancedConnectivity, METH_VARARGS},
+    {"GetShowEnhancedConnectivity", InverseGhostZoneAttributes_GetShowEnhancedConnectivity, METH_VARARGS},
+    {"SetShowReducedConnectivity", InverseGhostZoneAttributes_SetShowReducedConnectivity, METH_VARARGS},
+    {"GetShowReducedConnectivity", InverseGhostZoneAttributes_GetShowReducedConnectivity, METH_VARARGS},
+    {"SetShowAMRRefined", InverseGhostZoneAttributes_SetShowAMRRefined, METH_VARARGS},
+    {"GetShowAMRRefined", InverseGhostZoneAttributes_GetShowAMRRefined, METH_VARARGS},
+    {"SetShowExterior", InverseGhostZoneAttributes_SetShowExterior, METH_VARARGS},
+    {"GetShowExterior", InverseGhostZoneAttributes_GetShowExterior, METH_VARARGS},
+    {"SetShowNotApplicable", InverseGhostZoneAttributes_SetShowNotApplicable, METH_VARARGS},
+    {"GetShowNotApplicable", InverseGhostZoneAttributes_GetShowNotApplicable, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -203,13 +339,18 @@ PyInverseGhostZoneAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "requestGhostZones") == 0)
         return InverseGhostZoneAttributes_GetRequestGhostZones(self, NULL);
-    if(strcmp(name, "showType") == 0)
-        return InverseGhostZoneAttributes_GetShowType(self, NULL);
-    if(strcmp(name, "GhostZonesOnly") == 0)
-        return PyInt_FromLong(long(InverseGhostZoneAttributes::GhostZonesOnly));
-    if(strcmp(name, "GhostZonesAndRealZones") == 0)
-        return PyInt_FromLong(long(InverseGhostZoneAttributes::GhostZonesAndRealZones));
-
+    if(strcmp(name, "showDuplicated") == 0)
+        return InverseGhostZoneAttributes_GetShowDuplicated(self, NULL);
+    if(strcmp(name, "showEnhancedConnectivity") == 0)
+        return InverseGhostZoneAttributes_GetShowEnhancedConnectivity(self, NULL);
+    if(strcmp(name, "showReducedConnectivity") == 0)
+        return InverseGhostZoneAttributes_GetShowReducedConnectivity(self, NULL);
+    if(strcmp(name, "showAMRRefined") == 0)
+        return InverseGhostZoneAttributes_GetShowAMRRefined(self, NULL);
+    if(strcmp(name, "showExterior") == 0)
+        return InverseGhostZoneAttributes_GetShowExterior(self, NULL);
+    if(strcmp(name, "showNotApplicable") == 0)
+        return InverseGhostZoneAttributes_GetShowNotApplicable(self, NULL);
 
     return Py_FindMethod(PyInverseGhostZoneAttributes_methods, self, name);
 }
@@ -226,8 +367,18 @@ PyInverseGhostZoneAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "requestGhostZones") == 0)
         obj = InverseGhostZoneAttributes_SetRequestGhostZones(self, tuple);
-    else if(strcmp(name, "showType") == 0)
-        obj = InverseGhostZoneAttributes_SetShowType(self, tuple);
+    else if(strcmp(name, "showDuplicated") == 0)
+        obj = InverseGhostZoneAttributes_SetShowDuplicated(self, tuple);
+    else if(strcmp(name, "showEnhancedConnectivity") == 0)
+        obj = InverseGhostZoneAttributes_SetShowEnhancedConnectivity(self, tuple);
+    else if(strcmp(name, "showReducedConnectivity") == 0)
+        obj = InverseGhostZoneAttributes_SetShowReducedConnectivity(self, tuple);
+    else if(strcmp(name, "showAMRRefined") == 0)
+        obj = InverseGhostZoneAttributes_SetShowAMRRefined(self, tuple);
+    else if(strcmp(name, "showExterior") == 0)
+        obj = InverseGhostZoneAttributes_SetShowExterior(self, tuple);
+    else if(strcmp(name, "showNotApplicable") == 0)
+        obj = InverseGhostZoneAttributes_SetShowNotApplicable(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

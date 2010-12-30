@@ -38,7 +38,6 @@
 
 #ifndef INVERSEGHOSTZONEATTRIBUTES_H
 #define INVERSEGHOSTZONEATTRIBUTES_H
-#include <string>
 #include <AttributeSubject.h>
 
 
@@ -60,12 +59,6 @@
 class InverseGhostZoneAttributes : public AttributeSubject
 {
 public:
-    enum ShowType
-    {
-        GhostZonesOnly,
-        GhostZonesAndRealZones
-    };
-
     // These constructors are for objects of this class
     InverseGhostZoneAttributes();
     InverseGhostZoneAttributes(const InverseGhostZoneAttributes &obj);
@@ -94,22 +87,26 @@ public:
 
     // Property setting methods
     void SetRequestGhostZones(bool requestGhostZones_);
-    void SetShowType(ShowType showType_);
+    void SetShowDuplicated(bool showDuplicated_);
+    void SetShowEnhancedConnectivity(bool showEnhancedConnectivity_);
+    void SetShowReducedConnectivity(bool showReducedConnectivity_);
+    void SetShowAMRRefined(bool showAMRRefined_);
+    void SetShowExterior(bool showExterior_);
+    void SetShowNotApplicable(bool showNotApplicable_);
 
     // Property getting methods
     bool GetRequestGhostZones() const;
-    ShowType GetShowType() const;
+    bool GetShowDuplicated() const;
+    bool GetShowEnhancedConnectivity() const;
+    bool GetShowReducedConnectivity() const;
+    bool GetShowAMRRefined() const;
+    bool GetShowExterior() const;
+    bool GetShowNotApplicable() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
-    // Enum conversion functions
-    static std::string ShowType_ToString(ShowType);
-    static bool ShowType_FromString(const std::string &, ShowType &);
-protected:
-    static std::string ShowType_ToString(int);
-public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -121,18 +118,28 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_requestGhostZones = 0,
-        ID_showType,
+        ID_showDuplicated,
+        ID_showEnhancedConnectivity,
+        ID_showReducedConnectivity,
+        ID_showAMRRefined,
+        ID_showExterior,
+        ID_showNotApplicable,
         ID__LAST
     };
 
 private:
     bool requestGhostZones;
-    int  showType;
+    bool showDuplicated;
+    bool showEnhancedConnectivity;
+    bool showReducedConnectivity;
+    bool showAMRRefined;
+    bool showExterior;
+    bool showNotApplicable;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define INVERSEGHOSTZONEATTRIBUTES_TMFS "bi"
+#define INVERSEGHOSTZONEATTRIBUTES_TMFS "bbbbbbb"
 
 #endif

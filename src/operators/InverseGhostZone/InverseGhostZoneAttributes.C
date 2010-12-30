@@ -39,43 +39,6 @@
 #include <InverseGhostZoneAttributes.h>
 #include <DataNode.h>
 
-//
-// Enum conversion methods for InverseGhostZoneAttributes::ShowType
-//
-
-static const char *ShowType_strings[] = {
-"GhostZonesOnly", "GhostZonesAndRealZones"};
-
-std::string
-InverseGhostZoneAttributes::ShowType_ToString(InverseGhostZoneAttributes::ShowType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return ShowType_strings[index];
-}
-
-std::string
-InverseGhostZoneAttributes::ShowType_ToString(int t)
-{
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return ShowType_strings[index];
-}
-
-bool
-InverseGhostZoneAttributes::ShowType_FromString(const std::string &s, InverseGhostZoneAttributes::ShowType &val)
-{
-    val = InverseGhostZoneAttributes::GhostZonesOnly;
-    for(int i = 0; i < 2; ++i)
-    {
-        if(s == ShowType_strings[i])
-        {
-            val = (ShowType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // ****************************************************************************
 // Method: InverseGhostZoneAttributes::InverseGhostZoneAttributes
 //
@@ -94,7 +57,12 @@ InverseGhostZoneAttributes::ShowType_FromString(const std::string &s, InverseGho
 void InverseGhostZoneAttributes::Init()
 {
     requestGhostZones = true;
-    showType = GhostZonesOnly;
+    showDuplicated = true;
+    showEnhancedConnectivity = true;
+    showReducedConnectivity = true;
+    showAMRRefined = true;
+    showExterior = true;
+    showNotApplicable = true;
 
     InverseGhostZoneAttributes::SelectAll();
 }
@@ -117,7 +85,12 @@ void InverseGhostZoneAttributes::Init()
 void InverseGhostZoneAttributes::Copy(const InverseGhostZoneAttributes &obj)
 {
     requestGhostZones = obj.requestGhostZones;
-    showType = obj.showType;
+    showDuplicated = obj.showDuplicated;
+    showEnhancedConnectivity = obj.showEnhancedConnectivity;
+    showReducedConnectivity = obj.showReducedConnectivity;
+    showAMRRefined = obj.showAMRRefined;
+    showExterior = obj.showExterior;
+    showNotApplicable = obj.showNotApplicable;
 
     InverseGhostZoneAttributes::SelectAll();
 }
@@ -276,7 +249,12 @@ InverseGhostZoneAttributes::operator == (const InverseGhostZoneAttributes &obj) 
 {
     // Create the return value
     return ((requestGhostZones == obj.requestGhostZones) &&
-            (showType == obj.showType));
+            (showDuplicated == obj.showDuplicated) &&
+            (showEnhancedConnectivity == obj.showEnhancedConnectivity) &&
+            (showReducedConnectivity == obj.showReducedConnectivity) &&
+            (showAMRRefined == obj.showAMRRefined) &&
+            (showExterior == obj.showExterior) &&
+            (showNotApplicable == obj.showNotApplicable));
 }
 
 // ****************************************************************************
@@ -420,8 +398,13 @@ InverseGhostZoneAttributes::NewInstance(bool copy) const
 void
 InverseGhostZoneAttributes::SelectAll()
 {
-    Select(ID_requestGhostZones, (void *)&requestGhostZones);
-    Select(ID_showType,          (void *)&showType);
+    Select(ID_requestGhostZones,        (void *)&requestGhostZones);
+    Select(ID_showDuplicated,           (void *)&showDuplicated);
+    Select(ID_showEnhancedConnectivity, (void *)&showEnhancedConnectivity);
+    Select(ID_showReducedConnectivity,  (void *)&showReducedConnectivity);
+    Select(ID_showAMRRefined,           (void *)&showAMRRefined);
+    Select(ID_showExterior,             (void *)&showExterior);
+    Select(ID_showNotApplicable,        (void *)&showNotApplicable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -460,10 +443,40 @@ InverseGhostZoneAttributes::CreateNode(DataNode *parentNode, bool completeSave, 
         node->AddNode(new DataNode("requestGhostZones", requestGhostZones));
     }
 
-    if(completeSave || !FieldsEqual(ID_showType, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showDuplicated, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("showType", ShowType_ToString(showType)));
+        node->AddNode(new DataNode("showDuplicated", showDuplicated));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showEnhancedConnectivity, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showEnhancedConnectivity", showEnhancedConnectivity));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showReducedConnectivity, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showReducedConnectivity", showReducedConnectivity));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showAMRRefined, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showAMRRefined", showAMRRefined));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showExterior, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showExterior", showExterior));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showNotApplicable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showNotApplicable", showNotApplicable));
     }
 
 
@@ -504,22 +517,18 @@ InverseGhostZoneAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("requestGhostZones")) != 0)
         SetRequestGhostZones(node->AsBool());
-    if((node = searchNode->GetNode("showType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
-                SetShowType(ShowType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            ShowType value;
-            if(ShowType_FromString(node->AsString(), value))
-                SetShowType(value);
-        }
-    }
+    if((node = searchNode->GetNode("showDuplicated")) != 0)
+        SetShowDuplicated(node->AsBool());
+    if((node = searchNode->GetNode("showEnhancedConnectivity")) != 0)
+        SetShowEnhancedConnectivity(node->AsBool());
+    if((node = searchNode->GetNode("showReducedConnectivity")) != 0)
+        SetShowReducedConnectivity(node->AsBool());
+    if((node = searchNode->GetNode("showAMRRefined")) != 0)
+        SetShowAMRRefined(node->AsBool());
+    if((node = searchNode->GetNode("showExterior")) != 0)
+        SetShowExterior(node->AsBool());
+    if((node = searchNode->GetNode("showNotApplicable")) != 0)
+        SetShowNotApplicable(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -534,10 +543,45 @@ InverseGhostZoneAttributes::SetRequestGhostZones(bool requestGhostZones_)
 }
 
 void
-InverseGhostZoneAttributes::SetShowType(InverseGhostZoneAttributes::ShowType showType_)
+InverseGhostZoneAttributes::SetShowDuplicated(bool showDuplicated_)
 {
-    showType = showType_;
-    Select(ID_showType, (void *)&showType);
+    showDuplicated = showDuplicated_;
+    Select(ID_showDuplicated, (void *)&showDuplicated);
+}
+
+void
+InverseGhostZoneAttributes::SetShowEnhancedConnectivity(bool showEnhancedConnectivity_)
+{
+    showEnhancedConnectivity = showEnhancedConnectivity_;
+    Select(ID_showEnhancedConnectivity, (void *)&showEnhancedConnectivity);
+}
+
+void
+InverseGhostZoneAttributes::SetShowReducedConnectivity(bool showReducedConnectivity_)
+{
+    showReducedConnectivity = showReducedConnectivity_;
+    Select(ID_showReducedConnectivity, (void *)&showReducedConnectivity);
+}
+
+void
+InverseGhostZoneAttributes::SetShowAMRRefined(bool showAMRRefined_)
+{
+    showAMRRefined = showAMRRefined_;
+    Select(ID_showAMRRefined, (void *)&showAMRRefined);
+}
+
+void
+InverseGhostZoneAttributes::SetShowExterior(bool showExterior_)
+{
+    showExterior = showExterior_;
+    Select(ID_showExterior, (void *)&showExterior);
+}
+
+void
+InverseGhostZoneAttributes::SetShowNotApplicable(bool showNotApplicable_)
+{
+    showNotApplicable = showNotApplicable_;
+    Select(ID_showNotApplicable, (void *)&showNotApplicable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -550,10 +594,40 @@ InverseGhostZoneAttributes::GetRequestGhostZones() const
     return requestGhostZones;
 }
 
-InverseGhostZoneAttributes::ShowType
-InverseGhostZoneAttributes::GetShowType() const
+bool
+InverseGhostZoneAttributes::GetShowDuplicated() const
 {
-    return ShowType(showType);
+    return showDuplicated;
+}
+
+bool
+InverseGhostZoneAttributes::GetShowEnhancedConnectivity() const
+{
+    return showEnhancedConnectivity;
+}
+
+bool
+InverseGhostZoneAttributes::GetShowReducedConnectivity() const
+{
+    return showReducedConnectivity;
+}
+
+bool
+InverseGhostZoneAttributes::GetShowAMRRefined() const
+{
+    return showAMRRefined;
+}
+
+bool
+InverseGhostZoneAttributes::GetShowExterior() const
+{
+    return showExterior;
+}
+
+bool
+InverseGhostZoneAttributes::GetShowNotApplicable() const
+{
+    return showNotApplicable;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -580,8 +654,13 @@ InverseGhostZoneAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_requestGhostZones: return "requestGhostZones";
-    case ID_showType:          return "showType";
+    case ID_requestGhostZones:        return "requestGhostZones";
+    case ID_showDuplicated:           return "showDuplicated";
+    case ID_showEnhancedConnectivity: return "showEnhancedConnectivity";
+    case ID_showReducedConnectivity:  return "showReducedConnectivity";
+    case ID_showAMRRefined:           return "showAMRRefined";
+    case ID_showExterior:             return "showExterior";
+    case ID_showNotApplicable:        return "showNotApplicable";
     default:  return "invalid index";
     }
 }
@@ -606,8 +685,13 @@ InverseGhostZoneAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_requestGhostZones: return FieldType_bool;
-    case ID_showType:          return FieldType_enum;
+    case ID_requestGhostZones:        return FieldType_bool;
+    case ID_showDuplicated:           return FieldType_bool;
+    case ID_showEnhancedConnectivity: return FieldType_bool;
+    case ID_showReducedConnectivity:  return FieldType_bool;
+    case ID_showAMRRefined:           return FieldType_bool;
+    case ID_showExterior:             return FieldType_bool;
+    case ID_showNotApplicable:        return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -632,8 +716,13 @@ InverseGhostZoneAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_requestGhostZones: return "bool";
-    case ID_showType:          return "enum";
+    case ID_requestGhostZones:        return "bool";
+    case ID_showDuplicated:           return "bool";
+    case ID_showEnhancedConnectivity: return "bool";
+    case ID_showReducedConnectivity:  return "bool";
+    case ID_showAMRRefined:           return "bool";
+    case ID_showExterior:             return "bool";
+    case ID_showNotApplicable:        return "bool";
     default:  return "invalid index";
     }
 }
@@ -665,9 +754,34 @@ InverseGhostZoneAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) c
         retval = (requestGhostZones == obj.requestGhostZones);
         }
         break;
-    case ID_showType:
+    case ID_showDuplicated:
         {  // new scope
-        retval = (showType == obj.showType);
+        retval = (showDuplicated == obj.showDuplicated);
+        }
+        break;
+    case ID_showEnhancedConnectivity:
+        {  // new scope
+        retval = (showEnhancedConnectivity == obj.showEnhancedConnectivity);
+        }
+        break;
+    case ID_showReducedConnectivity:
+        {  // new scope
+        retval = (showReducedConnectivity == obj.showReducedConnectivity);
+        }
+        break;
+    case ID_showAMRRefined:
+        {  // new scope
+        retval = (showAMRRefined == obj.showAMRRefined);
+        }
+        break;
+    case ID_showExterior:
+        {  // new scope
+        retval = (showExterior == obj.showExterior);
+        }
+        break;
+    case ID_showNotApplicable:
+        {  // new scope
+        retval = (showNotApplicable == obj.showNotApplicable);
         }
         break;
     default: retval = false;
