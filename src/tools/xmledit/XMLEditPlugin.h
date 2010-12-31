@@ -93,6 +93,9 @@ class QGroupBox;
 //    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
 //    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
 //
+//    Hank Childs, Thu Dec 30 22:37:51 PST 2010
+//    Add support for expression-creating-operators.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -116,6 +119,9 @@ class XMLEditPlugin : public QFrame
     void enabledByDefaultChanged(bool);
     void pluginTypeChanged(int);
     void varTypesChanged();
+    void createExpressionsChanged(bool);
+    void inOpVarTypesChanged();
+    void outOpVarTypesChanged();
     void dbTypeChanged(int);
     void filePatternsTextChanged(const QString&);
     void filePatternsStrictChanged(bool);
@@ -146,6 +152,30 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *varTypeSymmetricTensor;
     QCheckBox       *varTypeLabel;
     QCheckBox       *varTypeArray;
+    QGroupBox       *operatorPluginGroup;
+    QCheckBox       *createExpressions;
+    QCheckBox       *inOpVarTypeMesh;
+    QCheckBox       *inOpVarTypeScalar;
+    QCheckBox       *inOpVarTypeVector;
+    QCheckBox       *inOpVarTypeMaterial;
+    QCheckBox       *inOpVarTypeSubset;
+    QCheckBox       *inOpVarTypeSpecies;
+    QCheckBox       *inOpVarTypeCurve;
+    QCheckBox       *inOpVarTypeTensor;
+    QCheckBox       *inOpVarTypeSymmetricTensor;
+    QCheckBox       *inOpVarTypeLabel;
+    QCheckBox       *inOpVarTypeArray;
+    QCheckBox       *outOpVarTypeMesh;
+    QCheckBox       *outOpVarTypeScalar;
+    QCheckBox       *outOpVarTypeVector;
+    QCheckBox       *outOpVarTypeMaterial;
+    QCheckBox       *outOpVarTypeSubset;
+    QCheckBox       *outOpVarTypeSpecies;
+    QCheckBox       *outOpVarTypeCurve;
+    QCheckBox       *outOpVarTypeTensor;
+    QCheckBox       *outOpVarTypeSymmetricTensor;
+    QCheckBox       *outOpVarTypeLabel;
+    QCheckBox       *outOpVarTypeArray;
     QGroupBox       *dbPluginGroup;
     QComboBox       *dbType;
     QLineEdit       *filePatterns;

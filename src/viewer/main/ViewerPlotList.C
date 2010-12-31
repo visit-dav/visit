@@ -2499,6 +2499,9 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Hank Childs, Tue Aug 31 13:33:00 PDT 2010
 //    Expand the plot automatically when we add an auto-operator.
 //
+//    Hank Childs, Thu Dec 30 12:56:21 PST 2010
+//    Add support for operator expression from scalars, vectors, tensors, etc.
+//
 // ****************************************************************************
 
 int
@@ -2610,10 +2613,10 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     OperatorPluginManager *oPM = GetOperatorPluginManager();
     for (int j = 0; j < oPM->GetNEnabledPlugins(); j++)
     {
-        const string &mesh = newPlot->GetMeshName();
         std::string id = oPM->GetEnabledID(j);
         CommonOperatorPluginInfo *info = oPM->GetCommonPluginInfo(id);
-        ExpressionList *exprs = info->GetCreatedExpressions(mesh.c_str());
+        const avtDatabaseMetaData *md = newPlot->GetMetaData();
+        ExpressionList *exprs = info->GetCreatedExpressions(md);
         if (exprs == NULL)
             continue;
         for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
@@ -7782,6 +7785,9 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 //   Add code to send the expression being used to the operator as part of
 //   the expression.
 //
+//   Hank Childs, Thu Dec 30 13:09:36 PST 2010
+//   Add support for operator expressions from scalars, vectors, and tensors.
+//
 // ****************************************************************************
 
 void
@@ -7869,7 +7875,8 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
         for (int j = 0 ; j < plot->GetNOperators() ; j++)
         {
             ViewerOperator *oper = plot->GetOperator(j);
-            ExpressionList *exprs = oper->GetCreatedVariables(mesh.c_str());
+            const avtDatabaseMetaData *md = plot->GetMetaData();
+            ExpressionList *exprs = oper->GetCreatedVariables(md);
             if (exprs != NULL)
             {
                 for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)

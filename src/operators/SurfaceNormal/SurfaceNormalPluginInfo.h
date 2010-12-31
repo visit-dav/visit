@@ -75,7 +75,7 @@ class SurfaceNormalCommonPluginInfo : public virtual CommonOperatorPluginInfo, p
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
-    virtual ExpressionList *GetCreatedExpressions(const char *);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
 };
 
 class SurfaceNormalGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual SurfaceNormalCommonPluginInfo

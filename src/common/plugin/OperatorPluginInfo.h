@@ -54,6 +54,7 @@ class QvisWizard;
 class QWidget;
 class QString;
 class avtPluginFilter;
+class avtDatabaseMetaData;
 class ViewerPlot;
 class ExpressionList;
 
@@ -125,6 +126,10 @@ class ExpressionList;
 //    Hank Childs, Tue Aug 31 10:20:08 PDT 2010
 //    Remove unused method GetCreateVariables.
 //
+//    Hank Childs, Thu Dec 30 12:15:39 PST 2010
+//    Add the ability to create expressions based on scalars, vectors, or
+//    tensors.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
@@ -144,7 +149,7 @@ class PLUGIN_API CommonOperatorPluginInfo : public virtual GeneralOperatorPlugin
     virtual AttributeSubject *AllocAttributes() = 0;
     virtual void CopyAttributes(AttributeSubject *to,
                                 AttributeSubject *from) = 0;
-    virtual ExpressionList *GetCreatedExpressions(const char *mesh) {return NULL;}
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *md) {return NULL;}
 };
 
 class PLUGIN_API GUIOperatorPluginInfo : public virtual CommonOperatorPluginInfo

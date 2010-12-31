@@ -494,11 +494,15 @@ ViewerOperator::AllowsSubsequentOperators() const
 //    Hank Childs, Tue Aug 31 08:12:20 PDT 2010
 //    Use the GetCreatedExpressions method instead.
 //
+//    Hank Childs, Thu Dec 30 12:56:21 PST 2010
+//    Change argument to meta data, since we can now create expressions for
+//    scalars, vectors, tensors, etc.
+//
 // ****************************************************************************
 ExpressionList *
-ViewerOperator::GetCreatedVariables(const char *mesh)
+ViewerOperator::GetCreatedVariables(const avtDatabaseMetaData *md)
 {
-    return viewerPluginInfo->GetCreatedExpressions(mesh);
+    return viewerPluginInfo->GetCreatedExpressions(md);
 }
 
 

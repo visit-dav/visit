@@ -741,6 +741,9 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
 //
 // Modifications:
 //
+//   Hank Childs, Thu Dec 30 12:51:28 PST 2010
+//   Add created expressions support for scalars, vectors, and tensors.
+//
 // ****************************************************************************
 
 void
@@ -752,40 +755,33 @@ VariableMenuPopulator::GetOperatorCreatedExpressions(ExpressionList &newExpressi
 
     // Iterate over the meshes in the metadata and add operator-created expressions
     // for each relevant mesh.
-    for (int i = 0; i < md->GetNumMeshes(); ++i)
+    for(int j = 0; j < oPM->GetNEnabledPlugins(); j++)
     {
-        const avtMeshMetaData &mmd = md->GetMeshes(i);
-        if (!mmd.hideFromGUI)
+        std::string id(oPM->GetEnabledID(j));
+        CommonOperatorPluginInfo *ComInfo = oPM->GetCommonPluginInfo(id);
+        ExpressionList *fromOperators = ComInfo->GetCreatedExpressions(md);
+        if(fromOperators != NULL)
         {
-            for(int j = 0; j < oPM->GetNEnabledPlugins(); j++)
+            for(int k = 0; k < fromOperators->GetNumExpressions(); k++)
             {
-                std::string id(oPM->GetEnabledID(j));
-                CommonOperatorPluginInfo *ComInfo = oPM->GetCommonPluginInfo(id);
-                ExpressionList *fromOperators = ComInfo->GetCreatedExpressions(mmd.name.c_str());
-                if(fromOperators != NULL)
-                {
-                    for(int k = 0; k < fromOperators->GetNumExpressions(); k++)
-                    {
-                        const Expression &opExpr = fromOperators->GetExpressions(k);
-                        newExpressionList.AddExpressions(opExpr);
+                const Expression &opExpr = fromOperators->GetExpressions(k);
+                newExpressionList.AddExpressions(opExpr);
 
-                        // Now, since the operator created the expression, it's
-                        // entirely possible that the expression has not made it
-                        // into the expression list yet. So, as a side effect let's
-                        // add the expression into the list if it's not already there.
-                        ExpressionList *globalExpr = ParsingExprList::Instance()->GetList();
-                        Expression *e = globalExpr->operator[](opExpr.GetName().c_str());
-                        if(e == 0)
-                        {
-                            debug1 << "GetOperatorCreatedExpressions: Adding "
-                                      "operator-created expression " << opExpr.GetName()
-                                   << " to the global expression list." << endl;
-                            globalExpr->AddExpressions(opExpr);
-                        }
-                    }
-                    delete fromOperators;
+                // Now, since the operator created the expression, it's
+                // entirely possible that the expression has not made it
+                // into the expression list yet. So, as a side effect let's
+                // add the expression into the list if it's not already there.
+                ExpressionList *globalExpr = ParsingExprList::Instance()->GetList();
+                Expression *e = globalExpr->operator[](opExpr.GetName().c_str());
+                if(e == 0)
+                {
+                    debug1 << "GetOperatorCreatedExpressions: Adding "
+                              "operator-created expression " << opExpr.GetName()
+                           << " to the global expression list." << endl;
+                    globalExpr->AddExpressions(opExpr);
                 }
             }
+            delete fromOperators;
         }
     }
 }

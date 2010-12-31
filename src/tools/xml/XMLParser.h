@@ -215,6 +215,9 @@ ParseCharacters(const QString &buff)
 //    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
 //    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
 //
+//    Hank Childs, Thu Dec 30 13:33:19 PST 2010
+//    Added support for expression-creating operators.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -337,6 +340,9 @@ class XMLParser : public QXmlDefaultHandler
             QString filePatternsStrict = atts.value("filePatternsStrict");
             QString opensWholeDirectory = atts.value("opensWholeDirectory");
             QString category  = atts.value("category");
+            QString createExpression = atts.value("createExpression");
+            QString exprInType = atts.value("exprInType");
+            QString exprOutType = atts.value("exprOutType");
             currentPlugin = new Plugin(name, label, type, vartype,
                                        dbtype, version, iconFile, 
                                        haswriter.isNull() ? false : Text2Bool(haswriter),
@@ -366,6 +372,18 @@ class XMLParser : public QXmlDefaultHandler
             if (!category.isNull())
             {
                 currentPlugin->category = category;
+            }
+            if (!createExpression.isNull())
+            {
+                currentPlugin->createExpression = Text2Bool(createExpression);
+            }
+            if (!exprInType.isNull())
+            {
+                currentPlugin->exprInType = exprInType;
+            }
+            if (!exprOutType.isNull())
+            {
+                currentPlugin->exprOutType = exprOutType;
             }
         }
         else if (tag == "Attribute")

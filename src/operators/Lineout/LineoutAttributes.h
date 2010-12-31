@@ -40,6 +40,7 @@
 #define LINEOUTATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <visitstream.h>
 
 // ****************************************************************************
@@ -60,13 +61,23 @@
 class LineoutAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     LineoutAttributes();
     LineoutAttributes(const LineoutAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    LineoutAttributes(private_tmfs_t tmfs);
+    LineoutAttributes(const LineoutAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~LineoutAttributes();
 
     virtual LineoutAttributes& operator = (const LineoutAttributes &obj);
     virtual bool operator == (const LineoutAttributes &obj) const;
     virtual bool operator != (const LineoutAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const LineoutAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -125,7 +136,8 @@ public:
         ID_samplingOn,
         ID_numberOfSamplePoints,
         ID_reflineLabels,
-        ID_designator
+        ID_designator,
+        ID__LAST
     };
 
 private:
@@ -140,6 +152,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define LINEOUTATTRIBUTES_TMFS "DDbbbibs"
 
 #endif

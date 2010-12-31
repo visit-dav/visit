@@ -87,6 +87,9 @@
 //    Brad Whitlock, Thu Feb  4 16:09:24 PST 2010
 //    I added category.
 //
+//    Hank Childs, Thu Dec 30 13:33:19 PST 2010
+//    Add support for expression-creating operators.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -108,6 +111,10 @@ public:
     bool    hasEngineSpecificCode;
     bool    onlyEnginePlugin;
     bool    noEnginePlugin;
+
+    bool    createExpression;   // for Operator plugins
+    QString exprInType;         // for Operator plugins
+    QString exprOutType;        // for Operator plugins
 
     std::vector<QString> cxxflags;
     std::vector<QString> ldflags;
@@ -161,6 +168,9 @@ public:
           hasEngineSpecificCode(false),
           onlyEnginePlugin(onlyengine), 
           noEnginePlugin(noengine),
+          createExpression(false),
+          exprInType(),
+          exprOutType(),
           cxxflags(),
           ldflags(),
           libs(),

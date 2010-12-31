@@ -50,6 +50,7 @@ class AttributeSubject;
 class DataNode;
 class ViewerPlot;
 class ViewerOperatorPluginInfo;
+class avtDatabaseMetaData;
 class avtPluginFilter;
 class ExpressionList;
 
@@ -123,6 +124,9 @@ class ExpressionList;
 //    Brad Whitlock, Tue Apr 29 15:14:33 PDT 2008
 //    Added GetMenuName.
 //
+//    Hank Childs, Thu Dec 30 22:37:51 PST 2010
+//    Change signature of GetCreatedVariables.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerOperator : public ViewerBase
@@ -152,7 +156,7 @@ class VIEWER_API ViewerOperator : public ViewerBase
     bool NeedsRecalculation() const;
     bool ExecuteEngineRPC() const;
 
-    ExpressionList *GetCreatedVariables(const char *mesh);
+    ExpressionList *GetCreatedVariables(const avtDatabaseMetaData *md);
 
     void CreateNode(DataNode *);
     void SetFromNode(DataNode *, const std::string &);
