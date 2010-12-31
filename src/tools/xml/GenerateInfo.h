@@ -41,6 +41,7 @@
 
 #include <QTextStream>
 #include "Field.h"
+#include <visitstream.h>
 #include "Plugin.h"
 
 // ****************************************************************************
@@ -426,9 +427,9 @@ class InfoGeneratorPlugin : public Plugin
             h << "  public:" << endl;
             h << "    virtual AttributeSubject *AllocAttributes();" << endl;
             h << "    virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);" << endl;
-            if(OverrideBuiltin(name + "CommonPluginInfo::GetCreatedExpressions"))
+            if(createExpression)
             {
-                h << "    virtual ExpressionList *GetCreatedExpressions(const char *);" << endl;
+                h << "    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);" << endl;
             }
             h << "};" << endl;
             h << endl;
@@ -950,6 +951,49 @@ class InfoGeneratorPlugin : public Plugin
             c << "}" << endl;
         }
     }
+    void AddExpressionFromMD(QTextStream &c, QString opName, std::vector<QString> outtypes, QString typeToLookForS, QString typeToLookForP)
+    {
+        c << "    int num" << typeToLookForP << " = md->GetNum" << typeToLookForP << "();" << endl;
+        c << "    for (i = 0 ; i < num" << typeToLookForP << " ; i++)" << endl;
+        c << "    {" << endl;
+        c << "        const avt" << typeToLookForS << "MetaData *mmd = md->Get" << typeToLookForS << "(i);" << endl;
+        for (int j = 0 ; j < outtypes.size() ; j++)
+        {
+            c << "        {" << endl;
+            c << "            Expression e2;" << endl;
+            c << "            sprintf(name, \"operators/" << opName << "/\%s\", mmd->name.c_str());" << endl;
+            c << "            e2.SetName(name);" << endl;
+            c << "            e2.SetType(Expression::" << outtypes[j] << ");" << endl;
+            c << "            e2.SetFromOperator(true);" << endl;
+            c << "            e2.SetOperatorName(\"" << opName << "\");" << endl;
+            c << "            sprintf(defn, \"cell_constant(%s, 0.)\", mmd->name.c_str());" << endl;
+            c << "            e2.SetDefinition(defn);" << endl;
+            c << "            el->AddExpressions(e2);" << endl;
+            c << "        }" << endl;
+            c << "    }" << endl;
+        }
+    }
+    void AddExpressionFromExpr(QTextStream &c, QString opName, std::vector<QString> outtypes, QString exprType)
+    {
+        c << "        if (e.GetType() == Expression::" << exprType << ")" << endl;
+        c << "        {" << endl;
+        for (int j = 0 ; j < outtypes.size() ; j++)
+        {
+            c << "            {" << endl;
+            c << "                Expression e2;" << endl;
+            c << "                sprintf(name, \"operators/" << opName << "/\%s\", e.GetName().c_str());" << endl;
+            c << "                e2.SetName(name);" << endl;
+            c << "                e2.SetType(Expression::" << outtypes[j] << ");" << endl;
+            c << "                e2.SetFromOperator(true);" << endl;
+            c << "                e2.SetOperatorName(\"" << opName << "\");" << endl;
+            c << "                sprintf(defn, \"cell_constant(%s, 0.)\", e.GetName().c_str());" << endl;
+            c << "                e2.SetDefinition(defn);" << endl;
+            c << "                el->AddExpressions(e2);" << endl;
+            c << "            }" << endl;
+        }
+        c << "        }" << endl;
+    }
+
     void WriteCommonInfoSource(QTextStream &c)
     {
         if (type=="database")
@@ -1153,11 +1197,23 @@ class InfoGeneratorPlugin : public Plugin
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             c << "#include <"<<atts->name<<".h>" << endl;
             c << endl;
-            if (type=="operator" && OverrideBuiltin(name + 
-                        "CommonPluginInfo::GetCreatedExpressions")) 
+            if (type=="operator" && createExpression)
             {
                 c << "#include <Expression.h>" << endl;
                 c << "#include <ExpressionList.h>" << endl;
+                c << "#include <avtDatabaseMetaData.h>" << endl;
+                c << "#include <avtMeshMetaData.h>" << endl;
+                c << "#include <avtSubsetsMetaData.h>" << endl;
+                c << "#include <avtScalarMetaData.h>" << endl;
+                c << "#include <avtVectorMetaData.h>" << endl;
+                c << "#include <avtTensorMetaData.h>" << endl;
+                c << "#include <avtSymmetricTensorMetaData.h>" << endl;
+                c << "#include <avtArrayMetaData.h>" << endl;
+                c << "#include <avtMaterialMetaData.h>" << endl;
+                c << "#include <avtSpeciesMetaData.h>" << endl;
+                c << "#include <avtCurveMetaData.h>" << endl;
+                c << "#include <avtLabelMetaData.h>" << endl;
+
                 c << endl;
             }
             QString funcName = name + "CommonPluginInfo::AllocAttributes";
@@ -1208,7 +1264,116 @@ class InfoGeneratorPlugin : public Plugin
                 c << "    *(("<<atts->name<<" *) to) = *(("<<atts->name<<" *) from);" << endl;
                 c << "}" << endl;
             }
-            WriteOverrideDefinition(c, name + "CommonPluginInfo::GetCreatedExpressions");
+            funcName = name + "CommonPluginInfo::GetCreatedExpressions";
+            if (createExpression && !ReplaceBuiltin(c, funcName))
+            {
+                c << endl;
+                c << "// ****************************************************************************" << endl;
+                c << "//  Method: "<<funcName << endl;
+                c << "//" << endl;
+                c << "//  Purpose:" << endl;
+                c << "//      Gets the expressions created by this operator." << endl;
+                c << "//" << endl;
+                c << "//  Programmer: generated by xml2info" << endl;
+                c << "//  Creation:   omitted"<< endl;
+                c << "//" << endl;
+                c << "// ****************************************************************************" << endl;
+                c << endl;
+                c << "ExpressionList * " << endl;
+                c << funcName<<"(const avtDatabaseMetaData *md)" << endl;
+                c << "{" << endl;
+                int i;
+                vector<QString> intypes = SplitValues(exprInType);
+                bool doMesh = false, doScalar = false, doVector = false, doTensor = false, doMaterial = false;
+                bool doSubset = false, doSpecies = false, doCurve = false, doSymmTensor = false;
+                bool doLabel = false, doArray = false;
+                for (i = 0 ; i < intypes.size() ; i++)
+                {
+                    if (intypes[i] == "mesh")
+                        doMesh = true;
+                    if (intypes[i] == "scalar")
+                        doScalar = true;
+                    if (intypes[i] == "vector")
+                        doVector = true;
+                    if (intypes[i] == "material")
+                        doMaterial = true;
+                    if (intypes[i] == "subset")
+                        doSubset = true;
+                    if (intypes[i] == "species")
+                        doSpecies = true;
+                    if (intypes[i] == "curve")
+                        doCurve = true;
+                    if (intypes[i] == "tensor")
+                        doTensor = true;
+                    if (intypes[i] == "symmetrictensor")
+                        doSymmTensor = true;
+                    if (intypes[i] == "label")
+                        doLabel = true;
+                    if (intypes[i] == "array")
+                        doArray = true;
+                }
+                vector<QString> outtypes = SplitValues(exprOutType);
+                std::vector<QString> outExprTypes;
+                bool haveScalar = false, haveTensor = false;
+                for (i = 0 ; i < outtypes.size() ; i++)
+                {
+                    if (outtypes[i] == "mesh")
+                        cerr << "Mesh expressions not currently supported." << endl;
+                    if (outtypes[i] == "scalar")
+                    {
+                        if (!haveScalar)
+                            outExprTypes.push_back("ScalarMeshVar");
+                        haveScalar = true;
+                    }
+                    if (outtypes[i] == "vector")
+                        outExprTypes.push_back("VectorMeshVar");
+                    if (outtypes[i] == "material")
+                        outExprTypes.push_back("Material");
+                    if (outtypes[i] == "subset")
+                        cerr << "Subset expressions not currently supported." << endl;
+                    if (outtypes[i] == "species")
+                        outExprTypes.push_back("Species");
+                    if (outtypes[i] == "curve")
+                        outExprTypes.push_back("CurveMeshVar");
+                    if (outtypes[i] == "tensor")
+                    {
+                        if (!haveTensor)
+                            outExprTypes.push_back("TensorMeshVar");
+                        haveTensor = true;
+                    }
+                    if (outtypes[i] == "symmetrictensor")
+                    {
+                        if (!haveTensor)
+                            outExprTypes.push_back("TensorMeshVar");
+                        haveTensor = true;
+                    }
+                    if (outtypes[i] == "label")
+                    {
+                        if (!haveScalar)
+                            outExprTypes.push_back("ScalarMeshVar");
+                        haveScalar = true;
+                    }
+                    if (outtypes[i] == "array")
+                        outExprTypes.push_back("ArrayMeshVar");
+                }
+                c << "    int i;" << endl;
+                c << "    char name[1024], defn[1024];" << endl;
+                c << "    ExpressionList *el = new ExpressionList;" << endl;
+                if (doMesh)
+                    AddExpressionFromMD(c, name, outExprTypes, QString("Mesh"), QString("Meshes"));
+                if (doScalar)
+                    AddExpressionFromMD(c, name, outExprTypes, QString("Scalar"), QString("Scalars"));
+                c << "    const ExpressionList &oldEL = md->GetExprList();" << endl;
+                c << "    for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)" << endl;
+                c << "    {" << endl;
+                c << "        const Expression &e = oldEL.GetExpressions(i);" << endl;
+                if (doScalar)
+                    AddExpressionFromExpr(c, name, outExprTypes, QString("ScalarMeshVar"));
+                c << "    }" << endl;
+                c << "    return el;" << endl;
+                c << "}" << endl;
+                c << endl;
+            }
         }
     }
 

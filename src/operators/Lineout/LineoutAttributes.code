@@ -265,3 +265,4 @@ LineoutEnginePluginInfo::AllocAvtPluginFilter()
 {
     return new avtLineoutPluginFilter;
 }
+

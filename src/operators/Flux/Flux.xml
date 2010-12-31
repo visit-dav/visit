@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="Flux" type="operator" label="Flux" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis">
-    <Attribute name="FluxAttributes" purpose="Attributes for Flux operator" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="Flux.code">
+  <Plugin name="Flux" type="operator" label="Flux" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis" createExpression="true" exprInType="mesh" exprOutType="scalar">
+    <Attribute name="FluxAttributes" purpose="Attributes for Flux operator" persistent="false" keyframe="true" exportAPI="" exportInclude="">
       <Field name="flowField" label="Flow field" type="variablename" vartypes="00010000000">
       </Field>
       <Field name="weight" label="Multiply dot product by a scalar variable?" type="bool">
@@ -8,7 +8,5 @@
       </Field>
       <Field name="weightField" label="Weight field" type="variablename" enabler="weight:true" vartypes="01000000000">
       </Field>
-      <Function name="FluxCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
-      </Function>
     </Attribute>
   </Plugin>

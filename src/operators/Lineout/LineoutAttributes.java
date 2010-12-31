@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class LineoutAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 8;
+    private static int LineoutAttributes_numAdditionalAtts = 8;
 
     public LineoutAttributes()
     {
-        super(numAdditionalAttributes);
+        super(LineoutAttributes_numAdditionalAtts);
 
         point1 = new double[3];
         point1[0] = 0;
@@ -83,7 +83,7 @@ public class LineoutAttributes extends AttributeSubject implements Plugin
 
     public LineoutAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(LineoutAttributes_numAdditionalAtts + nMoreFields);
 
         point1 = new double[3];
         point1[0] = 0;
@@ -103,7 +103,7 @@ public class LineoutAttributes extends AttributeSubject implements Plugin
 
     public LineoutAttributes(LineoutAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(LineoutAttributes_numAdditionalAtts);
 
         int i;
 
@@ -134,7 +134,7 @@ public class LineoutAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return LineoutAttributes_numAdditionalAtts;
     }
 
     public boolean equals(LineoutAttributes obj)

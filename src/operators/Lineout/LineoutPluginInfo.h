@@ -75,6 +75,7 @@ class LineoutCommonPluginInfo : public virtual CommonOperatorPluginInfo, public 
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
 };
 
 class LineoutGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual LineoutCommonPluginInfo

@@ -272,13 +272,26 @@ avtLineoutFilter::VerifyInput(void)
 //   Hank Childs, Thu Jan 24 09:44:45 PST 2008
 //   Make use of new data members.
 //
+//   Hank Childs, Thu Dec 30 22:42:23 PST 2010
+//   Add support for Lineout when it creates the output variable.
+//
 // ****************************************************************************
 
 
 avtContract_p
-avtLineoutFilter::ModifyContract(avtContract_p spec)
+avtLineoutFilter::ModifyContract(avtContract_p in_contract)
 {
-    avtContract_p rv = new avtContract(spec);
+    avtContract_p rv;
+    if (strncmp(pipelineVariable, "operators/Lineout", strlen("operators/Lineout")) == 0)
+    {
+        const char *var = pipelineVariable + strlen("operators/Lineout");
+        avtDataRequest_p dr = new avtDataRequest(in_contract->GetDataRequest(), var);
+        rv = new avtContract(in_contract, dr);
+    }
+    else
+    {
+        rv = new avtContract(in_contract);
+    }
 
     useOriginalCells = false;
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())

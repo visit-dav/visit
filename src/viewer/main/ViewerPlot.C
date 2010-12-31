@@ -1498,6 +1498,9 @@ ViewerPlot::GetExpressions() const
 //    Hank Childs, Tue Aug 31 13:33:00 PDT 2010
 //    Expand the plot automatically when we add an auto-operator.
 //
+//    Hank Childs, Thu Dec 30 12:56:21 PST 2010
+//    Add support for operator expressions from scalars, vectors, tensors, etc.
+//
 // ****************************************************************************
 
 bool
@@ -1641,7 +1644,10 @@ ViewerPlot::SetVariableName(const std::string &name)
         const string &mesh = GetMeshName();
         std::string id = oPM->GetEnabledID(j);
         CommonOperatorPluginInfo *info = oPM->GetCommonPluginInfo(id);
-        ExpressionList *exprs = info->GetCreatedExpressions(mesh.c_str());
+        const avtDatabaseMetaData *md = GetMetaData();
+        ExpressionList *exprs = NULL;
+        if (md != 0)
+            exprs = info->GetCreatedExpressions(md);
         if (exprs == NULL)
             continue;
         for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
