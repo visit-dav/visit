@@ -42,15 +42,21 @@
 
 #include <avtDatasetVerifier.h>
 
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
+#include <vtkPoints.h>
 #include <vtkPointSet.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 
 #include <avtCallback.h>
+#include <avtCommonDataFunctions.h>
 
 #include <DebugStream.h>
 
@@ -167,6 +173,9 @@ avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list,
 //    No longer worry about type conversion.  That is the transform managers
 //    job now.
 //
+//    Hank Childs, Fri Dec 31 12:07:05 PST 2010
+//    Add support for safe mode.
+//
 // ****************************************************************************
 
 void
@@ -225,6 +234,218 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
             if (issueWarning)
                 IssueVarMismatchWarning(nscalars, nCells, false, dom, 
                                         cell_var->GetName());
+        }
+    }
+
+    int dims[3];
+    bool didDims = false;
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        vtkRectilinearGrid *rg = (vtkRectilinearGrid *) ds;
+        rg->GetDimensions(dims);
+        didDims = true;
+    }
+    if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        vtkStructuredGrid *sg = (vtkStructuredGrid *) ds;
+        sg->GetDimensions(dims);
+        didDims = true;
+    }
+    if (didDims)
+    {
+        int dimsnpts   = (dims[0]*dims[1]*dims[2]);
+        int dimsncells = 1;
+        if (dims[0] > 1)
+            dimsncells *= dims[0]-1;
+        if (dims[1] > 1)
+            dimsncells *= dims[1]-1;
+        if (dims[2] > 1)
+            dimsncells *= dims[2]-1;
+        if (dimsnpts != nPts)
+        {
+            if (! issuedWarningForVarMismatch)
+            {
+                char msg[1024];
+                sprintf(msg, "Your dimensions were declared to be %d x %d x %d, "
+                             "which should mean %d points.  But your point "
+                             "variables have %d points.  This is an unrecoverable "
+                             "error.", dims[0], dims[1], dims[2], dimsnpts, nPts);
+                avtCallback::IssueWarning(msg);
+                issuedWarningForVarMismatch = true;
+            }
+        }
+        if (dimsncells != nCells)
+        {
+            if (! issuedWarningForVarMismatch)
+            {
+                char msg[1024];
+                sprintf(msg, "Your dimensions were declared to be %d x %d x %d, "
+                             "which should mean %d cells.  But your cell "
+                             "variables have %d cells.  This is an unrecoverable "
+                             "error.", dims[0], dims[1], dims[2], dimsncells, nCells);
+                avtCallback::IssueWarning(msg);
+                issuedWarningForVarMismatch = true;
+            }
+        }
+    }
+
+    if (avtCallback::GetSafeMode())
+    {
+        issuedSafeModeWarning = false;
+        if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid *rg = (vtkRectilinearGrid *) ds;
+            CheckArray(dom, rg->GetXCoordinates(), "X-coordinates");
+            CheckArray(dom, rg->GetYCoordinates(), "Y-coordinates");
+            CheckArray(dom, rg->GetZCoordinates(), "Z-coordinates");
+        }
+        else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        {
+            vtkStructuredGrid *sg = (vtkStructuredGrid *) ds;
+            CheckArray(dom, sg->GetPoints()->GetData(), "Coordinates");
+        }
+        else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *) ds;
+            CheckArray(dom, ug->GetPoints()->GetData(), "Coordinates");
+            CheckConnectivity(dom, ug->GetNumberOfPoints(), ug->GetCells(),
+                              "Cells");
+        }
+        else if (ds->GetDataObjectType() == VTK_POLY_DATA)
+        {
+            vtkPolyData *pd = (vtkPolyData *) ds;
+            CheckArray(dom, pd->GetPoints()->GetData(), "Coordinates");
+            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetVerts(), 
+                              "Vertex Cells");
+            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetLines(), 
+                              "Line Cells");
+            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetPolys(), 
+                              "Polygon Cells");
+            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetStrips(), 
+                              "Triangle Strip Cells");
+        }
+         
+        for (int i = 0 ; i < 2 ; i++)
+        {
+            vtkDataSetAttributes *atts = NULL;
+            if (i == 0)
+                atts = ds->GetCellData();
+            else
+                atts = ds->GetPointData();
+            int narr = atts->GetNumberOfArrays();
+            for (int j = 0 ; j < narr ; j++)
+            {
+                vtkDataArray *arr = atts->GetArray(j);
+                const char *name = arr->GetName();
+                if (name == NULL)
+                {
+                    if (i == 0)
+                        name = "Unnamed Cell Var";
+                    else
+                        name = "Unnamed Point Var";
+                }
+                CheckArray(dom, arr, name);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatasetVerifier::CheckArray
+//
+//  Purpose:
+//      Checks to see if an array contains any NaNs or infs.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 1, 2011
+//
+// ****************************************************************************
+
+void
+avtDatasetVerifier::CheckArray(int dom, vtkDataArray *arr, const char *name)
+{
+    int ncomps = arr->GetNumberOfComponents();
+    int ntups  = arr->GetNumberOfTuples();
+    for (int i = 0 ; i < ntups ; i++)
+    {
+        double *vals = arr->GetTuple(i);
+        for (int j = 0 ; j < ncomps ; j++)
+        {
+            if (!visitIsFinite(vals[j]))
+            {
+                if (!issuedSafeModeWarning)
+                {
+                    char msg[1024];
+                    if (ncomps > 1)
+                        sprintf(msg, "In domain %d, array \"%s\" at location (%d, %d), "
+                                     "you have a non-finite value (%f).  Note that "
+                                     "only the first error encountered is reported.",
+                                       dom, name, i, j, vals[j]);
+                    else
+                        sprintf(msg, "In domain %d, array \"%s\" at location %d, "
+                                     "you have a non-finite value (%f).  Note that "
+                                     "only the first error encountered is reported.",
+                                       dom, name, i, vals[j]);
+                    avtCallback::IssueWarning(msg);
+                    issuedSafeModeWarning = true;
+                }
+                vals[j] = 0.;
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatasetVerifier::CheckConnectivity
+//
+//  Purpose:
+//      Checks to see if a connectivity array is invalid.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 1, 2011
+//
+// ****************************************************************************
+
+void
+avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts, vtkCellArray *arr, 
+                                      const char *name)
+{
+    int numEntries = arr->GetNumberOfConnectivityEntries();
+    vtkIdType *start_ptr = arr->GetPointer();
+    vtkIdType *ptr       = start_ptr;
+    int ncells = arr->GetNumberOfCells();
+    for (int i = 0 ; i < ncells ; i++)
+    {
+        int npts = *ptr;
+        if ((ptr+npts-start_ptr) > numEntries)
+        {
+            char msg[1024];
+            sprintf(msg, "In domain %d, connectivity values go beyond declared "
+                         "allocation.  Unrecoverable error.", dom);
+            avtCallback::IssueWarning(msg);
+            return;
+        }
+        ptr++;
+        for (int j = 0 ; j < npts ; j++)
+        {
+            if (*ptr < 0 || *ptr >= nTotalPts)
+            {
+                if (!issuedSafeModeWarning)
+                {
+                    char msg[1024];
+                    sprintf(msg, "In domain %d, your connectivity array (%s) "
+                                 "has a bad value. Cell %d references point %d "
+                                 "and the maximum value is %d.  Note that "
+                                 "only the first error encountered is reported.",
+                            dom, name, i, *ptr, nTotalPts);
+                    avtCallback::IssueWarning(msg);
+                    issuedSafeModeWarning = true;
+                }
+                *ptr = 0;
+            }
+            ptr++;
         }
     }
 }

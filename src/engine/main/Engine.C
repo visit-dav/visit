@@ -1788,6 +1788,10 @@ Engine::ProcessInput()
 //
 //    Mark C. Miller, Tue Oct 19 21:59:16 PDT 2010
 //    Predicated some cerr warnings about timeout on !PAR_Rank()
+//
+//    Hank Childs, Sat Jan  1 14:17:58 PST 2011
+//    Add "-safe" flag.
+//
 // ****************************************************************************
 
 void
@@ -1974,6 +1978,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
             avtDataObjectToDatasetFilter::SetVTKDebugMode(true);
             avtVariableCache::SetVTKDebugMode(true);
             vtkDebugStream::FrequentEventsFilter(true);
+        }
+        else if (strcmp(argv[i], "-safe") == 0)
+        {
+            avtCallback::EnableSafeMode();
         }
         else if (strcmp(argv[i], "-lb-block") == 0)
         {

@@ -101,6 +101,9 @@ typedef   void  (*ResetTimeoutCallback)(void *, int);
 //    Hank Childs, Tue Sep  5 10:51:08 PDT 2006
 //    Added ResetTimeout callback.
 //
+//    Hank Childs, Fri Dec 31 11:45:48 PST 2010
+//    Add a GetSafeMode callback.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCallback
@@ -153,6 +156,9 @@ class PIPELINE_API avtCallback
                                            ResetTimeoutCallback, void *);
     static void                  ResetTimeout(int);
 
+    static void                  EnableSafeMode(void) { safeMode = true; };
+    static bool                  GetSafeMode(void) { return safeMode; };
+
   protected:
     static WarningCallback       warningCallback;
     static void                 *warningCallbackArgs;
@@ -165,6 +171,7 @@ class PIPELINE_API avtCallback
 
     static bool                  nowinMode;
     static bool                  swRendering;
+    static bool                  safeMode;
 
     static UpdatePlotAttributesCallback
                                  updatePlotAttributesCallback;
