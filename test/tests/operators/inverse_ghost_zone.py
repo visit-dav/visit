@@ -11,7 +11,11 @@
 #  Modifications:
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
-#    Added ability to swtich between Silo's HDF5 and PDB data.
+#    Added ability to switch between Silo's HDF5 and PDB data.
+#
+#    Hank Childs, Sun Jan  2 10:45:22 PST 2011
+#    Add tests for new features.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -42,5 +46,27 @@ sil = SILRestriction()
 sil.TurnOffSet(1)
 SetPlotSILRestriction(sil)
 Test("ops_inverse_ghost_zone04")
+
+DeleteAllPlots()
+
+OpenDatabase("../data/boxlib_test_data/2D/plt0822/Header")
+AddPlot("Pseudocolor", "density")
+AddOperator("InverseGhostZone")
+i = InverseGhostZoneAttributes()
+i.requestGhostZones = 1
+i.showDuplicated = 1
+i.showEnhancedConnectivity = 0
+i.showReducedConnectivity = 0
+i.showAMRRefined = 0
+i.showExterior = 0
+i.showNotApplicable = 0
+SetOperatorOptions(i)
+DrawPlots()
+Test("ops_inverse_ghost_zone05")
+
+i.showDuplicated = 0
+i.showAMRRefined = 1
+SetOperatorOptions(i)
+Test("ops_inverse_ghost_zone06")
 
 Exit()
