@@ -35,12 +35,14 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>The Selection window was enhanced so users can load selections from a file and save selections to a file. This lets users use precomputed selections for analyses without having to recreate selections from a plot.</li>
    <li>The Movie wizard was enhanced so you can provide a stride, enabling every Nth frame to be saved.</li>
    <li>VisIt's filters can now cache intermediate results for later use.  Contours and streamlines should be faster after the first execution.</li>
+   <li>Lineouts can now be directly calculated (i.e. without having to make a Pseudocolor plot to extract a Lineout from).  You can access this feature by making a Curve plot of a scalar listed under operators/Lineout.</li>
+   <li>VisIt now has a "-safe" mode.  This mode will tell you if your data has NaNs, infs, or bad connectivity.  Access this mode by adding "-safe" to VisIt's invocation.  (This mode is not the default because it incurs a performance penalty.)</li>
 </ul>
 
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.2</font></b></p>
 <ul>
-   <li></li>
+   <li>The Y-axis title is now vertically oriented for 2D plots.</li>
    <li></li>
    <li></li>
    <li></li>
@@ -70,7 +72,7 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>The Streamline plot now reports progress as it executes.</li>
    <li>The Streamline plot now has a pathline option that allows the velocity field to vary over time.</li>
    <li>The Spreadsheet plot can now display curves.</li>
-   <li></li>
+   <li>The ParallelCoordinates plot now correctly display the extents of the data in the case where cells are removed by operators.</li>
    <li></li>
    <li></li>
    <li></li>
@@ -80,7 +82,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's operators in version 2.2</font></b></p>
 <ul>
    <li>IndexSelect now works with BOV files.</li>
-   <li></li>
+   <li>The InverseGhostZone operator now provides individual controls over which types of ghost zones to display (duplicated zones at the boundary, coarse zones from an AMR simulation, etc).</li>
    <li></li>
    <li></li>
    <li></li>
@@ -146,9 +148,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.2</font></b></p>
 <ul>
-   <li></li>
-   <li></li>
-   <li></li>
+   <li>xmledit, xml2info and xml2avt all now support expression-creating-operators.</li>
+   <li>The avtGradientExpression module was re-factored so that other modules can access these gradients without creating a mini-pipeline.</li>
    <li></li>
    <li></li>
    <li></li>

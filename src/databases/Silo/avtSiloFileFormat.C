@@ -2437,10 +2437,19 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
 }
 
 // ****************************************************************************
-// Function: Get the material indices (not the same as matnos) to which a
-// subsetting variable is restricted.
+//  Function: GetRestrictedMaterialIndices
 //
-// Created: Mark C. Miller, Mon Aug 30 01:32:15 PDT 2010
+//  Purpose:
+//     Get the material indices (not the same as matnos) to which a
+//     subsetting variable is restricted.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 30, 2010
+//
+//  Modifications:
+//
+//   Hank Childs, Sat Jan  1 15:11:10 PST 2011
+//   Fix sscanf problem from compiler warning.
 //
 // ****************************************************************************
 
@@ -2502,7 +2511,7 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
             {
                 int matno;
                 char matname[256];
-                int nmatches = sscanf(mmd->materialNames[j].c_str(), "%d %s", &matno, &matname);
+                int nmatches = sscanf(mmd->materialNames[j].c_str(), "%d %s", &matno, matname);
                 debug3 << "            matno=" << matno << ", matname=\"" << matname << "\"";
                 if (nmatches == 1) // have matno only
                 {

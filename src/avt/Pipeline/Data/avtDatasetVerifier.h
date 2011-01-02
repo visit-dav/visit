@@ -47,6 +47,7 @@
 
 #include <avtDataTree.h>
 
+class     vtkCellArray;
 class     vtkDataArray;
 class     vtkDataSet;
 class     vtkDataSetAttributes;
@@ -81,6 +82,9 @@ class     vtkDataSetAttributes;
 //    Hank Childs, Tue Jul  5 16:22:56 PDT 2005
 //    Add variable name to IssueWarning call.
 //
+//    Hank Childs, Sat Jan  1 12:42:28 PST 2011
+//    Add methods for -safe mode.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetVerifier
@@ -93,8 +97,11 @@ class PIPELINE_API avtDatasetVerifier
 
   protected:
     bool        issuedWarningForVarMismatch;
+    bool        issuedSafeModeWarning;
 
     void        VerifyDataset(vtkDataSet *, int);
+    void        CheckArray(int, vtkDataArray *, const char *);
+    void        CheckConnectivity(int, int, vtkCellArray *, const char *);
     void        CorrectVarMismatch(vtkDataArray *, vtkDataSetAttributes*, int); 
 
     void        IssueVarMismatchWarning(int, int, bool, int, const char *);
