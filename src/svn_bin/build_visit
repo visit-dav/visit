@@ -1015,6 +1015,10 @@
 #     constants need to be changed; libsrc/netcdf.h, libsrc4/netcdf.h and
 #     libsrc4/netcdf_base.h. Conditioned setting of PAR_INCLUDE_STRING for
 #     IceT build for non-Darwin on whether or not it was already defined.
+#
+#     Mark C. Miller, Tue Jan  4 09:06:12 PST 2011
+#     Added missing backslash for VISIT_EXODUSII_LIBDEP line in config-site
+#     file when referencing VISIT_NETCDF_LIBDEP.
 # *****************************************************************************
 
 
@@ -8287,7 +8291,7 @@ function build_hostconf
         "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR \${VISITHOME}/exodus/$EXODUS_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NETCDF_LIBDEP})" \
+        "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf \${VISIT_NETCDF_LIBDEP})" \
         >> $HOSTCONF
     fi
 
