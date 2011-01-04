@@ -1008,6 +1008,13 @@
 #     I updated to cmake 2.8.3 to fix Mac build problems. I also updated 
 #     HDF4 to 2.5 on Mac. We can update it for Linux later.
 #
+#     Mark C. Miller, Tue Jan  4 08:41:47 PST 2011
+#     Removed setting of SVN_SOURCE_PATH to something other than 'trunk/src'.
+#     Added --disable-dap to netcdf build to eliminate dap and curl dependence.
+#     Fixed patching of netcdf4 to include all 3 places where netcdf sizing
+#     constants need to be changed; libsrc/netcdf.h, libsrc4/netcdf.h and
+#     libsrc4/netcdf_base.h. Conditioned setting of PAR_INCLUDE_STRING for
+#     IceT build for non-Darwin on whether or not it was already defined.
 # *****************************************************************************
 
 
@@ -1338,12 +1345,6 @@ fi
 # Trunk:
 ####
 export SVN_SOURCE_PATH="trunk/src"
-
-###
-# Release:
-###
-export SVN_SOURCE_PATH="tags/2.1.2/src"
-
 
 if [[ "$OPSYS" != "Darwin" ]]; then
     WGET_MINOR_VERSION=$(wget --version| head -n 1|cut -d. -f 2)
@@ -6108,19 +6109,82 @@ function apply_netcdf_patch_for_exodusii
    * applications and utilities.  However, nothing is statically allocated to
    * these sizes internally.
    */
-! #define NC_MAX_DIMS     65536    /* max dimensions per file */
-! #define NC_MAX_ATTRS    8192     /* max global or per variable attributes */
-! #define NC_MAX_VARS     524288   /* max variables per file */
-! #define NC_MAX_NAME     256      /* max length of a name */
-! #define NC_MAX_VAR_DIMS 8        /* max per variable dimensions */
+! #define NC_MAX_DIMS	65536	 /* max dimensions per file */
+! #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	524288	 /* max variables per file */
+! #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS 8      /* max per variable dimensions */
 ! 
   
   /*
    * The netcdf version 3 functions all return integer error status.
 EOF
-   retval=$?
-   popd 1>/dev/null 2>&1
-   return $retval
+    retval1=$?
+    patch -p0 << \EOF
+*** libsrc4/netcdf.h	2010-04-12 11:48:02.000000000 -0700
+--- libsrc4/netcdf.h.ex	2011-01-03 15:51:46.000000000 -0800
+***************
+*** 199,209 ****
+   * applications and utilities.  However, nothing is statically allocated to
+   * these sizes internally.
+   */
+! #define NC_MAX_DIMS	1024	 /* max dimensions per file */
+  #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	8192	 /* max variables per file */
+  #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	NC_MAX_DIMS /* max per variable dimensions */
+  
+  /* In HDF5 files you can set the endianness of variables with
+   * nc_def_var_endian(). These defines are used there. */   
+--- 199,209 ----
+   * applications and utilities.  However, nothing is statically allocated to
+   * these sizes internally.
+   */
+! #define NC_MAX_DIMS	65536	 /* max dimensions per file */
+  #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	524288	 /* max variables per file */
+  #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	8        /* max per variable dimensions */
+  
+  /* In HDF5 files you can set the endianness of variables with
+   * nc_def_var_endian(). These defines are used there. */   
+EOF
+    retval2=$?
+    patch -p0 << \EOF
+*** libsrc4/netcdf_base.h	2010-01-21 08:00:18.000000000 -0800
+--- libsrc4/netcdf_base.h.ex	2011-01-03 16:03:36.000000000 -0800
+***************
+*** 192,202 ****
+   * applications and utilities.  However, nothing is statically allocated to
+   * these sizes internally.
+   */
+! #define NC_MAX_DIMS	1024	 /* max dimensions per file */
+  #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	8192	 /* max variables per file */
+  #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	NC_MAX_DIMS /* max per variable dimensions */
+  
+  /* In HDF5 files you can set the endianness of variables with
+   * nc_def_var_endian(). These defines are used there. */   
+--- 192,202 ----
+   * applications and utilities.  However, nothing is statically allocated to
+   * these sizes internally.
+   */
+! #define NC_MAX_DIMS	65536	 /* max dimensions per file */
+  #define NC_MAX_ATTRS	8192	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	524288	 /* max variables per file */
+  #define NC_MAX_NAME	256	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	8        /* max per variable dimensions */
+  
+  /* In HDF5 files you can set the endianness of variables with
+   * nc_def_var_endian(). These defines are used there. */   
+EOF
+    retval3=$?
+    popd 1>/dev/null 2>&1
+    if [[ $retval1 -eq 0 && $retval2 -eq 0 && $retval3 -eq 0 ]]; then
+        return 0
+    fi
+    return 1
 }
 
 function apply_netcdf_patch
@@ -6181,11 +6245,13 @@ function build_netcdf
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
         FC=\"\" $EXTRA_FLAGS --enable-cxx-4 $H5ARGS \
+        --disable-dap \
         --prefix=\"$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH\""
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         FC="" $EXTRA_FLAGS --enable-cxx-4 $H5ARGS \
+        --disable-dap \
         --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
 
     if [[ $? != 0 ]] ; then
@@ -7270,7 +7336,9 @@ function build_icet
         if [[ "$OPSYS" == "Darwin" && "$PAR_COMPILER" == "/usr/bin/mpic++" ]]; then
             PAR_INCLUDE_STRING="-I/usr/include/"
         else
-            PAR_INCLUDE_STRING=`$PAR_COMPILER --showme:compile`    
+            if [[ -z "$PAR_INCLUDE_STRING" ]]; then
+                PAR_INCLUDE_STRING=`$PAR_COMPILER --showme:compile`    
+            fi
         fi
     fi
     
