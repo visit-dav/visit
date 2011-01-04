@@ -143,7 +143,6 @@ class avtParICAlgorithm : public avtICAlgorithm
     void                      SendDS(int dst, std::vector<vtkDataSet *> &ds, std::vector<DomainType> &doms);
     bool                      RecvDS(std::vector<vtkDataSet *> &ds, std::vector<DomainType> &doms);
 
-
     void                      RestoreIntegralCurveSequence();
     void                      MergeTerminatedICSequences();
     
@@ -157,6 +156,9 @@ class avtParICAlgorithm : public avtICAlgorithm
     //Timers/Counters.
     ICStatistics              CommTime;
     ICStatistics              MsgCnt, ICCommCnt, BytesCnt, DSCnt;
+
+    std::map<int, std::pair<int, unsigned char*> > serializedDS;
+    void                      FreeSerializedDSBuffers();
     
   private:
     void                      PostRecv(int tag);
@@ -181,7 +183,6 @@ class avtParICAlgorithm : public avtICAlgorithm
     
     std::map<RequestTagPair, unsigned char *> sendBuffers, recvBuffers;
     std::map<RankIdPair, std::list<unsigned char *> > recvPackets;
-
     
     // Maps MPI_TAG to pair(num buffers, data size).
     std::map<int, std::pair<int, int> > messageTagInfo;

@@ -46,6 +46,17 @@
 #ifdef PARALLEL
 #include <avtParICAlgorithm.h>
 
+class domainCacheEntry
+{
+  public:
+    domainCacheEntry(DomainType _dom, vtkDataSet *_ds){ds=_ds; dom=_dom; refCnt=0;}
+    domainCacheEntry(){ds=NULL; refCnt=0;}
+
+    DomainType dom;
+    int refCnt;
+    vtkDataSet *ds;
+};
+
 // ****************************************************************************
 // Class: avtCommDSOnDemandICAlgorithm
 //
@@ -81,17 +92,38 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
     virtual void              PostRunAlgorithm() {}
     virtual void              SortIntegralCurves(std::list<avtIntegralCurve *> &);
     virtual void              HandleOOBIC(avtIntegralCurve *s);
-    virtual void              RequestDataset(DomainType &d);
+    virtual bool              RequestDataset(DomainType &d);
     virtual void              HandleMessages(int &numDone);
+
+    void                      AddRef(const DomainType &dom);
+    void                      DelRef(const DomainType &dom);
+    void                      CheckCacheVacancy(bool makeReq);
+
+    void Debug();
     
     std::list<avtIntegralCurve *> activeICs, oobICs;
     std::set<int>             pendingDomRequests;
+    std::map<int, int>        pendingDomReqTimers;
 
     //Communicated domain cache.
     virtual vtkDataSet       *GetDSFromDomainCache(const DomainType &dom);
-    virtual void              AddDSToDomainCache(const DomainType &dom, vtkDataSet *ds);
-    std::list<std::pair<DomainType, vtkDataSet *> > domainCache;
+    virtual void              AddDSToDomainCache(std::vector<DomainType> &doms,
+                                                 std::vector<vtkDataSet *> &dss);
+    std::list<domainCacheEntry> domainCache;
     int domainCacheSizeLimit;
+
+    ICStatistics              DSLatencyTime;
+    virtual void              CompileTimingStatistics()
+    {
+        avtParICAlgorithm::CompileTimingStatistics();
+        ComputeStatistic(DSLatencyTime);
+    }
+
+    virtual void              ReportTimings(ostream &os, bool totals)
+    {
+        avtParICAlgorithm::ReportTimings(os, totals);
+        PrintTiming(os, "DSLatTime", DSLatencyTime, TotalTime, totals);
+    }
 };
 
 
