@@ -1019,6 +1019,13 @@
 #     Mark C. Miller, Tue Jan  4 09:06:12 PST 2011
 #     Added missing backslash for VISIT_EXODUSII_LIBDEP line in config-site
 #     file when referencing VISIT_NETCDF_LIBDEP.
+#
+#     Eric Brugger, Tue Jan  4 09:39:43 PST 2011
+#     I modified the script to tell the user to use "make package" instead
+#     of "svn_bin/visit-bin-dist" to create a distribution. I also modified
+#     the script to output that message to the terminal in addition to the
+#     log file.
+#
 # *****************************************************************************
 
 
@@ -10064,33 +10071,34 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
     fi
     info "Done building VisIt"
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        echo \
+        info \
         "You may now try to run VisIt by cd'ing into the src/bin"
     else
-        echo \
+        info \
         "You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar*}/src/bin"
     fi
-    echo "directory and invoking \"visit\"."
-    echo 
-    echo "To create a binary distribution tarball from this build, cd to"
+    info "directory and invoking \"visit\"."
+    info
+    info "To create a binary distribution tarball from this build, cd to"
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        echo "${START_DIR}/src"
+        info "${START_DIR}/src"
     else
-        echo "${START_DIR}/${VISIT_FILE%.tar*}/src"
+        info "${START_DIR}/${VISIT_FILE%.tar*}/src"
     fi
-    echo "then enter: \"svn_bin/visit-bin-dist\""
-    echo "Will produce a tarball called visitVERSION.ARCH.tar.gz, where"
-    echo "VERSION is the version number, and ARCH is the OS architecure."
-    echo 
-    echo "To install the above tarball in a directory called "INSTALL_DIR_PATH","
-    echo "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
-    echo 
-    echo "If you run into problems, contact visit-users@ornl.gov"
+    info "then enter: \"make package\""
+    info
+    info "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
+    info "VERSION is the version number, and ARCH is the OS architecure."
+    info
+    info "To install the above tarball in a directory called "INSTALL_DIR_PATH","
+    info "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
+    info
+    info "If you run into problems, contact visit-users@ornl.gov"
 else
     if [[ $ANY_ERRORS == "no" ]] ; then
-        echo "Finished!"
+        info "Finished!"
     else
-        echo "Finished with Errors"
+        info "Finished with Errors"
     fi
 fi
 
