@@ -42,6 +42,7 @@
 
 #include <avtCommDSOnDemandICAlgorithm.h>
 #include <TimingsManager.h>
+#include <vtkDataSetWriter.h>
 
 #ifdef PARALLEL
 
@@ -50,11 +51,21 @@ using namespace std;
 static const int DONE = 0;
 static const int DATASET_REQUEST = 1;
 
+static bool cacheSort(const domainCacheEntry &cA,
+                      const domainCacheEntry &cB)
+{
+    return cA.refCnt < cB.refCnt;
+}
 
 static bool icDomainCompare(const avtIntegralCurve *icA,
                             const avtIntegralCurve *icB)
 {
-    return icA->domain.domain < icB->domain.domain;
+    // If # of domain occurances is equal, sort on domain.
+    if (icA->sortKey == icB->sortKey)
+        return icA->domain.domain < icB->domain.domain;
+    
+    //Reverse sort, so that the largest is first.
+    return icA->sortKey > icB->sortKey;
 }
 
 // ****************************************************************************
@@ -68,8 +79,8 @@ static bool icDomainCompare(const avtIntegralCurve *icA,
 // ****************************************************************************
 
 avtCommDSOnDemandICAlgorithm::avtCommDSOnDemandICAlgorithm(avtPICSFilter *picsFilter,
-                                                       int cacheSize)
-    : avtParICAlgorithm(picsFilter)
+                                                           int cacheSize)
+    : avtParICAlgorithm(picsFilter), DSLatencyTime("dsLat")
 {
     domainCacheSizeLimit = cacheSize;
 }
@@ -86,11 +97,11 @@ avtCommDSOnDemandICAlgorithm::avtCommDSOnDemandICAlgorithm(avtPICSFilter *picsFi
 
 avtCommDSOnDemandICAlgorithm::~avtCommDSOnDemandICAlgorithm()
 {
-    list<pair<DomainType, vtkDataSet *> >::iterator it;
+    list<domainCacheEntry>::iterator it;
 
     // Cleanup cache memory.
     for (it = domainCache.begin(); it != domainCache.end(); it++)
-        (*it).second->Delete();
+        it->ds->Delete();
     
     domainCache.resize(0);
 }
@@ -191,6 +202,29 @@ avtCommDSOnDemandICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
 void
 avtCommDSOnDemandICAlgorithm::RunAlgorithm()
 {
+    for (int i = 0; i < numDomains; i++)
+    {
+        vtkDataSet *d = GetDomain(i);
+        if (d)
+        {
+            int dsLen = 0;
+            unsigned char *dsBuff = NULL;
+
+            vtkDataSetWriter *writer = vtkDataSetWriter::New();
+            writer->WriteToOutputStringOn();
+            writer->SetFileTypeToBinary();
+            writer->SetInput(d);
+            writer->Write();
+
+            dsLen = writer->GetOutputStringLength();
+
+            dsBuff = new unsigned char[dsLen];
+            memcpy(dsBuff, writer->GetBinaryOutputString(), dsLen);
+            writer->Delete();
+
+            serializedDS[i] = pair<int,unsigned char*>(dsLen, dsBuff);
+        }
+    }
     debug1<<"avtCommDSOnDemandICAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
 
@@ -203,48 +237,55 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
     int numParticlesResolved = 0;
     
     bool IamDone = false;
+    CheckCacheVacancy(true);
+    Barrier();
+    Sleep(40);
+    HandleMessages(numDone);
+    Sleep(40);
+    HandleMessages(numDone);
     
     while (numDone < nProcs)
     {
+
+        //if(!IamDone)
+        //    Debug();
+        
         //Do work, if we have it....
         if (!activeICs.empty())
         {
             avtIntegralCurve *s = activeICs.front();
             activeICs.pop_front();
 
+            DomainType d = s->domain;
             vtkDataSet *ds = GetDataset(s->domain);
             if (ds != NULL)
             {
-                //Latency hiding. Request DS before advecting last IC.
-                if (activeICs.empty() && !oobICs.empty())
-                {
-                    SortIntegralCurves(oobICs);
-                    RequestDataset(oobICs.front()->domain);
-                }
-
+                //debug1<<"Advect("<<s->domain.domain<<") --> ";
                 AdvectParticle(s, ds);
                 if (s->status != avtIntegralCurve::STATUS_OK)
                 {
+                    //debug1<<" TERMINATE"<<endl;
                     terminatedICs.push_back(s);
                     numParticlesResolved++;
                     picsFilter->UpdateProgress(numParticlesResolved,
                                                numParticlesTotal);
                 }
                 else
+                {
+                    //debug1<<s->domain.domain<<endl;
                     HandleOOBIC(s);
+                }
+                DelRef(d);
             }
             else
+            {
+                debug1<<"Opps. Dom disappared. "<<d.domain<<endl;
                 HandleOOBIC(s);
+            }
         }
 
         HandleMessages(numDone);
-
-        //No actives, let's activate an oob IC.
-        if (activeICs.empty() && !oobICs.empty())
-        {
-            SortIntegralCurves(oobICs);
-            RequestDataset(oobICs.front()->domain);
-        }
+        CheckCacheVacancy(true);
         
         //See if we're done.
         if (!IamDone && activeICs.empty() && oobICs.empty())
@@ -278,11 +319,10 @@ avtCommDSOnDemandICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
     if (GetDataset(s->domain) != NULL)
     {
         activeICs.push_back(s);
+        AddRef(s->domain);
         return;
     }
-
-    //Otherwise, request the DS, and put it in the OOB list.
-    RequestDataset(s->domain);
+    
     oobICs.push_back(s);
 }
 
@@ -297,13 +337,13 @@ avtCommDSOnDemandICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 //
 // ****************************************************************************
 
-void
+bool
 avtCommDSOnDemandICAlgorithm::RequestDataset(DomainType &d)
 {
     //See if request already made.
     set<int>::iterator it = pendingDomRequests.find(d.domain);
     if (it != pendingDomRequests.end())
-        return;
+        return false;
     
     //Make the request, and send it.
     vector<int> req(2);
@@ -313,6 +353,9 @@ avtCommDSOnDemandICAlgorithm::RequestDataset(DomainType &d)
     int domRank = DomainToRank(d);
     SendMsg(domRank, req);
     pendingDomRequests.insert(d.domain);
+    pendingDomReqTimers[d.domain] = visitTimer->StartTimer();
+    //debug1<<" ** RequestDS: "<<d.domain<<" from "<<domRank<<endl;
+    return true;
 }
 
 
@@ -370,14 +413,12 @@ avtCommDSOnDemandICAlgorithm::HandleMessages(int &numDone)
     vector<DomainType> doms;
     if (RecvDS(ds, doms))
     {
+        AddDSToDomainCache(doms, ds);
+        
         for (int i = 0; i < ds.size(); i++)
         {
-            vtkDataSet *d = ds[i];
-            DomainType dom = doms[i];
-            AddDSToDomainCache(dom, d);
-            d->Delete();
-
-            set<int>::iterator it = pendingDomRequests.find(dom.domain);
+            ds[i]->Delete();
+            set<int>::iterator it = pendingDomRequests.find(doms[i].domain);
             pendingDomRequests.erase(it);
         }
 
@@ -392,6 +433,7 @@ avtCommDSOnDemandICAlgorithm::HandleMessages(int &numDone)
             {
                 debug5<<"Activate "<<ic->id<<" dom= "<<ic->domain<<endl;
                 activeICs.push_back(ic);
+                AddRef(ic->domain);
             }
             else
                 tmp.push_back(ic);
@@ -493,16 +535,16 @@ avtCommDSOnDemandICAlgorithm::GetDataset(const DomainType &dom)
 vtkDataSet *
 avtCommDSOnDemandICAlgorithm::GetDSFromDomainCache(const DomainType &dom)
 {
-    list<pair<DomainType, vtkDataSet *> >::iterator it;
+    list<domainCacheEntry>::iterator it;
 
     for (it = domainCache.begin(); it != domainCache.end(); it++)
     {
-        if (it->first == dom)
+        if (it->dom == dom)
         {
-            vtkDataSet *ds = it->second;
+            vtkDataSet *ds = it->ds;
             
             //Move it to the front of the list.
-            pair<DomainType, vtkDataSet *> entry = *it;
+            domainCacheEntry entry = *it;
             domainCache.erase(it);
             domainCache.push_front(entry);
             
@@ -524,21 +566,49 @@ avtCommDSOnDemandICAlgorithm::GetDSFromDomainCache(const DomainType &dom)
 // ****************************************************************************
 
 void
-avtCommDSOnDemandICAlgorithm::AddDSToDomainCache(const DomainType &dom, vtkDataSet *ds)
+avtCommDSOnDemandICAlgorithm::AddDSToDomainCache(vector<DomainType> &doms,
+                                                 vector<vtkDataSet *> &dss)
 {
-    pair<DomainType, vtkDataSet *> entry(dom, ds);
-
-    domainCache.push_front(entry);
-    ds->Register(NULL);
+    int newDoms = doms.size();
     
     // Purge cache, as needed.
-    if (domainCache.size() > domainCacheSizeLimit)
+    if (domainCache.size() + newDoms > domainCacheSizeLimit)
     {
-        entry = domainCache.back();
+        int purgeCnt = 0;
+        domainCache.sort(cacheSort);
         
-        entry.second->Delete();
-        domainCache.pop_back();
-        DomPurgeCnt.value++;
+        for (int i = 0; i < newDoms; i++)
+        {
+            domainCacheEntry &entry = domainCache.front();
+            debug1<<" ** PURGE "<<entry.dom.domain<<":"<<entry.refCnt;
+            if (entry.refCnt > 0)
+                debug1<<" BAD PURGE";
+            debug1<<endl;
+            
+            entry.ds->Delete();
+            
+            domainCache.pop_front();
+            DomPurgeCnt.value++;
+        }
+    }
+
+    for (int i = 0; i < newDoms; i++)
+    {
+        domainCacheEntry entry(doms[i], dss[i]);
+
+        domainCache.push_front(entry);
+        dss[i]->Register(NULL);
+
+        double latency = 0.0;
+        map<int,int>::iterator itt = pendingDomReqTimers.find(doms[i].domain);
+        if (itt != pendingDomReqTimers.end())
+        {
+            latency = visitTimer->StopTimer(itt->second, "recvDS");
+            pendingDomReqTimers.erase(itt);
+        }
+        DSLatencyTime.value += latency;
+        
+        debug1<<" ** RECV DS "<<doms[i].domain<<" latency= "<<latency<<endl;
     }
 }
 
@@ -558,10 +628,155 @@ void
 avtCommDSOnDemandICAlgorithm::SortIntegralCurves(list<avtIntegralCurve *> &ics)
 {
     int timerHandle = visitTimer->StartTimer();
+
+    //We want to sort these by 'number of domains' in the whole list.
+    list<avtIntegralCurve*>::iterator it;
+
+    map<int,int> domCounts;
+    map<int,int>::iterator mapIt;
+    for (it = ics.begin(); it != ics.end(); it++)
+    {
+        mapIt = domCounts.find((*it)->domain.domain);
+        if (mapIt == domCounts.end())
+            domCounts[(*it)->domain.domain] = 1;
+        else
+            mapIt->second++;
+    }
+
+    for (it = ics.begin(); it != ics.end(); it++)
+    {
+        (*it)->sortKey = domCounts[(*it)->domain.domain];
+    }
     
     ics.sort(icDomainCompare);
 
     SortTime.value += visitTimer->StopTimer(timerHandle, "SortIntegralCurves()");
+}
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::Debug
+//
+// Purpose: Debug...
+//
+// Programmer:  Dave Pugmire
+// Creation:    January  4, 2011
+//
+// ****************************************************************************
+
+void
+avtCommDSOnDemandICAlgorithm::Debug()
+{
+    list<avtIntegralCurve*>::iterator it;
+    debug1<<"ActiveICs: "<<activeICs.size()<<" [";
+    for (it = activeICs.begin(); it != activeICs.end(); it++)
+        debug1<<(*it)->domain.domain<<" ";
+    debug1<<"]"<<endl;
+    debug1<<"OOB   ICs: "<<oobICs.size()<<" [";
+    for (it = oobICs.begin(); it != oobICs.end(); it++)
+        debug1<<(*it)->domain.domain<<" ";
+    debug1<<"]"<<endl;
+
+    list<domainCacheEntry>::iterator itt;
+    debug1<<"Cache    : "<<domainCache.size()<<" [";
+    for (itt = domainCache.begin(); itt != domainCache.end(); itt++)
+        debug1<<itt->dom.domain<<":"<<itt->refCnt<<" ";
+    debug1<<"]"<<endl;
+
+
+    set<int>::iterator s;
+    debug1<<"Reqs     : "<<pendingDomRequests.size()<<" [";
+    for (s = pendingDomRequests.begin(); s != pendingDomRequests.end(); s++)
+        debug1<<*s<<" ";
+    debug1<<"]"<<endl;
+
+    CheckCacheVacancy(false);
+
+    debug1<<endl;
+}
+
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::AddRef
+//
+// Purpose: Increase the domain ref count.
+//
+// Programmer:  Dave Pugmire
+// Creation:    January  4, 2011
+//
+// ****************************************************************************
+
+void
+avtCommDSOnDemandICAlgorithm::AddRef(const DomainType &dom)
+{
+    list<domainCacheEntry>::iterator it;
+    for (it = domainCache.begin(); it != domainCache.end(); it++)
+        if (it->dom == dom)
+        {
+            it->refCnt++;
+            break;
+        }
+}
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::DelRef
+//
+// Purpose: Decrease the domain ref count.
+//
+// Programmer:  Dave Pugmire
+// Creation:    January  4, 2011
+//
+// ****************************************************************************
+
+void
+avtCommDSOnDemandICAlgorithm::DelRef(const DomainType &dom)
+{
+    list<domainCacheEntry>::iterator it;
+    for (it = domainCache.begin(); it != domainCache.end(); it++)
+        if (it->dom == dom)
+        {
+            it->refCnt--;
+            break;
+        }
+}
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::CheckCacheVacancy
+//
+// Purpose: Check how much room is available in the cache.
+//
+// Programmer:  Dave Pugmire
+// Creation:    January  4, 2011
+//
+// ****************************************************************************
+
+void
+avtCommDSOnDemandICAlgorithm::CheckCacheVacancy(bool makeReq)
+{
+    int cacheVacancy =  (domainCacheSizeLimit-1) - domainCache.size() - pendingDomRequests.size();
+
+    list<domainCacheEntry>::iterator it;
+    for (it = domainCache.begin(); it != domainCache.end(); it++)
+        if (it->refCnt == 0)
+            cacheVacancy++;
+
+    if (!makeReq)
+        debug1<<"Cache Vacancy: "<<cacheVacancy<<endl;
+
+    if (cacheVacancy <= 0 || !makeReq)
+        return;
+
+    SortIntegralCurves(oobICs);
+
+    int reqs = 0;
+    list<avtIntegralCurve*>::iterator itt;
+    for (itt = oobICs.begin(); itt != oobICs.end(); itt++)
+    {
+        if (RequestDataset((*itt)->domain))
+            reqs++;
+        
+        if (reqs == cacheVacancy)
+            break;
+    }
 }
 
 #endif
