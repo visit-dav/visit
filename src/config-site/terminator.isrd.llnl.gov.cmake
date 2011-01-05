@@ -1,1 +1,1 @@
-hitit.llnl.gov
+hitit.llnl.gov.cmake
