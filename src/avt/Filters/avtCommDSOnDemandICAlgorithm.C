@@ -371,25 +371,31 @@ avtCommDSOnDemandICAlgorithm::RequestDataset(DomainType &d)
 //   Dave Pugmire, Fri Dec 17 12:15:04 EST 2010
 //   Fix memory leaks by adding CheckPendingSendRequests().
 //
+//   Dave Pugmire, Wed Jan  5 07:57:21 EST 2011
+//   New datastructures for msg/ic/ds.
+//
 // ****************************************************************************
 
 void
 avtCommDSOnDemandICAlgorithm::HandleMessages(int &numDone)
 {
-    vector<vector<int> > msgs;
+    vector<MsgCommData> msgs;
+    vector<DSCommData> ds;
+
     if (RecvMsg(msgs))
     {
         for (int i = 0; i < msgs.size(); i++)
         {
-            int sendRank = msgs[i][0];
-            int msgType = msgs[i][1];
+            int sendRank = msgs[i].rank;
+            vector<int> &m = msgs[i].message;
+            int msgType = m[0];
 
             if (msgType == DONE)
                 numDone++;
             
             else if (msgType == DATASET_REQUEST)
             {
-                int dom = msgs[i][2];
+                int dom = m[1];
                 vtkDataSet *d = GetDomain(dom);
                 if (d)
                 {
@@ -409,16 +415,14 @@ avtCommDSOnDemandICAlgorithm::HandleMessages(int &numDone)
     }
 
     //Check for incoming Datasets.
-    vector<vtkDataSet *> ds;
-    vector<DomainType> doms;
-    if (RecvDS(ds, doms))
+    if (RecvDS(ds))
     {
-        AddDSToDomainCache(doms, ds);
+        AddDSToDomainCache(ds);
         
         for (int i = 0; i < ds.size(); i++)
         {
-            ds[i]->Delete();
-            set<int>::iterator it = pendingDomRequests.find(doms[i].domain);
+            ds[i].ds->Delete();
+            set<int>::iterator it = pendingDomRequests.find(ds[i].dom.domain);
             pendingDomRequests.erase(it);
         }
 
@@ -566,10 +570,9 @@ avtCommDSOnDemandICAlgorithm::GetDSFromDomainCache(const DomainType &dom)
 // ****************************************************************************
 
 void
-avtCommDSOnDemandICAlgorithm::AddDSToDomainCache(vector<DomainType> &doms,
-                                                 vector<vtkDataSet *> &dss)
+avtCommDSOnDemandICAlgorithm::AddDSToDomainCache(vector<DSCommData> &dss)
 {
-    int newDoms = doms.size();
+    int newDoms = dss.size();
     
     // Purge cache, as needed.
     if (domainCache.size() + newDoms > domainCacheSizeLimit)
@@ -594,13 +597,13 @@ avtCommDSOnDemandICAlgorithm::AddDSToDomainCache(vector<DomainType> &doms,
 
     for (int i = 0; i < newDoms; i++)
     {
-        domainCacheEntry entry(doms[i], dss[i]);
+        domainCacheEntry entry(dss[i].dom.domain, dss[i].ds);
 
         domainCache.push_front(entry);
-        dss[i]->Register(NULL);
+        dss[i].ds->Register(NULL);
 
         double latency = 0.0;
-        map<int,int>::iterator itt = pendingDomReqTimers.find(doms[i].domain);
+        map<int,int>::iterator itt = pendingDomReqTimers.find(dss[i].dom.domain);
         if (itt != pendingDomReqTimers.end())
         {
             latency = visitTimer->StopTimer(itt->second, "recvDS");
@@ -608,7 +611,7 @@ avtCommDSOnDemandICAlgorithm::AddDSToDomainCache(vector<DomainType> &doms,
         }
         DSLatencyTime.value += latency;
         
-        debug1<<" ** RECV DS "<<doms[i].domain<<" latency= "<<latency<<endl;
+        debug1<<" ** RECV DS "<<dss[i].dom.domain<<" latency= "<<latency<<endl;
     }
 }
 

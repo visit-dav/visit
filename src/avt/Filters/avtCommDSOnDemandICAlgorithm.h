@@ -107,8 +107,8 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
 
     //Communicated domain cache.
     virtual vtkDataSet       *GetDSFromDomainCache(const DomainType &dom);
-    virtual void              AddDSToDomainCache(std::vector<DomainType> &doms,
-                                                 std::vector<vtkDataSet *> &dss);
+    virtual void              AddDSToDomainCache(std::vector<DSCommData> &ds);
+
     std::list<domainCacheEntry> domainCache;
     int domainCacheSizeLimit;
 

@@ -48,6 +48,9 @@
 
 class vtkDataSet;
 class MemStream;
+class MsgCommData;
+class ICCommData;
+class DSCommData;
 
 // ****************************************************************************
 // Class: avtParICAlgorithm
@@ -105,6 +108,9 @@ class MemStream;
 //   Dave Pugmire, Mon Dec  6 14:42:45 EST 2010
 //   Fixes for SendDS, and RecvDS
 //
+//   Dave Pugmire, Wed Jan  5 07:57:21 EST 2011
+//   New datastructures for msg/ic/ds.
+//
 // ****************************************************************************
 
 class avtParICAlgorithm : public avtICAlgorithm
@@ -132,16 +138,21 @@ class avtParICAlgorithm : public avtICAlgorithm
 
     // Send/Recv Integral curves.
     void                      SendICs(int dst, std::vector<avtIntegralCurve*> &v);
-    bool                      RecvICs(std::list<avtIntegralCurve*> &v, std::list<int> *ranks=NULL);
+    bool                      RecvICs(std::list<ICCommData> &recvICs);
+    bool                      RecvICs(std::list<avtIntegralCurve *> &recvICs);
 
     // Send/Recv messages.
     void                      SendMsg(int dst, std::vector<int> &msg);
     void                      SendAllMsg(std::vector<int> &msg);
-    bool                      RecvMsg(std::vector<std::vector<int> > &msgs);
+    bool                      RecvMsg(std::vector<MsgCommData> &msgs);
 
     // Send/Recv datasets.
     void                      SendDS(int dst, std::vector<vtkDataSet *> &ds, std::vector<DomainType> &doms);
-    bool                      RecvDS(std::vector<vtkDataSet *> &ds, std::vector<DomainType> &doms);
+    bool                      RecvDS(std::vector<DSCommData> &ds);
+    bool                      RecvAny(std::vector<MsgCommData> *msgs,
+                                      std::list<ICCommData> *recvICs,
+                                      std::vector<DSCommData> *ds,
+                                      bool blockAndWait);
 
     void                      RestoreIntegralCurveSequence();
     void                      MergeTerminatedICSequences();
@@ -154,7 +165,7 @@ class avtParICAlgorithm : public avtICAlgorithm
     virtual void              ReportCounters(ostream &os, bool totals);
 
     //Timers/Counters.
-    ICStatistics              CommTime;
+    ICStatistics              CommTime, DSCommTime;
     ICStatistics              MsgCnt, ICCommCnt, BytesCnt, DSCnt;
 
     std::map<int, std::pair<int, unsigned char*> > serializedDS;
@@ -164,7 +175,11 @@ class avtParICAlgorithm : public avtICAlgorithm
     void                      PostRecv(int tag);
     void                      PostRecv(int tag, int sz);
     void                      SendData(int dst, int tag, MemStream *buff);
-    bool                      RecvData(int tag, std::vector<MemStream *> &buffers);
+    bool                      RecvData(std::set<int> &tags,
+                                       std::vector<std::pair<int,MemStream *> > &buffers,
+                                       bool blockAndWait=false);
+    inline bool               RecvData(int tag, std::vector<MemStream *> &buffers,
+                                       bool blockAndWait=false);
     void                      AddHeader(MemStream *buff);
     void                      RemoveHeader(MemStream *input, MemStream *header, MemStream *buff);
 
@@ -172,8 +187,8 @@ class avtParICAlgorithm : public avtICAlgorithm
                                         std::vector<avtIntegralCurve*> &);
     void                      PrepareForSend(int tag, MemStream *buff, std::vector<unsigned char *> &buffList);
     static bool               PacketCompare(const unsigned char *a, const unsigned char *b);
-    void                      ProcessReceivedBuffers(int tag, vector<unsigned char*> &incomingBuffers,
-                                                     vector<MemStream *> &buffers);
+    void                      ProcessReceivedBuffers(vector<unsigned char*> &incomingBuffers,
+                                                     vector<std::pair<int, MemStream *> > &buffers);
 
     // Send/Recv buffer management structures.
     typedef std::pair<MPI_Request, int> RequestTagPair;
@@ -196,8 +211,65 @@ class avtParICAlgorithm : public avtICAlgorithm
     //Message headers.
     typedef struct
     {
-        int rank, id, numPackets, packet, packetSz, dataSz;
+        int rank, id, tag, numPackets, packet, packetSz, dataSz;
     } Header;
+};
+
+bool
+avtParICAlgorithm::RecvData(int tag, std::vector<MemStream *> &buffers,
+                            bool blockAndWait)
+{
+    std::set<int> setTag;
+    setTag.insert(tag);
+    std::vector<std::pair<int, MemStream *> > b;
+    buffers.resize(0);
+    if (RecvData(setTag, b, blockAndWait))
+    {
+        buffers.resize(b.size());
+        for (int i = 0; i < b.size(); i++)
+            buffers[i] = b[i].second;
+        return true;
+    }
+    return false;
+}
+
+class MsgCommData
+{
+  public:
+    MsgCommData() {rank=-1;}
+    MsgCommData(int r, const std::vector<int> &m) {rank=r; message = m;}
+    MsgCommData(const MsgCommData &d) {rank=d.rank; message=d.message;}
+
+    MsgCommData &operator=(const MsgCommData &d) {rank=d.rank; message=d.message; return *this; }
+    
+    int rank;
+    std::vector<int> message;
+};
+
+class ICCommData
+{
+  public:
+    ICCommData() {rank=-1; ic=NULL;}
+    ICCommData(int r, avtIntegralCurve *c) {rank=r; ic=c;}
+    ICCommData(const ICCommData &d) {rank=d.rank; ic=d.ic;}
+
+    ICCommData &operator=(const ICCommData &d) {rank=d.rank; ic=d.ic; return *this; }
+    
+    int rank;
+    avtIntegralCurve *ic;
+};
+
+class DSCommData
+{
+  public:
+    DSCommData() {ds=NULL;}
+    DSCommData(DomainType &_dom, vtkDataSet *_ds) {dom=_dom; ds=_ds;}
+    DSCommData(const DSCommData &d) {ds=d.ds; dom=d.dom;}
+
+    DSCommData &operator=(const DSCommData &d) {ds=d.ds; dom=d.dom; return *this; }
+    
+    DomainType dom;
+    vtkDataSet *ds;
 };
 
 #endif
