@@ -81,6 +81,11 @@
 #include <UnexpectedValueException.h>
 
 #include <visit-config.h> // for WORDS_BIGENDIAN
+#ifdef _WIN32
+  #define rint(x) (floor(x+0.5))
+  #define cbrt(x) (pow(x, 1.0/3.0))
+  #define NAME_MAX 256
+#endif
 
 // ****************************************************************************
 //  Method: avtMFIX constructor
@@ -2511,7 +2516,7 @@ void avtMFIXFileFormat::GetAllTimesTweaked(void)
 
     for (int i = 0; i < this->NumberOfTimeSteps; i++) {
 #ifdef _WIN32
-        fread( (char*)&time , sizof(float) , 1 , tfile );
+        fread( (char*)&time , sizeof(float) , 1 , tfile );
 #else
         tfile.read( (char*)&time,sizeof(float) );
 #endif
