@@ -23,3 +23,4 @@ ADD_LIBRARY(bane
 
 TARGET_LINK_LIBRARIES(bane gage unrrdu nrrd biff air)
 VISIT_INSTALL_TARGETS(bane)
+VISIT_TEEM_ADD_FOLDER(bane)

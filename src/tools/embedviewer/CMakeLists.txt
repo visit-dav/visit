@@ -38,6 +38,9 @@
 #   Brad Whitlock, Tue Nov 30 11:32:08 PST 2010
 #   I added multiwindow example.
 #
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
+#
 #****************************************************************************/
 
 SET(SOURCES1
@@ -204,3 +207,5 @@ IF(VISIT_STATIC)
         ${viewer_exe_VPlot}
     )
 ENDIF(VISIT_STATIC)
+
+VISIT_TOOLS_ADD_FOLDER(embedded embedded multiwindow)

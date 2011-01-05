@@ -200,6 +200,10 @@
 #    and VISIT_H5PART_LIBDEP for all platforms. Call find for szip, zlib and
 #    jpeg before Finds for any libs that may have dependencies on them.
 #
+#     Kathleen Bonnell, Wed Jan 5 10:36:29 PST 2010
+#     Turn on use of FOLDER property.
+#     Move Plugin macros to their own CMake file.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -217,6 +221,9 @@ SET(CMAKE_SKIP_RULE_DEPENDENCY 1)
 # for now...
 SET(BUILD_SHARED_LIBS 1)
 
+# this turns on the FOLDER property for generators that may make use of it, like Visual Studio
+# should have no effect for generators that do not use.
+SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
 #-----------------------------------------------------------------------------
 # Get this computer's hostname using cmake's cross platform helper function.
@@ -604,74 +611,6 @@ MACRO(VISIT_INSTALL_TARGETS)
     ENDIF(VISIT_STATIC)
 ENDMACRO(VISIT_INSTALL_TARGETS)
 
-MACRO(VISIT_INSTALL_PLUGINS type)
-    IF(NOT VISIT_STATIC)
-        IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
-            SET_TARGET_PROPERTIES(${ARGN} PROPERTIES INSTALL_RPATH "$ORIGIN/../../lib")
-        ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
-        IF(NOT WIN32)
-            INSTALL(TARGETS ${ARGN}
-                LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
-                RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                            GROUP_READ GROUP_WRITE GROUP_EXECUTE 
-                            WORLD_READ             WORLD_EXECUTE
-                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-            )
-        ELSE(NOT WIN32)
-            # ${BUILD_TYPE} refers to the configuration option chosen (Release,
-            # Debug, etc). It is a var that will be given a value during compile
-            # not configure, so the dollar sign must be escaped in the string
-            # below.  Then during install, ${BUILD_TYPE} will be expanded.
-            FOREACH(target ${ARGN})
-                IF(MSVC_IDE)
-                  SET(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/lib${target}.dll")
-                  INSTALL(FILES ${filename}
-                    DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
-                    COMPONENT RUNTIME
-                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                GROUP_READ GROUP_WRITE GROUP_EXECUTE 
-                                WORLD_READ             WORLD_EXECUTE
-                    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-                  )
-                ELSE()  # For no IDE, installed straight into exe
-                  SET(filename "${VISIT_BINARY_DIR}/exe/lib${target}.dll")
-                  INSTALL(FILES ${filename}
-                    DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
-                    COMPONENT RUNTIME
-                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                GROUP_READ GROUP_WRITE GROUP_EXECUTE 
-                                WORLD_READ             WORLD_EXECUTE
-                  )
-                ENDIF()
-            ENDFOREACH(target)
-        ENDIF(NOT WIN32)
-        IF(APPLE)
-            FOREACH(target ${ARGN})
-                SET(filename lib${target}.dylib)
-                INSTALL(CODE 
-                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                         COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_PLUGINS}/${type}/${filename}\"
-                         OUTPUT_VARIABLE OSXOUT)
-                     MESSAGE(STATUS \"\${OSXOUT}\")
-                    ")
-            ENDFOREACH(target)
-        ENDIF(APPLE)
-    ENDIF(NOT VISIT_STATIC)
-ENDMACRO(VISIT_INSTALL_PLUGINS)
-
-MACRO(VISIT_INSTALL_DATABASE_PLUGINS)
-    VISIT_INSTALL_PLUGINS(databases ${ARGN})
-ENDMACRO(VISIT_INSTALL_DATABASE_PLUGINS)
-
-MACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
-    VISIT_INSTALL_PLUGINS(operators ${ARGN})
-ENDMACRO(VISIT_INSTALL_OPERATOR_PLUGINS)
-
-MACRO(VISIT_INSTALL_PLOT_PLUGINS)
-    VISIT_INSTALL_PLUGINS(plots ${ARGN})
-ENDMACRO(VISIT_INSTALL_PLOT_PLUGINS)
-
 # Install the headers for directories that we need in order to build plugins
 INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin viewer visit_vtk visitpy vtkqt winutil
     DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/visit
@@ -687,12 +626,6 @@ INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin vi
     PATTERN ".svn" EXCLUDE
     PATTERN "CMakeFiles" EXCLUDE
 )
-
-MACRO(VISIT_PLUGIN_TARGET_PREFIX) 
-    IF(WIN32)
-        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES PREFIX "../lib")
-    ENDIF(WIN32)
-ENDMACRO(VISIT_PLUGIN_TARGET_PREFIX)
 
 #-----------------------------------------------------------------------------
 # Detect packages here. We could probably write macros that we can include from

@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:22:08 PST 2010
+#   Add folder property.
 #
 #****************************************************************************/
 
@@ -60,3 +62,4 @@ ADD_DEFINITIONS(-DZ_PREFIX)
 ADD_LIBRARY(z ${ZLIB_SOURCES})
 
 VISIT_INSTALL_TARGETS(z)
+SET_TARGET_PROPERTIES(z PROPERTIES FOLDER thirdparty_builtin/zlib)

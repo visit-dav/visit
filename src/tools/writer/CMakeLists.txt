@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
 #
 #****************************************************************************/
 
@@ -60,3 +62,4 @@ ${PYTHON_LIBRARIES}
 )
 
 VISIT_INSTALL_TARGETS(visit_writer)
+VISIT_TOOLS_ADD_FOLDER(visit_writer)

@@ -35,8 +35,14 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:22:08 PST 2010
+#   Add folder property.
 #
 #****************************************************************************/
+
+MACRO(VISIT_TEEM_ADD_FOLDER target)
+    SET_TARGET_PROPERTIES(${target} PROPERTIES FOLDER thirdparty_builtin/teem)
+ENDMACRO(VISIT_TEEM_ADD_FOLDER)
 
 ADD_SUBDIRECTORY(teem-1.9.0-src)
 
@@ -47,6 +53,7 @@ SET(SCI_GLEW_LIBRARY GLEW)
 
 MACRO(SCIRUN_ADD_LIBRARY target)
     ADD_LIBRARY(${target} ${ARGN})
+    SET_TARGET_PROPERTIES(${target} PROPERTIES FOLDER thirdparty_builtin/slivr)
 ENDMACRO(SCIRUN_ADD_LIBRARY target)
 INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}

@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:22:08 PST 2010
+#   Add folder property.
 #
 #****************************************************************************/
 
@@ -52,3 +54,4 @@ ENDIF(WIN32)
 ADD_LIBRARY(GLEW ${GLEW_SOURCES})
 
 VISIT_INSTALL_TARGETS(GLEW)
+SET_TARGET_PROPERTIES(GLEW PROPERTIES FOLDER thirdparty_builtin/glew)

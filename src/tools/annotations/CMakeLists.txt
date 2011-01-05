@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
 #
 #****************************************************************************/
 
@@ -54,3 +56,4 @@ TARGET_LINK_LIBRARIES(text2polys vtkCommon vtkRendering vtkGraphics vtkFiltering
 TARGET_LINK_LIBRARIES(time_annotation vtkCommon vtkRendering vtkGraphics vtkFiltering vtkIO)
 
 VISIT_INSTALL_TARGETS(text2polys time_annotation)
+VISIT_TOOLS_ADD_FOLDER(annotations text2polys time_annotation)

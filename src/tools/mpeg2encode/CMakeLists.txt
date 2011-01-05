@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
 #
 #****************************************************************************/
 
@@ -69,3 +71,4 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 
 VISIT_INSTALL_TARGETS(mpeg2encode)
+VISIT_TOOLS_ADD_FOLDER(mpeg2encode)

@@ -59,3 +59,4 @@ ADD_LIBRARY(unrrdu
 
 TARGET_LINK_LIBRARIES(unrrdu nrrd biff hest air)
 VISIT_INSTALL_TARGETS(unrrdu)
+VISIT_TEEM_ADD_FOLDER(unrrdu)

@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
 #   
 #****************************************************************************/
 
@@ -60,6 +62,7 @@ FUNCTION(ADD_SILO_EXAMPLE target)
         SET_TARGET_PROPERTIES(adv_example_${target} PROPERTIES
             OUTPUT_NAME ${target}
             RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatibleAdvanced
+            FOLDER tools/DataManualExamples/CreatingCompatibleAdvanced
         )
         IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
             SET_TARGET_PROPERTIES(adv_example_${target} PROPERTIES

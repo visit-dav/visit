@@ -38,6 +38,9 @@
 #   Kathleen Bonnell, Wed May 5 12:07:54 PST 2010
 #   Disable optimization.
 # 
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
+# 
 #****************************************************************************/
 
 ADD_SUBDIRECTORY(remotecommand)
@@ -86,3 +89,4 @@ SET_TARGET_PROPERTIES(qtssh PROPERTIES
                       COMPILE_FLAGS "/Od")
 
 VISIT_INSTALL_TARGETS(qtssh)
+VISIT_TOOLS_ADD_FOLDER(qtssh)

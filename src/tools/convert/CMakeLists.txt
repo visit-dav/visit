@@ -50,6 +50,9 @@
 #   Hank Childs, Sat Aug 21 14:20:04 PDT 2010
 #   Rename ddf to dbin/DDF to DataBinning.
 #
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -117,6 +120,7 @@ ENDIF(VISIT_STATIC)
 #********************************* SERIAL ************************************
 ADD_EXECUTABLE(visitconvert_ser convert.C ${CONVERT_STATIC_SOURCES})
 VISIT_INSTALL_TARGETS(visitconvert_ser)
+VISIT_TOOLS_ADD_FOLDER(convert visitconvert_ser)
 
 IF(VISIT_DBIO_ONLY)
     SET_TARGET_PROPERTIES(visitconvert_ser PROPERTIES OUTPUT_NAME visitconvert_ser_lite)
@@ -177,6 +181,7 @@ ENDIF(VISIT_STATIC)
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_EXECUTABLE(visitconvert_par convert.C ${CONVERT_STATIC_SOURCES})
     VISIT_INSTALL_TARGETS(visitconvert_par)
+    VISIT_TOOLS_ADD_FOLDER(convert visitconvert_par)
 
     IF(VISIT_DBIO_ONLY)
         SET_TARGET_PROPERTIES(visitconvert_par PROPERTIES OUTPUT_NAME visitconvert_par_lite)

@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
 #
 #****************************************************************************/
 
@@ -128,3 +130,4 @@ IF(VISIT_STATIC)
 ENDIF(VISIT_STATIC)
 
 VISIT_INSTALL_TARGETS(visitprotocol)
+VISIT_TOOLS_ADD_FOLDER(visitprotocol)
