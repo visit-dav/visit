@@ -1026,6 +1026,9 @@
 #     the script to output that message to the terminal in addition to the
 #     log file.
 #
+#     Cyrus Harrison, Wed Jan  5 09:54:16 PST 2011
+#     Log full invocation w/ arguments.
+#
 # *****************************************************************************
 
 
@@ -9562,13 +9565,15 @@ else
 fi
 
 #
-# Log the start time.  Especially helpful if there are multiple starts
-# dumped into the same log.
+# Log build_visit invocation w/ arguments & the start time.
+# Especially helpful if there are multiple starts dumped into the
+# same log.
 #
 LINES="------------------------------------------------------------" 
-echo $LINES
-echo "Starting $0 at " $(date)
-echo $LINES 
+log $LINES
+log $0 $@
+log "Started:" $(date)
+log $LINES
 
 if [[ "$DO_SVN" == "yes" ]] ; then
     check_svn_client
