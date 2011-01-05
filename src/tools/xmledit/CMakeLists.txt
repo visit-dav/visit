@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
 #
 #****************************************************************************/
 
@@ -114,3 +116,4 @@ ENDIF(VISIT_STATIC)
 TARGET_LINK_LIBRARIES(xmledit ${RELEVANT_QT_LIBS})
 
 VISIT_INSTALL_TARGETS(xmledit)
+VISIT_TOOLS_ADD_FOLDER(xml xmledit)

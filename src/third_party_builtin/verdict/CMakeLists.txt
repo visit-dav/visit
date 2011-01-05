@@ -20,3 +20,4 @@ ADD_DEFINITIONS(-DVERDICT_EXPORTS)
 ADD_LIBRARY(visit_verdict ${VERDICT_SOURCES})
 
 VISIT_INSTALL_TARGETS(visit_verdict)
+SET_TARGET_PROPERTIES(visit_verdict PROPERTIES FOLDER thirdparty_builtin/visit_verdict)

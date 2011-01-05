@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:22:08 PST 2010
+#   Add folder property.
 #
 #****************************************************************************/
 
@@ -57,3 +59,4 @@ ADD_LIBRARY(bow ${BOW_SOURCES})
 TARGET_LINK_LIBRARIES(bow vtkzlib)
 
 VISIT_INSTALL_TARGETS(bow)
+SET_TARGET_PROPERTIES(bow PROPERTIES FOLDER thirdparty_builtin/bow)

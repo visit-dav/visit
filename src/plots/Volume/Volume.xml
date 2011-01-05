@@ -4,20 +4,13 @@
       ${QT_QTOPENGL_INCLUDE_DIR}
       ${SLIVR_INCLUDE_DIR}
       ${GLEW_INCLUDE_DIR}
-      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty/boost
-      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty
-      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty
-      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty/boost
-      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok/tuvok
-      ${VISIT_SOURCE_DIR}/third_party_builtin/tuvok
+      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty/boost
+      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty
+      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty
+      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty/boost
+      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok
+      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok
     </CXXFLAGS>
-    <LDFLAGS>
-      ${TUVOK_LIB}
-      ${QT_LDFLAGS}
-      ${QT_CORE_LIB}
-      ${QT_GUI_LIB}
-      ${QT_OPENGL_LIB}
-    </LDFLAGS>
     <Files components="G">
       ${SLIVR_GUI_IMPL}
       TransferFunctionWidget.C

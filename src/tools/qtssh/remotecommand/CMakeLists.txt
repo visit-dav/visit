@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
 #
 #****************************************************************************/
 
@@ -95,3 +97,4 @@ ADD_LIBRARY(remotecommand ${REMOTECOMMAND_SOURCES})
 TARGET_LINK_LIBRARIES(remotecommand wsock32 ws2_32)
 
 VISIT_INSTALL_TARGETS(remotecommand)
+VISIT_TOOLS_ADD_FOLDER(qtssh remotecommand)

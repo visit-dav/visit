@@ -21,3 +21,4 @@ ADD_LIBRARY(limn
 
 TARGET_LINK_LIBRARIES(limn ell nrrd biff hest air)
 VISIT_INSTALL_TARGETS(limn)
+VISIT_TEEM_ADD_FOLDER(limn)

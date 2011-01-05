@@ -110,6 +110,10 @@
 //    installed version of VisIt.  Convert Windows paths to CMake paths 
 //    since we are creating a CMake file.
 //
+//    Kathleen Bonnell, Tue Jan  4 08:38:03 PST 2011
+//    Fix CGNS dll define, due to update of cgns library.
+//    Add call to VISIT_PLUGIN_TARGET_FOLDER for project grouping in VS.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -292,7 +296,8 @@ class CMakeGeneratorPlugin : public Plugin
     {
         out << "PROJECT(" << name<< ")" << endl;
         out << endl;
-
+        out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
+        out << endl;
         out << "SET(COMMON_SOURCES" << endl;
         out << name << "PluginInfo.C" << endl;
         out << name << "CommonPluginInfo.C" << endl;
@@ -480,6 +485,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         out << "VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_FOLDER(plots ${INSTALLTARGETS})" << endl;
         out << endl;
     }
 
@@ -489,7 +495,8 @@ class CMakeGeneratorPlugin : public Plugin
     {
         out << "PROJECT(" << name<< ")" << endl;
         out << endl;
-
+        out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
+        out << endl;
         out << "SET(COMMON_SOURCES" << endl;
         out << name << "PluginInfo.C" << endl;
         out << name << "CommonPluginInfo.C" << endl;
@@ -653,12 +660,15 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         out << "VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_FOLDER(operators ${INSTALLTARGETS})" << endl;
         out << endl;
     }
 
     void WriteCMake_Database(QTextStream &out)
     {
         out << "PROJECT("<<name<<")" << endl;
+        out << endl;
+        out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
         out << endl;
         out << "SET(COMMON_SOURCES" << endl;
         out << ""<<name<<"PluginInfo.C" << endl;
@@ -819,7 +829,7 @@ class CMakeGeneratorPlugin : public Plugin
                 else if(libs[i].contains("NETCDF"))
                      out << "  ADD_DEFINITIONS(-DDLL_NETCDF)" << endl;
                 else if(libs[i].contains("CGNS"))
-                     out << "  ADD_DEFINITIONS(-D_CGNSDLL)" << endl;
+                     out << "  ADD_DEFINITIONS(-DUSE_DLL)" << endl;
                 else if(libs[i].contains("EXODUSII"))
                      out << "  ADD_DEFINITIONS(-DEXODUSII_BUILD_SHARED_ZIBS)" << endl;
             }
@@ -876,6 +886,7 @@ class CMakeGeneratorPlugin : public Plugin
         }
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_FOLDER(databases ${INSTALLTARGETS})" << endl;
     }
 
     void WriteCMake(QTextStream &out)

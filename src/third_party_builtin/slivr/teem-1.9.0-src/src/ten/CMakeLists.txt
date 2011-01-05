@@ -51,3 +51,4 @@ ADD_LIBRARY(ten
 
 TARGET_LINK_LIBRARIES(ten echo limn gage dye unrrdu ell nrrd biff air)
 VISIT_INSTALL_TARGETS(ten)
+VISIT_TEEM_ADD_FOLDER(ten)

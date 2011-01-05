@@ -38,6 +38,9 @@
 #   Brad Whitlock, Wed May 26 09:54:12 PDT 2010
 #   I added Jean Favre's life.c which simulates the "game of life".
 #
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -57,6 +60,7 @@ FUNCTION(SET_SIMULATION_PROPERTIES target)
     SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
         OUTPUT_NAME ${target}
         RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/Simulations
+        FOLDER tools/DataManualExamples/Simulations
     )
     IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
         SET_TARGET_PROPERTIES(sim_${target} PROPERTIES

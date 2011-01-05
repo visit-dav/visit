@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
 #
 #****************************************************************************/
 
@@ -58,3 +60,4 @@ ADD_EXECUTABLE(visit_transition ${VISIT_TRANSITION_SOURCES})
 
 # Installation targets
 VISIT_INSTALL_TARGETS(visit_composite visit_transition)
+VISIT_TOOLS_ADD_FOLDER(imagetools visit_composite visit_transition)

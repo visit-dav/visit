@@ -16,3 +16,4 @@ ADD_LIBRARY(echo
 
 TARGET_LINK_LIBRARIES(echo limn ell nrrd biff air)
 VISIT_INSTALL_TARGETS(echo)
+VISIT_TEEM_ADD_FOLDER(echo)

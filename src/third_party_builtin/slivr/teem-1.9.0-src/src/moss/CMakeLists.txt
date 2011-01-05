@@ -9,3 +9,4 @@ ADD_LIBRARY(moss
 TARGET_LINK_LIBRARIES(moss ell nrrd biff hest air)
 
 VISIT_INSTALL_TARGETS(moss)
+VISIT_TEEM_ADD_FOLDER(moss)

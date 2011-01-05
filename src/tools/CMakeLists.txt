@@ -41,7 +41,18 @@
 #   Kathleen Bonnell, Fri Jun  4 14:46:56 PDT 2010
 #   Change ${MILI_FOUND} to MILI_FOUND.
 #
+#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
+#   Add FOLDER property.
+#
 #****************************************************************************/
+
+MACRO(VISIT_TOOLS_ADD_FOLDER type)
+    IF(${ARGC} GREATER 1)
+        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES FOLDER tools/${type})
+    ELSE(${ARGC} GREATER 1)
+        SET_TARGET_PROPERTIES(${type} PROPERTIES FOLDER tools/${type})
+    ENDIF(${ARGC} GREATER 1)
+ENDMACRO(VISIT_TOOLS_ADD_FOLDER)
 
 IF(VISIT_DBIO_ONLY)
     ADD_SUBDIRECTORY(convert)

@@ -10,3 +10,4 @@ ADD_LIBRARY(coil
 
 TARGET_LINK_LIBRARIES(coil ten gage ell nrrd biff air)
 VISIT_INSTALL_TARGETS(coil)
+VISIT_TEEM_ADD_FOLDER(coil)

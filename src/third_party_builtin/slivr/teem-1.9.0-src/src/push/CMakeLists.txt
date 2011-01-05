@@ -6,3 +6,4 @@ ADD_LIBRARY(push
 TARGET_LINK_LIBRARIES(push ten gage ell nrrd biff air)
 
 VISIT_INSTALL_TARGETS(push)
+VISIT_TEEM_ADD_FOLDER(push)
