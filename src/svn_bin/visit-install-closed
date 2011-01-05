@@ -23,6 +23,9 @@
 #   Eric Brugger, Fri Nov  5 15:40:02 PDT 2010
 #   Replaced hopi with inca and removed pruple.
 #
+#   Eric Brugger, Wed Jan  5 09:40:00 PST 2011
+#   Added terminator.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -33,6 +36,7 @@ user=`whoami`
 # Parse the execute line, providing default values for error checking.
 #
 termite=true
+terminator=false
 inca=true
 
 ver=undefined
@@ -47,6 +51,7 @@ do
    case $1 in
       -none)
          termite=false
+         terminator=false
          inca=false
          shift
          ;;
@@ -56,6 +61,14 @@ do
          ;;
       +termite)
          termite=true
+         shift
+         ;;
+      -terminator)
+         terminator=false
+         shift
+         ;;
+      +terminator)
+         terminator=true
          shift
          ;;
       -inca)
@@ -132,6 +145,43 @@ then
 fi
 
 #
+# Install on terminator.
+#
+rm -f terminator
+cat <<EOF > terminator
+#!/bin/sh
+./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux_rhel5 /misc/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo ""                                            > resultlog 2>&1
+echo "        install of visit on terminator"      >> resultlog 2>&1
+echo "       --------------------------------"     >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /misc/gapps/visit                            >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /misc/gapps/visit/$ver+/linux-intel/bin      >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /misc/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /misc/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /misc/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /misc/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/misc\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.terminator
+EOF
+
+if [ $terminator = true ]
+then
+   if [ $test = no ]
+   then
+      scp -P 22 terminator:terminator/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux_rhel5.tar.gz
+      scp -P 22 visit$ver2.linux_rhel5.tar.gz terminator:
+      scp -P 22 visit-install terminator:
+      scp -P 22 terminator terminator:terminator_install
+      ssh -p 22 terminator "chmod 750 terminator_install;./terminator_install"
+   fi
+fi
+
+#
 # Install on inca.
 #
 rm -f inca
@@ -173,5 +223,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f termite inca
+   rm -f termite terminator inca
 fi
