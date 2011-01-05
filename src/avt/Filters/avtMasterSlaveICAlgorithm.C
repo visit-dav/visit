@@ -1050,14 +1050,14 @@ avtMasterICAlgorithm::SendStatus(bool forceSend)
 void
 avtMasterICAlgorithm::ProcessMessages()
 {
-    vector<vector<int> > msgs;
+    vector<MsgCommData> msgs;
     RecvMsg(msgs);
 
     for (int i = 0; i < msgs.size(); i++)
     {
-        vector<int> &msg = msgs[i];
-        int src = msg[0];
-        int msgType = msg[1];
+        vector<int> &msg = msgs[i].message;
+        int src = msgs[i].rank;
+        int msgType = msg[0];
 
         if (msgType == MSG_DONE)
         {
@@ -2460,7 +2460,7 @@ avtSlaveICAlgorithm::RunAlgorithm()
 void
 avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
 {
-    vector<vector<int> > msgs;
+    vector<MsgCommData> msgs;
     RecvMsg(msgs);
     
     done = false;
@@ -2468,9 +2468,9 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
     
     for (int i = 0; i < msgs.size(); i++)
     {
-        vector<int> &msg = msgs[i];
-        int src = msg[0];
-        int msgType = msg[1];
+        vector<int> &msg = msgs[i].message;
+        int src = msgs[i].rank;
+        int msgType = msg[0];
         
         if (msgType == MSG_DONE)
         {
@@ -2481,7 +2481,7 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
         //Load this domain.
         else if (msgType == MSG_LOAD_DOMAIN)
         {
-            DomainType dom(msg[2], msg[3]);
+            DomainType dom(msg[1], msg[2]);
             debug1<<"MSG: LoadDomain( "<<dom<<")\n";
             GetDomain(dom);
         }
@@ -2493,8 +2493,8 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             debug1<<"Slave: MSG_OFFLOAD_IC I have "<<activeICs.size()<<" to offer"<<endl;
             debug1<<msg<<endl;
             
-            int dst = msg[2];
-            int numDoms = msg[3];
+            int dst = msg[1];
+            int numDoms = msg[2];
             int num = 10*maxCnt;
             if (msgType == MSG_OFFLOAD_IC)
                 num = 10*maxCnt;
@@ -2505,7 +2505,7 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
 
             for (int d = 0; d < numDoms; d++)
             {
-                int domIdx = msg[4+d];
+                int domIdx = msg[3+d];
                 DomainType dom = IdxToDom(domIdx);
                 
                 list<avtIntegralCurve *>::iterator s = activeICs.begin();
@@ -2548,9 +2548,9 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
         //Send streamlines to another slave.
         else if (msgType == MSG_SEND_IC)
         {
-            int dst = msg[2];
-            DomainType dom = IdxToDom(msg[3]);
-            int num = msg[4];
+            int dst = msg[1];
+            DomainType dom = IdxToDom(msg[2]);
+            int num = msg[3];
 
             debug1<<"MSG: Send "<<num<<" x dom= "<<dom<<" to "<<dst;
             list<avtIntegralCurve *>::iterator s = activeICs.begin();

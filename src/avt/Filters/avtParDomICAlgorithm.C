@@ -263,6 +263,9 @@ avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
 //   Hank Childs, Fri Nov 26 14:39:43 PST 2010
 //   Add progress updates based on number of particles completed.
 //
+//   Dave Pugmire, Wed Jan  5 07:57:21 EST 2011
+//   New datastructures for msg/ic/ds.
+//
 // ****************************************************************************
 
 void
@@ -285,21 +288,23 @@ avtParDomICAlgorithm::ExchangeTermination()
     }
 
     // Check to see if msgs are coming in.
-    vector<vector<int> > msgs;
+    vector<MsgCommData> msgs;
     RecvMsg(msgs);
     for (int i = 0; i < msgs.size(); i++)
     {
-        int fromRank = msgs[i][0], msgType = msgs[i][1];
+        int fromRank = msgs[i].rank;
+        vector<int> &msg = msgs[i].message;
+        int msgType = msg[0];
         
         if (msgType == PARTICLE_TERMINATE_COUNT)
         {
-            totalNumIntegralCurves += msgs[i][2];
+            totalNumIntegralCurves += msg[1];
             //debug5<<fromRank<<": RECV DECR"<<endl;
         }
         else
         {
             //Find the right entry.
-            int icID = msgs[i][2], icCnt = msgs[i][3];
+            int icID = msg[1], icCnt = msg[2];
             pair<int,int> key(icID, icCnt);
 
             sendICInfoIterator i = sendICInfo.find(key);
@@ -435,36 +440,41 @@ avtParDomICAlgorithm::RunAlgorithm()
 // Programmer:  Dave Pugmire
 // Creation:    November  5, 2010
 //
+// Modifications:
+//   Dave Pugmire, Wed Jan  5 07:57:21 EST 2011
+//   New datastructures for msg/ic/ds.
+//
 // ****************************************************************************
 
 void
 avtParDomICAlgorithm::HandleIncomingIC()
 {
-    list<avtIntegralCurve *> incoming;
-    list<int> ranks;
-    RecvICs(incoming, &ranks);
+    list<ICCommData> incoming;
+    RecvICs(incoming);
 
-    list<avtIntegralCurve *>::iterator s;
-    list<int>::iterator r = ranks.begin();
-    for (s = incoming.begin(); s != incoming.end(); s++, r++)
+    list<ICCommData>::iterator s;
+    for (s = incoming.begin(); s != incoming.end(); s++)
     {
+        avtIntegralCurve *ic = (*s).ic;
+        int sendRank = (*s).rank;
+        
         vector<int> msg(3);
         msg[0] = PARTICLE_USED;
-        msg[1] = (*s)->id;
-        msg[2] = (*s)->counter;
+        msg[1] = ic->id;
+        msg[2] = ic->counter;
 
         avtVector pt;
-        (*s)->CurrentLocation(pt);
-        if (PointInDomain(pt, (*s)->domain))
+        ic->CurrentLocation(pt);
+        if (PointInDomain(pt, ic->domain))
         {
-            activeICs.push_back(*s);
+            activeICs.push_back(ic);
         }
         else
         {
             msg[0] = PARTICLE_NOT_USED;
-            delete *s;
+            delete ic;
         }
-        SendMsg(*r, msg);
+        SendMsg(sendRank, msg);
     }
 }
 
