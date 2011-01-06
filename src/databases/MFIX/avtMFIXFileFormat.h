@@ -56,7 +56,7 @@
   #define MFIX_NAME_MAX MAX_PATH
 #else
   #include <limits.h>
-  #define MFIX_NAME_MAX (NAME_MAX+1);
+  #define MFIX_NAME_MAX (NAME_MAX+1)
 #endif
 
 class DBOptionsAttributes;
