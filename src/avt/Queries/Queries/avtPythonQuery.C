@@ -548,6 +548,9 @@ avtPythonQuery::Execute()
                           "Unable to add domain id to execution input list");
     }
 
+    // Free the memory from the GetAllLeaves function call.
+    delete [] data_sets;
+
     // call execute on Filter
     PyObject *py_filter = pyEnv->Filter()->PythonObject();
     if(py_filter == NULL)
@@ -555,7 +558,7 @@ avtPythonQuery::Execute()
                       "Python filter not initialized.");
 
     // get the execute method
-    PyObject *py_exe= PyString_FromString("execute");
+    PyObject *py_exe = PyString_FromString("execute");
     if(py_exe == NULL)
         PYQUERY_ERROR("avtPythonQuery::Execute Error - "
                      "Error preparing for call of 'execute' method.");
@@ -571,7 +574,6 @@ avtPythonQuery::Execute()
     Py_DECREF(py_dsets);
     Py_DECREF(py_domids);
     Py_DECREF(py_exe);
-
 }
 
 // ****************************************************************************

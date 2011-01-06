@@ -226,7 +226,15 @@ avtResampleFilter::InputNeedsNoResampling(void)
     int n = 0;
     vtkDataSet **in_dss = inDT->GetAllLeaves(n);
     if (n && in_dss && in_dss[0] && in_dss[0]->GetDataObjectType() == VTK_POLY_DATA)
+    {
+        // Free the memory from the GetAllLeaves function call.
+        delete [] in_dss;
+
         return true;
+    }
+
+    // Free the memory from the GetAllLeaves function call.
+    delete [] in_dss;
 #endif
 
     return false;

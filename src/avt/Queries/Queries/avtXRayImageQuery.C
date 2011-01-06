@@ -405,6 +405,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
         if (nLeaves <= 0)
         {
+            // Free the memory from the GetAllLeaves function call.
+            delete [] leaves;
+            delete filt;
+
             EXCEPTION1(VisItException, "There must be at least one bin.");
         }
 
@@ -434,7 +438,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         if (outputType >=0 && outputType <= 4)
         {
             string msg = "";
-            char *exts[5] = {"bmp", "jpeg", "png", "tif", "bof"};
+            const char *exts[5] = {"bmp", "jpeg", "png", "tif", "bof"};
             char buf[512];
     
             if (nLeaves == 1)
@@ -454,6 +458,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             SetResultMessage("No x ray image query results were written "
                              "because the output type was invalid\n");
         }
+
+        // Free the memory from the GetAllLeaves function call.
+        delete [] leaves;
     }
     visitTimer->StopTimer(t2, "avtXRayImageQuery::WriteImage");
 

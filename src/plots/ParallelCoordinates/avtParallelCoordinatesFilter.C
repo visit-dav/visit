@@ -2377,6 +2377,9 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
         pointIdList->Delete();
     }
 
+    // Free the memory from the GetAllLeaves function call.
+    delete [] leaves;
+
     // Note the poor use of MPI below, coded for expediency, as I believe all
     // of the named selections will be small.
     int *numPerProcIn = new int[PAR_Size()];

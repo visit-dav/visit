@@ -455,8 +455,11 @@ avtPythonExpression::Execute()
     PyObject *py_domids = PyTuple_New(nsets);
 
      if(py_dsets == NULL || py_domids == NULL)
+     {
+            delete [] data_sets;
             PYEXPR_ERROR("avtPythonExpression::Execute Error - "
                          "Unable to create execution input lists");
+     }
 
     // array to hold output leaves
     avtDataTree_p *leaves = new avtDataTree_p[nsets];
@@ -465,13 +468,20 @@ avtPythonExpression::Execute()
     for(int i = 0; i < nsets ; i++)
     {
         if(PyTuple_SetItem(py_dsets,i,pyEnv->WrapVTKObject(data_sets[i],"vtkDataSet")) != 0)
+        {
+            delete [] data_sets;
             PYEXPR_ERROR("avtPythonExpression::Execute Error - "
                          "Unable to add data set to execution input list");
+        }
         if(PyTuple_SetItem(py_domids,i,PyInt_FromLong(domain_ids[i])) != 0)
+        {
+            delete [] data_sets;
             PYEXPR_ERROR("avtPythonExpression::Execute Error - "
                          "Unable to add domain id to execution input list");
+        }
 
     }
+    delete [] data_sets;
 
     // call execute on Filter
     PyObject *py_filter = pyEnv->Filter()->PythonObject();
