@@ -84,7 +84,6 @@
 #ifdef _WIN32
   #define rint(x) (floor(x+0.5))
   #define cbrt(x) (pow(x, 1.0/3.0))
-  #define NAME_MAX 256
 #endif
 
 // ****************************************************************************
@@ -104,7 +103,8 @@ avtMFIXFileFormat::avtMFIXFileFormat(const char *filename,
     DBOptionsAttributes *rdopts)
 : avtMTMDFileFormat(filename)
 {
-    strcpy(this->RestartFileName, filename);
+    strncpy(this->RestartFileName, filename, MFIX_NAME_MAX);
+    this->RestartFileName[MFIX_NAME_MAX-1]='\0';
     readInData = false;
     readInformation = false;
     fileBigEndian = true;
@@ -661,19 +661,23 @@ avtMFIXFileFormat::make_fn(char *fn, int spx)
 {
     char *p;
 
-    strncpy(fn, RestartFileName, NAME_MAX);
-    fn[NAME_MAX] = '\0';
+    strncpy(fn, RestartFileName, MFIX_NAME_MAX);
+    fn[MFIX_NAME_MAX-1] = '\0';
     p = strrchr(fn, '.');
     if (p == NULL)
         EXCEPTION1(InvalidVariableException, fn);
 
     /* XXX XXX XXX add bound checks */
     p++;
+    if(p-fn >= MFIX_NAME_MAX) EXCEPTION1(InvalidVariableException, fn);
     *p++ = 'S';
+    if(p-fn >= MFIX_NAME_MAX) EXCEPTION1(InvalidVariableException, fn);
     *p++ = 'P';
+    if(p-fn >= MFIX_NAME_MAX) EXCEPTION1(InvalidVariableException, fn);
     if (spx < 10)
         *p++ = '0' + spx;
     else *p++ = 'A' + (spx-10);
+    if(p-fn >= MFIX_NAME_MAX) EXCEPTION1(InvalidVariableException, fn);
     *p++ = '\0';
 }
 
@@ -772,7 +776,7 @@ avtMFIXFileFormat::GetVar(int timestate, int domain, const char *varname)
         delete [] buf;
     } else {
         int vidx = get_var_index(varname);
-        char fn[NAME_MAX + 1];
+        char fn[MFIX_NAME_MAX];
         int index = (vidx * MaximumTimestep) + timestate;
         long long nBytesSkip = SPXTimestepIndexTable->GetValue(index);
 
@@ -1410,8 +1414,8 @@ void avtMFIXFileFormat::ReadRestartFile()
     // later on.
     //this->Flag->Resize(this->IJKMaximum2);
     //this->GetBlockOfInts(in, this->Flag,this->IJKMaximum2);
-    strncpy(this->FlagFilename, this->RestartFileName,
-        sizeof(this->FlagFilename));
+    strncpy(this->FlagFilename, this->RestartFileName, MFIX_NAME_MAX);
+    this->FlagFilename[MFIX_NAME_MAX-1] = '\0';
     this->FlagFieldOffset = in.tellg();
     this->SkipBlockOfInts(in, this->IJKMaximum2);
 
@@ -2075,7 +2079,7 @@ void avtMFIXFileFormat::SkipBlockOfInts(istream& in, int n)
 //----------------------------------------------------------------------------
 void avtMFIXFileFormat::CreateVariableNames()
 {
-    char fileName[256];
+    char fileName[MFIX_NAME_MAX];
     int cnt = 0;
     char uString[120];
     char vString[120];
@@ -2309,7 +2313,7 @@ void avtMFIXFileFormat::CreateVariableNames()
 void avtMFIXFileFormat::GetTimeSteps()
 {
     int nextRecord, numberOfRecords;
-    char fileName[256];
+    char fileName[MFIX_NAME_MAX];
     int cnt = 0;
 
     for (int i = 0; i < this->NumberOfSPXFilesUsed; ++i) {
@@ -2487,7 +2491,7 @@ void avtMFIXFileFormat::GetAllTimesTweaked(void)
         }
     }
 
-    char fileName[256];
+    char fileName[MFIX_NAME_MAX];
     make_fn(fileName, maxVar + 1);
 
 #ifdef _WIN32

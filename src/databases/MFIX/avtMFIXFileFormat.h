@@ -48,6 +48,16 @@
 
 #include <vectortypes.h>
 
+#ifdef _WIN32
+  #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+  #endif
+  #define MFIX_NAME_MAX MAX_PATH
+#else
+  #include <limits.h>
+  #define MFIX_NAME_MAX (NAME_MAX+1);
+#endif
+
 class DBOptionsAttributes;
 class vtkDoubleArray;
 class vtkFloatArray;
@@ -150,7 +160,7 @@ class avtMFIXFileFormat : public avtMTMDFileFormat
      char*              GSB_currentFname;
      FILE*              GSB_file;
      int                SwapByteOrder;
-     char               RestartFileName[256];
+     char               RestartFileName[MFIX_NAME_MAX];
      doubleVector       times;
      stringVector       variables;
      bool               readInData;
@@ -214,7 +224,7 @@ class avtMFIXFileFormat : public avtMTMDFileFormat
                                                // the variables
      int                SPXRecordsPerTimestep; // number of records in a single
                                                // timestep for a variable
-     char               FlagFilename[256];     // What file are the flags in?
+     char               FlagFilename[MFIX_NAME_MAX];     // What file are the flags in?
      streampos          FlagFieldOffset;       // Where in the flag file is
                                                // that array?
 
