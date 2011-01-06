@@ -14776,7 +14776,7 @@ AddDefaultMethods()
     AddMethod("GetAnnotationObject", visit_GetAnnotationObject,
                                                 visit_GetAnnotationObject_doc);
     AddMethod("GetAnnotationObjectNames", visit_GetAnnotationObjectNames,
-                                                NULL);
+                                                visit_GetAnnotationObjectNames_doc);
 
     AddMethod("GetLocalHostName", visit_GetLocalHostName,
                                                        visit_GetLocalName_doc);
