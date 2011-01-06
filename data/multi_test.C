@@ -1683,7 +1683,7 @@ static float NodalToZonal(const float *nodalvals, const int *hexlist, int zoneno
 // The variables we are working from actually don't have any mixed parts
 // here. So, we don't really have an opportunity to output mixed values
 // apart from the zonal-averaged values.
-static int
+static void
 PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
     int matnos[], int matlist[], int dims[], int ndims,
     int mix_next[], int mix_mat[], int mix_zone[], float *mix_vf,
@@ -1819,7 +1819,7 @@ PutMatVars(DBfile *dbfile, const char *name, const char *meshname, int nmat,
 }
 
 // Purpose: Output material information using an MRG tree
-static int
+static void
 PutMatsUsingMrgtree(DBfile *dbfile, const char *name, const char *meshname,
     int nmat, int matnos[], int matlist[], int dims[], int ndims,
     int mix_next[], int mix_mat[], int mix_zone[], float *mix_vf,
@@ -1940,7 +1940,7 @@ PutMatsUsingMrgtree(DBfile *dbfile, const char *name, const char *meshname,
     DBFreeMrgtree(mrgtree);
 }
 
-static int
+static void
 PutMatVarsUsingMrgtrees(DBfile *dbfile, const char *name, const char *meshname,
     int nmat, int matnos[], int matlist[], int dims[], int ndims,
     int mix_next[], int mix_mat[], int mix_zone[], float *mix_vf,

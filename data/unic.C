@@ -119,7 +119,7 @@ write_quads(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float xyz[nx*ny*4*2];
+    float *xyz = new float[nx*ny*4*2];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -138,6 +138,8 @@ write_quads(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -150,7 +152,7 @@ write_quads(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*2];
+    float *vdata = new float[nx*ny*2];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -165,6 +167,8 @@ write_quads(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -177,7 +181,7 @@ write_quads(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -188,6 +192,8 @@ write_quads(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -238,7 +244,7 @@ write_vtk100(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 1;
-    float xyz[nx*ny*3*2];
+    float *xyz = new float[nx*ny*3*2];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -255,6 +261,8 @@ write_vtk100(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -267,7 +275,7 @@ write_vtk100(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*3];
+    float *vdata = new float[nx*ny*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -281,6 +289,8 @@ write_vtk100(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -293,7 +303,7 @@ write_vtk100(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -304,6 +314,8 @@ write_vtk100(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -354,7 +366,7 @@ write_vtk101(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 2, yoffset = 1;
-    float xyz[nx*ny*6*2];
+    float *xyz = new float[nx*ny*6*2];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -377,6 +389,8 @@ write_vtk101(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -389,7 +403,7 @@ write_vtk101(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*6];
+    float *vdata = new float[nx*ny*6];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -406,6 +420,8 @@ write_vtk101(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -418,7 +434,7 @@ write_vtk101(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -429,6 +445,8 @@ write_vtk101(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -479,7 +497,7 @@ write_vtk111(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 3;
-    float xyz[nx*ny*6*2];
+    float *xyz = new float[nx*ny*6*2];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -502,6 +520,8 @@ write_vtk111(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -514,7 +534,7 @@ write_vtk111(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*6];
+    float *vdata = new float[nx*ny*6];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -531,6 +551,8 @@ write_vtk111(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -543,7 +565,7 @@ write_vtk111(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -554,6 +576,8 @@ write_vtk111(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -604,7 +628,7 @@ write_vtk112(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 4, yoffset = 3;
-    float xyz[nx*ny*10*2];
+    float *xyz = new float[nx*ny*10*2];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -636,6 +660,8 @@ write_vtk112(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -648,7 +674,7 @@ write_vtk112(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*10];
+    float *vdata = new float[nx*ny*10];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -669,6 +695,8 @@ write_vtk112(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -681,7 +709,7 @@ write_vtk112(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -692,6 +720,8 @@ write_vtk112(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -742,7 +772,7 @@ write_vtk150(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 6;
-    float xyz[nx*ny*4*2];
+    float *xyz = new float[nx*ny*4*2];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -761,6 +791,8 @@ write_vtk150(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -773,7 +805,7 @@ write_vtk150(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*4];
+    float *vdata = new float[nx*ny*4];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -788,6 +820,8 @@ write_vtk150(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -800,7 +834,7 @@ write_vtk150(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -811,6 +845,8 @@ write_vtk150(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -861,7 +897,7 @@ write_vtk151(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 2, yoffset = 6;
-    float xyz[nx*ny*8*2];
+    float *xyz = new float[nx*ny*8*2];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -888,6 +924,8 @@ write_vtk151(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -900,7 +938,7 @@ write_vtk151(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*8];
+    float *vdata = new float[nx*ny*8];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -919,6 +957,8 @@ write_vtk151(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -931,7 +971,7 @@ write_vtk151(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -942,6 +982,8 @@ write_vtk151(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -992,7 +1034,7 @@ write_vtk161(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 8;
-    float xyz[nx*ny*9*2];
+    float *xyz = new float[nx*ny*9*2];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1021,6 +1063,8 @@ write_vtk161(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1033,7 +1077,7 @@ write_vtk161(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*9];
+    float *vdata = new float[nx*ny*9];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1053,6 +1097,8 @@ write_vtk161(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1065,7 +1111,7 @@ write_vtk161(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1076,6 +1122,8 @@ write_vtk161(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -1126,7 +1174,7 @@ write_vtk162(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 4, yoffset = 8;
-    float xyz[nx*ny*16*2];
+    float *xyz = new float[nx*ny*16*2];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1169,6 +1217,8 @@ write_vtk162(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1181,7 +1231,7 @@ write_vtk162(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*16];
+    float *vdata = new float[nx*ny*16];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1207,6 +1257,8 @@ write_vtk162(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
+   
+    delete [] vdata;
 
     status = H5Dclose(dataset_id);
 
@@ -1220,7 +1272,7 @@ write_vtk162(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1231,6 +1283,8 @@ write_vtk162(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -1280,7 +1334,7 @@ write_hexes(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "XYZ", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float xyz[nx*ny*8*3];
+    float *xyz = new float[nx*ny*8*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1315,6 +1369,8 @@ write_hexes(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1327,7 +1383,7 @@ write_hexes(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*8];
+    float *vdata = new float[nx*ny*8];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1346,6 +1402,8 @@ write_hexes(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1358,7 +1416,7 @@ write_hexes(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1369,6 +1427,8 @@ write_hexes(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -1419,7 +1479,7 @@ write_vtk200(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 1;
-    float xyz[nx*ny*4*3];
+    float *xyz = new float[nx*ny*4*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1442,6 +1502,7 @@ write_vtk200(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1454,7 +1515,7 @@ write_vtk200(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*4];
+    float *vdata = new float[nx*ny*4];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1469,6 +1530,8 @@ write_vtk200(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1481,7 +1544,7 @@ write_vtk200(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1492,6 +1555,8 @@ write_vtk200(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -1542,7 +1607,7 @@ write_vtk201(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 2, yoffset = 1;
-    float xyz[nx*ny*10*3];
+    float *xyz = new float[nx*ny*10*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1583,6 +1648,8 @@ write_vtk201(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1595,7 +1662,7 @@ write_vtk201(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*10];
+    float *vdata = new float[nx*ny*10];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1616,6 +1683,8 @@ write_vtk201(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1628,7 +1697,7 @@ write_vtk201(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1639,6 +1708,8 @@ write_vtk201(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -1689,7 +1760,7 @@ write_vtk211(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 3;
-    float xyz[nx*ny*10*3];
+    float *xyz = new float[nx*ny*10*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1730,6 +1801,7 @@ write_vtk211(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1742,7 +1814,7 @@ write_vtk211(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*10];
+    float *vdata = new float[nx*ny*10];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1763,6 +1835,8 @@ write_vtk211(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1775,7 +1849,7 @@ write_vtk211(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1786,6 +1860,8 @@ write_vtk211(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -1836,7 +1912,7 @@ write_vtk212(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 4, yoffset = 3;
-    float xyz[nx*ny*20*3];
+    float *xyz = new float[nx*ny*20*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1861,6 +1937,7 @@ write_vtk212(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1873,7 +1950,7 @@ write_vtk212(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*20];
+    float *vdata= new float[nx*ny*20];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1896,6 +1973,8 @@ write_vtk212(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -1908,7 +1987,7 @@ write_vtk212(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1919,6 +1998,8 @@ write_vtk212(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -1969,7 +2050,7 @@ write_vtk250(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 6;
-    float xyz[nx*ny*6*3];
+    float *xyz = new float[nx*ny*6*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -1998,6 +2079,7 @@ write_vtk250(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2010,7 +2092,7 @@ write_vtk250(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*6];
+    float *vdata = new float[nx*ny*6];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2027,6 +2109,8 @@ write_vtk250(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2039,7 +2123,7 @@ write_vtk250(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2050,6 +2134,8 @@ write_vtk250(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -2100,7 +2186,7 @@ write_vtk251(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 2, yoffset = 6;
-    float xyz[nx*ny*15*3];
+    float *xyz = new float[nx*ny*15*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2156,6 +2242,8 @@ write_vtk251(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2168,7 +2256,7 @@ write_vtk251(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*15];
+    float *vdata = new float[nx*ny*15];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2194,6 +2282,8 @@ write_vtk251(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2206,7 +2296,7 @@ write_vtk251(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2217,6 +2307,8 @@ write_vtk251(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -2267,7 +2359,7 @@ write_vtk261(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 8;
-    float xyz[nx*ny*18*3];
+    float *xyz = new float[nx*ny*18*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2332,6 +2424,8 @@ write_vtk261(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2344,7 +2438,7 @@ write_vtk261(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*18];
+    float *vdata = new float[nx*ny*18];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2373,6 +2467,8 @@ write_vtk261(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2385,7 +2481,7 @@ write_vtk261(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2396,6 +2492,8 @@ write_vtk261(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -2446,7 +2544,7 @@ write_vtk262(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 4, yoffset = 8;
-    float xyz[nx*ny*40*3];
+    float *xyz = new float[nx*ny*40*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2471,6 +2569,8 @@ write_vtk262(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2483,7 +2583,7 @@ write_vtk262(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*40];
+    float *vdata = new float[nx*ny*40];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2506,6 +2606,8 @@ write_vtk262(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2518,7 +2620,7 @@ write_vtk262(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2529,6 +2631,8 @@ write_vtk262(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -2579,7 +2683,7 @@ write_vtk300(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 0, yoffset = 11;
-    float xyz[nx*ny*8*3];
+    float *xyz = new float[nx*ny*8*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2614,6 +2718,8 @@ write_vtk300(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2626,7 +2732,7 @@ write_vtk300(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*8];
+    float *vdata = new float[nx*ny*8];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2645,6 +2751,8 @@ write_vtk300(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2657,7 +2765,7 @@ write_vtk300(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2668,6 +2776,8 @@ write_vtk300(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -2718,7 +2828,7 @@ write_vtk301(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 2, yoffset = 11;
-    float xyz[nx*ny*20*3];
+    float *xyz = new float[nx*ny*20*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2789,6 +2899,8 @@ write_vtk301(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2801,7 +2913,7 @@ write_vtk301(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*20];
+    float *vdata = new float[nx*ny*20];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2832,6 +2944,8 @@ write_vtk301(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -2844,7 +2958,7 @@ write_vtk301(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2855,6 +2969,8 @@ write_vtk301(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -2905,7 +3021,7 @@ write_vtk311(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 6, yoffset = 11;
-    float xyz[nx*ny*27*3];
+    float *xyz = new float[nx*ny*27*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -2997,6 +3113,8 @@ write_vtk311(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -3009,7 +3127,7 @@ write_vtk311(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*27];
+    float *vdata = new float[nx*ny*27];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -3047,6 +3165,8 @@ write_vtk311(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -3059,7 +3179,7 @@ write_vtk311(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -3070,6 +3190,8 @@ write_vtk311(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 
@@ -3120,7 +3242,7 @@ write_vtk312(const hid_t file_id, const int iblock)
                            dataspace_id, H5P_DEFAULT);
 
     int xoffset = 10, yoffset = 11;
-    float xyz[nx*ny*64*3];
+    float *xyz = new float[nx*ny*64*3];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -3146,6 +3268,8 @@ write_vtk312(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, xyz);
 
+    delete [] xyz;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -3158,7 +3282,7 @@ write_vtk312(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "VERTEXDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float vdata[nx*ny*64];
+    float *vdata = new float[nx*ny*64];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -3180,6 +3304,8 @@ write_vtk312(const hid_t file_id, const int iblock)
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, vdata);
 
+    delete [] vdata;
+
     status = H5Dclose(dataset_id);
 
     status = H5Sclose(dataspace_id);
@@ -3192,7 +3318,7 @@ write_vtk312(const hid_t file_id, const int iblock)
     dataset_id = H5Dcreate(block_id, "ELEMENTDATA", H5T_NATIVE_FLOAT,
                            dataspace_id, H5P_DEFAULT);
 
-    float cdata[nx*ny];
+    float *cdata = new float[nx*ny];
     for (int iy = 0; iy < ny; iy++)
     {
         for (int ix = 0; ix < nx; ix++)
@@ -3203,6 +3329,8 @@ write_vtk312(const hid_t file_id, const int iblock)
 
     status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, cdata);
+
+    delete [] cdata;
 
     status = H5Dclose(dataset_id);
 

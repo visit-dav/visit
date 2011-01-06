@@ -45,6 +45,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#else
+#define snprintf _snprintf
 #endif
 
 static const float minvals[] = {10.,10.,10.};

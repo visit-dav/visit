@@ -38,7 +38,14 @@
 
 #include <math.h>
 #include <string.h>
+#ifndef _WIN32
 #include <unistd.h>
+#else
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
 #include <visitstream.h>
 #include <string>
 #include <vector>
@@ -123,7 +130,7 @@ main(int argc, char *argv[])
         else if (strcmp(argv[i], "-single_file") == 0)
         {
             i++;
-	    single_file = 1;
+            single_file = 1;
         }
     }
 
@@ -146,17 +153,21 @@ main(int argc, char *argv[])
         cycle = i * 10;
         bool writeTransient = (i >= start && i < end);
         char filename[1024];
-	if (single_file == 1)
+        if (single_file == 1)
             sprintf(filename, "wave_1file.silo");
         else
             sprintf(filename, "wave%.4d.silo", cycle);
         WriteFile (filename, time, time_minus_1, cycle, writeTransient,
                    false, false);
-	if (single_file == 1)
-	{
+        if (single_file == 1)
+        {
             sprintf(filename, "wave_1file.silo:cycle_%04d", cycle);
-	    symlink("wave_1file.silo", filename);
-	}
+#ifndef _WIN32
+            symlink("wave_1file.silo", filename);
+#else
+            CopyFile("wave_1file.silo", filename, true);
+#endif
+        }
         ofile << filename << endl;
     }
 
@@ -181,17 +192,21 @@ main(int argc, char *argv[])
         bool writeTransientMesh = (i == 2);
         bool writeTransientMat  = (i >= start2 && i < end2);
         char filename[1024];
-	if (single_file == 1)
+        if (single_file == 1)
             sprintf(filename, "wave_tv_1file.silo");
-	else
+        else
             sprintf(filename, "wave_tv%.4d.silo", cycle);
         WriteFile (filename, time, time_minus_1, cycle, writeTransientVar,
                    writeTransientMesh, writeTransientMat);
-	if (single_file == 1)
-	{
+        if (single_file == 1)
+        {
             sprintf(filename, "wave_tv_1file.silo:cycle_%04d", cycle);
-	    symlink("wave_tv_1file.silo", filename);
-	}
+#ifndef _WIN32
+            symlink("wave_tv_1file.silo", filename);
+#else
+            CopyFile("wave_tv_1file.silo", filename, true);
+#endif
+        }
         ofile2 << filename << endl;
     }
 
@@ -536,17 +551,17 @@ WriteFile(char *filename, double time, double time_minus_1, int cycle,
     {
         char tmpDirName[256];
         char tmpFileName[256];
-	if (cycle == 0)
-	{
+        if (cycle == 0)
+        {
             dbfile = DBCreate(filename, 0, DB_LOCAL, "The Wave", driver);
-	}
-	else
-	{
+        }
+        else
+        {
             dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
-	}
-	sprintf(tmpDirName, "cycle_%04d", cycle);
-	DBMkdir(dbfile, tmpDirName);
-	DBSetDir(dbfile, tmpDirName);
+        }
+        sprintf(tmpDirName, "cycle_%04d", cycle);
+        DBMkdir(dbfile, tmpDirName);
+        DBSetDir(dbfile, tmpDirName);
     }
     else
     {

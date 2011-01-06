@@ -56,6 +56,12 @@
 #include <sys/stat.h>
 #include <silo.h>
 
+#ifdef _WIN32
+  #ifndef S_ISDIR
+    #define S_ISDIR(m) (((m &S_IFMT) == S_IFDIR))
+  #endif
+  #include <direct.h>
+#endif
 using namespace std;
 
 // function prototypes
@@ -86,8 +92,11 @@ void write_root(int driver)
     int stat_return = stat("mmadj_rect_2d_data/", &buf);
     if (S_ISDIR(buf.st_mode))
         system("rm -rf mmadj_rect_2d_data/");
-   
+#ifndef _WIN32   
     mkdir("mmadj_rect_2d_data/", S_IRWXU | S_IRWXG | S_IRWXO);
+#else
+    _mkdir("mmadj_rect_2d_data/");
+#endif
 
     // create a multimesh that specifies where the domains exist.
     int   types[4] = {DB_QUAD_RECT, DB_QUAD_RECT, DB_QUAD_RECT, DB_QUAD_RECT};

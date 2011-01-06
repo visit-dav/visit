@@ -71,8 +71,16 @@
 #   I added logic to only create the Silo data files if VisIt is being
 #   built with the Silo library.
 #
+#   Kathleen Bonnell, Mon Nov 15 15:46:11 MST 2010
+#   Add support for building on windows.  
+#  
 #****************************************************************************/
-cmake_minimum_required(VERSION 2.6)
+
+cmake_minimum_required(VERSION 2.8)
+
+IF(WIN32)
+    PROJECT(VISIT_DATA)
+ENDIF(WIN32)
 
 #-----------------------------------------------------------------------------
 # If this directory exists the root CMakeLists.txt adds this directroy as a 
@@ -81,7 +89,7 @@ cmake_minimum_required(VERSION 2.6)
 # Prevent users from running cmake directy in this directory.
 #-----------------------------------------------------------------------------
 IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-MESSAGE(FATAL_ERROR "VisIt's \"data\" directory cannot be configured "
+    MESSAGE(FATAL_ERROR "VisIt's \"data\" directory cannot be configured "
                     "independently from the main \"src\" directory. Please "
                     "run cmake on VisIt's \"src\" directory.")
 ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -102,6 +110,8 @@ MESSAGE(STATUS "Configuring VisIt Data Targets")
 #                     path/to/more/libs
 #                    LIBS
 #                     lib_names
+#                    DEFS
+#                     definitions (eg. Preprocessor for windows)
 #
 # Source files are detected in two ways:
 #  If ${target_name}_SOURCES is set:  its contents are used.
@@ -113,22 +123,26 @@ FUNCTION(BUILD_DATA_TARGET target_name)
     SET(target_INCLUDE_DIRS "")
     SET(target_LIB_DIRS "")
     SET(target_LIBS "")
+    SET(target_DEFS "")
 
     # cmake gymnastics to implement optional argument sections:
     FOREACH(ARG ${ARGN})
         IF("${ARG}" STREQUAL "INCLUDE_DIRS" OR
            "${ARG}" STREQUAL "LIB_DIRS" OR
-           "${ARG}" STREQUAL "LIBS")
+           "${ARG}" STREQUAL "LIBS" OR
+           "${ARG}" STREQUAL "DEFS")
             #switch var name to extend
             SET(ARG_VAR target_${ARG})
         ELSE("${ARG}" STREQUAL "INCLUDE_DIRS" OR
              "${ARG}" STREQUAL "LIB_DIRS" OR
-             "${ARG}" STREQUAL "LIBS")
+             "${ARG}" STREQUAL "LIBS" OR
+             "${ARG}" STREQUAL "DEFS")
             # add current arg into current varname
             SET("${ARG_VAR}" ${${ARG_VAR}} ${ARG})
         ENDIF("${ARG}" STREQUAL "INCLUDE_DIRS" OR
               "${ARG}" STREQUAL "LIB_DIRS" OR
-              "${ARG}" STREQUAL "LIBS")
+              "${ARG}" STREQUAL "LIBS" OR
+              "${ARG}" STREQUAL "DEFS")
     ENDFOREACH(ARG ${ARGN})
 
     INCLUDE_DIRECTORIES(${target_INCLUDE_DIRS})
@@ -142,6 +156,7 @@ FUNCTION(BUILD_DATA_TARGET target_name)
     ENDIF(DEFINED ${target_name}_SOURCES)
 
     ADD_EXECUTABLE(${target_name} ${target_SOURCES})
+    ADD_DEFINITIONS(${target_DEFS})
     TARGET_LINK_LIBRARIES(${target_name} ${target_LIBS})
     SET_TARGET_PROPERTIES(${target_name}
                            PROPERTIES
@@ -262,6 +277,13 @@ ENDFOREACH(VTK_TARGET ${VTK_TARGETS})
 # If we have HDF5 build all HDF5 Data Gen Target Programs
 #-----------------------------------------------------------------------------
 IF(HDF5_FOUND)
+  IF(WIN32)
+      # Need special defines on Windows
+      SET(HDF5_DEFS "-D_HDF5USEDLL_")
+  ELSE(WIN32)
+      SET(HDF5_DEFS "")
+  ENDIF(WIN32)
+  
 FOREACH(HDF5_TARGET ${HDF5_TARGETS})
     BUILD_DATA_TARGET(${HDF5_TARGET}
                       INCLUDE_DIRS
@@ -271,6 +293,8 @@ FOREACH(HDF5_TARGET ${HDF5_TARGETS})
                         ${HDF5_LIBRARY_DIR}
                       LIBS
                         ${HDF5_LIB}
+                      DEFS
+                        ${HDF5_DEFS}
                      )
 ENDFOREACH(HDF5_TARGET ${HDF5_TARGETS})
 ENDIF(HDF5_FOUND)
@@ -279,7 +303,7 @@ ENDIF(HDF5_FOUND)
 # If we have Silo build all Silo & PDB Data Gen Programs
 #-----------------------------------------------------------------------------
 IF(SILO_FOUND)
-    # Build PDB Targets (The required pbd symbols live in Silo's libs.)
+    # Build PDB Targets (The required pdb symbols live in Silo's libs.)
     FOREACH(PDB_TARGET ${PDB_TARGETS})
         BUILD_DATA_TARGET(${PDB_TARGET}
                           INCLUDE_DIRS
@@ -319,17 +343,31 @@ ENDIF(SILO_FOUND)
 # Discover the proper untar command.
 #
 # "cmake -E tar" supports untaring for normal & gzipped tarballs.
-# Unfortunately it is very slow so we only use it as a fallback.
+# Unfortunately it is very slow so we only use it as a fallback. It also
+# fails on Windows for many of our .tar.gz data files.
 #
 #-----------------------------------------------------------------------------
-FIND_PROGRAM(TAR_EXE tar)
-IF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
-    SET(UNTAR_CMD ${TAR_EXE})
-    SET(UNTAR_ARGS "-xzvf")
-ELSE(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
-    SET(UNTAR_CMD "cmake")
-    SET(UNTAR_ARGS "-E tar -xzvf")
-ENDIF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
+IF(NOT WIN32)
+    FIND_PROGRAM(TAR_EXE tar)
+    IF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
+        SET(UNTAR_CMD ${TAR_EXE})
+        SET(UNTAR_ARGS "-xzvf")
+    ELSE(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
+        SET(UNTAR_CMD ${CMAKE_COMMAND})
+        SET(UNTAR_ARGS "-E tar -xzvf")
+    ENDIF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
+ELSE(NOT WIN32)
+   # limitations in cmake's untar, even winzip's command line, so
+   # try 7-zip if available.
+   # 
+   FIND_PROGRAM(SEVEN_ZIP_EXE 7z "${VISIT_SEVEN_ZIP_DIR}" 
+                                 "$ENV{PROGRAMFILES}/7-Zip" 
+                                 "$ENV{PROGRAMFILES(X86)}/7-Zip")
+
+   IF ("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+       MESSAGE(WARNING "7-Zip not found, .tar.gz data files will not be extracted.")
+   ENDIF ("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+ENDIF(NOT WIN32)
 
 
 #-----------------------------------------------------------------------------
@@ -349,11 +387,28 @@ SET(DATA_TARGET_DEPENDS "")
 
 FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
     STRING(REPLACE ".tar.gz" "" DATASET_TARGET "${DATASET_TARGET_FILE}")
-    ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
-                       COMMAND ${UNTAR_CMD}
-                       ARGS ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
-                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                      )
+
+    IF(NOT WIN32)
+        ADD_CUSTOM_COMMAND(
+            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
+            COMMAND ${UNTAR_CMD}
+            ARGS ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            )
+    ELSE(NOT WIN32)
+        IF (NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+            # With 7-zip, first command extracts the tar file part, the second 
+            # extracts the data files from the tarball.
+            # We then must delete the .tar file
+            ADD_CUSTOM_COMMAND(
+                OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
+                COMMAND ${SEVEN_ZIP_EXE} x ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
+                COMMAND ${SEVEN_ZIP_EXE} x ${DATASET_TARGET}.tar
+                COMMAND del ${DATASET_TARGET}.tar
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                )
+        ENDIF (NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+    ENDIF (NOT WIN32)
     SET( DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET})
 ENDFOREACH(DATASET_TARGET_FILE IN ${ARCHIVED_DATASETS})
 
@@ -369,9 +424,20 @@ ADD_DEPENDENCIES(test data)
 #-----------------------------------------------------------------------------
 
 IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
-    SET(DIST_UNTAR_CMD "${UNTAR_CMD} ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz")
+    IF(NOT WIN32)
+        SET(DIST_UNTAR_CMD "${UNTAR_CMD} ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz")
 
-    INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
+        INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
+    ELSE(NOT WIN32)
+        IF (NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+              SET (DIST_UNTAR_CMD1 "\"${SEVEN_ZIP_EXE}\" x \"${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz\"")
+            SET (DIST_UNTAR_CMD2 "\"${SEVEN_ZIP_EXE}\" x visit_dist_data.tar")
+            SET (DIST_UNTAR_CMD3 "del /F visit_dist_data.tar")
+            INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD1} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
+            INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD2} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
+            INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD3} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
+        ENDIF (NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+    ENDIF(NOT WIN32)
 
     INSTALL(DIRECTORY
                 ${CMAKE_CURRENT_BINARY_DIR}/visit_dist_data/
@@ -383,18 +449,35 @@ IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
                 WORLD_READ WORLD_EXECUTE)
 ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
     IF(SILO_FOUND)
+        SET(EXE_EXT "")
+        SET(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+        SET(CMDS "")
+        IF (WIN32)
+            SET(EXE_EXT ".exe")
+            SET(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR})
+            FOREACH(SD ${SILO_LIBRARY_DIR})
+              FOREACH(SL ${SILO_LIB})
+                IF(EXISTS ${SD}/${SL})
+                  GET_FILENAME_COMPONENT(SL_WE ${SL} NAME_WE)
+                  FILE(COPY        ${SD}/${SL_WE}.dll
+                       DESTINATION ${DATA_OUT_DIR})
+                  SET(CMDS ${CMDS} " COMMAND ${CMAKE_COMMAND} -E copy ${SD}/${SL_WE}.dll ${DATA_OUT_DIR}")
+                ENDIF(EXISTS ${SD}/${SL})
+              ENDFOREACH(SL ${SILO_LIB})
+            ENDFOREACH(SD ${SILO_LIBRARY_DIR})
+        ENDIF(WIN32)
         ADD_CUSTOM_COMMAND(OUTPUT curv2d.silo curv2d_colmajor.silo
                                   curv3d.silo curv3d_colmajor.silo
                                   poly3d.silo rect2d.silo
                                   rect3d.silo ucd2d.silo ucd3d.silo
-                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/testall
-                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/testall)
+                           COMMAND ${DATA_OUT_DIR}/testall${EXE_EXT}
+                           DEPENDS ${DATA_OUT_DIR}/testall${EXE_EXT})
         ADD_CUSTOM_COMMAND(OUTPUT globe.silo globe_mat0.silo
-                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/globe
-                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/globe)
+                           COMMAND ${DATA_OUT_DIR}/globe${EXE_EXT}
+                           DEPENDS ${DATA_OUT_DIR}/globe${EXE_EXT})
         ADD_CUSTOM_COMMAND(OUTPUT dbA00.pdb dbB00.pdb dbC00.pdb
-                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/correlationtest
-                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/correlationtest)
+                           COMMAND ${DATA_OUT_DIR}/correlationtest${EXE_EXT}
+                           DEPENDS ${DATA_OUT_DIR}/correlationtest${EXE_EXT})
         ADD_CUSTOM_COMMAND(OUTPUT multi_curv2d.silo multi_curv3d.silo
                                   multi_point2d.silo multi_rect2d.silo
                                   multi_rect3d.silo multi_ucd3d.silo
@@ -410,14 +493,14 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
                                   histne_ucd3d_0008 histne_ucd3d_0009
                                   multi_ucd3d_ti_0001 multi_ucd3d_ti_0002
                                   multi_ucd3d_ti_0003 multi_ucd3d_ti_base
-                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/multi_test
-                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/multi_test)
+                           COMMAND ${DATA_OUT_DIR}/multi_test${EXE_EXT}
+                           DEPENDS ${DATA_OUT_DIR}/multi_test${EXE_EXT})
         ADD_CUSTOM_COMMAND(OUTPUT noise.silo
-                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/noise
-                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/noise)
+                           COMMAND ${DATA_OUT_DIR}/noise${EXE_EXT}
+                           DEPENDS ${DATA_OUT_DIR}/noise${EXE_EXT})
         ADD_CUSTOM_COMMAND(OUTPUT tire.silo
-                           COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tire
-                           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tire)
+                           COMMAND ${DATA_OUT_DIR}/tire${EXE_EXT}
+                           DEPENDS ${DATA_OUT_DIR}/tire${EXE_EXT})
 
         ADD_CUSTOM_TARGET(create_data_examples ALL
                           DEPENDS
@@ -427,6 +510,10 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
                               noise.silo poly3d.silo rect2d.silo rect3d.silo
                               tire.silo ucd2d.silo ucd3d.silo
                          )
+       
+        IF(WIN32)
+            ADD_CUSTOM_COMMAND(TARGET create_data_examples PRE_BUILD ${CMDS})
+        ENDIF(WIN32) 
 
         INSTALL(FILES
                     curv2d.silo curv3d.silo dbA00.pdb dbB00.pdb
