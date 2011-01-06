@@ -16359,16 +16359,19 @@ GetViewerMethods()
 // Creation:   Mon Dec 17 17:24:00 PST 2001
 //
 // Modifications:
+//   Cyrus Harrison, Wed Jan  5 16:12:43 PST 2011
+//   Run code defining helper functions using the visit module's dictionary.
+//   This will ensure the functions import correctly.
 //
 // ****************************************************************************
 
 static void
-initscriptfunctions()
+initscriptfunctions(PyObject *dict)
 {
-    PyRun_SimpleString((char*)(visit_EvalLinear));
-    PyRun_SimpleString((char*)(visit_EvalQuadratic));
-    PyRun_SimpleString((char*)(visit_EvalCubic));
-    PyRun_SimpleString((char*)(visit_EvalCubicSpline));
+    PyRun_String((char*)(visit_EvalLinear),Py_file_input,dict,dict);
+    PyRun_String((char*)(visit_EvalQuadratic),Py_file_input,dict,dict);
+    PyRun_String((char*)(visit_EvalCubic),Py_file_input,dict,dict);
+    PyRun_String((char*)(visit_EvalCubicSpline),Py_file_input,dict,dict);
 }
 
 // ****************************************************************************
@@ -16403,6 +16406,9 @@ initscriptfunctions()
 //   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
 //   Assyme PyErr_NewException won't modify its string argument and cast
 //   literals to char*'s before passing in.
+//
+//   Cyrus Harrison, Thu Jan  6 09:59:30 PST 2011
+//   Pass proper dictionary to initscriptfunctions.
 //
 // ****************************************************************************
 
@@ -16441,7 +16447,7 @@ initvisit()
     PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
 
     // Define builtin visit functions that are written in python.
-    initscriptfunctions();
+    initscriptfunctions(d);
 }
 
 // ****************************************************************************
@@ -16471,6 +16477,9 @@ initvisit()
 //   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
 //   Assyme PyErr_NewException won't modify its string argument and cast
 //   literals to char*'s before passing in.
+//
+//   Cyrus Harrison, Thu Jan  6 09:59:30 PST 2011
+//   Pass proper dictionary to initscriptfunctions.
 //
 // ****************************************************************************
 
@@ -16532,7 +16541,7 @@ initvisit2()
     PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
 
     // Define builtin visit functions that are written in python.
-    initscriptfunctions();
+    initscriptfunctions(d);
 }
 
 // ****************************************************************************
