@@ -406,7 +406,11 @@ double GetRandomNumber()
     random_counter++;
     return portable_random_data[index];
 #else
+#ifndef _WIN32
     return drand48();
+#else
+    return rand() / (double)RAND_MAX;
+#endif
 #endif
 }
 
@@ -719,7 +723,6 @@ void StarData::AdvanceTime()
 void
 StarData::Write(int cycle, int driver) const
 {
-    int i;
     int pointsInDom[] = {NPOINTS-1, NPOINTS, NPOINTS, NPOINTS,
                          NPOINTS, NPOINTS, NPOINTS, NPOINTS};
     float domXOffset[] = {0., 0.6, 0., 0.6, 0., 0.6, 0., 0.6};

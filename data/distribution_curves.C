@@ -76,7 +76,7 @@ using namespace std;
 
 int main()
 {
-    int  i, j;
+    int  i;
     int npts = 50000;
 
     ofstream ofile("distribution.ultra");

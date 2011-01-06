@@ -81,7 +81,6 @@ void Write(int style, int driver)
 
 
     DBfile *db;
-    const char *filename;
     char comment[256];
     sprintf(comment,"ghost zone test %d", style);
     if (style==1)
