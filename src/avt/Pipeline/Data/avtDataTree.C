@@ -809,6 +809,8 @@ avtDataTree::GetSingleLeaf(void)
     vtkDataSet **ds = GetAllLeaves(nLeaves);
     if (nLeaves != 1)
     {
+        delete [] ds;
+
         // Hmmm... we were earlier quoted one leaf, but now we got more than
         // one.
         debug1 << "avtDataTree::GetSingleLeaf ... unexpected case."

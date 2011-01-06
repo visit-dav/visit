@@ -378,6 +378,10 @@ avtDataBinningConstructor::ConstructDataBinning(
             int val = UnifyMaximumValue((hasError ? 1 : 0));
             if (val > 0)
             {
+                // Free the memory from the GetAllLeaves function call.
+                delete [] leaves;
+                delete [] isNodal;
+
                 debug1 << "Could not create data binning because either a "
                                   "variable could not be located, or because"
                                   " the centering of the variables do not "

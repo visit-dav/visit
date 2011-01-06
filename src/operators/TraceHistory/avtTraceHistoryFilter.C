@@ -271,6 +271,9 @@ avtTraceHistoryFilter::InitializeDataset(void)
         nVars = atts.GetNumberOfVariables();
     }
 
+    // Free the memory from the GetAllLeaves function call.
+    delete [] ds;
+
     return rv;
 }
 

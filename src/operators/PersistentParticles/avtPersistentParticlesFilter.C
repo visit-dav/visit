@@ -399,17 +399,26 @@ avtPersistentParticlesFilter::IterateMergeData(int ts, avtDataTree_p tree)
     SumIntAcrossAllProcessors(nds2);
     if (nds2 < 1 || nds > 1)
     {
+        // Free the memory from the GetAllLeaves function call.
+        delete [] dsets;
+
         EXCEPTION1(ImproperUseException, "Filter expected only one vtkDataSet"
                                          " in avtDataTree");
     }
 
     if (nds == 0)
     {
+        // Free the memory from the GetAllLeaves function call.
+        delete [] dsets;
+
         haveData = false;
         return;
     }
 
     vtkDataSet *currDs = dsets[0];
+    // Free the memory from the GetAllLeaves function call.
+    delete [] dsets;
+
     uGrid = vtkPointSet::SafeDownCast(currDs);
     if (uGrid == 0)
     {
@@ -507,17 +516,26 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     SumIntAcrossAllProcessors(nds2);
     if (nds2 < 1 || nds > 1)
     {
+        // Free the memory from the GetAllLeaves function call.
+        delete [] dsets;
+
         EXCEPTION1(ImproperUseException, "Filter expected only one vtkDataSet"
                                          " in avtDataTree");
     }
 
     if (nds == 0)
     {
+        // Free the memory from the GetAllLeaves function call.
+        delete [] dsets;
+
         haveData = false;
         return;
     }
 
     vtkDataSet *currDs = dsets[0];
+    // Free the memory from the GetAllLeaves function call.
+    delete [] dsets;
+
     uGrid = vtkPointSet::SafeDownCast(currDs);
     if (uGrid == 0)
     {

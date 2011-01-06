@@ -693,7 +693,11 @@ avtDataset::RenumberDomainIDs(bool acrossAllProcs)
     }
     
     if (numLeaves == 0) // had to wait this long to do parallel communication.
+    {
+        // Free the memory from the GetAllLeaves function call.
+        delete [] leaves;
         return;
+    }
 
     avtDataTree_p *newTrees = new avtDataTree_p[numLeaves];
     for (i = 0 ; i < numLeaves ; i++)
@@ -702,6 +706,9 @@ avtDataset::RenumberDomainIDs(bool acrossAllProcs)
     dataTree = new avtDataTree(numLeaves, newTrees);
 
     delete [] newTrees; // new array allocated by avtDataTree constructor
+
+    // Free the memory from the GetAllLeaves function call.
+    delete [] leaves;
 }
 
 

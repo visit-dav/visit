@@ -271,19 +271,34 @@ avtMultiCurveFilter::Execute(void)
     //
     if (nSets < 1)
     {
+        // Free the memory from the GetAllLeaves function call.
+        delete [] dataSets;
+
         EXCEPTION1(ImproperUseException, "Expecting at least one dataset");
     }
     else if (nSets > 1)
     {
         for (int i = 0; i < nSets; i++)
+        {
             if (dataSets[i]->GetDataObjectType() != VTK_POLY_DATA)
+            {
+                // Free the memory from the GetAllLeaves function call.
+                delete [] dataSets;
                 EXCEPTION1(ImproperUseException, "Expecting poly data");
+            }
+        }
         SetOutputDataTree(tree);
         setYAxisTickSpacing = false;
+
+        // Free the memory from the GetAllLeaves function call.
+        delete [] dataSets;
         return;
     }
 
     vtkDataSet *inDS = dataSets[0];
+    // Free the memory from the GetAllLeaves function call.
+    delete [] dataSets;
+
     int domain = domains[0];
 
     if (inDS->GetDataObjectType() != VTK_RECTILINEAR_GRID)

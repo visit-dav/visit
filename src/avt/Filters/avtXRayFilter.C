@@ -625,6 +625,9 @@ avtXRayFilter::Execute(void)
         delete [] imageFragments[i];
     delete [] imageFragmentSizes;
     delete [] imageFragments;
+
+    // Free the memory from the GetAllLeaves function call.
+    delete [] dataSets;
 }
    
 
