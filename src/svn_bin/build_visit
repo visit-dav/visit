@@ -1029,6 +1029,12 @@
 #     Cyrus Harrison, Wed Jan  5 09:54:16 PST 2011
 #     Log full invocation w/ arguments.
 #
+#     Eric Brugger, Thu Jan  6 14:40:29 PST 2011
+#     I moved the HDF4, HDF5 and NetCDF third party library options before
+#     the others and alphabetized them again. There were some order issues
+#     and it seemed simplest to put the libraries that other libraries
+#     depend on first.
+#
 # *****************************************************************************
 
 
@@ -8109,6 +8115,9 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "## Database reader plugin support libraries" >> $HOSTCONF
     echo "##" >> $HOSTCONF
+    echo "## The HDF4, HDF5 and NetCDF libraries must be first so that" >> $HOSTCONF
+    echo "## their libdeps are defined for any plugins that need them." >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     echo "## For libraries with LIBDEP settings, order matters." >> $HOSTCONF
     echo "## Libraries with LIBDEP settings that depend on other" >> $HOSTCONF
     echo "## Library's LIBDEP settings must come after them." >> $HOSTCONF
@@ -8119,6 +8128,60 @@ function build_hostconf
 # Although the code below originally ordered things alphabetically by library
 # name, that is NOT appropriate due to ordering dependency of LIBDEP processing.
 #
+    if [[ "$DO_HDF4" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## HDF4" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR \${VISITHOME}/hdf4/$HDF4_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF
+        if [[ "$DO_SZIP" == "yes" ]] ; then
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib jpeg)" \
+            >> $HOSTCONF
+        else
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP jpeg)" \
+            >> $HOSTCONF
+        fi
+        >> $HOSTCONF
+    fi
+
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## HDF5" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF 
+        if [[ "$DO_SZIP" == "yes" ]] ; then
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib z)" \
+            >> $HOSTCONF
+        else
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP /usr/lib z)" \
+            >> $HOSTCONF
+        fi
+    fi
+
+    if [[ "$DO_NETCDF" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## NetCDF" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR \${VISITHOME}/netcdf/$NETCDF_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
+            >> $HOSTCONF
+        fi
+    fi
+
     if [[ "$DO_ADVIO" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -8177,13 +8240,16 @@ function build_hostconf
         fi
     fi
 
-    if [[ "$DO_GDAL" == "yes" ]] ; then
+    if [[ "$DO_EXODUS" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## GDAL" >> $HOSTCONF
+        echo "## Exodus" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR \${VISITHOME}/gdal/$GDAL_VERSION/\${VISITARCH})" \
+        "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR \${VISITHOME}/exodus/$EXODUS_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf \${VISIT_NETCDF_LIBDEP})" \
         >> $HOSTCONF
     fi
 
@@ -8197,43 +8263,14 @@ function build_hostconf
         >> $HOSTCONF
     fi
 
-    if [[ "$DO_HDF4" == "yes" ]] ; then
+    if [[ "$DO_GDAL" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## HDF4" >> $HOSTCONF
+        echo "## GDAL" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR \${VISITHOME}/hdf4/$HDF4_VERSION/\${VISITARCH})" \
+        "VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR \${VISITHOME}/gdal/$GDAL_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
-        if [[ "$DO_SZIP" == "yes" ]] ; then
-            echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib jpeg)" \
-            >> $HOSTCONF
-        else
-            echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP jpeg)" \
-            >> $HOSTCONF
-        fi
-        >> $HOSTCONF
-    fi
-
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## HDF5" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF 
-        if [[ "$DO_SZIP" == "yes" ]] ; then
-            echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib z)" \
-            >> $HOSTCONF
-        else
-            echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP /usr/lib z)" \
-            >> $HOSTCONF
-        fi
     fi
 
     if [[ "$DO_H5PART" == "yes" ]] ; then
@@ -8275,36 +8312,6 @@ function build_hostconf
         >> $HOSTCONF
     fi
 
-    if [[ "$DO_NETCDF" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## NetCDF" >> $HOSTCONF
-        echo "## Must come AFTER HDF5 to ensure LIBDEP for NetCDF gets hdf5 LIBDEPS" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR \${VISITHOME}/netcdf/$NETCDF_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            echo \
-            "VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
-            >> $HOSTCONF
-        fi
-    fi
-
-    if [[ "$DO_EXODUS" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## Exodus" >> $HOSTCONF
-        echo "## Must come AFTER netcdf to ensure LIBDEP for Exodus gets netcdf LIBDEPS" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR \${VISITHOME}/exodus/$EXODUS_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf \${VISIT_NETCDF_LIBDEP})" \
-        >> $HOSTCONF
-    fi
-
     if [[ "$DO_SZIP" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -8319,7 +8326,6 @@ function build_hostconf
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## Silo" >> $HOSTCONF
-        echo "## Must come AFTER HDF5 to ensure LIBDEP for Silo gets hdf5 LIBDEPS" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_SILO_DIR \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH})" \
