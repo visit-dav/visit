@@ -200,9 +200,12 @@
 #    and VISIT_H5PART_LIBDEP for all platforms. Call find for szip, zlib and
 #    jpeg before Finds for any libs that may have dependencies on them.
 #
-#     Kathleen Bonnell, Wed Jan 5 10:36:29 PST 2010
-#     Turn on use of FOLDER property.
-#     Move Plugin macros to their own CMake file.
+#    Kathleen Bonnell, Wed Jan 5 10:36:29 PST 2010
+#    Turn on use of FOLDER property.
+#    Move Plugin macros to their own CMake file.
+#
+#    Kathleen Bonnell, Thu Jan 6 15:31:12 PST 2010
+#    Allow data dir to be built on windows.
 #
 #****************************************************************************/
 
@@ -1655,13 +1658,23 @@ ADD_SUBDIRECTORY(svn_bin)
 #-----------------------------------------------------------------------------
 # Add the "data" directory if it exists
 #-----------------------------------------------------------------------------
-IF(NOT WIN32 AND IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
+IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
+    IF(WIN32)
+        # Don't want the data dir files to be added to the main VISIT 
+        # solution file, so 'EXCLUDE_FROM_ALL' here, and create a new 
+        # PROJECT in data/CMakeLists.txt
+        SET(V_EX "EXCLUDE_FROM_ALL")
+     ENDIF(WIN32)
     IF(VISIT_OUT_OF_SOURCE_BUILD)
-        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../data ${CMAKE_CURRENT_BINARY_DIR}/data )
+        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../data 
+                         ${CMAKE_CURRENT_BINARY_DIR}/data 
+                         ${V_EX})
     ELSE(VISIT_OUT_OF_SOURCE_BUILD)
-        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../data ${VISIT_SOURCE_DIR}/../data)
+        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../data 
+                         ${VISIT_SOURCE_DIR}/../data 
+                         ${V_EX})
     ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
-ENDIF(NOT WIN32 AND IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
+ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
 
 #-----------------------------------------------------------------------------
 # Create library dependencies file
@@ -1783,20 +1796,24 @@ ELSE (NOT WIN32)
             COMMAND ${MAKENSIS} 
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE} 
                     /DINSTALL_PREFIX=${CIP_NATIVE} 
-                     ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
+                    ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS} 
                     /DVisItVersion=${VISIT_VERSION} 
                     /DCOMPILER=${VISIT_MSVC_VERSION} 
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE} 
                     /DINSTALL_PREFIX=${CIP_NATIVE} 
                     /DCL_64=${CMAKE_CL_64}
-                     ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
+                    ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
             DEPENDS ${VISIT_WINDOWS_DIR}/installation/CreateDBSections.nsi
                     ${VISIT_WINDOWS_DIR}/installation/binaryinstallation.nsi
         )
         ADD_CUSTOM_TARGET(_PACKAGE ALL DEPENDS visit${VISIT_VERSION}.exe)
         ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD 
             COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P cmake_install.cmake)
+        IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
+            ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD 
+                COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P ${VISIT_BINARY_DIR}/data/cmake_install.cmake)
+        ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
  
         SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
         
