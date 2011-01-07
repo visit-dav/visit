@@ -38,18 +38,19 @@
 #   Kathleen Bonnell, Thu Dec  3 10:30:15 PST 2009
 #   Use only 1 if-def block, fix libarary names for windows.
 #
+#   Eric Brugger, Fri Jan  7 13:50:15 PST 2011
+#   I replaced the BOXLIB2D and BOXLIB3D variables with just BOXLIB.
+#
 #****************************************************************************/
 
-# Use the BOXLIB2D_DIR, BOXLIB3D_DIR hints from the config-site .cmake file 
+# Use the BOXLIB_DIR hint from the config-site .cmake file 
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(BOXLIB2D lib/${VISIT_MSVC_VERSION} include boxlib2D)
-  SET_UP_THIRD_PARTY(BOXLIB3D lib/${VISIT_MSVC_VERSION} include boxlib3D)
+  SET_UP_THIRD_PARTY(BOXLIB lib/${VISIT_MSVC_VERSION} include box2D box3D)
 ELSE (WIN32)
-  SET_UP_THIRD_PARTY(BOXLIB2D lib include box2D)
-  SET_UP_THIRD_PARTY(BOXLIB3D lib include box3D)
+  SET_UP_THIRD_PARTY(BOXLIB lib include box2D box3D)
 ENDIF (WIN32)
 
 
