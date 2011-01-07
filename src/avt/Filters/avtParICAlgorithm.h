@@ -165,11 +165,8 @@ class avtParICAlgorithm : public avtICAlgorithm
     virtual void              ReportCounters(ostream &os, bool totals);
 
     //Timers/Counters.
-    ICStatistics              CommTime, DSCommTime;
+    ICStatistics              CommTime;
     ICStatistics              MsgCnt, ICCommCnt, BytesCnt, DSCnt;
-
-    std::map<int, std::pair<int, unsigned char*> > serializedDS;
-    void                      FreeSerializedDSBuffers();
     
   private:
     void                      PostRecv(int tag);

@@ -202,29 +202,6 @@ avtCommDSOnDemandICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
 void
 avtCommDSOnDemandICAlgorithm::RunAlgorithm()
 {
-    for (int i = 0; i < numDomains; i++)
-    {
-        vtkDataSet *d = GetDomain(i);
-        if (d)
-        {
-            int dsLen = 0;
-            unsigned char *dsBuff = NULL;
-
-            vtkDataSetWriter *writer = vtkDataSetWriter::New();
-            writer->WriteToOutputStringOn();
-            writer->SetFileTypeToBinary();
-            writer->SetInput(d);
-            writer->Write();
-
-            dsLen = writer->GetOutputStringLength();
-
-            dsBuff = new unsigned char[dsLen];
-            memcpy(dsBuff, writer->GetBinaryOutputString(), dsLen);
-            writer->Delete();
-
-            serializedDS[i] = pair<int,unsigned char*>(dsLen, dsBuff);
-        }
-    }
     debug1<<"avtCommDSOnDemandICAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
 
@@ -246,10 +223,6 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
     
     while (numDone < nProcs)
     {
-
-        //if(!IamDone)
-        //    Debug();
-        
         //Do work, if we have it....
         if (!activeICs.empty())
         {
@@ -279,14 +252,11 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
             }
             else
             {
-                debug1<<"Opps. Dom disappared. "<<d.domain<<endl;
+                //debug1<<"Opps. Dom disappared. "<<d.domain<<endl;
                 HandleOOBIC(s);
             }
         }
 
-        HandleMessages(numDone);
-        CheckCacheVacancy(true);
-        
         //See if we're done.
         if (!IamDone && activeICs.empty() && oobICs.empty())
         {
@@ -296,6 +266,9 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
             SendAllMsg(msg);
             IamDone = true;
         }
+        
+        CheckCacheVacancy(true);
+        HandleMessages(numDone);
     }
 
     debug1<<"All done. terminated sz= "<<terminatedICs.size()<<endl;
@@ -374,6 +347,9 @@ avtCommDSOnDemandICAlgorithm::RequestDataset(DomainType &d)
 //   Dave Pugmire, Wed Jan  5 07:57:21 EST 2011
 //   New datastructures for msg/ic/ds.
 //
+//   Dave Pugmire, Fri Jan  7 14:21:59 EST 2011
+//   Allow blockAndWait if no work to do.
+//
 // ****************************************************************************
 
 void
@@ -382,7 +358,12 @@ avtCommDSOnDemandICAlgorithm::HandleMessages(int &numDone)
     vector<MsgCommData> msgs;
     vector<DSCommData> ds;
 
-    if (RecvMsg(msgs))
+    bool blockAndWait = activeICs.empty() && (numDone < nProcs);
+    blockAndWait = false;
+    
+    RecvAny(&msgs, NULL, &ds, blockAndWait);
+
+    if (!msgs.empty())
     {
         for (int i = 0; i < msgs.size(); i++)
         {
@@ -415,7 +396,7 @@ avtCommDSOnDemandICAlgorithm::HandleMessages(int &numDone)
     }
 
     //Check for incoming Datasets.
-    if (RecvDS(ds))
+    if (!ds.empty())
     {
         AddDSToDomainCache(ds);
         
@@ -583,10 +564,12 @@ avtCommDSOnDemandICAlgorithm::AddDSToDomainCache(vector<DSCommData> &dss)
         for (int i = 0; i < newDoms; i++)
         {
             domainCacheEntry &entry = domainCache.front();
+            /*
             debug1<<" ** PURGE "<<entry.dom.domain<<":"<<entry.refCnt;
             if (entry.refCnt > 0)
                 debug1<<" BAD PURGE";
             debug1<<endl;
+            */
             
             entry.ds->Delete();
             
@@ -611,7 +594,7 @@ avtCommDSOnDemandICAlgorithm::AddDSToDomainCache(vector<DSCommData> &dss)
         }
         DSLatencyTime.value += latency;
         
-        debug1<<" ** RECV DS "<<dss[i].dom.domain<<" latency= "<<latency<<endl;
+        //debug1<<" ** RECV DS "<<dss[i].dom.domain<<" latency= "<<latency<<endl;
     }
 }
 
@@ -670,6 +653,8 @@ void
 avtCommDSOnDemandICAlgorithm::Debug()
 {
     list<avtIntegralCurve*>::iterator it;
+    debug1<<endl;
+    debug1<<"======================================================"<<endl;
     debug1<<"ActiveICs: "<<activeICs.size()<<" [";
     for (it = activeICs.begin(); it != activeICs.end(); it++)
         debug1<<(*it)->domain.domain<<" ";
@@ -694,6 +679,7 @@ avtCommDSOnDemandICAlgorithm::Debug()
 
     CheckCacheVacancy(false);
 
+    debug1<<"======================================================"<<endl;
     debug1<<endl;
 }
 
@@ -762,8 +748,8 @@ avtCommDSOnDemandICAlgorithm::CheckCacheVacancy(bool makeReq)
         if (it->refCnt == 0)
             cacheVacancy++;
 
-    if (!makeReq)
-        debug1<<"Cache Vacancy: "<<cacheVacancy<<endl;
+    //if (!makeReq)
+    //    debug1<<"Cache Vacancy: "<<cacheVacancy<<endl;
 
     if (cacheVacancy <= 0 || !makeReq)
         return;
