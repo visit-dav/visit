@@ -114,6 +114,9 @@
 //    Fix CGNS dll define, due to update of cgns library.
 //    Add call to VISIT_PLUGIN_TARGET_FOLDER for project grouping in VS.
 //
+//    Eric Brugger, Fri Jan  7 13:38:59 PST 2011
+//    I replaced the BOXLIB2D and BOXLIB3D variables with just BOXLIB.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -794,9 +797,7 @@ class CMakeGeneratorPlugin : public Plugin
         bool needWindowsDefines = false;
         for (size_t i=0; i<libs.size() && !needWindowsDefines; i++)
         {
-            if(libs[i].contains("BOXLIB2D"))
-                 needWindowsDefines = true;
-            else if(libs[i].contains("BOXLIB3D"))
+            if(libs[i].contains("BOXLIB"))
                  needWindowsDefines = true;
             else if(libs[i].contains("HDF5"))
                  needWindowsDefines = true;
@@ -816,9 +817,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << "IF(WIN32)" << endl;
             for (size_t i=0; i<libs.size(); i++)
             {
-                if(libs[i].contains("BOXLIB2D"))
-                     out << "  ADD_DEFINITIONS(-DBL_FORT_USE_UPPERCASE)" << endl;
-                else if(libs[i].contains("BOXLIB3D"))
+                if(libs[i].contains("BOXLIB"))
                      out << "  ADD_DEFINITIONS(-DBL_FORT_USE_UPPERCASE)" << endl;
                 else if(libs[i].contains("HDF5"))
                      out << "  ADD_DEFINITIONS(-D_HDF5USEDLL_)" << endl;

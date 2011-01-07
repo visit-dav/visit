@@ -1041,6 +1041,10 @@
 #     cmake and system python via CMAKE_INSTALL and VISIT_PYTHON_DIR
 #     environment variables.
 #
+#     Eric Brugger, Fri Jan  7 13:36:40 PST 2011
+#     I replace the BOXLIB2D and BOXLIB3D variables with just BOXLIB in
+#     the config site file.
+#
 # *****************************************************************************
 
 
@@ -8219,10 +8223,8 @@ function build_hostconf
         echo "## Boxlib" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_BOXLIB2D_DIR \${VISITHOME}/boxlib/$BOXLIB_VERSION/\${VISITARCH})" \
+        "VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR \${VISITHOME}/boxlib/$BOXLIB_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_BOXLIB3D_DIR \${VISITHOME}/boxlib/$BOXLIB_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
     fi
 
@@ -8298,7 +8300,6 @@ function build_hostconf
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## H5Part" >> $HOSTCONF
-        echo "## Must come AFTER HDF5 to ensure LIBDEP for H5Part gets hdf5 LIBDEPS" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR \${VISITHOME}/h5part/$H5PART_VERSION/\${VISITARCH})" \

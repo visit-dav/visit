@@ -207,6 +207,9 @@
 #    Kathleen Bonnell, Thu Jan 6 15:31:12 PST 2010
 #    Allow data dir to be built on windows.
 #
+#    Eric Brugger, Fri Jan  7 13:24:41 PST 2011
+#    I replaced the BOXLIB2D and BOXLIB3D variables with just BOXLIB.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -429,8 +432,7 @@ ENDIF(WIN32)
 #       and link).
 VISIT_3RDPARTY_VAR(VISIT_ADIOS_DIR     "Path containing the ADIOS library's include and lib" ADIOS_DIR)
 VISIT_3RDPARTY_VAR(VISIT_ADVIO_DIR     "Path containing the AdvIO library's include and lib" ADVIO_DIR)
-VISIT_3RDPARTY_VAR(VISIT_BOXLIB2D_DIR  "Path containing the Boxlib 2D library's include and lib" BOXLIB2D_DIR)
-VISIT_3RDPARTY_VAR(VISIT_BOXLIB3D_DIR  "Path containing the Boxlib 3D library's include and lib" BOXLIB3D_DIR)
+VISIT_3RDPARTY_VAR(VISIT_BOXLIB_DIR    "Path containing the Boxlib library's include and lib" BOXLIB_DIR)
 VISIT_3RDPARTY_VAR(VISIT_CCMIO_DIR     "Path containing the CCMIO library's include and lib" CCMIO_DIR)
 VISIT_3RDPARTY_VAR(VISIT_CFITSIO_DIR   "Path containing the CFITSIO library's include and lib" CFITSIO_DIR)
 VISIT_3RDPARTY_VAR(VISIT_CGNS_DIR      "Path containing the CGNS library's include and lib" CGNS_DIR)
@@ -797,12 +799,9 @@ ENDIF(ADVIO_FOUND)
 
 # Configure Boxlib support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
-IF(BOXLIB2D_FOUND)
-    SET(HAVE_LIBBOXLIB2D 1)
-ENDIF(BOXLIB2D_FOUND)
-IF(BOXLIB3D_FOUND)
-    SET(HAVE_LIBBOXLIB3D 1)
-ENDIF(BOXLIB3D_FOUND)
+IF(BOXLIB_FOUND)
+    SET(HAVE_LIBBOXLIB 1)
+ENDIF(BOXLIB_FOUND)
 
 # Configure ccmio support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCCMIO.cmake)
