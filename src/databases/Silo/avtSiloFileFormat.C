@@ -512,6 +512,9 @@ avtSiloFileFormat::GetFile(int f)
 //
 //    Mark C. Miller Tue Mar 30 16:28:48 PDT 2010
 //    Fix DBOpen logic for DB_UNKNOWN case to test for non-NULL result.
+//
+//    Mark C. Miller, Thu Jan  6 17:17:25 PST 2011
+//    Set driver type for unknown case by asking file what its type was.
 // ****************************************************************************
 
 DBfile *
@@ -554,6 +557,11 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
     {
         debug1 << "Succeeding in opening Silo file with DB_UNKNOWN driver" << endl;
         siloDriver = DB_UNKNOWN;
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,5,1)
+        siloDriver = DBGetDriverType(dbfiles[f]);
+#endif
+#endif
     }
     else
     {
@@ -3785,6 +3793,10 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
 //  Modifications:
 //    Mark C. Miller, Thu Jun 18 20:56:08 PDT 2009
 //    Replaced DBtoc* arg. with list of object names.
+//
+//    Mark C. Miller, Thu Jan  6 17:17:47 PST 2011
+//    Handle gui hide flag for expressions. There is a bug causing segv in
+//    PDB driver for version of silo prior to 4.8.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
@@ -3836,6 +3848,12 @@ avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
                         expr.SetName(defv->names[j]);
                         expr.SetDefinition(defv->defns[j]);
                         expr.SetType(vartype);
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,8,1)
+                        if (siloDriver != DB_PDB)
+#endif
+#endif
+                            expr.SetHidden(defv->guihides[j]);
                     md->AddExpression(&expr);
                 }
             }
