@@ -380,6 +380,11 @@ avtVTKFileFormat::ReadInDataset(void)
 //    Hank Childs, Fri Feb 15 11:25:32 PST 2008
 //    Fix memory leak.
 //
+//    Cyrus Harrison, Fri Jan  7 10:17:19 PST 2011
+//    Determine the proper material variable name & material metadata
+//    if PopulateDatabaseMetaData has not been called. This supports materials
+//    in the case we multiple vtk files acting as separate timesteps.
+//
 // ****************************************************************************
 
 void *
@@ -390,7 +395,50 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
 
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
+
+        // matvarname is only inited if we call: PopulateDatabaseMetaData().
+        // If you have a series of vtk files using this variable will cause
+        // a crash any time the time slider is changed (and treat all dbs
+        // as time varying is off)
+
+        if(matvarname == NULL)
+        {
+            if (!readInDataset)
+            {
+                ReadInDataset();
+            }
+            int ncellvars = dataset->GetCellData()->GetNumberOfArrays();
+            for(int i=0;( i < ncellvars) && (matvarname == NULL) ;i++)
+            {
+                // we are looking for either "avtSubsets" or "material"
+                if(strcmp(dataset->GetCellData()->GetArrayName(i), "avtSubsets") == 0)
+                    matvarname = strdup("avtSubsets");
+                else if(strcmp(dataset->GetCellData()->GetArrayName(i), "material") == 0)
+                    matvarname = strdup("material");
+            }
+        }
+
         vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(matvarname));
+
+
+        // again, if we haven't called PopulateDatabaseMetaData().
+        // this data will be bad ...
+        if(matnos.size() == 0)
+        {
+            int *iptr = matarr->GetPointer(0);
+            std::map<int, bool> valMap;
+            int ntuples = matarr->GetNumberOfTuples();
+            for (int j = 0; j < ntuples; j++)
+                valMap[iptr[j]] = true;
+            std::map<int, bool>::const_iterator it;
+            for (it = valMap.begin(); it != valMap.end(); it++)
+            {
+                char tmpname[32];
+                SNPRINTF(tmpname, sizeof(tmpname), "%d", it->first);
+                matnames.push_back(tmpname);
+                matnos.push_back(it->first);
+            }
+        }
 
         int ntuples = matarr->GetNumberOfTuples();
         int *matlist = matarr->GetPointer(0);
