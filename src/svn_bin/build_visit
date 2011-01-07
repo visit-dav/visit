@@ -1035,6 +1035,12 @@
 #     and it seemed simplest to put the libraries that other libraries
 #     depend on first.
 #
+#     Gunther H. Weber, Thu Jan  6 15:30:19 PST 2011
+#     Update H5Part to most recent version 1.6.2. Download H5Part from LBNL
+#     Codeforge page (like FastBit). Make it possible to use already installed
+#     cmake and system python via CMAKE_INSTALL and VISIT_PYTHON_DIR
+#     environment variables.
+#
 # *****************************************************************************
 
 
@@ -1482,9 +1488,10 @@ export CFITSIO_VERSION=${CFITSIO_VERSION:-"3006"}
 export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION:-"3.0"}
 export CFITSIO_BUILD_DIR=${CFITSIO_BUILD_DIR:-"cfitsio"}
 
-export H5PART_VERSION=${H5PART_VERSION:-"1.6.0"}
+export H5PART_VERSION=${H5PART_VERSION:-"1.6.2"}
 export H5PART_FILE=${H5PART_FILE:-"H5Part-${H5PART_VERSION}.tar.gz"}
 export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION:-"1.6"}
+export H5PART_URL=${H5PART_URL:-"https://codeforge.lbl.gov/frs/download.php/191"}
 export H5PART_BUILD_DIR=${H5PART_BUILD_DIR:-"H5Part-${H5PART_VERSION}"}
 
 export FASTBIT_VERSION=${FASTBIT_VERSION:-"1.2.0"}
@@ -2087,19 +2094,22 @@ function check_required_3rdparty
     #
     # Check for required files.
     #
-
-    if [[ "$DO_CMAKE" == "yes" || "$DO_VTK" == "yes" ]] ; then
-        ensure_built_or_ready "cmake"  $CMAKE_VERSION  $CMAKE_BUILD_DIR  $CMAKE_FILE
-        if [[ $? != 0 ]] ; then
-            return 1
+    if [[ "$CMAKE_INSTALL" == "" ]]; then 
+        if [[ "$DO_CMAKE" == "yes" || "$DO_VTK" == "yes" ]] ; then
+            ensure_built_or_ready "cmake"  $CMAKE_VERSION  $CMAKE_BUILD_DIR  $CMAKE_FILE
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
         fi
     fi
 
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-        if [[ "$DO_PYTHON" == "yes" || "$DO_VTK" == "yes" ]] ; then
-            ensure_built_or_ready "python" $PYTHON_VERSION $PYTHON_BUILD_DIR $PYTHON_FILE
-            if [[ $? != 0 ]] ; then
-                return 1
+        if [[ "$VISIT_PYTHON_DIR" == "" ]]; then
+            if [[ "$DO_PYTHON" == "yes" || "$DO_VTK" == "yes" ]] ; then
+                ensure_built_or_ready "python" $PYTHON_VERSION $PYTHON_BUILD_DIR $PYTHON_FILE
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
             fi
         fi
     fi
@@ -2299,7 +2309,7 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_H5PART" == "yes" ]] ; then
-        ensure_built_or_ready "h5part" $H5PART_VERSION $H5PART_BUILD_DIR $H5PART_FILE
+        ensure_built_or_ready "h5part" $H5PART_VERSION $H5PART_BUILD_DIR $H5PART_FILE $H5PART_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_H5PART="no"
@@ -3794,7 +3804,7 @@ function build_vtk
     # CMake is the build system for VTK.  Call another script that will build
     # that program.
     #
-    CMAKE_INSTALL="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
+    CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
     if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
        info "VTK: CMake found"
     else
@@ -3808,7 +3818,9 @@ function build_vtk
     #
     # We need python to build the vtk python bindings.
     #
-    PYTHON_INSTALL="$VISITDIR/python/${PYTHON_VERSION}/$VISITARCH/bin"
+    VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-"$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"}
+    PYTHON_INSTALL="${VISIT_PYTHON_DIR}/bin"
+echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
     if [[ -e ${PYTHON_INSTALL}/python ]] ; then
        info "VTK: Python found"
     else
@@ -3863,9 +3875,10 @@ function build_vtk
     # Setup paths and libs for python for the VTK build.
     #
 
-    VISIT_PYTHON_DIR="$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"
     if [[ "$OPSYS" == "Darwin" ]]; then
-        export DYLD_LIBRARY_PATH="${VISIT_PYTHON_DIR}/lib/:$DYLD_LIBRARY_PATH"
+        if [[ "${VISIT_PYTHON_DIR}/lib" != "/usr/lib" ]]; then
+            export DYLD_LIBRARY_PATH="${VISIT_PYTHON_DIR}/lib/:$DYLD_LIBRARY_PATH"
+        fi
     else
         export LD_LIBRARY_PATH="${VISIT_PYTHON_DIR}/lib/:$LD_LIBRARY_PATH"
     fi
@@ -8028,7 +8041,11 @@ function build_hostconf
     # of cmake.
 
     THIRD_PARTY_ABS_PATH=$(pushd $THIRD_PARTY_PATH 1,2>/dev/null; pwd; popd 1,2>/dev/null)
-    echo "#$THIRD_PARTY_ABS_PATH/cmake/$CMAKE_VERSION/$VISITARCH/bin/cmake" > $HOSTCONF
+    if [[ "$CMAKE_INSTALL" != "" ]]; then
+        echo "#$CMAKE_INSTALL/cmake" > $HOSTCONF
+    else
+        echo "#$THIRD_PARTY_ABS_PATH/cmake/$CMAKE_VERSION/$VISITARCH/bin/cmake" > $HOSTCONF
+    fi
     echo "##" >> $HOSTCONF
     echo "## $0 generated host.cmake" >> $HOSTCONF
     echo "## created: $(date)" >> $HOSTCONF
@@ -8063,7 +8080,11 @@ function build_hostconf
     echo \
 "## Specify the location of the python." >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR \${VISITHOME}/python/$PYTHON_VERSION/\${VISITARCH})" >> $HOSTCONF
+    if [[ "$VISIT_PYTHON_DIR" != "" ]]; then
+        echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
+    else
+        echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR \${VISITHOME}/python/$PYTHON_VERSION/\${VISITARCH})" >> $HOSTCONF
+    fi
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## Compiler flags." >> $HOSTCONF
