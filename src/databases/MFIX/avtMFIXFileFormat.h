@@ -56,6 +56,9 @@
   #define MFIX_NAME_MAX MAX_PATH
 #else
   #include <limits.h>
+  #ifdef __APPLE__
+    #include <sys/syslimits.h>
+  #endif
   #define MFIX_NAME_MAX (NAME_MAX+1)
 #endif
 
