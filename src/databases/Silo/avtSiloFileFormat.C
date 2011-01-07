@@ -3797,6 +3797,9 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
 //    Mark C. Miller, Thu Jan  6 17:17:47 PST 2011
 //    Handle gui hide flag for expressions. There is a bug causing segv in
 //    PDB driver for version of silo prior to 4.8.
+//
+//    Mark C. Miller, Thu Jan  6 19:33:41 PST 2011
+//    Simplifed logic for setting gui hide flag for expressions.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
@@ -3848,11 +3851,7 @@ avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
                         expr.SetName(defv->names[j]);
                         expr.SetDefinition(defv->defns[j]);
                         expr.SetType(vartype);
-#ifdef SILO_VERSION_GE
-#if SILO_VERSION_GE(4,8,1)
-                        if (siloDriver != DB_PDB)
-#endif
-#endif
+                        if (defv->guihides)
                             expr.SetHidden(defv->guihides[j]);
                     md->AddExpression(&expr);
                 }
