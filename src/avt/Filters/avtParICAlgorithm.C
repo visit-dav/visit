@@ -81,7 +81,7 @@ int avtParICAlgorithm::DATASET_TAG = 420003;
 
 avtParICAlgorithm::avtParICAlgorithm(avtPICSFilter *icFilter)
     : avtICAlgorithm(icFilter),
-      CommTime("comT"), DSCommTime("dsComT"), MsgCnt("msgC"), ICCommCnt("iccC"), BytesCnt("byteC"), DSCnt("dsC")
+      CommTime("comT"), MsgCnt("msgC"), ICCommCnt("iccC"), BytesCnt("byteC"), DSCnt("dsC")
 {
     nProcs = PAR_Size();
     rank = PAR_Rank();
@@ -101,20 +101,8 @@ avtParICAlgorithm::avtParICAlgorithm(avtPICSFilter *icFilter)
 
 avtParICAlgorithm::~avtParICAlgorithm()
 {
-    FreeSerializedDSBuffers();
 }
 
-
-void
-avtParICAlgorithm::FreeSerializedDSBuffers()
-{
-    map<int, pair<int, unsigned char*> >::iterator it;
-    for (it = serializedDS.begin(); it != serializedDS.end(); it++)
-    {
-        delete [] (*it).second.second;
-    }
-    serializedDS.clear();
-}
 
 // ****************************************************************************
 //  Method: avtParICAlgorithm::PostExecute
@@ -371,6 +359,7 @@ avtParICAlgorithm::PrepareForSend(int tag, MemStream *buff, vector<unsigned char
     int maxDataLen = it->second.second;
 
     avtParICAlgorithm::Header header;
+    header.tag = tag;
     header.rank = rank;
     header.id = msgID;
     header.numPackets = 1;
@@ -668,6 +657,11 @@ avtParICAlgorithm::SendAllMsg(vector<int> &msg)
 // Programmer:  Dave Pugmire
 // Creation:    January  5, 2011
 //
+// Modifications:
+//
+//   Dave Pugmire, Fri Jan  7 14:19:46 EST 2011
+//   Use MemStream instead of vtk serialization.
+//
 // ****************************************************************************
 
 bool
@@ -678,28 +672,35 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
 {
     set<int> tags;
     if (msgs)
+    {
         tags.insert(avtParICAlgorithm::MESSAGE_TAG);
+        msgs->resize(0);
+    }
     if (recvICs)
+    {
         tags.insert(avtParICAlgorithm::STREAMLINE_TAG);
+        recvICs->resize(0);
+    }
     if (ds)
     {
         tags.insert(avtParICAlgorithm::DATASET_TAG);
         tags.insert(avtParICAlgorithm::DATASET_PREP_TAG);
+        ds->resize(0);
     }
     
     if (tags.empty())
         return false;
-
+    
     vector<pair<int, MemStream *> > buffers;
     if (! RecvData(tags, buffers, blockAndWait))
         return false;
+
+    int timerHandle = visitTimer->StartTimer();
 
     for (int i = 0; i < buffers.size(); i++)
     {
         if (buffers[i].first == avtParICAlgorithm::MESSAGE_TAG)
         {
-            debug1<<__LINE__<<endl;
-
             int sendRank;
             vector<int> m;
             buffers[i].second->read(sendRank);
@@ -707,7 +708,6 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
             MsgCommData msg(sendRank, m);
 
             msgs->push_back(msg);
-            debug1<<__LINE__<<endl;
         }
         else if (buffers[i].first == avtParICAlgorithm::STREAMLINE_TAG)
         {
@@ -727,24 +727,11 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
             DomainType dom;
             int dsLen;
             buffers[i].second->read(dom);
-            buffers[i].second->read(dsLen);
-            
-            vtkDataSetReader *reader = vtkDataSetReader::New();
-            reader->ReadFromInputStringOn();
-            
-            vtkCharArray *array = vtkCharArray::New();
-            char *data = (char *)&buffers[i].second->data()[buffers[i].second->pos()];
-            array->SetArray(data, dsLen, 1);
-            reader->SetInputArray(array);
-            reader->Update();
-            
-            vtkDataSet *d = reader->GetOutput();
-            d->Register(NULL);
+
+            vtkDataSet *d;
+            buffers[i].second->read(&d);
             DSCommData dsData(dom, d);
             ds->push_back(dsData);
-            
-            array->Delete();
-            reader->Delete();
         }
         else if (buffers[i].first == avtParICAlgorithm::DATASET_PREP_TAG)
         {
@@ -758,6 +745,7 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
         delete buffers[i].second;
     }
     
+    CommTime.value += visitTimer->StopTimer(timerHandle, "RecvAny");
     return true;
 }
 
@@ -779,28 +767,7 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
 bool
 avtParICAlgorithm::RecvMsg(vector<MsgCommData> &msgs)
 {
-    int timerHandle = visitTimer->StartTimer();
-    msgs.resize(0);
-
-    vector<MemStream *> buffers;
-    while (RecvData(avtParICAlgorithm::MESSAGE_TAG, buffers))
-    {
-        for (int i = 0; i < buffers.size(); i++)
-        {
-            int sendRank;
-            vector<int> m;
-            buffers[i]->read(sendRank);
-            buffers[i]->read(m);
-            MsgCommData msg(sendRank, m);
-
-            msgs.push_back(msg);
-            delete buffers[i];
-        }
-    }
-
-    CommTime.value += visitTimer->StopTimer(timerHandle, "RecvMsg");
-
-    return ! msgs.empty();
+    return RecvAny(&msgs, NULL, NULL, false);
 }
 
 // ****************************************************************************
@@ -882,28 +849,7 @@ avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics)
 bool
 avtParICAlgorithm::RecvICs(list<ICCommData> &recvICs)
 {
-    int timerHandle = visitTimer->StartTimer();
-    vector<MemStream *> buffers;
-    while (RecvData(avtParICAlgorithm::STREAMLINE_TAG, buffers))
-    {
-        for (int i = 0; i < buffers.size(); i++)
-        {
-            int num, sendRank;
-            buffers[i]->read(sendRank);
-            buffers[i]->read(num);
-            for (int j = 0; j < num; j++)
-            {
-                avtIntegralCurve *ic = picsFilter->CreateIntegralCurve();
-                ic->Serialize(MemStream::READ, *buffers[i], GetSolver());
-                ICCommData d(sendRank, ic);
-                recvICs.push_back(d);
-            }
-            delete buffers[i];
-        }
-    }
-
-    CommTime.value += visitTimer->StopTimer(timerHandle, "RecvICs");
-    return ! recvICs.empty();
+    return RecvAny(NULL, &recvICs, NULL, false);
 }
 
 // ****************************************************************************
@@ -920,12 +866,15 @@ bool
 avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs)
 {
     list<ICCommData> incoming;
-    if (RecvICs(incoming))
+    bool val = RecvICs(incoming);
+    if (val);
     {
         list<ICCommData>::iterator it;
         for (it = incoming.begin(); it != incoming.end(); it++)
             recvICs.push_back((*it).ic);
     }
+    
+    return val;
 }
 
 
@@ -986,6 +935,9 @@ avtParICAlgorithm::DoSendICs(int dst,
 //   Dave Pugmire, Mon Dec  6 14:42:45 EST 2010
 //   Fixes for SendDS, and RecvDS
 //
+//   Dave Pugmire, Fri Jan  7 14:19:46 EST 2011
+//   Use MemStream instead of vtk serialization.
+//
 // ****************************************************************************
 
 void
@@ -996,55 +948,27 @@ avtParICAlgorithm::SendDS(int dst, vector<vtkDataSet *> &ds, vector<DomainType> 
     //Serialize the data sets.
     for (int i = 0; i < ds.size(); i++)
     {
-        //See if we have the DS serialized already....
-        map<int, pair<int, unsigned char*> >::iterator it;
-        it = serializedDS.find(doms[i].domain);
+        MemStream *dsBuff = new MemStream;
 
-        int dsLen = 0;
-        unsigned char *dsBuff = NULL;
+        dsBuff->write(doms[i]);
+        dsBuff->write(ds[i]);
+        int dsLen = dsBuff->len();
+        int totalLen = dsBuff->len();
         
-        if (it == serializedDS.end())
-        {
-            vtkDataSetWriter *writer = vtkDataSetWriter::New();
-            writer->WriteToOutputStringOn();
-            writer->SetFileTypeToBinary();
-            writer->SetInput(ds[i]);
-            writer->Write();
-
-            dsLen = writer->GetOutputStringLength();
-
-            dsBuff = new unsigned char[dsLen];
-            memcpy(dsBuff, writer->GetBinaryOutputString(), dsLen);
-            writer->Delete();
-
-            serializedDS[doms[i].domain] = pair<int,unsigned char*>(dsLen, dsBuff);
-            debug1<<"SerializeDS: "<<doms[i].domain<<endl;
-        }
-        else
-        {
-            dsLen = (*it).second.first;
-            dsBuff = (*it).second.second;
-            debug1<<"CachedDS: "<<doms[i].domain<<endl;
-        }
-        
-        int totalLen = dsLen + sizeof(DomainType) + sizeof(dsLen);
-        MemStream *buff0 = new MemStream(2*sizeof(int));
-        buff0->write(rank);
-        buff0->write(totalLen);
-        SendData(dst, avtParICAlgorithm::DATASET_PREP_TAG, buff0);
+        MemStream *msgBuff = new MemStream(2*sizeof(int));
+        msgBuff->write(rank);
+        msgBuff->write(totalLen);
+        SendData(dst, avtParICAlgorithm::DATASET_PREP_TAG, msgBuff);
         MsgCnt.value++;
 
-        MemStream *buff1 = new MemStream(totalLen);
-        buff1->write(doms[i]);
-        buff1->write(dsLen);
-        buff1->write(dsBuff, dsLen);
+        //Send dataset.
         messageTagInfo[avtParICAlgorithm::DATASET_TAG] = pair<int,int>(1, totalLen+sizeof(avtParICAlgorithm::Header));
-        SendData(dst, avtParICAlgorithm::DATASET_TAG, buff1);
+        SendData(dst, avtParICAlgorithm::DATASET_TAG, dsBuff);
         messageTagInfo.erase(messageTagInfo.find(avtParICAlgorithm::DATASET_TAG));
-        
+
         DSCnt.value++;
     }
-    DSCommTime.value += visitTimer->StopTimer(timerHandle, "SendDS");
+    CommTime.value += visitTimer->StopTimer(timerHandle, "SendDS");
 }
 
 // ****************************************************************************
@@ -1071,54 +995,7 @@ avtParICAlgorithm::SendDS(int dst, vector<vtkDataSet *> &ds, vector<DomainType> 
 bool
 avtParICAlgorithm::RecvDS(vector<DSCommData> &ds)
 {
-    int timerHandle = visitTimer->StartTimer();
-    ds.resize(0);
-    vector<MemStream *> buffers;
-
-    while (RecvData(avtParICAlgorithm::DATASET_TAG, buffers))
-    {
-        for (int i = 0; i < buffers.size(); i++)
-        {
-            DomainType dom;
-            int dsLen;
-            buffers[i]->read(dom);
-            buffers[i]->read(dsLen);
-            
-            vtkDataSetReader *reader = vtkDataSetReader::New();
-            reader->ReadFromInputStringOn();
-            
-            vtkCharArray *array = vtkCharArray::New();
-            char *data = (char *)&buffers[i]->data()[buffers[i]->pos()];
-            array->SetArray(data, dsLen, 1);
-            reader->SetInputArray(array);
-            reader->Update();
-            
-            vtkDataSet *d = reader->GetOutput();
-            d->Register(NULL);
-            DSCommData dsData(dom, d);
-            ds.push_back(dsData);
-            
-            array->Delete();
-            reader->Delete();
-            delete buffers[i];
-        }
-    }
-    
-    while (RecvData(avtParICAlgorithm::DATASET_PREP_TAG, buffers))
-    {
-        for (int i = 0; i < buffers.size(); i++)
-        {
-            int sendRank, dsLen;
-            buffers[i]->read(sendRank);
-            buffers[i]->read(dsLen);
-
-            PostRecv(avtParICAlgorithm::DATASET_TAG, dsLen);
-            delete buffers[i];
-        }
-    }
-
-    DSCommTime.value += visitTimer->StopTimer(timerHandle, "RecvDS");
-    return ! ds.empty();
+    return RecvAny(NULL, NULL, &ds, false);
 }
 
 
@@ -1439,7 +1316,6 @@ avtParICAlgorithm::CompileTimingStatistics()
 {
     avtICAlgorithm::CompileTimingStatistics();
     ComputeStatistic(CommTime);
-    ComputeStatistic(DSCommTime);
 }
 
 // ****************************************************************************
@@ -1484,8 +1360,6 @@ avtParICAlgorithm::CalculateExtraTime()
     avtICAlgorithm::CalculateExtraTime();
     if (CommTime.value > 0.0)
         ExtraTime.value -= CommTime.value;
-    if (DSCommTime.value > 0.0)
-        ExtraTime.value -= DSCommTime.value;
 }
 
 // ****************************************************************************
@@ -1504,7 +1378,6 @@ avtParICAlgorithm::ReportTimings(ostream &os, bool totals)
     avtICAlgorithm::ReportTimings(os, totals);
 
     PrintTiming(os, "CommTime", CommTime, TotalTime, totals);
-    PrintTiming(os, "DSCommTime", DSCommTime, TotalTime, totals);
 }
 
 
