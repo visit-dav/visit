@@ -57,6 +57,227 @@ namespace FusionPSE {
 #define SIGN(x) ((x) < 0.0 ? (int) -1 : (int) 1)
 
 
+// Adapted from Tolga Birdal
+
+class Otsu
+{
+  // Compute the q values in the equation
+  double Px( unsigned int init, unsigned int end, vector< unsigned int > &histo)
+  {
+    int sum = 0;
+
+    for (unsigned int i=init; i<end; ++i)
+      sum += histo[i];
+
+    return (double) sum;
+  }
+
+  // Compute the mean values in the equation (mu)
+  double Mx( unsigned int init, unsigned int end, vector< unsigned int > &histo)
+  {
+    int sum = 0;
+
+    for (unsigned int i=init; i<end; ++i)
+      sum += i * histo[i];
+      
+    return (double) sum;
+  }
+
+  // Find the maximum element in a vector
+  unsigned int findMaxVet( vector< double > &vet, double &maxVet)
+  {
+    maxVet = 0;
+    unsigned int index = 0;
+      
+    for (unsigned int i=1; i<vet.size()-1; ++i)
+    {
+      if( maxVet < vet[i] )
+      {
+        maxVet = vet[i];
+        index = i;
+      }
+    }
+
+    return index;
+  }
+    
+  // Compute the histogram
+  void getHistogram( vector< pair< unsigned int, double > >& stats,
+                     vector< unsigned int > &histo )
+  {
+    unsigned int nbins = stats.size() / 2;
+
+    double min = 1.0e9, max = -1.0e9;
+    
+    for( unsigned int i=0; i<stats.size(); ++i )
+    {
+      if( min > stats[i].second )
+        min = stats[i].second;
+      
+      if( max < stats[i].second )
+        max = stats[i].second;
+    }
+
+    histo.resize( nbins );
+    
+    for( unsigned int i=0; i<nbins; ++i )
+      histo[i] = 0;
+    
+    for( unsigned int i=0; i<stats.size(); ++i )
+    {
+      unsigned int index =
+        ( ((double) nbins-1.0) * (stats[i].second-min) / (max-min) );
+      
+      histo[index]++;
+    }
+
+    for( unsigned int i=0; i<nbins; ++i )
+    {
+      int diff;
+
+      if( i )
+        diff = abs((int)histo[i] - (int)histo[i-1]);
+      else
+        diff = 0;
+
+      cerr << i << "  " << histo[i] << "  " << diff << "  " << histo[i] << endl;
+    }
+  }
+
+public:
+  // find otsu threshold
+  void getOtsuThreshold2(vector< pair< unsigned int, double > >& stats,
+                         double &threshold, double &maxVet )
+  {
+    if( stats.size() == 1 )
+    {
+      threshold = stats[0].second;
+      maxVet = 0;
+
+      return;
+    }
+
+    else if( stats.size() == 2 )
+    {
+      threshold = (stats[0].second+stats[1].second)/2.0;
+      maxVet = 0;
+
+      return;
+    }
+
+    vector< unsigned int > histo;
+    getHistogram( stats, histo );
+
+    unsigned int nbins = histo.size();
+
+    unsigned int index;
+    maxVet = 0;
+
+    // loop through all possible t values and maximize between class variance
+    for( unsigned int i=1; i<nbins-1; ++i )
+    {
+      double p0 = Px(0,     i, histo);
+      double p1 = Px(i, nbins, histo);
+
+      double p01 = p0 * p1;
+
+      if (p01 == 0) p01 = 1.0;
+        
+      double m0 = Mx(0,     i, histo);
+      double m1 = Mx(i, nbins, histo);
+
+      double diff = m0 * p1 - m1 * p0;
+      
+      double vet = diff * diff / p01;
+
+      if( maxVet < vet )
+      {
+        maxVet = vet;
+        index = i;
+      }
+    }
+
+    double min = 1.0e9, max = -1.0e9;
+      
+    for( unsigned int i=0; i<stats.size(); ++i )
+    {
+      if( min > stats[i].second )
+        min = stats[i].second;
+
+      if( max < stats[i].second )
+        max = stats[i].second;
+    }
+
+    threshold = min + (double) index / ((double) nbins - 1.0) * (max-min);
+  }
+
+
+  // find otsu threshold
+  void getOtsuThreshold3(vector< pair< unsigned int, double > >& stats,
+                         double &threshold0, double &threshold1,
+                         double &maxVet )
+  {
+    vector< unsigned int > histo;
+    getHistogram( stats, histo );
+
+    unsigned int nbins = histo.size();
+
+    unsigned int index0;
+    unsigned int index1;
+
+    maxVet = 0;
+
+    // loop through all possible t values and maximize between class variance
+    for ( unsigned int i=1; i<nbins-2; ++i )
+    {
+      double p0 = Px(0, i, histo);
+      double m0 = Mx(0, i, histo);
+
+      for ( unsigned int j=i+1; j<nbins-1; ++j )
+      {
+        double p1 = Px(i,     j, histo);
+        double p2 = Px(j, nbins, histo);
+
+        double p01 = p0 * p1;
+        double p12 = p1 * p2;
+
+        if (p01 == 0) p01 = 1;
+        if (p12 == 0) p12 = 1;
+
+        double m1 = Mx(i,     j, histo);
+        double m2 = Mx(j, nbins, histo);
+        
+        double diff0 = (m0 * p1 - m1 * p0);
+        double vet0 = diff0 * diff0 / p01;
+
+        double diff1 = (m1 * p2 - m2 * p1);
+        double vet1 = diff1 * diff1 / p12;
+
+        if( maxVet < vet0 + vet1 )
+        {
+          maxVet = vet0 + vet1;
+          index0 = i;
+          index1 = j;
+        }
+      }
+    }
+
+    double min = 1.0e9, max = -1.0e9;
+    
+    for( unsigned int i=0; i<stats.size(); ++i )
+    {
+      if( min > stats[i].second )
+        min = stats[i].second;
+      
+      if( max < stats[i].second )
+        max = stats[i].second;
+    }
+
+    threshold0 = min + (double) index0 / ((double) nbins-1.0) * (max-min);
+    threshold1 = min + (double) index1 / ((double) nbins-1.0) * (max-min);
+  }
+};
+
 
 //===================================================================
 // Copyright 2001, softSurfer (www.softsurfer.com)
@@ -680,7 +901,6 @@ unsigned int FieldlineLib::GCD( vector< unsigned int > values,
     }
   }
     
-  
   // Find the most frequent greatest common denominator
   unsigned int gcd = 1;
   unsigned int cc = 0;
@@ -909,6 +1129,9 @@ SortWindingPairs( vector< WindingPair > &windingPairs, bool reverseOrder )
 void FieldlineLib::
 RankWindingPairs( vector< WindingPair > &windingPairs, bool LT )
 {
+  if( windingPairs.size() < 2 )
+    return;
+
   // Now rank the results.
   unsigned int rank = 0;
 
@@ -1150,8 +1373,6 @@ periodicityStats( vector< Point >& points,
   if( verboseFlag )
     cerr << "Base variance  " << base_var << endl;
   
-  bool small_var = (base_var < 1.0e-08);
-
   // Find the period with the best variance.
   if( max_period == 0 )
     max_period = points.size() / 2.0;
@@ -1160,16 +1381,11 @@ periodicityStats( vector< Point >& points,
   {
     double var = calculateSumOfSquares( points, i, 1 );
     
-    if( small_var )
-      test_var = 1.0 - (base_var - var) / base_var;
-    else
-      test_var = var;
+    stats.push_back( pair< unsigned int, double > (i, var ) );
 
-    stats.push_back( pair< unsigned int, double > (i, test_var ) );
-
-    if( best_var > test_var ) 
+    if( best_var > var ) 
     {
-      best_var = test_var;
+      best_var = var;
       best_period = i;
     }
   }
@@ -1178,69 +1394,69 @@ periodicityStats( vector< Point >& points,
     cerr << "Best period " << best_period << "  "
          << "variance  " << calculateSumOfSquares( points, best_period, 1 )
          << endl;
-  
+
   if( stats.size() == 0 )
     stats.push_back( pair< unsigned int, double > (best_period, best_var ) );
 
   // Now sort the results.
   sort( stats.begin(), stats.end(), compareSecond );
 
-  double cutoff;
+//   for( unsigned int i=0; i<stats.size(); ++i )
+//     cerr << stats[i].first << "  " << stats[i].second << "  "
+//       << 0 << "  " << stats[i].second << "  "
+//       << endl;
 
+  thresholdStats( stats );
+}
+
+
+void FieldlineLib::
+thresholdStats( vector< pair< unsigned int, double > >& stats )
+{
+  Otsu otsu;
+  double maxVet, cutoff;
+
+  otsu.getOtsuThreshold2( stats, cutoff, maxVet );
+
+  cerr << "Threshold " << cutoff << "  "
+       << "vet max  " << maxVet << endl;
+  
+//   double cutoff0, cutoff1;
+
+//   otsu.getOtsuThreshold3( stats, cutoff0, cutoff1, maxVet );
+//   cerr << "Threshold " << cutoff0 << "  " << cutoff1 << "  "
+//        << "vet max  " << maxVet << endl;
+  
   unsigned int cutoffIndex = stats.size();
-
-  if( calculateSumOfSquares( points, best_period, 1 ) < 1.0e-8 )
-    cutoff = 1.0e-8;
-  else
-    cutoff = 10.0 * stats[0].second;
 
   for( unsigned int i=0; i<stats.size(); ++i )
   {
-    if( (!small_var && stats[i].second <= cutoff) ||
-        ( small_var && stats[i].second <= 1.0e-8) )
+    if( stats[i].second <= cutoff ) 
     {
       if( verboseFlag )
         cerr << "period  " << stats[i].first << "  "
-             << "normalized variance  " << stats[i].second << "  "
+             << "variance  " << stats[i].second << "  "
              << endl;
     }
     else
     {
-      if( i == 1 && i+1 < stats.size() )
-      {
-        cutoff = 10.0 * stats[1].second;
-        --i;
-
-        continue;
-      }
-
-      if( i == 1 && i+1 < stats.size() )
-      {
-        if( verboseFlag )
-        {
-          cerr << "period  " << stats[i].first << "  "
-               << "normalized variance  " << stats[i].second << "  "
-               << endl;
-        }
-
-        ++i;
-      }
-
-      if( verboseFlag )
-      {
-        // Print the next five entries
-        for( unsigned int cc=0 ; cc<5 && i<stats.size(); ++cc )
-          cerr << "period  " << stats[i+cc].first << "  "
-               << "normalized variance  " << stats[i+cc].second << "  **"
-               << endl;
-      }
-
       cutoffIndex = i;
-      stats.resize(i);
-      
       break;
     }
   }
+
+  for( unsigned int i=cutoffIndex; i<stats.size(); ++i )
+  {
+    if( verboseFlag )
+    {
+      // Print the cutoff entries
+      cerr << "period  " << stats[i].first << "  "
+           << "variance  " << stats[i].second << "  **" << endl;
+    }
+  }
+
+  if( cutoffIndex > 1 )
+    stats.resize(cutoffIndex);
 }
 
 
@@ -2438,7 +2654,6 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     }
   }        
 
-
   // Now sort the results based on the index Euclidian distance.
   SortWindingPairs( mergedWindingPairs, true );
   RankWindingPairs( mergedWindingPairs, false );
@@ -2457,7 +2672,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
                                     windingGroupOffset );
 
 
-    if( verboseFlag && (drawable || i<10) )
+    if( verboseFlag && (drawable || i < 10) )
       cerr << "Final "
            << (drawable ? "Drawable " : "Rejected ") 
            << "winding pair:  " 
@@ -2513,12 +2728,11 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   unsigned int windingGCD = GCD( mergedWindingPairs[drawableIndex].toroidal,
                                  mergedWindingPairs[drawableIndex].poloidal );
 
-  vector< unsigned int > values;
-
-  values.resize( mergedWindingPairs.size() );
-
-  if( approximateWindingPairs.size() > 1 )
+  if( mergedWindingPairs.size() > 1 )
   {
+    vector< unsigned int > values;
+    values.resize( mergedWindingPairs.size() );
+
     for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
       values[i] = mergedWindingPairs[i].toroidal;
     
@@ -2529,7 +2743,98 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
     poloidalGCD = GCD( values );
 
+    // A period GCD greater than 1 is evidence of higher order hamonic.
     periodGCD = GCD( toroidalGCD, poloidalGCD );
+
+    // Islands so check for higher order harmonics which are
+    // indicative of islands within islands. Sometimes, they are not
+    // present without additional thresholding which separates the
+    // higher order from the lower order.    
+    if( (toroidalGCD == toroidalWinding / windingGCD &&
+         poloidalGCD == poloidalWinding / windingGCD) )
+    {
+      vector< pair< unsigned int, double > >::iterator iter;
+
+      // Remove all of the stats that are not part of the merged stats
+      // or part of the base period.
+      iter = toroidalStats.begin();
+
+      for( unsigned int i=0; i<toroidalStats.size(); ++i, ++iter )
+      {
+        bool found = false;
+
+        // Part of the merged stats? 
+        for( unsigned int j=0; j<mergedWindingPairs.size(); ++j )
+        {
+          if( toroidalStats[i].first == mergedWindingPairs[j].toroidal )
+          {
+            found = true;
+            break;
+          }
+        }
+
+        // The later removes those not part of any harmonics.
+        if( !found || toroidalStats[i].first % (toroidalWinding/windingGCD) )
+        {
+          toroidalStats.erase(iter);
+          --i;
+          --iter;
+        }
+      }
+
+      // If present, thresholding should leave only higher order
+      // harmonics.
+      thresholdStats( toroidalStats );
+
+      values.resize( toroidalStats.size() );
+
+      for( unsigned int i=0; i<toroidalStats.size(); ++i )
+        values[i] = toroidalStats[i].first;
+
+      toroidalGCD = GCD( values );
+
+
+      // Remove all of the stats that are not part of the merged stats
+      // or part of the base period.
+      iter = poloidalStats.begin();
+  
+      for( unsigned int i=0; i<poloidalStats.size(); ++i, ++iter )
+      {
+        bool found = false;
+
+        // Part of the merged stats? 
+        for( unsigned int j=0; j<mergedWindingPairs.size(); ++j )
+        {
+          if( poloidalStats[i].first == mergedWindingPairs[j].poloidal )
+          {
+            found = true;
+            break;
+          }
+        }
+
+        // The later removes those not part of any harmonics.
+        if( poloidalStats[i].first % (poloidalWinding/windingGCD) )
+        {
+          poloidalStats.erase(iter);
+          --i;
+          --iter;
+        }
+      }
+
+      // If present, thresholding should leave only higher order
+      // harmonics.
+      thresholdStats( poloidalStats );
+
+      values.resize( poloidalStats.size() );
+
+      for( unsigned int i=0; i<poloidalStats.size(); ++i )
+        values[i] = poloidalStats[i].first;
+    
+      poloidalGCD = GCD( values );
+
+      // A GCD greater than 1 is evidence of higher order hamonic.
+      periodGCD = GCD( toroidalGCD, poloidalGCD );
+    }
   }
   else
   {
@@ -4542,7 +4847,7 @@ FieldlineLib::findIslandCenter( vector < Point > &points,
             (*ic).second--;
             (*indexCount.find( (*SL).lower.vertex->ID )).second--;
             
-                    s.erase( SL );
+            s.erase( SL );
           }
         }                    
       }

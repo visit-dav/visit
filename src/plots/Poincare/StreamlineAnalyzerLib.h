@@ -211,6 +211,8 @@ public:
                     unsigned int max_period );
 
 
+  void thresholdStats( vector< pair< unsigned int, double > >& stats );
+
   double
   calculateSumOfSquares( vector< Point >& poloidalWinding_points,
                          unsigned int poloidalWinding,
