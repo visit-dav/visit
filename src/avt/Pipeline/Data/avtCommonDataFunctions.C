@@ -1786,6 +1786,8 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Make the use of isfinite conditional, since not all platforms support
 //    it (IRIX64 6.5 with MIPSpro 7.41, solaris with gcc 3.2).
 //
+//    Mark C. Miller, Mon Jan 10 07:21:59 PST 2011
+//    Replaced isfinite with visitIsFinite.
 // ****************************************************************************
 
 void
@@ -1838,15 +1840,8 @@ GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname,
 
         double val = MajorEigenvalue(ptr);
 
-#ifndef _WIN32
-#ifdef HAVE_ISFINITE
-        if (!isfinite(val))
+        if (!visitIsFinite(val))
             continue;
-#endif
-#else
-        if (!_finite(val))
-            continue;
-#endif
 
         exts[0] = (exts[0] < val ? exts[0] : val);
         exts[1] = (exts[1] > val ? exts[1] : val);
