@@ -1,7 +1,7 @@
-#/usr/gapps/visit/thirdparty_shared/cmake/2.8.0/linux-i686_gcc-3.2/bin/cmake
+#/usr/gapps/visit/thirdparty_shared/cmake/2.8.3/linux-i686_gcc-3.2/bin/cmake
 ##
 ## ./build_visit2_2_0 generated host.cmake
-## created: Tue Dec 14 11:03:07 PST 2010
+## created: Fri Jan  7 15:48:49 PST 2011
 ## system: Linux hoth.llnl.gov 2.4.21-27.0.2c.ELsmp #1 SMP Thu Aug 4 18:32:37 PDT 2005 i686 i686 i386 GNU/Linux
 ## by: brugger1
 
@@ -123,7 +123,7 @@ VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.7.1/${VISITARCH})
 ##
 ## H5Part
 ##
-VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 ##

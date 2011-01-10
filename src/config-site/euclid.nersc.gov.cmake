@@ -1,9 +1,9 @@
-#/project/projectdirs/visit/visit_3rdparty_euclid_opt/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake
+#/project/projectdirs/visit/visit_3rdparty_euclid_opt/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Mon Dec  6 13:28:25 PST 2010
+## created: Fri Jan  7 16:20:05 PST 2011
 ## system: Linux euclid.nersc.gov 2.6.18.194.17.4.el5-x86_64-bsdv3-prf #1 SMP Thu Oct 28 17:44:14 PDT 2010 x86_64 x86_64 x86_64 GNU/Linux
-## by: hrchilds
+## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
@@ -62,6 +62,9 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ## The HDF4, HDF5 and NetCDF libraries must be first so that
 ## their libdeps are defined for any plugins that need them.
 ##
+## For libraries with LIBDEP settings, order matters.
+## Libraries with LIBDEP settings that depend on other
+## Library's LIBDEP settings must come after them.
 ##############################################################
 
 ##
@@ -127,7 +130,7 @@ VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME2}/gdal/1.7.2/${VISITARCH})
 ##
 ## H5Part
 ##
-VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME2}/h5part/1.6.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.2/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 ##
