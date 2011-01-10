@@ -56,7 +56,7 @@
 #           CCMIO    2.6.1    libccmio-2.6.1.tar.gz  --ccmio
 #           CFITSIO  3006     cfitsio3006.tar.gz     --cfitsio
 #           CGNS     3.0.8    cgns-3.0.8-Source.tar.gz --cgns
-#           ExodusII 4.46     exodusii-4.46.tar.gz   -exodus
+#           ExodusII 4.98     exodusii-4.98.tar.gz   -exodus
 #           FastBit  0.9.9    fastbit-b0.9.9.tar.gz  
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      --gdal
 #           H5part   1.6.0    H5Part-1.6.0.tar.gz    --h5part
@@ -1045,6 +1045,9 @@
 #     I replace the BOXLIB2D and BOXLIB3D variables with just BOXLIB in
 #     the config site file.
 #
+#     Eric Brugger, Mon Jan 10 12:33:31 PST 2011
+#     I modified the script to build exodus 4.98 instead of exodus 4.46.
+#
 # *****************************************************************************
 
 
@@ -1477,10 +1480,10 @@ export GDAL_VERSION=${GDAL_VERSION:-"1.7.1"}
 export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"1.7"}
 export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-1.7.1"}
 
-export EXODUS_FILE=${EXODUS_FILE:-"exodusii-4.46.tar.gz"}
-export EXODUS_VERSION=${EXODUS_VERSION:-"4.46"}
+export EXODUS_FILE=${EXODUS_FILE:-"exodusii-4.98.tar.gz"}
+export EXODUS_VERSION=${EXODUS_VERSION:-"4.98"}
 export EXODUS_COMPATIBILITY_VERSION=${EXODUS_COMPATIBILITY_VERSION:-"4.0"}
-export EXODUS_BUILD_DIR=${EXODUS_BUILD_DIR:-"exodusii-4.46"}
+export EXODUS_BUILD_DIR=${EXODUS_BUILD_DIR:-"exodusii-4.98"}
 
 export BOXLIB_VERSION=${BOXLIB_VERSION:-"2010.10.01"}
 export BOXLIB_FILE=${BOXLIB_FILE:-"BoxLib-${BOXLIB_VERSION}.tar.gz"}
@@ -8076,7 +8079,7 @@ function build_hostconf
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## Specify the Qt4 binary dir. " >> $HOSTCONF
-    echo "## (qmake us used to locate & setup Qt4 dependencies)" >> $HOSTCONF
+    echo "## (qmake is used to locate & setup Qt4 dependencies)" >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
     echo >> $HOSTCONF

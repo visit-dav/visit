@@ -224,7 +224,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_static/cmake/2.8.0/linux-i686_gcc-3.2/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/cmake/2.8.3/linux-i686_gcc-3.2/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 touch CMake/ThirdPartyInstallLibrary.cmake
 make -j 4 package >> ../../buildlog 2>&1
@@ -277,7 +277,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 touch CMake/ThirdPartyInstallLibrary.cmake
 make -j 6 package >> ../../buildlog 2>&1
@@ -331,7 +331,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
 cp config-site/aztec1.cmake config-site/\`hostname\`.cmake
-/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 12 >> ../../buildlog 2>&1
 touch CMake/ThirdPartyInstallLibrary.cmake
 make -j 12 package >> ../../buildlog 2>&1
@@ -387,7 +387,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/cmake/2.8.0/linux-x86_64-gcc-4.0.2/bin/cmake . -DCMAKE_BUILD_TYPE=Release >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.3/linux-x86_64-gcc-4.0.2/bin/cmake . -DCMAKE_BUILD_TYPE=Release >> ../../buildlog 2>&1
 make -j 3 >> ../../buildlog 2>&1
 touch CMake/ThirdPartyInstallLibrary.cmake
 make -j 3 package >> ../../buildlog 2>&1
@@ -439,7 +439,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/common/graphics/installs/visit_3rdparty/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
+/project/projectdirs/visit/visit_3rdparty_euclid_opt/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE=Release -DVISIT_INSTALL_THIRD_PARTY=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 touch CMake/ThirdPartyInstallLibrary.cmake
 make -j 4 package >> ../../buildlog 2>&1
@@ -500,7 +500,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/home/brugger/visit/cmake/2.8.0/linux-rhel4-ia32_gcc-3.4/bin/cmake . -DCMAKE_BUILD_TYPE=Release >> ../../buildlog 2>&1
+/home/brugger/visit/cmake/2.8.3/linux-rhel4-ia32_gcc-3.4/bin/cmake . -DCMAKE_BUILD_TYPE=Release >> ../../buildlog 2>&1
 make -j 2 >> ../../buildlog 2>&1
 touch CMake/ThirdPartyInstallLibrary.cmake
 make -j 2 package >> ../../buildlog 2>&1
