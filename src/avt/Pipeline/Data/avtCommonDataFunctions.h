@@ -53,6 +53,8 @@
 
 #include <visit-config.h>
 
+#include <cmath>
+
 
 class     vtkDataArray;
 
@@ -265,6 +267,9 @@ typedef struct
 //    Kathleen Bonnell, Mon Sep 20 10:40:15 MST 2010
 //    Use _finite on Windows.
 //
+//    Mark C. Miller, Mon Jan 10 07:20:17 PST 2011
+//    Added 'std::' to non-win32 variant. Otherwise, failed to compile on 
+//    ancient RH3-gcc-3.2.3 system.
 // ****************************************************************************
 
 template <class T>
@@ -272,7 +277,7 @@ inline bool visitIsFinite(T t)
 {
 #ifndef _WIN32
 #ifdef HAVE_ISFINITE
-    return isfinite(t);
+    return std::isfinite(t);
 #endif
 #else
     return _finite(t);
