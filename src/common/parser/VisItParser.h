@@ -129,7 +129,7 @@ class PARSER_API Parser
 {
 public:
     Parser();
-    virtual ~Parser() {}
+    virtual ~Parser();
     void    Init();
     void    ParseOneToken(Token *);
     bool    Accept() { return accept; }

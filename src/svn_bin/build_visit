@@ -3076,19 +3076,40 @@ function apply_mesa_782_patch_1
 {
    patch -p0 <<\EOF
 diff -c a/src/mesa/drivers/osmesa/osmesa.c Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c
-*** a/src/mesa/drivers/osmesa/osmesa.c
---- Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c
+*** a/src/mesa/drivers/osmesa/osmesa.c	Tue Jun 15 10:43:47 2010
+--- Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c	Tue Jan 11 10:13:25 2011
 ***************
-*** 1329,1334 ****
---- 1329,1335 ----
+*** 1328,1336 ****
+      * that converts rendering from CHAN_BITS to the user-requested channel
       * size.
       */
-     osmesa->rb = new_osmesa_renderbuffer(&osmesa->mesa, osmesa->format, type);
-+    _mesa_remove_renderbuffer(osmesa->gl_buffer, BUFFER_FRONT_LEFT);
-     _mesa_add_renderbuffer(osmesa->gl_buffer, BUFFER_FRONT_LEFT, osmesa->rb);
-     assert(osmesa->rb->RefCount == 2);
-
+!    osmesa->rb = new_osmesa_renderbuffer(&osmesa->mesa, osmesa->format, type);
+!    _mesa_add_renderbuffer(osmesa->gl_buffer, BUFFER_FRONT_LEFT, osmesa->rb);
+!    assert(osmesa->rb->RefCount == 2);
+  
+     /* Set renderbuffer fields.  Set width/height = 0 to force 
+      * osmesa_renderbuffer_storage() being called by _mesa_resize_framebuffer()
+--- 1328,1339 ----
+      * that converts rendering from CHAN_BITS to the user-requested channel
+      * size.
+      */
+!    if (!osmesa->rb) {
+!       osmesa->rb = new_osmesa_renderbuffer(&osmesa->mesa, osmesa->format, type);
+!       _mesa_remove_renderbuffer(osmesa->gl_buffer, BUFFER_FRONT_LEFT);
+!       _mesa_add_renderbuffer(osmesa->gl_buffer, BUFFER_FRONT_LEFT, osmesa->rb);
+!       assert(osmesa->rb->RefCount == 2);
+!    }
+  
+     /* Set renderbuffer fields.  Set width/height = 0 to force 
+      * osmesa_renderbuffer_storage() being called by _mesa_resize_framebuffer()
 EOF
+
+   if [[ $? != 0 ]] ; then
+      warn "Unable to apply patch 1 to Mesa 7.8.2."
+      return 1
+   else
+      return 0
+   fi
 }
 
 function apply_mesa_782_patch_2
@@ -3173,6 +3194,13 @@ index a156823..8434491 100644
 -- 
 1.7.0.2
 EOF
+
+   if [[ $? != 0 ]] ; then
+      warn "Unable to apply patch 2 to Mesa 7.8.2."
+      return 1
+   else
+      return 0
+   fi
 }
 
 function apply_mesa_patch
@@ -3197,6 +3225,9 @@ function apply_mesa_patch
       fi
    elif [[ ${MESA_VERSION} == "7.8.2" ]] ; then
       apply_mesa_782_patch_1
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
       apply_mesa_782_patch_2
       if [[ $? != 0 ]] ; then
         return 1
