@@ -4,6 +4,11 @@
 ## created: Wed May 26 20:41:03 PDT 2010
 ## system: Linux miller86-1.llnl.gov 2.4.31 #1 SMP Thu Jul 28 19:32:32 PDT 2005 i686 i686 i386 GNU/Linux
 ## by: miller
+##
+## Modifications:
+## 
+##   Mark C. Miller, Mon Jan 10 17:24:31 PST 2011
+##   Fixed parallel build by pointing to correct mpicxx compiler
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
@@ -45,7 +50,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-O2")
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpic++)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /export/home/miller/pkg/mpich/mpich-1.2.5.2/bin/mpicxx)
 
 ##############################################################
 ##
