@@ -38,6 +38,9 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Kathleen Bonnell, Mon Jan 10 07:59:28 MST 2010
+#   Remove PROGRAM9 (xml2projectfile), and PROGRAM5 (xml2makefile).
+#
 #****************************************************************************/
 
 SET(PROGRAM1_SOURCES main1.C)
@@ -48,15 +51,11 @@ SET(PROGRAM3_SOURCES main3.C)
 
 SET(PROGRAM4_SOURCES main4.C)
 
-SET(PROGRAM5_SOURCES main5.C)
-
 SET(PROGRAM6_SOURCES main6.C)
 
 SET(PROGRAM7_SOURCES main7.C)
 
 SET(PROGRAM8_SOURCES main8.C)
-
-SET(PROGRAM9_SOURCES main9.C)
 
 SET(PROGRAM10_SOURCES main10.C)
 
