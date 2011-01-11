@@ -171,6 +171,9 @@ using     std::sort;
 //    Hank Childs, Sun Sep 19 10:47:12 PDT 2010
 //    Add support for data replication.
 //
+//    Hank Childs, Tue Jan 11 08:41:22 PST 2011
+//    Add support for time index.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes() : plotInfoAtts()
@@ -195,6 +198,7 @@ avtDataAttributes::avtDataAttributes() : plotInfoAtts()
     cycleIsAccurate        = false;
     dtime                  = 0.;
     timeIsAccurate         = false;
+    timeIndex              = 0;
     
     dynamicDomainDecomposition = false;
 
@@ -484,6 +488,9 @@ avtDataAttributes::DestructSelf(void)
 //    Hank Childs, Sun Sep 19 10:47:12 PDT 2010
 //    Add support for data replication.
 //
+//    Hank Childs, Tue Jan 11 08:41:22 PST 2011
+//    Add support for time index.
+//
 // ****************************************************************************
 
 void
@@ -503,6 +510,7 @@ avtDataAttributes::Print(ostream &out)
         out << "Cycle is not known. Suspected to be " << cycle << endl;
     else
         out << "Cycle = " << cycle << endl;
+    out << "Time index = " << timeIndex << endl;
 
     if (dynamicDomainDecomposition)
         out << "The data set is being decomposed in parallel dynamically" 
@@ -986,6 +994,9 @@ avtDataAttributes::Print(ostream &out)
 //    Hank Childs, Sun Sep 19 10:47:12 PDT 2010
 //    Add support for data replication.
 //
+//    Hank Childs, Tue Jan 11 08:41:22 PST 2011
+//    Add support for time index.
+//
 // ****************************************************************************
 
 void
@@ -1016,6 +1027,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     {
         timeIsAccurate = false;
     }
+    SetTimeIndex(di.timeIndex);
    
     SetDynamicDomainDecomposition(di.dynamicDomainDecomposition);
     SetMeshname(di.GetMeshname());
@@ -1226,6 +1238,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Hank Childs, Sun Sep 19 10:47:12 PDT 2010
 //    Add support for data replication.
 //
+//    Hank Childs, Tue Jan 11 08:41:22 PST 2011
+//    Add support for time index.
+//
 // ****************************************************************************
 
 void
@@ -1354,6 +1369,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     if (timeIsAccurate && da.timeIsAccurate && dtime != da.dtime)
     {
         EXCEPTION2(InvalidMergeException, dtime, da.dtime);
+    }
+    if (timeIndex != da.timeIndex)
+    {
+        EXCEPTION2(InvalidMergeException, timeIndex, da.timeIndex);
     }
     if (windowMode != da.windowMode)
     {
@@ -2514,6 +2533,24 @@ avtDataAttributes::SetTime(double d)
 
 
 // ****************************************************************************
+//  Method: avtDataAttributes::SetTimeIndex
+//
+//  Purpose:
+//      Sets the time index.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 11, 2011
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetTimeIndex(int v)
+{
+    timeIndex = v;
+}
+
+
+// ****************************************************************************
 //  Method: avtDataAttributes::SetDynamicDomainDecomposition
 //
 //  Purpose:
@@ -2680,6 +2717,9 @@ avtDataAttributes::SetDynamicDomainDecomposition(bool ddd)
 //    Hank Childs, Sun Sep 19 10:47:12 PDT 2010
 //    Add support for data replication.
 //
+//    Hank Childs, Tue Jan 11 08:41:22 PST 2011
+//    Add support for time index.
+//
 // ****************************************************************************
 
 void
@@ -2689,7 +2729,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     int   i, j;
 
     int varSize = 7;
-    int numVals = 33 + varSize*variables.size();
+    int numVals = 34 + varSize*variables.size();
     int *vals = new int[numVals];
     i = 0;
     vals[i++] = topologicalDimension;
@@ -2701,6 +2741,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[i++] = cycle;
     vals[i++] = (cycleIsAccurate ? 1 : 0);
     vals[i++] = (timeIsAccurate ? 1 : 0);
+    vals[i++] = timeIndex;
     vals[i++] = (dynamicDomainDecomposition ? 1 : 0);
     vals[i++] = (int) containsGhostZones;
     vals[i++] = (int) containsExteriorBoundaryGhosts;
@@ -2980,6 +3021,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Hank Childs, Sun Sep 19 10:47:12 PDT 2010
 //    Add support for data replication.
 //
+//    Hank Childs, Tue Jan 11 08:41:22 PST 2011
+//    Add support for time index.
+//
 // ****************************************************************************
 
 int
@@ -3025,6 +3069,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     timeIsAccurate = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    timeIndex = tmp;
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
@@ -4803,6 +4851,9 @@ avtDataAttributes::AddPlotInformation(const std::string &key,
 //    Hank Childs, Sun Sep 19 10:47:12 PDT 2010
 //    Add support for data replication.
 //
+//    Hank Childs, Tue Jan 11 08:41:22 PST 2011
+//    Add support for time index.
+//
 // ****************************************************************************
 
 static const char *
@@ -4988,6 +5039,8 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     else
         SNPRINTF(str, 4096, "%d (guess)", cycle);
     webpage->AddTableEntry2("Cycle", str);
+    SNPRINTF(str, 4096, "%d", timeIndex);
+    webpage->AddTableEntry2("Time index", str);
     webpage->EndTable();
 
     webpage->AddSubheading("Spatial extents attributes");

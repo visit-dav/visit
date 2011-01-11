@@ -53,6 +53,7 @@ class  vtkDataSet;
 
 class  avtDatasetDatabase;
 class  PickAttributes;
+class  ExpressionList;
 
 
 // ****************************************************************************
@@ -129,6 +130,9 @@ class  PickAttributes;
 //    Hank Childs, Fri Nov 26 16:26:55 PST 2010
 //    Add support for caching of arbitrary objects.
 //
+//    Hank Childs, Mon Jan 10 10:26:22 PST 2011
+//    Make sure we don't re-use cache items from outdated expressions.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
@@ -185,10 +189,13 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
     avtDatasetDatabase      *database;
     char                    *variable;
     int                      timestep;
-    avtDataRequest_p   lastSpec;
+    avtDataRequest_p         lastSpec;
+
+    static ExpressionList  *lastExprList;
 
     virtual bool        FetchDataset(avtDataRequest_p, avtDataTree_p &);
     virtual int         NumStagesForFetch(avtDataRequest_p);
+    std::string         ManageExpressions(const char *);
 };
 
 

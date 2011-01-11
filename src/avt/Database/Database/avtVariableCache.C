@@ -750,6 +750,54 @@ avtVariableCache::ClearTimestep(int ts)
 }
 
 // ****************************************************************************
+//  Method: avtVariableCache::ClearVariablesWithString
+//
+//  Purpose:
+//      Clears out all variables that start with a string.
+//
+//  Arguments:
+//      str     The string to clear.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 11, 2011
+//
+// ****************************************************************************
+
+void
+avtVariableCache::ClearVariablesWithString(const std::string &str)
+{
+    const char *substr = str.c_str();
+    int len = strlen(substr);
+    int t1 = visitTimer->StartTimer();
+    // clear out objectPointerMap items *before* vtkVars and voidRefVars
+    std::vector<vtkObject*> itemsToRemove;
+    std::map<vtkObject*,ObjectDomainPair>::iterator it;
+    for (it = objectPointerMap.begin(); it != objectPointerMap.end(); it++)
+    {
+        int objts = -1;
+        const char *name;
+        GetVTKObjectKey(&name, 0, &objts, it->second.domain, 0, it->second.obj);
+        if (strncmp(name, substr, len) == 0)
+        {
+            itemsToRemove.push_back(it->first);
+        }
+    }
+    for (size_t i = 0 ; i < itemsToRemove.size() ; i++)
+    {
+        objectPointerMap.erase(itemsToRemove[i]);
+    }
+    for (size_t i = 0 ; i < vtkVars.size() ; i++)
+    {
+        vtkVars[i]->ClearVariablesWithString(str);
+    }
+    for (size_t i = 0 ; i < voidRefVars.size() ; i++)
+    {
+        voidRefVars[i]->ClearVariablesWithString(str);
+    }
+    visitTimer->StopTimer(t1, "Clearing expr vars from DB cache");
+}
+
+// ****************************************************************************
 //  Method: OneDomain constructor
 //
 //  Arguments:
@@ -1356,6 +1404,34 @@ avtVariableCache::OneVar::ClearTimestep(int ts)
     for (size_t i = 0 ; i < materials.size() ; i++)
     {
         materials[i]->ClearTimestep(ts);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: OneVar::ClearVariablesWithString
+//
+//  Purpose:
+//      Clears out all containers that contain a string.
+//
+//  Arguments:
+//      str     The string to clear out.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 11, 2011
+//
+// ****************************************************************************
+
+void
+avtVariableCache::OneVar::ClearVariablesWithString(const std::string &str)
+{
+    const char *substr = str.c_str();
+    int len = strlen(substr);
+    if (strncmp(var, substr, len) == 0)
+    {
+        for (size_t i = 0 ; i < materials.size() ; i++)
+            delete materials[i];
+        materials.clear();
     }
 }
 
