@@ -80,6 +80,7 @@ class EXPR_API ExprParser : public Parser
 {
   public:
     ExprParser(ExprNodeFactory *f);
+    virtual ~ExprParser();
     ParseTreeNode *Parse(const std::string &);
 
     enum ErrorMessageTarget

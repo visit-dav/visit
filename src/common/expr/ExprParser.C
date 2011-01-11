@@ -81,6 +81,19 @@ ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
 }
 
 // ****************************************************************************
+//  Destructor:  ExprParser::~ExprParser
+//
+//  Programmer:  David Camp
+//  Creation:    Tue Jan 11 11:09:24 PST 2011
+//
+// ****************************************************************************
+ExprParser::~ExprParser()
+{
+    if (factory)
+        delete factory;
+}
+
+// ****************************************************************************
 //  Method:  ExprParser::ApplyRule
 //
 //  Purpose:
