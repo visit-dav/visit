@@ -44,6 +44,9 @@
 #
 #   Mark C. Miller, Thu Jul 29 13:09:44 PDT 2010
 #   Removed LibPipelineStubs as mdserver is now linked with libvisit_vtk
+#
+#   Mark C. Miller, Tue Jan 11 11:14:08 PST 2011
+#   Removed testmds. It is obsoleted by other testing.
 #****************************************************************************/
 
 SET(MDSERVER_SOURCES
@@ -131,10 +134,5 @@ IF(VISIT_STATIC)
         ${mdserver_IDatabase}
     )
 ENDIF(VISIT_STATIC)
-
-IF (NOT WIN32)
-    ADD_EXECUTABLE(testmds EXCLUDE_FROM_ALL testmds.C)
-    TARGET_LINK_LIBRARIES(testmds mdserverproxy mdserverrpc visitcommon avtdbatts)
-ENDIF (NOT WIN32)
 
 VISIT_INSTALL_TARGETS(mdserver)

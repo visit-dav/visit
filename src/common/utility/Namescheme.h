@@ -102,6 +102,7 @@ class UTILITY_API Namescheme
     char **arrnames;      // array names used by array refs
     const int **arrvals;  // pointer to actual array data assoc. with each name
     char **exprstrs;      // expressions to be evaluated for each conv. spec.
+    DBexprnode **exprtrees; // Built expression trees for each conv. spec.
 };
 
 #endif

@@ -80,7 +80,7 @@ int main()
     // load caches and see how things behave
     for (i = 0; i < 2*CACHE_SIZE; i++)
     {
-        cerr << "Iteration " << i << endl;
+        cout << "Iteration " << i << endl;
         char tmp[256];
         sprintf(tmp, "item %02d", i);
         string tmpStr = string(tmp);
@@ -112,7 +112,7 @@ int main()
     const int n = fullName.size();
     vector<string> keysToRemove;
 
-    cerr << "Iterating to find and remove all keys beginning with \"" << fullName.c_str() << "\"" << endl; 
+    cout << "Iterating to find and remove all keys beginning with \"" << fullName.c_str() << "\"" << endl; 
     for (it = delCache.begin(); it != delCache.end(); it++)
     {
         if (fullName.compare(0, n, it->first, 0, n) == 0)
@@ -125,9 +125,9 @@ int main()
         callbackCache.remove(keysToRemove[j]);
         delCache.remove(keysToRemove[j]);
         adelCache.remove(keysToRemove[j]);
-        cerr << "Removed item with key \"" << keysToRemove[j].c_str() << "\"" << endl;
+        cout << "Removed item with key \"" << keysToRemove[j].c_str() << "\"" << endl;
     }
-    cerr << "Iterating to see what remains in cache" << endl;
+    cout << "Iterating to see what remains in cache" << endl;
     for (it = delCache.begin(); it != delCache.end(); it++)
-        cerr << "Item with key \"" << it->first.c_str() << "\" still in cache" << endl;
+        cout << "Item with key \"" << it->first.c_str() << "\" still in cache" << endl;
 }

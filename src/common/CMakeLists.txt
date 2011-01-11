@@ -316,6 +316,12 @@ ADD_LIBRARY(visitcommon
 # Specify the libraries to link against on Windows
 IF(WIN32)
     TARGET_LINK_LIBRARIES(visitcommon ws2_32 shlwapi userenv)
+ELSE(WIN32)
+    ADD_EXECUTABLE(StringHelpers_test utility/StringHelpers_test.C)
+    TARGET_LINK_LIBRARIES(StringHelpers_test visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    ADD_EXECUTABLE(Namescheme_test utility/Namescheme_test.C)
+    TARGET_LINK_LIBRARIES(Namescheme_test visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    ADD_EXECUTABLE(MRUCache_test utility/MRUCache_test.C)
 ENDIF(WIN32)
 
 VISIT_INSTALL_TARGETS(visitcommon)

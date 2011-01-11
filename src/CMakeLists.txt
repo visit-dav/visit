@@ -1176,10 +1176,6 @@ SET(VISIT_COMMON_INCLUDES
     ${VISIT_SOURCE_DIR}/common/proxybase
     ${VISIT_SOURCE_DIR}/common/state
     ${VISIT_SOURCE_DIR}/common/utility
-    ${VISIT_SOURCE_DIR}/common/common/misc
-    ${VISIT_SOURCE_DIR}/common/common/plugin
-    ${VISIT_SOURCE_DIR}/common/common/state
-    ${VISIT_SOURCE_DIR}/common/common/utility
     )
 
 
