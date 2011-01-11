@@ -849,6 +849,9 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
 //    Mark C. Miller, Tue Aug 15 21:45:50 PDT 2006
 //    Added code to initialize extents to [0,1] if null was passed in. Keeps
 //    purify happy.
+//
+//    Dave Pugmire, Tue Jan 11 16:26:35 EST 2011
+//    Protect against spatialDims > 3.
 // ****************************************************************************
 
 void
@@ -857,7 +860,7 @@ avtMeshMetaData::SetExtents(const double *extents)
     if (extents == NULL)
     {
         hasSpatialExtents = false;
-        for (int i = 0 ; i < spatialDimension ; i++)
+        for (int i = 0 ; i < std::min(spatialDimension, 3) ; i++)
         {
             minSpatialExtents[i] = 0.0;  
             maxSpatialExtents[i] = 1.0; 
@@ -866,7 +869,7 @@ avtMeshMetaData::SetExtents(const double *extents)
     else
     {
         hasSpatialExtents = true;
-        for (int i = 0 ; i < spatialDimension ; i++)
+        for (int i = 0 ; i < std::min(spatialDimension, 3) ; i++)
         {
             minSpatialExtents[i] = extents[2*i];
             maxSpatialExtents[i] = extents[2*i + 1];
@@ -1084,7 +1087,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "Extents are: (";
-        for (int j = 0 ; j < spatialDimension ; j++)
+        for (int j = 0 ; j < std::min(spatialDimension, 3) ; j++)
         {
             out << "(" << minSpatialExtents[j] << ", " << maxSpatialExtents[j]
                 << ")";
