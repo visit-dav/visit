@@ -64,7 +64,7 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
                  NO_SYSTEM_ENVIRONMENT_PATH)
 
     IF ( NOT VISIT_LOC_QMAKE_EXE)
-        MESSAGE(FATAL_ERROR "Invalid Qt4 Binary path: ${QT_BIN}")
+      MESSAGE(FATAL_ERROR "Invalid Qt4 Binary path: ${QT_BIN}")
     ENDIF ( NOT VISIT_LOC_QMAKE_EXE)
 
     # add VISIT_QT_BIN to the env, so standard FindQt4 module can locate qmake.
@@ -74,169 +74,163 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
     INCLUDE(${CMAKE_ROOT}/Modules/FindQt4.cmake)
 
     IF(NOT QT_FOUND)
-        MESSAGE(FATAL_ERROR "Qt4 is required to build VisIt.")
-    ENDIF(NOT QT_FOUND)    
+      MESSAGE(FATAL_ERROR "Qt4 is required to build VisIt.")
+    ENDIF(NOT QT_FOUND)
   ELSE (NOT WIN32)
     # MESSAGE("QT_DIR = ${QT_DIR}")
     SET(QT_INCLUDE_DIR ${QT_DIR}/include)
     IF(VISIT_MSVC_VERSION AND EXISTS ${QT_DIR}/lib/${VISIT_MSVC_VERSION})
-      SET(QT_SHAREDLIB_DIR ${QT_DIR}/lib/${VISIT_MSVC_VERSION} 
+      SET(QT_SHAREDLIB_DIR ${QT_DIR}/lib/${VISIT_MSVC_VERSION}
           CACHE PATH "Qt library dir" FORCE )
-      SET(QT_LIBRARY_DIR ${QT_DIR}/lib/${VISIT_MSVC_VERSION} 
+      SET(QT_LIBRARY_DIR ${QT_DIR}/lib/${VISIT_MSVC_VERSION}
           CACHE PATH "Qt library dir" FORCE )
-      SET(QT_BINARY_DIR  ${QT_DIR}/lib/${VISIT_MSVC_VERSION} 
+      SET(QT_BINARY_DIR  ${QT_DIR}/lib/${VISIT_MSVC_VERSION}
           CACHE INTERNAL "" FORCE )
-    ELSEIF(EXISTS ${QT_DIR}/bin)
-      # Installed QT now puts dll's in bin, but lib's in lib, and one might need
-      # to look in both places, with dll prefered.
-      SET(QT_SHAREDLIB_DIR ${QT_DIR}/bin CACHE PATH "Qt shared library dir" 
-          FORCE )
-      SET(QT_LIBRARY_DIR ${QT_DIR}/lib CACHE PATH "Qt library dir" FORCE )
-      SET(QT_BINARY_DIR  ${QT_DIR}/bin CACHE INTERNAL "" FORCE )
-    ELSE()
-      MESSAGE(SEND_ERROR "Neither ${QT_DIR}/lib/${VISIT_MSVC_VERSION} nor "
-                         "${QT_DIR}/bin exists.")
+      ELSEIF(EXISTS ${QT_DIR}/bin)
+        # Installed QT now puts dll's in bin, but lib's in lib, and one might need
+        # to look in both places, with dll prefered.
+        SET(QT_SHAREDLIB_DIR ${QT_DIR}/bin CACHE PATH "Qt shared library dir"
+            FORCE )
+        SET(QT_LIBRARY_DIR ${QT_DIR}/lib CACHE PATH "Qt library dir" FORCE )
+        SET(QT_BINARY_DIR  ${QT_DIR}/bin CACHE INTERNAL "" FORCE )
+      ELSE()
+        MESSAGE(SEND_ERROR "Neither ${QT_DIR}/lib/${VISIT_MSVC_VERSION} nor "
+                           "${QT_DIR}/bin exists.")
+  ENDIF()
+
+  SET(QT_MOC_EXECUTABLE  ${QT_BINARY_DIR}/moc.exe)
+  SET(QT_INCLUDES ${QT_INCLUDE_DIR})
+    
+  # These might be dlls or libs
+  SET(QT_WIN_LIBS QtDesigner QtDesignerComponents QtSql QtSvg Qt QtTest 
+                  QtMain QtAssistantClient QtHelp QtXMLPatterns QtUiTools)
+  FOREACH(QTWINLIB ${QT_WIN_LIBS})
+    STRING(TOUPPER ${QTWINLIB} upper_qtwinlib)
+    SET(QT_${upper_qtwinlib}_FOUND 1)
+    SET(QT_${upper_qtwinlib}_INCLUDE_DIR ${QT_INCLUDE_DIR}/${QTWINLIB} 
+        CACHE PATH "The Qt ${QTWINLIB} include dir" FORCE)
+    IF(EXISTS ${QT_${upper_qtwinlib}_INCLUDE_DIR})
+      SET(QT_INCLUDES ${QT_INCLUDES} ${QT_${upper_qtwinlib}_INCLUDE_DIR})
     ENDIF()
+    IF (EXISTS ${QT_SHAREDLIB_DIR}/${QTWINLIB}4.dll)
+      SET(QT_${upper_qtwinlib}_LIBRARY 
+          ${QT_SHAREDLIB_DIR}/${QTWINLIB}4.dll CACHE STRING 
+          "The Qt ${QTWINLIB} library" FORCE)
+      SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE
+          ${QT_SHAREDLIB_DIR}/${QTWINLIB}4.dll)
+    ELSEIF (EXISTS ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
+      SET(QT_${upper_qtwinlib}_LIBRARY
+          ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib CACHE STRING
+          "The Qt ${QTWINLIB} library" FORCE)
+      SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE
+          ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
+    ELSE ()
+      SET(QT_${upper_qtwinlib}_LIBRARY
+          ${QT_LIBRARY_DIR}/${QTWINLIB}.lib CACHE STRING
+          "The Qt ${QTWINLIB} library" FORCE)
+      SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE
+          ${QT_LIBRARY_DIR}/${QTWINLIB}.lib)
+    ENDIF ()
+  ENDFOREACH(QTWINLIB)
 
-    SET(QT_MOC_EXECUTABLE  ${QT_BINARY_DIR}/moc.exe)
-    SET(QT_INCLUDES ${QT_INCLUDE_DIR})
-
-    # These might be dlls or libs
-    SET(QT_WIN_LIBS QtDesigner QtDesignerComponents QtSql QtSvg Qt QtTest 
-                    QtMain QtAssistantClient QtHelp QtXMLPatterns QtUiTools)
-    FOREACH(QTWINLIB ${QT_WIN_LIBS})
-        STRING(TOUPPER ${QTWINLIB} upper_qtwinlib)
-        SET(QT_${upper_qtwinlib}_FOUND 1)
-        SET(QT_${upper_qtwinlib}_INCLUDE_DIR ${QT_INCLUDE_DIR}/${QTWINLIB} 
-            CACHE PATH "The Qt ${QTWINLIB} include dir" FORCE)
-        IF(EXISTS ${QT_${upper_qtwinlib}_INCLUDE_DIR})
-            SET(QT_INCLUDES ${QT_INCLUDES} ${QT_${upper_qtwinlib}_INCLUDE_DIR})
-        ENDIF()
-        IF (EXISTS ${QT_SHAREDLIB_DIR}/${QTWINLIB}4.dll)
-            SET(QT_${upper_qtwinlib}_LIBRARY 
-                ${QT_SHAREDLIB_DIR}/${QTWINLIB}4.dll CACHE STRING 
-                "The Qt ${QTWINLIB} library" FORCE)
-            SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE 
-                ${QT_SHAREDLIB_DIR}/${QTWINLIB}4.dll)
-        ELSEIF (EXISTS ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
-            SET(QT_${upper_qtwinlib}_LIBRARY 
-                ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib CACHE STRING 
-                "The Qt ${QTWINLIB} library" FORCE)
-            SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE 
-                ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
-        ELSE ()
-            SET(QT_${upper_qtwinlib}_LIBRARY 
-                ${QT_LIBRARY_DIR}/${QTWINLIB}.lib CACHE STRING 
-                "The Qt ${QTWINLIB} library" FORCE)
-            SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE 
-                ${QT_LIBRARY_DIR}/${QTWINLIB}.lib)
-        ENDIF ()
+  # These are just libs, or the distributed dll is munged.
+  SET(QT_WIN_LIBS QtCore QtGui QtOpenGL QtNetwork QtXml)
+  FOREACH(QTWINLIB ${QT_WIN_LIBS})
+    STRING(TOUPPER ${QTWINLIB} upper_qtwinlib)
+    SET(QT_${upper_qtwinlib}_FOUND 1)
+    SET(QT_${upper_qtwinlib}_INCLUDE_DIR ${QT_INCLUDE_DIR}/${QTWINLIB}
+        CACHE PATH "The Qt ${QTWINLIB} include dir" FORCE)        
+    IF(EXISTS ${QT_${upper_qtwinlib}_INCLUDE_DIR})
+      SET(QT_INCLUDES ${QT_INCLUDES} ${QT_${upper_qtwinlib}_INCLUDE_DIR})
+    ENDIF()        
+    IF (EXISTS ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
+      SET(QT_${upper_qtwinlib}_LIBRARY ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib
+          CACHE STRING "The Qt ${QTWINLIB} library" FORCE)
+      SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE
+          ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
+      ELSE ()
+        SET(QT_${upper_qtwinlib}_LIBRARY
+            ${QT_LIBRARY_DIR}/${QTWINLIB}.lib CACHE STRING
+            "The Qt ${QTWINLIB} library" FORCE)
+        SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE
+            ${QT_LIBRARY_DIR}/${QTWINLIB}.lib)
+      ENDIF ()
     ENDFOREACH(QTWINLIB)
-
-    # These are just libs, or the distributed dll is munged.
-    SET(QT_WIN_LIBS QtCore QtGui QtOpenGL QtNetwork QtXml)
-    FOREACH(QTWINLIB ${QT_WIN_LIBS})
-        STRING(TOUPPER ${QTWINLIB} upper_qtwinlib)
-        SET(QT_${upper_qtwinlib}_FOUND 1)
-        SET(QT_${upper_qtwinlib}_INCLUDE_DIR ${QT_INCLUDE_DIR}/${QTWINLIB} 
-            CACHE PATH "The Qt ${QTWINLIB} include dir" FORCE)
-        IF(EXISTS ${QT_${upper_qtwinlib}_INCLUDE_DIR})
-            SET(QT_INCLUDES ${QT_INCLUDES} ${QT_${upper_qtwinlib}_INCLUDE_DIR})
-        ENDIF()
-        IF (EXISTS ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
-            SET(QT_${upper_qtwinlib}_LIBRARY ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib
-                CACHE STRING "The Qt ${QTWINLIB} library" FORCE)
-            SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE 
-                ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
-        ELSE ()
-            SET(QT_${upper_qtwinlib}_LIBRARY 
-                ${QT_LIBRARY_DIR}/${QTWINLIB}.lib CACHE STRING 
-                "The Qt ${QTWINLIB} library" FORCE)
-            SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE 
-                ${QT_LIBRARY_DIR}/${QTWINLIB}.lib)
-        ENDIF ()
-    ENDFOREACH(QTWINLIB)
-
   ENDIF (NOT WIN32)
 
-    #
-    # If we are using cocoa we need to define VISIT_MAC_NO_CARBON
-    #
-    IF(APPLE)
-        IF(QT_MAC_USE_COCOA)
-            ADD_DEFINITIONS(-DVISIT_MAC_NO_CARBON)
-        ENDIF(QT_MAC_USE_COCOA)
-    ENDIF(APPLE)
+  #
+  # If we are using cocoa we need to define VISIT_MAC_NO_CARBON
+  #
+  IF(APPLE)
+    IF(QT_MAC_USE_COCOA)
+      ADD_DEFINITIONS(-DVISIT_MAC_NO_CARBON)
+    ENDIF(QT_MAC_USE_COCOA)
+  ENDIF(APPLE)
 
-    # Since Qt was found, add install targets for its libraries.
-    FOREACH(QTLIB 
-        QT_QT3SUPPORT            
-        QT_QTASSISTANT           
-        QT_QAXCONTAINER           
-        QT_QAXSERVER                
-        QT_QTCORE                
-        QT_QTDBUS                
-        QT_QTDESIGNER            
-        QT_QTDESIGNERCOMPONENTS  
-        QT_QTGUI                 
-        QT_QTMOTIF               
-        QT_QTNETWORK             
-        QT_QTNSPLUGIN            
-        QT_QTOPENGL              
-        QT_QTSQL                 
-        QT_QTXML                 
-        QT_QTSVG                 
-        QT_QTTEST                
-        QT_QTMAIN                
-        QT_QTUITOOLS             
-        QT_QTASSISTANTCLIENT     
-        QT_QTHELP
-        QT_QTWEBKIT              
-        QT_QTXMLPATTERNS         
-        QT_PHONON                
+  # Since Qt was found, add install targets for its libraries.
+  FOREACH(QTLIB
+          QT_QT3SUPPORT
+          QT_QTASSISTANT
+          QT_QAXCONTAINER
+          QT_QAXSERVER
+          QT_QTCORE
+          QT_QTDBUS
+          QT_QTDESIGNER
+          QT_QTDESIGNERCOMPONENTS
+          QT_QTGUI
+          QT_QTMOTIF
+          QT_QTNETWORK
+          QT_QTNSPLUGIN
+          QT_QTOPENGL
+          QT_QTSQL
+          QT_QTXML
+          QT_QTSVG
+          QT_QTTEST
+          QT_QTMAIN
+          QT_QTUITOOLS
+          QT_QTASSISTANTCLIENT
+          QT_QTHELP
+          QT_QTWEBKIT
+          QT_QTXMLPATTERNS
+          QT_PHONON
+  )
+    IF(${${QTLIB}_FOUND})
+      IF(EXISTS ${${QTLIB}_LIBRARY_RELEASE})
+         THIRD_PARTY_INSTALL_LIBRARY(${${QTLIB}_LIBRARY_RELEASE})
+      ENDIF(EXISTS ${${QTLIB}_LIBRARY_RELEASE})
+    ENDIF(${${QTLIB}_FOUND})
+  ENDFOREACH(QTLIB)
+
+  # Add install targets for Qt headers too
+  FOREACH(H ${QT_INCLUDES})
+    IF(${H} MATCHES "/include/Qt")
+      INSTALL(DIRECTORY ${H}
+              DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt/include
+              FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                               GROUP_WRITE GROUP_READ
+                               WORLD_READ
+              DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                    GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                    WORLD_READ WORLD_EXECUTE
+              PATTERN ".svn" EXCLUDE
+      )
+    ENDIF(${H} MATCHES "/include/Qt")
+  ENDFOREACH(H)
+
+  # Install moc, too
+  IF(NOT WIN32)
+    INSTALL(PROGRAMS ${QT_BIN}/moc
+            DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+            PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                        GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                        WORLD_READ WORLD_EXECUTE
     )
-        IF(${${QTLIB}_FOUND})
-            IF(EXISTS ${${QTLIB}_LIBRARY_RELEASE})
-                THIRD_PARTY_INSTALL_LIBRARY(${${QTLIB}_LIBRARY_RELEASE})
-            ENDIF(EXISTS ${${QTLIB}_LIBRARY_RELEASE})
-        ENDIF(${${QTLIB}_FOUND})
-    ENDFOREACH(QTLIB)
-
-    # Add install targets for Qt headers too
-    FOREACH(H ${QT_INCLUDES})
-        IF(${H} MATCHES "/include/Qt")
-            INSTALL(DIRECTORY ${H}
-                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt/include
-                FILE_PERMISSIONS OWNER_WRITE OWNER_READ 
-                                 GROUP_WRITE GROUP_READ 
-                                 WORLD_READ
-                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE 
-                                      GROUP_WRITE GROUP_READ GROUP_EXECUTE 
-                                      WORLD_READ WORLD_EXECUTE
-                PATTERN ".svn" EXCLUDE
-            )
-        ENDIF(${H} MATCHES "/include/Qt")
-    ENDFOREACH(H)
-
-    # Install moc, too
-    IF(NOT WIN32)
-        INSTALL(PROGRAMS ${QT_BIN}/moc
+  ELSE(NOT WIN32)
+    INSTALL(PROGRAMS ${QT_MOC_EXECUTABLE}
             DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-            PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE 
-                        GROUP_WRITE GROUP_READ GROUP_EXECUTE 
+            PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                        GROUP_WRITE GROUP_READ GROUP_EXECUTE
                         WORLD_READ WORLD_EXECUTE
-        )
-    ELSE(NOT WIN32)
-        INSTALL(PROGRAMS ${QT_MOC_EXECUTABLE}
-            DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-            PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE 
-                        GROUP_WRITE GROUP_READ GROUP_EXECUTE 
-                        WORLD_READ WORLD_EXECUTE
-        )
-    ENDIF(NOT WIN32)
+    )
+  ENDIF(NOT WIN32)
 ENDIF(NOT "${QT_BIN}" MATCHES "OFF")
-
-
-
-
-
