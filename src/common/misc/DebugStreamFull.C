@@ -489,10 +489,14 @@ DebugStreamFull::DebugStreamFull(int level_) : ostream(new DebugStreamBuf)
 //    Change the DebugStreamBuf member to be a pointered value instead of a
 //    referenced value so that it works with the MIPSpro compiler.
 //
+//    Mark C. Miller, Tue Jan 11 09:27:18 PST 2011
+//    Added missing call to delete buf. Since above change in 2004, we have 
+//    been leaking these bufs on exit.
 // ****************************************************************************
 DebugStreamFull::~DebugStreamFull()
 {
     buf->close();
+    delete buf;
 }
 
 

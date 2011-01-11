@@ -334,6 +334,7 @@ Namescheme::Namescheme(const char *fmt, ...)
     this->arrnames = 0;
     this->arrvals = 0;
     this->exprstrs = 0;
+    this->exprtrees = 0;
 
     va_list ap;
     int i, j, k, n, pass, ncspecs, done;
@@ -398,6 +399,8 @@ Namescheme::Namescheme(const char *fmt, ...)
 
     // allocate various arrays needed by the naming scheme
     this->exprstrs = (char **) calloc(this->ncspecs, sizeof(char*));
+    this->exprtrees = (Namescheme::DBexprnode **) calloc(this->ncspecs,
+        sizeof(Namescheme::DBexprnode*));
     if (this->narrefs > 0)
     {
         this->arrnames = (char **) calloc(this->narrefs, sizeof(char*));
@@ -432,8 +435,12 @@ Namescheme::Namescheme(const char *fmt, ...)
         }
         else if (fmt[i] == this->delim || fmt[i] == '\0')
         {
+            char *exprstr1, *exprstr2;
             this->exprstrs[ncspecs] = (char*)calloc(i-(n+1)+1, sizeof(char));
             strncpy(this->exprstrs[ncspecs], &fmt[n+1], i-(n+1));
+            exprstr1 = exprstr2 = strdup(this->exprstrs[ncspecs]);
+            this->exprtrees[ncspecs] = BuildExprTree((const char **) &exprstr1);
+            free(exprstr2);
             ncspecs++;
             if (fmt[i] == '\0' ||
                 (fmt[i] == this->delim && fmt[i] == '\0'))
@@ -465,8 +472,12 @@ Namescheme::~Namescheme()
         FREE(embedstrs[i]);
     FREE(embedstrs);
     for (i = 0; i < ncspecs; i++)
+    {
         FREE(exprstrs[i]);
+        FreeTree(exprtrees[i]);
+    }
     FREE(exprstrs);
+    FREE(exprtrees);
     for (i = 0; i < narrefs; i++)
     {
         FREE(arrnames[i]);
@@ -487,7 +498,6 @@ Namescheme::~Namescheme()
 // ****************************************************************************
 const char *Namescheme::GetName(int natnum)
 {
-    char *currentExpr, *tmpExpr;
     static char retval[1024];
     int i;
 
@@ -504,21 +514,13 @@ const char *Namescheme::GetName(int natnum)
                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-        Namescheme::DBexprnode *exprtree;
-        int theVal;
-
-        currentExpr = strdup(this->exprstrs[i]);
-        tmpExpr = currentExpr;
-        exprtree = BuildExprTree((const char **)&currentExpr);
-        theVal = EvalExprTree(this, exprtree, natnum);
-        FreeTree(exprtree);
+        int theVal = EvalExprTree(this, this->exprtrees[i], natnum);
         strncpy(tmpfmt, this->fmtptrs[i], this->fmtptrs[i+1] - this->fmtptrs[i]);
         if (strcmp(tmpfmt, "%s") == 0)
             sprintf(tmp, tmpfmt, this->embedstrs[theVal]);
         else
             sprintf(tmp, tmpfmt, theVal);
         strcat(retval, tmp);
-        FREE(tmpExpr);
     }
     return retval;
 }

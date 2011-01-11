@@ -85,15 +85,6 @@ int main()
     if (strcmp(ns->GetName(25), "level2,patch16") != 0) return 1; // F
     if (strcmp(ns->GetName(26), "level3,patch0")  != 0) return 1; // G
     if (strcmp(ns->GetName(30), "level3,patch4")  != 0) return 1; // H
-#if 0
-    printf("\"%s\"\n", ns->GetName( 1));
-    printf("\"%s\"\n", ns->GetName( 3));
-    printf("\"%s\"\n", ns->GetName( 8));
-    printf("\"%s\"\n", ns->GetName( 9));
-    printf("\"%s\"\n", ns->GetName(20));
-    printf("\"%s\"\n", ns->GetName(25));
-    printf("\"%s\"\n", ns->GetName(26));
-#endif
     delete ns;
 
     // Test multiple conversion specifiers
