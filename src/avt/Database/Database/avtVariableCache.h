@@ -128,6 +128,9 @@ typedef struct
 //    Store the data set's domain in the objectDomainPointer.  This allows us
 //    to avoid an O(n^2) algorithm.
 //
+//    Hank Childs, Mon Jan 10 20:25:10 PST 2011
+//    Add method ClearVariablesWithString.
+//
 // ****************************************************************************
 
 class DATABASE_API avtVariableCache
@@ -173,6 +176,7 @@ class DATABASE_API avtVariableCache
                                          int *ts, int domain, void_ref_ptr vrp) const;
 
     void                   ClearTimestep(int);
+    void                   ClearVariablesWithString(const std::string &);
 
     void                   Print(ostream &);
 
@@ -266,6 +270,7 @@ class DATABASE_API avtVariableCache
                                          int *ts, int dom, const char **mat,
                                          avtCachableItem *) const;
         void                         ClearTimestep(int);
+        void                         ClearVariablesWithString(const std::string &);
     
         void                         Print(ostream &, int);
 
