@@ -1765,6 +1765,8 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     // Set numBins for use with the integration coding.
     //
     numBins = nComponentsPerCellArray;
+
+    delete [] iCellStart;
 #endif
 }
 
