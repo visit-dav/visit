@@ -11,6 +11,8 @@
 SET(VISITHOME /usr/gapps/visit)
 SET(VISITARCH linux-x86_64_gcc-4.1)
 
+SET(VISIT_VERBOSE_MAKEFILE TRUE)
+
 ##
 ## Specify the location of the mesa.
 ##
@@ -33,13 +35,28 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.6.1/${VISITARCH}/bin)
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
 ##
+## Ice-T
+##
+VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
+
+##
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
 VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden")
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden")
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -Wno-deprecated -m64 -fPIC -fvisibility=hidden")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -Wno-deprecated -m64 -fPIC -fvisibility=hidden")
+
+##
+## Add parallel arguments.
+##
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/local/tools/mvapich-gnu/include)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/local/tools/mvapich-gnu/include)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/local/tools/mvapich-gnu/lib/shared -L/usr/local/tools/mvapich-gnu/lib -Wl,-rpath=/usr/local/tools/mvapich-gnu/lib/shared")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/local/tools/mvapich-gnu/lib/shared")
 
 ##############################################################
 ##
@@ -130,6 +147,11 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
+
+##
+## Visus
+##
+VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISITHOME}/visus/26Feb07/${VISITARCH})
 
 ##
 ## ITAPS
