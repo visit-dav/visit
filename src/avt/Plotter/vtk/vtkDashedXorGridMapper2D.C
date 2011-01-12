@@ -467,6 +467,7 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     if ( input == NULL ) 
     {
         vtkErrorMacro(<< "No input!");
+        CLEAN_UP();
         return;
     }
     else
@@ -478,6 +479,7 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     if (numPts == 0)
     {
         vtkDebugMacro(<< "No points!");
+        CLEAN_UP();
         return;
     }
  
