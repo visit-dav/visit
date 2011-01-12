@@ -214,6 +214,10 @@
 #    Add support for optional TYPE [CMAKE_TYPE] arg par to the
 #    VISIT_OPTION_DEFAULT function.
 #
+#    Cyrus Harrison, Wed Jan 12 11:41:21 PST 2011
+#    Added init of opt_ARG_PREV in VISIT_OPTION_DEFAULT to avoid cmake 
+#    warning message.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -248,7 +252,7 @@ SITE_NAME(HOSTNAME)
 FUNCTION(VISIT_OPTION_DEFAULT var)
   SET(opt_ARGS "")
   SET(opt_TYPE "PATH")
-  SET(opt_ARG_PREV "")
+  SET(opt_ARG_PREV "[unset]")
   FOREACH(opt_ARG ${ARGN})
     ## if arg is TYPE:
     ##   we want to use the next value as the cmake var type
