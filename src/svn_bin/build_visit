@@ -1055,6 +1055,9 @@
 #     Cyrus Harrison, Tue Jan 11 11:59:32 PST 2011
 #     Use cmake type STRING when passing the value of CMAKE_BUILD_TYPE
 #
+#     Jeremy Meredith, Wed Jan 12 11:21:11 EST 2011
+#     Changed HDF4 libdep generation to point to VTK jpeg library.
+#
 # *****************************************************************************
 
 
@@ -8220,11 +8223,11 @@ function build_hostconf
         >> $HOSTCONF
         if [[ "$DO_SZIP" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib jpeg)" \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz \${VISITHOME}/vtk/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg)" \
             >> $HOSTCONF
         else
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP jpeg)" \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/vtk/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg)" \
             >> $HOSTCONF
         fi
         >> $HOSTCONF
