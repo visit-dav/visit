@@ -1058,6 +1058,9 @@
 #     Jeremy Meredith, Wed Jan 12 11:21:11 EST 2011
 #     Changed HDF4 libdep generation to point to VTK jpeg library.
 #
+#     Cyrus Harrison, Wed Jan 12 11:22:02 PST 2011
+#     Change config-site gen to add TYPE arguments to VISIT_OPTION_DEFAULT
+#
 # *****************************************************************************
 
 
@@ -8153,16 +8156,16 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "## Compiler flags." >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(VISIT_C_COMPILER $C_COMPILER)">> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER $CXX_COMPILER)" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release)" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(VISIT_C_COMPILER $C_COMPILER TYPE STRING)">> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER $CXX_COMPILER TYPE STRING)" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release TYPE STRING)" >> $HOSTCONF
 
     if [[ "$USE_VISIBILITY_HIDDEN" == "yes" ]] ; then
-        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS -fvisibility=hidden\")" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS -fvisibility=hidden\")" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
     else
-        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS\")" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\")" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS\" TYPE STRING)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\" TYPE STRING)" >> $HOSTCONF
     fi
 
     if [[ "$parallel" == "yes" ]] ; then
@@ -8170,17 +8173,17 @@ function build_hostconf
         echo "##" >> $HOSTCONF
         echo "## Parallel Build Setup." >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)" >> $HOSTCONF
         # we either set an mpi wrapper compiler in the host conf
         if [[ "$VISIT_MPI_COMPILER" != "" ]] ; then
             echo "## (configured w/ mpi compiler wrapper)" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER $VISIT_MPI_COMPILER)"  >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER $VISIT_MPI_COMPILER TYPE STRING)"  >> $HOSTCONF
         else
             # or we just set the flags.
             echo "## (configued w/ user provided CXX (PAR_INCLUDE) & LDFLAGS (PAR_LIBS) flags)" \
              >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS \"$PAR_INCLUDE\")"     >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  \"$PAR_LINKER_FLAGS\")" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS \"$PAR_INCLUDE\" TYPE STRING)"     >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  \"$PAR_LINKER_FLAGS\" TYPE STRING)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS        $PAR_LIBRARY_NAMES)" >> $HOSTCONF
         fi
     fi
@@ -8191,7 +8194,7 @@ function build_hostconf
 	echo "## Static build" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_STATIC ON)" >> $HOSTCONF
+        "VISIT_OPTION_DEFAULT(VISIT_STATIC ON TYPE BOOL)" >> $HOSTCONF
     fi
 
     echo >> $HOSTCONF
