@@ -51,12 +51,14 @@ class avtPythonFilterEnvironment;
 //  Class: avtPythonExpression
 //
 //  Purpose:
-//      TODO
+//      Interface to python expressions.
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   Tue Feb  2 13:45:21 PST 2010
 //
 //  Modifications:
+//   Cyrus Harrison, Tue Jan 11 16:33:27 PST 2011
+//   Added exprType & exprDescription members.
 //
 // ****************************************************************************
 
@@ -85,6 +87,9 @@ class EXPRESSION_API avtPythonExpression : public avtExpressionFilter
   private:
     avtPythonFilterEnvironment *pyEnv;
     std::string                 pyScript;
+
+    std::string                 exprType;
+    std::string                 exprDescription;
 
 };
 

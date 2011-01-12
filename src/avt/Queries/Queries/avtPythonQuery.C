@@ -136,28 +136,31 @@ avtPythonQuery::CleanUp()
 //  Programmer: Cyrus Harrison
 //  Creation:   April 17, 2009
 //
+//  Modifications:
+//   Cyrus Harrison,Tue Jan 11 16:33:27 PST 2011
+//    Don't return c_str() pointer from local string var.
+//
 // ****************************************************************************
 const char*
 avtPythonQuery::GetType()
 {
-    string res = "";
-
+    queryType = "";
     // hook to pyavt filter
     avtPythonFilter *py_filter = pyEnv->Filter();
     if(py_filter == NULL)
         PYQUERY_ERROR("avtPythonQuery::GetType Error - "
                        "Python filter not initialized.");
 
-    if(py_filter->GetAttribute("name",res))
+    if(py_filter->GetAttribute("name",queryType))
     {
-        if(res != "avtPythonQuery")
-            res = "avtPythonQuery(" + res + ")";
+        if(queryType != "avtPythonQuery")
+            queryType = "avtPythonQuery(" + queryType + ")";
     }
     else
         PYQUERY_ERROR("avtPythonQuery::GetType Error - "
                       "fetch of python filter attribute 'name' failed");
 
-    return res.c_str();
+    return queryType.c_str();
 }
 
 // ****************************************************************************
@@ -169,24 +172,26 @@ avtPythonQuery::GetType()
 //  Programmer: Cyrus Harrison
 //  Creation:   April 17, 2009
 //
+//  Modifications:
+//   Cyrus Harrison,Tue Jan 11 16:33:27 PST 2011
+//    Don't return c_str() pointer from local string var.
+//
 // ****************************************************************************
 const char*
 avtPythonQuery::GetDescription()
 {
-    // hook to pyavt filter
-    string res = "";
-
+    queryDescription ="";
     // hook to pyavt filter
     avtPythonFilter *py_filter = pyEnv->Filter();
     if(py_filter == NULL)
         PYQUERY_ERROR("avtPythonQuery::GetDescription Error - "
                        "Python filter not initialized.");
 
-    if(!py_filter->GetAttribute("description",res))
+    if(!py_filter->GetAttribute("description",queryDescription))
         PYQUERY_ERROR("avtPythonQuery::GetDescription Error - "
                       "fetch of python filter attribute 'description' failed");
 
-    return res.c_str();
+    return queryDescription.c_str();
 }
 
 // ****************************************************************************

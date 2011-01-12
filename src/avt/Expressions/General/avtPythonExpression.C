@@ -134,28 +134,31 @@ avtPythonExpression::CleanUp()
 //  Programmer: Cyrus Harrison
 //  Creation:   Tue Feb  2 13:50:10 PST 2010
 //
+//  Modifications:
+//   Cyrus Harrison,Tue Jan 11 16:33:27 PST 2011
+//    Don't return c_str() pointer from local string var.
+//
 // ****************************************************************************
 const char *
 avtPythonExpression::GetType()
 {
-    string res = "";
-
+    exprType="";
     // hook to pyavt filter
     avtPythonFilter *py_filter = pyEnv->Filter();
     if(py_filter == NULL)
         PYEXPR_ERROR("avtPythonExpression::GetType Error - "
                     "Python filter not initialized.")
 
-    if(py_filter && py_filter->GetAttribute("name",res))
+    if(py_filter && py_filter->GetAttribute("name",exprType))
     {
-        if(res != "avtPythonExpression")
-            res = "avtPythonExpression(" + res + ")";
+        if(exprType != "avtPythonExpression")
+            exprType = "avtPythonExpression(" + exprType + ")";
     }
     else
         PYEXPR_ERROR("avtPythonExpression::GetType Error - "
                      "fetch of python filter attribute 'name' failed");
 
-    return res.c_str();
+    return exprType.c_str();
 }
 
 // ****************************************************************************
@@ -167,13 +170,15 @@ avtPythonExpression::GetType()
 //  Programmer: Cyrus Harrison
 //  Creation:   Tue Feb  2 13:50:10 PST 2010
 //
+//  Modifications:
+//   Cyrus Harrison,Tue Jan 11 16:33:27 PST 2011
+//    Don't return c_str() pointer from local string var.
+//
 // ****************************************************************************
 const char *
 avtPythonExpression::GetDescription()
 {
-    // hook to pyavt filter
-    string res = "";
-
+    exprDescription = "";
     // hook to pyavt filter
     avtPythonFilter *py_filter = pyEnv->Filter();
     if(py_filter == NULL)
@@ -181,11 +186,11 @@ avtPythonExpression::GetDescription()
                      "Python filter not initialized.");
 
 
-    if(py_filter && !py_filter->GetAttribute("description",res))
+    if(py_filter && !py_filter->GetAttribute("description",exprDescription))
         PYEXPR_ERROR("avtPythonExpression::GetDescription Error - "
                       "fetch of python filter attribute 'description' failed");
 
-    return res.c_str();
+    return exprDescription.c_str();
 }
 
 // ****************************************************************************
