@@ -210,6 +210,10 @@
 #    Eric Brugger, Fri Jan  7 13:24:41 PST 2011
 #    I replaced the BOXLIB2D and BOXLIB3D variables with just BOXLIB.
 #
+#    Cyrus Harrison, Wed Jan 12 11:41:21 PST 2011
+#    Add support for optional TYPE [CMAKE_TYPE] arg par to the
+#    VISIT_OPTION_DEFAULT function.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -238,14 +242,32 @@ SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 SITE_NAME(HOSTNAME)
 
 #-----------------------------------------------------------------------------
-# Include this computer's config-site if one exists
+# Helper function for setting build options via config-site file.
+# Supports optional argument pair: TYPE [CMAKE_TYPE], default type = PATH
 #-----------------------------------------------------------------------------
-
 FUNCTION(VISIT_OPTION_DEFAULT var)
-  SET(${var} ${ARGN} CACHE PATH "${var} default value" FORCE)
+  SET(opt_ARGS "")
+  SET(opt_TYPE "PATH")
+  SET(opt_ARG_PREV "")
+  FOREACH(opt_ARG ${ARGN})
+    ## if arg is TYPE:
+    ##   we want to use the next value as the cmake var type
+    ## otherwise:
+    ##   we want to append the argument to the list of args used for "SET"
+    IF( ${opt_ARG_PREV} STREQUAL "TYPE")
+        SET(opt_TYPE ${opt_ARG})
+    ELSEIF(NOT ${opt_ARG} STREQUAL "TYPE")
+        LIST(APPEND opt_ARGS ${opt_ARG})
+    ENDIF(${opt_ARG_PREV} STREQUAL "TYPE")
+    SET(opt_ARG_PREV ${opt_ARG})
+  ENDFOREACH(opt_ARG in ${ARGN})
+  SET(${var} "${opt_ARGS}" CACHE ${opt_TYPE} "${var} default value" FORCE)
 ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetupITAPS.cmake)
 
+#-----------------------------------------------------------------------------
+# Include this computer's config-site if one exists
+#-----------------------------------------------------------------------------
 IF (NOT WIN32)
   IF(VISIT_CONFIG_SITE)
       SET(VISIT_CONFIG_SITE_FILE ${VISIT_CONFIG_SITE})
