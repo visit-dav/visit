@@ -1330,6 +1330,7 @@ avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
     delete [] new_mix_vf;
     delete [] top_mat;
     delete [] top_vf;
+    delete [] top_orig_idx;
 
     return rv;
 }

@@ -549,6 +549,7 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
     if ( input == NULL ) 
     {
         vtkErrorMacro(<< "No input!");
+        CLEAN_UP();
         return;
     }
     else
@@ -560,6 +561,7 @@ CGContextMoveToPoint(overlay->ctx, X,H-(Y));
     if (numPts == 0)
     {
         vtkDebugMacro(<< "No points!");
+        CLEAN_UP();
         return;
     }
   

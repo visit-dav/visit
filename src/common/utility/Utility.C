@@ -243,6 +243,7 @@ GetMemorySize(unsigned int &size, unsigned int &rss)
     int count = fscanf(file, "%u%u", &size, &rss);
     if (count != 2)
     {
+        fclose(file);
         return;
     }
     size *= getpagesize();
