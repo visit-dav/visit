@@ -45,7 +45,8 @@
 
 #include <QWidget>
 
-extern QWidget *create_application_main_window(VisItViewer *v);
+extern QWidget *create_application_main_window(VisItViewer *v,
+    int *argc, char ***argv);
 extern void show_application_main_window(QWidget *w);
 
 // ****************************************************************************
@@ -70,6 +71,8 @@ extern void show_application_main_window(QWidget *w);
 //    Brad Whitlock, Tue Nov 30 11:09:15 PST 2010
 //    Get the window from an external routine so we can reuse main.C
 //
+//    Mark C. Miller, Tue Jan 11 17:58:10 PST 2011
+//    Pass argc/argv to app to open file from command line.
 // ****************************************************************************
 
 int
@@ -103,6 +106,20 @@ main(int argc, char *argv[])
         while(okay && !d.absolutePath().endsWith("src"))
             okay = d.cdUp();
         std::string visithome(d.absolutePath().toStdString());
+        if (visithome == "/")
+        {
+#ifdef Q_WS_MACX
+            QDir d2(argv[0]);
+#else
+            QDir d2;
+#endif
+            okay = true;
+            while(okay && !d2.absolutePath().endsWith("test"))
+                okay = d2.cdUp();
+            okay = d2.cdUp();
+            if (okay) okay = d2.cd("src");
+            if (okay) visithome = std::string(d2.absolutePath().toStdString());
+        }
         qDebug("Setting VISITHOME to %s", visithome.c_str());
         viewer.SetVISITHOME(visithome);
 #endif
@@ -122,7 +139,7 @@ main(int argc, char *argv[])
         // Create our visualization app. We have to do it before the call to Setup()
         // since we're embedding vis windows.
         //
-        QWidget *visapp = create_application_main_window(&viewer);
+        QWidget *visapp = create_application_main_window(&viewer, &argc, &argv);
 
         //
         // Now that we've created the QApplication, let's call the viewer's

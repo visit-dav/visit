@@ -20,6 +20,7 @@ signals:
     void changePlotType(int);
     void setNContours(int);
     void saveWindow();
+    void quitApp();
 
 private slots:
    void ProcessOneCommand();
