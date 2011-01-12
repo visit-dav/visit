@@ -569,6 +569,9 @@ PrintHeader(FILE *f, const char *header)
 //    Brad Whitlock, Wed Jun 25 09:52:50 PDT 2008
 //    Changed how plugin managers are accessed.
 //
+//    Mark C. Miller, Tue Jan 11 14:47:41 PST 2011
+//    Replaced 'return 0' at end with 'exit(0)' as the former resulted in an
+//    abort on RH4/GCC-4.5
 // ****************************************************************************
 
 int
@@ -645,5 +648,5 @@ main(int argc, char *argv[])
     // Prepare for exit.
     VisItInit::Finalize();
 
-    return 0;
+    exit(0);
 }

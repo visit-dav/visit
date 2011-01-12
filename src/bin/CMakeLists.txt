@@ -85,6 +85,7 @@ SET(VISIT_BIN_FILES
         visit_transition
         visitconvert
         visitdiff.py
+        visitprotocol
         xml2atts
         xml2avt
         xml2cmake

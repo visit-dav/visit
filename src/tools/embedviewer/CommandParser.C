@@ -77,6 +77,11 @@ void CommandParser::ProcessOneCommand()
         qDebug("Executing command: %s", cmd.toStdString().c_str());
         emit saveWindow();
     }
+    else if(cmd == "quitApp")
+    {
+        qDebug("Executing command: %s", cmd.toStdString().c_str());
+        emit quitApp();
+    }
 
     // issue a synchronize. We'll get back to this method when
     // the synchronizer issues its signal.

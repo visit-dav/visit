@@ -24,7 +24,7 @@
 #include <vtkQtRenderWindow.h>
 
 QWidget *
-create_application_main_window(VisItViewer *v)
+create_application_main_window(VisItViewer *v, int *argc, char ***argv)
 {
     return new MultiWindowVisApp(v);
 }
