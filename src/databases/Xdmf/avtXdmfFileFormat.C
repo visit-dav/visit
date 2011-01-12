@@ -1009,6 +1009,13 @@ int avtXdmfFileFormat::GetSpatialDimensions(XdmfInt32 geometryType)
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
+//  Modifications:
+//      Eric Brugger, Wed Jan 12 14:52:54 PST 2011
+//      I modified the routine to return a single grid in the case of a
+//      collection where the collection type was unset (since the default
+//      type is spatial) and in the case of a tree. I also had it set the
+//      time in the case of a single time state.
+//
 // ****************************************************************************
 void avtXdmfFileFormat::GetTimes(std::vector<double> & times)
 {
@@ -1032,27 +1039,22 @@ void avtXdmfFileFormat::GetTimes(std::vector<double> & times)
             }
             numGrids = 1;
         }
-        else if(grid.GetCollectionType() == XDMF_GRID_COLLECTION_SPATIAL) {
+        else if(grid.GetCollectionType() == XDMF_GRID_COLLECTION_SPATIAL ||
+                grid.GetCollectionType() == XDMF_GRID_COLLECTION_UNSET) {
             numGrids = 1;
-            times.push_back(0);
-        }
-        else if(grid.GetCollectionType() == XDMF_GRID_COLLECTION_UNSET) {
-            firstGrid = "/Xdmf/Domain/Grid/Grid";
-            numGrids = dom->FindNumberOfElements("Grid", dom->FindElementByPath("/Xdmf/Domain/Grid"));
-            times.push_back(0);
+            times.push_back(grid.GetTime()->GetValue());
         }
     }
     else if (grid.GetGridType() == XDMF_GRID_TREE)
     {
-        firstGrid = "/Xdmf/Domain/Grid/Grid";
-        numGrids = dom->FindNumberOfElements("Grid", dom->FindElementByPath("/Xdmf/Domain/Grid"));
-        times.push_back(0);
+        numGrids = 1;
+        times.push_back(grid.GetTime()->GetValue());
     }
     else
     {
         // Just throw an empty time in here because we only have one timestep
         numGrids = dom->FindNumberOfElements("Grid", dom->FindElementByPath("/Xdmf/Domain"));
-        times.push_back(0);
+        times.push_back(grid.GetTime()->GetValue());
     }
 }
 
