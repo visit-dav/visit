@@ -1061,6 +1061,10 @@
 #     Cyrus Harrison, Wed Jan 12 11:22:02 PST 2011
 #     Change config-site gen to add TYPE arguments to VISIT_OPTION_DEFAULT
 #
+#     Eric Brugger, Thu Jan 13 11:18:47 PST 2011
+#     I modified the script to build IceT 1.0.0 instead of 0.5.4. I also
+#     modified it to add -fPIC to the compiler options.
+#
 # *****************************************************************************
 
 
@@ -1566,10 +1570,10 @@ export XDMF_VERSION=${XDMF_VERSION:-"2.1"}
 export XDMF_COMPATIBILITY_VERSION=${XDMF_COMPATIBILITY_VERSION:-"2.1"}
 export XDMF_BUILD_DIR=${XDMF_BUILD_DIR:-"Xdmf"}
 
-export ICET_FILE=${ICET_FILE:-"IceT-0-5-4.tar.gz"}
-export ICET_VERSION=${ICET_VERSION:-"0.5.4"}
-export ICET_COMPATIBILITY_VERSION=${ICET_COMPATIBILITY_VERSION:-"0.5.4"}
-export ICET_BUILD_DIR=${ICET_BUILD_DIR:-"IceT-0-5-4"}
+export ICET_FILE=${ICET_FILE:-"IceT-1-0-0.tar.gz"}
+export ICET_VERSION=${ICET_VERSION:-"1.0.0"}
+export ICET_COMPATIBILITY_VERSION=${ICET_COMPATIBILITY_VERSION:-"1.0.0"}
+export ICET_BUILD_DIR=${ICET_BUILD_DIR:-"IceT-1-0-0"}
 
 # Dialog-related variables.
 DLG="dialog"
@@ -7425,6 +7429,73 @@ function build_tcmalloc
 #                           Function 8.13, build_icet                         #
 # *************************************************************************** #
 
+function apply_icet_100_patch
+{
+   patch -p0 <<\EOF
+diff -c a/src/CMakeLists.txt IceT-1-0-0/src/CMakeLists.txt
+*** a/src/CMakeLists.txt
+--- IceT-1-0-0/src/CMakeLists.txt
+***************
+*** 18,35 ****
+        "${CMAKE_CURRENT_SOURCE_DIR}/communication"
+        "${CMAKE_CURRENT_SOURCE_DIR}/strategies")
+    SET(filesToInstall)
+!   FOREACH(p IN ${resPath})
+        SET(tmpFilesToInstall)
+        SET(exts "${p}/*.h;${p}/*.hxx;${p}/*.txx")
+!       FOREACH(ext IN ${exts})
+            FILE(GLOB tmpFilesToInstall
+            RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+            "${ext}")
+            IF(tmpFilesToInstall)
+                SET(filesToInstall "${filesToInstall};${tmpFilesToInstall}")
+            ENDIF(tmpFilesToInstall)
+!       ENDFOREACH(ext IN ${exts})
+!   ENDFOREACH(p IN ${resPath})
+    INSTALL(
+        FILES ${filesToInstall}
+        DESTINATION "${ICET_INSTALL_INCLUDE_DIR}/ice-t"
+--- 18,35 ----
+        "${CMAKE_CURRENT_SOURCE_DIR}/communication"
+        "${CMAKE_CURRENT_SOURCE_DIR}/strategies")
+    SET(filesToInstall)
+!   FOREACH(p ${resPath})
+        SET(tmpFilesToInstall)
+        SET(exts "${p}/*.h;${p}/*.hxx;${p}/*.txx")
+!       FOREACH(ext ${exts})
+            FILE(GLOB tmpFilesToInstall
+            RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+            "${ext}")
+            IF(tmpFilesToInstall)
+                SET(filesToInstall "${filesToInstall};${tmpFilesToInstall}")
+            ENDIF(tmpFilesToInstall)
+!       ENDFOREACH(ext)
+!   ENDFOREACH(p)
+    INSTALL(
+        FILES ${filesToInstall}
+        DESTINATION "${ICET_INSTALL_INCLUDE_DIR}/ice-t"
+EOF
+   if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch to IceT 1.0.0."
+        return 1
+   else
+        return 0
+   fi
+}
+
+function apply_icet_patch
+{
+   info "Patching IceT . . ."
+   if [[ ${ICET_VERSION} == "1.0.0" ]] ; then
+      apply_icet_100_patch
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
+   fi
+
+   return 0
+}
+
 function build_icet
 {
     PAR_INCLUDE_STRING=""
@@ -7499,6 +7570,8 @@ function build_icet
        return 1
     fi
 
+    apply_icet_patch
+
     info "Executing CMake on Ice-T"
     cd $ICET_BUILD_DIR || error "Can't cd to IceT build dir."
     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
@@ -7512,7 +7585,7 @@ function build_icet
         -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
         -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-        -DCMAKE_C_FLAGS:STRING="-DUSE_MGL_NAMESPACE ${CFLAGS} ${C_OPT_FLAGS}"\
+        -DCMAKE_C_FLAGS:STRING="-fPIC -DUSE_MGL_NAMESPACE ${CFLAGS} ${C_OPT_FLAGS}"\
         -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
         -DMPI_LIBRARY:FILEPATH="./fakempi.${LIBEXT}"\
         -DBUILD_TESTING:BOOL=OFF\
