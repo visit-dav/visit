@@ -1003,6 +1003,7 @@ Transition_Block(const TransitionOptions &options, ImageObject *image1, ImageObj
             printf("Wrote %s\n", outputName);
     }
 
+    delete [] order;
     return ret;
 }
 
