@@ -465,6 +465,7 @@ avtGadgetFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
   fprintf(stderr,"done creating\n");
 #endif
 
+  if(vec_flag) delete [] vec_flag;
 }
 
 

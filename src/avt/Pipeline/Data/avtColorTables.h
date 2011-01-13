@@ -71,6 +71,10 @@ class ColorTableAttributes;
 //   Jeremy Meredith, Fri Feb 20 14:54:04 EST 2009
 //   Added some alpha support methods.
 //
+//   David Camp, Thu Jan 13 11:03:52 PST 2011
+//   Added DeleteInstance function to delete global data. Helps with valgrind.
+//   It is inline because it will only be used if you define DEBUG_MEMORY_LEAKS.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtColorTables
@@ -101,6 +105,13 @@ public:
     bool                 ExportColorTable(const std::string &ctName,
                                           std::string &message);
     void                 ImportColorTables();
+
+    void                 DeleteInstance()
+                         {
+                             if(instance) delete instance;
+                             instance = NULL;
+                         }
+
 protected:
     avtColorTables();
     ~avtColorTables();

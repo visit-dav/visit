@@ -988,6 +988,9 @@ int VisItSetupEnvironment(void)
 *   Shelly Prevost, Wed Jan 25 08:50:44 PST 2006
 *   Added the guifile argument.
 *
+*   David Camp, Thu Jan 13 11:15:00 PST 2011
+*   Close file if an error occurred.
+*
 *******************************************************************************/
 int VisItInitializeSocketAndDumpSimFile(const char *name,
                                         const char *comment,
@@ -1020,10 +1023,16 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
     atexit(RemoveSimFile);
 
     if (!GetLocalhostName())
+    {
+       fclose(file);
        return FALSE;
+    }
 
     if (!StartListening())
+    {
+       fclose(file);
        return FALSE;
+    }
 
     fprintf(file, "host %s\n", localhost);
     fprintf(file, "port %d\n", listenPort);
