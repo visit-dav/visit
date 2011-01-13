@@ -86,7 +86,7 @@
 //    with "-I" as include paths.
 //
 //    Kathleen Bonnell, Fri May 21 14:15:23 MST 2010 
-//    Add DLL_NETCDF, _CGNSDLL EXODUSII_BUILD_SHARED_ZIBS defines for 
+//    Add DLL_NETCDF, _CGNSDLL EXODUSII_BUILD_SHARED_LIBS defines for 
 //    windows projects linking with NETCDF, CGNS or EXODUSII.
 //
 //    Kathleen Bonnell, Thu May 27 14:59:13 MST 2010 
@@ -116,6 +116,9 @@
 //
 //    Eric Brugger, Fri Jan  7 13:38:59 PST 2011
 //    I replaced the BOXLIB2D and BOXLIB3D variables with just BOXLIB.
+//
+//    Kathleen Bonnell, Tue Jan 11 17:06:21 MST 2011 
+//    Removed setting EXODUSII_BUILD_SHARED_LIBS definition.
 //
 // ****************************************************************************
 
@@ -829,8 +832,6 @@ class CMakeGeneratorPlugin : public Plugin
                      out << "  ADD_DEFINITIONS(-DDLL_NETCDF)" << endl;
                 else if(libs[i].contains("CGNS"))
                      out << "  ADD_DEFINITIONS(-DUSE_DLL)" << endl;
-                else if(libs[i].contains("EXODUSII"))
-                     out << "  ADD_DEFINITIONS(-DEXODUSII_BUILD_SHARED_ZIBS)" << endl;
             }
             out << "ENDIF(WIN32)" << endl;
         }
