@@ -396,6 +396,8 @@ CreateOperatorStateObjects(OperatorPluginManager &operatorPlugins,
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Jan 13 05:01:58 PST 2011
+//    Replace tabbed output with spaces
 // ****************************************************************************
 
 void
@@ -441,12 +443,12 @@ WriteObjectDefinitions(FILE *f, StateObjectMap &attributes)
                 while(tNames[attr].size() < maxNameLen)
                 tNames[attr] += space;
            
-                fprintf(f, "\t%s %s\n", tNames[attr].c_str(),
+                fprintf(f, "    %s %s\n", tNames[attr].c_str(),
                     pos->second->GetFieldName(attr).c_str());
             }
             else
             {
-                fprintf(f, "\t%s\n", tNames[attr].c_str());
+                fprintf(f, "    %s\n", tNames[attr].c_str());
             }
         }
         fprintf(f, "\n");
@@ -572,6 +574,9 @@ PrintHeader(FILE *f, const char *header)
 //    Mark C. Miller, Tue Jan 11 14:47:41 PST 2011
 //    Replaced 'return 0' at end with 'exit(0)' as the former resulted in an
 //    abort on RH4/GCC-4.5
+//
+//    Mark C. Miller, Thu Jan 13 05:02:53 PST 2011
+//    Replaced tabbed output with spaces.
 // ****************************************************************************
 
 int
@@ -594,7 +599,7 @@ main(int argc, char *argv[])
     PrintHeader(f, "VisIt protocol report");
     fprintf(f, "Command line: \n");
     for(int i = 0; i < argc; ++i)
-        fprintf(f, "\t%s\n", argv[i]);
+        fprintf(f, "    %s\n", argv[i]);
     fprintf(f, "\n");
     fprintf(f, "VisIt contains state objects that are used to communicate data from\n"
                "one VisIt component to another. These state objects are described by\n"
