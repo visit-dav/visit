@@ -2652,7 +2652,10 @@ avtNek5000FileFormat::GetBoundingBoxIntervalTree(int timestep)
     errorReadingData = anyErrorReadingData;
 #endif
     if (errorReadingData)
+    {
+        delete[] bounds;
         return NULL;
+    }
 
 #ifdef PARALLEL
         float *mergedBounds = new float[iNumBlocks*6];
@@ -2899,7 +2902,10 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
     errorReadingData = anyErrorReadingData;
 #endif
     if (errorReadingData)
+    {
+        delete[] bounds;
         return NULL;
+    }
 
 #ifdef PARALLEL
     float *mergedBounds = new float[iNumBlocks*2];

@@ -814,6 +814,8 @@ QvisCMap2Display::getAlpha(WidgetID id) const
     IdToWidgetMap::const_iterator it =  idToWidget.find(id);
     if(it != idToWidget.end())
         retval = it.value()->get_alpha();
+    else
+        retval = 0.0;
     return retval;
 }
 

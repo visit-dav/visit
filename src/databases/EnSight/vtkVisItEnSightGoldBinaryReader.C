@@ -224,6 +224,7 @@ int vtkVisItEnSightGoldBinaryReader::ReadGeometryFile(const char* fileName, int 
     char *name = strdup(line);
     if (strncmp(line, "interface", 9) == 0)
       {
+      if (name) free(name);
       return 1; // ignore it and move on
       }
     this->ReadLine(line);

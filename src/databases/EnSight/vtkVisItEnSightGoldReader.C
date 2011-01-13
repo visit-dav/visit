@@ -152,6 +152,7 @@ int vtkVisItEnSightGoldReader::ReadGeometryFile(const char* fileName, int timeSt
     char *name = strdup(line);
     if (strncmp(line, "interface", 9) == 0)
       {
+      if(name) free( name );
       return 1; // ignore it and move on
       }
 

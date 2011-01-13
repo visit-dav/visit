@@ -1812,6 +1812,8 @@ int vtkVisItDataReader::ReadCells(int size, int *data,
       {
       vtkErrorMacro(<<"Error reading binary cell data!" << " for file: " 
                     << this->FileName);
+      if (tmp != data)
+         delete [] tmp;
       return 0;
       }
     vtkByteSwap::Swap4BERange(tmp,size);
