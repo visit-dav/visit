@@ -8,7 +8,7 @@
       ${BOXLIB_LIBRARY_DIR}
     </LDFLAGS>
     <LIBS>
-      box3D
+      ${BOXLIB_3D_LIB}
     </LIBS>
     <FilePatterns>
       *.boxlib3d

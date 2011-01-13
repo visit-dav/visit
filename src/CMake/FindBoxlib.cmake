@@ -41,6 +41,10 @@
 #   Eric Brugger, Fri Jan  7 13:50:15 PST 2011
 #   I replaced the BOXLIB2D and BOXLIB3D variables with just BOXLIB.
 #
+#   Kathleen Bonnell, Thu Jan 13 15:21:47 MST 2011
+#   Restore separate vars for libraries (to handle different names on
+#   different platforms).
+#
 #****************************************************************************/
 
 # Use the BOXLIB_DIR hint from the config-site .cmake file 
@@ -48,9 +52,20 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(BOXLIB lib/${VISIT_MSVC_VERSION} include box2D box3D)
+  SET_UP_THIRD_PARTY(BOXLIB lib/${VISIT_MSVC_VERSION} include BoxLib2D BoxLib3D)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(BOXLIB lib include box2D box3D)
 ENDIF (WIN32)
+
+# place the 2D and 3D libraries into separate vars for plugin use.
+LIST(GET BOXLIB_LIB 0 tmp)
+SET(BOXLIB_2D_LIB ${tmp} CACHE STRING "2D boxlib" FORCE)
+
+LIST(GET BOXLIB_LIB 1 tmp)
+SET(BOXLIB_3D_LIB ${tmp} CACHE STRING "3D boxlib" FORCE)
+
+# unset unneeded vars.
+UNSET(tmp)
+UNSET(BOXLIB_LIB CACHE)
 
 
