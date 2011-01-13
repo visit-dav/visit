@@ -170,7 +170,7 @@ public:
                 const unsigned int left = n->left();
 
                 bool l = p <= n->lmax();
-                bool r = p > n->rmin();
+                bool r = p >= n->rmin();
 
                 if( l && r )
                 {
