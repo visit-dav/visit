@@ -649,7 +649,10 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
         {
             visit_handle h = VISIT_INVALID_HANDLE;
             if(simv2_UnstructuredMesh_alloc(&h) == VISIT_ERROR)
+            {
+                delete [] cellCopy;
                 return;
+            }
 
             // Send the coordinates down to the writer interleaved.
             visit_handle hc;

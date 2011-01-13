@@ -118,7 +118,7 @@ herr_t VsH5Attribute::getIntVectorValue(std::vector<int>* ivals) {
   for (size_t i = 0; i<npoints; ++i) {
     (*ivals)[i] = v[i];
   }
-  delete v;
+  delete [] v;
   
   return err;
 }
@@ -157,7 +157,7 @@ herr_t VsH5Attribute::getFloatVectorValue(std::vector<float>* fvals) {
   for (size_t i = 0; i<npoints; ++i) {
     (*fvals)[i] = v[i];
   }
-  delete v;
+  delete [] v;
   
   return err;
 }
@@ -195,7 +195,7 @@ herr_t VsH5Attribute::getDoubleVectorValue(std::vector<double>* dvals) {
   for (size_t i = 0; i<npoints; ++i) {
     (*dvals)[i] = v[i];
   }
-  delete v;
+  delete [] v;
   
   return err;
 }

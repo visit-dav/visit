@@ -1627,6 +1627,8 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
         else
         {
             debug4 << "nreg < 1. No material information" << endl;
+            delete [] names; // top
+            delete [] matnos;
         }
         df = avtMaterial::Destruct; 
     } 

@@ -2104,6 +2104,7 @@ v5dstruct *v5dOpenFile( const char *filename, v5dstruct *v )
    else {
       v = v5dNewStruct();
       if (!v) {
+         close(fd);
          return NULL;
       }
    }
@@ -2111,9 +2112,11 @@ v5dstruct *v5dOpenFile( const char *filename, v5dstruct *v )
    v->FileDesc = fd;
    v->Mode = 'r';
    if (read_v5d_header( v )) {
+      close(fd);
       return v;
    }
    else {
+      close(fd);
       return NULL;
    }
 }
@@ -2497,6 +2500,7 @@ v5dstruct *v5dUpdateFile( const char *filename, v5dstruct *v )
    if (!v) {
       v = v5dNewStruct();
       if (!v) {
+         close(fd);
          return NULL;
       }
    }
@@ -2505,9 +2509,11 @@ v5dstruct *v5dUpdateFile( const char *filename, v5dstruct *v )
    v->Mode = 'w';
 
    if (read_v5d_header( v )) {
+      close(fd);
       return v;
    }
    else {
+      close(fd);
       return NULL;
    }
 }

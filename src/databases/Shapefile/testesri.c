@@ -65,11 +65,13 @@ main(int argc, char *argv[])
     else if(code == esriFileErrorInvalidFile)
     {
         fprintf(outputLog, "The file was not an ESRI shape file!\n");
+        fclose(outputLog);
         return -1;
     }
     else
     {
         fprintf(outputLog, "Could not open the file!\n");
+        fclose(outputLog);
         return -1;
     }
 

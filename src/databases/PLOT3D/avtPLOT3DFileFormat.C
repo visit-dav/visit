@@ -2521,6 +2521,7 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
       double * doubleOutput = new double[numbersToRead];
       if ((fread(doubleOutput,sizeof(double),numbersToRead,fp))<numbersToRead)
       {
+        if (doubleOutput) delete [] doubleOutput;
         return 1;
       }
       else

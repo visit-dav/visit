@@ -4920,6 +4920,10 @@ void gmvread_mesh()
    if (gmv_data.keyword == CELLS) rdcells(nodetype_in);
    if (gmv_data.keyword == FACES) rdfaces();
    if (gmv_data.keyword == XFACES) rdxfaces();
+
+   if (xin) free(xin);
+   if (yin) free(yin);
+   if (zin) free(zin);
 }
 
 

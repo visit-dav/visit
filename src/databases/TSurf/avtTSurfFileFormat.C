@@ -379,6 +379,7 @@ avtTSurfFileFormat::ReadFile(const char *name, int nLines)
         // the size of the file.
         nPoints = fileSize / 60;
         nCells  = fileSize / 45;
+        fclose(fp);
 #endif
     }
     vtkPoints *pts = vtkPoints::New();

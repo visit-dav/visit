@@ -280,7 +280,10 @@ int read_int2_array( int f, short *iarray, int n )
    buffer = (signed char *) malloc( n * 2 );
    if (!buffer)  return 0;
    nread = read( f, buffer, n*2 );
-   if (nread<=0)  return 0;
+   if (nread<=0) {
+     free( buffer );
+     return 0;
+   }
    nread /= 2;
    for (i=0;i<nread;i++) {
       /* don't forget about sign extension! */
@@ -317,7 +320,10 @@ int read_uint2_array( int f, unsigned short *iarray, int n )
    buffer = (unsigned char *) malloc( n * 2 );
    if (!buffer)  return 0;
    nread = read( f, buffer, n*2 );
-   if (nread<=0)  return 0;
+   if (nread<=0) {
+       free( buffer );
+       return 0;
+   }
    nread /= 2;
    for (i=0;i<nread;i++) {
       iarray[i] = (buffer[i*2] << 8) | buffer[i*2+1];
@@ -388,6 +394,7 @@ int read_int4_array( int f, int *iarray, int n )
       return 0;
    nread = read( f, buffer, 4*n );
    if (nread<=0) {
+      free( buffer );
       return 0;
    }
    nread /= 4;
@@ -473,7 +480,10 @@ int read_float4_array( int f, float *x, int n )
    buffer = (long *) malloc( (n+1) * 4 );
    if (!buffer) return 0;
    nread = read( f, buffer, n*4 );
-   if (nread<=0)  return 0;
+   if (nread<=0) {
+       free( buffer );
+       return 0;
+   }
    nread /= 4;
    ieee_to_cray_array( x, buffer, nread );
    free( buffer );

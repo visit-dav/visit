@@ -650,7 +650,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
         //read out the data to the new file
         dataset_id.write(H5T_NATIVE_FLOAT,temp_float);
         //release the memory
-        delete temp_float;
+        delete [] temp_float;
         //create the attribute
         dataspace_id.create(1,&temp_size);
         attribute_id.create(dataset_id.getID(),"DataSetMinValue",
@@ -678,7 +678,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
         //read out the data to the new file
         dataset_id.write(H5T_NATIVE_DOUBLE,temp_double);
         //release the memory
-        delete temp_double;
+        delete [] temp_double;
         //create the attribute
         dataspace_id.create(1,&temp_size);
         attribute_id.create(dataset_id.getID(),"DataSetMinValue",
@@ -707,7 +707,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
         //read out the data to the new file
         dataset_id.write(H5T_NATIVE_INT32,temp_int);
         //release the memory
-        delete temp_int;
+        delete [] temp_int;
         //create the attribute
         dataspace_id.create(1,&temp_size);
         attribute_id.create(dataset_id.getID(),"DataSetMinValue",
@@ -736,7 +736,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
         //read out the data to the new file
         dataset_id.write(H5T_NATIVE_INT64,temp_lng);
         //release the memory
-        delete temp_lng;
+        delete [] temp_lng;
         //create the attribute
         dataspace_id.create(1,&temp_size);
         attribute_id.create(dataset_id.getID(),"DataSetMinValue",
@@ -765,7 +765,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
         //read out the data to the new file
         dataset_id.write(H5T_NATIVE_CHAR,temp_chr);
         //release the memory
-        delete temp_chr;
+        delete [] temp_chr;
         //create the attribute
         dataspace_id.create(1,&temp_size);
         attribute_id.create(dataset_id.getID(),"DataSetMinValue",
@@ -795,7 +795,7 @@ void H5_Index::create_dataset(const std::vector<int64_t> dims,
     attribute_id.write(H5T_NATIVE_INT64,&new_dataset);
     //close the attribute data
 
-    delete size;
+    delete [] size;
 }
 
 // create a uint32_t array with [nelements] elements and fill them with 0.
@@ -836,14 +836,22 @@ bool H5_Index::createBitmap(const std::string& variableName,
 
     answer = dataset_id.create(group_id.getID(),file_path.c_str(),
                                H5T_NATIVE_UINT32,dataspace_id.getID());
-    if (answer == false) return answer;
+    if (answer == false)
+    {
+        delete [] temp_int;
+        return answer;
+    }
 
     //read out the data to the new file
     answer = dataset_id.write(H5T_NATIVE_UINT32,temp_int);
-    if (answer == false) return answer;
+    if (answer == false)
+    {
+        delete [] temp_int;
+        return answer;
+    }
 
     //release the memory from the three datasets
-    delete temp_int;
+    delete [] temp_int;
 
     //determine the type of the original data...
     BaseFileInterface::DataType type;

@@ -851,7 +851,7 @@ AddEnvironment(const int useShortFileName, const int addPluginVars)
          }
     }
     /*
-     * Determine if this is is dev version
+     * Determine if this is dev version
      */
     {
         string vp(visitpath);
@@ -869,10 +869,10 @@ AddEnvironment(const int useShortFileName, const int addPluginVars)
             if (pos <= 0)
                 pos = len;
 
-            visitdevdir = (char*)malloc(pos +12);
+            visitdevdir = (char*)malloc(pos + 14);
             strncpy(visitdevdir, visitpath, pos);
             visitdevdir[pos] = '\0';
-            sprintf(visitdevdir,"%s\\ThirdParty", visitdevdir);
+            strncat(visitdevdir, "\\ThirdParty", 14);
         }
     }
  

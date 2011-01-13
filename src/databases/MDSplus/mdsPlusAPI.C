@@ -307,7 +307,7 @@ void* get_values( const char *signal, int dtype ) {
   char buf[1024];                     /* buffer for MDS+ exp */  
   int len, dsc;                       /* Used in MDS+ calls  */
   int null = 0;
-  int *dims;
+  int *dims = NULL;
   int cc, i, n, size = 1;
 
   void* values;
@@ -317,12 +317,18 @@ void* get_values( const char *signal, int dtype ) {
   int rank = get_dims( signal, &dims );
 
   if( rank < 0 )
+  {
+    if( dims ) free( dims );
     return NULL;
+  }
 
   if( rank == 0 )
+  {
+    if( dims ) free( dims );
     return get_value( signal, dtype );
+  }
 
-  
+
   for( i=0; i<rank; i++ )
     size *= dims[i];
 
@@ -522,7 +528,7 @@ get_names( const char *signal, char **names,
   sprintf( buf, "GETNCI(\"\\%s%s\", \"%s\", \"%s\")",
            signal, wildcard, path, item );
 
-  int *dims;
+  int *dims = NULL;
   int rank = get_dims( buf, &dims );
 
   if( rank > 0 ) {
@@ -533,8 +539,10 @@ get_names( const char *signal, char **names,
 
     *names = (char*) get_values( buf, DTYPE_CSTRING );
 
+    if( dims ) free( dims );
     return nnames;
   } else {
+    if( dims ) free( dims );
     return 0;
   }
 }
