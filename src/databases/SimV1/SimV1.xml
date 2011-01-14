@@ -3,6 +3,9 @@
     <FilePatterns>
       *.sim1
     </FilePatterns>
+    <LDFLAGS>
+      ${ICET_LIBRARY_DIR}
+    </LDFLAGS>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>
