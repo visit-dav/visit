@@ -176,6 +176,10 @@ MPIXfer::ReadHeader()
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//   Dave Pugmire, Fri Jan 14 11:31:41 EST 2011
+//   Use MPI_Waitall instead. Also, cleaned up a memory leak.
+//
 // ****************************************************************************
 
 void
@@ -186,25 +190,18 @@ MPIXfer::SendInterruption(int mpiInterruptTag)
         // Do a nonblocking send to all processes to do it quickly
         int size = PAR_Size();
         unsigned char buf[1] = {255};
-        MPI_Request *request = new MPI_Request[size];
+        MPI_Request *request = new MPI_Request[size-1];
         for (int i=1; i<size; i++)
         {
-            MPI_Isend(buf, 1, MPI_CHAR, i, mpiInterruptTag, VISIT_MPI_COMM, &request[i]);
+            MPI_Isend(buf, 1, MPI_CHAR, i, mpiInterruptTag, VISIT_MPI_COMM, &request[i-1]);
         }
 
         // Then wait for them all to read the command
-        int ncomplete = 0;
-        while (ncomplete < size-1)
-        {
-            for (int i=1; i<size; i++)
-            {
-                int flag;
-                MPI_Status status;
-                MPI_Test(&request[i], &flag, &status);
-                if (flag)
-                    ncomplete++;
-            }
-        }
+        MPI_Status *status = new MPI_Status[size-1];
+        MPI_Waitall(size-1, request, status);
+
+        delete [] request;
+        delete [] status;
     }
 }
 
