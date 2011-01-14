@@ -71,6 +71,9 @@ class domainCacheEntry
 //   Dave Pugmire, Fri Dec 17 12:15:04 EST 2010
 //   Override PostRunAlgorithm as a no-op.
 //
+//   Dave Pugmire, Fri Jan 14 11:06:09 EST 2011
+//   Added PostStepCallback() method, numDone as member data.
+//
 // ****************************************************************************
 
 class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
@@ -84,6 +87,7 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
     virtual void              ResetIntegralCurvesForContinueExecute();
     virtual bool              CheckNextTimeStepNeeded(int curTimeSlice);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics);
+    virtual bool              PostStepCallback();
 
   protected:
     vtkDataSet               *GetDataset(const DomainType &dom);
@@ -93,7 +97,7 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
     virtual void              SortIntegralCurves(std::list<avtIntegralCurve *> &);
     virtual void              HandleOOBIC(avtIntegralCurve *s);
     virtual bool              RequestDataset(DomainType &d);
-    virtual void              HandleMessages(int &numDone);
+    virtual void              HandleMessages();
 
     void                      AddRef(const DomainType &dom);
     void                      DelRef(const DomainType &dom);
@@ -109,6 +113,7 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
     virtual vtkDataSet       *GetDSFromDomainCache(const DomainType &dom);
     virtual void              AddDSToDomainCache(std::vector<DSCommData> &ds);
 
+    int                       numDone;
     std::list<domainCacheEntry> domainCache;
     int domainCacheSizeLimit;
 

@@ -220,6 +220,9 @@ class vtkAppendPolyData;
 //   Hank Childs, Sun Dec  5 10:43:57 PST 2010
 //   Add new data members for warnings.
 //
+//   Dave Pugmire, Fri Jan 14 11:10:44 EST 2011
+//   Set default communication pattern to RestoreSequenceAssembleUniformly.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
@@ -327,7 +330,7 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
 
     virtual std::vector<avtVector> GetInitialLocations(void);
     virtual CommunicationPattern   GetCommunicationPattern(void)
-                                      { return RestoreSequence; };
+                                      { return RestoreSequenceAssembleUniformly; };
 
 };
 

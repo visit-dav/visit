@@ -124,6 +124,10 @@ class avtICAlgorithm;
 //   Hank Childs, Sun Nov 28 12:20:12 PST 2010
 //   Add support for caching locators in the database.
 //
+//   Dave Pugmire, Fri Jan 14 11:09:59 EST 2011
+//   Add new communication pattern: RestoreSequenceAssembleUniformly, and
+//   PostStepCallback()
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -133,7 +137,8 @@ class AVTFILTERS_API avtPICSFilter :
   public:
     enum CommunicationPattern
     {
-        RestoreSequence = 0,
+        RestoreSequenceAssembleOnCurrentProcessor = 0,
+        RestoreSequenceAssembleUniformly,
         ReturnToOriginatingProcessor,
         LeaveOnCurrentProcessor,
         UndefinedCommunicationPattern
@@ -175,6 +180,7 @@ class AVTFILTERS_API avtPICSFilter :
     virtual void              UpdateDataObjectInfo(void);
 
     void                      ConvertToCartesian(bool val) { convertToCartesian = val; };
+    bool                      PostStepCallback();
 
 
   protected:

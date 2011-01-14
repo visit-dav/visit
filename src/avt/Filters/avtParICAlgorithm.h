@@ -111,6 +111,10 @@ class DSCommData;
 //   Dave Pugmire, Wed Jan  5 07:57:21 EST 2011
 //   New datastructures for msg/ic/ds.
 //
+//   Dave Pugmire, Fri Jan 14 11:07:41 EST 2011
+//   Added a new communication pattern, RestoreSequenceAssembleUniformly and
+//   renamed RestoreIntegralCurveSequence to RestoreIntegralCurveSequenceAssembleOnCurrentProcessor
+//
 // ****************************************************************************
 
 class avtParICAlgorithm : public avtICAlgorithm
@@ -154,7 +158,8 @@ class avtParICAlgorithm : public avtICAlgorithm
                                       std::vector<DSCommData> *ds,
                                       bool blockAndWait);
 
-    void                      RestoreIntegralCurveSequence();
+    void                      RestoreIntegralCurveSequenceAssembleOnCurrentProcessor();
+    void                      RestoreIntegralCurveSequenceAssembleUniformly();
     void                      MergeTerminatedICSequences();
     
 
@@ -170,7 +175,7 @@ class avtParICAlgorithm : public avtICAlgorithm
     
   private:
     void                      PostRecv(int tag);
-    void                      PostRecv(int tag, int sz);
+    void                      PostRecv(int tag, int sz, int src=-1);
     void                      SendData(int dst, int tag, MemStream *buff);
     bool                      RecvData(std::set<int> &tags,
                                        std::vector<std::pair<int,MemStream *> > &buffers,

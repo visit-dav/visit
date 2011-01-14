@@ -105,6 +105,9 @@
 //   Dave Pugmire, Mon Dec 20 15:01:14 EST 2010
 //   Added Sleep() method.
 //
+//   Dave Pugmire, Fri Jan 14 11:06:09 EST 2011
+//   Added PostStepCallback() method.
+//
 // ****************************************************************************
 
 class avtICAlgorithm
@@ -122,6 +125,7 @@ class avtICAlgorithm
     virtual void              GetTerminatedICs(vector<avtIntegralCurve *> &v);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics) = 0;
     virtual void              DeleteIntegralCurves(std::vector<int> &icIDs);
+    virtual bool              PostStepCallback() { return false; }
 
   protected:
     virtual void              RunAlgorithm() = 0;

@@ -83,6 +83,7 @@ avtCommDSOnDemandICAlgorithm::avtCommDSOnDemandICAlgorithm(avtPICSFilter *picsFi
     : avtParICAlgorithm(picsFilter), DSLatencyTime("dsLat")
 {
     domainCacheSizeLimit = cacheSize;
+    numDone = 0;
 }
 
 // ****************************************************************************
@@ -209,7 +210,7 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
     SortIntegralCurves(activeICs);
     SortIntegralCurves(oobICs);
 
-    int numDone = 0;
+    numDone = 0;
     int numParticlesTotal = activeICs.size() + oobICs.size();
     int numParticlesResolved = 0;
     
@@ -217,9 +218,9 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
     CheckCacheVacancy(true);
     Barrier();
     Sleep(40);
-    HandleMessages(numDone);
+    HandleMessages();
     Sleep(40);
-    HandleMessages(numDone);
+    HandleMessages();
     
     while (numDone < nProcs)
     {
@@ -268,7 +269,7 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
         }
         
         CheckCacheVacancy(true);
-        HandleMessages(numDone);
+        HandleMessages();
     }
 
     debug1<<"All done. terminated sz= "<<terminatedICs.size()<<endl;
@@ -353,13 +354,13 @@ avtCommDSOnDemandICAlgorithm::RequestDataset(DomainType &d)
 // ****************************************************************************
 
 void
-avtCommDSOnDemandICAlgorithm::HandleMessages(int &numDone)
+avtCommDSOnDemandICAlgorithm::HandleMessages()
 {
     vector<MsgCommData> msgs;
     vector<DSCommData> ds;
 
     bool blockAndWait = activeICs.empty() && (numDone < nProcs);
-    blockAndWait = false;
+    //blockAndWait = false;
     
     RecvAny(&msgs, NULL, &ds, blockAndWait);
 
@@ -765,6 +766,53 @@ avtCommDSOnDemandICAlgorithm::CheckCacheVacancy(bool makeReq)
         
         if (reqs == cacheVacancy)
             break;
+    }
+}
+
+// ****************************************************************************
+// Method:  avtCommDSOnDemandICAlgorithm::PostStepCallback
+//
+// Purpose: Do any processing needed after integration step has taken place.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    January 14, 2011
+//
+// ****************************************************************************
+
+bool
+avtCommDSOnDemandICAlgorithm::PostStepCallback()
+{
+    vector<MsgCommData> msgs;
+    RecvAny(&msgs, NULL, NULL, false);
+
+    for (int i = 0; i < msgs.size(); i++)
+    {
+        int sendRank = msgs[i].rank;
+        vector<int> &m = msgs[i].message;
+        int msgType = m[0];
+        
+        if (msgType == DONE)
+            numDone++;
+        
+        else if (msgType == DATASET_REQUEST)
+        {
+            int dom = m[1];
+            vtkDataSet *d = GetDomain(dom);
+            if (d)
+            {
+                vector<vtkDataSet *> ds;
+                vector<DomainType> doms;
+                doms.push_back(DomainType(dom, 0));
+                ds.push_back(d);
+                SendDS(sendRank, ds, doms);
+            }
+            else
+            {
+                //Why am I being asked for a domain I don't own?
+                EXCEPTION0(ImproperUseException);
+            }
+        }
     }
 }
 

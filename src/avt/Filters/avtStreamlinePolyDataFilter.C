@@ -260,7 +260,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
         float theta = 0.0, prevT = 0.0;
         avtVector lastPos;
 
-        cerr << phiFactor << "  " << (phiFactor == 0.0) << endl;
+        //cerr << phiFactor << "  " << (phiFactor == 0.0) << endl;
 
         for (int j = 0; j < numSamps; j++)
         {
