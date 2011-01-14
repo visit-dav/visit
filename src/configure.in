@@ -46,6 +46,10 @@ dnl
 dnl    Mark C. Miller, Sun Aug 29 23:24:19 PDT 2010
 dnl    Added logic to re-enable dbio-only
 dnl
+dnl    Eric Brugger, Fri Jan 14 09:45:47 PST 2011
+dnl    Moved the "." from before the options to after the options for the
+dnl    cmake command. This fix was provided by Dorian Krause.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl --------------------------------------------------------------------------
@@ -332,7 +336,7 @@ fi
 
 AC_MSG_RESULT(-- INVOKING CMAKE --)
 set -x
-$CMAKE . $VCONF_PREFIX \
+$CMAKE   $VCONF_PREFIX \
          "$VCONF_CFLAGS" \
          "$VCONF_CXXFLAGS" \
          $VCONF_JAVA \
@@ -342,5 +346,5 @@ $CMAKE . $VCONF_PREFIX \
          $VCONF_DBIO_ONLY \
          $VCONF_VMODULE \
          $VCONF_INSTALL_THIRD_PARTY \
-         $VCONF_BUILDALL 
+         $VCONF_BUILDALL .
 set +x
