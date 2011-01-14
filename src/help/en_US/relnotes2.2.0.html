@@ -37,6 +37,7 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>VisIt's filters can now cache intermediate results for later use.  Contours and streamlines should be faster after the first execution.</li>
    <li>Lineouts can now be directly calculated (i.e. without having to make a Pseudocolor plot to extract a Lineout from).  You can access this feature by making a Curve plot of a scalar listed under operators/Lineout.</li>
    <li>VisIt now has a "-safe" mode.  This mode will tell you if your data has NaNs, infs, or bad connectivity.  Access this mode by adding "-safe" to VisIt's invocation.  (This mode is not the default because it incurs a performance penalty.)</li>
+   <li>The manner in which operators are copied from existing plots to new plots has changed. The new behavior copies operators from the first selected plot instead of always copying operators from the first plot.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -126,7 +127,7 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>A bug was fixed when creating ghost data for 2D rectilinear or AMR data sets.  This bug manifested itself by causing domains or patches to disappear when you removed materials or contoured the data set (among other operations).</li>
    <li>A bug was fixed where creating a Contour plot after a Pseudocolor plot was causing AMR data sets to be mishandled.  (Extra geometry showed up that should have been removed.)</li>
    <li>VisIt can again read mixed material variables from simulations.</li>
-   <li></li>
+   <li>New windows are now able to create plots from the active source.</li>
    <li></li>
    <li></li>
    <li></li>
