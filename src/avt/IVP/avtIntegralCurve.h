@@ -51,6 +51,8 @@
 
 class vtkObject;
 
+typedef bool (*avtIntegralCurveCallback)(void);
+
 // ****************************************************************************
 // Class: DomainType
 //
@@ -235,7 +237,11 @@ class IVP_API avtIntegralCurve
     bool              EncounteredNumericalProblems(void)
                              { return encounteredNumericalProblems; };
 
+    void     SetPostStepCallback(avtIntegralCurveCallback func) {postStepCallbackFunction = func; }
+
   protected:
+    avtIntegralCurveCallback postStepCallbackFunction;
+
     avtIntegralCurve( const avtIntegralCurve& );
     avtIntegralCurve& operator=( const avtIntegralCurve& );
     
