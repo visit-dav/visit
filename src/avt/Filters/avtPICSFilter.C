@@ -109,6 +109,15 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <mpi.h>
 #endif
 
+avtPICSFilter *pcFilter = NULL;
+bool PostStepCB(void)
+{
+    if (pcFilter)
+        return pcFilter->PostStepCallback();
+
+    return false;
+}
+
 // ****************************************************************************
 //  Method: avtPICSFilter constructor
 //
@@ -1825,7 +1834,7 @@ void
 avtPICSFilter::IntegrateDomain(avtIntegralCurve *ic,
                                vtkDataSet *ds,
                                double *extents,
-                               int maxSteps )
+                               int maxSteps)
 {
     int t0 = visitTimer->StartTimer();
     if (DebugStream::Level4())
@@ -1834,7 +1843,10 @@ avtPICSFilter::IntegrateDomain(avtIntegralCurve *ic,
     if (ic->status == avtIntegralCurve::STATUS_OK)
     {
         avtIVPField* field = GetFieldForDomain(ic->domain, ds);
-        ic->Advance( field );
+        
+        //pcFilter = this;
+        //ic->SetPostStepCallback(&PostStepCB);
+        ic->Advance(field);
         delete field;
     }
 
@@ -2580,4 +2592,21 @@ avtPICSFilter::CacheLocators(void)
     // Always true for serial.
     return true;
 #endif
+}
+
+// ****************************************************************************
+// Method:  avtPICSFilter::PostStepCallback()
+//
+// Purpose: Callback after each integration step is taken.
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    January 14, 2011
+//
+// ****************************************************************************
+
+bool
+avtPICSFilter::PostStepCallback()
+{
+    return (icAlgo ? icAlgo->PostStepCallback() : false);
 }
