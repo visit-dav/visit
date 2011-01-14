@@ -2,7 +2,7 @@
 VisIt protocol report
 ========================================================================
 Command line: 
-    /net/alderaan.llnl.gov/export/alderaan2/miller86/visit/trunk/src/exe/visitprotocol
+    /nfs/tmp2/brugger/test_trunk/src/exe/visitprotocol
 
 VisIt contains state objects that are used to communicate data from
 one VisIt component to another. These state objects are described by
