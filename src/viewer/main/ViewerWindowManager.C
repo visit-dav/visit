@@ -547,6 +547,9 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 //    Brad Whitlock, Fri Aug 13 16:36:28 PDT 2010
 //    Fix legend renaming.
 //
+//    Brad Whitlock, Thu Jan 13 22:56:32 PST 2011
+//    I applied Cyrus' suggested fix for copying the sources. Looks good.
+//
 // ****************************************************************************
 
 void
@@ -567,22 +570,29 @@ ViewerWindowManager::AddWindow(bool copyAtts)
     //
     // Copy attributes.
     //
-    if ((copyAtts || clientAtts->GetCloneWindowOnFirstRef()) &&
-        (windowIndex != activeWindow))
+    if (windowIndex != activeWindow)
     {
         ViewerWindow *dest = windows[windowIndex];
         ViewerWindow *src = windows[activeWindow];
-        dest->CopyGeneralAttributes(src);
-        dest->CopyAnnotationAttributes(src);
-        dest->CopyLightList(src);
-        dest->CopyViewAttributes(src);
+        if (copyAtts || clientAtts->GetCloneWindowOnFirstRef())
+        {
+            dest->CopyGeneralAttributes(src);
+            dest->CopyAnnotationAttributes(src);
+            dest->CopyLightList(src);
+            dest->CopyViewAttributes(src);
         
-        StringStringMap nameMap = dest->GetPlotList()->CopyFrom(src->
-            GetPlotList(), true);
-        dest->GetActionManager()->CopyFrom(src->GetActionManager());
+            StringStringMap nameMap = dest->GetPlotList()->CopyFrom(src->
+                GetPlotList(), true);
+            dest->GetActionManager()->CopyFrom(src->GetActionManager());
 
-        dest->CopyAnnotationObjectList(src, nameMap, true);
-
+            dest->CopyAnnotationObjectList(src, nameMap, true);
+        }
+        else
+        {
+            // We always want to copy the active sources -- but not 
+            // the plots themselves.
+            dest->GetPlotList()->CopyFrom(src->GetPlotList(), false);
+        }
     }
     referenced[windowIndex] = true;
 

@@ -3318,6 +3318,10 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 //   Brad Whitlock, Tue Apr 29 15:58:55 PDT 2008
 //   Added tr().
 //
+//   Brad Whitlock, Thu Jan 13 22:44:08 PST 2011
+//   Use the first active plot as the source of operators instead of using
+//   the first plot all the time.
+//
 // ****************************************************************************
 
 ViewerPlot *
@@ -3444,16 +3448,30 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
     ENDTRY
 
     //
-    // Apply the same operators that are on the old plot to the new plot.
+    // Apply the same operators that are on the first active plot to 
+    // the new plot.
     //
     if (plot && applyOperators && (nPlots > 0))
     {
-        for (int j = 0; j < plots[0].plot->GetNOperators(); ++j)
+        // Find the index of the first active plot.
+        int firstActive = -1;
+        for(int j = 0; j < nPlots; ++j)
         {
-             ViewerOperator *op = plots[0].plot->GetOperator(j);
-             plot->AddOperator(op->GetType());
-             ViewerOperator *newOp = plot->GetOperator(j);
-             newOp->SetOperatorAtts(op->GetOperatorAtts());
+            if(plots[j].active)
+            {
+                firstActive = j;
+                break;
+            }
+        }
+        firstActive = (firstActive < 0) ? 0 : firstActive;
+
+        // Apply the first active plot's operators
+        for (int j = 0; j < plots[firstActive].plot->GetNOperators(); ++j)
+        {
+            ViewerOperator *op = plots[firstActive].plot->GetOperator(j);
+            plot->AddOperator(op->GetType());
+            ViewerOperator *newOp = plot->GetOperator(j);
+            newOp->SetOperatorAtts(op->GetOperatorAtts());
         }
     }
 
