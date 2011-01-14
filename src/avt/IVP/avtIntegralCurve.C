@@ -110,6 +110,7 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
     ivp->Reset( t_start, p_start );
     counter = 0;
     encounteredNumericalProblems = false;
+    postStepCallbackFunction = NULL;
 }
 
 
@@ -158,6 +159,7 @@ avtIntegralCurve::avtIntegralCurve()
     id = -1;
     counter = 0;
     encounteredNumericalProblems = false;
+    postStepCallbackFunction = NULL;
 }
 
 
@@ -373,6 +375,11 @@ void avtIntegralCurve::Advance( avtIVPField* field )
 
             status = STATUS_FINISHED;
         }
+        
+        /*
+        if (status == STATUS_OK && postStepCallbackFunction != NULL)
+            postStepCallbackFunction();
+        */
     }
     while( status == STATUS_OK );
 
