@@ -62,6 +62,9 @@
 #   Kathleen Bonnell, Wed Nov 17 10:02:46 PST 2010
 #   Add vendor_branches to skip list.
 #
+#   Cyrus Harrison, Fri Jan 14 10:48:50 PST 2011
+#   Add docs to the skip list.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -102,6 +105,9 @@ while read fline; do
             continue
             ;;
         *xpm)
+            continue
+            ;;
+        */docs/*)
             continue
             ;;
         */vendor_branches/*)
