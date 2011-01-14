@@ -1610,7 +1610,7 @@ fi
 echo "$as_me:$LINENO: result: -- INVOKING CMAKE --" >&5
 echo "${ECHO_T}-- INVOKING CMAKE --" >&6
 set -x
-$CMAKE . $VCONF_PREFIX \
+$CMAKE   $VCONF_PREFIX \
          "$VCONF_CFLAGS" \
          "$VCONF_CXXFLAGS" \
          $VCONF_JAVA \
@@ -1620,5 +1620,5 @@ $CMAKE . $VCONF_PREFIX \
          $VCONF_DBIO_ONLY \
          $VCONF_VMODULE \
          $VCONF_INSTALL_THIRD_PARTY \
-         $VCONF_BUILDALL
+         $VCONF_BUILDALL .
 set +x
