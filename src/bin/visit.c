@@ -952,7 +952,7 @@ AddEnvironment(const int useShortFileName, const int addPluginVars)
             putenv(tmp);
             if (addPluginVars)
             {
-                sprintf(tmp, "VISITPLUGININSTPRI=%s\\LLNL\\VisIt", appData);
+                sprintf(tmp, "VISITPLUGININSTPRI=%s", appData);
                 putenv(tmp);
             }
         }

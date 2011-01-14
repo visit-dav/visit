@@ -120,6 +120,9 @@
 //    Kathleen Bonnell, Tue Jan 11 17:06:21 MST 2011 
 //    Removed setting EXODUSII_BUILD_SHARED_LIBS definition.
 //
+//    Kathleen Bonnell, Thu Jan 13 17:54:38 MST 2011
+//    Only use VISIT_PLUGIN_TARGET_FOLDER if building from dev.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -302,8 +305,11 @@ class CMakeGeneratorPlugin : public Plugin
     {
         out << "PROJECT(" << name<< ")" << endl;
         out << endl;
+        if (using_dev)
+        {
         out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
         out << endl;
+        }
         out << "SET(COMMON_SOURCES" << endl;
         out << name << "PluginInfo.C" << endl;
         out << name << "CommonPluginInfo.C" << endl;
@@ -491,7 +497,8 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         out << "VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_FOLDER(plots ${INSTALLTARGETS})" << endl;
+        if (using_dev)
+          out << "VISIT_PLUGIN_TARGET_FOLDER(plots ${INSTALLTARGETS})" << endl;
         out << endl;
     }
 
@@ -501,8 +508,11 @@ class CMakeGeneratorPlugin : public Plugin
     {
         out << "PROJECT(" << name<< ")" << endl;
         out << endl;
+        if (using_dev)
+        {
         out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
         out << endl;
+        }
         out << "SET(COMMON_SOURCES" << endl;
         out << name << "PluginInfo.C" << endl;
         out << name << "CommonPluginInfo.C" << endl;
@@ -666,7 +676,8 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         out << "VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_FOLDER(operators ${INSTALLTARGETS})" << endl;
+        if (using_dev)
+          out << "VISIT_PLUGIN_TARGET_FOLDER(operators ${INSTALLTARGETS})" << endl;
         out << endl;
     }
 
@@ -674,8 +685,11 @@ class CMakeGeneratorPlugin : public Plugin
     {
         out << "PROJECT("<<name<<")" << endl;
         out << endl;
+        if (using_dev)
+        {
         out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
         out << endl;
+        }
         out << "SET(COMMON_SOURCES" << endl;
         out << ""<<name<<"PluginInfo.C" << endl;
         out << ""<<name<<"CommonPluginInfo.C" << endl;
@@ -886,7 +900,9 @@ class CMakeGeneratorPlugin : public Plugin
         }
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_PREFIX(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_FOLDER(databases ${INSTALLTARGETS})" << endl;
+        if (using_dev)
+          out << "VISIT_PLUGIN_TARGET_FOLDER(databases ${INSTALLTARGETS})" << endl;
+        out << endl;
     }
 
     void WriteCMake(QTextStream &out)

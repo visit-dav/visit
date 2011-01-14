@@ -103,10 +103,6 @@ SET(VISIT_COMMON_INCLUDES
     ${VISIT_INCLUDE_DIR}/visit/common/proxybase
     ${VISIT_INCLUDE_DIR}/visit/common/state
     ${VISIT_INCLUDE_DIR}/visit/common/utility
-    ${VISIT_INCLUDE_DIR}/visit/common/common/misc
-    ${VISIT_INCLUDE_DIR}/visit/common/common/plugin
-    ${VISIT_INCLUDE_DIR}/visit/common/common/state
-    ${VISIT_INCLUDE_DIR}/visit/common/common/utility
 )
 
 # VisIt options
