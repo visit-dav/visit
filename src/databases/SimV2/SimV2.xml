@@ -8,6 +8,9 @@
       ${VISIT_INCLUDE_DIR}/sim/V2/runtime
       ${MESA_INCLUDE_DIR}
     </CXXFLAGS>
+    <LDFLAGS>
+      ${ICET_LIBRARY_DIR}
+    </LDFLAGS>
     <LIBS>
       ${TESSELLATION_LIBRARY}
     </LIBS>

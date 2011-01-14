@@ -226,6 +226,7 @@ IF(VISIT_PARALLEL)
         avtviswindow_par
         avtpipeline_par
         cognomen
+        ${ICET_LIB}
     )
 
     IF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
@@ -255,7 +256,6 @@ IF(VISIT_PARALLEL)
         vtkftgl
         ${ALL_THIRDPARTY_IO_LIB}
         ${TCMALLOC_LIB}
-        ${ICET_LIB}
         ${CMAKE_THREAD_LIBS} 
         ${ZLIB_LIB} 
     )
