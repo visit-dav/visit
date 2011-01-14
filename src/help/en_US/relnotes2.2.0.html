@@ -128,8 +128,9 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>A bug was fixed where creating a Contour plot after a Pseudocolor plot was causing AMR data sets to be mishandled.  (Extra geometry showed up that should have been removed.)</li>
    <li>VisIt can again read mixed material variables from simulations.</li>
    <li>New windows are now able to create plots from the active source.</li>
-   <li></li>
-   <li></li>
+   <li>Using -dump option with Curve plots no longer crashes the engine.</li>
+   <li>A bug was fixed where Contour plots of small data values were not being colored correctly.</li>
+   <li>A bug with building a plugin against Installed verison of VisIt on windows has been fixed.</li>
    <li></li>
 </ul>
 
@@ -151,7 +152,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
    <li>xmledit, xml2info and xml2avt all now support expression-creating-operators.</li>
    <li>The avtGradientExpression module was re-factored so that other modules can access these gradients without creating a mini-pipeline.</li>
-   <li></li>
+   <li>The data diretory can now be built on Windows.</li>
    <li></li>
    <li></li>
    <li></li>
