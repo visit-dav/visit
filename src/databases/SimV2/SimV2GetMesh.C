@@ -569,7 +569,9 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
 // Creation:   Thu Feb 25 11:57:18 PST 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 14 01:49:00 PST 2011
+//   Make all components the same type in 2D or bad things happen.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -625,7 +627,12 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     {
         if(ndims == 2 && i == 2)
         {
-            coords[i] = vtkFloatArray::New();
+            // We don't really have a Z dimension in 2D but create one
+            // and make it the same as the others.
+            if(dataType[0] == VISIT_DATATYPE_FLOAT)
+                coords[i] = vtkFloatArray::New();
+            else
+                coords[i] = vtkDoubleArray::New();
             coords[i]->SetNumberOfTuples(1);
             coords[i]->SetComponent(0, 0, 0);
         }
