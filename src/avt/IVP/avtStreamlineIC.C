@@ -228,6 +228,9 @@ avtStreamlineIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 //    Hank Childs, Sun Dec  5 11:43:46 PST 2010
 //    Communicate new data members.
 //
+//    David Camp, Mon Jan 17 12:48:18 PST 2011
+//    Added missing data members to list.
+//
 // ****************************************************************************
 
 void
@@ -238,8 +241,12 @@ avtStreamlineIC::Serialize(MemStream::Mode mode, MemStream &buff,
     avtStateRecorderIntegralCurve::Serialize(mode, buff, solver);
 
     buff.io(mode, numSteps);
+    buff.io(mode, maxSteps);
+    buff.io(mode, doDistance);
+    buff.io(mode, maxDistance);
+    buff.io(mode, doTime);
+    buff.io(mode, maxTime);
     buff.io(mode, terminatedBecauseOfMaxSteps);
     buff.io(mode, speedAtTermination);
 }
-
 
