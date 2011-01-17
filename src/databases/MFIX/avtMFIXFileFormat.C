@@ -146,7 +146,7 @@ avtMFIXFileFormat::avtMFIXFileFormat(const char *filename,
 
 #ifdef WORDS_BIGENDIAN
     if (fileBigEndian)
-        thisSwapByteOrder = false;
+        this->SwapByteOrder = false;
     else
         this->SwapByteOrder = true;
 #else
