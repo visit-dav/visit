@@ -56,6 +56,7 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>VisIt can now read many GMV files.</li>
    <li>The MFIX reader was re-written so that it supports multiple domains and ghost zones and scales well.</li>
    <li>The Xdmf reader was modified so that the GUI displays a single grid, when the grid consists of a collection of grids, rather than all the individual grids in the collection.</li>
+   <li>The Nek5000 reader can now work around the bug in legacy Nek files where the time and cycle are concatenated.  This bug only affected binary, non-parallel files with a new mesh at every time slice.</li>
    <li></li>
 </ul>
 
@@ -122,7 +123,7 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>xmledit, xml2info and xml2avt all now support expression-creating-operators.</li>
    <li>The avtGradientExpression module was re-factored so that other modules can access these gradients without creating a mini-pipeline.</li>
    <li>The data diretory can now be built on Windows.</li>
-   <li>VISIT_BOXLIB2D_DIR and VISIT_BOXLIB3D_DIR were replaced with VISIT_BOXLIB_DIR. In order to continue being able to build the BoxLib reader you must upgrad to the new BoxLib library and update your config site file. If you don't do this the build system will silently fail to build the BoxLib reader.</li>
+   <li>VISIT_BOXLIB2D_DIR and VISIT_BOXLIB3D_DIR were replaced with VISIT_BOXLIB_DIR. In order to continue being able to build the BoxLib reader you must upgrade to the new BoxLib library and update your config site file. If you don't do this the build system will silently fail to build the BoxLib reader.</li>
    <li></li>
 </ul>
 
