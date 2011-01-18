@@ -1,38 +1,39 @@
 dnl Process this file with autoconf to produce configure.
 dnl 
 dnl 
-dnl                            Copyright 2000 - 2009
-dnl                 The Regents of the University of California.
-dnl                             All rights reserved.
-dnl 
-dnl This work was produced at the University of California, Lawrence Livermore
-dnl National Laboratory (UC LLNL)  under contract no.  W-7405-ENG-48 (Contract
-dnl 48) between  the U.S. Department of Energy  (DOE)  and The Regents  of the
-dnl University  of  California  (University)  for  the  operation of  UC LLNL.
-dnl Copyright   is  reserved to  the   University for  purposes  of controlled
-dnl dissemination,   commercialization  through  formal licensing,   or  other
-dnl disposition under  terms of Contract   48; DOE policies,  regulations  and
-dnl orders; and  U.S. statutes.  The    rights of the  Federal Government  are
-dnl reserved under Contract 48 subject to  the restrictions agreed upon by DOE
-dnl and University.
-dnl 
-dnl                                 DISCLAIMER
-dnl 
-dnl This software was prepared as an account of work sponsored by an agency of
-dnl the United States Government. Neither the United States Government nor the
-dnl University  of California nor any of  their employees, makes any warranty,
-dnl express or implied,  or assumes  any liability  or responsiblity  for  the
-dnl accuracy, completeness, or    usefullness of any  information,  apparatus,
-dnl product, or  process   disclosed, or represents that  its   use would  not
-dnl infringe privately    owned  rights. Reference   herein  to  any  specific
-dnl commercial  products, process,  or    service by trade   name,  trademark,
-dnl manufacturer, or otherwise, does  not necessarily constitute or imply  its
-dnl endorsement, recommendation, or  favoring by the United  States Government
-dnl or the   University  of  California.  The views   and  opinions of authors
-dnl expressed herein do not  necessarily state or  reflect those of the United
-dnl States Government  or the University of  California, and shall not be used
-dnl for advertising or product endorsement purposes.
+dnl Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+dnl Produced at the Lawrence Livermore National Laboratory
+dnl LLNL-CODE-400142
+dnl All rights reserved.
 dnl
+dnl This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+dnl full copyright notice is contained in the file COPYRIGHT located at the root
+dnl of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+dnl
+dnl Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+dnl modification, are permitted provided that the following conditions are met:
+dnl
+dnl  - Redistributions of  source code must  retain the above  copyright notice,
+dnl    this list of conditions and the disclaimer below.
+dnl  - Redistributions in binary form must reproduce the above copyright notice,
+dnl    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+dnl    documentation and/or other materials provided with the distribution.
+dnl  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+dnl    be used to endorse or promote products derived from this software without
+dnl    specific prior written permission.
+dnl
+dnl THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+dnl AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+dnl IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+dnl ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+dnl LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+dnl DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+dnl DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+dnl SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+dnl CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+dnl LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+dnl OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+dnl DAMAGE.
 dnl
 dnl
 dnl Modifications:
