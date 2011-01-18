@@ -44,6 +44,7 @@
 #include <TimingsManager.h>
 #include <VisItInit.h>
 #include <InitVTKLite.h>
+#include <avtCallback.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
 #include <DatabasePluginManager.h>
@@ -225,6 +226,9 @@ main(int argc, char *argv[])
 //   Removed assume and fallback format options.  This is obsolete with
 //   the new file format detection now in visit proper.
 //
+//   Hank Childs, Tue Jan 18 09:39:17 PST 2011
+//   Add support for -auxsessionkey.
+//
 // ****************************************************************************
 
 bool
@@ -245,6 +249,15 @@ ProcessCommandLine(int argc, char *argv[])
         else if(strcmp(argv[i], "-noconnect") == 0)
         {
             runApp = false;
+        }
+        else if(strcmp(argv[i], "-auxsessionkey") == 0)
+        {
+            if (i+1 < argc)
+            {
+                std::string s = argv[i+1];
+                avtCallback::SetAuxSessionKey(s);
+                i++;
+            }
         }
     }
 
