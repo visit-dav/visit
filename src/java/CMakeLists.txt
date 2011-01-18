@@ -39,6 +39,9 @@
 #   Hank Childs, Thu Aug 19 12:26:29 PDT 2010
 #   Rename DDF to DataBinning.
 #
+#   Brad Whitlock, Tue Jan 11 10:22:33 PST 2011
+#   Add DualClients.java
+#
 #****************************************************************************/
 
 PROJECT(JavaClient Java)
@@ -194,6 +197,7 @@ ADD_CUSTOM_TARGET(pack ${CMAKE_Java_ARCHIVE} cvf visit.jar llnl WORKING_DIRECTOR
 
 # Add a target that compiles all of the main programs.
 SET(MAIN_SOURCES
+DualClients.java
 GetMetaData.java 
 MakeHostProfile.java 
 NIFGUI.java 
