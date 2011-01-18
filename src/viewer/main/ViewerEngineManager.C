@@ -706,6 +706,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Brad Whitlock, Wed Dec 1 23:35:34 PST 2010
+//    Tell EngineProxy that it is a simulation.
+//
 // ****************************************************************************
 
 bool
@@ -736,7 +739,7 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
     // If an engine for the host doesn't already exist, create one.
     //
     EngineInformation newEngine;
-    newEngine.proxy = new EngineProxy;
+    newEngine.proxy = new EngineProxy(true);
 
     //
     // Add some arguments to the engine proxy before we try to

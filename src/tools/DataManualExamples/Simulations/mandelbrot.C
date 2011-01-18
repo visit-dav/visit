@@ -217,7 +217,6 @@ calculate_amr(patch_t *patch, int level, int max_levels, int ratio)
 
 #define SIM_STOPPED       0
 #define SIM_RUNNING       1
-#define SIM_RUNNING_SLOW  2
 
 struct simulation_data
 {
@@ -345,15 +344,11 @@ ProcessConsoleCommand(simulation_data *sim)
     /* Read A Command */
     char cmd[1000];
 
-    int iseof = (fgets(cmd, 1000, stdin) == NULL);
-    if (iseof)
+    if(VisItReadConsole(1000, cmd) == VISIT_ERROR)
     {
         sprintf(cmd, "quit");
         printf("quit\n");
     }
-
-    if (strlen(cmd)>0 && cmd[strlen(cmd)-1] == '\n')
-        cmd[strlen(cmd)-1] = '\0';
 
     if(strcmp(cmd, "quit") == 0)
         sim->done = 1;
@@ -478,7 +473,7 @@ void read_input_deck(void) { }
 
 void mainloop(void)
 {
-    int blocking, visitstate, timeout, err = 0;
+    int blocking, visitstate, err = 0;
 
     // Set up some simulation data.
     simulation_data sim;
@@ -496,9 +491,8 @@ void mainloop(void)
     do
     {
         blocking = (sim.runMode == SIM_STOPPED) ? 1 : 0;
-        timeout = (sim.runMode == SIM_RUNNING_SLOW) ? 500000 : 0;
         /* Get input from VisIt or timeout so the simulation can run. */
-        visitstate = VisItDetectInputWithTimeout(blocking, timeout, fileno(stdin));
+        visitstate = VisItDetectInput(blocking, fileno(stdin));
 
         /* Do different things depending on the output from VisItDetectInput. */
         if(visitstate >= -5 && visitstate <= -1)
@@ -516,7 +510,7 @@ void mainloop(void)
             /* VisIt is trying to connect to sim. */
             if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
-                sim.runMode = SIM_RUNNING_SLOW;
+                sim.runMode = SIM_STOPPED;
                 fprintf(stderr, "VisIt connected\n");
                 VisItSetCommandCallback(ControlCommandCallback, (void*)&sim);
 

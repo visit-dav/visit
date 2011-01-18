@@ -290,6 +290,9 @@ Engine::Engine() : viewerArgs()
     netmgr = NULL;
     lb = NULL;
     procAtts = NULL;
+
+    simxfer = NULL;
+    simConnection = NULL;
     simulationCommandCallback = NULL;
     simulationCommandCallbackData = NULL;
     metaData = NULL;
@@ -365,6 +368,8 @@ Engine::~Engine()
 {
     delete xfer;
     delete lb;
+
+    delete simxfer;
     delete silAtts;
     delete metaData;
     delete commandFromSim;
@@ -523,6 +528,8 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     VisItInit::SetComponentName("engine");
     VisItInit::Initialize(*argc, *argv, 0,1, true, sigs);
 #endif
+
+    simxfer = new Xfer;
 
     // Configure external options.
     RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
@@ -803,6 +810,14 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     else
         vtkConnection = viewerP->GetReadConnection(1);
 
+    if(simulationPluginsEnabled)
+    {
+        if(reverseLaunch)
+            simConnection = viewer->GetWriteConnection(2);
+        else
+            simConnection = viewerP->GetReadConnection(2);
+    }
+
     // Parse the command line.
     ProcessCommandLine(*argc, *argv);
 
@@ -994,9 +1009,9 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     metaData = new avtDatabaseMetaData;
     silAtts = new SILAttributes;
     commandFromSim = new SimulationCommand;
-    xfer->Add(metaData);
-    xfer->Add(silAtts);
-    xfer->Add(commandFromSim);
+    simxfer->Add(metaData);
+    simxfer->Add(silAtts);
+    simxfer->Add(commandFromSim);
 
     //
     // Hook up the viewer connections to Xfer
@@ -1008,6 +1023,9 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
             xfer->SetInputConnection(viewer->GetWriteConnection());
         else
             xfer->SetInputConnection(viewerP->GetWriteConnection());
+
+        if(simulationPluginsEnabled)
+            simxfer->SetOutputConnection(simConnection);
     }
     else
     {
@@ -1020,6 +1038,9 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
         xfer->SetInputConnection(viewer->GetWriteConnection());
     else
         xfer->SetInputConnection(viewerP->GetWriteConnection());
+
+    if(simulationPluginsEnabled)
+        simxfer->SetOutputConnection(simConnection);
 #endif
     if(reverseLaunch)
         xfer->SetOutputConnection(viewer->GetReadConnection());
@@ -1222,7 +1243,7 @@ Engine::ReverseLaunchViewer(int *argc, char **argv[])
                          0,                        // ssh port
                          false,                    // ssh tunnelling
                          1,                        // num read sockets
-                         2);                       // num write sockets
+                         simulationPluginsEnabled ? 3 : 2); // num write sockets
         }
         CATCH(VisItException)
         {
@@ -1295,10 +1316,11 @@ Engine::ConnectViewer(int *argc, char **argv[])
         {
             // The viewer launched the engine
             viewerP = new ParentProcess;
+            int nwrite = simulationPluginsEnabled ? 3 : 2;
 #ifdef PARALLEL
-            viewerP->Connect(1, 2, argc, argv, PAR_UIProcess());
+            viewerP->Connect(1, nwrite, argc, argv, PAR_UIProcess());
 #else
-            viewerP->Connect(1, 2, argc, argv, true);
+            viewerP->Connect(1, nwrite, argc, argv, true);
 #endif
         }
     }
@@ -3267,7 +3289,7 @@ Engine::PopulateSimulationMetaData(const std::string &db,
     // Send the metadata and SIL to the viewer
     if(!quitRPC->GetQuit())
     {
-        xfer->SetUpdate(true);
+        simxfer->SetUpdate(true);
         metaData->Notify();
         silAtts->SelectAll();
         silAtts->Notify();
@@ -3345,7 +3367,7 @@ Engine::SimulationInitiateCommand(const std::string &command)
     {
         // Allow the command to be sent, even if we're in the middle of an
         // Xfer::Process. This fixes a synchronization bug.
-        xfer->SetUpdate(true);
+        simxfer->SetUpdate(true);
 
         commandFromSim->SetCommand(command);
         commandFromSim->Notify();

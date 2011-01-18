@@ -376,6 +376,8 @@ class ENGINE_MAIN_API Engine
     // The metadata, filename, format, control data for a simulation
     std::string               filename;
     std::string               format;
+    Xfer                     *simxfer;
+    Connection               *simConnection;
     avtDatabaseMetaData      *metaData;
     SILAttributes            *silAtts;
     SimulationCommand        *commandFromSim;

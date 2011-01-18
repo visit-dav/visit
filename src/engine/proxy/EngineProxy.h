@@ -320,7 +320,7 @@ class ParentProcess;
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
 {
 public:
-    EngineProxy();
+    EngineProxy(bool sim = false);
     virtual ~EngineProxy();
 
     // This version of Create is specifically for reverse launch.
@@ -472,6 +472,7 @@ private:
     StatusAttributes        *statusAtts;
 
     // Metadata, SIL published by a simulation
+    Xfer                    *simxfer;
     avtDatabaseMetaData     *metaData;
     SILAttributes           *silAtts;
     SimulationCommand       *commandFromSim;
