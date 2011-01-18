@@ -30,7 +30,7 @@ QString preHeaderLeader = "pre_";
 const char *copyright_str = 
 "/*****************************************************************************\n"
 "*\n"
-"* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC\n"
+"* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC\n"
 "* Produced at the Lawrence Livermore National Laboratory\n"
 "* LLNL-CODE-442911\n"
 "* All rights reserved.\n"

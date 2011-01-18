@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -129,7 +129,7 @@ SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
 SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "MCurveIt version ${VISIT_VERSION}")
 SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "MCurveIt ${VISIT_VERSION}")
 SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC")
+SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC")
 
 SET(VIEWER_QT_LIBS 
 ${QT_QTGUI_LIBRARY}
