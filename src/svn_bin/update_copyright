@@ -7,7 +7,10 @@
 find -type f -name "*.c" -exec sed -i "s/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC/" {} \; -print
 find -type f -name "*.C" -exec sed -i "s/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC/" {} \; -print
 find -type f -name "*.h" -exec sed -i "s/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.f" -exec sed -i "s/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC/" {} \; -print
 find -type f -name "*.java" -exec sed -i "s/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC/" {} \; -print
 find -type f -name "*.cmake" -exec sed -i "s/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC/" {} \; -print
 find -type f -name "*.txt" -exec sed -i "s/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC/" {} \; -print
 find -type f -name "*.in" -exec sed -i "s/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.py" -exec sed -i "s/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.sh" -exec sed -i "s/Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC/" {} \; -print

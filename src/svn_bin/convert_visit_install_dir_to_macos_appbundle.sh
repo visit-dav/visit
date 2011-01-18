@@ -54,7 +54,7 @@ cat >>$1/Contents/Info.plist <<EOF
         <key>LSRequiresCarbon</key>
         <true/>
         <key>NSHumanReadableCopyright</key>
-        <string>Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC</string>
+        <string>Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC</string>
 </dict>
 </plist>
 EOF
