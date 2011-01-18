@@ -252,15 +252,11 @@ ProcessConsoleCommand(simulation_data *sim)
 
     if (sim->par_rank == 0)
     {
-        int iseof = (fgets(cmd, 1000, stdin) == NULL);
-        if (iseof)
+        if(VisItReadConsole(1000, cmd) == VISIT_ERROR)
         {
             sprintf(cmd, "quit");
             printf("quit\n");
         }
-
-        if (strlen(cmd)>0 && cmd[strlen(cmd)-1] == '\n')
-            cmd[strlen(cmd)-1] = '\0';
     }
 
 #ifdef PARALLEL

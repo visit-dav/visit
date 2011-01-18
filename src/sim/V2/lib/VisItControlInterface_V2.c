@@ -43,6 +43,9 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <direct.h>
+#include <sys/stat.h>
+#include <shlobj.h>
+#include <shlwapi.h>
 #else
 #include <dlfcn.h>
 #include <netdb.h>
@@ -1213,12 +1216,41 @@ static VISIT_SOCKET AcceptConnection(void)
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Brad Whitlock, Mon Jan 17 18:31:23 PST 2011
+*   I added a Windows implementation.
 *
 *******************************************************************************/
 static const char *GetHomeDirectory(void)
 {
 #ifdef _WIN32
-    return "C:/Users/Brad";
+    char visituserpath[MAX_PATH], expvisituserpath[MAX_PATH];
+    static char *returnpath = NULL;
+    int haveVISITUSERHOME=0, pathlen = 0;
+    TCHAR szPath[MAX_PATH];
+
+    LIBSIM_API_ENTER(GetHomeDirectory);
+
+    if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
+                             SHGFP_TYPE_CURRENT, szPath))) 
+    {
+        SNPRINTF(visituserpath, 512, "%s", szPath);
+        haveVISITUSERHOME = 1;
+    }
+
+    if (haveVISITUSERHOME)
+        ExpandEnvironmentStrings(visituserpath, expvisituserpath, MAX_PATH);
+    else
+        strcpy(expvisituserpath, "C:\\Users");
+
+    if(returnpath != NULL)
+        free(returnpath);
+    pathlen = 1 + strlen(expvisituserpath);
+    returnpath = (char*)malloc(pathlen);
+    strcpy(returnpath, expvisituserpath);
+
+    LIBSIM_API_LEAVE1(GetHomeDirectory, "homedir=%s", returnpath);
+
+    return returnpath;
 #else
     struct passwd *users_passwd_entry = NULL;
 
@@ -1249,6 +1281,11 @@ static void EnsureSimulationDirectoryExists(void)
     char str[1024];
     LIBSIM_API_ENTER(EnsureSimulationDirectoryExists);
 
+#ifdef _WIN32
+    SNPRINTF(str, 1024, "%s/Simulations", GetHomeDirectory());
+    VisItMkdir(str, 7*64 + 7*8 + 7);
+    LIBSIM_MESSAGE1("mkdir %s", str);
+#else
     SNPRINTF(str, 1024, "%s/.visit", GetHomeDirectory());
     VisItMkdir(str, 7*64 + 7*8 + 7);
     LIBSIM_MESSAGE1("mkdir %s", str);
@@ -1256,6 +1293,7 @@ static void EnsureSimulationDirectoryExists(void)
     SNPRINTF(str, 1024, "%s/.visit/simulations", GetHomeDirectory());
     VisItMkdir(str, 7*64 + 7*8 + 7);
     LIBSIM_MESSAGE1("mkdir %s", str);
+#endif
 
     LIBSIM_API_LEAVE(EnsureSimulationDirectoryExists);
 }
@@ -1348,6 +1386,8 @@ static int LoadVisItLibrary_Windows(void)
     SetErrorMode(0);
     dl_handle = LoadLibrary(lib);
 
+#if 0
+    /* TODO: Make the error reporting work. */
     if (dl_handle == NULL)
     {
         WCHAR msg[1024];
@@ -1360,6 +1400,7 @@ LIBSIM_MESSAGE1("Error: %x", GetLastError());
 
         /*SNPRINTF(lastError, 1024, "Failed to open the VisIt library: %s\n", msg);*/
     }
+#endif
 
     LIBSIM_API_LEAVE(LoadVisItLibrary_Windows);
 
@@ -1716,7 +1757,9 @@ int VisItSetupEnvironment(void)
     LIBSIM_API_ENTER(VisItSetupEnvironment);
     GetVisItDirectory(visitpath, 1024);
 
-    /* Tell Windows that we want to get DLLs from this path */
+    /* Tell Windows that we want to get DLLs from this path. We DO need this
+     * in order for dependent DLLs to be located.
+     */
     SetDllDirectory(visitpath);
 
     /* Set the VisIt home dir. */
@@ -1729,7 +1772,7 @@ int VisItSetupEnvironment(void)
     LIBSIM_MESSAGE(tmp);
     putenv(tmp);
 
-    // Initiate the use of a Winsock DLL (WS2_32.DLL), necessary for sockets.
+    /* Initiate the use of a Winsock DLL (WS2_32.DLL), necessary for sockets. */
     wVersionRequested = MAKEWORD(2,2);
     WSAStartup(wVersionRequested, &wsaData);
 #else
@@ -1822,7 +1865,12 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
     
     if ( !absoluteFilename )
     {
-        SNPRINTF(simulationFileName, 255, "%s/.visit/simulations/%012d.%s.sim2",
+        SNPRINTF(simulationFileName, 255, 
+#ifdef _WIN32
+                 "%s/Simulations/%012d.%s.sim2",
+#else
+                 "%s/.visit/simulations/%012d.%s.sim2",
+#endif
                  GetHomeDirectory(), (int)time(NULL), name);
     }
     else
@@ -1893,27 +1941,15 @@ VisItDetectInput(int blocking, int consoleFileDescriptor)
 }
 
 #ifdef _WIN32
-static int inputThreadsStarted = 0;
-static HANDLE stdinevent = 0;
+/*
+ * Win32 implementation of VisItDetectInputWithTimeout.
+ */
+static int selectThreadStarted = 0;
+static int consoleThreadStarted = 0;
 static WSAEVENT listenevent = 0;
 static HANDLE engineevent = 0;
 static HANDLE listeneventCB = 0;
 static HANDLE engineeventCB = 0;
-
-DWORD WINAPI
-stdin_thread(LPVOID param)
-{
-    while(1)
-    {
-        WaitForSingleObject(GetStdHandle(STD_INPUT_HANDLE), INFINITE);
-        fprintf(stderr, "stdin thread signaling input\n");
-        SetEvent(stdinevent);
-    }
-
-    return 0;
-}
-
-#define SELECT_ENGINE_SOCKET
 
 static void
 VLogWindowsSocketError()
@@ -2016,6 +2052,14 @@ VLogWindowsSocketError()
     fprintf(stderr, "\n");
 }
 
+/*
+ * We run this function on another thread so select can block and then we
+ * send events to the main thread which is stuck in WaitForMultipleObjects
+ * inside its VisItDetectInputWithTimeout function. We use this multiple
+ * thread approach so we can wait for both socket input and console input,
+ * which is central to VisItDetectInput.
+ */
+
 DWORD WINAPI
 select_thread(LPVOID param)
 {
@@ -2024,18 +2068,15 @@ select_thread(LPVOID param)
     {
         fd_set readSet;
         int    ignored = 0, status = 0;
-        struct timeval SmallTimeout = {0, 50000};
 
         FD_ZERO(&readSet);
 
         /* If we're connected, select on the control socket */
-#ifdef SELECT_ENGINE_SOCKET
         if(engineSocket != VISIT_INVALID_SOCKET)
         {
             FD_SET(engineSocket, &readSet);
-            fprintf(stderr, "select_thread: selecting engine control socket\n");
+            /*fprintf(stderr, "select_thread: selecting engine control socket\n");*/
         }
-#endif
 
         /* If we're connected, do *not* select on the listen socket */
         /* This forces us to have only one client at a time. */
@@ -2043,91 +2084,66 @@ select_thread(LPVOID param)
             listenSocket != VISIT_INVALID_SOCKET)
         {
             FD_SET(listenSocket, &readSet);
-            fprintf(stderr, "select_thread: selecting listen socket for inbound connections\n");
+/*            fprintf(stderr, "select_thread: selecting listen socket for inbound connections\n");*/
         }
 
-        fprintf(stderr, "select_thread: calling select\n");
+/*        fprintf(stderr, "select_thread: calling select\n");*/
         status = select(ignored, &readSet, (fd_set*)NULL, 
                         (fd_set*)NULL, NULL);
 
-//haveEngineSocket ? &SmallTimeout : NULL);
-
         if(status == SOCKET_ERROR)
         {
-            fprintf(stderr, "SOCKET_ERROR\n");
             VLogWindowsSocketError();
-        }
-        else if(status == 0)
-        {
-            // timed out
-//fprintf(stderr, "timed out!\n");
         }
         else if(status > 0)
         {
              if (listenSocket != VISIT_INVALID_SOCKET &&
                  FD_ISSET(listenSocket, &readSet))
              {
-//               fprintf(stderr, "Send a listen event!\n");
                  SetEvent(listenevent);
-                 // wait for it to be done.
+
+                 /* wait for it to be done. */
                  WaitForSingleObject(listeneventCB, INFINITE);
              }
-#ifdef SELECT_ENGINE_SOCKET
              else if (engineSocket != VISIT_INVALID_SOCKET &&
                       FD_ISSET(engineSocket, &readSet))
              {
-//               fprintf(stderr, "Send an engine event!\n");
                  SetEvent(engineevent);
 
-                 // wait for it to be done.
+                 /* wait for it to be done. */
                  WaitForSingleObject(engineeventCB, INFINITE);
              }
-#endif
-        }
-        else
-        {
-            // error
         }
     }
 
     return 0;
 }
 
+/*
+ * Wait for input from the sockets or console on a specified timeout interval.
+ */
 int
 VisItDetectInputWithTimeout(int blocking, int timeoutVal,
     int consoleFileDescriptor)
 {
     HANDLE handles[3];
-    int n, msec;
+    int n0, n, msec;
 
     LIBSIM_API_ENTER2(VisItDetectInput, "blocking=%d, consoleFile=%d",
                       blocking, consoleFileDescriptor);
 
     msec = timeoutVal / 1000;
 
-    if(!inputThreadsStarted)
+    if(!selectThreadStarted)
     {
-        DWORD stdin_threadid, select_threadid;
+        DWORD select_threadid;
 
-        stdinevent  = CreateEvent(NULL, FALSE, FALSE, NULL);
         listenevent = CreateEvent(NULL, FALSE, FALSE, NULL);
         engineevent = CreateEvent(NULL, FALSE, FALSE, NULL);
         listeneventCB = CreateEvent(NULL, FALSE, FALSE, NULL);
         engineeventCB = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-#if 0
-        fprintf(stderr, "Creating stdin thread\n");
-        if(!CreateThread(NULL, 0, stdin_thread,
-                         NULL, 0, &stdin_threadid))
-        {
-            LIBSIM_API_LEAVE1(VisItDetectInput,
-                              "Unable to create console input thread. return %d",
-                              -4);
-            return -4;
-        }
-#endif
-
-        fprintf(stderr, "Creating socket input thread\n");
+        /*fprintf(stderr, "Creating socket input thread\n");*/
         if(!CreateThread(NULL, 0, select_thread,
                          NULL, 0, &select_threadid))
         {
@@ -2137,16 +2153,21 @@ VisItDetectInputWithTimeout(int blocking, int timeoutVal,
             return -4;
         }
 
-        inputThreadsStarted = 1;
+        selectThreadStarted = 1;
     }
 
-    // Wait for any of these events to occur.
+    /* Wait for any of these events to occur. */
+waitforevents:
+    n0 = 2;
     handles[0] = listenevent;
     handles[1] = engineevent;
-    //handles[2] = GetStdHandle(STD_INPUT_HANDLE);
-    n = WaitForMultipleObjects(2, handles, FALSE, blocking ? INFINITE : msec);
+    if(consoleFileDescriptor >= 0)
+    {
+        handles[2] = GetStdHandle(STD_INPUT_HANDLE);
+        n0++;
+    }
 
-    //fprintf(stderr, "MsgWaitForMultipleObjects: returned %d\n", n);
+    n = WaitForMultipleObjects(n0, handles, FALSE, blocking ? INFINITE : msec);
 
     if(n == WAIT_TIMEOUT)
     {
@@ -2157,20 +2178,21 @@ VisItDetectInputWithTimeout(int blocking, int timeoutVal,
     }
     else if(n == WAIT_OBJECT_0)
     {
-        // we received an event on the listen socket. If it's an event
-        // indicating that there's input then tell the user it's okay
-        // to read from the listen socket.
+        /* We received an event on the listen socket. If it's an event
+         * indicating that there's input then tell the user it's okay
+         * to read from the listen socket.
+         */
         LIBSIM_API_LEAVE1(VisItDetectInput,
-                          "WAIT_OBJECT_0: Listen  socket input. return %d",
+                          "WAIT_OBJECT_0: Listen socket input. return %d",
                           1);
-//        SetEvent(listeneventCB);
         return 1;
     }
     else if(n == WAIT_OBJECT_0+1)
     {
-        // we received an event for the engine socket. If it's an event
-        // indicating that there's input then tell the user it's okay
-        // to read from the engine socket.
+        /* we received an event for the engine socket. If it's an event
+         * indicating that there's input then tell the user it's okay
+         * to read from the engine socket.
+         */
         LIBSIM_API_LEAVE1(VisItDetectInput,
                           "WAIT_OBJECT_0+1: Engine socket input. return %d",
                           2);
@@ -2178,12 +2200,39 @@ VisItDetectInputWithTimeout(int blocking, int timeoutVal,
     }
     else if(n == WAIT_OBJECT_0+2)
     {
-        // we received a stdin event. Tell the client that it's
-        // okay to read from the console.
+        /* We received a stdin event but it might not be a key event.
+         * Peek at the events to look for key presses. If we find some,
+         * tell the client that it's okay to read from the console.
+         */
+        DWORD nEvents = 0;
+        INPUT_RECORD input[100];
+        int retval = 0; /* no input timeout */
+        if(PeekConsoleInput(GetStdHandle(STD_INPUT_HANDLE),
+           input, 100, &nEvents))
+        {
+            DWORD j;
+            for(j = 0; j < nEvents; ++j)
+            {
+                if(input[j].EventType == KEY_EVENT)
+                {
+                    retval = 3; /* read console input */
+                    break;
+                }
+            }
+        }
+        /* We did not have any real key events so go back to waiting for them. */
+        if(retval != 3)
+        {
+            /* Gobble up the junk events so we don't keep getting them. */
+            DWORD maxevents = nEvents;
+            ReadConsoleInput(GetStdHandle(STD_INPUT_HANDLE),
+                             input, maxevents, &nEvents);
+            goto waitforevents;
+        }
+
         LIBSIM_API_LEAVE1(VisItDetectInput,
-                          "WAIT_OBJECT_0+2: Console socket input. return %d",
+                          "WAIT_OBJECT_0+2: Console input. return %d",
                           3);
-        fprintf(stderr, "WAIT_OBJECT_0+2\n");
         return 3;
     }
 
@@ -2330,6 +2379,60 @@ VisItDetectInputWithTimeout(int blocking, int timeoutVal,
 
 /*******************************************************************************
 *
+* Name: VisItReadConsole
+*
+* Purpose: Read at most maxlen characters from the console.
+*
+* Author: Brad Whitlock, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
+*
+*******************************************************************************/
+
+int
+VisItReadConsole(int maxlen, char *buffer)
+{
+    int retval = VISIT_OKAY;
+
+    LIBSIM_API_ENTER(VisItReadConsole);
+
+    if(buffer != NULL && maxlen > 0)
+    {
+#ifdef _WIN32
+        DWORD mlen = maxlen, nread = 0, nEvents = 0;
+        memset(buffer, 0, maxlen);
+
+        /* This blocks so we may need to switch at some point to a ReadConsoleInput*/
+        if(ReadConsole(GetStdHandle(STD_INPUT_HANDLE), buffer, mlen, &nread, NULL))
+        {
+            /* Strip end of line */
+            if(nread > 0)
+            {
+                buffer[nread-1] = '\0';
+                buffer[nread-2] = '\0';
+            }
+        }
+        else
+            retval = VISIT_ERROR;
+#else
+        if(fgets(cmd, 1000, stdin) == NULL)
+            retval = VISIT_ERROR;
+        else
+        {
+            /* Strip end of line */
+            int len = strlen(buffer);
+            if(len > 0 && buffer[len-1] == '\n')
+                buffer[len-1] = '\0';
+        }
+#endif
+    }
+
+    LIBSIM_API_LEAVE(VisItReadConsole);
+    return retval;
+}
+
+/*******************************************************************************
+*
 * Name: VisItAttemptToCompleteConnection
 *
 * Purpose: Accept the socket, verify security keys, get the connection
@@ -2407,9 +2510,9 @@ int VisItAttemptToCompleteConnection(void)
         engineSocket = callbacks->control.get_descriptor(engine);
         LIBSIM_MESSAGE1("visit_getdescriptor returned %d", (int)engineSocket);
 #ifdef _WIN32
-#ifndef SELECT_ENGINE_SOCKET
-        WSAEventSelect(engineSocket, engineevent, FD_READ);
-#endif
+        /* Send an event back to the select_thread telling it that it is okay
+         * to proceed.
+         */
         SetEvent(listeneventCB);
 #endif
     }
@@ -2501,14 +2604,18 @@ int VisItProcessEngineCommand(void)
     else if (callbacks != NULL)
     {
         LIBSIM_MESSAGE("Calling visit_processinput");
+#ifdef _WIN32
+        /* Send an event back to select_thread telling it that it is okay to
+           proceed
+         */
+        if(parallelRank == 0)
+            SetEvent(engineeventCB);
+#endif
         retval = ((*callbacks->control.process_input)(engine) == 1) ?
             VISIT_OKAY : VISIT_ERROR;
         LIBSIM_MESSAGE1("visit_processinput returned: %d", retval);
     }
-#ifdef _WIN32
-    if(parallelRank == 0)
-        SetEvent(engineeventCB);
-#endif
+
     LIBSIM_API_LEAVE1(VisItProcessEngineCommand, "return %d", retval);
     return retval;
 }
@@ -2630,7 +2737,7 @@ void VisItDisconnect(void)
     engineSocket = VISIT_INVALID_SOCKET;
     engine = NULL;
 #ifdef _WIN32
-    inputThreadsStarted = 0;
+    selectThreadStarted = 0;
 #endif
     CloseVisItLibrary();
     LIBSIM_API_LEAVE(VisItDisconnect);

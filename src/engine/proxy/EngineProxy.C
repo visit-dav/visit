@@ -94,12 +94,12 @@
 //
 // ****************************************************************************
 
-EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
+EngineProxy::EngineProxy(bool sim) : RemoteProxyBase("-engine")
 {
     engineP = NULL;
 
     // Indicate that we want 2 write sockets from the engine.
-    nWrite = 2;
+    nWrite = sim ? 3 : 2;
 
     // Initialize the engine information that we can query.
     numProcs = 1;
@@ -108,6 +108,7 @@ EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
 
     // Create the status attributes that we use to communicate status
     // information to the client.
+    simxfer = sim ? (new Xfer) : NULL;
     statusAtts = new StatusAttributes;
     metaData = new avtDatabaseMetaData;
     silAtts = new SILAttributes;
@@ -156,6 +157,8 @@ EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
 EngineProxy::~EngineProxy()
 {
     delete statusAtts;
+
+    delete simxfer;
     delete metaData;
     delete silAtts;
     delete commandFromSim;
@@ -197,7 +200,8 @@ EngineProxy::Connect(const stringVector &args)
     int argc = args.size();
 
     engineP = new ParentProcess;
-    engineP->Connect(1, 2, &argc, &argv, true);
+    int nwrite = (simxfer != NULL) ? 3 : 2;
+    engineP->Connect(1, nwrite, &argc, &argv, true);
     delete [] argv;
 
     // Use engineP's connections for xfer.
@@ -300,14 +304,20 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&constructDataBinningRPC);
     xfer.Add(&namedSelectionRPC);
     xfer.Add(&setEFileOpenOptionsRPC);
+    xfer.Add(&exprList);
 
     //
     // Add other state objects to the transfer object
     //
-    xfer.Add(&exprList);
-    xfer.Add(metaData);
-    xfer.Add(silAtts);
-    xfer.Add(commandFromSim);
+    Xfer *x = &xfer;
+    if(simxfer != NULL && component != NULL)
+    {
+        x = simxfer;
+        simxfer->SetInputConnection(component->GetWriteConnection(2));
+    }
+    x->Add(metaData);
+    x->Add(silAtts);
+    x->Add(commandFromSim);
 
     // Extract some information about the engine from the command line
     // arguments that were used to create it.
@@ -1734,8 +1744,8 @@ EngineProxy::ExportDatabase(const int id, const ExportDBAttributes *atts)
 int
 EngineProxy::GetWriteSocket()
 {
-    if (xfer.GetInputConnection())
-        return xfer.GetInputConnection()->GetDescriptor();
+    if (simxfer != NULL && simxfer->GetInputConnection() != NULL)
+        return simxfer->GetInputConnection()->GetDescriptor();
     else
         return -1;
 }
@@ -1757,9 +1767,9 @@ EngineProxy::GetWriteSocket()
 void
 EngineProxy::ReadDataAndProcess()
 {
-    int amountRead = xfer.GetInputConnection()->Fill();
+    int amountRead = simxfer->GetInputConnection()->Fill();
     if (amountRead > 0)
-        xfer.Process();
+        simxfer->Process();
     else
         EXCEPTION0(LostConnectionException);
 }
