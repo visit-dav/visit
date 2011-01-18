@@ -57,6 +57,7 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>The MFIX reader was re-written so that it supports multiple domains and ghost zones and scales well.</li>
    <li>The Xdmf reader was modified so that the GUI displays a single grid, when the grid consists of a collection of grids, rather than all the individual grids in the collection.</li>
    <li>The Nek5000 reader can now work around the bug in legacy Nek files where the time and cycle are concatenated.  This bug only affected binary, non-parallel files with a new mesh at every time slice.</li>
+   <li>The VTK reader was modified to support materials in a time series of files.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -74,6 +75,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
    <li>IndexSelect now works with BOV files.</li>
    <li>The InverseGhostZone operator now provides individual controls over which types of ghost zones to display (duplicated zones at the boundary, coarse zones from an AMR simulation, etc).</li>
+   <li>The Elevate operator now works correctly in parallel when combined with a Slice operator.</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -105,6 +107,8 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>A bug with building a plugin against Installed verison of VisIt on windows has been fixed.</li>
    <li>build_visit was modified to use https instead of http for doing anonymous svn checkouts of the source code. Using http failed on some systems.</li>
    <li>build_visit was modified so that it builds VisIt on Mac OS X 10.5.8 systems. The cmake command incorrectly had the "." before the rest of the command line options instead of after all the command line options.</li>
+   <li>The 'Eval' helper functions in VisIt's python module import correctly when the module is used in an external python interpreter.</li>
+   <li>build_visit was modified to log its invocation command line.</li>
 </ul>
 
   
@@ -123,6 +127,7 @@ enhancements and bug-fixes that were added to this release.</p>
    <li>The avtGradientExpression module was re-factored so that other modules can access these gradients without creating a mini-pipeline.</li>
    <li>The data diretory can now be built on Windows.</li>
    <li>VISIT_BOXLIB2D_DIR and VISIT_BOXLIB3D_DIR were replaced with VISIT_BOXLIB_DIR. In order to continue being able to build the BoxLib reader you must upgrade to the new BoxLib library and update your config site file. If you don't do this the build system will silently fail to build the BoxLib reader.</li>
+   <li>The function VISIT_OPTION_DEFAULT, used in config-site cmake files, now accepts an optional argument to specify the cmake variable type being set.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
