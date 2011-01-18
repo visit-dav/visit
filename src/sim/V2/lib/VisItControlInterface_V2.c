@@ -2415,7 +2415,7 @@ VisItReadConsole(int maxlen, char *buffer)
         else
             retval = VISIT_ERROR;
 #else
-        if(fgets(cmd, 1000, stdin) == NULL)
+        if(fgets(buffer, 1000, stdin) == NULL)
             retval = VISIT_ERROR;
         else
         {
