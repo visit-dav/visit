@@ -41,6 +41,10 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Brad Whitlock, Tue Jan 18 00:32:18 PST 2011
+#   Force C++ linker for serial SimV2 examples. Otherwise I've noticed we
+#   are exposed to exceptions on newer Linux versions.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -147,6 +151,7 @@ ENDFUNCTION(ADD_PARALLEL_FORTRAN_SIMV1_SIMULATION)
 FUNCTION(ADD_SIMV2_SIMULATION target)
     ADD_EXECUTABLE(sim_${target} ${ARGN})
     SET_SIMULATION_PROPERTIES(${target})
+    SET_TARGET_PROPERTIES(sim_${target} PROPERTIES HAS_CXX ON)
     TARGET_LINK_LIBRARIES(sim_${target} simV2 ${EXTRA_SIM_LIBS})
     ADD_TARGET_COMPILE_FLAGS(sim_${target}
         -I${VISIT_SOURCE_DIR}/sim/V2/lib
