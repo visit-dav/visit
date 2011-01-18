@@ -162,6 +162,7 @@ public:
     void SetColorType(ColoringMethod colorType_);
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetColorTableName(const std::string &colorTableName_);
+    void SetInvertColorTable(bool invertColorTable_);
     void SetLegendFlag(bool legendFlag_);
 
     // Property getting methods
@@ -210,6 +211,7 @@ public:
           ColorAttribute &GetSingleColor();
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
+    bool                 GetInvertColorTable() const;
     bool                 GetLegendFlag() const;
 
     // Persistence methods
@@ -288,6 +290,7 @@ public:
         ID_colorType,
         ID_singleColor,
         ID_colorTableName,
+        ID_invertColorTable,
         ID_legendFlag,
         ID__LAST
     };
@@ -332,12 +335,13 @@ private:
     int            colorType;
     ColorAttribute singleColor;
     std::string    colorTableName;
+    bool           invertColorTable;
     bool           legendFlag;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SCATTERATTRIBUTES_TMFS "sibbddidisbbddidisbbddidisbbddiddiibiasb"
+#define SCATTERATTRIBUTES_TMFS "sibbddidisbbddidisbbddidisbbddiddiibiasbb"
 
 #endif

@@ -40,6 +40,7 @@
 #define TENSORATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -60,13 +61,23 @@
 class TensorAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     TensorAttributes();
     TensorAttributes(const TensorAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    TensorAttributes(private_tmfs_t tmfs);
+    TensorAttributes(const TensorAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~TensorAttributes();
 
     virtual TensorAttributes& operator = (const TensorAttributes &obj);
     virtual bool operator == (const TensorAttributes &obj) const;
     virtual bool operator != (const TensorAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const TensorAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -89,6 +100,7 @@ public:
     void SetUseLegend(bool useLegend_);
     void SetTensorColor(const ColorAttribute &tensorColor_);
     void SetColorTableName(const std::string &colorTableName_);
+    void SetInvertColorTable(bool invertColorTable_);
 
     // Property getting methods
     bool                 GetUseStride() const;
@@ -103,6 +115,7 @@ public:
           ColorAttribute &GetTensorColor();
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
+    bool                 GetInvertColorTable() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -129,7 +142,9 @@ public:
         ID_colorByEigenvalues,
         ID_useLegend,
         ID_tensorColor,
-        ID_colorTableName
+        ID_colorTableName,
+        ID_invertColorTable,
+        ID__LAST
     };
 
 private:
@@ -143,9 +158,12 @@ private:
     bool           useLegend;
     ColorAttribute tensorColor;
     std::string    colorTableName;
+    bool           invertColorTable;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define TENSORATTRIBUTES_TMFS "biidbbbbasb"
 
 #endif

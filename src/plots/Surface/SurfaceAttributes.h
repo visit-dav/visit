@@ -40,6 +40,7 @@
 #define SURFACEATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -77,13 +78,23 @@ public:
         CurrentPlot
     };
 
+    // These constructors are for objects of this class
     SurfaceAttributes();
     SurfaceAttributes(const SurfaceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SurfaceAttributes(private_tmfs_t tmfs);
+    SurfaceAttributes(const SurfaceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SurfaceAttributes();
 
     virtual SurfaceAttributes& operator = (const SurfaceAttributes &obj);
     virtual bool operator == (const SurfaceAttributes &obj) const;
     virtual bool operator != (const SurfaceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SurfaceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -114,6 +125,7 @@ public:
     void SetMin(double min_);
     void SetMax(double max_);
     void SetColorTableName(const std::string &colorTableName_);
+    void SetInvertColorTable(bool invertColorTable_);
 
     // Property getting methods
     bool                 GetLegendFlag() const;
@@ -136,6 +148,7 @@ public:
     double               GetMax() const;
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
+    bool                 GetInvertColorTable() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -185,7 +198,9 @@ public:
         ID_skewFactor,
         ID_min,
         ID_max,
-        ID_colorTableName
+        ID_colorTableName,
+        ID_invertColorTable,
+        ID__LAST
     };
 
 private:
@@ -206,9 +221,12 @@ private:
     double         min;
     double         max;
     std::string    colorTableName;
+    bool           invertColorTable;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SURFACEATTRIBUTES_TMFS "bbbbibbbiiiaadddsb"
 
 #endif

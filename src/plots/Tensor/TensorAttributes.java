@@ -60,11 +60,11 @@ import llnl.visit.ColorAttribute;
 
 public class TensorAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 10;
+    private static int TensorAttributes_numAdditionalAtts = 11;
 
     public TensorAttributes()
     {
-        super(numAdditionalAttributes);
+        super(TensorAttributes_numAdditionalAtts);
 
         useStride = false;
         stride = 1;
@@ -76,11 +76,12 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         useLegend = true;
         tensorColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
+        invertColorTable = false;
     }
 
     public TensorAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(TensorAttributes_numAdditionalAtts + nMoreFields);
 
         useStride = false;
         stride = 1;
@@ -92,11 +93,12 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         useLegend = true;
         tensorColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
+        invertColorTable = false;
     }
 
     public TensorAttributes(TensorAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(TensorAttributes_numAdditionalAtts);
 
         useStride = obj.useStride;
         stride = obj.stride;
@@ -108,6 +110,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         useLegend = obj.useLegend;
         tensorColor = new ColorAttribute(obj.tensorColor);
         colorTableName = new String(obj.colorTableName);
+        invertColorTable = obj.invertColorTable;
 
         SelectAll();
     }
@@ -119,7 +122,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return TensorAttributes_numAdditionalAtts;
     }
 
     public boolean equals(TensorAttributes obj)
@@ -134,7 +137,8 @@ public class TensorAttributes extends AttributeSubject implements Plugin
                 (colorByEigenvalues == obj.colorByEigenvalues) &&
                 (useLegend == obj.useLegend) &&
                 (tensorColor == obj.tensorColor) &&
-                (colorTableName.equals(obj.colorTableName)));
+                (colorTableName.equals(obj.colorTableName)) &&
+                (invertColorTable == obj.invertColorTable));
     }
 
     public String GetName() { return "Tensor"; }
@@ -201,6 +205,12 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         Select(9);
     }
 
+    public void SetInvertColorTable(boolean invertColorTable_)
+    {
+        invertColorTable = invertColorTable_;
+        Select(10);
+    }
+
     // Property getting methods
     public boolean        GetUseStride() { return useStride; }
     public int            GetStride() { return stride; }
@@ -212,6 +222,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
     public boolean        GetUseLegend() { return useLegend; }
     public ColorAttribute GetTensorColor() { return tensorColor; }
     public String         GetColorTableName() { return colorTableName; }
+    public boolean        GetInvertColorTable() { return invertColorTable; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -236,6 +247,8 @@ public class TensorAttributes extends AttributeSubject implements Plugin
             tensorColor.Write(buf);
         if(WriteSelect(9, buf))
             buf.WriteString(colorTableName);
+        if(WriteSelect(10, buf))
+            buf.WriteBool(invertColorTable);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -273,6 +286,9 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         case 9:
             SetColorTableName(buf.ReadString());
             break;
+        case 10:
+            SetInvertColorTable(buf.ReadBool());
+            break;
         }
     }
 
@@ -289,6 +305,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("useLegend", useLegend, indent) + "\n";
         str = str + indent + "tensorColor = {" + tensorColor.Red() + ", " + tensorColor.Green() + ", " + tensorColor.Blue() + ", " + tensorColor.Alpha() + "}\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
+        str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
         return str;
     }
 
@@ -304,5 +321,6 @@ public class TensorAttributes extends AttributeSubject implements Plugin
     private boolean        useLegend;
     private ColorAttribute tensorColor;
     private String         colorTableName;
+    private boolean        invertColorTable;
 }
 

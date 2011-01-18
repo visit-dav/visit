@@ -55,7 +55,7 @@
 
 #include <QvisColorButton.h>
 #include <QvisColorSwatchListWidget.h>
-#include <QvisColorTableButton.h>
+#include <QvisColorTableWidget.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
@@ -143,6 +143,9 @@ QvisBoundaryPlotWindow::~QvisBoundaryPlotWindow()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Kathleen Bonnell, Mon Jan 17 17:45:38 MST 2011
+//   Changed colorTableButton to colorTableWidget to gain the invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -216,10 +219,14 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     colorLayout->addWidget(multipleColorLabel, 4, 0, Qt::AlignRight);
 
     // Create the color table widget
-    colorTableButton = new QvisColorTableButton(boundaryColorGroup);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+    colorTableWidget = new QvisColorTableWidget(boundaryColorGroup, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    colorLayout->addWidget(colorTableButton, 1, 1, 1, 2, Qt::AlignLeft | Qt::AlignVCenter);
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    colorLayout->addWidget(colorTableWidget, 1, 1, 1, 2, Qt::AlignLeft | Qt::AlignVCenter);
 
     // Create the overall opacity.
     QHBoxLayout *opLayout = new QHBoxLayout(0);
@@ -384,6 +391,9 @@ QvisBoundaryPlotWindow::CreateWindowContents()
 //   Brad Whitlock, Thu Jul 17 11:43:27 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Bonnell, Mon Jan 17 17:45:38 MST 2011
+//   Changed colorTableButton to colorTableWidget to gain the invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -414,7 +424,10 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
                 colorModeButtons->button(0)->setChecked(true);
             break;
         case BoundaryAttributes::ID_colorTableName:
-            colorTableButton->setColorTable(boundaryAtts->GetColorTableName().c_str());
+            colorTableWidget->setColorTable(boundaryAtts->GetColorTableName().c_str());
+            break;
+        case BoundaryAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(boundaryAtts->GetInvertColorTable());
             break;
         case BoundaryAttributes::ID_filledFlag:
             // nothing anymore
@@ -519,7 +532,7 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
     multipleColorList->setEnabled(mEnabled);
     multipleColor->setEnabled(mEnabled);
     multipleColorOpacity->setEnabled(mEnabled);
-    colorTableButton->setEnabled(boundaryAtts->GetColorType() ==
+    colorTableWidget->setEnabled(boundaryAtts->GetColorType() ==
         BoundaryAttributes::ColorByColorTable);
 }
 
@@ -1270,6 +1283,30 @@ void
 QvisBoundaryPlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
 {
     boundaryAtts->SetColorTableName(ctName.toStdString());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisBoundaryPlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   boundary plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisBoundaryPlotWindow::invertColorTableToggled(bool val)
+{
+    boundaryAtts->SetInvertColorTable(val);
     Apply();
 }
 

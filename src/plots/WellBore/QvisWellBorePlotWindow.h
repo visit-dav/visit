@@ -53,7 +53,7 @@ class QListWidget;
 class QTextEdit;
 class QvisColorButton;
 class QvisColorManagerWidget;
-class QvisColorTableButton;
+class QvisColorTableWidget;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
@@ -70,9 +70,12 @@ class QvisOpacitySlider;
 // Creation:   omitted
 //
 // Modifications:
-//     Eric Brugger, Mon Nov 10 13:16:16 PST 2008
-//     Added the ability to display well bore names and stems.
+//   Eric Brugger, Mon Nov 10 13:16:16 PST 2008
+//   Added the ability to display well bore names and stems.
 //   
+//   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 class QvisWellBorePlotWindow : public QvisPostableWindowObserver
@@ -116,6 +119,7 @@ class QvisWellBorePlotWindow : public QvisPostableWindowObserver
     void multipleColorChanged(const QColor &color, int index);
     void opacityChanged(int opacity, int index);
     void colorTableClicked(bool useDefault, const QString &ctName);
+    void invertColorTableToggled(bool val);
     void drawWellsAsChanged(int val);
     void wellCylinderQualityChanged(int val);
     void wellRadiusProcessText();
@@ -144,7 +148,7 @@ class QvisWellBorePlotWindow : public QvisPostableWindowObserver
     QvisColorButton        *singleColor;
     QvisOpacitySlider      *singleColorOpacity;
     QvisColorManagerWidget *multipleColors;
-    QvisColorTableButton   *colorTableButton;
+    QvisColorTableWidget   *colorTableWidget;
     QLabel                 *drawWellsAsLabel;
     QComboBox              *drawWellsAs;
     QLabel                 *wellCylinderQualityLabel;

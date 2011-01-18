@@ -51,7 +51,7 @@ class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class TensorAttributes;
 class QvisOpacitySlider;
-class QvisColorTableButton;
+class QvisColorTableWidget;
 
 // ****************************************************************************
 // Class: QvisTensorPlotWindow
@@ -71,6 +71,9 @@ class QvisColorTableButton;
 //
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
+//
+//   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
 // ****************************************************************************
 
@@ -103,13 +106,14 @@ private slots:
     void legendToggled(bool on);
     void colorModeChanged(int);
     void colorTableClicked(bool useDefault, const QString &ctName);
+    void invertColorTableToggled(bool val);
 private:
     int                  plotType;
     TensorAttributes     *tensorAtts;
 
     QvisColorButton      *tensorColor;
     QButtonGroup         *colorButtonGroup; 
-    QvisColorTableButton *colorTableButton;
+    QvisColorTableWidget *colorTableWidget;
 
     QLineEdit            *scaleLineEdit;
     QCheckBox            *scaleByMagnitudeToggle;

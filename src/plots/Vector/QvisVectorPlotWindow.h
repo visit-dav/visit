@@ -49,7 +49,7 @@ class QLabel;
 class QLineEdit;
 class QRadioButton;
 class QvisColorButton;
-class QvisColorTableButton;
+class QvisColorTableWidget;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
@@ -103,6 +103,9 @@ class VectorAttributes;
 //   Hank Childs, Tue Aug 24 07:37:27 PDT 2010
 //   Add option for glyph location.
 //
+//   Kathleen Bonnell, Mon Jan 17 18:02:39 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 class QvisVectorPlotWindow : public QvisPostableWindowObserver
@@ -139,6 +142,7 @@ private slots:
     void drawHeadToggled(bool);
     void colorModeChanged(int);
     void colorTableClicked(bool useDefault, const QString &ctName);
+    void invertColorTableToggled(bool val);
     void originTypeChanged(int);
     void glyphTypeChanged(int newType);
 
@@ -161,7 +165,7 @@ private:
 
     QvisColorButton      *vectorColor;
     QButtonGroup         *colorButtonGroup; 
-    QvisColorTableButton *colorTableButton;
+    QvisColorTableWidget *colorTableWidget;
 
     QLineEdit            *scaleLineEdit;
     QCheckBox            *scaleByMagnitudeToggle;

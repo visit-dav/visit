@@ -50,7 +50,7 @@ class QLabel;
 class QLineEdit;
 class QvisColorButton;
 class QvisColorManagerWidget;
-class QvisColorTableButton;
+class QvisColorTableWidget;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
@@ -86,6 +86,9 @@ class QvisOpacitySlider;
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Kathleen Bonnell, Mon Jan 17 17:59:09 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 class QvisContourPlotWindow : public QvisPostableWindowObserver
@@ -120,6 +123,7 @@ private slots:
     void singleColorOpacityChanged(int opacity);
     void multipleColorChanged(const QColor &color, int index);
     void colorTableClicked(bool useDefault, const QString &ctName);
+    void invertColorTableToggled(bool val);
     void opacityChanged(int opacity, int index);
     void colorModeChanged(int index);
     void scaleClicked(int scale);
@@ -147,7 +151,7 @@ private:
     QvisColorButton        *singleColor;
     QvisOpacitySlider      *singleColorOpacity;
     QvisColorManagerWidget *multipleColors;
-    QvisColorTableButton   *colorTableButton;
+    QvisColorTableWidget   *colorTableWidget;
     QComboBox              *selectByComboBox;
     QLineEdit              *selectByLineEdit;
     QCheckBox              *minToggle;

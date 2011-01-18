@@ -278,6 +278,9 @@ avtTensorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Eric Brugger, Wed Nov 24 13:17:56 PST 2004
 //    I added scaleByMagnitude and autoScale.
 //
+//    Kathleen Bonnell, Mon Jan 17 18:20:03 MST 2011
+//    Consider invertColorTable flag when setting updateColors.
+//
 // ****************************************************************************
 
 void
@@ -287,7 +290,8 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
 
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
-       (atts.GetColorTableName() != newAtts->GetColorTableName());
+       (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
+       (atts.GetInvertColorTable() != newAtts->GetInvertColorTable());
 
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
@@ -349,6 +353,10 @@ avtTensorPlot::SetAtts(const AttributeGroup *a)
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jan 17 18:20:03 MST 2011
+//    Retrieve invertColorTable flag and pass to avtLUT.
+//
 // ****************************************************************************
 
 bool
@@ -358,13 +366,14 @@ avtTensorPlot::SetColorTable(const char *ctName)
     if (atts.GetColorByEigenvalues())
     {
         bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
+        bool invert = atts.GetInvertColorTable();
         if (atts.GetColorTableName() == "Default")
         {
-            retval =  avtLUT->SetColorTable(NULL, namesMatch);
+            retval =  avtLUT->SetColorTable(NULL, namesMatch, false, invert);
         }
         else
         {
-            retval =  avtLUT->SetColorTable(ctName, namesMatch);
+            retval =  avtLUT->SetColorTable(ctName, namesMatch, false, invert);
         }
 
         if (retval)

@@ -188,6 +188,11 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
+    if(atts->GetInvertColorTable())
+        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssmoothingLevel = %d\n", prefix, atts->GetSmoothingLevel());
     str += tmpStr;
     if(atts->GetPointSizeVarEnabled())
@@ -605,6 +610,30 @@ PseudocolorAttributes_GetColorTableName(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PseudocolorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the invertColorTable in the object.
+    obj->data->SetInvertColorTable(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 PseudocolorAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
@@ -822,6 +851,8 @@ PyMethodDef PyPseudocolorAttributes_methods[PSEUDOCOLORATTRIBUTES_NMETH] = {
     {"GetOpacity", PseudocolorAttributes_GetOpacity, METH_VARARGS},
     {"SetColorTableName", PseudocolorAttributes_SetColorTableName, METH_VARARGS},
     {"GetColorTableName", PseudocolorAttributes_GetColorTableName, METH_VARARGS},
+    {"SetInvertColorTable", PseudocolorAttributes_SetInvertColorTable, METH_VARARGS},
+    {"GetInvertColorTable", PseudocolorAttributes_GetInvertColorTable, METH_VARARGS},
     {"SetSmoothingLevel", PseudocolorAttributes_SetSmoothingLevel, METH_VARARGS},
     {"GetSmoothingLevel", PseudocolorAttributes_GetSmoothingLevel, METH_VARARGS},
     {"SetPointSizeVarEnabled", PseudocolorAttributes_SetPointSizeVarEnabled, METH_VARARGS},
@@ -922,6 +953,8 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PseudocolorAttributes_GetOpacity(self, NULL);
     if(strcmp(name, "colorTableName") == 0)
         return PseudocolorAttributes_GetColorTableName(self, NULL);
+    if(strcmp(name, "invertColorTable") == 0)
+        return PseudocolorAttributes_GetInvertColorTable(self, NULL);
     if(strcmp(name, "smoothingLevel") == 0)
         return PseudocolorAttributes_GetSmoothingLevel(self, NULL);
     if(strcmp(name, "pointSizeVarEnabled") == 0)
@@ -999,6 +1032,8 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PseudocolorAttributes_SetOpacity(self, tuple);
     else if(strcmp(name, "colorTableName") == 0)
         obj = PseudocolorAttributes_SetColorTableName(self, tuple);
+    else if(strcmp(name, "invertColorTable") == 0)
+        obj = PseudocolorAttributes_SetInvertColorTable(self, tuple);
     else if(strcmp(name, "smoothingLevel") == 0)
         obj = PseudocolorAttributes_SetSmoothingLevel(self, tuple);
     else if(strcmp(name, "pointSizeVarEnabled") == 0)

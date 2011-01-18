@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class ScatterAttributes extends AttributeSubject implements Plugin
 {
-    private static int ScatterAttributes_numAdditionalAtts = 40;
+    private static int ScatterAttributes_numAdditionalAtts = 41;
 
     // Enum values
     public final static int SCALING_LINEAR = 0;
@@ -127,6 +127,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         colorType = COLORINGMETHOD_COLORBYFOREGROUNDCOLOR;
         singleColor = new ColorAttribute(255, 0, 0);
         colorTableName = new String("Default");
+        invertColorTable = false;
         legendFlag = true;
     }
 
@@ -173,6 +174,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         colorType = COLORINGMETHOD_COLORBYFOREGROUNDCOLOR;
         singleColor = new ColorAttribute(255, 0, 0);
         colorTableName = new String("Default");
+        invertColorTable = false;
         legendFlag = true;
     }
 
@@ -219,6 +221,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         colorType = obj.colorType;
         singleColor = new ColorAttribute(obj.singleColor);
         colorTableName = new String(obj.colorTableName);
+        invertColorTable = obj.invertColorTable;
         legendFlag = obj.legendFlag;
 
         SelectAll();
@@ -276,6 +279,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
                 (colorType == obj.colorType) &&
                 (singleColor == obj.singleColor) &&
                 (colorTableName.equals(obj.colorTableName)) &&
+                (invertColorTable == obj.invertColorTable) &&
                 (legendFlag == obj.legendFlag));
     }
 
@@ -517,10 +521,16 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         Select(38);
     }
 
+    public void SetInvertColorTable(boolean invertColorTable_)
+    {
+        invertColorTable = invertColorTable_;
+        Select(39);
+    }
+
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(39);
+        Select(40);
     }
 
     // Property getting methods
@@ -563,6 +573,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     public int            GetColorType() { return colorType; }
     public ColorAttribute GetSingleColor() { return singleColor; }
     public String         GetColorTableName() { return colorTableName; }
+    public boolean        GetInvertColorTable() { return invertColorTable; }
     public boolean        GetLegendFlag() { return legendFlag; }
 
     // Write and read methods.
@@ -647,6 +658,8 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(38, buf))
             buf.WriteString(colorTableName);
         if(WriteSelect(39, buf))
+            buf.WriteBool(invertColorTable);
+        if(WriteSelect(40, buf))
             buf.WriteBool(legendFlag);
     }
 
@@ -773,6 +786,9 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
             SetColorTableName(buf.ReadString());
             break;
         case 39:
+            SetInvertColorTable(buf.ReadBool());
+            break;
+        case 40:
             SetLegendFlag(buf.ReadBool());
             break;
         }
@@ -910,6 +926,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
+        str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         return str;
     }
@@ -955,6 +972,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     private int            colorType;
     private ColorAttribute singleColor;
     private String         colorTableName;
+    private boolean        invertColorTable;
     private boolean        legendFlag;
 }
 

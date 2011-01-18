@@ -53,7 +53,7 @@ class QLineEdit;
 class QRadioButton;
 class QvisColorButton;
 class QvisColorManagerWidget;
-class QvisColorTableButton;
+class QvisColorTableWidget;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
@@ -88,6 +88,9 @@ class QvisOpacitySlider;
 //   
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
+//
+//   Kathleen Bonnell, Mon Jan 17 17:54:48 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
 // ****************************************************************************
 
@@ -127,6 +130,7 @@ private slots:
     void processMaxLimitText();
     void processSkewText();
     void colorTableClicked(bool useDefault, const QString &ctName);
+    void invertColorTableToggled(bool val);
     void limitsSelectChanged(int);
 private:
     int                     plotType;
@@ -136,7 +140,7 @@ private:
     QGroupBox              *surfaceGroup;
     QButtonGroup           *colorModeButtons;
     QvisColorButton        *surfaceColor;
-    QvisColorTableButton   *colorTableButton;
+    QvisColorTableWidget   *colorTableWidget;
 
     // Wireframe controls
     QGroupBox              *wireframeGroup;

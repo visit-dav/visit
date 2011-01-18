@@ -51,7 +51,7 @@
 #include <PseudocolorAttributes.h>
 #include <ViewerProxy.h>
 #include <QvisOpacitySlider.h>
-#include <QvisColorTableButton.h>
+#include <QvisColorTableWidget.h>
 #include <QvisPointControl.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
@@ -180,6 +180,9 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Kathleen Bonnell, Mon Jan 17 18:02:39 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -306,10 +309,14 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     // Create the color table widgets
     colorLayout->addWidget( new QLabel(tr("Color table"), central), gRow, 0);
 
-    colorTableButton = new QvisColorTableButton(central);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+    colorTableWidget = new QvisColorTableWidget(central, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    colorLayout->addWidget(colorTableButton, gRow, 1, Qt::AlignLeft | Qt::AlignVCenter);
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    colorLayout->addWidget(colorTableWidget, gRow, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
     gRow++;
 
@@ -520,6 +527,9 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //   (instead of just a single global opacity for the whole plot).
 //   There's a new toggle for this, and it overrides the whole-plot opacity.
 //
+//   Kathleen Bonnell, Mon Jan 17 18:02:39 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -631,7 +641,10 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             opacitySlider->blockSignals(false);
             break;
         case PseudocolorAttributes::ID_colorTableName:
-            colorTableButton->setColorTable(pcAtts->GetColorTableName().c_str());
+            colorTableWidget->setColorTable(pcAtts->GetColorTableName().c_str());
+            break;
+        case PseudocolorAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(pcAtts->GetInvertColorTable());
             break;
         case PseudocolorAttributes::ID_smoothingLevel:
             smoothingLevelButtons->blockSignals(true);
@@ -940,6 +953,30 @@ QvisPseudocolorPlotWindow::colorTableClicked(bool useDefault,
     const QString &ctName)
 {
     pcAtts->SetColorTableName(ctName.toStdString());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPseudocolorPlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   pseudocolor plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::invertColorTableToggled(bool val)
+{
+    pcAtts->SetInvertColorTable(val);
     Apply();
 }
 

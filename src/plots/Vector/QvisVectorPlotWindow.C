@@ -54,7 +54,7 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisColorButton.h>
-#include <QvisColorTableButton.h>
+#include <QvisColorTableWidget.h>
 
 // ****************************************************************************
 // Method: QvisVectorPlotWindow::QvisVectorPlotWindow
@@ -179,6 +179,9 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Hank Childs, Tue Aug 24 07:42:05 PDT 2010
 //   Add location widgets.  Also reorgnized into three tabs.
 //    
+//   Kathleen Bonnell, Mon Jan 17 18:07:08 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -467,10 +470,14 @@ QvisVectorPlotWindow::CreateWindowContents()
     cgLayout->addWidget(rb, 1, 0);
 
     // Create the color-by-eigenvalues button.
-    colorTableButton = new QvisColorTableButton(colorGroupBox);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+    colorTableWidget = new QvisColorTableWidget(colorGroupBox, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    cgLayout->addWidget(colorTableButton, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    cgLayout->addWidget(colorTableWidget, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
     // Create the vector color button.
     vectorColor = new QvisColorButton(colorGroupBox);
@@ -600,6 +607,9 @@ QvisVectorPlotWindow::CreateWindowContents()
 //   Hank Childs, Tue Aug 24 17:35:39 PDT 2010
 //   Add support for advanced vector placements.
 //
+//   Kathleen Bonnell, Mon Jan 17 18:07:08 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -696,7 +706,10 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             vectorColor->blockSignals(false);
             }
           case VectorAttributes::ID_colorTableName:
-            colorTableButton->setColorTable(vectorAtts->GetColorTableName().c_str());
+            colorTableWidget->setColorTable(vectorAtts->GetColorTableName().c_str());
+            break;
+          case VectorAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(vectorAtts->GetInvertColorTable());
             break;
           case VectorAttributes::ID_vectorOrigin:
             originButtonGroup->blockSignals(true);
@@ -1356,6 +1369,30 @@ QvisVectorPlotWindow::colorTableClicked(bool useDefault,
 {
     vectorAtts->SetColorByMag(true);
     vectorAtts->SetColorTableName(ctName.toStdString());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   vector plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVectorPlotWindow::invertColorTableToggled(bool val)
+{
+    vectorAtts->SetInvertColorTable(val);
     Apply();
 }
 

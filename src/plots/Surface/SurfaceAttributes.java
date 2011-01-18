@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class SurfaceAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 17;
+    private static int SurfaceAttributes_numAdditionalAtts = 18;
 
     // Enum values
     public final static int COLORBYTYPE_CONSTANT = 0;
@@ -76,7 +76,7 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
 
     public SurfaceAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SurfaceAttributes_numAdditionalAtts);
 
         legendFlag = true;
         lightingFlag = true;
@@ -95,11 +95,12 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         min = 0;
         max = 1;
         colorTableName = new String("hot");
+        invertColorTable = false;
     }
 
     public SurfaceAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SurfaceAttributes_numAdditionalAtts + nMoreFields);
 
         legendFlag = true;
         lightingFlag = true;
@@ -118,11 +119,12 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         min = 0;
         max = 1;
         colorTableName = new String("hot");
+        invertColorTable = false;
     }
 
     public SurfaceAttributes(SurfaceAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SurfaceAttributes_numAdditionalAtts);
 
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
@@ -141,6 +143,7 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         min = obj.min;
         max = obj.max;
         colorTableName = new String(obj.colorTableName);
+        invertColorTable = obj.invertColorTable;
 
         SelectAll();
     }
@@ -152,7 +155,7 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SurfaceAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SurfaceAttributes obj)
@@ -174,7 +177,8 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
                 (skewFactor == obj.skewFactor) &&
                 (min == obj.min) &&
                 (max == obj.max) &&
-                (colorTableName.equals(obj.colorTableName)));
+                (colorTableName.equals(obj.colorTableName)) &&
+                (invertColorTable == obj.invertColorTable));
     }
 
     public String GetName() { return "Surface"; }
@@ -283,6 +287,12 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         Select(16);
     }
 
+    public void SetInvertColorTable(boolean invertColorTable_)
+    {
+        invertColorTable = invertColorTable_;
+        Select(17);
+    }
+
     // Property getting methods
     public boolean        GetLegendFlag() { return legendFlag; }
     public boolean        GetLightingFlag() { return lightingFlag; }
@@ -301,6 +311,7 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
     public double         GetMin() { return min; }
     public double         GetMax() { return max; }
     public String         GetColorTableName() { return colorTableName; }
+    public boolean        GetInvertColorTable() { return invertColorTable; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -339,6 +350,8 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(max);
         if(WriteSelect(16, buf))
             buf.WriteString(colorTableName);
+        if(WriteSelect(17, buf))
+            buf.WriteBool(invertColorTable);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -398,6 +411,9 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         case 16:
             SetColorTableName(buf.ReadString());
             break;
+        case 17:
+            SetInvertColorTable(buf.ReadBool());
+            break;
         }
     }
 
@@ -433,6 +449,7 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("min", min, indent) + "\n";
         str = str + doubleToString("max", max, indent) + "\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
+        str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
         return str;
     }
 
@@ -455,5 +472,6 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
     private double         min;
     private double         max;
     private String         colorTableName;
+    private boolean        invertColorTable;
 }
 

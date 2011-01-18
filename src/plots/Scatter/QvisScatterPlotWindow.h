@@ -51,7 +51,7 @@ class QSpinBox;
 class QVBox;
 class QButtonGroup;
 class QRadioButton;
-class QvisColorTableButton;
+class QvisColorTableWidget;
 class QvisOpacitySlider;
 class QvisColorButton;
 class QvisLineStyleWidget;
@@ -78,6 +78,9 @@ class QvisVariableButton;
 //
 //   Cyrus Harrison, Thu Aug 19 13:19:11 PDT 2010
 //   Added var1 button & slot to capture var1 changes.
+//
+//   Kathleen Bonnell, Mon Jan 17 18:10:28 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
 // ****************************************************************************
 
@@ -139,6 +142,7 @@ private slots:
     void scaleCubeChanged(bool val);
     void colorModeChanged(int index);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
+    void invertColorTableToggled(bool val);
     void singleColorChanged(const QColor &color);
     void legendToggled(bool val);
 private:
@@ -194,7 +198,7 @@ private:
     QButtonGroup *colorModeButtons;
     QRadioButton *colorTableRadioButton;
     QvisColorButton *singleColor;
-    QvisColorTableButton *colorTableName;
+    QvisColorTableWidget *colorTableWidget;
     QCheckBox *legendToggle;
 
     QLabel *var1ScalingLabel;

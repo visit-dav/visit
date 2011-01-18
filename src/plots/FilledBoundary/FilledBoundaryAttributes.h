@@ -40,6 +40,7 @@
 #define FILLEDBOUNDARYATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 #include <ColorAttributeList.h>
 
@@ -83,13 +84,23 @@ public:
         Sphere
     };
 
+    // These constructors are for objects of this class
     FilledBoundaryAttributes();
     FilledBoundaryAttributes(const FilledBoundaryAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    FilledBoundaryAttributes(private_tmfs_t tmfs);
+    FilledBoundaryAttributes(const FilledBoundaryAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~FilledBoundaryAttributes();
 
     virtual FilledBoundaryAttributes& operator = (const FilledBoundaryAttributes &obj);
     virtual bool operator == (const FilledBoundaryAttributes &obj) const;
     virtual bool operator != (const FilledBoundaryAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const FilledBoundaryAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -108,6 +119,7 @@ public:
     // Property setting methods
     void SetColorType(ColoringMethod colorType_);
     void SetColorTableName(const std::string &colorTableName_);
+    void SetInvertColorTable(bool invertColorTable_);
     void SetFilledFlag(bool filledFlag_);
     void SetLegendFlag(bool legendFlag_);
     void SetLineStyle(int lineStyle_);
@@ -132,6 +144,7 @@ public:
     ColoringMethod           GetColorType() const;
     const std::string        &GetColorTableName() const;
           std::string        &GetColorTableName();
+    bool                     GetInvertColorTable() const;
     bool                     GetFilledFlag() const;
     bool                     GetLegendFlag() const;
     int                      GetLineStyle() const;
@@ -192,6 +205,7 @@ public:
     enum {
         ID_colorType = 0,
         ID_colorTableName,
+        ID_invertColorTable,
         ID_filledFlag,
         ID_legendFlag,
         ID_lineStyle,
@@ -210,12 +224,14 @@ public:
         ID_pointType,
         ID_pointSizeVarEnabled,
         ID_pointSizeVar,
-        ID_pointSizePixels
+        ID_pointSizePixels,
+        ID__LAST
     };
 
 private:
     int                colorType;
     std::string        colorTableName;
+    bool               invertColorTable;
     bool               filledFlag;
     bool               legendFlag;
     int                lineStyle;
@@ -238,6 +254,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define FILLEDBOUNDARYATTRIBUTES_TMFS "isbbbiiaas*idbbibadibsi"
 
 #endif

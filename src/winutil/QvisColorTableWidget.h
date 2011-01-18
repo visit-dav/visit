@@ -36,29 +36,52 @@
 *
 *****************************************************************************/
 
-#ifndef PY_CONTOURATTRIBUTES_H
-#define PY_CONTOURATTRIBUTES_H
-#include <Python.h>
-#include <ContourAttributes.h>
+#ifndef QVIS_COLORTABLE_WIDGET_H
+#define QVIS_COLORTABLE_WIDGET_H
+#include <winutil_exports.h>
+#include <QWidget>
 
+// Forward declarations.
+class QCheckBox;
+class QvisColorTableButton;
+
+// ****************************************************************************
+// Class: QvisColorTableWidget
 //
-// Functions exposed to the VisIt module.
+// Purpose:
+//   This contains the color table button, plus a toggle for inverting the
+//   color table.
 //
-#define CONTOURATTRIBUTES_NMETH 42
-void           PyContourAttributes_StartUp(ContourAttributes *subj, void *data);
-void           PyContourAttributes_CloseDown();
-PyMethodDef *  PyContourAttributes_GetMethodTable(int *nMethods);
-bool           PyContourAttributes_Check(PyObject *obj);
-ContourAttributes *  PyContourAttributes_FromPyObject(PyObject *obj);
-PyObject *     PyContourAttributes_New();
-PyObject *     PyContourAttributes_Wrap(const ContourAttributes *attr);
-void           PyContourAttributes_SetParent(PyObject *obj, PyObject *parent);
-void           PyContourAttributes_SetDefaults(const ContourAttributes *atts);
-std::string    PyContourAttributes_GetLogString();
-std::string    PyContourAttributes_ToString(const ContourAttributes *, const char *);
-PyObject *     PyContourAttributes_getattr(PyObject *self, char *name);
-int            PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args);
-extern PyMethodDef PyContourAttributes_methods[CONTOURATTRIBUTES_NMETH];
+// Programmer: Kathleen Bonnell 
+// Creation:   January 17, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class WINUTIL_API QvisColorTableWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    QvisColorTableWidget(QWidget *parent, 
+                         bool showInvertButton = false);
+    virtual ~QvisColorTableWidget();
+    virtual QSize sizeHint() const;
+
+    void setColorTable(const QString &ctName);
+    void setInvertColorTable(bool val);
+
+signals:
+    void selectedColorTable(bool useDefault, const QString &ctName);
+    void invertColorTableToggled(bool);
+
+private slots:
+    void handleSelectedColorTable(bool useDefault, const QString &ctName);
+    void invertToggled(bool);
+
+private:
+    QvisColorTableButton          *colorTableButton;
+    QCheckBox                     *invertToggle; 
+};
 
 #endif
-

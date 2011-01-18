@@ -65,7 +65,7 @@ import java.lang.Integer;
 
 public class WellBoreAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 18;
+    private static int WellBoreAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int WELLRENDERINGMODE_LINES = 0;
@@ -88,12 +88,13 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
 
     public WellBoreAttributes()
     {
-        super(numAdditionalAttributes);
+        super(WellBoreAttributes_numAdditionalAtts);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
         colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
         colorTableName = new String("Default");
+        invertColorTable = false;
         singleColor = new ColorAttribute(255, 0, 0);
         multiColor = new ColorAttributeList();
         drawWellsAs = WELLRENDERINGMODE_CYLINDERS;
@@ -112,12 +113,13 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
 
     public WellBoreAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(WellBoreAttributes_numAdditionalAtts + nMoreFields);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
         colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
         colorTableName = new String("Default");
+        invertColorTable = false;
         singleColor = new ColorAttribute(255, 0, 0);
         multiColor = new ColorAttributeList();
         drawWellsAs = WELLRENDERINGMODE_CYLINDERS;
@@ -136,7 +138,7 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
 
     public WellBoreAttributes(WellBoreAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(WellBoreAttributes_numAdditionalAtts);
 
         int i;
 
@@ -150,6 +152,7 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
 
         colorType = obj.colorType;
         colorTableName = new String(obj.colorTableName);
+        invertColorTable = obj.invertColorTable;
         singleColor = new ColorAttribute(obj.singleColor);
         multiColor = new ColorAttributeList(obj.multiColor);
         drawWellsAs = obj.drawWellsAs;
@@ -183,7 +186,7 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return WellBoreAttributes_numAdditionalAtts;
     }
 
     public boolean equals(WellBoreAttributes obj)
@@ -213,6 +216,7 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
                 true /* can ignore changedColors */ &&
                 (colorType == obj.colorType) &&
                 (colorTableName.equals(obj.colorTableName)) &&
+                (invertColorTable == obj.invertColorTable) &&
                 (singleColor == obj.singleColor) &&
                 (multiColor.equals(obj.multiColor)) &&
                 (drawWellsAs == obj.drawWellsAs) &&
@@ -257,88 +261,94 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
         Select(3);
     }
 
+    public void SetInvertColorTable(boolean invertColorTable_)
+    {
+        invertColorTable = invertColorTable_;
+        Select(4);
+    }
+
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(4);
+        Select(5);
     }
 
     public void SetMultiColor(ColorAttributeList multiColor_)
     {
         multiColor = multiColor_;
-        Select(5);
+        Select(6);
     }
 
     public void SetDrawWellsAs(int drawWellsAs_)
     {
         drawWellsAs = drawWellsAs_;
-        Select(6);
+        Select(7);
     }
 
     public void SetWellCylinderQuality(int wellCylinderQuality_)
     {
         wellCylinderQuality = wellCylinderQuality_;
-        Select(7);
+        Select(8);
     }
 
     public void SetWellRadius(float wellRadius_)
     {
         wellRadius = wellRadius_;
-        Select(8);
+        Select(9);
     }
 
     public void SetWellLineWidth(int wellLineWidth_)
     {
         wellLineWidth = wellLineWidth_;
-        Select(9);
+        Select(10);
     }
 
     public void SetWellLineStyle(int wellLineStyle_)
     {
         wellLineStyle = wellLineStyle_;
-        Select(10);
+        Select(11);
     }
 
     public void SetWellAnnotation(int wellAnnotation_)
     {
         wellAnnotation = wellAnnotation_;
-        Select(11);
+        Select(12);
     }
 
     public void SetWellStemHeight(float wellStemHeight_)
     {
         wellStemHeight = wellStemHeight_;
-        Select(12);
+        Select(13);
     }
 
     public void SetWellNameScale(float wellNameScale_)
     {
         wellNameScale = wellNameScale_;
-        Select(13);
+        Select(14);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(14);
+        Select(15);
     }
 
     public void SetNWellBores(int nWellBores_)
     {
         nWellBores = nWellBores_;
-        Select(15);
+        Select(16);
     }
 
     public void SetWellBores(Vector wellBores_)
     {
         wellBores = wellBores_;
-        Select(16);
+        Select(17);
     }
 
     public void SetWellNames(Vector wellNames_)
     {
         wellNames = wellNames_;
-        Select(17);
+        Select(18);
     }
 
     // Property getting methods
@@ -346,6 +356,7 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
     public Vector                GetChangedColors() { return changedColors; }
     public int                   GetColorType() { return colorType; }
     public String                GetColorTableName() { return colorTableName; }
+    public boolean               GetInvertColorTable() { return invertColorTable; }
     public ColorAttribute        GetSingleColor() { return singleColor; }
     public ColorAttributeList    GetMultiColor() { return multiColor; }
     public int                   GetDrawWellsAs() { return drawWellsAs; }
@@ -373,32 +384,34 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(3, buf))
             buf.WriteString(colorTableName);
         if(WriteSelect(4, buf))
-            singleColor.Write(buf);
+            buf.WriteBool(invertColorTable);
         if(WriteSelect(5, buf))
-            multiColor.Write(buf);
+            singleColor.Write(buf);
         if(WriteSelect(6, buf))
-            buf.WriteInt(drawWellsAs);
+            multiColor.Write(buf);
         if(WriteSelect(7, buf))
-            buf.WriteInt(wellCylinderQuality);
+            buf.WriteInt(drawWellsAs);
         if(WriteSelect(8, buf))
-            buf.WriteFloat(wellRadius);
+            buf.WriteInt(wellCylinderQuality);
         if(WriteSelect(9, buf))
-            buf.WriteInt(wellLineWidth);
+            buf.WriteFloat(wellRadius);
         if(WriteSelect(10, buf))
-            buf.WriteInt(wellLineStyle);
+            buf.WriteInt(wellLineWidth);
         if(WriteSelect(11, buf))
-            buf.WriteInt(wellAnnotation);
+            buf.WriteInt(wellLineStyle);
         if(WriteSelect(12, buf))
-            buf.WriteFloat(wellStemHeight);
+            buf.WriteInt(wellAnnotation);
         if(WriteSelect(13, buf))
-            buf.WriteFloat(wellNameScale);
+            buf.WriteFloat(wellStemHeight);
         if(WriteSelect(14, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteFloat(wellNameScale);
         if(WriteSelect(15, buf))
-            buf.WriteInt(nWellBores);
+            buf.WriteBool(legendFlag);
         if(WriteSelect(16, buf))
-            buf.WriteIntVector(wellBores);
+            buf.WriteInt(nWellBores);
         if(WriteSelect(17, buf))
+            buf.WriteIntVector(wellBores);
+        if(WriteSelect(18, buf))
             buf.WriteStringVector(wellNames);
     }
 
@@ -420,47 +433,50 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
             SetColorTableName(buf.ReadString());
             break;
         case 4:
-            singleColor.Read(buf);
-            Select(4);
+            SetInvertColorTable(buf.ReadBool());
             break;
         case 5:
-            multiColor.Read(buf);
+            singleColor.Read(buf);
             Select(5);
             break;
         case 6:
-            SetDrawWellsAs(buf.ReadInt());
+            multiColor.Read(buf);
+            Select(6);
             break;
         case 7:
-            SetWellCylinderQuality(buf.ReadInt());
+            SetDrawWellsAs(buf.ReadInt());
             break;
         case 8:
-            SetWellRadius(buf.ReadFloat());
+            SetWellCylinderQuality(buf.ReadInt());
             break;
         case 9:
-            SetWellLineWidth(buf.ReadInt());
+            SetWellRadius(buf.ReadFloat());
             break;
         case 10:
-            SetWellLineStyle(buf.ReadInt());
+            SetWellLineWidth(buf.ReadInt());
             break;
         case 11:
-            SetWellAnnotation(buf.ReadInt());
+            SetWellLineStyle(buf.ReadInt());
             break;
         case 12:
-            SetWellStemHeight(buf.ReadFloat());
+            SetWellAnnotation(buf.ReadInt());
             break;
         case 13:
-            SetWellNameScale(buf.ReadFloat());
+            SetWellStemHeight(buf.ReadFloat());
             break;
         case 14:
-            SetLegendFlag(buf.ReadBool());
+            SetWellNameScale(buf.ReadFloat());
             break;
         case 15:
-            SetNWellBores(buf.ReadInt());
+            SetLegendFlag(buf.ReadBool());
             break;
         case 16:
-            SetWellBores(buf.ReadIntVector());
+            SetNWellBores(buf.ReadInt());
             break;
         case 17:
+            SetWellBores(buf.ReadIntVector());
+            break;
+        case 18:
             SetWellNames(buf.ReadStringVector());
             break;
         }
@@ -480,6 +496,7 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
             str = str + "COLORINGMETHOD_COLORBYCOLORTABLE";
         str = str + "\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
+        str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
         str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
         str = str + indent + "multiColor = {\n" + multiColor.toString(indent + "    ") + indent + "}\n";
         str = str + indent + "drawWellsAs = ";
@@ -526,6 +543,7 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
     private Vector                changedColors; // vector of Byte objects
     private int                   colorType;
     private String                colorTableName;
+    private boolean               invertColorTable;
     private ColorAttribute        singleColor;
     private ColorAttributeList    multiColor;
     private int                   drawWellsAs;

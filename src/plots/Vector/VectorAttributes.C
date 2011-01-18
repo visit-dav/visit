@@ -255,6 +255,7 @@ void VectorAttributes::Init()
     headOn = true;
     colorByMag = true;
     useLegend = true;
+    invertColorTable = false;
     vectorOrigin = Tail;
     minFlag = false;
     maxFlag = false;
@@ -302,6 +303,7 @@ void VectorAttributes::Copy(const VectorAttributes &obj)
     useLegend = obj.useLegend;
     vectorColor = obj.vectorColor;
     colorTableName = obj.colorTableName;
+    invertColorTable = obj.invertColorTable;
     vectorOrigin = obj.vectorOrigin;
     minFlag = obj.minFlag;
     maxFlag = obj.maxFlag;
@@ -487,6 +489,7 @@ VectorAttributes::operator == (const VectorAttributes &obj) const
             (useLegend == obj.useLegend) &&
             (vectorColor == obj.vectorColor) &&
             (colorTableName == obj.colorTableName) &&
+            (invertColorTable == obj.invertColorTable) &&
             (vectorOrigin == obj.vectorOrigin) &&
             (minFlag == obj.minFlag) &&
             (maxFlag == obj.maxFlag) &&
@@ -656,6 +659,7 @@ VectorAttributes::SelectAll()
     Select(ID_useLegend,        (void *)&useLegend);
     Select(ID_vectorColor,      (void *)&vectorColor);
     Select(ID_colorTableName,   (void *)&colorTableName);
+    Select(ID_invertColorTable, (void *)&invertColorTable);
     Select(ID_vectorOrigin,     (void *)&vectorOrigin);
     Select(ID_minFlag,          (void *)&minFlag);
     Select(ID_maxFlag,          (void *)&maxFlag);
@@ -789,6 +793,12 @@ VectorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     {
         addToParent = true;
         node->AddNode(new DataNode("colorTableName", colorTableName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_invertColorTable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("invertColorTable", invertColorTable));
     }
 
     if(completeSave || !FieldsEqual(ID_vectorOrigin, &defaultObject))
@@ -937,6 +947,8 @@ VectorAttributes::SetFromNode(DataNode *parentNode)
         vectorColor.SetFromNode(node);
     if((node = searchNode->GetNode("colorTableName")) != 0)
         SetColorTableName(node->AsString());
+    if((node = searchNode->GetNode("invertColorTable")) != 0)
+        SetInvertColorTable(node->AsBool());
     if((node = searchNode->GetNode("vectorOrigin")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1127,6 +1139,13 @@ VectorAttributes::SetColorTableName(const std::string &colorTableName_)
 }
 
 void
+VectorAttributes::SetInvertColorTable(bool invertColorTable_)
+{
+    invertColorTable = invertColorTable_;
+    Select(ID_invertColorTable, (void *)&invertColorTable);
+}
+
+void
 VectorAttributes::SetVectorOrigin(VectorAttributes::OriginType vectorOrigin_)
 {
     vectorOrigin = vectorOrigin_;
@@ -1309,6 +1328,12 @@ VectorAttributes::GetColorTableName()
     return colorTableName;
 }
 
+bool
+VectorAttributes::GetInvertColorTable() const
+{
+    return invertColorTable;
+}
+
 VectorAttributes::OriginType
 VectorAttributes::GetVectorOrigin() const
 {
@@ -1430,6 +1455,7 @@ VectorAttributes::GetFieldName(int index) const
     case ID_useLegend:        return "useLegend";
     case ID_vectorColor:      return "vectorColor";
     case ID_colorTableName:   return "colorTableName";
+    case ID_invertColorTable: return "invertColorTable";
     case ID_vectorOrigin:     return "vectorOrigin";
     case ID_minFlag:          return "minFlag";
     case ID_maxFlag:          return "maxFlag";
@@ -1480,6 +1506,7 @@ VectorAttributes::GetFieldType(int index) const
     case ID_useLegend:        return FieldType_bool;
     case ID_vectorColor:      return FieldType_color;
     case ID_colorTableName:   return FieldType_colortable;
+    case ID_invertColorTable: return FieldType_bool;
     case ID_vectorOrigin:     return FieldType_enum;
     case ID_minFlag:          return FieldType_bool;
     case ID_maxFlag:          return FieldType_bool;
@@ -1530,6 +1557,7 @@ VectorAttributes::GetFieldTypeName(int index) const
     case ID_useLegend:        return "bool";
     case ID_vectorColor:      return "color";
     case ID_colorTableName:   return "colortable";
+    case ID_invertColorTable: return "bool";
     case ID_vectorOrigin:     return "enum";
     case ID_minFlag:          return "bool";
     case ID_maxFlag:          return "bool";
@@ -1640,6 +1668,11 @@ VectorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_colorTableName:
         {  // new scope
         retval = (colorTableName == obj.colorTableName);
+        }
+        break;
+    case ID_invertColorTable:
+        {  // new scope
+        retval = (invertColorTable == obj.invertColorTable);
         }
         break;
     case ID_vectorOrigin:

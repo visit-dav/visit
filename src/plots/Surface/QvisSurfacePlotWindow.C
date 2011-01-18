@@ -52,7 +52,7 @@
 
 #include <QvisColorButton.h>
 #include <QvisColorManagerWidget.h>
-#include <QvisColorTableButton.h>
+#include <QvisColorTableWidget.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
@@ -149,6 +149,9 @@ QvisSurfacePlotWindow::~QvisSurfacePlotWindow()
 //
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
+//
+//   Kathleen Bonnell, Mon Jan 17 17:54:48 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
 // ****************************************************************************
 
@@ -264,10 +267,14 @@ QvisSurfacePlotWindow::CreateWindowContents()
     surfaceLayout->addWidget(rb, 1, 0);
 
     // Create the surface color-by-z button.
-    colorTableButton = new QvisColorTableButton(surfaceGroup);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+    colorTableWidget = new QvisColorTableWidget(surfaceGroup, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    surfaceLayout->addWidget(colorTableButton, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    surfaceLayout->addWidget(colorTableWidget, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
     // Create the surface color button.
     surfaceColor = new QvisColorButton(surfaceGroup);
@@ -395,6 +402,9 @@ QvisSurfacePlotWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Fri Jul 18 11:58:52 PDT 2008
 //   Qt 4.
+//  
+//   Kathleen Bonnell, Mon Jan 17 17:54:48 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
 // ****************************************************************************
 
@@ -464,7 +474,7 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
             colorModeButtons->button(surfaceAtts->GetColorByZFlag() ? 0:1)->setChecked(true);
 
             surfaceColor->setEnabled(!surfaceAtts->GetColorByZFlag());
-            colorTableButton->setEnabled(surfaceAtts->GetColorByZFlag());
+            colorTableWidget->setEnabled(surfaceAtts->GetColorByZFlag());
             break;
 
         case SurfaceAttributes::ID_scaling:
@@ -523,8 +533,12 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
             break;
 
         case SurfaceAttributes::ID_colorTableName:
-            colorTableButton->setColorTable(
+            colorTableWidget->setColorTable(
                               surfaceAtts->GetColorTableName().c_str());
+            break;
+        case SurfaceAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(
+                              surfaceAtts->GetInvertColorTable());
             break;
         }
 
@@ -1134,6 +1148,30 @@ QvisSurfacePlotWindow::colorTableClicked(bool , const QString &ctName)
 {
     surfaceAtts->SetColorByZFlag(true);
     surfaceAtts->SetColorTableName(ctName.toStdString());
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSurfacePlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   surface plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSurfacePlotWindow::invertColorTableToggled(bool val)
+{
+    surfaceAtts->SetInvertColorTable(val);
     Apply();
 }
 

@@ -393,6 +393,9 @@ avtContourPlot::NeedZBufferToCompositeEvenIn2D(void)
 //   Brad Whitlock, Fri Apr 25 10:35:28 PDT 2003
 //   I made it throw an InvalidColortableException.
 //
+//   Kathleen Bonnell, Mon Jan 17 17:57:45 MST 2011
+//   Retrieve invertcolorTable toggle and send it to the color table.
+//
 // ****************************************************************************
 
 void
@@ -445,6 +448,7 @@ avtContourPlot::SetColors()
             EXCEPTION1(InvalidColortableException, ctName);
         }
 
+        bool invert = atts.GetInvertColorTable();
         // 
         // Add a color for each subset name.
         //
@@ -454,7 +458,7 @@ avtContourPlot::SetColors()
             for(int i = 0; i < numLevels; ++i)
             {
                 unsigned char rgb[3] = {0,0,0};
-                ct->GetControlPointColor(ctName.c_str(), i, rgb);
+                ct->GetControlPointColor(ctName.c_str(), i, rgb, invert);
                 *cptr++ = rgb[0];
                 *cptr++ = rgb[1];
                 *cptr++ = rgb[2];
@@ -467,7 +471,7 @@ avtContourPlot::SetColors()
         {
             // The CT is continuous, sample the CT so we have a unique color
             // for each element.
-            unsigned char *rgb = ct->GetSampledColors(ctName.c_str(), numLevels);
+            unsigned char *rgb = ct->GetSampledColors(ctName.c_str(), numLevels, invert);
             if(rgb)
             {
                 for(int i = 0; i < numLevels; ++i)
