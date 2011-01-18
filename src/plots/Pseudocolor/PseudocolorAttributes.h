@@ -135,6 +135,7 @@ public:
     void SetSkewFactor(double skewFactor_);
     void SetOpacity(double opacity_);
     void SetColorTableName(const std::string &colorTableName_);
+    void SetInvertColorTable(bool invertColorTable_);
     void SetSmoothingLevel(int smoothingLevel_);
     void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
     void SetPointSizeVar(const std::string &pointSizeVar_);
@@ -159,6 +160,7 @@ public:
     double            GetOpacity() const;
     const std::string &GetColorTableName() const;
           std::string &GetColorTableName();
+    bool              GetInvertColorTable() const;
     int               GetSmoothingLevel() const;
     bool              GetPointSizeVarEnabled() const;
     const std::string &GetPointSizeVar() const;
@@ -226,6 +228,7 @@ public:
         ID_skewFactor,
         ID_opacity,
         ID_colorTableName,
+        ID_invertColorTable,
         ID_smoothingLevel,
         ID_pointSizeVarEnabled,
         ID_pointSizeVar,
@@ -251,6 +254,7 @@ private:
     double      skewFactor;
     double      opacity;
     std::string colorTableName;
+    bool        invertColorTable;
     int         smoothingLevel;
     bool        pointSizeVarEnabled;
     std::string pointSizeVar;
@@ -263,6 +267,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PSEUDOCOLORATTRIBUTES_TMFS "bbbbiiidddiddsibsiiii"
+#define PSEUDOCOLORATTRIBUTES_TMFS "bbbbiiidddiddsbibsiiii"
 
 #endif

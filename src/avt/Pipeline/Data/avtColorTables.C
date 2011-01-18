@@ -471,6 +471,37 @@ static const float ct_shapely_colors[] = {
 // Static pointer to single instance.
 avtColorTables *avtColorTables::instance = NULL;
 
+void 
+reverse_colors(unsigned char* c, int nc)
+{
+    unsigned char tmp[3];
+    for (int i = 0, j= (nc-1)*3; i < j; i+=3,j-=3)
+    {
+        tmp[0] = c[i];
+        tmp[1] = c[i+1];
+        tmp[2] = c[i+2];
+        c[i]   = c[j];
+        c[i+1] = c[j+1];
+        c[i+2] = c[j+2];
+        c[j]   = tmp[0];
+        c[j+1] = tmp[1];
+        c[j+2] = tmp[2];
+    }
+}
+
+void 
+reverse_alphas(unsigned char *a, int na)
+{
+    unsigned char tmp;
+    for (int i = 0, j= (na-1); i < j; ++i,--j)
+    {
+        tmp  = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+    }
+}
+
+
 // ****************************************************************************
 // Method: avtColorTables::avtColorTables
 //
@@ -766,10 +797,13 @@ avtColorTables::SetDefaultDiscreteColorTable(const std::string &ctName)
 //   Brad Whitlock, Tue Dec 3 14:24:06 PST 2002
 //   I rewrote the method.
 //
+//   Kathleen Bonnell, Mon Jan 17 11:22:22 MST 2011
+//   Add invert functionality.
+//
 // ****************************************************************************
 
 const unsigned char *
-avtColorTables::GetColors(const std::string &ctName)
+avtColorTables::GetColors(const std::string &ctName, bool invert)
 {
     const unsigned char *retval = NULL;
     int index;
@@ -777,6 +811,8 @@ avtColorTables::GetColors(const std::string &ctName)
     {
         const ColorControlPointList &ct = ctAtts->operator[](index);
         ct.GetColors(tmpColors, GetNumColors());
+        if (invert)
+            reverse_colors(tmpColors, GetNumColors());
         retval = tmpColors;
     }
 
@@ -795,9 +831,13 @@ avtColorTables::GetColors(const std::string &ctName)
 //  Programmer:  Jeremy Meredith
 //  Creation:    February 20, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jan 17 11:22:22 MST 2011
+//    Add invert functionality.
+//
 // ****************************************************************************
 const unsigned char *
-avtColorTables::GetAlphas(const std::string &ctName)
+avtColorTables::GetAlphas(const std::string &ctName, bool invert)
 {
     unsigned char dummy[256*3];
     const unsigned char *retval = NULL;
@@ -806,6 +846,8 @@ avtColorTables::GetAlphas(const std::string &ctName)
     {
         const ColorControlPointList &ct = ctAtts->operator[](index);
         ct.GetColors(dummy, GetNumColors(), tmpAlphas);
+        if (invert)
+            reverse_alphas(tmpAlphas, GetNumColors());
         retval = tmpAlphas;
     }
 
@@ -869,11 +911,13 @@ avtColorTables::ColorTableIsFullyOpaque(const std::string &reqName)
 // Creation:   Mon Nov 25 14:20:10 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Mon Jan 17 11:22:22 MST 2011
+//   Add invert functionality.
 //   
 // ****************************************************************************
 
 unsigned char *
-avtColorTables::GetSampledColors(const std::string &ctName, int nColors) const
+avtColorTables::GetSampledColors(const std::string &ctName, int nColors, bool invert) const
 {
     unsigned char *retval = NULL;
     int index;
@@ -884,6 +928,8 @@ avtColorTables::GetSampledColors(const std::string &ctName, int nColors) const
         int nc = (nColors < 1) ? 1 : nColors;
         retval = new unsigned char[nc * 3];
         ct.GetColors(retval, nc);
+        if (invert)
+            reverse_colors(retval, nc);
     }
   
     return retval;
@@ -914,11 +960,14 @@ avtColorTables::GetSampledColors(const std::string &ctName, int nColors) const
 //   Brad Whitlock, Tue Mar 13 11:21:38 PDT 2007
 //   Changed due to code generation changes.
 //
+//   Kathleen Bonnell, Mon Jan 17 11:22:22 MST 2011
+//   Add invert functionality.
+//
 // ****************************************************************************
 
 bool
 avtColorTables::GetControlPointColor(const std::string &ctName, int i,
-    unsigned char *rgb) const
+    unsigned char *rgb, bool invert) const
 {
     bool retval = false;
     int index;
@@ -926,6 +975,8 @@ avtColorTables::GetControlPointColor(const std::string &ctName, int i,
     {
         const ColorControlPointList &ct = ctAtts->operator[](index);
         int j = i % ct.GetNumControlPoints();
+        if (invert)
+            j = ct.GetNumControlPoints() -1 -j;
 
         rgb[0] = ct[j].GetColors()[0];
         rgb[1] = ct[j].GetColors()[1];

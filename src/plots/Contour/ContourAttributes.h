@@ -40,6 +40,7 @@
 #define CONTOURATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorControlPointList.h>
 #include <ColorAttribute.h>
 #include <ColorAttributeList.h>
@@ -81,13 +82,23 @@ public:
     };
     static const int MAX_CONTOURS;
 
+    // These constructors are for objects of this class
     ContourAttributes();
     ContourAttributes(const ContourAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ContourAttributes(private_tmfs_t tmfs);
+    ContourAttributes(const ContourAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ContourAttributes();
 
     virtual ContourAttributes& operator = (const ContourAttributes &obj);
     virtual bool operator == (const ContourAttributes &obj) const;
     virtual bool operator != (const ContourAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ContourAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -109,6 +120,7 @@ public:
     void SetChangedColors(const unsignedCharVector &changedColors_);
     void SetColorType(ColoringMethod colorType_);
     void SetColorTableName(const std::string &colorTableName_);
+    void SetInvertColorTable(bool invertColorTable_);
     void SetLegendFlag(bool legendFlag_);
     void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
@@ -133,6 +145,7 @@ public:
     ColoringMethod              GetColorType() const;
     const std::string           &GetColorTableName() const;
           std::string           &GetColorTableName();
+    bool                        GetInvertColorTable() const;
     bool                        GetLegendFlag() const;
     int                         GetLineStyle() const;
     int                         GetLineWidth() const;
@@ -196,6 +209,7 @@ public:
         ID_changedColors,
         ID_colorType,
         ID_colorTableName,
+        ID_invertColorTable,
         ID_legendFlag,
         ID_lineStyle,
         ID_lineWidth,
@@ -210,7 +224,8 @@ public:
         ID_min,
         ID_max,
         ID_scaling,
-        ID_wireframe
+        ID_wireframe,
+        ID__LAST
     };
 
 private:
@@ -218,6 +233,7 @@ private:
     unsignedCharVector    changedColors;
     int                   colorType;
     std::string           colorTableName;
+    bool                  invertColorTable;
     bool                  legendFlag;
     int                   lineStyle;
     int                   lineWidth;
@@ -236,6 +252,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CONTOURATTRIBUTES_TMFS "au*isbbiiaaid*d*ibbddib"
 
 #endif

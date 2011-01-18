@@ -53,7 +53,7 @@
 
 #include <QvisColorButton.h>
 #include <QvisColorManagerWidget.h>
-#include <QvisColorTableButton.h>
+#include <QvisColorTableWidget.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
@@ -151,6 +151,9 @@ QvisContourPlotWindow::~QvisContourPlotWindow()
 //
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
+//
+//   Kathleen Bonnell, Mon Jan 17 17:59:09 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
 // ****************************************************************************
 
@@ -289,10 +292,14 @@ QvisContourPlotWindow::CreateWindowContents()
     colorLayout->addWidget(multipleColors, 3, 0, 1, 3);
 
     // Add the color table button.
-    colorTableButton = new QvisColorTableButton(contourColorGroup);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+    colorTableWidget = new QvisColorTableWidget(contourColorGroup, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    colorLayout->addWidget(colorTableButton, 0, 1, 1, 2,
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    colorLayout->addWidget(colorTableWidget, 0, 1, 1, 2,
         Qt::AlignLeft | Qt::AlignVCenter);
 
 
@@ -403,6 +410,9 @@ QvisContourPlotWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Jul 15 15:21:40 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Bonnell, Mon Jan 17 17:59:09 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -446,10 +456,13 @@ QvisContourPlotWindow::UpdateWindow(bool doAll)
 
             singleColor->setEnabled(index == 1);
             singleColorOpacity->setEnabled(index == 1);
-            colorTableButton->setEnabled(index == 0);
+            colorTableWidget->setEnabled(index == 0);
             break;
         case ContourAttributes::ID_colorTableName:
-            colorTableButton->setColorTable(contourAtts->GetColorTableName().c_str());
+            colorTableWidget->setColorTable(contourAtts->GetColorTableName().c_str());
+            break;
+        case ContourAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(contourAtts->GetInvertColorTable());
             break;
         case ContourAttributes::ID_legendFlag:
             legendToggle->blockSignals(true);
@@ -1547,3 +1560,26 @@ QvisContourPlotWindow::colorTableClicked(bool, const QString &ctName)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisContourPlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   contour plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisContourPlotWindow::invertColorTableToggled(bool val)
+{
+    contourAtts->SetInvertColorTable(val);
+    Apply();
+}

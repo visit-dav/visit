@@ -151,7 +151,6 @@ avtLookupTable::SetLUTColors(const unsigned char *colors, int nColors)
     logLUT->SetNumberOfTableValues(nColors);
     skewLUT->SetNumberOfTableValues(nColors);
 
-
     const unsigned char *cptr = colors;
     for(int i = 0; i < nColors; ++i)
     {
@@ -243,7 +242,7 @@ avtLookupTable::SetLUTColorsWithOpacity(const unsigned char *colors,
         double g = (double) cptr[1] * INV_255 ;
         double b = (double) cptr[2] * INV_255 ;
         double a = (double) cptr[3] * INV_255 ;
- 
+
         stdLUT->SetTableValue(i, r, g, b, a);
         logLUT->SetTableValue(i, r, g, b, a);
         skewLUT->SetTableValue(i, r, g, b, a);
@@ -314,11 +313,14 @@ avtLookupTable::GetNumberOfColors()
 //    Added ability to also set the LUT colors with opacities from the
 //    color table (if requested by the caller in the new argument).
 //
+//    Kathleen Bonnell, Mon Jan 17 17:38:40 MST 2011
+//    Added invert argument.
+//
 // ****************************************************************************
 
 bool
 avtLookupTable::SetColorTable(const char *ctName, bool validName,
-                              bool useOpacities)
+                              bool useOpacities, bool invert)
 {
     bool retval = false;
     bool useDefault = false;
@@ -341,7 +343,7 @@ avtLookupTable::SetColorTable(const char *ctName, bool validName,
         const char *dct = ct->GetDefaultContinuousColorTable().c_str();
         if(dct == 0)
             dct = ct->GetDefaultDiscreteColorTable().c_str();
-        const unsigned char *c = ct->GetColors(dct);
+        const unsigned char *c = ct->GetColors(dct, invert);
         const unsigned char *a = NULL;
         if (useOpacities)
             a = ct->GetAlphas(dct);
@@ -358,7 +360,7 @@ avtLookupTable::SetColorTable(const char *ctName, bool validName,
     else if (validName) 
     {
         // Use the specified color table. It was a valid color table.
-        const unsigned char *c = ct->GetColors(ctName);
+        const unsigned char *c = ct->GetColors(ctName, invert);
         const unsigned char *a = NULL;
         if (useOpacities)
             a = ct->GetAlphas(ctName);

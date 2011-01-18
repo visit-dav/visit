@@ -257,6 +257,7 @@ void PseudocolorAttributes::Init()
     pointType = Point;
     skewFactor = 1;
     opacity = 1;
+    invertColorTable = false;
     smoothingLevel = 0;
     pointSizeVarEnabled = false;
     pointSizePixels = 2;
@@ -298,6 +299,7 @@ void PseudocolorAttributes::Copy(const PseudocolorAttributes &obj)
     skewFactor = obj.skewFactor;
     opacity = obj.opacity;
     colorTableName = obj.colorTableName;
+    invertColorTable = obj.invertColorTable;
     smoothingLevel = obj.smoothingLevel;
     pointSizeVarEnabled = obj.pointSizeVarEnabled;
     pointSizeVar = obj.pointSizeVar;
@@ -478,6 +480,7 @@ PseudocolorAttributes::operator == (const PseudocolorAttributes &obj) const
             (skewFactor == obj.skewFactor) &&
             (opacity == obj.opacity) &&
             (colorTableName == obj.colorTableName) &&
+            (invertColorTable == obj.invertColorTable) &&
             (smoothingLevel == obj.smoothingLevel) &&
             (pointSizeVarEnabled == obj.pointSizeVarEnabled) &&
             (pointSizeVar == obj.pointSizeVar) &&
@@ -642,6 +645,7 @@ PseudocolorAttributes::SelectAll()
     Select(ID_skewFactor,          (void *)&skewFactor);
     Select(ID_opacity,             (void *)&opacity);
     Select(ID_colorTableName,      (void *)&colorTableName);
+    Select(ID_invertColorTable,    (void *)&invertColorTable);
     Select(ID_smoothingLevel,      (void *)&smoothingLevel);
     Select(ID_pointSizeVarEnabled, (void *)&pointSizeVarEnabled);
     Select(ID_pointSizeVar,        (void *)&pointSizeVar);
@@ -763,6 +767,12 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("colorTableName", colorTableName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_invertColorTable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("invertColorTable", invertColorTable));
     }
 
     if(completeSave || !FieldsEqual(ID_smoothingLevel, &defaultObject))
@@ -927,6 +937,8 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
         SetOpacity(node->AsDouble());
     if((node = searchNode->GetNode("colorTableName")) != 0)
         SetColorTableName(node->AsString());
+    if((node = searchNode->GetNode("invertColorTable")) != 0)
+        SetInvertColorTable(node->AsBool());
     if((node = searchNode->GetNode("smoothingLevel")) != 0)
         SetSmoothingLevel(node->AsInt());
     if((node = searchNode->GetNode("pointSizeVarEnabled")) != 0)
@@ -1057,6 +1069,13 @@ PseudocolorAttributes::SetColorTableName(const std::string &colorTableName_)
 {
     colorTableName = colorTableName_;
     Select(ID_colorTableName, (void *)&colorTableName);
+}
+
+void
+PseudocolorAttributes::SetInvertColorTable(bool invertColorTable_)
+{
+    invertColorTable = invertColorTable_;
+    Select(ID_invertColorTable, (void *)&invertColorTable);
 }
 
 void
@@ -1202,6 +1221,12 @@ PseudocolorAttributes::GetColorTableName()
     return colorTableName;
 }
 
+bool
+PseudocolorAttributes::GetInvertColorTable() const
+{
+    return invertColorTable;
+}
+
 int
 PseudocolorAttributes::GetSmoothingLevel() const
 {
@@ -1304,6 +1329,7 @@ PseudocolorAttributes::GetFieldName(int index) const
     case ID_skewFactor:          return "skewFactor";
     case ID_opacity:             return "opacity";
     case ID_colorTableName:      return "colorTableName";
+    case ID_invertColorTable:    return "invertColorTable";
     case ID_smoothingLevel:      return "smoothingLevel";
     case ID_pointSizeVarEnabled: return "pointSizeVarEnabled";
     case ID_pointSizeVar:        return "pointSizeVar";
@@ -1349,6 +1375,7 @@ PseudocolorAttributes::GetFieldType(int index) const
     case ID_skewFactor:          return FieldType_double;
     case ID_opacity:             return FieldType_opacity;
     case ID_colorTableName:      return FieldType_colortable;
+    case ID_invertColorTable:    return FieldType_bool;
     case ID_smoothingLevel:      return FieldType_int;
     case ID_pointSizeVarEnabled: return FieldType_bool;
     case ID_pointSizeVar:        return FieldType_variablename;
@@ -1394,6 +1421,7 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
     case ID_skewFactor:          return "double";
     case ID_opacity:             return "opacity";
     case ID_colorTableName:      return "colortable";
+    case ID_invertColorTable:    return "bool";
     case ID_smoothingLevel:      return "int";
     case ID_pointSizeVarEnabled: return "bool";
     case ID_pointSizeVar:        return "variablename";
@@ -1495,6 +1523,11 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_colorTableName:
         {  // new scope
         retval = (colorTableName == obj.colorTableName);
+        }
+        break;
+    case ID_invertColorTable:
+        {  // new scope
+        retval = (invertColorTable == obj.invertColorTable);
         }
         break;
     case ID_smoothingLevel:

@@ -161,6 +161,9 @@
       <Field name="colorTableName" label="Color table" type="colortable">
         Default
       </Field>
+      <Field name="invertColorTable" label="Invert Color table" type="bool">
+        false
+      </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true
       </Field>

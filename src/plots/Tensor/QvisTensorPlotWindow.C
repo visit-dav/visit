@@ -52,7 +52,7 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisColorButton.h>
-#include <QvisColorTableButton.h>
+#include <QvisColorTableWidget.h>
 
 // ****************************************************************************
 // Method: QvisTensorPlotWindow::QvisTensorPlotWindow
@@ -128,6 +128,9 @@ QvisTensorPlotWindow::~QvisTensorPlotWindow()
 //
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
+//
+//   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
 // ****************************************************************************
 
@@ -249,10 +252,14 @@ QvisTensorPlotWindow::CreateWindowContents()
     cgLayout->addWidget(rb, 1, 0);
 
     // Create the color-by-eigenvalues button.
-    colorTableButton = new QvisColorTableButton(colorGroupBox);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+    colorTableWidget = new QvisColorTableWidget(colorGroupBox, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    cgLayout->addWidget(colorTableButton, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    cgLayout->addWidget(colorTableWidget, 0, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
     // Create the tensor color button.
     tensorColor = new QvisColorButton(colorGroupBox);
@@ -308,6 +315,9 @@ QvisTensorPlotWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Tue Aug 8 20:12:23 PST 2008
 //   Qt 4.
+//
+//   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
 // ****************************************************************************
 
@@ -378,7 +388,10 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             }
             break;
         case TensorAttributes::ID_colorTableName:
-            colorTableButton->setColorTable(tensorAtts->GetColorTableName().c_str());
+            colorTableWidget->setColorTable(tensorAtts->GetColorTableName().c_str());
+            break;
+        case TensorAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(tensorAtts->GetInvertColorTable());
             break;
         }
     } // end for
@@ -719,3 +732,28 @@ QvisTensorPlotWindow::colorTableClicked(bool useDefault,
     tensorAtts->SetColorTableName(ctName.toStdString());
     Apply();
 }
+
+// ****************************************************************************
+// Method: QvisTensorPlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   tensor plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisTensorPlotWindow::invertColorTableToggled(bool val)
+{
+    tensorAtts->SetInvertColorTable(val);
+    Apply();
+}
+

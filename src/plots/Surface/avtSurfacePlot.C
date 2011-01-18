@@ -426,6 +426,9 @@ avtSurfacePlot::CustomizeBehavior()
 //    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
 //    Set renderer's CanApplyGlobalRepresentation flag. 
 //    
+//    Kathleen Bonnell, Mon Jan 17 17:51:40 MST 2011
+//    Account for InvertColorTable when determining updateColors.
+//
 // ****************************************************************************
 
 void
@@ -435,7 +438,8 @@ avtSurfacePlot::SetAtts(const AttributeGroup *a)
 
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
-       (atts.GetColorTableName() != newAtts->GetColorTableName());
+       (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
+       (atts.GetInvertColorTable() != newAtts->GetInvertColorTable());
 
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
@@ -500,6 +504,9 @@ avtSurfacePlot::SetAtts(const AttributeGroup *a)
 //    avtLookupTable) to ensure changing active color in color table window
 //    affects this plot if its color table is default.  
 //
+//    Kathleen Bonnell, Mon Jan 17 17:52:24 MST 2011
+//    Retrieve invertColorTable toggle and pass to avtLUT.
+//
 // ****************************************************************************
 
 bool
@@ -509,10 +516,11 @@ avtSurfacePlot::SetColorTable(const char *ctName)
     if (atts.GetColorByZFlag())
     {
         bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
+        bool invert     = atts.GetInvertColorTable();
         if (atts.GetColorTableName() == "Default")
-            retval = avtLUT->SetColorTable(NULL, namesMatch);
+            retval = avtLUT->SetColorTable(NULL, namesMatch, false, invert);
         else
-            retval = avtLUT->SetColorTable(ctName, namesMatch);
+            retval = avtLUT->SetColorTable(ctName, namesMatch, false, invert);
     }
     return retval;
 }

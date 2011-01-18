@@ -140,6 +140,11 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
+    if(atts->GetInvertColorTable())
+        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+    str += tmpStr;
     const char *vectorOrigin_names = "Head, Middle, Tail";
     switch (atts->GetVectorOrigin())
     {
@@ -674,6 +679,30 @@ VectorAttributes_GetColorTableName(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+VectorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the invertColorTable in the object.
+    obj->data->SetInvertColorTable(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 VectorAttributes_SetVectorOrigin(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
@@ -1007,6 +1036,8 @@ PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH] = {
     {"GetVectorColor", VectorAttributes_GetVectorColor, METH_VARARGS},
     {"SetColorTableName", VectorAttributes_SetColorTableName, METH_VARARGS},
     {"GetColorTableName", VectorAttributes_GetColorTableName, METH_VARARGS},
+    {"SetInvertColorTable", VectorAttributes_SetInvertColorTable, METH_VARARGS},
+    {"GetInvertColorTable", VectorAttributes_GetInvertColorTable, METH_VARARGS},
     {"SetVectorOrigin", VectorAttributes_SetVectorOrigin, METH_VARARGS},
     {"GetVectorOrigin", VectorAttributes_GetVectorOrigin, METH_VARARGS},
     {"SetMinFlag", VectorAttributes_SetMinFlag, METH_VARARGS},
@@ -1101,6 +1132,8 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
         return VectorAttributes_GetVectorColor(self, NULL);
     if(strcmp(name, "colorTableName") == 0)
         return VectorAttributes_GetColorTableName(self, NULL);
+    if(strcmp(name, "invertColorTable") == 0)
+        return VectorAttributes_GetInvertColorTable(self, NULL);
     if(strcmp(name, "vectorOrigin") == 0)
         return VectorAttributes_GetVectorOrigin(self, NULL);
     if(strcmp(name, "Head") == 0)
@@ -1196,6 +1229,8 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VectorAttributes_SetVectorColor(self, tuple);
     else if(strcmp(name, "colorTableName") == 0)
         obj = VectorAttributes_SetColorTableName(self, tuple);
+    else if(strcmp(name, "invertColorTable") == 0)
+        obj = VectorAttributes_SetInvertColorTable(self, tuple);
     else if(strcmp(name, "vectorOrigin") == 0)
         obj = VectorAttributes_SetVectorOrigin(self, tuple);
     else if(strcmp(name, "minFlag") == 0)

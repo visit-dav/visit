@@ -40,6 +40,7 @@
 #define WELLBOREATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorControlPointList.h>
 #include <ColorAttribute.h>
 #include <ColorAttributeList.h>
@@ -88,13 +89,23 @@ public:
         StemAndName
     };
 
+    // These constructors are for objects of this class
     WellBoreAttributes();
     WellBoreAttributes(const WellBoreAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    WellBoreAttributes(private_tmfs_t tmfs);
+    WellBoreAttributes(const WellBoreAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~WellBoreAttributes();
 
     virtual WellBoreAttributes& operator = (const WellBoreAttributes &obj);
     virtual bool operator == (const WellBoreAttributes &obj) const;
     virtual bool operator != (const WellBoreAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const WellBoreAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -116,6 +127,7 @@ public:
     void SetChangedColors(const unsignedCharVector &changedColors_);
     void SetColorType(ColoringMethod colorType_);
     void SetColorTableName(const std::string &colorTableName_);
+    void SetInvertColorTable(bool invertColorTable_);
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetMultiColor(const ColorAttributeList &multiColor_);
     void SetDrawWellsAs(WellRenderingMode drawWellsAs_);
@@ -139,6 +151,7 @@ public:
     ColoringMethod              GetColorType() const;
     const std::string           &GetColorTableName() const;
           std::string           &GetColorTableName();
+    bool                        GetInvertColorTable() const;
     const ColorAttribute        &GetSingleColor() const;
           ColorAttribute        &GetSingleColor();
     const ColorAttributeList    &GetMultiColor() const;
@@ -202,6 +215,7 @@ public:
         ID_changedColors,
         ID_colorType,
         ID_colorTableName,
+        ID_invertColorTable,
         ID_singleColor,
         ID_multiColor,
         ID_drawWellsAs,
@@ -215,7 +229,8 @@ public:
         ID_legendFlag,
         ID_nWellBores,
         ID_wellBores,
-        ID_wellNames
+        ID_wellNames,
+        ID__LAST
     };
 
 private:
@@ -223,6 +238,7 @@ private:
     unsignedCharVector    changedColors;
     int                   colorType;
     std::string           colorTableName;
+    bool                  invertColorTable;
     ColorAttribute        singleColor;
     ColorAttributeList    multiColor;
     int                   drawWellsAs;
@@ -240,6 +256,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define WELLBOREATTRIBUTES_TMFS "au*isbaaiifiiiffbii*s*"
 
 #endif

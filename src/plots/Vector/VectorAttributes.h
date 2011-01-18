@@ -132,6 +132,7 @@ public:
     void SetUseLegend(bool useLegend_);
     void SetVectorColor(const ColorAttribute &vectorColor_);
     void SetColorTableName(const std::string &colorTableName_);
+    void SetInvertColorTable(bool invertColorTable_);
     void SetVectorOrigin(OriginType vectorOrigin_);
     void SetMinFlag(bool minFlag_);
     void SetMaxFlag(bool maxFlag_);
@@ -162,6 +163,7 @@ public:
           ColorAttribute &GetVectorColor();
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
+    bool                 GetInvertColorTable() const;
     OriginType           GetVectorOrigin() const;
     bool                 GetMinFlag() const;
     bool                 GetMaxFlag() const;
@@ -231,6 +233,7 @@ public:
         ID_useLegend,
         ID_vectorColor,
         ID_colorTableName,
+        ID_invertColorTable,
         ID_vectorOrigin,
         ID_minFlag,
         ID_maxFlag,
@@ -261,6 +264,7 @@ private:
     bool           useLegend;
     ColorAttribute vectorColor;
     std::string    colorTableName;
+    bool           invertColorTable;
     int            vectorOrigin;
     bool           minFlag;
     bool           maxFlag;
@@ -277,6 +281,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VECTORATTRIBUTES_TMFS "ibiiiidbbdbbbasibbiddbidbi"
+#define VECTORATTRIBUTES_TMFS "ibiiiidbbdbbbasbibbiddbidbi"
 
 #endif

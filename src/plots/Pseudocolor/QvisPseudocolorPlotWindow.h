@@ -46,7 +46,7 @@ class QCheckBox;
 class QButtonGroup;
 class QLabel;
 class QvisOpacitySlider;
-class QvisColorTableButton;
+class QvisColorTableWidget;
 class QvisPointControl;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
@@ -107,6 +107,9 @@ class PseudocolorAttributes;
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Kathleen Bonnell, Mon Jan 17 18:02:39 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 class QvisPseudocolorPlotWindow : public QvisPostableWindowObserver
@@ -140,6 +143,7 @@ private slots:
     void scaleClicked(int scale);
     void changedOpacity(int opacity, const void *);
     void colorTableClicked(bool useDefault, const QString &ctName);
+    void invertColorTableToggled(bool val);
     void limitsSelectChanged(int);
     void smoothingLevelChanged(int index);
 
@@ -168,7 +172,7 @@ private:
     QLineEdit             *skewLineEdit;
     QLabel                *opacitySliderLabel;
     QvisOpacitySlider     *opacitySlider;
-    QvisColorTableButton  *colorTableButton;
+    QvisColorTableWidget  *colorTableWidget;
     QButtonGroup          *smoothingLevelButtons;
     QvisPointControl      *pointControl;
     QLabel                *lineStyleLabel;

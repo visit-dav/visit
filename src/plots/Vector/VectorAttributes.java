@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class VectorAttributes extends AttributeSubject implements Plugin
 {
-    private static int VectorAttributes_numAdditionalAtts = 26;
+    private static int VectorAttributes_numAdditionalAtts = 27;
 
     // Enum values
     public final static int QUALITY_FAST = 0;
@@ -99,6 +99,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         useLegend = true;
         vectorColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
+        invertColorTable = false;
         vectorOrigin = ORIGINTYPE_TAIL;
         minFlag = false;
         maxFlag = false;
@@ -131,6 +132,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         useLegend = true;
         vectorColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
+        invertColorTable = false;
         vectorOrigin = ORIGINTYPE_TAIL;
         minFlag = false;
         maxFlag = false;
@@ -163,6 +165,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         useLegend = obj.useLegend;
         vectorColor = new ColorAttribute(obj.vectorColor);
         colorTableName = new String(obj.colorTableName);
+        invertColorTable = obj.invertColorTable;
         vectorOrigin = obj.vectorOrigin;
         minFlag = obj.minFlag;
         maxFlag = obj.maxFlag;
@@ -206,6 +209,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
                 (useLegend == obj.useLegend) &&
                 (vectorColor == obj.vectorColor) &&
                 (colorTableName.equals(obj.colorTableName)) &&
+                (invertColorTable == obj.invertColorTable) &&
                 (vectorOrigin == obj.vectorOrigin) &&
                 (minFlag == obj.minFlag) &&
                 (maxFlag == obj.maxFlag) &&
@@ -313,70 +317,76 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         Select(14);
     }
 
+    public void SetInvertColorTable(boolean invertColorTable_)
+    {
+        invertColorTable = invertColorTable_;
+        Select(15);
+    }
+
     public void SetVectorOrigin(int vectorOrigin_)
     {
         vectorOrigin = vectorOrigin_;
-        Select(15);
+        Select(16);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(16);
+        Select(17);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(17);
+        Select(18);
     }
 
     public void SetLimitsMode(int limitsMode_)
     {
         limitsMode = limitsMode_;
-        Select(18);
+        Select(19);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(19);
+        Select(20);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(20);
+        Select(21);
     }
 
     public void SetLineStem(boolean lineStem_)
     {
         lineStem = lineStem_;
-        Select(21);
+        Select(22);
     }
 
     public void SetGeometryQuality(int geometryQuality_)
     {
         geometryQuality = geometryQuality_;
-        Select(22);
+        Select(23);
     }
 
     public void SetStemWidth(double stemWidth_)
     {
         stemWidth = stemWidth_;
-        Select(23);
+        Select(24);
     }
 
     public void SetOrigOnly(boolean origOnly_)
     {
         origOnly = origOnly_;
-        Select(24);
+        Select(25);
     }
 
     public void SetGlyphType(int glyphType_)
     {
         glyphType = glyphType_;
-        Select(25);
+        Select(26);
     }
 
     // Property getting methods
@@ -395,6 +405,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public boolean        GetUseLegend() { return useLegend; }
     public ColorAttribute GetVectorColor() { return vectorColor; }
     public String         GetColorTableName() { return colorTableName; }
+    public boolean        GetInvertColorTable() { return invertColorTable; }
     public int            GetVectorOrigin() { return vectorOrigin; }
     public boolean        GetMinFlag() { return minFlag; }
     public boolean        GetMaxFlag() { return maxFlag; }
@@ -441,26 +452,28 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(14, buf))
             buf.WriteString(colorTableName);
         if(WriteSelect(15, buf))
-            buf.WriteInt(vectorOrigin);
+            buf.WriteBool(invertColorTable);
         if(WriteSelect(16, buf))
-            buf.WriteBool(minFlag);
+            buf.WriteInt(vectorOrigin);
         if(WriteSelect(17, buf))
-            buf.WriteBool(maxFlag);
+            buf.WriteBool(minFlag);
         if(WriteSelect(18, buf))
-            buf.WriteInt(limitsMode);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(19, buf))
-            buf.WriteDouble(min);
+            buf.WriteInt(limitsMode);
         if(WriteSelect(20, buf))
-            buf.WriteDouble(max);
+            buf.WriteDouble(min);
         if(WriteSelect(21, buf))
-            buf.WriteBool(lineStem);
+            buf.WriteDouble(max);
         if(WriteSelect(22, buf))
-            buf.WriteInt(geometryQuality);
+            buf.WriteBool(lineStem);
         if(WriteSelect(23, buf))
-            buf.WriteDouble(stemWidth);
+            buf.WriteInt(geometryQuality);
         if(WriteSelect(24, buf))
-            buf.WriteBool(origOnly);
+            buf.WriteDouble(stemWidth);
         if(WriteSelect(25, buf))
+            buf.WriteBool(origOnly);
+        if(WriteSelect(26, buf))
             buf.WriteInt(glyphType);
     }
 
@@ -515,36 +528,39 @@ public class VectorAttributes extends AttributeSubject implements Plugin
             SetColorTableName(buf.ReadString());
             break;
         case 15:
-            SetVectorOrigin(buf.ReadInt());
+            SetInvertColorTable(buf.ReadBool());
             break;
         case 16:
-            SetMinFlag(buf.ReadBool());
+            SetVectorOrigin(buf.ReadInt());
             break;
         case 17:
-            SetMaxFlag(buf.ReadBool());
+            SetMinFlag(buf.ReadBool());
             break;
         case 18:
-            SetLimitsMode(buf.ReadInt());
+            SetMaxFlag(buf.ReadBool());
             break;
         case 19:
-            SetMin(buf.ReadDouble());
+            SetLimitsMode(buf.ReadInt());
             break;
         case 20:
-            SetMax(buf.ReadDouble());
+            SetMin(buf.ReadDouble());
             break;
         case 21:
-            SetLineStem(buf.ReadBool());
+            SetMax(buf.ReadDouble());
             break;
         case 22:
-            SetGeometryQuality(buf.ReadInt());
+            SetLineStem(buf.ReadBool());
             break;
         case 23:
-            SetStemWidth(buf.ReadDouble());
+            SetGeometryQuality(buf.ReadInt());
             break;
         case 24:
-            SetOrigOnly(buf.ReadBool());
+            SetStemWidth(buf.ReadDouble());
             break;
         case 25:
+            SetOrigOnly(buf.ReadBool());
+            break;
+        case 26:
             SetGlyphType(buf.ReadInt());
             break;
         }
@@ -573,6 +589,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("useLegend", useLegend, indent) + "\n";
         str = str + indent + "vectorColor = {" + vectorColor.Red() + ", " + vectorColor.Green() + ", " + vectorColor.Blue() + ", " + vectorColor.Alpha() + "}\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
+        str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
         str = str + indent + "vectorOrigin = ";
         if(vectorOrigin == ORIGINTYPE_HEAD)
             str = str + "ORIGINTYPE_HEAD";
@@ -626,6 +643,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     private boolean        useLegend;
     private ColorAttribute vectorColor;
     private String         colorTableName;
+    private boolean        invertColorTable;
     private int            vectorOrigin;
     private boolean        minFlag;
     private boolean        maxFlag;

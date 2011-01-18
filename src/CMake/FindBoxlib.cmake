@@ -45,6 +45,9 @@
 #   Restore separate vars for libraries (to handle different names on
 #   different platforms).
 #
+#   Kathleen Bonnell, Mon Jan 17 17:24:44 MST 2011
+#   Don't set BOXLIB_2D/3D_LIB unless BOXLIB_FOUND.
+#
 #****************************************************************************/
 
 # Use the BOXLIB_DIR hint from the config-site .cmake file 
@@ -57,15 +60,17 @@ ELSE (WIN32)
   SET_UP_THIRD_PARTY(BOXLIB lib include box2D box3D)
 ENDIF (WIN32)
 
-# place the 2D and 3D libraries into separate vars for plugin use.
-LIST(GET BOXLIB_LIB 0 tmp)
-SET(BOXLIB_2D_LIB ${tmp} CACHE STRING "2D boxlib" FORCE)
+IF(BOXLIB_FOUND)
+  # place the 2D and 3D libraries into separate vars for plugin use.
+  LIST(GET BOXLIB_LIB 0 tmp)
+  SET(BOXLIB_2D_LIB ${tmp} CACHE STRING "2D boxlib" FORCE)
 
-LIST(GET BOXLIB_LIB 1 tmp)
-SET(BOXLIB_3D_LIB ${tmp} CACHE STRING "3D boxlib" FORCE)
+  LIST(GET BOXLIB_LIB 1 tmp)
+  SET(BOXLIB_3D_LIB ${tmp} CACHE STRING "3D boxlib" FORCE)
 
-# unset unneeded vars.
-UNSET(tmp)
-UNSET(BOXLIB_LIB CACHE)
+  # unset unneeded vars.
+  UNSET(tmp)
+  UNSET(BOXLIB_LIB CACHE)
+ENDIF(BOXLIB_FOUND)
 
 

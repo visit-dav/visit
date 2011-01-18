@@ -468,6 +468,9 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Don't delete and recreate the resample filter ... it messes with SR mode.
 //    Also set the default value when resampling to be 0-magnitude.
 //
+//    Kathleen Bonnell, Mon Jan 17 18:04:56 MST 2011
+//    Consider InvertColorTable flag when setting updateColors.
+//
 // ****************************************************************************
 
 void
@@ -478,6 +481,7 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
        (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
+       (atts.GetInvertColorTable() != newAtts->GetInvertColorTable()) ||
        (atts.GetColorByMag() != newAtts->GetColorByMag());
 
     // See if any attributes that require the plot to be regenerated were
@@ -595,6 +599,9 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
 //    I added code to set the LUT colors for the case where we are using
 //    a single color.
 //
+//    Kathleen Bonnell, Mon Jan 17 18:04:56 MST 2011
+//    Retrieve invertColorTable flag and send to avtLUT.
+//
 // ****************************************************************************
 
 bool
@@ -604,13 +611,14 @@ avtVectorPlot::SetColorTable(const char *ctName)
     if (atts.GetColorByMag())
     {
         bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
+        bool invert = atts.GetInvertColorTable();
         if (atts.GetColorTableName() == "Default")
         {
-            retval =  avtLUT->SetColorTable(NULL, namesMatch);
+            retval =  avtLUT->SetColorTable(NULL, namesMatch, false, invert);
         }
         else
         {
-            retval =  avtLUT->SetColorTable(ctName, namesMatch);
+            retval =  avtLUT->SetColorTable(ctName, namesMatch, false, invert);
         }
 
         if (retval)

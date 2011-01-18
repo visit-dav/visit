@@ -390,6 +390,9 @@ avtScatterPlot::GetColorInformation(std::string &colorString,
 //    I made the pointSize in the atts be used for to set the point size for
 //    points, which is not the same as what's used for Box, Axis, Icosahedra.
 //   
+//    Kathleen Bonnell, Mon Jan 17 18:13:11 MST 2011
+//    Consider InvertColorTable flag when setting updateColors.
+//
 // ****************************************************************************
 
 void
@@ -399,7 +402,8 @@ avtScatterPlot::SetAtts(const AttributeGroup *a)
 
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
-         (atts.GetColorTableName() != newAtts->GetColorTableName()); 
+         (atts.GetColorTableName() != newAtts->GetColorTableName()) || 
+         (atts.GetInvertColorTable() != newAtts->GetInvertColorTable()); 
 
     needsRecalculation =
         atts.ChangesRequireRecalculation(*(const ScatterAttributes*)a);
@@ -572,6 +576,8 @@ avtScatterPlot::SetLegend(bool legendOn)
 // Creation:   Tue Dec 14 13:55:32 PST 2004
 //
 // Modifications:
+//    Kathleen Bonnell, Mon Jan 17 18:13:11 MST 2011
+//    Retrieve invertColorTable flag and pass to avtLUT.
 //
 // ****************************************************************************
 
@@ -579,11 +585,12 @@ bool
 avtScatterPlot::SetColorTable(const char *ctName)
 {
     bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
+    bool invert = atts.GetInvertColorTable();
 
     if (atts.GetColorTableName() == "Default")
-        return avtLUT->SetColorTable(NULL, namesMatch); 
+        return avtLUT->SetColorTable(NULL, namesMatch, false, invert); 
     else
-        return avtLUT->SetColorTable(ctName, namesMatch);
+        return avtLUT->SetColorTable(ctName, namesMatch, false, invert);
 }
 
 // ****************************************************************************

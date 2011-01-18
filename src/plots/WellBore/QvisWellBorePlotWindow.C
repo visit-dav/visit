@@ -57,7 +57,7 @@
 
 #include <QvisColorButton.h>
 #include <QvisColorManagerWidget.h>
-#include <QvisColorTableButton.h>
+#include <QvisColorTableWidget.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
@@ -136,6 +136,9 @@ QvisWellBorePlotWindow::~QvisWellBorePlotWindow()
 //   Eric Brugger, Mon Nov 10 13:18:02 PST 2008
 //   Added the ability to display well bore names and stems.
 //   
+//   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -246,10 +249,14 @@ QvisWellBorePlotWindow::CreateWindowContents()
     colorLayout->addWidget(multipleColors, 3, 0, 1, 3);
 
     // Add the color table button.
-    colorTableButton = new QvisColorTableButton(wellColorGroup);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+    colorTableWidget = new QvisColorTableWidget(wellColorGroup, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    colorLayout->addWidget(colorTableButton, 0, 1, 1, 2,
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    colorLayout->addWidget(colorTableWidget, 0, 1, 1, 2,
         Qt::AlignLeft | Qt::AlignVCenter);
 
     QGridLayout *mainLayout = new QGridLayout(0);
@@ -358,6 +365,9 @@ QvisWellBorePlotWindow::CreateWindowContents()
 //   Eric Brugger, Mon Nov 10 13:18:02 PST 2008
 //   Added the ability to display well bore names and stems.
 //   
+//   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -397,12 +407,17 @@ QvisWellBorePlotWindow::UpdateWindow(bool doAll)
 
             singleColor->setEnabled(index == 1);
             singleColorOpacity->setEnabled(index == 1);
-            colorTableButton->setEnabled(index == 0);
+            colorTableWidget->setEnabled(index == 0);
             break;
           case WellBoreAttributes::ID_colorTableName:
-            colorTableButton->blockSignals(true);
-            colorTableButton->setColorTable(atts->GetColorTableName().c_str());
-            colorTableButton->blockSignals(false);
+            colorTableWidget->blockSignals(true);
+            colorTableWidget->setColorTable(atts->GetColorTableName().c_str());
+            colorTableWidget->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_invertColorTable:
+            colorTableWidget->blockSignals(true);
+            colorTableWidget->setInvertColorTable(atts->GetInvertColorTable());
+            colorTableWidget->blockSignals(false);
             break;
           case WellBoreAttributes::ID_singleColor:
             tempcolor = QColor(atts->GetSingleColor().Red(),
@@ -1702,6 +1717,31 @@ void
 QvisWellBorePlotWindow::colorTableClicked(bool, const QString &ctName)
 {
     atts->SetColorTableName(ctName.toStdString());
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisWellBorePlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   well bore plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisWellBorePlotWindow::invertColorTableToggled(bool val)
+{
+    atts->SetInvertColorTable(val);
     Apply();
 }
 

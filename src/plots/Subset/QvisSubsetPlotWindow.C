@@ -55,7 +55,7 @@
 
 #include <QvisColorButton.h>
 #include <QvisColorSwatchListWidget.h>
-#include <QvisColorTableButton.h>
+#include <QvisColorTableWidget.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
@@ -143,6 +143,9 @@ QvisSubsetPlotWindow::~QvisSubsetPlotWindow()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Kathleen Bonnell, Mon Jan 17 18:14:12 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -216,10 +219,14 @@ QvisSubsetPlotWindow::CreateWindowContents()
     colorLayout->addWidget(multipleColorLabel, 4, 0, Qt::AlignRight);
 
     // Create the color table widget
-    colorTableButton = new QvisColorTableButton(subsetColorGroup);
-    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+    colorTableWidget = new QvisColorTableWidget(subsetColorGroup, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    colorLayout->addWidget(colorTableButton, 1, 1, 1, 2, Qt::AlignLeft | Qt::AlignVCenter);
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    colorLayout->addWidget(colorTableWidget, 1, 1, 1, 2, Qt::AlignLeft | Qt::AlignVCenter);
 
     // Create the overall opacity.
     QHBoxLayout *opLayout = new QHBoxLayout(0);
@@ -395,6 +402,9 @@ QvisSubsetPlotWindow::CreateWindowContents()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Kathleen Bonnell, Mon Jan 17 18:14:12 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
 // ****************************************************************************
 
 void
@@ -425,7 +435,10 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
                 colorModeButtons->button(0)->setChecked(true);
             break;
         case SubsetAttributes::ID_colorTableName:
-            colorTableButton->setColorTable(subsetAtts->GetColorTableName().c_str());
+            colorTableWidget->setColorTable(subsetAtts->GetColorTableName().c_str());
+            break;
+        case SubsetAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(subsetAtts->GetInvertColorTable());
             break;
         case SubsetAttributes::ID_filledFlag:
             // nothing anymore
@@ -535,7 +548,7 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
     multipleColorList->setEnabled(mEnabled);
     multipleColor->setEnabled(mEnabled);
     multipleColorOpacity->setEnabled(mEnabled);
-    colorTableButton->setEnabled(subsetAtts->GetColorType() ==
+    colorTableWidget->setEnabled(subsetAtts->GetColorType() ==
         SubsetAttributes::ColorByColorTable);
 }
 
@@ -1289,6 +1302,29 @@ QvisSubsetPlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisSubsetPlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   subset plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetPlotWindow::invertColorTableToggled(bool val)
+{
+    subsetAtts->SetInvertColorTable(val);
+    Apply();
+}
 
 // ****************************************************************************
 // Method: QvisSubsetPlotWindow::GetCurrentValues

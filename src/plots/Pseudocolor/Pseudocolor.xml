@@ -74,6 +74,9 @@
       <Field name="colorTableName" label="Color table" type="colortable">
         hot
       </Field>
+      <Field name="invertColorTable" label="Invert Color table" type="bool">
+        false
+      </Field>
       <Field name="smoothingLevel" label="Smoothing" type="int">
         0
       </Field>

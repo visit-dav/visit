@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define BOUNDARYATTRIBUTES_NMETH 40
 void           PyBoundaryAttributes_StartUp(BoundaryAttributes *subj, void *data);
 void           PyBoundaryAttributes_CloseDown();
-PyMethodDef *   PyBoundaryAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyBoundaryAttributes_GetMethodTable(int *nMethods);
 bool           PyBoundaryAttributes_Check(PyObject *obj);
 BoundaryAttributes *  PyBoundaryAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyBoundaryAttributes_New();
-PyObject *      PyBoundaryAttributes_Wrap(const BoundaryAttributes *attr);
+PyObject *     PyBoundaryAttributes_New();
+PyObject *     PyBoundaryAttributes_Wrap(const BoundaryAttributes *attr);
 void           PyBoundaryAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyBoundaryAttributes_SetDefaults(const BoundaryAttributes *atts);
 std::string    PyBoundaryAttributes_GetLogString();
 std::string    PyBoundaryAttributes_ToString(const BoundaryAttributes *, const char *);
+PyObject *     PyBoundaryAttributes_getattr(PyObject *self, char *name);
+int            PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyBoundaryAttributes_methods[BOUNDARYATTRIBUTES_NMETH];
 
 #endif
 

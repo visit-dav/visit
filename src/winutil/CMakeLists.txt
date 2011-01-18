@@ -35,12 +35,15 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Bonnell, Mon Jan 17 17:42:15 MST 2011
+#   Add QvisColorTableWidget.
 #
 #****************************************************************************/
 
 SET(WINUTIL_SOURCES
 Appearance.C
 QvisColorTableButton.C
+QvisColorTableWidget.C
 QvisVariableButton.C
 QvisVariableButtonHelper.C
 QvisVariablePopupMenu.C
@@ -52,6 +55,7 @@ WindowMetrics.C
 # List the files that we'll run moc on
 SET(WINUTIL_MOC_SOURCES
 QvisColorTableButton.h
+QvisColorTableWidget.h
 QvisVariableButton.h
 QvisVariableButtonHelper.h
 QvisVariablePopupMenu.h

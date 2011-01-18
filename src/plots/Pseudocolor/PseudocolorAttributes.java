@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class PseudocolorAttributes extends AttributeSubject implements Plugin
 {
-    private static int PseudocolorAttributes_numAdditionalAtts = 21;
+    private static int PseudocolorAttributes_numAdditionalAtts = 22;
 
     // Enum values
     public final static int CENTERING_NATURAL = 0;
@@ -101,6 +101,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         skewFactor = 1;
         opacity = 1;
         colorTableName = new String("hot");
+        invertColorTable = false;
         smoothingLevel = 0;
         pointSizeVarEnabled = false;
         pointSizeVar = new String("default");
@@ -128,6 +129,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         skewFactor = 1;
         opacity = 1;
         colorTableName = new String("hot");
+        invertColorTable = false;
         smoothingLevel = 0;
         pointSizeVarEnabled = false;
         pointSizeVar = new String("default");
@@ -155,6 +157,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         skewFactor = obj.skewFactor;
         opacity = obj.opacity;
         colorTableName = new String(obj.colorTableName);
+        invertColorTable = obj.invertColorTable;
         smoothingLevel = obj.smoothingLevel;
         pointSizeVarEnabled = obj.pointSizeVarEnabled;
         pointSizeVar = new String(obj.pointSizeVar);
@@ -193,6 +196,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
                 (skewFactor == obj.skewFactor) &&
                 (opacity == obj.opacity) &&
                 (colorTableName.equals(obj.colorTableName)) &&
+                (invertColorTable == obj.invertColorTable) &&
                 (smoothingLevel == obj.smoothingLevel) &&
                 (pointSizeVarEnabled == obj.pointSizeVarEnabled) &&
                 (pointSizeVar.equals(obj.pointSizeVar)) &&
@@ -290,46 +294,52 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         Select(13);
     }
 
+    public void SetInvertColorTable(boolean invertColorTable_)
+    {
+        invertColorTable = invertColorTable_;
+        Select(14);
+    }
+
     public void SetSmoothingLevel(int smoothingLevel_)
     {
         smoothingLevel = smoothingLevel_;
-        Select(14);
+        Select(15);
     }
 
     public void SetPointSizeVarEnabled(boolean pointSizeVarEnabled_)
     {
         pointSizeVarEnabled = pointSizeVarEnabled_;
-        Select(15);
+        Select(16);
     }
 
     public void SetPointSizeVar(String pointSizeVar_)
     {
         pointSizeVar = pointSizeVar_;
-        Select(16);
+        Select(17);
     }
 
     public void SetPointSizePixels(int pointSizePixels_)
     {
         pointSizePixels = pointSizePixels_;
-        Select(17);
+        Select(18);
     }
 
     public void SetLineStyle(int lineStyle_)
     {
         lineStyle = lineStyle_;
-        Select(18);
+        Select(19);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(19);
+        Select(20);
     }
 
     public void SetOpacityType(int opacityType_)
     {
         opacityType = opacityType_;
-        Select(20);
+        Select(21);
     }
 
     // Property getting methods
@@ -347,6 +357,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public double  GetSkewFactor() { return skewFactor; }
     public double  GetOpacity() { return opacity; }
     public String  GetColorTableName() { return colorTableName; }
+    public boolean GetInvertColorTable() { return invertColorTable; }
     public int     GetSmoothingLevel() { return smoothingLevel; }
     public boolean GetPointSizeVarEnabled() { return pointSizeVarEnabled; }
     public String  GetPointSizeVar() { return pointSizeVar; }
@@ -387,18 +398,20 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(13, buf))
             buf.WriteString(colorTableName);
         if(WriteSelect(14, buf))
-            buf.WriteInt(smoothingLevel);
+            buf.WriteBool(invertColorTable);
         if(WriteSelect(15, buf))
-            buf.WriteBool(pointSizeVarEnabled);
+            buf.WriteInt(smoothingLevel);
         if(WriteSelect(16, buf))
-            buf.WriteString(pointSizeVar);
+            buf.WriteBool(pointSizeVarEnabled);
         if(WriteSelect(17, buf))
-            buf.WriteInt(pointSizePixels);
+            buf.WriteString(pointSizeVar);
         if(WriteSelect(18, buf))
-            buf.WriteInt(lineStyle);
+            buf.WriteInt(pointSizePixels);
         if(WriteSelect(19, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteInt(lineStyle);
         if(WriteSelect(20, buf))
+            buf.WriteInt(lineWidth);
+        if(WriteSelect(21, buf))
             buf.WriteInt(opacityType);
     }
 
@@ -449,24 +462,27 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
             SetColorTableName(buf.ReadString());
             break;
         case 14:
-            SetSmoothingLevel(buf.ReadInt());
+            SetInvertColorTable(buf.ReadBool());
             break;
         case 15:
-            SetPointSizeVarEnabled(buf.ReadBool());
+            SetSmoothingLevel(buf.ReadInt());
             break;
         case 16:
-            SetPointSizeVar(buf.ReadString());
+            SetPointSizeVarEnabled(buf.ReadBool());
             break;
         case 17:
-            SetPointSizePixels(buf.ReadInt());
+            SetPointSizeVar(buf.ReadString());
             break;
         case 18:
-            SetLineStyle(buf.ReadInt());
+            SetPointSizePixels(buf.ReadInt());
             break;
         case 19:
-            SetLineWidth(buf.ReadInt());
+            SetLineStyle(buf.ReadInt());
             break;
         case 20:
+            SetLineWidth(buf.ReadInt());
+            break;
+        case 21:
             SetOpacityType(buf.ReadInt());
             break;
         }
@@ -519,6 +535,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("skewFactor", skewFactor, indent) + "\n";
         str = str + doubleToString("opacity", opacity, indent) + "\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
+        str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
         str = str + intToString("smoothingLevel", smoothingLevel, indent) + "\n";
         str = str + boolToString("pointSizeVarEnabled", pointSizeVarEnabled, indent) + "\n";
         str = str + stringToString("pointSizeVar", pointSizeVar, indent) + "\n";
@@ -550,6 +567,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     private double  skewFactor;
     private double  opacity;
     private String  colorTableName;
+    private boolean invertColorTable;
     private int     smoothingLevel;
     private boolean pointSizeVarEnabled;
     private String  pointSizeVar;

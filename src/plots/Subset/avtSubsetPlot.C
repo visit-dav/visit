@@ -806,6 +806,9 @@ avtSubsetPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    I fixed it so the global plot opacity affects the plot when the plot
 //    is colored using a single color.
 //
+//    Kathleen Bonnell, Mon Jan 17 18:16:41 MST 2011
+//    Retrieve invertColorTable flag and send to color table.
+//
 // ****************************************************************************
 
 void 
@@ -909,6 +912,7 @@ avtSubsetPlot::SetColors()
         for(int i = 0; i < numColors; ++i)
             levelColorMap.insert(LevelColorMap::value_type(allLabels[i], i));
 
+        bool invert = atts.GetInvertColorTable();
         // 
         // Add a color for each subset name.
         //
@@ -918,7 +922,7 @@ avtSubsetPlot::SetColors()
             for(int i = 0; i < numColors; ++i)
             {
                 unsigned char rgb[3] = {0,0,0};
-                ct->GetControlPointColor(ctName.c_str(), i, rgb);
+                ct->GetControlPointColor(ctName.c_str(), i, rgb, invert);
                 *cptr++ = rgb[0];
                 *cptr++ = rgb[1];
                 *cptr++ = rgb[2];
@@ -931,7 +935,7 @@ avtSubsetPlot::SetColors()
         {
             // The CT is continuous, sample the CT so we have a unique color
             // for each element.
-            unsigned char *rgb = ct->GetSampledColors(ctName.c_str(), numColors);
+            unsigned char *rgb = ct->GetSampledColors(ctName.c_str(), numColors, invert);
             if(rgb)
             {
                 for(int i = 0; i < numColors; ++i)

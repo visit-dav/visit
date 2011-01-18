@@ -70,6 +70,9 @@
       <Field name="colorTableName" label="Color table" type="colortable">
         Default
       </Field>
+      <Field name="invertColorTable" label="Invert Color table" type="bool">
+        false
+      </Field>
       <Field name="vectorOrigin" label="Vector Origin" type="enum" subtype="OriginType">
         Tail
       </Field>

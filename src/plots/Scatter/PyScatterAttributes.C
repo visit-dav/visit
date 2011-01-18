@@ -393,6 +393,11 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
+    if(atts->GetInvertColorTable())
+        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetLegendFlag())
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
@@ -1495,6 +1500,30 @@ ScatterAttributes_GetColorTableName(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+ScatterAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
+{
+    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the invertColorTable in the object.
+    obj->data->SetInvertColorTable(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ScatterAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
+{
+    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 ScatterAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
@@ -1600,6 +1629,8 @@ PyMethodDef PyScatterAttributes_methods[SCATTERATTRIBUTES_NMETH] = {
     {"GetSingleColor", ScatterAttributes_GetSingleColor, METH_VARARGS},
     {"SetColorTableName", ScatterAttributes_SetColorTableName, METH_VARARGS},
     {"GetColorTableName", ScatterAttributes_GetColorTableName, METH_VARARGS},
+    {"SetInvertColorTable", ScatterAttributes_SetInvertColorTable, METH_VARARGS},
+    {"GetInvertColorTable", ScatterAttributes_GetInvertColorTable, METH_VARARGS},
     {"SetLegendFlag", ScatterAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", ScatterAttributes_GetLegendFlag, METH_VARARGS},
     {NULL, NULL}
@@ -1798,6 +1829,8 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
         return ScatterAttributes_GetSingleColor(self, NULL);
     if(strcmp(name, "colorTableName") == 0)
         return ScatterAttributes_GetColorTableName(self, NULL);
+    if(strcmp(name, "invertColorTable") == 0)
+        return ScatterAttributes_GetInvertColorTable(self, NULL);
     if(strcmp(name, "legendFlag") == 0)
         return ScatterAttributes_GetLegendFlag(self, NULL);
 
@@ -1906,6 +1939,8 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ScatterAttributes_SetSingleColor(self, tuple);
     else if(strcmp(name, "colorTableName") == 0)
         obj = ScatterAttributes_SetColorTableName(self, tuple);
+    else if(strcmp(name, "invertColorTable") == 0)
+        obj = ScatterAttributes_SetInvertColorTable(self, tuple);
     else if(strcmp(name, "legendFlag") == 0)
         obj = ScatterAttributes_SetLegendFlag(self, tuple);
 

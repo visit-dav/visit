@@ -75,6 +75,9 @@ class ColorTableAttributes;
 //   Added DeleteInstance function to delete global data. Helps with valgrind.
 //   It is inline because it will only be used if you define DEBUG_MEMORY_LEAKS.
 //
+//    Kathleen Bonnell, Mon Jan 17 11:18:35 MST 2011
+//    Added invert arg to color retrieval methods.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtColorTables
@@ -87,14 +90,18 @@ public:
     const std::string   &GetDefaultDiscreteColorTable() const;
     void                 SetDefaultDiscreteColorTable(const std::string &);
 
-    const unsigned char *GetColors(const std::string &ctName);
-    const unsigned char *GetAlphas(const std::string &ctName);
+    const unsigned char *GetColors(const std::string &ctName, 
+                                   bool invert = false);
+    const unsigned char *GetAlphas(const std::string &ctName, 
+                                   bool invert = false);
     bool                 ColorTableIsFullyOpaque(const std::string &ctName);
 
     unsigned char       *GetSampledColors(const std::string &ctName,
-                                          int nColors) const;
+                                          int nColors,
+                                          bool invert = false) const;
     bool                 GetControlPointColor(const std::string &ctName,
-                                              int i, unsigned char *rgb) const;
+                                              int i, unsigned char *rgb,
+                                              bool invert = false) const;
     int                  GetNumColors() const { return 256; };
     bool                 IsDiscrete(const std::string &ctName) const;
     bool                 ColorTableExists(const std::string &ctName) const;

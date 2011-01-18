@@ -34,6 +34,9 @@
       <Field name="colorTableName" label="Color table" type="colortable">
         Default
       </Field>
+      <Field name="invertColorTable" label="Invert Color table" type="bool">
+        false
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
     </Attribute>

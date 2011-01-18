@@ -65,6 +65,9 @@ class vtkSkewLookupTable;
 //    Allowed SetColorTable to optionally also use the color table's opacity.
 //    Added new SetLUTColorsAndOpacity method to actually perform the work.
 //
+//    Kathleen Bonnell, Mon Jan 17 17:36:52 MST 2011
+//    Added invert argument to SetColorTable.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtLookupTable
@@ -75,7 +78,8 @@ class PIPELINE_API avtLookupTable
 
     void                          SetSkewFactor(const double);
     bool                          SetColorTable(const char *ctName, bool,
-                                                bool useOpacities = false);
+                                                bool useOpacities = false,
+                                                bool invert = false);
     void                          SetLUTColors(const unsigned char *, int);
     void                          SetLUTColorsWithOpacity(
                                       const unsigned char *, int);

@@ -524,6 +524,9 @@ avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    to set the rendering order.  Renamed SetOpacity because it was
 //    too complex to take just a single argument.
 //
+//    Kathleen Bonnell, Mon Jan 17 18:00:41 MST 2011
+//    Consider InvertColorTable toggle when setting updateColors.
+//
 // ****************************************************************************
 
 void
@@ -534,6 +537,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     // See if the colors will need to be updated.
     bool updateColors = (!colorsInitialized) ||
         (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
+        (atts.GetInvertColorTable() != newAtts->GetInvertColorTable()) ||
         (atts.GetOpacityType() != newAtts->GetOpacityType());
 
     // See if any attributes that require the plot to be regenerated were
@@ -647,6 +651,9 @@ avtPseudocolorPlot::GetDataExtents(vector<double> &extents)
 //    We have to be careful to update the mapper opacity, render order,
 //    and return value here.
 //
+//    Kathleen Bonnell, Mon Jan 17 18:00:41 MST 2011
+//    Retrieve invertColorTableToggle and send to avtLUT.
+//
 // ****************************************************************************
 
 bool
@@ -662,10 +669,12 @@ avtPseudocolorPlot::SetColorTable(const char *ctName)
                    (oldColorTableIsFullyOpaque != colorTableIsFullyOpaque));
     if (atts.GetColorTableName() == "Default")
         retval |= avtLUT->SetColorTable(NULL, namesMatch,
-                                     atts.GetOpacityType()); 
+                                     atts.GetOpacityType(), 
+                                     atts.GetInvertColorTable()); 
     else
         retval |= avtLUT->SetColorTable(ctName, namesMatch,
-                                     atts.GetOpacityType());
+                                     atts.GetOpacityType(), 
+                                     atts.GetInvertColorTable()); 
     return retval;
 }
 

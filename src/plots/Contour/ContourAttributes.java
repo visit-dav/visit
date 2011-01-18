@@ -65,7 +65,7 @@ import java.lang.Double;
 
 public class ContourAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 19;
+    private static int ContourAttributes_numAdditionalAtts = 20;
 
     // Enum values
     public final static int SELECT_BY_LEVEL = 0;
@@ -82,12 +82,13 @@ public class ContourAttributes extends AttributeSubject implements Plugin
 
     public ContourAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ContourAttributes_numAdditionalAtts);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
         colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
         colorTableName = new String("Default");
+        invertColorTable = false;
         legendFlag = true;
         lineStyle = 0;
         lineWidth = 0;
@@ -107,12 +108,13 @@ public class ContourAttributes extends AttributeSubject implements Plugin
 
     public ContourAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ContourAttributes_numAdditionalAtts + nMoreFields);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
         colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
         colorTableName = new String("Default");
+        invertColorTable = false;
         legendFlag = true;
         lineStyle = 0;
         lineWidth = 0;
@@ -132,7 +134,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
 
     public ContourAttributes(ContourAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ContourAttributes_numAdditionalAtts);
 
         int i;
 
@@ -146,6 +148,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
 
         colorType = obj.colorType;
         colorTableName = new String(obj.colorTableName);
+        invertColorTable = obj.invertColorTable;
         legendFlag = obj.legendFlag;
         lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
@@ -184,7 +187,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ContourAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ContourAttributes obj)
@@ -214,6 +217,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
                 true /* can ignore changedColors */ &&
                 (colorType == obj.colorType) &&
                 (colorTableName.equals(obj.colorTableName)) &&
+                (invertColorTable == obj.invertColorTable) &&
                 (legendFlag == obj.legendFlag) &&
                 (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
@@ -259,94 +263,100 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         Select(3);
     }
 
+    public void SetInvertColorTable(boolean invertColorTable_)
+    {
+        invertColorTable = invertColorTable_;
+        Select(4);
+    }
+
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(4);
+        Select(5);
     }
 
     public void SetLineStyle(int lineStyle_)
     {
         lineStyle = lineStyle_;
-        Select(5);
+        Select(6);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(6);
+        Select(7);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(7);
+        Select(8);
     }
 
     public void SetMultiColor(ColorAttributeList multiColor_)
     {
         multiColor = multiColor_;
-        Select(8);
+        Select(9);
     }
 
     public void SetContourNLevels(int contourNLevels_)
     {
         contourNLevels = contourNLevels_;
-        Select(9);
+        Select(10);
     }
 
     public void SetContourValue(Vector contourValue_)
     {
         contourValue = contourValue_;
-        Select(10);
+        Select(11);
     }
 
     public void SetContourPercent(Vector contourPercent_)
     {
         contourPercent = contourPercent_;
-        Select(11);
+        Select(12);
     }
 
     public void SetContourMethod(int contourMethod_)
     {
         contourMethod = contourMethod_;
-        Select(12);
+        Select(13);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(13);
+        Select(14);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(14);
+        Select(15);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(15);
+        Select(16);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(16);
+        Select(17);
     }
 
     public void SetScaling(int scaling_)
     {
         scaling = scaling_;
-        Select(17);
+        Select(18);
     }
 
     public void SetWireframe(boolean wireframe_)
     {
         wireframe = wireframe_;
-        Select(18);
+        Select(19);
     }
 
     // Property getting methods
@@ -354,6 +364,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
     public Vector                GetChangedColors() { return changedColors; }
     public int                   GetColorType() { return colorType; }
     public String                GetColorTableName() { return colorTableName; }
+    public boolean               GetInvertColorTable() { return invertColorTable; }
     public boolean               GetLegendFlag() { return legendFlag; }
     public int                   GetLineStyle() { return lineStyle; }
     public int                   GetLineWidth() { return lineWidth; }
@@ -382,34 +393,36 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(3, buf))
             buf.WriteString(colorTableName);
         if(WriteSelect(4, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteBool(invertColorTable);
         if(WriteSelect(5, buf))
-            buf.WriteInt(lineStyle);
+            buf.WriteBool(legendFlag);
         if(WriteSelect(6, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteInt(lineStyle);
         if(WriteSelect(7, buf))
-            singleColor.Write(buf);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(8, buf))
-            multiColor.Write(buf);
+            singleColor.Write(buf);
         if(WriteSelect(9, buf))
-            buf.WriteInt(contourNLevels);
+            multiColor.Write(buf);
         if(WriteSelect(10, buf))
-            buf.WriteDoubleVector(contourValue);
+            buf.WriteInt(contourNLevels);
         if(WriteSelect(11, buf))
-            buf.WriteDoubleVector(contourPercent);
+            buf.WriteDoubleVector(contourValue);
         if(WriteSelect(12, buf))
-            buf.WriteInt(contourMethod);
+            buf.WriteDoubleVector(contourPercent);
         if(WriteSelect(13, buf))
-            buf.WriteBool(minFlag);
+            buf.WriteInt(contourMethod);
         if(WriteSelect(14, buf))
-            buf.WriteBool(maxFlag);
+            buf.WriteBool(minFlag);
         if(WriteSelect(15, buf))
-            buf.WriteDouble(min);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(16, buf))
-            buf.WriteDouble(max);
+            buf.WriteDouble(min);
         if(WriteSelect(17, buf))
-            buf.WriteInt(scaling);
+            buf.WriteDouble(max);
         if(WriteSelect(18, buf))
+            buf.WriteInt(scaling);
+        if(WriteSelect(19, buf))
             buf.WriteBool(wireframe);
     }
 
@@ -431,50 +444,53 @@ public class ContourAttributes extends AttributeSubject implements Plugin
             SetColorTableName(buf.ReadString());
             break;
         case 4:
-            SetLegendFlag(buf.ReadBool());
+            SetInvertColorTable(buf.ReadBool());
             break;
         case 5:
-            SetLineStyle(buf.ReadInt());
+            SetLegendFlag(buf.ReadBool());
             break;
         case 6:
-            SetLineWidth(buf.ReadInt());
+            SetLineStyle(buf.ReadInt());
             break;
         case 7:
-            singleColor.Read(buf);
-            Select(7);
+            SetLineWidth(buf.ReadInt());
             break;
         case 8:
-            multiColor.Read(buf);
+            singleColor.Read(buf);
             Select(8);
             break;
         case 9:
-            SetContourNLevels(buf.ReadInt());
+            multiColor.Read(buf);
+            Select(9);
             break;
         case 10:
-            SetContourValue(buf.ReadDoubleVector());
+            SetContourNLevels(buf.ReadInt());
             break;
         case 11:
-            SetContourPercent(buf.ReadDoubleVector());
+            SetContourValue(buf.ReadDoubleVector());
             break;
         case 12:
-            SetContourMethod(buf.ReadInt());
+            SetContourPercent(buf.ReadDoubleVector());
             break;
         case 13:
-            SetMinFlag(buf.ReadBool());
+            SetContourMethod(buf.ReadInt());
             break;
         case 14:
-            SetMaxFlag(buf.ReadBool());
+            SetMinFlag(buf.ReadBool());
             break;
         case 15:
-            SetMin(buf.ReadDouble());
+            SetMaxFlag(buf.ReadBool());
             break;
         case 16:
-            SetMax(buf.ReadDouble());
+            SetMin(buf.ReadDouble());
             break;
         case 17:
-            SetScaling(buf.ReadInt());
+            SetMax(buf.ReadDouble());
             break;
         case 18:
+            SetScaling(buf.ReadInt());
+            break;
+        case 19:
             SetWireframe(buf.ReadBool());
             break;
         }
@@ -494,6 +510,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
             str = str + "COLORINGMETHOD_COLORBYCOLORTABLE";
         str = str + "\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
+        str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
@@ -530,6 +547,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
     private Vector                changedColors; // vector of Byte objects
     private int                   colorType;
     private String                colorTableName;
+    private boolean               invertColorTable;
     private boolean               legendFlag;
     private int                   lineStyle;
     private int                   lineWidth;

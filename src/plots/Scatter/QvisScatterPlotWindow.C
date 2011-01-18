@@ -54,7 +54,7 @@
 #include <QToolTip>
 #include <QWidget>
 
-#include <QvisColorTableButton.h>
+#include <QvisColorTableWidget.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
 #include <QvisLineStyleWidget.h>
@@ -163,6 +163,9 @@ QvisScatterPlotWindow::~QvisScatterPlotWindow()
 //
 //   Cyrus Harrison, Thu Aug 19 13:19:11 PDT 2010
 //   Widget changes to capture when var1 is changed.
+//
+//   Kathleen Bonnell, Mon Jan 17 18:10:28 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
 // ****************************************************************************
 
@@ -718,10 +721,14 @@ QvisScatterPlotWindow::CreateWindowContents()
     colorLayout->addWidget(singleColor, 1, 1);
 
     // Create the color table selection.
-    colorTableName = new QvisColorTableButton(colorGroup);
-    connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
+    colorTableWidget = new QvisColorTableWidget(colorGroup, true);
+    connect(colorTableWidget, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
-    colorLayout->addWidget(colorTableName, 2, 1);
+    connect(colorTableWidget,
+            SIGNAL(invertColorTableToggled(bool)),
+            this,
+            SLOT(invertColorTableToggled(bool)));
+    colorLayout->addWidget(colorTableWidget, 2, 1);
 
 
     // Rendering
@@ -814,6 +821,9 @@ QvisScatterPlotWindow::CreateWindowContents()
 //
 //   Cyrus Harrison, Thu Aug 19 09:08:41 PDT 2010
 //   Capture update of var1.
+//
+//   Kathleen Bonnell, Mon Jan 17 18:10:28 MST 2011
+//   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
 // ****************************************************************************
 
@@ -1033,11 +1043,14 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
           singleColor->setEnabled(atts->GetColorType() ==
                                   ScatterAttributes::ColorBySingleColor);
 
-          colorTableName->setEnabled(atts->GetColorType() ==
+          colorTableWidget->setEnabled(atts->GetColorType() ==
                                      ScatterAttributes::ColorByColorTable);
             break;
         case ScatterAttributes::ID_colorTableName:
-            colorTableName->setColorTable(atts->GetColorTableName().c_str());
+            colorTableWidget->setColorTable(atts->GetColorTableName().c_str());
+            break;
+        case ScatterAttributes::ID_invertColorTable:
+            colorTableWidget->setInvertColorTable(atts->GetInvertColorTable());
             break;
         case ScatterAttributes::ID_singleColor:
             tempcolor = QColor(atts->GetSingleColor().Red(),
@@ -1889,6 +1902,29 @@ QvisScatterPlotWindow::colorTableNameChanged(bool useDefault, const QString &ctN
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisScatterPlotWindow::invertColorTableToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the invert color table flag into the
+//   scatter plot attributes.
+//
+// Arguments:
+//   val    :  Whether or not to invert the color table.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January  17, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScatterPlotWindow::invertColorTableToggled(bool val)
+{
+    atts->SetInvertColorTable(val);
+    Apply();
+}
 
 void
 QvisScatterPlotWindow::singleColorChanged(const QColor &color)
