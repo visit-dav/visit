@@ -231,6 +231,9 @@
 #    Eric Brugger, Fri Oct 29 09:40:23 PDT 2010
 #    Added the profiles for aztec, edge and inca.
 #
+#    Hank Childs, Sun Oct 31 20:48:23 PDT 2010
+#    Add ANL / MCS login profiles.
+#
 #    Eric Brugger, Fri Nov  5 16:13:21 PDT 2010
 #    Deleted the profiles for hopi, purple, um, ilx, up and yana.
 #
@@ -621,6 +624,7 @@ if ($config == anl) then
    cp "$dir"/$version+/.visit/allhosts/host_anl_cosmea.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_anl_eureka.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_anl_gadzooks.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_anl_mcs_login.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_anl_teragrid.xml "$dir"/$version+/.visit/hosts/
 else if ($config == llnl_closed) then
    ln -s visit-config-llnl_closed.ini "$dir"/$version+/.visit/config
