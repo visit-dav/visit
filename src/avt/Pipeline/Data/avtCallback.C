@@ -77,6 +77,8 @@ void                         *avtCallback::getDatabaseCallbackArgs = NULL;
 bool                          avtCallback::haveRenderingException = false;
 std::string                   avtCallback::renderingExceptionMessage;
 
+std::string                   avtCallback::auxSessionKey;
+
 
 // ****************************************************************************
 //  Method: avtCallback::RegisterWarningCallback

@@ -1814,6 +1814,9 @@ Engine::ProcessInput()
 //    Hank Childs, Sat Jan  1 14:17:58 PST 2011
 //    Add "-safe" flag.
 //
+//    Hank Childs, Tue Jan 18 09:39:17 PST 2011
+//    Add support for -auxsessionkey.
+//
 // ****************************************************************************
 
 void
@@ -2053,6 +2056,15 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-no-icet") == 0)
         {
             this->useIceT = false;
+        }
+        else if(strcmp(argv[i], "-auxsessionkey") == 0)
+        {
+            if (i+1 < argc)
+            {
+                std::string s = argv[i+1];
+                avtCallback::SetAuxSessionKey(s);
+                i++;
+            }
         }
     }
     avtCallback::SetSoftwareRendering(!haveHWAccel);

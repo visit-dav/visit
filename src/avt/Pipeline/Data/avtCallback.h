@@ -104,6 +104,9 @@ typedef   void  (*ResetTimeoutCallback)(void *, int);
 //    Hank Childs, Fri Dec 31 11:45:48 PST 2010
 //    Add a GetSafeMode callback.
 //
+//    Hank Childs, Tue Jan 18 07:38:18 PST 2011
+//    Add auxsessionkey support for UCHC folks.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCallback
@@ -159,6 +162,12 @@ class PIPELINE_API avtCallback
     static void                  EnableSafeMode(void) { safeMode = true; };
     static bool                  GetSafeMode(void) { return safeMode; };
 
+    // This method is used to pass a string to database readers.
+    static std::string           GetAuxSessionKey(void) 
+                                                  { return auxSessionKey; };
+    static void                  SetAuxSessionKey(const std::string &k)
+                                                  { auxSessionKey = k; };
+
   protected:
     static WarningCallback       warningCallback;
     static void                 *warningCallbackArgs;
@@ -172,6 +181,8 @@ class PIPELINE_API avtCallback
     static bool                  nowinMode;
     static bool                  swRendering;
     static bool                  safeMode;
+
+    static std::string           auxSessionKey;
 
     static UpdatePlotAttributesCallback
                                  updatePlotAttributesCallback;
