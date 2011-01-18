@@ -1236,10 +1236,10 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
 
 #ifndef MDSERVER
 // ****************************************************************************
-// Method: CopyVariableData
+// Method: StoreVariableData
 //
 // Purpose: 
-//   Copy memory into the new vtkDataArray, taking 2-tuple to 3-tuple conversion
+//   Store memory into the new vtkDataArray, taking 2-tuple to 3-tuple conversion
 //   into account.
 //
 // Arguments:
@@ -1247,17 +1247,21 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
 //   src         : The source data array.
 //   nComponents : The number of components in the data.
 //   nTuples     : The numebr of tuples in the data.
+//   owner       : The owner of the array.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 27 11:12:21 PST 2009
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jan 18 00:14:15 PST 2011
+//   I added code to use the array from the simulation directly.
+//
 // ****************************************************************************
 
-template <class T>
+template <class ARR, class T>
 void
-CopyVariableData(vtkDataArray *array, const T *src, int nComponents, int nTuples)
+StoreVariableData(ARR *array, T *src, int nComponents, int nTuples,
+   int owner)
 {
     if(nComponents == 2)
     {
@@ -1278,9 +1282,17 @@ CopyVariableData(vtkDataArray *array, const T *src, int nComponents, int nTuples
     else
     {
         array->SetNumberOfComponents(nComponents);
+#define USE_SET_ARRAY
+#ifdef USE_SET_ARRAY
+        // Use the raw data provided by the sim.
+        int saveArray = (owner == VISIT_OWNER_SIM) ? 1 : 0;
+        array->SetArray(src, nComponents * nTuples, saveArray);
+#else
+        // Here we copy the data.
         array->SetNumberOfTuples(nTuples);
         memcpy(array->GetVoidPointer(0), src, 
                sizeof(T) * nTuples * nComponents);
+#endif
     }
 }
 #endif
@@ -1302,6 +1314,8 @@ CopyVariableData(vtkDataArray *array, const T *src, int nComponents, int nTuples
 //  Creation:   Fri Feb 19 15:09:06 PST 2010
 //
 //  Modifications:
+//    Brad Whitlock, Tue Jan 18 00:16:58 PST 2011
+//    I added support for sharing the simulation array directly.
 //
 // ****************************************************************************
 
@@ -1326,29 +1340,38 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
     vtkDataArray *array = 0;
     if (dataType == VISIT_DATATYPE_FLOAT)
     {
-        array = vtkFloatArray::New();
-        CopyVariableData(array, (const float *)data, nComponents, nTuples);
+        vtkFloatArray *farray = vtkFloatArray::New();
+        StoreVariableData(farray, (float *)data, nComponents, nTuples, owner);
+        array = farray;
     }
     else if (dataType == VISIT_DATATYPE_DOUBLE)
     {
-        array = vtkDoubleArray::New();
-        CopyVariableData(array, (const double *)data, nComponents, nTuples);
+        vtkDoubleArray *darray = vtkDoubleArray::New();
+        StoreVariableData(darray, (double *)data, nComponents, nTuples, owner);
+        array = darray;
     }
     else if (dataType == VISIT_DATATYPE_INT)
     {
-        array = vtkIntArray::New();
-        CopyVariableData(array, (const int *)data, nComponents, nTuples);
+        vtkIntArray *iarray = vtkIntArray::New();
+        StoreVariableData(iarray, (int *)data, nComponents, nTuples, owner);
+        array = iarray;
     }
     else if(dataType == VISIT_DATATYPE_CHAR)
     {
-        array = vtkUnsignedCharArray::New();
-        CopyVariableData(array, (const char *)data, nComponents, nTuples);
+        vtkUnsignedCharArray *ucarray = vtkUnsignedCharArray::New();
+        StoreVariableData(ucarray, (unsigned char *)data, nComponents, nTuples, owner);
+        array = ucarray;
     }
     else
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
-
+#ifdef USE_SET_ARRAY
+    // We've given the pointer from the variable data object to the VTK data 
+    // array, which will dispose of it. We must NULL out the object so we
+    // don't delete the memory when we free the variable data object.
+    simv2_VariableData_nullData(h);
+#endif
     simv2_VariableData_free(h);
 
     // See if there is a polyhedral split for this variable's mesh.
