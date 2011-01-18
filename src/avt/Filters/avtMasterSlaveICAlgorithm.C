@@ -1045,6 +1045,9 @@ avtMasterICAlgorithm::SendStatus(bool forceSend)
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
 //
+//   Dave Pugmire, Tue Jan 18 06:57:31 EST 2011
+//   Regression fix. Message processing assumed that src was in msg[0].
+//
 // ****************************************************************************
 
 void
@@ -1064,12 +1067,20 @@ avtMasterICAlgorithm::ProcessMessages()
             done = true;
             break;
         }
-        else if (msgType == MSG_STATUS)
-            ProcessSlaveUpdate(msg);
-        else if (msgType == MSG_MASTER_STATUS)
-            ProcessMasterUpdate(msg);
-        else if (msgType == MSG_OFFLOAD_IC)
-            ProcessOffloadIC(msg);
+        else
+        {
+            vector<int> status(msg.size()+1);
+            status[0] = src;
+            for (int i = 1; i < status.size(); i++)
+                status[i] = msg[i-1];
+            
+            if (msgType == MSG_STATUS)
+                ProcessSlaveUpdate(status);
+            else if (msgType == MSG_MASTER_STATUS)
+                ProcessMasterUpdate(status);
+            else if (msgType == MSG_OFFLOAD_IC)
+                ProcessOffloadIC(status);
+        }
     }
 }
 
@@ -2284,7 +2295,11 @@ avtSlaveICAlgorithm::SendStatus(bool forceSend)
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
 //   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename several methods called in this function to reflect the new emphasis //   in particle advection, as opposed to streamlines.
+//   Rename several methods called in this function to reflect the new emphasis
+//   in particle advection, as opposed to streamlines.
+//
+//   Dave Pugmire, Tue Jan 18 06:58:40 EST 2011
+//   Regression fix. The old recvICs code was doing a domain load, as a side effect.
 //
 // ****************************************************************************
 
@@ -2392,9 +2407,15 @@ avtSlaveICAlgorithm::RunAlgorithm()
         oobICs.clear();
         
         //See if we have any ICs.
-        //int earlyTerminations = 0;
-        bool newICs = RecvICs(activeICs);//, earlyTerminations);
-        //numTerminated += earlyTerminations;
+        list<avtIntegralCurve*> newICs;
+        if (RecvICs(newICs))
+        {
+            list<avtIntegralCurve*>::iterator it;
+            for (it = newICs.begin(); it != newICs.end(); it++)
+                if (! DomainLoaded((*it)->domain))
+                    GetDomain((*it)->domain);
+            activeICs.splice(activeICs.end(), newICs);
+        }
         ProcessMessages(done, newMsgs);
         CheckPendingSendRequests();
 
