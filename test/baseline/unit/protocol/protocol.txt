@@ -1722,6 +1722,7 @@ Plot plugin state objects
 BoundaryAttributes
     enum                   colorType
     colortable             colorTableName
+    bool                   invertColorTable
     bool                   filledFlag
     bool                   legendFlag
     linestyle              lineStyle
@@ -1744,6 +1745,7 @@ ContourAttributes
     ucharVector               changedColors
     enum                      colorType
     colortable                colorTableName
+    bool                      invertColorTable
     bool                      legendFlag
     linestyle                 lineStyle
     linewidth                 lineWidth
@@ -1787,6 +1789,7 @@ CurveAttributes
 FilledBoundaryAttributes
     enum                   colorType
     colortable             colorTableName
+    bool                   invertColorTable
     bool                   filledFlag
     bool                   legendFlag
     linestyle              lineStyle
@@ -1999,6 +2002,7 @@ PseudocolorAttributes
     double       skewFactor
     opacity      opacity
     colortable   colorTableName
+    bool         invertColorTable
     int          smoothingLevel
     bool         pointSizeVarEnabled
     variablename pointSizeVar
@@ -2047,6 +2051,7 @@ ScatterAttributes
     enum       colorType
     color      singleColor
     colortable colorTableName
+    bool       invertColorTable
     bool       legendFlag
 
 SpreadsheetAttributes
@@ -2166,6 +2171,7 @@ StreamlineAttributes
 SubsetAttributes
     enum                   colorType
     colortable             colorTableName
+    bool                   invertColorTable
     bool                   filledFlag
     bool                   legendFlag
     linestyle              lineStyle
@@ -2202,6 +2208,7 @@ SurfaceAttributes
     double     min
     double     max
     colortable colorTableName
+    bool       invertColorTable
 
 TensorAttributes
     bool       useStride
@@ -2214,6 +2221,7 @@ TensorAttributes
     bool       useLegend
     color      tensorColor
     colortable colorTableName
+    bool       invertColorTable
 
 TopologyAttributes
     linewidth              lineWidth
@@ -2246,6 +2254,7 @@ VectorAttributes
     bool       useLegend
     color      vectorColor
     colortable colorTableName
+    bool       invertColorTable
     enum       vectorOrigin
     bool       minFlag
     bool       maxFlag
@@ -2297,6 +2306,7 @@ WellBoreAttributes
     ucharVector               changedColors
     enum                      colorType
     colortable                colorTableName
+    bool                      invertColorTable
     color                     singleColor
     att,ColorAttributeList    multiColor
     enum                      drawWellsAs
