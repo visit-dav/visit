@@ -1065,6 +1065,14 @@
 #     I modified the script to build IceT 1.0.0 instead of 0.5.4. I also
 #     modified it to add -fPIC to the compiler options.
 #
+#     Eric Brugger, Wed Jan 19 10:13:02 PST 2011
+#     I modified the script to set the svn source path to the 2.2.0 tagged
+#     source.
+#
+#     Eric Brugger, Wed Jan 19 11:50:58 PST 2011
+#     I merged the 2.2RC to the trunk and changed the svn source path back
+#     to trunk/src.
+#
 # *****************************************************************************
 
 
@@ -1395,6 +1403,11 @@ fi
 # Trunk:
 ####
 export SVN_SOURCE_PATH="trunk/src"
+
+###
+# Release:
+###
+#export SVN_SOURCE_PATH="tags/2.2.0/src"
 
 if [[ "$OPSYS" != "Darwin" ]]; then
     WGET_MINOR_VERSION=$(wget --version| head -n 1|cut -d. -f 2)
