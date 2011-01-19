@@ -41,6 +41,9 @@
 #include "DeclareDataCallbacks.h"
 
 #ifdef _WIN32
+#if _MSC_VER < 1600
+#define _WIN32_WINNT 0x0502
+#endif
 #include <winsock2.h>
 #include <direct.h>
 #include <sys/stat.h>
