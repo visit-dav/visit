@@ -100,7 +100,6 @@ class avtM3DC1FileFormat : public avtMTSDFileFormat
     vtkDataArray  *GetFieldVar(int, const char *);
 
     vtkPoints *GetMeshPoints(float *elements,
-                             int poloidalPlanes,
                              int refinementLevel);
 
     float * GetElements(int timestate, const char *meshname);
@@ -116,7 +115,6 @@ class avtM3DC1FileFormat : public avtMTSDFileFormat
     hid_t m_fileID;
     std::string m_filename;
     int m_refinement;
-    int m_poloidalPlanes;
     avtCentering m_dataLocation;
     float m_perturbationScale;
 
@@ -129,7 +127,13 @@ public:
 
     // Variables read from mesh and field attributes.
     int nelms;
+    int nvertices;
+    int nplanes;
 
+    int element_dimension;
+    unsigned int element_size;
+    unsigned int scalar_size;
+    
   protected:
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 };

@@ -46,6 +46,7 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
+#include <avtVector.h>
 
 // ****************************************************************************
 //  Class:  avtM3DC1Field
@@ -78,7 +79,7 @@ class avtM3DC1Field
   } edge;
   
   public:
-    avtM3DC1Field( float *elementsPtr, int nelements );
+    avtM3DC1Field( float *elementsPtr, int nelements, int dim, int planes );
 
     ~avtM3DC1Field();
 
@@ -87,17 +88,19 @@ class avtM3DC1Field
                        double x, double y, int *index);
     void add_edge(edge *list, int *tri, int side, int el, int *nlist);
 
-    int get_tri_coords2D(double *x, double *xout);
-    int get_tri_coords2D(double *x, int el, double *xout);
+    int get_tri_coords2D(double *x, double *xout) const;
+    int get_tri_coords2D(double *x, int el, double *xout) const;
 
-    float interp    (float *var, int el, double *lcoords);
-    float interpdR  (float *var, int el, double *lcoords);
-    float interpdz  (float *var, int el, double *lcoords);
-    float interpdR2 (float *var, int el, double *lcoords);
-    float interpdz2 (float *var, int el, double *lcoords);
-    float interpdRdz(float *var, int el, double *lcoords);
+    avtVector operator()( const double &t, const avtVector &p ) const;
 
-    void interpBcomps(float *B, double *x, int element, double *xieta);
+    float interp    (float *var, int el, double *lcoords) const;
+    float interpdR  (float *var, int el, double *lcoords) const;
+    float interpdz  (float *var, int el, double *lcoords) const;
+    float interpdR2 (float *var, int el, double *lcoords) const;
+    float interpdz2 (float *var, int el, double *lcoords) const;
+    float interpdRdz(float *var, int el, double *lcoords) const;
+
+    void interpBcomps(float *B, double *x, int element, double *xieta) const;
 
  protected:
 
@@ -106,6 +109,13 @@ class avtM3DC1Field
     float *elements;
     double *trigtable;   /* Geometry of each triangle */
     int    *neighbors;   /* Element neighbor table for efficient searches */
+
+    int tElements;       /* Number elements in a plane */
+
+    int element_dimension;
+    int nplanes;
+    int element_size;
+    int scalar_size;
 
  public:
     //  variables on the mesh
@@ -116,7 +126,7 @@ class avtM3DC1Field
     double F0;                      /* Strength of vacuum toroidal field */
     
     // Variables calculated in findElementNeighbors
-    double Rmin, Rmax, zmin, zmax;  /* Mesh bounds */
+//    double Rmin, Rmax, zmin, zmax;  /* Mesh bounds */
 
     // unused variables read from header attributes
     // (xlim, zlim) or explicitly set (psilim).
