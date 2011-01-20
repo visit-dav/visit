@@ -103,7 +103,7 @@ class IVP_API avtIVPVTKField: public avtIVPField
     virtual void      SetScalarVariable( unsigned char index, 
                                          const std::string& name );
 
-    bool           IsInside( const double& t, const avtVector &pt ) const;
+    virtual bool      IsInside( const double& t, const avtVector &pt ) const;
     unsigned int   GetDimension() const;
     void           SetNormalized( bool v );
 
