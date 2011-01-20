@@ -1073,6 +1073,10 @@
 #     I merged the 2.2RC to the trunk and changed the svn source path back
 #     to trunk/src.
 #
+#     Eric Brugger, Thu Jan 20 15:19:55 PST 2011
+#     I modified the script to add hdf5_hl as a dependent library for
+#     netcdf if using netcdf with hdf5.
+#
 # *****************************************************************************
 
 
@@ -8351,7 +8355,7 @@ function build_hostconf
         >> $HOSTCONF
         if [[ "$DO_HDF5" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
+            "VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP})" \
             >> $HOSTCONF
         fi
     fi
