@@ -35,9 +35,11 @@
 # DAMAGE.
 #
 # Modifications:
-#
 #   Hank Childs, Sat Aug 21 11:53:13 PDT 2010
 #   Rename directory DDF to DataBinning.
+#
+#   Brad Whitlock, Thu Jan 20 08:48:38 PST 2011
+#   Do not build QtVisWindow on engine-only or server-components-only builds.
 #
 #****************************************************************************/
 
@@ -61,7 +63,9 @@ ELSE(VISIT_DBIO_ONLY)
     ADD_SUBDIRECTORY(Queries)
     ADD_SUBDIRECTORY(FileWriter)
     ADD_SUBDIRECTORY(VisWindow)
-    ADD_SUBDIRECTORY(QtVisWindow)
+    IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY)
+        ADD_SUBDIRECTORY(QtVisWindow)
+    ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY)
     IF(VISIT_PYTHON_FILTERS)
         ADD_SUBDIRECTORY(PythonFilters)
     ENDIF(VISIT_PYTHON_FILTERS)
