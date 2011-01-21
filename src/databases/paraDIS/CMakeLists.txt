@@ -57,7 +57,7 @@ RC_cpp_lib/pathutil.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-paraDIS_lib RC_c_lib RC_cpp_lib ${BOOST_INCLUDE_DIR} 
+paraDIS_lib RC_c_lib RC_cpp_lib 
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_INCLUDE_DIR}/visit/avt/DBAtts/MetaData
 ${VISIT_INCLUDE_DIR}/visit/avt/DBAtts/SIL
