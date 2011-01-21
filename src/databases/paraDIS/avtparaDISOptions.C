@@ -43,6 +43,7 @@
 #include <avtparaDISOptions.h>
 
 #include <DBOptionsAttributes.h>
+#include <DebugStream.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -100,6 +101,7 @@ GetparaDISReadOptions(void)
     int debug=0;
     cp = getenv("PARADIS_VERBOSITY"); 
     if (cp) debug=atoi(cp); 
+    debug1 << "paradis debug set to " << debug << endl;
     rv->SetInt(PARADIS_VERBOSITY, debug);
     
     cp = getenv("PARADIS_DEBUG_FILE");
