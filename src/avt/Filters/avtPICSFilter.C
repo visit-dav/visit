@@ -87,8 +87,8 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPAdamsBashforth.h>
 #include <avtIVPM3DC1Integrator.h>
 #include <avtIVPM3DC1Field.h>
-#include <avtIVPNIMRODIntegrator.h>
-#include <avtIVPNIMRODField.h>
+//#include <avtIVPNIMRODIntegrator.h>
+//#include <avtIVPNIMRODField.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
@@ -1447,8 +1447,8 @@ avtPICSFilter::GetFieldForDomain( const DomainType &domain, vtkDataSet *ds )
     {
         if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_INTEGRATOR)
             return new avtIVPM3DC1Field(ds, *locator);
-        else if (integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR)
-            return new avtIVPNIMRODField(ds, *locator);
+//        else if (integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR)
+//            return new avtIVPNIMRODField(ds, *locator);
         else
             return new avtIVPVTKField(ds, *locator);
     }
@@ -2049,12 +2049,12 @@ avtPICSFilter::PreExecute(void)
         solver->SetMaximumStepSize(maxStepLength);
         solver->SetTolerances(relTol, absTolToUse);
     }
-    else if (integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR)
-    {
-        solver = new avtIVPAdamsBashforth;
-        solver->SetMaximumStepSize(maxStepLength);
-        solver->SetTolerances(relTol, absTolToUse);
-    }
+//     else if (integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR)
+//     {
+//         solver = new avtIVPAdamsBashforth;
+//         solver->SetMaximumStepSize(maxStepLength);
+//         solver->SetTolerances(relTol, absTolToUse);
+//     }
 
     solver->convertToCartesian = convertToCartesian;
 }
@@ -2369,6 +2369,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         // Which is ignored.
 
         // Single variables stored as attributes on the header
+        out_dr->AddSecondaryVariable("hidden/header/nplanes"); // /nplanes
         out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
         out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
         
@@ -2387,33 +2388,34 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         out_dr->AddSecondaryVariable("hidden/psi");    // /time_XXX/fields/psi
         out_dr->AddSecondaryVariable("hidden/psi_i");  // /time_XXX/fields/psi_i
     }
-    else if ( integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR )
-    {
-        // Add in the other fields that the M3D Interpolation needs
-        // for doing their Newton's Metod.
+//     else if ( integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR )
+//     {
+//         // Add in the other fields that the M3D Interpolation needs
+//         // for doing their Newton's Metod.
 
-        // Assume the user has selected B as the primary variable.
-        // Which is ignored.
+//         // Assume the user has selected B as the primary variable.
+//         // Which is ignored.
 
-        // Single variables stored as attributes on the header
-        out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
-        out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
+//         // Single variables stored as attributes on the header
+//         out_dr->AddSecondaryVariable("hidden/header/nplanes"); // /nplanes
+//         out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
+//         out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
         
-        out_dr->AddSecondaryVariable("hidden/header/bzero");    // /bzero
-        out_dr->AddSecondaryVariable("hidden/header/rzero");    // /rzero
+//         out_dr->AddSecondaryVariable("hidden/header/bzero");    // /bzero
+//         out_dr->AddSecondaryVariable("hidden/header/rzero");    // /rzero
 
-        // The mesh - N elements x 7
-        out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
+//         // The mesh - N elements x 7
+//         out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
 
-        // Variables on the mesh - N elements x 20
-        out_dr->AddSecondaryVariable("hidden/equilibrium/f");  // /equilibrium/fields/f
-        out_dr->AddSecondaryVariable("hidden/equilibrium/psi");// /equilibrium/fields/psi
+//         // Variables on the mesh - N elements x 20
+//         out_dr->AddSecondaryVariable("hidden/equilibrium/f");  // /equilibrium/fields/f
+//         out_dr->AddSecondaryVariable("hidden/equilibrium/psi");// /equilibrium/fields/psi
 
-        out_dr->AddSecondaryVariable("hidden/f");      // /time_XXX/fields/f
-        out_dr->AddSecondaryVariable("hidden/f_i");    // /time_XXX/fields/f_i
-        out_dr->AddSecondaryVariable("hidden/psi");    // /time_XXX/fields/psi
-        out_dr->AddSecondaryVariable("hidden/psi_i");  // /time_XXX/fields/psi_i
-    }
+//         out_dr->AddSecondaryVariable("hidden/f");      // /time_XXX/fields/f
+//         out_dr->AddSecondaryVariable("hidden/f_i");    // /time_XXX/fields/f_i
+//         out_dr->AddSecondaryVariable("hidden/psi");    // /time_XXX/fields/psi
+//         out_dr->AddSecondaryVariable("hidden/psi_i");  // /time_XXX/fields/psi_i
+//     }
 
     if (doPathlines)
     {

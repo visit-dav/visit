@@ -48,8 +48,11 @@
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 
-#define ELEMENT_SIZE 7
-#define SCALAR_SIZE 20
+#define ELEMENT_SIZE_2D 7
+#define SCALAR_SIZE_2D 20
+
+#define ELEMENT_SIZE_3D 9
+#define SCALAR_SIZE_3D 80
 
 // ****************************************************************************
 //  Method: avtIVPM3DC1Field constructor
@@ -77,19 +80,43 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   // nodes for STREAMLINES thus there are 3 times the number of
   // original values.
   if( ds->GetPointData()->GetArray("hidden/elements") )
+  {
     nelms =
       ds->GetPointData()->GetArray("hidden/elements")->GetNumberOfTuples() / 3;
 
+    element_size =
+      ds->GetPointData()->GetArray("hidden/elements")->GetNumberOfComponents();
+  }
   // 2.0 Change data is at the cells for POINCARE
   else
+  {
     nelms =
       ds->GetCellData()->GetArray("hidden/elements")->GetNumberOfTuples();
+
+    element_size =
+      ds->GetCellData()->GetArray("hidden/elements")->GetNumberOfComponents();
+  }
+
+  if( element_size == ELEMENT_SIZE_2D )
+  {
+    element_dimension = 2;
+    scalar_size = SCALAR_SIZE_2D;
+  }
+  else //if( element_size == ELEMENT_SIZE_3D )
+  {
+    element_dimension = 3;
+    scalar_size = SCALAR_SIZE_3D;
+  }
 
   // Dummy variable to the template class
   int   *intPtr, intVar = 0;
   float *fltPtr, fltVar = 0;
 
   // Single values from the header attributes.
+  intPtr = SetDataPointer( ds, intVar, "hidden/header/nplanes", nelms, 1 );
+  nplanes = intPtr[0];
+  delete [] intPtr;
+
   intPtr = SetDataPointer( ds, intVar, "hidden/header/linear", nelms, 1 );
   linflag = intPtr[0];
   delete [] intPtr;
@@ -107,15 +134,15 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   delete [] fltPtr;
 
   // The mesh elements.
-  elements = SetDataPointer( ds, fltVar, "hidden/elements",  nelms, ELEMENT_SIZE );
+  elements = SetDataPointer( ds, fltVar, "hidden/elements",  nelms, element_size );
 
   // Vector values from the field.
-  psi0  = SetDataPointer( ds, fltVar, "hidden/equilibrium/psi", nelms, SCALAR_SIZE );
-  f0    = SetDataPointer( ds, fltVar, "hidden/equilibrium/f",   nelms, SCALAR_SIZE );
-  psinr = SetDataPointer( ds, fltVar, "hidden/psi",             nelms, SCALAR_SIZE );
-  psini = SetDataPointer( ds, fltVar, "hidden/psi_i",           nelms, SCALAR_SIZE );
-  fnr   = SetDataPointer( ds, fltVar, "hidden/f",               nelms, SCALAR_SIZE );
-  fni   = SetDataPointer( ds, fltVar, "hidden/f_i",             nelms, SCALAR_SIZE );
+  psi0  = SetDataPointer( ds, fltVar, "hidden/equilibrium/psi", nelms, scalar_size );
+  f0    = SetDataPointer( ds, fltVar, "hidden/equilibrium/f",   nelms, scalar_size );
+  psinr = SetDataPointer( ds, fltVar, "hidden/psi",             nelms, scalar_size );
+  psini = SetDataPointer( ds, fltVar, "hidden/psi_i",           nelms, scalar_size );
+  fnr   = SetDataPointer( ds, fltVar, "hidden/f",               nelms, scalar_size );
+  fni   = SetDataPointer( ds, fltVar, "hidden/f_i",             nelms, scalar_size );
 
   // Now set some values using the above data.
   F0 = -bzero * rzero;
@@ -131,10 +158,32 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
 //
 // ****************************************************************************
 
-avtIVPM3DC1Field::avtIVPM3DC1Field( float *elementsPtr, int nelements ) 
-    : avtIVPVTKField(NULL, NULL), elements( elementsPtr), neighbors(0),
-    psi0(0), f0(0), psinr(0), psini(0), fnr(0), fni(0), nelms(nelements)
+avtIVPM3DC1Field::avtIVPM3DC1Field( float *elementsPtr,
+                                    int nelements, int dim, int planes )
+  : avtIVPVTKField( 0, 0 ),
+    elements( elementsPtr ), neighbors(0),
+    psi0(0), f0(0), psinr(0), psini(0), fnr(0), fni(0),
+    nelms(nelements), element_dimension(dim), nplanes(planes)
 {
+  if( element_dimension == 2 )
+  {
+    element_size = ELEMENT_SIZE_2D;
+    scalar_size = SCALAR_SIZE_2D;
+  }  
+  else //if( element_dimension == 3 )
+  {
+    element_size = ELEMENT_SIZE_3D;
+    scalar_size = SCALAR_SIZE_3D;
+  }
+
+  // For the lookup table make the following assumptions:
+  // Equally spaced planes,
+  // Equal number of elements in each plane,
+  // Matching element alignment at each plane.
+  
+  // As such, construct a table with using elements from one plane.
+  tElements = nelms / nplanes;
+
   findElementNeighbors();
 }
 
@@ -278,49 +327,6 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
 
 // ****************************************************************************
-//  Method: avtIVPM3DC1Field::operator
-//
-//  Purpose:
-//      Evaluates a point location by consulting a M3D C1 grid.
-//      Gets the B field components directly
-//
-//  THIS CODE SHOULD NOT BE USED FOR FIELDLINE INTEGRATION!!!!
-//      
-//
-//  Programmer: Allen Sanderson
-//  Creation:   October 24, 2009
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtVector
-avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
-{
-  // NOTE: Assumes the point is in cylindrical coordiantes.
-  double pt[3] = { p[0], p[1], p[2] };
-
-  /* Find the element containing the point; get local coords xi,eta */
-  double xieta[2];
-  int    element;
-
-  if ((element = get_tri_coords2D(pt, xieta)) < 0) 
-  {
-    return avtVector(0,0,0);
-  }
-  else 
-  {
-    float B[3];
-
-    interpBcomps(B, pt, element, xieta);
-    
-    // The B value is in cylindrical coordiantes
-    return avtVector( B[0], B[0], B[2] );
-  }
-}
-
-
-// ****************************************************************************
 //  Method: avtIVPM3DC1Field IsInside
 //
 //  Creationist: Allen Sanderson
@@ -335,13 +341,13 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
 
 bool avtIVPM3DC1Field::IsInside(const double& t, const avtVector& x) const
 {
-  double xin[3], xout[3];
+  double xin[3], xout[element_dimension];
 
   xin[0] = x[0];
   xin[1] = x[1];
   xin[2] = x[2];
 
-  return (bool) get_tri_coords2D(xin, xout);
+  return (bool) ( get_tri_coords2D(xin, xout) >= 0 );
 }
 
 
@@ -402,7 +408,7 @@ void avtIVPM3DC1Field::findElementNeighbors()
   // (x+b*cos(theta)-c*sin(theta),z+b*sin(theta)+c*cos(theta)).
 
   for (el=0; el<nelms; el++) {
-    ptr = elements + ELEMENT_SIZE*el;
+    ptr = elements + element_size*el;
     co = trigtable[2*el]     = cos(ptr[3]);
     sn = trigtable[2*el + 1] = sin(ptr[3]);
 
@@ -427,14 +433,14 @@ void avtIVPM3DC1Field::findElementNeighbors()
 //           neighbors[1], neighbors[2]);
 
   /* Use unique vert list to find mesh bounds */
-  Rmin = Rmax = vert_list[0].x;
-  zmin = zmax = vert_list[0].y;
-  for (vert=1; vert<vlen; vert++) {
-    if (Rmin > vert_list[vert].x) Rmin = vert_list[vert].x;
-    if (Rmax < vert_list[vert].x) Rmax = vert_list[vert].x;
-    if (zmin > vert_list[vert].y) zmin = vert_list[vert].y;
-    if (zmax < vert_list[vert].y) zmax = vert_list[vert].y;    
-  }
+//   Rmin = Rmax = vert_list[0].x;
+//   zmin = zmax = vert_list[0].y;
+//   for (vert=1; vert<vlen; vert++) {
+//     if (Rmin > vert_list[vert].x) Rmin = vert_list[vert].x;
+//     if (Rmax < vert_list[vert].x) Rmax = vert_list[vert].x;
+//     if (zmin > vert_list[vert].y) zmin = vert_list[vert].y;
+//     if (zmax < vert_list[vert].y) zmax = vert_list[vert].y;    
+//   }
 
 //   fprintf(stderr, "R bounds: %lf, %lf\nz bounds: %lf, %lf\n",
 //           Rmin, Rmax, zmin, zmax);
@@ -515,20 +521,29 @@ void avtIVPM3DC1Field::add_edge(edge *list, int *tri,
 // ****************************************************************************
 int avtIVPM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
 {
-  float     *tri;
-  double     co, sn, rrel, zrel;
+  float  *tri;
+  double co, sn, rrel, zrel;
+  int    index;
 
+  tri = elements + element_size*el;
+  
   /* Compute coordinates local to the current element */
-  co = trigtable[2*el];
-  sn = trigtable[2*el + 1];
-  
-  tri = elements + ELEMENT_SIZE*el;
-  
+  if( element_dimension == 2 )
+    index = 2 * el;
+  else //if( element_dimension == 3 )
+    index = 2*(el%tElements);
+
+  co = trigtable[index];
+  sn = trigtable[index + 1];
+
   rrel = xin[0] - (tri[4] + tri[1]*co);
   zrel = xin[2] - (tri[5] + tri[1]*sn);
   
   xout[0] = rrel*co + zrel*sn;  /* = xi */
   xout[1] = zrel*co - rrel*sn;  /* = eta */
+
+  if( element_dimension == 3 )  /* = dphi */
+    xout[2] = xin[1] - tri[8];
 
   return el;
 }
@@ -548,13 +563,13 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
   double     co, sn, rrel, zrel;
   int        last=-1, next, flag0, flag1, flag2;
 
-  for (int count=0; count<nelms; ++count) {
+  for (int count=0; count<nelms; ++count)
+  {
+    tri = elements + element_size*el;
 
     /* Compute coordinates local to the current element */
     co = trigtable[2*el];
     sn = trigtable[2*el + 1];
-
-    tri = elements + ELEMENT_SIZE*el;
 
     rrel = xin[0] - (tri[4] + tri[1]*co);
     zrel = xin[2] - (tri[5] + tri[1]*sn);
@@ -616,8 +631,78 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
 
 // fprintf(stderr, "Searched %d elements.\n", count);
 
-  return el;
+  if( element_dimension == 2 )
+    return el;
+  else //if( element_dimension == 3 )
+  {
+    // The above finds the xi and eta for the phi = 0 plane. Which is
+    // the same for any plane. Now find the correct phi plane via a
+    // brut force search of each plane.
+
+    // Assumptions:
+    // Equal number of elements in each plane,
+    // Same ordering of elements in each plane,
+    // Matching element alignment at each plane.
+    for( int i=0; i<nplanes; ++i )
+    {
+      if( tri[8] <= xin[1] ) // tri[8] == phi0
+      {
+        xout[2] = xin[1] - tri[8];
+
+        if( xout[2] <= tri[7] ) // tri[7] == depth of the section
+          return el + i * tElements;
+      }
+
+      // Go to the next plane
+      tri += element_size*tElements;
+    }
+
+    return -1;
+  }
 }
+
+// ****************************************************************************
+//  Method: avtIVPM3DC1Field::operator
+//
+//  Purpose:
+//      Evaluates a point location by consulting a M3D C1 grid.
+//      Gets the B field components directly
+//
+//  THIS CODE SHOULD NOT BE USED FOR FIELDLINE INTEGRATION!!!!
+//      
+//
+//  Programmer: Allen Sanderson
+//  Creation:   October 24, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtVector
+avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
+{
+  // NOTE: Assumes the point is in cylindrical coordiantes.
+  double pt[3] = { p[0], p[1], p[2] };
+
+  /* Find the element containing the point; get local coords xi,eta */
+  double xieta[2];
+  int    element;
+
+  if ((element = get_tri_coords2D(pt, xieta)) < 0) 
+  {
+    return avtVector(0,0,0);
+  }
+  else 
+  {
+    float B[3];
+
+    interpBcomps(B, pt, element, xieta);
+    
+    // The B value is in cylindrical coordiantes
+    return avtVector( B[0], B[1], B[2] );
+  }
+}
+
 
 // ****************************************************************************
 //  Method: interp basic interpolation
@@ -628,14 +713,38 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
 // ****************************************************************************
 float avtIVPM3DC1Field::interp(float *var, int el, double *lcoords) const
 {
-  float *a = var + SCALAR_SIZE*el;
-  double xi = *lcoords, eta = lcoords[1];
+  float *a = var + scalar_size*el;
+  double xi = lcoords[0], eta = lcoords[1];
+  double val = 0;
 
-  return *a + eta*(a[2] + eta*(a[5] + eta*(a[9] + eta*(a[14] + eta*a[19])))) +
-    xi*(a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + eta*a[18]))) +
-        xi*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17])) +
-            xi*(a[6] + eta*(a[11] + eta*a[16]) +
-                xi*(a[10] + xi*a[15]))));
+  if( element_dimension == 2 )
+  {
+    val = a[0] +
+      eta*(a[2] + eta*(a[5] + eta*(a[9] + eta*(a[14] + eta*a[19])))) +
+      xi*(a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + eta*a[18]))) +
+          xi*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17])) +
+              xi*(a[6] + eta*(a[11] + eta*a[16]) +
+                  xi*(a[10] + xi*a[15]))));
+  }
+  else //if( element_dimension == 3 )
+  {
+    double dphi = lcoords[2];
+
+    for( unsigned int q=0; q<4; ++q )
+    {
+      val += (a[0] +
+              eta*(a[2] + eta*(a[5] + eta*(a[9] + eta*(a[14] + eta*a[19])))) +
+              xi*(a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + eta*a[18]))) +
+                  xi*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17])) +
+                      xi*(a[6] + eta*(a[11] + eta*a[16]) +
+                          xi*(a[10] + xi*a[15]))))) *
+              pow(dphi, (double) q);
+
+      a += scalar_size/4;
+    }
+  }
+
+  return val;
 }
 
 // ****************************************************************************
@@ -647,20 +756,50 @@ float avtIVPM3DC1Field::interp(float *var, int el, double *lcoords) const
 // ****************************************************************************
 float avtIVPM3DC1Field::interpdR(float *var, int el, double *lcoords) const
 {
-  float *a = var + SCALAR_SIZE*el;
-  double xi = lcoords[0], eta = lcoords[1], xicoef, etacoef;
+  float *a = var + scalar_size*el;
+  double xi = lcoords[0], eta = lcoords[1];
+  double xicoef = 0, etacoef = 0;
+  int index;
 
-  xicoef = a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + a[18]*eta))) +
-    xi*(2.0*(a[3] + eta*(a[7] + eta*(a[12] + a[17]*eta))) +
-        xi*(3.0*(a[6] + eta*(a[11] + a[16]*eta)) +
-            xi*(4.0*a[10] + xi*5.0*a[15])));
+  if( element_dimension == 2 )
+  {
+    index = 2 * el;
 
-  etacoef = a[2] + xi*(a[4] + xi*(a[7] + a[11]*xi)) +
-    eta*(2.0*(a[5] + xi*(a[8] + xi*(a[12] + a[16]*xi))) +
-         eta*(3.0*(a[9] + xi*(a[13] + a[17]*xi)) +
+    xicoef = a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + a[18]*eta))) +
+      xi*(2.0*(a[3] + eta*(a[7] + eta*(a[12] + a[17]*eta))) +
+          xi*(3.0*(a[6] + eta*(a[11] + a[16]*eta)) +
+              xi*(4.0*a[10] + xi*5.0*a[15])));
+    
+    etacoef = a[2] + xi*(a[4] + xi*(a[7] + a[11]*xi)) +
+      eta*(2.0*(a[5] + xi*(a[8] + xi*(a[12] + a[16]*xi))) +
+           eta*(3.0*(a[9] + xi*(a[13] + a[17]*xi)) +
               eta*(4.0*(a[14] + a[18]*xi) + eta*5.0*a[19])));
+  }
+  else //if( element_dimension == 3 )
+  {
+    index = 2*(el%tElements);
+    double dphi = lcoords[2];
 
-  return xicoef*trigtable[2*el] - etacoef*trigtable[2*el + 1];
+    for( unsigned int q=0; q<4; ++q )
+    {
+      xicoef += (a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + a[18]*eta))) +
+                 xi*(2.0*(a[3] + eta*(a[7] + eta*(a[12] + a[17]*eta))) +
+                     xi*(3.0*(a[6] + eta*(a[11] + a[16]*eta)) +
+                         xi*(4.0*a[10] + xi*5.0*a[15])))) *
+        pow(dphi, (double) q);
+      
+      etacoef += (a[2] + xi*(a[4] + xi*(a[7] + a[11]*xi)) +
+                  eta*(2.0*(a[5] + xi*(a[8] + xi*(a[12] + a[16]*xi))) +
+                       eta*(3.0*(a[9] + xi*(a[13] + a[17]*xi)) +
+                            eta*(4.0*(a[14] + a[18]*xi) + eta*5.0*a[19])))) *
+        pow(dphi, (double) q);
+
+
+      a += scalar_size/4;
+    }
+  }
+
+  return xicoef*trigtable[index] - etacoef*trigtable[index + 1];
 }
 
 // ****************************************************************************
@@ -672,20 +811,50 @@ float avtIVPM3DC1Field::interpdR(float *var, int el, double *lcoords) const
 // ****************************************************************************
 float avtIVPM3DC1Field::interpdz(float *var, int el, double *lcoords) const
 {
-  float *a = var + SCALAR_SIZE*el;
-  double xi = lcoords[0], eta = lcoords[1], xicoef, etacoef;
+  float *a = var + scalar_size*el;
+  double xi = lcoords[0], eta = lcoords[1];
+  double xicoef=0, etacoef=0;
+  int index;
 
-  xicoef = a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + a[18]*eta))) +
-    xi*(2.0*(a[3] + eta*(a[7] + eta*(a[12] + a[17]*eta))) +
-        xi*(3.0*(a[6] + eta*(a[11] + a[16]*eta)) +
-            xi*(4.0*a[10] + xi*5.0*a[15])));
+  if( element_dimension == 2 )
+  {
+    index = 2 * el;
 
-  etacoef = a[2] + xi*(a[4] + xi*(a[7] + a[11]*xi)) +
-    eta*(2.0*(a[5] + xi*(a[8] + xi*(a[12] + a[16]*xi))) +
-         eta*(3.0*(a[9] + xi*(a[13] + a[17]*xi)) +
-              eta*(4.0*(a[14] + a[18]*xi) + eta*5.0*a[19])));
+    xicoef = a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + a[18]*eta))) +
+      xi*(2.0*(a[3] + eta*(a[7] + eta*(a[12] + a[17]*eta))) +
+          xi*(3.0*(a[6] + eta*(a[11] + a[16]*eta)) +
+              xi*(4.0*a[10] + xi*5.0*a[15])));
 
-  return xicoef*trigtable[2*el + 1] + etacoef*trigtable[2*el];
+    etacoef = a[2] + xi*(a[4] + xi*(a[7] + a[11]*xi)) +
+      eta*(2.0*(a[5] + xi*(a[8] + xi*(a[12] + a[16]*xi))) +
+           eta*(3.0*(a[9] + xi*(a[13] + a[17]*xi)) +
+                eta*(4.0*(a[14] + a[18]*xi) + eta*5.0*a[19])));
+  }
+  else //if( element_dimension == 3 )
+  {
+    index = 2*(el%tElements);
+    double dphi = lcoords[2];
+
+    for( unsigned int q=0; q<4; ++q )
+    {
+      xicoef += (a[1] + eta*(a[4] + eta*(a[8] + eta*(a[13] + a[18]*eta))) +
+                 xi*(2.0*(a[3] + eta*(a[7] + eta*(a[12] + a[17]*eta))) +
+                     xi*(3.0*(a[6] + eta*(a[11] + a[16]*eta)) +
+                         xi*(4.0*a[10] + xi*5.0*a[15])))) *
+        pow(dphi, (double) q);
+
+      etacoef += (a[2] + xi*(a[4] + xi*(a[7] + a[11]*xi)) +
+                  eta*(2.0*(a[5] + xi*(a[8] + xi*(a[12] + a[16]*xi))) +
+                       eta*(3.0*(a[9] + xi*(a[13] + a[17]*xi)) +
+                            eta*(4.0*(a[14] + a[18]*xi) + eta*5.0*a[19])))) *
+        pow(dphi, (double) q);
+ 
+
+      a += scalar_size/4;
+    }
+  }
+
+  return xicoef*trigtable[index + 1] + etacoef*trigtable[index];
 }
 
 
@@ -698,23 +867,56 @@ float avtIVPM3DC1Field::interpdz(float *var, int el, double *lcoords) const
 // ****************************************************************************
 float avtIVPM3DC1Field::interpdR2(float *var, int el, double *lcoords) const
 {
-  float *a = var + SCALAR_SIZE*el;
-  double co=trigtable[2*el], sn=trigtable[2*el + 1];
-  double xi = lcoords[0], eta = lcoords[1], xixicoef, etaetacoef, xietacoef;
+  float *a = var + scalar_size*el;
+  double xi = lcoords[0], eta = lcoords[1];
+  double xixicoef=0, etaetacoef=0, xietacoef=0;
+  int index;
 
-  xixicoef = 2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
-    xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
-        xi*(12.0*a[10] + xi*20.0*a[15]));
+  if( element_dimension == 2 )
+  {
+    index = 2 * el;
 
-  etaetacoef = 2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
-    eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
-         eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19]));
+    xixicoef = 2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
+      xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
+          xi*(12.0*a[10] + xi*20.0*a[15]));
 
-  xietacoef = 2.0*a[4] +
-    eta*(4.0*a[8] + xi*(8.0*a[12] + 12.0*xi*a[16]) +
-         eta*(6.0*a[13] + 12.0*xi*a[17] + 8.0*eta*a[18])) +
-    xi*(4.0*a[7] + 6.0*xi*a[11]);
+    etaetacoef = 2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
+      eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
+           eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19]));
 
+    xietacoef = 2.0*a[4] +
+      eta*(4.0*a[8] + xi*(8.0*a[12] + 12.0*xi*a[16]) +
+           eta*(6.0*a[13] + 12.0*xi*a[17] + 8.0*eta*a[18])) +
+      xi*(4.0*a[7] + 6.0*xi*a[11]);
+  }
+  else //if( element_dimension == 3 )
+  {
+    index = 2*(el%tElements);
+    double dphi = lcoords[2];
+
+    for( unsigned int q=0; q<4; ++q )
+    {
+      xixicoef += (2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
+                   xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
+                       xi*(12.0*a[10] + xi*20.0*a[15]))) *
+        pow(dphi, (double) q);
+
+      etaetacoef += (2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
+                     eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
+                          eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19]))) *
+        pow(dphi, (double) q);
+
+      xietacoef += (2.0*a[4] +
+                    eta*(4.0*a[8] + xi*(8.0*a[12] + 12.0*xi*a[16]) +
+                         eta*(6.0*a[13] + 12.0*xi*a[17] + 8.0*eta*a[18])) +
+                    xi*(4.0*a[7] + 6.0*xi*a[11])) *
+        pow(dphi, (double) q);
+
+      a += scalar_size/4;
+    }
+  }
+
+  double co=trigtable[index], sn=trigtable[index + 1];
   return (xixicoef*co - xietacoef*sn)*co + etaetacoef*sn*sn;
 }
 
@@ -728,23 +930,56 @@ float avtIVPM3DC1Field::interpdR2(float *var, int el, double *lcoords) const
 // ****************************************************************************
 float avtIVPM3DC1Field::interpdz2(float *var, int el, double *lcoords) const
 {
-  float *a = var + SCALAR_SIZE*el;
-  double co=trigtable[2*el], sn=trigtable[2*el + 1];
-  double xi = lcoords[0], eta = lcoords[1], xixicoef, etaetacoef, xietacoef;
+  float *a = var + scalar_size*el;
+  double xi = lcoords[0], eta = lcoords[1];
+  double xixicoef=0, etaetacoef=0, xietacoef=0;
+  int index;
 
-  xixicoef = 2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
-    xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
-        xi*(12.0*a[10] + xi*20.0*a[15]));
+  if( element_dimension == 2 )
+  {
+    index = 2 * el;
 
-  etaetacoef = 2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
-    eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
-         eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19]));
+    xixicoef = 2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
+      xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
+          xi*(12.0*a[10] + xi*20.0*a[15]));
 
-  xietacoef = 2.0*a[4] +
-    eta*(4.0*a[8] + xi*(8.0*a[12] + 12.0*xi*a[16]) +
-         eta*(6.0*a[13] + 12.0*xi*a[17] + 8.0*eta*a[18])) +
-    xi*(4.0*a[7] + 6.0*xi*a[11]);
+    etaetacoef = 2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
+      eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
+           eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19]));
 
+    xietacoef = 2.0*a[4] +
+      eta*(4.0*a[8] + xi*(8.0*a[12] + 12.0*xi*a[16]) +
+           eta*(6.0*a[13] + 12.0*xi*a[17] + 8.0*eta*a[18])) +
+      xi*(4.0*a[7] + 6.0*xi*a[11]);
+  }
+  else //if( element_dimension == 3 )
+  {
+    index = 2*(el%tElements);
+    double dphi = lcoords[2];
+
+    for( unsigned int q=0; q<4; ++q )
+    {
+      xixicoef += (2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
+                   xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
+                       xi*(12.0*a[10] + xi*20.0*a[15]))) *
+        pow(dphi, (double) q);
+
+      etaetacoef += (2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
+                     eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
+                          eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19]))) *
+        pow(dphi, (double) q);
+
+      xietacoef += (2.0*a[4] +
+                    eta*(4.0*a[8] + xi*(8.0*a[12] + 12.0*xi*a[16]) +
+                         eta*(6.0*a[13] + 12.0*xi*a[17] + 8.0*eta*a[18])) +
+                    xi*(4.0*a[7] + 6.0*xi*a[11])) *
+        pow(dphi, (double) q);
+
+      a += scalar_size/4;
+     }
+  }
+
+  double co=trigtable[index], sn=trigtable[index + 1];
   return (xixicoef*sn + xietacoef*co)*sn + etaetacoef*co*co;
 }
 
@@ -758,23 +993,57 @@ float avtIVPM3DC1Field::interpdz2(float *var, int el, double *lcoords) const
 // ****************************************************************************
 float avtIVPM3DC1Field::interpdRdz(float *var, int el, double *lcoords) const
 {
-  float *a = var + SCALAR_SIZE*el;
-  double co=trigtable[2*el], sn=trigtable[2*el + 1];
-  double xi = lcoords[0], eta = lcoords[1], xixicoef, etaetacoef, xietacoef;
+  float *a = var + scalar_size*el;
+  double xi = lcoords[0], eta = lcoords[1];
+  double xixicoef=0, etaetacoef=0, xietacoef=0;
+  int index;
 
-  xixicoef = 2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
-    xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
-        xi*(12.0*a[10] + xi*20.0*a[15]));
+  if( element_dimension == 2 )
+  {
+    index = 2 * el;
 
-  etaetacoef = 2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
-    eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
-         eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19]));
+    xixicoef = 2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
+      xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
+          xi*(12.0*a[10] + xi*20.0*a[15]));
 
-  xietacoef = a[4] +
-    eta*(2.0*a[8] + xi*(4.0*a[12] + 6.0*xi*a[16]) +
-         eta*(3.0*a[13] + 6.0*xi*a[17] + 4.0*eta*a[18])) +
-    xi*(2.0*a[7] + 3.0*xi*a[11]);
+    etaetacoef = 2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
+      eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
+           eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19]));
 
+    xietacoef = a[4] +
+      eta*(2.0*a[8] + xi*(4.0*a[12] + 6.0*xi*a[16]) +
+           eta*(3.0*a[13] + 6.0*xi*a[17] + 4.0*eta*a[18])) +
+      xi*(2.0*a[7] + 3.0*xi*a[11]);
+  }
+  else //if( element_dimension == 3 )
+  {
+    index = 2*(el%tElements);
+    double dphi = lcoords[2];
+
+    for( unsigned int q=0; q<4; ++q )
+    {
+      xixicoef += (2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
+                   xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
+                       xi*(12.0*a[10] + xi*20.0*a[15]))) *
+        pow(dphi, (double) q);
+
+      etaetacoef += (2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
+                     eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
+                          eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19]))) *
+        pow(dphi, (double) q);
+
+      xietacoef += (a[4] +
+                    eta*(2.0*a[8] + xi*(4.0*a[12] + 6.0*xi*a[16]) +
+                         eta*(3.0*a[13] + 6.0*xi*a[17] + 4.0*eta*a[18])) +
+                    xi*(2.0*a[7] + 3.0*xi*a[11])) *
+        pow(dphi, (double) q);
+
+
+      a += scalar_size/4;
+    }
+  }
+
+  double co=trigtable[index], sn=trigtable[index + 1];
   return (xixicoef - etaetacoef)*co*sn + xietacoef*(co*co - sn*sn);
 }
 
@@ -807,9 +1076,9 @@ void avtIVPM3DC1Field::interpBcomps(float *B, double *x,
   *B_z = interpdR(psi0, element, xieta) / x[0];
 
   /* B_phi = d^2f/dR^2 + 1/R df/dR + d^2f/dz^2 + F0/R^2 */
-  *B_phi = interpdR2(f0, element, xieta) +
-    interpdz2(f0, element, xieta) +
-    (interpdR(f0, element, xieta) + F0/x[0])/ x[0];
+  *B_phi = (interpdR2(f0, element, xieta) +
+            interpdz2(f0, element, xieta) +
+            (interpdR(f0, element, xieta) + F0/x[0]) / x[0]);
 
   /* n>0 components, if applicable */
   if (linflag) {
@@ -823,7 +1092,7 @@ void avtIVPM3DC1Field::interpBcomps(float *B, double *x,
       + tmode*(dfnrdr*sn + dfnidr*co);
 
     *B_z += (interpdR(psinr, element, xieta)*co -
-             interpdR(psini, element, xieta)*sn)/ x[0]
+             interpdR(psini, element, xieta)*sn) / x[0]
       + tmode*(interpdz(fnr, element, xieta)*sn +
                       interpdz(fni, element, xieta)*co);
 

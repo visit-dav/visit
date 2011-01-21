@@ -50,6 +50,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkTriangle.h>
+#include <vtkWedge.h>
 
 #include <avtDatabaseMetaData.h>
 
@@ -59,14 +60,17 @@
 #include <avtCallback.h>
 #include <NonCompliantException.h>
 #include <InvalidFilesException.h>
+#include <InvalidVariableException.h>
 #include <DebugStream.h>
 
-#include <InvalidVariableException.h>
 
 using namespace std;
 
-#define ELEMENT_SIZE 7
-#define SCALAR_SIZE 20
+#define ELEMENT_SIZE_2D 7
+#define SCALAR_SIZE_2D 20
+
+#define ELEMENT_SIZE_3D 9
+#define SCALAR_SIZE_3D 80
 
 
 // ****************************************************************************
@@ -81,14 +85,12 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
                                        DBOptionsAttributes *readOpts)
   : avtMTSDFileFormat(&filename, 1),
     m_filename(filename),
-    m_poloidalPlanes(1), m_refinement(2), m_dataLocation(AVT_NODECENT),
+    m_refinement(2), m_dataLocation(AVT_NODECENT),
     m_perturbationScale(1.5)
 {
     if (readOpts != NULL) {
       for (int i=0; i<readOpts->GetNumberOfOptions(); ++i) {
-        if (readOpts->GetName(i) == "Number of poloidal planes")
-          m_poloidalPlanes = readOpts->GetInt("Number of poloidal planes");
-        else if (readOpts->GetName(i) == "Mesh refinement")
+        if (readOpts->GetName(i) == "Mesh refinement")
           m_refinement = readOpts->GetEnum("Mesh refinement");
         else if (readOpts->GetName(i) == "Linear mesh data location") 
         {
@@ -103,8 +105,6 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
           m_perturbationScale = readOpts->GetDouble("Perturbation scaling");
       }
     }
-
-    if( m_poloidalPlanes < 1 )  m_poloidalPlanes = 1;
 
     if( m_refinement < 0 )      m_refinement = 0;
     else if( m_refinement > 5 ) m_refinement = 5;
@@ -191,11 +191,11 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     // Original meshes for the user to see.
     AddMeshToMetaData( md, "equilibrium/mesh",
-                       mt, extents, nblocks*m_poloidalPlanes, block_origin,
+                       mt, extents, nblocks, block_origin,
                        spatial_dimension, topological_dimension );
     
     AddMeshToMetaData( md,"mesh", mt,
-                       extents, nblocks*m_poloidalPlanes, block_origin,
+                       extents, nblocks, block_origin,
                        spatial_dimension, topological_dimension );
     
     
@@ -212,22 +212,26 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
 
     // This vector is the dummy vector
-    // For now the mesh is the same mesh as the original mesh because
-    // of needing it for the integration.
+    if( element_dimension == 2 )
+    {
+      // For now the mesh is the same mesh as the original mesh because
+      // of needing it for the integration.
+      AddVectorVarToMetaData( md, "B-By-Parts",
+                              string("mesh"),
+                              AVT_ZONECENT, 3);
 
-    AddVectorVarToMetaData( md, "B", string("mesh"),
-                            AVT_ZONECENT, 3);
-
-//     AddVectorVarToMetaData( md, "B", string("mesh") + string(level),
-//                             m_dataLocation, 3 );
-
+      // Interpolated on to a mesh for visualization only.
+      AddVectorVarToMetaData( md, "B-Interpolated",
+                              string("mesh") + string(level),
+                              m_dataLocation, 3 );
+    }
 
     // Hidden refined meshes for working with the interpolated data
     if( m_refinement )
     {
       int nLevels = m_refinement + 1;
 
-      nblocks = m_poloidalPlanes * nelms * nLevels * nLevels;
+      nblocks = nelms * nLevels * nLevels;
 
       mmd =
         new avtMeshMetaData(string("equilibrium/mesh") + string(level),
@@ -280,13 +284,13 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     avtVectorMetaData *amd =
       new avtVectorMetaData("hidden/equilibrium/elements",
                            "hidden/equilibrium/mesh",
-                           AVT_ZONECENT, ELEMENT_SIZE);
+                           AVT_ZONECENT, element_size);
 
     amd->hideFromGUI = true;
     md->Add(amd);
 
     amd = new avtVectorMetaData("hidden/elements", "hidden/mesh",
-                               AVT_ZONECENT, ELEMENT_SIZE);
+                               AVT_ZONECENT, element_size);
 
     amd->hideFromGUI = true;
     md->Add(amd);
@@ -296,14 +300,14 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     {
       string varname = "hidden/equilibrium/" + m_fieldVarNames[i];
       amd = new avtVectorMetaData(varname, "hidden/equilibrium/mesh",
-                                 AVT_ZONECENT, SCALAR_SIZE);
+                                 AVT_ZONECENT, scalar_size);
 
       amd->hideFromGUI = true;
       md->Add(amd);
 
       varname = "hidden/" + m_fieldVarNames[i];
       amd = new avtVectorMetaData(varname, "hidden/mesh",
-                                 AVT_ZONECENT, SCALAR_SIZE);
+                                 AVT_ZONECENT, scalar_size);
 
       amd->hideFromGUI = true;
       md->Add(amd);
@@ -373,7 +377,7 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
   H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
 
   // Sanity check.  
-  if( rank != 2 || sdim[0] != nelms || sdim[1] != ELEMENT_SIZE )
+  if( rank != 2 || sdim[0] != nelms || sdim[1] != element_size )
   {
       EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
                   "The number of elements or the element size does not match" );          
@@ -404,7 +408,6 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
 //
 //  Arguments:
 //      elements        The original C1 elements 
-//      poloidalPlanes  The number poloidal planes to create
 //      refinement      The amount of mesh refinement.
 //
 //  Programmer: allen -- generated by xml2avt
@@ -414,53 +417,84 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
 
 vtkPoints *
 avtM3DC1FileFormat::GetMeshPoints(float *elements,
-                                  int poloidalPlanes,
                                   int refinement)
 {
-  // Inital number of triangles before refinement but with all planes.
-  int ntris = m_poloidalPlanes * nelms * 3;
+  // Inital number of triangles before refinement.
+  int npts = nelms * nvertices;
+  int ncoords = nvertices * 3;
 
   // VTK structure for holding the mesh points. 
   vtkPoints *vtkPts = vtkPoints::New();
-  vtkPts->SetNumberOfPoints( ntris );
+  vtkPts->SetNumberOfPoints( npts );
   float *pts = (float *) vtkPts->GetVoidPointer(0);
 
-  // Create the mesh hat each requested plane 0-> 2 * Pi
-  for( int p=0; p<poloidalPlanes; ++p ) 
+  float phi = 0;
+
+  // Pointer for fast indexing through the elements.
+  float *element = elements;
+
+//   for( int i=0; i<nelms/2; ++i )
+//     element += element_size;
+
+  for( int i=0; i<nelms; ++i )
   {
-    float phi = 2.0*M_PI * (float) p / (float) poloidalPlanes;
+    // The element values from Jardin, JCP 200:133 (2004)
+    float a     = element[0];
+    float b     = element[1];
+    float c     = element[2];
+    float theta = element[3];
+    float x     = element[4];
+    float z     = element[5];
 
-    // Pointer for fast indexing through the elements.
-    float *element = elements;
+    // The seventh value (call it "e") specifies which edges of the
+    // element lie on the domain boundary.  The first edge is the
+    // edge between the first and second nodes, the second edge
+    // joins nodes 2 and 3, and the third edge joins nodes 3 and 1.
+    // If edge n lies on the domain boundary, than the nth bit of e
+    // is set.  For example, e=0 means no edges are on the domain
+    // boundary, e=5 means the first and third edges are on the
+    // domain boundary.
+    unsigned int e = element[6];
 
-    for( int i=0; i<nelms; ++i )
+    if( element_dimension == 3 )
+      phi = element[8];
+
+    // The three points in the phi plane that define the triangle mesh element.
+    pts[0] = x;
+    pts[1] = phi;
+    pts[2] = z;
+
+    pts[3] = x + (a+b)*cos(theta);
+    pts[4] = phi;
+    pts[5] = z + (a+b)*sin(theta);
+    
+    pts[6] = x + b*cos(theta) - c*sin(theta);
+    pts[7] = phi;
+    pts[8] = z + b*sin(theta) + c*cos(theta);
+
+    // The three points in the phi+d plane that define the second part of
+    // the wedge element.
+    if( element_dimension == 3 )
     {
-      // The element values from Jardin, JCP 200:133 (2004)
-      float a     = element[0];
-      float b     = element[1];
-      float c     = element[2];
-      float theta = element[3];
-      float x     = element[4];
-      float z     = element[5];
+      float d = element[7];
 
-      // The three points in the Y plane that define the mesh element.
-      pts[0] = x;
-      pts[1] = phi;
-      pts[2] = z;
+      pts[ 9] = x;
+      pts[10] = phi + d;
+      pts[11] = z;
 
-      pts[3] = x + (a+b)*cos(theta);
-      pts[4] = phi;
-      pts[5] = z + (a+b)*sin(theta);
+      pts[12] = x + (a+b)*cos(theta);
+      pts[13] = phi + d;
+      pts[14] = z + (a+b)*sin(theta);
+    
+      pts[15] = x + b*cos(theta) - c*sin(theta);
+      pts[16] = phi + d;
+      pts[17] = z + b*sin(theta) + c*cos(theta);
+    }
 
-      pts[6] = x + b*cos(theta) - c*sin(theta);
-      pts[7] = phi;
-      pts[8] = z + b*sin(theta) + c*cos(theta);
-
-      // Increment for fast indexing.
-      element += ELEMENT_SIZE;
-      pts += 9;
-    } 
-  }
+    // Increment for fast indexing.
+    element += element_size;
+    pts += ncoords;
+  } 
 
   // Now do any needed refinement. Currently the flag is 0-4. The user
   // sees 1-5. With 1 being no refinement aka linear.
@@ -473,69 +507,190 @@ avtM3DC1FileFormat::GetMeshPoints(float *elements,
 
     // VTK structure for holding the refined mesh points. 
     vtkPoints *rf_vtkPts = vtkPoints::New();
-    rf_vtkPts->SetNumberOfPoints( ntris * nLevels* nLevels );
+
+    rf_vtkPts->SetNumberOfPoints( npts *
+                                  (int) pow( (float) nLevels,
+                                             (float) element_dimension) );
+
     float *rf_pts = (float *) rf_vtkPts->GetVoidPointer(0);
 
-    for( int i=0; i<ntris; i+=3 )
+    if( element_dimension == 2 )
     {
-      // Refine the triangle based on barrycentric coordinates.
-      float *A = &(pts[0]);
-      float *B = &(pts[3]);
-      float *C = &(pts[6]);
-
-      for( int j=0; j<nLevels; ++j )
+      for( int i=0; i<npts; i+=nvertices )
       {
-        float a  = (float)  j      / (float) nLevels;
-        float a1 = (float) (j + 1) / (float) nLevels;
+        // Refine the triangle based on barrycentric coordinates.
+        float *A = &(pts[0]);
+        float *B = &(pts[3]);
+        float *C = &(pts[6]);
 
-        for( int k=0; k<nLevels-j; ++k )
+        for( int j=0; j<nLevels; ++j )
         {
-          float b   = (float) (nLevels-j-k)   / (float) nLevels;
-          float b_1 = (float) (nLevels-j-k-1) / (float) nLevels;
+          float a  = (float)  j      / (float) nLevels;
+          float a1 = (float) (j + 1) / (float) nLevels;
 
-          float c  = (float)  k    / (float) nLevels;
-          float c1 = (float) (k+1) / (float) nLevels;
-
-          rf_pts[0] = a * A[0] + b * B[0] + c * C[0];
-          rf_pts[1] = a * A[1] + b * B[1] + c * C[1];
-          rf_pts[2] = a * A[2] + b * B[2] + c * C[2];
-
-          rf_pts[3] = a * A[0] + b_1 * B[0] + c1 * C[0];
-          rf_pts[4] = a * A[1] + b_1 * B[1] + c1 * C[1];
-          rf_pts[5] = a * A[2] + b_1 * B[2] + c1 * C[2];
-
-          rf_pts[6] = a1 * A[0] + b_1 * B[0] + c * C[0];
-          rf_pts[7] = a1 * A[1] + b_1 * B[1] + c * C[1];
-          rf_pts[8] = a1 * A[2] + b_1 * B[2] + c * C[2];
-
-          rf_pts += 9;
-
-          if( k )
+          for( int k=0; k<nLevels-j; ++k )
           {
-            float c_1 = (float) (k-1) / (float) nLevels;
+            float b   = (float) (nLevels-j-k)   / (float) nLevels;
+            float b_1 = (float) (nLevels-j-k-1) / (float) nLevels;
+
+            float c  = (float)  k    / (float) nLevels;
+            float c1 = (float) (k+1) / (float) nLevels;
 
             rf_pts[0] = a * A[0] + b * B[0] + c * C[0];
             rf_pts[1] = a * A[1] + b * B[1] + c * C[1];
             rf_pts[2] = a * A[2] + b * B[2] + c * C[2];
+
+            rf_pts[3] = a * A[0] + b_1 * B[0] + c1 * C[0];
+            rf_pts[4] = a * A[1] + b_1 * B[1] + c1 * C[1];
+            rf_pts[5] = a * A[2] + b_1 * B[2] + c1 * C[2];
+
+            rf_pts[6] = a1 * A[0] + b_1 * B[0] + c * C[0];
+            rf_pts[7] = a1 * A[1] + b_1 * B[1] + c * C[1];
+            rf_pts[8] = a1 * A[2] + b_1 * B[2] + c * C[2];
+
+            rf_pts += ncoords;
+
+            if( k )
+            {
+              float c_1 = (float) (k-1) / (float) nLevels;
+
+              rf_pts[0] = a * A[0] + b * B[0] + c * C[0];
+              rf_pts[1] = a * A[1] + b * B[1] + c * C[1];
+              rf_pts[2] = a * A[2] + b * B[2] + c * C[2];
             
-            rf_pts[3] = a1 * A[0] + b_1 * B[0] + c * C[0];
-            rf_pts[4] = a1 * A[1] + b_1 * B[1] + c * C[1];
-            rf_pts[5] = a1 * A[2] + b_1 * B[2] + c * C[2];
+              rf_pts[3] = a1 * A[0] + b_1 * B[0] + c * C[0];
+              rf_pts[4] = a1 * A[1] + b_1 * B[1] + c * C[1];
+              rf_pts[5] = a1 * A[2] + b_1 * B[2] + c * C[2];
             
-            rf_pts[6] = a1 * A[0] + b * B[0] + c_1 * C[0];
-            rf_pts[7] = a1 * A[1] + b * B[1] + c_1 * C[1];
-            rf_pts[8] = a1 * A[2] + b * B[2] + c_1 * C[2];
+              rf_pts[6] = a1 * A[0] + b * B[0] + c_1 * C[0];
+              rf_pts[7] = a1 * A[1] + b * B[1] + c_1 * C[1];
+              rf_pts[8] = a1 * A[2] + b * B[2] + c_1 * C[2];
             
-            rf_pts += 9;
+              rf_pts += ncoords;
+            }
           }
         }
 
-        if( i == 0 )
-          cerr << endl;
-
+        pts += ncoords;
       }
+    }
 
-      pts += 9;
+    else //if( element_dimension == 3 )
+    {
+      for( int i=0; i<npts; i+=nvertices )
+      {
+        // Refine the triangle based on barrycentric coordinates.
+        float *A = &(pts[0]);
+        float *B = &(pts[3]);
+        float *C = &(pts[6]);
+
+        float *D = &(pts[9]);
+        float *E = &(pts[12]);
+        float *F = &(pts[15]);
+
+        for( int j=0; j<nLevels; ++j )
+        {
+          float a  = (float)  j      / (float) nLevels;
+          float a1 = (float) (j + 1) / (float) nLevels;
+          
+          for( int k=0; k<nLevels-j; ++k )
+          {
+            float b   = (float) (nLevels-j-k)   / (float) nLevels;
+            float b_1 = (float) (nLevels-j-k-1) / (float) nLevels;
+            
+            float c  = (float)  k    / (float) nLevels;
+            float c1 = (float) (k+1) / (float) nLevels;
+
+            double left_pts[9], right_pts[9];
+
+            left_pts[0] = a * A[0] + b * B[0] + c * C[0];
+            left_pts[1] = a * A[1] + b * B[1] + c * C[1];
+            left_pts[2] = a * A[2] + b * B[2] + c * C[2];
+
+            left_pts[3] = a * A[0] + b_1 * B[0] + c1 * C[0];
+            left_pts[4] = a * A[1] + b_1 * B[1] + c1 * C[1];
+            left_pts[5] = a * A[2] + b_1 * B[2] + c1 * C[2];
+
+            left_pts[6] = a1 * A[0] + b_1 * B[0] + c * C[0];
+            left_pts[7] = a1 * A[1] + b_1 * B[1] + c * C[1];
+            left_pts[8] = a1 * A[2] + b_1 * B[2] + c * C[2];
+
+
+            right_pts[0] = a * D[0] + b * E[0] + c * F[0];
+            right_pts[1] = a * D[1] + b * E[1] + c * F[1];
+            right_pts[2] = a * D[2] + b * E[2] + c * F[2];
+
+            right_pts[3] = a * D[0] + b_1 * E[0] + c1 * F[0];
+            right_pts[4] = a * D[1] + b_1 * E[1] + c1 * F[1];
+            right_pts[5] = a * D[2] + b_1 * E[2] + c1 * F[2];
+
+            right_pts[6] = a1 * D[0] + b_1 * E[0] + c * F[0];
+            right_pts[7] = a1 * D[1] + b_1 * E[1] + c * F[1];
+            right_pts[8] = a1 * D[2] + b_1 * E[2] + c * F[2];
+
+            for( int l=0; l<nLevels; ++l )
+            {
+              for( int ii=0; ii<9; ++ii )
+                rf_pts[ii] = left_pts[ii] + (double) l *
+                  (right_pts[ii] - left_pts[ii]) / (double) nLevels;
+
+              rf_pts += ncoords/2;
+
+              for( int ii=0; ii<9; ++ii )
+                rf_pts[ii] = left_pts[ii] + (double) (l+1) *
+                  (right_pts[ii] - left_pts[ii]) / (double) nLevels;
+
+              rf_pts += ncoords/2;
+            }
+
+            if( k )
+            {
+              float c_1 = (float) (k-1) / (float) nLevels;
+
+              left_pts[0] = a * A[0] + b * B[0] + c * C[0];
+              left_pts[1] = a * A[1] + b * B[1] + c * C[1];
+              left_pts[2] = a * A[2] + b * B[2] + c * C[2];
+              
+              left_pts[3] = a1 * A[0] + b_1 * B[0] + c * C[0];
+              left_pts[4] = a1 * A[1] + b_1 * B[1] + c * C[1];
+              left_pts[5] = a1 * A[2] + b_1 * B[2] + c * C[2];
+              
+              left_pts[6] = a1 * A[0] + b * B[0] + c_1 * C[0];
+              left_pts[7] = a1 * A[1] + b * B[1] + c_1 * C[1];
+              left_pts[8] = a1 * A[2] + b * B[2] + c_1 * C[2];
+              
+              right_pts[0] = a * D[0] + b * E[0] + c * F[0];
+              right_pts[1] = a * D[1] + b * E[1] + c * F[1];
+              right_pts[2] = a * D[2] + b * E[2] + c * F[2];
+              
+              right_pts[3] = a1 * D[0] + b_1 * E[0] + c * F[0];
+              right_pts[4] = a1 * D[1] + b_1 * E[1] + c * F[1];
+              right_pts[5] = a1 * D[2] + b_1 * E[2] + c * F[2];
+              
+              right_pts[6] = a1 * D[0] + b * E[0] + c_1 * F[0];
+              right_pts[7] = a1 * D[1] + b * E[1] + c_1 * F[1];
+              right_pts[8] = a1 * D[2] + b * E[2] + c_1 * F[2];
+
+              for( int l=0; l<nLevels; ++l )
+              {
+                for( int ii=0; ii<9; ++ii )
+                  rf_pts[ii] = left_pts[ii] + (double) l *
+                    (right_pts[ii] - left_pts[ii]) / (double) nLevels;
+                
+                rf_pts += ncoords/2;
+                
+                for( int ii=0; ii<9; ++ii )
+                  rf_pts[ii] = left_pts[ii] + (double) (l+1) *
+                    (right_pts[ii] - left_pts[ii]) / (double) nLevels;
+                
+                rf_pts += ncoords/2;
+              }
+            }
+          }
+        }
+
+        pts += ncoords;
+      }
     }
 
     // Delete the old points.
@@ -575,18 +730,14 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   const char *meshnamePtr = meshname;  
   char meshStr[64];
 
-  int poloidalPlanes;
-
   // If hidden only one poloidal plane as the mesh will be used for
   // interpolation. There should also be no refinement.
   if( strncmp(meshname, "hidden/", 7 ) == 0 )
   {
-    poloidalPlanes = 1;
     meshnamePtr = &(meshname[7]);
   }
   else
   {
-    poloidalPlanes = m_poloidalPlanes;
     meshnamePtr = meshname;
   }
   
@@ -618,10 +769,8 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   // Create a VTK grid for the mesh.
   vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
 
-  // Now get the points on the mesh based on the number of planes and
-  // the refinement level.
-  vtkPoints *vtkPts =
-    GetMeshPoints( elements, m_poloidalPlanes, refinement);
+  // Now get the points on the mesh based on the refinement level.
+  vtkPoints *vtkPts = GetMeshPoints( elements, refinement);
 
   // Add the points to the VTK grid.
   int npts = vtkPts->GetNumberOfPoints();
@@ -632,19 +781,40 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   // Add in the VTK cells. The connectivity is the same for all
   // triangles because each triangle is defined by three points that
   // are not unique. 
-  grid->Allocate(npts/3);
 
-  vtkTriangle *tri = vtkTriangle::New();
-  for( int i=0; i<npts; i+=3 )
-  {
-    tri->GetPointIds()->SetId( 0, i   );
-    tri->GetPointIds()->SetId( 1, i+1 );
-    tri->GetPointIds()->SetId( 2, i+2 );
+  grid->Allocate(npts/nvertices);
     
-    grid->InsertNextCell( tri->GetCellType(), tri->GetPointIds() );
+  if( element_dimension == 2 )
+  {
+    vtkTriangle *tri = vtkTriangle::New();
+    for( int i=0; i<npts; i+=nvertices )
+    {
+      tri->GetPointIds()->SetId( 0, i   );
+      tri->GetPointIds()->SetId( 1, i+1 );
+      tri->GetPointIds()->SetId( 2, i+2 );
+      
+      grid->InsertNextCell( tri->GetCellType(), tri->GetPointIds() );
+    }
+    
+    tri->Delete();
   }
-  
-  tri->Delete();
+  else //if( element_dimension == 3 )
+  {
+    vtkWedge *wedge = vtkWedge::New();
+    for( int i=0; i<npts; i+=nvertices )
+    {
+      wedge->GetPointIds()->SetId( 0, i   );
+      wedge->GetPointIds()->SetId( 1, i+1 );
+      wedge->GetPointIds()->SetId( 2, i+2 );
+      wedge->GetPointIds()->SetId( 3, i+3 );
+      wedge->GetPointIds()->SetId( 4, i+4 );
+      wedge->GetPointIds()->SetId( 5, i+5 );
+      
+      grid->InsertNextCell( wedge->GetCellType(), wedge->GetPointIds() );
+    }
+    
+    wedge->Delete();
+  }
 
   return grid;
 }
@@ -684,8 +854,29 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
   string variable(&(varname[7]));
   float value;
 
+  // Read in 3D flag and nplanes an an int
+  if( variable == "nplanes" )
+  {
+    int intVal;
+    // 2D or 3D elements?
+    if ( ReadAttribute( rootID, "3d", &intVal ) && intVal == 1 )
+    {
+      // Read in nplanes
+      if ( ! ReadAttribute( rootID, "nplanes", &intVal ) )
+      {
+        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nplanes' was not found or was the wrong type." );
+      }
+      else
+        value = intVal;
+    }  
+    else
+    {
+      value = 1;
+    }  
+  }
+
   // Read in linear flag and ntor an an int
-  if( variable == "linear" || variable == "ntor"   )
+  else if( variable == "linear" || variable == "ntor"   )
   {
       int intVal;
       if ( ! ReadAttribute( rootID, variable.c_str(), &intVal ) )
@@ -759,10 +950,10 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   if( strncmp(varname, "equilibrium", 11 ) == 0 )
   {
     if( strcmp(&(varname[11]), "elements" ) == 0 ) {
-      nComponents = ELEMENT_SIZE;;
+      nComponents = element_size;;
       sprintf( groupStr, "/equilibrium/mesh" );
     } else {
-      nComponents = SCALAR_SIZE;;
+      nComponents = scalar_size;;
       sprintf( groupStr, "/equilibrium/fields" );
     }
 
@@ -770,10 +961,10 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
 
   } else {
     if( strcmp(varname, "elements" ) == 0 ) {
-      nComponents = ELEMENT_SIZE;;
+      nComponents = element_size;;
       sprintf( groupStr, "/time_%03d/mesh", timestate );
     } else {
-      nComponents = SCALAR_SIZE;;
+      nComponents = scalar_size;;
       sprintf( groupStr, "/time_%03d/fields", timestate );
     }
 
@@ -881,21 +1072,19 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   // be interpolated onto the linear mesh.
   float* elements;
   if( strncmp(varname, "equilibrium", 11 ) == 0 )
-  {
     elements = GetElements(timestate, "equilibrium/mesh");
-  } else {
+  else
     elements = GetElements(timestate, "mesh");
-  }
 
   // Create a temporary mesh for getting the correct field variable
   // values on the linear mesh.
-  vtkPoints *vtkPts = GetMeshPoints( elements, m_poloidalPlanes, m_refinement );
+  vtkPoints *vtkPts = GetMeshPoints( elements, m_refinement );
   float* pts = (float *) vtkPts->GetVoidPointer(0);
   int npts = vtkPts->GetNumberOfPoints();
 
   // Get the M3D C1 field so the variables can be interpolated on the
   // linear mesh.
-  avtM3DC1Field m3dField(elements, nelms);
+  avtM3DC1Field m3dField(elements, nelms, element_dimension, nplanes);
 
   // Get the field variable to be interpolated on the linear mesh.
   vtkDataArray* vtkVar = GetFieldVar( timestate, varname );
@@ -908,7 +1097,7 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
     nvalues = npts;
   // Get the value at the center of each element on the linear mesh.
   else if( m_dataLocation == AVT_ZONECENT)
-    nvalues = npts / 3;
+    nvalues = npts / nvertices;
     
   // VTK structure for the field variable on the linear mesh.
   vtkFloatArray *var = vtkFloatArray::New();
@@ -922,7 +1111,7 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   float* varPtr = (float *) var->GetVoidPointer(0);
 
   int element;
-  double xieta[2];
+  double xieta[element_dimension];
 
   double pt[3], centroid[3];
 
@@ -934,19 +1123,31 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
       // xi,eta. We only want the index so that we know which element
       // the nodes are part of. Do this once so that it is
       // faster. Also it ensures that the correct element is found
-      // because the points lie on the element.
+      // because the points lie in the element.
       // 
-      if( i % 3 == 0 )
+      if( i % nvertices == 0 )
       {
-        centroid[0] = (pts[0] + pts[3] + pts[6] ) / 3.0;
-        centroid[1] = (pts[1] + pts[4] + pts[7] ) / 3.0;
-        centroid[2] = (pts[2] + pts[5] + pts[8] ) / 3.0;
+        if( element_dimension == 2 )
+        {
+          centroid[0] = (pts[0] + pts[3] + pts[6] ) / nvertices;
+          centroid[1] = (pts[1] + pts[4] + pts[7] ) / nvertices;
+          centroid[2] = (pts[2] + pts[5] + pts[8] ) / nvertices;
+        }
+        else //if( element_dimension == 3 )
+        {
+          centroid[0] = (pts[0] + pts[3] + pts[6] +
+                         pts[9] + pts[12] + pts[15] ) / nvertices;
+          centroid[1] = (pts[1] + pts[4] + pts[7] +
+                         pts[10] + pts[13] + pts[16] ) / nvertices;
+          centroid[2] = (pts[2] + pts[5] + pts[8] +
+                         pts[11] + pts[14] + pts[17] ) / nvertices;
+        }
 
         if( (element = m3dField.get_tri_coords2D(centroid, xieta)) < 0 )
         {
           char buf[1024];
 
-          sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for point %10.6f %10.6f %10.6f", 
+          sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for centroid %10.6f %10.6f %10.6f",
                    centroid[0], centroid[1], centroid[2] );
 
           avtCallback::IssueWarning( buf );
@@ -957,15 +1158,17 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
 
       /* Find the element containing the point; get local coords xi,eta */
       if ((element = m3dField.get_tri_coords2D(pt, element, xieta)) >= 0)
+      {
         *varPtr++ = m3dField.interp(values, element, xieta);
+      }
       else
       {
         char buf[1024];
 
-          sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for point %10.6f %10.6f %10.6f", 
+        sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for point %10.6f %10.6f %10.6f", 
                  pt[0], pt[1], pt[2] );
 
-          avtCallback::IssueWarning( buf );
+        avtCallback::IssueWarning( buf );
 
         *varPtr++ = 0;
       }
@@ -976,28 +1179,42 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   
   else if( m_dataLocation == AVT_ZONECENT)
   {
-    for( int i=0; i<npts; i+=3 )
+    for( int i=0; i<npts; i+=nvertices )
     {
-      centroid[0] = (pts[0] + pts[3] + pts[6] ) / 3.0;
-      centroid[1] = (pts[1] + pts[4] + pts[7] ) / 3.0;
-      centroid[2] = (pts[2] + pts[5] + pts[8] ) / 3.0;
+      if( element_dimension == 2 )
+      {
+        centroid[0] = (pts[0] + pts[3] + pts[6] ) / nvertices;
+        centroid[1] = (pts[1] + pts[4] + pts[7] ) / nvertices;
+        centroid[2] = (pts[2] + pts[5] + pts[8] ) / nvertices;
+      }
+      else //if( element_dimension == 3 )
+      {
+        centroid[0] = (pts[0] + pts[3] + pts[6] +
+                       pts[9] + pts[12] + pts[15] ) / nvertices;
+        centroid[1] = (pts[1] + pts[4] + pts[7] +
+                       pts[10] + pts[13] + pts[16] ) / nvertices;
+        centroid[2] = (pts[2] + pts[5] + pts[8] +
+                       pts[11] + pts[14] + pts[17] ) / nvertices;
+      }
 
       /* Find the element containing the point; get local coords xi,eta */
       if ((element = m3dField.get_tri_coords2D(centroid, xieta)) >= 0)
+      {
         *varPtr++ = m3dField.interp(values, element, xieta);
+      }
       else
       {
-          char buf[1024];
+        char buf[1024];
 
-          sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for point %10.6f %10.6f %10.6f", 
-                   centroid[0], centroid[1], centroid[2] );
-
-          avtCallback::IssueWarning( buf );
+        sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for centroid %10.6f %10.6f %10.6f", 
+                 centroid[0], centroid[1], centroid[2] );
+        
+        avtCallback::IssueWarning( buf );
         
         *varPtr++ = 0;
       }
       
-      pts += 9;
+      pts += nvertices * 3;
     }
   }
 
@@ -1065,11 +1282,14 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
       return vtkVar;
     } 
   }
-  else if( strcmp(varname, "B") == 0 )
+  else if( strcmp(varname, "B-By-Parts") == 0 ||
+           strcmp(varname, "B-Interpolated") == 0 )
   {
-    // FIXME - TEMPORARY UNITL FIX FOR MIXED NODE AND ZONE
     avtCentering dataLocation = m_dataLocation;
-    m_dataLocation = AVT_ZONECENT;
+
+    // When using by part the location is center based.
+    if( strcmp(varname, "B-By-Parts") == 0 )
+      m_dataLocation = AVT_ZONECENT;
     
     // First get the elements for this variable so that the variable can
     // be interpolated onto the linear mesh.
@@ -1080,15 +1300,19 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
     // For now the mesh is the same mesh as the original mesh because
     // of needing it for the integration.
-    vtkPoints *vtkPts = GetMeshPoints( elements, 1, 0 );
-//  vtkPoints *vtkPts = GetMeshPoints( elements, m_poloidalPlanes, m_refinement);
+    vtkPoints *vtkPts;
+
+    if( strcmp(varname, "B-By-Parts") == 0 )
+      vtkPts = GetMeshPoints( elements, 0 );
+    else if( strcmp(varname, "B-Interpolated") == 0 )
+      vtkPts = GetMeshPoints( elements, m_refinement );
 
     float* pts = (float *) vtkPts->GetVoidPointer(0);
     int npts = vtkPts->GetNumberOfPoints();
 
     // Get the M3D C1 field so the variables can be interpolated on the
     // linear mesh.
-    avtM3DC1Field m3dField(elements, nelms);
+    avtM3DC1Field m3dField(elements, nelms, element_dimension, nplanes);
 
     // Header variables are at the top level group.
     hid_t rootID = H5Gopen( m_fileID, "/", H5P_DEFAULT);
@@ -1158,7 +1382,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
     int element;
     float B[3];
-    double centroid[3], xieta[2];
+    double pt[3], centroid[3], xieta[element_dimension];
 
     if( m_dataLocation == AVT_NODECENT)
     {
@@ -1170,27 +1394,46 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
         // faster. Also it ensures that the correct element is found
         // because the points lie on the element.
         // 
-        if( i % 3 == 0 )
+        if( i % nvertices == 0 )
         {
-          centroid[0] = (pts[0] + pts[3] + pts[6] ) / 3.0;
-          centroid[1] = (pts[1] + pts[4] + pts[7] ) / 3.0;
-          centroid[2] = (pts[2] + pts[5] + pts[8] ) / 3.0;
-          
+          if( element_dimension == 2 )
+          {
+            centroid[0] = (pts[0] + pts[3] + pts[6] ) / nvertices;
+            centroid[1] = (pts[1] + pts[4] + pts[7] ) / nvertices;
+            centroid[2] = (pts[2] + pts[5] + pts[8] ) / nvertices;
+          }
+          else //if( element_dimension == 3 )
+          {
+            centroid[0] = (pts[0] + pts[3] + pts[6] +
+                           pts[9] + pts[12] + pts[15] ) / nvertices;
+            centroid[1] = (pts[1] + pts[4] + pts[7] +
+                           pts[10] + pts[13] + pts[16] ) / nvertices;
+            centroid[2] = (pts[2] + pts[5] + pts[8] +
+                           pts[11] + pts[14] + pts[17] ) / nvertices;
+          }
+
           element = m3dField.get_tri_coords2D(centroid, xieta);
         }
         
-        double pt[3] = {pts[0],pts[1],pts[2]};
-            
+        pt[0] = pts[0];  pt[1] = pts[1];   pt[2] = pts[2];
+
         /* Find the element containing the point; get local coords xi,eta */
-        if ((element = m3dField.get_tri_coords2D(pt, element, xieta)) < 0) 
+        if ((element = m3dField.get_tri_coords2D(pt, element, xieta)) >= 0) 
         {
-          *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
+          m3dField.interpBcomps(B, pt, element, xieta);
+
+          *varPtr++ = B[0]; *varPtr++ = B[1]; *varPtr++ = B[2];
         }
         else 
         {
-          m3dField.interpBcomps(B, pt, element, xieta);
-        
-          *varPtr++ = B[0]; *varPtr++ = B[1]; *varPtr++ = B[2];
+          char buf[1024];
+
+          sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for point %10.6f %10.6f %10.6f", 
+                   pt[0], pt[1], pt[2] );
+
+          avtCallback::IssueWarning( buf );
+
+          *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
         
         pts += 3;
@@ -1201,26 +1444,45 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
     {
       for( int i=0; i<npts; i+=3 )
       {
-        centroid[0] = (pts[0] + pts[3] + pts[6] ) / 3.0;
-        centroid[1] = (pts[1] + pts[4] + pts[7] ) / 3.0;
-        centroid[2] = (pts[2] + pts[5] + pts[8] ) / 3.0;
-        
-        /* Find the element containing the point; get local coords xi,eta */
-        if ((element = m3dField.get_tri_coords2D(centroid, xieta)) < 0) 
+        if( element_dimension == 2 )
         {
-          *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
+          centroid[0] = (pts[0] + pts[3] + pts[6] ) / nvertices;
+          centroid[1] = (pts[1] + pts[4] + pts[7] ) / nvertices;
+          centroid[2] = (pts[2] + pts[5] + pts[8] ) / nvertices;
+        }
+        else //if( element_dimension == 3 )
+        {
+          centroid[0] = (pts[0] + pts[3] + pts[6] +
+                         pts[9] + pts[12] + pts[15] ) / nvertices;
+          centroid[1] = (pts[1] + pts[4] + pts[7] +
+                         pts[10] + pts[13] + pts[16] ) / nvertices;
+          centroid[2] = (pts[2] + pts[5] + pts[8] +
+                         pts[11] + pts[14] + pts[17] ) / nvertices;
+        }
+
+        /* Find the element containing the point; get local coords xi,eta */
+        if ((element = m3dField.get_tri_coords2D(centroid, xieta)) >= 0) 
+        {
+          m3dField.interpBcomps(B, centroid, element, xieta);
+
+          *varPtr++ = B[0];  *varPtr++ = B[1];  *varPtr++ = B[2];
         }
         else 
         {
-          m3dField.interpBcomps(B, centroid, element, xieta);
-        
-          *varPtr++ = B[0]; *varPtr++ = B[1]; *varPtr++ = B[2];
+          char buf[1024];
+
+          sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for centroid %10.6f %10.6f %10.6f",
+                   centroid[0], centroid[1], centroid[2] );
+
+          avtCallback::IssueWarning( buf );
+
+          *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
 
         pts += 9;
       }
     }
-    
+
     // Set the pointers to null as the VTK delete operation will take
     // of deleting the data. Normally the M3DCIField thinks it needs
     // to delete the data.
@@ -1241,7 +1503,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
     vtkVarPsi->Delete();
     vtkVarPsi_i->Delete();
 
-    // FIXME - TEMPORARY UNITL FIX FOR MIXED NODE AND ZONE 
+    // Make the original data location is used.
     m_dataLocation = dataLocation;
   
     return var;
@@ -1419,7 +1681,7 @@ herr_t groupIterator(hid_t locId, const char* name, void* opdata) {
 
       if( rank != 2 ||
           sdim[0] != M3DC1FF->nelms ||
-          sdim[1] != SCALAR_SIZE )
+          sdim[1] != M3DC1FF->scalar_size )
       {
         EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
                     "Dataset '" + string(name) +
@@ -1490,6 +1752,39 @@ avtM3DC1FileFormat::LoadFile()
         EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'ntime' was not found or was the wrong type." );
     }
 
+    // 2D or 3D elements?
+    if ( ReadAttribute( rootID, "3d", &element_dimension ) )
+      element_dimension += 2;
+    else
+      element_dimension = 2;
+
+    if( element_dimension == 2 )
+    {
+      nvertices = 3;
+
+      element_size = ELEMENT_SIZE_2D;
+      scalar_size = SCALAR_SIZE_2D;
+
+      nplanes = 1;
+    }  
+    else //if( element_dimension == 3 )
+    {
+      nvertices = 6;
+
+      element_size = ELEMENT_SIZE_3D;
+      scalar_size = SCALAR_SIZE_3D;
+
+      // Read in nplanes
+      if ( ! ReadAttribute( rootID, "nplanes", &nplanes ) )
+      {
+        H5Gclose(rootID);
+        H5Fclose(m_fileID);
+        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nplanes' was not found or was the wrong type." );
+      }
+    }
+
+    m_scalarVarNames.push_back("header/nplanes");
+
     // Read in linear flag and ntor
     int linear;
     if ( ! ReadAttribute( rootID, "linear", &linear ) )
@@ -1500,7 +1795,7 @@ avtM3DC1FileFormat::LoadFile()
     }
     
     m_scalarVarNames.push_back("header/linear");
-      
+
     int ntor;
     if ( ! ReadAttribute( rootID, "ntor", &ntor ) )
     {
@@ -1557,7 +1852,7 @@ avtM3DC1FileFormat::LoadFile()
     
     if( rank != 2 ||
         sdim[0] != nelms ||
-        sdim[1] != ELEMENT_SIZE )
+        sdim[1] != element_size )
     {
       EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - number of elements or the element size does not match" );
     }
@@ -1633,7 +1928,7 @@ avtM3DC1FileFormat::LoadFile()
 
             if( rank != 2 ||
                 sdim[0] != nelms ||
-                sdim[1] != SCALAR_SIZE )
+                sdim[1] != scalar_size )
               {
                 EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - Dataset '" +
                             string(timeStep) + string("/fields/") + m_fieldVarNames[i] +
@@ -1664,7 +1959,7 @@ avtM3DC1FileFormat::LoadFile()
     
         if( rank != 2 ||
             sdim[0] != nelms ||
-            sdim[1] != ELEMENT_SIZE )
+            sdim[1] != element_size )
         {
           EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - The number of elements or the element size does not match" );
         }
