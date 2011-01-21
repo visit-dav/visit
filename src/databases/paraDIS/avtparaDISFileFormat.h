@@ -44,6 +44,8 @@
 #define AVT_paraDIS_FILE_FORMAT_H
 
 #include "paradis_c_interface.h"
+#include "parallelParaDIS.h"
+#include "Dumpfile.h"
 #include <avtSTSDFileFormat.h>
 #include "avtparaDISOptions.h"
 #include <vtkUnstructuredGrid.h>
@@ -63,6 +65,10 @@ using namespace std;
 //
 // ****************************************************************************
 
+#define PARADIS_NO_FORMAT 0  // uninitialized
+#define PARADIS_DUMPFILE_FORMAT 1  // Old serial data format
+#define PARADIS_PARALLEL_FORMAT 2  // new parallel data format
+
 class avtparaDISFileFormat : public avtSTSDFileFormat
 {
   public:
@@ -70,6 +76,8 @@ class avtparaDISFileFormat : public avtSTSDFileFormat
                                             DBOptionsAttributes *rdatts);
     virtual           ~avtparaDISFileFormat() {;};
 
+
+ 
     //
     // This is used to return unconvention data -- ranging from material
     // information to information about block connectivity.
@@ -93,13 +101,17 @@ class avtparaDISFileFormat : public avtSTSDFileFormat
     virtual void           FreeUpResources(void); 
     
     
-    // These would tell the parent class to call PopulateDatabaseMetadata() for each timestep.  I decided against it.  I now "declare" the cylinder mesh and just raise an exception if it doesn't find a cylinder file. 
+    // These would tell the parent class to call PopulateDatabaseMetadata() for each timestep.  I decided against it. 
     //  virtual bool HasInvariantMetaData(void) const { return false; };
     //  virtual bool HasInvariantSIL(void)      const { return false; };
- 
-    vtkDataSet *TestGetMesh(const char *meshname);
+
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    bool PopulateMetaDataSerialFormat(avtDatabaseMetaData *md); 
+    bool PopulateMetaDataParallelFormat(avtDatabaseMetaData *md); 
 
     virtual vtkDataSet    *GetMesh(const char *meshname);
+    vtkDataSet    *GetMeshSerialFormat(const char *meshname);
+    vtkDataSet    *GetMeshParallelFormat(const char *meshname);
 
     virtual vtkDataArray  *GetVar(const char *);
     virtual vtkDataArray  *GetVectorVar(const char *);
@@ -109,19 +121,16 @@ class avtparaDISFileFormat : public avtSTSDFileFormat
   protected:
     // DATA MEMBERS
     std::string mFilename; 
+    int mFormat; 
+    int mVerbosity; 
+    
 
     /*!
-      paraDIS data:
+      paraDIS data PARALLEL
     */
-    std::vector<std::string> 
-      mBurgersTypes, mNodeNeighborValues, mSegmentMNTypes;
+    ParallelData mParallelData; 
+    Dumpfile mDumpfile; 
 
-    int mVerbosity; 
-    int mProcNum, mNumProcs;
-    int mMaterialSetChoice; 
-
-    bool PopulateParaDISMetaData(avtDatabaseMetaData *md); 
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };
 
 
