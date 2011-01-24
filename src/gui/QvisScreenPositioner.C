@@ -416,7 +416,7 @@ void
 QvisScreenPositioner::keyReleaseEvent(QKeyEvent *e)
 {
     // Handle the key strokes.
-    if((e->modifiers() && Qt::ShiftModifier) > 0)
+    if(((e->modifiers()) & (Qt::ShiftModifier)) > 0)
         paging = false;
 }
 

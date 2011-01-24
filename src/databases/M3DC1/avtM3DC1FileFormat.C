@@ -1111,7 +1111,7 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   float* varPtr = (float *) var->GetVoidPointer(0);
 
   int element;
-  double xieta[element_dimension];
+  double *xieta = new double[element_dimension];
 
   double pt[3], centroid[3];
 
@@ -1220,7 +1220,7 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
 
   vtkPts->Delete();
   vtkVar->Delete();
-  
+  delete [] xieta; 
   return var;
 }
 
@@ -1382,7 +1382,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
     int element;
     float B[3];
-    double pt[3], centroid[3], xieta[element_dimension];
+    double pt[3], centroid[3], *xieta = new double[element_dimension];
 
     if( m_dataLocation == AVT_NODECENT)
     {
@@ -1502,6 +1502,8 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
     vtkVarF_i->Delete();
     vtkVarPsi->Delete();
     vtkVarPsi_i->Delete();
+
+    delete [] xieta;
 
     // Make the original data location is used.
     m_dataLocation = dataLocation;
