@@ -1892,7 +1892,7 @@ islandChecks( vector< Point >& points,
         double min_len_index;
 
         double min_dist = 1.0e9; // Minimum distance.
-        double min_dist_index;
+        double min_dist_index=0;
 
         double min_dist2 = 1.0e9;// Second minimum distance.
         double min_dist2_index;
@@ -2601,7 +2601,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
   for( unsigned int i=0; i<periodWindingPairs.size(); ++i )
   {
-    if( verboseFlag & i<10 )
+    if( verboseFlag && i<10 )
       cerr << "Period based winding pair:  " 
            << periodWindingPairs[i].toroidal << ","
            << periodWindingPairs[i].poloidal << "  "

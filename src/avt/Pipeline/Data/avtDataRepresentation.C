@@ -1023,7 +1023,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         {
             vtkDataArray *arr = newDS->GetFieldData()->GetArray(i);
             string cur_name("");
-            if (arr->GetName() != NULL);
+            if (arr->GetName() != NULL)
                 cur_name = arr->GetName();
             string dmp_name = cur_name;
             orig_names.push_back(cur_name);

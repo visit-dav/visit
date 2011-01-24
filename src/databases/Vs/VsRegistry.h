@@ -29,7 +29,7 @@ class VsMDVariable;
 #include <string>
 #include <vector>
 
-typedef class std::pair<std::string, int> NamePair;
+typedef std::pair<std::string, int> NamePair;
 
 class VsRegistry {
 public:

@@ -341,13 +341,14 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
 bool avtIVPM3DC1Field::IsInside(const double& t, const avtVector& x) const
 {
-  double xin[3], xout[element_dimension];
+  double xin[3];
+  std::vector<double> xout(element_dimension);
 
   xin[0] = x[0];
   xin[1] = x[1];
   xin[2] = x[2];
 
-  return (bool) ( get_tri_coords2D(xin, xout) >= 0 );
+  return (bool) ( get_tri_coords2D(xin, &xout[0]) >= 0 );
 }
 
 
