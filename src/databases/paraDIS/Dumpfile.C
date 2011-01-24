@@ -119,6 +119,7 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
 }
 
 Dumpfile::~Dumpfile() {
+  debug2 << "Dumpfile::~Dumpfile()" << endl;
   paraDIS_Clear(); 
   return; 
 }

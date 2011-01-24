@@ -183,6 +183,7 @@ int FileSet::VarBytePositionInElement(string varname) {
 ElementFetcher::ElementFetcher (std::string elementName, FileSet *fileset): 
   mFileSet(fileset),  mOutputData(NULL), mOutputIndex(0), 
   mElementName(elementName) {
+  
 #ifdef PARALLEL
   /*!  I keep this here to remind myself how to use MPI.  LOL
     MPI_Comm_rank(MPI_COMM_WORLD, &mProcNum); 
@@ -195,6 +196,15 @@ ElementFetcher::ElementFetcher (std::string elementName, FileSet *fileset):
   mProcNum = 0; 
   mNumProcs = 1; 
 #endif
+
+  long numelems = mFileSet -> NumElems(); 
+  mElemsPerProc = ((float)numelems)/(float)mNumProcs; // close enough
+  mStartElement = mProcNum * mElemsPerProc; 
+  mEndElement = (mProcNum + 1)*mElemsPerProc-1;
+  if (mEndElement > numelems-1) { 
+    mEndElement = numelems-1;
+  }
+  debug2<< "ElementFetcher::ComputeWorkingSubset: Processor " << mProcNum << " mStartElement = " << mStartElement << ", mEndElement = " << mEndElement << ", mElemsPerProc = " << mElemsPerProc << ", totalElems = " << numelems << endl; 
   
   return; 
 }
@@ -204,15 +214,6 @@ ElementFetcher::ElementFetcher (std::string elementName, FileSet *fileset):
   ElementFetcher::IterateOverFiles()
  */
 void ElementFetcher::IterateOverFiles(void *output) {
-
-  long numelems = mFileSet -> NumElems(); 
-  mElemsPerProc = ((float)numelems)/(float)mNumProcs; // close enough
-  mStartElement = mProcNum * mElemsPerProc; 
-  mEndElement = (mProcNum + 1)*mElemsPerProc;
-  if (mEndElement > numelems-1) { 
-    mEndElement = numelems-1;
-  }
-  debug2<< "ElementFetcher::IterateOverFiles: Processor " << mProcNum << " startSeg = " << mStartElement << ", endSeg = " << mEndElement << ", totalElems = " << numelems << endl; 
 
   mOutputData = output; 
   
@@ -225,10 +226,10 @@ void ElementFetcher::IterateOverFiles(void *output) {
          elementsCompleted < mEndElement; 
        fileno++) {      
     //  int elemsInFile = mFileSet->mElemsPerFile[fileno]; 
-    int elementsToRead = mFileSet->mElemsPerFile[fileno];
+    long elementsToRead = mFileSet->mElemsPerFile[fileno];
     if (elementsCompleted + elementsToRead > mStartElement) {
       // at least one element in the file is of interest
-      int fileOffset = 0; 
+      long fileOffset = 0; 
       if (mStartElement > elementsCompleted) {
         // the mStartElement is somewhere in our file
         fileOffset = mStartElement - elementsCompleted;
@@ -306,7 +307,7 @@ void ElementFetcher::GetElemsFromTextFile(std::string filename, long fileOffset,
     EXCEPTION1(VisItException, msg.c_str()); 
   }
 
-  int linenum = 0;
+  long linenum = 0;
   for (linenum=0; linenum < fileOffset && datafile.good(); linenum++) {
     getline(datafile, line); 
   }
@@ -315,7 +316,7 @@ void ElementFetcher::GetElemsFromTextFile(std::string filename, long fileOffset,
     EXCEPTION1(VisItException, msg.c_str()); 
   }
   
-  int elementNum = 0; 
+  long elementNum = 0; 
   for (elementNum =0; elementNum < elementsToRead && datafile.good(); linenum++, elementNum++) {
     getline(datafile, line); 
     InterpretTextElement(line, linenum); 
@@ -341,8 +342,8 @@ vtkDataSet * MeshElementFetcher::GetMeshElems(void) {
   mElementDataType = mFileSet->mDataArrayTypes[0]; 
 
   vtkPoints *points =  vtkPoints::New();
-  int numelems = mFileSet->NumElems(); 
-  int  pointsPerElement = 0; 
+  long numelems = mEndElement - mStartElement + 1; 
+  long  pointsPerElement = 0; 
   
   if (mElementName == "nodes") {
     points->SetNumberOfPoints(numelems);
@@ -360,11 +361,13 @@ vtkDataSet * MeshElementFetcher::GetMeshElems(void) {
   IterateOverFiles((void*)points); 
 
   vtkUnstructuredGrid *theMesh = vtkUnstructuredGrid::New();
+
+  theMesh->SetPoints(points);  
+  points->Delete(); // decrement reference count
+
   if (mElementName == "segments") {
     // create the elements
-    theMesh->SetPoints(points); 
-    points->Delete(); // decrement reference count
-    int segnum = 0; 
+    long segnum = 0; 
     vtkIdType nodeIndices[2]; 
     for (segnum =0; segnum < mEndElement-mStartElement+1; segnum++) {
       nodeIndices[0] = segnum*2;
@@ -374,9 +377,7 @@ vtkDataSet * MeshElementFetcher::GetMeshElems(void) {
   } // end segment mesh creation
   else { // if (mElementName == "nodes") 
     // create a node mesh
-    theMesh->SetPoints(points); 
-    points->Delete(); 
-    int nodenum = 0; 
+    long nodenum = 0; 
     vtkIdType nodeIndex[1]; //has to be array type
     while (nodenum  < mEndElement-mStartElement) {
       nodeIndex[0] = nodenum; 
@@ -406,7 +407,7 @@ inline void MeshElementFetcher:: InterpretTextElement(std::string line, long lin
     string msg = string("Error in line ")+intToString(linenum)+string(": not enough tokens in line ");
     EXCEPTION1(VisItException, msg.c_str()); 
   }
-  int lineIndex = 0; 
+  long lineIndex = 0; 
   for (lineIndex = 0; lineIndex < 3*mPointsPerElement; ) {
     location[0] = strtod(linetokens[lineIndex++].c_str(), NULL); 
     location[1] = strtod(linetokens[lineIndex++].c_str(), NULL); 
@@ -459,12 +460,12 @@ vtkDataArray * VarElementFetcher::GetVarElems(void) {
   mVarBytePositionInElement = mFileSet->VarBytePositionInElement(mElementName); 
   debug4 << "mNumVarComponents = " << mNumVarComponents << ", mVarTokenPositionInElement = " << mVarTokenPositionInElement << ", mVarBytePositionInElement = " << mVarBytePositionInElement << endl; 
   mVarBuffer = new float[mNumVarComponents]; 
-  int index = 0;
+  long index = 0;
   float f=0.0; 
 
   vtkFloatArray *tuples = vtkFloatArray::New(); 
 
-  int numelems = mFileSet->NumElems(); 
+  long numelems = mEndElement - mStartElement + 1;
   tuples->SetNumberOfComponents(mNumVarComponents); 
   tuples->SetNumberOfTuples(numelems); 
 
@@ -487,7 +488,7 @@ void VarElementFetcher:: InterpretTextElement(std::string line, long linenum) {
     EXCEPTION1(VisItException, msg.c_str()); 
   }
   debug5 << "Element " << mOutputIndex << " value = ("; 
-  int i=0; 
+  long i=0; 
   for (i=0; i < mNumVarComponents; ++i ) {
     mVarBuffer[i] = strtod(linetokens[i+mVarTokenPositionInElement].c_str(), NULL);
     debug5 << mVarBuffer[i] << ", ";     
@@ -506,7 +507,7 @@ void VarElementFetcher:: InterpretTextElement(std::string line, long linenum) {
   increments mOutputIndex by the correct amount 
  */
 inline void VarElementFetcher::InterpretBinaryElement(char *elementData){
-  int i=0;
+  long i=0;
   elementData += mVarBytePositionInElement;
   debug5 << "Element " << mOutputIndex << " value = ("; 
   for (i=0; i < mNumVarComponents; ++i ) {
@@ -560,7 +561,7 @@ bool ParallelData:: ParseMetaDataFile(void) {
   }
 
   bool parsingDescription = false; 
-  int linenum = 0;
+  long linenum = 0;
   while ( ++linenum && myfile.good() ) {
     getline (myfile,line);
     debug3 << "Parsing line " << linenum << ": \"" << line << "\"" << endl;  
@@ -629,16 +630,16 @@ bool ParallelData:: ParseMetaDataFile(void) {
 
     //=======================================================
     if (linetokens[0] == "BINARY") {
-      int numtokens = linetokens.size(); 
-      int tokennum; 
+      long numtokens = linetokens.size(); 
+      long tokennum; 
       for (tokennum = 1; tokennum < numtokens; ++tokennum) {
         vector<string> typetuple = Split(linetokens[tokennum], '='); 
         if (typetuple.size() != 2) {
           debug1 << "Bad BINARY tuple: " << linetokens[tokennum] << endl; 
           return false; 
         }
-        int typeSize = atol(typetuple[1].c_str()); 
-        int typenum = -1; 
+        long typeSize = atol(typetuple[1].c_str()); 
+        long typenum = -1; 
         if (typetuple[0] == "D") {
           debug3 << "sizeof(D-double)=" << typeSize << endl; 
           typenum = 0; 
@@ -700,12 +701,12 @@ bool ParallelData:: ParseMetaDataFile(void) {
 bool ParallelData::ParseFormatString(string formatString, FileSet *fileset) { 
   debug4 << "ParallelData::ParseFormatString called" << endl; 
   vector<string> formatStringTokens = Split(formatString); 
-  int numtokens = formatStringTokens.size(); 
+  long numtokens = formatStringTokens.size(); 
   if (numtokens < 2) {
     debug1 << "Not enough tokens in FORMAT line in nodal metadata -- expect at least two, including FORMAT token\n"; 
     return false; 
   }
-  int tokenNum = 1; 
+  long tokenNum = 1; 
   for (tokenNum = 1; tokenNum < numtokens; ++tokenNum) {
     string token = formatStringTokens[tokenNum];     
     std::string::size_type startparen = token.find("("), 
@@ -719,7 +720,7 @@ bool ParallelData::ParseFormatString(string formatString, FileSet *fileset) {
       vartype = token.substr(startparen+1, colon-startparen-1), 
       componentstr = token.substr(colon+1, endparen-colon-1); 
 
-    int components = atol(componentstr.c_str()); 
+    long components = atol(componentstr.c_str()); 
     fileset->AddVar(varname, vartype, components); 
   }
   return true;    
