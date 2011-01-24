@@ -435,8 +435,8 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
 //      Gets the B field components directly - should not be used for
 //      calculating integral curves.
 //
-//  THIS CODE SHOULD NOT BE USED FOR FIELDLINE INTEGRATION!!!!
-//      
+//  THIS CODE SHOULD NOT BE USED FOR FIELDLINE INTEGRATION WITH 2D
+//  ELEMENTS.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   October 24, 2009
@@ -821,8 +821,10 @@ float avtM3DC1Field::interpdRdz(float *var, int el, double *lcoords) const
 //  Method: interpBcomps
 //
 //  Simultaneously interpolate all three cylindrical components of
-//  magnetic field - should not be used for calculating integral
-//  curves.
+//  magnetic field
+//
+//  THIS CODE SHOULD NOT BE USED FOR FIELDLINE INTEGRATION WITH 2D
+//  ELEMENTS.
 //
 //  Creationist: Joshua Breslau
 //  Creation:   20 November 2009
