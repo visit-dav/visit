@@ -257,6 +257,11 @@ avtDatasetToDataObjectFilter::FetchArbitraryVTKObject(int dependencies,
 //  Programmer: Hank Childs
 //  Creation:   November 28, 2010
 //
+//  Modifications:
+//
+//    David Camp, Mon Jan 24 11:53:02 PST 2011
+//    Remove cerr debug message and add if (DebugStream::Level5()).
+//
 // ****************************************************************************
 
 void
@@ -267,17 +272,16 @@ avtDatasetToDataObjectFilter::StoreArbitraryVTKObject(int dependencies,
     bool canUse = CheckDependencies(dependencies);
     if (! canUse)
     {
-        cerr << "Cannot cache " << type << " for " << name << " because "
+        if (DebugStream::Level5())
+        {
+            debug5 << "Cannot cache " << type << " for " << name << " because "
                << "dependencies were not satisfied.\n"
                << "This is an informational message, not an error." << endl;
-        debug5 << "Cannot cache " << type << " for " << name << " because "
-               << "dependencies were not satisfied.\n"
-               << "This is an informational message, not an error." << endl;
+        }
         return;
     }
 
     avtOriginatingSource *source = GetInput()->GetOriginatingSource();
     source->StoreArbitraryVTKObject(name, dom, ts, type, obj);
 }
-
 
