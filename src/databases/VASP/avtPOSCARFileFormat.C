@@ -397,6 +397,11 @@ avtPOSCARFileFormat::GetVectorVar(const char *varname)
 //   Jeremy Meredith, Tue Dec 29 13:41:16 EST 2009
 //   Added some error checks.
 //
+//    Jeremy Meredith, Mon Jan 24 17:03:27 EST 2011
+//    In newer VASP flavors, there is an optional line with atomic symbols
+//    above the line which lists the counts of atoms for each species
+//    type.  This line takes precedence over any "types=" line in the header.
+//
 // ****************************************************************************
 void
 avtPOSCARFileFormat::ReadFile()
@@ -448,17 +453,39 @@ avtPOSCARFileFormat::ReadFile()
 
     in.getline(line, 132); // skip rest of the last lattice line
 
-    // get atom counts
+    // get atom counts, and optionally, element types
     in.getline(line, 132);
+    string atomtypeline(line);
     string atomcountline(line);
 
-    natoms = 0;
-    int tmp;
-    std::istringstream count_in(atomcountline);
-    while (count_in >> tmp)
+    std::istringstream type_in(atomtypeline);
+    string tmp_element;
+    if ((type_in >> tmp_element) &&
+        ElementNameToAtomicNumber(tmp_element.c_str()) > 0)
     {
-        species_counts.push_back(tmp);
-        natoms += tmp;
+        // We've got an element types line to parse.
+        // This overrides any earlier "types =" from above:
+        element_map.clear();
+        // Push the one we already read:
+        element_map.push_back(ElementNameToAtomicNumber(tmp_element.c_str()));
+        // Read the rest:
+        while (type_in >> tmp_element)
+        {
+            element_map.push_back(ElementNameToAtomicNumber(tmp_element.c_str()));
+        }
+        // We need to read the next line for the atom counts: we set it up
+        // to use this past line in the event we didn't have a species line:
+        in.getline(line, 132);
+        atomcountline = line;
+    }
+
+    natoms = 0;
+    int tmp_count;
+    std::istringstream count_in(atomcountline);
+    while (count_in >> tmp_count)
+    {
+        species_counts.push_back(tmp_count);
+        natoms += tmp_count;
     }
 
     // error check
