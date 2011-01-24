@@ -99,9 +99,12 @@ struct FileSet {
 class ElementFetcher {
  public:
   ElementFetcher (std::string elementName, FileSet *fileset); 
-  
- 
-  void IterateOverFiles(void *output); // main loop to get elements
+    
+
+  /*!
+    // IterateOverFiles: main loop to get elements
+  */
+  void IterateOverFiles(void *output); 
   /*!
     GetElemsFromTextFile()
     called from IterateOverFiles()
