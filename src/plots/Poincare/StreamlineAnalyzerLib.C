@@ -131,8 +131,38 @@ class Otsu
       histo[index]++;
     }
 
+
+    pair< unsigned int, unsigned int > zeropair[2];
+
+    zeropair[0] = pair< unsigned int, unsigned int >(0,0);
+    zeropair[1] = pair< unsigned int, unsigned int >(0,0);
+
+    unsigned int zerostart=nbins, zerostop=nbins;
+
     for( unsigned int i=0; i<nbins; ++i )
     {
+      if( histo[i] == 0 && zerostart == nbins )
+      {
+        zerostart = i;
+        zerostop  = i;
+      }
+      else if( histo[i] != 0 && zerostart != nbins )
+      {
+        zerostop = i-1;
+
+        if( zerostop-zerostart > zeropair[0].second-zeropair[0].first )
+        {
+          zeropair[1] = zeropair[0];
+          zeropair[0] = pair< unsigned int, unsigned int >(zerostart, zerostop);
+        }
+        else if( zerostop-zerostart > zeropair[1].second-zeropair[1].first )
+        {
+          zeropair[1] = pair< unsigned int, unsigned int >(zerostart, zerostop);
+        }
+
+        zerostart = nbins;
+      }
+
       int diff;
 
       if( i )
@@ -142,6 +172,13 @@ class Otsu
 
       cerr << i << "  " << histo[i] << "  " << diff << "  " << histo[i] << endl;
     }
+
+    cerr << endl
+         << "zero pairs  "
+         << zeropair[0].first << "-" << zeropair[0].second << "  "
+         << zeropair[0].second-zeropair[0].first+1 << "     "
+         << zeropair[1].first << "-" << zeropair[1].second << "  "
+         << zeropair[1].second-zeropair[1].first+1 << endl;
   }
 
 public:
@@ -1886,16 +1923,16 @@ islandChecks( vector< Point >& points,
         max_gap *= 0.5;
 
         double min_gap = 1.0e9;  // Distance between points.
-        double min_gap_index;
+        unsigned int min_gap_index = 0;
 
         double min_len = 1.0e9;  // Difference in segments.
-        double min_len_index;
+        unsigned int min_len_index = 0;
 
         double min_dist = 1.0e9; // Minimum distance.
-        double min_dist_index=0;
+        unsigned int min_dist_index = 0;
 
         double min_dist2 = 1.0e9;// Second minimum distance.
-        double min_dist2_index;
+        unsigned int min_dist2_index = 0;
 
         bool past_max_gap = false;
 
