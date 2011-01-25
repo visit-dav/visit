@@ -45,6 +45,7 @@
 #include <vector>
 #include <errno.h>
 #include <string.h>
+#include <libgen.h>
 #ifdef PARALLEL
 #include <avtParallel.h>
 #endif
@@ -550,7 +551,22 @@ ParallelData::~ParallelData() {
   
  */
 bool ParallelData:: ParseMetaDataFile(void) {
-  debug2 << "ParallelData:: ParseMetaDataFile" << endl;
+  debug2 << "ParallelData:: ParseMetaDataFile " << mMetaDataFileName << endl;
+  string cwd = "./"; 
+  char buf[2048];
+  if (!getcwd(buf, 2048)) {
+    debug1 << "Warning: cannot get current working directory -- this will cause errors if reading a meta data file in another directory other than your current working directory." << endl; 
+  } else {
+    cwd = string(buf) + "/"; 
+  }
+  if (mMetaDataFileName[0] != '/' ) {
+    debug2 << "mMetaDataFileName " << mMetaDataFileName; 
+    mMetaDataFileName = cwd + "/" + mMetaDataFileName; 
+    debug2 << " changed to " << mMetaDataFileName << endl;  
+  }
+  strncpy(buf, mMetaDataFileName.c_str(), 2047); 
+  string datadir = string(dirname(buf)) + "/"; 
+
   string line;
   vector<string> linetokens;
   bool goodversion = false; 
@@ -559,7 +575,7 @@ bool ParallelData:: ParseMetaDataFile(void) {
   if (!myfile.is_open()) {
     return false; 
   }
-
+    
   bool parsingDescription = false; 
   long linenum = 0;
   while ( ++linenum && myfile.good() ) {
@@ -675,8 +691,12 @@ bool ParallelData:: ParseMetaDataFile(void) {
       if (linetokens.size() != 4) {
         debug1 << "Bad FILE line: " << line << endl; 
         return false; 
-      }         
-      fileset->mFileNames.push_back(linetokens[1]); 
+      }        
+      string filename = linetokens[1]; 
+      if (filename[0] != '/'){
+        filename = datadir + filename; 
+      }
+      fileset->mFileNames.push_back(filename); 
       fileset->mElemsPerFile.push_back(atol(linetokens[3].c_str())); 
       continue;
     }
