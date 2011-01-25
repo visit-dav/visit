@@ -59,7 +59,7 @@ import java.lang.Integer;
 
 public class QueryAttributes extends AttributeSubject
 {
-    private static int QueryAttributes_numAdditionalAtts = 19;
+    private static int QueryAttributes_numAdditionalAtts = 20;
 
     // Enum values
     public final static int ELEMENTTYPE_ZONE = 0;
@@ -111,6 +111,7 @@ public class QueryAttributes extends AttributeSubject
         darg2.addElement(new Double(0));
         floatFormat = new String("%g");
         xmlResult = new String("");
+        dumpSteps = false;
     }
 
     public QueryAttributes(int nMoreFields)
@@ -143,6 +144,7 @@ public class QueryAttributes extends AttributeSubject
         darg2.addElement(new Double(0));
         floatFormat = new String("%g");
         xmlResult = new String("");
+        dumpSteps = false;
     }
 
     public QueryAttributes(QueryAttributes obj)
@@ -200,6 +202,7 @@ public class QueryAttributes extends AttributeSubject
 
         floatFormat = new String(obj.floatFormat);
         xmlResult = new String(obj.xmlResult);
+        dumpSteps = obj.dumpSteps;
 
         SelectAll();
     }
@@ -287,7 +290,8 @@ public class QueryAttributes extends AttributeSubject
                 darg1_equal &&
                 darg2_equal &&
                 (floatFormat.equals(obj.floatFormat)) &&
-                (xmlResult.equals(obj.xmlResult)));
+                (xmlResult.equals(obj.xmlResult)) &&
+                (dumpSteps == obj.dumpSteps));
     }
 
     // Property setting methods
@@ -415,6 +419,12 @@ public class QueryAttributes extends AttributeSubject
         Select(18);
     }
 
+    public void SetDumpSteps(boolean dumpSteps_)
+    {
+        dumpSteps = dumpSteps_;
+        Select(19);
+    }
+
     // Property getting methods
     public String   GetName() { return name; }
     public Vector   GetVariables() { return variables; }
@@ -435,6 +445,7 @@ public class QueryAttributes extends AttributeSubject
     public Vector   GetDarg2() { return darg2; }
     public String   GetFloatFormat() { return floatFormat; }
     public String   GetXmlResult() { return xmlResult; }
+    public boolean  GetDumpSteps() { return dumpSteps; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -477,6 +488,8 @@ public class QueryAttributes extends AttributeSubject
             buf.WriteString(floatFormat);
         if(WriteSelect(18, buf))
             buf.WriteString(xmlResult);
+        if(WriteSelect(19, buf))
+            buf.WriteBool(dumpSteps);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -540,6 +553,9 @@ public class QueryAttributes extends AttributeSubject
         case 18:
             SetXmlResult(buf.ReadString());
             break;
+        case 19:
+            SetDumpSteps(buf.ReadBool());
+            break;
         }
     }
 
@@ -575,6 +591,7 @@ public class QueryAttributes extends AttributeSubject
         str = str + doubleVectorToString("darg2", darg2, indent) + "\n";
         str = str + stringToString("floatFormat", floatFormat, indent) + "\n";
         str = str + stringToString("xmlResult", xmlResult, indent) + "\n";
+        str = str + boolToString("dumpSteps", dumpSteps, indent) + "\n";
         return str;
     }
 
@@ -599,5 +616,6 @@ public class QueryAttributes extends AttributeSubject
     private Vector   darg2; // vector of Double objects
     private String   floatFormat;
     private String   xmlResult;
+    private boolean  dumpSteps;
 }
 
