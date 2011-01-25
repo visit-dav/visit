@@ -4,6 +4,7 @@
       OUT*
       POS*
       CHG*
+      CONT*
     </FilePatterns>
     <Files components="M">
       avtVASPFileFormat.C
