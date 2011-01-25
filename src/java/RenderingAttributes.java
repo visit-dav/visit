@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class RenderingAttributes extends AttributeSubject
 {
-    private static int RenderingAttributes_numAdditionalAtts = 20;
+    private static int RenderingAttributes_numAdditionalAtts = 22;
 
     // Enum values
     public final static int GEOMETRYREPRESENTATION_SURFACES = 0;
@@ -76,6 +76,10 @@ public class RenderingAttributes extends AttributeSubject
 public final static int DEFAULT_SCALABLE_AUTO_THRESHOLD = 2000000;
 
 public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
+
+public final static int DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE = TRISTATEMODE_AUTO;
+
+public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
 
 
     public RenderingAttributes()
@@ -108,6 +112,8 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
         endCuePoint[2] = 0;
         compressionActivationMode = TRISTATEMODE_NEVER;
         colorTexturingFlag = true;
+        compactDomainsActivationMode = TRISTATEMODE_NEVER;
+        compactDomainsAutoThreshold = 256;
     }
 
     public RenderingAttributes(int nMoreFields)
@@ -140,6 +146,8 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
         endCuePoint[2] = 0;
         compressionActivationMode = TRISTATEMODE_NEVER;
         colorTexturingFlag = true;
+        compactDomainsActivationMode = TRISTATEMODE_NEVER;
+        compactDomainsAutoThreshold = 256;
     }
 
     public RenderingAttributes(RenderingAttributes obj)
@@ -176,6 +184,8 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
 
         compressionActivationMode = obj.compressionActivationMode;
         colorTexturingFlag = obj.colorTexturingFlag;
+        compactDomainsActivationMode = obj.compactDomainsActivationMode;
+        compactDomainsAutoThreshold = obj.compactDomainsAutoThreshold;
 
         SelectAll();
     }
@@ -224,7 +234,9 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
                 startCuePoint_equal &&
                 endCuePoint_equal &&
                 (compressionActivationMode == obj.compressionActivationMode) &&
-                (colorTexturingFlag == obj.colorTexturingFlag));
+                (colorTexturingFlag == obj.colorTexturingFlag) &&
+                (compactDomainsActivationMode == obj.compactDomainsActivationMode) &&
+                (compactDomainsAutoThreshold == obj.compactDomainsAutoThreshold));
     }
 
     // Property setting methods
@@ -368,6 +380,18 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
         Select(19);
     }
 
+    public void SetCompactDomainsActivationMode(int compactDomainsActivationMode_)
+    {
+        compactDomainsActivationMode = compactDomainsActivationMode_;
+        Select(20);
+    }
+
+    public void SetCompactDomainsAutoThreshold(int compactDomainsAutoThreshold_)
+    {
+        compactDomainsAutoThreshold = compactDomainsAutoThreshold_;
+        Select(21);
+    }
+
     // Property getting methods
     public boolean        GetAntialiasing() { return antialiasing; }
     public int            GetGeometryRepresentation() { return geometryRepresentation; }
@@ -389,6 +413,8 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
     public double[]       GetEndCuePoint() { return endCuePoint; }
     public int            GetCompressionActivationMode() { return compressionActivationMode; }
     public boolean        GetColorTexturingFlag() { return colorTexturingFlag; }
+    public int            GetCompactDomainsActivationMode() { return compactDomainsActivationMode; }
+    public int            GetCompactDomainsAutoThreshold() { return compactDomainsAutoThreshold; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -433,6 +459,10 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
             buf.WriteInt(compressionActivationMode);
         if(WriteSelect(19, buf))
             buf.WriteBool(colorTexturingFlag);
+        if(WriteSelect(20, buf))
+            buf.WriteInt(compactDomainsActivationMode);
+        if(WriteSelect(21, buf))
+            buf.WriteInt(compactDomainsAutoThreshold);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -500,6 +530,12 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
         case 19:
             SetColorTexturingFlag(buf.ReadBool());
             break;
+        case 20:
+            SetCompactDomainsActivationMode(buf.ReadInt());
+            break;
+        case 21:
+            SetCompactDomainsAutoThreshold(buf.ReadInt());
+            break;
         }
     }
 
@@ -563,6 +599,15 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
             str = str + "TRISTATEMODE_AUTO";
         str = str + "\n";
         str = str + boolToString("colorTexturingFlag", colorTexturingFlag, indent) + "\n";
+        str = str + indent + "compactDomainsActivationMode = ";
+        if(compactDomainsActivationMode == TRISTATEMODE_NEVER)
+            str = str + "TRISTATEMODE_NEVER";
+        if(compactDomainsActivationMode == TRISTATEMODE_ALWAYS)
+            str = str + "TRISTATEMODE_ALWAYS";
+        if(compactDomainsActivationMode == TRISTATEMODE_AUTO)
+            str = str + "TRISTATEMODE_AUTO";
+        str = str + "\n";
+        str = str + intToString("compactDomainsAutoThreshold", compactDomainsAutoThreshold, indent) + "\n";
         return str;
     }
 
@@ -588,5 +633,7 @@ public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
     private double[]       endCuePoint;
     private int            compressionActivationMode;
     private boolean        colorTexturingFlag;
+    private int            compactDomainsActivationMode;
+    private int            compactDomainsAutoThreshold;
 }
 

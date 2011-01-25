@@ -1,6 +1,6 @@
 // ***************************************************************************
 //
-// Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+// Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 // Produced at the Lawrence Livermore National Laboratory
 // LLNL-CODE-442911
 // All rights reserved.
@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class ViewerRPC extends AttributeSubject
 {
-    private static int ViewerRPC_numAdditionalAtts = 34;
+    private static int ViewerRPC_numAdditionalAtts = 35;
 
     // Enum values
     public final static int VIEWERRPCTYPE_CLOSERPC = 0;
@@ -300,6 +300,7 @@ public class ViewerRPC extends AttributeSubject
         intArg1 = 0;
         intArg2 = 0;
         intArg3 = 0;
+        intArg4 = 0;
         stringArg1 = new String("");
         stringArg2 = new String("");
         doubleArg1 = new Vector();
@@ -350,6 +351,7 @@ public class ViewerRPC extends AttributeSubject
         intArg1 = 0;
         intArg2 = 0;
         intArg3 = 0;
+        intArg4 = 0;
         stringArg1 = new String("");
         stringArg2 = new String("");
         doubleArg1 = new Vector();
@@ -426,6 +428,7 @@ public class ViewerRPC extends AttributeSubject
         intArg1 = obj.intArg1;
         intArg2 = obj.intArg2;
         intArg3 = obj.intArg3;
+        intArg4 = obj.intArg4;
         stringArg1 = new String(obj.stringArg1);
         stringArg2 = new String(obj.stringArg2);
         doubleArg1 = new Vector(obj.doubleArg1.size());
@@ -569,6 +572,7 @@ public class ViewerRPC extends AttributeSubject
                 (intArg1 == obj.intArg1) &&
                 (intArg2 == obj.intArg2) &&
                 (intArg3 == obj.intArg3) &&
+                (intArg4 == obj.intArg4) &&
                 (stringArg1.equals(obj.stringArg1)) &&
                 (stringArg2.equals(obj.stringArg2)) &&
                 doubleArg1_equal &&
@@ -779,34 +783,40 @@ public class ViewerRPC extends AttributeSubject
         Select(28);
     }
 
+    public void SetIntArg4(int intArg4_)
+    {
+        intArg4 = intArg4_;
+        Select(29);
+    }
+
     public void SetStringArg1(String stringArg1_)
     {
         stringArg1 = stringArg1_;
-        Select(29);
+        Select(30);
     }
 
     public void SetStringArg2(String stringArg2_)
     {
         stringArg2 = stringArg2_;
-        Select(30);
+        Select(31);
     }
 
     public void SetDoubleArg1(Vector doubleArg1_)
     {
         doubleArg1 = doubleArg1_;
-        Select(31);
+        Select(32);
     }
 
     public void SetDoubleArg2(Vector doubleArg2_)
     {
         doubleArg2 = doubleArg2_;
-        Select(32);
+        Select(33);
     }
 
     public void SetToolUpdateMode(int toolUpdateMode_)
     {
         toolUpdateMode = toolUpdateMode_;
-        Select(33);
+        Select(34);
     }
 
     // Property getting methods
@@ -839,6 +849,7 @@ public class ViewerRPC extends AttributeSubject
     public int      GetIntArg1() { return intArg1; }
     public int      GetIntArg2() { return intArg2; }
     public int      GetIntArg3() { return intArg3; }
+    public int      GetIntArg4() { return intArg4; }
     public String   GetStringArg1() { return stringArg1; }
     public String   GetStringArg2() { return stringArg2; }
     public Vector   GetDoubleArg1() { return doubleArg1; }
@@ -907,14 +918,16 @@ public class ViewerRPC extends AttributeSubject
         if(WriteSelect(28, buf))
             buf.WriteInt(intArg3);
         if(WriteSelect(29, buf))
-            buf.WriteString(stringArg1);
+            buf.WriteInt(intArg4);
         if(WriteSelect(30, buf))
-            buf.WriteString(stringArg2);
+            buf.WriteString(stringArg1);
         if(WriteSelect(31, buf))
-            buf.WriteDoubleVector(doubleArg1);
+            buf.WriteString(stringArg2);
         if(WriteSelect(32, buf))
-            buf.WriteDoubleVector(doubleArg2);
+            buf.WriteDoubleVector(doubleArg1);
         if(WriteSelect(33, buf))
+            buf.WriteDoubleVector(doubleArg2);
+        if(WriteSelect(34, buf))
             buf.WriteInt(toolUpdateMode);
     }
 
@@ -1010,18 +1023,21 @@ public class ViewerRPC extends AttributeSubject
             SetIntArg3(buf.ReadInt());
             break;
         case 29:
-            SetStringArg1(buf.ReadString());
+            SetIntArg4(buf.ReadInt());
             break;
         case 30:
-            SetStringArg2(buf.ReadString());
+            SetStringArg1(buf.ReadString());
             break;
         case 31:
-            SetDoubleArg1(buf.ReadDoubleVector());
+            SetStringArg2(buf.ReadString());
             break;
         case 32:
-            SetDoubleArg2(buf.ReadDoubleVector());
+            SetDoubleArg1(buf.ReadDoubleVector());
             break;
         case 33:
+            SetDoubleArg2(buf.ReadDoubleVector());
+            break;
+        case 34:
             SetToolUpdateMode(buf.ReadInt());
             break;
         }
@@ -1450,6 +1466,7 @@ public class ViewerRPC extends AttributeSubject
         str = str + intToString("intArg1", intArg1, indent) + "\n";
         str = str + intToString("intArg2", intArg2, indent) + "\n";
         str = str + intToString("intArg3", intArg3, indent) + "\n";
+        str = str + intToString("intArg4", intArg4, indent) + "\n";
         str = str + stringToString("stringArg1", stringArg1, indent) + "\n";
         str = str + stringToString("stringArg2", stringArg2, indent) + "\n";
         str = str + doubleVectorToString("doubleArg1", doubleArg1, indent) + "\n";
@@ -1489,6 +1506,7 @@ public class ViewerRPC extends AttributeSubject
     private int      intArg1;
     private int      intArg2;
     private int      intArg3;
+    private int      intArg4;
     private String   stringArg1;
     private String   stringArg2;
     private Vector   doubleArg1; // vector of Double objects
