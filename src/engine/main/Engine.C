@@ -135,6 +135,49 @@ static void ResetEngineTimeout(void *p, int secs);
 const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 #endif
 
+#ifdef _WIN32
+  #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
+  #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
+  #define HASSPACE(A) (strstr(A, " ") != NULL)
+
+  void
+  StripSurroundingQuotes(std::string & s1)
+  {
+      if(s1.size() > 0 && (s1[0] == '\'' || s1[0] == '\"'))
+      {
+          s1 = s1.substr(1, s1.size()-1);
+      }
+      if(s1.size() > 0 && (s1[s1.size()-1] == '\'' || s1[s1.size()-1] == '\"'))
+      {
+          s1 = s1.substr(0, s1.size()-1);
+      }
+  }
+
+ 
+  std::string
+  GetNextArg(int argc, char **argv, int start, int &nargs)
+  {
+      std::string tmpArg(argv[start]);
+      if (BEGINSWITHQUOTE(argv[start]) && !ENDSWITHQUOTE(argv[start]))
+      {
+          // A path-with-spaces on Windows will get surrounded by quotes,
+          // but some system calls will still split the single arg into many,
+          // breaking on the spaces.  They need to be catenated back together
+          // into a single argument.
+          for (int j = start+1; j < argc; j++)
+          {
+              nargs++;
+              tmpArg += " ";
+              tmpArg += argv[j];
+              if (ENDSWITHQUOTE(argv[j]))
+                  break;
+          }
+      }
+      StripSurroundingQuotes(tmpArg);
+      return tmpArg;
+  }
+#endif
+
 // ****************************************************************************
 // Class: ViewerRemoteProcess
 //
@@ -1817,6 +1860,10 @@ Engine::ProcessInput()
 //    Hank Childs, Tue Jan 18 09:39:17 PST 2011
 //    Add support for -auxsessionkey.
 //
+//    Kathleen Bonnell, Mon Jan 24 17:44:01 MST 2011
+//    For Windows, handle spaces and quotes for -dump and -infodump paths
+//    if specified.
+//
 // ****************************************************************************
 
 void
@@ -1982,8 +2029,15 @@ Engine::ProcessCommandLine(int argc, char **argv)
             // check for optional -dump output directory
             if( i+1 < argc && argv[i+1][0] !='-')
             {
+#ifndef _WIN32
                 avtDebugDumpOptions::SetDumpDirectory(argv[i+1]);
                 ++i;
+#else
+                // make sure spaces and surrounding quotes are handled
+                int nskip = 1;
+                avtDebugDumpOptions::SetDumpDirectory(GetNextArg(argc, argv, i+1, nskip));
+                i+= nskip;
+#endif
             }
         }
         else if (strcmp(argv[i], "-info-dump") == 0)
@@ -1994,8 +2048,15 @@ Engine::ProcessCommandLine(int argc, char **argv)
             // check for optional -dump output directory
             if( i+1 < argc && argv[i+1][0] !='-')
             {
+#ifndef _WIN32
                 avtDebugDumpOptions::SetDumpDirectory(argv[i+1]);
                 ++i;
+#else
+                // make sure spaces and surrounding quotes are handled
+                int nskip = 1;
+                avtDebugDumpOptions::SetDumpDirectory(GetNextArg(argc, argv, i+1, nskip));
+                i+= nskip;
+#endif
             }
         }
         else if (strcmp(argv[i], "-vtk-debug") == 0)
