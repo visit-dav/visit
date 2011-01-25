@@ -585,6 +585,10 @@ avtPOSCARFileFormat::ReadFile()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January  8, 2008
 //
+//  Modifications:
+//   Jeremy Meredith, Tue Jan 25 11:41:49 EST 2011
+//   A "CONTCAR" is actually a "POSCAR".
+//
 // ****************************************************************************
 bool
 avtPOSCARFileFormat::Identify(const std::string &filename)
@@ -610,6 +614,8 @@ avtPOSCARFileFormat::Identify(const std::string &filename)
     for (int i=0; i<=fn.length()-3; i++)
     {
         if (fn.substr(i,3) == "POS")
+            return true;
+        if (fn.substr(i,4) == "CONT")
             return true;
     }
 
