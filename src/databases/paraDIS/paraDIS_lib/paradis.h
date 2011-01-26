@@ -81,7 +81,11 @@
 #define DEBUG 1
 
 /* now for the API */  
-#include <stdint.h>
+#include <boost/cstdint.hpp>
+using boost::int8_t;
+using boost::int16_t;
+using boost::int32_t;
+using boost::uint32_t;
 #include <stdio.h>
 #include <vector>
 #include <set>
