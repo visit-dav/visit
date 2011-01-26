@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <AxisAttributes.h>
 
 // ****************************************************************************
@@ -76,13 +77,23 @@ public:
         Both
     };
 
+    // These constructors are for objects of this class
     Axes2D();
     Axes2D(const Axes2D &obj);
+protected:
+    // These constructors are for objects derived from this class
+    Axes2D(private_tmfs_t tmfs);
+    Axes2D(const Axes2D &obj, private_tmfs_t tmfs);
+public:
     virtual ~Axes2D();
 
     virtual Axes2D& operator = (const Axes2D &obj);
     virtual bool operator == (const Axes2D &obj) const;
     virtual bool operator != (const Axes2D &obj) const;
+private:
+    void Init();
+    void Copy(const Axes2D &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -148,7 +159,8 @@ public:
         ID_tickLocation,
         ID_tickAxes,
         ID_xAxis,
-        ID_yAxis
+        ID_yAxis,
+        ID__LAST
     };
 
 private:
@@ -163,6 +175,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AXES2D_TMFS "bbbiiiaa"
 
 #endif

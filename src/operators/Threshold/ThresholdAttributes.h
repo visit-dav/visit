@@ -40,6 +40,7 @@
 #define THRESHOLDATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <AxisRestrictionAttributes.h>
 #include <DebugStream.h>
 
@@ -72,13 +73,23 @@ public:
         PartOfZone
     };
 
+    // These constructors are for objects of this class
     ThresholdAttributes();
     ThresholdAttributes(const ThresholdAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ThresholdAttributes(private_tmfs_t tmfs);
+    ThresholdAttributes(const ThresholdAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ThresholdAttributes();
 
     virtual ThresholdAttributes& operator = (const ThresholdAttributes &obj);
     virtual bool operator == (const ThresholdAttributes &obj) const;
     virtual bool operator != (const ThresholdAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ThresholdAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -152,7 +163,8 @@ public:
         ID_lowerBounds,
         ID_upperBounds,
         ID_defaultVarName,
-        ID_defaultVarIsScalar
+        ID_defaultVarIsScalar,
+        ID__LAST
     };
 
 private:
@@ -166,6 +178,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define THRESHOLDATTRIBUTES_TMFS "is*i*d*d*sb"
 
 #endif

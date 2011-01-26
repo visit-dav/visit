@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ColorControlPoint
 //
@@ -59,13 +60,23 @@
 class STATE_API ColorControlPoint : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ColorControlPoint();
     ColorControlPoint(const ColorControlPoint &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ColorControlPoint(private_tmfs_t tmfs);
+    ColorControlPoint(const ColorControlPoint &obj, private_tmfs_t tmfs);
+public:
     virtual ~ColorControlPoint();
 
     virtual ColorControlPoint& operator = (const ColorControlPoint &obj);
     virtual bool operator == (const ColorControlPoint &obj) const;
     virtual bool operator != (const ColorControlPoint &obj) const;
+private:
+    void Init();
+    void Copy(const ColorControlPoint &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -102,7 +113,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_colors = 0,
-        ID_position
+        ID_position,
+        ID__LAST
     };
 
 private:
@@ -111,6 +123,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define COLORCONTROLPOINT_TMFS "Uf"
 
 #endif

@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ConeAttributes
 //
@@ -66,13 +67,23 @@ public:
         R_Theta
     };
 
+    // These constructors are for objects of this class
     ConeAttributes();
     ConeAttributes(const ConeAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ConeAttributes(private_tmfs_t tmfs);
+    ConeAttributes(const ConeAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ConeAttributes();
 
     virtual ConeAttributes& operator = (const ConeAttributes &obj);
     virtual bool operator == (const ConeAttributes &obj) const;
     virtual bool operator != (const ConeAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ConeAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -132,7 +143,8 @@ public:
         ID_representation,
         ID_upAxis,
         ID_cutByLength,
-        ID_length
+        ID_length,
+        ID__LAST
     };
 
 private:
@@ -146,6 +158,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CONEATTRIBUTES_TMFS "dDDiDbd"
 
 #endif

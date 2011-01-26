@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ViewAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API ViewAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ViewAttributes();
     ViewAttributes(const ViewAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ViewAttributes(private_tmfs_t tmfs);
+    ViewAttributes(const ViewAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ViewAttributes();
 
     virtual ViewAttributes& operator = (const ViewAttributes &obj);
     virtual bool operator == (const ViewAttributes &obj) const;
     virtual bool operator != (const ViewAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ViewAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -146,7 +157,8 @@ public:
         ID_perspective,
         ID_windowCoords,
         ID_viewportCoords,
-        ID_eyeAngle
+        ID_eyeAngle,
+        ID__LAST
     };
 
 private:
@@ -167,6 +179,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VIEWATTRIBUTES_TMFS "DDDdbdddDdbDDd"
 
 #endif

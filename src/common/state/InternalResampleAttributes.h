@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: InternalResampleAttributes
 //
@@ -60,13 +61,23 @@
 class STATE_API InternalResampleAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     InternalResampleAttributes();
     InternalResampleAttributes(const InternalResampleAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    InternalResampleAttributes(private_tmfs_t tmfs);
+    InternalResampleAttributes(const InternalResampleAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~InternalResampleAttributes();
 
     virtual InternalResampleAttributes& operator = (const InternalResampleAttributes &obj);
     virtual bool operator == (const InternalResampleAttributes &obj) const;
     virtual bool operator != (const InternalResampleAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const InternalResampleAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -149,7 +160,8 @@ public:
         ID_useArbitrator,
         ID_arbitratorLessThan,
         ID_arbitratorVarName,
-        ID_distributedResample
+        ID_distributedResample,
+        ID__LAST
     };
 
 private:
@@ -174,6 +186,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define INTERNALRESAMPLEATTRIBUTES_TMFS "biiiibfbddddddbbsb"
 
 #endif

@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SubdivideQuadsAttributes
 //
@@ -59,13 +60,23 @@
 class SubdivideQuadsAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SubdivideQuadsAttributes();
     SubdivideQuadsAttributes(const SubdivideQuadsAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SubdivideQuadsAttributes(private_tmfs_t tmfs);
+    SubdivideQuadsAttributes(const SubdivideQuadsAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SubdivideQuadsAttributes();
 
     virtual SubdivideQuadsAttributes& operator = (const SubdivideQuadsAttributes &obj);
     virtual bool operator == (const SubdivideQuadsAttributes &obj) const;
     virtual bool operator != (const SubdivideQuadsAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SubdivideQuadsAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -109,7 +120,8 @@ public:
         ID_maxSubdivs,
         ID_fanOutPoints,
         ID_doTriangles,
-        ID_variable
+        ID_variable,
+        ID__LAST
     };
 
 private:
@@ -121,6 +133,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SUBDIVIDEQUADSATTRIBUTES_TMFS "dibbs"
 
 #endif

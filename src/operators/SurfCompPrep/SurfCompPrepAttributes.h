@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SurfCompPrepAttributes
 //
@@ -72,13 +73,23 @@ public:
         Average
     };
 
+    // These constructors are for objects of this class
     SurfCompPrepAttributes();
     SurfCompPrepAttributes(const SurfCompPrepAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SurfCompPrepAttributes(private_tmfs_t tmfs);
+    SurfCompPrepAttributes(const SurfCompPrepAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SurfCompPrepAttributes();
 
     virtual SurfCompPrepAttributes& operator = (const SurfCompPrepAttributes &obj);
     virtual bool operator == (const SurfCompPrepAttributes &obj) const;
     virtual bool operator != (const SurfCompPrepAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SurfCompPrepAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -176,7 +187,8 @@ public:
         ID_ySteps,
         ID_zStart,
         ID_zStop,
-        ID_zSteps
+        ID_zSteps,
+        ID__LAST
     };
 
 private:
@@ -203,6 +215,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SURFCOMPPREPATTRIBUTES_TMFS "iiddiddiddiddiddiddi"
 
 #endif

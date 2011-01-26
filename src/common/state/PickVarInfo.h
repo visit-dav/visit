@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include "snprintf.h"
 
 // ****************************************************************************
@@ -68,13 +69,23 @@ public:
         None
     };
 
+    // These constructors are for objects of this class
     PickVarInfo();
     PickVarInfo(const PickVarInfo &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PickVarInfo(private_tmfs_t tmfs);
+    PickVarInfo(const PickVarInfo &obj, private_tmfs_t tmfs);
+public:
     virtual ~PickVarInfo();
 
     virtual PickVarInfo& operator = (const PickVarInfo &obj);
     virtual bool operator == (const PickVarInfo &obj) const;
     virtual bool operator != (const PickVarInfo &obj) const;
+private:
+    void Init();
+    void Copy(const PickVarInfo &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -174,7 +185,8 @@ public:
         ID_matNames,
         ID_numSpecsPerMat,
         ID_treatAsASCII,
-        ID_floatFormat
+        ID_floatFormat,
+        ID__LAST
     };
 
 private:
@@ -195,6 +207,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PICKVARINFO_TMFS "sss*d*s*d*bisi*s*i*bs"
 
 #endif

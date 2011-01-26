@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: PlotQueryInfo
 //
@@ -75,13 +76,23 @@ public:
         CacheIndex
     };
 
+    // These constructors are for objects of this class
     PlotQueryInfo();
     PlotQueryInfo(const PlotQueryInfo &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PlotQueryInfo(private_tmfs_t tmfs);
+    PlotQueryInfo(const PlotQueryInfo &obj, private_tmfs_t tmfs);
+public:
     virtual ~PlotQueryInfo();
 
     virtual PlotQueryInfo& operator = (const PlotQueryInfo &obj);
     virtual bool operator == (const PlotQueryInfo &obj) const;
     virtual bool operator != (const PlotQueryInfo &obj) const;
+private:
+    void Init();
+    void Copy(const PlotQueryInfo &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -119,7 +130,8 @@ public:
     enum {
         ID_changeType = 0,
         ID_oldFrameIndex,
-        ID_newFrameIndex
+        ID_newFrameIndex,
+        ID__LAST
     };
 
 private:
@@ -129,6 +141,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PLOTQUERYINFO_TMFS "iii"
 
 #endif

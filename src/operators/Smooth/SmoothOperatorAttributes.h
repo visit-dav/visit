@@ -40,6 +40,7 @@
 #define SMOOTHOPERATORATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SmoothOperatorAttributes
 //
@@ -58,13 +59,23 @@
 class SmoothOperatorAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SmoothOperatorAttributes();
     SmoothOperatorAttributes(const SmoothOperatorAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SmoothOperatorAttributes(private_tmfs_t tmfs);
+    SmoothOperatorAttributes(const SmoothOperatorAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SmoothOperatorAttributes();
 
     virtual SmoothOperatorAttributes& operator = (const SmoothOperatorAttributes &obj);
     virtual bool operator == (const SmoothOperatorAttributes &obj) const;
     virtual bool operator != (const SmoothOperatorAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SmoothOperatorAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -112,7 +123,8 @@ public:
         ID_maintainFeatures,
         ID_featureAngle,
         ID_edgeAngle,
-        ID_smoothBoundaries
+        ID_smoothBoundaries,
+        ID__LAST
     };
 
 private:
@@ -126,6 +138,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SMOOTHOPERATORATTRIBUTES_TMFS "iddbddb"
 
 #endif

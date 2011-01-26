@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SyncAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API SyncAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SyncAttributes();
     SyncAttributes(const SyncAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SyncAttributes(private_tmfs_t tmfs);
+    SyncAttributes(const SyncAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SyncAttributes();
 
     virtual SyncAttributes& operator = (const SyncAttributes &obj);
     virtual bool operator == (const SyncAttributes &obj) const;
     virtual bool operator != (const SyncAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SyncAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -95,7 +106,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_syncTag = 0
+        ID_syncTag = 0,
+        ID__LAST
     };
 
 private:
@@ -103,6 +115,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SYNCATTRIBUTES_TMFS "i"
 
 #endif

@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ClientMethod
 //
@@ -60,13 +61,23 @@
 class STATE_API ClientMethod : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ClientMethod();
     ClientMethod(const ClientMethod &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ClientMethod(private_tmfs_t tmfs);
+    ClientMethod(const ClientMethod &obj, private_tmfs_t tmfs);
+public:
     virtual ~ClientMethod();
 
     virtual ClientMethod& operator = (const ClientMethod &obj);
     virtual bool operator == (const ClientMethod &obj) const;
     virtual bool operator != (const ClientMethod &obj) const;
+private:
+    void Init();
+    void Copy(const ClientMethod &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -114,7 +125,8 @@ public:
         ID_methodName = 0,
         ID_intArgs,
         ID_doubleArgs,
-        ID_stringArgs
+        ID_stringArgs,
+        ID__LAST
     };
 
 private:
@@ -125,6 +137,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CLIENTMETHOD_TMFS "si*d*s*"
 
 #endif

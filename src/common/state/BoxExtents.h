@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: BoxExtents
 //
@@ -59,13 +60,23 @@
 class STATE_API BoxExtents : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     BoxExtents();
     BoxExtents(const BoxExtents &obj);
+protected:
+    // These constructors are for objects derived from this class
+    BoxExtents(private_tmfs_t tmfs);
+    BoxExtents(const BoxExtents &obj, private_tmfs_t tmfs);
+public:
     virtual ~BoxExtents();
 
     virtual BoxExtents& operator = (const BoxExtents &obj);
     virtual bool operator == (const BoxExtents &obj) const;
     virtual bool operator != (const BoxExtents &obj) const;
+private:
+    void Init();
+    void Copy(const BoxExtents &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -97,7 +108,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_extents = 0
+        ID_extents = 0,
+        ID__LAST
     };
 
 private:
@@ -105,6 +117,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define BOXEXTENTS_TMFS "D"
 
 #endif

@@ -42,6 +42,7 @@
 #include <AttributeSubject.h>
 
 
+
 // ****************************************************************************
 // Class: ColorAttribute
 //
@@ -61,13 +62,23 @@ class STATE_API ColorAttribute : public AttributeSubject
 {
 public:
 
+    // These constructors are for objects of this class
     ColorAttribute();
     ColorAttribute(const ColorAttribute &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ColorAttribute(private_tmfs_t tmfs);
+    ColorAttribute(const ColorAttribute &obj, private_tmfs_t tmfs);
+public:
     virtual ~ColorAttribute();
 
     virtual ColorAttribute& operator = (const ColorAttribute &obj);
     virtual bool operator == (const ColorAttribute &obj) const;
     virtual bool operator != (const ColorAttribute &obj) const;
+private:
+    void Init();
+    void Copy(const ColorAttribute &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -117,7 +128,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_color = 0
+        ID_color = 0,
+        ID__LAST
     };
 
 private:
@@ -125,6 +137,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define COLORATTRIBUTE_TMFS "U"
 
 #endif

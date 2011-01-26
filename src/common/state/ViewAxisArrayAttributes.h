@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ViewAxisArrayAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API ViewAxisArrayAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ViewAxisArrayAttributes();
     ViewAxisArrayAttributes(const ViewAxisArrayAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ViewAxisArrayAttributes(private_tmfs_t tmfs);
+    ViewAxisArrayAttributes(const ViewAxisArrayAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ViewAxisArrayAttributes();
 
     virtual ViewAxisArrayAttributes& operator = (const ViewAxisArrayAttributes &obj);
     virtual bool operator == (const ViewAxisArrayAttributes &obj) const;
     virtual bool operator != (const ViewAxisArrayAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ViewAxisArrayAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -107,7 +118,8 @@ public:
     enum {
         ID_domainCoords = 0,
         ID_rangeCoords,
-        ID_viewportCoords
+        ID_viewportCoords,
+        ID__LAST
     };
 
 private:
@@ -117,6 +129,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VIEWAXISARRAYATTRIBUTES_TMFS "DDD"
 
 #endif

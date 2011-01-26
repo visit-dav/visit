@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: CompactSILRestrictionAttributes
 //
@@ -60,13 +61,23 @@
 class STATE_API CompactSILRestrictionAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     CompactSILRestrictionAttributes();
     CompactSILRestrictionAttributes(const CompactSILRestrictionAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    CompactSILRestrictionAttributes(private_tmfs_t tmfs);
+    CompactSILRestrictionAttributes(const CompactSILRestrictionAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~CompactSILRestrictionAttributes();
 
     virtual CompactSILRestrictionAttributes& operator = (const CompactSILRestrictionAttributes &obj);
     virtual bool operator == (const CompactSILRestrictionAttributes &obj) const;
     virtual bool operator != (const CompactSILRestrictionAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const CompactSILRestrictionAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -106,7 +117,8 @@ public:
     enum {
         ID_useSet = 0,
         ID_topSet,
-        ID_topSetIsAllOn
+        ID_topSetIsAllOn,
+        ID__LAST
     };
 
 private:
@@ -116,6 +128,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define COMPACTSILRESTRICTIONATTRIBUTES_TMFS "u*sb"
 
 #endif

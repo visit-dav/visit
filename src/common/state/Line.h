@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -61,13 +62,23 @@
 class STATE_API Line : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     Line();
     Line(const Line &obj);
+protected:
+    // These constructors are for objects derived from this class
+    Line(private_tmfs_t tmfs);
+    Line(const Line &obj, private_tmfs_t tmfs);
+public:
     virtual ~Line();
 
     virtual Line& operator = (const Line &obj);
     virtual bool operator == (const Line &obj) const;
     virtual bool operator != (const Line &obj) const;
+private:
+    void Init();
+    void Copy(const Line &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -140,7 +151,8 @@ public:
         ID_reflineLabels,
         ID_varName,
         ID_samplingOn,
-        ID_numSamples
+        ID_numSamples,
+        ID__LAST
     };
 
 private:
@@ -158,6 +170,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define LINE_TMFS "DDsaiibbsbi"
 
 #endif

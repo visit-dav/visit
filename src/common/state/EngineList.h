@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: EngineList
 //
@@ -60,13 +61,23 @@
 class STATE_API EngineList : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     EngineList();
     EngineList(const EngineList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    EngineList(private_tmfs_t tmfs);
+    EngineList(const EngineList &obj, private_tmfs_t tmfs);
+public:
     virtual ~EngineList();
 
     virtual EngineList& operator = (const EngineList &obj);
     virtual bool operator == (const EngineList &obj) const;
     virtual bool operator != (const EngineList &obj) const;
+private:
+    void Init();
+    void Copy(const EngineList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -118,7 +129,8 @@ public:
         ID_numProcessors,
         ID_numNodes,
         ID_loadBalancing,
-        ID_simulationName
+        ID_simulationName,
+        ID__LAST
     };
 
 private:
@@ -130,6 +142,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define ENGINELIST_TMFS "s*i*i*i*s*"
 
 #endif

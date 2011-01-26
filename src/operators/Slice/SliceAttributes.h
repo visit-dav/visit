@@ -40,6 +40,7 @@
 #define SLICEATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <cmath>
 #include <math.h>
 
@@ -78,13 +79,23 @@ public:
         Node
     };
 
+    // These constructors are for objects of this class
     SliceAttributes();
     SliceAttributes(const SliceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SliceAttributes(private_tmfs_t tmfs);
+    SliceAttributes(const SliceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SliceAttributes();
 
     virtual SliceAttributes& operator = (const SliceAttributes &obj);
     virtual bool operator == (const SliceAttributes &obj) const;
     virtual bool operator != (const SliceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SliceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -186,7 +197,8 @@ public:
         ID_originNodeDomain,
         ID_meshName,
         ID_theta,
-        ID_phi
+        ID_phi,
+        ID__LAST
     };
 
 private:
@@ -210,6 +222,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SLICEATTRIBUTES_TMFS "iDddiiDiDbbbiisdd"
 
 #endif

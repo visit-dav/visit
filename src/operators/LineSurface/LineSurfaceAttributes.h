@@ -40,6 +40,7 @@
 #define LINESURFACEATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: LineSurfaceAttributes
 //
@@ -58,13 +59,23 @@
 class LineSurfaceAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     LineSurfaceAttributes();
     LineSurfaceAttributes(const LineSurfaceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    LineSurfaceAttributes(private_tmfs_t tmfs);
+    LineSurfaceAttributes(const LineSurfaceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~LineSurfaceAttributes();
 
     virtual LineSurfaceAttributes& operator = (const LineSurfaceAttributes &obj);
     virtual bool operator == (const LineSurfaceAttributes &obj) const;
     virtual bool operator != (const LineSurfaceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const LineSurfaceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -110,7 +121,8 @@ public:
         ID_endTime,
         ID_stride,
         ID_point1,
-        ID_point2
+        ID_point2,
+        ID__LAST
     };
 
 private:
@@ -122,6 +134,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define LINESURFACEATTRIBUTES_TMFS "iiiDD"
 
 #endif

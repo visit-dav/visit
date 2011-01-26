@@ -44,7 +44,7 @@
 //
 
 static const char *CreateType_strings[] = {
-"Dual grid and stitch cells", "Dual grid", "Stitch cells"
+"DualGridAndStitchCells", "DualGrid", "StitchCells"
 };
 
 std::string

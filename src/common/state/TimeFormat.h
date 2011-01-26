@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: TimeFormat
 //
@@ -67,13 +68,23 @@ public:
         CyclesAndTimes
     };
 
+    // These constructors are for objects of this class
     TimeFormat();
     TimeFormat(const TimeFormat &obj);
+protected:
+    // These constructors are for objects derived from this class
+    TimeFormat(private_tmfs_t tmfs);
+    TimeFormat(const TimeFormat &obj, private_tmfs_t tmfs);
+public:
     virtual ~TimeFormat();
 
     virtual TimeFormat& operator = (const TimeFormat &obj);
     virtual bool operator == (const TimeFormat &obj) const;
     virtual bool operator != (const TimeFormat &obj) const;
+private:
+    void Init();
+    void Copy(const TimeFormat &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -112,7 +123,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_displayMode = 0,
-        ID_precision
+        ID_precision,
+        ID__LAST
     };
 
 private:
@@ -121,6 +133,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define TIMEFORMAT_TMFS "ii"
 
 #endif

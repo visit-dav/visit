@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <AxisAttributes.h>
 
 // ****************************************************************************
@@ -76,13 +77,23 @@ public:
         Both
     };
 
+    // These constructors are for objects of this class
     Axes3D();
     Axes3D(const Axes3D &obj);
+protected:
+    // These constructors are for objects derived from this class
+    Axes3D(private_tmfs_t tmfs);
+    Axes3D(const Axes3D &obj, private_tmfs_t tmfs);
+public:
     virtual ~Axes3D();
 
     virtual Axes3D& operator = (const Axes3D &obj);
     virtual bool operator == (const Axes3D &obj) const;
     virtual bool operator != (const Axes3D &obj) const;
+private:
+    void Init();
+    void Copy(const Axes3D &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -159,7 +170,8 @@ public:
         ID_bboxFlag,
         ID_xAxis,
         ID_yAxis,
-        ID_zAxis
+        ID_zAxis,
+        ID__LAST
     };
 
 private:
@@ -177,6 +189,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AXES3D_TMFS "bbbiiibbaaa"
 
 #endif

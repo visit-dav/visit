@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: CoordSwapAttributes
 //
@@ -66,13 +67,23 @@ public:
         Coord3
     };
 
+    // These constructors are for objects of this class
     CoordSwapAttributes();
     CoordSwapAttributes(const CoordSwapAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    CoordSwapAttributes(private_tmfs_t tmfs);
+    CoordSwapAttributes(const CoordSwapAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~CoordSwapAttributes();
 
     virtual CoordSwapAttributes& operator = (const CoordSwapAttributes &obj);
     virtual bool operator == (const CoordSwapAttributes &obj) const;
     virtual bool operator != (const CoordSwapAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const CoordSwapAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -114,7 +125,8 @@ public:
     enum {
         ID_newCoord1 = 0,
         ID_newCoord2,
-        ID_newCoord3
+        ID_newCoord3,
+        ID__LAST
     };
 
 private:
@@ -124,6 +136,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define COORDSWAPATTRIBUTES_TMFS "iii"
 
 #endif

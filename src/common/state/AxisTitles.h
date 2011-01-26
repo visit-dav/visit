@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <FontAttributes.h>
 
 // ****************************************************************************
@@ -61,13 +62,23 @@
 class STATE_API AxisTitles : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     AxisTitles();
     AxisTitles(const AxisTitles &obj);
+protected:
+    // These constructors are for objects derived from this class
+    AxisTitles(private_tmfs_t tmfs);
+    AxisTitles(const AxisTitles &obj, private_tmfs_t tmfs);
+public:
     virtual ~AxisTitles();
 
     virtual AxisTitles& operator = (const AxisTitles &obj);
     virtual bool operator == (const AxisTitles &obj) const;
     virtual bool operator != (const AxisTitles &obj) const;
+private:
+    void Init();
+    void Copy(const AxisTitles &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -118,7 +129,8 @@ public:
         ID_userTitle,
         ID_userUnits,
         ID_title,
-        ID_units
+        ID_units,
+        ID__LAST
     };
 
 private:
@@ -131,6 +143,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AXISTITLES_TMFS "babbss"
 
 #endif

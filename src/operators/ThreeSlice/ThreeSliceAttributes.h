@@ -39,6 +39,7 @@
 #ifndef THREESLICEATTRIBUTES_H
 #define THREESLICEATTRIBUTES_H
 #include <AttributeSubject.h>
+
 #include <PointAttributes.h>
 
 // ****************************************************************************
@@ -59,13 +60,23 @@
 class ThreeSliceAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ThreeSliceAttributes();
     ThreeSliceAttributes(const ThreeSliceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ThreeSliceAttributes(private_tmfs_t tmfs);
+    ThreeSliceAttributes(const ThreeSliceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ThreeSliceAttributes();
 
     virtual ThreeSliceAttributes& operator = (const ThreeSliceAttributes &obj);
     virtual bool operator == (const ThreeSliceAttributes &obj) const;
     virtual bool operator != (const ThreeSliceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ThreeSliceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -104,7 +115,8 @@ public:
         ID_x = 0,
         ID_y,
         ID_z,
-        ID_interactive
+        ID_interactive,
+        ID__LAST
     };
 
 private:
@@ -115,6 +127,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define THREESLICEATTRIBUTES_TMFS "fffb"
 
 #endif

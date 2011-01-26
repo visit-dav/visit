@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: AxisRestrictionAttributes
 //
@@ -60,13 +61,23 @@
 class STATE_API AxisRestrictionAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     AxisRestrictionAttributes();
     AxisRestrictionAttributes(const AxisRestrictionAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    AxisRestrictionAttributes(private_tmfs_t tmfs);
+    AxisRestrictionAttributes(const AxisRestrictionAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~AxisRestrictionAttributes();
 
     virtual AxisRestrictionAttributes& operator = (const AxisRestrictionAttributes &obj);
     virtual bool operator == (const AxisRestrictionAttributes &obj) const;
     virtual bool operator != (const AxisRestrictionAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const AxisRestrictionAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -108,7 +119,8 @@ public:
     enum {
         ID_names = 0,
         ID_minima,
-        ID_maxima
+        ID_maxima,
+        ID__LAST
     };
 
 private:
@@ -118,6 +130,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AXISRESTRICTIONATTRIBUTES_TMFS "s*d*d*"
 
 #endif

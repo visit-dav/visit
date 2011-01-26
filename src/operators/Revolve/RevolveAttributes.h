@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: RevolveAttributes
 //
@@ -67,13 +68,23 @@ public:
         ZR
     };
 
+    // These constructors are for objects of this class
     RevolveAttributes();
     RevolveAttributes(const RevolveAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    RevolveAttributes(private_tmfs_t tmfs);
+    RevolveAttributes(const RevolveAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~RevolveAttributes();
 
     virtual RevolveAttributes& operator = (const RevolveAttributes &obj);
     virtual bool operator == (const RevolveAttributes &obj) const;
     virtual bool operator != (const RevolveAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const RevolveAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -126,7 +137,8 @@ public:
         ID_axis,
         ID_startAngle,
         ID_stopAngle,
-        ID_steps
+        ID_steps,
+        ID__LAST
     };
 
 private:
@@ -139,6 +151,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define REVOLVEATTRIBUTES_TMFS "ibDddi"
 
 #endif

@@ -40,6 +40,7 @@
 #define MULTICURVEATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorControlPointList.h>
 #include <ColorAttribute.h>
 #include <ColorAttributeList.h>
@@ -68,13 +69,23 @@ public:
         ColorByMultipleColors
     };
 
+    // These constructors are for objects of this class
     MultiCurveAttributes();
     MultiCurveAttributes(const MultiCurveAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    MultiCurveAttributes(private_tmfs_t tmfs);
+    MultiCurveAttributes(const MultiCurveAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~MultiCurveAttributes();
 
     virtual MultiCurveAttributes& operator = (const MultiCurveAttributes &obj);
     virtual bool operator == (const MultiCurveAttributes &obj) const;
     virtual bool operator != (const MultiCurveAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const MultiCurveAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -171,7 +182,8 @@ public:
         ID_markerVariable,
         ID_displayIds,
         ID_idVariable,
-        ID_legendFlag
+        ID_legendFlag,
+        ID__LAST
     };
 
 private:
@@ -193,6 +205,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define MULTICURVEATTRIBUTES_TMFS "au*iaaiisbdbsbsb"
 
 #endif

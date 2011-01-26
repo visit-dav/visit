@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -68,13 +69,23 @@ public:
         Times
     };
 
+    // These constructors are for objects of this class
     FontAttributes();
     FontAttributes(const FontAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    FontAttributes(private_tmfs_t tmfs);
+    FontAttributes(const FontAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~FontAttributes();
 
     virtual FontAttributes& operator = (const FontAttributes &obj);
     virtual bool operator == (const FontAttributes &obj) const;
     virtual bool operator != (const FontAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const FontAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -127,7 +138,8 @@ public:
         ID_useForegroundColor,
         ID_color,
         ID_bold,
-        ID_italic
+        ID_italic,
+        ID__LAST
     };
 
 private:
@@ -140,6 +152,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define FONTATTRIBUTES_TMFS "idbabb"
 
 #endif

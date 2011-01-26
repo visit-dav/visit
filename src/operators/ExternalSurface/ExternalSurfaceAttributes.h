@@ -40,6 +40,7 @@
 #define EXTERNALSURFACEATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ExternalSurfaceAttributes
 //
@@ -58,13 +59,23 @@
 class ExternalSurfaceAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ExternalSurfaceAttributes();
     ExternalSurfaceAttributes(const ExternalSurfaceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ExternalSurfaceAttributes(private_tmfs_t tmfs);
+    ExternalSurfaceAttributes(const ExternalSurfaceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ExternalSurfaceAttributes();
 
     virtual ExternalSurfaceAttributes& operator = (const ExternalSurfaceAttributes &obj);
     virtual bool operator == (const ExternalSurfaceAttributes &obj) const;
     virtual bool operator != (const ExternalSurfaceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ExternalSurfaceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -97,7 +108,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_removeGhosts = 0,
-        ID_edgesIn2D
+        ID_edgesIn2D,
+        ID__LAST
     };
 
 private:
@@ -106,6 +118,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define EXTERNALSURFACEATTRIBUTES_TMFS "bb"
 
 #endif

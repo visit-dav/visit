@@ -40,6 +40,7 @@
 #define SPHERESLICEATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SphereSliceAttributes
 //
@@ -58,13 +59,23 @@
 class SphereSliceAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SphereSliceAttributes();
     SphereSliceAttributes(const SphereSliceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SphereSliceAttributes(private_tmfs_t tmfs);
+    SphereSliceAttributes(const SphereSliceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SphereSliceAttributes();
 
     virtual SphereSliceAttributes& operator = (const SphereSliceAttributes &obj);
     virtual bool operator == (const SphereSliceAttributes &obj) const;
     virtual bool operator != (const SphereSliceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SphereSliceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -99,7 +110,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_origin = 0,
-        ID_radius
+        ID_radius,
+        ID__LAST
     };
 
 private:
@@ -108,6 +120,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SPHERESLICEATTRIBUTES_TMFS "Dd"
 
 #endif

@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: MessageAttributes
 //
@@ -69,13 +70,23 @@ public:
         Information
     };
 
+    // These constructors are for objects of this class
     MessageAttributes();
     MessageAttributes(const MessageAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    MessageAttributes(private_tmfs_t tmfs);
+    MessageAttributes(const MessageAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~MessageAttributes();
 
     virtual MessageAttributes& operator = (const MessageAttributes &obj);
     virtual bool operator == (const MessageAttributes &obj) const;
     virtual bool operator != (const MessageAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const MessageAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -124,7 +135,8 @@ public:
         ID_text = 0,
         ID_unicode,
         ID_hasUnicode,
-        ID_severity
+        ID_severity,
+        ID__LAST
     };
 
 private:
@@ -135,6 +147,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define MESSAGEATTRIBUTES_TMFS "su*bi"
 
 #endif

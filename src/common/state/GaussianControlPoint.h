@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: GaussianControlPoint
 //
@@ -59,13 +60,23 @@
 class STATE_API GaussianControlPoint : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     GaussianControlPoint();
     GaussianControlPoint(const GaussianControlPoint &obj);
+protected:
+    // These constructors are for objects derived from this class
+    GaussianControlPoint(private_tmfs_t tmfs);
+    GaussianControlPoint(const GaussianControlPoint &obj, private_tmfs_t tmfs);
+public:
     virtual ~GaussianControlPoint();
 
     virtual GaussianControlPoint& operator = (const GaussianControlPoint &obj);
     virtual bool operator == (const GaussianControlPoint &obj) const;
     virtual bool operator != (const GaussianControlPoint &obj) const;
+private:
+    void Init();
+    void Copy(const GaussianControlPoint &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -107,7 +118,8 @@ public:
         ID_height,
         ID_width,
         ID_xBias,
-        ID_yBias
+        ID_yBias,
+        ID__LAST
     };
 
 private:
@@ -119,6 +131,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define GAUSSIANCONTROLPOINT_TMFS "fffff"
 
 #endif

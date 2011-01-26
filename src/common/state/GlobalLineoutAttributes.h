@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: GlobalLineoutAttributes
 //
@@ -71,13 +72,23 @@ public:
         CreateColor
     };
 
+    // These constructors are for objects of this class
     GlobalLineoutAttributes();
     GlobalLineoutAttributes(const GlobalLineoutAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    GlobalLineoutAttributes(private_tmfs_t tmfs);
+    GlobalLineoutAttributes(const GlobalLineoutAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~GlobalLineoutAttributes();
 
     virtual GlobalLineoutAttributes& operator = (const GlobalLineoutAttributes &obj);
     virtual bool operator == (const GlobalLineoutAttributes &obj) const;
     virtual bool operator != (const GlobalLineoutAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const GlobalLineoutAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -138,7 +149,8 @@ public:
         ID_createReflineLabels,
         ID_curveOption,
         ID_colorOption,
-        ID_freezeInTime
+        ID_freezeInTime,
+        ID__LAST
     };
 
 private:
@@ -154,6 +166,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define GLOBALLINEOUTATTRIBUTES_TMFS "bbibibiib"
 
 #endif

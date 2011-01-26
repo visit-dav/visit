@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: Point
 //
@@ -72,13 +73,23 @@ public:
         VT_Unknown
     };
 
+    // These constructors are for objects of this class
     Point();
     Point(const Point &obj);
+protected:
+    // These constructors are for objects derived from this class
+    Point(private_tmfs_t tmfs);
+    Point(const Point &obj, private_tmfs_t tmfs);
+public:
     virtual ~Point();
 
     virtual Point& operator = (const Point &obj);
     virtual bool operator == (const Point &obj) const;
     virtual bool operator != (const Point &obj) const;
+private:
+    void Init();
+    void Copy(const Point &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -126,7 +137,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_value = 0
+        ID_value = 0,
+        ID__LAST
     };
 
 private:
@@ -134,6 +146,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define POINT_TMFS "s"
 
 #endif

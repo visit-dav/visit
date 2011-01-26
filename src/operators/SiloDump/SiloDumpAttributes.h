@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SiloDumpAttributes
 //
@@ -59,13 +60,23 @@
 class SiloDumpAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SiloDumpAttributes();
     SiloDumpAttributes(const SiloDumpAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SiloDumpAttributes(private_tmfs_t tmfs);
+    SiloDumpAttributes(const SiloDumpAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SiloDumpAttributes();
 
     virtual SiloDumpAttributes& operator = (const SiloDumpAttributes &obj);
     virtual bool operator == (const SiloDumpAttributes &obj) const;
     virtual bool operator != (const SiloDumpAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SiloDumpAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -100,7 +111,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_filename = 0,
-        ID_display
+        ID_display,
+        ID__LAST
     };
 
 private:
@@ -109,6 +121,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SILODUMPATTRIBUTES_TMFS "sb"
 
 #endif

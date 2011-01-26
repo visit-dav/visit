@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: TraceHistoryAttributes
 //
@@ -59,13 +60,23 @@
 class TraceHistoryAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     TraceHistoryAttributes();
     TraceHistoryAttributes(const TraceHistoryAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    TraceHistoryAttributes(private_tmfs_t tmfs);
+    TraceHistoryAttributes(const TraceHistoryAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~TraceHistoryAttributes();
 
     virtual TraceHistoryAttributes& operator = (const TraceHistoryAttributes &obj);
     virtual bool operator == (const TraceHistoryAttributes &obj) const;
     virtual bool operator != (const TraceHistoryAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const TraceHistoryAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -110,7 +121,8 @@ public:
         ID_vars = 0,
         ID_displacement,
         ID_numiter,
-        ID_output
+        ID_output,
+        ID__LAST
     };
 
 private:
@@ -121,6 +133,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define TRACEHISTORYATTRIBUTES_TMFS "s*sis"
 
 #endif

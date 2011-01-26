@@ -40,6 +40,7 @@
 #define TRIANGULATEREGULARPOINTSATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: TriangulateRegularPointsAttributes
 //
@@ -58,13 +59,23 @@
 class TriangulateRegularPointsAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     TriangulateRegularPointsAttributes();
     TriangulateRegularPointsAttributes(const TriangulateRegularPointsAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    TriangulateRegularPointsAttributes(private_tmfs_t tmfs);
+    TriangulateRegularPointsAttributes(const TriangulateRegularPointsAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~TriangulateRegularPointsAttributes();
 
     virtual TriangulateRegularPointsAttributes& operator = (const TriangulateRegularPointsAttributes &obj);
     virtual bool operator == (const TriangulateRegularPointsAttributes &obj) const;
     virtual bool operator != (const TriangulateRegularPointsAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const TriangulateRegularPointsAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -103,7 +114,8 @@ public:
         ID_useXGridSpacing = 0,
         ID_xGridSpacing,
         ID_useYGridSpacing,
-        ID_yGridSpacing
+        ID_yGridSpacing,
+        ID__LAST
     };
 
 private:
@@ -114,6 +126,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define TRIANGULATEREGULARPOINTSATTRIBUTES_TMFS "bdbd"
 
 #endif

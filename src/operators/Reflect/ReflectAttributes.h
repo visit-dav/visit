@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ReflectAttributes
 //
@@ -71,13 +72,23 @@ public:
         NXNYNZ
     };
 
+    // These constructors are for objects of this class
     ReflectAttributes();
     ReflectAttributes(const ReflectAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ReflectAttributes(private_tmfs_t tmfs);
+    ReflectAttributes(const ReflectAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ReflectAttributes();
 
     virtual ReflectAttributes& operator = (const ReflectAttributes &obj);
     virtual bool operator == (const ReflectAttributes &obj) const;
     virtual bool operator != (const ReflectAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ReflectAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -138,7 +149,8 @@ public:
         ID_specifiedY,
         ID_useZBoundary,
         ID_specifiedZ,
-        ID_reflections
+        ID_reflections,
+        ID__LAST
     };
 
 private:
@@ -153,6 +165,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define REFLECTATTRIBUTES_TMFS "ibdbdbdI"
 
 #endif

@@ -39,6 +39,7 @@
 #ifndef TOPOLOGYATTRIBUTES_H
 #define TOPOLOGYATTRIBUTES_H
 #include <AttributeSubject.h>
+
 #include <ColorAttributeList.h>
 #include <ColorAttribute.h>
 
@@ -60,13 +61,23 @@
 class TopologyAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     TopologyAttributes();
     TopologyAttributes(const TopologyAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    TopologyAttributes(private_tmfs_t tmfs);
+    TopologyAttributes(const TopologyAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~TopologyAttributes();
 
     virtual TopologyAttributes& operator = (const TopologyAttributes &obj);
     virtual bool operator == (const TopologyAttributes &obj) const;
     virtual bool operator != (const TopologyAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const TopologyAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -124,7 +135,8 @@ public:
         ID_maxPlateauOpacity,
         ID_maxOpacity,
         ID_tolerance,
-        ID_hitpercent
+        ID_hitpercent,
+        ID__LAST
     };
 
 private:
@@ -140,6 +152,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define TOPOLOGYATTRIBUTES_TMFS "iiadddddd"
 
 #endif

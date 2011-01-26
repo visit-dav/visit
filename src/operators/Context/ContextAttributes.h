@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ContextAttributes
 //
@@ -65,13 +66,23 @@ public:
         All
     };
 
+    // These constructors are for objects of this class
     ContextAttributes();
     ContextAttributes(const ContextAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ContextAttributes(private_tmfs_t tmfs);
+    ContextAttributes(const ContextAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ContextAttributes();
 
     virtual ContextAttributes& operator = (const ContextAttributes &obj);
     virtual bool operator == (const ContextAttributes &obj) const;
     virtual bool operator != (const ContextAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ContextAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -127,7 +138,8 @@ public:
         ID_context,
         ID_cutoff,
         ID_below,
-        ID_above
+        ID_above,
+        ID__LAST
     };
 
 private:
@@ -141,6 +153,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CONTEXTATTRIBUTES_TMFS "dddsddd"
 
 #endif

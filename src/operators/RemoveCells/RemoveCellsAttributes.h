@@ -40,6 +40,7 @@
 #define REMOVECELLSATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: RemoveCellsAttributes
 //
@@ -58,13 +59,23 @@
 class RemoveCellsAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     RemoveCellsAttributes();
     RemoveCellsAttributes(const RemoveCellsAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    RemoveCellsAttributes(private_tmfs_t tmfs);
+    RemoveCellsAttributes(const RemoveCellsAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~RemoveCellsAttributes();
 
     virtual RemoveCellsAttributes& operator = (const RemoveCellsAttributes &obj);
     virtual bool operator == (const RemoveCellsAttributes &obj) const;
     virtual bool operator != (const RemoveCellsAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const RemoveCellsAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -101,7 +112,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_cellList = 0,
-        ID_domainList
+        ID_domainList,
+        ID__LAST
     };
 
 private:
@@ -110,6 +122,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define REMOVECELLSATTRIBUTES_TMFS "i*i*"
 
 #endif

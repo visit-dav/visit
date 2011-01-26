@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ClientInformation
 //
@@ -60,13 +61,23 @@
 class STATE_API ClientInformation : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ClientInformation();
     ClientInformation(const ClientInformation &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ClientInformation(private_tmfs_t tmfs);
+    ClientInformation(const ClientInformation &obj, private_tmfs_t tmfs);
+public:
     virtual ~ClientInformation();
 
     virtual ClientInformation& operator = (const ClientInformation &obj);
     virtual bool operator == (const ClientInformation &obj) const;
     virtual bool operator != (const ClientInformation &obj) const;
+private:
+    void Init();
+    void Copy(const ClientInformation &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -110,7 +121,8 @@ public:
     enum {
         ID_clientName = 0,
         ID_methodNames,
-        ID_methodPrototypes
+        ID_methodPrototypes,
+        ID__LAST
     };
 
 private:
@@ -120,6 +132,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CLIENTINFORMATION_TMFS "ss*s*"
 
 #endif

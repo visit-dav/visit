@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: PrinterAttributes
 //
@@ -60,13 +61,23 @@
 class STATE_API PrinterAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     PrinterAttributes();
     PrinterAttributes(const PrinterAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PrinterAttributes(private_tmfs_t tmfs);
+    PrinterAttributes(const PrinterAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~PrinterAttributes();
 
     virtual PrinterAttributes& operator = (const PrinterAttributes &obj);
     virtual bool operator == (const PrinterAttributes &obj) const;
     virtual bool operator != (const PrinterAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const PrinterAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -133,7 +144,8 @@ public:
         ID_printColor,
         ID_outputToFile,
         ID_outputToFileName,
-        ID_pageSize
+        ID_pageSize,
+        ID__LAST
     };
 
 private:
@@ -150,6 +162,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PRINTERATTRIBUTES_TMFS "ssssibbbsi"
 
 #endif

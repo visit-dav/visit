@@ -1488,3 +1488,4 @@ HistogramAttributes::VarChangeRequiresReset()
 {
     return true;
 }
+

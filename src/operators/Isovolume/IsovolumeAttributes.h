@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: IsovolumeAttributes
 //
@@ -59,13 +60,23 @@
 class IsovolumeAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     IsovolumeAttributes();
     IsovolumeAttributes(const IsovolumeAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    IsovolumeAttributes(private_tmfs_t tmfs);
+    IsovolumeAttributes(const IsovolumeAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~IsovolumeAttributes();
 
     virtual IsovolumeAttributes& operator = (const IsovolumeAttributes &obj);
     virtual bool operator == (const IsovolumeAttributes &obj) const;
     virtual bool operator != (const IsovolumeAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const IsovolumeAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -103,7 +114,8 @@ public:
     enum {
         ID_lbound = 0,
         ID_ubound,
-        ID_variable
+        ID_variable,
+        ID__LAST
     };
 
 private:
@@ -113,6 +125,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define ISOVOLUMEATTRIBUTES_TMFS "dds"
 
 #endif

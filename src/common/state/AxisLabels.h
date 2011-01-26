@@ -40,6 +40,7 @@
 #define AXISLABELS_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 #include <FontAttributes.h>
 
 // ****************************************************************************
@@ -60,13 +61,23 @@
 class STATE_API AxisLabels : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     AxisLabels();
     AxisLabels(const AxisLabels &obj);
+protected:
+    // These constructors are for objects derived from this class
+    AxisLabels(private_tmfs_t tmfs);
+    AxisLabels(const AxisLabels &obj, private_tmfs_t tmfs);
+public:
     virtual ~AxisLabels();
 
     virtual AxisLabels& operator = (const AxisLabels &obj);
     virtual bool operator == (const AxisLabels &obj) const;
     virtual bool operator != (const AxisLabels &obj) const;
+private:
+    void Init();
+    void Copy(const AxisLabels &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -104,7 +115,8 @@ public:
     enum {
         ID_visible = 0,
         ID_font,
-        ID_scaling
+        ID_scaling,
+        ID__LAST
     };
 
 private:
@@ -114,6 +126,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AXISLABELS_TMFS "bai"
 
 #endif

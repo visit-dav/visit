@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: KeyframeAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API KeyframeAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     KeyframeAttributes();
     KeyframeAttributes(const KeyframeAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    KeyframeAttributes(private_tmfs_t tmfs);
+    KeyframeAttributes(const KeyframeAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~KeyframeAttributes();
 
     virtual KeyframeAttributes& operator = (const KeyframeAttributes &obj);
     virtual bool operator == (const KeyframeAttributes &obj) const;
     virtual bool operator != (const KeyframeAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const KeyframeAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -101,7 +112,8 @@ public:
     enum {
         ID_enabled = 0,
         ID_nFrames,
-        ID_nFramesWasUserSet
+        ID_nFramesWasUserSet,
+        ID__LAST
     };
 
 private:
@@ -111,6 +123,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define KEYFRAMEATTRIBUTES_TMFS "bib"
 
 #endif

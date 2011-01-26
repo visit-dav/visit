@@ -40,6 +40,7 @@
 #define TRUECOLORATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: TruecolorAttributes
 //
@@ -58,13 +59,23 @@
 class TruecolorAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     TruecolorAttributes();
     TruecolorAttributes(const TruecolorAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    TruecolorAttributes(private_tmfs_t tmfs);
+    TruecolorAttributes(const TruecolorAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~TruecolorAttributes();
 
     virtual TruecolorAttributes& operator = (const TruecolorAttributes &obj);
     virtual bool operator == (const TruecolorAttributes &obj) const;
     virtual bool operator != (const TruecolorAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const TruecolorAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -99,7 +110,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_opacity = 0,
-        ID_lightingFlag
+        ID_lightingFlag,
+        ID__LAST
     };
 
 private:
@@ -108,6 +120,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define TRUECOLORATTRIBUTES_TMFS "db"
 
 #endif

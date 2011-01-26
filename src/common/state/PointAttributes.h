@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: PointAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API PointAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     PointAttributes();
     PointAttributes(const PointAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PointAttributes(private_tmfs_t tmfs);
+    PointAttributes(const PointAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~PointAttributes();
 
     virtual PointAttributes& operator = (const PointAttributes &obj);
     virtual bool operator == (const PointAttributes &obj) const;
     virtual bool operator != (const PointAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const PointAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -97,7 +108,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_point = 0
+        ID_point = 0,
+        ID__LAST
     };
 
 private:
@@ -105,6 +117,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define POINTATTRIBUTES_TMFS "D"
 
 #endif
