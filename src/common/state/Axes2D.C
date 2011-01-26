@@ -151,6 +151,7 @@ void Axes2D::Init()
     yAxis.GetTitle().GetFont().SetItalic(true);
     yAxis.GetLabel().GetFont().SetFont(FontAttributes::Courier);
     yAxis.GetLabel().GetFont().SetBold(true);
+    yAxis.GetLabel().GetFont().SetItalic(true);
 
     Axes2D::SelectAll();
 }
