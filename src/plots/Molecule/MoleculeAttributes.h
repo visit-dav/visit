@@ -40,6 +40,7 @@
 #define MOLECULEATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -92,13 +93,23 @@ public:
         Super
     };
 
+    // These constructors are for objects of this class
     MoleculeAttributes();
     MoleculeAttributes(const MoleculeAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    MoleculeAttributes(private_tmfs_t tmfs);
+    MoleculeAttributes(const MoleculeAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~MoleculeAttributes();
 
     virtual MoleculeAttributes& operator = (const MoleculeAttributes &obj);
     virtual bool operator == (const MoleculeAttributes &obj) const;
     virtual bool operator != (const MoleculeAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const MoleculeAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -231,7 +242,8 @@ public:
         ID_minFlag,
         ID_scalarMin,
         ID_maxFlag,
-        ID_scalarMax
+        ID_scalarMax,
+        ID__LAST
     };
 
 private:
@@ -260,6 +272,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define MOLECULEATTRIBUTES_TMFS "iiiiasffiifiissssbbfbf"
 
 #endif

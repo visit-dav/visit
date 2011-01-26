@@ -42,7 +42,6 @@
 #include <AttributeSubject.h>
 
 #include <PlaneAttributes.h>
-#include <avtVector.h>
 
 // ****************************************************************************
 // Class: ClipAttributes

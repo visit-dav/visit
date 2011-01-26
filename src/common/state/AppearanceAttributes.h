@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: AppearanceAttributes
 //
@@ -60,13 +61,23 @@
 class STATE_API AppearanceAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     AppearanceAttributes();
     AppearanceAttributes(const AppearanceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    AppearanceAttributes(private_tmfs_t tmfs);
+    AppearanceAttributes(const AppearanceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~AppearanceAttributes();
 
     virtual AppearanceAttributes& operator = (const AppearanceAttributes &obj);
     virtual bool operator == (const AppearanceAttributes &obj) const;
     virtual bool operator != (const AppearanceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const AppearanceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -144,7 +155,8 @@ public:
         ID_defaultBackground,
         ID_defaultFontName,
         ID_defaultStyle,
-        ID_defaultOrientation
+        ID_defaultOrientation,
+        ID__LAST
     };
 
 private:
@@ -162,6 +174,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define APPEARANCEATTRIBUTES_TMFS "bssssissssi"
 
 #endif

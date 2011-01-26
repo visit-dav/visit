@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ViewCurveAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API ViewCurveAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ViewCurveAttributes();
     ViewCurveAttributes(const ViewCurveAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ViewCurveAttributes(private_tmfs_t tmfs);
+    ViewCurveAttributes(const ViewCurveAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ViewCurveAttributes();
 
     virtual ViewCurveAttributes& operator = (const ViewCurveAttributes &obj);
     virtual bool operator == (const ViewCurveAttributes &obj) const;
     virtual bool operator != (const ViewCurveAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ViewCurveAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -113,7 +124,8 @@ public:
         ID_rangeCoords,
         ID_viewportCoords,
         ID_domainScale,
-        ID_rangeScale
+        ID_rangeScale,
+        ID__LAST
     };
 
 private:
@@ -125,6 +137,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VIEWCURVEATTRIBUTES_TMFS "DDDii"
 
 #endif

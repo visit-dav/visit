@@ -40,6 +40,7 @@
 #define EXPRESSIONLIST_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 class Expression;
 
 // ****************************************************************************
@@ -60,13 +61,23 @@ class Expression;
 class STATE_API ExpressionList : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ExpressionList();
     ExpressionList(const ExpressionList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ExpressionList(private_tmfs_t tmfs);
+    ExpressionList(const ExpressionList &obj, private_tmfs_t tmfs);
+public:
     virtual ~ExpressionList();
 
     virtual ExpressionList& operator = (const ExpressionList &obj);
     virtual bool operator == (const ExpressionList &obj) const;
     virtual bool operator != (const ExpressionList &obj) const;
+private:
+    void Init();
+    void Copy(const ExpressionList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -112,7 +123,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_expressions = 0
+        ID_expressions = 0,
+        ID__LAST
     };
 
 protected:
@@ -122,6 +134,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define EXPRESSIONLIST_TMFS "a*"
 
 #endif

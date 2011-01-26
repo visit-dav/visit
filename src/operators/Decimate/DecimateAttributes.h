@@ -40,6 +40,7 @@
 #define DECIMATEATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: DecimateAttributes
 //
@@ -58,13 +59,23 @@
 class DecimateAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     DecimateAttributes();
     DecimateAttributes(const DecimateAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    DecimateAttributes(private_tmfs_t tmfs);
+    DecimateAttributes(const DecimateAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~DecimateAttributes();
 
     virtual DecimateAttributes& operator = (const DecimateAttributes &obj);
     virtual bool operator == (const DecimateAttributes &obj) const;
     virtual bool operator != (const DecimateAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const DecimateAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -94,7 +105,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_target = 0
+        ID_target = 0,
+        ID__LAST
     };
 
 private:
@@ -102,6 +114,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define DECIMATEATTRIBUTES_TMFS "d"
 
 #endif

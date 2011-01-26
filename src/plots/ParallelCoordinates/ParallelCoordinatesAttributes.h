@@ -40,6 +40,7 @@
 #define PARALLELCOORDINATESATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 #include <AxisRestrictionAttributes.h>
 
@@ -68,13 +69,23 @@ public:
         BinsColoredByPopulation
     };
 
+    // These constructors are for objects of this class
     ParallelCoordinatesAttributes();
     ParallelCoordinatesAttributes(const ParallelCoordinatesAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ParallelCoordinatesAttributes(private_tmfs_t tmfs);
+    ParallelCoordinatesAttributes(const ParallelCoordinatesAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ParallelCoordinatesAttributes();
 
     virtual ParallelCoordinatesAttributes& operator = (const ParallelCoordinatesAttributes &obj);
     virtual bool operator == (const ParallelCoordinatesAttributes &obj) const;
     virtual bool operator != (const ParallelCoordinatesAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ParallelCoordinatesAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -170,7 +181,8 @@ public:
         ID_unifyAxisExtents,
         ID_linesNumPartitions,
         ID_focusGamma,
-        ID_drawFocusAs
+        ID_drawFocusAs,
+        ID__LAST
     };
 
 private:
@@ -192,6 +204,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PARALLELCOORDINATESATTRIBUTES_TMFS "s*s*d*d*babfiabbifi"
 
 #endif

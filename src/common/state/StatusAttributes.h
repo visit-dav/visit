@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: StatusAttributes
 //
@@ -62,13 +63,23 @@ class STATE_API StatusAttributes : public AttributeSubject
 public:
     static const int DEFAULT_DURATION;
 
+    // These constructors are for objects of this class
     StatusAttributes();
     StatusAttributes(const StatusAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    StatusAttributes(private_tmfs_t tmfs);
+    StatusAttributes(const StatusAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~StatusAttributes();
 
     virtual StatusAttributes& operator = (const StatusAttributes &obj);
     virtual bool operator == (const StatusAttributes &obj) const;
     virtual bool operator != (const StatusAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const StatusAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -136,7 +147,8 @@ public:
         ID_currentStageName,
         ID_maxStage,
         ID_messageType,
-        ID_duration
+        ID_duration,
+        ID__LAST
     };
 
 private:
@@ -154,6 +166,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define STATUSATTRIBUTES_TMFS "sbsu*biisiii"
 
 #endif

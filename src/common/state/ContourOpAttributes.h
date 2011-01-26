@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ContourOpAttributes
 //
@@ -72,13 +73,23 @@ public:
         Log
     };
 
+    // These constructors are for objects of this class
     ContourOpAttributes();
     ContourOpAttributes(const ContourOpAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ContourOpAttributes(private_tmfs_t tmfs);
+    ContourOpAttributes(const ContourOpAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ContourOpAttributes();
 
     virtual ContourOpAttributes& operator = (const ContourOpAttributes &obj);
     virtual bool operator == (const ContourOpAttributes &obj) const;
     virtual bool operator != (const ContourOpAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ContourOpAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -152,7 +163,8 @@ public:
         ID_min,
         ID_max,
         ID_scaling,
-        ID_variable
+        ID_variable,
+        ID__LAST
     };
 
 private:
@@ -169,6 +181,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CONTOUROPATTRIBUTES_TMFS "id*d*ibbddis"
 
 #endif

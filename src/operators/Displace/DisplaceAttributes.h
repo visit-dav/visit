@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: DisplaceAttributes
 //
@@ -59,13 +60,23 @@
 class DisplaceAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     DisplaceAttributes();
     DisplaceAttributes(const DisplaceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    DisplaceAttributes(private_tmfs_t tmfs);
+    DisplaceAttributes(const DisplaceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~DisplaceAttributes();
 
     virtual DisplaceAttributes& operator = (const DisplaceAttributes &obj);
     virtual bool operator == (const DisplaceAttributes &obj) const;
     virtual bool operator != (const DisplaceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const DisplaceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -100,7 +111,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_factor = 0,
-        ID_variable
+        ID_variable,
+        ID__LAST
     };
 
 private:
@@ -109,6 +121,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define DISPLACEATTRIBUTES_TMFS "ds"
 
 #endif

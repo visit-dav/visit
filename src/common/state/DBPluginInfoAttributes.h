@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 class DBOptionsAttributes;
 class DBOptionsAttributes;
 
@@ -62,13 +63,23 @@ class DBOptionsAttributes;
 class STATE_API DBPluginInfoAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     DBPluginInfoAttributes();
     DBPluginInfoAttributes(const DBPluginInfoAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    DBPluginInfoAttributes(private_tmfs_t tmfs);
+    DBPluginInfoAttributes(const DBPluginInfoAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~DBPluginInfoAttributes();
 
     virtual DBPluginInfoAttributes& operator = (const DBPluginInfoAttributes &obj);
     virtual bool operator == (const DBPluginInfoAttributes &obj) const;
     virtual bool operator != (const DBPluginInfoAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const DBPluginInfoAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -139,7 +150,8 @@ public:
         ID_dbReadOptions,
         ID_dbWriteOptions,
         ID_typesFullNames,
-        ID_host
+        ID_host,
+        ID__LAST
     };
 
 protected:
@@ -154,6 +166,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define DBPLUGININFOATTRIBUTES_TMFS "s*i*a*a*s*s"
 
 #endif

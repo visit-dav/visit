@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: NamespaceAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API NamespaceAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     NamespaceAttributes();
     NamespaceAttributes(const NamespaceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    NamespaceAttributes(private_tmfs_t tmfs);
+    NamespaceAttributes(const NamespaceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~NamespaceAttributes();
 
     virtual NamespaceAttributes& operator = (const NamespaceAttributes &obj);
     virtual bool operator == (const NamespaceAttributes &obj) const;
     virtual bool operator != (const NamespaceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const NamespaceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -106,7 +117,8 @@ public:
         ID_type = 0,
         ID_subsets,
         ID_min,
-        ID_max
+        ID_max,
+        ID__LAST
     };
 
 private:
@@ -117,6 +129,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define NAMESPACEATTRIBUTES_TMFS "ii*ii"
 
 #endif

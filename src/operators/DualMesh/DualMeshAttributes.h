@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: DualMeshAttributes
 //
@@ -66,13 +67,23 @@ public:
         ZonesToNodes
     };
 
+    // These constructors are for objects of this class
     DualMeshAttributes();
     DualMeshAttributes(const DualMeshAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    DualMeshAttributes(private_tmfs_t tmfs);
+    DualMeshAttributes(const DualMeshAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~DualMeshAttributes();
 
     virtual DualMeshAttributes& operator = (const DualMeshAttributes &obj);
     virtual bool operator == (const DualMeshAttributes &obj) const;
     virtual bool operator != (const DualMeshAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const DualMeshAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -108,7 +119,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_mode = 0
+        ID_mode = 0,
+        ID__LAST
     };
 
 private:
@@ -116,6 +128,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define DUALMESHATTRIBUTES_TMFS "i"
 
 #endif

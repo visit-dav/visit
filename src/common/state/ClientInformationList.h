@@ -40,6 +40,7 @@
 #define CLIENTINFORMATIONLIST_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 class ClientInformation;
 
 // ****************************************************************************
@@ -60,13 +61,23 @@ class ClientInformation;
 class STATE_API ClientInformationList : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ClientInformationList();
     ClientInformationList(const ClientInformationList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ClientInformationList(private_tmfs_t tmfs);
+    ClientInformationList(const ClientInformationList &obj, private_tmfs_t tmfs);
+public:
     virtual ~ClientInformationList();
 
     virtual ClientInformationList& operator = (const ClientInformationList &obj);
     virtual bool operator == (const ClientInformationList &obj) const;
     virtual bool operator != (const ClientInformationList &obj) const;
+private:
+    void Init();
+    void Copy(const ClientInformationList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -105,7 +116,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_clients = 0
+        ID_clients = 0,
+        ID__LAST
     };
 
 protected:
@@ -115,6 +127,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CLIENTINFORMATIONLIST_TMFS "a*"
 
 #endif

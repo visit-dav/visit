@@ -40,6 +40,7 @@
 #define VISUALCUELIST_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 class VisualCueInfo;
 
 // ****************************************************************************
@@ -60,13 +61,23 @@ class VisualCueInfo;
 class STATE_API VisualCueList : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     VisualCueList();
     VisualCueList(const VisualCueList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    VisualCueList(private_tmfs_t tmfs);
+    VisualCueList(const VisualCueList &obj, private_tmfs_t tmfs);
+public:
     virtual ~VisualCueList();
 
     virtual VisualCueList& operator = (const VisualCueList &obj);
     virtual bool operator == (const VisualCueList &obj) const;
     virtual bool operator != (const VisualCueList &obj) const;
+private:
+    void Init();
+    void Copy(const VisualCueList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -107,7 +118,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_cues = 0
+        ID_cues = 0,
+        ID__LAST
     };
 
 protected:
@@ -117,6 +129,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VISUALCUELIST_TMFS "a*"
 
 #endif

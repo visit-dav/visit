@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ZoneDumpAttributes
 //
@@ -59,13 +60,23 @@
 class ZoneDumpAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ZoneDumpAttributes();
     ZoneDumpAttributes(const ZoneDumpAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ZoneDumpAttributes(private_tmfs_t tmfs);
+    ZoneDumpAttributes(const ZoneDumpAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ZoneDumpAttributes();
 
     virtual ZoneDumpAttributes& operator = (const ZoneDumpAttributes &obj);
     virtual bool operator == (const ZoneDumpAttributes &obj) const;
     virtual bool operator != (const ZoneDumpAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ZoneDumpAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -111,7 +122,8 @@ public:
         ID_lowerBound,
         ID_upperBound,
         ID_outputFile,
-        ID_enabled
+        ID_enabled,
+        ID__LAST
     };
 
 private:
@@ -123,6 +135,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define ZONEDUMPATTRIBUTES_TMFS "sddsb"
 
 #endif

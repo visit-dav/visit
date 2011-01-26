@@ -40,6 +40,7 @@
 #define COLORCONTROLPOINTLIST_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 class ColorControlPoint;
 
 // ****************************************************************************
@@ -60,13 +61,23 @@ class ColorControlPoint;
 class STATE_API ColorControlPointList : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ColorControlPointList();
     ColorControlPointList(const ColorControlPointList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ColorControlPointList(private_tmfs_t tmfs);
+    ColorControlPointList(const ColorControlPointList &obj, private_tmfs_t tmfs);
+public:
     virtual ~ColorControlPointList();
 
     virtual ColorControlPointList& operator = (const ColorControlPointList &obj);
     virtual bool operator == (const ColorControlPointList &obj) const;
     virtual bool operator != (const ColorControlPointList &obj) const;
+private:
+    void Init();
+    void Copy(const ColorControlPointList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -124,7 +135,8 @@ public:
         ID_smoothingFlag,
         ID_equalSpacingFlag,
         ID_discreteFlag,
-        ID_externalFlag
+        ID_externalFlag,
+        ID__LAST
     };
 
 protected:
@@ -138,6 +150,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define COLORCONTROLPOINTLIST_TMFS "a*bbbb"
 
 #endif

@@ -40,6 +40,7 @@
 #define AXESARRAY_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 #include <AxisAttributes.h>
 
 // ****************************************************************************
@@ -60,13 +61,23 @@
 class STATE_API AxesArray : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     AxesArray();
     AxesArray(const AxesArray &obj);
+protected:
+    // These constructors are for objects derived from this class
+    AxesArray(private_tmfs_t tmfs);
+    AxesArray(const AxesArray &obj, private_tmfs_t tmfs);
+public:
     virtual ~AxesArray();
 
     virtual AxesArray& operator = (const AxesArray &obj);
     virtual bool operator == (const AxesArray &obj) const;
     virtual bool operator != (const AxesArray &obj) const;
+private:
+    void Init();
+    void Copy(const AxesArray &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -113,7 +124,8 @@ public:
         ID_autoSetTicks,
         ID_autoSetScaling,
         ID_lineWidth,
-        ID_axes
+        ID_axes,
+        ID__LAST
     };
 
 private:
@@ -126,6 +138,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AXESARRAY_TMFS "bbbbia"
 
 #endif

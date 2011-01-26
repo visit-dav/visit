@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SILMatrixAttributes
 //
@@ -60,13 +61,23 @@
 class STATE_API SILMatrixAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SILMatrixAttributes();
     SILMatrixAttributes(const SILMatrixAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SILMatrixAttributes(private_tmfs_t tmfs);
+    SILMatrixAttributes(const SILMatrixAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SILMatrixAttributes();
 
     virtual SILMatrixAttributes& operator = (const SILMatrixAttributes &obj);
     virtual bool operator == (const SILMatrixAttributes &obj) const;
     virtual bool operator != (const SILMatrixAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SILMatrixAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -119,7 +130,8 @@ public:
         ID_role1,
         ID_set2,
         ID_category2,
-        ID_role2
+        ID_role2,
+        ID__LAST
     };
 
 private:
@@ -132,6 +144,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SILMATRIXATTRIBUTES_TMFS "i*sii*si"
 
 #endif

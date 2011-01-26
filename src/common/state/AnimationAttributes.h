@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: AnimationAttributes
 //
@@ -73,13 +74,23 @@ public:
         Swing
     };
 
+    // These constructors are for objects of this class
     AnimationAttributes();
     AnimationAttributes(const AnimationAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    AnimationAttributes(private_tmfs_t tmfs);
+    AnimationAttributes(const AnimationAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~AnimationAttributes();
 
     virtual AnimationAttributes& operator = (const AnimationAttributes &obj);
     virtual bool operator == (const AnimationAttributes &obj) const;
     virtual bool operator != (const AnimationAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const AnimationAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -134,7 +145,8 @@ public:
         ID_pipelineCachingMode,
         ID_frameIncrement,
         ID_timeout,
-        ID_playbackMode
+        ID_playbackMode,
+        ID__LAST
     };
 
 private:
@@ -146,6 +158,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define ANIMATIONATTRIBUTES_TMFS "ibiii"
 
 #endif

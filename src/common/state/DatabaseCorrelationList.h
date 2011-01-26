@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 class DatabaseCorrelation;
 #include <visitstream.h>
 
@@ -69,13 +70,23 @@ public:
         CorrelateOnlyIfSameLength
     };
 
+    // These constructors are for objects of this class
     DatabaseCorrelationList();
     DatabaseCorrelationList(const DatabaseCorrelationList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    DatabaseCorrelationList(private_tmfs_t tmfs);
+    DatabaseCorrelationList(const DatabaseCorrelationList &obj, private_tmfs_t tmfs);
+public:
     virtual ~DatabaseCorrelationList();
 
     virtual DatabaseCorrelationList& operator = (const DatabaseCorrelationList &obj);
     virtual bool operator == (const DatabaseCorrelationList &obj) const;
     virtual bool operator != (const DatabaseCorrelationList &obj) const;
+private:
+    void Init();
+    void Copy(const DatabaseCorrelationList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -136,7 +147,8 @@ public:
         ID_correlations = 0,
         ID_needPermission,
         ID_defaultCorrelationMethod,
-        ID_whenToCorrelate
+        ID_whenToCorrelate,
+        ID__LAST
     };
 
 protected:
@@ -149,7 +161,9 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define DATABASECORRELATIONLIST_TMFS "a*bii"
 
 // User-defined functions
 ostream &operator <<(ostream &, const DatabaseCorrelationList &cL);

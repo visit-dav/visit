@@ -40,6 +40,7 @@
 #define SILRESTRICTIONATTRIBUTES_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 #include <SILAttributes.h>
 
 // ****************************************************************************
@@ -60,13 +61,23 @@
 class STATE_API SILRestrictionAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SILRestrictionAttributes();
     SILRestrictionAttributes(const SILRestrictionAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SILRestrictionAttributes(private_tmfs_t tmfs);
+    SILRestrictionAttributes(const SILRestrictionAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SILRestrictionAttributes();
 
     virtual SILRestrictionAttributes& operator = (const SILRestrictionAttributes &obj);
     virtual bool operator == (const SILRestrictionAttributes &obj) const;
     virtual bool operator != (const SILRestrictionAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SILRestrictionAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -106,7 +117,8 @@ public:
     enum {
         ID_useSet = 0,
         ID_topSet,
-        ID_silAtts
+        ID_silAtts,
+        ID__LAST
     };
 
 private:
@@ -116,6 +128,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SILRESTRICTIONATTRIBUTES_TMFS "u*ia"
 
 #endif

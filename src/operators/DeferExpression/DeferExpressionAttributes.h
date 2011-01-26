@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: DeferExpressionAttributes
 //
@@ -59,13 +60,23 @@
 class DeferExpressionAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     DeferExpressionAttributes();
     DeferExpressionAttributes(const DeferExpressionAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    DeferExpressionAttributes(private_tmfs_t tmfs);
+    DeferExpressionAttributes(const DeferExpressionAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~DeferExpressionAttributes();
 
     virtual DeferExpressionAttributes& operator = (const DeferExpressionAttributes &obj);
     virtual bool operator == (const DeferExpressionAttributes &obj) const;
     virtual bool operator != (const DeferExpressionAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const DeferExpressionAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -97,7 +108,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_exprs = 0
+        ID_exprs = 0,
+        ID__LAST
     };
 
 private:
@@ -105,6 +117,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define DEFEREXPRESSIONATTRIBUTES_TMFS "s*"
 
 #endif

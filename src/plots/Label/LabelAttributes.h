@@ -40,6 +40,7 @@
 #define LABELATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -104,13 +105,23 @@ public:
         LABEL_DT_NEVER
     };
 
+    // These constructors are for objects of this class
     LabelAttributes();
     LabelAttributes(const LabelAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    LabelAttributes(private_tmfs_t tmfs);
+    LabelAttributes(const LabelAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~LabelAttributes();
 
     virtual LabelAttributes& operator = (const LabelAttributes &obj);
     virtual bool operator == (const LabelAttributes &obj) const;
     virtual bool operator != (const LabelAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const LabelAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -231,7 +242,8 @@ public:
         ID_horizontalJustification,
         ID_verticalJustification,
         ID_depthTestMode,
-        ID_formatTemplate
+        ID_formatTemplate,
+        ID__LAST
     };
 
 private:
@@ -256,6 +268,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define LABELATTRIBUTES_TMFS "ibbbbiiibafbafiiis"
 
 #endif

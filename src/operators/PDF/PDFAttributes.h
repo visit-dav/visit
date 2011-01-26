@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: PDFAttributes
 //
@@ -76,13 +77,23 @@ public:
         ZoneCount
     };
 
+    // These constructors are for objects of this class
     PDFAttributes();
     PDFAttributes(const PDFAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PDFAttributes(private_tmfs_t tmfs);
+    PDFAttributes(const PDFAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~PDFAttributes();
 
     virtual PDFAttributes& operator = (const PDFAttributes &obj);
     virtual bool operator == (const PDFAttributes &obj) const;
     virtual bool operator != (const PDFAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const PDFAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -212,7 +223,8 @@ public:
         ID_var3SkewFactor,
         ID_var3NumSamples,
         ID_scaleCube,
-        ID_densityType
+        ID_densityType,
+        ID__LAST
     };
 
 private:
@@ -246,6 +258,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PDFATTRIBUTES_TMFS "sbbddidisbbddidiisbbddidibi"
 
 #endif

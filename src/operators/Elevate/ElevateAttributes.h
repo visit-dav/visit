@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ElevateAttributes
 //
@@ -71,13 +72,23 @@ public:
         CurrentPlot
     };
 
+    // These constructors are for objects of this class
     ElevateAttributes();
     ElevateAttributes(const ElevateAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ElevateAttributes(private_tmfs_t tmfs);
+    ElevateAttributes(const ElevateAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ElevateAttributes();
 
     virtual ElevateAttributes& operator = (const ElevateAttributes &obj);
     virtual bool operator == (const ElevateAttributes &obj) const;
     virtual bool operator != (const ElevateAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ElevateAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -147,7 +158,8 @@ public:
         ID_maxFlag,
         ID_max,
         ID_zeroFlag,
-        ID_variable
+        ID_variable,
+        ID__LAST
     };
 
 private:
@@ -164,6 +176,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define ELEVATEATTRIBUTES_TMFS "biidbdbdbs"
 
 #endif

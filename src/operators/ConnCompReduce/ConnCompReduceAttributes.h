@@ -40,6 +40,7 @@
 #define CONNCOMPREDUCEATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: ConnCompReduceAttributes
 //
@@ -58,13 +59,23 @@
 class ConnCompReduceAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     ConnCompReduceAttributes();
     ConnCompReduceAttributes(const ConnCompReduceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    ConnCompReduceAttributes(private_tmfs_t tmfs);
+    ConnCompReduceAttributes(const ConnCompReduceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~ConnCompReduceAttributes();
 
     virtual ConnCompReduceAttributes& operator = (const ConnCompReduceAttributes &obj);
     virtual bool operator == (const ConnCompReduceAttributes &obj) const;
     virtual bool operator != (const ConnCompReduceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const ConnCompReduceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -94,7 +105,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_target = 0
+        ID_target = 0,
+        ID__LAST
     };
 
 private:
@@ -102,6 +114,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CONNCOMPREDUCEATTRIBUTES_TMFS "d"
 
 #endif

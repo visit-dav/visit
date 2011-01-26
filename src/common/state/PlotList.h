@@ -40,6 +40,7 @@
 #define PLOTLIST_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 class Plot;
 
 // ****************************************************************************
@@ -60,13 +61,23 @@ class Plot;
 class STATE_API PlotList : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     PlotList();
     PlotList(const PlotList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PlotList(private_tmfs_t tmfs);
+    PlotList(const PlotList &obj, private_tmfs_t tmfs);
+public:
     virtual ~PlotList();
 
     virtual PlotList& operator = (const PlotList &obj);
     virtual bool operator == (const PlotList &obj) const;
     virtual bool operator != (const PlotList &obj) const;
+private:
+    void Init();
+    void Copy(const PlotList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -112,7 +123,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_plots = 0
+        ID_plots = 0,
+        ID__LAST
     };
 
 protected:
@@ -122,6 +134,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PLOTLIST_TMFS "a*"
 
 #endif

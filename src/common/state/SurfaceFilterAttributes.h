@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SurfaceFilterAttributes
 //
@@ -71,13 +72,23 @@ public:
         CurrentPlot
     };
 
+    // These constructors are for objects of this class
     SurfaceFilterAttributes();
     SurfaceFilterAttributes(const SurfaceFilterAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SurfaceFilterAttributes(private_tmfs_t tmfs);
+    SurfaceFilterAttributes(const SurfaceFilterAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SurfaceFilterAttributes();
 
     virtual SurfaceFilterAttributes& operator = (const SurfaceFilterAttributes &obj);
     virtual bool operator == (const SurfaceFilterAttributes &obj) const;
     virtual bool operator != (const SurfaceFilterAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SurfaceFilterAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -150,7 +161,8 @@ public:
         ID_zeroFlag,
         ID_variable,
         ID_useXYLimits,
-        ID_generateNodalOutput
+        ID_generateNodalOutput,
+        ID__LAST
     };
 
 private:
@@ -168,6 +180,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SURFACEFILTERATTRIBUTES_TMFS "ibbidddbsbb"
 
 #endif

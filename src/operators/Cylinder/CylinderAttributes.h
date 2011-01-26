@@ -39,6 +39,7 @@
 #ifndef CYLINDERATTRIBUTES_H
 #define CYLINDERATTRIBUTES_H
 #include <AttributeSubject.h>
+
 #include <Line.h>
 
 // ****************************************************************************
@@ -59,13 +60,23 @@
 class CylinderAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     CylinderAttributes();
     CylinderAttributes(const CylinderAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    CylinderAttributes(private_tmfs_t tmfs);
+    CylinderAttributes(const CylinderAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~CylinderAttributes();
 
     virtual CylinderAttributes& operator = (const CylinderAttributes &obj);
     virtual bool operator == (const CylinderAttributes &obj) const;
     virtual bool operator != (const CylinderAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const CylinderAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -105,7 +116,8 @@ public:
     enum {
         ID_point1 = 0,
         ID_point2,
-        ID_radius
+        ID_radius,
+        ID__LAST
     };
 
 private:
@@ -115,6 +127,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define CYLINDERATTRIBUTES_TMFS "DDd"
 
 #endif

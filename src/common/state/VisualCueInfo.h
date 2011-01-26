@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 #include <PickAttributes.h>
 #include <Line.h>
@@ -70,13 +71,23 @@ public:
         Unknown
     };
 
+    // These constructors are for objects of this class
     VisualCueInfo();
     VisualCueInfo(const VisualCueInfo &obj);
+protected:
+    // These constructors are for objects derived from this class
+    VisualCueInfo(private_tmfs_t tmfs);
+    VisualCueInfo(const VisualCueInfo &obj, private_tmfs_t tmfs);
+public:
     virtual ~VisualCueInfo();
 
     virtual VisualCueInfo& operator = (const VisualCueInfo &obj);
     virtual bool operator == (const VisualCueInfo &obj) const;
     virtual bool operator != (const VisualCueInfo &obj) const;
+private:
+    void Init();
+    void Copy(const VisualCueInfo &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -147,7 +158,8 @@ public:
         ID_showLabel,
         ID_lineStyle,
         ID_lineWidth,
-        ID_opacity
+        ID_opacity,
+        ID__LAST
     };
 
 private:
@@ -163,6 +175,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define VISUALCUEINFO_TMFS "d*iassbiid"
 
 #endif

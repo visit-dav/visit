@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <visitstream.h>
 
 // ****************************************************************************
@@ -70,13 +71,23 @@ public:
         UserDefinedCorrelation
     };
 
+    // These constructors are for objects of this class
     DatabaseCorrelation();
     DatabaseCorrelation(const DatabaseCorrelation &obj);
+protected:
+    // These constructors are for objects derived from this class
+    DatabaseCorrelation(private_tmfs_t tmfs);
+    DatabaseCorrelation(const DatabaseCorrelation &obj, private_tmfs_t tmfs);
+public:
     virtual ~DatabaseCorrelation();
 
     virtual DatabaseCorrelation& operator = (const DatabaseCorrelation &obj);
     virtual bool operator == (const DatabaseCorrelation &obj) const;
     virtual bool operator != (const DatabaseCorrelation &obj) const;
+private:
+    void Init();
+    void Copy(const DatabaseCorrelation &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -166,7 +177,8 @@ public:
         ID_databaseCycles,
         ID_indices,
         ID_condensedTimes,
-        ID_condensedCycles
+        ID_condensedCycles,
+        ID__LAST
     };
 
 private:
@@ -183,7 +195,9 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define DATABASECORRELATION_TMFS "siis*i*d*i*i*d*i*"
 
 // User-defined functions
 STATE_API ostream& operator << (ostream &os, const DatabaseCorrelation &);

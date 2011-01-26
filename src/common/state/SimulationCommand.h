@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SimulationCommand
 //
@@ -60,13 +61,23 @@
 class STATE_API SimulationCommand : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SimulationCommand();
     SimulationCommand(const SimulationCommand &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SimulationCommand(private_tmfs_t tmfs);
+    SimulationCommand(const SimulationCommand &obj, private_tmfs_t tmfs);
+public:
     virtual ~SimulationCommand();
 
     virtual SimulationCommand& operator = (const SimulationCommand &obj);
     virtual bool operator == (const SimulationCommand &obj) const;
     virtual bool operator != (const SimulationCommand &obj) const;
+private:
+    void Init();
+    void Copy(const SimulationCommand &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -94,7 +105,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_command = 0
+        ID_command = 0,
+        ID__LAST
     };
 
 private:
@@ -102,6 +114,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SIMULATIONCOMMAND_TMFS "s"
 
 #endif

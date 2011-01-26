@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: SphereAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API SphereAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SphereAttributes();
     SphereAttributes(const SphereAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SphereAttributes(private_tmfs_t tmfs);
+    SphereAttributes(const SphereAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SphereAttributes();
 
     virtual SphereAttributes& operator = (const SphereAttributes &obj);
     virtual bool operator == (const SphereAttributes &obj) const;
     virtual bool operator != (const SphereAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SphereAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -100,7 +111,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_origin = 0,
-        ID_radius
+        ID_radius,
+        ID__LAST
     };
 
 private:
@@ -109,6 +121,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SPHEREATTRIBUTES_TMFS "Dd"
 
 #endif

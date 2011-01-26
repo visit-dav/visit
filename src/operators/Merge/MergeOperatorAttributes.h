@@ -40,6 +40,7 @@
 #define MERGEOPERATORATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: MergeOperatorAttributes
 //
@@ -58,13 +59,23 @@
 class MergeOperatorAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     MergeOperatorAttributes();
     MergeOperatorAttributes(const MergeOperatorAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    MergeOperatorAttributes(private_tmfs_t tmfs);
+    MergeOperatorAttributes(const MergeOperatorAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~MergeOperatorAttributes();
 
     virtual MergeOperatorAttributes& operator = (const MergeOperatorAttributes &obj);
     virtual bool operator == (const MergeOperatorAttributes &obj) const;
     virtual bool operator != (const MergeOperatorAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const MergeOperatorAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -97,7 +108,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_parallelMerge = 0,
-        ID_tolerance
+        ID_tolerance,
+        ID__LAST
     };
 
 private:
@@ -106,6 +118,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define MERGEOPERATORATTRIBUTES_TMFS "bd"
 
 #endif

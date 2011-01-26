@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -68,13 +69,23 @@ public:
         Camera
     };
 
+    // These constructors are for objects of this class
     LightAttributes();
     LightAttributes(const LightAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    LightAttributes(private_tmfs_t tmfs);
+    LightAttributes(const LightAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~LightAttributes();
 
     virtual LightAttributes& operator = (const LightAttributes &obj);
     virtual bool operator == (const LightAttributes &obj) const;
     virtual bool operator != (const LightAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const LightAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -129,7 +140,8 @@ public:
         ID_type,
         ID_direction,
         ID_color,
-        ID_brightness
+        ID_brightness,
+        ID__LAST
     };
 
 private:
@@ -142,6 +154,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define LIGHTATTRIBUTES_TMFS "bbiDad"
 
 #endif

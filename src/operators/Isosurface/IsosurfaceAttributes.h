@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: IsosurfaceAttributes
 //
@@ -71,13 +72,23 @@ public:
         Log
     };
 
+    // These constructors are for objects of this class
     IsosurfaceAttributes();
     IsosurfaceAttributes(const IsosurfaceAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    IsosurfaceAttributes(private_tmfs_t tmfs);
+    IsosurfaceAttributes(const IsosurfaceAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~IsosurfaceAttributes();
 
     virtual IsosurfaceAttributes& operator = (const IsosurfaceAttributes &obj);
     virtual bool operator == (const IsosurfaceAttributes &obj) const;
     virtual bool operator != (const IsosurfaceAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const IsosurfaceAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -151,7 +162,8 @@ public:
         ID_maxFlag,
         ID_max,
         ID_scaling,
-        ID_variable
+        ID_variable,
+        ID__LAST
     };
 
 private:
@@ -168,6 +180,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define ISOSURFACEATTRIBUTES_TMFS "id*d*ibdbdis"
 
 #endif

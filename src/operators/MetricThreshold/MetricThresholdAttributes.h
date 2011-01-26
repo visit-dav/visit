@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: MetricThresholdAttributes
 //
@@ -84,13 +85,23 @@ public:
         Largest_Angle
     };
 
+    // These constructors are for objects of this class
     MetricThresholdAttributes();
     MetricThresholdAttributes(const MetricThresholdAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    MetricThresholdAttributes(private_tmfs_t tmfs);
+    MetricThresholdAttributes(const MetricThresholdAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~MetricThresholdAttributes();
 
     virtual MetricThresholdAttributes& operator = (const MetricThresholdAttributes &obj);
     virtual bool operator == (const MetricThresholdAttributes &obj) const;
     virtual bool operator != (const MetricThresholdAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const MetricThresholdAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -180,7 +191,8 @@ public:
         ID_tri_upper,
         ID_Quad,
         ID_quad_lower,
-        ID_quad_upper
+        ID_quad_upper,
+        ID__LAST
     };
 
 private:
@@ -206,6 +218,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define METRICTHRESHOLDATTRIBUTES_TMFS "ibddbddbddbddbddbdd"
 
 #endif

@@ -40,6 +40,7 @@
 #define BOUNDARYOPATTRIBUTES_H
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: BoundaryOpAttributes
 //
@@ -58,13 +59,23 @@
 class BoundaryOpAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     BoundaryOpAttributes();
     BoundaryOpAttributes(const BoundaryOpAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    BoundaryOpAttributes(private_tmfs_t tmfs);
+    BoundaryOpAttributes(const BoundaryOpAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~BoundaryOpAttributes();
 
     virtual BoundaryOpAttributes& operator = (const BoundaryOpAttributes &obj);
     virtual bool operator == (const BoundaryOpAttributes &obj) const;
     virtual bool operator != (const BoundaryOpAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const BoundaryOpAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -94,7 +105,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_smoothingLevel = 0
+        ID_smoothingLevel = 0,
+        ID__LAST
     };
 
 private:
@@ -102,6 +114,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define BOUNDARYOPATTRIBUTES_TMFS "i"
 
 #endif

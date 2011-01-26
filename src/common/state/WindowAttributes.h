@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <ViewCurveAttributes.h>
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>
@@ -67,13 +68,23 @@
 class STATE_API WindowAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     WindowAttributes();
     WindowAttributes(const WindowAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    WindowAttributes(private_tmfs_t tmfs);
+    WindowAttributes(const WindowAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~WindowAttributes();
 
     virtual WindowAttributes& operator = (const WindowAttributes &obj);
     virtual bool operator == (const WindowAttributes &obj) const;
     virtual bool operator != (const WindowAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const WindowAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -177,7 +188,8 @@ public:
         ID_gradientBackgroundStyle,
         ID_backgroundImage,
         ID_imageRepeatX,
-        ID_imageRepeatY
+        ID_imageRepeatY,
+        ID__LAST
     };
 
 private:
@@ -201,6 +213,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define WINDOWATTRIBUTES_TMFS "aaaaaaaIUUiDDisii"
 
 #endif

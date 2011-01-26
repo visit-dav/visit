@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: AxisTickMarks
 //
@@ -59,13 +60,23 @@
 class STATE_API AxisTickMarks : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     AxisTickMarks();
     AxisTickMarks(const AxisTickMarks &obj);
+protected:
+    // These constructors are for objects derived from this class
+    AxisTickMarks(private_tmfs_t tmfs);
+    AxisTickMarks(const AxisTickMarks &obj, private_tmfs_t tmfs);
+public:
     virtual ~AxisTickMarks();
 
     virtual AxisTickMarks& operator = (const AxisTickMarks &obj);
     virtual bool operator == (const AxisTickMarks &obj) const;
     virtual bool operator != (const AxisTickMarks &obj) const;
+private:
+    void Init();
+    void Copy(const AxisTickMarks &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -107,7 +118,8 @@ public:
         ID_majorMinimum,
         ID_majorMaximum,
         ID_minorSpacing,
-        ID_majorSpacing
+        ID_majorSpacing,
+        ID__LAST
     };
 
 private:
@@ -119,6 +131,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define AXISTICKMARKS_TMFS "bdddd"
 
 #endif

@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 class PickVarInfo;
 #include <visitstream.h>
 
@@ -78,13 +79,23 @@ public:
         ZR
     };
 
+    // These constructors are for objects of this class
     PickAttributes();
     PickAttributes(const PickAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PickAttributes(private_tmfs_t tmfs);
+    PickAttributes(const PickAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~PickAttributes();
 
     virtual PickAttributes& operator = (const PickAttributes &obj);
     virtual bool operator == (const PickAttributes &obj) const;
     virtual bool operator != (const PickAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const PickAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -395,7 +406,8 @@ public:
         ID_createSpreadsheet,
         ID_subsetName,
         ID_floatFormat,
-        ID_timePreserveCoord
+        ID_timePreserveCoord,
+        ID__LAST
     };
 
 protected:
@@ -471,6 +483,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*iissDDDDDDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssb"
 
 #endif

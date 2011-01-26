@@ -42,6 +42,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: DBOptionsAttributes
 //
@@ -70,13 +71,23 @@ public:
         Enum
     };
 
+    // These constructors are for objects of this class
     DBOptionsAttributes();
     DBOptionsAttributes(const DBOptionsAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    DBOptionsAttributes(private_tmfs_t tmfs);
+    DBOptionsAttributes(const DBOptionsAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~DBOptionsAttributes();
 
     virtual DBOptionsAttributes& operator = (const DBOptionsAttributes &obj);
     virtual bool operator == (const DBOptionsAttributes &obj) const;
     virtual bool operator != (const DBOptionsAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const DBOptionsAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -185,7 +196,8 @@ public:
         ID_optEnums,
         ID_enumStrings,
         ID_enumStringsSizes,
-        ID_obsoleteNames
+        ID_obsoleteNames,
+        ID__LAST
     };
 
 private:
@@ -203,6 +215,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define DBOPTIONSATTRIBUTES_TMFS "i*s*i*d*d*i*s*i*s*i*s*"
 
 #endif

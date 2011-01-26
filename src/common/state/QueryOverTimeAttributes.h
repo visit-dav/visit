@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <QueryAttributes.h>
 #include <PickAttributes.h>
 
@@ -69,13 +70,23 @@ public:
         Timestep
     };
 
+    // These constructors are for objects of this class
     QueryOverTimeAttributes();
     QueryOverTimeAttributes(const QueryOverTimeAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    QueryOverTimeAttributes(private_tmfs_t tmfs);
+    QueryOverTimeAttributes(const QueryOverTimeAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~QueryOverTimeAttributes();
 
     virtual QueryOverTimeAttributes& operator = (const QueryOverTimeAttributes &obj);
     virtual bool operator == (const QueryOverTimeAttributes &obj) const;
     virtual bool operator != (const QueryOverTimeAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const QueryOverTimeAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -142,7 +153,8 @@ public:
         ID_createWindow,
         ID_windowId,
         ID_queryAtts,
-        ID_pickAtts
+        ID_pickAtts,
+        ID__LAST
     };
 
 private:
@@ -159,6 +171,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define QUERYOVERTIMEATTRIBUTES_TMFS "ibibiibiaa"
 
 #endif

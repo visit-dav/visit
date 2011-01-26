@@ -40,6 +40,7 @@
 #define GAUSSIANCONTROLPOINTLIST_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 class GaussianControlPoint;
 
 // ****************************************************************************
@@ -60,13 +61,23 @@ class GaussianControlPoint;
 class STATE_API GaussianControlPointList : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     GaussianControlPointList();
     GaussianControlPointList(const GaussianControlPointList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    GaussianControlPointList(private_tmfs_t tmfs);
+    GaussianControlPointList(const GaussianControlPointList &obj, private_tmfs_t tmfs);
+public:
     virtual ~GaussianControlPointList();
 
     virtual GaussianControlPointList& operator = (const GaussianControlPointList &obj);
     virtual bool operator == (const GaussianControlPointList &obj) const;
     virtual bool operator != (const GaussianControlPointList &obj) const;
+private:
+    void Init();
+    void Copy(const GaussianControlPointList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -109,7 +120,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_controlPoints = 0
+        ID_controlPoints = 0,
+        ID__LAST
     };
 
 protected:
@@ -119,6 +131,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define GAUSSIANCONTROLPOINTLIST_TMFS "a*"
 
 #endif

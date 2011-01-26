@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 #include <Axes2D.h>
 #include <Axes3D.h>
 #include <FontAttributes.h>
@@ -89,13 +90,23 @@ public:
         SmartDirectory
     };
 
+    // These constructors are for objects of this class
     AnnotationAttributes();
     AnnotationAttributes(const AnnotationAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    AnnotationAttributes(private_tmfs_t tmfs);
+    AnnotationAttributes(const AnnotationAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~AnnotationAttributes();
 
     virtual AnnotationAttributes& operator = (const AnnotationAttributes &obj);
     virtual bool operator == (const AnnotationAttributes &obj) const;
     virtual bool operator != (const AnnotationAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const AnnotationAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -221,7 +232,8 @@ public:
         ID_backgroundImage,
         ID_imageRepeatX,
         ID_imageRepeatY,
-        ID_axesArray
+        ID_axesArray,
+        ID__LAST
     };
 
 private:
@@ -248,6 +260,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define ANNOTATIONATTRIBUTES_TMFS "aababaiddbaaiaaisiia"
 
 #endif

@@ -507,9 +507,9 @@ HostProfileList::SetFromNode(DataNode *parentNode)
 
     DataNode *node;
     DataNode **children;
-    // Clear all the MachineProfiles.
-    ClearMachines();
 
+    // Clear all the MachineProfiles if we got any.
+    bool clearedMachines = false;
     // Go through all of the children and construct a new
     // MachineProfile for each one of them.
     children = searchNode->GetChildren();
@@ -519,6 +519,11 @@ HostProfileList::SetFromNode(DataNode *parentNode)
         {
             if(children[i]->GetKey() == std::string("MachineProfile"))
             {
+                if (!clearedMachines)
+                {
+                    ClearMachines();
+                    clearedMachines = true;
+                }
                 MachineProfile temp;
                 temp.SetFromNode(children[i]);
                 AddMachines(temp);

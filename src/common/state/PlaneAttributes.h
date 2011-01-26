@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: PlaneAttributes
 //
@@ -59,13 +60,23 @@
 class STATE_API PlaneAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     PlaneAttributes();
     PlaneAttributes(const PlaneAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PlaneAttributes(private_tmfs_t tmfs);
+    PlaneAttributes(const PlaneAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~PlaneAttributes();
 
     virtual PlaneAttributes& operator = (const PlaneAttributes &obj);
     virtual bool operator == (const PlaneAttributes &obj) const;
     virtual bool operator != (const PlaneAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const PlaneAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -116,7 +127,8 @@ public:
         ID_upAxis,
         ID_haveRadius,
         ID_radius,
-        ID_threeSpace
+        ID_threeSpace,
+        ID__LAST
     };
 
 private:
@@ -129,6 +141,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PLANEATTRIBUTES_TMFS "DDDbdb"
 
 #endif

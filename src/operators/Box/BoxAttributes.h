@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+
 // ****************************************************************************
 // Class: BoxAttributes
 //
@@ -65,13 +66,23 @@ public:
         All
     };
 
+    // These constructors are for objects of this class
     BoxAttributes();
     BoxAttributes(const BoxAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    BoxAttributes(private_tmfs_t tmfs);
+    BoxAttributes(const BoxAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~BoxAttributes();
 
     virtual BoxAttributes& operator = (const BoxAttributes &obj);
     virtual bool operator == (const BoxAttributes &obj) const;
     virtual bool operator != (const BoxAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const BoxAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -125,7 +136,8 @@ public:
         ID_miny,
         ID_maxy,
         ID_minz,
-        ID_maxz
+        ID_maxz,
+        ID__LAST
     };
 
 private:
@@ -139,6 +151,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define BOXATTRIBUTES_TMFS "idddddd"
 
 #endif

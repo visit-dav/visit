@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
+
 class NamespaceAttributes;
 class SILMatrixAttributes;
 class SILArrayAttributes;
@@ -63,13 +64,23 @@ class SILArrayAttributes;
 class STATE_API SILAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     SILAttributes();
     SILAttributes(const SILAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    SILAttributes(private_tmfs_t tmfs);
+    SILAttributes(const SILAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~SILAttributes();
 
     virtual SILAttributes& operator = (const SILAttributes &obj);
     virtual bool operator == (const SILAttributes &obj) const;
     virtual bool operator != (const SILAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const SILAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -172,7 +183,8 @@ public:
         ID_nspace,
         ID_matrices,
         ID_arrays,
-        ID_order
+        ID_order,
+        ID__LAST
     };
 
 protected:
@@ -193,6 +205,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define SILATTRIBUTES_TMFS "is*i*i*is*i*i*a*a*a*i*"
 
 #endif

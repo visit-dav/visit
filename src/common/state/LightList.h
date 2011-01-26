@@ -40,6 +40,7 @@
 #define LIGHTLIST_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 #include <LightAttributes.h>
 
 // ****************************************************************************
@@ -60,13 +61,23 @@
 class STATE_API LightList : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     LightList();
     LightList(const LightList &obj);
+protected:
+    // These constructors are for objects derived from this class
+    LightList(private_tmfs_t tmfs);
+    LightList(const LightList &obj, private_tmfs_t tmfs);
+public:
     virtual ~LightList();
 
     virtual LightList& operator = (const LightList &obj);
     virtual bool operator == (const LightList &obj) const;
     virtual bool operator != (const LightList &obj) const;
+private:
+    void Init();
+    void Copy(const LightList &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -140,7 +151,8 @@ public:
         ID_light4,
         ID_light5,
         ID_light6,
-        ID_light7
+        ID_light7,
+        ID__LAST
     };
 
 private:
@@ -155,6 +167,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define LIGHTLIST_TMFS "aaaaaaaa"
 
 #endif
