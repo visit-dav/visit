@@ -5,6 +5,11 @@
 
 #ifndef PARADIS_C_INTERFACE_H
 #define PARADIS_C_INTERFACE_H
+#include <boost/cstdint.hpp>
+using boost::int8_t;
+using boost::int16_t;
+using boost::int32_t;
+using boost::uint32_t;
 
 #include <stdint.h>
 #ifdef __cplusplus
