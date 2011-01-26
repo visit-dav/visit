@@ -2374,13 +2374,13 @@ ConnectedComponentsAttributes
     bool EnableGhostNeighborsOptimization
 
 ContextAttributes
-    double offset
-    double low
-    double hi
-    string context
-    double cutoff
-    double below
-    double above
+    double       offset
+    double       low
+    double       hi
+    variablename context
+    double       cutoff
+    double       below
+    double       above
 
 CoordSwapAttributes
     enum newCoord1
