@@ -142,6 +142,7 @@ void Axes3D::Init()
     bboxFlag = true;
     xAxis.GetTitle().SetTitle("X-Axis");
     yAxis.GetTitle().SetTitle("Y-Axis");
+    zAxis.GetTitle().SetTitle("Z-Axis");
 
     Axes3D::SelectAll();
 }
