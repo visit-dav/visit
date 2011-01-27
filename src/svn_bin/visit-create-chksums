@@ -103,7 +103,6 @@ do
    $cmd visit-install$version2                     >> $output
    $cmd jvisit$version.tar.gz                      >> $output
    $cmd visit$version.exe                          >> $output
-   $cmd visit$version2.darwin-i386-10.4.tar.gz     >> $output
    $cmd visit$version2.linux-euclid.tar.gz         >> $output
    $cmd visit$version2.linux-rhel3.tar.gz          >> $output
    $cmd visit$version2.linux-x86_64-rhel4.tar.gz   >> $output
