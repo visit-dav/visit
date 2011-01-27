@@ -57,22 +57,6 @@ extern "C"
 #include <adios_read.h>
 }
 
-template <class T> static inline void
-SwapIndices(int dim, T *arr)
-{
-    if (dim <= 1) return;
-    else if (dim == 2)
-    {
-        T i0 = arr[0], i1 = arr[1];
-        arr[0] = i1; arr[1] = i0;
-    }
-    else if (dim == 3)
-    {
-        T i0 = arr[0], i2 = arr[2];
-        arr[0] = i2; arr[2] = i0;
-    }               
-}
-
 class ADIOSVar;
 class ADIOSScalar;
 class ADIOSAttr;
@@ -117,6 +101,8 @@ class ADIOSFileObject
     std::string Filename() const {return fileName;}
     int NumTimeSteps();
     void GetCycles(std::vector<int> &cycles);
+    void GetCycles(std::string &varNm, std::vector<int> &cycles);
+    void GetTimes(std::string &varNm, std::vector<double> &times);
 
     //Attributes
     bool GetIntAttr(const std::string &nm, int &val);
@@ -179,7 +165,6 @@ class ADIOSVar
 
     void GetReadArrays(int ts, uint64_t *s, uint64_t *c, int *ntuples);
     
-    void SwapIndices();
     ADIOS_DATATYPES type;
     int dim, groupIdx, varid, timedim;
     uint64_t start[3], count[3], global[3];
@@ -314,7 +299,7 @@ inline std::ostream& operator<<(std::ostream& out, const ADIOSVar &v)
 {
     out<<"ADIOSVar: "<<v.name<<endl;
     out<<"  dim= "<<v.dim<<" timedim= "<<v.timedim<<endl;
-    out<<"  type= "<<v.type<<" ids= "<<v.groupIdx<<" "<<v.varid<<endl;
+    out<<"  type= "<<v.type<<" gIdx, vId= "<<v.groupIdx<<" "<<v.varid<<endl;
     out<<"  global= ["<<v.global[0]<<" "<<v.global[1]<<" "<<v.global[2]<<"]"<<endl;
     out<<"  start= ["<<v.start[0]<<" "<<v.start[1]<<" "<<v.start[2]<<"]"<<endl;
     out<<"  count= ["<<v.count[0]<<" "<<v.count[1]<<" "<<v.count[2]<<"]"<<endl;

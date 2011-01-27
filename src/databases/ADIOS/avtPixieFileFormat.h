@@ -67,6 +67,9 @@ class vtkRectilinearGrid;
 //  Dave Pugmire, Wed Mar 24 16:43:32 EDT 2010
 //  Handle time varying variables and add expressions.
 //
+//   Dave Pugmire, Thu Jan 27 11:39:46 EST 2011
+//   Support for new Pixle file format.
+//
 // ****************************************************************************
 
 class avtPixieFileFormat : public avtMTMDFileFormat
@@ -82,6 +85,7 @@ class avtPixieFileFormat : public avtMTMDFileFormat
     virtual  ~avtPixieFileFormat();
 
     virtual void        GetCycles(std::vector<int> &);
+    virtual void        GetTimes(std::vector<double> &);
     virtual int         GetNTimesteps(void);
 
     virtual const char    *GetType(void)   { return "ADIOS-Pixie"; };
@@ -125,6 +129,5 @@ class avtPixieFileFormat : public avtMTMDFileFormat
     std::string      GetVarName(const std::string &vname, bool &isTimeVarying);
     std::string      GetVarMesh(const std::string &vname, MeshInfo &mi);
     bool             GetTimeStep(const std::string &vname, int &ts);
-    std::string      GetCoordName(const std::string &nm, int ts);
 };
 #endif

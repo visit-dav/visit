@@ -58,6 +58,7 @@
 #include <vtkStructuredGrid.h>
 
 using     std::string;
+static string RemoveLeadingSlash(const string &str);
 
 // ****************************************************************************
 //  Method: avtPixleFileFormat::Identify
@@ -181,7 +182,26 @@ avtPixieFileFormat::GetNTimesteps()
 void
 avtPixieFileFormat::GetCycles(std::vector<int> &cycles)
 {
-    cycles = timecycles;
+    string nm = "/itime";
+    file->GetCycles(nm, cycles);
+}
+
+
+// ****************************************************************************
+// Method:  avtPixieFileFormat::GetTimes
+//
+// Purpose:
+//   
+// Programmer:  Dave Pugmire
+// Creation:    January 26, 2011
+//
+// ****************************************************************************
+
+void
+avtPixieFileFormat::GetTimes(std::vector<double> &times)
+{
+    string nm = "/time";
+    file->GetTimes(nm, times);
 }
 
 
@@ -221,6 +241,9 @@ avtPixieFileFormat::FreeUpResources(void)
 //  Dave Pugmire, Wed Mar 24 16:43:32 EDT 2010
 //  Add expressions.
 //
+//   Dave Pugmire, Thu Jan 27 11:39:46 EST 2011
+//   Support for new Pixle file format.
+//
 // ****************************************************************************
 
 void
@@ -258,7 +281,15 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSt
     VarInfoMap::const_iterator vi;
     for (vi = variables.begin(); vi != variables.end(); vi++)
     {
-        AddScalarVarToMetaData(md, vi->first, vi->second.mesh, AVT_NODECENT);            
+        avtScalarMetaData *sm = new avtScalarMetaData;
+        
+        sm->originalName = vi->first;
+        sm->name = RemoveLeadingSlash(vi->first);
+        sm->meshName = vi->second.mesh;
+        sm->hasDataExtents = false;
+        sm->centering = AVT_NODECENT;
+
+        md->Add(sm);
     }
 
     //Add expressions.
@@ -318,6 +349,10 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSt
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
 //
+//  Modifications
+//   Dave Pugmire, Thu Jan 27 11:39:46 EST 2011
+//   Support for new Pixle file format.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -341,15 +376,6 @@ avtPixieFileFormat::GetMesh(int timestate, int domain, const char *meshname)
             coords[i]->SetNumberOfTuples(mi->second.dims[i]);
 
             float m = 0.0, M = (float)mi->second.dims[i];
-            
-            string coordNm = GetCoordName(mi->second.coords[i], timestate);
-            ADIOSFileObject::varIter vi = file->variables.find(coordNm);
-            if (vi != file->variables.end())
-            {
-                m = vi->second.extents[0];
-                M = vi->second.extents[1];
-            }
-            
             float c = m, dc = (M-m)/(float)(mi->second.dims[i]);
             
             float *data = (float *)coords[i]->GetVoidPointer(0);
@@ -357,9 +383,9 @@ avtPixieFileFormat::GetMesh(int timestate, int domain, const char *meshname)
                 data[j] = c;
         }
         
-        int nx = mi->second.dims[0], ny = mi->second.dims[1], nz = mi->second.dims[2];        
-        grid->SetDimensions(nx, ny, nz);
+        int nx = mi->second.dims[0], ny = mi->second.dims[1], nz = mi->second.dims[2];
 
+        grid->SetDimensions(nx, ny, nz);
         grid->SetXCoordinates(coords[0]);
         grid->SetYCoordinates(coords[1]);
         grid->SetZCoordinates(coords[2]);
@@ -372,15 +398,13 @@ avtPixieFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     else
     {
         vtkFloatArray *coords[3];
-        for (int i = 0; i < 3; i++)
-        {
-            string coordNm = GetCoordName(mi->second.coords[i], timestate);
-            file->ReadVariable(coordNm, 0, &coords[i]);
-        }
+        file->ReadVariable("/nodes/X", timestate, &coords[0]);
+        file->ReadVariable("/nodes/Y", timestate, &coords[1]);
+        file->ReadVariable("/nodes/Z", timestate, &coords[2]);
         
         int nx = mi->second.dims[0], ny = mi->second.dims[1], nz = mi->second.dims[2];
 
-        vtkStructuredGrid *sgrid  = vtkStructuredGrid::New(); 
+        vtkStructuredGrid *sgrid  = vtkStructuredGrid::New();
         vtkPoints *points = vtkPoints::New();
         sgrid->SetPoints(points);
         points->Delete();
@@ -452,17 +476,9 @@ avtPixieFileFormat::GetVar(int timestate, int domain, const char *varname)
         EXCEPTION1(InvalidVariableException, varname);
 
     string nm = vi->second.fileVarName;
-    if (vi->second.isTimeVarying)
-    {
-        char tmp[256];
-        string::size_type index = nm.find("/", 1);
-        string v = nm.substr(index+1, index-nm.size());
-        SNPRINTF(tmp, 256, "%s_%d/%s", "/Timestep", timestate, v.c_str());
-        nm = tmp;
-    }
     
     vtkFloatArray *arr = NULL;
-    if ( !file->ReadVariable(nm, 0, &arr))
+    if ( !file->ReadVariable(nm, timestate, &arr))
         EXCEPTION1(InvalidVariableException, varname);
         
     return arr;
@@ -508,6 +524,9 @@ avtPixieFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 //  Dave Pugmire, Wed Mar 24 16:43:32 EDT 2010
 //  Read in expressions.
 //
+//   Dave Pugmire, Thu Jan 27 11:39:46 EST 2011
+//   Support for new Pixle file format.
+//
 // ****************************************************************************
 
 void
@@ -527,7 +546,7 @@ avtPixieFileFormat::Initialize()
     {
         const ADIOSVar &v = vi->second;
 
-        if (!IsVariable(v.name))
+        if (!IsVariable(v.name) || v.dim == 1)
             continue;
 
         MeshInfo mi;
@@ -739,27 +758,13 @@ avtPixieFileFormat::GetTimeStep(const std::string &vname, int &ts)
     return false;
 }
 
-
-// ****************************************************************************
-//  Method: avtPixieFileFormat::GetCoordName
-//
-//  Purpose:
-//      Put the timestep info back on the coordinate name.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Wed Mar 17 15:29:24 EDT 2010
-//
-// ****************************************************************************
-
-std::string
-avtPixieFileFormat::GetCoordName(const std::string &nm, int ts)
+static string
+RemoveLeadingSlash(const string &str)
 {
-    string coord = "";
-    
-    int t = timecycles[ts];
-    char str[1024];
-    SNPRINTF(str, 1024, "/Timestep_%d%s", t, nm.c_str());
-    coord = str;
-
-    return coord;
+    string s;
+    if (str[0] == '/')
+        s = str.substr(1, str.size());
+    else
+        s = str;
+    return s;
 }

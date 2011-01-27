@@ -60,6 +60,8 @@ SupportedVariable(ADIOS_VARINFO *avi);
 
 static void
 ConvertToFloat(float *data, int &n, ADIOS_DATATYPES &t, const void *readData);
+template<class T> static void
+ConvertTo(T *data, int &n, ADIOS_DATATYPES &t, const void *readData);
 
 // ****************************************************************************
 //  Method: ADIOSFileObject::ADIOSFileObject
@@ -153,6 +155,94 @@ ADIOSFileObject::GetCycles(std::vector<int> &cycles)
         cycles.push_back(fp->tidx_start + i);
 }
 
+// ****************************************************************************
+// Method:  ADIOSFileObject::GetCycles
+//
+// Purpose:
+//   Return cycles.
+//
+// Programmer:  Dave Pugmire
+// Creation:    January 27, 2011
+//
+// ****************************************************************************
+
+void
+ADIOSFileObject::GetCycles(std::string &varNm, std::vector<int> &cycles)
+{
+    Open();
+    cycles.resize(0);
+
+    varIter vi = variables.find(varNm);
+    if (vi == variables.end())
+    {
+        debug5<<"Variable "<<varNm<<" not found."<<endl;
+        return;
+    }
+    ADIOSVar v = vi->second;
+    
+    int tupleSz = adios_type_size(v.type, NULL);
+    uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
+
+    count[0] = v.count[0];
+    int ntuples = v.count[0];
+    
+    void *readData = malloc(ntuples*tupleSz);
+    OpenGroup(v.groupIdx);
+    uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, readData);
+    CloseGroup(v.groupIdx);
+
+    if (retval > 0)
+    {
+        cycles.resize(ntuples);
+        ConvertTo(&cycles[0], ntuples, v.type, readData);
+    }
+    free(readData);
+}
+
+
+// ****************************************************************************
+// Method:  ADIOSFileObject::GetTimes
+//
+// Purpose:
+//   
+// Programmer:  Dave Pugmire
+// Creation:    January 26, 2011
+//
+// ****************************************************************************
+
+void
+ADIOSFileObject::GetTimes(std::string &varNm, std::vector<double> &times)
+{
+    Open();
+    times.resize(0);
+    
+    varIter vi = variables.find(varNm);
+    if (vi == variables.end())
+    {
+        debug5<<"Variable "<<varNm<<" not found."<<endl;
+        return;
+    }
+    ADIOSVar v = vi->second;
+
+    int tupleSz = adios_type_size(v.type, NULL);
+    uint64_t start[4] = {0,0,0,0}, count[4] = {0,0,0,0};
+
+    count[0] = v.count[0];
+    int ntuples = v.count[0];
+    
+    void *readData = malloc(ntuples*tupleSz);
+    OpenGroup(v.groupIdx);
+    uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, readData);
+    CloseGroup(v.groupIdx);
+
+    if (retval > 0)
+    {
+        times.resize(ntuples);
+        ConvertTo(&times[0], ntuples, v.type, readData);
+    }
+    free(readData);
+}
+
 
 // ****************************************************************************
 //  Method: ADIOSFileObject::Open
@@ -244,6 +334,7 @@ ADIOSFileObject::Open()
             }
             else
                 debug5<<"Skipping variable: "<<gps[gr]->var_namelist[vr]<<" dim= "<<avi->ndim
+                      <<" timedim= "<<avi->timedim
                       <<" type= "<<adios_type_to_string(avi->type)<<endl;
             
             adios_free_varinfo(avi);
@@ -573,7 +664,7 @@ ADIOSFileObject::ReadVariable(const std::string &nm,
                               int ts,
                               vtkDataArray **array)
 {
-    debug5<<"ADIOSFileObject::ReadVariable("<<nm<<")"<<endl;
+    debug5<<"ADIOSFileObject::ReadVariable("<<nm<<" time= "<<ts<<")"<<endl;
     Open();
 
     varIter vi = variables.find(nm);
@@ -624,7 +715,7 @@ ADIOSFileObject::ReadVariable(const std::string &nm,
                               int ts,
                               vtkFloatArray **array)
 {
-    debug5<<"ADIOSFileObject::ReadVariable("<<nm<<")"<<endl;
+    debug5<<"ADIOSFileObject::ReadVariable("<<nm<<" time= "<<ts<<")"<<endl;
     Open();
 
     varIter vi = variables.find(nm);
@@ -654,14 +745,13 @@ ADIOSFileObject::ReadVariable(const std::string &nm,
     OpenGroup(v.groupIdx);
 
     uint64_t retval = adios_read_var_byid(gps[v.groupIdx], v.varid, start, count, readData);
-        
     CloseGroup(v.groupIdx);
 
     if (retval > 0 && convertData)
     {
-        ConvertToFloat(data, ntuples, v.type, readData);
-        free(readData);
+        ConvertTo(data, ntuples, v.type, readData);
     }
+    free(readData);
 
     return (retval > 0);
 }
@@ -781,7 +871,7 @@ ADIOSFileObject::AllocateArray(ADIOS_DATATYPES &t)
 static bool
 SupportedVariable(ADIOS_VARINFO *avi)
 {
-    if ((avi->ndim == 1 && avi->timedim >= 0) ||  // scalar with time
+    if (/*(avi->ndim == 1 && avi->timedim >= 0) ||  // scalar with time*/
         (avi->ndim > 3 && avi->timedim == -1) ||  // >3D array with no time
         (avi->ndim > 4 && avi->timedim >= 0)  ||  // >3D array with time
         avi->type == adios_long_double ||
@@ -859,53 +949,42 @@ ADIOSVar::ADIOSVar(const std::string &nm, int grpIdx, ADIOS_VARINFO *avi)
     if (avi->timedim == -1)
         dim = avi->ndim;
     else
-        dim = avi->ndim - 1;
-    int i = 0; // avi's index
-    int j = 0; // vi's index
-    // 1. process dimensions before the time dimension
-    // Note that this is empty loop with current ADIOS/C++ (timedim = 0 or -1)
-    for (; i < std::min(avi->timedim,3); i++)
     {
-        start[j] = 0;
-        count[j] = 1;
-        global[j] = 1;
-        if (i<avi->ndim)
-            count[j] = global[j] = avi->dims[i];
-        j++;
+        if (avi->ndim == 1)
+            dim = avi->ndim;
+        else
+            dim = avi->ndim - 1;
     }
-    // 2. skip time dimension if it has one
-    if (avi->timedim >= 0)
-        i++; 
-    // 3. process dimensions after the time dimension
-    for (; i < (avi->timedim == -1 ? 3 : 4); i++)
+
+    for (int i = 0; i < 3; i++)
     {
-        start[j] = 0;
-        count[j] = 1;
-        global[j] = 1;
-        if (i<avi->ndim)
-            count[j] = global[j] = avi->dims[i];
-        j++;
+        start[i] = 0;
+        count[i] = 0;
     }
     
-    SwapIndices();
-}
+    int idx = (timedim == -1 ? 0 : 1);
+    if (dim == 1 && timedim == 0)
+        idx = 0;
+    
+    //ADIOS is ZYX.
+    if (dim == 3)
+    {
+        count[0] = avi->dims[idx+2];
+        count[1] = avi->dims[idx+1];
+        count[2] = avi->dims[idx+0];
+    }
+    else if (dim == 2)
+    {
+        count[0] = avi->dims[idx+1];
+        count[1] = avi->dims[idx+0];
+    }
+    else if (dim == 1)
+    {
+        count[0] = avi->dims[0];
+    }
 
-// ****************************************************************************
-//  Method: ADIOSVar::SwapIndices
-//
-//  Purpose:
-//      Swap indices.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Tue Mar  9 12:40:15 EST 2010
-//
-// ****************************************************************************
-
-void ADIOSVar::SwapIndices()
-{
-    ::SwapIndices(dim, start);
-    ::SwapIndices(dim, count);
-    ::SwapIndices(dim, global);
+    for (int i = 0; i < 3; i++)
+        global[i] = count[i];
 }
 
 // ****************************************************************************
@@ -923,45 +1002,58 @@ void
 ADIOSVar::GetReadArrays(int ts, uint64_t *s, uint64_t *c, int *ntuples)
 {
     *ntuples = 1;
-    
-    int i=0;  // VisIt var dimension index
-    int j=0;  // adios var dimension index
-    // timedim=-1 for non-timed variables, 0..n for others
-    // 1. up to time index, or max 3
-    // This loop is empty with current ADIOS/C++ (timedim = -1 or 0)
-    for (; i<std::min(timedim,3); i++)
-    {
-        *ntuples *= (int)count[i];
-        s[j] = start[i];
-        c[j] = count[i];
-        j++;
-    }
-    // 2. handle time index if the variable has time
+
+    s[0] = s[1] = s[2] = s[3] = 0;
+    c[0] = c[1] = c[2] = c[3] = 0;
+
+    int idx = 0;
     if (timedim >= 0)
     {
-        s[j] = ts;
-        c[j] = 1;
-        j++;
+        s[idx] = ts;
+        c[idx] = 1;
+        idx++;
     }
-    // 3. the rest of indices (all if no time dimension)
-    for (; i<3; i++)
+
+    if (dim == 1)
     {
-        *ntuples *= (int)count[i];
-        s[j] = start[i];
-        c[j] = count[i];
-        j++;
+        s[idx] = start[0];
+        c[idx] = count[0];
+        idx++;
+        *ntuples *= (int)count[0];
     }
-    
-    ::SwapIndices(dim, s);
-    ::SwapIndices(dim, c);
+    //ADIOS is ZYX.
+    else if (dim == 2)
+    {
+        s[idx] = start[1];
+        c[idx] = count[1];
+        idx++;
+        s[idx] = start[0];
+        c[idx] = count[0];
+        *ntuples *= (int)count[0];
+        *ntuples *= (int)count[1];
+    }
+    else if (dim == 3)
+    {
+        s[idx] = start[2];
+        c[idx] = count[2];
+        idx++;
+        s[idx] = start[1];
+        c[idx] = count[1];
+        idx++;
+        s[idx] = start[0];
+        c[idx] = count[0];
+        *ntuples *= (int)count[0];
+        *ntuples *= (int)count[1];
+        *ntuples *= (int)count[2];
+    }
 }
 
 
 // ****************************************************************************
-//  Method: ConvertToFloat
+//  Method: ConvertTo
 //
 //  Purpose:
-//      Convert array to floats.
+//      Convert arrays to different types.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Wed Mar 17 15:29:24 EDT 2010
@@ -971,16 +1063,14 @@ ADIOSVar::GetReadArrays(int ts, uint64_t *s, uint64_t *c, int *ntuples)
 //
 // ****************************************************************************
 
-template<class T> static void
-CopyArray( T readData, float *data, int n )
+template<class T0, class T1> static void
+CopyArray( T0 *inData, T1 *outData, int n)
 {
-    T p1 = (T)readData;
     for (int i = 0; i < n; i++)
-        data[i] = (float)p1[i];
+        outData[i] = (T1)inData[i];
 }
-
-static void
-ConvertToFloat(float *data, int &n, ADIOS_DATATYPES &t, const void *readData)
+template<class T> static void
+ConvertTo(T *data, int &n, ADIOS_DATATYPES &t, const void *readData)
 {
     switch(t)
     {
