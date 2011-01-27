@@ -86,6 +86,7 @@ using boost::int8_t;
 using boost::int16_t;
 using boost::int32_t;
 using boost::uint32_t;
+
 #include <stdio.h>
 #include <vector>
 #include <set>
