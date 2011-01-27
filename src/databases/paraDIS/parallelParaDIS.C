@@ -45,7 +45,7 @@
 #include <vector>
 #include <errno.h>
 #include <string.h>
-#include <libgen.h>
+
 #ifdef PARALLEL
 #include <avtParallel.h>
 #endif
@@ -59,11 +59,63 @@
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
 
+#ifdef WIN32
+#include <stdio.h>
+#define F_SLASH_STRING "/"
+#define B_SLASH_STRING "\\"
+#define DEV_CHAR ":"
+#else
+#include <libgen.h>
+#endif
+#ifdef WIN32
+#include <direct.h> /* for _getcwd */
+#define getcwd _getcwd
+#else
+#include <unistd.h>
+#endif
 
 using namespace std; 
 // ************************************************************************* //
 //                            parallelParDIS.C                          //
 // ************************************************************************* //
+
+// ****************************************************************************
+// parse_dirname
+//
+//  Purpose: to parse a directory name from the given path.  
+//           Added because windows does not have 'libgen.h' (dirname).
+//  Stolen from S3D reader. 
+//
+// ****************************************************************************
+string
+parse_dirname(char *wholePath)
+{
+#ifndef WIN32
+    return string(dirname(wholePath)) + "/";
+#else
+    string wholePathString(wholePath);
+    int len = wholePathString.size();
+    if (wholePathString[len-1] == DEV_CHAR[0])
+        return wholePathString;
+    int pos = len;
+    string es(".");
+    string searchFor = (string)F_SLASH_STRING + (string)B_SLASH_STRING + (string)DEV_CHAR;
+    while (pos == len)
+    {
+        pos = wholePathString.find_last_of(searchFor, --len);
+    }
+    if (pos == -1)
+        return es;
+    else if (pos == 0)
+        pos++;
+    if (wholePathString[pos] == DEV_CHAR[0])
+    {
+       pos++;
+    }
+    string rets = wholePathString.substr(0, pos);
+    return rets + "\\";
+#endif
+}
 
 
 
@@ -565,7 +617,7 @@ bool ParallelData:: ParseMetaDataFile(void) {
     debug2 << " changed to " << mMetaDataFileName << endl;  
   }
   strncpy(buf, mMetaDataFileName.c_str(), 2047); 
-  string datadir = string(dirname(buf)) + "/"; 
+  string datadir = parse_dirname(buf); 
 
   string line;
   vector<string> linetokens;
@@ -693,7 +745,7 @@ bool ParallelData:: ParseMetaDataFile(void) {
         return false; 
       }        
       string filename = linetokens[1]; 
-      if (filename[0] != '/'){
+      if (filename[0] != '/'){ // this won't work on Windows
         filename = datadir + filename; 
       }
       fileset->mFileNames.push_back(filename); 
