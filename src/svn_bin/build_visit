@@ -1073,6 +1073,10 @@
 #     I modified the script to add hdf5_hl as a dependent library for
 #     netcdf if using netcdf with hdf5.
 #
+#     Jeremy Meredith, Thu Jan 27 16:21:08 EST 2011
+#     HDF4 libdep generation needs to use libvtkjpeg on only Darwin/AIX,
+#     and the normal libjpeg everywhere else.
+#
 # *****************************************************************************
 
 
@@ -8310,14 +8314,26 @@ function build_hostconf
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR \${VISITHOME}/hdf4/$HDF4_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
-        if [[ "$DO_SZIP" == "yes" ]] ; then
+        if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
+          if [[ "$DO_SZIP" == "yes" ]] ; then
             echo \
             "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz \${VISITHOME}/vtk/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg)" \
             >> $HOSTCONF
-        else
+          else
             echo \
             "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/vtk/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg)" \
             >> $HOSTCONF
+          fi
+        else
+          if [[ "$DO_SZIP" == "yes" ]] ; then
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib jpeg)" \
+            >> $HOSTCONF
+          else
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP /usr/lib jpeg)" \
+            >> $HOSTCONF
+          fi
         fi
         >> $HOSTCONF
     fi
