@@ -758,7 +758,6 @@ PyavtScalarMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "enumNChooseRMaxR") == 0)
         return avtScalarMetaData_GetEnumNChooseRMaxR(self, NULL);
 
-
     if(strcmp(name, "__methods__") != 0)
     {
         PyObject *retval = PyavtVarMetaData_getattr(self, name);
@@ -766,6 +765,7 @@ PyavtScalarMetaData_getattr(PyObject *self, char *name)
     }
 
     PyavtScalarMetaData_ExtendSetGetMethodTable();
+
     return Py_FindMethod(PyavtScalarMetaData_methods, self, name);
 }
 
@@ -807,6 +807,8 @@ PyavtScalarMetaData_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

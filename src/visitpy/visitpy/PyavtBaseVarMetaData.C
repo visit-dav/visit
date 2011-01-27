@@ -305,6 +305,8 @@ PyavtBaseVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

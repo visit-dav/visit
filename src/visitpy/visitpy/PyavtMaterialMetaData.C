@@ -311,7 +311,6 @@ PyavtMaterialMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "colorNames") == 0)
         return avtMaterialMetaData_GetColorNames(self, NULL);
 
-
     if(strcmp(name, "__methods__") != 0)
     {
         PyObject *retval = PyavtBaseVarMetaData_getattr(self, name);
@@ -319,6 +318,7 @@ PyavtMaterialMetaData_getattr(PyObject *self, char *name)
     }
 
     PyavtMaterialMetaData_ExtendSetGetMethodTable();
+
     return Py_FindMethod(PyavtMaterialMetaData_methods, self, name);
 }
 
@@ -346,6 +346,8 @@ PyavtMaterialMetaData_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

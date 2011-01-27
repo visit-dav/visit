@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define AXISATTRIBUTES_NMETH 10
 void VISITPY_API           PyAxisAttributes_StartUp(AxisAttributes *subj, void *data);
 void VISITPY_API           PyAxisAttributes_CloseDown();
-VISITPY_API PyMethodDef *   PyAxisAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyAxisAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyAxisAttributes_Check(PyObject *obj);
 VISITPY_API AxisAttributes *  PyAxisAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyAxisAttributes_New();
-VISITPY_API PyObject *      PyAxisAttributes_Wrap(const AxisAttributes *attr);
+VISITPY_API PyObject *     PyAxisAttributes_New();
+VISITPY_API PyObject *     PyAxisAttributes_Wrap(const AxisAttributes *attr);
 void VISITPY_API           PyAxisAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAxisAttributes_SetDefaults(const AxisAttributes *atts);
 std::string VISITPY_API    PyAxisAttributes_GetLogString();
 std::string VISITPY_API    PyAxisAttributes_ToString(const AxisAttributes *, const char *);
+VISITPY_API PyObject *     PyAxisAttributes_getattr(PyObject *self, char *name);
+int VISITPY_API            PyAxisAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyAxisAttributes_methods[AXISATTRIBUTES_NMETH];
 
 #endif
 
