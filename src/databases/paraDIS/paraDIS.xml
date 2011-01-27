@@ -35,6 +35,7 @@
       -IRC_c_lib
       -IRC_cpp_lib
       -DRC_CPP_VISIT_BUILD
+      ${BOOST_INCLUDE_DIR}
     </CXXFLAGS>
     <FilePatterns>
       *.prds
