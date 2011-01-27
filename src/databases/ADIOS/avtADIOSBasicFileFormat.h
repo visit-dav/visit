@@ -131,13 +131,6 @@ class avtADIOSBasicFileFormat : public avtMTMDFileFormat
         int dim;
         uint64_t start[3], count[3], global[3];
         std::string name;
-
-        void SwapIndices()
-        {
-            ::SwapIndices(dim, start);
-            ::SwapIndices(dim, count);
-            ::SwapIndices(dim, global);
-        }
     };
 
     std::map<std::string, meshInfo> meshes;
