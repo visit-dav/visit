@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define GAUSSIANCONTROLPOINTLIST_NMETH 7
 void VISITPY_API           PyGaussianControlPointList_StartUp(GaussianControlPointList *subj, void *data);
 void VISITPY_API           PyGaussianControlPointList_CloseDown();
-VISITPY_API PyMethodDef *   PyGaussianControlPointList_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyGaussianControlPointList_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyGaussianControlPointList_Check(PyObject *obj);
 VISITPY_API GaussianControlPointList *  PyGaussianControlPointList_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyGaussianControlPointList_New();
-VISITPY_API PyObject *      PyGaussianControlPointList_Wrap(const GaussianControlPointList *attr);
+VISITPY_API PyObject *     PyGaussianControlPointList_New();
+VISITPY_API PyObject *     PyGaussianControlPointList_Wrap(const GaussianControlPointList *attr);
 void VISITPY_API           PyGaussianControlPointList_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyGaussianControlPointList_SetDefaults(const GaussianControlPointList *atts);
 std::string VISITPY_API    PyGaussianControlPointList_GetLogString();
 std::string VISITPY_API    PyGaussianControlPointList_ToString(const GaussianControlPointList *, const char *);
+VISITPY_API PyObject *     PyGaussianControlPointList_getattr(PyObject *self, char *name);
+int VISITPY_API            PyGaussianControlPointList_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyGaussianControlPointList_methods[GAUSSIANCONTROLPOINTLIST_NMETH];
 
 #endif
 

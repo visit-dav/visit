@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define VIEWAXISARRAYATTRIBUTES_NMETH 8
 void VISITPY_API           PyViewAxisArrayAttributes_StartUp(ViewAxisArrayAttributes *subj, void *data);
 void VISITPY_API           PyViewAxisArrayAttributes_CloseDown();
-VISITPY_API PyMethodDef *   PyViewAxisArrayAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyViewAxisArrayAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyViewAxisArrayAttributes_Check(PyObject *obj);
 VISITPY_API ViewAxisArrayAttributes *  PyViewAxisArrayAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyViewAxisArrayAttributes_New();
-VISITPY_API PyObject *      PyViewAxisArrayAttributes_Wrap(const ViewAxisArrayAttributes *attr);
+VISITPY_API PyObject *     PyViewAxisArrayAttributes_New();
+VISITPY_API PyObject *     PyViewAxisArrayAttributes_Wrap(const ViewAxisArrayAttributes *attr);
 void VISITPY_API           PyViewAxisArrayAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyViewAxisArrayAttributes_SetDefaults(const ViewAxisArrayAttributes *atts);
 std::string VISITPY_API    PyViewAxisArrayAttributes_GetLogString();
 std::string VISITPY_API    PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *, const char *);
+VISITPY_API PyObject *     PyViewAxisArrayAttributes_getattr(PyObject *self, char *name);
+int VISITPY_API            PyViewAxisArrayAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyViewAxisArrayAttributes_methods[VIEWAXISARRAYATTRIBUTES_NMETH];
 
 #endif
 

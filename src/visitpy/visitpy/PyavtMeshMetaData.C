@@ -427,6 +427,8 @@ PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%shideFromGUI = 0\n", prefix);
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sLODs = %d\n", prefix, atts->LODs);
+    str += tmpStr;
     return str;
 }
 
@@ -1756,6 +1758,30 @@ avtMeshMetaData_GetHideFromGUI(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+avtMeshMetaData_SetLODs(PyObject *self, PyObject *args)
+{
+    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the LODs in the object.
+    obj->data->LODs = (int)ival;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtMeshMetaData_GetLODs(PyObject *self, PyObject *args)
+{
+    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->LODs));
+    return retval;
+}
+
 
 
 PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH] = {
@@ -1848,6 +1874,8 @@ PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH] = {
     {"GetContainsExteriorBoundaryGhosts", avtMeshMetaData_GetContainsExteriorBoundaryGhosts, METH_VARARGS},
     {"SetHideFromGUI", avtMeshMetaData_SetHideFromGUI, METH_VARARGS},
     {"GetHideFromGUI", avtMeshMetaData_GetHideFromGUI, METH_VARARGS},
+    {"SetLODs", avtMeshMetaData_SetLODs, METH_VARARGS},
+    {"GetLODs", avtMeshMetaData_GetLODs, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -2012,6 +2040,8 @@ PyavtMeshMetaData_getattr(PyObject *self, char *name)
         return avtMeshMetaData_GetContainsExteriorBoundaryGhosts(self, NULL);
     if(strcmp(name, "hideFromGUI") == 0)
         return avtMeshMetaData_GetHideFromGUI(self, NULL);
+    if(strcmp(name, "LODs") == 0)
+        return avtMeshMetaData_GetLODs(self, NULL);
 
     return Py_FindMethod(PyavtMeshMetaData_methods, self, name);
 }
@@ -2114,11 +2144,15 @@ PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtMeshMetaData_SetContainsExteriorBoundaryGhosts(self, tuple);
     else if(strcmp(name, "hideFromGUI") == 0)
         obj = avtMeshMetaData_SetHideFromGUI(self, tuple);
+    else if(strcmp(name, "LODs") == 0)
+        obj = avtMeshMetaData_SetLODs(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

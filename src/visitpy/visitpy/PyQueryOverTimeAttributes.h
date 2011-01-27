@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define QUERYOVERTIMEATTRIBUTES_NMETH 18
 void VISITPY_API           PyQueryOverTimeAttributes_StartUp(QueryOverTimeAttributes *subj, void *data);
 void VISITPY_API           PyQueryOverTimeAttributes_CloseDown();
-VISITPY_API PyMethodDef *   PyQueryOverTimeAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyQueryOverTimeAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyQueryOverTimeAttributes_Check(PyObject *obj);
 VISITPY_API QueryOverTimeAttributes *  PyQueryOverTimeAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyQueryOverTimeAttributes_New();
-VISITPY_API PyObject *      PyQueryOverTimeAttributes_Wrap(const QueryOverTimeAttributes *attr);
+VISITPY_API PyObject *     PyQueryOverTimeAttributes_New();
+VISITPY_API PyObject *     PyQueryOverTimeAttributes_Wrap(const QueryOverTimeAttributes *attr);
 void VISITPY_API           PyQueryOverTimeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyQueryOverTimeAttributes_SetDefaults(const QueryOverTimeAttributes *atts);
 std::string VISITPY_API    PyQueryOverTimeAttributes_GetLogString();
 std::string VISITPY_API    PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *, const char *);
+VISITPY_API PyObject *     PyQueryOverTimeAttributes_getattr(PyObject *self, char *name);
+int VISITPY_API            PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH];
 
 #endif
 

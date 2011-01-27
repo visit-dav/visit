@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define COLORCONTROLPOINTLIST_NMETH 15
 void VISITPY_API           PyColorControlPointList_StartUp(ColorControlPointList *subj, void *data);
 void VISITPY_API           PyColorControlPointList_CloseDown();
-VISITPY_API PyMethodDef *   PyColorControlPointList_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyColorControlPointList_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyColorControlPointList_Check(PyObject *obj);
 VISITPY_API ColorControlPointList *  PyColorControlPointList_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyColorControlPointList_New();
-VISITPY_API PyObject *      PyColorControlPointList_Wrap(const ColorControlPointList *attr);
+VISITPY_API PyObject *     PyColorControlPointList_New();
+VISITPY_API PyObject *     PyColorControlPointList_Wrap(const ColorControlPointList *attr);
 void VISITPY_API           PyColorControlPointList_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyColorControlPointList_SetDefaults(const ColorControlPointList *atts);
 std::string VISITPY_API    PyColorControlPointList_GetLogString();
 std::string VISITPY_API    PyColorControlPointList_ToString(const ColorControlPointList *, const char *);
+VISITPY_API PyObject *     PyColorControlPointList_getattr(PyObject *self, char *name);
+int VISITPY_API            PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH];
 
 #endif
 

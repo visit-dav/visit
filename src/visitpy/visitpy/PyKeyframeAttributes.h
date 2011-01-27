@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define KEYFRAMEATTRIBUTES_NMETH 8
 void VISITPY_API           PyKeyframeAttributes_StartUp(KeyframeAttributes *subj, void *data);
 void VISITPY_API           PyKeyframeAttributes_CloseDown();
-VISITPY_API PyMethodDef *   PyKeyframeAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyKeyframeAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyKeyframeAttributes_Check(PyObject *obj);
 VISITPY_API KeyframeAttributes *  PyKeyframeAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyKeyframeAttributes_New();
-VISITPY_API PyObject *      PyKeyframeAttributes_Wrap(const KeyframeAttributes *attr);
+VISITPY_API PyObject *     PyKeyframeAttributes_New();
+VISITPY_API PyObject *     PyKeyframeAttributes_Wrap(const KeyframeAttributes *attr);
 void VISITPY_API           PyKeyframeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyKeyframeAttributes_SetDefaults(const KeyframeAttributes *atts);
 std::string VISITPY_API    PyKeyframeAttributes_GetLogString();
 std::string VISITPY_API    PyKeyframeAttributes_ToString(const KeyframeAttributes *, const char *);
+VISITPY_API PyObject *     PyKeyframeAttributes_getattr(PyObject *self, char *name);
+int VISITPY_API            PyKeyframeAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyKeyframeAttributes_methods[KEYFRAMEATTRIBUTES_NMETH];
 
 #endif
 

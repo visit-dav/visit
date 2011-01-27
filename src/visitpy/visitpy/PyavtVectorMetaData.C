@@ -173,7 +173,6 @@ PyavtVectorMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "varDim") == 0)
         return avtVectorMetaData_GetVarDim(self, NULL);
 
-
     if(strcmp(name, "__methods__") != 0)
     {
         PyObject *retval = PyavtVarMetaData_getattr(self, name);
@@ -181,6 +180,7 @@ PyavtVectorMetaData_getattr(PyObject *self, char *name)
     }
 
     PyavtVectorMetaData_ExtendSetGetMethodTable();
+
     return Py_FindMethod(PyavtVectorMetaData_methods, self, name);
 }
 
@@ -204,6 +204,8 @@ PyavtVectorMetaData_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

@@ -259,6 +259,27 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     else
         SNPRINTF(tmpStr, 1000, "%scolorTexturingFlag = 0\n", prefix);
     str += tmpStr;
+    const char *compactDomainsActivationMode_names = "Never, Always, Auto";
+    switch (atts->GetCompactDomainsActivationMode())
+    {
+      case RenderingAttributes::Never:
+          SNPRINTF(tmpStr, 1000, "%scompactDomainsActivationMode = %sNever  # %s\n", prefix, prefix, compactDomainsActivationMode_names);
+          str += tmpStr;
+          break;
+      case RenderingAttributes::Always:
+          SNPRINTF(tmpStr, 1000, "%scompactDomainsActivationMode = %sAlways  # %s\n", prefix, prefix, compactDomainsActivationMode_names);
+          str += tmpStr;
+          break;
+      case RenderingAttributes::Auto:
+          SNPRINTF(tmpStr, 1000, "%scompactDomainsActivationMode = %sAuto  # %s\n", prefix, prefix, compactDomainsActivationMode_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%scompactDomainsAutoThreshold = %d\n", prefix, atts->GetCompactDomainsAutoThreshold());
+    str += tmpStr;
     return str;
 }
 
@@ -909,6 +930,63 @@ RenderingAttributes_GetColorTexturingFlag(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+RenderingAttributes_SetCompactDomainsActivationMode(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the compactDomainsActivationMode in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetCompactDomainsActivationMode(RenderingAttributes::TriStateMode(ival));
+    else
+    {
+        fprintf(stderr, "An invalid compactDomainsActivationMode value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Never, Always, Auto.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetCompactDomainsActivationMode(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCompactDomainsActivationMode()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetCompactDomainsAutoThreshold(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the compactDomainsAutoThreshold in the object.
+    obj->data->SetCompactDomainsAutoThreshold((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetCompactDomainsAutoThreshold(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCompactDomainsAutoThreshold()));
+    return retval;
+}
+
 
 
 PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
@@ -953,6 +1031,10 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"GetCompressionActivationMode", RenderingAttributes_GetCompressionActivationMode, METH_VARARGS},
     {"SetColorTexturingFlag", RenderingAttributes_SetColorTexturingFlag, METH_VARARGS},
     {"GetColorTexturingFlag", RenderingAttributes_GetColorTexturingFlag, METH_VARARGS},
+    {"SetCompactDomainsActivationMode", RenderingAttributes_SetCompactDomainsActivationMode, METH_VARARGS},
+    {"GetCompactDomainsActivationMode", RenderingAttributes_GetCompactDomainsActivationMode, METH_VARARGS},
+    {"SetCompactDomainsAutoThreshold", RenderingAttributes_SetCompactDomainsAutoThreshold, METH_VARARGS},
+    {"GetCompactDomainsAutoThreshold", RenderingAttributes_GetCompactDomainsAutoThreshold, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1058,6 +1140,17 @@ PyRenderingAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "colorTexturingFlag") == 0)
         return RenderingAttributes_GetColorTexturingFlag(self, NULL);
+    if(strcmp(name, "compactDomainsActivationMode") == 0)
+        return RenderingAttributes_GetCompactDomainsActivationMode(self, NULL);
+    if(strcmp(name, "Never") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::Never));
+    if(strcmp(name, "Always") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::Always));
+    if(strcmp(name, "Auto") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::Auto));
+
+    if(strcmp(name, "compactDomainsAutoThreshold") == 0)
+        return RenderingAttributes_GetCompactDomainsAutoThreshold(self, NULL);
 
     return Py_FindMethod(PyRenderingAttributes_methods, self, name);
 }
@@ -1112,6 +1205,10 @@ PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RenderingAttributes_SetCompressionActivationMode(self, tuple);
     else if(strcmp(name, "colorTexturingFlag") == 0)
         obj = RenderingAttributes_SetColorTexturingFlag(self, tuple);
+    else if(strcmp(name, "compactDomainsActivationMode") == 0)
+        obj = RenderingAttributes_SetCompactDomainsActivationMode(self, tuple);
+    else if(strcmp(name, "compactDomainsAutoThreshold") == 0)
+        obj = RenderingAttributes_SetCompactDomainsAutoThreshold(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

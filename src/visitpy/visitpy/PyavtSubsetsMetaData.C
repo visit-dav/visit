@@ -709,7 +709,6 @@ PyavtSubsetsMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "maxTopoDim") == 0)
         return avtSubsetsMetaData_GetMaxTopoDim(self, NULL);
 
-
     if(strcmp(name, "__methods__") != 0)
     {
         PyObject *retval = PyavtVarMetaData_getattr(self, name);
@@ -717,6 +716,7 @@ PyavtSubsetsMetaData_getattr(PyObject *self, char *name)
     }
 
     PyavtSubsetsMetaData_ExtendSetGetMethodTable();
+
     return Py_FindMethod(PyavtSubsetsMetaData_methods, self, name);
 }
 
@@ -762,6 +762,8 @@ PyavtSubsetsMetaData_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 

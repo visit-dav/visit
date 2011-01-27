@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define AXISLABELS_NMETH 8
 void VISITPY_API           PyAxisLabels_StartUp(AxisLabels *subj, void *data);
 void VISITPY_API           PyAxisLabels_CloseDown();
-VISITPY_API PyMethodDef *   PyAxisLabels_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyAxisLabels_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyAxisLabels_Check(PyObject *obj);
 VISITPY_API AxisLabels *  PyAxisLabels_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyAxisLabels_New();
-VISITPY_API PyObject *      PyAxisLabels_Wrap(const AxisLabels *attr);
+VISITPY_API PyObject *     PyAxisLabels_New();
+VISITPY_API PyObject *     PyAxisLabels_Wrap(const AxisLabels *attr);
 void VISITPY_API           PyAxisLabels_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAxisLabels_SetDefaults(const AxisLabels *atts);
 std::string VISITPY_API    PyAxisLabels_GetLogString();
 std::string VISITPY_API    PyAxisLabels_ToString(const AxisLabels *, const char *);
+VISITPY_API PyObject *     PyAxisLabels_getattr(PyObject *self, char *name);
+int VISITPY_API            PyAxisLabels_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyAxisLabels_methods[AXISLABELS_NMETH];
 
 #endif
 

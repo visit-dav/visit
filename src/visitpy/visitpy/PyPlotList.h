@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define PLOTLIST_NMETH 7
 void VISITPY_API           PyPlotList_StartUp(PlotList *subj, void *data);
 void VISITPY_API           PyPlotList_CloseDown();
-VISITPY_API PyMethodDef *   PyPlotList_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyPlotList_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyPlotList_Check(PyObject *obj);
 VISITPY_API PlotList *  PyPlotList_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyPlotList_New();
-VISITPY_API PyObject *      PyPlotList_Wrap(const PlotList *attr);
+VISITPY_API PyObject *     PyPlotList_New();
+VISITPY_API PyObject *     PyPlotList_Wrap(const PlotList *attr);
 void VISITPY_API           PyPlotList_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyPlotList_SetDefaults(const PlotList *atts);
 std::string VISITPY_API    PyPlotList_GetLogString();
 std::string VISITPY_API    PyPlotList_ToString(const PlotList *, const char *);
+VISITPY_API PyObject *     PyPlotList_getattr(PyObject *self, char *name);
+int VISITPY_API            PyPlotList_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyPlotList_methods[PLOTLIST_NMETH];
 
 #endif
 
