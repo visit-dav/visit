@@ -685,6 +685,9 @@ $0 = shift @ARGV;
 #    for a msub or qsub job if the user does not have write permission in
 #    the directory where visit was started.
 #
+#    Brad Whitlock, Tue Jan 25 11:34:37 PST 2011
+#    I made MacOS X 10.6 and later use the darwin-x86_64 architexture string.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2063,6 +2066,9 @@ for ($os) {
         elsif ($req_compiler eq "i386") {
                 push @supportedarchs, "darwin-i386";
         }
+        elsif ($req_compiler eq "x86_64") {
+                push @supportedarchs, "darwin-x86_64";
+        }
         elsif ( -d "$visitdir/darwin")
         {
             push @supportedarchs, "darwin";
@@ -2071,7 +2077,15 @@ for ($os) {
         {
             chomp( $mach    = `uname -p` );
             if ($mach =~ /i386/) {
-                push @supportedarchs, "darwin-i386";
+                # For MacOS X 10.6 and above, use x86_64.
+                chomp( $darwinver = `uname -r`);
+                my @darwinversions = split('\.', $darwinver);
+                if ($darwinversions[0] >= 10) {
+                    push @supportedarchs, "darwin-x86_64";
+                }
+                else {
+                    push @supportedarchs, "darwin-i386";
+                }
             }
             elsif ($mach =~ /x86_64/) {
                 push @supportedarchs, "darwin-x86_64";

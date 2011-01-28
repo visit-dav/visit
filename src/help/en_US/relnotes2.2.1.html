@@ -1,0 +1,34 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 2.2.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 2.2.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. Release 2.2.1 is primarily a
+bug fix release to release 2.1.1. It fixes additional bugs in release
+2.1.1.  Look <a href="relnotes2.1.1.html">here</a> to see a complete
+list of changes in release 2.1.1.</p>
+
+<p><b><font size="4">Bugs fixed in version 2.2.1</font></b></p>
+<ul>
+<li>VisIt's simV2 simulation instrumentation library was fixed so operations that require synchronization with the viewer, such as <i>VisItUpdatePlots()</i>, do not lock up in parallel when a simulation's slave callback function does not broadcast integers.</li>
+</ul>
+
+<p><b><font size="4">Enhancements in version 2.2.1</font></b></p>
+<ul>
+<li>VisIt will now use the internal platform name <i>darwin-x86_64</i> on MacOS X 10.6 and later. This allows the older MacOS X 10.5 <i>darwin-i386</i> version to be installed side by side with the newer 64-bit version in directories that contain multiple VisIt installations for different platforms.</li>
+<li>Event handling has been rewritten in VisIt's Java client so it no longer requires a second thread. Synchronization with a 2 thread design proved to be too error prone and evidently did not work on all Java virtual machines.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous
+version of VisIt: <a href="relnotes2.2.0.html">VisIt 2.2.0 Release Notes</a>.</p>
+
+</body>
+</html>
