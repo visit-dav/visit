@@ -84,7 +84,8 @@ public class avtSubsetsMetaData extends avtVarMetaData
         isMaterialCat = false;
         isUnionOfChunks = false;
         hasPartialCells = false;
-            maxTopoDim = 0;
+        decompMode = DECOMPMODE_NONE;
+        maxTopoDim = 0;
     }
 
     public avtSubsetsMetaData(int nMoreFields)
@@ -101,7 +102,8 @@ public class avtSubsetsMetaData extends avtVarMetaData
         isMaterialCat = false;
         isUnionOfChunks = false;
         hasPartialCells = false;
-            maxTopoDim = 0;
+        decompMode = DECOMPMODE_NONE;
+        maxTopoDim = 0;
     }
 
     public avtSubsetsMetaData(avtSubsetsMetaData obj)
