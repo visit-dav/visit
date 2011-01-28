@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define SPREADSHEETATTRIBUTES_NMETH 30
 void           PySpreadsheetAttributes_StartUp(SpreadsheetAttributes *subj, void *data);
 void           PySpreadsheetAttributes_CloseDown();
-PyMethodDef *   PySpreadsheetAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PySpreadsheetAttributes_GetMethodTable(int *nMethods);
 bool           PySpreadsheetAttributes_Check(PyObject *obj);
 SpreadsheetAttributes *  PySpreadsheetAttributes_FromPyObject(PyObject *obj);
-PyObject *      PySpreadsheetAttributes_New();
-PyObject *      PySpreadsheetAttributes_Wrap(const SpreadsheetAttributes *attr);
+PyObject *     PySpreadsheetAttributes_New();
+PyObject *     PySpreadsheetAttributes_Wrap(const SpreadsheetAttributes *attr);
 void           PySpreadsheetAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySpreadsheetAttributes_SetDefaults(const SpreadsheetAttributes *atts);
 std::string    PySpreadsheetAttributes_GetLogString();
 std::string    PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *, const char *);
+PyObject *     PySpreadsheetAttributes_getattr(PyObject *self, char *name);
+int            PySpreadsheetAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PySpreadsheetAttributes_methods[SPREADSHEETATTRIBUTES_NMETH];
 
 #endif
 

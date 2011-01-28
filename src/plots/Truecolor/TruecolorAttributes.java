@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class TruecolorAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 2;
+    private static int TruecolorAttributes_numAdditionalAtts = 2;
 
     public TruecolorAttributes()
     {
-        super(numAdditionalAttributes);
+        super(TruecolorAttributes_numAdditionalAtts);
 
         opacity = 1;
         lightingFlag = true;
@@ -71,7 +71,7 @@ public class TruecolorAttributes extends AttributeSubject implements Plugin
 
     public TruecolorAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(TruecolorAttributes_numAdditionalAtts + nMoreFields);
 
         opacity = 1;
         lightingFlag = true;
@@ -79,7 +79,7 @@ public class TruecolorAttributes extends AttributeSubject implements Plugin
 
     public TruecolorAttributes(TruecolorAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(TruecolorAttributes_numAdditionalAtts);
 
         opacity = obj.opacity;
         lightingFlag = obj.lightingFlag;
@@ -94,7 +94,7 @@ public class TruecolorAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return TruecolorAttributes_numAdditionalAtts;
     }
 
     public boolean equals(TruecolorAttributes obj)

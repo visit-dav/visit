@@ -64,7 +64,7 @@ import llnl.visit.ColorAttributeList;
 
 public class MultiCurveAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 15;
+    private static int MultiCurveAttributes_numAdditionalAtts = 15;
 
     // Enum values
     public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 0;
@@ -73,7 +73,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
 
     public MultiCurveAttributes()
     {
-        super(numAdditionalAttributes);
+        super(MultiCurveAttributes_numAdditionalAtts);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
@@ -94,7 +94,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
 
     public MultiCurveAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(MultiCurveAttributes_numAdditionalAtts + nMoreFields);
 
         defaultPalette = new ColorControlPointList();
         changedColors = new Vector();
@@ -115,7 +115,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
 
     public MultiCurveAttributes(MultiCurveAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(MultiCurveAttributes_numAdditionalAtts);
 
         int i;
 
@@ -151,7 +151,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return MultiCurveAttributes_numAdditionalAtts;
     }
 
     public boolean equals(MultiCurveAttributes obj)

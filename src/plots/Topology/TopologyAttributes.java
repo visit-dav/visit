@@ -60,11 +60,11 @@ import llnl.visit.ColorAttributeList;
 
 public class TopologyAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 9;
+    private static int TopologyAttributes_numAdditionalAtts = 9;
 
     public TopologyAttributes()
     {
-        super(numAdditionalAttributes);
+        super(TopologyAttributes_numAdditionalAtts);
 
         lineWidth = 2;
         lineStyle = 0;
@@ -79,7 +79,7 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
 
     public TopologyAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(TopologyAttributes_numAdditionalAtts + nMoreFields);
 
         lineWidth = 2;
         lineStyle = 0;
@@ -94,7 +94,7 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
 
     public TopologyAttributes(TopologyAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(TopologyAttributes_numAdditionalAtts);
 
         lineWidth = obj.lineWidth;
         lineStyle = obj.lineStyle;
@@ -116,7 +116,7 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return TopologyAttributes_numAdditionalAtts;
     }
 
     public boolean equals(TopologyAttributes obj)

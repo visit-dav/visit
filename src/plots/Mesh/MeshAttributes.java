@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class MeshAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 19;
+    private static int MeshAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int POINTTYPE_BOX = 0;
@@ -86,7 +86,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
 
     public MeshAttributes()
     {
-        super(numAdditionalAttributes);
+        super(MeshAttributes_numAdditionalAtts);
 
         legendFlag = true;
         lineStyle = 0;
@@ -111,7 +111,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
 
     public MeshAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(MeshAttributes_numAdditionalAtts + nMoreFields);
 
         legendFlag = true;
         lineStyle = 0;
@@ -136,7 +136,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
 
     public MeshAttributes(MeshAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(MeshAttributes_numAdditionalAtts);
 
         legendFlag = obj.legendFlag;
         lineStyle = obj.lineStyle;
@@ -168,7 +168,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return MeshAttributes_numAdditionalAtts;
     }
 
     public boolean equals(MeshAttributes obj)

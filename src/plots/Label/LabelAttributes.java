@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class LabelAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 18;
+    private static int LabelAttributes_numAdditionalAtts = 18;
 
     // Enum values
     public final static int LABELINDEXDISPLAY_NATURAL = 0;
@@ -97,7 +97,7 @@ public class LabelAttributes extends AttributeSubject implements Plugin
 
     public LabelAttributes()
     {
-        super(numAdditionalAttributes);
+        super(LabelAttributes_numAdditionalAtts);
 
         varType = VARIABLETYPE_LABEL_VT_UNKNOWN_TYPE;
         legendFlag = true;
@@ -121,7 +121,7 @@ public class LabelAttributes extends AttributeSubject implements Plugin
 
     public LabelAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(LabelAttributes_numAdditionalAtts + nMoreFields);
 
         varType = VARIABLETYPE_LABEL_VT_UNKNOWN_TYPE;
         legendFlag = true;
@@ -145,7 +145,7 @@ public class LabelAttributes extends AttributeSubject implements Plugin
 
     public LabelAttributes(LabelAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(LabelAttributes_numAdditionalAtts);
 
         varType = obj.varType;
         legendFlag = obj.legendFlag;
@@ -176,7 +176,7 @@ public class LabelAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return LabelAttributes_numAdditionalAtts;
     }
 
     public boolean equals(LabelAttributes obj)
