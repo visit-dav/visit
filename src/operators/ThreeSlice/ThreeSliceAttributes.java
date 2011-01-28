@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class ThreeSliceAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 4;
+    private static int ThreeSliceAttributes_numAdditionalAtts = 4;
 
     public ThreeSliceAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ThreeSliceAttributes_numAdditionalAtts);
 
         x = 0f;
         y = 0f;
@@ -73,7 +73,7 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
 
     public ThreeSliceAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ThreeSliceAttributes_numAdditionalAtts + nMoreFields);
 
         x = 0f;
         y = 0f;
@@ -83,7 +83,7 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
 
     public ThreeSliceAttributes(ThreeSliceAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ThreeSliceAttributes_numAdditionalAtts);
 
         x = obj.x;
         y = obj.y;
@@ -100,7 +100,7 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ThreeSliceAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ThreeSliceAttributes obj)

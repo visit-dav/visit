@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class LineSurfaceAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 5;
+    private static int LineSurfaceAttributes_numAdditionalAtts = 5;
 
     public LineSurfaceAttributes()
     {
-        super(numAdditionalAttributes);
+        super(LineSurfaceAttributes_numAdditionalAtts);
 
         startTime = 0;
         endTime = 1;
@@ -80,7 +80,7 @@ public class LineSurfaceAttributes extends AttributeSubject implements Plugin
 
     public LineSurfaceAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(LineSurfaceAttributes_numAdditionalAtts + nMoreFields);
 
         startTime = 0;
         endTime = 1;
@@ -97,7 +97,7 @@ public class LineSurfaceAttributes extends AttributeSubject implements Plugin
 
     public LineSurfaceAttributes(LineSurfaceAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(LineSurfaceAttributes_numAdditionalAtts);
 
         int i;
 
@@ -125,7 +125,7 @@ public class LineSurfaceAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return LineSurfaceAttributes_numAdditionalAtts;
     }
 
     public boolean equals(LineSurfaceAttributes obj)

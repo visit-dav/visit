@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class BoxAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 7;
+    private static int BoxAttributes_numAdditionalAtts = 7;
 
     // Enum values
     public final static int AMOUNT_SOME = 0;
@@ -68,7 +68,7 @@ public class BoxAttributes extends AttributeSubject implements Plugin
 
     public BoxAttributes()
     {
-        super(numAdditionalAttributes);
+        super(BoxAttributes_numAdditionalAtts);
 
         amount = AMOUNT_SOME;
         minx = 0;
@@ -81,7 +81,7 @@ public class BoxAttributes extends AttributeSubject implements Plugin
 
     public BoxAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(BoxAttributes_numAdditionalAtts + nMoreFields);
 
         amount = AMOUNT_SOME;
         minx = 0;
@@ -94,7 +94,7 @@ public class BoxAttributes extends AttributeSubject implements Plugin
 
     public BoxAttributes(BoxAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(BoxAttributes_numAdditionalAtts);
 
         amount = obj.amount;
         minx = obj.minx;
@@ -114,7 +114,7 @@ public class BoxAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return BoxAttributes_numAdditionalAtts;
     }
 
     public boolean equals(BoxAttributes obj)

@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define LINESURFACEATTRIBUTES_NMETH 12
 void           PyLineSurfaceAttributes_StartUp(LineSurfaceAttributes *subj, void *data);
 void           PyLineSurfaceAttributes_CloseDown();
-PyMethodDef *   PyLineSurfaceAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyLineSurfaceAttributes_GetMethodTable(int *nMethods);
 bool           PyLineSurfaceAttributes_Check(PyObject *obj);
 LineSurfaceAttributes *  PyLineSurfaceAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyLineSurfaceAttributes_New();
-PyObject *      PyLineSurfaceAttributes_Wrap(const LineSurfaceAttributes *attr);
+PyObject *     PyLineSurfaceAttributes_New();
+PyObject *     PyLineSurfaceAttributes_Wrap(const LineSurfaceAttributes *attr);
 void           PyLineSurfaceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyLineSurfaceAttributes_SetDefaults(const LineSurfaceAttributes *atts);
 std::string    PyLineSurfaceAttributes_GetLogString();
 std::string    PyLineSurfaceAttributes_ToString(const LineSurfaceAttributes *, const char *);
+PyObject *     PyLineSurfaceAttributes_getattr(PyObject *self, char *name);
+int            PyLineSurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyLineSurfaceAttributes_methods[LINESURFACEATTRIBUTES_NMETH];
 
 #endif
 

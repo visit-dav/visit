@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define DEFORMSPHEREGLYPHATTRIBUTES_NMETH 8
 void           PyDeformSphereGlyphAttributes_StartUp(DeformSphereGlyphAttributes *subj, void *data);
 void           PyDeformSphereGlyphAttributes_CloseDown();
-PyMethodDef *   PyDeformSphereGlyphAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyDeformSphereGlyphAttributes_GetMethodTable(int *nMethods);
 bool           PyDeformSphereGlyphAttributes_Check(PyObject *obj);
 DeformSphereGlyphAttributes *  PyDeformSphereGlyphAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyDeformSphereGlyphAttributes_New();
-PyObject *      PyDeformSphereGlyphAttributes_Wrap(const DeformSphereGlyphAttributes *attr);
+PyObject *     PyDeformSphereGlyphAttributes_New();
+PyObject *     PyDeformSphereGlyphAttributes_Wrap(const DeformSphereGlyphAttributes *attr);
 void           PyDeformSphereGlyphAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyDeformSphereGlyphAttributes_SetDefaults(const DeformSphereGlyphAttributes *atts);
 std::string    PyDeformSphereGlyphAttributes_GetLogString();
 std::string    PyDeformSphereGlyphAttributes_ToString(const DeformSphereGlyphAttributes *, const char *);
+PyObject *     PyDeformSphereGlyphAttributes_getattr(PyObject *self, char *name);
+int            PyDeformSphereGlyphAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyDeformSphereGlyphAttributes_methods[DEFORMSPHEREGLYPHATTRIBUTES_NMETH];
 
 #endif
 

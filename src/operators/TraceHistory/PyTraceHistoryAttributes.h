@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define TRACEHISTORYATTRIBUTES_NMETH 10
 void           PyTraceHistoryAttributes_StartUp(TraceHistoryAttributes *subj, void *data);
 void           PyTraceHistoryAttributes_CloseDown();
-PyMethodDef *   PyTraceHistoryAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyTraceHistoryAttributes_GetMethodTable(int *nMethods);
 bool           PyTraceHistoryAttributes_Check(PyObject *obj);
 TraceHistoryAttributes *  PyTraceHistoryAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyTraceHistoryAttributes_New();
-PyObject *      PyTraceHistoryAttributes_Wrap(const TraceHistoryAttributes *attr);
+PyObject *     PyTraceHistoryAttributes_New();
+PyObject *     PyTraceHistoryAttributes_Wrap(const TraceHistoryAttributes *attr);
 void           PyTraceHistoryAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTraceHistoryAttributes_SetDefaults(const TraceHistoryAttributes *atts);
 std::string    PyTraceHistoryAttributes_GetLogString();
 std::string    PyTraceHistoryAttributes_ToString(const TraceHistoryAttributes *, const char *);
+PyObject *     PyTraceHistoryAttributes_getattr(PyObject *self, char *name);
+int            PyTraceHistoryAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyTraceHistoryAttributes_methods[TRACEHISTORYATTRIBUTES_NMETH];
 
 #endif
 

@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class TriangulateRegularPointsAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 4;
+    private static int TriangulateRegularPointsAttributes_numAdditionalAtts = 4;
 
     public TriangulateRegularPointsAttributes()
     {
-        super(numAdditionalAttributes);
+        super(TriangulateRegularPointsAttributes_numAdditionalAtts);
 
         useXGridSpacing = false;
         xGridSpacing = 1;
@@ -73,7 +73,7 @@ public class TriangulateRegularPointsAttributes extends AttributeSubject impleme
 
     public TriangulateRegularPointsAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(TriangulateRegularPointsAttributes_numAdditionalAtts + nMoreFields);
 
         useXGridSpacing = false;
         xGridSpacing = 1;
@@ -83,7 +83,7 @@ public class TriangulateRegularPointsAttributes extends AttributeSubject impleme
 
     public TriangulateRegularPointsAttributes(TriangulateRegularPointsAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(TriangulateRegularPointsAttributes_numAdditionalAtts);
 
         useXGridSpacing = obj.useXGridSpacing;
         xGridSpacing = obj.xGridSpacing;
@@ -100,7 +100,7 @@ public class TriangulateRegularPointsAttributes extends AttributeSubject impleme
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return TriangulateRegularPointsAttributes_numAdditionalAtts;
     }
 
     public boolean equals(TriangulateRegularPointsAttributes obj)

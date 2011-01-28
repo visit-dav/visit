@@ -59,25 +59,25 @@ import llnl.visit.Plugin;
 
 public class EdgeAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 1;
+    private static int EdgeAttributes_numAdditionalAtts = 1;
 
     public EdgeAttributes()
     {
-        super(numAdditionalAttributes);
+        super(EdgeAttributes_numAdditionalAtts);
 
         dummy = true;
     }
 
     public EdgeAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(EdgeAttributes_numAdditionalAtts + nMoreFields);
 
         dummy = true;
     }
 
     public EdgeAttributes(EdgeAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(EdgeAttributes_numAdditionalAtts);
 
         dummy = obj.dummy;
 
@@ -91,7 +91,7 @@ public class EdgeAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return EdgeAttributes_numAdditionalAtts;
     }
 
     public boolean equals(EdgeAttributes obj)

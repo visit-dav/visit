@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class DualMeshAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 1;
+    private static int DualMeshAttributes_numAdditionalAtts = 1;
 
     // Enum values
     public final static int CONVERSIONMODE_AUTO = 0;
@@ -69,21 +69,21 @@ public class DualMeshAttributes extends AttributeSubject implements Plugin
 
     public DualMeshAttributes()
     {
-        super(numAdditionalAttributes);
+        super(DualMeshAttributes_numAdditionalAtts);
 
         mode = CONVERSIONMODE_AUTO;
     }
 
     public DualMeshAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(DualMeshAttributes_numAdditionalAtts + nMoreFields);
 
         mode = CONVERSIONMODE_AUTO;
     }
 
     public DualMeshAttributes(DualMeshAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(DualMeshAttributes_numAdditionalAtts);
 
         mode = obj.mode;
 
@@ -97,7 +97,7 @@ public class DualMeshAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return DualMeshAttributes_numAdditionalAtts;
     }
 
     public boolean equals(DualMeshAttributes obj)

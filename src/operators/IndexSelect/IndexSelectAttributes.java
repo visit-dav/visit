@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class IndexSelectAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 16;
+    private static int IndexSelectAttributes_numAdditionalAtts = 16;
 
     // Enum values
     public final static int DIMENSION_ONED = 0;
@@ -69,7 +69,7 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
 
     public IndexSelectAttributes()
     {
-        super(numAdditionalAttributes);
+        super(IndexSelectAttributes_numAdditionalAtts);
 
         dim = DIMENSION_TWOD;
         xMin = 0;
@@ -91,7 +91,7 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
 
     public IndexSelectAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(IndexSelectAttributes_numAdditionalAtts + nMoreFields);
 
         dim = DIMENSION_TWOD;
         xMin = 0;
@@ -113,7 +113,7 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
 
     public IndexSelectAttributes(IndexSelectAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(IndexSelectAttributes_numAdditionalAtts);
 
         dim = obj.dim;
         xMin = obj.xMin;
@@ -142,7 +142,7 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return IndexSelectAttributes_numAdditionalAtts;
     }
 
     public boolean equals(IndexSelectAttributes obj)

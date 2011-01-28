@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ElevateAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 10;
+    private static int ElevateAttributes_numAdditionalAtts = 10;
 
     // Enum values
     public final static int SCALING_LINEAR = 0;
@@ -72,7 +72,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
 
     public ElevateAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ElevateAttributes_numAdditionalAtts);
 
         useXYLimits = false;
         limitsMode = LIMITSMODE_ORIGINALDATA;
@@ -88,7 +88,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
 
     public ElevateAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ElevateAttributes_numAdditionalAtts + nMoreFields);
 
         useXYLimits = false;
         limitsMode = LIMITSMODE_ORIGINALDATA;
@@ -104,7 +104,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
 
     public ElevateAttributes(ElevateAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ElevateAttributes_numAdditionalAtts);
 
         useXYLimits = obj.useXYLimits;
         limitsMode = obj.limitsMode;
@@ -127,7 +127,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ElevateAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ElevateAttributes obj)

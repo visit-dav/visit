@@ -61,7 +61,7 @@ import java.util.Vector;
 
 public class OnionPeelAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 8;
+    private static int OnionPeelAttributes_numAdditionalAtts = 8;
 
     // Enum values
     public final static int NODEFACE_NODE = 0;
@@ -73,7 +73,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
 
     public OnionPeelAttributes()
     {
-        super(numAdditionalAttributes);
+        super(OnionPeelAttributes_numAdditionalAtts);
 
         adjacencyType = NODEFACE_NODE;
         useGlobalId = false;
@@ -88,7 +88,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
 
     public OnionPeelAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(OnionPeelAttributes_numAdditionalAtts + nMoreFields);
 
         adjacencyType = NODEFACE_NODE;
         useGlobalId = false;
@@ -103,7 +103,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
 
     public OnionPeelAttributes(OnionPeelAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(OnionPeelAttributes_numAdditionalAtts);
 
         int i;
 
@@ -131,7 +131,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return OnionPeelAttributes_numAdditionalAtts;
     }
 
     public boolean equals(OnionPeelAttributes obj)

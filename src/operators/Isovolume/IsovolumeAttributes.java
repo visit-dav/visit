@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class IsovolumeAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 3;
+    private static int IsovolumeAttributes_numAdditionalAtts = 3;
 
     public IsovolumeAttributes()
     {
-        super(numAdditionalAttributes);
+        super(IsovolumeAttributes_numAdditionalAtts);
 
         lbound = -1e+37;
         ubound = 1e+37;
@@ -72,7 +72,7 @@ public class IsovolumeAttributes extends AttributeSubject implements Plugin
 
     public IsovolumeAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(IsovolumeAttributes_numAdditionalAtts + nMoreFields);
 
         lbound = -1e+37;
         ubound = 1e+37;
@@ -81,7 +81,7 @@ public class IsovolumeAttributes extends AttributeSubject implements Plugin
 
     public IsovolumeAttributes(IsovolumeAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(IsovolumeAttributes_numAdditionalAtts);
 
         lbound = obj.lbound;
         ubound = obj.ubound;
@@ -97,7 +97,7 @@ public class IsovolumeAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return IsovolumeAttributes_numAdditionalAtts;
     }
 
     public boolean equals(IsovolumeAttributes obj)

@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class RevolveAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 6;
+    private static int RevolveAttributes_numAdditionalAtts = 6;
 
     // Enum values
     public final static int MESHTYPE_AUTO = 0;
@@ -70,7 +70,7 @@ public class RevolveAttributes extends AttributeSubject implements Plugin
 
     public RevolveAttributes()
     {
-        super(numAdditionalAttributes);
+        super(RevolveAttributes_numAdditionalAtts);
 
         meshType = MESHTYPE_AUTO;
         autoAxis = true;
@@ -85,7 +85,7 @@ public class RevolveAttributes extends AttributeSubject implements Plugin
 
     public RevolveAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(RevolveAttributes_numAdditionalAtts + nMoreFields);
 
         meshType = MESHTYPE_AUTO;
         autoAxis = true;
@@ -100,7 +100,7 @@ public class RevolveAttributes extends AttributeSubject implements Plugin
 
     public RevolveAttributes(RevolveAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(RevolveAttributes_numAdditionalAtts);
 
         int i;
 
@@ -125,7 +125,7 @@ public class RevolveAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return RevolveAttributes_numAdditionalAtts;
     }
 
     public boolean equals(RevolveAttributes obj)

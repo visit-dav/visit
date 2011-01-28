@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class MetricThresholdAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 19;
+    private static int MetricThresholdAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int PRESET_NONE = 0;
@@ -87,7 +87,7 @@ public class MetricThresholdAttributes extends AttributeSubject implements Plugi
 
     public MetricThresholdAttributes()
     {
-        super(numAdditionalAttributes);
+        super(MetricThresholdAttributes_numAdditionalAtts);
 
         preset = PRESET_NONE;
         Hexahedron = false;
@@ -112,7 +112,7 @@ public class MetricThresholdAttributes extends AttributeSubject implements Plugi
 
     public MetricThresholdAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(MetricThresholdAttributes_numAdditionalAtts + nMoreFields);
 
         preset = PRESET_NONE;
         Hexahedron = false;
@@ -137,7 +137,7 @@ public class MetricThresholdAttributes extends AttributeSubject implements Plugi
 
     public MetricThresholdAttributes(MetricThresholdAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(MetricThresholdAttributes_numAdditionalAtts);
 
         preset = obj.preset;
         Hexahedron = obj.Hexahedron;
@@ -169,7 +169,7 @@ public class MetricThresholdAttributes extends AttributeSubject implements Plugi
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return MetricThresholdAttributes_numAdditionalAtts;
     }
 
     public boolean equals(MetricThresholdAttributes obj)

@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class DeformSphereGlyphAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 3;
+    private static int DeformSphereGlyphAttributes_numAdditionalAtts = 3;
 
     public DeformSphereGlyphAttributes()
     {
-        super(numAdditionalAttributes);
+        super(DeformSphereGlyphAttributes_numAdditionalAtts);
 
         var = new String("Default");
         scale = 1;
@@ -72,7 +72,7 @@ public class DeformSphereGlyphAttributes extends AttributeSubject implements Plu
 
     public DeformSphereGlyphAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(DeformSphereGlyphAttributes_numAdditionalAtts + nMoreFields);
 
         var = new String("Default");
         scale = 1;
@@ -81,7 +81,7 @@ public class DeformSphereGlyphAttributes extends AttributeSubject implements Plu
 
     public DeformSphereGlyphAttributes(DeformSphereGlyphAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(DeformSphereGlyphAttributes_numAdditionalAtts);
 
         var = new String(obj.var);
         scale = obj.scale;
@@ -97,7 +97,7 @@ public class DeformSphereGlyphAttributes extends AttributeSubject implements Plu
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return DeformSphereGlyphAttributes_numAdditionalAtts;
     }
 
     public boolean equals(DeformSphereGlyphAttributes obj)

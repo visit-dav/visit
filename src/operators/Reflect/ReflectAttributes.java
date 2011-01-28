@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ReflectAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 8;
+    private static int ReflectAttributes_numAdditionalAtts = 8;
 
     // Enum values
     public final static int OCTANT_PXPYPZ = 0;
@@ -74,7 +74,7 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
 
     public ReflectAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ReflectAttributes_numAdditionalAtts);
 
         octant = OCTANT_PXPYPZ;
         useXBoundary = true;
@@ -96,7 +96,7 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
 
     public ReflectAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ReflectAttributes_numAdditionalAtts + nMoreFields);
 
         octant = OCTANT_PXPYPZ;
         useXBoundary = true;
@@ -118,7 +118,7 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
 
     public ReflectAttributes(ReflectAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ReflectAttributes_numAdditionalAtts);
 
         int i;
 
@@ -144,7 +144,7 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ReflectAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ReflectAttributes obj)

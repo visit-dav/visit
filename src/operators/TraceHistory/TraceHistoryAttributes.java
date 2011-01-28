@@ -60,11 +60,11 @@ import java.util.Vector;
 
 public class TraceHistoryAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 4;
+    private static int TraceHistoryAttributes_numAdditionalAtts = 4;
 
     public TraceHistoryAttributes()
     {
-        super(numAdditionalAttributes);
+        super(TraceHistoryAttributes_numAdditionalAtts);
 
         vars = new Vector();
         displacement = new String("");
@@ -74,7 +74,7 @@ public class TraceHistoryAttributes extends AttributeSubject implements Plugin
 
     public TraceHistoryAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(TraceHistoryAttributes_numAdditionalAtts + nMoreFields);
 
         vars = new Vector();
         displacement = new String("");
@@ -84,7 +84,7 @@ public class TraceHistoryAttributes extends AttributeSubject implements Plugin
 
     public TraceHistoryAttributes(TraceHistoryAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(TraceHistoryAttributes_numAdditionalAtts);
 
         int i;
 
@@ -106,7 +106,7 @@ public class TraceHistoryAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return TraceHistoryAttributes_numAdditionalAtts;
     }
 
     public boolean equals(TraceHistoryAttributes obj)

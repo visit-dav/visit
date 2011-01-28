@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ContextAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 7;
+    private static int ContextAttributes_numAdditionalAtts = 7;
 
     // Enum values
     public final static int AMOUNT_SOME = 0;
@@ -68,7 +68,7 @@ public class ContextAttributes extends AttributeSubject implements Plugin
 
     public ContextAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ContextAttributes_numAdditionalAtts);
 
         offset = 2;
         low = 2;
@@ -81,7 +81,7 @@ public class ContextAttributes extends AttributeSubject implements Plugin
 
     public ContextAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ContextAttributes_numAdditionalAtts + nMoreFields);
 
         offset = 2;
         low = 2;
@@ -94,7 +94,7 @@ public class ContextAttributes extends AttributeSubject implements Plugin
 
     public ContextAttributes(ContextAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ContextAttributes_numAdditionalAtts);
 
         offset = obj.offset;
         low = obj.low;
@@ -114,7 +114,7 @@ public class ContextAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ContextAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ContextAttributes obj)

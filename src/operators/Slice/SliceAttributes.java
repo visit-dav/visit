@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class SliceAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 17;
+    private static int SliceAttributes_numAdditionalAtts = 17;
 
     // Enum values
     public final static int AXISTYPE_XAXIS = 0;
@@ -77,7 +77,7 @@ public class SliceAttributes extends AttributeSubject implements Plugin
 
     public SliceAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SliceAttributes_numAdditionalAtts);
 
         originType = ORIGINTYPE_INTERCEPT;
         originPoint = new double[3];
@@ -109,7 +109,7 @@ public class SliceAttributes extends AttributeSubject implements Plugin
 
     public SliceAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SliceAttributes_numAdditionalAtts + nMoreFields);
 
         originType = ORIGINTYPE_INTERCEPT;
         originPoint = new double[3];
@@ -141,7 +141,7 @@ public class SliceAttributes extends AttributeSubject implements Plugin
 
     public SliceAttributes(SliceAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SliceAttributes_numAdditionalAtts);
 
         int i;
 
@@ -185,7 +185,7 @@ public class SliceAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SliceAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SliceAttributes obj)

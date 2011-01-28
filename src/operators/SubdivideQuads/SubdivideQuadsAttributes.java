@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class SubdivideQuadsAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 5;
+    private static int SubdivideQuadsAttributes_numAdditionalAtts = 5;
 
     public SubdivideQuadsAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SubdivideQuadsAttributes_numAdditionalAtts);
 
         threshold = 0.500002;
         maxSubdivs = 4;
@@ -74,7 +74,7 @@ public class SubdivideQuadsAttributes extends AttributeSubject implements Plugin
 
     public SubdivideQuadsAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SubdivideQuadsAttributes_numAdditionalAtts + nMoreFields);
 
         threshold = 0.500002;
         maxSubdivs = 4;
@@ -85,7 +85,7 @@ public class SubdivideQuadsAttributes extends AttributeSubject implements Plugin
 
     public SubdivideQuadsAttributes(SubdivideQuadsAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SubdivideQuadsAttributes_numAdditionalAtts);
 
         threshold = obj.threshold;
         maxSubdivs = obj.maxSubdivs;
@@ -103,7 +103,7 @@ public class SubdivideQuadsAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SubdivideQuadsAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SubdivideQuadsAttributes obj)

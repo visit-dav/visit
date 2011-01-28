@@ -60,25 +60,25 @@ import java.util.Vector;
 
 public class DeferExpressionAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 1;
+    private static int DeferExpressionAttributes_numAdditionalAtts = 1;
 
     public DeferExpressionAttributes()
     {
-        super(numAdditionalAttributes);
+        super(DeferExpressionAttributes_numAdditionalAtts);
 
         exprs = new Vector();
     }
 
     public DeferExpressionAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(DeferExpressionAttributes_numAdditionalAtts + nMoreFields);
 
         exprs = new Vector();
     }
 
     public DeferExpressionAttributes(DeferExpressionAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(DeferExpressionAttributes_numAdditionalAtts);
 
         int i;
 
@@ -97,7 +97,7 @@ public class DeferExpressionAttributes extends AttributeSubject implements Plugi
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return DeferExpressionAttributes_numAdditionalAtts;
     }
 
     public boolean equals(DeferExpressionAttributes obj)

@@ -62,7 +62,7 @@ import java.lang.Double;
 
 public class ThresholdAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 7;
+    private static int ThresholdAttributes_numAdditionalAtts = 7;
 
     // Enum values
     public final static int OUTPUTMESHTYPE_INPUTZONES = 0;
@@ -74,7 +74,7 @@ public class ThresholdAttributes extends AttributeSubject implements Plugin
 
     public ThresholdAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ThresholdAttributes_numAdditionalAtts);
 
         outputMeshType = 0;
         listedVarNames = new Vector();
@@ -88,7 +88,7 @@ public class ThresholdAttributes extends AttributeSubject implements Plugin
 
     public ThresholdAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ThresholdAttributes_numAdditionalAtts + nMoreFields);
 
         outputMeshType = 0;
         listedVarNames = new Vector();
@@ -102,7 +102,7 @@ public class ThresholdAttributes extends AttributeSubject implements Plugin
 
     public ThresholdAttributes(ThresholdAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ThresholdAttributes_numAdditionalAtts);
 
         int i;
 
@@ -144,7 +144,7 @@ public class ThresholdAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ThresholdAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ThresholdAttributes obj)

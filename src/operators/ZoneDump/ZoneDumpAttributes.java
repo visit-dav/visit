@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class ZoneDumpAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 5;
+    private static int ZoneDumpAttributes_numAdditionalAtts = 5;
 
     public ZoneDumpAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ZoneDumpAttributes_numAdditionalAtts);
 
         variable = new String("");
         lowerBound = -1e+37;
@@ -74,7 +74,7 @@ public class ZoneDumpAttributes extends AttributeSubject implements Plugin
 
     public ZoneDumpAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ZoneDumpAttributes_numAdditionalAtts + nMoreFields);
 
         variable = new String("");
         lowerBound = -1e+37;
@@ -85,7 +85,7 @@ public class ZoneDumpAttributes extends AttributeSubject implements Plugin
 
     public ZoneDumpAttributes(ZoneDumpAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ZoneDumpAttributes_numAdditionalAtts);
 
         variable = new String(obj.variable);
         lowerBound = obj.lowerBound;
@@ -103,7 +103,7 @@ public class ZoneDumpAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ZoneDumpAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ZoneDumpAttributes obj)

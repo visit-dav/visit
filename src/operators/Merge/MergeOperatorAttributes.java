@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class MergeOperatorAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 2;
+    private static int MergeOperatorAttributes_numAdditionalAtts = 2;
 
     public MergeOperatorAttributes()
     {
-        super(numAdditionalAttributes);
+        super(MergeOperatorAttributes_numAdditionalAtts);
 
         parallelMerge = false;
         tolerance = 0;
@@ -71,7 +71,7 @@ public class MergeOperatorAttributes extends AttributeSubject implements Plugin
 
     public MergeOperatorAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(MergeOperatorAttributes_numAdditionalAtts + nMoreFields);
 
         parallelMerge = false;
         tolerance = 0;
@@ -79,7 +79,7 @@ public class MergeOperatorAttributes extends AttributeSubject implements Plugin
 
     public MergeOperatorAttributes(MergeOperatorAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(MergeOperatorAttributes_numAdditionalAtts);
 
         parallelMerge = obj.parallelMerge;
         tolerance = obj.tolerance;
@@ -94,7 +94,7 @@ public class MergeOperatorAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return MergeOperatorAttributes_numAdditionalAtts;
     }
 
     public boolean equals(MergeOperatorAttributes obj)

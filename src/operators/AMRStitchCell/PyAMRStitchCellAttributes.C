@@ -76,6 +76,25 @@ PyAMRStitchCellAttributes_ToString(const AMRStitchCellAttributes *atts, const ch
     std::string str; 
     char tmpStr[1000]; 
 
+    const char *CreateCellsOfType_names = "DualGridAndStitchCells, DualGrid, StitchCells";
+    switch (atts->GetCreateCellsOfType())
+    {
+      case AMRStitchCellAttributes::DualGridAndStitchCells:
+          SNPRINTF(tmpStr, 1000, "%sCreateCellsOfType = %sDualGridAndStitchCells  # %s\n", prefix, prefix, CreateCellsOfType_names);
+          str += tmpStr;
+          break;
+      case AMRStitchCellAttributes::DualGrid:
+          SNPRINTF(tmpStr, 1000, "%sCreateCellsOfType = %sDualGrid  # %s\n", prefix, prefix, CreateCellsOfType_names);
+          str += tmpStr;
+          break;
+      case AMRStitchCellAttributes::StitchCells:
+          SNPRINTF(tmpStr, 1000, "%sCreateCellsOfType = %sStitchCells  # %s\n", prefix, prefix, CreateCellsOfType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -88,10 +107,45 @@ AMRStitchCellAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+/*static*/ PyObject *
+AMRStitchCellAttributes_SetCreateCellsOfType(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the CreateCellsOfType in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetCreateCellsOfType(AMRStitchCellAttributes::CreateType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid CreateCellsOfType value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "DualGridAndStitchCells, DualGrid, StitchCells.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+AMRStitchCellAttributes_GetCreateCellsOfType(PyObject *self, PyObject *args)
+{
+    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCreateCellsOfType()));
+    return retval;
+}
+
 
 
 PyMethodDef PyAMRStitchCellAttributes_methods[AMRSTITCHCELLATTRIBUTES_NMETH] = {
     {"Notify", AMRStitchCellAttributes_Notify, METH_VARARGS},
+    {"SetCreateCellsOfType", AMRStitchCellAttributes_SetCreateCellsOfType, METH_VARARGS},
+    {"GetCreateCellsOfType", AMRStitchCellAttributes_GetCreateCellsOfType, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -120,6 +174,15 @@ AMRStitchCellAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyAMRStitchCellAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "CreateCellsOfType") == 0)
+        return AMRStitchCellAttributes_GetCreateCellsOfType(self, NULL);
+    if(strcmp(name, "DualGridAndStitchCells") == 0)
+        return PyInt_FromLong(long(AMRStitchCellAttributes::DualGridAndStitchCells));
+    if(strcmp(name, "DualGrid") == 0)
+        return PyInt_FromLong(long(AMRStitchCellAttributes::DualGrid));
+    if(strcmp(name, "StitchCells") == 0)
+        return PyInt_FromLong(long(AMRStitchCellAttributes::StitchCells));
+
 
     return Py_FindMethod(PyAMRStitchCellAttributes_methods, self, name);
 }
@@ -134,6 +197,8 @@ PyAMRStitchCellAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
+    if(strcmp(name, "CreateCellsOfType") == 0)
+        obj = AMRStitchCellAttributes_SetCreateCellsOfType(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
