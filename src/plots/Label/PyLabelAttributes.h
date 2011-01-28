@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define LABELATTRIBUTES_NMETH 36
 void           PyLabelAttributes_StartUp(LabelAttributes *subj, void *data);
 void           PyLabelAttributes_CloseDown();
-PyMethodDef *   PyLabelAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyLabelAttributes_GetMethodTable(int *nMethods);
 bool           PyLabelAttributes_Check(PyObject *obj);
 LabelAttributes *  PyLabelAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyLabelAttributes_New();
-PyObject *      PyLabelAttributes_Wrap(const LabelAttributes *attr);
+PyObject *     PyLabelAttributes_New();
+PyObject *     PyLabelAttributes_Wrap(const LabelAttributes *attr);
 void           PyLabelAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyLabelAttributes_SetDefaults(const LabelAttributes *atts);
 std::string    PyLabelAttributes_GetLogString();
 std::string    PyLabelAttributes_ToString(const LabelAttributes *, const char *);
+PyObject *     PyLabelAttributes_getattr(PyObject *self, char *name);
+int            PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyLabelAttributes_methods[LABELATTRIBUTES_NMETH];
 
 #endif
 

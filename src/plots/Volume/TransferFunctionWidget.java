@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class TransferFunctionWidget extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 4;
+    private static int TransferFunctionWidget_numAdditionalAtts = 4;
 
     // Enum values
     public final static int WIDGETTYPE_RECTANGLE = 0;
@@ -67,7 +67,7 @@ public class TransferFunctionWidget extends AttributeSubject
 
     public TransferFunctionWidget()
     {
-        super(numAdditionalAttributes);
+        super(TransferFunctionWidget_numAdditionalAtts);
 
         Type = WIDGETTYPE_RECTANGLE;
         Name = new String("unnamed");
@@ -89,7 +89,7 @@ public class TransferFunctionWidget extends AttributeSubject
 
     public TransferFunctionWidget(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(TransferFunctionWidget_numAdditionalAtts + nMoreFields);
 
         Type = WIDGETTYPE_RECTANGLE;
         Name = new String("unnamed");
@@ -111,7 +111,7 @@ public class TransferFunctionWidget extends AttributeSubject
 
     public TransferFunctionWidget(TransferFunctionWidget obj)
     {
-        super(numAdditionalAttributes);
+        super(TransferFunctionWidget_numAdditionalAtts);
 
         int i;
 
@@ -136,7 +136,7 @@ public class TransferFunctionWidget extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return TransferFunctionWidget_numAdditionalAtts;
     }
 
     public boolean equals(TransferFunctionWidget obj)

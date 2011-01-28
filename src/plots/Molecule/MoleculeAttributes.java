@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class MoleculeAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 22;
+    private static int MoleculeAttributes_numAdditionalAtts = 22;
 
     // Enum values
     public final static int ATOMRENDERINGMODE_NOATOMS = 0;
@@ -87,7 +87,7 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
 
     public MoleculeAttributes()
     {
-        super(numAdditionalAttributes);
+        super(MoleculeAttributes_numAdditionalAtts);
 
         drawAtomsAs = ATOMRENDERINGMODE_SPHEREATOMS;
         scaleRadiusBy = RADIUSTYPE_FIXED;
@@ -115,7 +115,7 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
 
     public MoleculeAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(MoleculeAttributes_numAdditionalAtts + nMoreFields);
 
         drawAtomsAs = ATOMRENDERINGMODE_SPHEREATOMS;
         scaleRadiusBy = RADIUSTYPE_FIXED;
@@ -143,7 +143,7 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
 
     public MoleculeAttributes(MoleculeAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(MoleculeAttributes_numAdditionalAtts);
 
         drawAtomsAs = obj.drawAtomsAs;
         scaleRadiusBy = obj.scaleRadiusBy;
@@ -178,7 +178,7 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return MoleculeAttributes_numAdditionalAtts;
     }
 
     public boolean equals(MoleculeAttributes obj)

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="FontAttributes" purpose="Describes font properties that we can set through VTK" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="FontAttributes" purpose="Describes font properties that we can set through VTK" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="FontAttributes.code">
     <Enum name="FontName">
       Arial
       Courier
@@ -26,4 +26,8 @@
     <Field name="italic" label="italic" type="bool">
       false
     </Field>
+    <Function name="FontAttributes_SetHeight" user="true" member="true" internal="true">
+    </Function>
+    <Function name="FontAttributes_GetHeight" user="true" member="true" internal="true">
+    </Function>
   </Attribute>

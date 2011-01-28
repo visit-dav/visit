@@ -1,0 +1,36 @@
+Target: xml2python
+Function: FontAttributes_SetHeight 
+Declaration: FontAttributes_SetHeight
+Definition:
+//
+// These functions help map between height and the new "scale". All of the old
+// font heights were 0.02 by default so we can use that to create a scale value.
+//
+
+PyObject *
+FontAttributes_SetHeight(PyObject *self, PyObject *args)
+{
+    FontAttributesObject *obj = (FontAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the scale in the object.
+    obj->data->SetScale(dval / 0.02);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+Function: FontAttributes_GetHeight
+Declaration: FontAttributes_GetHeight
+Definition:
+PyObject *
+FontAttributes_GetHeight(PyObject *self, PyObject *args)
+{
+    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetScale() * 0.02);
+    return retval;
+}
+

@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class ParallelCoordinatesAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 15;
+    private static int ParallelCoordinatesAttributes_numAdditionalAtts = 15;
 
     // Enum values
     public final static int FOCUSRENDERING_INDIVIDUALLINES = 0;
@@ -72,7 +72,7 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
 
     public ParallelCoordinatesAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ParallelCoordinatesAttributes_numAdditionalAtts);
 
         scalarAxisNames = new Vector();
         visualAxisNames = new Vector();
@@ -93,7 +93,7 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
 
     public ParallelCoordinatesAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ParallelCoordinatesAttributes_numAdditionalAtts + nMoreFields);
 
         scalarAxisNames = new Vector();
         visualAxisNames = new Vector();
@@ -114,7 +114,7 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
 
     public ParallelCoordinatesAttributes(ParallelCoordinatesAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ParallelCoordinatesAttributes_numAdditionalAtts);
 
         int i;
 
@@ -162,7 +162,7 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ParallelCoordinatesAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ParallelCoordinatesAttributes obj)

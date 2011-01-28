@@ -62,7 +62,7 @@ import java.util.Vector;
 
 public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 17;
+    private static int SpreadsheetAttributes_numAdditionalAtts = 17;
 
     // Enum values
     public final static int NORMALAXIS_X = 0;
@@ -72,7 +72,7 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 
     public SpreadsheetAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SpreadsheetAttributes_numAdditionalAtts);
 
         subsetName = new String("Whole");
         formatString = new String("%1.6f");
@@ -95,7 +95,7 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 
     public SpreadsheetAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SpreadsheetAttributes_numAdditionalAtts + nMoreFields);
 
         subsetName = new String("Whole");
         formatString = new String("%1.6f");
@@ -118,7 +118,7 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 
     public SpreadsheetAttributes(SpreadsheetAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SpreadsheetAttributes_numAdditionalAtts);
 
         int i;
 
@@ -159,7 +159,7 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SpreadsheetAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SpreadsheetAttributes obj)
