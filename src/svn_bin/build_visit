@@ -1076,6 +1076,9 @@
 #     HDF4 libdep generation needs to use libvtkjpeg on only Darwin/AIX,
 #     and the normal libjpeg everywhere else.
 #
+#     Hank Childs, Fri Jan 28 09:07:07 PST 2011
+#     Add better error messages when Qt won't build because of OpenGL.
+#
 # *****************************************************************************
 
 
@@ -1621,13 +1624,18 @@ function log
 # Programmer: Cyrus Harrison                                                  #
 # Date: Tue Nov 18 15:09:47 PST 2008                                          #
 #                                                                             #
+# Modifications:                                                              #
+#                                                                             #
+#   Hank Childs, Fri Jan 28 10:32:06 PST 2011                                 #
+#   Add -e to echo so tabs are printed.                                       #
+#                                                                             #
 # *************************************************************************** #
 function warn
 {
     if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        echo "$@" 1>&3
+        echo -e "$@" 1>&3
     else
-        echo "$@"
+        echo -e "$@"
     fi
     
     if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
@@ -3763,7 +3771,18 @@ function build_qt
        HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'  | cut -c 1-3`
        if [[ "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
           warn "Qt4 configure did not find OpenGL." \
-                "VisIt needs Qt4 with enabled OpenGL support. Giving up."
+                "VisIt needs Qt4 with enabled OpenGL support. Giving up.\n" \
+                "Here are some common reasons why Qt will not build with GL support.\n" \
+                "\t- The OpenGL development environment is not installed.\n" \
+                "\t  (You can check this by searching for /usr/include/GL/GL.h)\n" \
+                "\t- libGLU is not available\n"\
+                "\t- libGLU is available, but only as a shared library\n"\
+                "You can learn more about exactly why Qt failed by doing the following:\n"\
+                "\t- cd $QT_BUILD_DIR\n" \
+                "\t- ./configure -opengl -verbose\n" \
+                "\t  (this will produce the details of the failed OpenGL tests.)\n" \
+                "\t  (also note you will need to respond with \"o\" to opt for\n" \
+                "\t   the open source license and \"yes\" to accept.)\n"
           return 1
        fi
     fi
