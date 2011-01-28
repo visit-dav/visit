@@ -70,7 +70,8 @@ public:
     {
         DormandPrince,
         AdamsBashforth,
-        M3DC1Integrator,
+        M3DC12DIntegrator,
+        M3DC13DIntegrator,
         NIMRODIntegrator
     };
     enum CoordinateSystem

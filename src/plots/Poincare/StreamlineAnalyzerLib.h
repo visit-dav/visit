@@ -208,7 +208,8 @@ public:
   void
   periodicityStats( vector< Point >& points,
                     vector< pair< unsigned int, double > >& stats,
-                    unsigned int max_period );
+                    unsigned int max_period,
+                    unsigned int checkType );
 
 
   void thresholdStats( vector< pair< unsigned int, double > >& stats );
@@ -216,7 +217,7 @@ public:
   double
   calculateSumOfSquares( vector< Point >& poloidalWinding_points,
                          unsigned int poloidalWinding,
-                         int checkType );
+                         unsigned int checkType );
 
   bool
   rationalCheck( vector< Point >& points,

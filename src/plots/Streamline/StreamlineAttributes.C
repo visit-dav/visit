@@ -319,21 +319,21 @@ StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, S
 //
 
 static const char *IntegrationType_strings[] = {
-"DormandPrince", "AdamsBashforth", "M3DC1Integrator", 
-"NIMRODIntegrator"};
+"DormandPrince", "AdamsBashforth", "M3DC12DIntegrator", 
+"M3DC13DIntegrator", "NIMRODIntegrator"};
 
 std::string
 StreamlineAttributes::IntegrationType_ToString(StreamlineAttributes::IntegrationType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
+    if(index < 0 || index >= 5) index = 0;
     return IntegrationType_strings[index];
 }
 
 std::string
 StreamlineAttributes::IntegrationType_ToString(int t)
 {
-    int index = (t < 0 || t >= 4) ? 0 : t;
+    int index = (t < 0 || t >= 5) ? 0 : t;
     return IntegrationType_strings[index];
 }
 
@@ -341,7 +341,7 @@ bool
 StreamlineAttributes::IntegrationType_FromString(const std::string &s, StreamlineAttributes::IntegrationType &val)
 {
     val = StreamlineAttributes::DormandPrince;
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 5; ++i)
     {
         if(s == IntegrationType_strings[i])
         {
@@ -2273,7 +2273,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
+            if(ival >= 0 && ival < 5)
                 SetIntegrationType(IntegrationType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

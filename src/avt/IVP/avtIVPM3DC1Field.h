@@ -99,14 +99,15 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
 
   avtVector operator()( const double &t, const avtVector &v ) const;
 
+  void interpBcomps(float *B, double *x, int element, double *xieta) const;
+
   float interp    (float *var, int el, double *lcoords) const;
+
   float interpdR  (float *var, int el, double *lcoords) const;
   float interpdz  (float *var, int el, double *lcoords) const;
   float interpdR2 (float *var, int el, double *lcoords) const;
   float interpdz2 (float *var, int el, double *lcoords) const;
   float interpdRdz(float *var, int el, double *lcoords) const;
-
-  void interpBcomps(float *B, double *x, int element, double *xieta) const;
 
  protected:
   template< class type >
@@ -130,6 +131,8 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   int scalar_size;
 
  public:
+
+  // 2D Variables
   //  variables on the mesh
   float *psi0, *f0;                  /* Equilibrium field */
   float *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
@@ -153,6 +156,10 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   
   // variables read from header attributes.
   double bzero, rzero;
+
+  // 3D Variables
+  //  variables on the mesh
+  float *f, *psi, *phi, *I;                  /* B field conponents*/
 };
 
 #endif

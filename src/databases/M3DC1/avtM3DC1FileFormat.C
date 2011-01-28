@@ -211,21 +211,17 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       AddScalarVarToMetaData( md, m_fieldVarNames[i], meshname, m_dataLocation );
     }
 
-    // This vector is the dummy vector
-    if( element_dimension == 2 )
-    {
-      // For now the mesh is the same mesh as the original mesh because
-      // of needing it for the integration.
-      AddVectorVarToMetaData( md, "B-By-Parts",
-                              string("mesh"),
-                              AVT_ZONECENT, 3);
-
-      // Interpolated on to a mesh for visualization only.
-      AddVectorVarToMetaData( md, "B-Interpolated",
-                              string("mesh") + string(level),
-                              m_dataLocation, 3 );
-    }
-
+    // For now the mesh is the same mesh as the original mesh because
+    // of needing it for the integration.
+    AddVectorVarToMetaData( md, "B_C1_Elements",
+                            string("mesh"),
+                            AVT_ZONECENT, 3);
+    
+    // Interpolated on to a mesh for visualization only.
+    AddVectorVarToMetaData( md, "B_Interpolated",
+                            string("mesh") + string(level),
+                            m_dataLocation, 3 );
+    
     // Hidden refined meshes for working with the interpolated data
     if( m_refinement )
     {
@@ -1282,13 +1278,13 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
       return vtkVar;
     } 
   }
-  else if( strcmp(varname, "B-By-Parts") == 0 ||
-           strcmp(varname, "B-Interpolated") == 0 )
+  else if( strcmp(varname, "B_C1_Elements") == 0 ||
+           strcmp(varname, "B_Interpolated") == 0 )
   {
     avtCentering dataLocation = m_dataLocation;
 
     // When using by part the location is center based.
-    if( strcmp(varname, "B-By-Parts") == 0 )
+    if( strcmp(varname, "B_C1_Elements") == 0 )
       m_dataLocation = AVT_ZONECENT;
     
     // First get the elements for this variable so that the variable can
@@ -1302,9 +1298,9 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
     // of needing it for the integration.
     vtkPoints *vtkPts;
 
-    if( strcmp(varname, "B-By-Parts") == 0 )
+    if( strcmp(varname, "B_C1_Elements") == 0 )
       vtkPts = GetMeshPoints( elements, 0 );
-    else if( strcmp(varname, "B-Interpolated") == 0 )
+    else if( strcmp(varname, "B_Interpolated") == 0 )
       vtkPts = GetMeshPoints( elements, m_refinement );
 
     float* pts = (float *) vtkPts->GetVoidPointer(0);
@@ -1320,46 +1316,74 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
       EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
                   "The root group '/' was not found" );
 
-    // Get the field variable to be interpolated on the linear mesh.
-    if ( ! ReadAttribute( rootID, "linear", &(m3dField.linflag) ) )
+    vtkDataArray* vtkVarF0;
+    vtkDataArray* vtkVarPsi0;
+    
+    vtkDataArray* vtkVarF;
+    vtkDataArray* vtkVarF_i;
+    vtkDataArray* vtkVarPsi;
+    vtkDataArray* vtkVarPsi_i;
+
+    vtkDataArray* vtkVarI;
+    vtkDataArray* vtkVarPhi;
+
+    if( element_dimension == 2 )
+    {
+      // Get the field variable to be interpolated on the linear mesh.
+      if ( ! ReadAttribute( rootID, "linear", &(m3dField.linflag) ) )
         EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
                     "Attribute 'linear' was not found or was the wrong type." );
       
-    if ( ! ReadAttribute( rootID, "ntor", &(m3dField.tmode) ) )
+      if ( ! ReadAttribute( rootID, "ntor", &(m3dField.tmode) ) )
         EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
                     "Attribute 'ntor' was not found or was the wrong type." );
       
-    if ( ! ReadAttribute( rootID, "bzero", &(m3dField.bzero) ) )
+      if ( ! ReadAttribute( rootID, "bzero", &(m3dField.bzero) ) )
         EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
                     "Attribute 'bzero' was not found or was the wrong type." );
       
-    if ( ! ReadAttribute( rootID, "rzero", &(m3dField.rzero) ) )
+      if ( ! ReadAttribute( rootID, "rzero", &(m3dField.rzero) ) )
         EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
                     "Attribute 'rzero' was not found or was the wrong type." );
 
-    m3dField.F0 = -m3dField.bzero * m3dField.rzero;
+      m3dField.F0 = -m3dField.bzero * m3dField.rzero;
       
-    H5Gclose( rootID );
+      H5Gclose( rootID );
     
-    // Variables on the mesh - N elements x 20
-    vtkDataArray* vtkVarF0 = GetFieldVar( timestate, "equilibrium/f");  
-    m3dField.f0 = (float*) vtkVarF0->GetVoidPointer(0);
+      // Variables on the mesh - N elements x 20
+      vtkVarF0 = GetFieldVar( timestate, "equilibrium/f");  
+      m3dField.f0 = (float*) vtkVarF0->GetVoidPointer(0);
 
-    vtkDataArray* vtkVarPsi0 = GetFieldVar( timestate, "equilibrium/psi");
-    m3dField.psi0 = (float*) vtkVarPsi0->GetVoidPointer(0);
+      vtkVarPsi0 = GetFieldVar( timestate, "equilibrium/psi");
+      m3dField.psi0 = (float*) vtkVarPsi0->GetVoidPointer(0);
     
-    vtkDataArray* vtkVarF = GetFieldVar( timestate, "f");
-    m3dField.fnr = (float*) vtkVarF->GetVoidPointer(0);
+      vtkVarF = GetFieldVar( timestate, "f");
+      m3dField.fnr = (float*) vtkVarF->GetVoidPointer(0);
 
-    vtkDataArray* vtkVarF_i = GetFieldVar( timestate, "f_i");
-    m3dField.fni = (float*) vtkVarF_i->GetVoidPointer(0);
+      vtkVarF_i = GetFieldVar( timestate, "f_i");
+      m3dField.fni = (float*) vtkVarF_i->GetVoidPointer(0);
 
-    vtkDataArray* vtkVarPsi = GetFieldVar( timestate, "psi");
-    m3dField.psinr = (float*) vtkVarPsi->GetVoidPointer(0);
+      vtkVarPsi = GetFieldVar( timestate, "psi");
+      m3dField.psinr = (float*) vtkVarPsi->GetVoidPointer(0);
 
-    vtkDataArray* vtkVarPsi_i = GetFieldVar( timestate, "psi_i");
-    m3dField.psini = (float*) vtkVarPsi_i->GetVoidPointer(0);
-    
+      vtkVarPsi_i = GetFieldVar( timestate, "psi_i");
+      m3dField.psini = (float*) vtkVarPsi_i->GetVoidPointer(0);
+    }
+    else //if( element_dimension == 3 )
+    {
+      vtkVarF = GetFieldVar( timestate, "f");
+      m3dField.f = (float*) vtkVarF->GetVoidPointer(0);
+
+      vtkVarPsi = GetFieldVar( timestate, "psi");
+      m3dField.psi = (float*) vtkVarPsi->GetVoidPointer(0);
+
+      vtkVarPhi = GetFieldVar( timestate, "phi");
+      m3dField.phi = (float*) vtkVarPhi->GetVoidPointer(0);
+
+      vtkVarI = GetFieldVar( timestate, "I");
+      m3dField.I = (float*) vtkVarI->GetVoidPointer(0);
+    }
+
     // Get the value at the node of each element on the linear mesh.
     int nvalues;
 
@@ -1367,7 +1391,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
       nvalues = npts;
     // Get the value at the center of each element on the linear mesh.
     else if( m_dataLocation == AVT_ZONECENT)
-      nvalues = npts / 3;
+      nvalues = npts / nvertices;
     
     // VTK structure for the field variable on the linear mesh.
     vtkFloatArray *var = vtkFloatArray::New();
@@ -1382,7 +1406,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
     int element;
     float B[3];
-    double pt[3], centroid[3], *xieta = new double[element_dimension];
+    double pt[3], centroid[3], xieta[element_dimension];
 
     if( m_dataLocation == AVT_NODECENT)
     {
@@ -1442,7 +1466,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
   
     else if( m_dataLocation == AVT_ZONECENT)
     {
-      for( int i=0; i<npts; i+=3 )
+      for( int i=0; i<npts; i+=nvertices )
       {
         if( element_dimension == 2 )
         {
@@ -1479,31 +1503,44 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
           *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
 
-        pts += 9;
+        pts += nvertices * 3;
       }
     }
 
     // Set the pointers to null as the VTK delete operation will take
     // of deleting the data. Normally the M3DCIField thinks it needs
     // to delete the data.
-    m3dField.f0 = 0;
-    m3dField.psi0 = 0;    
-    m3dField.fnr = 0;
-    m3dField.fni = 0;
-    m3dField.psinr = 0;
-    m3dField.psini = 0;
+    if( element_dimension == 2 )
+    {
+      m3dField.f0 = 0;
+      m3dField.psi0 = 0;    
+      m3dField.fnr = 0;
+      m3dField.fni = 0;
+      m3dField.psinr = 0;
+      m3dField.psini = 0;
+
+      vtkVarF0->Delete();
+      vtkVarPsi0->Delete();
+   
+      vtkVarF->Delete();
+      vtkVarF_i->Delete();
+      vtkVarPsi->Delete();
+      vtkVarPsi_i->Delete();
+    }
+    else //if( element_dimension == 3 )
+    {
+      vtkVarF->Delete();
+      vtkVarPsi->Delete();
+      vtkVarPhi->Delete();
+      vtkVarI->Delete();
+
+      m3dField.f   = 0;
+      m3dField.psi = 0;    
+      m3dField.phi = 0;    
+      m3dField.I   = 0;
+    }
 
     vtkPts->Delete();
-
-    vtkVarF0->Delete();    
-    vtkVarPsi0->Delete();
-   
-    vtkVarF->Delete();
-    vtkVarF_i->Delete();
-    vtkVarPsi->Delete();
-    vtkVarPsi_i->Delete();
-
-    delete [] xieta;
 
     // Make the original data location is used.
     m_dataLocation = dataLocation;

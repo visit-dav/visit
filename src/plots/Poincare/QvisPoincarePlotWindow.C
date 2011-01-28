@@ -213,7 +213,8 @@ QvisPoincarePlotWindow::CreateWindowContents()
     integrationTypeCombo = new QComboBox(integrationGroup);
     integrationTypeCombo->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationTypeCombo->addItem(tr("Adams-Bashforth (Multi-step)"));
-    integrationTypeCombo->addItem(tr("M3D-C1 Integrator"));
+    integrationTypeCombo->addItem(tr("M3D-C1 2D Integrator"));
+    integrationTypeCombo->addItem(tr("M3D-C1 3D Integrator"));
     integrationTypeCombo->addItem(tr("NIMROD Integrator"));
     connect(integrationTypeCombo, SIGNAL(activated(int)),
            this, SLOT(integrationTypeChanged(int)));
@@ -1406,7 +1407,8 @@ QvisPoincarePlotWindow::UpdateIntegrationAttributes()
         break;
 
     case PoincareAttributes::AdamsBashforth:
-    case PoincareAttributes::M3DC1Integrator:
+    case PoincareAttributes::M3DC12DIntegrator:
+    case PoincareAttributes::M3DC13DIntegrator:
     case PoincareAttributes::NIMRODIntegrator:
         maxStepLength->show();
         maxStepLengthLabel->show();
