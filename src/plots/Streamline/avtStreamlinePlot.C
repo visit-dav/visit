@@ -407,6 +407,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Hank Childs, Sun Dec  5 11:43:46 PST 2010
 //   Pass along attributes for issuing warnings.
 //
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add vary tube radius by variable.
+//
 // ****************************************************************************
 
 void
@@ -516,6 +519,10 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
 
     if (atts.GetOpacityType() == StreamlineAttributes::VariableRange)
         streamlineFilter->SetOpacityVariable(atts.GetOpacityVariable());
+    
+    if (atts.GetVaryTubeRadius() != StreamlineAttributes::None && !atts.GetVaryTubeRadiusVariable().empty())
+        streamlineFilter->SetScaleTubeRadiusVariable(atts.GetVaryTubeRadiusVariable());
+    
 #endif
 
     UpdateMapperAndLegend();

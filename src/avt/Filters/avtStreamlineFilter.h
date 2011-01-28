@@ -268,6 +268,7 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     void                      SetColoringMethod(int, const std::string &var="");
     void                      SetVelocitiesForLighting(bool v) { storeVelocitiesForLighting = v; };
     void                      SetOpacityVariable(const std::string &var);
+    void                      SetScaleTubeRadiusVariable(const std::string &var);
 
     void                      SetReferenceTypeForDisplay(int d) 
                                                { referenceTypeForDisplay = d; };
@@ -290,7 +291,7 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     int    displayMethod;
     int    coloringMethod;
     int    referenceTypeForDisplay;
-    std::string coloringVariable, opacityVariable;
+    std::string coloringVariable, opacityVariable, scaleTubeRadiusVariable;
 
     int      maxSteps;
     bool     doDistance;

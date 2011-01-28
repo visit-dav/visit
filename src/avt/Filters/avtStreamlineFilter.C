@@ -298,6 +298,9 @@ avtStreamlineFilter::GenerateAttributeFields() const
     // opacity scalar
     if( !opacityVariable.empty() )
         attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR1;
+    // tube radius scale scalar
+    if (!scaleTubeRadiusVariable.empty())
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR2;
 
     return attr;
 }
@@ -437,6 +440,26 @@ avtStreamlineFilter::SetOpacityVariable(const std::string &var)
     opacityVariable = var;
 }
 
+
+// ****************************************************************************
+// Method:  avtStreamlineFilter::SetScaleTubeRadiusVariable
+//
+// Purpose:
+//   Set the tube radius scale variable
+//
+// Arguments:
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    January 27, 2011
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetScaleTubeRadiusVariable(const std::string &var)
+{
+    scaleTubeRadiusVariable = var;
+}
 
 // ****************************************************************************
 // Method: avtStreamlineFilter::SetDisplayMethod
@@ -1540,6 +1563,9 @@ avtStreamlineFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &pts
 //   Always add necessary secondary variables, regardless of whether there
 //   is "colorVar" in the contract.
 //
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add vary tube radius by variable.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1549,7 +1575,8 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
     avtDataRequest_p out_dr = NULL;
 
     if (strcmp(in_dr->GetVariable(), "colorVar") == 0 ||
-        opacityVariable != "")
+        ! opacityVariable.empty() ||
+        ! scaleTubeRadiusVariable.empty())
     {
         // The avtStreamlinePlot requested "colorVar", so remove that from the
         // contract now.
@@ -1561,8 +1588,10 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
     if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
         out_dr->AddSecondaryVariable(coloringVariable.c_str());
 
-    if (opacityVariable != "")
+    if (!opacityVariable.empty())
         out_dr->AddSecondaryVariable(opacityVariable.c_str());
+    if(!scaleTubeRadiusVariable.empty())
+        out_dr->AddSecondaryVariable(scaleTubeRadiusVariable.c_str());
 
     avtContract_p out_contract;
     if ( *out_dr )
@@ -1584,6 +1613,11 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
 //  Programmer: Christoph Garth
 //  Creation:   July 14, 2010
 //
+//  Modifications:
+//
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add vary tube radius by variable.
+//
 // ****************************************************************************
 
 avtIVPField* 
@@ -1597,6 +1631,9 @@ avtStreamlineFilter::GetFieldForDomain(const DomainType& dom, vtkDataSet* ds)
 
     if( !opacityVariable.empty() )
         field->SetScalarVariable( 1, opacityVariable );
+
+    if (!scaleTubeRadiusVariable.empty())
+        field->SetScalarVariable(2, scaleTubeRadiusVariable);
 
     return field;
 }

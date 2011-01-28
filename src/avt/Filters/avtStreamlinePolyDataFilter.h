@@ -95,6 +95,7 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
     static                    std::string opacityArrayName;
     static                    std::string thetaArrayName;
     static                    std::string tangentsArrayName;
+    static                    std::string scaleRadiusArrayName;
 
     void                      SetCoordinateSystem(int c) {coordinateSystem = c;}
     void                      SetPhiFactor(double pf) {phiFactor = pf;}
