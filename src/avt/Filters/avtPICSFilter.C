@@ -1448,8 +1448,8 @@ avtPICSFilter::GetFieldForDomain( const DomainType &domain, vtkDataSet *ds )
       if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_2D_INTEGRATOR ||
           integrationType == STREAMLINE_INTEGRATE_M3D_C1_3D_INTEGRATOR)
         return new avtIVPM3DC1Field(ds, *locator);
-      else if (integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR)
-        return new avtIVPNIMRODField(ds, *locator);
+//       else if (integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR)
+//         return new avtIVPNIMRODField(ds, *locator);
       else
         return new avtIVPVTKField(ds, *locator);
     }
