@@ -93,14 +93,15 @@ class avtM3DC1Field
 
     avtVector operator()( const double &t, const avtVector &p ) const;
 
+    void interpBcomps(float *B, double *x, int element, double *xieta) const;
+
     float interp    (float *var, int el, double *lcoords) const;
+
     float interpdR  (float *var, int el, double *lcoords) const;
     float interpdz  (float *var, int el, double *lcoords) const;
     float interpdR2 (float *var, int el, double *lcoords) const;
     float interpdz2 (float *var, int el, double *lcoords) const;
     float interpdRdz(float *var, int el, double *lcoords) const;
-
-    void interpBcomps(float *B, double *x, int element, double *xieta) const;
 
  protected:
 
@@ -118,29 +119,35 @@ class avtM3DC1Field
     int scalar_size;
 
  public:
-    //  variables on the mesh
-    float *psi0, *f0;                  /* Equilibrium field */
-    float *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
 
-    // variable based on attributes (bzero and rzero)
-    double F0;                      /* Strength of vacuum toroidal field */
-    
-    // Variables calculated in findElementNeighbors
-//    double Rmin, Rmax, zmin, zmax;  /* Mesh bounds */
+  // 2D Variables
+  //  variables on the mesh
+  float *psi0, *f0;                  /* Equilibrium field */
+  float *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
+  
+  // variable based on attributes (bzero and rzero)
+  double F0;                      /* Strength of vacuum toroidal field */
+  
+  // Variables calculated in findElementNeighbors
+//double Rmin, Rmax, zmin, zmax;  /* Mesh bounds */
 
-    // unused variables read from header attributes
-    // (xlim, zlim) or explicitly set (psilim).
-//  double xlim, zlim, psilim;      /* Information about limiting surface */
+  // unused variables read from header attributes
+  // (xlim, zlim) or explicitly set (psilim).
+//double xlim, zlim, psilim;      /* Information about limiting surface */
 
-    // unused variables read from header attributes (ntime == nframes)
-//  int    nframes;
+  // unused variables read from header attributes (ntime == nframes)
+//int    nframes;
 
-    // variables read from header attributes (linear == linflag,
-    // ntor == tmode) or part of the mesh (nelms).
-    int linflag, nelms, tmode;
+  // variables read from header attributes (linear == linflag,
+  // ntor == tmode) or part of the mesh (nelms).
+  int linflag, nelms, tmode;
+  
+  // variables read from header attributes.
+  double bzero, rzero;
 
-    // variables read from header attributes.
-    double bzero, rzero;
+  // 3D Variables
+  //  variables on the mesh
+  float *f, *psi, *phi, *I;                  /* B field conponents*/
 };
 
 #endif

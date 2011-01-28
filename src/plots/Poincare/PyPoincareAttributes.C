@@ -182,7 +182,7 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     }
     SNPRINTF(tmpStr, 1000, "%spointDensity = %d\n", prefix, atts->GetPointDensity());
     str += tmpStr;
-    const char *integrationType_names = "DormandPrince, AdamsBashforth, M3DC1Integrator, NIMRODIntegrator";
+    const char *integrationType_names = "DormandPrince, AdamsBashforth, M3DC12DIntegrator, M3DC13DIntegrator, NIMRODIntegrator";
     switch (atts->GetIntegrationType())
     {
       case PoincareAttributes::DormandPrince:
@@ -193,8 +193,12 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           SNPRINTF(tmpStr, 1000, "%sintegrationType = %sAdamsBashforth  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
-      case PoincareAttributes::M3DC1Integrator:
-          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC1Integrator  # %s\n", prefix, prefix, integrationType_names);
+      case PoincareAttributes::M3DC12DIntegrator:
+          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC12DIntegrator  # %s\n", prefix, prefix, integrationType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::M3DC13DIntegrator:
+          SNPRINTF(tmpStr, 1000, "%sintegrationType = %sM3DC13DIntegrator  # %s\n", prefix, prefix, integrationType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::NIMRODIntegrator:
@@ -889,14 +893,15 @@ PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the integrationType in the object.
-    if(ival >= 0 && ival < 4)
+    if(ival >= 0 && ival < 5)
         obj->data->SetIntegrationType(PoincareAttributes::IntegrationType(ival));
     else
     {
         fprintf(stderr, "An invalid integrationType value was given. "
-                        "Valid values are in the range of [0,3]. "
+                        "Valid values are in the range of [0,4]. "
                         "You can also use the following names: "
-                        "DormandPrince, AdamsBashforth, M3DC1Integrator, NIMRODIntegrator.");
+                        "DormandPrince, AdamsBashforth, M3DC12DIntegrator, M3DC13DIntegrator, NIMRODIntegrator"
+                        ".");
         return NULL;
     }
 
@@ -2317,8 +2322,10 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PoincareAttributes::DormandPrince));
     if(strcmp(name, "AdamsBashforth") == 0)
         return PyInt_FromLong(long(PoincareAttributes::AdamsBashforth));
-    if(strcmp(name, "M3DC1Integrator") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::M3DC1Integrator));
+    if(strcmp(name, "M3DC12DIntegrator") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::M3DC12DIntegrator));
+    if(strcmp(name, "M3DC13DIntegrator") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::M3DC13DIntegrator));
     if(strcmp(name, "NIMRODIntegrator") == 0)
         return PyInt_FromLong(long(PoincareAttributes::NIMRODIntegrator));
 

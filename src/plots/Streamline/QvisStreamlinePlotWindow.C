@@ -546,7 +546,8 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
-    integrationType->addItem(tr("M3D-C1 Integrator (M3D code only)"));
+    integrationType->addItem(tr("M3D-C1 2D Integrator (M3D code only)"));
+    integrationType->addItem(tr("M3D-C1 3D Integrator (M3D code only)"));
     integrationType->addItem(tr("NIMROD Integrator (NIMROD code only)"));
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
@@ -2437,7 +2438,8 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
         break;
 
     case StreamlineAttributes::AdamsBashforth:
-    case StreamlineAttributes::M3DC1Integrator:
+    case StreamlineAttributes::M3DC12DIntegrator:
+    case StreamlineAttributes::M3DC13DIntegrator:
     case StreamlineAttributes::NIMRODIntegrator:
         maxStepLength->show();
         maxStepLengthLabel->show();
