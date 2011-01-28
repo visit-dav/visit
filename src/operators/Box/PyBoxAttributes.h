@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define BOXATTRIBUTES_NMETH 16
 void           PyBoxAttributes_StartUp(BoxAttributes *subj, void *data);
 void           PyBoxAttributes_CloseDown();
-PyMethodDef *   PyBoxAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyBoxAttributes_GetMethodTable(int *nMethods);
 bool           PyBoxAttributes_Check(PyObject *obj);
 BoxAttributes *  PyBoxAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyBoxAttributes_New();
-PyObject *      PyBoxAttributes_Wrap(const BoxAttributes *attr);
+PyObject *     PyBoxAttributes_New();
+PyObject *     PyBoxAttributes_Wrap(const BoxAttributes *attr);
 void           PyBoxAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyBoxAttributes_SetDefaults(const BoxAttributes *atts);
 std::string    PyBoxAttributes_GetLogString();
 std::string    PyBoxAttributes_ToString(const BoxAttributes *, const char *);
+PyObject *     PyBoxAttributes_getattr(PyObject *self, char *name);
+int            PyBoxAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyBoxAttributes_methods[BOXATTRIBUTES_NMETH];
 
 #endif
 

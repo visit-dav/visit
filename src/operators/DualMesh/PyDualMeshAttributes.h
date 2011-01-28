@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define DUALMESHATTRIBUTES_NMETH 4
 void           PyDualMeshAttributes_StartUp(DualMeshAttributes *subj, void *data);
 void           PyDualMeshAttributes_CloseDown();
-PyMethodDef *   PyDualMeshAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyDualMeshAttributes_GetMethodTable(int *nMethods);
 bool           PyDualMeshAttributes_Check(PyObject *obj);
 DualMeshAttributes *  PyDualMeshAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyDualMeshAttributes_New();
-PyObject *      PyDualMeshAttributes_Wrap(const DualMeshAttributes *attr);
+PyObject *     PyDualMeshAttributes_New();
+PyObject *     PyDualMeshAttributes_Wrap(const DualMeshAttributes *attr);
 void           PyDualMeshAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyDualMeshAttributes_SetDefaults(const DualMeshAttributes *atts);
 std::string    PyDualMeshAttributes_GetLogString();
 std::string    PyDualMeshAttributes_ToString(const DualMeshAttributes *, const char *);
+PyObject *     PyDualMeshAttributes_getattr(PyObject *self, char *name);
+int            PyDualMeshAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyDualMeshAttributes_methods[DUALMESHATTRIBUTES_NMETH];
 
 #endif
 

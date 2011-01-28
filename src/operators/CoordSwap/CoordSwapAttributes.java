@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class CoordSwapAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 3;
+    private static int CoordSwapAttributes_numAdditionalAtts = 3;
 
     // Enum values
     public final static int COORD_COORD1 = 0;
@@ -69,7 +69,7 @@ public class CoordSwapAttributes extends AttributeSubject implements Plugin
 
     public CoordSwapAttributes()
     {
-        super(numAdditionalAttributes);
+        super(CoordSwapAttributes_numAdditionalAtts);
 
         newCoord1 = COORD_COORD1;
         newCoord2 = COORD_COORD2;
@@ -78,7 +78,7 @@ public class CoordSwapAttributes extends AttributeSubject implements Plugin
 
     public CoordSwapAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(CoordSwapAttributes_numAdditionalAtts + nMoreFields);
 
         newCoord1 = COORD_COORD1;
         newCoord2 = COORD_COORD2;
@@ -87,7 +87,7 @@ public class CoordSwapAttributes extends AttributeSubject implements Plugin
 
     public CoordSwapAttributes(CoordSwapAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(CoordSwapAttributes_numAdditionalAtts);
 
         newCoord1 = obj.newCoord1;
         newCoord2 = obj.newCoord2;
@@ -103,7 +103,7 @@ public class CoordSwapAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return CoordSwapAttributes_numAdditionalAtts;
     }
 
     public boolean equals(CoordSwapAttributes obj)

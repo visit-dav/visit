@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 20;
+    private static int SurfCompPrepAttributes_numAdditionalAtts = 20;
 
     // Enum values
     public final static int COORDINATESYSTEM_CARTESIAN = 0;
@@ -73,7 +73,7 @@ public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
 
     public SurfCompPrepAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SurfCompPrepAttributes_numAdditionalAtts);
 
         surfaceType = SURFACETYPE_AVERAGE;
         coordSystem = COORDINATESYSTEM_CARTESIAN;
@@ -99,7 +99,7 @@ public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
 
     public SurfCompPrepAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SurfCompPrepAttributes_numAdditionalAtts + nMoreFields);
 
         surfaceType = SURFACETYPE_AVERAGE;
         coordSystem = COORDINATESYSTEM_CARTESIAN;
@@ -125,7 +125,7 @@ public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
 
     public SurfCompPrepAttributes(SurfCompPrepAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SurfCompPrepAttributes_numAdditionalAtts);
 
         surfaceType = obj.surfaceType;
         coordSystem = obj.coordSystem;
@@ -158,7 +158,7 @@ public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SurfCompPrepAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SurfCompPrepAttributes obj)

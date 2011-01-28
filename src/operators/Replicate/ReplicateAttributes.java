@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class ReplicateAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 11;
+    private static int ReplicateAttributes_numAdditionalAtts = 11;
 
     public ReplicateAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ReplicateAttributes_numAdditionalAtts);
 
         useUnitCellVectors = false;
         xVector = new double[3];
@@ -92,7 +92,7 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
 
     public ReplicateAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ReplicateAttributes_numAdditionalAtts + nMoreFields);
 
         useUnitCellVectors = false;
         xVector = new double[3];
@@ -121,7 +121,7 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
 
     public ReplicateAttributes(ReplicateAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ReplicateAttributes_numAdditionalAtts);
 
         int i;
 
@@ -163,7 +163,7 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ReplicateAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ReplicateAttributes obj)

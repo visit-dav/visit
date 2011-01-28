@@ -59,25 +59,25 @@ import llnl.visit.Plugin;
 
 public class BoundaryOpAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 1;
+    private static int BoundaryOpAttributes_numAdditionalAtts = 1;
 
     public BoundaryOpAttributes()
     {
-        super(numAdditionalAttributes);
+        super(BoundaryOpAttributes_numAdditionalAtts);
 
         smoothingLevel = 0;
     }
 
     public BoundaryOpAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(BoundaryOpAttributes_numAdditionalAtts + nMoreFields);
 
         smoothingLevel = 0;
     }
 
     public BoundaryOpAttributes(BoundaryOpAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(BoundaryOpAttributes_numAdditionalAtts);
 
         smoothingLevel = obj.smoothingLevel;
 
@@ -91,7 +91,7 @@ public class BoundaryOpAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return BoundaryOpAttributes_numAdditionalAtts;
     }
 
     public boolean equals(BoundaryOpAttributes obj)

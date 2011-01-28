@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define ONIONPEELATTRIBUTES_NMETH 18
 void           PyOnionPeelAttributes_StartUp(OnionPeelAttributes *subj, void *data);
 void           PyOnionPeelAttributes_CloseDown();
-PyMethodDef *   PyOnionPeelAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyOnionPeelAttributes_GetMethodTable(int *nMethods);
 bool           PyOnionPeelAttributes_Check(PyObject *obj);
 OnionPeelAttributes *  PyOnionPeelAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyOnionPeelAttributes_New();
-PyObject *      PyOnionPeelAttributes_Wrap(const OnionPeelAttributes *attr);
+PyObject *     PyOnionPeelAttributes_New();
+PyObject *     PyOnionPeelAttributes_Wrap(const OnionPeelAttributes *attr);
 void           PyOnionPeelAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyOnionPeelAttributes_SetDefaults(const OnionPeelAttributes *atts);
 std::string    PyOnionPeelAttributes_GetLogString();
 std::string    PyOnionPeelAttributes_ToString(const OnionPeelAttributes *, const char *);
+PyObject *     PyOnionPeelAttributes_getattr(PyObject *self, char *name);
+int            PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyOnionPeelAttributes_methods[ONIONPEELATTRIBUTES_NMETH];
 
 #endif
 

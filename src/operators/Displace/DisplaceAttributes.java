@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class DisplaceAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 2;
+    private static int DisplaceAttributes_numAdditionalAtts = 2;
 
     public DisplaceAttributes()
     {
-        super(numAdditionalAttributes);
+        super(DisplaceAttributes_numAdditionalAtts);
 
         factor = 1;
         variable = new String("default");
@@ -71,7 +71,7 @@ public class DisplaceAttributes extends AttributeSubject implements Plugin
 
     public DisplaceAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(DisplaceAttributes_numAdditionalAtts + nMoreFields);
 
         factor = 1;
         variable = new String("default");
@@ -79,7 +79,7 @@ public class DisplaceAttributes extends AttributeSubject implements Plugin
 
     public DisplaceAttributes(DisplaceAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(DisplaceAttributes_numAdditionalAtts);
 
         factor = obj.factor;
         variable = new String(obj.variable);
@@ -94,7 +94,7 @@ public class DisplaceAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return DisplaceAttributes_numAdditionalAtts;
     }
 
     public boolean equals(DisplaceAttributes obj)

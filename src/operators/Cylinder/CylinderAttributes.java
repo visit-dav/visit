@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class CylinderAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 3;
+    private static int CylinderAttributes_numAdditionalAtts = 3;
 
     public CylinderAttributes()
     {
-        super(numAdditionalAttributes);
+        super(CylinderAttributes_numAdditionalAtts);
 
         point1 = new double[3];
         point1[0] = 0;
@@ -78,7 +78,7 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
 
     public CylinderAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(CylinderAttributes_numAdditionalAtts + nMoreFields);
 
         point1 = new double[3];
         point1[0] = 0;
@@ -93,7 +93,7 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
 
     public CylinderAttributes(CylinderAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(CylinderAttributes_numAdditionalAtts);
 
         int i;
 
@@ -119,7 +119,7 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return CylinderAttributes_numAdditionalAtts;
     }
 
     public boolean equals(CylinderAttributes obj)

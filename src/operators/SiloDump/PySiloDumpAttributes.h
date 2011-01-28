@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define SILODUMPATTRIBUTES_NMETH 6
 void           PySiloDumpAttributes_StartUp(SiloDumpAttributes *subj, void *data);
 void           PySiloDumpAttributes_CloseDown();
-PyMethodDef *   PySiloDumpAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PySiloDumpAttributes_GetMethodTable(int *nMethods);
 bool           PySiloDumpAttributes_Check(PyObject *obj);
 SiloDumpAttributes *  PySiloDumpAttributes_FromPyObject(PyObject *obj);
-PyObject *      PySiloDumpAttributes_New();
-PyObject *      PySiloDumpAttributes_Wrap(const SiloDumpAttributes *attr);
+PyObject *     PySiloDumpAttributes_New();
+PyObject *     PySiloDumpAttributes_Wrap(const SiloDumpAttributes *attr);
 void           PySiloDumpAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySiloDumpAttributes_SetDefaults(const SiloDumpAttributes *atts);
 std::string    PySiloDumpAttributes_GetLogString();
 std::string    PySiloDumpAttributes_ToString(const SiloDumpAttributes *, const char *);
+PyObject *     PySiloDumpAttributes_getattr(PyObject *self, char *name);
+int            PySiloDumpAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PySiloDumpAttributes_methods[SILODUMPATTRIBUTES_NMETH];
 
 #endif
 

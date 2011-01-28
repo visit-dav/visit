@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class PDFAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 27;
+    private static int PDFAttributes_numAdditionalAtts = 27;
 
     // Enum values
     public final static int SCALING_LINEAR = 0;
@@ -75,7 +75,7 @@ public class PDFAttributes extends AttributeSubject implements Plugin
 
     public PDFAttributes()
     {
-        super(numAdditionalAttributes);
+        super(PDFAttributes_numAdditionalAtts);
 
         var1 = new String("default");
         var1MinFlag = false;
@@ -108,7 +108,7 @@ public class PDFAttributes extends AttributeSubject implements Plugin
 
     public PDFAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(PDFAttributes_numAdditionalAtts + nMoreFields);
 
         var1 = new String("default");
         var1MinFlag = false;
@@ -141,7 +141,7 @@ public class PDFAttributes extends AttributeSubject implements Plugin
 
     public PDFAttributes(PDFAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(PDFAttributes_numAdditionalAtts);
 
         var1 = new String(obj.var1);
         var1MinFlag = obj.var1MinFlag;
@@ -181,7 +181,7 @@ public class PDFAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return PDFAttributes_numAdditionalAtts;
     }
 
     public boolean equals(PDFAttributes obj)

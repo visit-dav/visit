@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class SiloDumpAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 2;
+    private static int SiloDumpAttributes_numAdditionalAtts = 2;
 
     public SiloDumpAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SiloDumpAttributes_numAdditionalAtts);
 
         filename = new String("dump");
         display = false;
@@ -71,7 +71,7 @@ public class SiloDumpAttributes extends AttributeSubject implements Plugin
 
     public SiloDumpAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SiloDumpAttributes_numAdditionalAtts + nMoreFields);
 
         filename = new String("dump");
         display = false;
@@ -79,7 +79,7 @@ public class SiloDumpAttributes extends AttributeSubject implements Plugin
 
     public SiloDumpAttributes(SiloDumpAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SiloDumpAttributes_numAdditionalAtts);
 
         filename = new String(obj.filename);
         display = obj.display;
@@ -94,7 +94,7 @@ public class SiloDumpAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SiloDumpAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SiloDumpAttributes obj)

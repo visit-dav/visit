@@ -62,11 +62,11 @@ import java.lang.Double;
 
 public class CreateBondsAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 14;
+    private static int CreateBondsAttributes_numAdditionalAtts = 14;
 
     public CreateBondsAttributes()
     {
-        super(numAdditionalAttributes);
+        super(CreateBondsAttributes_numAdditionalAtts);
 
         elementVariable = new String("element");
         atomicNumber1 = new Vector();
@@ -103,7 +103,7 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
 
     public CreateBondsAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(CreateBondsAttributes_numAdditionalAtts + nMoreFields);
 
         elementVariable = new String("element");
         atomicNumber1 = new Vector();
@@ -140,7 +140,7 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
 
     public CreateBondsAttributes(CreateBondsAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(CreateBondsAttributes_numAdditionalAtts);
 
         int i;
 
@@ -203,7 +203,7 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return CreateBondsAttributes_numAdditionalAtts;
     }
 
     public boolean equals(CreateBondsAttributes obj)

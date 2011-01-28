@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class ExternalSurfaceAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 2;
+    private static int ExternalSurfaceAttributes_numAdditionalAtts = 2;
 
     public ExternalSurfaceAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ExternalSurfaceAttributes_numAdditionalAtts);
 
         removeGhosts = false;
         edgesIn2D = true;
@@ -71,7 +71,7 @@ public class ExternalSurfaceAttributes extends AttributeSubject implements Plugi
 
     public ExternalSurfaceAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ExternalSurfaceAttributes_numAdditionalAtts + nMoreFields);
 
         removeGhosts = false;
         edgesIn2D = true;
@@ -79,7 +79,7 @@ public class ExternalSurfaceAttributes extends AttributeSubject implements Plugi
 
     public ExternalSurfaceAttributes(ExternalSurfaceAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ExternalSurfaceAttributes_numAdditionalAtts);
 
         removeGhosts = obj.removeGhosts;
         edgesIn2D = obj.edgesIn2D;
@@ -94,7 +94,7 @@ public class ExternalSurfaceAttributes extends AttributeSubject implements Plugi
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ExternalSurfaceAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ExternalSurfaceAttributes obj)

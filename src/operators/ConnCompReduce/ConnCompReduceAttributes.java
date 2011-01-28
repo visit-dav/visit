@@ -59,25 +59,25 @@ import llnl.visit.Plugin;
 
 public class ConnCompReduceAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 1;
+    private static int ConnCompReduceAttributes_numAdditionalAtts = 1;
 
     public ConnCompReduceAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ConnCompReduceAttributes_numAdditionalAtts);
 
         target = 0.1;
     }
 
     public ConnCompReduceAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ConnCompReduceAttributes_numAdditionalAtts + nMoreFields);
 
         target = 0.1;
     }
 
     public ConnCompReduceAttributes(ConnCompReduceAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ConnCompReduceAttributes_numAdditionalAtts);
 
         target = obj.target;
 
@@ -91,7 +91,7 @@ public class ConnCompReduceAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ConnCompReduceAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ConnCompReduceAttributes obj)

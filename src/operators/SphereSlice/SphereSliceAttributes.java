@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class SphereSliceAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 2;
+    private static int SphereSliceAttributes_numAdditionalAtts = 2;
 
     public SphereSliceAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SphereSliceAttributes_numAdditionalAtts);
 
         origin = new double[3];
         origin[0] = 0;
@@ -74,7 +74,7 @@ public class SphereSliceAttributes extends AttributeSubject implements Plugin
 
     public SphereSliceAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SphereSliceAttributes_numAdditionalAtts + nMoreFields);
 
         origin = new double[3];
         origin[0] = 0;
@@ -85,7 +85,7 @@ public class SphereSliceAttributes extends AttributeSubject implements Plugin
 
     public SphereSliceAttributes(SphereSliceAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SphereSliceAttributes_numAdditionalAtts);
 
         int i;
 
@@ -106,7 +106,7 @@ public class SphereSliceAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SphereSliceAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SphereSliceAttributes obj)

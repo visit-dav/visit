@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class DelaunayAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 1;
+    private static int DelaunayAttributes_numAdditionalAtts = 1;
 
     // Enum values
     public final static int DIMENSION_AUTOMATIC = 0;
@@ -69,21 +69,21 @@ public class DelaunayAttributes extends AttributeSubject implements Plugin
 
     public DelaunayAttributes()
     {
-        super(numAdditionalAttributes);
+        super(DelaunayAttributes_numAdditionalAtts);
 
         dimension = DIMENSION_AUTOMATIC;
     }
 
     public DelaunayAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(DelaunayAttributes_numAdditionalAtts + nMoreFields);
 
         dimension = DIMENSION_AUTOMATIC;
     }
 
     public DelaunayAttributes(DelaunayAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(DelaunayAttributes_numAdditionalAtts);
 
         dimension = obj.dimension;
 
@@ -97,7 +97,7 @@ public class DelaunayAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return DelaunayAttributes_numAdditionalAtts;
     }
 
     public boolean equals(DelaunayAttributes obj)

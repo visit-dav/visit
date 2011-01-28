@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define EXTERNALSURFACEATTRIBUTES_NMETH 6
 void           PyExternalSurfaceAttributes_StartUp(ExternalSurfaceAttributes *subj, void *data);
 void           PyExternalSurfaceAttributes_CloseDown();
-PyMethodDef *   PyExternalSurfaceAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyExternalSurfaceAttributes_GetMethodTable(int *nMethods);
 bool           PyExternalSurfaceAttributes_Check(PyObject *obj);
 ExternalSurfaceAttributes *  PyExternalSurfaceAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyExternalSurfaceAttributes_New();
-PyObject *      PyExternalSurfaceAttributes_Wrap(const ExternalSurfaceAttributes *attr);
+PyObject *     PyExternalSurfaceAttributes_New();
+PyObject *     PyExternalSurfaceAttributes_Wrap(const ExternalSurfaceAttributes *attr);
 void           PyExternalSurfaceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyExternalSurfaceAttributes_SetDefaults(const ExternalSurfaceAttributes *atts);
 std::string    PyExternalSurfaceAttributes_GetLogString();
 std::string    PyExternalSurfaceAttributes_ToString(const ExternalSurfaceAttributes *, const char *);
+PyObject *     PyExternalSurfaceAttributes_getattr(PyObject *self, char *name);
+int            PyExternalSurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyExternalSurfaceAttributes_methods[EXTERNALSURFACEATTRIBUTES_NMETH];
 
 #endif
 

@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define RESAMPLEATTRIBUTES_NMETH 32
 void           PyResampleAttributes_StartUp(ResampleAttributes *subj, void *data);
 void           PyResampleAttributes_CloseDown();
-PyMethodDef *   PyResampleAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyResampleAttributes_GetMethodTable(int *nMethods);
 bool           PyResampleAttributes_Check(PyObject *obj);
 ResampleAttributes *  PyResampleAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyResampleAttributes_New();
-PyObject *      PyResampleAttributes_Wrap(const ResampleAttributes *attr);
+PyObject *     PyResampleAttributes_New();
+PyObject *     PyResampleAttributes_Wrap(const ResampleAttributes *attr);
 void           PyResampleAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyResampleAttributes_SetDefaults(const ResampleAttributes *atts);
 std::string    PyResampleAttributes_GetLogString();
 std::string    PyResampleAttributes_ToString(const ResampleAttributes *, const char *);
+PyObject *     PyResampleAttributes_getattr(PyObject *self, char *name);
+int            PyResampleAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyResampleAttributes_methods[RESAMPLEATTRIBUTES_NMETH];
 
 #endif
 

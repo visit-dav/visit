@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define REFLECTATTRIBUTES_NMETH 18
 void           PyReflectAttributes_StartUp(ReflectAttributes *subj, void *data);
 void           PyReflectAttributes_CloseDown();
-PyMethodDef *   PyReflectAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyReflectAttributes_GetMethodTable(int *nMethods);
 bool           PyReflectAttributes_Check(PyObject *obj);
 ReflectAttributes *  PyReflectAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyReflectAttributes_New();
-PyObject *      PyReflectAttributes_Wrap(const ReflectAttributes *attr);
+PyObject *     PyReflectAttributes_New();
+PyObject *     PyReflectAttributes_Wrap(const ReflectAttributes *attr);
 void           PyReflectAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyReflectAttributes_SetDefaults(const ReflectAttributes *atts);
 std::string    PyReflectAttributes_GetLogString();
 std::string    PyReflectAttributes_ToString(const ReflectAttributes *, const char *);
+PyObject *     PyReflectAttributes_getattr(PyObject *self, char *name);
+int            PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyReflectAttributes_methods[REFLECTATTRIBUTES_NMETH];
 
 #endif
 

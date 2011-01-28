@@ -61,11 +61,11 @@ import java.util.Vector;
 
 public class RemoveCellsAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 2;
+    private static int RemoveCellsAttributes_numAdditionalAtts = 2;
 
     public RemoveCellsAttributes()
     {
-        super(numAdditionalAttributes);
+        super(RemoveCellsAttributes_numAdditionalAtts);
 
         cellList = new Vector();
         domainList = new Vector();
@@ -73,7 +73,7 @@ public class RemoveCellsAttributes extends AttributeSubject implements Plugin
 
     public RemoveCellsAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(RemoveCellsAttributes_numAdditionalAtts + nMoreFields);
 
         cellList = new Vector();
         domainList = new Vector();
@@ -81,7 +81,7 @@ public class RemoveCellsAttributes extends AttributeSubject implements Plugin
 
     public RemoveCellsAttributes(RemoveCellsAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(RemoveCellsAttributes_numAdditionalAtts);
 
         int i;
 
@@ -108,7 +108,7 @@ public class RemoveCellsAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return RemoveCellsAttributes_numAdditionalAtts;
     }
 
     public boolean equals(RemoveCellsAttributes obj)

@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define SUBDIVIDEQUADSATTRIBUTES_NMETH 12
 void           PySubdivideQuadsAttributes_StartUp(SubdivideQuadsAttributes *subj, void *data);
 void           PySubdivideQuadsAttributes_CloseDown();
-PyMethodDef *   PySubdivideQuadsAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PySubdivideQuadsAttributes_GetMethodTable(int *nMethods);
 bool           PySubdivideQuadsAttributes_Check(PyObject *obj);
 SubdivideQuadsAttributes *  PySubdivideQuadsAttributes_FromPyObject(PyObject *obj);
-PyObject *      PySubdivideQuadsAttributes_New();
-PyObject *      PySubdivideQuadsAttributes_Wrap(const SubdivideQuadsAttributes *attr);
+PyObject *     PySubdivideQuadsAttributes_New();
+PyObject *     PySubdivideQuadsAttributes_Wrap(const SubdivideQuadsAttributes *attr);
 void           PySubdivideQuadsAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySubdivideQuadsAttributes_SetDefaults(const SubdivideQuadsAttributes *atts);
 std::string    PySubdivideQuadsAttributes_GetLogString();
 std::string    PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *, const char *);
+PyObject *     PySubdivideQuadsAttributes_getattr(PyObject *self, char *name);
+int            PySubdivideQuadsAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PySubdivideQuadsAttributes_methods[SUBDIVIDEQUADSATTRIBUTES_NMETH];
 
 #endif
 

@@ -61,7 +61,7 @@ import java.util.Vector;
 
 public class IsosurfaceAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 10;
+    private static int IsosurfaceAttributes_numAdditionalAtts = 10;
 
     // Enum values
     public final static int SELECT_BY_LEVEL = 0;
@@ -74,7 +74,7 @@ public class IsosurfaceAttributes extends AttributeSubject implements Plugin
 
     public IsosurfaceAttributes()
     {
-        super(numAdditionalAttributes);
+        super(IsosurfaceAttributes_numAdditionalAtts);
 
         contourNLevels = 10;
         contourValue = new Vector();
@@ -90,7 +90,7 @@ public class IsosurfaceAttributes extends AttributeSubject implements Plugin
 
     public IsosurfaceAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(IsosurfaceAttributes_numAdditionalAtts + nMoreFields);
 
         contourNLevels = 10;
         contourValue = new Vector();
@@ -106,7 +106,7 @@ public class IsosurfaceAttributes extends AttributeSubject implements Plugin
 
     public IsosurfaceAttributes(IsosurfaceAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(IsosurfaceAttributes_numAdditionalAtts);
 
         int i;
 
@@ -143,7 +143,7 @@ public class IsosurfaceAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return IsosurfaceAttributes_numAdditionalAtts;
     }
 
     public boolean equals(IsosurfaceAttributes obj)

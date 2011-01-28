@@ -59,11 +59,11 @@ import llnl.visit.Plugin;
 
 public class SmoothOperatorAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 7;
+    private static int SmoothOperatorAttributes_numAdditionalAtts = 7;
 
     public SmoothOperatorAttributes()
     {
-        super(numAdditionalAttributes);
+        super(SmoothOperatorAttributes_numAdditionalAtts);
 
         numIterations = 20;
         relaxationFactor = 0.01;
@@ -76,7 +76,7 @@ public class SmoothOperatorAttributes extends AttributeSubject implements Plugin
 
     public SmoothOperatorAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(SmoothOperatorAttributes_numAdditionalAtts + nMoreFields);
 
         numIterations = 20;
         relaxationFactor = 0.01;
@@ -89,7 +89,7 @@ public class SmoothOperatorAttributes extends AttributeSubject implements Plugin
 
     public SmoothOperatorAttributes(SmoothOperatorAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(SmoothOperatorAttributes_numAdditionalAtts);
 
         numIterations = obj.numIterations;
         relaxationFactor = obj.relaxationFactor;
@@ -109,7 +109,7 @@ public class SmoothOperatorAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return SmoothOperatorAttributes_numAdditionalAtts;
     }
 
     public boolean equals(SmoothOperatorAttributes obj)

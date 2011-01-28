@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ClipAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 16;
+    private static int ClipAttributes_numAdditionalAtts = 16;
 
     // Enum values
     public final static int CLIPSTYLE_PLANE = 0;
@@ -76,7 +76,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
 
     public ClipAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ClipAttributes_numAdditionalAtts);
 
         quality = QUALITY_FAST;
         funcType = CLIPSTYLE_PLANE;
@@ -119,7 +119,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
 
     public ClipAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ClipAttributes_numAdditionalAtts + nMoreFields);
 
         quality = QUALITY_FAST;
         funcType = CLIPSTYLE_PLANE;
@@ -162,7 +162,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
 
     public ClipAttributes(ClipAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ClipAttributes_numAdditionalAtts);
 
         int i;
 
@@ -221,7 +221,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ClipAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ClipAttributes obj)

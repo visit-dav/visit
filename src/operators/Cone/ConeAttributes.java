@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ConeAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 7;
+    private static int ConeAttributes_numAdditionalAtts = 7;
 
     // Enum values
     public final static int REPRESENTATION_THREED = 0;
@@ -69,7 +69,7 @@ public class ConeAttributes extends AttributeSubject implements Plugin
 
     public ConeAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ConeAttributes_numAdditionalAtts);
 
         angle = 45;
         origin = new double[3];
@@ -91,7 +91,7 @@ public class ConeAttributes extends AttributeSubject implements Plugin
 
     public ConeAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ConeAttributes_numAdditionalAtts + nMoreFields);
 
         angle = 45;
         origin = new double[3];
@@ -113,7 +113,7 @@ public class ConeAttributes extends AttributeSubject implements Plugin
 
     public ConeAttributes(ConeAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ConeAttributes_numAdditionalAtts);
 
         int i;
 
@@ -147,7 +147,7 @@ public class ConeAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ConeAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ConeAttributes obj)

@@ -59,25 +59,25 @@ import llnl.visit.Plugin;
 
 public class DecimateAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 1;
+    private static int DecimateAttributes_numAdditionalAtts = 1;
 
     public DecimateAttributes()
     {
-        super(numAdditionalAttributes);
+        super(DecimateAttributes_numAdditionalAtts);
 
         target = 0.1;
     }
 
     public DecimateAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(DecimateAttributes_numAdditionalAtts + nMoreFields);
 
         target = 0.1;
     }
 
     public DecimateAttributes(DecimateAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(DecimateAttributes_numAdditionalAtts);
 
         target = obj.target;
 
@@ -91,7 +91,7 @@ public class DecimateAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return DecimateAttributes_numAdditionalAtts;
     }
 
     public boolean equals(DecimateAttributes obj)

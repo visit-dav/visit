@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ResampleAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 15;
+    private static int ResampleAttributes_numAdditionalAtts = 15;
 
     // Enum values
     public final static int TIERESOLVER_RANDOM = 0;
@@ -69,7 +69,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
 
     public ResampleAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ResampleAttributes_numAdditionalAtts);
 
         useExtents = true;
         startX = 0;
@@ -90,7 +90,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
 
     public ResampleAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ResampleAttributes_numAdditionalAtts + nMoreFields);
 
         useExtents = true;
         startX = 0;
@@ -111,7 +111,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
 
     public ResampleAttributes(ResampleAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ResampleAttributes_numAdditionalAtts);
 
         useExtents = obj.useExtents;
         startX = obj.startX;
@@ -139,7 +139,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ResampleAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ResampleAttributes obj)

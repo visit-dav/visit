@@ -44,17 +44,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define MERGEOPERATORATTRIBUTES_NMETH 6
 void           PyMergeOperatorAttributes_StartUp(MergeOperatorAttributes *subj, void *data);
 void           PyMergeOperatorAttributes_CloseDown();
-PyMethodDef *   PyMergeOperatorAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *  PyMergeOperatorAttributes_GetMethodTable(int *nMethods);
 bool           PyMergeOperatorAttributes_Check(PyObject *obj);
 MergeOperatorAttributes *  PyMergeOperatorAttributes_FromPyObject(PyObject *obj);
-PyObject *      PyMergeOperatorAttributes_New();
-PyObject *      PyMergeOperatorAttributes_Wrap(const MergeOperatorAttributes *attr);
+PyObject *     PyMergeOperatorAttributes_New();
+PyObject *     PyMergeOperatorAttributes_Wrap(const MergeOperatorAttributes *attr);
 void           PyMergeOperatorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyMergeOperatorAttributes_SetDefaults(const MergeOperatorAttributes *atts);
 std::string    PyMergeOperatorAttributes_GetLogString();
 std::string    PyMergeOperatorAttributes_ToString(const MergeOperatorAttributes *, const char *);
+PyObject *     PyMergeOperatorAttributes_getattr(PyObject *self, char *name);
+int            PyMergeOperatorAttributes_setattr(PyObject *self, char *name, PyObject *args);
+extern PyMethodDef PyMergeOperatorAttributes_methods[MERGEOPERATORATTRIBUTES_NMETH];
 
 #endif
 

@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ProjectAttributes extends AttributeSubject implements Plugin
 {
-    private static int numAdditionalAttributes = 2;
+    private static int ProjectAttributes_numAdditionalAtts = 2;
 
     // Enum values
     public final static int PROJECTIONTYPE_ZYCARTESIAN = 0;
@@ -77,7 +77,7 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
 
     public ProjectAttributes()
     {
-        super(numAdditionalAttributes);
+        super(ProjectAttributes_numAdditionalAtts);
 
         projectionType = PROJECTIONTYPE_XYCARTESIAN;
         vectorTransformMethod = VECTORTRANSFORMMETHOD_ASDIRECTION;
@@ -85,7 +85,7 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
 
     public ProjectAttributes(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(ProjectAttributes_numAdditionalAtts + nMoreFields);
 
         projectionType = PROJECTIONTYPE_XYCARTESIAN;
         vectorTransformMethod = VECTORTRANSFORMMETHOD_ASDIRECTION;
@@ -93,7 +93,7 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
 
     public ProjectAttributes(ProjectAttributes obj)
     {
-        super(numAdditionalAttributes);
+        super(ProjectAttributes_numAdditionalAtts);
 
         projectionType = obj.projectionType;
         vectorTransformMethod = obj.vectorTransformMethod;
@@ -108,7 +108,7 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return ProjectAttributes_numAdditionalAtts;
     }
 
     public boolean equals(ProjectAttributes obj)
