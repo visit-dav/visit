@@ -2937,6 +2937,7 @@ VisItSynchronize(void)
     int blocking = 1;
     int syncing = 1;
     int visitstate = 0, err = 0;
+    void (*sim_spc)(void) = visit_slave_process_callback;
 
     LIBSIM_API_ENTER(VisItSynchronize);
 
@@ -2949,7 +2950,6 @@ VisItSynchronize(void)
     visit_add_sync(visit_sync_helper, &syncing);
 
     /* Save the sim's slave process callback and install a new one temporarily. */
-    void (*sim_spc)(void) = visit_slave_process_callback;
     VisItSetSlaveProcessCallback(visit_sync_slave_process_callback);
 
     do
