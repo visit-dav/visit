@@ -56,11 +56,11 @@ package llnl.visit;
 
 public class PostponedAction extends AttributeSubject
 {
-    private static int numAdditionalAttributes = 2;
+    private static int PostponedAction_numAdditionalAtts = 2;
 
     public PostponedAction()
     {
-        super(numAdditionalAttributes);
+        super(PostponedAction_numAdditionalAtts);
 
         RPC = new ViewerRPC();
         window = 0;
@@ -68,7 +68,7 @@ public class PostponedAction extends AttributeSubject
 
     public PostponedAction(int nMoreFields)
     {
-        super(numAdditionalAttributes + nMoreFields);
+        super(PostponedAction_numAdditionalAtts + nMoreFields);
 
         RPC = new ViewerRPC();
         window = 0;
@@ -76,7 +76,7 @@ public class PostponedAction extends AttributeSubject
 
     public PostponedAction(PostponedAction obj)
     {
-        super(numAdditionalAttributes);
+        super(PostponedAction_numAdditionalAtts);
 
         RPC = new ViewerRPC(obj.RPC);
         window = obj.window;
@@ -91,7 +91,7 @@ public class PostponedAction extends AttributeSubject
 
     public int GetNumAdditionalAttributes()
     {
-        return numAdditionalAttributes;
+        return PostponedAction_numAdditionalAtts;
     }
 
     public boolean equals(PostponedAction obj)
