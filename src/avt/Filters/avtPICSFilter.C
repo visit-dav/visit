@@ -87,8 +87,8 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPAdamsBashforth.h>
 #include <avtIVPM3DC1Integrator.h>
 #include <avtIVPM3DC1Field.h>
-#include <avtIVPNIMRODIntegrator.h>
-#include <avtIVPNIMRODField.h>
+//#include <avtIVPNIMRODIntegrator.h>
+//#include <avtIVPNIMRODField.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
