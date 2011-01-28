@@ -75,6 +75,9 @@
 //    Hank Childs, Sun Dec  5 10:18:13 PST 2010
 //    Add an avtIVPField as an argument to CheckForTermination.
 //
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add scalar2
+//
 // ****************************************************************************
 
 class IVP_API avtStateRecorderIntegralCurve : public avtIntegralCurve
@@ -92,7 +95,8 @@ public:
         SAMPLE_ARCLENGTH  = 16,
         SAMPLE_SCALAR0    = 32,
         SAMPLE_SCALAR1    = 64,
-        SAMPLE_UNUSED     = 128,
+        SAMPLE_SCALAR2    = 128,
+        SAMPLE_UNUSED     = 256,
     };
 
     struct Sample
@@ -104,6 +108,7 @@ public:
         double    arclength;
         double    scalar0;
         double    scalar1;
+        double    scalar2;
     };
 
     // ----

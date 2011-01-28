@@ -148,6 +148,11 @@ public:
         CONN_CMFE,
         POS_CMFE
     };
+    enum VaryTubeRadiusType
+    {
+        None,
+        Scalar
+    };
 
     // These constructors are for objects of this class
     StreamlineAttributes();
@@ -187,6 +192,7 @@ public:
     void SelectSingleColor();
     void SelectColoringVariable();
     void SelectOpacityVariable();
+    void SelectVaryTubeRadiusVariable();
 
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
@@ -282,6 +288,9 @@ public:
     void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
     void SetIssueCriticalPointsWarnings(bool issueCriticalPointsWarnings_);
     void SetCriticalPointThreshold(double criticalPointThreshold_);
+    void SetVaryTubeRadius(VaryTubeRadiusType varyTubeRadius_);
+    void SetVaryTubeRadiusFactor(double varyTubeRadiusFactor_);
+    void SetVaryTubeRadiusVariable(const std::string &varyTubeRadiusVariable_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -390,6 +399,10 @@ public:
     bool                 GetIssueStiffnessWarnings() const;
     bool                 GetIssueCriticalPointsWarnings() const;
     double               GetCriticalPointThreshold() const;
+    VaryTubeRadiusType   GetVaryTubeRadius() const;
+    double               GetVaryTubeRadiusFactor() const;
+    const std::string    &GetVaryTubeRadiusVariable() const;
+          std::string    &GetVaryTubeRadiusVariable();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -460,6 +473,11 @@ public:
     static bool PathlinesCMFE_FromString(const std::string &, PathlinesCMFE &);
 protected:
     static std::string PathlinesCMFE_ToString(int);
+public:
+    static std::string VaryTubeRadiusType_ToString(VaryTubeRadiusType);
+    static bool VaryTubeRadiusType_FromString(const std::string &, VaryTubeRadiusType &);
+protected:
+    static std::string VaryTubeRadiusType_ToString(int);
 public:
 
     // Keyframing methods
@@ -567,6 +585,9 @@ public:
         ID_issueStiffnessWarnings,
         ID_issueCriticalPointsWarnings,
         ID_criticalPointThreshold,
+        ID_varyTubeRadius,
+        ID_varyTubeRadiusFactor,
+        ID_varyTubeRadiusVariable,
         ID__LAST
     };
 
@@ -664,11 +685,14 @@ private:
     bool           issueStiffnessWarnings;
     bool           issueCriticalPointsWarnings;
     double         criticalPointThreshold;
+    int            varyTubeRadius;
+    double         varyTubeRadiusFactor;
+    std::string    varyTubeRadiusVariable;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdiidsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbd"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdiidsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdids"
 
 #endif

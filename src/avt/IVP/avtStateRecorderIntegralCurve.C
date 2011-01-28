@@ -121,6 +121,9 @@ avtStateRecorderIntegralCurve::~avtStateRecorderIntegralCurve()
 //   Dave Pugmire, Tue Sep 28 10:39:11 EDT 2010
 //   If step is with tolerance of previous step, just overwrite the previous step.
 //
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add scalar2
+//
 // ****************************************************************************
 
 void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
@@ -173,6 +176,9 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
         
     if( historyMask & SAMPLE_SCALAR1 )
         history.push_back( field->ComputeScalarVariable( 1, t, p ) );
+
+    if( historyMask & SAMPLE_SCALAR2 )
+        history.push_back( field->ComputeScalarVariable( 2, t, p ) );
 }
 
 // ****************************************************************************
@@ -220,6 +226,11 @@ avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step,
 //  Programmer: Christoph Garth
 //  Creation:   July 14, 2010
 //
+//  Modifications:
+//
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add scalar2
+//
 // ****************************************************************************
 
 size_t avtStateRecorderIntegralCurve::GetSampleStride() const
@@ -237,6 +248,7 @@ size_t avtStateRecorderIntegralCurve::GetSampleStride() const
     TEST_AND_INCREMENT( SAMPLE_ARCLENGTH, 1 );
     TEST_AND_INCREMENT( SAMPLE_SCALAR0, 1 );
     TEST_AND_INCREMENT( SAMPLE_SCALAR1, 1 );
+    TEST_AND_INCREMENT( SAMPLE_SCALAR2, 1 );
 
 #undef TEST_AND_INCREMENT
 
@@ -251,6 +263,11 @@ size_t avtStateRecorderIntegralCurve::GetSampleStride() const
 //
 //  Programmer: Christoph Garth
 //  Creation:   July 14, 2010
+//
+//  Modifications:
+//
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add scalar2
 //
 // ****************************************************************************
 
@@ -288,6 +305,9 @@ avtStateRecorderIntegralCurve::GetSample( size_t n ) const
 
     if( historyMask & SAMPLE_SCALAR1 )
         s.scalar1 = *(m++);
+
+    if( historyMask & SAMPLE_SCALAR2 )
+        s.scalar2 = *(m++);
 
     return s;
 }

@@ -829,6 +829,25 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     drawLayout->addWidget(tubeDisplayDensityLabel, 0, 2);
     drawLayout->addWidget(tubeDisplayDensity, 0, 3);
 
+    //Tube vary radius.
+    tubeRadiusVary = new QCheckBox(tr("Vary radius"), displayGrp);
+    connect(tubeRadiusVary, SIGNAL(toggled(bool)), this, SLOT(tubeRadiusVaryChanged(bool)));
+    drawLayout->addWidget(tubeRadiusVary, 2, 0);
+    
+    tubeRadiusVaryVariableLabel = new QLabel(tr("Variable"), displayGrp);
+    drawLayout->addWidget(tubeRadiusVaryVariableLabel, 2, 1);
+    tubeRadiusVaryVariable = new QvisVariableButton(false, true, true,
+                                                    QvisVariableButton::Scalars, displayGrp);
+    connect(tubeRadiusVaryVariable, SIGNAL(activated(const QString &)),
+            this, SLOT(tubeRadiusVaryVariableChanged(const QString&)));
+    drawLayout->addWidget(tubeRadiusVaryVariable, 2, 2);
+
+    tubeRadiusVaryFactorLabel = new QLabel(tr("Factor"), displayGrp);
+    drawLayout->addWidget(tubeRadiusVaryFactorLabel, 2, 3);
+    tubeRadiusVaryFactorEdit = new QLineEdit(displayGrp);
+    connect(tubeRadiusVaryFactorEdit, SIGNAL(returnPressed()),
+            this, SLOT(tubeRadiusVaryFactorProcessText()));
+    drawLayout->addWidget(tubeRadiusVaryFactorEdit, 2, 4);
 
     // Splitter
     QFrame *splitter = new QFrame(displayGrp);
@@ -1553,6 +1572,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 geomRadiusLabel->hide();
                 tubeDisplayDensityLabel->hide();
                 tubeDisplayDensity->hide();
+                tubeRadiusVary->hide();
+                tubeRadiusVaryVariable->hide();
+                tubeRadiusVaryVariableLabel->hide();
+                tubeRadiusVaryFactorLabel->hide();
+                tubeRadiusVaryFactorEdit->hide();
             }
             else
             {
@@ -1565,6 +1589,15 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                     ribbonWidth->hide();
                     tubeSizeType->show();
                     ribbonSizeType->hide();
+
+                    tubeRadiusVary->show();
+                    if (streamAtts->GetVaryTubeRadius() == StreamlineAttributes::Scalar)
+                    {
+                        tubeRadiusVaryVariable->show();
+                        tubeRadiusVaryVariableLabel->show();
+                        tubeRadiusVaryFactorLabel->show();
+                        tubeRadiusVaryFactorEdit->show();
+                    }
                 }
                 if (streamAtts->GetDisplayMethod() == StreamlineAttributes::Ribbons)
                 {
@@ -1586,10 +1619,45 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             displayMethod->blockSignals(false);
             }
             break;
+
+          case StreamlineAttributes::ID_varyTubeRadius:
+            tubeRadiusVary->blockSignals(true);
+            if (streamAtts->GetVaryTubeRadius() == StreamlineAttributes::None)
+            {
+                tubeRadiusVary->setChecked(false);
+                tubeRadiusVaryVariable->hide();
+                tubeRadiusVaryVariableLabel->hide();
+                tubeRadiusVaryFactorLabel->hide();
+                tubeRadiusVaryFactorEdit->hide();
+            }
+            else
+            {
+                tubeRadiusVary->setChecked(true);
+                tubeRadiusVaryVariable->show();
+                tubeRadiusVaryVariableLabel->show();
+                tubeRadiusVaryFactorLabel->show();
+                tubeRadiusVaryFactorEdit->show();
+            }
+            tubeRadiusVary->blockSignals(false);
+            break;
+          case StreamlineAttributes::ID_varyTubeRadiusVariable:
+            tubeRadiusVaryVariable->blockSignals(true);
+            temp = streamAtts->GetVaryTubeRadiusVariable().c_str();
+            tubeRadiusVaryVariable->setText(temp);
+            tubeRadiusVaryVariable->blockSignals(false);
+            break;
+          case StreamlineAttributes::ID_varyTubeRadiusFactor:
+            tubeRadiusVaryFactorEdit->blockSignals(true);
+            temp.setNum(streamAtts->GetVaryTubeRadiusFactor());
+            tubeRadiusVaryFactorEdit->setText(temp);
+            tubeRadiusVaryFactorEdit->blockSignals(false);
+            break;
             
         case StreamlineAttributes::ID_coloringVariable:
+            coloringVar->blockSignals(true);
             temp = streamAtts->GetColoringVariable().c_str();
             coloringVar->setText(temp);
+            coloringVar->blockSignals(false);
           break;
           
         case StreamlineAttributes::ID_showSeeds:
@@ -3059,6 +3127,29 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetCriticalPointThreshold(streamAtts->GetCriticalPointThreshold());
         }
     }
+
+    if (which_widget == StreamlineAttributes::ID_varyTubeRadiusFactor || doAll)
+    {
+        double val;
+        bool res = LineEditGetDouble(tubeRadiusVaryFactorEdit, val);
+        if (res)
+        {
+            if (val >= 1.0)
+                streamAtts->SetVaryTubeRadiusFactor(val);
+            else
+            {
+                ResettingError(tr("Tube vary radius factor must be >= 1.0"),
+                               DoubleToQString(streamAtts->GetVaryTubeRadiusFactor()));
+                streamAtts->SetVaryTubeRadiusFactor(streamAtts->GetVaryTubeRadiusFactor());
+            }
+        }
+        else
+        {
+            ResettingError(tr("Tube vary radius factor"),
+                DoubleToQString(streamAtts->GetVaryTubeRadiusFactor()));
+            streamAtts->SetVaryTubeRadiusFactor(streamAtts->GetVaryTubeRadiusFactor());
+        }
+    }
 }
 
 
@@ -3528,6 +3619,27 @@ void
 QvisStreamlinePlotWindow::coloringVariableChanged(const QString &var)
 {
     streamAtts->SetColoringVariable(var.toStdString());
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::tubeRadiusVaryChanged(bool val)
+{
+    streamAtts->SetVaryTubeRadius( (val ? StreamlineAttributes::Scalar : StreamlineAttributes::None) );
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::tubeRadiusVaryVariableChanged(const QString &var)
+{
+    streamAtts->SetVaryTubeRadiusVariable(var.toStdString());
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::tubeRadiusVaryFactorProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_varyTubeRadiusFactor);
     Apply();
 }
 

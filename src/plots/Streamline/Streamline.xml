@@ -97,6 +97,10 @@
         CONN_CMFE
         POS_CMFE
       </Enum>
+      <Enum name="VaryTubeRadiusType">
+        None
+        Scalar
+      </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
       </Field>
@@ -257,7 +261,7 @@
         AsIs
       </Field>
       <Field name="phiFactor" label="Phi Factor" type="double">
-        0.0
+        0.000000
       </Field>
       <Field name="coloringVariable" label="unnamed1" type="string">
       </Field>
@@ -403,6 +407,14 @@
       </Field>
       <Field name="criticalPointThreshold" label="criticalPointThreshold" type="double" enabler="issueCriticalPointsWarnings:true">
         0.001000
+      </Field>
+      <Field name="varyTubeRadius" label="varyTubeRadius" type="enum" subtype="VaryTubeRadiusType">
+        None
+      </Field>
+      <Field name="varyTubeRadiusFactor" label="varyTubeRadiusFactor" type="double">
+        10.000000
+      </Field>
+      <Field name="varyTubeRadiusVariable" label="varyTubeRadiusVariable" type="string">
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

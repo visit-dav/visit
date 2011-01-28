@@ -634,6 +634,9 @@ avtOpenGLStreamlineRenderer::DrawAsLines(vtkPolyData *data)
 //   Add support for the end points being outside the range for a given
 //   streamline.
 //
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add vary tube radius by variable.
+//
 // ****************************************************************************
 
 void
@@ -648,6 +651,15 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
     tube->SetNumberOfSides(atts.GetTubeDisplayDensity());
     tube->SetCapping(1);
     tube->ReleaseDataFlagOn();
+    
+    vtkDataArray *activeScalars = data->GetPointData()->GetScalars();
+    if (atts.GetVaryTubeRadius() != StreamlineAttributes::None &&
+        data->GetPointData()->GetArray(avtStreamlinePolyDataFilter::scaleRadiusArrayName.c_str()))
+    {
+        data->GetPointData()->SetActiveScalars(avtStreamlinePolyDataFilter::scaleRadiusArrayName.c_str());
+        tube->SetVaryRadiusToVaryRadiusByScalar();
+        tube->SetRadiusFactor(atts.GetVaryTubeRadiusFactor());
+    }
 
     //Easy case, make tubes and we're done.
     if (!atts.GetDisplayBeginFlag() && !atts.GetDisplayEndFlag())
@@ -682,6 +694,9 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
     
     //Create the tube polydata, and draw.
     tube->Update();
+    
+    if (activeScalars)
+        data->GetPointData()->SetActiveScalars(activeScalars->GetName());
 
     if (appendForTranspPolys)
         appendForTranspPolys->AddInput(tube->GetOutput());

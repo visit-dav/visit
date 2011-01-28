@@ -539,6 +539,43 @@ StreamlineAttributes::PathlinesCMFE_FromString(const std::string &s, StreamlineA
     return false;
 }
 
+//
+// Enum conversion methods for StreamlineAttributes::VaryTubeRadiusType
+//
+
+static const char *VaryTubeRadiusType_strings[] = {
+"None", "Scalar"};
+
+std::string
+StreamlineAttributes::VaryTubeRadiusType_ToString(StreamlineAttributes::VaryTubeRadiusType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return VaryTubeRadiusType_strings[index];
+}
+
+std::string
+StreamlineAttributes::VaryTubeRadiusType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return VaryTubeRadiusType_strings[index];
+}
+
+bool
+StreamlineAttributes::VaryTubeRadiusType_FromString(const std::string &s, StreamlineAttributes::VaryTubeRadiusType &val)
+{
+    val = StreamlineAttributes::None;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == VaryTubeRadiusType_strings[i])
+        {
+            val = (VaryTubeRadiusType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: StreamlineAttributes::StreamlineAttributes
 //
@@ -672,6 +709,8 @@ void StreamlineAttributes::Init()
     issueStiffnessWarnings = true;
     issueCriticalPointsWarnings = true;
     criticalPointThreshold = 0.001;
+    varyTubeRadius = None;
+    varyTubeRadiusFactor = 10;
 
     StreamlineAttributes::SelectAll();
 }
@@ -810,6 +849,9 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     issueStiffnessWarnings = obj.issueStiffnessWarnings;
     issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
     criticalPointThreshold = obj.criticalPointThreshold;
+    varyTubeRadius = obj.varyTubeRadius;
+    varyTubeRadiusFactor = obj.varyTubeRadiusFactor;
+    varyTubeRadiusVariable = obj.varyTubeRadiusVariable;
 
     StreamlineAttributes::SelectAll();
 }
@@ -1101,7 +1143,10 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
             (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
             (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
-            (criticalPointThreshold == obj.criticalPointThreshold));
+            (criticalPointThreshold == obj.criticalPointThreshold) &&
+            (varyTubeRadius == obj.varyTubeRadius) &&
+            (varyTubeRadiusFactor == obj.varyTubeRadiusFactor) &&
+            (varyTubeRadiusVariable == obj.varyTubeRadiusVariable));
 }
 
 // ****************************************************************************
@@ -1451,6 +1496,9 @@ StreamlineAttributes::SelectAll()
     Select(ID_issueStiffnessWarnings,            (void *)&issueStiffnessWarnings);
     Select(ID_issueCriticalPointsWarnings,       (void *)&issueCriticalPointsWarnings);
     Select(ID_criticalPointThreshold,            (void *)&criticalPointThreshold);
+    Select(ID_varyTubeRadius,                    (void *)&varyTubeRadius);
+    Select(ID_varyTubeRadiusFactor,              (void *)&varyTubeRadiusFactor);
+    Select(ID_varyTubeRadiusVariable,            (void *)&varyTubeRadiusVariable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2043,6 +2091,24 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("criticalPointThreshold", criticalPointThreshold));
     }
 
+    if(completeSave || !FieldsEqual(ID_varyTubeRadius, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("varyTubeRadius", VaryTubeRadiusType_ToString(varyTubeRadius)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_varyTubeRadiusFactor, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("varyTubeRadiusFactor", varyTubeRadiusFactor));
+    }
+
+    if(completeSave || !FieldsEqual(ID_varyTubeRadiusVariable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("varyTubeRadiusVariable", varyTubeRadiusVariable));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -2503,6 +2569,26 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetIssueCriticalPointsWarnings(node->AsBool());
     if((node = searchNode->GetNode("criticalPointThreshold")) != 0)
         SetCriticalPointThreshold(node->AsDouble());
+    if((node = searchNode->GetNode("varyTubeRadius")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetVaryTubeRadius(VaryTubeRadiusType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            VaryTubeRadiusType value;
+            if(VaryTubeRadiusType_FromString(node->AsString(), value))
+                SetVaryTubeRadius(value);
+        }
+    }
+    if((node = searchNode->GetNode("varyTubeRadiusFactor")) != 0)
+        SetVaryTubeRadiusFactor(node->AsDouble());
+    if((node = searchNode->GetNode("varyTubeRadiusVariable")) != 0)
+        SetVaryTubeRadiusVariable(node->AsString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3175,6 +3261,27 @@ StreamlineAttributes::SetCriticalPointThreshold(double criticalPointThreshold_)
     Select(ID_criticalPointThreshold, (void *)&criticalPointThreshold);
 }
 
+void
+StreamlineAttributes::SetVaryTubeRadius(StreamlineAttributes::VaryTubeRadiusType varyTubeRadius_)
+{
+    varyTubeRadius = varyTubeRadius_;
+    Select(ID_varyTubeRadius, (void *)&varyTubeRadius);
+}
+
+void
+StreamlineAttributes::SetVaryTubeRadiusFactor(double varyTubeRadiusFactor_)
+{
+    varyTubeRadiusFactor = varyTubeRadiusFactor_;
+    Select(ID_varyTubeRadiusFactor, (void *)&varyTubeRadiusFactor);
+}
+
+void
+StreamlineAttributes::SetVaryTubeRadiusVariable(const std::string &varyTubeRadiusVariable_)
+{
+    varyTubeRadiusVariable = varyTubeRadiusVariable_;
+    Select(ID_varyTubeRadiusVariable, (void *)&varyTubeRadiusVariable);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -3815,6 +3922,30 @@ StreamlineAttributes::GetCriticalPointThreshold() const
     return criticalPointThreshold;
 }
 
+StreamlineAttributes::VaryTubeRadiusType
+StreamlineAttributes::GetVaryTubeRadius() const
+{
+    return VaryTubeRadiusType(varyTubeRadius);
+}
+
+double
+StreamlineAttributes::GetVaryTubeRadiusFactor() const
+{
+    return varyTubeRadiusFactor;
+}
+
+const std::string &
+StreamlineAttributes::GetVaryTubeRadiusVariable() const
+{
+    return varyTubeRadiusVariable;
+}
+
+std::string &
+StreamlineAttributes::GetVaryTubeRadiusVariable()
+{
+    return varyTubeRadiusVariable;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -3895,6 +4026,12 @@ void
 StreamlineAttributes::SelectOpacityVariable()
 {
     Select(ID_opacityVariable, (void *)&opacityVariable);
+}
+
+void
+StreamlineAttributes::SelectVaryTubeRadiusVariable()
+{
+    Select(ID_varyTubeRadiusVariable, (void *)&varyTubeRadiusVariable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4014,6 +4151,9 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_issueStiffnessWarnings:            return "issueStiffnessWarnings";
     case ID_issueCriticalPointsWarnings:       return "issueCriticalPointsWarnings";
     case ID_criticalPointThreshold:            return "criticalPointThreshold";
+    case ID_varyTubeRadius:                    return "varyTubeRadius";
+    case ID_varyTubeRadiusFactor:              return "varyTubeRadiusFactor";
+    case ID_varyTubeRadiusVariable:            return "varyTubeRadiusVariable";
     default:  return "invalid index";
     }
 }
@@ -4131,6 +4271,9 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_issueStiffnessWarnings:            return FieldType_bool;
     case ID_issueCriticalPointsWarnings:       return FieldType_bool;
     case ID_criticalPointThreshold:            return FieldType_double;
+    case ID_varyTubeRadius:                    return FieldType_enum;
+    case ID_varyTubeRadiusFactor:              return FieldType_double;
+    case ID_varyTubeRadiusVariable:            return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -4248,6 +4391,9 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_issueStiffnessWarnings:            return "bool";
     case ID_issueCriticalPointsWarnings:       return "bool";
     case ID_criticalPointThreshold:            return "double";
+    case ID_varyTubeRadius:                    return "enum";
+    case ID_varyTubeRadiusFactor:              return "double";
+    case ID_varyTubeRadiusVariable:            return "string";
     default:  return "invalid index";
     }
 }
@@ -4779,6 +4925,21 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (criticalPointThreshold == obj.criticalPointThreshold);
         }
         break;
+    case ID_varyTubeRadius:
+        {  // new scope
+        retval = (varyTubeRadius == obj.varyTubeRadius);
+        }
+        break;
+    case ID_varyTubeRadiusFactor:
+        {  // new scope
+        retval = (varyTubeRadiusFactor == obj.varyTubeRadiusFactor);
+        }
+        break;
+    case ID_varyTubeRadiusVariable:
+        {  // new scope
+        retval = (varyTubeRadiusVariable == obj.varyTubeRadiusVariable);
+        }
+        break;
     default: retval = false;
     }
 
@@ -4824,6 +4985,9 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Hank Childs, Mon Oct  4 14:32:06 PDT 2010
 //   Add support for having multiple termination criterias.
 //
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add vary tube radius by variable.
+//
 // ****************************************************************************
 
 #define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
@@ -4859,7 +5023,8 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         coloringVariable != obj.coloringVariable ||
         (displayMethod != obj.displayMethod && obj.displayMethod == Ribbons) ||
         (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
-
+        varyTubeRadiusVariable != obj.varyTubeRadiusVariable ||
+        varyTubeRadius != obj.varyTubeRadius ||
         ((opacityType == VariableRange) && (obj.opacityType != VariableRange ||
                                             opacityVariable != obj.opacityVariable)))
     {

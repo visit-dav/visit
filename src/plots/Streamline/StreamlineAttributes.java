@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int StreamlineAttributes_numAdditionalAtts = 93;
+    private static int StreamlineAttributes_numAdditionalAtts = 96;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -125,6 +125,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public final static int PATHLINESCMFE_CONN_CMFE = 0;
     public final static int PATHLINESCMFE_POS_CMFE = 1;
+
+    public final static int VARYTUBERADIUSTYPE_NONE = 0;
+    public final static int VARYTUBERADIUSTYPE_SCALAR = 1;
 
 
     public StreamlineAttributes()
@@ -260,6 +263,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         issueStiffnessWarnings = true;
         issueCriticalPointsWarnings = true;
         criticalPointThreshold = 0.001;
+        varyTubeRadius = VARYTUBERADIUSTYPE_NONE;
+        varyTubeRadiusFactor = 10;
+        varyTubeRadiusVariable = new String("");
     }
 
     public StreamlineAttributes(int nMoreFields)
@@ -395,6 +401,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         issueStiffnessWarnings = true;
         issueCriticalPointsWarnings = true;
         criticalPointThreshold = 0.001;
+        varyTubeRadius = VARYTUBERADIUSTYPE_NONE;
+        varyTubeRadiusFactor = 10;
+        varyTubeRadiusVariable = new String("");
     }
 
     public StreamlineAttributes(StreamlineAttributes obj)
@@ -533,6 +542,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         issueStiffnessWarnings = obj.issueStiffnessWarnings;
         issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
         criticalPointThreshold = obj.criticalPointThreshold;
+        varyTubeRadius = obj.varyTubeRadius;
+        varyTubeRadiusFactor = obj.varyTubeRadiusFactor;
+        varyTubeRadiusVariable = new String(obj.varyTubeRadiusVariable);
 
         SelectAll();
     }
@@ -693,7 +705,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (issueTerminationWarnings == obj.issueTerminationWarnings) &&
                 (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
                 (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
-                (criticalPointThreshold == obj.criticalPointThreshold));
+                (criticalPointThreshold == obj.criticalPointThreshold) &&
+                (varyTubeRadius == obj.varyTubeRadius) &&
+                (varyTubeRadiusFactor == obj.varyTubeRadiusFactor) &&
+                (varyTubeRadiusVariable.equals(obj.varyTubeRadiusVariable)));
     }
 
     public String GetName() { return "Streamline"; }
@@ -1329,6 +1344,24 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(92);
     }
 
+    public void SetVaryTubeRadius(int varyTubeRadius_)
+    {
+        varyTubeRadius = varyTubeRadius_;
+        Select(93);
+    }
+
+    public void SetVaryTubeRadiusFactor(double varyTubeRadiusFactor_)
+    {
+        varyTubeRadiusFactor = varyTubeRadiusFactor_;
+        Select(94);
+    }
+
+    public void SetVaryTubeRadiusVariable(String varyTubeRadiusVariable_)
+    {
+        varyTubeRadiusVariable = varyTubeRadiusVariable_;
+        Select(95);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double[]       GetPointSource() { return pointSource; }
@@ -1423,6 +1456,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public boolean        GetIssueStiffnessWarnings() { return issueStiffnessWarnings; }
     public boolean        GetIssueCriticalPointsWarnings() { return issueCriticalPointsWarnings; }
     public double         GetCriticalPointThreshold() { return criticalPointThreshold; }
+    public int            GetVaryTubeRadius() { return varyTubeRadius; }
+    public double         GetVaryTubeRadiusFactor() { return varyTubeRadiusFactor; }
+    public String         GetVaryTubeRadiusVariable() { return varyTubeRadiusVariable; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1613,6 +1649,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(issueCriticalPointsWarnings);
         if(WriteSelect(92, buf))
             buf.WriteDouble(criticalPointThreshold);
+        if(WriteSelect(93, buf))
+            buf.WriteInt(varyTubeRadius);
+        if(WriteSelect(94, buf))
+            buf.WriteDouble(varyTubeRadiusFactor);
+        if(WriteSelect(95, buf))
+            buf.WriteString(varyTubeRadiusVariable);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1899,6 +1941,15 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         case 92:
             SetCriticalPointThreshold(buf.ReadDouble());
             break;
+        case 93:
+            SetVaryTubeRadius(buf.ReadInt());
+            break;
+        case 94:
+            SetVaryTubeRadiusFactor(buf.ReadDouble());
+            break;
+        case 95:
+            SetVaryTubeRadiusVariable(buf.ReadString());
+            break;
         }
     }
 
@@ -2127,6 +2178,14 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("issueStiffnessWarnings", issueStiffnessWarnings, indent) + "\n";
         str = str + boolToString("issueCriticalPointsWarnings", issueCriticalPointsWarnings, indent) + "\n";
         str = str + doubleToString("criticalPointThreshold", criticalPointThreshold, indent) + "\n";
+        str = str + indent + "varyTubeRadius = ";
+        if(varyTubeRadius == VARYTUBERADIUSTYPE_NONE)
+            str = str + "VARYTUBERADIUSTYPE_NONE";
+        if(varyTubeRadius == VARYTUBERADIUSTYPE_SCALAR)
+            str = str + "VARYTUBERADIUSTYPE_SCALAR";
+        str = str + "\n";
+        str = str + doubleToString("varyTubeRadiusFactor", varyTubeRadiusFactor, indent) + "\n";
+        str = str + stringToString("varyTubeRadiusVariable", varyTubeRadiusVariable, indent) + "\n";
         return str;
     }
 
@@ -2225,5 +2284,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private boolean        issueStiffnessWarnings;
     private boolean        issueCriticalPointsWarnings;
     private double         criticalPointThreshold;
+    private int            varyTubeRadius;
+    private double         varyTubeRadiusFactor;
+    private String         varyTubeRadiusVariable;
 }
 

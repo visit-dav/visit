@@ -767,6 +767,25 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scriticalPointThreshold = %g\n", prefix, atts->GetCriticalPointThreshold());
     str += tmpStr;
+    const char *varyTubeRadius_names = "None, Scalar";
+    switch (atts->GetVaryTubeRadius())
+    {
+      case StreamlineAttributes::None:
+          SNPRINTF(tmpStr, 1000, "%svaryTubeRadius = %sNone  # %s\n", prefix, prefix, varyTubeRadius_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::Scalar:
+          SNPRINTF(tmpStr, 1000, "%svaryTubeRadius = %sScalar  # %s\n", prefix, prefix, varyTubeRadius_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%svaryTubeRadiusFactor = %g\n", prefix, atts->GetVaryTubeRadiusFactor());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%svaryTubeRadiusVariable = \"%s\"\n", prefix, atts->GetVaryTubeRadiusVariable().c_str());
+    str += tmpStr;
     return str;
 }
 
@@ -3498,6 +3517,87 @@ StreamlineAttributes_GetCriticalPointThreshold(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+StreamlineAttributes_SetVaryTubeRadius(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the varyTubeRadius in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetVaryTubeRadius(StreamlineAttributes::VaryTubeRadiusType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid varyTubeRadius value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "None, Scalar.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetVaryTubeRadius(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetVaryTubeRadius()));
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetVaryTubeRadiusFactor(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the varyTubeRadiusFactor in the object.
+    obj->data->SetVaryTubeRadiusFactor(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetVaryTubeRadiusFactor(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetVaryTubeRadiusFactor());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetVaryTubeRadiusVariable(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the varyTubeRadiusVariable in the object.
+    obj->data->SetVaryTubeRadiusVariable(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetVaryTubeRadiusVariable(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetVaryTubeRadiusVariable().c_str());
+    return retval;
+}
+
 
 
 PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
@@ -3688,6 +3788,12 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetIssueCriticalPointsWarnings", StreamlineAttributes_GetIssueCriticalPointsWarnings, METH_VARARGS},
     {"SetCriticalPointThreshold", StreamlineAttributes_SetCriticalPointThreshold, METH_VARARGS},
     {"GetCriticalPointThreshold", StreamlineAttributes_GetCriticalPointThreshold, METH_VARARGS},
+    {"SetVaryTubeRadius", StreamlineAttributes_SetVaryTubeRadius, METH_VARARGS},
+    {"GetVaryTubeRadius", StreamlineAttributes_GetVaryTubeRadius, METH_VARARGS},
+    {"SetVaryTubeRadiusFactor", StreamlineAttributes_SetVaryTubeRadiusFactor, METH_VARARGS},
+    {"GetVaryTubeRadiusFactor", StreamlineAttributes_GetVaryTubeRadiusFactor, METH_VARARGS},
+    {"SetVaryTubeRadiusVariable", StreamlineAttributes_SetVaryTubeRadiusVariable, METH_VARARGS},
+    {"GetVaryTubeRadiusVariable", StreamlineAttributes_GetVaryTubeRadiusVariable, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -4031,6 +4137,17 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetIssueCriticalPointsWarnings(self, NULL);
     if(strcmp(name, "criticalPointThreshold") == 0)
         return StreamlineAttributes_GetCriticalPointThreshold(self, NULL);
+    if(strcmp(name, "varyTubeRadius") == 0)
+        return StreamlineAttributes_GetVaryTubeRadius(self, NULL);
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::None));
+    if(strcmp(name, "Scalar") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Scalar));
+
+    if(strcmp(name, "varyTubeRadiusFactor") == 0)
+        return StreamlineAttributes_GetVaryTubeRadiusFactor(self, NULL);
+    if(strcmp(name, "varyTubeRadiusVariable") == 0)
+        return StreamlineAttributes_GetVaryTubeRadiusVariable(self, NULL);
 
     return Py_FindMethod(PyStreamlineAttributes_methods, self, name);
 }
@@ -4231,6 +4348,12 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetIssueCriticalPointsWarnings(self, tuple);
     else if(strcmp(name, "criticalPointThreshold") == 0)
         obj = StreamlineAttributes_SetCriticalPointThreshold(self, tuple);
+    else if(strcmp(name, "varyTubeRadius") == 0)
+        obj = StreamlineAttributes_SetVaryTubeRadius(self, tuple);
+    else if(strcmp(name, "varyTubeRadiusFactor") == 0)
+        obj = StreamlineAttributes_SetVaryTubeRadiusFactor(self, tuple);
+    else if(strcmp(name, "varyTubeRadiusVariable") == 0)
+        obj = StreamlineAttributes_SetVaryTubeRadiusVariable(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

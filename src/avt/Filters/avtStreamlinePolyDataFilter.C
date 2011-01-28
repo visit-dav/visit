@@ -61,6 +61,7 @@ std::string avtStreamlinePolyDataFilter::paramArrayName = "params";
 std::string avtStreamlinePolyDataFilter::opacityArrayName = "opacity";
 std::string avtStreamlinePolyDataFilter::thetaArrayName = "theta";
 std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
+std::string avtStreamlinePolyDataFilter::scaleRadiusArrayName = "scaleRadius";
 
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CreateIntegralCurveOutput
@@ -115,6 +116,9 @@ std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 //
 //   Hank Childs, Sun Dec  5 10:43:57 PST 2010
 //   Issue warnings for more problems.
+//
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add vary tube radius by variable.
 //
 // ****************************************************************************
 
@@ -210,6 +214,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
     vtkFloatArray *scalars  = vtkFloatArray::New();
     vtkFloatArray *params   = vtkFloatArray::New();
     vtkFloatArray *tangents = vtkFloatArray::New();
+    vtkFloatArray *scaleTubeRad = NULL;
     vtkFloatArray *thetas   = NULL;
     vtkFloatArray *opacity  = NULL;
 
@@ -238,12 +243,19 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
         thetas->SetName(thetaArrayName.c_str());
         pd->GetPointData()->AddArray(thetas);
     }
-    if (opacityVariable != "")
+    if (!opacityVariable.empty())
     {
         opacity = vtkFloatArray::New();
         opacity->Allocate(numPts);
         opacity->SetName(opacityArrayName.c_str());
         pd->GetPointData()->AddArray(opacity);
+    }
+    if (!scaleTubeRadiusVariable.empty())
+    {
+        scaleTubeRad = vtkFloatArray::New();
+        scaleTubeRad->Allocate(numPts);
+        scaleTubeRad->SetName(scaleRadiusArrayName.c_str());
+        pd->GetPointData()->AddArray(scaleTubeRad);
     }
 
     vtkIdType pIdx = 0, idx = 0;
@@ -337,6 +349,8 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
                 thetas->InsertTuple1(pIdx, theta);
                 prevT = s.time;
             }
+            if (scaleTubeRad)
+                scaleTubeRad->InsertTuple1(pIdx, s.scalar2);
             
             pIdx++;
             lastPos = s.position;

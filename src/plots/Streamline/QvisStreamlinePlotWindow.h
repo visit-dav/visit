@@ -143,6 +143,9 @@ class StreamlineAttributes;
 //   Hank Childs, Sun Dec  5 04:59:00 PST 2010
 //   Add new data members for warnings for stiffness and critical points.
 //
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add vary tube radius by variable.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -270,7 +273,9 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void issueWarningForStiffnessChanged(bool);
     void issueWarningForCriticalPointsChanged(bool);
     void criticalPointThresholdProcessText();
-
+    void tubeRadiusVaryFactorProcessText();
+    void tubeRadiusVaryVariableChanged(const QString&);
+    void tubeRadiusVaryChanged(bool);
   private:
     int plotType;
     QComboBox *sourceType;
@@ -329,6 +334,11 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QRadioButton *fillButtons[2];
 
     QComboBox *displayMethod;
+    QCheckBox *tubeRadiusVary;
+    QComboBox *tubeRadiusVaryMethod;
+    QLabel    *tubeRadiusVaryVariableLabel, *tubeRadiusVaryFactorLabel;
+    QvisVariableButton *tubeRadiusVaryVariable;
+    QLineEdit *tubeRadiusVaryFactorEdit;
     QCheckBox *showSeeds, *showHeads;
     QLabel    *seedRadiusLabel, *headRadiusLabel, *headHeightLabel;
     QComboBox *headDisplayType;
