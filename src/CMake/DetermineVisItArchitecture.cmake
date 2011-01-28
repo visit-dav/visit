@@ -44,6 +44,9 @@
 #   I modified the architecture string it generates on AIX to be either
 #   ibm-aix-pwr or ibm-aix-pwr64.
 #
+#   Brad Whitlock, Tue Jan 25 12:28:55 PST 2011
+#   I made Mac 10.x and later use darwin-x86_64.
+#
 #****************************************************************************/
 
 MACRO(DETERMINE_VISIT_ARCHITECTURE ARCH)
@@ -67,7 +70,16 @@ MACRO(DETERMINE_VISIT_ARCHITECTURE ARCH)
         ENDIF($ENV{OBJECT_MODE} STREQUAL "32")
     ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
         IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")
-            SET(${ARCH} darwin-i386)
+            EXECUTE_PROCESS(COMMAND uname -r
+               OUTPUT_STRIP_TRAILING_WHITESPACE
+               OUTPUT_VARIABLE _OSX_VERSION)
+            STRING(SUBSTRING ${_OSX_VERSION} 0 1 _OSX_MAJOR_VERSION)
+            IF(${_OSX_MAJOR_VERSION} STREQUAL "1")
+                # This will match 10, 11, 12, ...
+                SET(${ARCH} darwin-x86_64)
+            ELSE(${_OSX_MAJOR_VERSION} STREQUAL "1")
+                SET(${ARCH} darwin-i386)
+            ENDIF(${_OSX_MAJOR_VERSION} STREQUAL "1")
         ELSE(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")
             SET(${ARCH} darwin-ppc)
         ENDIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386")

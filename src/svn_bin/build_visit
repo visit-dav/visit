@@ -19,13 +19,12 @@
 #
 #	OS	Hardware	Compiler	Machine
 #	-----	--------	--------	-------
-#       RHEL3,	x86,		GCC 3.4.6	staples.llnl.gov
 #       RHEL3, 	x86,		GCC 3.2.3	hoth.llnl.gov
-#       CHAOS, 	x86_64,		GCC 3.4.5	vertex.llnl.gov
-#       CHAOS,	ia64, 		GCC 3.4.5	thunder.llnl.gov
+#       CHAOS, 	x86_64,		GCC 4.1.2	aztec.llnl.gov
 #       SuSE,   x86_64,		GCC 4.0.2	antares.lbl.gov
 #       SuSE,   x86_64,		GCC 4.1.0	octagon.lbl.gov
-#       MacOSX  i386,		GCC 4.0.1	dantooine.llnl.gov
+#       MacOSX  i386,		GCC 4.0.1	corellia.llnl.gov
+#       MacOSX  x86_64          GCC 4.2.1       dantooine.llnl.gov
 #       MacOSX  ppc,		GCC 4.0.1	snailbait.llnl.gov
 #
 #   It is believed that this script will also work with other Linux variations.
@@ -65,7 +64,7 @@
 #           HDF5     1.8.4    hdf5-1.8.4.tar.gz      --hdf5
 #           MDSplus  2.2      mdsplus-2.2-4.tar.gz
 #           Mili     1.10     mili-1.10a.tar.gz      --mili
-#           NetCDF   4.1,1    netcdf-4.1.1.tar.gz    --netcdf
+#           NetCDF   4.1.1    netcdf-4.1.1.tar.gz    --netcdf
 #           AdvIO    1.2.0    AdvIO-1.2.tar.gz       --advio
 #           Silo     4.8      silo-4.8.tar.gz        --silo
 #           szip     2.1      szip-2.1.tar.gz        --szip

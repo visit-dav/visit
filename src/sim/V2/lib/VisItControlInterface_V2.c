@@ -190,6 +190,7 @@ static int           visit_sync_callbacks_size = 0;
 static int           visit_sync_id = 1;
 static void        (*visit_command_callback)(const char*,const char*,void*) = NULL;
 static void         *visit_command_callback_data = NULL;
+static void        (*visit_slave_process_callback)(void) = NULL;
 
 
 /*******************************************************************************
@@ -528,6 +529,9 @@ visit_handle_command_callback(const char *cmd, const char *args, void *cbdata)
 * Date:       Thu Mar 26 13:28:11 PDT 2009
 *
 * Modifications:
+*   Brad Whitlock, Thu Jan 27 15:55:31 PST 2011
+*   I added LEAVE trace statements to early returns so the trace logs don't
+*   lool like recursion when this function is called repeatedly.
 *
 ******************************************************************************/
 
@@ -550,12 +554,14 @@ visit_process_engine_command(void)
             {
                 command = VISIT_COMMAND_SUCCESS;
                 BroadcastInt(&command, 0);
+                LIBSIM_API_LEAVE1(visit_process_engine_command, "return %d", 1); 
                 return 1;
             }
             else
             {
                 command = VISIT_COMMAND_FAILURE;
                 BroadcastInt(&command, 0);
+                LIBSIM_API_LEAVE1(visit_process_engine_command, "return %d", 0); 
                 return 0;
             }
         }
@@ -573,8 +579,10 @@ visit_process_engine_command(void)
                     VisItProcessEngineCommand();
                     break;
                 case VISIT_COMMAND_SUCCESS:
+                    LIBSIM_API_LEAVE1(visit_process_engine_command, "return %d", 1); 
                     return 1;
                 case VISIT_COMMAND_FAILURE:
+                    LIBSIM_API_LEAVE1(visit_process_engine_command, "return %d", 0); 
                     return 0;
                 }
             }
@@ -582,7 +590,7 @@ visit_process_engine_command(void)
     }
 
     command = VisItProcessEngineCommand() ? 1 : 0;
-    LIBSIM_API_LEAVE(visit_process_engine_command); 
+    LIBSIM_API_LEAVE1(visit_process_engine_command, "return %d", command); 
     return command;
 }
 
@@ -2544,13 +2552,20 @@ int VisItAttemptToCompleteConnection(void)
 *   Brad Whitlock, Fri Jul 25 15:55:53 PDT 2008
 *   Trace information.
 *
+*   Brad Whitlock, Thu Jan 27 15:13:25 PST 2011
+*   Store off the slave process callback because we'll need to install a new
+*   one during synchronization in case the user has a funky callback.
+*
 *******************************************************************************/
 void VisItSetSlaveProcessCallback(void (*spic)(void))
 {
     LIBSIM_API_ENTER1(VisItSetSlaveProcessCallback, "spic=%p", (void*)spic);
     LIBSIM_MESSAGE("Calling visit_set_slave_process_callback");
     if(callbacks != NULL && callbacks->control.set_slave_process_callback)
+    {
+        visit_slave_process_callback = spic;
         (*callbacks->control.set_slave_process_callback)(spic);
+    }
     LIBSIM_API_LEAVE(VisItSetSlaveProcessCallback);
 }
 
@@ -2894,6 +2909,11 @@ DECLARE_DATA_CALLBACKS(VISIT_SET_CALLBACK_BODY, CB_ARGS)
 * Date:       Thu Mar 26 13:28:11 PDT 2009
 *
 * Modifications:
+*   Brad Whitlock, Thu Jan 27 15:22:00 PST 2011
+*   The visit_process_engine_command function we use internally assumes that
+*   messages that tell slave processes what to do are ints. We must install
+*   our own int-based slave process callback to ensure that we're broadcasting
+*   ints since the sim's slave process callback can do whatever it wants.
 *
 ******************************************************************************/
 
@@ -2902,6 +2922,13 @@ visit_sync_helper(void *cbdata)
 {
     int *syncing = (int *)cbdata;
     *syncing = 0;
+}
+
+static void
+visit_sync_slave_process_callback(void)
+{
+    int command = VISIT_COMMAND_PROCESS;
+    BroadcastInt(&command, 0);
 }
 
 int
@@ -2920,6 +2947,10 @@ VisItSynchronize(void)
 
     /* Send a sync to the viewer. When we get it back the loop will end. */
     visit_add_sync(visit_sync_helper, &syncing);
+
+    /* Save the sim's slave process callback and install a new one temporarily. */
+    void (*sim_spc)(void) = visit_slave_process_callback;
+    VisItSetSlaveProcessCallback(visit_sync_slave_process_callback);
 
     do
     {
@@ -2959,6 +2990,9 @@ VisItSynchronize(void)
             /* We're not trapping for console input. */
         }
     } while(syncing && err == 0);
+
+    /* Restore the sim's slave process callback. */
+    VisItSetSlaveProcessCallback(sim_spc);
 
     LIBSIM_API_LEAVE(VisItSynchronize);
     return (err==0) ? VISIT_OKAY : VISIT_ERROR;
