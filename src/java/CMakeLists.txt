@@ -42,6 +42,9 @@
 #   Brad Whitlock, Tue Jan 11 10:22:33 PST 2011
 #   Add DualClients.java
 #
+#   Brad Whitlock, Fri Jan 28 11:13:40 PST 2011
+#   Add EventLoop object.
+#
 #****************************************************************************/
 
 PROJECT(JavaClient Java)
@@ -154,6 +157,7 @@ SET(PACKAGE_SOURCES
 Version.java 
 SimpleObserver.java 
 CouldNotConnectException.java 
+EventLoop.java
 LostConnectionException.java 
 IncompatibleSecurityTokenException.java 
 IncompatibleVersionException.java 
@@ -168,9 +172,9 @@ RemoteProcess.java
 ViewerState.java 
 ProxyInterface.java
 ViewerMethods.java 
-Yielder.java
-Xfer.java 
 SyncNotifier.java
+Xfer.java
+Yielder.java
 ViewerProxy.java 
 )
 

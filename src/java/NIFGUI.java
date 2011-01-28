@@ -73,6 +73,9 @@ import llnl.visit.plots.CurveAttributes;
 //   Brad Whitlock, Mon Feb 25 11:07:24 PDT 2008
 //   Changed to new ViewerProxy interface.
 //
+//   Brad Whitlock, Fri Jan 28 11:13:06 PST 2011
+//   Call StartProcessing through the event loop object.
+//
 // ****************************************************************************
 
 public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemListener
@@ -319,7 +322,7 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
 
                 // Tell the viewer proxy to start its input processing thread
                 // so it can automatically read input from VisIt's viewer.
-                viewer.StartProcessing();
+                viewer.GetEventLoop().StartProcessing();
             }
             else
                 addOutput("ViewerProxy could not launch the viewer.");

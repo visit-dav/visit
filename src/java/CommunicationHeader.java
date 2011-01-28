@@ -58,6 +58,9 @@ package llnl.visit;
 //   Brad Whitlock, Thu Jan 2 14:12:31 PST 2003
 //   I added security keys.
 //
+//   Brad Whitlock, Fri Jan 28 11:25:36 PST 2011
+//   I loosened the test for version equality to support patch releases.
+//
 // ****************************************************************************
 
 class CommunicationHeader
@@ -192,9 +195,19 @@ class CommunicationHeader
 
         // Check the version number.
         boolean same = true;
+        int dotCount = 0;
         for(int i = 0; i < 10; ++i)
         {
-            same &= (version[i] == b.version[i]);
+            boolean sameChar = (version[i] == b.version[i]);
+            if(sameChar && version[i] == '.')
+                dotCount++;
+            same &= sameChar;
+            // Stop checking versions after the second dot. Our version numbers 
+            // are now A.B.C and patch releases are supposed to be compatible. So,
+            // if the versions have been the same up to the second dot then
+            // don't check the patch version. Just assume it is compatible.
+            if(same && dotCount >= 2)
+                break;
             //System.out.println("ver="+version[i]+" remote.ver="+b.version[i]);
         }
         if(!same)
