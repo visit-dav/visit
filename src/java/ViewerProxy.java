@@ -287,7 +287,6 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
         viewer.AddArgument("-viewer");
 
         // Make viewer RPC's synchronous by default.
-        syncCount = 0;
         synchronous = true;
         pluginsLoaded = false;
         doUpdate = true;
@@ -295,10 +294,13 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
 
         xfer = new Xfer();
         messageObserver = new MessageObserver();
-        syncNotifier = new SyncNotifier();
 
         state = new ViewerState();
         methods = new ViewerMethods(this);
+
+        // Create the event loop.
+        eventLoop = new EventLoop(xfer, state.GetMessageAttributes(), 
+            state.GetSyncAttributes());
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -423,54 +425,15 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
             // hook up the message observer.
             messageObserver.Attach(state.GetMessageAttributes());
 
-            // Hook up the syncAtts notifier.
-            state.GetSyncAttributes().Attach(syncNotifier);
-
             // Hook up this object to the plugin atts.
             state.GetPluginManagerAttributes().Attach(this);
 
             // Start reading input from the viewer so we can load the
             // plugins that the viewer has loaded.
-            StartProcessing();
-            Yielder y = new Yielder(1000);
-            boolean errFlag = false;
-            while(!errFlag && !pluginsLoaded)
-            {
-                // Yield to other threads so we don't swamp the CPU with
-                // zero work.
-                try
-                {
-                    y.yield();
-                }
-                catch(java.lang.InterruptedException e)
-                {
-                    errFlag = true;
-                }
-            }
+            eventLoop.Synchronize();
         }
 
         return retval;
-    }
-
-    /**
-     * Starts automatic processing of information from the viewer. If automatic
-     * processing is enabled then the ViewerProxy will listen for new state
-     * from the viewer on a socket. For most applications, this is desireable.
-     *
-     */
-    public void StartProcessing()
-    {
-        PrintMessage("Starting to read from input from viewer.");
-        xfer.StartProcessing();
-    }
-
-    /**
-     * Stops automatic processing of information from the viewer.
-     */
-    public void StopProcessing()
-    {
-        PrintMessage("Stopped reading input from viewer.");
-        xfer.StopProcessing();
     }
 
     /**
@@ -516,7 +479,6 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
         operatorPlugins.SetVerbose(val);
         viewer.SetVerbose(val);
         xfer.SetVerbose(val);
-        syncNotifier.SetVerbose(val);
     }
 
     /**
@@ -551,39 +513,18 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
      *
      * @return true if there were no errors; false otherwise.
      */
-    public synchronized boolean Synchronize()
+    public boolean Synchronize()
     {
-        // Clear any error in the message observer.
-        messageObserver.ClearError();
+        return synchronous ? eventLoop.Synchronize() : true;
+    }
 
-        // Tell the syncObserver to notify this thread when the new syncCount
-        // gets returned from the viewer.
-        ++syncCount;
-        syncNotifier.NotifyThreadOnValue(Thread.currentThread(), syncCount);
-        syncNotifier.SetUpdate(false);
-
-        // Send a new synchronization tag
-        GetViewerState().GetSyncAttributes().SetSyncTag(syncCount);
-        GetViewerState().GetSyncAttributes().Notify();
-        GetViewerState().GetSyncAttributes().SetSyncTag(-1);
-
-        // Wait until the syncNotifier notifies us that it's okay to proceed.
-        boolean noErrors = true;
-        try
-        {
-            synchronized(Thread.currentThread())
-            { 
-                PrintMessage("Waiting for viewer sync.");
-                Thread.currentThread().wait();
-            }
-        }
-        catch(java.lang.InterruptedException e)
-        {
-            noErrors = false;
-        }
-
-        // Make it return true if there are no errors.
-        return noErrors && !messageObserver.GetErrorFlag();
+    /**
+     * Get the event loop object.
+     * @return The event loop object.
+     */
+    public EventLoop GetEventLoop()
+    {
+        return eventLoop;
     }
 
     /**
@@ -879,10 +820,9 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
     private Xfer                 xfer;
     private PluginManager        plotPlugins;
     private PluginManager        operatorPlugins;
-    private int                  syncCount;
     private boolean              synchronous;
     private MessageObserver      messageObserver;
-    private SyncNotifier         syncNotifier;
+    private EventLoop            eventLoop;
     private boolean              pluginsLoaded;
     private boolean              doUpdate;
     private boolean              verbose;

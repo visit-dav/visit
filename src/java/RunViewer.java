@@ -37,6 +37,7 @@
 // ****************************************************************************
 
 import llnl.visit.Axes3D;
+import llnl.visit.EventLoop;
 import llnl.visit.ViewerProxy;
 import llnl.visit.ColorAttribute;
 import llnl.visit.AnnotationAttributes;
@@ -135,18 +136,8 @@ public class RunViewer
 
             // If we have the -stay argument on the command line, keep the
             // viewer around so we can do stuff with it.
-            while(stay)
-            {
-                try
-                {
-                    // Sleep a little so we don't hog the CPU.
-                    Thread.currentThread().sleep(200);
-                }
-                catch(java.lang.InterruptedException e)
-                {
-                    stay = false;
-                }
-            }
+            if(stay)
+                viewer.GetEventLoop().Execute();
 
             viewer.Close();
         }
