@@ -1,4 +1,4 @@
- /*****************************************************************************
+/*****************************************************************************
 *
 * Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
@@ -459,12 +459,14 @@ avtM3DC1Field::operator()( const double &t, const avtVector &p ) const
   double pt[3] = { p[0], p[1], p[2] };
 
   /* Find the element containing the point; get local coords xi,eta */
-  double xieta[element_dimension];
+  double *xieta = new double[element_dimension];
   int    element;
+
+  avtVector vec;
 
   if ((element = get_tri_coords2D(pt, xieta)) < 0) 
   {
-    return avtVector(0,0,0);
+    vec = avtVector(0,0,0);
   }
   else 
   {
@@ -473,8 +475,12 @@ avtM3DC1Field::operator()( const double &t, const avtVector &p ) const
     interpBcomps(B, pt, element, xieta);
     
     // The B value is in cylindrical coordiantes
-    return avtVector( B[0], B[1], B[2] );
+    vec = avtVector( B[0], B[1], B[2] );
   }
+
+  delete [] xieta;
+
+  return vec;
 }
 
 
