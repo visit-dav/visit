@@ -1406,7 +1406,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
     int element;
     float B[3];
-    double pt[3], centroid[3], xieta[element_dimension];
+    double pt[3], centroid[3], *xieta = new double[element_dimension];
 
     if( m_dataLocation == AVT_NODECENT)
     {
@@ -1506,6 +1506,8 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
         pts += nvertices * 3;
       }
     }
+
+    delete [] xieta;
 
     // Set the pointers to null as the VTK delete operation will take
     // of deleting the data. Normally the M3DCIField thinks it needs
@@ -2029,6 +2031,7 @@ void avtM3DC1FileFormat::GetCycles(std::vector<int> &cycles)
 {
     cycles = m_cycles;
 }
+
 
 
 // ****************************************************************************
