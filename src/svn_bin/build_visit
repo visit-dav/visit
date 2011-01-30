@@ -1079,6 +1079,10 @@
 #     Hank Childs, Fri Jan 28 09:07:07 PST 2011
 #     Add better error messages when Qt won't build because of OpenGL.
 #
+#     Hank Childs, Sun Jan 30 08:52:51 AST 2011
+#     Update VisIt release number.  Also add error message about why HDF4
+#     may be failing.  Also fix problem with GDAL for Linux x86_64.
+#
 # *****************************************************************************
 
 
@@ -1433,7 +1437,7 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION:-"2.1.2"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.2.0"}
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE:-"vtk-5.0.0g.tar.gz"}
@@ -6127,7 +6131,8 @@ function build_hdf4
         --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" \
         --disable-fortran --disable-dependency-tracking
         if [[ $? != 0 ]] ; then
-           warn "HDF4 configure failed.  Giving up"
+           warn "HDF4 configure failed.  Giving up"\
+                "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
            return 1
         fi
         MAKEOPS="-i"
@@ -6138,7 +6143,10 @@ function build_hdf4
         --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
         --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         if [[ $? != 0 ]] ; then
-           warn "HDF4 configure failed.  Giving up"
+           warn "HDF4 configure failed.  Giving up.\n"\
+                "The most common reasons why HDF4 will not build is that the libjpeg\n"\
+                "development package is not installed.\n"\
+                "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
            return 1
         fi
     fi
@@ -6558,44 +6566,23 @@ function build_cgns
 #                         Function 8.6, build_gdal                            #
 # *************************************************************************** #
 
-function build_gdal
+function apply_gdal_linux_x86_64_patch
 {
-    #
-    # Prepare build dir
-    #
-    prepare_build_dir $GDAL_BUILD_DIR $GDAL_FILE
-    untarred_gdal=$?
-    if [[ $untarred_gdal == -1 ]] ; then
-       warn "Unable to prepare GDAL Build Directory. Giving Up"
-       return 1
-    fi
+    mv configure configure.old
+    sed "s/expat_prefix\/lib -lexpat/expat_prefix\/lib64 -lexpat/g" configure.old > configure
+    chmod 700 configure
+}
 
-    #
-    info "Configuring GDAL . . ."
-    cd $GDAL_BUILD_DIR || error "Can't cd to GDAL build dir."
-    info "Invoking command to configure GDAL"
-    if [[ "$OPSYS" == "Darwin" ]]; then
-       if [[ "$DO_STATIC_BUILD" == "no" ]]; then
-           EXTRA_FLAGS="F77=\"\"--enable-shared --disable-static"
-       else
-           EXTRA_FLAGS="F77=\"\"--enable-static --disable-shared"
-       fi
-    else
-       EXTRA_FLAGS="--enable-static --disable-shared"
-    fi
+function apply_gdal_mac6_patch
+{
+    cat frmts/gtiff/libtiff/GNUmakefile | \
+       sed 's/tif_zip.o/tif_zip.o lfind.o/' > tmp.make
+    mv frmts/gtiff/libtiff/GNUmakefile \
+       frmts/gtiff/libtiff/GNUmakefile.orig
+    mv tmp.make frmts/gtiff/libtiff/GNUmakefile
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        # Check for version 6.x.x (MacOS 10.2, Jaguar)
-        VER=$(uname -r)
-        if (( ${VER%%.*} < 7 )) ; then
-            cat frmts/gtiff/libtiff/GNUmakefile | \
-               sed 's/tif_zip.o/tif_zip.o lfind.o/' > tmp.make
-            mv frmts/gtiff/libtiff/GNUmakefile \
-               frmts/gtiff/libtiff/GNUmakefile.orig
-            mv tmp.make frmts/gtiff/libtiff/GNUmakefile
-
-            echo > frmts/gtiff/libtiff/lfind.c
-            cat >> frmts/gtiff/libtiff/lfind.c << EOF
+    echo > frmts/gtiff/libtiff/lfind.c
+    cat >> frmts/gtiff/libtiff/lfind.c << EOF
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
@@ -6632,8 +6619,47 @@ linear_base(key, base, nelp, width, compar, add_flag)
       return(end);
 }
 EOF
+}
+
+function build_gdal
+{
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $GDAL_BUILD_DIR $GDAL_FILE
+    untarred_gdal=$?
+    if [[ $untarred_gdal == -1 ]] ; then
+       warn "Unable to prepare GDAL Build Directory. Giving Up"
+       return 1
+    fi
+
+    #
+    info "Configuring GDAL . . ."
+    cd $GDAL_BUILD_DIR || error "Can't cd to GDAL build dir."
+    info "Invoking command to configure GDAL"
+    if [[ "$OPSYS" == "Darwin" ]]; then
+       if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+           EXTRA_FLAGS="F77=\"\"--enable-shared --disable-static"
+       else
+           EXTRA_FLAGS="F77=\"\"--enable-static --disable-shared"
+       fi
+    else
+       EXTRA_FLAGS="--enable-static --disable-shared"
+    fi
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        # Check for version 6.x.x (MacOS 10.2, Jaguar)
+        VER=$(uname -r)
+        if (( ${VER%%.*} < 7 )) ; then
+             apply_gdal_mac6_patch
         fi
     fi
+    if [[ "$OPSYS" == "Linux" ]] ; then
+        if [[ "$(uname -m)" == "x86_64" ]] ; then
+             apply_gdal_linux_x86_64_patch
+        fi
+    fi
+
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
        CFLAGS="$CFLAGS $C_OPT_FLAGS -DH5_USE_16_API" \
        CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS -DH5_USE_16_API" \
@@ -6651,7 +6677,7 @@ EOF
     #
     # Build GDAL
     #
-    info "Building GDAL . . . (~4 minutes)"
+    info "Building GDAL . . . (~7 minutes)"
 
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
