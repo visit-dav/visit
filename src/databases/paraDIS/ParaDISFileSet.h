@@ -33,34 +33,34 @@
 * OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 * DAMAGE.
 *
-* Originating Author:  Richard Cook 925-423-9605 c.2011-01-03
-* This file encapsulates the old "dumpfile-based" code, which is capable of 
-* very detailed analysis, but cannot work in parallel.
 *****************************************************************************/
-#include <avtSTSDFileFormat.h>
-#include "avtparaDISOptions.h"
-#include <vtkUnstructuredGrid.h>
+#ifndef PARADISFILESET
+#define PARADISFILESET 1
+
 #include <string>
-#include <vtkFloatArray.h>
-#include "ParaDISFileSet.h" 
 
-struct Dumpfile: public ParaDISFileSet {
+class ParaDISFileSet {
  public:
-  Dumpfile(std::string filename, DBOptionsAttributes *rdatts); 
-  ~Dumpfile(); 
+  ParaDISFileSet() {
+    mBurgersTypes.push_back(std::string("100 arm type"));    
+    mBurgersTypes.push_back(std::string("010 arm type"));
+    mBurgersTypes.push_back(std::string("001 arm type"));
+    mBurgersTypes.push_back(std::string("+++ arm type"));
+    mBurgersTypes.push_back(std::string("++- arm type"));
+    mBurgersTypes.push_back(std::string("+-+ arm type"));
+    mBurgersTypes.push_back(std::string("-++ arm type"));
+    mBurgersTypes.push_back(std::string("unknown arm type"));
+    
+    return; 
+  } 
 
-  bool FileIsValid(void);
-  virtual vtkDataSet *GetMesh(std::string meshname);
-  virtual vtkDataArray *GetVar(std::string varname); 
+  virtual vtkDataSet *GetMesh(std::string meshname)=0;
+  virtual vtkDataArray *GetVar(std::string varname)=0; 
   virtual void *GetAuxiliaryData(const char *var, const char *type,
-                         DestructorFunction &df);
-  /*!
-    paraDIS data SERIAL
-  */
-  std::vector<std::string> mNodeNeighborValues, mSegmentMNTypes;
-  
-  int mVerbosity; 
-  int mMaterialSetChoice; 
-  std::string mFilename; 
-  std::string mDebugFile; 
+                         DestructorFunction &df)=0;
+
+  std::vector<std::string> mBurgersTypes;
+
 }; 
+
+#endif

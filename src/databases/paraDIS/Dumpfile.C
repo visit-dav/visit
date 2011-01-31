@@ -91,15 +91,6 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   mSegmentMNTypes.push_back(string("ARM_SHORT_NN_111"));
   mSegmentMNTypes.push_back(string("ARM_SHORT_NN_100"));
 
-  mBurgersTypes.push_back(string("100 arm type"));    
-  mBurgersTypes.push_back(string("010 arm type"));
-  mBurgersTypes.push_back(string("001 arm type"));
-  mBurgersTypes.push_back(string("+++ arm type"));
-  mBurgersTypes.push_back(string("++- arm type"));
-  mBurgersTypes.push_back(string("+-+ arm type"));
-  mBurgersTypes.push_back(string("-++ arm type"));
-  mBurgersTypes.push_back(string("unknown arm type"));
-
   mNodeNeighborValues.push_back(string("0 neighbors"));    
   mNodeNeighborValues.push_back(string("1 neighbor"));    
   mNodeNeighborValues.push_back(string("2 neighbors"));    

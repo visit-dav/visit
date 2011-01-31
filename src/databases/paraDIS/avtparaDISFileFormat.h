@@ -69,6 +69,7 @@ using namespace std;
 #define PARADIS_DUMPFILE_FORMAT 1  // Old serial data format
 #define PARADIS_PARALLEL_FORMAT 2  // new parallel data format
 
+
 class avtparaDISFileFormat : public avtSTSDFileFormat
 {
   public:
