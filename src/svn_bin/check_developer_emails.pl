@@ -1,5 +1,23 @@
 #! /usr/bin/env perl
 
+# ----------------------------------------------------------------------------
+# Programmer: Jeremy Meredith
+# Date:       January 31, 2011
+#
+# Purpose:
+#   Look for committers from the past day.
+#
+#   Make sure these users have their username
+#   mapped to an email address in the
+#   nersc_username_to_email script.
+#
+#   Also, if the visit-developers list admin
+#   password is supplied, make sure these
+#   committers have an active subscription
+#   to the visit-developers list.
+#
+#   If an address is given, email the result.
+# ----------------------------------------------------------------------------
 
 # remove the cookie and mapper files
 unlink "mapper";
