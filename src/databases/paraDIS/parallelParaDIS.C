@@ -40,6 +40,7 @@
 *****************************************************************************/
 
 #include "RC_cpp_lib/stringutil.h"
+#include "paraDIS_lib/paradis.h"
 #include <DebugStream.h>
 #include "parallelParaDIS.h"
 #include <vector>
@@ -506,11 +507,15 @@ inline void MeshElementFetcher::InterpretBinaryElement(char *elementData){
 vtkDataArray * VarElementFetcher::GetVarElems(void) {
   debug2 << "Beginning VarElementFetcher::GetVarElems" << endl;   
   
-  mElementDataType = mFileSet->VarType(mElementName); 
+  string virtualName = mElementName; 
+  if (virtualName == "Burgers type" ) {
+    virtualName = "BurgersVec";
+  }
+  mElementDataType = mFileSet->VarType(virtualName); 
+  mNumVarComponents = mFileSet->VarComponents(virtualName); 
+  mVarTokenPositionInElement = mFileSet->VarTokenPositionInElement(virtualName); 
+  mVarBytePositionInElement = mFileSet->VarBytePositionInElement(virtualName); 
 
-  mNumVarComponents = mFileSet->VarComponents(mElementName); 
-  mVarTokenPositionInElement = mFileSet->VarTokenPositionInElement(mElementName); 
-  mVarBytePositionInElement = mFileSet->VarBytePositionInElement(mElementName); 
   debug4 << "mNumVarComponents = " << mNumVarComponents << ", mVarTokenPositionInElement = " << mVarTokenPositionInElement << ", mVarBytePositionInElement = " << mVarBytePositionInElement << endl; 
   mVarBuffer = new float[mNumVarComponents]; 
   long index = 0;
@@ -519,13 +524,64 @@ vtkDataArray * VarElementFetcher::GetVarElems(void) {
   vtkFloatArray *tuples = vtkFloatArray::New(); 
 
   long numelems = mEndElement - mStartElement + 1;
-  tuples->SetNumberOfComponents(mNumVarComponents); 
+  if  (mElementName == "Burgers type" ) {
+    tuples->SetNumberOfComponents(1); 
+  } else {
+    tuples->SetNumberOfComponents(mNumVarComponents); 
+  }
   tuples->SetNumberOfTuples(numelems); 
 
   IterateOverFiles((void*)tuples); 
 
   return tuples; 
 }
+
+//=============================================================
+/*
+  InterpretBurgersType(void)
+  Helper function to change mVarBuffer[0] to the enumerated value corresponding to the burgers type detected in mVarBuffer at start of function. 
+  from paradis.h: 
+  #define BURGERS_NONE 0
+  #define BURGERS_100  1
+  #define BURGERS_010  2
+  #define BURGERS_001  3
+  #define BURGERS_PPP  4  // +++
+  #define BURGERS_PPM  5  // ++-
+  #define BURGERS_PMP  6  // +-+
+  #define BURGERS_PMM  7  // +--
+  #define BURGERS_UNKNOWN  8    
+*/ 
+void VarElementFetcher::InterpretBurgersType(void) {
+  debug5 << "InterpretBurgersType() called" << endl;
+  int valarray[3] = 
+    {Category(mVarBuffer[0]), 
+     Category(mVarBuffer[1]), 
+     Category(mVarBuffer[2])};
+  if (valarray[0] == 1 && valarray[1] == 0 && valarray[2] == 0)
+    mVarBuffer[0] = BURGERS_100;
+  else if (valarray[0] == 0 && valarray[1] == 1 && valarray[2] == 0)
+    mVarBuffer[0] = BURGERS_010;
+  else if (valarray[0] == 0 && valarray[1] == 0 && valarray[2] == 1)
+    mVarBuffer[0] = BURGERS_001;
+  else if ((valarray[0] == 2 && valarray[1] == 2 && valarray[2] == 2) ||
+           (valarray[0] == 3 && valarray[1] == 3 && valarray[2] == 3))
+    mVarBuffer[0] = BURGERS_PPP;
+  else if ((valarray[0] == 2 && valarray[1] == 2 && valarray[2] == 3) ||
+           (valarray[0] == 3 && valarray[1] == 3 && valarray[2] == 2))
+    mVarBuffer[0] = BURGERS_PPM;
+  else if ((valarray[0] == 2 && valarray[1] == 3 && valarray[2] == 2) ||
+           (valarray[0] == 3 && valarray[1] == 2 && valarray[2] == 3))
+    mVarBuffer[0] = BURGERS_PMP;
+  else if ((valarray[0] == 2 && valarray[1] == 3 && valarray[2] == 3) ||
+           (valarray[0] == 3 && valarray[1] == 2 && valarray[2] == 2)) {
+    mVarBuffer[0] = BURGERS_PMM;
+  }  else {
+    debug1 << "Warning:  unknown burgers type: create verbose debug logs for details" << endl;
+    mVarBuffer[0] = BURGERS_NONE; 
+  }
+  return; 
+}
+
 //=============================================================
 /*
   VarElementFetcher:: InterpretTextElement
@@ -547,6 +603,10 @@ void VarElementFetcher:: InterpretTextElement(std::string line, long linenum) {
     debug5 << mVarBuffer[i] << ", ";     
   }
   debug5 << ")" << endl;
+  if (mElementName == "Burgers type" ) {
+    InterpretBurgersType(); // changes mVarBuffer[0] value
+  }
+
   ((vtkFloatArray *)mOutputData)->SetTuple(mOutputIndex++, mVarBuffer); 
   
   return;
@@ -577,6 +637,11 @@ inline void VarElementFetcher::InterpretBinaryElement(char *elementData){
   }
    
   debug5 << ")" << endl;
+
+  if (mElementName == "Burgers type" ) {
+    InterpretBurgersType(); // changes mVarBuffer[0] value
+  }
+
   ((vtkFloatArray *)mOutputData)->SetTuple(mOutputIndex++, mVarBuffer); 
   return; 
 }
@@ -825,7 +890,7 @@ vtkDataArray *ParallelData::GetVar(string varname) {
   FileSet *fileset = NULL; 
   if (mNodeFiles.HaveVar(varname)) {
     fileset = &mNodeFiles;
-  } else if (mSegmentFiles.HaveVar(varname)) {
+  } else if (varname == "Burgers type" || mSegmentFiles.HaveVar(varname)) {
     fileset = &mSegmentFiles;
   } 
   if (!fileset) {

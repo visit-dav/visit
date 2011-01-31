@@ -67,7 +67,6 @@ using rclib::Point;
 using     std::string;
 
 
-
 // ****************************************************************************
 //  Method: avtparaDIS constructor
 //
@@ -173,6 +172,16 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
       }
     }
     
+    // Add burgers vector scalars to the segments mesh
+    avtScalarMetaData *el_smd =
+      new avtScalarMetaData("Burgers type", "segments", AVT_ZONECENT);
+    el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    int a=0;
+    for (a=0; a<mParallelData.mBurgersTypes.size(); a++) {
+      el_smd->AddEnumNameValue(mParallelData.mBurgersTypes[a], a);
+    }
+    md->Add(el_smd);
+
    /*!
       =======================================================
       populate the nodes mesh
@@ -195,7 +204,8 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     
     md->SetFormatCanDoDomainDecomposition(true);  
     mFormat = PARADIS_PARALLEL_FORMAT; 
-  } else if (mDumpfile.FileIsValid()) { 
+  } // end of parallel data format mesh creation 
+  else if (mDumpfile.FileIsValid()) { 
     debug1 << " populateDatabaseMetaData detected dumpfile-based dataset" << endl;  
 
 #ifdef PARALLEL

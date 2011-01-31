@@ -44,6 +44,7 @@
 #include <avtSTSDFileFormat.h>
 #include "avtparaDISOptions.h"
 #include <vtkUnstructuredGrid.h>
+#include "ParaDISFileSet.h" 
 using namespace std; 
 // ************************************************************************* //
 //                            parallelParDIS.h                           //
@@ -174,11 +175,33 @@ class VarElementFetcher: public ElementFetcher {
       return; 
     }
   vtkDataArray *GetVarElems(void); 
-  vtkDataArray *GetVectorVarElems(void) {
-    return NULL; 
-  }
   virtual void InterpretTextElement(std::string line, long linenum);
-                                  
+
+  /*!
+    InterpretBurgersType(void)
+    Helper function to change mVarBuffer[0] to the enumerated value corresponding to the burgers type detected in mVarBuffer at start of function. 
+  */ 
+  void InterpretBurgersType(void); 
+
+  /*!
+    Category
+    initial analysis of burgers vector
+  */ 
+  int Category(float num) {
+    if (!num)
+      return 0;
+    else if (fabs(fabs(num) - 1.15) < 0.01 || fabs(fabs(num) - 1.00) < 0.01) 
+      return 1;
+    else if (fabs(num - 0.577) < 0.001 || fabs(num - 0.500) < 0.001)
+      return 2;
+    else if (fabs(num + 0.577) < 0.001 || fabs(num + 0.500) < 0.001)
+      return 3;
+    debug2 << "\n********************************\n\n";
+    debug2 << "WARNING: Weird value "<<num<<" encountered in Category" << endl;
+    debug2 << "\n********************************\n\n";
+    return 4;
+  }
+  
   virtual void InterpretBinaryElement(char *elementData);
 
   int mNumVarComponents, // generally 1 (scalar) or 3 (vector)
@@ -188,19 +211,19 @@ class VarElementFetcher: public ElementFetcher {
   
 }; 
 
-struct ParallelData {
+struct ParallelData: public ParaDISFileSet {
  public: 
   ParallelData(std::string filename);
   ~ParallelData();
 
   bool ParseMetaDataFile(void); 
   bool ParseFormatString(std::string formatString, FileSet *fileset);
-  vtkDataSet *GetMesh(std::string meshname);
+  virtual vtkDataSet *GetMesh(std::string meshname);
   void GetBinaryMeshPoints(vtkPoints *points, long firstPointIndex, std::string filename, long elementOffset, long elementsToRead, int pointsPerElement);  
   void GetTextMeshPoints(vtkPoints *points, long firstPointIndex, std::string filename, long elementOffset, long elementsToRead, int pointsPerElement);  
-  vtkDataArray *GetVar(std::string varname); 
+  virtual vtkDataArray *GetVar(std::string varname); 
 
-  void *GetAuxiliaryData(const char *var, const char *type,
+  virtual void *GetAuxiliaryData(const char *var, const char *type,
                          DestructorFunction &df);
 
   // data members:
