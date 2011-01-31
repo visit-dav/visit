@@ -179,9 +179,10 @@ class VarElementFetcher: public ElementFetcher {
 
   /*!
     InterpretBurgersType(void)
-    Helper function to change mVarBuffer[0] to the enumerated value corresponding to the burgers type detected in mVarBuffer at start of function. 
+    Helper function for InterpretTextElement and InterpretBinaryElement()
+    Returns the enumerated value corresponding to the burgers type detected in mVarBuffer at start of function. 
   */ 
-  void InterpretBurgersType(void); 
+  int InterpretBurgersType(void); 
 
   /*!
     Category

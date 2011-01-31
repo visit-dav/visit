@@ -521,17 +521,18 @@ vtkDataArray * VarElementFetcher::GetVarElems(void) {
   long index = 0;
   float f=0.0; 
 
-  vtkFloatArray *tuples = vtkFloatArray::New(); 
 
   long numelems = mEndElement - mStartElement + 1;
   if  (mElementName == "Burgers type" ) {
-    tuples->SetNumberOfComponents(1); 
+    int * materials = new int[numelems]; 
+    IterateOverFiles((void*)materials); 
   } else {
+    vtkFloatArray *tuples = vtkFloatArray::New(); 
     tuples->SetNumberOfComponents(mNumVarComponents); 
+    tuples->SetNumberOfTuples(numelems); 
+    
+    IterateOverFiles((void*)tuples); 
   }
-  tuples->SetNumberOfTuples(numelems); 
-
-  IterateOverFiles((void*)tuples); 
 
   return tuples; 
 }
@@ -551,42 +552,40 @@ vtkDataArray * VarElementFetcher::GetVarElems(void) {
   #define BURGERS_PMM  7  // +--
   #define BURGERS_UNKNOWN  8    
 */ 
-void VarElementFetcher::InterpretBurgersType(void) {
+int VarElementFetcher::InterpretBurgersType(void) {
   debug5 << "InterpretBurgersType() called" << endl;
   int valarray[3] = 
     {Category(mVarBuffer[0]), 
      Category(mVarBuffer[1]), 
      Category(mVarBuffer[2])};
+
   if (valarray[0] == 1 && valarray[1] == 0 && valarray[2] == 0)
-    mVarBuffer[0] = BURGERS_100;
+    return BURGERS_100;
   else if (valarray[0] == 0 && valarray[1] == 1 && valarray[2] == 0)
-    mVarBuffer[0] = BURGERS_010;
+    return BURGERS_010;
   else if (valarray[0] == 0 && valarray[1] == 0 && valarray[2] == 1)
-    mVarBuffer[0] = BURGERS_001;
+    return BURGERS_001;
   else if ((valarray[0] == 2 && valarray[1] == 2 && valarray[2] == 2) ||
            (valarray[0] == 3 && valarray[1] == 3 && valarray[2] == 3))
-    mVarBuffer[0] = BURGERS_PPP;
+    return BURGERS_PPP;
   else if ((valarray[0] == 2 && valarray[1] == 2 && valarray[2] == 3) ||
            (valarray[0] == 3 && valarray[1] == 3 && valarray[2] == 2))
-    mVarBuffer[0] = BURGERS_PPM;
+    return BURGERS_PPM;
   else if ((valarray[0] == 2 && valarray[1] == 3 && valarray[2] == 2) ||
            (valarray[0] == 3 && valarray[1] == 2 && valarray[2] == 3))
-    mVarBuffer[0] = BURGERS_PMP;
+    return BURGERS_PMP;
   else if ((valarray[0] == 2 && valarray[1] == 3 && valarray[2] == 3) ||
            (valarray[0] == 3 && valarray[1] == 2 && valarray[2] == 2)) {
-    mVarBuffer[0] = BURGERS_PMM;
-  }  else {
-    debug1 << "Warning:  unknown burgers type: create verbose debug logs for details" << endl;
-    mVarBuffer[0] = BURGERS_NONE; 
-  }
-  return; 
+    return BURGERS_PMM;
+  } 
+  debug1 << "Warning:  unknown burgers type: create verbose debug logs for details" << endl;
+  return BURGERS_NONE; 
 }
 
 //=============================================================
 /*
   VarElementFetcher:: InterpretTextElement
   Interprets the line as a segment or a node and adds it to mOutputData.  
-  increments mOutputIndex by one if a node, two if a segment. 
  */
 void VarElementFetcher:: InterpretTextElement(std::string line, long linenum) {
   debug5 << "VarElementFetcher:: InterpretTextElement parsing line " << linenum << ": \"" << line << "\"" << endl;  
@@ -604,10 +603,11 @@ void VarElementFetcher:: InterpretTextElement(std::string line, long linenum) {
   }
   debug5 << ")" << endl;
   if (mElementName == "Burgers type" ) {
-    InterpretBurgersType(); // changes mVarBuffer[0] value
+    mOutputData[mOutputIndex++] = InterpretBurgersType(); 
   }
-
-  ((vtkFloatArray *)mOutputData)->SetTuple(mOutputIndex++, mVarBuffer); 
+  else {
+    ((vtkFloatArray *)mOutputData)->SetTuple(mOutputIndex++, mVarBuffer); 
+  }
   
   return;
 }
