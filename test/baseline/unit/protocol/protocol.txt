@@ -2167,6 +2167,9 @@ StreamlineAttributes
     bool         issueStiffnessWarnings
     bool         issueCriticalPointsWarnings
     double       criticalPointThreshold
+    enum         varyTubeRadius
+    double       varyTubeRadiusFactor
+    string       varyTubeRadiusVariable
 
 SubsetAttributes
     enum                   colorType
