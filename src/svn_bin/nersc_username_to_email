@@ -37,6 +37,10 @@
 #    
 #    Hari Krishnan, Fri Jan 21 15:50:55 PST 2011
 #    Added case for userid "hkrishna".
+#
+#    Hank Childs, Mon Jan 31 07:45:07 PST 2011
+#    Switch myself to hchilds@lbl.gov, add loring and allens.
+#
 # *****************************************************************************
 
 
@@ -51,7 +55,7 @@ case $1 in
         ;;
     # Hank Childs, Lawrence Berkeley National Laboratory
     "hrchilds")
-        emaddr=hankchilds@gmail.com
+        emaddr=hchilds@lbl.gov
         ;;
     # Mark Miller, Lawrence Livermore National Laboratory
     "miller86")
@@ -87,13 +91,13 @@ case $1 in
         ;;
     # Tom Fogal, University of New Hampshire / University of Utah
     "fogal1")
-        emaddr=tfogal@alumni.unh.edu
+        emaddr=tfogal@sci.utah.edu
         ;;
     # Dave Pugmire, Oak Ridge National Laboratory
     "pugmire")
         emaddr=pugmire@ornl.gov
         ;;
-    # Josh Strtton, formerly of the SCI institute
+    # Josh Stratton, formerly of the SCI institute
     "stratton")
         emaddr=strattonbrazil@gmail.com
         ;;
@@ -127,6 +131,14 @@ case $1 in
         ;;
     "cook47")
         emaddr=rcook@llnl.gov
+        ;;
+    # Burlen Loring, Lawrence Berkeley National Laboratory
+    "loring")
+        emaddr=bloring@lbl.gov
+        ;;
+    # Allen Sanderson, University of Utah
+    "allens")
+        emaddr=allen@sci.utah.edu
         ;;
     *)
         emaddr=visit-developers@ornl.gov
