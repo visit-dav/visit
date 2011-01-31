@@ -173,7 +173,11 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     
     // Add burgers vector scalars to the segments mesh
-    avtScalarMetaData *el_smd =
+    AddMaterialToMetaData(md, "Segment_Burgers_Type", "segments", 
+                          mParallelData.mBurgersTypes.size(), 
+                          mDumpfile.mBurgersTypes);
+    /*!
+      avtScalarMetaData *el_smd =
       new avtScalarMetaData("Burgers type", "segments", AVT_ZONECENT);
     el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
     int a=0;
@@ -181,7 +185,7 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
       el_smd->AddEnumNameValue(mParallelData.mBurgersTypes[a], a);
     }
     md->Add(el_smd);
-
+    */
    /*!
       =======================================================
       populate the nodes mesh
