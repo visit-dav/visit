@@ -468,6 +468,7 @@ inline void MeshElementFetcher:: InterpretTextElement(std::string line, long lin
     location[2] = strtod(linetokens[lineIndex++].c_str(), NULL); 
     debug5 << "Setting point " << mOutputIndex << " to (" << location[0] << ", " << location[1] << ", " << location[2] << ")" << endl; 
     ((vtkPoints *)mOutputData)->SetPoint(mOutputIndex++, location); 
+    
   }
   return; 
 }
@@ -495,6 +496,7 @@ inline void MeshElementFetcher::InterpretBinaryElement(char *elementData){
     }   
     debug5 << "Setting point " << mOutputIndex << " to (" << location[0] << ", " << location[1] << ", " << location[2] << ")" << endl; 
     ((vtkPoints *)mOutputData)->SetPoint(mOutputIndex++, location); 
+    
   }
   return; 
 }
@@ -504,11 +506,35 @@ inline void MeshElementFetcher::InterpretBinaryElement(char *elementData){
   VarElementFetcher::GetMaterialElems
 */
 
-void * 
-VarElementFetcher::GetMaterialElems(const char *type,
-                                    DestructorFunction &df) {
+int * 
+VarElementFetcher::GetMaterialElems(void) {
+  debug3 << "VarElementFetcher::GetMaterialElems()" << endl;
 
-  return NULL; 
+  string virtualName = mElementName; 
+  if (virtualName == "Burgers type" ) {
+    virtualName = "BurgersVec"; // to ensure reading the correct variable
+  } else {
+    debug1 << "Error:  unknown material: " << virtualName << endl; 
+    return NULL; 
+  }
+
+  mElementDataType = mFileSet->VarType(virtualName); 
+  mNumVarComponents = mFileSet->VarComponents(virtualName); 
+  mVarTokenPositionInElement = mFileSet->VarTokenPositionInElement(virtualName); 
+  mVarBytePositionInElement = mFileSet->VarBytePositionInElement(virtualName); 
+
+  debug4 << "mNumVarComponents = " << mNumVarComponents << ", mVarTokenPositionInElement = " << mVarTokenPositionInElement << ", mVarBytePositionInElement = " << mVarBytePositionInElement << endl; 
+
+  mVarBuffer = new float[mNumVarComponents]; 
+  long numelems = mEndElement - mStartElement + 1;
+  int *matId = new int[numelems];
+
+  IterateOverFiles((void*)matId); 
+  
+  delete mVarBuffer; 
+  mVarBuffer = NULL; 
+  
+  return matId; 
 }
 
 //=============================================================
@@ -520,9 +546,6 @@ vtkDataArray * VarElementFetcher::GetVarElems(void) {
   debug2 << "Beginning VarElementFetcher::GetVarElems" << endl;   
   
   string virtualName = mElementName; 
-  if (virtualName == "Burgers type" ) {
-    virtualName = "BurgersVec";
-  }
   mElementDataType = mFileSet->VarType(virtualName); 
   mNumVarComponents = mFileSet->VarComponents(virtualName); 
   mVarTokenPositionInElement = mFileSet->VarTokenPositionInElement(virtualName); 
@@ -536,15 +559,14 @@ vtkDataArray * VarElementFetcher::GetVarElems(void) {
   vtkFloatArray *tuples = vtkFloatArray::New(); 
 
   long numelems = mEndElement - mStartElement + 1;
-  if  (mElementName == "Burgers type" ) {
-    tuples->SetNumberOfComponents(1); 
-  } else {
-    tuples->SetNumberOfComponents(mNumVarComponents); 
-  }
+  tuples->SetNumberOfComponents(mNumVarComponents); 
+  
   tuples->SetNumberOfTuples(numelems); 
 
   IterateOverFiles((void*)tuples); 
 
+  delete mVarBuffer; 
+  mVarBuffer = NULL; 
   return tuples; 
 }
 
@@ -563,35 +585,36 @@ vtkDataArray * VarElementFetcher::GetVarElems(void) {
   #define BURGERS_PMM  7  // +--
   #define BURGERS_UNKNOWN  8    
 */ 
-void VarElementFetcher::InterpretBurgersType(void) {
-  debug5 << "InterpretBurgersType() called" << endl;
+int VarElementFetcher::InterpretBurgersType(void) {
   int valarray[3] = 
     {Category(mVarBuffer[0]), 
      Category(mVarBuffer[1]), 
      Category(mVarBuffer[2])};
+  int btype = BURGERS_NONE;
   if (valarray[0] == 1 && valarray[1] == 0 && valarray[2] == 0)
-    mVarBuffer[0] = BURGERS_100;
+    btype = BURGERS_100;
   else if (valarray[0] == 0 && valarray[1] == 1 && valarray[2] == 0)
-    mVarBuffer[0] = BURGERS_010;
+    btype = BURGERS_010;
   else if (valarray[0] == 0 && valarray[1] == 0 && valarray[2] == 1)
-    mVarBuffer[0] = BURGERS_001;
+    btype = BURGERS_001;
   else if ((valarray[0] == 2 && valarray[1] == 2 && valarray[2] == 2) ||
            (valarray[0] == 3 && valarray[1] == 3 && valarray[2] == 3))
-    mVarBuffer[0] = BURGERS_PPP;
+    btype = BURGERS_PPP;
   else if ((valarray[0] == 2 && valarray[1] == 2 && valarray[2] == 3) ||
            (valarray[0] == 3 && valarray[1] == 3 && valarray[2] == 2))
-    mVarBuffer[0] = BURGERS_PPM;
+    btype = BURGERS_PPM;
   else if ((valarray[0] == 2 && valarray[1] == 3 && valarray[2] == 2) ||
            (valarray[0] == 3 && valarray[1] == 2 && valarray[2] == 3))
-    mVarBuffer[0] = BURGERS_PMP;
+    btype = BURGERS_PMP;
   else if ((valarray[0] == 2 && valarray[1] == 3 && valarray[2] == 3) ||
            (valarray[0] == 3 && valarray[1] == 2 && valarray[2] == 2)) {
-    mVarBuffer[0] = BURGERS_PMM;
-  }  else {
+    btype = BURGERS_PMM;
+  }  else {    
     debug1 << "Warning:  unknown burgers type: create verbose debug logs for details" << endl;
-    mVarBuffer[0] = BURGERS_NONE; 
+    btype = BURGERS_NONE; // redundant for explictness' sake
   }
-  return; 
+  debug5 << "InterpretBurgersType returning type " << btype; 
+  return btype; 
 }
 
 //=============================================================
@@ -616,10 +639,10 @@ void VarElementFetcher:: InterpretTextElement(std::string line, long linenum) {
   }
   debug5 << ")" << endl;
   if (mElementName == "Burgers type" ) {
-    InterpretBurgersType(); // changes mVarBuffer[0] value
+    ((int*)mOutputData)[mOutputIndex++] = InterpretBurgersType(); 
+  } else {
+    ((vtkFloatArray *)mOutputData)->SetTuple(mOutputIndex++, mVarBuffer); 
   }
-
-  ((vtkFloatArray *)mOutputData)->SetTuple(mOutputIndex++, mVarBuffer); 
   
   return;
 }
@@ -651,10 +674,10 @@ inline void VarElementFetcher::InterpretBinaryElement(char *elementData){
   debug5 << ")" << endl;
 
   if (mElementName == "Burgers type" ) {
-    InterpretBurgersType(); // changes mVarBuffer[0] value
+    ((int*)mOutputData)[mOutputIndex++] = InterpretBurgersType(); 
+  } else {
+    ((vtkFloatArray *)mOutputData)->SetTuple(mOutputIndex++, mVarBuffer); 
   }
-
-  ((vtkFloatArray *)mOutputData)->SetTuple(mOutputIndex++, mVarBuffer); 
   return; 
 }
 
@@ -921,6 +944,10 @@ void *
 ParallelData::GetAuxiliaryData(const char *var, const char *type,
                              DestructorFunction &df) {
   debug3 << "ParallelData::GetAuxiliaryData("<<var<<", "<<type<< ") returning NULL"<<endl;
+  if (strcmp(type, AUXILIARY_DATA_MATERIAL) != 0) {
+    return NULL;
+  }
+
   string varname(var); 
   FileSet *fileset = NULL; 
   if (mNodeFiles.HaveVar(varname)) {
@@ -934,5 +961,12 @@ ParallelData::GetAuxiliaryData(const char *var, const char *type,
   }
 
   VarElementFetcher vef(varname, fileset); 
-  return vef.GetMaterialElems(type, df); 
+  long numelems = vef.mEndElement - vef.mStartElement + 1; 
+  avtMaterial *mat = 
+    new avtMaterial(mBurgersTypes.size(), mBurgersTypes, 
+                    numelems, vef.GetMaterialElems(), 0, 
+                    NULL, NULL, NULL, NULL);  
+  df = avtMaterial::Destruct;
+
+  return mat; 
 } 
