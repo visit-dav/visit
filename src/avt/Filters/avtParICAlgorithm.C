@@ -142,11 +142,14 @@ avtParICAlgorithm::PostExecute()
 //   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
 //   Rename to InitializeBuffers to prevent name collision.
 //
+//   Dave Pugmire, Tue Feb  1 09:40:18 EST 2011
+//   Compute proper message size.
+//
 // ****************************************************************************
 
 void
 avtParICAlgorithm::InitializeBuffers(vector<avtIntegralCurve *> &seeds,
-                                     int msgSize,
+                                     int mSz,
                                      int nMsgRecvs,
                                      int nICRecvs,
                                      int nDSRecvs)
@@ -160,9 +163,9 @@ avtParICAlgorithm::InitializeBuffers(vector<avtIntegralCurve *> &seeds,
     // Msgs are handled as vector<int>.
     // Serialization of msg consists: size_t (num elements) +
     // sender rank + message size.
-    msgSize = sizeof(size_t);
+    int msgSize = sizeof(size_t);
     msgSize += sizeof(int); // sender rank.
-    msgSize += msgSize * sizeof(int);
+    msgSize += (mSz * sizeof(int));
 
     //During particle advection, the IC state is only serialized.
     slSize = 256;
@@ -197,23 +200,33 @@ avtParICAlgorithm::InitializeBuffers(vector<avtIntegralCurve *> &seeds,
 //   Dave Pugmire, Mon Nov 29 09:23:01 EST 2010
 //   Add optional tag argument to CleanupRequests.
 //
+//   Dave Pugmire, Tue Feb  1 09:40:18 EST 2011
+//   If tag is set, the map was not being cleaned out properly.
+//
 // ****************************************************************************
 
 void
 avtParICAlgorithm::CleanupRequests(int tag)
 {
+    vector<RequestTagPair> delKeys;
     for (bufferIterator i = recvBuffers.begin(); i != recvBuffers.end(); i++)
     {
-        if (tag != -1 && tag != i->first.second)
-            continue;
-
-        MPI_Request r = i->first.first;
-        if (r != MPI_REQUEST_NULL)
-            MPI_Cancel(&r);
-        if (i->second != NULL)
-            delete [] i->second;
-
-        recvBuffers.erase(i);
+        if (tag == -1 || tag == i->first.second)
+            delKeys.push_back(i->first);
+    }
+    
+    if (! delKeys.empty())
+    {
+        vector<RequestTagPair>::const_iterator it;
+        for (it = delKeys.begin(); it != delKeys.end(); it++)
+        {
+            RequestTagPair v = *it;
+            
+            unsigned char *buff = recvBuffers[v];
+            MPI_Cancel(&(v.first));
+            delete [] buff;
+            recvBuffers.erase(v);
+        }
     }
 }
 
@@ -1106,8 +1119,10 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
           <<" terminatedICs: "<<terminatedICs.size()<<endl;
 
     //Create larger streamline buffers.
+
     CleanupRequests(avtParICAlgorithm::STREAMLINE_TAG);
     messageTagInfo[avtParICAlgorithm::STREAMLINE_TAG] = pair<int,int>(numSLRecvs, 512*1024);
+
     for (int i = 0; i < numSLRecvs; i++)
         PostRecv(avtParICAlgorithm::STREAMLINE_TAG);
 
@@ -1280,6 +1295,7 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
     //Create larger streamline buffers.
     CleanupRequests(avtParICAlgorithm::STREAMLINE_TAG);
     messageTagInfo[avtParICAlgorithm::STREAMLINE_TAG] = pair<int,int>(numSLRecvs, 512*1024);
+
     for (int i = 0; i < numSLRecvs; i++)
         PostRecv(avtParICAlgorithm::STREAMLINE_TAG);
 
