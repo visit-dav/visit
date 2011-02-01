@@ -74,15 +74,20 @@ public:
     
     toroidalWinding = 0;
     poloidalWinding = 0;
+
+    toroidalPeriod    = 0;
+    poloidalPeriod    = 0;
+
     windingGroupOffset = 0;
     islands = 0;
+
     nnodes  = 0;
     
     confidence        = 0;
-    nPuncturesNeeded  = 0;
-    toroidalPeriod    = 0;
-    poloidalPeriod    = 0;
     ridgelineVariance = 0;
+
+    maxPunctures      = 0;
+    nPuncturesNeeded  = 0;
   };
 
 enum FieldlineType { UNKNOWN_TYPE  = 0,
