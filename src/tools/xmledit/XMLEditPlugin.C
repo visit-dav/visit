@@ -94,6 +94,10 @@
 //    Hank Childs, Thu Dec 30 15:01:59 PST 2010
 //    Add support for expression-creating-operators.
 //
+//    Hank Childs, Mon Jan 31 15:57:50 PST 2011
+//    Grey out the labels for operator creating expressions when we have 
+//    non-operators.
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p)
@@ -228,9 +232,9 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     operatorPluginLayout->addWidget(createExpressions, opRow,0,1,2);
     opRow++;
 
-    operatorPluginLayout->addWidget(
-        new QLabel(tr("Variable type inputted by the operator"), operatorPluginGroup),
-        opRow,0, 1,5);
+    opVarInputType = new QLabel(tr("Variable type inputted by the operator"),
+                                operatorPluginGroup);
+    operatorPluginLayout->addWidget(opVarInputType, opRow,0, 1,5);
     ++opRow;
 
     inOpVarTypeMesh            = new QCheckBox(tr("Mesh"), operatorPluginGroup);
@@ -260,9 +264,8 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     operatorPluginLayout->addWidget(inOpVarTypeArray, opRow, 4);
     ++opRow;
 
-    operatorPluginLayout->addWidget(
-        new QLabel(tr("Variable type created by the operator"), operatorPluginGroup),
-        opRow,0, 1,5);
+    opVarOutputType = new QLabel(tr("Variable type created by the operator"), operatorPluginGroup);
+    operatorPluginLayout->addWidget(opVarOutputType, opRow,0, 1,5);
     ++opRow;
 
     outOpVarTypeMesh            = new QCheckBox(tr("Mesh"), operatorPluginGroup);
@@ -740,6 +743,9 @@ XMLEditPlugin::UpdateWindowContents()
 //    Hank Childs, Thu Dec 30 15:21:18 PST 2010
 //    Add support for expression-creating-operators.
 //
+//    Hank Childs, Mon Jan 31 16:02:59 PST 2011
+//    Grey out operator heading if we are doing plot or DB.
+//
 // ****************************************************************************
 
 void
@@ -767,7 +773,9 @@ XMLEditPlugin::UpdateWindowSensitivity()
     varTypeSymmetricTensor->setEnabled(plot);
     varTypeLabel->setEnabled(plot);
     varTypeArray->setEnabled(plot);
+    operatorPluginGroup->setEnabled(op);
     createExpressions->setEnabled(op);
+    opVarInputType->setEnabled(op);
     inOpVarTypeMesh->setEnabled(op);
     inOpVarTypeScalar->setEnabled(op);
     inOpVarTypeVector->setEnabled(op);
@@ -779,6 +787,7 @@ XMLEditPlugin::UpdateWindowSensitivity()
     inOpVarTypeSymmetricTensor->setEnabled(op);
     inOpVarTypeLabel->setEnabled(op);
     inOpVarTypeArray->setEnabled(op);
+    opVarOutputType->setEnabled(op);
     outOpVarTypeMesh->setEnabled(op);
     outOpVarTypeScalar->setEnabled(op);
     outOpVarTypeVector->setEnabled(op);
