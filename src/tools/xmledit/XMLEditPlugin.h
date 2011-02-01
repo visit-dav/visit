@@ -42,6 +42,7 @@
 #include <qframe.h>
 
 class XMLDocument;
+class QLabel;
 class QLineEdit;
 class QButtonGroup;
 class QComboBox;
@@ -95,6 +96,10 @@ class QGroupBox;
 //
 //    Hank Childs, Thu Dec 30 22:37:51 PST 2010
 //    Add support for expression-creating-operators.
+//
+//    Hank Childs, Mon Jan 31 16:02:59 PST 2011
+//    Add some data members that facilitate greying out operator options when
+//    making non-operators.
 //
 // ****************************************************************************
 
@@ -154,6 +159,7 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *varTypeArray;
     QGroupBox       *operatorPluginGroup;
     QCheckBox       *createExpressions;
+    QLabel          *opVarInputType;
     QCheckBox       *inOpVarTypeMesh;
     QCheckBox       *inOpVarTypeScalar;
     QCheckBox       *inOpVarTypeVector;
@@ -165,6 +171,7 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *inOpVarTypeSymmetricTensor;
     QCheckBox       *inOpVarTypeLabel;
     QCheckBox       *inOpVarTypeArray;
+    QLabel          *opVarOutputType;
     QCheckBox       *outOpVarTypeMesh;
     QCheckBox       *outOpVarTypeScalar;
     QCheckBox       *outOpVarTypeVector;

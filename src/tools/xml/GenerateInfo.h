@@ -212,6 +212,9 @@
 //   Kathleen Bonnell, Wed Sep 29 08:49:20 PDT 2010
 //   Added ability to override operator common method 'GetCreatedExpressions.'
 //
+//   Hank Childs, Mon Jan 31 22:17:51 PST 2011
+//   Fix oversight where vectors aren't being generated.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -1363,6 +1366,12 @@ class InfoGeneratorPlugin : public Plugin
                     AddExpressionFromMD(c, name, outExprTypes, QString("Mesh"), QString("Meshes"));
                 if (doScalar)
                     AddExpressionFromMD(c, name, outExprTypes, QString("Scalar"), QString("Scalars"));
+                if (doVector)
+                    AddExpressionFromMD(c, name, outExprTypes, QString("Vector"), QString("Vectors"));
+                if (doTensor || doSymmTensor)
+                    AddExpressionFromMD(c, name, outExprTypes, QString("Tensor"), QString("Tensors"));
+                if (doMaterial || doSubset || doSpecies || doCurve || doLabel || doArray)
+                    cerr << "Unsupported variable type for creating an expression.  Contact a VisIt developer." << endl;
                 c << "    const ExpressionList &oldEL = md->GetExprList();" << endl;
                 c << "    for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)" << endl;
                 c << "    {" << endl;
