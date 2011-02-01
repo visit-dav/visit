@@ -219,6 +219,9 @@ avtIntegralCurve::~avtIntegralCurve()
 //    Hank Childs, Sun Dec  5 11:43:46 PST 2010
 //    Indicate when we have a numerical problem.
 //
+//    David Camp, Tue Feb  1 09:45:41 PST 2011
+//    Added a catch just incase an error ocurres.
+//
 // ****************************************************************************
 
 void avtIntegralCurve::Advance( avtIVPField* field )
@@ -325,7 +328,18 @@ void avtIntegralCurve::Advance( avtIVPField* field )
                 // next domain.
                 double    t = ivp->GetCurrentT();
                 avtVector y = ivp->GetCurrentY();
-                avtVector v = (*field)( t, y );
+                avtVector v;
+                try
+                { 
+                    v = (*field)( t, y );
+                }
+                catch (avtIVPField::Undefined&)
+                {
+                    if( DebugStream::Level5() )
+                        debug5 << "avtIntegralCurve::Advance(): bad step, "
+                               << "Error with t: " << t << " y: " << y << endl;
+                    break;
+                }
                         
                 // Determine the stepsize such that the push distance
                 // in either coordinate direction is at least 1e-6

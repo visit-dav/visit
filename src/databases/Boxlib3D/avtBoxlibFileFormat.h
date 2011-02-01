@@ -82,6 +82,9 @@ class VisMF;
 //    Hank Childs, Wed Oct  8 16:56:47 PDT 2008
 //    Add data member for coordinate system.
 //
+//    David Camp, Tue Feb  1 09:47:31 PST 2011
+//    Added the GetTime() function for the pathline code.
+//
 // ****************************************************************************
 
 class avtBoxlibFileFormat : public avtSTMDFileFormat
@@ -95,6 +98,8 @@ class avtBoxlibFileFormat : public avtSTMDFileFormat
     
     virtual int           GetCycle(void) { return cycle; };
     virtual int           GetCycleFromFilename(const char *f) const;
+
+    virtual double        GetTime(void);
  
     virtual vtkDataSet   *GetMesh(int, const char *);
     virtual vtkDataArray *GetVar(int, const char *);

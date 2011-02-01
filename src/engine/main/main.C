@@ -319,14 +319,15 @@ main(int argc, char *argv[])
         // Connect failed
         if (PAR_Rank() == 0)
         {
-             debug1 << "The engine could not connect to the viewer due to a"
+             debug1 << "The engine could not connect to the viewer due to a "
                   << "networking problem.  The engine is exiting" << endl;
-             cerr << "The engine could not connect to the viewer due to a"
+             cerr << "The engine could not connect to the viewer due to a "
                   << "networking problem.  The engine is exiting" << endl;
         }
     }
 
-    debug1 << "ENGINE exited." << endl;
+    if (DebugStream::Level1())
+        debug1 << "ENGINE exited." << endl;
     engine->Finalize();
 
 #ifdef DEBUG_MEMORY_LEAKS
@@ -338,3 +339,4 @@ main(int argc, char *argv[])
 #endif
     return 0;
 }
+

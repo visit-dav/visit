@@ -196,6 +196,11 @@ avtIVPVTKTimeVaryingField::GetExtents( double extents[6] ) const
 //  Programmer: Christoph Garth
 //  Creation:   July 12, 2010
 //
+//  Modifications:
+//
+//   David Camp, Tue Feb  1 09:43:32 PST 2011
+//   Added a check for time range to the FindCell
+//
 // ****************************************************************************
 
 bool
@@ -214,6 +219,9 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
             return false;
         }
     }       
+
+    if( time < t0 || time > t1 )
+        return false;
 
     return lastCell != -1;
 }

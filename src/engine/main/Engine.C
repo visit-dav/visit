@@ -244,10 +244,13 @@ protected:
         viewerArgs.push_back("-connectengine");
         viewerArgs.push_back(arg);
 
-        debug5 << mName << "viewer args(";
-        for(size_t i = 0; i < viewerArgs.size(); ++i)
-            debug5 << viewerArgs[i] << ", ";
-        debug5 << ")" << endl;
+        if (DebugStream::Level5())
+        {
+            debug5 << mName << "viewer args(";
+            for(size_t i = 0; i < viewerArgs.size(); ++i)
+                debug5 << viewerArgs[i] << ", ";
+            debug5 << ")" << endl;
+        }
 
         RemoteProcess::Launch(rHost, createAsThoughLocal, viewerArgs);
     }
@@ -584,7 +587,8 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     std::set_new_handler(Engine::NewHandler);
 #endif
 
-    debug1 << "ENGINE started\n";
+    if (DebugStream::Level1())
+        debug1 << "ENGINE started. pid: " << getpid() << endl;
 #ifdef PARALLEL
     {
         char msg[1024];
@@ -874,7 +878,8 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     {
         std::ostringstream s;
         s << "Setting up " << this->nDisplays << " GPUs for HW rendering";
-        debug3 << "Setting up X displays for " << this->nDisplays << " GPUs."
+        if (DebugStream::Level3())
+            debug3 << "Setting up X displays for " << this->nDisplays << " GPUs."
                << "  Using X arguments: '" << this->X_Args << "'" << std::endl;
         TimedCodeBlock(s.str(), this->SetupDisplay());
     }
@@ -887,19 +892,24 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 #if defined(PARALLEL) && defined(HAVE_ICET)
     if(this->useIceT)
     {
-        debug2 << "Using IceT network manager." << std::endl;
+        if (DebugStream::Level2())
+            debug2 << "Using IceT network manager." << std::endl;
         netmgr = new IceTNetworkManager;
     }
     else
     {
-        debug2 << "Using standard network manager." << std::endl;
+        if (DebugStream::Level2())
+            debug2 << "Using standard network manager." << std::endl;
         netmgr = new NetworkManager;
     }
 #else
-    if(this->useIceT)
+    if (DebugStream::Level1())
     {
-        debug1 << "Error; IceT not enabled at compile time. "
+        if(this->useIceT)
+        {
+            debug1 << "Error; IceT not enabled at compile time. "
                << "Ignoring ..." << std::endl;
+        }
     }
     netmgr = new NetworkManager;
 #endif
@@ -1369,7 +1379,8 @@ Engine::ConnectViewer(int *argc, char **argv[])
     }
     CATCH(IncompatibleVersionException)
     {
-        debug1 << "The engine has a different version than its client." << endl;
+        if (DebugStream::Level1())
+            debug1 << "The engine has a different version than its client." << endl;
         noFatalExceptions = false;
     }
     CATCH(CouldNotConnectException)
@@ -1500,7 +1511,8 @@ Engine::PAR_EventLoop()
             overrideTimeoutEnabled = false;
 
             idleTimeoutEnabled = true;
-            debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
+            if (DebugStream::Level5())
+                debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
             ResetTimeout(idleTimeoutMins * 60);
 
             // Get the next message length.
@@ -1523,7 +1535,8 @@ Engine::PAR_EventLoop()
 
             // We have work to do, so reset the alarm.
             idleTimeoutEnabled = false;
-            debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
+            if (DebugStream::Level5())
+                debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
             ResetTimeout(executionTimeoutMins * 60);
 
             // Process the state information.
@@ -1646,7 +1659,8 @@ Engine::EventLoop()
         overrideTimeoutEnabled = false;
 
         idleTimeoutEnabled = true;
-        debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
+        if (DebugStream::Level5())
+            debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
         ResetTimeout(idleTimeoutMins * 60);
 
         //
@@ -1661,14 +1675,16 @@ Engine::EventLoop()
             {
                 // We've got some work to do.  Reset the alarm.
                 idleTimeoutEnabled = false;
-                debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
+                if (DebugStream::Level5())
+                     debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
                 ResetTimeout(executionTimeoutMins * 60);
 
                 // Process input.
                 ProcessInput();
 
                 idleTimeoutEnabled = true;
-                debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
+                if (DebugStream::Level5())
+                    debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
                 ResetTimeout(idleTimeoutMins * 60);
             }
             CATCH(LostConnectionException)
@@ -1895,7 +1911,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
             if(!StringHelpers::str_to_u_numeric<size_t>(argv[i+1],
                                                         &this->nDisplays))
             {
-                debug1 << "Could not parse '-n-gpus-per-node' argument "
+                if (DebugStream::Level1())
+                    debug1 << "Could not parse '-n-gpus-per-node' argument "
                        << "'" << argv[i+1] << "'. "
                        << "Disabling hardware acceleration!" << std::endl;
                 this->nDisplays = 0;
@@ -1952,7 +1969,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
                     {
                         if (!PAR_Rank())
                             cerr << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
-                        debug1 << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
+                        if (DebugStream::Level1())
+                            debug1 << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
                         idleTimeoutMins = (int) to;
                     }
                     else if (strcmp(argv[i], "-idle-timeout") == 0)
@@ -1964,7 +1982,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 {
                     if (!PAR_Rank())
                         cerr << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
-                    debug1 << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
+                    if (DebugStream::Level1())
+                        debug1 << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
                 }
                 i++;
             }
@@ -1972,7 +1991,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
             {
                 if (!PAR_Rank())
                     cerr << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
-                debug1 << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
+                if (DebugStream::Level1())
+                    debug1 << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
             }
         }
         else if (strcmp(argv[i], "-ui-bcast-thresholds") == 0)
@@ -2110,8 +2130,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
             }
             else
             {
-              debug1 << "Ignoring IceT request: currently incompatible with "
-                        "parallel HW acceleration.\n";
+              if (DebugStream::Level1())
+                  debug1 << "Ignoring IceT request: currently incompatible with "
+                            "parallel HW acceleration.\n";
             }
         }
         else if (strcmp(argv[i], "-no-icet") == 0)
@@ -2251,8 +2272,9 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
     rpc->SendReply(totalSize);
     int writeData = visitTimer->StartTimer();
     int nStrings = do_str.GetNStrings();
-    debug5 << "sending " << totalSize << " bytes to the viewer " << nStrings
-           << " from strings." << endl;
+    if (DebugStream::Level5())
+        debug5 << "sending " << totalSize << " bytes to the viewer " << nStrings
+               << " from strings." << endl;
 
     const int buff_size = 4096;
     unsigned char buffer[buff_size];
@@ -2303,7 +2325,8 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
         }
     }
 
-    debug5 << "Number of actual direct writes = " << strings_written << endl;
+    if (DebugStream::Level5())
+        debug5 << "Number of actual direct writes = " << strings_written << endl;
 
     char info[124];
     SNPRINTF(info, 124, "Writing %d bytes to socket", totalSize);     
@@ -2760,8 +2783,9 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             (currentTotalGlobalCellCount + currentCellCount 
                   > scalableThreshold))
         {
-            debug5 << "exceeded scalable threshold of " << scalableThreshold 
-                   << endl;
+            if (DebugStream::Level5())
+                debug5 << "exceeded scalable threshold of " << scalableThreshold 
+                       << endl;
             thresholdExceeded = true; 
         }
 
@@ -2783,9 +2807,12 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             {
                 if (!thresholdExceeded)
                 {
-                    debug5 << "Exceeded scalable threshold of " << scalableThreshold << endl;
-                    if (reducedCurrentCellCount == INT_MAX-1)
-                        debug5 << "This was due to 'oridinary' overflow in summing cell counts" << endl;
+                    if (DebugStream::Level5())
+                    {
+                        debug5 << "Exceeded scalable threshold of " << scalableThreshold << endl;
+                        if (reducedCurrentCellCount == INT_MAX-1)
+                            debug5 << "This was due to 'oridinary' overflow in summing cell counts" << endl;
+                    }
                 }
                 thresholdExceeded = true;
             }
@@ -2810,7 +2837,8 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             if (thresholdExceeded && !sendDataAnyway)
             {
                 // dummy a null data object message to send to viewer
-                debug2 << "Sending back null dataset message." << std::endl;
+                if (DebugStream::Level2())
+                    debug2 << "Sending back null dataset message.\n";
                 avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_DATASET_MSG);
                 CopyTo(ui_dob, nullData);
             }
@@ -2836,7 +2864,8 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
         }
         else
         {
-            debug1 << "Sending error: " << v.GetErrorMessage() << std::endl;
+            if (DebugStream::Level1())
+                debug1 << "Sending error: " << v.GetErrorMessage() << std::endl;
             rpc->SendError(v.GetErrorMessage());
         }
 
@@ -2877,8 +2906,9 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
         }
         else
         {
-            debug5 << "not sending data to proc 0 because the data object "
-                   << "does not require parallel streams." << endl;
+            if (DebugStream::Level5())
+                debug5 << "not sending data to proc 0 because the data object "
+                       << "does not require parallel streams." << endl;
         }
     }
 
@@ -3243,8 +3273,11 @@ Engine::EngineInitializeProgressCallback(void *data, int nStages)
             rpc->SendStatus(0, 1, "Starting execution", nStages+1);
     }
     else
-        debug1 << "ERROR: EngineInitializeProgressCallback called "
-               << "with nStages == 0" << endl;
+    {
+        if (DebugStream::Level1())
+            debug1 << "ERROR: EngineInitializeProgressCallback called "
+                   << "with nStages == 0" << endl;
+    }
 }
 
 
@@ -3279,8 +3312,11 @@ Engine::EngineWarningCallback(void *data, const char *msg)
     NonBlockingRPC *rpc = (NonBlockingRPC*)data;
     if (!rpc)
     {
-        debug1 << "EngineWarningCallback called with no RPC set. Message was..." << endl;
-        debug1 << msg << endl;
+        if (DebugStream::Level1())
+        {
+            debug1 << "EngineWarningCallback called with no RPC set. Message was..." << endl;
+            debug1 << msg << endl;
+        }
     }
     else
     {
@@ -3759,8 +3795,9 @@ Engine::SetupDisplay()
     }
     else
     {
-        debug1 << "Display initialization failed.  Rendering in this state "
-               << "has undefined results ..." << std::endl;
+        if (DebugStream::Level1())
+            debug1 << "Display initialization failed.  Rendering in this state "
+                   << "has undefined results ..." << std::endl;
     }
 }
 
@@ -3786,11 +3823,16 @@ ResetEngineTimeout(void *p, int secs)
     e->SetOverrideTimeout(secs*60);
     if (e->IsIdleTimeoutEnabled() == false)
     {
-        debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
-    } else
+        if (DebugStream::Level5())
+            debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
+    }
+    else
     {
-        debug5 << "ResetEngineTimeout: We shouldn't get here!  Callbacks shouldn't set the timeout during idle!" << endl;
-        debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
+        if (DebugStream::Level5())
+        {
+            debug5 << "ResetEngineTimeout: We shouldn't get here!  Callbacks shouldn't set the timeout during idle!" << endl;
+            debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
+        }
     }
     e->ResetTimeout(secs);
 }
