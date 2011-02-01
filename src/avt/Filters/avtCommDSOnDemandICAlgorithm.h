@@ -97,7 +97,9 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
     virtual void              SortIntegralCurves(std::list<avtIntegralCurve *> &);
     virtual void              HandleOOBIC(avtIntegralCurve *s);
     virtual bool              RequestDataset(DomainType &d);
-    virtual void              HandleMessages();
+    virtual bool              HandleMessages(bool checkMsgs=true,
+                                             bool checkDSs=true,
+                                             bool allowBlockAndWait=true);
 
     void                      AddRef(const DomainType &dom);
     void                      DelRef(const DomainType &dom);
