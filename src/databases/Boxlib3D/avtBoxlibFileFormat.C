@@ -2323,3 +2323,25 @@ int VSSearch(const vector<string> &v, const string &s)
 }
 
 
+// ***************************************************************************
+//  Method: avtBoxlibFileFormat::GetTime
+//
+//  Purpose:
+//    Return the time associated with this file
+//
+//  Returns:
+//    Returns time
+//    
+//  Programmer:  David Camp
+//  Creation:    Jan  31, 2011
+//
+// ***************************************************************************
+
+double
+avtBoxlibFileFormat::GetTime()
+{
+    if (! haveReadTimeAndCycle)
+        ReadHeader();
+    return time;
+}
+
