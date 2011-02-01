@@ -116,9 +116,11 @@ class avtParDomICAlgorithm : public avtParICAlgorithm
   protected:
     virtual void              RunAlgorithm();
     virtual void              PreRunAlgorithm();
-    void                      ExchangeTermination();
+    void                      HandleCommunication();
+    void                      ProcessICs(std::list<ICCommData> &ics);
+    void                      ProcessMsgs(std::vector<MsgCommData> &msgs);
+
     void                      HandleOOBIC(avtIntegralCurve *s);
-    void                      HandleIncomingIC();
     
     int                       numICChange, totalNumIntegralCurves;
     int                       origNumIntegralCurves;
@@ -127,6 +129,11 @@ class avtParDomICAlgorithm : public avtParICAlgorithm
     std::list<avtIntegralCurve *> activeICs;
     int                       maxCnt;
 
+    //Tracks who uses ICs that are communicated.
+    // pair<int,int> = (ic ID, sendICCounter).  Tracks a unique send of an IC to others.
+    // pair<int, list<int> > = (numRanksThatUsedIC, list_of_ranks_send_IC).  This is bookeeping
+    // to keep track of who used the IC (if any), and update IC count. If nobody used the IC, its
+    // marked as terminated.
     std::map<std::pair<int,int>, std::pair<int, std::list<int> > > sendICInfo;
     typedef std::map<std::pair<int,int>, std::pair<int, std::list<int> > >::iterator sendICInfoIterator;
 };

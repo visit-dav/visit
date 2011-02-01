@@ -234,110 +234,6 @@ avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
     debug1<<"]\n";
 }
 
-
-// ****************************************************************************
-//  Method: avtParDomICAlgorithm::ExchangeTermination()
-//
-//  Purpose:
-//      Send/recv terminations.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   January 27, 2009
-//
-//  Modifications:
-//
-//    Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
-//    Change numTerminated to numSLChange.
-//
-//    Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//    Rename data members to reflect the new emphasis in particle advection, as
-//    opposed to streamlines.
-//
-//   Dave Pugmire, Tue Oct 19 10:53:51 EDT 2010
-//   Fix for unstructured meshes.
-//
-//   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
-//   Fix for unstructured meshes. Need to account for particles that are sent to domains
-//   that based on bounding box, and the particle does not lay in any cells.
-//
-//   Hank Childs, Fri Nov 26 14:39:43 PST 2010
-//   Add progress updates based on number of particles completed.
-//
-//   Dave Pugmire, Wed Jan  5 07:57:21 EST 2011
-//   New datastructures for msg/ic/ds.
-//
-// ****************************************************************************
-
-void
-avtParDomICAlgorithm::ExchangeTermination()
-{
-    // If I have terminations, send it out.
-    if (numICChange != 0)
-    {
-        vector<int> msg(2);
-        msg[0] = PARTICLE_TERMINATE_COUNT;
-        msg[1] = numICChange;
-        SendAllMsg(msg);
-        //debug5<<rank<<": SEND TERMINATE "<<numICChange<<endl;
-        
-        totalNumIntegralCurves += numICChange;
-        picsFilter->UpdateProgress(
-                       origNumIntegralCurves-totalNumIntegralCurves,
-                       origNumIntegralCurves);
-        numICChange = 0;
-    }
-
-    // Check to see if msgs are coming in.
-    vector<MsgCommData> msgs;
-    RecvMsg(msgs);
-    for (int i = 0; i < msgs.size(); i++)
-    {
-        int fromRank = msgs[i].rank;
-        vector<int> &msg = msgs[i].message;
-        int msgType = msg[0];
-        
-        if (msgType == PARTICLE_TERMINATE_COUNT)
-        {
-            totalNumIntegralCurves += msg[1];
-            //debug5<<fromRank<<": RECV DECR"<<endl;
-        }
-        else
-        {
-            //Find the right entry.
-            int icID = msg[1], icCnt = msg[2];
-            pair<int,int> key(icID, icCnt);
-
-            sendICInfoIterator i = sendICInfo.find(key);
-            if (i == sendICInfo.end())
-            {
-                //debug5<<icID<<", "<<icCnt<<" not found in sendICInfo!!"<<endl;
-                continue;
-            }
-
-            list<int>::iterator li;
-            for (li = i->second.second.begin(); li != i->second.second.end(); li++)
-                if (*li == fromRank)
-                {
-                    i->second.second.erase(li);
-                    if (msgType == PARTICLE_USED)
-                        i->second.first++;
-                    break;
-                }
-
-            //Everyone has reported back.
-            if (i->second.second.empty())
-            {
-                //Nobody used it
-                if (i->second.first == 0)
-                    numICChange--;
-                else if (i->second.first > 1)
-                    numICChange += (i->second.first-1);
-                sendICInfo.erase(i);
-            }
-        }
-    }
-}
-
 // ****************************************************************************
 //  Method: avtParDomICAlgorithm::PreRunAlgorithm
 //
@@ -425,35 +321,73 @@ avtParDomICAlgorithm::RunAlgorithm()
             cnt++;
         }
 
-        HandleIncomingIC();
-        ExchangeTermination();
         CheckPendingSendRequests();
+        HandleCommunication();
     }
 
     CheckPendingSendRequests();
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
 
+
 // ****************************************************************************
-// Method:  avtParDomICAlgorithm::HandleIncomingIC()
+// Method:  avtParDomICAlgorithm::HandleCommunication
+//
+// Purpose:
+//   Send termination msgs, and recv any incoming msgs/ICs.
 //
 // Programmer:  Dave Pugmire
-// Creation:    November  5, 2010
-//
-// Modifications:
-//   Dave Pugmire, Wed Jan  5 07:57:21 EST 2011
-//   New datastructures for msg/ic/ds.
+// Creation:    February  1, 2011
 //
 // ****************************************************************************
 
 void
-avtParDomICAlgorithm::HandleIncomingIC()
+avtParDomICAlgorithm::HandleCommunication()
 {
-    list<ICCommData> incoming;
-    RecvICs(incoming);
+    //Send terminations, if any.
+    if (numICChange != 0)
+    {
+        vector<int> msg(2);
+        msg[0] = PARTICLE_TERMINATE_COUNT;
+        msg[1] = numICChange;
+        SendAllMsg(msg);
+        //debug5<<rank<<": SEND TERMINATE "<<numICChange<<endl;
+        
+        totalNumIntegralCurves += numICChange;
+        picsFilter->UpdateProgress(
+                       origNumIntegralCurves-totalNumIntegralCurves,
+                       origNumIntegralCurves);
+        numICChange = 0;
+    }
+    
+    vector<MsgCommData> msgs;
+    list<ICCommData> ics;
+    bool blockAndWait = activeICs.empty() && (totalNumIntegralCurves > 0);
 
+    RecvAny(&msgs, &ics, NULL, blockAndWait);
+
+    if (!ics.empty())
+        ProcessICs(ics);
+    if (!msgs.empty())
+        ProcessMsgs(msgs);
+}
+
+// ****************************************************************************
+// Method:  avtParDomICAlgorithm::ProcessICs
+//
+// Purpose:
+//   Handle incoming ICs, and see if they belong to me.
+//
+// Programmer:  Dave Pugmire
+// Creation:    February  1, 2011
+//
+// ****************************************************************************
+
+void
+avtParDomICAlgorithm::ProcessICs(list<ICCommData> &ics)
+{
     list<ICCommData>::iterator s;
-    for (s = incoming.begin(); s != incoming.end(); s++)
+    for (s = ics.begin(); s != ics.end(); s++)
     {
         avtIntegralCurve *ic = (*s).ic;
         int sendRank = (*s).rank;
@@ -462,7 +396,7 @@ avtParDomICAlgorithm::HandleIncomingIC()
         msg[0] = PARTICLE_USED;
         msg[1] = ic->id;
         msg[2] = ic->counter;
-
+        
         avtVector pt;
         ic->CurrentLocation(pt);
         if (PointInDomain(pt, ic->domain))
@@ -478,6 +412,67 @@ avtParDomICAlgorithm::HandleIncomingIC()
     }
 }
 
+// ****************************************************************************
+// Method:  avtParDomICAlgorithm::ProcessMsgs
+//
+// Purpose:
+//   Handle incoming messages.
+//
+// Programmer:  Dave Pugmire
+// Creation:    February  1, 2011
+//
+// ****************************************************************************
+
+void
+avtParDomICAlgorithm::ProcessMsgs(vector<MsgCommData> &msgs)
+{
+    for (int i = 0; i < msgs.size(); i++)
+    {
+        int fromRank = msgs[i].rank;
+        vector<int> &msg = msgs[i].message;
+        int msgType = msg[0];
+        
+        if (msgType == PARTICLE_TERMINATE_COUNT)
+        {
+            totalNumIntegralCurves += msg[1];
+            //debug5<<fromRank<<": RECV DECR"<<endl;
+        }
+        else
+        {
+            //Find the right entry.
+            int icID = msg[1], icCnt = msg[2];
+            pair<int,int> key(icID, icCnt);
+            
+            sendICInfoIterator i = sendICInfo.find(key);
+            if (i == sendICInfo.end())
+            {
+                //debug5<<icID<<", "<<icCnt<<" not found in sendICInfo!!"<<endl;
+                continue;
+            }
+            
+            list<int>::iterator li;
+            for (li = i->second.second.begin(); li != i->second.second.end(); li++)
+                if (*li == fromRank)
+                {
+                    i->second.second.erase(li);
+                    if (msgType == PARTICLE_USED)
+                        i->second.first++;
+                    break;
+                }
+            
+            //Everyone has reported back.
+            if (i->second.second.empty())
+            {
+                //Nobody used it
+                if (i->second.first == 0)
+                    numICChange--;
+                else if (i->second.first > 1)
+                    numICChange += (i->second.first-1);
+                sendICInfo.erase(i);
+            }
+        }
+    }
+}
 
 // ****************************************************************************
 //  Method: avtParDomICAlgorithm::HandleOOBIC

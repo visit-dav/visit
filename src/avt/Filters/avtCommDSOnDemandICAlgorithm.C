@@ -216,10 +216,6 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
     
     bool IamDone = false;
     CheckCacheVacancy(true);
-    Barrier();
-    Sleep(40);
-    HandleMessages();
-    Sleep(40);
     HandleMessages();
     
     while (numDone < nProcs)
@@ -353,18 +349,25 @@ avtCommDSOnDemandICAlgorithm::RequestDataset(DomainType &d)
 //
 // ****************************************************************************
 
-void
-avtCommDSOnDemandICAlgorithm::HandleMessages()
+bool
+avtCommDSOnDemandICAlgorithm::HandleMessages(bool checkMsgs,
+                                             bool checkDSs,
+                                             bool allowBlockAndWait)
+
 {
-    vector<MsgCommData> msgs;
-    vector<DSCommData> ds;
+    vector<MsgCommData> msgs, *msgPtr = NULL;
+    vector<DSCommData> ds, *dsPtr = NULL;
 
-    bool blockAndWait = activeICs.empty() && (numDone < nProcs);
-    //blockAndWait = false;
+    bool blockAndWait = allowBlockAndWait && (activeICs.empty() && (numDone < nProcs));
+    if (checkMsgs)
+        msgPtr = &msgs;
+    if (checkDSs)
+        dsPtr = &ds;
     
-    RecvAny(&msgs, NULL, &ds, blockAndWait);
+    RecvAny(msgPtr, NULL, dsPtr, blockAndWait);
 
-    if (!msgs.empty())
+    bool retVal = false;
+    if (checkMsgs && !msgs.empty())
     {
         for (int i = 0; i < msgs.size(); i++)
         {
@@ -394,10 +397,11 @@ avtCommDSOnDemandICAlgorithm::HandleMessages()
                 }
             }
         }
+        retVal = true;
     }
 
     //Check for incoming Datasets.
-    if (!ds.empty())
+    if (checkDSs && !ds.empty())
     {
         AddDSToDomainCache(ds);
         
@@ -410,14 +414,13 @@ avtCommDSOnDemandICAlgorithm::HandleMessages()
 
         //See if we can move any ICs into the active pool.
         list<avtIntegralCurve *> tmp;
-        debug5<<"Check activation: "<<oobICs.size()<<endl;
         while (!oobICs.empty())
         {
             avtIntegralCurve *ic = oobICs.front();
             oobICs.pop_front();
             if (GetDataset(ic->domain))
             {
-                debug5<<"Activate "<<ic->id<<" dom= "<<ic->domain<<endl;
+                //debug5<<"Activate "<<ic->id<<" dom= "<<ic->domain<<endl;
                 activeICs.push_back(ic);
                 AddRef(ic->domain);
             }
@@ -426,9 +429,12 @@ avtCommDSOnDemandICAlgorithm::HandleMessages()
         }
 
         oobICs.insert(oobICs.begin(), tmp.begin(), tmp.end());
+        retVal = true;
     }
 
     CheckPendingSendRequests();
+    
+    return retVal;
 }
 
 
@@ -783,37 +789,7 @@ avtCommDSOnDemandICAlgorithm::CheckCacheVacancy(bool makeReq)
 bool
 avtCommDSOnDemandICAlgorithm::PostStepCallback()
 {
-    vector<MsgCommData> msgs;
-    RecvAny(&msgs, NULL, NULL, false);
-
-    for (int i = 0; i < msgs.size(); i++)
-    {
-        int sendRank = msgs[i].rank;
-        vector<int> &m = msgs[i].message;
-        int msgType = m[0];
-        
-        if (msgType == DONE)
-            numDone++;
-        
-        else if (msgType == DATASET_REQUEST)
-        {
-            int dom = m[1];
-            vtkDataSet *d = GetDomain(dom);
-            if (d)
-            {
-                vector<vtkDataSet *> ds;
-                vector<DomainType> doms;
-                doms.push_back(DomainType(dom, 0));
-                ds.push_back(d);
-                SendDS(sendRank, ds, doms);
-            }
-            else
-            {
-                //Why am I being asked for a domain I don't own?
-                EXCEPTION0(ImproperUseException);
-            }
-        }
-    }
+    return HandleMessages(true, false, false);
 }
 
 #endif
