@@ -174,15 +174,17 @@ class VarElementFetcher: public ElementFetcher {
     {
       return; 
     }
-  vtkDataArray *GetVarElems(void); 
-  virtual void InterpretTextElement(std::string line, long linenum);
+    void *GetMaterialElems(const char *type,
+                           DestructorFunction &df);
+    
+    vtkDataArray *GetVarElems(void); 
+    virtual void InterpretTextElement(std::string line, long linenum);
 
   /*!
     InterpretBurgersType(void)
-    Helper function for InterpretTextElement and InterpretBinaryElement()
-    Returns the enumerated value corresponding to the burgers type detected in mVarBuffer at start of function. 
+    Helper function to change mVarBuffer[0] to the enumerated value corresponding to the burgers type detected in mVarBuffer at start of function. 
   */ 
-  int InterpretBurgersType(void); 
+  void InterpretBurgersType(void); 
 
   /*!
     Category
