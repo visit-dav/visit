@@ -173,7 +173,7 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     
     // Add burgers vector scalars to the segments mesh
-    AddMaterialToMetaData(md, "Segment_Burgers_Type", "segments", 
+    AddMaterialToMetaData(md, "Burgers type", "segments", 
                           mParallelData.mBurgersTypes.size(), 
                           mDumpfile.mBurgersTypes);
     /*!
