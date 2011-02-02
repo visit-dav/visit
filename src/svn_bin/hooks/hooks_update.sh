@@ -59,6 +59,8 @@ to hooks that you want INSTALLED must be done ONLY ON THE TRUNK. If you\n\
 require hook behavior that is specific to your branch -- which can involve\n\
 some tricky coding in the hooks -- you may want to have your changes reviewed\n\
 by another developer before committing."
+        else
+            log "...and for file \"$f\""
         fi
         continue
     fi
