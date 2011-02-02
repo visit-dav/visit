@@ -45,7 +45,9 @@ for f in ${files} ; do
     # hooks that are changed on something other than the trunk.
     if test "`echo $f | rev | cut -d'/' -f2-4 | rev`" = "src/svn_bin/hooks" \
          -a "`echo $f | cut -d'/' -f1-4`" != "trunk/src/svn_bin/hooks"; then
-        log -e "\
+        if test "$issuedInstallWarning" = "0"; then
+            issuedInstallWarning=1
+            log -e "\
 In the file, \"$f\",\n\
 you are committing a change to hooks on something other than the trunk.\n\
 If this is the result of a merge of the trunk into a branch, then you\n\
@@ -57,6 +59,9 @@ to hooks that you want INSTALLED must be done ONLY ON THE TRUNK. If you\n\
 require hook behavior that is specific to your branch -- which can involve\n\
 some tricky coding in the hooks -- you may want to have your changes reviewed\n\
 by another developer before committing."
+        else
+            log "...and also for file \"$f\""
+        fi
         continue
     fi
 
