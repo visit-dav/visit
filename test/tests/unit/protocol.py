@@ -13,5 +13,8 @@ tapp = os.path.join(visitTopDir,"src","bin","visitprotocol")
 subp = subprocess.Popen(tapp, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 (outdata,errdata) = subp.communicate()
 subp.wait()
-TestText("protocol", outdata)
-Exit()
+if subp.returncode == 0:
+    excode = 111
+else:
+    excode = 113
+Exit(excode)
