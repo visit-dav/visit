@@ -703,6 +703,10 @@ TimingsManager::DumpTimings(void)
 //    Hank Childs, Fri Sep 14 13:01:08 PDT 2007
 //    Changed to reflect new handling of values.
 //
+//    Hank Childs, Thu Feb  3 07:29:24 PST 2011
+//    Change the string from "Unknown", since it was confusing folks looking
+//    at the files.
+//
 // ****************************************************************************
 
 void
@@ -713,7 +717,7 @@ TimingsManager::StopAllUnstoppedTimers()
     //
     for (int i = 0 ; i < visitTimer->GetNValues(); i++)
         if (usedEntry[i])
-            visitTimer->StopTimer(i, "Unknown");
+            visitTimer->StopTimer(i, "A StartTimer call was unmatched!  Elapsed time since StartTimer: ");
 }
 
 // ****************************************************************************
