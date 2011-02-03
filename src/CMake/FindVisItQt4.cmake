@@ -45,6 +45,10 @@
 #   Kathleen Bonnell, Thu Dec 2 15:12:44 MST 2010
 #   Install moc on Windows.  Add all include dirs on Windows.
 # 
+#   Kathleen Bonnell, Thu Feb 3 08:21:18 PST 2010
+#   Allow for using installed QT on Windows (follow same path as on *nix).
+#   Simplified code when using windowsbuild version of QT.
+#
 #****************************************************************************/
 
 #
@@ -53,7 +57,19 @@
 #
 
 IF(NOT "${QT_BIN}" MATCHES "OFF")
-  IF (NOT WIN32)
+  IF(WIN32)
+    IF(VISIT_MSVC_VERSION AND EXISTS ${QT_DIR}/lib/${VISIT_MSVC_VERSION})
+      # using VisIt's windowsbuild Qt
+      SET(USE_CMAKE_FIND OFF)
+    ELSE()
+      # using other Qt
+      SET(USE_CMAKE_FIND ON)
+    ENDIF()
+  ELSE()
+    SET(USE_CMAKE_FIND ON)
+  ENDIF(WIN32)
+
+  IF (USE_CMAKE_FIND)
     # Make sure the VISIT_QT_BIN path is valid & qmake exists.
     FIND_PROGRAM(VISIT_LOC_QMAKE_EXE NAMES qmake qmake4 qmake-qt4
                  PATHS
@@ -76,78 +92,34 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
     IF(NOT QT_FOUND)
       MESSAGE(FATAL_ERROR "Qt4 is required to build VisIt.")
     ENDIF(NOT QT_FOUND)
-  ELSE (NOT WIN32)
+  ELSE (USE_CMAKE_FIND)
     # MESSAGE("QT_DIR = ${QT_DIR}")
     SET(QT_INCLUDE_DIR ${QT_DIR}/include)
-    IF(VISIT_MSVC_VERSION AND EXISTS ${QT_DIR}/lib/${VISIT_MSVC_VERSION})
-      SET(QT_SHAREDLIB_DIR ${QT_DIR}/lib/${VISIT_MSVC_VERSION}
-          CACHE PATH "Qt library dir" FORCE )
-      SET(QT_LIBRARY_DIR ${QT_DIR}/lib/${VISIT_MSVC_VERSION}
-          CACHE PATH "Qt library dir" FORCE )
-      SET(QT_BINARY_DIR  ${QT_DIR}/lib/${VISIT_MSVC_VERSION}
-          CACHE INTERNAL "" FORCE )
-      ELSEIF(EXISTS ${QT_DIR}/bin)
-        # Installed QT now puts dll's in bin, but lib's in lib, and one might need
-        # to look in both places, with dll prefered.
-        SET(QT_SHAREDLIB_DIR ${QT_DIR}/bin CACHE PATH "Qt shared library dir"
-            FORCE )
-        SET(QT_LIBRARY_DIR ${QT_DIR}/lib CACHE PATH "Qt library dir" FORCE )
-        SET(QT_BINARY_DIR  ${QT_DIR}/bin CACHE INTERNAL "" FORCE )
-      ELSE()
-        MESSAGE(SEND_ERROR "Neither ${QT_DIR}/lib/${VISIT_MSVC_VERSION} nor "
-                           "${QT_DIR}/bin exists.")
-  ENDIF()
+    SET(QT_LIBRARY_DIR ${QT_DIR}/lib/${VISIT_MSVC_VERSION}
+        CACHE PATH "Qt library dir" FORCE )
+    SET(QT_BINARY_DIR  ${QT_DIR}/lib/${VISIT_MSVC_VERSION}
+        CACHE INTERNAL "" FORCE )
 
-  SET(QT_MOC_EXECUTABLE  ${QT_BINARY_DIR}/moc.exe)
-  SET(QT_INCLUDES ${QT_INCLUDE_DIR})
+    SET(QT_MOC_EXECUTABLE  ${QT_BINARY_DIR}/moc.exe)
+    SET(QT_INCLUDES ${QT_INCLUDE_DIR})
     
-  # These might be dlls or libs
-  SET(QT_WIN_LIBS QtDesigner QtDesignerComponents QtSql QtSvg Qt QtTest 
-                  QtMain QtAssistantClient QtHelp QtXMLPatterns QtUiTools)
-  FOREACH(QTWINLIB ${QT_WIN_LIBS})
-    STRING(TOUPPER ${QTWINLIB} upper_qtwinlib)
-    SET(QT_${upper_qtwinlib}_FOUND 1)
-    SET(QT_${upper_qtwinlib}_INCLUDE_DIR ${QT_INCLUDE_DIR}/${QTWINLIB} 
-        CACHE PATH "The Qt ${QTWINLIB} include dir" FORCE)
-    IF(EXISTS ${QT_${upper_qtwinlib}_INCLUDE_DIR})
-      SET(QT_INCLUDES ${QT_INCLUDES} ${QT_${upper_qtwinlib}_INCLUDE_DIR})
-    ENDIF()
-    IF (EXISTS ${QT_SHAREDLIB_DIR}/${QTWINLIB}4.dll)
-      SET(QT_${upper_qtwinlib}_LIBRARY 
-          ${QT_SHAREDLIB_DIR}/${QTWINLIB}4.dll CACHE STRING 
-          "The Qt ${QTWINLIB} library" FORCE)
-      SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE
-          ${QT_SHAREDLIB_DIR}/${QTWINLIB}4.dll)
-    ELSEIF (EXISTS ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
-      SET(QT_${upper_qtwinlib}_LIBRARY
-          ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib CACHE STRING
-          "The Qt ${QTWINLIB} library" FORCE)
-      SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE
-          ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
-    ELSE ()
-      SET(QT_${upper_qtwinlib}_LIBRARY
-          ${QT_LIBRARY_DIR}/${QTWINLIB}.lib CACHE STRING
-          "The Qt ${QTWINLIB} library" FORCE)
-      SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE
-          ${QT_LIBRARY_DIR}/${QTWINLIB}.lib)
-    ENDIF ()
-  ENDFOREACH(QTWINLIB)
-
-  # These are just libs, or the distributed dll is munged.
-  SET(QT_WIN_LIBS QtCore QtGui QtOpenGL QtNetwork QtXml)
-  FOREACH(QTWINLIB ${QT_WIN_LIBS})
-    STRING(TOUPPER ${QTWINLIB} upper_qtwinlib)
-    SET(QT_${upper_qtwinlib}_FOUND 1)
-    SET(QT_${upper_qtwinlib}_INCLUDE_DIR ${QT_INCLUDE_DIR}/${QTWINLIB}
-        CACHE PATH "The Qt ${QTWINLIB} include dir" FORCE)        
-    IF(EXISTS ${QT_${upper_qtwinlib}_INCLUDE_DIR})
-      SET(QT_INCLUDES ${QT_INCLUDES} ${QT_${upper_qtwinlib}_INCLUDE_DIR})
-    ENDIF()        
-    IF (EXISTS ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
-      SET(QT_${upper_qtwinlib}_LIBRARY ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib
-          CACHE STRING "The Qt ${QTWINLIB} library" FORCE)
-      SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE
-          ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
+    SET(QT_WIN_LIBS QtDesigner QtDesignerComponents QtSql QtSvg Qt QtTest 
+                    QtMain QtAssistantClient QtHelp QtXMLPatterns QtUiTools
+                    QtCore QtGui QtOpenGL QtNetwork QtXml)
+    FOREACH(QTWINLIB ${QT_WIN_LIBS})
+      STRING(TOUPPER ${QTWINLIB} upper_qtwinlib)
+      SET(QT_${upper_qtwinlib}_FOUND 1)
+      SET(QT_${upper_qtwinlib}_INCLUDE_DIR ${QT_INCLUDE_DIR}/${QTWINLIB} 
+          CACHE PATH "The Qt ${QTWINLIB} include dir" FORCE)
+      IF(EXISTS ${QT_${upper_qtwinlib}_INCLUDE_DIR})
+        SET(QT_INCLUDES ${QT_INCLUDES} ${QT_${upper_qtwinlib}_INCLUDE_DIR})
+      ENDIF()
+      IF (EXISTS ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
+        SET(QT_${upper_qtwinlib}_LIBRARY
+            ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib CACHE STRING
+            "The Qt ${QTWINLIB} library" FORCE)
+        SET(QT_${upper_qtwinlib}_LIBRARY_RELEASE
+            ${QT_LIBRARY_DIR}/${QTWINLIB}4.lib)
       ELSE ()
         SET(QT_${upper_qtwinlib}_LIBRARY
             ${QT_LIBRARY_DIR}/${QTWINLIB}.lib CACHE STRING
@@ -156,7 +128,7 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
             ${QT_LIBRARY_DIR}/${QTWINLIB}.lib)
       ENDIF ()
     ENDFOREACH(QTWINLIB)
-  ENDIF (NOT WIN32)
+  ENDIF (USE_CMAKE_FIND)
 
   #
   # If we are using cocoa we need to define VISIT_MAC_NO_CARBON
