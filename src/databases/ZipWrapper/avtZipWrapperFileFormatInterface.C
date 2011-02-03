@@ -140,6 +140,9 @@ class avtZWFileFormatInterface : public avtFileFormatInterface
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Thu Feb  3 11:40:18 PST 2011
+//    Fix problem with virtual methods not matching signature of base type.
+//
 // ****************************************************************************
 class avtZipWrapperFileFormat : public avtMTMDFileFormat
 {
@@ -155,9 +158,9 @@ class avtZipWrapperFileFormat : public avtMTMDFileFormat
 
     // Methods overridden to ensure this dummied up format object behaves like
     // the real format object it parallels.
-    bool                   HasInvariantMetaData()
+    bool                   HasInvariantMetaData() const
                                { return realFileFormat->HasInvariantMetaData(); };
-    bool                   HasInvariantSIL()
+    bool                   HasInvariantSIL() const
                                { return realFileFormat->HasInvariantSIL(); };
     bool                   CanCacheVariable(const char *v)
                                { return realFileFormat->CanCacheVariable(v); };
