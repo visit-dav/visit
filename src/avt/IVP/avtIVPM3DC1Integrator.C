@@ -607,7 +607,7 @@ avtIVPM3DC1Integrator::getBfield1(const avtIVPField* field,
   int    element;
 
   // FIX THIS CODE - It would be preferable to use a dynamic cast but
-  // because the field is passd down a const it can not be used.
+  // because the field is passed down a const it can not be used.
   avtIVPM3DC1Field *m3dField = (avtIVPM3DC1Field *)(field);
 
   /* Find the element containing the point x; get local coords xi,eta */
@@ -685,7 +685,7 @@ avtIVPM3DC1Integrator::getBfield2(const avtIVPField* field,
   int    element;
 
   // FIX THIS CODE - It would be preferable to use a dynamic cast but
-  // because the field is passd down as a const it can not be used.
+  // because the field is passed down as a const it can not be used.
   avtIVPM3DC1Field *m3dField = (avtIVPM3DC1Field *)(field);
 
   /* Find the element containing the point x; get local coords xi,eta */

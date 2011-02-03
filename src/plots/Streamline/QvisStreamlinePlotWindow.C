@@ -546,9 +546,9 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
-    integrationType->addItem(tr("M3D-C1 2D Integrator (M3D code only)"));
-    integrationType->addItem(tr("M3D-C1 3D Integrator (M3D code only)"));
-    integrationType->addItem(tr("NIMROD Integrator (NIMROD code only)"));
+    integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D data only)"));
+    integrationType->addItem(tr("M3D-C1 3D Integrator (M3D-C1 3D data only)"));
+    integrationType->addItem(tr("NIMROD Integrator (NIMROD data only)"));
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationType, 0,1);

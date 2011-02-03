@@ -213,9 +213,9 @@ QvisPoincarePlotWindow::CreateWindowContents()
     integrationTypeCombo = new QComboBox(integrationGroup);
     integrationTypeCombo->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationTypeCombo->addItem(tr("Adams-Bashforth (Multi-step)"));
-    integrationTypeCombo->addItem(tr("M3D-C1 2D Integrator"));
-    integrationTypeCombo->addItem(tr("M3D-C1 3D Integrator"));
-    integrationTypeCombo->addItem(tr("NIMROD Integrator"));
+    integrationTypeCombo->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D data only)"));
+    integrationTypeCombo->addItem(tr("M3D-C1 3D Integrator (M3D-C1 3D data only)"));
+    integrationTypeCombo->addItem(tr("NIMROD Integrator (NIMROD data only)"));
     connect(integrationTypeCombo, SIGNAL(activated(int)),
            this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationTypeCombo, 0, 1);
