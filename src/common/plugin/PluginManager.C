@@ -628,6 +628,10 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 //    I added code to catch InvalidPluginException so an invalid libI cannot
 //    take down a program. Now, we just skip those plugins.
 //
+//    Kathleen Bonnell, Thu Feb  3 13:22:56 PST 2011
+//    Do the find for "_ser" or "_par" only on the portion of the plugin name 
+//    after the last slash.  Use VISIT_SLASH_CHAR instead of '/'.
+//
 // ****************************************************************************
 
 void
@@ -751,10 +755,10 @@ PluginManager::ReadPluginInfo()
         {
             string pluginFile(pluginsWithWrongVersion[i]);
             string ext(VISIT_PLUGIN_EXTENSION);
-            int slashPos = pluginFile.rfind("/");
+            int slashPos = pluginFile.rfind(VISIT_SLASH_CHAR);
             string dirname = pluginFile.substr(0, slashPos);
-            int suffixLen = (pluginFile.find("_ser") != -1 ||
-                             pluginFile.find("_par") != -1) ? 4 : 0;
+            int suffixLen = (pluginFile.substr(slashPos).find("_ser") != -1 ||
+                             pluginFile.substr(slashPos).find("_par") != -1) ? 4 : 0;
             int len = pluginFile.size() - slashPos - suffixLen - 5 -
                 managerName.size() - ext.size();
             string pluginPrefix(pluginFile.substr(slashPos + 5, len));
@@ -785,10 +789,10 @@ PluginManager::ReadPluginInfo()
         {
             string pluginFile(pluginsWithNoVersion[i]);
             string ext(VISIT_PLUGIN_EXTENSION);
-            int slashPos = pluginFile.rfind("/");
+            int slashPos = pluginFile.rfind(VISIT_SLASH_CHAR);
             string dirname = pluginFile.substr(0, slashPos);
-            int suffixLen = (pluginFile.find("_ser") != -1 ||
-                             pluginFile.find("_par") != -1) ? 4 : 0;
+            int suffixLen = (pluginFile.substr(slashPos).find("_ser") != -1 ||
+                             pluginFile.substr(slashPos).find("_par") != -1) ? 4 : 0;
             int len = pluginFile.size() - slashPos - suffixLen - 5 -
                 managerName.size() - ext.size();
             string pluginPrefix(pluginFile.substr(slashPos + 5, len));
@@ -1589,6 +1593,10 @@ PluginManager::PluginOpen(const string &pluginFile)
 //   Changed "/" to VISIT_SLASH_CHAR so code will work correctly on windows.
 //   Also changed symbol to symbolName in call to GetProcAddress.
 //   
+//    Kathleen Bonnell, Thu Feb  3 13:22:56 PST 2011
+//    Do the find for "_ser" or "_par" only on the portion of the plugin name 
+//    after the last slash. 
+//
 // ****************************************************************************
 
 void *
@@ -1611,8 +1619,8 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
     {
         string ext(VISIT_PLUGIN_EXTENSION);
         int slashPos = openPlugin.rfind(VISIT_SLASH_CHAR);
-        int suffixLen = (openPlugin.find("_ser") != -1 ||
-                         openPlugin.find("_par") != -1) ? 4 : 0;
+        int suffixLen = (openPlugin.substr(slashPos).find("_ser") != -1 ||
+                         openPlugin.substr(slashPos).find("_par") != -1) ? 4 : 0;
         int len = openPlugin.size() - slashPos - suffixLen - 5 -
                   managerName.size() - ext.size();
         string pluginPrefix(openPlugin.substr(slashPos + 5, len));
