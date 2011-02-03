@@ -1918,6 +1918,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Kathleen Bonnell, Thu Feb  3 11:24:17 PST 2011
+//    PickAtts plotBounds now stored as a vector.
+//
 // ****************************************************************************
 
 bool
@@ -2012,10 +2015,15 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         if (dext)
         {
             int dim = plot->GetSpatialDimension();
-            double pb[6] = { 0., 0., 0., 0., 0., 0.};
-            for (int i = 0; i < 2*dim; i++)
+            doubleVector pb;
+            for (int i = 0; i < 2*dim; ++i)
             {
-                pb[i] = dext[i];
+                pb.push_back(dext[i]);
+            }
+            // need 6
+            for (int i = 2*dim; i < 6; ++i)
+            {
+                pb.push_back(0.);
             }
             pickAtts->SetPlotBounds(pb);
             delete [] dext;

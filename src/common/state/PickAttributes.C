@@ -162,12 +162,6 @@ void PickAttributes::Init()
     nodePoint[0] = 0;
     nodePoint[1] = 0;
     nodePoint[2] = 0;
-    plotBounds[0] = 0;
-    plotBounds[1] = 0;
-    plotBounds[2] = 0;
-    plotBounds[3] = 0;
-    plotBounds[4] = 0;
-    plotBounds[5] = 0;
     rayPoint1[0] = 0;
     rayPoint1[1] = 0;
     rayPoint1[2] = 0;
@@ -255,9 +249,7 @@ void PickAttributes::Copy(const PickAttributes &obj)
     nodePoint[1] = obj.nodePoint[1];
     nodePoint[2] = obj.nodePoint[2];
 
-    for(int i = 0; i < 6; ++i)
-        plotBounds[i] = obj.plotBounds[i];
-
+    plotBounds = obj.plotBounds;
     rayPoint1[0] = obj.rayPoint1[0];
     rayPoint1[1] = obj.rayPoint1[1];
     rayPoint1[2] = obj.rayPoint1[2];
@@ -496,11 +488,6 @@ PickAttributes::operator == (const PickAttributes &obj) const
     for(int i = 0; i < 3 && nodePoint_equal; ++i)
         nodePoint_equal = (nodePoint[i] == obj.nodePoint[i]);
 
-    // Compare the plotBounds arrays.
-    bool plotBounds_equal = true;
-    for(int i = 0; i < 6 && plotBounds_equal; ++i)
-        plotBounds_equal = (plotBounds[i] == obj.plotBounds[i]);
-
     // Compare the rayPoint1 arrays.
     bool rayPoint1_equal = true;
     for(int i = 0; i < 3 && rayPoint1_equal; ++i)
@@ -544,7 +531,7 @@ PickAttributes::operator == (const PickAttributes &obj) const
             pickPoint_equal &&
             cellPoint_equal &&
             nodePoint_equal &&
-            plotBounds_equal &&
+            (plotBounds == obj.plotBounds) &&
             rayPoint1_equal &&
             rayPoint2_equal &&
             (meshInfo == obj.meshInfo) &&
@@ -754,7 +741,7 @@ PickAttributes::SelectAll()
     Select(ID_pickPoint,                   (void *)pickPoint, 3);
     Select(ID_cellPoint,                   (void *)cellPoint, 3);
     Select(ID_nodePoint,                   (void *)nodePoint, 3);
-    Select(ID_plotBounds,                  (void *)plotBounds, 6);
+    Select(ID_plotBounds,                  (void *)&plotBounds);
     Select(ID_rayPoint1,                   (void *)rayPoint1, 3);
     Select(ID_rayPoint2,                   (void *)rayPoint2, 3);
     Select(ID_meshInfo,                    (void *)&meshInfo);
@@ -1220,11 +1207,10 @@ PickAttributes::SetNodePoint(const double *nodePoint_)
 }
 
 void
-PickAttributes::SetPlotBounds(const double *plotBounds_)
+PickAttributes::SetPlotBounds(const doubleVector &plotBounds_)
 {
-    for(int i = 0; i < 6; ++i)
-        plotBounds[i] = plotBounds_[i];
-    Select(ID_plotBounds, (void *)plotBounds, 6);
+    plotBounds = plotBounds_;
+    Select(ID_plotBounds, (void *)&plotBounds);
 }
 
 void
@@ -1715,13 +1701,13 @@ PickAttributes::GetNodePoint()
     return nodePoint;
 }
 
-const double *
+const doubleVector &
 PickAttributes::GetPlotBounds() const
 {
     return plotBounds;
 }
 
-double *
+doubleVector &
 PickAttributes::GetPlotBounds()
 {
     return plotBounds;
@@ -2148,7 +2134,7 @@ PickAttributes::SelectNodePoint()
 void
 PickAttributes::SelectPlotBounds()
 {
-    Select(ID_plotBounds, (void *)plotBounds, 6);
+    Select(ID_plotBounds, (void *)&plotBounds);
 }
 
 void
@@ -2594,7 +2580,7 @@ PickAttributes::GetFieldType(int index) const
     case ID_pickPoint:                   return FieldType_doubleArray;
     case ID_cellPoint:                   return FieldType_doubleArray;
     case ID_nodePoint:                   return FieldType_doubleArray;
-    case ID_plotBounds:                  return FieldType_doubleArray;
+    case ID_plotBounds:                  return FieldType_doubleVector;
     case ID_rayPoint1:                   return FieldType_doubleArray;
     case ID_rayPoint2:                   return FieldType_doubleArray;
     case ID_meshInfo:                    return FieldType_string;
@@ -2685,7 +2671,7 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_pickPoint:                   return "doubleArray";
     case ID_cellPoint:                   return "doubleArray";
     case ID_nodePoint:                   return "doubleArray";
-    case ID_plotBounds:                  return "doubleArray";
+    case ID_plotBounds:                  return "doubleVector";
     case ID_rayPoint1:                   return "doubleArray";
     case ID_rayPoint2:                   return "doubleArray";
     case ID_meshInfo:                    return "string";
@@ -2887,12 +2873,7 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         break;
     case ID_plotBounds:
         {  // new scope
-        // Compare the plotBounds arrays.
-        bool plotBounds_equal = true;
-        for(int i = 0; i < 6 && plotBounds_equal; ++i)
-            plotBounds_equal = (plotBounds[i] == obj.plotBounds[i]);
-
-        retval = plotBounds_equal;
+        retval = (plotBounds == obj.plotBounds);
         }
         break;
     case ID_rayPoint1:
@@ -3794,6 +3775,9 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
 //   Brad Whitlock, Tue Jan 20 16:42:30 PST 2009
 //   Changed to using local CoordinateType enum.
 //
+//   Kathleen Bonnell, Thu Feb  3 11:20:11 PST 2011
+//   plotBounds changed to a vetor.
+//
 // ****************************************************************************
 
 void
@@ -3835,9 +3819,8 @@ PickAttributes::PrepareForNewPick()
         realIncidentElements.clear();
 
     meshInfo = "";
-    for (int i = 0; i < 6; ++i)
-        plotBounds[i] = 0.;
-
+    if (!plotBounds.empty())
+        plotBounds.clear();
     ClearVarInfos();
 
     if (!invalidVars.empty())
