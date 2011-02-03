@@ -872,7 +872,9 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
   }
 
   // Read in linear flag and ntor an an int
-  else if( variable == "linear" || variable == "ntor"   )
+  else if( variable == "eqsubtract" ||
+           variable == "linear" ||
+           variable == "ntor"   )
   {
       int intVal;
       if ( ! ReadAttribute( rootID, variable.c_str(), &intVal ) )
@@ -1318,18 +1320,47 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
     vtkDataArray* vtkVarF0;
     vtkDataArray* vtkVarPsi0;
+    vtkDataArray* vtkVarI0;
     
     vtkDataArray* vtkVarF;
     vtkDataArray* vtkVarF_i;
     vtkDataArray* vtkVarPsi;
     vtkDataArray* vtkVarPsi_i;
-
     vtkDataArray* vtkVarI;
-    vtkDataArray* vtkVarPhi;
+
+    // Get the field variable to be interpolated on the linear mesh.
+    if ( ! ReadAttribute( rootID, "bzero", &(m3dField.bzero) ) )
+      EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
+                  "Attribute 'bzero' was not found or was the wrong type." );
+      
+    if ( ! ReadAttribute( rootID, "rzero", &(m3dField.rzero) ) )
+      EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
+                  "Attribute 'rzero' was not found or was the wrong type." );
+
+    m3dField.F0 = -m3dField.bzero * m3dField.rzero;
+
+    if ( ! ReadAttribute( rootID, "eqsubtract", &(m3dField.eqsubtract) ) )
+      EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
+                  "Attribute 'eqsubtract' was not found or was the wrong type." );
+
+    // Get the equalibrium if was subtracted out.
+    if( m3dField.eqsubtract )
+    {
+      vtkVarF0 = GetFieldVar( timestate, "equilibrium/f");  
+      m3dField.f0 = (float*) vtkVarF0->GetVoidPointer(0);
+      
+      vtkVarPsi0 = GetFieldVar( timestate, "equilibrium/psi");
+      m3dField.psi0 = (float*) vtkVarPsi0->GetVoidPointer(0);
+
+      if( element_dimension == 3 )
+      {
+        vtkVarI0 = GetFieldVar( timestate, "equilibrium/I");
+        m3dField.I0 = (float*) vtkVarPsi0->GetVoidPointer(0);
+      }
+    }
 
     if( element_dimension == 2 )
     {
-      // Get the field variable to be interpolated on the linear mesh.
       if ( ! ReadAttribute( rootID, "linear", &(m3dField.linflag) ) )
         EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
                     "Attribute 'linear' was not found or was the wrong type." );
@@ -1338,52 +1369,36 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
         EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
                     "Attribute 'ntor' was not found or was the wrong type." );
       
-      if ( ! ReadAttribute( rootID, "bzero", &(m3dField.bzero) ) )
-        EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                    "Attribute 'bzero' was not found or was the wrong type." );
-      
-      if ( ! ReadAttribute( rootID, "rzero", &(m3dField.rzero) ) )
-        EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
-                    "Attribute 'rzero' was not found or was the wrong type." );
-
-      m3dField.F0 = -m3dField.bzero * m3dField.rzero;
-      
-      H5Gclose( rootID );
-    
       // Variables on the mesh - N elements x 20
-      vtkVarF0 = GetFieldVar( timestate, "equilibrium/f");  
-      m3dField.f0 = (float*) vtkVarF0->GetVoidPointer(0);
-
-      vtkVarPsi0 = GetFieldVar( timestate, "equilibrium/psi");
-      m3dField.psi0 = (float*) vtkVarPsi0->GetVoidPointer(0);
-    
-      vtkVarF = GetFieldVar( timestate, "f");
-      m3dField.fnr = (float*) vtkVarF->GetVoidPointer(0);
-
-      vtkVarF_i = GetFieldVar( timestate, "f_i");
-      m3dField.fni = (float*) vtkVarF_i->GetVoidPointer(0);
-
-      vtkVarPsi = GetFieldVar( timestate, "psi");
-      m3dField.psinr = (float*) vtkVarPsi->GetVoidPointer(0);
-
-      vtkVarPsi_i = GetFieldVar( timestate, "psi_i");
-      m3dField.psini = (float*) vtkVarPsi_i->GetVoidPointer(0);
+      if( m3dField.linflag )
+      {
+        vtkVarF = GetFieldVar( timestate, "f");
+        m3dField.fnr = (float*) vtkVarF->GetVoidPointer(0);
+        
+        vtkVarPsi = GetFieldVar( timestate, "psi");
+        m3dField.psinr = (float*) vtkVarPsi->GetVoidPointer(0);
+        
+        vtkVarF_i = GetFieldVar( timestate, "f_i");
+        m3dField.fni = (float*) vtkVarF_i->GetVoidPointer(0);
+        
+        vtkVarPsi_i = GetFieldVar( timestate, "psi_i");
+        m3dField.psini = (float*) vtkVarPsi_i->GetVoidPointer(0);
+      }
     }
     else //if( element_dimension == 3 )
     {
       vtkVarF = GetFieldVar( timestate, "f");
       m3dField.f = (float*) vtkVarF->GetVoidPointer(0);
-
+      
       vtkVarPsi = GetFieldVar( timestate, "psi");
       m3dField.psi = (float*) vtkVarPsi->GetVoidPointer(0);
-
-      vtkVarPhi = GetFieldVar( timestate, "phi");
-      m3dField.phi = (float*) vtkVarPhi->GetVoidPointer(0);
 
       vtkVarI = GetFieldVar( timestate, "I");
       m3dField.I = (float*) vtkVarI->GetVoidPointer(0);
     }
 
+    H5Gclose( rootID );
+    
     // Get the value at the node of each element on the linear mesh.
     int nvalues;
 
@@ -1516,37 +1531,53 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
     {
       m3dField.f0 = 0;
       m3dField.psi0 = 0;    
+
       m3dField.fnr = 0;
       m3dField.fni = 0;
       m3dField.psinr = 0;
       m3dField.psini = 0;
 
-      vtkVarF0->Delete();
-      vtkVarPsi0->Delete();
-   
-      vtkVarF->Delete();
-      vtkVarF_i->Delete();
-      vtkVarPsi->Delete();
-      vtkVarPsi_i->Delete();
+      if( m3dField.eqsubtract )
+      {
+        vtkVarF0->Delete();
+        vtkVarPsi0->Delete();
+      }
+
+      if( m3dField.linflag )
+      {
+        vtkVarF->Delete();
+        vtkVarF_i->Delete();
+        vtkVarPsi->Delete();
+        vtkVarPsi_i->Delete();
+      }
     }
     else //if( element_dimension == 3 )
     {
+      m3dField.f0   = 0;
+      m3dField.psi0 = 0;    
+      m3dField.I0   = 0;
+
+      m3dField.f    = 0;
+      m3dField.psi  = 0;    
+      m3dField.I    = 0;
+
+      if( m3dField.eqsubtract )
+      {
+        vtkVarF0->Delete();
+        vtkVarPsi0->Delete();
+        vtkVarI0->Delete();
+      }
+
       vtkVarF->Delete();
       vtkVarPsi->Delete();
-      vtkVarPhi->Delete();
       vtkVarI->Delete();
-
-      m3dField.f   = 0;
-      m3dField.psi = 0;    
-      m3dField.phi = 0;    
-      m3dField.I   = 0;
     }
 
     vtkPts->Delete();
 
     // Make the original data location is used.
     m_dataLocation = dataLocation;
-  
+
     return var;
   }
 
@@ -1825,8 +1856,17 @@ avtM3DC1FileFormat::LoadFile()
     }
 
     m_scalarVarNames.push_back("header/nplanes");
+    // Read in eqsubtract, linear flag and ntor
+    int eqsubtract;
+    if ( ! ReadAttribute( rootID, "eqsubtract", &eqsubtract ) )
+    {
+        H5Gclose(rootID);
+        H5Fclose(m_fileID);
+        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'eqsubtract' was not found or was the wrong type." );
+    }
+    
+    m_scalarVarNames.push_back("header/eqsubtract");
 
-    // Read in linear flag and ntor
     int linear;
     if ( ! ReadAttribute( rootID, "linear", &linear ) )
     {

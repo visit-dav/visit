@@ -2401,6 +2401,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         // Which is ignored.
 
         // Single variables stored as attributes on the header
+        out_dr->AddSecondaryVariable("hidden/header/eqsubtract");// /eqsubtract
         out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
         out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
         
@@ -2429,13 +2430,18 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         // Single variables stored as attributes on the header
         out_dr->AddSecondaryVariable("hidden/header/nplanes"); // /nplanes
 
+        out_dr->AddSecondaryVariable("hidden/header/eqsubtract");// /eqsubtract
+
         // The mesh - N elements x 9
         out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
 
         // Variables on the mesh - N elements x 80
+        out_dr->AddSecondaryVariable("hidden/equilibrium/f");  // /equilibrium/fields/f
+        out_dr->AddSecondaryVariable("hidden/equilibrium/psi");// /equilibrium/fields/psi
+        out_dr->AddSecondaryVariable("hidden/equilibrium/I");  // /equilibrium/fields/I
+
         out_dr->AddSecondaryVariable("hidden/f");    // /time_XXX/fields/f
         out_dr->AddSecondaryVariable("hidden/psi");  // /time_XXX/fields/psi
-        out_dr->AddSecondaryVariable("hidden/phi");  // /time_XXX/fields/phi
         out_dr->AddSecondaryVariable("hidden/I");    // /time_XXX/fields/I
     }
     else if ( integrationType == STREAMLINE_INTEGRATE_NIMROD_INTEGRATOR )
