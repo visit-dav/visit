@@ -169,6 +169,9 @@ avtSamplePointCommunicator::SetImagePartition(avtImagePartition *ip)
 //    Hank Childs, Tue Jan 13 14:28:28 PST 2009
 //    Tell the output cell list whether or not it should jitter.
 //
+//    Hank Childs, Thu Feb  3 09:03:05 PST 2011
+//    Add timings entries.
+//
 // ****************************************************************************
 
 void
@@ -183,7 +186,9 @@ avtSamplePointCommunicator::Execute(void)
     // We are typically still waiting for the sample point extractors, so put
     // in a barrier so this filter can be absolved of blame.
     //
+    int t1 = visitTimer->StartTimer();
     Barrier();
+    visitTimer->StopTimer(t1, "Waiting for other processors to catch up");
     UpdateProgress(currentStage++, nProgressStages);
 
     if (imagePartition == NULL)
@@ -191,7 +196,9 @@ avtSamplePointCommunicator::Execute(void)
         EXCEPTION0(ImproperUseException);
     }
 
+    int t2 = visitTimer->StartTimer();
     EstablishImagePartitionBoundaries();
+    visitTimer->StopTimer(t2, "Establishing partition boundaries");
     UpdateProgress(currentStage++, nProgressStages);
 
     avtVolume *involume      = GetTypedInput()->GetVolume();
@@ -202,34 +209,41 @@ avtSamplePointCommunicator::Execute(void)
     //
     // Have the rays serialize their sample points.
     //
+    int t3 = visitTimer->StartTimer();
     int   *out_points_count = new int[numProcs];
     char **out_points_msgs  = new char*[numProcs];
     char *tmpcat1 = involume->ConstructMessages(imagePartition,
                                             out_points_msgs, out_points_count);
     UpdateProgress(currentStage++, nProgressStages);
+    visitTimer->StopTimer(t3, "Building sample messages");
 
     //
     // Have the cells serialize themselves.
     //
+    int t4 = visitTimer->StartTimer();
     avtCellList *incl  = GetTypedInput()->GetCellList();
     int   *out_cells_count = new int[numProcs];
     char **out_cells_msgs  = new char*[numProcs];
     char *tmpcat2 = incl->ConstructMessages(imagePartition, out_cells_msgs,
                                             out_cells_count);
     UpdateProgress(currentStage++, nProgressStages);
+    visitTimer->StopTimer(t4, "Building cell messages");
 
     //
     // Determine which cells/points are going where and distribute them in a
     // way that minimizes communication.
     //
+    int t5 = visitTimer->StartTimer();
     DetermineImagePartitionAssignments(out_points_count, out_cells_count);
     UpdateProgress(currentStage++, nProgressStages);
+    visitTimer->StopTimer(t5, "Assigning image portions to processors");
 
     //
     // The messages are set up for image partition assignments of 0->0, 1->1,
     // etc.  Rework them so that they can be sent in to our CommunicateMessage
     // routines.
     //
+    int t6 = visitTimer->StartTimer();
     char *pointsOnThisProc;
     int   numPointsOnThisProc;
     char *concat1 = MutateMessagesByAssignment(out_points_msgs,
@@ -237,7 +251,9 @@ avtSamplePointCommunicator::Execute(void)
     delete [] tmpcat1; // No longer needed.  out_points_msgs contains the
                        // same info with the proper ordering.
     UpdateProgress(currentStage++, nProgressStages);
+    visitTimer->StopTimer(t6, "Preparing sample messages to send");
 
+    int t7 = visitTimer->StartTimer();
     char *cellsOnThisProc;
     int   numCellsOnThisProc;
     char *concat2 = MutateMessagesByAssignment(out_cells_msgs,
@@ -245,10 +261,12 @@ avtSamplePointCommunicator::Execute(void)
     delete [] tmpcat2; // No longer needed.  out_cells_msgs contains the
                        // same info with the proper ordering.
     UpdateProgress(currentStage++, nProgressStages);
+    visitTimer->StopTimer(t7, "Preparing cell messages to send");
 
     //
     // Send the sample points.
     //
+    int t8 = visitTimer->StartTimer();
     int   *in_points_count  = new int[numProcs];
     char **in_points_msgs   = new char*[numProcs];
     char *concat3 = CommunicateMessages(out_points_msgs, out_points_count,
@@ -257,10 +275,12 @@ avtSamplePointCommunicator::Execute(void)
     delete [] out_points_count;
     delete [] out_points_msgs;
     UpdateProgress(currentStage++, nProgressStages);
+    visitTimer->StopTimer(t8, "Sending sample points");
 
     //
     // Send the cells.
     //
+    int t9 = visitTimer->StartTimer();
     int   *in_cells_count  = new int[numProcs];
     char **in_cells_msgs   = new char*[numProcs];
     char *concat4 = CommunicateMessages(out_cells_msgs, out_cells_count,
@@ -269,6 +289,7 @@ avtSamplePointCommunicator::Execute(void)
     delete [] out_cells_count;
     delete [] out_cells_msgs;
     UpdateProgress(currentStage++, nProgressStages);
+    visitTimer->StopTimer(t9, "Sending cells");
 
     //
     // Create the output volume and let it know that it only is for a restricted
@@ -292,6 +313,7 @@ avtSamplePointCommunicator::Execute(void)
     //
     // Put the sample points into our output volume.
     //
+    int t10 = visitTimer->StartTimer();
     outvolume->ExtractSamples(in_points_msgs, in_points_count, numProcs);
     delete [] concat3;
     delete [] in_points_count;
@@ -301,10 +323,12 @@ avtSamplePointCommunicator::Execute(void)
     outvolume->ExtractSamples(&pointsOnThisProc, &numPointsOnThisProc, 1);
     delete [] pointsOnThisProc;
     UpdateProgress(currentStage++, nProgressStages);
+    visitTimer->StopTimer(t10, "Getting sample points out of messages");
     
     //
     // Extract the sample points from the new cells.
     //
+    int t11 = visitTimer->StartTimer();
     avtCellList *outcl = GetTypedOutput()->GetCellList();
     outcl->SetJittering(jittering);
     outcl->Restrict(outMinWidth, outMaxWidth, outMinHeight, outMaxHeight);
@@ -317,6 +341,7 @@ avtSamplePointCommunicator::Execute(void)
     outcl->ExtractCells(&cellsOnThisProc, &numCellsOnThisProc, 1, outvolume);
     delete [] cellsOnThisProc;
     UpdateProgress(currentStage++, nProgressStages);
+    visitTimer->StopTimer(t11, "Getting sample points out of cells");
 
     visitTimer->StopTimer(timingsIndex, "Sample point communication");
 #else

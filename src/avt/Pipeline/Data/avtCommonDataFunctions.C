@@ -3134,7 +3134,27 @@ CInsertRectilinearTransformInfoIntoDataset(avtDataRepresentation &data,
 //  Programmer:  Jeremy Meredith
 //  Creation:    February 15, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  3 14:50:54 CST 2011
+//    Use pointer arithmetic.  Looks to be ~4X faster.
+//
 // ****************************************************************************
+
+template <class T> static bool
+PopulateHistogram(T *buf, int ntups, int nbins, double min, double max, VISIT_LONG_LONG *numVals)
+{
+    double mult = nbins/(max-min);  // This is actually needed to help the compiler.  2X difference.
+    for (int i = 0 ; i < ntups ; i++)
+    {
+        double val = (double) buf[i];
+        int idx = (int)(mult*(val-min));
+        idx = (idx < 0 ? 0 : idx);
+        idx = (idx >= nbins ? nbins-1 : idx);
+        numVals[idx]++;
+    }
+}
+
 
 void
 CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
@@ -3170,13 +3190,44 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
     int nbins = cha->numVals.size();
     double min = cha->min;
     double max = cha->max;
-    for (int i = 0 ; i < ntups ; i++)
+    VISIT_LONG_LONG *numVals = &(cha->numVals[0]);
+ 
+    switch (arr->GetDataType())
     {
-        double val = arr->GetTuple1(i);
-        int idx = (int)(nbins*((val-min)/(max-min)));
-        idx = (idx < 0 ? 0 : idx);
-        idx = (idx >= nbins ? nbins-1 : idx);
-        cha->numVals[idx]++;
+        case VTK_CHAR:
+            PopulateHistogram((char*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
+        case VTK_UNSIGNED_CHAR:
+            PopulateHistogram((unsigned char*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
+        case VTK_SHORT:
+            PopulateHistogram((short*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
+        case VTK_UNSIGNED_SHORT:
+            PopulateHistogram((unsigned short*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
+        case VTK_INT:           
+            PopulateHistogram((int*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
+        case VTK_UNSIGNED_INT:  
+            PopulateHistogram((unsigned int*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
+        case VTK_LONG:          
+            PopulateHistogram((long*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
+        case VTK_UNSIGNED_LONG: 
+            PopulateHistogram((unsigned long*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
+        case VTK_FLOAT:         
+            PopulateHistogram((float*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
+        case VTK_DOUBLE:        
+            PopulateHistogram((double*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
+        case VTK_ID_TYPE:       
+            PopulateHistogram((vtkIdType*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
+            break;
     }
 }
+
 
