@@ -21,6 +21,7 @@ list of changes in release 2.2.1.</p>
 <li>VisIt's simV2 simulation instrumentation library was fixed so operations that require synchronization with the viewer, such as <i>VisItUpdatePlots()</i>, do not lock up in parallel when a simulation's slave callback function does not broadcast integers.</li>
 <li>The xmlinfo tool now generates the correct plugin info for operator plugins that create expressions from vectors or tensors.</li>
 <li>The xmledit tool now correctly greys out the operator section for plot and database plugins.</li>
+<li>File format readers that produce point meshes with degenerate connectivity are now better supported: Pseudocolor plots now get the correct range for these files.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.2.1</font></b></p>
