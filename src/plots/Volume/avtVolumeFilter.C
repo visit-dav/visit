@@ -68,6 +68,7 @@
 #include <InvalidDimensionsException.h>
 #include <InvalidVariableException.h>
 #include <snprintf.h>
+#include <TimingsManager.h>
 
 
 //
@@ -156,6 +157,9 @@ avtVolumeFilter::SetAttributes(const VolumeAttributes &a)
 //    Hank Childs, Fri May 21 11:28:12 CDT 2010
 //    Calculate histograms for setting up transfer functions.
 //
+//    Hank Childs, Wed Feb  2 17:51:34 CST 2011
+//    Add timings statement for histogram calculation.
+//
 // ****************************************************************************
 
 void
@@ -204,6 +208,7 @@ avtVolumeFilter::Execute(void)
 
     std::string s = string(primaryVariable);
     std::vector<VISIT_LONG_LONG> numvals(numValsInHist, 0);
+    int t1 = visitTimer->StartTimer();
     avtDatasetExaminer::CalculateHistogram(ds, s, minmax[0], minmax[1], numvals);
 
     VISIT_LONG_LONG maxVal = 0;
@@ -222,6 +227,7 @@ avtVolumeFilter::Execute(void)
     vhist["histogram_size"] = numValsInHist;
     vhist["histogram_1d"] = h1;
     // vhist["histogram_2d"] = compressedbuf; <<-- not doing this
+    visitTimer->StopTimer(t1, "Calculating histogram");
 
     GetOutput()->GetInfo().GetAttributes().AddPlotInformation("VolumeHistogram", vhist);
 }

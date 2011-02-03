@@ -46,6 +46,7 @@
 
 #include <float.h>
 #include <DebugStream.h>
+#include <TimingsManager.h>
 
 
 // ****************************************************************************
@@ -745,6 +746,7 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
 
     bool ranGood = true;
     CalculateHistogramArgs args;
+    int t1 = visitTimer->StartTimer();
     if (*dataTree != NULL)
     {
         args.min      = min;
@@ -753,7 +755,9 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
         args.numVals.resize(numvals.size(), 0);
         dataTree->Traverse(CCalculateHistogram, (void *) &args, ranGood);
     }
+    visitTimer->StopTimer(t1, "Per-processor histogram calculation");
 
+    int t2 = visitTimer->StartTimer();
     int iFailed        = (ranGood ? 1 : 0);
     int somebodyFailed = UnifyMaximumValue(iFailed);
 
@@ -762,6 +766,7 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
 
     SumLongLongArrayAcrossAllProcessors(&(args.numVals[0]), &(numvals[0]),
                                         numvals.size());
+    visitTimer->StopTimer(t2, "Parallel processing of histogram");
     
     return true;
 }
