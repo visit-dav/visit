@@ -84,13 +84,7 @@
       0.000000
       0.000000
     </Field>
-    <Field name="plotBounds" label="plotBounds" type="doubleArray" length="6" internal="true">
-      0.000000
-      0.000000
-      0.000000
-      0.000000
-      0.000000
-      0.000000
+    <Field name="plotBounds" label="plotBounds" type="doubleVector" length="6" internal="true">
     </Field>
     <Field name="rayPoint1" label="rayPoint1" type="doubleArray" length="3" internal="true">
       0.000000

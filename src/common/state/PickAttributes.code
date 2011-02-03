@@ -662,6 +662,9 @@ Definition:
 //   Brad Whitlock, Tue Jan 20 16:42:30 PST 2009
 //   Changed to using local CoordinateType enum.
 //
+//   Kathleen Bonnell, Thu Feb  3 11:20:11 PST 2011
+//   plotBounds changed to a vetor.
+//
 // ****************************************************************************
 
 void
@@ -703,9 +706,8 @@ PickAttributes::PrepareForNewPick()
         realIncidentElements.clear();
 
     meshInfo = "";
-    for (int i = 0; i < 6; ++i)
-        plotBounds[i] = 0.;
-
+    if (!plotBounds.empty())
+        plotBounds.clear();
     ClearVarInfos();
 
     if (!invalidVars.empty())

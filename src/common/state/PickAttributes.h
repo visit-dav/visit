@@ -156,7 +156,7 @@ public:
     void SetPickPoint(const double *pickPoint_);
     void SetCellPoint(const double *cellPoint_);
     void SetNodePoint(const double *nodePoint_);
-    void SetPlotBounds(const double *plotBounds_);
+    void SetPlotBounds(const doubleVector &plotBounds_);
     void SetRayPoint1(const double *rayPoint1_);
     void SetRayPoint2(const double *rayPoint2_);
     void SetMeshInfo(const std::string &meshInfo_);
@@ -232,8 +232,8 @@ public:
           double       *GetCellPoint();
     const double       *GetNodePoint() const;
           double       *GetNodePoint();
-    const double       *GetPlotBounds() const;
-          double       *GetPlotBounds();
+    const doubleVector &GetPlotBounds() const;
+          doubleVector &GetPlotBounds();
     const double       *GetRayPoint1() const;
           double       *GetRayPoint1();
     const double       *GetRayPoint2() const;
@@ -436,7 +436,7 @@ private:
     double               pickPoint[3];
     double               cellPoint[3];
     double               nodePoint[3];
-    double               plotBounds[6];
+    doubleVector         plotBounds;
     double               rayPoint1[3];
     double               rayPoint2[3];
     std::string          meshInfo;
@@ -485,6 +485,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*iissDDDDDDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssb"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssb"
 
 #endif
