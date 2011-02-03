@@ -335,6 +335,9 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist,
 //  Creation:   June 2, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Feb  3 10:25:15 PST 2011
+//    Don't send 'UserBounds' to cell locator if they are all zero, as this
+//    means the actual extents could not be retrieved from the viewer plot.
 //
 // ****************************************************************************
 
@@ -359,7 +362,13 @@ avtLocateQuery::LocatorFindCell(vtkDataSet *ds, double &dist, double *isect)
     // plot that originated this query.  The locator will use these
     // bounds only if they are smaller than the dataset bounds.
     //
-    cellLocator->SetUserBounds(pickAtts.GetPlotBounds());
+    double *pb = pickAtts.GetPlotBounds();
+    // *HACK* only send the bounds if they have been set
+    // *HACK* fix with 2.3 when state objects can be changed.
+    if (!(pb[0] == 0. && pb[1] == 0. && pb[2] == 0. && pb[3] == 0. && pb[4] == 0. && pb[5] == 0))
+    {
+        cellLocator->SetUserBounds(pickAtts.GetPlotBounds());
+    }
     cellLocator->BuildLocator();
 
     double pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
