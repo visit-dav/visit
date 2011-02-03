@@ -1224,31 +1224,37 @@ CRemoveVariable(avtDataRepresentation &data, void *arg, bool &success)
 //    Hank Childs, Wed Oct 10 15:56:16 PDT 2007
 //    Added argument for ignoring values from ghost zones.
 //
+//    Hank Childs, Wed Feb  2 18:15:27 CST 2011
+//    No longer require the number of points or cells to be greater than 0.
+//    Degenerate point meshes (i.e. no cells in the connectivity) have 0
+//    cells, but we still want to calculate the range ... because the transform
+//    manager is called after this routine and it will fix this problem up.
+//
 // ****************************************************************************
 
 void
 GetDataRange(vtkDataSet *ds, double *de, const char *vname,
              bool ignoreGhost)
 {
-    if (ds->GetNumberOfCells() > 0 && ds->GetNumberOfPoints() > 0)
-    {
-        vtkDataArray *da = NULL;
-        if (ds->GetPointData()->GetArray(vname) != NULL)
-            da = ds->GetPointData()->GetArray(vname);
-        else
-            da = ds->GetCellData()->GetArray(vname);
+    vtkDataArray *da = NULL;
+    if (ds->GetPointData()->GetArray(vname) != NULL)
+        da = ds->GetPointData()->GetArray(vname);
+    else
+        da = ds->GetCellData()->GetArray(vname);
 
-        if (da == NULL)
-            return;
+    if (da == NULL)
+        return;
 
-        int dim = da->GetNumberOfComponents();
-        if (dim == 1)
-            GetDataScalarRange(ds, de, vname, ignoreGhost);
-        else if (dim <= 3)
-            GetDataMagnitudeRange(ds, de, vname, ignoreGhost);
-        else if (dim == 9)
-            GetDataMajorEigenvalueRange(ds, de, vname, ignoreGhost);
-    }
+    if (da->GetNumberOfTuples() <= 0)
+        return;
+
+    int dim = da->GetNumberOfComponents();
+    if (dim == 1)
+        GetDataScalarRange(ds, de, vname, ignoreGhost);
+    else if (dim <= 3)
+        GetDataMagnitudeRange(ds, de, vname, ignoreGhost);
+    else if (dim == 9)
+        GetDataMajorEigenvalueRange(ds, de, vname, ignoreGhost);
 }
 
 
