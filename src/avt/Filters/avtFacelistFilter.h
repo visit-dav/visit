@@ -53,6 +53,7 @@ class   vtkStructuredGridFacelistFilter;
 class   vtkUnstructuredGridFacelistFilter;
 class   vtkPolyData;
 
+class   avtFacelist;
 class   avtMultiFacelist;
 
 
@@ -117,6 +118,9 @@ class   avtMultiFacelist;
 //    Removed unused "useFacelists" data member, and the InitalizeFilter
 //    method (since that's the only thing it touched).
 //
+//    Hank Childs, Fri Feb  4 13:43:38 PST 2011
+//    Make the method to take external faces for a domain be a static method.
+//  
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
@@ -137,6 +141,13 @@ class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
     void                                 SetMustCreatePolyData(bool val)
                                               { mustCreatePolyData = val; };
 
+    static avtDataTree_p                 FindFaces(vtkDataSet *, int, 
+                                                   std::string, 
+                                                   avtDataObjectInformation &,
+                                                   bool = false, bool = false, 
+                                                   bool = false, bool = false,
+                                                   avtFacelist * = NULL);
+
   protected:
     bool                                 create3DCellNumbers;
     bool                                 createEdgeListFor2DDatasets;
@@ -145,16 +156,17 @@ class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
 
     virtual avtDataTree_p                ExecuteDataTree(vtkDataSet *, int,
                                                      std::string);
-    vtkDataSet                          *Take2DFaces(vtkDataSet *);
-    vtkDataSet                          *FindEdges(vtkDataSet *);
-    avtDataTree_p                        Take3DFaces(vtkDataSet *, int,
-                                                     std::string);
-    vtkDataSet                          *ConvertToPolys(vtkDataSet *, int);
+    static vtkDataSet                   *Take2DFaces(vtkDataSet *, bool, bool);
+    static vtkDataSet                   *FindEdges(vtkDataSet *);
+    static avtDataTree_p                 Take3DFaces(vtkDataSet *, int,
+                                                     std::string, bool, bool,
+                                                     avtDataObjectInformation&,
+                                                     avtFacelist *fl);
+    static vtkDataSet                   *ConvertToPolys(vtkDataSet *, int);
 
     virtual void                         UpdateDataObjectInfo(void);
-    virtual avtContract_p   ModifyContract(
-                                                   avtContract_p);
-    virtual bool                        FilterUnderstandsTransformedRectMesh();
+    virtual avtContract_p                ModifyContract(avtContract_p);
+    virtual bool                         FilterUnderstandsTransformedRectMesh();
 };
 
 

@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtExternalNodeExpression.C                        //
+//                        avtFindExternalExpression.C                        //
 // ************************************************************************* //
 
-#include <avtExternalNodeExpression.h>
+#include <avtFindExternalExpression.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -48,17 +48,12 @@
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 
-#include <avtCallback.h>
-#include <avtCondenseDatasetFilter.h>
-#include <avtDatasetExaminer.h>
-#include <avtGhostZoneAndFacelistFilter.h>
-#include <avtSourceFromAVTDataset.h>
-#include <avtTypes.h>
+#include <avtFacelistFilter.h>
 
 #include <ExpressionException.h>
 
 // ****************************************************************************
-//  Method: avtExternalNodeExpression constructor
+//  Method: avtFindExternalExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -67,15 +62,21 @@
 //  Programmer: Hank Childs
 //  Creation:   September 21, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb  4 13:46:18 PST 2011
+//    Initialize doCells.
+//
 // ****************************************************************************
 
-avtExternalNodeExpression::avtExternalNodeExpression()
+avtFindExternalExpression::avtFindExternalExpression()
 {
+    doCells = false;
 }
 
 
 // ****************************************************************************
-//  Method: avtExternalNodeExpression destructor
+//  Method: avtFindExternalExpression destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -86,14 +87,14 @@ avtExternalNodeExpression::avtExternalNodeExpression()
 //
 // ****************************************************************************
 
-avtExternalNodeExpression::~avtExternalNodeExpression()
+avtFindExternalExpression::~avtFindExternalExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtExternalNodeExpression::DeriveVariable
+//  Method: avtFindExternalExpression::DeriveVariable
 //
 //  Purpose:
 //      Assigns the zone ID to each variable.
@@ -112,65 +113,60 @@ avtExternalNodeExpression::~avtExternalNodeExpression()
 //    Hank Childs, Wed Sep 28 11:07:50 PDT 2005
 //    Use correct form of delete operator.
 //
+//    Hank Childs, Fri Feb  4 13:46:18 PST 2011
+//    Extend to cells as well.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtExternalNodeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds)
 {
     int  i;
 
     vtkDataSet *new_ds = in_ds->NewInstance();
     new_ds->ShallowCopy(in_ds);
-    int npts = new_ds->GetNumberOfPoints();
+    int nids = (doCells ? new_ds->GetNumberOfCells()
+                        : new_ds->GetNumberOfPoints());
     vtkIntArray *arr = vtkIntArray::New();
-    arr->SetNumberOfTuples(npts);
-    for (i = 0 ; i < npts ; i++)
+    arr->SetNumberOfTuples(nids);
+    for (i = 0 ; i < nids ; i++)
         arr->SetValue(i, i);
-    const char *varname = "_avt_node_id";
+    const char *varname = "_avt_id";
     arr->SetName(varname);
-    new_ds->GetPointData()->AddArray(arr);
+    if (doCells)
+        new_ds->GetCellData()->AddArray(arr);
+    else
+        new_ds->GetPointData()->AddArray(arr);
     arr->Delete();
 
-    //
-    // A whole bunch of rigamorale to get the AVT pipeline to update using
-    // only this VTK dataset.
-    //
-    avtDataset_p ds = new avtDataset(new_ds, *(GetTypedInput()));
-    avtSourceFromAVTDataset termsrc(ds);
-    avtGhostZoneAndFacelistFilter gzff;
-    gzff.SetInput(termsrc.GetOutput());
-    gzff.SetUseFaceFilter(true);
-    gzff.SetCreateEdgeListFor2DDatasets(true);
-    avtCondenseDatasetFilter cdf;
-    cdf.KeepAVTandVTK(true);
-    cdf.BypassHeuristic(true);
-    cdf.SetInput(gzff.GetOutput());
-    cdf.Update(GetGeneralContract());
-    avtDataset_p ds2;
-    avtDataObject_p output = cdf.GetOutput();
-    CopyTo(ds2, output);
-    avtCentering node_cent = AVT_NODECENT;
-    vtkDataArray *arr2 = 
-                   avtDatasetExaminer::GetArray(ds2, varname, 0, node_cent);
+    avtDataTree_p tree = avtFacelistFilter::FindFaces(new_ds, -1, "",
+                                  GetInput()->GetInfo(), false, false,
+                                  true, true, NULL);
+    vtkDataSet *ds = tree->GetSingleLeaf();
+    vtkDataArray *arr2 = NULL;
+    if (doCells)
+        arr2 =  ds->GetCellData()->GetArray(varname);
+    else
+        arr2 =  ds->GetPointData()->GetArray(varname);
     if (arr2 == NULL || arr2->GetDataType() != VTK_INT)
-        EXCEPTION2(ExpressionException, outputVariableName, "An internal error occurred when "
-                   "calculating the external nodes.");
+        EXCEPTION2(ExpressionException, outputVariableName, "An internal error"
+                   " occurred when calculating the external nodes.");
     vtkIntArray *arr3 = (vtkIntArray *) arr2;
 
-    bool *haveNode = new bool[npts];
-    for (i = 0 ; i < npts ; i++)
-        haveNode[i] = false;
+    bool *haveId = new bool[nids];
+    for (i = 0 ; i < nids ; i++)
+        haveId[i] = false;
 
     int nArr = arr3->GetNumberOfTuples();
     for (i = 0 ; i < nArr ; i++)
-        haveNode[arr3->GetValue(i)] = true;
+        haveId[arr3->GetValue(i)] = true;
 
     vtkFloatArray *rv = vtkFloatArray::New();
-    rv->SetNumberOfTuples(npts);
-    for (i = 0 ; i < npts ; i++)
-        rv->SetTuple1(i, (haveNode[i] ? 1. : 0.));
+    rv->SetNumberOfTuples(nids);
+    for (i = 0 ; i < nids ; i++)
+        rv->SetTuple1(i, (haveId[i] ? 1. : 0.));
 
-    delete [] haveNode;
+    delete [] haveId;
     new_ds->Delete();
 
     return rv;
