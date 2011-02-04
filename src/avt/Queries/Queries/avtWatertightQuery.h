@@ -47,7 +47,7 @@
 
 #include <avtDatasetQuery.h>
 
-class     avtExternalNodeExpression;
+class     avtFindExternalExpression;
 
 
 // ****************************************************************************
@@ -59,6 +59,11 @@ class     avtExternalNodeExpression;
 //
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Feb  4 14:33:41 PST 2011
+//    Update query for new name of expression to find external nodes.
 //
 // ****************************************************************************
 
@@ -74,7 +79,7 @@ class QUERY_API avtWatertightQuery : public avtDatasetQuery
                              { return "Watertight"; };
 
   protected:
-    avtExternalNodeExpression *external_nodes;
+    avtFindExternalExpression *external_nodes;
     bool                       foundExternalNode;
 
     virtual void               VerifyInput(void);
