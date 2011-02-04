@@ -41,6 +41,7 @@
 #include <avtCylindricalRadiusExpression.h>
 #include <avtDataIdExpression.h>
 #include <avtExpressionComponentMacro.h>
+#include <avtFindExternalExpression.h>
 #include <avtNeighborEvaluatorExpression.h>
 #include <avtSurfaceNormalExpression.h>
 #include <avtZoneTypeExpression.h>
@@ -69,6 +70,9 @@
 //   Hank Childs, Thu Jul  8 08:11:06 PDT 2010
 //   Change coordinate extrema to include polar coordinates.
 //   
+//   Hank Childs, Fri Feb  4 14:00:21 PST 2011
+//   Add external_node and external_cell.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -176,6 +180,15 @@ avtFunctionExpr::CreateMeshFilters(const string &functionName) const
         avtCoordinateExtremaExpression *ce = new avtCoordinateExtremaExpression;
         ce->SetGetMinimum(false);
         return ce;
+    }
+    else if (functionName == "external_node" || functionName == "external_cell")
+    {
+        avtFindExternalExpression *e = new avtFindExternalExpression();
+        if (functionName == "external_cell")
+            e->SetDoCells(true);
+        else
+            e->SetDoCells(false);
+        return e;
     }
 
     return 0;

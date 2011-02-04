@@ -37,11 +37,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtExternalNodeExpression.h                       //
+//                         avtFindExternalExpression.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_EXTERNAL_NODE_EXPRESSION_H
-#define AVT_EXTERNAL_NODE_EXPRESSION_H
+#ifndef AVT_FIND_EXTERNAL_EXPRESSION_H
+#define AVT_FIND_EXTERNAL_EXPRESSION_H
 
 #include <avtSingleInputExpressionFilter.h>
 
@@ -49,31 +49,39 @@ class     vtkDataArray;
 
 
 // ****************************************************************************
-//  Class: avtExternalNodeExpression
+//  Class: avtFindExternalExpression
 //
 //  Purpose:
-//      An expression that determines which nodes are external.
+//      An expression that determines which nodes or cells are external.
 //          
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb  4 13:46:18 PST 2011
+//    Expand this expression to also deal with external cells.  Rename.
+//
 // ****************************************************************************
 
-class EXPRESSION_API avtExternalNodeExpression 
+class EXPRESSION_API avtFindExternalExpression 
     : public avtSingleInputExpressionFilter
 {
   public:
-                              avtExternalNodeExpression();
-    virtual                  ~avtExternalNodeExpression();
+                              avtFindExternalExpression();
+    virtual                  ~avtFindExternalExpression();
 
     virtual const char       *GetType(void) 
-                                      { return "avtExternalNodeExpression"; };
+                                      { return "avtFindExternalExpression"; };
     virtual const char       *GetDescription(void)
-                                      {return "Determining external nodes"; };
+                                      {return "Determining exterior"; };
+
+    void                      SetDoCells(bool dc) { doCells = dc; };
 
   protected:
+    bool                      doCells;
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual bool              IsPointVariable(void)  { return true; };
+    virtual bool              IsPointVariable(void)  { return !doCells; };
 };
 
 

@@ -170,6 +170,9 @@
 //    Adding polar coordinates and I really didn't think there should be
 //    12 expressions for this minor functionality.
 //
+//    Hank Childs, Fri Feb  4 14:00:21 PST 2011
+//    Added external_cell expression.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -322,6 +325,7 @@ const char *expr_mesh[] = {
     "cylindrical",
     "cylindrical_radius",
     "cylindrical_theta",
+    "external_cell",
     "external_node",
     "global_nodeid",
     "global_zoneid",

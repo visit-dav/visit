@@ -38,7 +38,6 @@
 #include <avtExprNode.h>
 #include <avtCornerAngle.h>
 #include <avtEdgeLength.h>
-#include <avtExternalNodeExpression.h>
 #include <avtFacePlanarity.h>
 #include <avtNeighborExpression.h>
 #include <avtNodeDegreeExpression.h>
@@ -88,6 +87,10 @@
 //   
 //    Mark C. Miller, Wed Jun  3 14:50:50 PDT 2009
 //    Added face_planarity expressions.
+//
+//    Hank Childs, Fri Feb  4 14:00:21 PST 2011
+//    Place external_node in misc.  It belongs better there.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -97,8 +100,6 @@ avtFunctionExpr::CreateMeshQualityFilters(const string &functionName) const
 
     if (functionName == "neighbor")
         f = new avtNeighborExpression();
-    else if (functionName == "external_node")
-        f = new avtExternalNodeExpression();
     else if (functionName == "node_degree")
         f = new avtNodeDegreeExpression();
     // Begin Verdict Metrics

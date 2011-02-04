@@ -272,15 +272,53 @@ avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
 //    was advertised in the contract.  (This can come up if you have
 //    a data set with different topological dimensions in different domains.)
 //
+//    Hank Childs, Fri Feb  4 13:46:18 PST 2011
+//    Split most of routine into the static function "FindFaces".
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, 
                                    std::string label)
 {
-    int tDim = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
-    int sDim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-    int dis_elem = GetInput()->GetInfo().GetValidity().GetDisjointElements();
+    avtFacelist *fl = NULL;
+    avtDataValidity &v = GetInput()->GetInfo().GetValidity();
+    if (v.GetUsingAllData() && v.GetZonesPreserved())
+    {
+        avtMetaData *md = GetMetaData();
+        fl = md->GetExternalFacelist(domain);
+    }
+
+    return FindFaces(in_ds, domain, label, GetInput()->GetInfo(), 
+                     create3DCellNumbers, forceFaceConsolidation, 
+                     createEdgeListFor2DDatasets, mustCreatePolyData, fl);
+}
+
+
+// ****************************************************************************
+//  Method: avtFacelistFilter::FindFaces
+//
+//  Purpose:
+//      Finds the faces for a single domain.  A static function that can be
+//      called outside of a pipeline.
+//
+//  Notes:      Most of this routine used to be located in ExecuteDataTree.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 4, 2010
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtFacelistFilter::FindFaces(vtkDataSet *in_ds, int domain, std::string label,
+                             avtDataObjectInformation &info,
+                             bool create3DCellNumbers, bool forceFaceConsolidation,
+                             bool createEdgeListFor2DDatasets,
+                             bool mustCreatePolyData, avtFacelist *fl)
+{
+    int tDim = info.GetAttributes().GetTopologicalDimension();
+    int sDim = info.GetAttributes().GetSpatialDimension();
+    int dis_elem = info.GetValidity().GetDisjointElements();
 
     vtkDataSet *orig_in_ds = in_ds;
     bool shouldDeleteInDs = false;
@@ -347,12 +385,14 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
         if (createEdgeListFor2DDatasets)
             out_ds = FindEdges(in_ds);
         else
-            out_ds = Take2DFaces(in_ds);
+            out_ds = Take2DFaces(in_ds, forceFaceConsolidation,
+                                 mustCreatePolyData);
         break;
 
       // 3D meshes
       case 3:
-        out_dt = Take3DFaces(in_ds, domain, label);
+        out_dt = Take3DFaces(in_ds, domain, label, forceFaceConsolidation,
+                             mustCreatePolyData, info, fl);
         break;
 
       default:
@@ -459,16 +499,21 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 //    Use extents instead of dims for VOI when creating 6 2D rectilinear grids
 //    - fixes bug with Pseudocolor plot and Box Operator 
 //
+//    Hank Childs, Fri Feb  4 13:46:18 PST 2011
+//    Add additional arguments so this could be a static function.
+//
 // ****************************************************************************
 
 avtDataTree_p
-avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
+avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label,
+                               bool forceFaceConsolidation, bool mustCreatePolyData,
+                               avtDataObjectInformation &info, avtFacelist *fl)
 {
     vtkDataSet    *out_ds = NULL;
     avtDataTree_p  out_dt;
-    vtkPolyData *pd = vtkPolyData::New();
-    bool         hasCellData = (in_ds->GetCellData()->GetNumberOfArrays() > 0 
-                                ? true : false);
+    vtkPolyData   *pd = vtkPolyData::New();
+    bool           hasCellData = (in_ds->GetCellData()->GetNumberOfArrays() > 0 
+                                     ? true : false);
 
     vtkRectilinearGridFacelistFilter *rf = 
                                        vtkRectilinearGridFacelistFilter::New();
@@ -487,7 +532,7 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
                        2*(dims[0]-1)*(dims[2]-1) + 
                        2*(dims[1]-1)*(dims[2]-1);
         bool tooSmall = (numPolys < 500);
-        if (GetInput()->GetInfo().GetAttributes().GetRectilinearGridHasTransform())
+        if (info.GetAttributes().GetRectilinearGridHasTransform())
             tooSmall = false;  // Causes problems if we apply this optimization
                                // for transformed grids.
         if (mustCreatePolyData || forceFaceConsolidation || tooSmall)
@@ -658,14 +703,6 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
     }
     else if (dstype == VTK_UNSTRUCTURED_GRID)
     {
-        avtFacelist *fl = NULL;
-        avtDataValidity &v = GetInput()->GetInfo().GetValidity();
-        if (v.GetUsingAllData() && v.GetZonesPreserved())
-        {
-            avtMetaData *md = GetMetaData();
-            fl = md->GetExternalFacelist(domain);
-        }
-
         //
         // Some facelists from Silo files cannot calculate zonal variables,
         // so disregard the facelist in this case.
@@ -791,10 +828,14 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
 //    Kathleen Bonnell, Thu Nov 11 10:41:51 PST 2010
 //    Added support for VTK_QUADRATIC_EDGE.
 //
+//    Hank Childs, Fri Feb  4 13:46:18 PST 2011
+//    Add additional arguments so this could be a static function.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
+avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds, bool forceFaceConsolidation,
+                               bool mustCreatePolyData)
 {
     int dstype = in_ds->GetDataObjectType();
 

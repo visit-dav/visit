@@ -51,8 +51,11 @@
 #    Hank Childs, Sat Aug 21 14:05:14 PDT 2010
 #    Rename ApplyDDFExpression to ApplyDataBinningExpression.
 #
-#   Hank Childs, Thu Sep 23 16:00:56 PDT 2010
-#   Added avtDeferExpressionBaseFilter.
+#    Hank Childs, Thu Sep 23 16:00:56 PDT 2010
+#    Added avtDeferExpressionBaseFilter.
+#
+#    Hank Childs, Fri Feb  4 13:46:18 PST 2011
+#    Rename avtExternalNodeExpression to avtFindExternalExpression.
 #
 #****************************************************************************/
 
@@ -130,7 +133,7 @@ General/avtDistanceToBestFitLineExpression.C
 General/avtDivergenceExpression.C
 General/avtDominantMaterialExpression.C
 General/avtExpressionComponentMacro.C
-General/avtExternalNodeExpression.C
+General/avtFindExternalExpression.C
 General/avtGeodesicVectorQuantizeExpression.C
 General/avtGradientExpression.C
 General/avtHSVColorComposeExpression.C
