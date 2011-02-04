@@ -46,6 +46,7 @@
 #include <float.h>
 #include <snprintf.h>
 #include <PickVarInfo.h>
+#include <DebugStream.h>
 
 
 using std::string;
@@ -143,6 +144,10 @@ avtVariableByNodeQuery::Preparation(const avtDataAttributes &inAtts)
 //    none in the case that the user accidentally performed the query on
 //    a Mesh plot.
 //
+//    Kathleen Bonnell, Thu Feb  3 16:17:37 PST 2011
+//    Verify that pickvarinfo's values aren't empty before attempting to 
+//    reference an element.
+//
 // ****************************************************************************
 
 void
@@ -163,8 +168,19 @@ avtVariableByNodeQuery::PostExecute(void)
             SetResultMessage(msg.c_str());
             if(pickAtts.GetNumVarInfos() > 0)
             {
-                vals = pickAtts.GetVarInfo(0).GetValues();
-                SetResultValue(vals[vals.size()-1]);
+                doubleVector dvals = pickAtts.GetVarInfo(0).GetValues();
+                if (dvals.size() > 0)
+                {
+                    SetResultValue(dvals[dvals.size()-1]);
+                }   
+                else
+                {
+                    debug3 << "Variable by Node query reports a fulfilled pick "
+                           << "and has varInfo's, but the values vector is empty. " 
+                           << "This could happen when picking on a Material."
+                           << endl;
+                    SetResultValues(vals);
+                }
             }
             else
                 SetResultValues(vals);
