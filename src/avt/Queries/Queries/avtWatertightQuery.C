@@ -47,7 +47,7 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
-#include <avtExternalNodeExpression.h>
+#include <avtFindExternalExpression.h>
 #include <avtSourceFromAVTDataset.h>
 #include <InvalidDimensionsException.h>
 #include <InvalidVariableException.h>
@@ -62,11 +62,17 @@ using     std::string;
 //  Programmer: Hank Childs 
 //  Creation:   September 23, 2005 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb  4 14:33:41 PST 2011
+//    Reflect new name for expression to find external cells.
+//
 // ****************************************************************************
 
 avtWatertightQuery::avtWatertightQuery() 
 {
-    external_nodes = new avtExternalNodeExpression;
+    external_nodes = new avtFindExternalExpression;
+    external_nodes->SetDoCells(false);
     external_nodes->SetOutputVariableName("_avt_external_nodes");
 }
 
