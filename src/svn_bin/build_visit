@@ -59,8 +59,7 @@
 #           FastBit  0.9.9    fastbit-b0.9.9.tar.gz  
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      --gdal
 #           H5part   1.6.0    H5Part-1.6.0.tar.gz    --h5part
-#           HDF4     2.4.1    HDF4.2r1.tar.gz        --hdf4
-#                    2.5      hdf-4.2.5.tar.gz       (on Mac)
+#           HDF4     4.2.5    hdf-4.2.5.tar.gz       --hdf4
 #           HDF5     1.8.4    hdf5-1.8.4.tar.gz      --hdf5
 #           MDSplus  2.2      mdsplus-2.2-4.tar.gz
 #           Mili     1.10     mili-1.10a.tar.gz      --mili
@@ -1087,6 +1086,11 @@
 #     Update VisIt release number.  Also add error message about why HDF4
 #     may be failing.  Also fix problem with GDAL for Linux x86_64.
 #
+#     Eric Brugger, Fri Feb  4 14:26:40 PST 2011
+#     I modified the anonymous svn downloads to use http instead of https.
+#     I switched the version of HDF4 to 4.2.5 and modified it to use vtkjpeg
+#     on all platforms, not just on the Mac.
+#
 # *****************************************************************************
 
 
@@ -1398,7 +1402,7 @@ if [[ "$CXX_COMPILER" == "g++" ]] ; then
 fi
 
 
-export SVN_ANON_ROOT_PATH="https://portal.nersc.gov/svn/visit"
+export SVN_ANON_ROOT_PATH="http://portal.nersc.gov/svn/visit"
 # Setup svn path: use SVN_NERSC_NAME if set
 if test -z "$SVN_NERSC_NAME" ; then
     export SVN_REPO_ROOT_PATH="svn+ssh://svn.nersc.gov/svn/visit"
@@ -1487,17 +1491,10 @@ export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-${HDF5_VERSION}"}
 # Note: Versions of HDF5 1.6.5 and earlier DO NOT have last path component
 export HDF5_URL=${HDF5_URL:-"http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-${HDF5_VERSION}/src"}
 
-if [[ "$OPSYS" == "Darwin" ]]; then
 export HDF4_FILE=${HDF4_FILE:-"hdf-4.2.5.tar.gz"}
 export HDF4_VERSION=${HDF4_VERSION:-"4.2.5"}
 export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION:-"4.2"}
 export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.5"}
-else
-export HDF4_FILE=${HDF4_FILE:-"HDF4.2r1.tar.gz"}
-export HDF4_VERSION=${HDF4_VERSION:-"4.2.1"}
-export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION:-"4.0"}
-export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"HDF4.2r1"}
-fi
 
 export MILI_FILE=${MILI_FILE:-"mili-1.10a.tar.gz"}
 export MILI_VERSION=${MILI_VERSION:-"1.10.0"}
@@ -6121,10 +6118,10 @@ function build_hdf4
     cd $HDF4_BUILD_DIR || error "Can't cd to hdf4 build dir."
     info "Invoking command to configure HDF4"
     MAKEOPS=""
+    mv configure configure.old
+    sed "s/-ljpeg/-lvtkjpeg/g" configure.old | sed "s/jpeg_start_decompress/vtk_jpeg_start_decompress/g" > configure
+    chmod 700 configure
     if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
-        mv configure configure.old
-        sed "s/-ljpeg/-lvtkjpeg/g" configure.old | sed "s/jpeg_start_decompress/vtk_jpeg_start_decompress/g" > configure
-        chmod 700 configure
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
         ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" \
@@ -6141,15 +6138,16 @@ function build_hdf4
         fi
         MAKEOPS="-i"
     else
-        export LD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib":"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
         ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" LIBS="-lm" --disable-fortran \
+        CPPFLAGS="-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0 \
+        -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/vtk-5.0/vtkjpeg" \
         --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
+        --with-jpeg="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH" \
         --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         if [[ $? != 0 ]] ; then
            warn "HDF4 configure failed.  Giving up.\n"\
-                "The most common reasons why HDF4 will not build is that the libjpeg\n"\
-                "development package is not installed.\n"\
                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
            return 1
         fi
@@ -8362,8 +8360,7 @@ function build_hostconf
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR \${VISITHOME}/hdf4/$HDF4_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
-        if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
-          if [[ "$DO_SZIP" == "yes" ]] ; then
+        if [[ "$DO_SZIP" == "yes" ]] ; then
             echo \
             "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz \${VISITHOME}/vtk/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg)" \
             >> $HOSTCONF
@@ -8371,17 +8368,6 @@ function build_hostconf
             echo \
             "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/vtk/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg)" \
             >> $HOSTCONF
-          fi
-        else
-          if [[ "$DO_SZIP" == "yes" ]] ; then
-            echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib jpeg)" \
-            >> $HOSTCONF
-          else
-            echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP /usr/lib jpeg)" \
-            >> $HOSTCONF
-          fi
         fi
         >> $HOSTCONF
     fi
