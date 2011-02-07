@@ -47,6 +47,8 @@
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataRelevantPointsFilter.h>
 
 #include <avtFacelistFilter.h>
 
@@ -116,6 +118,9 @@ avtFindExternalExpression::~avtFindExternalExpression()
 //    Hank Childs, Fri Feb  4 13:46:18 PST 2011
 //    Extend to cells as well.
 //
+//    Hank Childs, Mon Feb  7 07:00:30 PST 2011
+//    Fix problem with finding external nodes with unstructured meshes.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -143,6 +148,22 @@ avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds)
                                   GetInput()->GetInfo(), false, false,
                                   true, true, NULL);
     vtkDataSet *ds = tree->GetSingleLeaf();
+
+    vtkPolyDataRelevantPointsFilter *pdrpf = NULL;
+    if (!doCells)
+    {
+        // If we have an unstructured grid, then the facelist filter sent
+        // back the same point list.  Reduce the point list to just those
+        // that are on the boundary.
+        if (ds->GetDataObjectType() == VTK_POLY_DATA)
+        {
+            pdrpf = vtkPolyDataRelevantPointsFilter::New();
+            pdrpf->SetInput((vtkPolyData *) ds);
+            pdrpf->Update();
+            ds = pdrpf->GetOutput();
+        }
+    }
+
     vtkDataArray *arr2 = NULL;
     if (doCells)
         arr2 =  ds->GetCellData()->GetArray(varname);
@@ -168,6 +189,8 @@ avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds)
 
     delete [] haveId;
     new_ds->Delete();
+    if (pdrpf != NULL)
+        pdrpf->Delete();
 
     return rv;
 }
