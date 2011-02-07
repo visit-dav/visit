@@ -16363,15 +16363,18 @@ GetViewerMethods()
 //   Run code defining helper functions using the visit module's dictionary.
 //   This will ensure the functions import correctly.
 //
+//   Cyrus Harrison, Mon Feb  7 15:34:17 PST 2011
+//   Add missing global dict.
+//
 // ****************************************************************************
 
 static void
-initscriptfunctions(PyObject *dict)
+initscriptfunctions(PyObject *gdict,PyObject *mdict)
 {
-    PyRun_String((char*)(visit_EvalLinear),Py_file_input,dict,dict);
-    PyRun_String((char*)(visit_EvalQuadratic),Py_file_input,dict,dict);
-    PyRun_String((char*)(visit_EvalCubic),Py_file_input,dict,dict);
-    PyRun_String((char*)(visit_EvalCubicSpline),Py_file_input,dict,dict);
+    PyRun_String((char*)(visit_EvalLinear),Py_file_input,gdict,mdict);
+    PyRun_String((char*)(visit_EvalQuadratic),Py_file_input,gdict,mdict);
+    PyRun_String((char*)(visit_EvalCubic),Py_file_input,gdict,mdict);
+    PyRun_String((char*)(visit_EvalCubicSpline),Py_file_input,gdict,mdict);
 }
 
 // ****************************************************************************
@@ -16410,13 +16413,17 @@ initscriptfunctions(PyObject *dict)
 //   Cyrus Harrison, Thu Jan  6 09:59:30 PST 2011
 //   Pass proper dictionary to initscriptfunctions.
 //
+//   Cyrus Harrison, Mon Feb  7 15:34:17 PST 2011
+//   Add missing global dict.
+//
 // ****************************************************************************
 
 void
 initvisit()
 {
     int initCode = 0;
-
+    PyObject *main_module = NULL;
+    PyObject *gdict = NULL;
     // save a pointer to the main PyThreadState object
     mainThreadState = PyThreadState_Get();
 
@@ -16433,6 +16440,9 @@ initvisit()
         initCode = InitializeModule();
     }
 
+    main_module = PyImport_AddModule("__main__"); //borrowed
+    gdict = PyModule_GetDict(main_module); //borrowed
+
     PyObject *d;
 
     // Add the VisIt module to Python. Note that we're passing the address
@@ -16447,7 +16457,7 @@ initvisit()
     PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
 
     // Define builtin visit functions that are written in python.
-    initscriptfunctions(d);
+    initscriptfunctions(gdict,d);
 }
 
 // ****************************************************************************
@@ -16481,6 +16491,9 @@ initvisit()
 //   Cyrus Harrison, Thu Jan  6 09:59:30 PST 2011
 //   Pass proper dictionary to initscriptfunctions.
 //
+//   Cyrus Harrison, Mon Feb  7 15:34:17 PST 2011
+//   Add missing global dict.
+//
 // ****************************************************************************
 
 void
@@ -16488,6 +16501,8 @@ initvisit2()
 {
     int initCode = 0;
     PyObject *d = NULL;
+    PyObject *main_module = NULL;
+    PyObject *gdict = NULL;
 
     // save a pointer to the main PyThreadState object
     mainThreadState = PyThreadState_Get();
@@ -16504,6 +16519,9 @@ initvisit2()
         THREAD_INIT();
         initCode = InitializeModule();
     }
+
+    main_module = PyImport_AddModule("__main__"); //borrowed
+    gdict = PyModule_GetDict(main_module); //borrowed
 
     d = PyEval_GetLocals();
 
@@ -16541,7 +16559,7 @@ initvisit2()
     PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
 
     // Define builtin visit functions that are written in python.
-    initscriptfunctions(d);
+    initscriptfunctions(gdict,d);
 }
 
 // ****************************************************************************
