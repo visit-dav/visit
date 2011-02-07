@@ -297,8 +297,8 @@ avtPICSFilter::SetDomain(avtIntegralCurve *ic)
 
     intervalTree->GetElementsListFromRange( xyz, xyz, doms );
 
-    // if (DebugStream::Level5())
-    //     debug5<<"SetDomain(): pt= "<<endPt<<" T= "<<t<<" step= "<<timeStep<<endl;
+    //if (DebugStream::Level5())
+    //    debug5<<"SetDomain(): pt= "<<endPt<<" t "<<t<<" doms= "<<doms<<endl;
 
     for( int i=0; i<doms.size(); i++ )
         ic->seedPtDomainList.push_back( DomainType( doms[i], timeStep ) );
@@ -389,8 +389,8 @@ vtkDataSet *
 avtPICSFilter::GetDomain(const DomainType &domain,
                          double X, double Y, double Z)
 {
-    if (DebugStream::Level5())
-        debug5<<"avtPICSFilter::GetDomain("<<domain<<" "<<X<<" "<<Y<<" "<<Z<<"), OperatingOnDemand()=" << OperatingOnDemand() << endl;
+    //    if (DebugStream::Level5())
+    //        debug5<<"avtPICSFilter::GetDomain("<<domain<<" "<<X<<" "<<Y<<" "<<Z<<"), OperatingOnDemand()=" << OperatingOnDemand() << endl;
     
     if (domain.domain == -1 || domain.timeStep == -1)
         return NULL;
@@ -412,8 +412,8 @@ avtPICSFilter::GetDomain(const DomainType &domain,
     else
         ds = dataSets[domain.domain];
     
-    if (DebugStream::Level5())
-        debug5<<ds<<endl;
+    //    if (DebugStream::Level5())
+    //        debug5<<ds<<endl;
 
     return ds;
 }
@@ -998,6 +998,9 @@ AlgorithmToString(int algo)
 //   Hank Childs, Thu Oct 21 08:54:51 PDT 2010
 //   Detect when we have an empty data set and issue a warning (not crash).
 //
+//   Dave Pugmire, Mon Feb  7 13:45:54 EST 2011
+//   Ensure spatial meta data is ok. If not, recompute.
+//
 // ****************************************************************************
 
 void
@@ -1023,6 +1026,12 @@ avtPICSFilter::Initialize()
         // better off calculating one.
         dontUseIntervalTree = true;
     }
+    dontUseIntervalTree = true;
+    if (!GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
+    {
+        dontUseIntervalTree = true;
+    }
+    
     if (it_tmp == NULL || dontUseIntervalTree)
     {
         if (OperatingOnDemand())
@@ -1600,14 +1609,13 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
     {
         // check if this is perchance a ghost cell; 
         // if it is, we do not want this domain
-
-        if( vtkDataArray* ghosts = ds->GetCellData()->GetArray("avtGhostZones") )
+        if (vtkDataArray* ghosts = ds->GetCellData()->GetArray("avtGhostZones"))
         {
             if( ghosts->GetComponent( cell, 0 ) )
                 cell = -1;
         }
     }
-
+    
     if (DebugStream::Level5())
         debug5 << "avtPICSFilter::PointInDomain( " << pt << " ) returns " 
                << (cell == -1 ? "false" : "true") << endl;
