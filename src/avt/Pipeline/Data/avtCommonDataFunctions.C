@@ -3141,7 +3141,7 @@ CInsertRectilinearTransformInfoIntoDataset(avtDataRepresentation &data,
 //
 // ****************************************************************************
 
-template <class T> static bool
+template <class T> static void
 PopulateHistogram(T *buf, int ntups, int nbins, double min, double max, VISIT_LONG_LONG *numVals)
 {
     double mult = nbins/(max-min);  // This is actually needed to help the compiler.  2X difference.
