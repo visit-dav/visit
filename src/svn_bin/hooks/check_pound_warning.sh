@@ -15,6 +15,9 @@
 #   Re-factored most of skipping logic to CanHandleCommonSkipCases.
 #   Adjusted main file loop to accomodate fact that FLIST file now contains
 #   file status chars as well as file names.
+#
+#   Mark C. Miller, Mon Feb  7 20:33:45 PST 2011
+#   Permit #warning in branches.
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -34,6 +37,16 @@ while read fline; do
     if `HandleCommonSkipCases $fstat $fname`; then
         continue
     fi
+
+    case $fname in
+        trunk/*)
+            # Do not skip (continue) these
+            ;;
+        *)
+            # Skip anything not on trunk
+            continue
+            ;;
+    esac
 
     svnlook cat -t $TXN $REPOS $fname | grep -q '^#warning' 1>/dev/null 2>&1
     commitFileHasPoundWarnings=$?
