@@ -821,6 +821,10 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Hank Childs, Thu May 20 21:32:04 PDT 2010
 //    Use a more efficient version of Log10-with-minimum.
 //
+//    Paul Navratil, Tue Feb  8 09:32:03 PST 2011
+//    If we want to create an expression with name 'X' and 'X' is already
+//    an expression in the list, then delete 'X' before adding the new one.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -905,15 +909,33 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
 
         SNPRINTF(exprName, 128, "_%s_gradient", gradvar);
         char exprDef[512];
+        ExpressionList *elist = ParsingExprList::Instance()->GetList();
         if (atts.GetSmoothData())
         {
             SNPRINTF(exprDef, 512, "gradient(recenter(<%s>, \"nodal\"), \"fast\")", gradvar);
+            for (int i=0; i < elist->GetNumExpressions(); ++i)
+            {
+                if ((*elist)[i].GetName() == exprName)
+                {
+                    debug3 << "Removed expression '" << exprName << "' from expression list to recalculate gradient" << endl;
+                    elist->RemoveExpressions(i);
+                    break;
+                }
+            }
         }
         else
         {
             SNPRINTF(exprDef, 512, "gradient(<%s>, \"fast\")", gradvar);
+            for (int i=0; i < elist->GetNumExpressions(); ++i)
+            {
+                if ((*elist)[i].GetName() == exprName)
+                {
+                    debug3 << "Removed expression '" << exprName << "' from expression list to recalculate gradient" << endl;
+                    elist->RemoveExpressions(i);
+                    break;
+                }
+            }
         }
-        ExpressionList *elist = ParsingExprList::Instance()->GetList();
 
         Expression *e = new Expression();
         e->SetName(exprName);
