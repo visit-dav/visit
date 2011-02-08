@@ -497,7 +497,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
 
   // sampling offset between points.
   double sampleDistance = atts.GetSampleDistance();
-  int nLinearSamples = ceil(axis.length() / sampleDistance) + 1;
+  int nLinearSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
 
   axis.normalize();
   avtVector delta = axis * sampleDistance;
@@ -554,14 +554,14 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
 
   // sampling offset between points.
   double sampleDistance = atts.GetSampleDistance();
-  int nLinearSamples = ceil(axis.length() / sampleDistance) + 1;
+  int nLinearSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
 
   axis.normalize();
   avtVector delta = axis * sampleDistance;
 
   // sampling offset between arcs.
   double sampleArc = atts.GetSampleArc();
-  int nRadialSamples = ceil( 360.0 / sampleArc );
+  int nRadialSamples = (int) ceil( 360.0 / sampleArc );
 
   double tangent = tan( 2.0 * M_PI * divergence / 360.0 );
 
