@@ -115,12 +115,16 @@ avtPhong::~avtPhong()
 //      Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
 //      Added ability to reduce amount of lighting for low-gradient-mag areas.
 //
+//      Paul Navratil, Tue Feb  8 09:28:28 PST 2011
+//      Add support for colored lights.
+//
 // ****************************************************************************
 
 void
 avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
 {
     double r = 0., g = 0., b = 0.;
+    double lc[4];
 
     const int maxNumLights = 8;
     for (int i = 0 ; i < maxNumLights ; i++)
@@ -130,11 +134,12 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
             continue;
   
         double brightness = l.GetBrightness();
+        l.GetColor().GetRgba(lc);
         if (l.GetType() == LightAttributes::Ambient)
         {
-            r += brightness*rgb[0];
-            g += brightness*rgb[1];
-            b += brightness*rgb[2];
+            r += brightness*rgb[0]*lc[0];
+            g += brightness*rgb[1]*lc[1];
+            b += brightness*rgb[2]*lc[2];
         }
         else 
         {
@@ -185,9 +190,9 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
                               grad[2]*grad[2]);
             if (mag == 0.)
             {
-                r += brightness*rgb[0];
-                g += brightness*rgb[1];
-                b += brightness*rgb[2];
+                r += brightness*rgb[0]*lc[0];
+                g += brightness*rgb[1]*lc[1];
+                b += brightness*rgb[2]*lc[2];
                 continue;
             }
             grad[0] /= mag;
@@ -210,9 +215,9 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
             }
             diffuse = 1.0 - (diffuseScale * (1.0-diffuse));
 
-            r += brightness*diffuse*rgb[0];
-            g += brightness*diffuse*rgb[1];
-            b += brightness*diffuse*rgb[2];
+            r += brightness*diffuse*rgb[0]*lc[0];
+            g += brightness*diffuse*rgb[1]*lc[1];
+            b += brightness*diffuse*rgb[2]*lc[2];
   
             if (doSpecular)
             {
