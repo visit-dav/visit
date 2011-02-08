@@ -152,6 +152,7 @@ static void InitState_5(Dictionary &d, State &s)
     SetShiftState(s,  55, d.Get('('));
 
     // reduce rule 42: Variable ==> Identifier 
+    SetReduceRule(s,  42, d.Get(256));
     SetReduceRule(s,  42, d.Get('+'));
     SetReduceRule(s,  42, d.Get('*'));
     SetReduceRule(s,  42, d.Get('-'));
@@ -160,12 +161,12 @@ static void InitState_5(Dictionary &d, State &s)
     SetReduceRule(s,  42, d.Get('%'));
     SetReduceRule(s,  42, d.Get('['));
     SetReduceRule(s,  42, d.Get('&'));
-    SetReduceRule(s,  42, d.Get(256));
 }
 
 static void InitState_6(Dictionary &d, State &s)
 {
     // reduce rule 16: Constant ==> Integer 
+    SetReduceRule(s,  16, d.Get(256));
     SetReduceRule(s,  16, d.Get('+'));
     SetReduceRule(s,  16, d.Get('*'));
     SetReduceRule(s,  16, d.Get('-'));
@@ -174,12 +175,12 @@ static void InitState_6(Dictionary &d, State &s)
     SetReduceRule(s,  16, d.Get('%'));
     SetReduceRule(s,  16, d.Get('['));
     SetReduceRule(s,  16, d.Get('&'));
-    SetReduceRule(s,  16, d.Get(256));
 }
 
 static void InitState_7(Dictionary &d, State &s)
 {
     // reduce rule 17: Constant ==> Float 
+    SetReduceRule(s,  17, d.Get(256));
     SetReduceRule(s,  17, d.Get('+'));
     SetReduceRule(s,  17, d.Get('*'));
     SetReduceRule(s,  17, d.Get('-'));
@@ -188,12 +189,12 @@ static void InitState_7(Dictionary &d, State &s)
     SetReduceRule(s,  17, d.Get('%'));
     SetReduceRule(s,  17, d.Get('['));
     SetReduceRule(s,  17, d.Get('&'));
-    SetReduceRule(s,  17, d.Get(256));
 }
 
 static void InitState_8(Dictionary &d, State &s)
 {
     // reduce rule 18: Constant ==> String 
+    SetReduceRule(s,  18, d.Get(256));
     SetReduceRule(s,  18, d.Get('+'));
     SetReduceRule(s,  18, d.Get('*'));
     SetReduceRule(s,  18, d.Get('-'));
@@ -202,12 +203,12 @@ static void InitState_8(Dictionary &d, State &s)
     SetReduceRule(s,  18, d.Get('%'));
     SetReduceRule(s,  18, d.Get('['));
     SetReduceRule(s,  18, d.Get('&'));
-    SetReduceRule(s,  18, d.Get(256));
 }
 
 static void InitState_9(Dictionary &d, State &s)
 {
     // reduce rule 19: Constant ==> Bool 
+    SetReduceRule(s,  19, d.Get(256));
     SetReduceRule(s,  19, d.Get('+'));
     SetReduceRule(s,  19, d.Get('*'));
     SetReduceRule(s,  19, d.Get('-'));
@@ -216,7 +217,6 @@ static void InitState_9(Dictionary &d, State &s)
     SetReduceRule(s,  19, d.Get('%'));
     SetReduceRule(s,  19, d.Get('['));
     SetReduceRule(s,  19, d.Get('&'));
-    SetReduceRule(s,  19, d.Get(256));
 }
 
 static void InitState_10(Dictionary &d, State &s)
@@ -238,6 +238,7 @@ static void InitState_10(Dictionary &d, State &s)
 static void InitState_11(Dictionary &d, State &s)
 {
     // reduce rule 11: Expr ==> Constant 
+    SetReduceRule(s,  11, d.Get(256));
     SetReduceRule(s,  11, d.Get('+'));
     SetReduceRule(s,  11, d.Get('*'));
     SetReduceRule(s,  11, d.Get('-'));
@@ -246,12 +247,12 @@ static void InitState_11(Dictionary &d, State &s)
     SetReduceRule(s,  11, d.Get('%'));
     SetReduceRule(s,  11, d.Get('['));
     SetReduceRule(s,  11, d.Get('&'));
-    SetReduceRule(s,  11, d.Get(256));
 }
 
 static void InitState_12(Dictionary &d, State &s)
 {
     // reduce rule 12: Expr ==> Vector 
+    SetReduceRule(s,  12, d.Get(256));
     SetReduceRule(s,  12, d.Get('+'));
     SetReduceRule(s,  12, d.Get('*'));
     SetReduceRule(s,  12, d.Get('-'));
@@ -260,12 +261,12 @@ static void InitState_12(Dictionary &d, State &s)
     SetReduceRule(s,  12, d.Get('%'));
     SetReduceRule(s,  12, d.Get('['));
     SetReduceRule(s,  12, d.Get('&'));
-    SetReduceRule(s,  12, d.Get(256));
 }
 
 static void InitState_13(Dictionary &d, State &s)
 {
     // reduce rule 13: Expr ==> Function 
+    SetReduceRule(s,  13, d.Get(256));
     SetReduceRule(s,  13, d.Get('+'));
     SetReduceRule(s,  13, d.Get('*'));
     SetReduceRule(s,  13, d.Get('-'));
@@ -274,12 +275,12 @@ static void InitState_13(Dictionary &d, State &s)
     SetReduceRule(s,  13, d.Get('%'));
     SetReduceRule(s,  13, d.Get('['));
     SetReduceRule(s,  13, d.Get('&'));
-    SetReduceRule(s,  13, d.Get(256));
 }
 
 static void InitState_14(Dictionary &d, State &s)
 {
     // reduce rule 14: Expr ==> Variable 
+    SetReduceRule(s,  14, d.Get(256));
     SetReduceRule(s,  14, d.Get('+'));
     SetReduceRule(s,  14, d.Get('*'));
     SetReduceRule(s,  14, d.Get('-'));
@@ -288,12 +289,12 @@ static void InitState_14(Dictionary &d, State &s)
     SetReduceRule(s,  14, d.Get('%'));
     SetReduceRule(s,  14, d.Get('['));
     SetReduceRule(s,  14, d.Get('&'));
-    SetReduceRule(s,  14, d.Get(256));
 }
 
 static void InitState_15(Dictionary &d, State &s)
 {
     // reduce rule 15: Expr ==> Database 
+    SetReduceRule(s,  15, d.Get(256));
     SetReduceRule(s,  15, d.Get('+'));
     SetReduceRule(s,  15, d.Get('*'));
     SetReduceRule(s,  15, d.Get('-'));
@@ -302,7 +303,6 @@ static void InitState_15(Dictionary &d, State &s)
     SetReduceRule(s,  15, d.Get('%'));
     SetReduceRule(s,  15, d.Get('['));
     SetReduceRule(s,  15, d.Get('&'));
-    SetReduceRule(s,  15, d.Get(256));
 }
 
 static void InitState_16(Dictionary &d, State &s)
@@ -311,6 +311,7 @@ static void InitState_16(Dictionary &d, State &s)
     SetShiftState(s,  62, d.Get('['));
 
     // reduce rule 9: Expr ==> - Expr 
+    SetReduceRule(s,   9, d.Get(256));
     SetReduceRule(s,   9, d.Get('+'));
     SetReduceRule(s,   9, d.Get('*'));
     SetReduceRule(s,   9, d.Get('-'));
@@ -318,7 +319,6 @@ static void InitState_16(Dictionary &d, State &s)
     SetReduceRule(s,   9, d.Get('^'));
     SetReduceRule(s,   9, d.Get('%'));
     SetReduceRule(s,   9, d.Get('&'));
-    SetReduceRule(s,   9, d.Get(256));
 }
 
 static void InitState_17(Dictionary &d, State &s)
@@ -1258,6 +1258,7 @@ static void InitState_76(Dictionary &d, State &s)
 static void InitState_77(Dictionary &d, State &s)
 {
     // reduce rule 10: Expr ==> ( Expr ) 
+    SetReduceRule(s,  10, d.Get(256));
     SetReduceRule(s,  10, d.Get('+'));
     SetReduceRule(s,  10, d.Get('*'));
     SetReduceRule(s,  10, d.Get('-'));
@@ -1266,7 +1267,6 @@ static void InitState_77(Dictionary &d, State &s)
     SetReduceRule(s,  10, d.Get('%'));
     SetReduceRule(s,  10, d.Get('['));
     SetReduceRule(s,  10, d.Get('&'));
-    SetReduceRule(s,  10, d.Get(256));
 }
 
 static void InitState_78(Dictionary &d, State &s)
@@ -1582,6 +1582,7 @@ static void InitState_96(Dictionary &d, State &s)
 static void InitState_97(Dictionary &d, State &s)
 {
     // reduce rule 43: Variable ==> < PathSpec > 
+    SetReduceRule(s,  43, d.Get(256));
     SetReduceRule(s,  43, d.Get('+'));
     SetReduceRule(s,  43, d.Get('*'));
     SetReduceRule(s,  43, d.Get('-'));
@@ -1590,7 +1591,6 @@ static void InitState_97(Dictionary &d, State &s)
     SetReduceRule(s,  43, d.Get('%'));
     SetReduceRule(s,  43, d.Get('['));
     SetReduceRule(s,  43, d.Get('&'));
-    SetReduceRule(s,  43, d.Get(256));
 }
 
 static void InitState_98(Dictionary &d, State &s)
@@ -1983,6 +1983,7 @@ static void InitState_123(Dictionary &d, State &s)
 static void InitState_124(Dictionary &d, State &s)
 {
     // reduce rule 28: Function ==> Identifier ( ) 
+    SetReduceRule(s,  28, d.Get(256));
     SetReduceRule(s,  28, d.Get('+'));
     SetReduceRule(s,  28, d.Get('*'));
     SetReduceRule(s,  28, d.Get('-'));
@@ -1991,7 +1992,6 @@ static void InitState_124(Dictionary &d, State &s)
     SetReduceRule(s,  28, d.Get('%'));
     SetReduceRule(s,  28, d.Get('['));
     SetReduceRule(s,  28, d.Get('&'));
-    SetReduceRule(s,  28, d.Get(256));
 }
 
 static void InitState_125(Dictionary &d, State &s)
@@ -2229,10 +2229,10 @@ static void InitState_141(Dictionary &d, State &s)
     SetShiftState(s,  63, d.Get('&'));
 
     // reduce rule 1: Expr ==> Expr + Expr 
+    SetReduceRule(s,   1, d.Get(256));
     SetReduceRule(s,   1, d.Get('+'));
     SetReduceRule(s,   1, d.Get('-'));
     SetReduceRule(s,   1, d.Get('%'));
-    SetReduceRule(s,   1, d.Get(256));
 }
 
 static void InitState_142(Dictionary &d, State &s)
@@ -2243,12 +2243,12 @@ static void InitState_142(Dictionary &d, State &s)
     SetShiftState(s,  63, d.Get('&'));
 
     // reduce rule 3: Expr ==> Expr * Expr 
+    SetReduceRule(s,   3, d.Get(256));
     SetReduceRule(s,   3, d.Get('+'));
     SetReduceRule(s,   3, d.Get('*'));
     SetReduceRule(s,   3, d.Get('-'));
     SetReduceRule(s,   3, d.Get('/'));
     SetReduceRule(s,   3, d.Get('%'));
-    SetReduceRule(s,   3, d.Get(256));
 }
 
 static void InitState_143(Dictionary &d, State &s)
@@ -2261,10 +2261,10 @@ static void InitState_143(Dictionary &d, State &s)
     SetShiftState(s,  63, d.Get('&'));
 
     // reduce rule 2: Expr ==> Expr - Expr 
+    SetReduceRule(s,   2, d.Get(256));
     SetReduceRule(s,   2, d.Get('+'));
     SetReduceRule(s,   2, d.Get('-'));
     SetReduceRule(s,   2, d.Get('%'));
-    SetReduceRule(s,   2, d.Get(256));
 }
 
 static void InitState_144(Dictionary &d, State &s)
@@ -2275,12 +2275,12 @@ static void InitState_144(Dictionary &d, State &s)
     SetShiftState(s,  63, d.Get('&'));
 
     // reduce rule 4: Expr ==> Expr / Expr 
+    SetReduceRule(s,   4, d.Get(256));
     SetReduceRule(s,   4, d.Get('+'));
     SetReduceRule(s,   4, d.Get('*'));
     SetReduceRule(s,   4, d.Get('-'));
     SetReduceRule(s,   4, d.Get('/'));
     SetReduceRule(s,   4, d.Get('%'));
-    SetReduceRule(s,   4, d.Get(256));
 }
 
 static void InitState_145(Dictionary &d, State &s)
@@ -2290,12 +2290,12 @@ static void InitState_145(Dictionary &d, State &s)
     SetShiftState(s,  62, d.Get('['));
 
     // reduce rule 5: Expr ==> Expr ^ Expr 
+    SetReduceRule(s,   5, d.Get(256));
     SetReduceRule(s,   5, d.Get('+'));
     SetReduceRule(s,   5, d.Get('*'));
     SetReduceRule(s,   5, d.Get('-'));
     SetReduceRule(s,   5, d.Get('/'));
     SetReduceRule(s,   5, d.Get('%'));
-    SetReduceRule(s,   5, d.Get(256));
 }
 
 static void InitState_146(Dictionary &d, State &s)
@@ -2326,12 +2326,12 @@ static void InitState_148(Dictionary &d, State &s)
     SetShiftState(s,  62, d.Get('['));
 
     // reduce rule 7: Expr ==> Expr & Expr 
+    SetReduceRule(s,   7, d.Get(256));
     SetReduceRule(s,   7, d.Get('+'));
     SetReduceRule(s,   7, d.Get('*'));
     SetReduceRule(s,   7, d.Get('-'));
     SetReduceRule(s,   7, d.Get('/'));
     SetReduceRule(s,   7, d.Get('%'));
-    SetReduceRule(s,   7, d.Get(256));
 }
 
 static void InitState_149(Dictionary &d, State &s)
@@ -2852,6 +2852,7 @@ static void InitState_183(Dictionary &d, State &s)
 static void InitState_184(Dictionary &d, State &s)
 {
     // reduce rule 45: Database ==> < DBSpec : > 
+    SetReduceRule(s,  45, d.Get(256));
     SetReduceRule(s,  45, d.Get('+'));
     SetReduceRule(s,  45, d.Get('*'));
     SetReduceRule(s,  45, d.Get('-'));
@@ -2860,7 +2861,6 @@ static void InitState_184(Dictionary &d, State &s)
     SetReduceRule(s,  45, d.Get('%'));
     SetReduceRule(s,  45, d.Get('['));
     SetReduceRule(s,  45, d.Get('&'));
-    SetReduceRule(s,  45, d.Get(256));
 }
 
 static void InitState_185(Dictionary &d, State &s)
@@ -3610,6 +3610,7 @@ static void InitState_233(Dictionary &d, State &s)
 static void InitState_234(Dictionary &d, State &s)
 {
     // reduce rule 29: Function ==> Identifier ( Args ) 
+    SetReduceRule(s,  29, d.Get(256));
     SetReduceRule(s,  29, d.Get('+'));
     SetReduceRule(s,  29, d.Get('*'));
     SetReduceRule(s,  29, d.Get('-'));
@@ -3618,7 +3619,6 @@ static void InitState_234(Dictionary &d, State &s)
     SetReduceRule(s,  29, d.Get('%'));
     SetReduceRule(s,  29, d.Get('['));
     SetReduceRule(s,  29, d.Get('&'));
-    SetReduceRule(s,  29, d.Get(256));
 }
 
 static void InitState_235(Dictionary &d, State &s)
@@ -3647,6 +3647,7 @@ static void InitState_235(Dictionary &d, State &s)
 static void InitState_236(Dictionary &d, State &s)
 {
     // reduce rule 8: Expr ==> Expr [ Integer ] 
+    SetReduceRule(s,   8, d.Get(256));
     SetReduceRule(s,   8, d.Get('+'));
     SetReduceRule(s,   8, d.Get('*'));
     SetReduceRule(s,   8, d.Get('-'));
@@ -3655,7 +3656,6 @@ static void InitState_236(Dictionary &d, State &s)
     SetReduceRule(s,   8, d.Get('%'));
     SetReduceRule(s,   8, d.Get('['));
     SetReduceRule(s,   8, d.Get('&'));
-    SetReduceRule(s,   8, d.Get(256));
 }
 
 static void InitState_237(Dictionary &d, State &s)
@@ -3979,6 +3979,7 @@ static void InitState_259(Dictionary &d, State &s)
 static void InitState_260(Dictionary &d, State &s)
 {
     // reduce rule 44: Variable ==> < DBSpec : PathSpec > 
+    SetReduceRule(s,  44, d.Get(256));
     SetReduceRule(s,  44, d.Get('+'));
     SetReduceRule(s,  44, d.Get('*'));
     SetReduceRule(s,  44, d.Get('-'));
@@ -3987,7 +3988,6 @@ static void InitState_260(Dictionary &d, State &s)
     SetReduceRule(s,  44, d.Get('%'));
     SetReduceRule(s,  44, d.Get('['));
     SetReduceRule(s,  44, d.Get('&'));
-    SetReduceRule(s,  44, d.Get(256));
 }
 
 static void InitState_261(Dictionary &d, State &s)
@@ -4293,6 +4293,7 @@ static void InitState_280(Dictionary &d, State &s)
 static void InitState_281(Dictionary &d, State &s)
 {
     // reduce rule 20: Vector ==> { Expr , Expr } 
+    SetReduceRule(s,  20, d.Get(256));
     SetReduceRule(s,  20, d.Get('+'));
     SetReduceRule(s,  20, d.Get('*'));
     SetReduceRule(s,  20, d.Get('-'));
@@ -4301,7 +4302,6 @@ static void InitState_281(Dictionary &d, State &s)
     SetReduceRule(s,  20, d.Get('%'));
     SetReduceRule(s,  20, d.Get('['));
     SetReduceRule(s,  20, d.Get('&'));
-    SetReduceRule(s,  20, d.Get(256));
 }
 
 static void InitState_282(Dictionary &d, State &s)
@@ -5892,6 +5892,7 @@ static void InitState_385(Dictionary &d, State &s)
 static void InitState_386(Dictionary &d, State &s)
 {
     // reduce rule 21: Vector ==> { Expr , Expr , Expr } 
+    SetReduceRule(s,  21, d.Get(256));
     SetReduceRule(s,  21, d.Get('+'));
     SetReduceRule(s,  21, d.Get('*'));
     SetReduceRule(s,  21, d.Get('-'));
@@ -5900,7 +5901,6 @@ static void InitState_386(Dictionary &d, State &s)
     SetReduceRule(s,  21, d.Get('%'));
     SetReduceRule(s,  21, d.Get('['));
     SetReduceRule(s,  21, d.Get('&'));
-    SetReduceRule(s,  21, d.Get(256));
 }
 
 static void InitState_387(Dictionary &d, State &s)
