@@ -4286,6 +4286,10 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Kathleen Bonnell, Tue Feb  8 12:25:14 PST 2011
+//    Reorder start/endTime tests to catch more errors.
+//
 // ***********************************************************************
 
 void
@@ -4393,6 +4397,17 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     int endT   = timeQueryAtts->GetEndTimeFlag() ? 
                  timeQueryAtts->GetEndTime() : nStates-1;
 
+    if (startT < 0)
+    {
+        Warning(tr("Clamping start time to 0."));
+        startT = 0;
+    }
+    if (endT > nStates-1)
+    {
+        Warning(tr("Clamping end time to number of available timesteps."));
+        endT = nStates-1;
+    }
+
     if (startT >= endT)
     {
         Error(tr("Query over time: start time must be smaller than end time"
@@ -4407,19 +4422,9 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
               "please correct start and end times try again.")); 
         return;
     }
-    if (startT < 0)
-    {
-        Warning(tr("Clamping start time to 0."));
-        startT = 0;
-    }
-    if (endT > nStates-1)
-    {
-        Warning(tr("Clamping end time to number of available timesteps."));
-        endT = nStates-1;
-    }
+
     timeQueryAtts->SetStartTime(startT); 
     timeQueryAtts->SetEndTime(endT); 
-
 
     //
     //  See if we can get a window in which to place the resulting curve.
