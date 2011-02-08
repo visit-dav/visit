@@ -123,6 +123,11 @@ QvisQueryOverTimeWindow::~QvisQueryOverTimeWindow()
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//   Kathleen Bonnell, Mon Feb  7 13:07:25 PST 2011
+//   Added comments that explicitly state start/end times are TimeStates.
+//   And that the 'Cycles' 'Times' and 'Timestate' options only apply to 
+//   values displayed for x-axis.
+//
 // ****************************************************************************
 
 void
@@ -136,6 +141,10 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     topLayout->addWidget(timeTypeBox);
    
     QGridLayout *timeTypeBoxLayout = new QGridLayout(timeTypeBox);    
+
+    QLabel *mLabel = new QLabel(tr("Choices entered here only apply to values displayed in the x-axis of the time curve."), central);
+    mLabel->setWordWrap(true);
+    timeTypeBoxLayout->addWidget(mLabel, 0, 0, 1, 3);
 
     timeType = new QButtonGroup(timeTypeBox);
     connect(timeType, SIGNAL(buttonClicked(int)), this, SLOT(timeTypeChanged(int)));
@@ -161,15 +170,18 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //
     // StartTime 
     //
+    QLabel *msgLabel = new QLabel(tr("Start and End times MUST be specified as Time steps, not cycles or times."), central);
+    msgLabel->setWordWrap(true);
+    mainLayout->addWidget(msgLabel, 0, 0, 1, 3);
     startTimeFlag = new QCheckBox(tr("Starting timestep"), central);
     connect(startTimeFlag, SIGNAL(toggled(bool)),
             this, SLOT(startTimeFlagChanged(bool)));
-    mainLayout->addWidget(startTimeFlag, 1,0);
+    mainLayout->addWidget(startTimeFlag, 3,0);
 
     startTime = new QNarrowLineEdit(central);
     connect(startTime, SIGNAL(returnPressed()),
             this, SLOT(startTimeProcessText()));
-    mainLayout->addWidget(startTime, 1,1);
+    mainLayout->addWidget(startTime, 3,1);
 
     //
     // EndTime 
@@ -177,41 +189,41 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     endTimeFlag = new QCheckBox(tr("Ending timestep"), central);
     connect(endTimeFlag, SIGNAL(toggled(bool)),
             this, SLOT(endTimeFlagChanged(bool)));
-    mainLayout->addWidget(endTimeFlag, 2,0);
+    mainLayout->addWidget(endTimeFlag, 4,0);
 
     endTime = new QNarrowLineEdit(central);
     connect(endTime, SIGNAL(returnPressed()),
             this, SLOT(endTimeProcessText()));
-    mainLayout->addWidget(endTime, 2,1);
+    mainLayout->addWidget(endTime, 4,1);
 
     //
     // Stride 
     //
     strideLabel = new QLabel(tr("stride"), central);
-    mainLayout->addWidget(strideLabel,3,0);
+    mainLayout->addWidget(strideLabel,5,0);
     stride = new QNarrowLineEdit(central);
     connect(stride, SIGNAL(returnPressed()),
             this, SLOT(strideProcessText()));
-    mainLayout->addWidget(stride, 3,1);
+    mainLayout->addWidget(stride, 5,1);
 
     //
     // CreateWindow 
     //
-    createWindow = new QCheckBox(tr("Use 1st unused window or\ncreate new one.  All\nsubsequent queries will\nuse this same window."),
+    createWindow = new QCheckBox(tr("Use 1st unused window or create new\none. All subsequent queries will use this\nsame window."),
                                   central);
     connect(createWindow, SIGNAL(toggled(bool)),
             this, SLOT(createWindowChanged(bool)));
-    mainLayout->addWidget(createWindow, 4,0,1,2);
+    mainLayout->addWidget(createWindow, 6,0,3,2);
 
     //
     // WindowId 
     //
     windowIdLabel = new QLabel(tr("Window #"), central);
-    mainLayout->addWidget(windowIdLabel,5,0);
+    mainLayout->addWidget(windowIdLabel,9,0);
     windowId = new QNarrowLineEdit(central);
     connect(windowId, SIGNAL(returnPressed()),
             this, SLOT(windowIdProcessText()));
-    mainLayout->addWidget(windowId, 5,1);
+    mainLayout->addWidget(windowId, 9,1);
 
 }
 

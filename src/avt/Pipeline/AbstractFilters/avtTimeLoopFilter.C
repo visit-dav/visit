@@ -47,7 +47,7 @@
 #include <avtParallel.h>
 
 #include <DebugStream.h>
-#include <ImproperUseException.h>
+#include <UnexpectedValueException.h>
 
 #include <math.h>
 
@@ -316,6 +316,12 @@ avtTimeLoopFilter::DataCanBeParallelizedOverTime(void)
 //    Renamed from SetTimeLoop.  Removed args.  Check for set values and
 //    use defaults as necessary.
 //
+//    Kathleen Bonnell, Mon Feb  7 12:54:18 PST 2011
+//    Moved all start/end time checking before calculation of nFrames. Use
+//    UnexpectedValueException instead of ImproperUseException so that engine 
+//    will not exit. Clamp endTime if >= numStates, just like listed in the 
+//    issued warning.
+//
 // ****************************************************************************
 
 void
@@ -334,29 +340,36 @@ avtTimeLoopFilter::FinalizeTimeLoop()
     {
         stride = 1;
     }
+    if (endTime >= numStates)
+    {
+        endTime = numStates -1;
+        std::ostringstream oss;
+        oss << GetType() 
+            << ": Clamping end time to number of available timesteps"
+            << "(" << numStates-1 << ").";
+        std::string msg(oss.str());
+        avtCallback::IssueWarning(msg.c_str());
+    }
     if (startTime >= endTime)
     {
-        std::string msg("Start time must be smaller than end time for " );
-        msg += GetType();
-        msg += ".\n";
-        EXCEPTION1(ImproperUseException, msg);
+        std::ostringstream oss;
+        oss << " (for " << GetType() << ") startTime < endTime (" 
+            << endTime << ")";
+        std::string expected(oss.str());
+        EXCEPTION2(UnexpectedValueException, expected, startTime);
     }
 
     nFrames = (int) ceil((((float)endTime -startTime))/(float)stride) + 1; 
 
     if (nFrames <= 1)
     {
-        std::string msg(GetType());
-        msg = msg +  " requires more than 1 frame, please correct start " + 
-               "and end times and try again.";
-        EXCEPTION1(ImproperUseException, msg);
-    }
-
-    if (endTime >= numStates)
-    {
-        std::string msg(GetType());
-        msg += ":  Clamping end time to number of available timesteps.";
-        avtCallback::IssueWarning(msg.c_str());
+        std::ostringstream oss1, oss2;
+        oss1 << " (for " << GetType() << ") nFrames > 1";
+        oss2 <<  nFrames 
+             << ". Please correct start and end times and try again.";
+        std::string expected(oss1.str());
+        std::string got(oss2.str());
+        EXCEPTION2(UnexpectedValueException, expected, got);
     }
 
     //
