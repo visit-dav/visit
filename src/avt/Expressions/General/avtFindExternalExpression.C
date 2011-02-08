@@ -121,6 +121,9 @@ avtFindExternalExpression::~avtFindExternalExpression()
 //    Hank Childs, Mon Feb  7 07:00:30 PST 2011
 //    Fix problem with finding external nodes with unstructured meshes.
 //
+//    Hank Childs, Tue Feb  8 13:24:25 PST 2011
+//    Add support for "corner case" where nothing is on the exterior.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -169,18 +172,29 @@ avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds)
         arr2 =  ds->GetCellData()->GetArray(varname);
     else
         arr2 =  ds->GetPointData()->GetArray(varname);
+    bool haveArray = true;
     if (arr2 == NULL || arr2->GetDataType() != VTK_INT)
-        EXCEPTION2(ExpressionException, outputVariableName, "An internal error"
-                   " occurred when calculating the external nodes.");
+    {
+        if (ds->GetNumberOfCells() > 0)
+        {
+            EXCEPTION2(ExpressionException, outputVariableName, "An internal "
+                   "error occurred when calculating the external nodes.");
+        }
+        else
+            haveArray = false;
+    }
     vtkIntArray *arr3 = (vtkIntArray *) arr2;
 
     bool *haveId = new bool[nids];
     for (i = 0 ; i < nids ; i++)
         haveId[i] = false;
 
-    int nArr = arr3->GetNumberOfTuples();
-    for (i = 0 ; i < nArr ; i++)
-        haveId[arr3->GetValue(i)] = true;
+    if (haveArray)
+    {
+        int nArr = arr3->GetNumberOfTuples();
+        for (i = 0 ; i < nArr ; i++)
+            haveId[arr3->GetValue(i)] = true;
+    }
 
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfTuples(nids);
