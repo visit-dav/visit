@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
             cerr << "    Error creating file   \n";
             cerr << "---------------------------\n";
             cerr << endl;
-            exit(-1);
+            return -1;
         }
         cerr << "Writing to file: " << argv[1] << endl;
         G->WriteStateInitialization("ExprGrammar", output);
