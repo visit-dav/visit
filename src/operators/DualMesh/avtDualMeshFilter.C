@@ -206,6 +206,9 @@ avtDualMeshFilter::UpdateDataObjectInfo(void)
 //    Cyrus Harrison, Fri Feb 13 15:03:08 PST 2009
 //    Fixed memory leak.
 //
+//    Hank Childs, Tue Feb  8 15:28:14 PST 2011
+//    Add better support for 2D data ... z-coord wasn't being set.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -275,9 +278,13 @@ avtDualMeshFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
     if(dims[1]>1)
         result->SetYCoordinates(res_y_coords);
+    else
+        result->SetYCoordinates(rgrid->GetYCoordinates());
             
     if(dims[2]>1)
         result->SetZCoordinates(res_z_coords);
+    else
+        result->SetZCoordinates(rgrid->GetZCoordinates());
             
     if(res_x_coords)
         res_x_coords->Delete();
