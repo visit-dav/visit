@@ -2060,7 +2060,7 @@ SpreadsheetViewer::selectPickPoints()
             int old_ijk[3];
             for (int i = 0 ; i < numOldPicks ; i++)
             {
-                GetPickIJK(pastPicks[2*i], pastPicks[2*i+1], old_ijk);
+                GetPickIJK((int)pastPicks[2*i], (int)pastPicks[2*i+1], old_ijk);
 
                 // If old pick is same cell as current pick then skip it
                 if (old_ijk[0] == ijk[0] && old_ijk[1] == ijk[1] && old_ijk[2] == ijk[2])

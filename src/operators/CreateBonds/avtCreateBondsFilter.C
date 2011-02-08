@@ -311,8 +311,8 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     // extents, then no point doing the more complex spatial
     // subdivision scheme.  And if it's too small, the overhead of
     // making such a big vector grid for the box storage could be bad.
-    int approxNBoxes = (maxx - minx)*(maxy - miny)*(maxz - minz) /
-                                        (maxBondDist*maxBondDist*maxBondDist);
+    int approxNBoxes = (int)((maxx - minx)*(maxy - miny)*(maxz - minz) /
+                                        (maxBondDist*maxBondDist*maxBondDist));
     double minAllowable = 8;
     double maxAllowable = 10000000;
     if (approxNBoxes < minAllowable || approxNBoxes > maxAllowable)
@@ -404,7 +404,7 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
 
     //outPts->SetNumberOfPoints(nPts * 1.1);
     outPD->CopyAllocate(inPD,nPts);
-    outCD->CopyAllocate(inCD,nVerts*1.2);
+    outCD->CopyAllocate(inCD,(int)(nVerts*1.2));
 
 
     //
@@ -637,8 +637,8 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
                                     // get the element number of the
                                     // atoms.  for a2, must look up
                                     // from its *original* atom number
-                                    int e1 = elementnos[a1];
-                                    int e2 = elementnos[a2];
+                                    int e1 = (int) elementnos[a1];
+                                    int e2 = (int) elementnos[a2];
 
                                     // okay, now check for an actual match.
                                     // note that if it's not the native image,
@@ -766,7 +766,7 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
 
     //outPts->SetNumberOfPoints(nPts * 1.1);
     outPD->CopyAllocate(inPD,nPts);
-    outCD->CopyAllocate(inCD,nVerts*1.2);
+    outCD->CopyAllocate(inCD,(int)(nVerts*1.2));
 
     //
     // Copy the input points and verts over.
@@ -838,8 +838,8 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
             inPts->GetPoint(i,p1);
             inPts->GetPoint(j,p2);
 
-            int e1 = elementnos[i];
-            int e2 = elementnos[j];
+            int e1 = (int) elementnos[i];
+            int e2 = (int) elementnos[j];
 
             double dmin, dmax;
             bool possible = AtomBondDistances(e1,e2, dmin,dmax);
@@ -885,7 +885,7 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
     int timerPer = visitTimer->StartTimer();
     for (int j=0; j<natoms && addPeriodicBonds; j++)
     {
-        int e2 = elementnos[j];
+        int e2 = (int) elementnos[j];
         double p2[3];
         inPts->GetPoint(j,p2);
 
@@ -922,7 +922,7 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
             if (i==j)
                 continue;
 
-            int e1 = elementnos[i];
+            int e1 = (int) elementnos[i];
             double p1[3];
             inPts->GetPoint(i,p1);
 

@@ -444,7 +444,7 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
         {
             id = nodesFromCells->GetId(i);
             minD = d2;
-            origNode = origNodes->GetComponent(id, ncomp);
+            origNode = (int) origNodes->GetComponent(id, ncomp);
         }
     }
 

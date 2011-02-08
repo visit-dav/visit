@@ -1332,7 +1332,7 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
         else
         {
             ResettingError(tr("singlePlane"),
-                IntToQString(atts->GetSinglePlane()));
+                IntToQString((int)(atts->GetSinglePlane())));
             atts->SetSinglePlane(atts->GetSinglePlane());
         }
     }

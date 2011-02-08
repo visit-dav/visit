@@ -745,8 +745,8 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
 
 
     // Needed to check whether coarse vertex is out of bounds
-    int maxGlobalI = (domainBoundingBox[1] - domainBoundingBox[0]) / cellSize[0] - 1;
-    int maxGlobalJ = (domainBoundingBox[3] - domainBoundingBox[2]) / cellSize[1] - 1;
+    int maxGlobalI = (int) ((domainBoundingBox[1] - domainBoundingBox[0]) / cellSize[0] - 1);
+    int maxGlobalJ = (int) ((domainBoundingBox[3] - domainBoundingBox[2]) / cellSize[1] - 1);
 
     if (topologicalDimension == 2)
     {
@@ -954,7 +954,7 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
     else
     {
         // Create 3D stitch cells
-        int maxGlobalK = (domainBoundingBox[5] - domainBoundingBox[4]) / cellSize[2] - 1;
+        int maxGlobalK = (int) ((domainBoundingBox[5] - domainBoundingBox[4]) / cellSize[2] - 1);
 #ifdef LOC
 #undef LOC
 #endif
