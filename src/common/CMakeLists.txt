@@ -46,6 +46,10 @@
 #
 #   Mark C. Miller, Fri Oct 29 10:02:16 PDT 2010
 #   Added DBYieldedNoDataException
+#
+#   Mark C. Miller, Tue Feb  8 16:28:32 PST 2011
+#   Added custom 'init' target for pareser re-gen. It was lost in transition
+#   from autoconf to CMake.
 #****************************************************************************/
 
 SET(COMM_SOURCES
@@ -326,6 +330,10 @@ ELSE(WIN32)
     TARGET_LINK_LIBRARIES(exprconfig visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(exprtest expr/test.C)
     TARGET_LINK_LIBRARIES(exprtest visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    ADD_CUSTOM_TARGET(init)
+    ADD_DEPENDENCIES(init exprconfig)
+    ADD_CUSTOM_COMMAND(TARGET init POST_BUILD COMMAND exprconfig ExprInit.C
+        WORKING_DIRECTORY ${VISIT_SOURCE_DIR}/common/expr)
 ENDIF(WIN32)
 
 VISIT_INSTALL_TARGETS(visitcommon)
