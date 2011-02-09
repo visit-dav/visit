@@ -2357,6 +2357,8 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //    Hank Childs, Sat Apr 24 18:31:34 PDT 2010
 //    Fix problem-sized memory leak.
 //
+//    Mark C. Miller, Tue Feb  8 19:59:04 PST 2011
+//    Add logic to deal with possible memory over usage as per #587
 // ****************************************************************************
 
 static void
@@ -2414,6 +2416,35 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
             srcCnt = INT_MAX-1;
         else
             srcCnt = srcCnt + dstCnt;
+
+        //
+        // MANAGE POSSIBLE MEMORY OVER-USAGE
+        // ---------------------------------
+        //
+        // Its concievable that polygon count does not correlate well with memory
+        // usage such that polygon count could be well below threshold but
+        // memory usage, nonetheless, is going to drive us into a condition where
+        // we run into 'virtual' memory and thrash horribly or run out of memory
+        // entirely and crash. To avert this possibility, we also check for possible
+        // memory OVERusage and will kick into SR mode if we determine we are going
+        // to use too much memory. The trick is to guesstimate the amount of memory
+        // a 'scalableThreshold' number of triangles (polygons reall) should require.
+        // If we consider JUST TRIANGLES and assume that for each triangle, we
+        // represent the x, y and z coordinates of each vertex in double precision,
+        // then a 'scalableThreshold' number of triangles will require
+        // scalableThreshold * 3 (coords) * 3 (vertices) * 8 (bytes).
+        // Although we have here the length of the data-object-string equivalent of
+        // the datasets, that is ok, because the data-object-string equivalent is still
+        // a 'binary' representation of the data, as opposed to ASCII representation.
+        // Now, we don't really know if indeed after the dob->Merge() operation the
+        // resultant merged dataset will be of size srcLen + dstLen. In theory,
+        // I think it could be smaller. I don't think it could be larger. Regardless,
+        // our condition of possible OVERusage of memory involves testing
+        // srcLen+dstLen against our guesstimate of what it should take. For our
+        // default SR threshold of 2e+6 triangles, this equates to 144 Mbytes.
+        //
+        if ((srcLen + dstLen) >= scalableThreshold*72)
+            srcCnt = INT_MAX-1;
     }
 
     //
@@ -2424,7 +2455,6 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
     // case where we send basically the data tree--labels and domain ids--without
     // the actual data).
     //
-
     if ((srcCnt < scalableThreshold) || sendDataAnyway)
     {
         dstStr = new char [dstLen];
