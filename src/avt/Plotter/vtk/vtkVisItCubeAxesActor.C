@@ -96,6 +96,11 @@ vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
 //   Jeremy Meredith, Tue May 18 13:24:05 EDT 2010
 //   Added Ranges which are independent of Bounds.
 //
+//   Kathleen Bonnell, Wed Feb  9 10:52:42 PST 2011
+//   Change defaults for last*AxisDigits, so that label formats are 
+//   computed on first-build for all axes. (Fixes problem with not showing 
+//   enough precision in some cases).
+//
 // *************************************************************************
 
 vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
@@ -204,9 +209,9 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->lastXPow = 0;
   this->lastYPow = 0;
   this->lastZPow = 0;
-  this->lastXAxisDigits = 3;
-  this->lastYAxisDigits = 3;
-  this->lastZAxisDigits = 3;
+  this->lastXAxisDigits = -1;
+  this->lastYAxisDigits = -1;
+  this->lastZAxisDigits = -1;
 
   this->LastXBounds[0] = FLT_MAX;
   this->LastXBounds[1] = FLT_MAX;
