@@ -2359,6 +2359,10 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //
 //    Mark C. Miller, Tue Feb  8 19:59:04 PST 2011
 //    Add logic to deal with possible memory over usage as per #587
+//
+//    Mark C. Miller, Wed Feb  9 09:42:57 PST 2011
+//    Handle possible overflow condition in memory usage computation. Added
+//    debug output. Protected the test with some additional checks.
 // ****************************************************************************
 
 static void
@@ -2443,8 +2447,16 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
         // srcLen+dstLen against our guesstimate of what it should take. For our
         // default SR threshold of 2e+6 triangles, this equates to 144 Mbytes.
         //
-        if ((srcLen + dstLen) >= scalableThreshold*72)
-            srcCnt = INT_MAX-1;
+        if (srcCnt < INT_MAX-1 && scalableThreshold > 0)
+        {
+            tmp = (double) srcLen + (double) dstLen;
+            if (tmp >= (double) scalableThreshold*72.0)
+            {
+                debug3 << "Triggering transition into SR due to memory usage of " 
+                       << tmp << " bytes." << endl;
+                srcCnt = INT_MAX-1;
+            }
+        }
     }
 
     //
