@@ -1087,6 +1087,11 @@
 #     I switched the version of HDF4 to 4.2.5 and modified it to use vtkjpeg
 #     on all platforms, not just on the Mac.
 #
+#     Eric Brugger, Wed Feb  9 16:24:13 PST 2011
+#     I modified the script to only add the hdf5 dependent libraries to
+#     silo's dependent libraries in the config site file it generates if
+#     the script is building hdf5.
+#
 # *****************************************************************************
 
 
@@ -8553,7 +8558,7 @@ function build_hostconf
             >> $HOSTCONF
         else
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z \${VISIT_HDF5_LIBDEP})" \
+            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z)" \
             >> $HOSTCONF
         fi
     fi
