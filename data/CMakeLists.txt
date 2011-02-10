@@ -72,8 +72,11 @@
 #   built with the Silo library.
 #
 #   Kathleen Bonnell, Mon Nov 15 15:46:11 MST 2010
-#   Add support for building on windows.  
-#  
+#   Add support for building on windows.
+#
+#   Cyrus Harrison, Wed Feb  9 11:20:26 PST 2011
+#   Fix install of data files from out of source build.
+#
 #****************************************************************************/
 
 cmake_minimum_required(VERSION 2.8)
@@ -466,61 +469,105 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
               ENDFOREACH(SL ${SILO_LIB})
             ENDFOREACH(SD ${SILO_LIBRARY_DIR})
         ENDIF(WIN32)
-        ADD_CUSTOM_COMMAND(OUTPUT curv2d.silo curv2d_colmajor.silo
-                                  curv3d.silo curv3d_colmajor.silo
-                                  poly3d.silo rect2d.silo
-                                  rect3d.silo ucd2d.silo ucd3d.silo
+        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/curv2d.silo
+                                   ${DATA_OUT_DIR}/curv2d_colmajor.silo
+                                   ${DATA_OUT_DIR}/curv3d.silo
+                                   ${DATA_OUT_DIR}/curv3d_colmajor.silo
+                                   ${DATA_OUT_DIR}/poly3d.silo
+                                   ${DATA_OUT_DIR}/rect2d.silo
+                                   ${DATA_OUT_DIR}/rect3d.silo
+                                   ${DATA_OUT_DIR}/ucd2d.silo
+                                   ${DATA_OUT_DIR}/ucd3d.silo
                            COMMAND ${DATA_OUT_DIR}/testall${EXE_EXT}
                            DEPENDS ${DATA_OUT_DIR}/testall${EXE_EXT})
-        ADD_CUSTOM_COMMAND(OUTPUT globe.silo globe_mat0.silo
+        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/globe.silo
+                                   ${DATA_OUT_DIR}/globe_mat0.silo
                            COMMAND ${DATA_OUT_DIR}/globe${EXE_EXT}
                            DEPENDS ${DATA_OUT_DIR}/globe${EXE_EXT})
-        ADD_CUSTOM_COMMAND(OUTPUT dbA00.pdb dbB00.pdb dbC00.pdb
+        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/dbA00.pdb
+                                   ${DATA_OUT_DIR}/dbB00.pdb
+                                   ${DATA_OUT_DIR}/dbC00.pdb
                            COMMAND ${DATA_OUT_DIR}/correlationtest${EXE_EXT}
                            DEPENDS ${DATA_OUT_DIR}/correlationtest${EXE_EXT})
-        ADD_CUSTOM_COMMAND(OUTPUT multi_curv2d.silo multi_curv3d.silo
-                                  multi_point2d.silo multi_rect2d.silo
-                                  multi_rect3d.silo multi_ucd3d.silo
-                                  hist_ucd3d_0000 hist_ucd3d_0001
-                                  hist_ucd3d_0002 hist_ucd3d_0003
-                                  hist_ucd3d_0004 hist_ucd3d_0005
-                                  hist_ucd3d_0006 hist_ucd3d_0007
-                                  hist_ucd3d_0008 hist_ucd3d_0009
-                                  histne_ucd3d_0000 histne_ucd3d_0001
-                                  histne_ucd3d_0002 histne_ucd3d_0003
-                                  histne_ucd3d_0004 histne_ucd3d_0005
-                                  histne_ucd3d_0006 histne_ucd3d_0007
-                                  histne_ucd3d_0008 histne_ucd3d_0009
-                                  multi_ucd3d_ti_0001 multi_ucd3d_ti_0002
-                                  multi_ucd3d_ti_0003 multi_ucd3d_ti_base
+        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/multi_curv2d.silo
+                                   ${DATA_OUT_DIR}/multi_curv3d.silo
+                                   ${DATA_OUT_DIR}/multi_point2d.silo
+                                   ${DATA_OUT_DIR}/multi_rect2d.silo
+                                   ${DATA_OUT_DIR}/multi_rect3d.silo
+                                   ${DATA_OUT_DIR}/multi_ucd3d.silo
+                                   ${DATA_OUT_DIR}/hist_ucd3d_0000
+                                   ${DATA_OUT_DIR}/hist_ucd3d_0001
+                                   ${DATA_OUT_DIR}/hist_ucd3d_0002
+                                   ${DATA_OUT_DIR}/hist_ucd3d_0003
+                                   ${DATA_OUT_DIR}/hist_ucd3d_0004
+                                   ${DATA_OUT_DIR}/hist_ucd3d_0005
+                                   ${DATA_OUT_DIR}/hist_ucd3d_0006
+                                   ${DATA_OUT_DIR}/hist_ucd3d_0007
+                                   ${DATA_OUT_DIR}/hist_ucd3d_0008
+                                   ${DATA_OUT_DIR}/hist_ucd3d_0009
+                                   ${DATA_OUT_DIR}/histne_ucd3d_0000
+                                   ${DATA_OUT_DIR}/histne_ucd3d_0001
+                                   ${DATA_OUT_DIR}/histne_ucd3d_0002
+                                   ${DATA_OUT_DIR}/histne_ucd3d_0003
+                                   ${DATA_OUT_DIR}/histne_ucd3d_0004
+                                   ${DATA_OUT_DIR}/histne_ucd3d_0005
+                                   ${DATA_OUT_DIR}/histne_ucd3d_0006
+                                   ${DATA_OUT_DIR}/histne_ucd3d_0007
+                                   ${DATA_OUT_DIR}/histne_ucd3d_0008
+                                   ${DATA_OUT_DIR}/histne_ucd3d_0009
+                                   ${DATA_OUT_DIR}/multi_ucd3d_ti_0001
+                                   ${DATA_OUT_DIR}/multi_ucd3d_ti_0002
+                                   ${DATA_OUT_DIR}/multi_ucd3d_ti_0003
+                                   ${DATA_OUT_DIR}/multi_ucd3d_ti_base
                            COMMAND ${DATA_OUT_DIR}/multi_test${EXE_EXT}
                            DEPENDS ${DATA_OUT_DIR}/multi_test${EXE_EXT})
-        ADD_CUSTOM_COMMAND(OUTPUT noise.silo
+        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/noise.silo
                            COMMAND ${DATA_OUT_DIR}/noise${EXE_EXT}
                            DEPENDS ${DATA_OUT_DIR}/noise${EXE_EXT})
-        ADD_CUSTOM_COMMAND(OUTPUT tire.silo
+        ADD_CUSTOM_COMMAND(OUTPUT  ${DATA_OUT_DIR}/tire.silo
                            COMMAND ${DATA_OUT_DIR}/tire${EXE_EXT}
                            DEPENDS ${DATA_OUT_DIR}/tire${EXE_EXT})
 
         ADD_CUSTOM_TARGET(create_data_examples ALL
                           DEPENDS
-                              curv2d.silo curv3d.silo dbA00.pdb dbB00.pdb
-                              globe.silo globe_mat0.silo multi_rect2d.silo
-                              multi_rect3d.silo multi_ucd3d.silo
-                              noise.silo poly3d.silo rect2d.silo rect3d.silo
-                              tire.silo ucd2d.silo ucd3d.silo
+                              ${DATA_OUT_DIR}/curv2d.silo
+                              ${DATA_OUT_DIR}/curv3d.silo
+                              ${DATA_OUT_DIR}/dbA00.pdb
+                              ${DATA_OUT_DIR}/dbB00.pdb
+                              ${DATA_OUT_DIR}/globe.silo
+                              ${DATA_OUT_DIR}/globe_mat0.silo
+                              ${DATA_OUT_DIR}/multi_rect2d.silo
+                              ${DATA_OUT_DIR}/multi_rect3d.silo
+                              ${DATA_OUT_DIR}/multi_ucd3d.silo
+                              ${DATA_OUT_DIR}/noise.silo
+                              ${DATA_OUT_DIR}/poly3d.silo
+                              ${DATA_OUT_DIR}/rect2d.silo
+                              ${DATA_OUT_DIR}/rect3d.silo
+                              ${DATA_OUT_DIR}/tire.silo
+                              ${DATA_OUT_DIR}/ucd2d.silo
+                              ${DATA_OUT_DIR}/ucd3d.silo
                          )
-       
         IF(WIN32)
             ADD_CUSTOM_COMMAND(TARGET create_data_examples PRE_BUILD ${CMDS})
         ENDIF(WIN32) 
 
         INSTALL(FILES
-                    curv2d.silo curv3d.silo dbA00.pdb dbB00.pdb
-                    globe.silo globe_mat0.silo
-                    multi_rect2d.silo multi_rect3d.silo multi_ucd3d.silo
-                    noise.silo poly3d.silo rect2d.silo rect3d.silo
-                    tire.silo ucd2d.silo ucd3d.silo
+                    ${DATA_OUT_DIR}/curv2d.silo
+                    ${DATA_OUT_DIR}/curv3d.silo
+                    ${DATA_OUT_DIR}/dbA00.pdb
+                    ${DATA_OUT_DIR}/dbB00.pdb
+                    ${DATA_OUT_DIR}/globe.silo
+                    ${DATA_OUT_DIR}/globe_mat0.silo
+                    ${DATA_OUT_DIR}/multi_rect2d.silo
+                    ${DATA_OUT_DIR}/multi_rect3d.silo
+                    ${DATA_OUT_DIR}/multi_ucd3d.silo
+                    ${DATA_OUT_DIR}/noise.silo
+                    ${DATA_OUT_DIR}/poly3d.silo
+                    ${DATA_OUT_DIR}/rect2d.silo
+                    ${DATA_OUT_DIR}/rect3d.silo
+                    ${DATA_OUT_DIR}/tire.silo
+                    ${DATA_OUT_DIR}/ucd2d.silo
+                    ${DATA_OUT_DIR}/ucd3d.silo
                 DESTINATION
                     data
                 PERMISSIONS
