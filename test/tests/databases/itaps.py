@@ -45,6 +45,9 @@
 #    Mark C. Miller, Wed Aug 11 09:10:52 PDT 2010
 #    Made skiping logic (above) trigger in any parallel mode, not just
 #    non-scalable, parallel.
+#
+#    Mark C. Miller, Thu Feb 10 05:37:38 PST 2011
+#    Fixed typo in name of database to close.
 # ----------------------------------------------------------------------------
 
 def RestrictSetsInCategory(silr, className, setIds):
@@ -111,7 +114,7 @@ DrawPlots()
 Test("itaps_05")
 
 DeleteAllPlots()
-CloseDatabase("../data/iTaps_test_data/MOAB/brick_cubit10.cub.cub")
+CloseDatabase("../data/iTaps_test_data/MOAB/brick_cubit10.cub")
 
 OpenDatabase("../data/iTaps_test_data/MOAB/ptest.cub", 0, "ITAPS_MOAB_1.0")
 AddPlot("Mesh","mesh")
