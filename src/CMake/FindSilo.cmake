@@ -53,6 +53,11 @@
 #    Brad Whitlock, Wed Sep 22 14:15:23 PST 2010
 #    I added FORCE to the lines that set the PDB variables.
 #
+#    Eric Brugger, Wed Feb  9 16:29:57 PST 2011
+#    I modified the script so that it works with silo configured with and
+#    without hdf5 support. It looks for silo configured with hdf5 support
+#    first, then without it.
+#
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file 
@@ -73,7 +78,18 @@ IF (WIN32)
         )
   ENDIF()
 ELSE (WIN32)
-    SET_UP_THIRD_PARTY(SILO lib include siloh5)
+    FIND_LIBRARY(SILOH5_LIBRARY_EXISTS
+      NAME siloh5
+      PATHS ${SILO_DIR}/lib
+      NO_DEFAULT_PATH
+      NO_CMAKE_ENVIRONMENT_PATH
+      NO_CMAKE_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH)
+    IF(SILOH5_LIBRARY_EXISTS)
+        SET_UP_THIRD_PARTY(SILO lib include siloh5)
+    ELSE(SILOH5_LIBRARY_EXISTS)
+        SET_UP_THIRD_PARTY(SILO lib include silo)
+    ENDIF(SILOH5_LIBRARY_EXISTS)
 ENDIF (WIN32)
 
 # We use Silo for PDB most of the time so set up additional PDB variables.
