@@ -3302,6 +3302,12 @@ VisWindow::RecalculateRenderOrder(void)
 //    Hank Childs, Wed Feb 27 10:02:18 PST 2002
 //    Add support for timings.
 //
+//    Hank Childs, Fri Feb 11 12:46:01 PST 2011
+//    Don't measure time for every 50 renderings.  It just causes unmatched
+//    timings in the engine and viewer.  And we don't look at it.  And we
+//    get an instantaneous frame rate in the viewer and for each SR in the
+//    engine.
+//
 // ****************************************************************************
 
 void
@@ -3309,11 +3315,15 @@ VisWindow::StartRender(void)
 {
     static int timingIndex = -1;
     static int numFrames = 0;
-    if (timingIndex == -1)
+    bool   measureEvery50Renders = false;
+    if (measureEvery50Renders)
     {
-        timingIndex = visitTimer->StartTimer();
+        if (timingIndex == -1)
+        {
+            timingIndex = visitTimer->StartTimer();
+        }
+        numFrames++;
     }
-    numFrames++;
 
     std::vector< VisWinColleague * >::iterator it;
     for (it = colleagues.begin() ; it != colleagues.end() ; it++)
@@ -3321,13 +3331,16 @@ VisWindow::StartRender(void)
         (*it)->UpdateView();
     }
 
-    if (numFrames >= 50)
+    if (measureEvery50Renders)
     {
-        visitTimer->StopTimer(timingIndex,
-                              "Time elapsed over rendering of last 50 frames");
-        visitTimer->DumpTimings();
-        timingIndex = visitTimer->StartTimer();
-        numFrames = 0;
+        if (numFrames >= 50)
+        {
+            visitTimer->StopTimer(timingIndex,
+                                  "Time elapsed over rendering of last 50 frames");
+            visitTimer->DumpTimings();
+            timingIndex = visitTimer->StartTimer();
+            numFrames = 0;
+        }
     }
 }
 
