@@ -69,6 +69,7 @@ int ftime(struct timeb *);
 
 
 TimingsManager   *visitTimer = NULL;
+static int        firstTimer = -1;
 
 static struct TIMEINFO initTimeInfo;
 
@@ -256,6 +257,12 @@ TimingsManager::Initialize(const char *fname)
 //  Programmer: Mark C. Miller 
 //  Creation:   July 26, 2006 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 11 11:12:22 PST 2011
+//    Turn off WithholdOutputTimings.  Also terminate timer for how long the
+//    process is running.
+//
 // ****************************************************************************
 
 void
@@ -263,7 +270,10 @@ TimingsManager::Finalize()
 {
     if (visitTimer)
     {
+        if (firstTimer >= 0)
+            visitTimer->StopTimer(firstTimer, "Total component run time");
         visitTimer->StopAllUnstoppedTimers();
+        visitTimer->WithholdOutput(false);
         visitTimer->DumpTimings();
         delete visitTimer;
         visitTimer = 0;
@@ -335,12 +345,20 @@ TimingsManager::SetFilename(const std::string &fname)
 //  Programmer: Eric Brugger
 //  Creation:   November 5, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 11 11:12:22 PST 2011
+//    Initialize a timer that can keep track of how long the process is 
+//    running.
+//
 // ****************************************************************************
 
 void
 TimingsManager::Enable(void)
 {
     enabled = true;
+    if (firstTimer < 0)
+        firstTimer = visitTimer->StartTimer();
 }
 
 

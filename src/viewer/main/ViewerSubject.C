@@ -2338,6 +2338,9 @@ ViewerSubject::GetOperatorFactory() const
 //    Save a copy of the original host profiles loaded from the system dir.
 //    Don't read any host profiles if they passed -noconfig.
 //
+//    Hank Childs, Fri Feb 11 14:19:18 PST 2011
+//    Fix unmatched timer call.
+//
 // ****************************************************************************
 
 void
@@ -2388,7 +2391,6 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
     // we call the routine to process the config file settings here because
     // it only has to update the appearance attributes.
     //
-    timeid = visitTimer->StartTimer();
     char *configFile = GetSystemConfigFile();
     if (GetViewerProperties()->GetNoConfig())
         systemSettings = NULL;
