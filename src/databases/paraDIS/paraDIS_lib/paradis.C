@@ -26,9 +26,11 @@ namespace paraDIS {
   //===========================================================================
 #ifdef DEBUG
   int32_t ArmSegment::mNextID = 0; 
-  int32_t Arm::mNextID = 0; 
+  int32_t Arm::mNextID = 0;
+
   rclib::Point<float> FullNode::mBoundsMin, FullNode::mBoundsMax, FullNode::mBoundsSize; 
 #endif
+  double Arm::mLongestLength = 0.0; 
   double gSegLen = 0 ;
   uint32_t gNumClassified = 0, gNumWrapped = 0, gNumArmSegmentsMeasured=0; 
 
@@ -402,7 +404,6 @@ namespace paraDIS {
       throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
     } 
     ArmSegment *lastSegment = NULL; 
-    uint32_t numSeen = 0; 
     if (mTerminalSegments.size() == 1)  lastSegment = startSegment; 
     else lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1]); 
     
@@ -418,6 +419,7 @@ namespace paraDIS {
       currentNode = currentSegment->GetOtherEndpoint(currentNode); 
       currentSegment = currentNode->GetOtherNeighbor(currentSegment);       
     }
+    if (mArmLength > mLongestLength) mLongestLength = mArmLength; 
     return; 
   }
     
@@ -617,6 +619,12 @@ namespace paraDIS {
     uint32_t numLinkedLoops = 0; 
 #endif
     
+    double *armLengthBins = NULL; 
+    long *armBins = NULL; 
+    if (mNumBins) {
+      armLengthBins = (double*)calloc(mNumBins, sizeof(double)); 
+      armBins = (long*)calloc(mNumBins, sizeof(long));  
+    }
     //NN types corresponding to burgers values of the NN arms:    
     const char *armTypes[7] = {
       "NN_100", 
@@ -649,7 +657,16 @@ namespace paraDIS {
           longLengths[btype-1] += length; 
         }       
       }
-      
+      if (mNumBins) {
+        int binNum = length/Arm::mLongestLength * mNumBins; 
+        if (binNum == mNumBins) binNum = mNumBins-1; 
+        if (binNum > mNumBins || binNum < 0) {
+          printf("Error:  binNum %d is invalid (num bins is %d)\n", binNum, mNumBins); 
+        } else {
+          armLengthBins[binNum] += length; 
+          armBins[binNum]++; 
+        } 
+      }
       armLengths[armType] += length;
       totalArmLength += length; 
       numArms[armType]++;       
@@ -715,7 +732,7 @@ namespace paraDIS {
         printf("Total number of %s arms: %d\n", armTypes[n], numShortArms[n] + numLongArms[n]); 
         printf("Total length of %s arms: %.2f\n", armTypes[n], shortLengths[n] + longLengths[n]); 
         printf("Number of %s arms SHORTER than threshold = %d\n", armTypes[n], numShortArms[n]); 
-        printf("Total length of %s arms longer than threshold = %.2f\n", armTypes[n], shortLengths[n]); 
+        printf("Total length of %s arms shorter than threshold = %.2f\n", armTypes[n], shortLengths[n]); 
         printf("Number of %s arms LONGER than threshold = %d\n", armTypes[n], numLongArms[n]); 
         printf("Total length of %s arms longer than threshold = %.2f\n", armTypes[n], longLengths[n]); 
         printf("\n"); 
@@ -738,6 +755,37 @@ namespace paraDIS {
     printf("\n"); 
 
     printf("----------------------\n\n\n"); 
+
+    if (mNumBins) {
+      // print a row of bin values
+      printf("BINS:  \n"); 
+      long totalArms = 0; // reality check
+      double totalLength = 0;  // reality check
+      string bins = "Bin:", binNums = "Num Arms:", binLengths = "Lengths:"; 
+      int fieldwidth = 12; 
+      bins.resize(fieldwidth, ' '); 
+      binNums.resize(fieldwidth, ' '); 
+      binLengths.resize(fieldwidth, ' ');
+
+      int binNum = 0; 
+      for (binNum = 0; binNum < mNumBins; ++binNum) {
+        bins += intToString(binNum); 
+        bins.resize(fieldwidth*(binNum+2), ' '); 
+
+        binNums += intToString(armBins[binNum]);
+        binNums.resize(fieldwidth*(binNum+2), ' '); 
+        totalArms += armBins[binNum]; 
+
+        binLengths += doubleToString(armLengthBins[binNum], 2); 
+        binLengths.resize(fieldwidth*(binNum+2), ' '); 
+        totalLength += armLengthBins[binNum]; 
+      }
+      bins += "TOTAL"; 
+      binNums += intToString(totalArms); 
+      binLengths += doubleToString(totalLength, 2); 
+
+      cout << bins << endl << binNums << endl << binLengths << endl; 
+    }
 
 #ifdef DEBUG_SEGMENTS
     // check against segment lengths: 
