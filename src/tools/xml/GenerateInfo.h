@@ -960,7 +960,7 @@ class InfoGeneratorPlugin : public Plugin
         c << "    for (i = 0 ; i < num" << typeToLookForP << " ; i++)" << endl;
         c << "    {" << endl;
         c << "        const avt" << typeToLookForS << "MetaData *mmd = md->Get" << typeToLookForS << "(i);" << endl;
-        for (int j = 0 ; j < outtypes.size() ; j++)
+        for (size_t j = 0 ; j < outtypes.size() ; j++)
         {
             c << "        {" << endl;
             c << "            Expression e2;" << endl;
@@ -980,7 +980,7 @@ class InfoGeneratorPlugin : public Plugin
     {
         c << "        if (e.GetType() == Expression::" << exprType << ")" << endl;
         c << "        {" << endl;
-        for (int j = 0 ; j < outtypes.size() ; j++)
+        for (size_t j = 0 ; j < outtypes.size() ; j++)
         {
             c << "            {" << endl;
             c << "                Expression e2;" << endl;
@@ -1285,12 +1285,11 @@ class InfoGeneratorPlugin : public Plugin
                 c << "ExpressionList * " << endl;
                 c << funcName<<"(const avtDatabaseMetaData *md)" << endl;
                 c << "{" << endl;
-                int i;
                 vector<QString> intypes = SplitValues(exprInType);
                 bool doMesh = false, doScalar = false, doVector = false, doTensor = false, doMaterial = false;
                 bool doSubset = false, doSpecies = false, doCurve = false, doSymmTensor = false;
                 bool doLabel = false, doArray = false;
-                for (i = 0 ; i < intypes.size() ; i++)
+                for (size_t i = 0 ; i < intypes.size() ; i++)
                 {
                     if (intypes[i] == "mesh")
                         doMesh = true;
@@ -1318,7 +1317,7 @@ class InfoGeneratorPlugin : public Plugin
                 vector<QString> outtypes = SplitValues(exprOutType);
                 std::vector<QString> outExprTypes;
                 bool haveScalar = false, haveTensor = false;
-                for (i = 0 ; i < outtypes.size() ; i++)
+                for (size_t i = 0 ; i < outtypes.size() ; i++)
                 {
                     if (outtypes[i] == "mesh")
                         cerr << "Mesh expressions not currently supported." << endl;

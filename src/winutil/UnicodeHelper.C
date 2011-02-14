@@ -62,7 +62,7 @@ void
 unsignedCharVector_to_QString(unsignedCharVector &vec, QString &s)
 {
     s = QString();
-    for(int i = 0; i < vec.size(); i += 2)
+    for(size_t i = 0; i < vec.size(); i += 2)
         s += QString(QChar(vec[i], vec[i+1]));
 }
 

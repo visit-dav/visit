@@ -1121,10 +1121,9 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
     struct hostent     *hp;
     struct sockaddr_in server;
     stringVector       launchArgs;
-    size_t             i;
 
     debug1 << mName << "origLaunchArgs={";
-    for(int i = 0; i < origLaunchArgs.size(); ++i)
+    for(size_t i = 0; i < origLaunchArgs.size(); ++i)
         debug1 << origLaunchArgs[i] << " ";
     debug1 << "}" << endl;
     debug1 << "simHost=" << simHost << endl;
@@ -1151,7 +1150,7 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
     }
 
     debug1 << mName << "AFTER -guesshost conversion: launchArgs={";
-    for(int i = 0; i < launchArgs.size(); ++i)
+    for(size_t i = 0; i < launchArgs.size(); ++i)
         debug1 << launchArgs[i] << " ";
     debug1 << "}" << endl;
 
@@ -1162,7 +1161,7 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
     SetupGatewaySocketBridgeIfNeeded(launchArgs, true);
 
     debug1 << mName << "AFTER Socket Bridge: launchArgs={";
-    for(int i = 0; i < launchArgs.size(); ++i)
+    for(size_t i = 0; i < launchArgs.size(); ++i)
         debug1 << launchArgs[i] << " ";
     debug1 << "}" << endl;
 

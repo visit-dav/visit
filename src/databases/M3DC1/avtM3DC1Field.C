@@ -848,7 +848,6 @@ void avtM3DC1Field::interpdX2(float *var, int el, double *lcoords,
 {
   float *a = var + scalar_size*el;
   double xi = lcoords[0], eta = lcoords[1];
-  int index;
 
   if( element_dimension == 2 )
   {

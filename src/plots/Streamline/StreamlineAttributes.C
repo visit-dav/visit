@@ -5134,7 +5134,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         if (pointList.size() != obj.pointList.size())
             return true;
         else
-            for (int i = 0 ; i < pointList.size() ; i++)
+            for (size_t i = 0 ; i < pointList.size() ; i++)
                 if (pointList[i] != obj.pointList[i])
                     return true;
     }

@@ -122,7 +122,7 @@ herr_t VsUniformMesh::getLowerBounds(std::vector<float>* fVals) {
     std::vector<double> dVals;
     err = lowerBoundsAtt->getDoubleVectorValue(&dVals);
     fVals->resize(dVals.size());
-    for (int i = 0; i < dVals.size(); i++) {
+    for (size_t i = 0; i < dVals.size(); i++) {
       (*fVals)[i] = (float)(dVals[i]);
     }
   } else if (isFloatType(type)) {
@@ -146,7 +146,7 @@ herr_t VsUniformMesh::getUpperBounds(std::vector<float>* fVals) {
     std::vector<double> dVals;
     err = upperBoundsAtt->getDoubleVectorValue(&dVals);
     fVals->resize(dVals.size());
-    for (int i = 0; i < dVals.size(); i++) {
+    for (size_t i = 0; i < dVals.size(); i++) {
       (*fVals)[i] = (float)(dVals[i]);
     }
   } else if (isFloatType(type)) {

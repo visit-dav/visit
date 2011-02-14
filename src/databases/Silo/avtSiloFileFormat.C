@@ -3807,8 +3807,7 @@ avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
     const char *dirname, avtDatabaseMetaData *md)
 {
 #ifdef DB_VARTYPE_SCALAR
-    int i,j;
-    for (i = 0; i < ndefvars; i++)
+    for (int i = 0; i < ndefvars; i++)
     {
         DBdefvars *defv = 0;
 
@@ -3916,7 +3915,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         return;
 #endif
 
-    int    i, j, k;
+    int    i;
     DBtoc *toc = DBGetToc(dbfile);
     if (toc == NULL)
         return;
@@ -10735,8 +10734,6 @@ CreateCurve(DBcurve *cur, const char *curvename, int vtkType)
 vtkDataSet *
 avtSiloFileFormat::GetCurve(DBfile *dbfile, const char *cn)
 {
-    int i;
-
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
     // library, so let's cast it away.
@@ -14717,7 +14714,7 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile, avtDatabaseMe
 static DBgroupelmap * 
 GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int dontForceSingle)
 {
-    int i,j,k,q,pass;
+    int i,k,q,pass;
     DBgroupelmap *retval = 0;
 
     // We do this to prevent Silo for re-interpreting integer data in
@@ -14859,8 +14856,7 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
 {
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,3)
-    int i, j, k, q;
-    char tmpName[256];
+    int i, j, q;
     bool probablyAnAMRMesh = true;
     DBgroupelmap *gm = 0; 
 

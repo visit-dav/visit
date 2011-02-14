@@ -2055,7 +2055,7 @@ QvisVolumePlotWindow::Update2DTransferFunction()
 void
 QvisVolumePlotWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
     QString msg, temp;
     int i;
 

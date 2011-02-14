@@ -3178,7 +3178,7 @@ PickAttributes::PrintSelf(ostream &os)
     
     std::string fileName;
     std::string format;
-    int pos = databaseName.find_last_of('/');
+    size_t pos = databaseName.find_last_of('/');
     if (pos >= databaseName.size())
         fileName = databaseName;
     else
@@ -3447,7 +3447,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
    
     std::string fileName; 
     std::string format; 
-    int pos = databaseName.find_last_of('/');
+    size_t pos = databaseName.find_last_of('/');
     if (pos >= databaseName.size())
         fileName = databaseName;
     else
@@ -3886,7 +3886,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
    
     std::string fileName;
     std::string format;
-    int pos = databaseName.find_last_of('/');
+    size_t pos = databaseName.find_last_of('/');
     if (pos >= databaseName.size())
         fileName = databaseName;
     else

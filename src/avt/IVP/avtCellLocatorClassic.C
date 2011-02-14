@@ -76,7 +76,7 @@ void avtCellLocatorClassic::Free()
 {
     if( Tree )
     {
-        for( int i=0; i<NumberOfOctants; i++ )
+        for( unsigned int i=0; i<NumberOfOctants; i++ )
         {
             if( Tree[i] )
                 Tree[i]->Delete();
@@ -126,7 +126,7 @@ void avtCellLocatorClassic::Build()
     // compute number of octants and number of divisions
     int ndivs = 1, prod = 1, noct = 1;
 
-    for( int i=0; i<Level; ++i )
+    for( unsigned int i=0; i<Level; ++i )
     {
         ndivs *= 2;
         prod  *= 8;

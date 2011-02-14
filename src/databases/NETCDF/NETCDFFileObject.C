@@ -1064,7 +1064,7 @@ NETCDFFileObject::PrintFileContents(ostream &os)
                             if(attsize > 1)\
                             {\
                                 debug4 << ", value={";\
-                                for(int k = 0; k < attsize; ++k)\
+                                for(size_t k = 0; k < attsize; ++k)\
                                 {\
                                     if(k > 0)\
                                         debug4 << ", ";\

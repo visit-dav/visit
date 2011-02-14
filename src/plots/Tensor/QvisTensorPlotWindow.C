@@ -422,7 +422,7 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
 void
 QvisTensorPlotWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
     QString msg, temp;
 
     // Do the scale value.

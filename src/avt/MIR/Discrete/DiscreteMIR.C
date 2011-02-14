@@ -803,7 +803,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
                     ring.push_back(id(edge_begin));
             }
 
-            for(int t = 0; t < ring.size(); ++t)
+            for(size_t t = 0; t < ring.size(); ++t)
             {
                 ReconstructedZone zone;
                 zone.origzone   = cellid;
@@ -1149,7 +1149,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
 
 #if 1
             // Make each of the small tets.
-            for(int st = 0; st < small_tets.size(); st += 3)
+            for(size_t st = 0; st < small_tets.size(); st += 3)
             {
                 // Make sure that the centroid handle exists.
                 if (centroid_handles[small_tets[st]] == 0)
@@ -1176,7 +1176,7 @@ DiscreteMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int d
             // Maybe make the big tets if the corresponding face has a
             // centroid point.  If there is no centroid point, then
             // we'll skip it and handle it in the next section.
-            for(int bt = 0; bt < big_tets.size(); bt += 3)
+            for(size_t bt = 0; bt < big_tets.size(); bt += 3)
             {
                 // Skip this tet if the corresponding face's centroid
                 // doesn't exist.

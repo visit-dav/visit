@@ -133,7 +133,6 @@ f_visit_internal_commandcallback(const char *cmd, const char *stringdata, void *
         char *end = NULL;
         if((end = strstr(cmd, ";QPushButton;Simulations;NONE")) != NULL)
         {
-            int i;
             lcmd = end - cmd - 10;
             realcmd = ALLOC(char, lcmd + 1);
             memset(realcmd, 0, lcmd + 1);

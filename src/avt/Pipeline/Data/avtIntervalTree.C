@@ -2040,7 +2040,7 @@ bool
 LineIntersectsBox2D(double *bounds, double invDirX, double invDirY,
     double originX, double originY, int signX, int signY)
 {
-    double tmin, tmax, tymin, tymax, tzmin, tzmax;
+    double tmin, tmax, tymin, tymax;
 
     tmin  = (bounds[signX]   - originX) * invDirX;
     tmax  = (bounds[1-signX] - originX) * invDirX;

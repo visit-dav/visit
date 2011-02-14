@@ -380,7 +380,7 @@ XMLEditEnums::enumlistNew()
     {
         okay = true;
         newtype = tr("unnamed%1").arg(newid);
-        for (size_t i=0; i<enumlist->count() && okay; i++)
+        for (int i=0; i<enumlist->count() && okay; i++)
         {
             if (enumlist->item(i)->text() == newtype)
                 okay = false;
@@ -392,7 +392,7 @@ XMLEditEnums::enumlistNew()
     EnumType *e = new EnumType(newtype);
     EnumType::enums.push_back(e);
     UpdateWindowContents();
-    for (size_t i=0; i<enumlist->count(); i++)
+    for (int i=0; i<enumlist->count(); i++)
     {
         if (enumlist->item(i)->text() == newtype)
         {

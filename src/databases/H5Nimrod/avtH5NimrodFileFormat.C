@@ -129,7 +129,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
 {
     // INITIALIZE DATA MEMBERS
     fname = filename;
-    hid_t file_id, root_id, group_id, dataset_id;
+    hid_t file_id, root_id, group_id;
     char *string_attrib;
     float time;
 

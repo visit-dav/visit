@@ -352,7 +352,7 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
     QvisPlotListBoxItem *actionItem = 0;
 
     // Walk through all of the items, checking if we've clicked in each one.
-    for (size_t i = 0; i < count(); ++i)
+    for (int i = 0; i < count(); ++i)
     {
         QListWidgetItem *current = item(i);
         QvisPlotListBoxItem *item2 = (QvisPlotListBoxItem *)current;
@@ -846,7 +846,7 @@ QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
     // highlighted/selected, non-intuitive...??)
     
     bool anyActive = false;
-    for(size_t i = 0; i < count(); ++i)
+    for(int i = 0; i < count(); ++i)
     {
         QvisPlotListBoxItem *lbi = (QvisPlotListBoxItem *)item(i);
         Plot &currentPlot = lbi->GetPlot();

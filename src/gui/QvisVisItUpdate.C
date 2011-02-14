@@ -340,7 +340,7 @@ QvisVisItUpdate::cleanUp()
 
     // Delete all of the files in the files list.
     QDir dir;
-    for(size_t i = 0; i < files.count(); ++i)
+    for(int i = 0; i < files.count(); ++i)
     {
         dir.remove(files[i]);
         debug1 << "Removed " << files[i].toStdString() << endl;

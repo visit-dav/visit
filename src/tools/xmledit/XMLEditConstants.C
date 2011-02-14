@@ -474,7 +474,7 @@ XMLEditConstants::constantlistNew()
     {
         okay = true;
         newname = tr("unnamed%1").arg(newid);
-        for (size_t i=0; i<constantlist->count() && okay; i++)
+        for (int i=0; i<constantlist->count() && okay; i++)
         {
             if (constantlist->item(i)->text() == newname)
                 okay = false;
@@ -487,7 +487,7 @@ XMLEditConstants::constantlistNew()
     
     a->constants.push_back(c);
     UpdateWindowContents();
-    for (size_t i=0; i<constantlist->count(); i++)
+    for (int i=0; i<constantlist->count(); i++)
     {
         if (constantlist->item(i)->text() == newname)
         {

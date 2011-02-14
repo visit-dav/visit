@@ -219,7 +219,6 @@ Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
             char xvar[100];
             char yvar[100];
             char zvar[100];
-            char slice[100];
             char integrate[100];
             char log[100];
             char cs[100];

@@ -202,7 +202,7 @@ PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent,
         output = input->NewInstance();
         int bloat = 0;
        
-        for(int i = 1; i < polyhedralSplit.size(); i += 2)
+        for(size_t i = 1; i < polyhedralSplit.size(); i += 2)
            bloat += (polyhedralSplit[i] - 1);
         output->SetNumberOfComponents(input->GetNumberOfComponents());
         output->SetNumberOfTuples(input->GetNumberOfTuples() + bloat);

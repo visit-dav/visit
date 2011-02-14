@@ -302,7 +302,7 @@ QualifiedFilename::DetermineSeparator(const std::string &p) const
 {
     char sep = VISIT_SLASH_CHAR;
 
-    for(int i = 0; i < p.length(); ++i)
+    for(size_t i = 0; i < p.length(); ++i)
     {
         if(p[i] == '\\' || p[i] == '/')
         {
@@ -474,7 +474,7 @@ QualifiedFilenameVector
 CombineQualifiedFilenameVectors(const QualifiedFilenameVector &a,
     const QualifiedFilenameVector &b)
 {
-    int i;
+    size_t i;
     QualifiedFilenameVector retval;
 
     // Add the elements from a if they're not in retval.

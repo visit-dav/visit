@@ -1220,7 +1220,7 @@ FileOpenOptions::AddAssumedFormatsToPreferred(const stringVector &given)
     {
         // get its actual ID
         std::string id = "";
-        for (int j=0; j<typeIDs.size(); j++)
+        for (size_t j=0; j<typeIDs.size(); j++)
         {
             if (given[i] == typeIDs[j] ||
                 given[i] == typeNames[j])
@@ -1236,7 +1236,7 @@ FileOpenOptions::AddAssumedFormatsToPreferred(const stringVector &given)
         // make a new list with this given one at the front
         stringVector newPreferredIDs;
         newPreferredIDs.push_back(id);
-        for (int j=0; j<preferredIDs.size(); j++)
+        for (size_t j=0; j<preferredIDs.size(); j++)
         {
             if (preferredIDs[j] != id)
                 newPreferredIDs.push_back(preferredIDs[j]);
@@ -1264,11 +1264,11 @@ void
 FileOpenOptions::AddFallbackFormatsToPreferred(const stringVector &given)
 {
     // for each format, append it
-    for (int i=0; i<given.size(); i++)
+    for (size_t i=0; i<given.size(); i++)
     {
         // get its actual ID
         std::string id = "";
-        for (int j=0; j<typeIDs.size(); j++)
+        for (size_t j=0; j<typeIDs.size(); j++)
         {
             if (given[i] == typeIDs[j] ||
                 given[i] == typeNames[j])
@@ -1283,7 +1283,7 @@ FileOpenOptions::AddFallbackFormatsToPreferred(const stringVector &given)
 
         // make a new list with this given one at the back
         stringVector newPreferredIDs;
-        for (int j=0; j<preferredIDs.size(); j++)
+        for (size_t j=0; j<preferredIDs.size(); j++)
         {
             if (preferredIDs[j] != id)
                 newPreferredIDs.push_back(preferredIDs[j]);

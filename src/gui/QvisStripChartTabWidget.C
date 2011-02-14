@@ -91,7 +91,7 @@ QvisStripChartTabWidget::QvisStripChartTabWidget(QWidget *parent, QObject *mgr, 
     SC_Info[3] = SC_NamesTabsIndex ( STRIP_CHART_4_WIDGET_NAME,STRIP_CHART_4_TAB_NAME,3);
     SC_Info[4] = SC_NamesTabsIndex ( STRIP_CHART_5_WIDGET_NAME,STRIP_CHART_5_TAB_NAME,4);
     // create the strip charts
-    for (size_t i =0; i< SC_Info.size(); i++) 
+    for (int i =0; i< SC_Info.size(); i++) 
     {
         stripCharts[SC_Info[i].getIndex()] = new VisItSimStripChart(this,winX,winY);
         QScrollArea *sc = new QScrollArea(this);
@@ -250,7 +250,7 @@ void QvisStripChartTabWidget::setTabLabel(int tabIndex, const QString &newLabel)
 int QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 {
     int ST_Index = -1;
-    for (size_t i = 0; i < SC_Info.size(); i++)
+    for (int i = 0; i < SC_Info.size(); i++)
     {
         if (SC_Name == tabText(i))
             ST_Index = i;
@@ -281,7 +281,7 @@ int QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 int
 QvisStripChartTabWidget::nameToTabIndex(const QString &Tab_Name) const
 {
-    for (size_t i = 0; i < SC_Info.size(); i++)
+    for (int i = 0; i < SC_Info.size(); i++)
     {
         if(SC_Info[i].getTabName() == Tab_Name) 
             return i;

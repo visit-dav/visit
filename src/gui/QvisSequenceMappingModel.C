@@ -320,7 +320,7 @@ QvisSequenceMappingModel::printContents() const
     {
         qDebug("Viewport: %s", it.key().toStdString().c_str());
 
-        for(size_t i = 0; i < it.value().size(); ++i)
+        for(int i = 0; i < it.value().size(); ++i)
         {
             qDebug("\tsequence: %s, %d", it.value()[i].name.toStdString().c_str(),
                                          it.value()[i].seqType);

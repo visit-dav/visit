@@ -1133,7 +1133,7 @@ XMLEditFields::fieldlistNew()
     {
         okay = true;
         newname.sprintf("unnamed%d", newid);
-        for (size_t i=0; i<fieldlist->count() && okay; i++)
+        for (int i=0; i<fieldlist->count() && okay; i++)
         {
             if (fieldlist->item(i)->text() == newname)
                 okay = false;
@@ -1146,7 +1146,7 @@ XMLEditFields::fieldlistNew()
     
     a->fields.push_back(f);
     UpdateWindowContents();
-    for (size_t i=0; i<fieldlist->count(); i++)
+    for (int i=0; i<fieldlist->count(); i++)
     {
         if (fieldlist->item(i)->text() == newname)
         {

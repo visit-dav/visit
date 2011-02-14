@@ -901,7 +901,7 @@ void write_rectilinear_mesh(const char *filename, int ub, int *dims,
                             int nvars, int *vardim, int *centering,
                             const char * const *varnames, float **vars)
 {
-    int   i, j;
+    int   i;
     char  str[128];
     int npts = dims[0]*dims[1]*dims[2];
     int ncX = (dims[0] - 1 < 1 ? 1 : dims[0] - 1);
@@ -1038,7 +1038,7 @@ void write_curvilinear_mesh(const char *filename, int ub, int *dims,float *pts,
                             int nvars, int *vardim, int *centering,
                             const char * const *varnames, float **vars)
 {
-    int   i, j;
+    int   i;
     char  str[128];
     int npts = dims[0]*dims[1]*dims[2];
     int ncX = (dims[0] - 1 < 1 ? 1 : dims[0] - 1);

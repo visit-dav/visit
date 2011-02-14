@@ -1735,7 +1735,7 @@ void vtkCEAucdReader::ClearCache()
    this->CachedFileName = 0;
    this->CachedFileStream = 0;
    this->CachedGlobalOffset = 0;
-   for(int i=0;i<CachedOutputs.size();i++)
+   for(size_t i=0;i<CachedOutputs.size();i++)
    {
       if (this->CachedOutputs[i] != 0) this->CachedOutputs[i]->Delete();
    }

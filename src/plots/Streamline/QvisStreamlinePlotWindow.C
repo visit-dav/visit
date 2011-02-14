@@ -1350,7 +1350,6 @@ void
 QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
 {
     QString       temp;
-    const double *dptr;
     QColor        tempcolor;
 
     for(int i = 0; i < streamAtts->NumAttributes(); ++i)
@@ -2553,7 +2552,7 @@ QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 void
 QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
     QString msg, temp;
 
     // Do stepLength

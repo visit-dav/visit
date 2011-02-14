@@ -1416,7 +1416,7 @@ periodicityStats( vector< Point >& points,
 
   // Find the base period variance.
   unsigned int best_period = points.size();
-  double test_var, best_var = 1.0e9;
+  double best_var = 1.0e9;
 
   double base_var = calculateSumOfSquares( points, 1, checkType );
 

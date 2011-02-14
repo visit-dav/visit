@@ -364,7 +364,7 @@ QvisParallelCoordinatesWidget::redrawScene(QPainter *painter)
 void
 QvisParallelCoordinatesWidget::drawAxes(QPainter *painter)
 {
-    int axisNum, axisX, tickNum, dashNum;
+    int axisNum, axisX;
 
     painter->setPen(QPen(QColor(0,0,0), AXIS_AND_TICK_WIDTH));
 
@@ -375,7 +375,7 @@ QvisParallelCoordinatesWidget::drawAxes(QPainter *painter)
         if ((!namedRightAxis && (axisNum == axisCount-1)) ||
             (axisNum >= axisTitles.size()))
         {
-            for (dashNum = 0; dashNum < dashesTopYPos.size(); dashNum++)
+            for (size_t dashNum = 0; dashNum < dashesTopYPos.size(); dashNum++)
             {
                 painter->drawLine(axisX, dashesTopYPos[dashNum],
                                   axisX, dashesBotYPos[dashNum]);
@@ -385,7 +385,7 @@ QvisParallelCoordinatesWidget::drawAxes(QPainter *painter)
         {
             painter->drawLine(axisX, axisBottomY, axisX, axisTopY);
             
-            for (tickNum = 0; tickNum < ticksYPos.size(); tickNum++)
+            for (size_t tickNum = 0; tickNum < ticksYPos.size(); tickNum++)
             {
                 painter->drawLine(axisX-TICK_HALF_LENGTH, ticksYPos[tickNum],
                                   axisX+TICK_HALF_LENGTH, ticksYPos[tickNum]);

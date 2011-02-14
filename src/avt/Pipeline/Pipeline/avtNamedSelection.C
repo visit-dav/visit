@@ -459,7 +459,7 @@ avtFloatingPointIdNamedSelection::CreateConditionString(void)
         // convert all the identifiers into a string...
         std::string id_string = "( id in ( "; // Prabhat- TODO id is hardcoded here..
 
-        for (int j=0; j<ids.size()-1; j++)
+        for (size_t j=0; j<ids.size()-1; j++)
             id_string = id_string + stringify(ids[j]) + ", ";
         id_string = id_string + stringify(ids[ids.size()-1]) + " ))";
 

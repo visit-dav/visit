@@ -380,7 +380,6 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     setWindowRole("gui-main");
 
     setAttribute(Qt::WA_DeleteOnClose,true);
-    int     id;
     QPixmap saveIcon, computerIcon, printIcon, rainbowIcon;
     QPixmap annotIcon, lightIcon, subsetIcon, selectionIcon, viewIcon;
     QPixmap exprIcon, animIcon, pluginIcon, pickIcon, copyIcon, lockIcon;
