@@ -341,6 +341,10 @@ avtNek5000FileFormat::avtNek5000FileFormat(const char *filename)
 //    1.0".  They are still recognized so that they will not produce an error
 //    if present.
 //
+//    Jean Favre (seconded and committed by Hank Childs), Mon Feb 14 09:24:00 PST 2011 
+//    Fix problem with uninitialized variable in the case where the path is
+//    fully specified.
+//    
 // ****************************************************************************
 
 void           
@@ -472,16 +476,16 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
                 break;
             }
         }
-    }
-    if (ii == -1)
-    {
+        if (ii == -1)
+        {
 #ifdef _WIN32
-        _getcwd(buf, 512);
+          _getcwd(buf, 512);
 #else
-        getcwd(buf, 512);
+          getcwd(buf, 512);
 #endif
-        strcat(buf, "/");
-        fileTemplate.insert(0, buf, strlen(buf));
+          strcat(buf, "/"); 
+          fileTemplate.insert(0, buf, strlen(buf));
+        }
     }
 
 #ifdef _WIN32
