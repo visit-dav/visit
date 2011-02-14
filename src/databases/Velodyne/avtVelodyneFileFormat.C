@@ -992,7 +992,6 @@ GetAuxiliaryData(const char *var, const char *type,
       matnos[m++] = *i;
 
     char** mnames= new char*[nmats];
-    char buf[1000];
     for( int i=0; i<nmats; i++ ) {
       const string& mt = reader_->GetMaterialTitle(matnos[i]);
       mnames[i] = new char[ mt.length()+1 ];

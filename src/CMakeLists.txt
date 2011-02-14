@@ -218,6 +218,9 @@
 #    Added init of opt_ARG_PREV in VISIT_OPTION_DEFAULT to avoid cmake 
 #    warning message.
 #
+#    Kathleen Bonnell, Mon Feb 14 11:09:17 MST 2011
+#    Remove strerror test, HAVE_STRERROR no longer used in VisIt.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1434,7 +1437,6 @@ ENDFUNCTION(CHECK_FTIME_PROTOTYPE)
 
 # Check for some functions
 CHECK_FUNCTION_EXISTS(memmove HAVE_MEMMOVE)
-CHECK_FUNCTION_EXISTS(strerror HAVE_STRERROR)
 CHECK_FUNCTION_EXISTS(div HAVE_DIV)
 CHECK_FUNCTION_EXISTS(setenv HAVE_SETENV)
 CHECK_FUNCTION_EXISTS(strtof HAVE_STRTOF)

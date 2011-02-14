@@ -2276,7 +2276,6 @@ avtNek5000FileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var,
                                               int &outVarOffsetAscii,
                                               int &outTimestepHasMesh )
 {
-    int ii;
     outTimestepHasMesh = 0;
 
     UpdateCyclesAndTimes();   //Needs to call this to update iTimestepsWithMesh

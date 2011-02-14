@@ -138,7 +138,6 @@ avtDataBinning::CreateGrid(void)
     
             // Note the assumption here that the X-axis corresponds to tuple 0,
             // the Y-axis to tuple 1, etc.
-            float center[3];
             loc[0] = (bbox[0] + bbox[1]) / 2.;
             loc[1] = (bbox[2] + bbox[3]) / 2.;
             loc[2] = (bbox[4] + bbox[5]) / 2.;

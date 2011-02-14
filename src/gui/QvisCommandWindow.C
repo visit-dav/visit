@@ -668,7 +668,7 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
     // before it gets applied.
     std::string fname("user_macro_");
     fname += macroName.toStdString();
-    for(int i = 0; i < fname.size(); ++i)
+    for(size_t i = 0; i < fname.size(); ++i)
     {
         if(!isalpha(fname[i]) && !isdigit(fname[i]) && fname[i] != '_')
             fname[i] = '_';

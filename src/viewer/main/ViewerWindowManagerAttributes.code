@@ -41,7 +41,7 @@ ViewerWindowManagerAttributes::CreateNode(DataNode *parentNode, bool, bool)
     // Create a node for ViewerWindowManagerAttributes.
     DataNode *node = new DataNode("ViewerWindowManagerAttributes");
     DataNode *attNode = new DataNode("ActionConfigurations");
-    for(int i = 0; i < actionConfigurations.size(); ++i)
+    for(size_t i = 0; i < actionConfigurations.size(); ++i)
         actionConfigurations[i]->CreateNode(attNode, true, true);
     node->AddNode(attNode);
 
@@ -444,7 +444,7 @@ ViewerWindowManagerAttributes::RemoveActionFromNode(DataNode *node,
         {
             stringVector newActions;
             const stringVector &oldActions = aNode->AsStringVector();
-            for(int j = 0; j < oldActions.size(); ++j)
+            for(size_t j = 0; j < oldActions.size(); ++j)
             {
                 if(oldActions[j] != actionName)
                     newActions.push_back(oldActions[j]);
@@ -565,10 +565,10 @@ ViewerWindowManagerAttributes::AddActionGroup(DataNode *node,
 
                 // Add any actions in newActions to existingActions that
                 // are not already in existingActions.
-                for(int j = 0; j < newActions.size(); ++j)
+                for(size_t j = 0; j < newActions.size(); ++j)
                 {
                     bool actionFound = false;
-                    for(int k = 0; k < existingActions.size(); ++k)
+                    for(size_t k = 0; k < existingActions.size(); ++k)
                     {
                         if(existingActions[k] == newActions[j])
                         {

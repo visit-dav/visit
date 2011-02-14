@@ -2937,7 +2937,7 @@ void
 avtConnComponentsExpression::SpatialPartition::CreatePartition
 (const BoundarySet &bset, double *bounds)
 {
-    int   i, j, k;
+    int   i, j;
     int t0 = visitTimer->StartTimer();
 
     if (itree != NULL)

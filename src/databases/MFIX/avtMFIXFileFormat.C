@@ -2066,7 +2066,6 @@ void avtMFIXFileFormat::GetBlockOfInts(istream& in, vtkIntArray *v, int n)
 void avtMFIXFileFormat::SkipBlockOfInts(istream& in, int n)
 {
     const int numberOfIntsInBlock = 512/sizeof(int);
-    int tempArray[numberOfIntsInBlock];
     int numberOfRecords;
 
     if ( n%numberOfIntsInBlock == 0)

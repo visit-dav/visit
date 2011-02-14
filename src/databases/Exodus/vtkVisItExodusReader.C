@@ -912,12 +912,12 @@ void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
   // VTK unstructured grid.
   int totalSize = 0;
   int numCells = 0;
-  for (i = 0; i < connect.size(); i++)
+  for (size_t j = 0; j < connect.size(); j++)
     {
-    if(cell_num_points[i] != 0)
+    if(cell_num_points[j] != 0)
       {
-      totalSize += (cell_num_points[i]+1)*(num_elem_in_block[i]);
-      numCells += num_elem_in_block[i];
+      totalSize += (cell_num_points[j]+1)*(num_elem_in_block[j]);
+      numCells += num_elem_in_block[j];
       }
     }
 
@@ -968,9 +968,9 @@ void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
       }
     }
   
-  for (i = 0 ; i < connect.size() ; i++)
-    if (connect[i] != NULL)
-        delete [] connect[i];
+  for (size_t j = 0 ; j < connect.size() ; j++)
+    if (connect[j] != NULL)
+        delete [] connect[j];
 
   vtkCellArray *cells = vtkCellArray::New();
   cells->SetCells(numCells, nlist);

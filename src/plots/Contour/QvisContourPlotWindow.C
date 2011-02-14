@@ -875,7 +875,7 @@ QvisContourPlotWindow::UpdateSelectByText()
 void
 QvisContourPlotWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
     QString msg, temp;
 
     // Do the select by line edit.

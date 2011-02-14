@@ -800,7 +800,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
       VsLog::debugLog() <<methodSig <<"Allocation succeeded." <<std::endl;
     }
     // JRC: what goes here to detect failure to allocate?
-    catch (vtkstd::bad_alloc& ex) {
+    catch (vtkstd::bad_alloc) {
       VsLog::debugLog() << methodSig <<"Caught vtkstd::bad_alloc exception." <<std::endl;
       VsLog::debugLog() << methodSig <<"Unable to allocate space for cells.  Cleaning up."
       <<std::endl;
@@ -1495,7 +1495,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
       VsLog::debugLog() <<methodSig <<"Allocating " <<numValues
       << " vertices.  If old VTK and this fails, it will just abort." << endl;
       meshPtr->Allocate(numValues);
-    } catch (vtkstd::bad_alloc& ex) {
+    } catch (vtkstd::bad_alloc) {
       VsLog::debugLog() <<methodSig <<"Caught vtkstd::bad_alloc. Unable to allocate cells."
       <<"Cleaning up." <<std::endl;
       meshPtr->Delete();
@@ -1598,7 +1598,7 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
       VsLog::debugLog() <<methodSig <<"Allocating " <<numValues
       << " vertices.  If old VTK and this fails, it will just abort." << endl;
       meshPtr->Allocate(numValues);
-    } catch (vtkstd::bad_alloc& ex) {
+    } catch (vtkstd::bad_alloc) {
       VsLog::debugLog() <<methodSig <<"Caught vtkstd::bad_alloc. Unable to allocate cells."
       <<"Cleaning up." <<std::endl;
       meshPtr->Delete();

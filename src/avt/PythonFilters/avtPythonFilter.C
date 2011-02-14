@@ -119,7 +119,7 @@ avtPythonFilter::GetAttribute(const string &attr_name, int &res)
 
     long lres = PyInt_AsLong(py_obj);
     Py_DECREF(py_obj);
-    if(lres == -1); // check for python error.
+    //if(lres == -1); // check for python error.
 
     res = int(lres);
     return true;

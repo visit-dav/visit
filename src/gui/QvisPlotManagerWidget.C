@@ -1670,7 +1670,7 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
                              fileServer->GetTreatAllDBsAsTimeVarying());
         }
     }
-    CATCH2(GetMetaDataException, gmde)
+    CATCH(GetMetaDataException)
     {
         debug1 << "Unable to get metadata when populating variable list" << endl;
         return false;

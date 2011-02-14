@@ -55,7 +55,7 @@ public:
     {
         // Find the number of widgets
         int nWidgets = 0;
-        for(int c = 0; c < cmap2_.size(); ++c)
+        for(size_t c = 0; c < cmap2_.size(); ++c)
         {
             std::vector<SLIVR::CM2Widget*> &widgets = cmap2_[c]->widgets();
             nWidgets += widgets.size();
@@ -85,10 +85,10 @@ public:
         glDisable(GL_BLEND);
 
         // Draw the widgets
-        for(int c = 0; c < cmap2_.size(); ++c)
+        for(size_t c = 0; c < cmap2_.size(); ++c)
         {
             std::vector<SLIVR::CM2Widget*> &widgets = cmap2_[c]->widgets();
-            for(int w = 0; w < widgets.size(); ++w)
+            for(size_t w = 0; w < widgets.size(); ++w)
                  widgets[w]->draw();
         }
     }
@@ -421,10 +421,10 @@ QvisCMap2Display::mousePressEvent(QMouseEvent *e)
 {
     int doColor = (e->button() == Qt::MidButton) ? 1 : 0;
 
-    for(int c = 0; c < cmap2.size(); ++c)
+    for(size_t c = 0; c < cmap2.size(); ++c)
     {
         std::vector<SLIVR::CM2Widget*> &widgets = cmap2[c]->widgets();
-        for(int w = 0; w < widgets.size(); ++w)
+        for(size_t w = 0; w < widgets.size(); ++w)
         {
             int obj = widgets[w]->pick1(e->x(), height() - e->y(), width(), height());
             if(obj <= 0)
@@ -851,7 +851,7 @@ int
 QvisCMap2Display::numWidgets() const
 {
     int retval = 0;
-    for(int c = 0; c < cmap2.size(); ++c)
+    for(size_t c = 0; c < cmap2.size(); ++c)
     {
         std::vector<SLIVR::CM2Widget*> &widgets = cmap2[c]->widgets();
         retval += widgets.size();
@@ -866,7 +866,7 @@ QvisCMap2Display::removeWidget(WidgetID id)
     if(it != idToWidget.end())
     {
         // Remove from the cmap.
-        for(int c = 0; c < cmap2.size(); ++c)
+        for(size_t c = 0; c < cmap2.size(); ++c)
         {
             std::vector<SLIVR::CM2Widget*> &widgets = cmap2[c]->widgets();
             std::vector<SLIVR::CM2Widget*>::iterator w = widgets.begin();
@@ -894,7 +894,7 @@ QvisCMap2Display::removeWidget(WidgetID id)
 void
 QvisCMap2Display::clear()
 {
-    for(int c = 0; c < cmap2.size(); ++c)
+    for(size_t c = 0; c < cmap2.size(); ++c)
     {
         std::vector<SLIVR::CM2Widget*> &widgets = cmap2[c]->widgets();
         widgets.clear();

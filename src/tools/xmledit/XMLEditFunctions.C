@@ -558,7 +558,7 @@ XMLEditFunctions::functionlistNew()
     {
         okay = true;
         newname = tr("unnamed%1").arg(newid);
-        for (size_t i=0; i<functionlist->count() && okay; i++)
+        for (int i=0; i<functionlist->count() && okay; i++)
         {
             if (functionlist->item(i)->text() == newname)
                 okay = false;
@@ -571,7 +571,7 @@ XMLEditFunctions::functionlistNew()
     
     a->functions.push_back(f);
     UpdateWindowContents();
-    for (size_t i=0; i<functionlist->count(); i++)
+    for (int i=0; i<functionlist->count(); i++)
     {
         if (functionlist->item(i)->text() == newname)
         {

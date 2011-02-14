@@ -177,7 +177,7 @@ class MRUCacheBase {
       iterator find(const vector<kT>& keys)
       {
           iterator mpos;
-          for (int i = 0; i < keys.size(); i++)
+          for (size_t i = 0; i < keys.size(); i++)
           {
               mpos = find(keys[i]);
               if (mpos != end())

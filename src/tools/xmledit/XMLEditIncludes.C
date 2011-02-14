@@ -457,7 +457,7 @@ XMLEditIncludes::includelistNew()
     {
         okay = true;
         newname.sprintf("unnamed%d", newid);
-        for (size_t i=0; i<includelist->count() && okay; i++)
+        for (int i=0; i<includelist->count() && okay; i++)
         {
             if (includelist->item(i)->text() == newname)
                 okay = false;
@@ -471,7 +471,7 @@ XMLEditIncludes::includelistNew()
     
     a->includes.push_back(n);
     UpdateWindowContents();
-    for (size_t i=0; i<includelist->count(); i++)
+    for (int i=0; i<includelist->count(); i++)
     {
         if (includelist->item(i)->text() == newname)
         {

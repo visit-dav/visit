@@ -127,9 +127,10 @@ life_data_allocate(life_data *life, int par_rank, int par_size)
 void
 life_data_simulate(life_data *life, int par_rank, int par_size)
 {
-    int nsum, i, j, JPNN, JNN, JMNN, dest;
+    int nsum, i, j, JPNN, JNN, JMNN;
     int *true_life = NULL, *working_life = NULL;
 #ifdef PARALLEL
+    int dest;
     MPI_Status status;
     MPI_Request request;
 #endif
@@ -820,7 +821,7 @@ SimGetDomainList(const char *name, void *cbdata)
     if(VisIt_DomainList_alloc(&h) != VISIT_ERROR)
     {
         visit_handle hdl;
-        int i, *iptr = NULL;
+        int *iptr = NULL;
         simulation_data *sim = (simulation_data *)cbdata;
 
         iptr = (int *)malloc(sizeof(int));

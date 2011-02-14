@@ -947,7 +947,6 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
     
     int *segptr = segments;
     double endPt[3], endPtPrev[3];
-    unsigned char rgba[4];
     float scalar, opacity=1.0;
 
     for (int i=0; i<data->GetNumberOfLines(); i++)
@@ -968,7 +967,6 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
         
         if (idx1 == nPts-1)
         {
-            double next[3], pt[3];
             points->GetPoint(segptr[idx1-1], endPtPrev);
             points->GetPoint(segptr[idx1], endPt);
             

@@ -10072,8 +10072,6 @@ ViewerSubject::SetCreateVectorMagnitudeExpressions()
 void
 ViewerSubject::ApplyNamedSelection()
 {
-    int   i;
-
     std::string selName = GetViewerState()->GetViewerRPC()->GetStringArg1();
 
     //

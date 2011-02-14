@@ -314,7 +314,7 @@ void
 avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     int timeState, bool)
 {
-    int i, j;
+    int i;
 
     GenerateTimestepCounts();
 

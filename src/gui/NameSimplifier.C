@@ -316,7 +316,7 @@ NameSimplifier::GetSimplifiedNames(stringVector &n) const
 {
     n.clear();
 
-    for (int i=0; i<names.size(); i++)
+    for (size_t i=0; i<names.size(); i++)
     {
         n.push_back(names[i].GetAsString());
     }

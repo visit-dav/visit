@@ -838,7 +838,6 @@ avtStructuredDomainNesting::GetChildrenForLogicalIndex(int domain, int ijk[3],
                    domainNesting[domain].logicalExtents[5]);
     }
 
-    bool inside_i, inside_j, inside_k;
     int child_ext[6];
     vector<int> ratios;
 
@@ -1076,7 +1075,7 @@ void avtStructuredDomainNesting::ComputeChildBoundingBox(int domain)
         vector<int> ratios;
         int ext;
 
-        for(int i=0; i<domainNesting[domain].childDomains.size(); i++)
+        for(size_t i=0; i<domainNesting[domain].childDomains.size(); i++)
         {
             ratios = GetRatiosForLevel(domainNesting[domain].level,
                                        domainNesting[domain].childDomains[i]);

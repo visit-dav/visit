@@ -124,9 +124,6 @@
 /* Define to 1 if you have the `memmove' function. */
 #cmakedefine HAVE_MEMMOVE 1
 
-/* Define to 1 if you have the `strerror' function. */
-#cmakedefine HAVE_STRERROR 1
-
 /* Define to 1 if you have the `div' function. */
 #cmakedefine HAVE_DIV 1
 

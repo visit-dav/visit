@@ -47,7 +47,7 @@
 static void UpperCase(const std::string &src, std::string &dest)
 {
     std::string tmp(src);
-    for(int i = 0; i < tmp.size(); ++i)
+    for(size_t i = 0; i < tmp.size(); ++i)
     {
         char c = tmp[i];
         if(tmp[i] >= 'a' && tmp[i] <= 'z')

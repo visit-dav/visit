@@ -132,7 +132,7 @@ struct IVP_API MemStream
     friend std::ostream& operator<<(std::ostream &out, const MemStream &m)
     {
         out<<" MemStream(p= "<<m.pos()<<", l= "<<m.len()<<"["<<m.capacity()<<"]) data=[";
-        for (int i=0; i < m.len(); i++)
+        for (size_t i=0; i < m.len(); i++)
             out<<(int)(m._data[i])<<" ";
         out<<"]";
         return out;

@@ -445,7 +445,7 @@ XMLEditCode::codelistNew()
     {
         okay = true;
         newname = tr("unnamed%1").arg(newid);
-        for (size_t i=0; i<codelist->count() && okay; i++)
+        for (int i=0; i<codelist->count() && okay; i++)
         {
             if (codelist->item(i)->text() == newname)
                 okay = false;
@@ -458,7 +458,7 @@ XMLEditCode::codelistNew()
     
     a->codes.push_back(c);
     UpdateWindowContents();
-    for (size_t i=0; i<codelist->count(); i++)
+    for (int i=0; i<codelist->count(); i++)
     {
         if (codelist->item(i)->text() == newname)
         {
