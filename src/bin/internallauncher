@@ -691,6 +691,10 @@ $0 = shift @ARGV;
 #    Hank Childs, Mon Feb 14 13:27:04 PST 2011
 #    Make sure Eureka support doesn't spill into other "login1" nodes.
 #
+#    Hank Childs, Mon Feb 14 23:38:46 UTC 2011
+#    If we can't locate the current machine's architecture, at least tell them
+#    which architectures we could locate.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2257,6 +2261,16 @@ else # We're running a public version.
         if ($exe_name eq "engine_par")
         {
             print STDERR "Note that the serial engine may still work.\n";
+        }
+        $dirs = `ls -1 $visitdir/ | grep -v bin`;
+        if ($dirs eq "")
+        {
+            print STDERR "VisIt cannot locate binaries for any architectures.\n";
+        }
+        else
+        {
+            print STDERR "VisIt located binaries for the following architectures:\n";
+            print STDERR "\t$dirs";
         }
         exit 1;
     }
