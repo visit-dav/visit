@@ -1,4 +1,4 @@
-#!/bin/csh -f
+#!/bin/sh
 #-----------------------------------------------------------------------
 #
 # VISIT_INSTALL - Install a compressed tar file distribution of visit
@@ -246,100 +246,104 @@
 #    Cyrus Harrison, Fri Dec 17 11:25:51 PST 2010
 #    Added profile for sierra.
 #
+#    Eric Brugger, Tue Feb 15 09:37:37 PST 2011
+#    Converted from C shell to Posix shell.
+#
 #-----------------------------------------------------------------------
 
-set Compress = COMPRESS
+Compress=COMPRESS
 
-set beta = false
-set private = false
-set config = prompt
-set configSpecified = false
-set bank = false
-set logging = false
-set group_ownership = none
-set dir_permission = 755
-set file_permission = 644
-set dmg = false
+beta=false
+private=false
+config=prompt
+bank=false
+logging=false
+group_ownership=none
+dir_permission=755
+file_permission=644
+dmg=false
 
 # Figure out the platform so if we're on a platform for which we need to
 # perform extra steps, we know it.
-set uname = `which uname`
-set os = `$uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
+uname=`which uname`
+os=`$uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
 
-set option_found = true
-while ($option_found == true)
-   switch ($1)
-      case -gw:
-         set dir_permission = 775
-         set file_permission = 664
+option_found=true
+while [ "$option_found" = "true" ]; do
+   case "$1" in
+      -gw)
+         dir_permission=775
+         file_permission=664
          shift
-         breaksw
-      case -g:
-         set group_ownership = $2
-         shift
-         shift
-         breaksw
-      case -beta:
-         set beta = true
-         shift
-         breaksw
-      case -private:
-         set private = true
-         shift
-         breaksw
-      case -c:
-         set config = $2
-         set configSpecified = true
+         ;;
+      -g)
+         group_ownership=$2
          shift
          shift
-         breaksw
-      case -b:
-         set bank = $2
+         ;;
+      -beta)
+         beta=true
+         shift
+         ;;
+      -private)
+         private=true
+         shift
+         ;;
+      -c)
+         config=$2
          shift
          shift
-         breaksw
-      case -l:
-         set logging = true
+         ;;
+      -b)
+         bank=$2
          shift
-         breaksw
-      case -dmg:
-         set dmg = true
          shift
-         breaksw
-      default:
-         set option_found = false
-         breaksw
-   endsw
-end
+         ;;
+      -l)
+         logging=true
+         shift
+         ;;
+      -dmg)
+         dmg=true
+         shift
+         ;;
+      *)
+         option_found=false
+         ;;
+   esac
+done
 
-if ($#argv != 3) then
-   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc | umich] [-g group] [-b bank] [-gw] [-l] [-dmg]"
+if [ "$#" != "3" ]; then
+   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc | umich]"
+   echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
-   echo "                     This will install all of its files and subdirectories"
-   echo "                     directly in the specified directory."
+   echo "                     This will install all of its files and"
+   echo "                     subdirectories directly in the specified"
+   echo "                     directory."
    echo "                     (So use /usr/local/visit, not /usr/local)"
-   exit (1)
-endif
+   exit 1
+fi
 
-if ($beta == true && $private == true) then
-   echo "Only -beta or -private may be specified, not both."
-   exit (1)
-endif
+if [ "$beta" = "true" ]; then
+   if [ "$private" = "true" ]; then
+      echo "Only -beta or -private may be specified, not both."
+      exit 1
+   fi
+fi
 
+version="$1";
+base=`echo visit$version | tr "." "_"`
+platform="$2"
+dir="$3"
 
-set version = "$1";
-set base = `echo visit$version | tr "." "_"`
-set platform = "$2"
-set dir = "$3"
-
-set fname1 = $base.$platform.tar.Z
-if (! -e $fname1) then
-   set Compress = GZIP
-   set fname1 = $base.$platform.tar.gz
-   if (! -e $fname1) then
-      set tarname = $base.$platform.tar
-      if (-e $tarname) then
+fname1=$base.$platform.tar.Z
+if [ ! -e $fname1 ]; then
+   Compress=GZIP
+   fname1=$base.$platform.tar.gz
+   if [ ! -e $fname1 ]; then
+      tarname=$base.$platform.tar
+      if [ -e $tarname ]; then
           # Note: as far as I can tell, it would be fine to just
           # accept the unzipped distribution.  But I decided that 
           # would be a bigger change than I wanted to make.
@@ -354,17 +358,17 @@ if (! -e $fname1) then
           echo "Please download the zipped distribution again."
       else
           ls -1 $base.*.tar.* >& /dev/null
-          if ($status == 0) then
+          if [ "$status" = "0" ]; then
               echo "You specified your distribution as $platform."
               echo "I could not locate that distribution."
-              set num_dist = `ls -1 $base*.tar.* | wc -l`
-              if ($num_dist == "1") then
+              num_dist=`ls -1 $base*.tar.* | wc -l`
+              if [ "$num_dist" = "1" ]; then
                  echo "But I could find this distribution that you downloaded:"
               else
                  echo "But I could find these distributions that you downloaded:"
-              endif
+              fi
               ls -1 $base*.tar.* | sed 's/'$base'\./    /g' | sed 's/.tar.gz//g' | sed 's/.tar.Z//g'
-              if ($num_dist == 1) then
+              if [ "$num_dist" = "1" ]; then
                   echo "Either try specifying visit-install again with this "
                   echo "distribution, or, if you think you specified the distribution"
                   echo "name correctly, try downloading the file for $platform ($fname1)"
@@ -372,51 +376,52 @@ if (! -e $fname1) then
                   echo "Either try specifying visit-install again with one of these "
                   echo "distributions, or, if you think you specified the distribution"
                   echo "name correctly, try downloading the file for $platform ($fname1)"
-              endif
+              fi
               echo ""
           else
               echo "Could not find file containing the distribution."
               echo "(I was looking for file: $fname1)"
-          endif
-      endif
+          fi
+      fi
       echo "Bailing out..."
-      exit (2)
-   endif
-endif
-set fname2 = $base.$platform.tar
+      exit 2
+   fi
+fi
+fname2=$base.$platform.tar
 
 #
 # If the directory name is not an absolute path then make it one.
 #
-if (`echo "$dir" | grep "^/"` == "") then
-   set dir = `pwd`/"$dir"
-endif
+absolutepath=`echo "$dir" | grep "^/"`
+if [ "$absolutepath" = "" ]; then
+   dir=`pwd`/"$dir"
+fi
 
-if (-e $dir) then
-   touch $dir/test.$$
-   if (! -e $dir/test.$$) then
+if [ -e $dir ]; then
+   touch $dir/test.$$ 2> /dev/null
+   if [ ! -e $dir/test.$$ ]; then
       echo ""
       echo "You do not have write permission to $dir"
       echo "Bailing out"
       echo ""
-      exit (2)
+      exit 3
    else
       rm $dir/test.$$
-   endif
+   fi
 else
-   touch $dir.test.$$
-   if (! -e $dir.test.$$) then
+   touch $dir.test.$$ 2> /dev/null
+   if [ ! -e $dir.test.$$ ]; then
       echo ""
       echo "You do not have write permission to create $dir"
       echo "Bailing out"
       echo ""
-      exit (2)
+      exit 3
    else
       rm $dir.test.$$
-   endif
-endif
+   fi
+fi
 
-while ($config == prompt)
+while [ "$config" = "prompt" ]; do
    echo "Choose a system configuration file.  A system configuration"
    echo "file contains profiles that make it easy to access VisIt on"
    echo "remote computers."
@@ -434,142 +439,123 @@ while ($config == prompt)
    echo ""
    echo "(1,2,3,4,5,6,7,8,9,10):"
 
-   set config = $<
-   switch ($config)
-      case 1:
-         set config = none
-         breaksw
-      case 2:
-         set config = anag
-         breaksw
-      case 3:
-         set config = anl
-         breaksw
-      case 4:
-         set config = llnl_open
-         breaksw
-      case 5:
-         set config = llnl_closed
-         breaksw
-      case 6:
-         set config = nersc
-         breaksw
-      case 7:
-         set config = ornl
-         breaksw
-      case 8:
-         set config = princeton
-         breaksw
-      case 9:
-         set config = tacc
-         breaksw
-      case 10:
-         set config = umich
-         breaksw
-      default:
-         set config = prompt
-         breaksw
-   endsw
-end
+   read config
+   case "$config" in
+      1)
+         config=none
+         ;;
+      2)
+         config=anag
+         ;;
+      3)
+         config=anl
+         ;;
+      4)
+         config=llnl_open
+         ;;
+      5)
+         config=llnl_closed
+         ;;
+      6)
+         config=nersc
+         ;;
+      7)
+         config=ornl
+         ;;
+      8)
+         config=princeton
+         ;;
+      9)
+         config=tacc
+         ;;
+      10)
+         config=umich
+         ;;
+      *)
+         config=prompt
+         ;;
+   esac
+done
 
-if ($config != none && $config != llnl_open && $config != llnl_closed && $config != nersc && $config != ornl && $config != anl && $config != princeton && $config != tacc && $config != anag && $config != umich) then
-   echo "Illegal configuration option, choices are none, open, closed, ornl, nersc, anl, princeton, anag, umich, and tacc."
-   exit (1)
-endif
-
-# If the config was specified as "none" and we're on Darwin then assume
-# for now that the -b option was not passed. If this is the case then let's
-# not prompt for a bank and just assume bdivp. This should let "Check for updates"
-# work on the Mac with the broken 1.5.2.
-# REMOVE IN VISIT 1.6.
-if ($configSpecified == true && "$config" == "none" && "$2" == "darwin") then
-    set bank = "bdivp"
-endif
-
-if ($bank == prompt) then
-    # Determine whether the user needs a bank in order to install.
-    set yn = ""
-    while ("$yn" == "")
-        echo "Do you need to use a bank when submitting jobs to a"
-        echo "batch system? (y/n):"
-        set yn = `echo $< | tr "[A-Z]" "[a-z]"`
-        if ("$yn" != "y" && "$yn" != "n") then
-            set yn = ""
-        endif
-    end
-
-    # If a bank is required then prompt for it.
-    if ("$yn" == "y") then
-        while ($bank == prompt)
-           echo ""
-           echo "Type the name of a bank for VisIt to use when launching its"
-           echo "compute engine in a batch system:"
-
-           set bank = $<
-           if ("$bank" == "") then
-               echo "YOU MUST ENTER A BANK NAME!"
-               set bank = prompt
-           else
-               echo "You chose bank: $bank"
-           endif
-        end
-    else
-        # No bank was required. Use the default of bdivp.
-        set bank = "bdivp"
-    endif
-endif
+case "$config" in
+   none)
+      ;;
+   anag)
+      ;;
+   anl)
+      ;;
+   llnl_open)
+      ;;
+   llnl_closed)
+      ;;
+   nersc)
+      ;;
+   ornl)
+      ;;
+   princeton)
+      ;;
+   tacc)
+      ;;
+   umich)
+      ;;
+   *)
+      echo "Illegal configuration option, choices are none, anag, anl,"
+      echo "llnl_open, llnl_closed, nersc, ornl, princeton, tacc, and umich."
+      exit 4
+      ;;
+esac
 
 #
 # If both $dir/$version and $dir/$version+ exist it is an error.
 #
-if (-e "$dir"/$version) then
-   if (-e "$dir"/$version+) then
+if [ -e "$dir"/$version ]; then
+   if [ -e "$dir"/$version+ ]; then
       echo "Both the directories $version and $version+ exist. Remove"
       echo "one or both."
-      exit (3)
-   endif
-endif
+      exit 5
+   fi
+fi
 
 #
 # Set up the distribution directory
 #
-(mkdir testdir && rmdir testdir) >& /dev/null
-if ($status == 0) then
+mkdir testdir && rmdir testdir 2> /dev/null
+if [ "$?" = "0" ]; then
     echo "Local directory is writable."
-    set dist = "distribution"
+    dist="distribution"
 else
     echo "Note: local directory is not writable, so we are putting our intermediate files into /tmp instead."
-    set dist = "/tmp/distribution"
-endif
+    dist="/tmp/distribution"
+fi
 rm -rf $dist
 mkdir $dist
 cp $fname1 $dist
 cd "$dist"
-if ($Compress == "COMPRESS") then
+if [ "$Compress" = "COMPRESS" ]; then
    uncompress $fname1
 else
    gunzip $fname1
-endif
-if (! -e $fname2) then
+fi
+if [ ! -e $fname2 ]; then
    echo ""
    echo "Unable to unzip $fname1.  The file appears to be corrupted."
    echo "This is often the case when a download has not yet completed."
    echo "Bailing out..."
    echo ""
-   exit (2)
-endif
+   exit 6
+fi
 tar xvbf 20 $fname2
 rm -f $fname2
 cd ..
 
-set distributiondir = `ls -d distribution/*`
+distributiondir=distribution/`ls distribution`
 
 #
 # If the installation directory doesn't exist, create it.
 #
-if (! -e "$dir")                mkdir "$dir"
-if (! -e "$dir"/bin)            mkdir "$dir"/bin
-if (! -e "$dir"/data)           mkdir "$dir"/data
+[ ! -e "$dir" ] &&                mkdir "$dir"
+[ ! -e "$dir"/bin ] &&            mkdir "$dir"/bin
+[ ! -e "$dir"/data ] &&           mkdir "$dir"/data
 
 #
 # Copy in the new files.  We are careful to leave the current
@@ -581,31 +567,31 @@ cp $distributiondir/bin/xml2plugin       "$dir"/bin/xml2plugin+
 cp $distributiondir/bin/visit_plugin     "$dir"/bin/visit_plugin+
 cp $distributiondir/bin/mkgrdbl          "$dir"/bin/mkgrdbl+
 
-if (-e "$dir"/$version) then
+if [ -e "$dir"/$version ]; then
    mv "$dir"/$version "$dir"/$version+
    ln -s $version+ "$dir"/$version
-endif
-if (! -e "$dir"/$version+)                 mkdir "$dir"/$version+
+fi
+[ ! -e "$dir"/$version+ ] &&             mkdir "$dir"/$version+
 
 cd "$distributiondir/$version"
 
+
 # Determine the platform
-set findbin = `find . -name engine_ser`
-set platformBin = `echo "$findbin" | sed -e "s/engine_ser//"`
-set savepwd = `pwd`
+findbin=`find . -name engine_ser`
+platformBin=`echo "$findbin" | sed -e "s/engine_ser//"`
+savepwd=`pwd`
 cd "$platformBin/.."
-set platformPath = `pwd`
+platformPath=`pwd`
 cd "$savepwd"
-set platformDir = ""
-foreach f (`echo $platformPath | tr "/" " "`)
-   set platformDir = $f
-end
+platformDir=""
+for f in `echo $platformPath | tr "/" " "`; do
+   platformDir=$f
+done
 # Copy the files
 find . -print | cpio -pmud "$dir"/$version+
+cd ../data
+find . -print | cpio -pmud "$dir"/data
 cd ../../..
-foreach datafile (`ls $distributiondir/data/*`)
-    cp $datafile "$dir"/data
-end
 
 #
 # Store some of the installation options so they can be used by VisIt when
@@ -613,20 +599,19 @@ end
 #
 echo "1;$config;$bank;$platform" > "$dir"/$version+/$platformDir/.installinfo
 
-
 #
 # Use the appropriate configuration file, setting the bank to the right value.
 #
 rm -f "$dir"/$version+/.visit/config
 rm -rf "$dir"/$version+/.visit/hosts
 mkdir "$dir"/$version+/.visit/hosts
-if ($config == anl) then
+if [ "$config" = "anl" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_anl_cosmea.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_anl_eureka.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_anl_gadzooks.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_anl_mcs_login.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_anl_teragrid.xml "$dir"/$version+/.visit/hosts/
-else if ($config == llnl_closed) then
+elif [ "$config" = "llnl_closed" ]; then
    ln -s visit-config-llnl_closed.ini "$dir"/$version+/.visit/config
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_eos.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_graph.xml   "$dir"/$version+/.visit/hosts/
@@ -637,7 +622,7 @@ else if ($config == llnl_closed) then
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_rhea.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_tempest.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_snl_closed_redrose.xml  "$dir"/$version+/.visit/hosts/
-else if ($config == llnl_open) then
+elif [ "$config" = "llnl_open" ]; then
    ln -s visit-config-llnl_open.ini  "$dir"/$version+/.visit/config
    cp "$dir"/$version+/.visit/allhosts/host_llnl_alastor.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_atlas.xml   "$dir"/$version+/.visit/hosts/
@@ -648,70 +633,64 @@ else if ($config == llnl_open) then
    cp "$dir"/$version+/.visit/allhosts/host_llnl_sierra.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_zeus.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml     "$dir"/$version+/.visit/hosts/
-else if ($config == nersc) then
+elif [ "$config" = "nersc" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_nersc_franklin.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_hopper.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_euclid.xml "$dir"/$version+/.visit/hosts/
-else if ($config == ornl) then
+elif [ "$config" = "ornl" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_ornl_ewok.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_ornl_jaguarpf.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_ornl_jaguar.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_ornl_lens.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_ornl_photon.xml   "$dir"/$version+/.visit/hosts/
-else if ($config == princeton) then
+elif [ "$config" = "princeton" ]; then
    ln -s visit-config-princeton.ini "$dir"/$version+/.visit/config
    cp "$dir"/$version+/.visit/allhosts/host_princeton_artemis.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_princeton_hecate.xml      "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_princeton_tigressdata.xml "$dir"/$version+/.visit/hosts/
-else if ($config == tacc) then
+elif [ "$config" = "tacc" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_tacc_longhorn.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_tacc_ranger.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_tacc_spur.xml   "$dir"/$version+/.visit/hosts/
-else if ($config == umich) then
+elif [ "$config" = "umich" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_umich_flux.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_umich_nyx.xml   "$dir"/$version+/.visit/hosts/
-else if ($config == anag) then
+elif [ "$config" = "anag" ]; then
    ln -s visit-config-anag.ini    "$dir"/$version+/.visit/config
    ln -s visit-guiconfig-anag.ini "$dir"/$version+/.visit/guiconfig
    ln -s visit-visitrc-anag.ini   "$dir"/$version+/.visit/visitrc
-endif
+fi
 
 # Do the bank fixup
-foreach hostfile (`ls $dir/$version+/.visit/hosts/host_*`)
-    sed -i -e "s/bdivp/${bank}/" $hostfile
-end
-
+for hostfile in `ls $dir/$version+/.visit/hosts`; do
+    sed -i -e "s/bdivp/${bank}/" $dir/$version+/.visit/hosts/$hostfile
+done
 
 #
 # If we're on MacOS X, then we want to create some small scripts that
 # can be clicked on from the Finder and have VisIt work.
 #
-if("$os" == "darwin") then
+if [ "$os" = "darwin" ]; then
     # Create a clickable script to run the cli, silex, and xmledit.
-    set csh = `which csh`
-    set scriptNames = ("VisIt" "cli" "Silex" "XmlEdit")
-    set appNames = ("visit" "cli" "silex" "xmledit")
-    @ i = 1
-    while($i < 5)
-        set app = $appNames[$i]
-        set appscript = $scriptNames[$i]
-        if(-e "$dir"/bin/$appscript.command) then
+    csh=`which csh`
+    for appscript in "VisIt" "cli" "Silex" "XmlEdit"; do
+        app=`echo $appscript | tr "[A-Z]" "[a-z]"`
+        if [ -e "$dir"/bin/$appscript.command ]; then
             rm -f "$dir"/bin/$appscript.command
-        endif
+        fi
         echo "#\!$csh -f"           >  "$dir"/bin/$appscript.command
-        if($i > 1) then
+        if [ "$i" > "0" ]; then
             echo "`pwd`/visit -$app" >> "$dir"/bin/$appscript.command
         else
             echo "`pwd`/visit"       >> "$dir"/bin/$appscript.command
-        endif
+        fi
         echo "exit 0"               >> "$dir"/bin/$appscript.command
-        if ($group_ownership != none) then
+        if [ "$group_ownership" != "none" ]; then
             chgrp $group_ownership "$dir"/bin/$appscript.command
-        endif
+        fi
         chmod $dir_permission  "$dir"/bin/$appscript.command
-        @ i++
-    end
-endif
+    done
+fi
 
 #
 # Set the permissions properly
@@ -723,8 +702,7 @@ chmod $dir_permission "$dir"/bin/xml2plugin+
 chmod $dir_permission "$dir"/bin/visit_plugin+
 chmod $dir_permission "$dir"/bin/mkgrdbl+
 chmod $dir_permission "$dir"/data
-chmod $file_permission "$dir"/data/*
-chmod $dir_permission "$dir"/$version+
+find "$dir"/data -type f -exec chmod $file_permission {} \;
 
 #
 # Note that there is a short period of time when the second command
@@ -737,39 +715,44 @@ chmod $dir_permission "$dir"/$version+
 find "$dir"/$version+ -type d -exec chmod $dir_permission {} \;
 find "$dir"/$version+ -type f -exec chmod $file_permission {} \;
 
-chmod $dir_permission "$dir"/$version+/*/bin/*
-chmod $dir_permission "$dir"/$version+/bin/*
-if("$os" == "darwin") then
-    chmod $dir_permission "$dir"/$version+/*/bin/*.app/Contents/MacOS/* 
-endif
+for arch in `ls "$dir"/$version+`; do
+    if [ "$arch" != "bin" ]; then
+        find "$dir"/$version+/$arch/bin -exec chmod $dir_permission {} \;
+    fi
+done
+find "$dir"/$version+/bin -exec chmod $dir_permission {} \;
+
+if [ "$os" = "darwin" ]; then
+    for arch in `ls "$dir"/$version+`; do
+        if [ "$arch" != "bin" ]; then
+            for app in `find "$dir"/$version+/$arch/bin -name "*.app" -print`; do
+                find "$dir"/$version+/$arch/bin/$app/Contents/MacOS -exec chmod $dir_permission {} \;
+            done
+        fi
+    done
+fi
 
 #
 # Set the group ownership properly
 #
-if ($group_ownership != none) then
-    chgrp $group_ownership "$dir"/bin
-    chgrp $group_ownership "$dir"/bin/frontendlauncher+
-    chgrp $group_ownership "$dir"/bin/xml2plugin+
-    chgrp $group_ownership "$dir"/bin/visit_plugin+
-    chgrp $group_ownership "$dir"/bin/mkgrdbl+
-    chgrp $group_ownership "$dir"/data
-    chgrp $group_ownership "$dir"/data/*
-    find "$dir"/$version+ -type d -exec chgrp $group_ownership {} \;
-    find "$dir"/$version+ -type f -exec chgrp $group_ownership {} \;
-endif
+if [ "$group_ownership" != "none" ]; then
+    find "$dir"/bin -exec chgrp $group_ownership {} \;
+    find "$dir"/data -exec chgrp $group_ownership {} \;
+    find "$dir"/$version+ -exec chgrp $group_ownership {} \;
+fi
 
-if ($logging == true) then
+#
+# Enable logging if requested.
+#
+if [ "$logging" = "true" ]; then
     sed -e "s/logging[ \t]*= 0/logging        = 1/" $distributiondir/$version/bin/internallauncher > "$dir"/$version+/bin/internallauncher
     chmod $dir_permission "$dir"/$version+/bin/internallauncher
     touch "$dir"/$version+/usagelog
-    touch "$dir"/$version+/cli_usagelog
     chmod 666 "$dir"/$version+/usagelog
-    chmod 666 "$dir"/$version+/cli_usagelog
-    if ($group_ownership != none) then
+    if [ "$group_ownership" != "none" ]; then
         chgrp $group_ownership "$dir"/$version+/usagelog
-        chgrp $group_ownership "$dir"/$version+/cli_usagelog
-    endif
-endif
+    fi
+fi
 
 #
 # Clean up the temporary directories.
@@ -779,13 +762,13 @@ rm -rf distribution
 #
 # Make the symbolic links for the programs
 #
-set programs = "curv3dprep makemili mpeg2encode silex surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
+programs="curv3dprep makemili mpeg2encode silex surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
 
 cd "$dir"/bin
-foreach prog ($programs)
+for prog in $programs; do
     rm -f $prog
     ln -s frontendlauncher $prog
-end
+done
 
 #
 # Remove the symbolic link for "convert" in case it is there from a previous
@@ -802,34 +785,37 @@ cd "$dir"
 # If $version exists at this point it is a link and must be removed
 # with the rm command and replaced with the "plus" version.
 #
-if (-e $version) then
+if [ -e $version ]; then
    rm -f $version
    mv $version+ $version
-endif
-if (-e bin/frontendlauncher)     rm -f bin/frontendlauncher
+fi
+[ -e bin/frontendlauncher ] &&   rm -f bin/frontendlauncher
 mv bin/frontendlauncher+ bin/frontendlauncher
-if (-e bin/xml2plugin)           rm -f bin/xml2plugin
+[ -e bin/xml2plugin ] &&         rm -f bin/xml2plugin
 mv bin/xml2plugin+ bin/xml2plugin
-if (-e bin/visit_plugin)         rm -f bin/visit_plugin
+[ -e bin/visit_plugin ] &&       rm -f bin/visit_plugin
 mv bin/visit_plugin+ bin/visit_plugin
-if (-e bin/mkgrdbl)              rm -f bin/mkgrdbl
+[ -e bin/mkgrdbl ] &&            rm -f bin/mkgrdbl
 mv bin/mkgrdbl+ bin/mkgrdbl
-if ($beta == true) then
-   if (-e $version+)             mv $version+ $version
-   if (-e beta)                  rm -f beta
+if [ "$beta" = "true" ]; then
+   [ -e $version+ ] &&           mv $version+ $version
+   [ -e beta ] &&                rm -f beta
    ln -s $version beta
-else if ($private == false) then
-   if (-e $version+)             mv $version+ $version
-   if (-e current)               rm -f current
+elif [ "$private" = "false" ]; then
+   [ -e $version+ ] &&           mv $version+ $version
+   [ -e current ] &&             rm -f current
    ln -s $version current
-endif
+fi
 
 #
 # Create dmg if requested
-if ($dmg == true) then
+#
+if [ "$dmg" = "true" ]; then
    /usr/bin/hdiutil create -fs HFS+ -srcfolder $dir -volname VisIt-$version VisIt-$version.dmg
-endif
+fi
 
+#
 # Write out a message that we can look for in the visit update process. This is
 # a workaround for a Qt bug.
+#
 echo "visit-install done"
