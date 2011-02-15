@@ -552,6 +552,9 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    built in parallel since this caused some out of bounds memory
 //    references.
 //
+//    Cyrus Harrison, Tue Feb 15 13:20:20 PST 2011
+//    Preserve axis labels if they exist.
+//
 // ****************************************************************************
 
 void
@@ -614,10 +617,16 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
     DBAddOption(tmpOptlist, DBOPT_TIME, &ftime);
     double dtime = atts.GetTime();
     DBAddOption(tmpOptlist, DBOPT_DTIME, &dtime);
+    if (atts.GetXLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_XLABEL, (char *) atts.GetXLabel().c_str());
     if (atts.GetXUnits() != "")
         DBAddOption(tmpOptlist, DBOPT_XUNITS, (char *) atts.GetXUnits().c_str());
+    if (atts.GetYLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_YLABEL, (char *) atts.GetYLabel().c_str());
     if (atts.GetYUnits() != "")
         DBAddOption(tmpOptlist, DBOPT_YUNITS, (char *) atts.GetYUnits().c_str());
+    if (atts.GetZLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_ZLABEL, (char *) atts.GetZLabel().c_str());
     if (atts.GetZUnits() != "")
         DBAddOption(tmpOptlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
 
@@ -688,6 +697,9 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
 //    Eric Brugger, Mon Jun 22 16:39:31 PDT 2009
 //    I modified the writer to handle the case where the meshes in a
 //    multimesh or multivar were not all of the same type.
+//
+//    Cyrus Harrison, Tue Feb 15 13:20:20 PST 2011
+//    Preserve axis labels if they exist.
 //
 // ****************************************************************************
 
@@ -773,10 +785,16 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     DBAddOption(tmpOptlist, DBOPT_TIME, &ftime);
     double dtime = atts.GetTime();
     DBAddOption(tmpOptlist, DBOPT_DTIME, &dtime);
+    if (atts.GetXLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_XLABEL, (char *) atts.GetXLabel().c_str());
     if (atts.GetXUnits() != "")
         DBAddOption(tmpOptlist, DBOPT_XUNITS, (char *) atts.GetXUnits().c_str());
+    if (atts.GetYLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_YLABEL, (char *) atts.GetYLabel().c_str());
     if (atts.GetYUnits() != "")
         DBAddOption(tmpOptlist, DBOPT_YUNITS, (char *) atts.GetYUnits().c_str());
+    if (atts.GetZLabel() != "")
+        DBAddOption(tmpOptlist, DBOPT_ZLABEL, (char *) atts.GetZLabel().c_str());
     if (atts.GetZUnits() != "")
         DBAddOption(tmpOptlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
 
@@ -906,13 +924,15 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
 //    Brad Whitlock, Tue May 19 12:17:48 PDT 2009
 //    Make sure that we save out the cellOrigin.
 //
+//    Cyrus Harrison, Tue Feb 15 13:20:20 PST 2011
+//    Preserve axis labels if they exist.
+//
 // ****************************************************************************
 
 void
 avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 {
-    optlist = DBMakeOptlist(10);
-    
+    optlist = DBMakeOptlist(20);
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     static int cycle = atts.GetCycle();
     DBAddOption(optlist, DBOPT_CYCLE, &cycle);
@@ -922,12 +942,19 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
     DBAddOption(optlist, DBOPT_DTIME, &dtime);
     static int cellOrigin = atts.GetCellOrigin();
     DBAddOption(optlist, DBOPT_ORIGIN, &cellOrigin);
+    if (atts.GetXLabel() != "")
+        DBAddOption(optlist, DBOPT_XLABEL, (char *) atts.GetXLabel().c_str());
     if (atts.GetXUnits() != "")
         DBAddOption(optlist, DBOPT_XUNITS, (char *) atts.GetXUnits().c_str());
+    if (atts.GetYLabel() != "")
+        DBAddOption(optlist, DBOPT_YLABEL, (char *) atts.GetYLabel().c_str());
     if (atts.GetYUnits() != "")
         DBAddOption(optlist, DBOPT_YUNITS, (char *) atts.GetYUnits().c_str());
+    if (atts.GetZLabel() != "")
+        DBAddOption(optlist, DBOPT_ZLABEL, (char *) atts.GetZLabel().c_str());
     if (atts.GetZUnits() != "")
         DBAddOption(optlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
+
 }
 
 
