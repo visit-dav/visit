@@ -1060,6 +1060,9 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
 //    Cyrus Harrison, Fri Mar 16 15:50:10 PDT 2007
 //    Added progress update. 
 //
+//    Hank Childs, Fri Feb 11 14:38:46 PST 2011
+//    Add barrier to improve timings.
+//
 // ****************************************************************************
 int
 avtConnComponentsExpression::GlobalLabelShift
@@ -1076,6 +1079,13 @@ avtConnComponentsExpression::GlobalLabelShift
     // get the processor id and # of processors
     int procid = PAR_Rank();
     int nprocs = PAR_Size();
+
+    if (visitTimer->Enabled())
+    {
+        int tb = visitTimer->StartTimer();
+        Barrier();
+        visitTimer->StopTimer(tb, "Waiting for all processors to enter new stage.");
+    }
 
     int t0 = visitTimer->StartTimer();
 
@@ -1184,10 +1194,14 @@ avtConnComponentsExpression::GlobalResolve(int num_comps,
     UnifyMinMax(bounds,6);
 
     // create the spatial partition
+    int tp  = visitTimer->StartTimer();
     spart.CreatePartition(bset,bounds);
+    visitTimer->StopTimer(tp, "Creating spatial partition");
 
     // Relocate proper cells using boundary set
+    int t1 = visitTimer->StartTimer();
     bset.RelocateUsingPartition(spart,outputVariableName);
+    visitTimer->StopTimer(t1, "Relocating using spatial partition (communication)");
 
     // get the relocated datasets
     sets = bset.GetMeshes();
