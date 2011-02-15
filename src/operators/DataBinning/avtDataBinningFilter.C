@@ -398,11 +398,15 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
 //    Hank Childs, Sun Oct 17 09:45:44 PDT 2010
 //    Change the name of the variable we create.
 //
+//    Cyrus Harrison, Tue Feb 15 13:44:45 PST 2011
+//    Preserve units if possible & better y-axis label for 1D case.
+//
 // ****************************************************************************
 
 void
 avtDataBinningFilter::UpdateDataObjectInfo(void)
 {
+    avtDataAttributes &inAtts   = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
     int dim = ( (atts.GetNumDimensions() == DataBinningAttributes::One) ? 1
               : ((atts.GetNumDimensions() == DataBinningAttributes::Two) ? 2 : 3));
@@ -429,7 +433,26 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
     else
         var1 = atts.GetDim1Var();
     dataAtts.SetXLabel(var1);
-    dataAtts.SetXUnits("");
+    if(inAtts.ValidVariable(var1.c_str()))
+        dataAtts.SetXUnits(inAtts.GetVariableUnits(var1.c_str()));
+    else
+        dataAtts.SetXUnits("");
+
+    if (atts.GetNumDimensions() == DataBinningAttributes::One)
+    {
+        // In this case we generate a curve, so create a sensible
+        // axis name for the output var.
+        DataBinningAttributes::ReductionOperator rop_id = atts.GetReductionOperator();
+        string rop_str = DataBinningAttributes::ReductionOperator_ToString(rop_id);
+        if( ! (rop_id == DataBinningAttributes::Count ||
+               rop_id == DataBinningAttributes::RMS ||
+               rop_id == DataBinningAttributes::PDF) )
+        {
+            rop_str = rop_str + "(" + atts.GetVarForReduction() + ")";
+        }
+        dataAtts.SetYLabel(rop_str);
+        dataAtts.SetYUnits("");
+    }
 
     if ((atts.GetNumDimensions() == DataBinningAttributes::Two ||
          atts.GetNumDimensions() == DataBinningAttributes::Three))
@@ -444,6 +467,10 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
             var2 = atts.GetDim2Var();
         dataAtts.SetYLabel(var2);
         dataAtts.SetYUnits("");
+        if(inAtts.ValidVariable(var2.c_str()))
+            dataAtts.SetYUnits(inAtts.GetVariableUnits(var2.c_str()));
+        else
+            dataAtts.SetYUnits("");
     }
 
     if (atts.GetNumDimensions() == DataBinningAttributes::Three)
@@ -457,7 +484,10 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
         else
             var3 = atts.GetDim3Var();
         dataAtts.SetZLabel(var3);
-        dataAtts.SetZUnits("");
+        if(inAtts.ValidVariable(var3.c_str()))
+            dataAtts.SetZUnits(inAtts.GetVariableUnits(var3.c_str()));
+        else
+            dataAtts.SetZUnits("");
     }
 }
 
