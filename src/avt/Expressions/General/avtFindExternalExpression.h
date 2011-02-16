@@ -62,6 +62,9 @@ class     vtkDataArray;
 //    Hank Childs, Fri Feb  4 13:46:18 PST 2011
 //    Expand this expression to also deal with external cells.  Rename.
 //
+//    Hank Childs, Wed Feb 16 13:01:36 PST 2011
+//    Make sure the output is always a scalar.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtFindExternalExpression 
@@ -82,6 +85,7 @@ class EXPRESSION_API avtFindExternalExpression
     bool                      doCells;
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return !doCells; };
+    virtual int               GetVariableDimension() { return 1; }
 };
 
 
