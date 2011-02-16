@@ -12,7 +12,6 @@ SET(VISITHOME /scratch/build/visit_3rdparty)
 SET(VISITARCH i386-apple-darwin9_gcc-4.0)
 SET(VISIT_VERBOSE_MAKEFILE TRUE)
 VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /usr/local/visit)
-VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release)
 
 ##
 ## Specify the location of the mesa.
