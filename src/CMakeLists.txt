@@ -292,6 +292,14 @@ IF (NOT WIN32)
 
 ENDIF (NOT WIN32)
 
+#-----------------------------------------------------------------------------
+# If not already set, we use a default build type of Release
+#-----------------------------------------------------------------------------
+
+IF (NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build,
+options are: Debug Release RelWithDebInfo MinSizeRel.")
+ENDIF()
 
 #-----------------------------------------------------------------------------
 # Set compiler from config-site
@@ -353,15 +361,6 @@ IF (WIN32)
   ENDIF()
   MESSAGE(STATUS "VISIT_WIN_ICON_RESOURCE = ${VISIT_WIN_ICON_RESOURCE}")
 ENDIF (WIN32)
-
-#-----------------------------------------------------------------------------
-# If not already set, we use a default build type of Release
-#-----------------------------------------------------------------------------
-
-IF (NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build,
-options are: Debug Release RelWithDebInfo MinSizeRel.")
-ENDIF()
 
 #-----------------------------------------------------------------------------
 # Output directories.
