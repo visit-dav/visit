@@ -1,8 +1,8 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
-# LLNL-CODE-400142
+# LLNL-CODE-442911
 # All rights reserved.
 #
 # This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
@@ -59,6 +59,10 @@
 #  This file is used to prevent qt from loading plugins from other qt
 #  installs.
 #
+#  Eric Brugger, Wed Feb 16 11:50:39 PST 2011
+#  I changed the installation location of visitdiff.py to the same location
+#  that makemovie.py and makemoviemain.py get installed.
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
@@ -84,7 +88,6 @@ SET(VISIT_BIN_FILES
         visit_plugin
         visit_transition
         visitconvert
-        visitdiff.py
         visitprotocol
         xml2atts
         xml2avt
@@ -126,7 +129,7 @@ IF (NOT WIN32)
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
 
-    INSTALL(FILES makemovie.py makemoviemain.py
+    INSTALL(FILES makemovie.py makemoviemain.py visitdiff.py
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
