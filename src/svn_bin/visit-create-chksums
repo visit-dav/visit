@@ -74,7 +74,7 @@ chmod 755 filesize
 #
 # Create the md5 checksums, the sha1 checksums, and the file sizes.
 #
-cmds="md5sum sha1sum ../visit$version/filesize"
+cmds="md5sum sha1sum sha256sum ../visit$version/filesize"
 for cmd in $cmds
 do
    case $cmd in
@@ -85,6 +85,10 @@ do
       sha1sum)
          property=checksums
          output=visit_sha1_checksums
+         ;;
+      sha256sum)
+         property=checksums
+         output=visit_sha256_checksums
          ;;
       ../visit$version/filesize)
          property="file sizes"
@@ -103,6 +107,7 @@ do
    $cmd visit-install$version2                     >> $output
    $cmd jvisit$version.tar.gz                      >> $output
    $cmd visit$version.exe                          >> $output
+   $cmd visit${version}_x64.exe                    >> $output
    $cmd visit$version2.linux-euclid.tar.gz         >> $output
    $cmd visit$version2.linux-rhel3.tar.gz          >> $output
    $cmd visit$version2.linux-x86_64-rhel4.tar.gz   >> $output
