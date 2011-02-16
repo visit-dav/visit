@@ -8226,6 +8226,9 @@ function build_mdsplus
 # Mark C. Miller, Wed Oct 27 19:29:19 PDT 2010                                #
 # Adjusted ordering of database lib variables to ensure LIBDEP gets processed #
 # correctly. Added comments to host conf file regarding ordering issue.       #
+#                                                                             #
+# Kathleen Bonnell, Wed Feb 16 08:35:40 PST 2011                              #
+# Remove setting of CMAKE_BUILD_TYPE                                          #
 # *************************************************************************** #
 
 function build_hostconf
@@ -8299,7 +8302,6 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(VISIT_C_COMPILER $C_COMPILER TYPE STRING)">> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER $CXX_COMPILER TYPE STRING)" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release TYPE STRING)" >> $HOSTCONF
 
     if [[ "$USE_VISIBILITY_HIDDEN" == "yes" ]] ; then
         echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
