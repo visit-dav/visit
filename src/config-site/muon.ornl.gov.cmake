@@ -12,7 +12,7 @@ SET(VISITHOME /apps/visit)
 SET(VISITARCH i386-apple-darwin10_gcc-4.2)
 SET(VISIT_VERBOSE_MAKEFILE TRUE)
 SET(CMAKE_INSTALL_PREFIX /apps/visit)
-VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Debug)
+SET(CMAKE_BUILD_TYPE Debug CACHE STRING "")
 
 ##
 ## Specify the location of the mesa.

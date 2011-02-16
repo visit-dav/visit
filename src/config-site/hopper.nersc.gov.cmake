@@ -13,7 +13,6 @@ SET(VISITHOME /usr/common/graphics/installs/visit_3rdparty)
 SET(VISITARCH linux-x86_64_gcc-4.3)
 SET(VISIT_VERBOSE_MAKEFILE TRUE)
 VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /usr/common/graphics/visit)
-VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release)
 
 ##
 ## Do not build Tuvok
