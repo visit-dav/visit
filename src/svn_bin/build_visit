@@ -8331,10 +8331,20 @@ function build_ADIOS
     info "Configuring ADIOS . . ."
     cd $ADIOS_BUILD_DIR || error "Can't cd to ADIOS build dir."
     info "Invoking command to configure ADIOS"
-    ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-       CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
-       --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
+    if [[ "$VISIT_MPI_COMPILER" != "" ]] ; then
+        ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
+            CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+            MPICXX="$VISIT_MPI_COMPILER" \
+            --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
+            --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
+    else
+        ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
+            CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+            --without-mpi \
+            --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
+            --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
+    fi
+        
     if [[ $? != 0 ]] ; then
        warn "ADIOS configure failed.  Giving up"
        return 1
@@ -8796,6 +8806,9 @@ function build_hostconf
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## ADIOS" >> $HOSTCONF
+        if [[ "$VISIT_MPI_COMPILER" != "" ]] ; then
+            echo "## (configured w/ mpi compiler wrapper)" >> $HOSTCONF
+        fi
         echo "##" >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR \${VISITHOME}/ADIOS/$ADIOS_VERSION/\${VISITARCH})" \
@@ -10464,12 +10477,16 @@ if [[ "$DO_ADIOS" == "yes" ]] ; then
     if [[ $? == 0 ]] ; then
         info "Skipping ADIOS build.  ADIOS is already installed."
     else
-        info "Building MXML (~1 minutes)"
-        build_mxml
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install mxml.  Bailing out."
+        check_if_installed "mxml" $MXML_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping build of MXML"
+        else
+            build_mxml
+            if [[ $? != 0 ]] ; then
+                 error "Unable to build or install mxml.  Bailing out."
+            fi
+            info "Done building mxml"
         fi
-        info "Done building mxml"
 
         info "Building ADIOS (~1 minutes)"
         build_ADIOS
