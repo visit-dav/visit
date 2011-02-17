@@ -108,6 +108,8 @@
 #     Function 8.18, build_advio:   build AdvIO
 #     Function 8.19, build_xdmf  :  build XDMF
 #     Function 8.20, build_mdsplus: build MDSplus
+#     Function 8.21, build_mxml:    build mxml
+#     Function 8.22, build_ADIOS:   build ADIOS
 #     Function 8, build_silo:       build Silo
 #     Function 9, build_hostconf:   build the config-site/host.conf file
 #     Function 9.1, build_visit:    build the VisIt source code
@@ -1096,6 +1098,9 @@
 #     silo's dependent libraries in the config site file it generates if
 #     the script is building hdf5.
 #
+#     Dave Pugmire, Thu Feb 17 15:55:03 EST 2011
+#     Add ADIOS build.
+#
 # *****************************************************************************
 
 
@@ -1384,6 +1389,10 @@ export ON_TCMALLOC="off"
 export DO_ICET="no"
 export ON_ICET="off"
 export PREVENT_ICET="no"
+export DO_ADIOS="no"
+export ON_ADIOS="off"
+export DO_MXML="no"
+export ON_MXML="off"
 GRAPHICAL="yes"
 ON_GRAPHICAL="on"
 verify="no"
@@ -1598,6 +1607,16 @@ export XDMF_FILE=${XDMF_FILE:-"Xdmf-2.1.tar.gz"}
 export XDMF_VERSION=${XDMF_VERSION:-"2.1"}
 export XDMF_COMPATIBILITY_VERSION=${XDMF_COMPATIBILITY_VERSION:-"2.1"}
 export XDMF_BUILD_DIR=${XDMF_BUILD_DIR:-"Xdmf"}
+
+export ADIOS_FILE=${ADIOS_FILE:-"adios-1.2.1.tar.gz"}
+export ADIOS_VERSION=${ADIOS_VERSION:-"1.2.1"}
+export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.2.1"}
+export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.2.1"}
+
+export MXML_FILE=${ADIOS_FILE:-"mxml-2.6.tar.gz"}
+export MXML_VERSION=${MXML_VERSION:-"2.6"}
+export MXML_COMPATIBILITY_VERSION=${MXML_COMPATIBILITY_VERSION:-"2.6"}
+export MXML_BUILD_DIR=${MXML_BUILD_DIR:-"mxml-2.6"}
 
 export ICET_FILE=${ICET_FILE:-"IceT-1-0-0.tar.gz"}
 export ICET_VERSION=${ICET_VERSION:-"1.0.0"}
@@ -2489,6 +2508,15 @@ function check_optional_3rdparty
             ANY_ERRORS="yes"
             DO_XDMF="no"
             error "Unable to build XDMF.  ${XDMF_FILE} not found."
+        fi
+    fi
+
+    if [[ "$DO_ADIOS" == "yes" ]] ; then
+        ensure_built_or_ready "ADIOS" $ADIOS_VERSION $ADIOS_BUILD_DIR $ADIOS_FILE
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_ADIOS="no"
+            error "Unable to build ADIOS.  ${ADIOS_FILE} not found."
         fi
     fi
 
@@ -8220,6 +8248,127 @@ function build_mdsplus
     return 0
 }
 
+
+# ***************************************************************************
+#                         Function 8.21, build_mxml
+# Required by ADIOS.
+#
+# Modifications:
+#
+# ***************************************************************************
+
+function build_mxml
+{
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $MXML_BUILD_DIR $MXML_FILE
+    untarred_mxml=$?
+    if [[ $untarred_mxml == -1 ]] ; then
+       warn "Unable to prepare mxml Build Directory. Giving Up"
+       return 1
+    fi
+
+    #
+    info "Configuring mxml . . ."
+    cd $MXML_BUILD_DIR || error "Can't cd to mxml build dir."
+    info "Invoking command to configure mxml"
+    ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
+       CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+       --prefix="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       warn "mxml configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build mxml
+    #
+    info "Building mxml . . . (~1 minutes)"
+
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+       warn "mxml build failed.  Giving up"
+       return 1
+    fi
+    info "Installing ADIOS . . ."
+
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+       warn "mxml build (make install) failed.  Giving up"
+       return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/mxml"
+       chgrp -R ${GROUP} "$VISITDIR/mxml"
+    fi
+    cd "$START_DIR"
+    info "Done with mxml"
+    return 0
+}
+
+# ***************************************************************************
+#                         Function 8.22, build_ADIOS
+#
+# Modifications:
+#
+# ***************************************************************************
+
+function build_ADIOS
+{
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $ADIOS_BUILD_DIR $ADIOS_FILE
+    untarred_ADIOS=$?
+    if [[ $untarred_ADIOS == -1 ]] ; then
+       warn "Unable to prepare ADIOS Build Directory. Giving Up"
+       return 1
+    fi
+
+    #
+    info "Configuring ADIOS . . ."
+    cd $ADIOS_BUILD_DIR || error "Can't cd to ADIOS build dir."
+    info "Invoking command to configure ADIOS"
+    ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
+       CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+       --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
+       --prefix="$VISITDIR/ADIOS/$ADIOS_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       warn "ADIOS configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build ADIOS
+    #
+    info "Building ADIOS . . . (~2 minutes)"
+
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+       warn "ADIOSbuild failed.  Giving up"
+       return 1
+    fi
+    info "Installing ADIOS . . ."
+
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+       warn "ADIOS build (make install) failed.  Giving up"
+       return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/ADIOS"
+       chgrp -R ${GROUP} "$VISITDIR/ADIOS"
+    fi
+    cd "$START_DIR"
+    info "Done with ADIOS"
+    return 0
+}
+
+
+
 # *************************************************************************** #
 #                          Function 9, build_hostconf                         #
 #                                                                             #
@@ -8642,6 +8791,16 @@ function build_hostconf
         echo "ITAPS_LINK_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/lib)" \
         >> $HOSTCONF
     fi
+
+    if [[ "$DO_ADIOS" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## ADIOS" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR \${VISITHOME}/ADIOS/$ADIOS_VERSION/\${VISITARCH})" \
+        >> $HOSTCONF
+    fi
     echo >> $HOSTCONF
     cd "$START_DIR"
     echo "Done creating $HOSTCONF"
@@ -9000,6 +9159,7 @@ usage () {
   printf "BOOLEAN FLAGS\n"
   printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
   printf "%-15s %s [%s]\n" "--all-io"  "Build all available I/O libraries" "$DO_ALLIO"
+  printf "%-15s %s [%s]\n" "--adios"   "Build ADIOS" "$DO_ADIOS"
   printf "%-15s %s [%s]\n" "--advio"   "Build AdvIO" "$DO_ADVIO"
   printf "%-15s %s [%s]\n" "--boxlib"  "Build Boxlib" "$DO_BOXLIB"
   printf "%-15s %s [%s]\n" "--ccmio"   "Build Star-CD support" "$DO_CCMIO"
@@ -9240,6 +9400,7 @@ for arg in "${arguments[@]}" ; do
     case $arg in
         --absolute) ABS_PATH="yes"; ON_ABS_PATH="on";;
         --all-io) DO_ALLIO="yes";;
+        --adios) DO_ADIOS="yes"; ON_ADIOS="on";;
         --advio) DO_ADVIO="yes"; ON_ADVIO="on";;
         --arch) next_arg="arch";;
         --boxlib) DO_BOXLIB="yes"; ON_BOXLIB="on";;
@@ -9397,6 +9558,8 @@ if [[ "$DO_DBIO_ONLY" == "yes" || "$DO_ALLIO" == "yes" ]]; then
     ON_SILO="on"
     DO_XDMF="yes"
     ON_XDMF="on"
+    DO_ADIOS="yes"
+    ON_ADIOS="on"
 
     #
     # Releasibility of these libs is not yet understood
@@ -9562,6 +9725,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "Silo"     "$SILO_VERSION    $SILO_FILE"      $ON_SILO \
            "SZip"     "$SZIP_VERSION    $SZIP_FILE"      $ON_SZIP \
            "Xdmf"     "$XDMF_VERSION  $XDMF_FILE"    $ON_XDMF  \
+           "ADIOS"    "$ADIOS_VERSION  $ADIOS_FILE"    $ON_ADIOS \
             2> tmp$$
     retval=$?
 
@@ -9584,6 +9748,8 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         DO_SILO="no"
         DO_SZIP="no"
         DO_XDMF="no"
+        DO_ADIOS="no"
+        DO_MXML="no"
         for OPTION in $choice
         do
             case $OPTION in
@@ -9623,6 +9789,9 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
               Xdmf)
                  DO_XDMF="yes"
                  DO_HDF5="yes";;
+              ADIOS)
+                 DO_ADIOS="yes"
+                 DO_MXML="yes"
             esac
         done
         ;;
@@ -10286,6 +10455,28 @@ if [[ "$DO_XDMF" == "yes" ]] ; then
             error "Unable to build or install Xdmf.  Bailing out."
         fi
         info "Done building Xdmf"
+   fi
+fi
+
+cd "$START_DIR"
+if [[ "$DO_ADIOS" == "yes" ]] ; then
+    check_if_installed "ADIOS" $ADIOS_VERSION
+    if [[ $? == 0 ]] ; then
+        info "Skipping ADIOS build.  ADIOS is already installed."
+    else
+        info "Building MXML (~1 minutes)"
+        build_mxml
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install mxml.  Bailing out."
+        fi
+        info "Done building mxml"
+
+        info "Building ADIOS (~1 minutes)"
+        build_ADIOS
+        if [[ $? != 0 ]] ; then
+            error "Unable to build or install ADIOS.  Bailing out."
+        fi
+        info "Done building ADIOS"
    fi
 fi
 
