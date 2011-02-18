@@ -1092,6 +1092,11 @@
 #     silo's dependent libraries in the config site file it generates if
 #     the script is building hdf5.
 #
+#     Eric Brugger, Fri Feb 18 13:42:05 PST 2011
+#     I modified the script to lower the optimization for VTK if using gcc
+#     4.5.1 to avoid a compiler bug that is encountered compiling one of
+#     the VTK source files.
+#
 # *****************************************************************************
 
 
@@ -4001,6 +4006,20 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
     fi
 
     #
+    # Determine if we need to lower the optimizatoin for gcc 4.5.1.
+    #
+    if [[ "$CXX_COMPILER" == "g++" ]] ; then
+        GCC_VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3)
+        if [[ "$GCC_VERSION" == "4.5.1" ]] ; then
+           BUILD_TYPE_STRING=""
+           CXX_OPTIMIZATION_STRING="-O2"
+        else
+           BUILD_TYPE_STRING="-DCMAKE_BUILD_TYPE:STRING=Release"
+           CXX_OPTIMIZATION_STRING=""
+        fi
+    fi
+
+    #
     # Execute CMake, which will set up the Makefiles for VTK.  (like configure)
     #
     # Linking OSMesa for MANGLED_MESA_LIBRARY is correct here; we'll never use
@@ -4030,10 +4049,10 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
             -DUSE_ANSI_STD_LIB:BOOL=ON\
             -DVTK_USE_MANGLED_MESA:BOOL=ON\
             -DVTK_USE_HYBRID:BOOL=ON\
-            -DCMAKE_BUILD_TYPE:STRING=Release\
-            -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
+            ${BUILD_TYPE_STRING}\
+            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
             -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-            -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
+            -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
             -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
             -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
             -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
@@ -4058,10 +4077,10 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
             -DUSE_ANSI_STD_LIB:BOOL=ON\
             -DVTK_USE_MANGLED_MESA:BOOL=ON\
             -DVTK_USE_HYBRID:BOOL=ON\
-            -DCMAKE_BUILD_TYPE:STRING=Release\
-            -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
+            ${BUILD_TYPE_STRING}\
+            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
             -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-            -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
+            -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
             -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
             -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
             -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
@@ -4086,10 +4105,10 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
             -DUSE_ANSI_STD_LIB:BOOL=ON\
             -DVTK_USE_MANGLED_MESA:BOOL=ON\
             -DVTK_USE_HYBRID:BOOL=ON\
-            -DCMAKE_BUILD_TYPE:STRING=Release\
-            -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
+            ${BUILD_TYPE_STRING}\
+            -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
             -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-            -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
+            -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
             -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
             -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names\
             -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
@@ -4109,10 +4128,10 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
         -DUSE_ANSI_STD_LIB:BOOL=ON\
         -DVTK_USE_MANGLED_MESA:BOOL=ON\
         -DVTK_USE_HYBRID:BOOL=ON\
-        -DCMAKE_BUILD_TYPE:STRING=Release\
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} -LANG:std -64"\
+        ${BUILD_TYPE_STRING}\
+        -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS} -LANG:std -64"\
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS}" \
+        -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}" \
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
         -DCMAKE_EXE_LINKER_FLAGS:STRING=-LANG:std -64\
         -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
@@ -4139,10 +4158,10 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
                -DUSE_ANSI_STD_LIB:BOOL=ON\
                -DVTK_USE_MANGLED_MESA:BOOL=OFF\
                -DVTK_USE_HYBRID:BOOL=ON\
-               -DCMAKE_BUILD_TYPE:STRING=Release\
-               -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
+               ${BUILD_TYPE_STRING}\
+               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
                -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-               -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
+               -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
                -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
                -DVTK_USE_TK:BOOL=OFF\
                -DTK_INCLUDE_PATH:FILEPATH=""\
@@ -4159,10 +4178,10 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
                -DUSE_ANSI_STD_LIB:BOOL=ON\
                -DVTK_USE_MANGLED_MESA:BOOL=ON\
                -DVTK_USE_HYBRID:BOOL=ON\
-               -DCMAKE_BUILD_TYPE:STRING=Release\
-               -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
+               ${BUILD_TYPE_STRING}\
+               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
                -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-               -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
+               -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
                -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
                -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
                -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${LIBEXT}"\
@@ -4180,10 +4199,10 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
                -DUSE_ANSI_STD_LIB:BOOL=ON\
                -DVTK_USE_MANGLED_MESA:BOOL=ON\
                -DVTK_USE_HYBRID:BOOL=ON\
-               -DCMAKE_BUILD_TYPE:STRING=Release\
-               -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS}"\
+               ${BUILD_TYPE_STRING}\
+               -DCMAKE_CXX_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CXXFLAGS}"\
                -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-               -DCMAKE_C_FLAGS:STRING="${CFLAGS}"\
+               -DCMAKE_C_FLAGS:STRING="${CXX_OPTIMIZATION_STRING} ${CFLAGS}"\
                -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
                -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
                -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
