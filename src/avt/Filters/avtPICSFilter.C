@@ -1026,7 +1026,7 @@ avtPICSFilter::Initialize()
         // better off calculating one.
         dontUseIntervalTree = true;
     }
-    dontUseIntervalTree = true;
+    
     if (!GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
     {
         dontUseIntervalTree = true;
