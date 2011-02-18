@@ -50,7 +50,7 @@
 #include <avtVector.h>
 #include <algorithm>
 
-const double avtIntegralCurve::minH = 1e-9;
+const double avtIntegralCurve::minHFactor = std::numeric_limits<double>::epsilon() * 100.0;
 
 using namespace std;
 
@@ -219,6 +219,9 @@ avtIntegralCurve::~avtIntegralCurve()
 //    Hank Childs, Sun Dec  5 11:43:46 PST 2010
 //    Indicate when we have a numerical problem.
 //
+//   Dave Pugmire, Fri Feb 18 14:52:18 EST 2011
+//   Replaced minH with minHFactor for use when integrating upto a domain boundary.
+//
 // ****************************************************************************
 
 void avtIntegralCurve::Advance( avtIVPField* field )
@@ -297,6 +300,7 @@ void avtIntegralCurve::Advance( avtIVPField* field )
             // The point is inside, hence the step was too long. 
             // Try to reduce the step size.
             double h = ivp->GetNextStepSize();
+            double t = ivp->GetCurrentT();
 
             if( h == 0.0 )
             {
@@ -317,7 +321,7 @@ void avtIntegralCurve::Advance( avtIVPField* field )
                     debug5 << "avtIntegralCurve::Advance(): step outside, "
                            << "retry with initial guess " << h << '\n';
             }
-            else if( std::abs(h) < minH )
+            else if (std::abs(h) <= std::abs(t) * minHFactor)
             {
                 // If we are close enough to the boundary, stop the bisection.
                 // Do a very small Euler step to move the integrator's current 

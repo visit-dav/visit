@@ -51,6 +51,9 @@
 #include <vtkGenericCell.h>
 #include <DebugStream.h>
 
+//const unsigned char avtIVPVTKField::ghostMask = (1<<ZONE_NOT_APPLICABLE_TO_PROBLEM) | (1<<ZONE_EXTERIOR_TO_PROBLEM);
+const unsigned char avtIVPVTKField::ghostMask = (1<<5) | (1<<4);
+
 // ****************************************************************************
 //  Method: avtIVPVTKField constructor
 //
@@ -86,7 +89,6 @@ avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator )
     // Cache a raw pointer to the ghost zone flags
     vtkUnsignedCharArray* ghostData = 
         vtkUnsignedCharArray::SafeDownCast( ds->GetCellData()->GetArray( "avtGhostZones" ) );
-
     ghostPtr = ghostData ? ghostData->GetPointer(0) : NULL;
 
     lastCell = -1;
@@ -169,6 +171,11 @@ avtIVPVTKField::GetExtents( double extents[6] ) const
 //  Programmer: Christoph Garth
 //  Creation:   July 12, 2010
 //
+//  Modifications:
+//
+//   Dave Pugmire, Mon Feb  7 13:46:56 EST 2011
+//   Fix ghost mask for ghost cell integration.
+//
 // ****************************************************************************
 
 bool
@@ -181,7 +188,7 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
         if( -1 == (lastCell = loc->FindCell( &pos.x, &lastWeights )) )
             return false;
 
-        if( ghostPtr && ghostPtr[lastCell] & 0xfc )
+        if( ghostPtr && ghostPtr[lastCell] & ghostMask)
         {
             lastCell = -1;
             return false;

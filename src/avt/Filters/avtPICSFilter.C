@@ -994,6 +994,9 @@ AlgorithmToString(int algo)
 //   Hank Childs, Thu Oct 21 08:54:51 PDT 2010
 //   Detect when we have an empty data set and issue a warning (not crash).
 //
+//   Dave Pugmire, Mon Feb  7 13:45:54 EST 2011
+//   Ensure spatial meta data is ok. If not, recompute.
+//
 // ****************************************************************************
 
 void
@@ -1019,6 +1022,12 @@ avtPICSFilter::Initialize()
         // better off calculating one.
         dontUseIntervalTree = true;
     }
+    
+    if (!GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
+    {
+        dontUseIntervalTree = true;
+    }
+    
     if (it_tmp == NULL || dontUseIntervalTree)
     {
         if (OperatingOnDemand())

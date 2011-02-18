@@ -185,6 +185,9 @@ class IVP_API DomainType
 //   Hank Childs, Sun Dec  5 11:43:46 PST 2010
 //   Added data member for tracking when we encounter numerical problems.
 //
+//   Dave Pugmire, Fri Feb 18 14:52:18 EST 2011
+//   Replaced minH with minHFactor for use when integrating upto a domain boundary.
+//
 // ****************************************************************************
 
 class IVP_API avtIntegralCurve
@@ -268,7 +271,7 @@ class IVP_API avtIntegralCurve
 
     avtIVPSolver*       ivp;
 
-    static const double minH;
+    static const double minHFactor;
 };
 
 

@@ -84,6 +84,9 @@ class vtkDataArray;
 //   Christoph Garth, July 13 16:49:12 PDT 2010
 //   Compute scalars by index instead of by name.
 //
+//   Dave Pugmire, Mon Feb  7 13:46:56 EST 2011
+//   Fix ghost mask for ghost cell integration.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPVTKField: public avtIVPField
@@ -128,6 +131,9 @@ class IVP_API avtIVPVTKField: public avtIVPField
     mutable avtVector               lastPos;
     mutable vtkIdType               lastCell;
     mutable avtInterpolationWeights lastWeights;
+
+  private:
+    static const unsigned char ghostMask;
 };
 
 #endif
