@@ -12,9 +12,9 @@
 <center><b><font size="6">VisIt 2.2.1 Release Notes</font></b></center>
 
 <p>Welcome to VisIt's release notes page. Release 2.2.1 is primarily a
-bug fix release to release 2.2.1. It fixes additional bugs in release
-2.2.1.  Look <a href="relnotes2.2.1.html">here</a> to see a complete
-list of changes in release 2.2.1.</p>
+bug fix release to release 2.2. It fixes additional bugs in release
+2.2.  Look <a href="relnotes2.2.0.html">here</a> to see a complete
+list of changes in release 2.2.</p>
 
 <p><b><font size="4">Bugs fixed in version 2.2.1</font></b></p>
 <ul>
@@ -22,7 +22,7 @@ list of changes in release 2.2.1.</p>
 <li>The xmlinfo tool now generates the correct plugin info for operator plugins that create expressions from vectors or tensors.</li>
 <li>The xmledit tool now correctly greys out the operator section for plot and database plugins.</li>
 <li>File format readers that produce point meshes with degenerate connectivity are now better supported; Pseudocolor plots now get the correct range for these files.</li>
-<li>Fixed problem with using Pick after animating through time.</li>
+<li>A problem was fixed with using Pick after animating through time.</li>
 <li>The ray-casted volume renderer now properly honors non-white light sources.</li>
 <li>When doing a ray-casted volume rendering, changes to the <i>Smoothing</i> button now correctly take effect in the lighting model.</li>
 <li>LibSim is now installed on Windows.</li>
@@ -30,16 +30,22 @@ list of changes in release 2.2.1.</p>
 <li>The DualMesh operator now correctly works with 2D meshes that are not at Z=0 as well.</li>
 <li>3D axis labels now show adequate precision when autoscaled.</li>
 <li>A bug was fixed with the Nek5000 reader with absolute paths in the .nek5000 file.</li>
+<li>build_visit was modified to work properly when Silo support was specified without also specifying HDF5 support.</li>
+<li>build_visit was modified to use vtkjpeg with HDF4 on all platforms so that it worked on machines without jpeg installed.</li>
+<li>build_visit was modified to use http instead of https for anonymous svn downloads, so that it would work on all platforms.</li>
+<li>build_visit was modified to use a lower level of optimization when building VTK with gcc 4.5.1 to avoid an internal compiler error in gcc.</li>
+<li>The visit-install script now properly installs visitdiff.py.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.2.1</font></b></p>
 <ul>
 <li>VisIt will now use the internal platform name <i>darwin-x86_64</i> on MacOS X 10.6 and later. This allows the older MacOS X 10.5 <i>darwin-i386</i> version to be installed side by side with the newer 64-bit version in directories that contain multiple VisIt installations for different platforms.</li>
 <li>Event handling has been rewritten in VisIt's Java client so it no longer requires a second thread. Synchronization with a 2 thread design proved to be too error prone and evidently did not work on all Java virtual machines.</li>
+<li>The visit-install script was ported from C Shell to Posix Shell so that it would run on a larger range of platforms.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous
-version of VisIt: <a href="relnotes2.2.0.html">VisIt 2.2.0 Release Notes</a>.</p>
+version of VisIt: <a href="relnotes2.2.0.html">VisIt 2.2 Release Notes</a>.</p>
 
 </body>
 </html>
