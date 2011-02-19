@@ -1910,12 +1910,8 @@ if ( $host =~ /^up\d+$/ or $host =~ /^purple\d+$/)
 # HACK for Eureka @ Argonne
 # ----
 $IsRunningOnEureka_ANL = 0;
-$matchesLonghorn = 0;
-if ($host =~ /login1.longhorn/)
-{
-   $matchesLonghorn = 1;
-}
-if ( ($parallel) and $exe_name eq "engine" and (($host =~ /login1/) and ($matchesLonghorn eq 0))  )
+if (($parallel) and $exe_name eq "engine" and ($host =~ /eureka/) and
+    ($host =~ /alcf/))
 {
     chomp($domain   = `hostname -d`);
     if ( $domain eq "gadzooks.alcf.anl.gov" or $domain eq "mcs.anl.gov" or $domain eq "eureka.alcf.anl.gov")

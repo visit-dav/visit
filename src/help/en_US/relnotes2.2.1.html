@@ -35,6 +35,11 @@ list of changes in release 2.2.</p>
 <li>build_visit was modified to use http instead of https for anonymous svn downloads, so that it would work on all platforms.</li>
 <li>build_visit was modified to use a lower level of optimization when building VTK with gcc 4.5.1 to avoid an internal compiler error in gcc.</li>
 <li>The visit-install script now properly installs visitdiff.py.</li>
+<li>An issue was fixed in which the detection of the Eureka machine at Argonne
+was too lax, causing special case code to apply to other machines.</li>
+<li>VisIt no longer forces out-of-tree plugins to use the same compiler VisIt
+was compiled against, working around issues with compiler wrappers on some
+supercomputers.<li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.2.1</font></b></p>
