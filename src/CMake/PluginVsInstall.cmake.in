@@ -71,13 +71,21 @@
 # Build shared libraries since we're building plugins.
 SET(BUILD_SHARED_LIBS 1)
 
-# Force the same compiler as VisIt, if we can
-IF(EXISTS @CMAKE_C_COMPILER@)
-    SET(CMAKE_C_COMPILER @CMAKE_C_COMPILER@)
-ENDIF(EXISTS @CMAKE_C_COMPILER@)
-IF(EXISTS @CMAKE_CXX_COMPILER@)
-    SET(CMAKE_CXX_COMPILER @CMAKE_CXX_COMPILER@)
-ENDIF(EXISTS @CMAKE_CXX_COMPILER@)
+# Warn if compilers might be incompatible.
+IF(EXISTS @CMAKE_C_COMPILER@ AND
+   NOT ${CMAKE_C_COMPILER} STREQUAL @CMAKE_C_COMPILER@)
+  MESSAGE(WARNING "C compiler used for VisIt differs from the one used for
+                   the current project!  They may incompatible.")
+ENDIF(EXISTS @CMAKE_C_COMPILER@ AND
+      NOT ${CMAKE_C_COMPILER} STREQUAL @CMAKE_C_COMPILER@)
+
+IF(EXISTS @CMAKE_CXX_COMPILER@ AND
+   NOT ${CMAKE_CXX_COMPILER} STREQUAL @CMAKE_CXX_COMPILER@)
+  MESSAGE(WARNING "C++ compiler used for VisIt differs from the one used for
+                   the current project!  They may incompatible.")
+ENDIF(EXISTS @CMAKE_CXX_COMPILER@ AND
+      NOT ${CMAKE_CXX_COMPILER} STREQUAL @CMAKE_CXX_COMPILER@)
+
 
 # The comment below is intended to capture version information
 # of the compiler in use at the time CMake was invoked to build
