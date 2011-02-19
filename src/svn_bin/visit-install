@@ -249,6 +249,9 @@
 #    Eric Brugger, Tue Feb 15 09:37:37 PST 2011
 #    Converted from C shell to Posix shell.
 #
+#    Hari Krishnan, Fri Feb 18 16:27:56 PST 2011
+#    Add profiles for NICS @ UTK.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -314,7 +317,7 @@ while [ "$option_found" = "true" ]; do
 done
 
 if [ "$#" != "3" ]; then
-   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc | umich]"
+   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc | umich | nics]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -436,8 +439,9 @@ while [ "$config" = "prompt" ]; do
    echo "   8) Princeton network"
    echo "   9) TACC network"
    echo "   10) U of Michigan Center for Advanced Computing network"
+   echo "   11) NICS at University of Tennessee at Knoxville"
    echo ""
-   echo "(1,2,3,4,5,6,7,8,9,10):"
+   echo "(1,2,3,4,5,6,7,8,9,10,11):"
 
    read config
    case "$config" in
@@ -471,6 +475,9 @@ while [ "$config" = "prompt" ]; do
       10)
          config=umich
          ;;
+      11)
+         config=nics
+         ;;
       *)
          config=prompt
          ;;
@@ -498,9 +505,11 @@ case "$config" in
       ;;
    umich)
       ;;
+   nics)
+      ;;
    *)
       echo "Illegal configuration option, choices are none, anag, anl,"
-      echo "llnl_open, llnl_closed, nersc, ornl, princeton, tacc, and umich."
+      echo "llnl_open, llnl_closed, nersc, ornl, princeton, tacc, umich, and nics."
       exit 4
       ;;
 esac
@@ -655,6 +664,9 @@ elif [ "$config" = "tacc" ]; then
 elif [ "$config" = "umich" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_umich_flux.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_umich_nyx.xml   "$dir"/$version+/.visit/hosts/
+elif [ "$config" = "nics" ]; then
+   cp "$dir"/$version+/.visit/allhosts/host_nics_kraken.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_nics_nautilus.xml "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "anag" ]; then
    ln -s visit-config-anag.ini    "$dir"/$version+/.visit/config
    ln -s visit-guiconfig-anag.ini "$dir"/$version+/.visit/guiconfig
