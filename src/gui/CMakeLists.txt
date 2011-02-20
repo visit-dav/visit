@@ -50,6 +50,8 @@
 #   Brad Whitlock, Fri Aug  6 16:34:54 PDT 2010
 #   Added QvisSelectionsWindow.
 #
+#   Mark C. Miller, Sat Feb 19 17:46:07 PST 2011
+#   Removed QvisSILSetSelector as it was no longer referenced by anything.
 #****************************************************************************/
 
 SET(GUILIB_SOURCES
@@ -160,7 +162,6 @@ QvisQueryWindow.C
 QvisRecentPathRemovalWindow.C
 QvisRenderingWindow.C
 QvisRotationTransition.C
-QvisSILSetSelector.C
 QvisSaveMovieWizard.C
 QvisSaveWindow.C
 QvisScreenPositionEdit.C
@@ -305,7 +306,6 @@ QvisFileOpenDialog.h
 QvisCMFEWizard.h
 QvisColorManagerWidget.h
 QvisColorSwatchListWidget.h
-QvisSILSetSelector.h
 QvisSubsetWindow.h
 QvisSubsetPanelWidget.h
 QvisTimeSliderInterface.h
