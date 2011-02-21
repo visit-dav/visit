@@ -146,6 +146,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
 //   Add vary tube radius by variable.
 //
+//   Dave Pugmire, Mon Feb 21 08:17:42 EST 2011
+//   Add color by correlation distance.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -276,6 +279,9 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void tubeRadiusVaryFactorProcessText();
     void tubeRadiusVaryVariableChanged(const QString&);
     void tubeRadiusVaryChanged(bool);
+    void correlationDistanceMinDistTypeChanged(int);
+    void processCorrelationDistanceAngTolEditText();
+    void processCorrelationDistanceMinDistEditText();
   private:
     int plotType;
     QComboBox *sourceType;
@@ -354,6 +360,9 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *lineWidthLabel;
     QLabel    *lineWidthDummy;
     QComboBox *dataValueComboBox;
+    QLabel    *correlationDistanceAngTolLabel, *correlationDistanceMinDistLabel;
+    QLineEdit *correlationDistanceAngTolEdit, *correlationDistanceMinDistEdit;
+    QComboBox *correlationDistanceMinDistType;
     QvisColorTableButton *colorTableName;
     QLabel    *colorTableNameLabel;
     QvisColorButton *singleColor;

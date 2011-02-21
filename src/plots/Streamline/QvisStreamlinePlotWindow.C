@@ -684,6 +684,9 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 //   Hank Childs, Oct  8 23:30:27 PDT 2010
 //   Set up controls for multiple termination criteria.
 // 
+//   Dave Pugmire, Mon Feb 21 08:17:42 EST 2011
+//   Add color by correlation distance.
+//
 // ****************************************************************************
 
 void
@@ -713,10 +716,10 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataValueComboBox->addItem(tr("Time"),4);
     dataValueComboBox->addItem(tr("Seed point ID"),5);
     dataValueComboBox->addItem(tr("Variable"),6);
+    dataValueComboBox->addItem(tr("Correlation Distance"),7);
     connect(dataValueComboBox, SIGNAL(activated(int)),
             this, SLOT(coloringMethodChanged(int)));
     dataLayout->addWidget(dataValueComboBox, 0, 1);
-
 
     coloringVar = new QvisVariableButton(false, true, true,
                                          QvisVariableButton::Scalars,
@@ -725,9 +728,29 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(coloringVar, SIGNAL(activated(const QString &)),
             this, SLOT(coloringVariableChanged(const QString&)));
 
+    //Correlation distance widgets.
+    correlationDistanceAngTolLabel = new QLabel(tr("Angular tolerance (degrees)"), dataGroup);
+    correlationDistanceMinDistLabel = new QLabel(tr("Minimum measuring distance"), dataGroup);
+    correlationDistanceAngTolEdit = new QLineEdit(dataGroup);
+    correlationDistanceMinDistEdit = new QLineEdit(dataGroup);
+    correlationDistanceMinDistType = new QComboBox(dataGroup);
+    correlationDistanceMinDistType->addItem(tr("Absolute"), 0);
+    correlationDistanceMinDistType->addItem(tr("Fraction of Bounding Box"), 1);
+    connect(correlationDistanceMinDistType, SIGNAL(activated(int)), this, SLOT(correlationDistanceMinDistTypeChanged(int)));
+
+    dataLayout->addWidget(correlationDistanceAngTolLabel, 1, 0);
+    dataLayout->addWidget(correlationDistanceAngTolEdit, 1, 1);
+    dataLayout->addWidget(correlationDistanceMinDistLabel, 2, 0);
+    dataLayout->addWidget(correlationDistanceMinDistEdit, 2, 1);
+    dataLayout->addWidget(correlationDistanceMinDistType, 2, 2);
+    connect(correlationDistanceAngTolEdit, SIGNAL(returnPressed()),
+            this, SLOT(processCorrelationDistanceAngTolEditText()));
+    connect(correlationDistanceMinDistEdit, SIGNAL(returnPressed()),
+            this, SLOT(processCorrelationDistanceMinDistEditText()));
+
     // Create the limits group box.
     QGroupBox *limitsGroup = new QGroupBox(central);
-    dataLayout->addWidget(limitsGroup, 1, 0, 1, 3);
+    dataLayout->addWidget(limitsGroup, 3, 0, 1, 3);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
     limitsLayout->setMargin(5);
@@ -1852,6 +1875,22 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 coloringVar->setEnabled(false);
                 coloringVar->hide();
             }
+            if (streamAtts->GetColoringMethod() == StreamlineAttributes::ColorByCorrelationDistance)
+            {
+                TurnOn(correlationDistanceAngTolLabel);
+                TurnOn(correlationDistanceMinDistLabel);
+                TurnOn(correlationDistanceAngTolEdit);
+                TurnOn(correlationDistanceMinDistEdit);
+                TurnOn(correlationDistanceMinDistType);
+            }
+            else
+            {
+                TurnOff(correlationDistanceAngTolLabel);
+                TurnOff(correlationDistanceMinDistLabel);
+                TurnOff(correlationDistanceAngTolEdit);
+                TurnOff(correlationDistanceMinDistEdit);
+                TurnOff(correlationDistanceMinDistType);
+            }
             }
             break;
         case StreamlineAttributes::ID_colorTableName:
@@ -2164,6 +2203,48 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
               temp.setNum(streamAtts->GetCriticalPointThreshold());
               criticalPointThreshold->setText(temp);
               break;
+
+          case StreamlineAttributes::ID_correlationDistanceAngTol:
+            correlationDistanceAngTolEdit->blockSignals(true);
+            temp.setNum(streamAtts->GetCorrelationDistanceAngTol());
+            correlationDistanceAngTolEdit->setText(temp);
+            correlationDistanceAngTolEdit->blockSignals(false);
+            break;
+            
+          case StreamlineAttributes::ID_correlationDistanceMinDistAbsolute:
+            if (streamAtts->GetCorrelationDistanceMinDistType() == StreamlineAttributes::Absolute)
+            {
+                correlationDistanceMinDistEdit->blockSignals(true);
+                temp.setNum(streamAtts->GetCorrelationDistanceMinDistAbsolute());
+                correlationDistanceMinDistEdit->setText(temp);
+                correlationDistanceMinDistEdit->blockSignals(false);
+            }
+            break;
+          case StreamlineAttributes::ID_correlationDistanceMinDistBBox:
+            if (streamAtts->GetCorrelationDistanceMinDistType() == StreamlineAttributes::FractionOfBBox)
+            {
+                correlationDistanceMinDistEdit->blockSignals(true);
+                temp.setNum(streamAtts->GetCorrelationDistanceMinDistBBox());
+                correlationDistanceMinDistEdit->setText(temp);
+                correlationDistanceMinDistEdit->blockSignals(false);
+            }
+            break;
+            
+          case StreamlineAttributes::ID_correlationDistanceMinDistType:
+            correlationDistanceMinDistType->blockSignals(true);
+            correlationDistanceMinDistType->setCurrentIndex((int) streamAtts->GetCorrelationDistanceMinDistType());
+            correlationDistanceMinDistType->blockSignals(false);
+            if (streamAtts->GetCorrelationDistanceMinDistType() == StreamlineAttributes::FractionOfBBox)
+            {
+                temp.setNum(streamAtts->GetCorrelationDistanceMinDistBBox());
+                correlationDistanceMinDistEdit->setText(temp);
+            }
+            if (streamAtts->GetCorrelationDistanceMinDistType() == StreamlineAttributes::Absolute)
+            {
+                temp.setNum(streamAtts->GetCorrelationDistanceMinDistAbsolute());
+                correlationDistanceMinDistEdit->setText(temp);
+            }
+            break;
         }
     }
 }
@@ -3151,6 +3232,75 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetVaryTubeRadiusFactor(streamAtts->GetVaryTubeRadiusFactor());
         }
     }
+
+    if (which_widget == StreamlineAttributes::ID_correlationDistanceAngTol || doAll)
+    {
+        double val;
+        bool res = LineEditGetDouble(correlationDistanceAngTolEdit, val);
+        if (res)
+        {
+            if (val >= 0.0)
+                streamAtts->SetCorrelationDistanceAngTol(val);
+            else
+            {
+                ResettingError(tr("Correlation distance angular tolerance must be >= 0.0"),
+                               DoubleToQString(streamAtts->GetCorrelationDistanceAngTol()));
+                streamAtts->SetCorrelationDistanceAngTol(streamAtts->GetCorrelationDistanceAngTol());
+            }
+        }
+        else
+        {
+            ResettingError(tr("Correlation distance angular tolerance"),
+                DoubleToQString(streamAtts->GetCorrelationDistanceAngTol()));
+            streamAtts->SetCorrelationDistanceAngTol(streamAtts->GetCorrelationDistanceAngTol());
+        }
+    }
+    if ((which_widget == StreamlineAttributes::ID_correlationDistanceMinDistAbsolute || doAll)
+        && streamAtts->GetCorrelationDistanceMinDistType() == StreamlineAttributes::Absolute)
+    {
+        double val;
+        bool res = LineEditGetDouble(correlationDistanceMinDistEdit, val);
+        if (res)
+        {
+            if (val >= 0.0)
+                streamAtts->SetCorrelationDistanceMinDistAbsolute(val);
+            else
+            {
+                ResettingError(tr("Correlation distance minimum distance must be >= 0.0"),
+                               DoubleToQString(streamAtts->GetCorrelationDistanceMinDistAbsolute()));
+                streamAtts->SetCorrelationDistanceMinDistAbsolute(streamAtts->GetCorrelationDistanceMinDistAbsolute());
+            }
+        }
+        else
+        {
+            ResettingError(tr("Correlation distance minimum distnace"),
+                DoubleToQString(streamAtts->GetCorrelationDistanceMinDistAbsolute()));
+            streamAtts->SetCorrelationDistanceMinDistAbsolute(streamAtts->GetCorrelationDistanceMinDistAbsolute());
+        }
+    }
+    if ((which_widget == StreamlineAttributes::ID_correlationDistanceMinDistBBox || doAll)
+        && streamAtts->GetCorrelationDistanceMinDistType() == StreamlineAttributes::FractionOfBBox)
+    {
+        double val;
+        bool res = LineEditGetDouble(correlationDistanceMinDistEdit, val);
+        if (res)
+        {
+            if (val >= 0.0)
+                streamAtts->SetCorrelationDistanceMinDistBBox(val);
+            else
+            {
+                ResettingError(tr("Correlation distance minimum distance must be >= 0.0"),
+                               DoubleToQString(streamAtts->GetCorrelationDistanceMinDistBBox()));
+                streamAtts->SetCorrelationDistanceMinDistBBox(streamAtts->GetCorrelationDistanceMinDistBBox());
+            }
+        }
+        else
+        {
+            ResettingError(tr("Correlation distance minimum distnace"),
+                DoubleToQString(streamAtts->GetCorrelationDistanceMinDistBBox()));
+            streamAtts->SetCorrelationDistanceMinDistBBox(streamAtts->GetCorrelationDistanceMinDistBBox());
+        }
+    }
 }
 
 
@@ -4020,6 +4170,28 @@ QvisStreamlinePlotWindow::readPoints()
     }
 
     f.close();
+}
+
+void
+QvisStreamlinePlotWindow::correlationDistanceMinDistTypeChanged(int v)
+{
+    streamAtts->SetCorrelationDistanceMinDistType((StreamlineAttributes::SizeType) v);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::processCorrelationDistanceAngTolEditText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_correlationDistanceAngTol);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::processCorrelationDistanceMinDistEditText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_correlationDistanceMinDistAbsolute);
+    GetCurrentValues(StreamlineAttributes::ID_correlationDistanceMinDistBBox);
+    Apply();
 }
 
 static void

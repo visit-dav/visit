@@ -186,6 +186,9 @@ static float random_11()
 //   Hank Childs, Sun Dec  5 10:43:57 PST 2010
 //   Initialize data members for warnings.
 //
+//   Dave Pugmire, Mon Feb 21 08:22:30 EST 2011
+//   Color by correlation distance.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
@@ -211,6 +214,9 @@ avtStreamlineFilter::avtStreamlineFilter()
     issueWarningForStiffness = true;
     issueWarningForCriticalPoints = true;
     criticalPointThreshold = 1e-3;
+    correlationDistanceAngTol = 0.0;
+    correlationDistanceMinDist = 0.0;
+    correlationDistanceDoBBox = false;
 }
 
 

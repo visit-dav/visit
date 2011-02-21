@@ -65,6 +65,7 @@ class vtkAppendPolyData;
 #define STREAMLINE_COLOR_TIME        4
 #define STREAMLINE_COLOR_ID          5
 #define STREAMLINE_COLOR_VARIABLE    6
+#define STREAMLINE_CORRELATION_DISTANCE 7
 
 #define STREAMLINE_DISPLAY_LINES     0
 #define STREAMLINE_DISPLAY_TUBES     1
@@ -266,6 +267,13 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
 
     void                      SetDisplayMethod(int d);
     void                      SetColoringMethod(int, const std::string &var="");
+    void                      SetColorByCorrelationDistanceTol(double angTol, double minDist, bool doBBox)
+                              {
+                                  correlationDistanceAngTol = angTol;
+                                  correlationDistanceMinDist = minDist;
+                                  correlationDistanceDoBBox = doBBox;
+                              }
+
     void                      SetVelocitiesForLighting(bool v) { storeVelocitiesForLighting = v; };
     void                      SetOpacityVariable(const std::string &var);
     void                      SetScaleTubeRadiusVariable(const std::string &var);
@@ -292,6 +300,8 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
     int    coloringMethod;
     int    referenceTypeForDisplay;
     std::string coloringVariable, opacityVariable, scaleTubeRadiusVariable;
+    double correlationDistanceAngTol, correlationDistanceMinDist;
+    bool correlationDistanceDoBBox;
 
     int      maxSteps;
     bool     doDistance;

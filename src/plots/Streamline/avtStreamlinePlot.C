@@ -410,6 +410,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
 //   Add vary tube radius by variable.
 //
+//   Dave Pugmire, Mon Feb 21 08:19:26 EST 2011
+//   Add color by correlation distance.
+//
 // ****************************************************************************
 
 void
@@ -511,6 +514,15 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
 
     streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()),
                                         atts.GetColoringVariable());
+    if (atts.GetColoringMethod() == StreamlineAttributes::ColorByCorrelationDistance)
+    {
+        bool doBBox = (atts.GetCorrelationDistanceMinDistType() == StreamlineAttributes::FractionOfBBox);
+        double minDist = (doBBox ? atts.GetCorrelationDistanceMinDistBBox() : atts.GetCorrelationDistanceMinDistAbsolute());
+        double angTol = atts.GetCorrelationDistanceAngTol();
+
+        streamlineFilter->SetColorByCorrelationDistanceTol(angTol, minDist, doBBox);
+    }
+
     streamlineFilter->SetVelocitiesForLighting(atts.GetLightingFlag());
     streamlineFilter->SetReferenceTypeForDisplay(atts.GetReferenceTypeForDisplay());
 

@@ -79,7 +79,8 @@ public:
         ColorByLength,
         ColorByTime,
         ColorBySeedPointID,
-        ColorByVariable
+        ColorByVariable,
+        ColorByCorrelationDistance
     };
     enum CoordinateSystem
     {
@@ -292,6 +293,10 @@ public:
     void SetVaryTubeRadius(VaryTubeRadiusType varyTubeRadius_);
     void SetVaryTubeRadiusFactor(double varyTubeRadiusFactor_);
     void SetVaryTubeRadiusVariable(const std::string &varyTubeRadiusVariable_);
+    void SetCorrelationDistanceAngTol(double correlationDistanceAngTol_);
+    void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_);
+    void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_);
+    void SetCorrelationDistanceMinDistType(SizeType correlationDistanceMinDistType_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -404,6 +409,10 @@ public:
     double               GetVaryTubeRadiusFactor() const;
     const std::string    &GetVaryTubeRadiusVariable() const;
           std::string    &GetVaryTubeRadiusVariable();
+    double               GetCorrelationDistanceAngTol() const;
+    double               GetCorrelationDistanceMinDistAbsolute() const;
+    double               GetCorrelationDistanceMinDistBBox() const;
+    SizeType             GetCorrelationDistanceMinDistType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -589,6 +598,10 @@ public:
         ID_varyTubeRadius,
         ID_varyTubeRadiusFactor,
         ID_varyTubeRadiusVariable,
+        ID_correlationDistanceAngTol,
+        ID_correlationDistanceMinDistAbsolute,
+        ID_correlationDistanceMinDistBBox,
+        ID_correlationDistanceMinDistType,
         ID__LAST
     };
 
@@ -689,11 +702,15 @@ private:
     int            varyTubeRadius;
     double         varyTubeRadiusFactor;
     std::string    varyTubeRadiusVariable;
+    double         correlationDistanceAngTol;
+    double         correlationDistanceMinDistAbsolute;
+    double         correlationDistanceMinDistBBox;
+    int            correlationDistanceMinDistType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdiidsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdids"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdiidsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddi"
 
 #endif
