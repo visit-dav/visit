@@ -40,6 +40,7 @@
         ColorByTime
         ColorBySeedPointID
         ColorByVariable
+        ColorByCorrelationDistance
       </Enum>
       <Enum name="CoordinateSystem">
         AsIs
@@ -416,6 +417,18 @@
         10.000000
       </Field>
       <Field name="varyTubeRadiusVariable" label="varyTubeRadiusVariable" type="string">
+      </Field>
+      <Field name="correlationDistanceAngTol" label="correlationDistanceAngTol" type="double">
+        5.000000
+      </Field>
+      <Field name="correlationDistanceMinDistAbsolute" label="correlationDistanceMinDistAbsolute" type="double">
+        1.000000
+      </Field>
+      <Field name="correlationDistanceMinDistBBox" label="correlationDistanceMinDistBBox" type="double">
+        0.005000
+      </Field>
+      <Field name="correlationDistanceMinDistType" label="correlationDistanceMinDistType" type="enum" subtype="SizeType">
+        FractionOfBBox
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

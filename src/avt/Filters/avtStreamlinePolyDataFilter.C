@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <avtStreamlinePolyDataFilter.h>
-
+#include <limits>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkFloatArray.h>
@@ -119,6 +119,9 @@ std::string avtStreamlinePolyDataFilter::scaleRadiusArrayName = "scaleRadius";
 //
 //   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
 //   Add vary tube radius by variable.
+//
+//   Dave Pugmire, Mon Feb 21 08:22:30 EST 2011
+//   Color by correlation distance.
 //
 // ****************************************************************************
 
@@ -258,6 +261,15 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
         pd->GetPointData()->AddArray(scaleTubeRad);
     }
 
+    double correlationDistMinDistToUse = correlationDistanceMinDist;
+    double correlationDistAngTolToUse = 0.0;
+    if (coloringMethod == STREAMLINE_CORRELATION_DISTANCE)
+    {
+        if (correlationDistanceDoBBox)
+            correlationDistMinDistToUse *= GetLengthScale();
+        correlationDistAngTolToUse = cos(correlationDistanceAngTol *M_PI/180.0);
+    }
+
     vtkIdType pIdx = 0, idx = 0;
     for (int i = 0; i < numICs; i++)
     {
@@ -323,6 +335,10 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
                 break;
               case STREAMLINE_COLOR_SOLID:
                 scalars->InsertTuple1(pIdx, 0.0f);
+                break;
+              case STREAMLINE_CORRELATION_DISTANCE:
+                scalars->InsertTuple1(pIdx, ComputeCorrelationDistance(j, ic, correlationDistAngTolToUse, correlationDistMinDistToUse));
+                break;
             }
 
             // parameter scalars
@@ -412,4 +428,60 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
         fclose(fp);
     }
     */
+}
+
+// ****************************************************************************
+// Method:  avtStreamlinePolyDataFilter::ComputeCorrelationDistance
+//
+// Purpose:
+//   Compute the correlation distance at this point. Defined as the arc length
+//   distance from the current point to the next point (greater than minDist away)
+//   along the streamilne where the velocity direction is the same (to angTol).
+//
+// Arguments:
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    February 21, 2011
+//
+// ****************************************************************************
+
+
+float
+avtStreamlinePolyDataFilter::ComputeCorrelationDistance(int idx,  avtStateRecorderIntegralCurve *ic,
+                                                        double angTol, double minDist)
+{
+    int nSamps = ic->GetNumberOfSamples();
+    
+    //Last point...
+    if (idx == nSamps-1)
+        return 0.0f;
+    
+    float val = std::numeric_limits<float>::max();
+    
+    avtStateRecorderIntegralCurve::Sample s0 = ic->GetSample(idx);
+    avtVector curVel = s0.velocity.normalized();
+    double dist = 0.0;
+
+    avtVector p0 = s0.position;
+    for (int i = idx+1; i < nSamps; i++)
+    {
+        avtStateRecorderIntegralCurve::Sample s = ic->GetSample(i);
+        dist += (p0-s.position).length();
+        p0 = s.position;
+        
+        if (dist < minDist)
+            continue;
+
+        avtVector vel = s.velocity.normalized();
+        double dot = vel.dot(curVel);
+
+        if (fabs(dot) >= angTol)
+        {
+            val = dist;
+            break;
+        }
+    }
+
+    return val;
 }

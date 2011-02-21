@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class StreamlineAttributes extends AttributeSubject implements Plugin
 {
-    private static int StreamlineAttributes_numAdditionalAtts = 96;
+    private static int StreamlineAttributes_numAdditionalAtts = 100;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -80,6 +80,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int COLORINGMETHOD_COLORBYTIME = 4;
     public final static int COLORINGMETHOD_COLORBYSEEDPOINTID = 5;
     public final static int COLORINGMETHOD_COLORBYVARIABLE = 6;
+    public final static int COLORINGMETHOD_COLORBYCORRELATIONDISTANCE = 7;
 
     public final static int COORDINATESYSTEM_ASIS = 0;
     public final static int COORDINATESYSTEM_CYLINDRICALTOCARTESIAN = 1;
@@ -267,6 +268,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         varyTubeRadius = VARYTUBERADIUSTYPE_NONE;
         varyTubeRadiusFactor = 10;
         varyTubeRadiusVariable = new String("");
+        correlationDistanceAngTol = 5;
+        correlationDistanceMinDistAbsolute = 1;
+        correlationDistanceMinDistBBox = 0.005;
+        correlationDistanceMinDistType = SIZETYPE_FRACTIONOFBBOX;
     }
 
     public StreamlineAttributes(int nMoreFields)
@@ -405,6 +410,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         varyTubeRadius = VARYTUBERADIUSTYPE_NONE;
         varyTubeRadiusFactor = 10;
         varyTubeRadiusVariable = new String("");
+        correlationDistanceAngTol = 5;
+        correlationDistanceMinDistAbsolute = 1;
+        correlationDistanceMinDistBBox = 0.005;
+        correlationDistanceMinDistType = SIZETYPE_FRACTIONOFBBOX;
     }
 
     public StreamlineAttributes(StreamlineAttributes obj)
@@ -546,6 +555,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         varyTubeRadius = obj.varyTubeRadius;
         varyTubeRadiusFactor = obj.varyTubeRadiusFactor;
         varyTubeRadiusVariable = new String(obj.varyTubeRadiusVariable);
+        correlationDistanceAngTol = obj.correlationDistanceAngTol;
+        correlationDistanceMinDistAbsolute = obj.correlationDistanceMinDistAbsolute;
+        correlationDistanceMinDistBBox = obj.correlationDistanceMinDistBBox;
+        correlationDistanceMinDistType = obj.correlationDistanceMinDistType;
 
         SelectAll();
     }
@@ -709,7 +722,11 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (criticalPointThreshold == obj.criticalPointThreshold) &&
                 (varyTubeRadius == obj.varyTubeRadius) &&
                 (varyTubeRadiusFactor == obj.varyTubeRadiusFactor) &&
-                (varyTubeRadiusVariable.equals(obj.varyTubeRadiusVariable)));
+                (varyTubeRadiusVariable.equals(obj.varyTubeRadiusVariable)) &&
+                (correlationDistanceAngTol == obj.correlationDistanceAngTol) &&
+                (correlationDistanceMinDistAbsolute == obj.correlationDistanceMinDistAbsolute) &&
+                (correlationDistanceMinDistBBox == obj.correlationDistanceMinDistBBox) &&
+                (correlationDistanceMinDistType == obj.correlationDistanceMinDistType));
     }
 
     public String GetName() { return "Streamline"; }
@@ -1363,6 +1380,30 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(95);
     }
 
+    public void SetCorrelationDistanceAngTol(double correlationDistanceAngTol_)
+    {
+        correlationDistanceAngTol = correlationDistanceAngTol_;
+        Select(96);
+    }
+
+    public void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_)
+    {
+        correlationDistanceMinDistAbsolute = correlationDistanceMinDistAbsolute_;
+        Select(97);
+    }
+
+    public void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_)
+    {
+        correlationDistanceMinDistBBox = correlationDistanceMinDistBBox_;
+        Select(98);
+    }
+
+    public void SetCorrelationDistanceMinDistType(int correlationDistanceMinDistType_)
+    {
+        correlationDistanceMinDistType = correlationDistanceMinDistType_;
+        Select(99);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double[]       GetPointSource() { return pointSource; }
@@ -1460,6 +1501,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public int            GetVaryTubeRadius() { return varyTubeRadius; }
     public double         GetVaryTubeRadiusFactor() { return varyTubeRadiusFactor; }
     public String         GetVaryTubeRadiusVariable() { return varyTubeRadiusVariable; }
+    public double         GetCorrelationDistanceAngTol() { return correlationDistanceAngTol; }
+    public double         GetCorrelationDistanceMinDistAbsolute() { return correlationDistanceMinDistAbsolute; }
+    public double         GetCorrelationDistanceMinDistBBox() { return correlationDistanceMinDistBBox; }
+    public int            GetCorrelationDistanceMinDistType() { return correlationDistanceMinDistType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1656,6 +1701,14 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(varyTubeRadiusFactor);
         if(WriteSelect(95, buf))
             buf.WriteString(varyTubeRadiusVariable);
+        if(WriteSelect(96, buf))
+            buf.WriteDouble(correlationDistanceAngTol);
+        if(WriteSelect(97, buf))
+            buf.WriteDouble(correlationDistanceMinDistAbsolute);
+        if(WriteSelect(98, buf))
+            buf.WriteDouble(correlationDistanceMinDistBBox);
+        if(WriteSelect(99, buf))
+            buf.WriteInt(correlationDistanceMinDistType);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1951,6 +2004,18 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         case 95:
             SetVaryTubeRadiusVariable(buf.ReadString());
             break;
+        case 96:
+            SetCorrelationDistanceAngTol(buf.ReadDouble());
+            break;
+        case 97:
+            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
+            break;
+        case 98:
+            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
+            break;
+        case 99:
+            SetCorrelationDistanceMinDistType(buf.ReadInt());
+            break;
         }
     }
 
@@ -2002,6 +2067,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             str = str + "COLORINGMETHOD_COLORBYSEEDPOINTID";
         if(coloringMethod == COLORINGMETHOD_COLORBYVARIABLE)
             str = str + "COLORINGMETHOD_COLORBYVARIABLE";
+        if(coloringMethod == COLORINGMETHOD_COLORBYCORRELATIONDISTANCE)
+            str = str + "COLORINGMETHOD_COLORBYCORRELATIONDISTANCE";
         str = str + "\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
         str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
@@ -2189,6 +2256,15 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + doubleToString("varyTubeRadiusFactor", varyTubeRadiusFactor, indent) + "\n";
         str = str + stringToString("varyTubeRadiusVariable", varyTubeRadiusVariable, indent) + "\n";
+        str = str + doubleToString("correlationDistanceAngTol", correlationDistanceAngTol, indent) + "\n";
+        str = str + doubleToString("correlationDistanceMinDistAbsolute", correlationDistanceMinDistAbsolute, indent) + "\n";
+        str = str + doubleToString("correlationDistanceMinDistBBox", correlationDistanceMinDistBBox, indent) + "\n";
+        str = str + indent + "correlationDistanceMinDistType = ";
+        if(correlationDistanceMinDistType == SIZETYPE_ABSOLUTE)
+            str = str + "SIZETYPE_ABSOLUTE";
+        if(correlationDistanceMinDistType == SIZETYPE_FRACTIONOFBBOX)
+            str = str + "SIZETYPE_FRACTIONOFBBOX";
+        str = str + "\n";
         return str;
     }
 
@@ -2290,5 +2366,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private int            varyTubeRadius;
     private double         varyTubeRadiusFactor;
     private String         varyTubeRadiusVariable;
+    private double         correlationDistanceAngTol;
+    private double         correlationDistanceMinDistAbsolute;
+    private double         correlationDistanceMinDistBBox;
+    private int            correlationDistanceMinDistType;
 }
 

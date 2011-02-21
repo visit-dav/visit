@@ -271,7 +271,7 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     SNPRINTF(tmpStr, 1000, "%ssampleDensity2 = %d\n", prefix, atts->GetSampleDensity2());
     str += tmpStr;
     const char *coloringMethod_names = "Solid, ColorBySpeed, ColorByVorticity, ColorByLength, ColorByTime, "
-        "ColorBySeedPointID, ColorByVariable";
+        "ColorBySeedPointID, ColorByVariable, ColorByCorrelationDistance";
     switch (atts->GetColoringMethod())
     {
       case StreamlineAttributes::Solid:
@@ -300,6 +300,10 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
       case StreamlineAttributes::ColorByVariable:
           SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorByVariable  # %s\n", prefix, prefix, coloringMethod_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::ColorByCorrelationDistance:
+          SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorByCorrelationDistance  # %s\n", prefix, prefix, coloringMethod_names);
           str += tmpStr;
           break;
       default:
@@ -790,6 +794,27 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%svaryTubeRadiusVariable = \"%s\"\n", prefix, atts->GetVaryTubeRadiusVariable().c_str());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%scorrelationDistanceAngTol = %g\n", prefix, atts->GetCorrelationDistanceAngTol());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistAbsolute = %g\n", prefix, atts->GetCorrelationDistanceMinDistAbsolute());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistBBox = %g\n", prefix, atts->GetCorrelationDistanceMinDistBBox());
+    str += tmpStr;
+    const char *correlationDistanceMinDistType_names = "Absolute, FractionOfBBox";
+    switch (atts->GetCorrelationDistanceMinDistType())
+    {
+      case StreamlineAttributes::Absolute:
+          SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistType = %sAbsolute  # %s\n", prefix, prefix, correlationDistanceMinDistType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::FractionOfBBox:
+          SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistType = %sFractionOfBBox  # %s\n", prefix, prefix, correlationDistanceMinDistType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -1461,15 +1486,15 @@ StreamlineAttributes_SetColoringMethod(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the coloringMethod in the object.
-    if(ival >= 0 && ival < 7)
+    if(ival >= 0 && ival < 8)
         obj->data->SetColoringMethod(StreamlineAttributes::ColoringMethod(ival));
     else
     {
         fprintf(stderr, "An invalid coloringMethod value was given. "
-                        "Valid values are in the range of [0,6]. "
+                        "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
                         "Solid, ColorBySpeed, ColorByVorticity, ColorByLength, ColorByTime, "
-                        "ColorBySeedPointID, ColorByVariable.");
+                        "ColorBySeedPointID, ColorByVariable, ColorByCorrelationDistance.");
         return NULL;
     }
 
@@ -3603,6 +3628,111 @@ StreamlineAttributes_GetVaryTubeRadiusVariable(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+StreamlineAttributes_SetCorrelationDistanceAngTol(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the correlationDistanceAngTol in the object.
+    obj->data->SetCorrelationDistanceAngTol(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetCorrelationDistanceAngTol(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceAngTol());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the correlationDistanceMinDistAbsolute in the object.
+    obj->data->SetCorrelationDistanceMinDistAbsolute(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceMinDistAbsolute());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetCorrelationDistanceMinDistBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the correlationDistanceMinDistBBox in the object.
+    obj->data->SetCorrelationDistanceMinDistBBox(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetCorrelationDistanceMinDistBBox(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceMinDistBBox());
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the correlationDistanceMinDistType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetCorrelationDistanceMinDistType(StreamlineAttributes::SizeType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid correlationDistanceMinDistType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Absolute, FractionOfBBox.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetCorrelationDistanceMinDistType(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCorrelationDistanceMinDistType()));
+    return retval;
+}
+
 
 
 PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
@@ -3799,6 +3929,14 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetVaryTubeRadiusFactor", StreamlineAttributes_GetVaryTubeRadiusFactor, METH_VARARGS},
     {"SetVaryTubeRadiusVariable", StreamlineAttributes_SetVaryTubeRadiusVariable, METH_VARARGS},
     {"GetVaryTubeRadiusVariable", StreamlineAttributes_GetVaryTubeRadiusVariable, METH_VARARGS},
+    {"SetCorrelationDistanceAngTol", StreamlineAttributes_SetCorrelationDistanceAngTol, METH_VARARGS},
+    {"GetCorrelationDistanceAngTol", StreamlineAttributes_GetCorrelationDistanceAngTol, METH_VARARGS},
+    {"SetCorrelationDistanceMinDistAbsolute", StreamlineAttributes_SetCorrelationDistanceMinDistAbsolute, METH_VARARGS},
+    {"GetCorrelationDistanceMinDistAbsolute", StreamlineAttributes_GetCorrelationDistanceMinDistAbsolute, METH_VARARGS},
+    {"SetCorrelationDistanceMinDistBBox", StreamlineAttributes_SetCorrelationDistanceMinDistBBox, METH_VARARGS},
+    {"GetCorrelationDistanceMinDistBBox", StreamlineAttributes_GetCorrelationDistanceMinDistBBox, METH_VARARGS},
+    {"SetCorrelationDistanceMinDistType", StreamlineAttributes_SetCorrelationDistanceMinDistType, METH_VARARGS},
+    {"GetCorrelationDistanceMinDistType", StreamlineAttributes_GetCorrelationDistanceMinDistType, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -3888,6 +4026,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(StreamlineAttributes::ColorBySeedPointID));
     if(strcmp(name, "ColorByVariable") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::ColorByVariable));
+    if(strcmp(name, "ColorByCorrelationDistance") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::ColorByCorrelationDistance));
 
     if(strcmp(name, "colorTableName") == 0)
         return StreamlineAttributes_GetColorTableName(self, NULL);
@@ -4155,6 +4295,19 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetVaryTubeRadiusFactor(self, NULL);
     if(strcmp(name, "varyTubeRadiusVariable") == 0)
         return StreamlineAttributes_GetVaryTubeRadiusVariable(self, NULL);
+    if(strcmp(name, "correlationDistanceAngTol") == 0)
+        return StreamlineAttributes_GetCorrelationDistanceAngTol(self, NULL);
+    if(strcmp(name, "correlationDistanceMinDistAbsolute") == 0)
+        return StreamlineAttributes_GetCorrelationDistanceMinDistAbsolute(self, NULL);
+    if(strcmp(name, "correlationDistanceMinDistBBox") == 0)
+        return StreamlineAttributes_GetCorrelationDistanceMinDistBBox(self, NULL);
+    if(strcmp(name, "correlationDistanceMinDistType") == 0)
+        return StreamlineAttributes_GetCorrelationDistanceMinDistType(self, NULL);
+    if(strcmp(name, "Absolute") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Absolute));
+    if(strcmp(name, "FractionOfBBox") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::FractionOfBBox));
+
 
     return Py_FindMethod(PyStreamlineAttributes_methods, self, name);
 }
@@ -4361,6 +4514,14 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetVaryTubeRadiusFactor(self, tuple);
     else if(strcmp(name, "varyTubeRadiusVariable") == 0)
         obj = StreamlineAttributes_SetVaryTubeRadiusVariable(self, tuple);
+    else if(strcmp(name, "correlationDistanceAngTol") == 0)
+        obj = StreamlineAttributes_SetCorrelationDistanceAngTol(self, tuple);
+    else if(strcmp(name, "correlationDistanceMinDistAbsolute") == 0)
+        obj = StreamlineAttributes_SetCorrelationDistanceMinDistAbsolute(self, tuple);
+    else if(strcmp(name, "correlationDistanceMinDistBBox") == 0)
+        obj = StreamlineAttributes_SetCorrelationDistanceMinDistBBox(self, tuple);
+    else if(strcmp(name, "correlationDistanceMinDistType") == 0)
+        obj = StreamlineAttributes_SetCorrelationDistanceMinDistType(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
