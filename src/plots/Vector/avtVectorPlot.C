@@ -256,10 +256,42 @@ avtVectorPlot::GetMapper(void)
 //    Don't apply uniform spacing if the topological dimension is less than
 //    the spatial dimension.
 //
+//    Hank Childs, Mon Feb 21 15:48:07 PST 2011
+//    Move all rendering transformations to the proper routine
+//    (ApplyRenderingTransformation).
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtVectorPlot::ApplyOperators(avtDataObject_p input)
+{
+    return input;
+}
+
+// ****************************************************************************
+//  Method: avtVectorPlot::ApplyRenderingTransformation
+//
+//  Purpose:
+//      Applies the rendering transformation. 
+//
+//  Arguments:
+//      input   The input data object.
+//
+//  Returns:    The data object after rendering transformations. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 22, 2002 
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 21 15:48:07 PST 2011
+//    The rendering transformation was incorrectly being performed in the
+//    "ApplyOperators".  Move those filters here.
+//
+// ****************************************************************************
+
+avtDataObject_p
+avtVectorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     ghostFilter->SetInput(input);
     ComputeMagVarName(varname);
@@ -283,30 +315,6 @@ avtVectorPlot::ApplyOperators(avtDataObject_p input)
     vectorFilter->SetInput(dob);
     vectorFilter->SetMagVarName(magVarName); 
     return vectorFilter->GetOutput();
-}
-
-// ****************************************************************************
-//  Method: avtVectorPlot::ApplyRenderingTransformation
-//
-//  Purpose:
-//      Applies the rendering transformation. 
-//
-//  Arguments:
-//      input   The input data object.
-//
-//  Returns:    The input data object. 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 22, 2002 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtDataObject_p
-avtVectorPlot::ApplyRenderingTransformation(avtDataObject_p input)
-{
-    return input; 
 }
 
 
