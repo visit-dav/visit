@@ -43,6 +43,7 @@
 #include <avtIndexSelectFilter.h>
 
 #include <vtkCell.h>
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkMaskPoints.h>
@@ -395,6 +396,11 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
 //    If this is an AMR mesh, retrieve AMR indices and don't remove ghost zones.
 //
+//    Kathleen Bonnell, Tue Feb 22 11:44:48 PST 2011
+//    Added code to convert vtkPolyVertex cells returned from vtkMaskPoints
+//    to vtkVertex cells, as filters down the pipeline may not be able to
+//    handle vtkPolyVertexCells.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -509,6 +515,31 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
             pointsFilter->SetInput(ds);
             pointsFilter->Update();
             rv = pointsFilter->GetOutput();
+            // HACK to convert vtkPolyVertex cells into vtkVertex cells
+            // as other filters in the pipeline may not be able to handle
+            // vtkPolyVertex.
+            // Can be removed when VTK version upgraded to something >=5.2
+            // as newer vtkMaskPoints provides a flag SingleCellPerVertex
+            // that allows creation of vtkVertex instead of vtkPolyVertex.
+            vtkPolyData *pd = (vtkPolyData*)rv;
+       
+            vtkCellArray *multiVerts = pd->GetVerts();
+            vtkCellArray *singleVerts = vtkCellArray::New();
+            singleVerts->Allocate(pd->GetNumberOfPoints()*2);
+            for (vtkIdType i = 0; i < multiVerts->GetNumberOfCells(); ++i)
+            {
+                vtkIdType mv_npts;
+                vtkIdType *mv_pts;
+                multiVerts->GetCell(i, mv_npts, mv_pts);
+                for (vtkIdType j = 0; j < mv_npts; ++j)
+                {
+                    singleVerts->InsertNextCell(1); 
+                    singleVerts->InsertCellPoint(mv_pts[j]); 
+                }
+            }
+            singleVerts->Squeeze();
+            pd->SetVerts(singleVerts);
+            singleVerts->Delete();
         }
         else
         {
