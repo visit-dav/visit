@@ -21,6 +21,8 @@
 import os
 import sys
 import glob
+import commands
+import re
 
 # The following functions returns true if cont (file or directory) is
 # contained in dir.
@@ -41,6 +43,19 @@ pluginNameList = glob.glob(visitExecDir + "/plugins/*/*.so")
 # Change this to the Lustre mount point on you machine
 lustrePrefix = "/usr/common"
 
+# Find MPI path
+hostname = os.uname()[1]
+configFilename = os.path.abspath(os.path.dirname(sys.argv[0]) + "/../config-site/" + hostname + ".cmake")
+(status, MPIRPathLine) = commands.getstatusoutput("grep VISIT_PARALLEL_RPATH " + configFilename + " | egrep -v ^#")
+
+MPIRPath = ""
+if status == 0:
+    MPIRPath = re.sub("^[^\"]*\"","", MPIRPathLine.rstrip())
+    MPIRPath = re.sub("\"[^\"]*$", "", MPIRPath)
+    MPIRPath = ":"+re.sub(";", ":", MPIRPath)
+else:
+    print "Warning: Could not determine rpath for MPI. Assuming none is needed."
+
 # Check if the VisIt parallel engine executable exists
 if not os.access(execName, os.X_OK):
   sys.exit("Invalid VisIt executable %s!" % execName)
@@ -51,13 +66,16 @@ libList = [ execName ] + pluginNameList
 # Examine dependencies
 for lib in libList:
    print "Examining dependencies for " + lib
-   lddOut = os.popen("env LD_LIBRARY_PATH=%s ldd %s" % (os.environ["LD_LIBRARY_PATH"]+":"+visitExecDir+"/lib", lib))
+   lddOut = os.popen("env LD_LIBRARY_PATH=%s ldd %s" % (os.environ["LD_LIBRARY_PATH"]+":"+visitExecDir+"/lib"+MPIRPath, lib))
    for line in lddOut.readlines():
      if line.strip() != "statically linked":
        if len(line.strip().split()) == 4:
          (libname, sep, libpath, addr) = line.strip().split()
          if sep != "=>":
             sys.exit("Error: Unexpected separator %s!" % sep)
+       elif len(line.strip().split()) == 3:
+          (libname, sep, addr) = line.strip().split()
+          continue
        else:
          (libpath, addr) = line.strip().split()
        if libpath != "not":

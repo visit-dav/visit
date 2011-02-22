@@ -38,6 +38,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cstdio>
 #include <SocketBridge.h>
 
 
@@ -87,7 +88,7 @@ int main(int argc, const char* argv[])
             {
                 // The child process will start the bridge
                 // Close stdin and any other file descriptors.
-                fclose(stdin);
+                std::fclose(stdin);
                 for (int k = 3 ; k < 32 ; ++k)
                 {
                     close(k);

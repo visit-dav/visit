@@ -1807,7 +1807,7 @@ $IsRunningOnHopperNERSC = 0;
 if ( $host =~ /^hopper/ )
 {
     $IsRunningOnHopperNERSC = 1;
-    $ENV{LD_LIBRARY_PATH} = "/opt/gcc/4.3.3/snos/lib64";
+    $ENV{LD_LIBRARY_PATH} = "/opt/gcc/4.5.2/snos/lib64";
 
     if ($exe_name eq "gui")
     {
