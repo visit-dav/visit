@@ -37,8 +37,8 @@ The actual number of nodes is 2500.
 The actual number of zones is 2401.
 
 MinMax Actual:
-airVfGradient -- Min = 0.004 (node 96814 at coord <-4.4898, 4.4898, 5.30612>)
-airVfGradient -- Max = 0.752533 (node 44289 at coord <5.71429, 4.08163, -3.26531>)
+airVfGradient -- Min = 0.004 (zone 18341 at coord <-3.67347, 2.85714, -6.93878>)
+airVfGradient -- Max = 0.787188 (zone 13361 at coord <3.67347, 1.22449, -7.7551>)
 
 
 MinMax Original:
@@ -46,8 +46,8 @@ airVfGradient -- Min = 0.004 (zone 18341 at coord <-3.67347, 2.85714, -6.93878>)
 airVfGradient -- Max = 0.787188 (zone 13361 at coord <3.67347, 1.22449, -7.7551>)
 
 MinMax Actual:
-grad -- Min = 0.0167808 (node 69799 at coord <10, 8.36735, 1.02041>)
-grad -- Max = 0.710979 (node 88892 at coord <7.14286, 1.02041, 4.28572>)
+grad -- Min = 0.00145262 (node 69914 at coord <-4.28571, 9.59184, 1.02041>)
+grad -- Max = 1.23754 (node 98491 at coord <6.73469, -2.2449, 5.91837>)
 
 
 MinMax Original:

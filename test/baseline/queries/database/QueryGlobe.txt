@@ -23,8 +23,8 @@ The original number of zones is 1200.
 The actual number of zones is 1269.
 
 MinMax Actual:
-vel -- Min = 4.17534e-31 (node 3 at coord <2.03636e-31, -3.64509e-31, 3.33333>)
-vel -- Max = 9.51057 (node 63 at coord <9.51057, 0, -3.09017>)
+vel -- Min = 0 (node 11 at coord <0, 0, 10>)
+vel -- Max = 10 (node 116 at coord <9.51057, 3.09017, 7.10543e-14>)
 
 
 MinMax Original:
@@ -32,8 +32,8 @@ vel -- Min = 0 (node 11 at coord <0, 0, 10>)
 vel -- Max = 10 (node 116 at coord <9.51057, 3.09017, 7.10543e-14>)
 
 MinMAx Actual:
-disp -- Min = 0.0198941 (node 823 at coord <0.0397882, -0.251212, 1.20923>)
-disp -- Max = 4.36175 (node 52 at coord <8.72351, 1.38167, 1.41634>)
+disp -- Min = 0.0198941 (zone 4 at coord <0.0397882, 0.251212, 1.20923>)
+disp -- Max = 4.36175 (zone 780 at coord <8.72351, 1.38167, 1.41634>)
 
 
 The total t is 3.13554e+06
