@@ -198,6 +198,7 @@ extern const char *visit_SetOperatorOptions_doc;
 extern const char *visit_SetPickAttributes_doc;
 extern const char *visit_SetPipelineCachingMode_doc;
 extern const char *visit_SetPlotDatabaseState_doc;
+extern const char *visit_SetPlotFollowsTime_doc;
 extern const char *visit_SetPlotFrameRange_doc;
 extern const char *visit_SetPlotOptions_doc;
 extern const char *visit_SetPlotSILRestriction_doc;
