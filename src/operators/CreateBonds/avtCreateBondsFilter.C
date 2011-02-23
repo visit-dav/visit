@@ -46,6 +46,7 @@
 #include <vtkFloatArray.h>
 #include <vtkCellData.h>
 #include <vtkCellArray.h>
+#include <vtkGeometryFilter.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
@@ -264,14 +265,22 @@ ShouldAtomsBeBonded(double dmin, double dmax,
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 27, 2010
 //
+//   Jeremy Meredith, Tue Feb 22 21:36:07 EST 2011
+//   Added support for non-polydata mesh types through the geometry filter.
+//   Sure, it may be a little blunt, but it doesn't hurt anything and allows
+//   e.g. Silo point meshes (which are unstructured, not poly data) to work.
+//
 // ****************************************************************************
 vtkDataSet *
 avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
+    vtkGeometryFilter *geom = NULL;
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {
-        EXCEPTION1(ImproperUseException,
-                   "Expected a vtkPolyData in the avtCreateBondsFilter.");
+        geom = vtkGeometryFilter::New();
+        geom->SetInput(in_ds);
+        in_ds = geom->GetOutput();
+        in_ds->Update();
     }
 
     //
@@ -315,18 +324,22 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                                         (maxBondDist*maxBondDist*maxBondDist);
     double minAllowable = 8;
     double maxAllowable = 10000000;
+    vtkDataSet *out_ds = NULL;
     if (approxNBoxes < minAllowable || approxNBoxes > maxAllowable)
     {
         debug4 << "avtCreateBondsFilter: reverting to slow method\n";
-        return ExecuteData_Slow((vtkPolyData*)in_ds);
+        out_ds = ExecuteData_Slow((vtkPolyData*)in_ds);
     }
     else
     {
         debug4 << "avtCreateBondsFilter: using fast method, "
                << "approximately "<<approxNBoxes<<" boxes\n";
-        return ExecuteData_Fast((vtkPolyData*)in_ds, maxBondDist,
-                                minx,maxx, miny,maxy, minz,maxz);
+        out_ds = ExecuteData_Fast((vtkPolyData*)in_ds, maxBondDist,
+                                  minx,maxx, miny,maxy, minz,maxz);
     }
+    if (geom)
+        geom->Delete();
+    return out_ds;
 }
 
 
