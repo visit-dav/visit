@@ -72,6 +72,11 @@ class MenuCurveItem(UltraCurveItem):
 
 # ----------------------------------------------------------------------------
 # Class: PlotCurveItem
+#
+# Modifications:
+#   Kathleen Bonnell, Tue Feb 22 16:10:49 PST 2011
+#   Added getUseVar, which returns the var of the last expression applied
+#   (if any), or the curve's root var.
 # ----------------------------------------------------------------------------
 class PlotCurveItem(UltraCurveItem):
     """ Subclass of UltraCurveItem, representing a plotted curve.
@@ -118,6 +123,12 @@ class PlotCurveItem(UltraCurveItem):
         if self.expressions is not None:
             p.expressions = self.expressions[:]
         return p
+
+    def getUseVar(self):
+        if len(self.expressions) == 0:
+            return self.var
+        else:
+            return self.expressions[-1]
 
 # ----------------------------------------------------------------------------
 # Class: CurveList
