@@ -62,10 +62,17 @@ def getBoxOperatorId(id):
             return i
     return -1
 
+#-----------------------------------------------------------------------------
+# Creates cmfe with the 2 curves (c1 being the 'active db')
+#
+# Modifications:
+#   Kathleen Bonnell, Tue Feb 22 15:45:58 PST 2011
+#   Take into account expressions attached to the curve
+#-----------------------------------------------------------------------------
 
 def createCurveCMFE(c1, c2):
-    var1 = "<%s>" % (c1.var) 
-    var2 = "<%s:%s>" % (c2.fileName, c2.var) 
+    var1 = "<%s>" % c1.getUseVar()
+    var2 = "<%s:%s>" % (c2.fileName, c2.getUseVar()) 
     cmfe = "curve_cmfe(%s,%s)" % (var2, var1)
     return cmfe
 
@@ -149,6 +156,10 @@ def createAndApplyExpression(curve, expDef, cmd):
 
 #-----------------------------------------------------------------------------
 # Handle regular math ops
+#
+# Modifications:
+#   Kathleen Bonnell, Tue Feb 22 16:36:52 PST 2011
+#   Make use of new curve method 'getUseVar'
 #-----------------------------------------------------------------------------
 def ultra_doOp_percurve(curve, t):
     currentPlot = setAsActivePlot(curve.plotId)
@@ -157,14 +168,7 @@ def ultra_doOp_percurve(curve, t):
 
     curve.modified = True
 
-    # which var should be used for new exressions?
-    numE = len(curve.expressions)
-    if numE == 0:
-        usevar = curve.var 
-    else:
-        usevar = curve.expressions[numE-1]
-
-    usevar = "<%s>"%usevar
+    usevar = "<%s>"%curve.getUseVar()
     if t.cmd in mathOpsNoArg:
         newvarDef = "%s(%s)" % (t.cmd, usevar)
         if t.cmd == "ln" or t.cmd == "log10":
@@ -298,26 +302,37 @@ def ultra_doOp_percurve(curve, t):
 
 #-----------------------------------------------------------------------------
 # Handle math ops requiring cmfe's
+#
+# Modifications:
+#   Kathleen Bonnell, Tue Feb 22 14:56:42 PST 2011
+#   Activate the DB of the first curve, as it is the base for the cmfe.
+#   Stop processing if AddPlot returns an error. 
+#   Take into acount expressions that have been applied to a curve.
+# 
 #-----------------------------------------------------------------------------
 def ultra_docmfemath(cl, t):
     if len(cl) < 2:
         print "Usage error: %s curve-list" % t.cmd
         return 
     curve1 = cl[0]
-    fullExpression = "<%s>" % curve1.var
+    # when building the cmfe, we want the first curve to be the active DB
+    ActivateDatabase(curve1.fileName)
+    fullExpression = "<%s>" % curve1.getUseVar()
     exprName = "%s" % curve1.id
     for i in range(1, len(cl)):
         curve = cl[i]
         exprName += "%s%s" % (t.cmd, curve.id)
-        if (curve.var not in  curve.expressions):
+        if (curve.getUseVar() not in  curve.expressions):
             cmfe = createCurveCMFE(curve1, curve)
         else:
-            cmfe = "<%s>" % curve.var
+            cmfe = "<%s>" % curve.getUseVar()
         fullExpression += " %s %s" %(t.cmd, cmfe)
     DefineCurveExpression(exprName, fullExpression)
     newCurve = PlotCurveItem(exprName)
     newCurve.expressions.append(exprName)
-    AddPlot("Curve", newCurve.var)
+    # don't want to do anything more if AddPlot returns an error
+    if not AddPlot("Curve", newCurve.var):
+        return
     n = GetNumPlots()
     newCurve.plotId = GetPlotList().GetPlots(n-1).id
     selectedList.add(newCurve)
@@ -332,6 +347,11 @@ def ultra_docmfemath(cl, t):
 
 #-----------------------------------------------------------------------------
 # Handle ops on Menu curves
+#
+# Modifications:
+#   Kathleen Bonnell, Tue Feb 22 15:04:37 PST 2011
+#   Ensure the selected curve's DB is active (if not in need of opening).
+#
 #-----------------------------------------------------------------------------
 
 def ultra_multiCurveNum(t):
@@ -341,6 +361,8 @@ def ultra_multiCurveNum(t):
             if not curve.fileName in openedDBList:
                 openedDBList.append(curve.fileName)
                 OpenDatabase(curve.fileName)
+            else:
+                ActivateDatabase(curve.fileName)
             AddPlot("Curve", curve.var)
             n = GetNumPlots()
             c2 = PlotCurveItem(curve.var, curve.extents, curve.fileName)
@@ -530,8 +552,6 @@ def ultra_saveCurve(t):
         if (currentPlot != -1):
             # This is how we need to do it for VisIt 2.0
             s = GetPlotInformation()['Curve']
-            # This is how we need to do it for VisIt 1.12
-            #s = GetOutputArray()
             FILE.write("# %s\n"%curve.var) 
             for i in range(0, len(s), 2):
                 FILE.write("%13.6e %13.6e\n"%(s[i], s[i+1]))
@@ -539,6 +559,10 @@ def ultra_saveCurve(t):
 
 #-----------------------------------------------------------------------------
 # Execution of wrapper
+#
+# Modifications:
+#   Kathleen Bonnell, Tue Feb 22 14:56:42 PST 2011
+#   Remove exception from message printed on error. 
 #-----------------------------------------------------------------------------
 def runUltraWrapper():
     quitTime.timeToQuit = 0
@@ -570,7 +594,9 @@ def runUltraWrapper():
             try:
                 ulRes = ultracommand.parseString(cmd)
             except ParseException, err: 
-                print 'Exception (%s) while parsing command: %s' %(err,cmd)
+                # the actual exception is not useful for users 
+                #print 'Exception (%s) while parsing command: %s' %(err,cmd)
+                print 'Exception while parsing command: %s' %(cmd)
                 UltraUsage(cmd.split()[0])
                 continue
 
