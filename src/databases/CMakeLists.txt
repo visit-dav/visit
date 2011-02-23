@@ -92,7 +92,11 @@
 #    Eric Brugger, Fri Jan  7 13:35:31 PST 2011
 #    I replaced the BOXLIB2D and BOXLIB3D variables with just BOXLIB.
 #
+#    Brad Whitlock, Wed Feb 23 11:52:22 PST 2011
+#    Add VelodyneCLE "AMR" plugin from Corvid.
+#
 #****************************************************************************/
+
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
 ELSE(NOT WIN32)
@@ -147,6 +151,7 @@ IF(NOT XDMF_FOUND)
     SET(XDMF_READER VisItXdmf)
 ENDIF(NOT XDMF_FOUND)
 THIRDPARTY_DEPENDENT_PLUGINS(HDF5     
+AMR
 Chombo
 CosmosPP
 Enzo
