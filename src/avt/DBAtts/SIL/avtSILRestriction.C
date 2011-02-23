@@ -54,11 +54,13 @@
 #include <IncompatibleDomainListsException.h>
 #include <InvalidVariableException.h>
 #include <TimingsManager.h>
+#include <stack>
 
 #define STATE_INDEX(S) (((S)==SomeUsed)?1:(((S)==AllUsed)?2:((S)==SomeUsedOtherProc?3:((S)==AllUsedOtherProc?4:0))))
 
 using  std::string;
 using  std::vector;
+using  std::stack;
 
 // ****************************************************************************
 // Method: VariableNamesEqual
@@ -1899,6 +1901,9 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
 //    Hank Childs, Fri Dec 11 11:37:48 PST 2009
 //    Add a timer.
 //
+//    Cyrus Harrison, Tue Feb 22 14:39:19 PST 2011
+//    More robust matching for case were leaves & names may not exactly match.
+//
 // ****************************************************************************
 
 bool
@@ -1956,43 +1961,80 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
         for (i = 0; i < leaves.size(); i++)
             useSet[leaves[i]] = 0xAA;
 
-        //
-        // Now, for every non-domain set, find its equivalent in the
-        // input SIL and set this set's selection similarly
-        //
-        for (i = 0; i < GetNumSets(); i++)
+        // stacks used for DFS
+        stack<int> stack_curr;
+        stack<int> stack_other;
+
+        // start from the topset and do a DFS traversal of both silrs
+        stack_curr.push(this->GetTopSet());
+        stack_other.push(silr->GetTopSet());
+
+        // Note: these stacks should always have the same # of elements,
+        // checking the size of both shoudn't be necessary, but
+        // we do it just in case.
+        while(stack_curr.size() > 0 && stack_other.size() > 0)
         {
+            // get the next pair of set id from the stacks.
+            int scurr_id  = stack_curr.top();
+            int sother_id = stack_other.top();
+            stack_curr.pop();
+            stack_other.pop();
+            // get the sets that correspond to the set ids.
+            avtSILSet_p scurr  = this->GetSILSet(scurr_id);
+            avtSILSet_p sother = silr->GetSILSet(sother_id);
 
-           avtSILSet_p set1 = GetSILSet(i);
-           if (set1->GetIdentifier() < 0)
-           {
-              int set2Index;
+            // don't consider domains (preserves old behaivor)
+            if (scurr->GetIdentifier() < 0 && sother->GetIdentifier() < 0 )
+            {
+                if (silr->useSet[sother_id] == AllUsed)
+                {
+                    this->TurnOnSet(scurr_id);
+                }
+                else if (silr->useSet[sother_id] == NoneUsed)
+                {
+                    this->TurnOffSet(scurr_id);
+                }
 
-              // try to find the equivalently named
-              // set in the input SIL
-              TRY
-              {
-                  set2Index = silr->GetSetIndex(set1->GetName());
-              }
-              CATCH(InvalidVariableException)
-              {
-                  set2Index = -1;
-              }
-              ENDTRY
+                // look for matching children in the current sets.
+                const vector<int>  &scurr_mout  = scurr->GetMapsOut();
+                const vector<int>  &sother_mout = sother->GetMapsOut();
 
-              // ok, we found it, now set the selection for this 
-              if (set2Index != -1)
-              {
-                  if (silr->useSet[set2Index] == AllUsed)
-                  {
-                      TurnOnSet(i);
-                  }
-                  else if (silr->useSet[set2Index] == NoneUsed)
-                  {
-                      TurnOffSet(i);
-                  }
-              }
-           }
+                // These are not guaranteed to be the same.
+                // We only care about subsets w/ matching names.
+                // Find these & add them to the stack.
+                // We are setting values in 'this' SILR, so we use the maps out
+                // of the current set object in the outer loop.
+
+                // Note: if this double loop creates a performance issue,
+                // sorting the two lists by name may improve things.
+                for(int i=0; i < scurr_mout.size(); i++)
+                {
+                    int scmo_id = scurr_mout[i];
+                    avtSILSet_p scmo = this->GetSILSet(scmo_id);
+                    // if we have already processed this id or if the subset is a domain
+                    // we can exit early.
+                    if(useSet[scmo_id] ==  0xAA && scmo->GetIdentifier() < 0)
+                    {
+                        bool found = false;
+                        string scmo_name = scmo->GetName();
+                        for(int j=0; i < sother_mout.size() && !found; j++)
+                        {
+                            int somo_id = sother_mout[j];
+                            avtSILSet_p somo =silr->GetSILSet(somo_id);
+                            // check if the names match, and make sure the other set is
+                            // not a domain.
+                            if(scmo_name == somo->GetName() && somo->GetIdentifier() < 0)
+                            {
+                                // we have a match, add both to the stack
+                                stack_curr.push(scmo_id);
+                                stack_curr.push(somo_id);
+                                // make sure we only have one matching 'j' per 'i'
+                                found = true;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         //
