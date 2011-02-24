@@ -647,7 +647,7 @@ elif [ "$config" = "nersc" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_nersc_hopper.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_euclid.xml "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "ornl" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_ornl_ewok.xml     "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_ornl_sith.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_ornl_jaguarpf.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_ornl_jaguar.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_ornl_lens.xml     "$dir"/$version+/.visit/hosts/
