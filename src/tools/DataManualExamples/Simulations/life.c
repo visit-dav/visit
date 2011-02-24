@@ -130,7 +130,7 @@ life_data_simulate(life_data *life, int par_rank, int par_size)
     int nsum, i, j, JPNN, JNN, JMNN;
     int *true_life = NULL, *working_life = NULL;
 #ifdef PARALLEL
-    int dest;
+    int source, dest;
     MPI_Status status;
     MPI_Request request;
 #endif
