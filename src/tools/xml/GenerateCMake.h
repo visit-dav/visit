@@ -123,6 +123,10 @@
 //    Kathleen Bonnell, Thu Jan 13 17:54:38 MST 2011
 //    Only use VISIT_PLUGIN_TARGET_FOLDER if building from dev.
 //
+//    Brad Whitlock, Wed Feb 23 15:24:48 PST 2011
+//    Enable Fortran language compilation if the user added Fortran code to the
+//    list of files.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -299,10 +303,27 @@ class CMakeGeneratorPlugin : public Plugin
         out << ")" << endl;
     }
 
+    bool CustomFilesUseFortran(const std::vector<QString> &files) const
+    {
+        const char *ext[] = {".f", ".f77", ".f90", ".f95", ".for", 
+                             ".F", ".F77", ".F90", ".F95", ".FOR"};
+        for(size_t i = 0; i < files.size(); ++i)
+        {
+            for(int j = 0; j < 10; ++j)
+            {
+                if(files[i].endsWith(ext[j]))
+                    return true;
+            }
+        }
+        return false;
+    }
+
     void WriteCMake_Plot(QTextStream &out, 
                          const QString &guilibname, 
                          const QString &viewerlibname)
     {
+        bool useFortran = false;
+
         out << "PROJECT(" << name<< ")" << endl;
         out << endl;
         if (using_dev)
@@ -327,8 +348,11 @@ class CMakeGeneratorPlugin : public Plugin
         out << "Qvis" << name << "PlotWindow.C" << endl;
         out << "${COMMON_SOURCES}" << endl;
         if (customgfiles)
+        {
+            useFortran |= CustomFilesUseFortran(gfiles);
             for (size_t i=0; i<gfiles.size(); i++)
                 out << gfiles[i] << endl;
+        }
         else
             for (size_t i=0; i<defaultgfiles.size(); i++)
                 out << defaultgfiles[i] << endl;
@@ -348,8 +372,11 @@ class CMakeGeneratorPlugin : public Plugin
         out << name<<"ViewerPluginInfo.C" << endl;
         out << "avt"<<name<<"Plot.C" << endl;
         if (customvfiles)
+        {
+            useFortran |= CustomFilesUseFortran(vfiles);
             for (size_t i=0; i<vfiles.size(); i++)
                 out << vfiles[i] << endl;
+        }
         else
             for (size_t i=0; i<defaultvfiles.size(); i++)
                 out << defaultvfiles[i] << endl;
@@ -371,14 +398,22 @@ class CMakeGeneratorPlugin : public Plugin
         out << name<<"EnginePluginInfo.C" << endl;
         out << "avt"<<name<<"Plot.C" << endl;
         if (customefiles)
+        {
+            useFortran |= CustomFilesUseFortran(efiles);
             for (size_t i=0; i<efiles.size(); i++)
                 out << efiles[i] << endl;
+        }
         else
             for (size_t i=0; i<defaultefiles.size(); i++)
                 out << defaultefiles[i] << endl;
         out << "${COMMON_SOURCES}" << endl;
         out << ")" << endl;
         out << endl;
+
+        if(useFortran)
+        {
+            out << "ENABLE_LANGUAGE(Fortran)" << endl;
+        }
 
         // Special rules for OpenGL sources.
         std::set<QString> openglFiles;
@@ -506,6 +541,8 @@ class CMakeGeneratorPlugin : public Plugin
                              const QString guilibname, 
                              const QString viewerlibname)
     {
+        bool useFortran = false;
+
         out << "PROJECT(" << name<< ")" << endl;
         out << endl;
         if (using_dev)
@@ -530,8 +567,11 @@ class CMakeGeneratorPlugin : public Plugin
         out << "Qvis" << name << "Window.C" << endl;
         out << "${COMMON_SOURCES}" << endl;
         if (customgfiles)
+        {
+            useFortran |= CustomFilesUseFortran(gfiles);
             for (size_t i=0; i<gfiles.size(); i++)
                 out << gfiles[i] << endl;
+        }
         else
             for (size_t i=0; i<defaultgfiles.size(); i++)
                 out << defaultgfiles[i] << endl;
@@ -549,8 +589,11 @@ class CMakeGeneratorPlugin : public Plugin
         out << "SET(LIBV_SOURCES" << endl;
         out << name<<"ViewerPluginInfo.C" << endl;
         if (customvfiles)
+        {
+            useFortran |= CustomFilesUseFortran(vfiles);
             for (size_t i=0; i<vfiles.size(); i++)
                 out << vfiles[i] << endl;
+        }
         else
             for (size_t i=0; i<defaultvfiles.size(); i++)
                 out << defaultvfiles[i] << endl;
@@ -570,14 +613,22 @@ class CMakeGeneratorPlugin : public Plugin
         out << "SET(LIBE_SOURCES" << endl;
         out << name<<"EnginePluginInfo.C" << endl;
         if (customefiles)
+        {
+            useFortran |= CustomFilesUseFortran(efiles);
             for (size_t i=0; i<efiles.size(); i++)
                 out << efiles[i] << endl;
+        }
         else
             for (size_t i=0; i<defaultefiles.size(); i++)
                 out << defaultefiles[i] << endl;
         out << "${COMMON_SOURCES}" << endl;
         out << ")" << endl;
         out << endl;
+
+        if(useFortran)
+        {
+            out << "ENABLE_LANGUAGE(Fortran)" << endl;
+        }
 
         WriteCMake_PlotOperator_Includes(out, true);
 
@@ -683,6 +734,8 @@ class CMakeGeneratorPlugin : public Plugin
 
     void WriteCMake_Database(QTextStream &out)
     {
+        bool useFortran = false;
+
         out << "PROJECT("<<name<<")" << endl;
         out << endl;
         if (using_dev)
@@ -705,14 +758,18 @@ class CMakeGeneratorPlugin : public Plugin
             out << ""<<name<<"MDServerPluginInfo.C" << endl;
             out << "${COMMON_SOURCES}" << endl;
             if (custommfiles)
+            {
+                useFortran |= CustomFilesUseFortran(mfiles);
                 for (size_t i=0; i<mfiles.size(); i++)
                     out << mfiles[i] << endl;
+            }
             else
                 for (size_t i=0; i<defaultmfiles.size(); i++)
                     out << defaultmfiles[i] << endl;
             out << ")" << endl;
             if (customwmfiles)
             {
+                useFortran |= CustomFilesUseFortran(wmfiles);
                 out << "IF(WIN32)" << endl;
                 out << "    SET(LIBM_WIN32_SOURCES" << endl;
                 for (size_t i=0; i<wmfiles.size(); i++)
@@ -737,14 +794,18 @@ class CMakeGeneratorPlugin : public Plugin
             out <<name<<"EnginePluginInfo.C" << endl;
             out << "${COMMON_SOURCES}" << endl;
             if (customefiles)
+            {
+                useFortran |= CustomFilesUseFortran(efiles);
                 for (size_t i=0; i<efiles.size(); i++)
                     out << efiles[i] << endl;
+            }
             else
                 for (size_t i=0; i<defaultefiles.size(); i++)
                     out << defaultefiles[i] << endl;
             out << ")" << endl;
             if (customwefiles)
             {
+                useFortran |= CustomFilesUseFortran(wefiles);
                 out << "IF(WIN32)" << endl;
                 out << "    SET(LIBE_WIN32_SOURCES" << endl;
                 for (size_t i=0; i<wefiles.size(); i++)
@@ -848,6 +909,11 @@ class CMakeGeneratorPlugin : public Plugin
                      out << "  ADD_DEFINITIONS(-DUSE_DLL)" << endl;
             }
             out << "ENDIF(WIN32)" << endl;
+        }
+
+        if(useFortran)
+        {
+            out << "ENABLE_LANGUAGE(Fortran)" << endl;
         }
 
         out << endl;

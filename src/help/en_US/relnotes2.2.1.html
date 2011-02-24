@@ -43,6 +43,7 @@ supercomputers.<li>
 <li>A problem was fixed where using Box Operator didn't work correctly on a Point Mesh after Index Select Operator was applied.</li>
 <li>The UltraWrapper will now manipulate curves correctly when multiple ultra files are opened and plotted.</li> 
 <li>Pick through time after creating a time-history curve once, then changing the plotted variable now operators on the correct variable.</li>
+<li>All simulation example programs now build.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.2.1</font></b></p>
@@ -51,6 +52,7 @@ supercomputers.<li>
 <li>VisIt will now use the internal platform name <i>darwin-x86_64</i> on MacOS X 10.6 and later. This allows the older MacOS X 10.5 <i>darwin-i386</i> version to be installed side by side with the newer 64-bit version in directories that contain multiple VisIt installations for different platforms.</li>
 <li>Event handling has been rewritten in VisIt's Java client so it no longer requires a second thread. Synchronization with a 2 thread design proved to be too error prone and evidently did not work on all Java virtual machines.</li>
 <li>The visit-install script was ported from C Shell to Posix Shell so that it would run on a larger range of platforms.</li>
+<li>xml2cmake was enhanced so it enables Fortran language compilation when the user adds Fortran files as custom sources in VisIt plug-ins.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous

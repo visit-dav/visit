@@ -40,9 +40,6 @@
 #include <VisItControlInterface_V2.h>
 #include <stdio.h>
 
-
-#include "SimulationExample.h"
-
 #include <stubs.c>
 
 #ifdef PARALLEL
@@ -58,6 +55,8 @@ static int visit_broadcast_string_callback(char *str, int len, int sender)
     return MPI_Bcast(str, len, MPI_CHAR, sender, MPI_COMM_WORLD);
 }
 #endif
+
+#include "SimulationExample.h"
 
 /* CHANGE 1 */
 #define VISIT_COMMAND_PROCESS 0
