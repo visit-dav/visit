@@ -1106,6 +1106,9 @@
 #     4.5.1 to avoid a compiler bug that is encountered compiling one of
 #     the VTK source files.
 #
+#     Eric Brugger, Wed Jan 19 10:13:02 PST 2011
+#     I changed the visit version number to 2.2.1.
+#
 # *****************************************************************************
 
 
@@ -1436,6 +1439,8 @@ fi
 # release tag.
 ############################################################################
 
+export VISIT_VERSION=${VISIT_VERSION:-"2.2.1"}
+
 ####
 # Trunk:
 ####
@@ -1444,7 +1449,7 @@ export SVN_SOURCE_PATH="trunk/src"
 ###
 # Release:
 ###
-#export SVN_SOURCE_PATH="tags/2.2.0/src"
+#export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
 
 if [[ "$OPSYS" != "Darwin" ]]; then
     WGET_MINOR_VERSION=$(wget --version| head -n 1|cut -d. -f 2)
@@ -1457,6 +1462,7 @@ if [[ "$OPSYS" != "Darwin" ]]; then
        export WGET_OPTS=${WGET_OPTS:-"--no-check-certificate"}
     fi
 fi
+
 #
 # TARBALL LOCATIONS AND VERSIONS
 #
@@ -1464,7 +1470,6 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION:-"2.2.0"}
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE:-"vtk-5.0.0g.tar.gz"}
