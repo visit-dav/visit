@@ -6910,8 +6910,7 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
         // Tell the engine to clear any networks that involve the
         // database that we're closing.
         //
-        ViewerEngineManager::Instance()->ClearCache(EngineKey(host, sim),
-                                                    db.c_str());
+        ViewerEngineManager::Instance()->ClearCache(EngineKey(host, sim), db);
 
         Message(tr("VisIt closed \"%1\".").arg(expandedDB.c_str()));        
     }
@@ -7175,7 +7174,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
                         debug4 << db.c_str() << " in compute engine on "
                                << host.c_str() << endl;
                     }
-                    ViewerEngineManager::Instance()->ClearCache(key, db.c_str());
+                    ViewerEngineManager::Instance()->ClearCache(key, db);
                 }
 
                 //

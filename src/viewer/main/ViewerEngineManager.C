@@ -2055,8 +2055,8 @@ ViewerEngineManager::EndEngineExecute()
 // ****************************************************************************
 
 bool
-ViewerEngineManager::OpenDatabase(const EngineKey &ek, const char *format,
-                                  const char *filename, int time)
+ViewerEngineManager::OpenDatabase(const EngineKey &ek, const std::string &format,
+                                  const std::string &filename, int time)
 {
     ENGINE_PROXY_RPC_BEGIN("OpenDatabase");
     bool cmq = ViewerWindowManager::Instance()->GetClientAtts()->
@@ -2092,8 +2092,8 @@ ViewerEngineManager::OpenDatabase(const EngineKey &ek, const char *format,
 
 bool
 ViewerEngineManager::DefineVirtualDatabase(const EngineKey &ek,
-                      const char *format, const char *dbName, const char *path,
-                      const stringVector &files, int time)
+    const std::string &format, const std::string &dbName,
+    const std::string &path, const stringVector &files, int time)
 {
     ENGINE_PROXY_RPC_BEGIN("DefineVirtualDatabase");
     bool cmq = ViewerWindowManager::Instance()->GetClientAtts()->
@@ -2123,8 +2123,7 @@ ViewerEngineManager::DefineVirtualDatabase(const EngineKey &ek,
 // ****************************************************************************
 
 bool
-ViewerEngineManager::ApplyOperator(const EngineKey &ek,
-                                   const char *name,
+ViewerEngineManager::ApplyOperator(const EngineKey &ek, const std::string &name,
     const AttributeSubject *atts)
 {
     ENGINE_PROXY_RPC_BEGIN("ApplyOperator");
@@ -2186,7 +2185,7 @@ ViewerEngineManager::MakePlot(const EngineKey &ek, const std::string &plotName,
 
 bool
 ViewerEngineManager::UpdatePlotAttributes(const EngineKey &ek,
-                                          const char *name, int id,
+                                          const std::string &name, int id,
                                           const AttributeSubject *atts)
 {
     ENGINE_PROXY_RPC_BEGIN("UpdatePlotAttributes");
@@ -2365,10 +2364,10 @@ ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
 
 bool
 ViewerEngineManager::ClearCache(const EngineKey &ek,
-                                const char *dbName)
+                                const std::string &dbName)
 {
     ENGINE_PROXY_RPC_BEGIN_NOSTART("ClearCache");
-    if (dbName == 0)
+    if (dbName == "")
         engine->ClearCache();
     else
         engine->ClearCache(dbName);

@@ -4089,6 +4089,11 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Hank Childs, Fri Nov 26 10:31:34 PST 2010
 //    Set up expressions from operators when we open a file.
 //
+//    Brad Whitlock, Thu Feb 24 01:55:07 PST 2011
+//    Make a copy of the metadata since something along the way has a 
+//    side-effect of invalidating it, causing a crash when we use -o from the
+//    command line.
+//
 // ****************************************************************************
 
 int
@@ -4126,11 +4131,13 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
     //
     debug1 << mName << "Calling GetMetaDataForState(" << host << ", " << db
            << ", " << timeState << ", " << forcedFileType << ")" << endl;
-    const avtDatabaseMetaData *md = fs->GetMetaDataForState(host, db,
-                                                            timeState,
-                                                            forcedFileType);
-    if (md != NULL)
+    const avtDatabaseMetaData *mdptr = fs->GetMetaDataForState(host, db,
+                                                               timeState,
+                                                               forcedFileType);
+    if (mdptr != NULL)
     {
+        avtDatabaseMetaData md(*mdptr);
+
         // set the active host database name now that we have valid metadata.
         plotList->SetHostDatabaseName(hdb.c_str());
         
@@ -4140,7 +4147,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         // correlation for this database.
         //
         bool nStatesDecreased = false;
-        if(md->GetNumStates() > 1)
+        if(md.GetNumStates() > 1)
         {
             //
             // Get the name of the database so we can use that for the name
@@ -4158,12 +4165,12 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             // value and we use a valid time state when telling the compute
             // engine to open the database.
             //
-            if(timeState > md->GetNumStates() - 1)
+            if(timeState > md.GetNumStates() - 1)
             {
-                debug3 << mName << "There are " << md->GetNumStates()
+                debug3 << mName << "There are " << md.GetNumStates()
                        << " time states in the database but timeState was "
                        << "set to "<< timeState <<". Clamping timeState to ";
-                timeState = md->GetNumStates() - 1;
+                timeState = md.GetNumStates() - 1;
                 debug3 << timeState << "." << endl;
                 nStatesDecreased = true;
             }
@@ -4177,7 +4184,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             stringVector dbs; dbs.push_back(correlationName);
             int timeSliderState = (timeState >= 0) ? timeState : 0;
             wM->CreateDatabaseCorrelation(correlationName, dbs, 0,
-                timeSliderState, md->GetNumStates());
+                timeSliderState, md.GetNumStates());
         }
         else if(timeState > 0)
         {
@@ -4220,14 +4227,14 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         //
         plotList->UpdateExpressionList(false);
         ExpressionList *adder = ParsingExprList::Instance()->GetList();
-        VariableMenuPopulator::GetOperatorCreatedExpressions(*adder, md, 
+        VariableMenuPopulator::GetOperatorCreatedExpressions(*adder, &md, 
                                                     GetOperatorPluginManager());
 
         //
         // Determine the name of the simulation
         //
         std::string sim = "";
-        if (md->GetIsSimulation())
+        if (md.GetIsSimulation())
             sim = db;
 
         //
@@ -4246,13 +4253,13 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         //
         stringVector noArgs;
         bool success;
-        if (md->GetIsSimulation())
+        if (md.GetIsSimulation())
         {
             ViewerEngineManager *vem = ViewerEngineManager::Instance();
             success = vem->ConnectSim(ek, noArgs,
-                                      md->GetSimInfo().GetHost(),
-                                      md->GetSimInfo().GetPort(),
-                                      md->GetSimInfo().GetSecurityKey());
+                                      md.GetSimInfo().GetHost(),
+                                      md.GetSimInfo().GetPort(),
+                                      md.GetSimInfo().GetSecurityKey());
 
             if (success)
             {
@@ -4323,24 +4330,24 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             // Don't bother if you couldn't even start an engine.
             //
             ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
-            if(md->GetIsVirtualDatabase() && md->GetNumStates() > 1)
+            if(md.GetIsVirtualDatabase() && md.GetNumStates() > 1)
             {
-                eMgr->DefineVirtualDatabase(ek, md->GetFileFormat().c_str(),
-                                            db.c_str(),
-                                            md->GetTimeStepPath().c_str(),
-                                            md->GetTimeStepNames(),
+                eMgr->DefineVirtualDatabase(ek, md.GetFileFormat(),
+                                            db,
+                                            md.GetTimeStepPath(),
+                                            md.GetTimeStepNames(),
                                             timeState);
             }
             else
             {
-                eMgr->OpenDatabase(ek, md->GetFileFormat().c_str(),
-                                   db.c_str(), timeState);
+                eMgr->OpenDatabase(ek, md.GetFileFormat(),
+                                   db, timeState);
 
                 // If we're opening a simulation, send ClearCache to it since that
                 // is a harmless blocking RPC that will prevent OpenDatabaase from
                 // returning until we get simulation metadata and SIL back. This is
                 // a synchronize operation.
-                if(md->GetIsSimulation())
+                if(md.GetIsSimulation())
                     eMgr->ClearCache(ek, "invalid name");
             }
         }
@@ -4353,9 +4360,9 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         {
             bool defaultPlotsAdded = false;
 
-            for(i=0; i<md->GetNumDefaultPlots(); i++)
+            for(i=0; i<md.GetNumDefaultPlots(); i++)
             {
-                const avtDefaultPlotMetaData *dp = md->GetDefaultPlot(i);
+                const avtDefaultPlotMetaData *dp = md.GetDefaultPlot(i);
                 DataNode *adn = CreateAttributesDataNode(dp);
 
                 //
@@ -4703,7 +4710,7 @@ ViewerSubject::ReOpenDatabase()
     //
     // Clear the cache for the database.
     //
-    ViewerEngineManager::Instance()->ClearCache(key, db.c_str());
+    ViewerEngineManager::Instance()->ClearCache(key, db);
 
     //
     // Open the database. Since reopening a file can result in a different
