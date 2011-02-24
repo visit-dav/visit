@@ -295,6 +295,9 @@ class FileOpenOptions;
 //    Hank Childs, Sat Aug 21 14:20:04 PDT 2010
 //    Rename DDF to DataBinning.
 //
+//    Brad Whitlock, Thu Feb 24 01:56:40 PST 2011
+//    Remove some const char * arguments and use std::string instead.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -376,18 +379,18 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     //
     // Engine RPCs
     //
-    bool OpenDatabase( const EngineKey &ek, const char *format, 
-                      const char *filename, int time=0);
-    bool DefineVirtualDatabase(const EngineKey &ek, const char *format,
-                               const char *dbName, const char *path, 
+    bool OpenDatabase( const EngineKey &ek, const std::string &format, 
+                      const std::string &filename, int time=0);
+    bool DefineVirtualDatabase(const EngineKey &ek, const std::string &format,
+                               const std::string &dbName, const std::string &path, 
                                const stringVector &files, int time=0);
-    bool ApplyOperator(const EngineKey &ek, const char *name,
+    bool ApplyOperator(const EngineKey &ek, const std::string &name,
                        const AttributeSubject *atts);
     bool MakePlot(const EngineKey &ek, const std::string &plotName,
                   const std::string &pluginID,
                   const AttributeSubject *atts, const vector<double> &,
                   int winID, int *networkId);
-    bool UpdatePlotAttributes(const EngineKey &ek, const char *name,
+    bool UpdatePlotAttributes(const EngineKey &ek, const std::string &name,
                               int id, const AttributeSubject *atts);
     bool Pick(const EngineKey &ek, const int nid, int wid,
               const PickAttributes *atts, PickAttributes &retAtts);
@@ -403,7 +406,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                          const double *viewExtents,
                          const std::string ctName,
                          const int winID);
-    bool ClearCache(const EngineKey &ek, const char *dbName = 0);
+    bool ClearCache(const EngineKey &ek, const std::string &dbName = std::string(""));
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);
     bool GetProcInfo(const EngineKey &ek, ProcessAttributes &retAtts);
