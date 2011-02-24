@@ -1675,7 +1675,12 @@ avtFLASHFileFormat::GetVectorVar(int visitDomain, const char *varname)
 //    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
 //    Close all open ids when returning an exception.
 //
+//    Andrew Szymkowiak, Wed Feb 23 22:32:06 PST 2011
+//    Zero out patchesPerLevel vector so we don't miscount and end up with
+//    SIL generation errors.
+//
 // ****************************************************************************
+
 void
 avtFLASHFileFormat::ReadAllMetaData()
 {
@@ -1722,6 +1727,7 @@ avtFLASHFileFormat::ReadAllMetaData()
         ReadProcessorNumbers();
 
         patchesPerLevel.resize(numLevels);
+        memset(&patchesPerLevel[0], 0, numLevels * sizeof(int));
         int  i;
 
         for (i = 0; i < numBlocks; i++)
@@ -3244,6 +3250,8 @@ avtFLASHFileFormat::ReadIntegerScalars(hid_t file_id)
     H5Tclose(datatype);
     H5Sclose(spaceId);
     H5Dclose(intScalarsId);
+
+    delete [] is;
 }
 
 // ****************************************************************************
