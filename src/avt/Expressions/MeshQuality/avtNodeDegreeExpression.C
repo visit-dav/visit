@@ -141,6 +141,15 @@ void GlobalPointAssign(vtkCell *cell, int adj[], int _a, int _b, int _c,
     adj[3] = cell->GetPointId(_d);
 }
 
+inline
+void GlobalPointAssign2(vtkCell *cell, int adj[], int _a, int _b)
+{
+    adj[0] = cell->GetPointId(_a);
+    adj[1] = cell->GetPointId(_b);
+    adj[2] = -1;
+    adj[3] = -1;
+}
+
 // ****************************************************************************
 //  Method: avtNodeDegreeExpression::DeriveVariable
 //
@@ -155,6 +164,10 @@ void GlobalPointAssign(vtkCell *cell, int adj[], int _a, int _b, int _c,
 //
 //  Programmer:   Akira Haddox
 //  Creation:     June 27, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Wed Feb 23 23:36:56 PST 2011
+//    I added support for triangles, quads, lines.
 //
 // ****************************************************************************
 
@@ -184,7 +197,7 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
             // But we will store in adj[] the global ID of the points
             // that this point is adjacent to.
 
-            int adj[4];
+            int adj[4], nadj = 3;
             switch (cell->GetCellType())
             {
                 case VTK_TETRA:
@@ -249,7 +262,37 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
                         case 1: GlobalPointAssign(cell,adj,0,2,4,-1); break;
                         case 2: GlobalPointAssign(cell,adj,1,3,4,-1); break;
                         case 3: GlobalPointAssign(cell,adj,0,2,4,-1); break;
-                        case 4: GlobalPointAssign(cell,adj,0,1,2,3); break;
+                        case 4: GlobalPointAssign(cell,adj,0,1,2,3); nadj = 4; break;
+                    }
+                    break;
+
+                case VTK_QUAD:
+                    nadj = 2;
+                    switch (localId)
+                    {
+                        case 0: GlobalPointAssign2(cell,adj,1,3); break;
+                        case 1: GlobalPointAssign2(cell,adj,0,2); break;
+                        case 2: GlobalPointAssign2(cell,adj,1,3); break;
+                        case 3: GlobalPointAssign2(cell,adj,0,2); break;
+                    }
+                    break;
+
+                case VTK_TRIANGLE:
+                    nadj = 2;
+                    switch (localId)
+                    {
+                        case 0: GlobalPointAssign2(cell,adj,1,2); break;
+                        case 1: GlobalPointAssign2(cell,adj,0,2); break;
+                        case 2: GlobalPointAssign2(cell,adj,0,1); break;
+                    }
+                    break;
+
+                case VTK_LINE:
+                    nadj = 1;
+                    switch (localId)
+                    {
+                        case 0: adj[0] = cell->GetPointId(1); break;
+                        case 1: adj[0] = cell->GetPointId(0); break;
                     }
                     break;
 
@@ -260,15 +303,11 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
             // Now we add to the connectivity list.
             // Take the three points in adj[]
             // and if they're not already in the connectivity list, add them.
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < nadj; j++)
             {
                 if (VIntFind(connectivity[id],adj[j]) == -1)
                     connectivity[id].push_back(adj[j]);
             }
-            // If it's a pyramid, and we have a fourth point, process that.
-            if (cell->GetCellType() == VTK_PYRAMID && adj[3] != -1)
-                if (VIntFind(connectivity[id],adj[3]) == -1)
-                    connectivity[id].push_back(adj[3]);
         }
     }
 
