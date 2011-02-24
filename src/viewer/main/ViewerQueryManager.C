@@ -2658,7 +2658,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
             pickAtts->GetPickPoint()[0] != FLT_MAX)
         {
             win->ValidateQuery(pickAtts, NULL);
-        } // else no valid position could be determined, data was transfored
+        } // else no valid position could be determined, data was transformed
 
         //
         // Send pick attributes to the client.
@@ -2690,10 +2690,8 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
         UpdatePickAtts();
 
         //
-        // 
-        //
-        //
-        // If we are not reusing a pick letter, make the pick label ready for the next pick point.
+        // If we are not reusing a pick letter, make the pick label ready for 
+        // the next pick point.
         //
         if (!pickAtts->GetReusePickLetter()) UpdateDesignator();
     }
@@ -4589,6 +4587,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Kathleen Bonnell, Wed Feb 23 10:52:02 PST 2011
+//    Save the current vars from PickAtts to use for resetting at completion.
+//
 // ****************************************************************************
 
 void
@@ -4608,7 +4610,8 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
     //  We can only do one variable (for now) for a time query,
     //  so make sure we have the right one.
     // 
-    string pvarName = pickAtts->GetVariables()[0];
+    stringVector userVars  = pickAtts->GetVariables();
+    string pvarName = userVars[0];
     if (pvarName == "default")
         pvarName = vName;
 
@@ -4656,6 +4659,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
     }
     if (issueWarning)
     {
+        pickAtts->SetVariables(userVars);
         if (type == PickAttributes::Zone || type == PickAttributes::DomainZone) 
         {
             Warning(tr("The centering of the pick-through-time (zone) does "
@@ -4729,6 +4733,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
 
         DoTimeQuery(origWin, &qatts);
     }
+    pickAtts->SetVariables(userVars);
 }
 
 
