@@ -268,6 +268,11 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin. Changed cellOrigin to seedOrigin to work
 //    for either nodes or zones
+//
+//    Kathleen Bonnell, Thu Feb 24 11:56:13 PST 2011
+//    Fix occasional parallel engine crash by performing Update on 
+//    removeGhostCells filter instead of its output.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -351,10 +356,8 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
     {
         removeGhostCells = vtkDataSetRemoveGhostCells::New();
         removeGhostCells->SetInput(ds);
+        removeGhostCells->Update();
         ds = removeGhostCells->GetOutput();
-        ds->Update();
-        // using SetSource(NULL) no longer a good idea.
-        //ds->SetSource(NULL);
     }
 
     avtDataAttributes &da = GetInput()->GetInfo().GetAttributes();
@@ -397,8 +400,8 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         }
 
         //
-        // This often comes up when someone has their default saved to cell 0 and
-        // the origin is 1.  Then the cell they're asking for is '-1'.
+        // This often comes up when someone has their default saved to cell 0 
+        // and the origin is 1.  Then the cell they're asking for is '-1'.
         //
         if (seed < 0)
         {

@@ -1921,6 +1921,11 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Thu Feb  3 11:24:17 PST 2011
 //    PickAtts plotBounds now stored as a vector.
 //
+//    Kathleen Bonnell, Thu Feb 24 11:59:36 PST 2011
+//    For meshes transformed in mapper via rectilinearGridTransform, the
+//    determined ray Points need to be transformed in order for Pick to
+//    work correctly.
+//
 // ****************************************************************************
 
 bool
@@ -2109,6 +2114,26 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 rp2[0] /= scale[0];
                 rp2[1] /= scale[1];
                 rp2[2] /= scale[2];
+            }
+        }
+
+        if (mmd != NULL && mmd->rectilinearGridHasTransform)
+        {
+            // mesh transformed in mapper, so need to apply the inverse
+            // of that transform to the ray points so that Pick will be
+            // working in the correct space.
+            debug3 << "Pick's ray points transformed by "
+                   << "rectilinearGridTransform." << endl;
+            avtMatrix m(mmd->rectilinearGridTransform);
+            m.Inverse();
+            avtVector r1(rp1);
+            avtVector r2(rp2);
+            r1 = m * r1;
+            r2 = m * r2;
+            for (int i = 0; i < 3; ++i)
+            {
+                rp1[i] = r1[i];
+                rp2[i] = r2[i];
             }
         }
 
@@ -4610,7 +4635,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
     //  We can only do one variable (for now) for a time query,
     //  so make sure we have the right one.
     // 
-    stringVector userVars  = pickAtts->GetVariables();
+    stringVector userVars = pickAtts->GetVariables();
     string pvarName = userVars[0];
     if (pvarName == "default")
         pvarName = vName;
