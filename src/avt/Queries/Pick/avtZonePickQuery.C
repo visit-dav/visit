@@ -143,10 +143,6 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 //    Kathleen Bonnell, Fri Jul  8 14:15:21 PDT 2005 
 //    Modified test for determining if 'real' id needs to be calculated. 
 //
-//    Kathleen Bonnell, Thu Feb 24 11:54:13 PST 2011
-//    Use rectilinearGridTransform matrix to transform cell/pick points to
-//    correct location if necessary.
-//
 // ****************************************************************************
 
 void
@@ -315,20 +311,6 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
         // 
         double ppt[3] = { v1.x, v1.y, v1.z };
         pickAtts.SetCellPoint(ppt);
-    }
-    else if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID &&
-        GetInput()->GetInfo().GetAttributes().GetRectilinearGridHasTransform())
-    {
-        avtMatrix m(GetInput()->GetInfo().GetAttributes().GetRectilinearGridTransform());
-        avtVector p(pickAtts.GetPickPoint());
-        p = m * p;
-        double ppt[3] = { p.x, p.y, p.z };
-        //
-        // Need to set both the point used for info, and the point used
-        // for the visual cue
-        //
-        pickAtts.SetCellPoint(ppt);
-        pickAtts.SetPickPoint(ppt);
     }
     else 
     {

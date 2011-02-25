@@ -233,6 +233,10 @@ avtPickQuery::PreExecute(void)
 //    Kathleen Bonnell, Tue Feb 13 12:48:14 PST 2007 
 //    Send the MeshCoordType to the returning PickAtts.
 //
+//    Kathleen Bonnell, Thu Feb 24 11:54:13 PST 2011
+//    Use rectilinearGridTransform matrix to transform cell/pick points to
+//    correct location if necessary.
+//
 // ****************************************************************************
 
 void
@@ -267,6 +271,23 @@ avtPickQuery::PostExecute(void)
         }
     }
     pickAtts.SetMeshCoordType((PickAttributes::CoordinateType)GetInput()->GetInfo().GetAttributes().GetMeshCoordType());
+
+    if (GetInput()->GetInfo().GetAttributes().GetRectilinearGridHasTransform())
+    {
+        avtMatrix m(GetInput()->GetInfo().GetAttributes().GetRectilinearGridTransform());
+        avtVector pp(pickAtts.GetPickPoint());
+        avtVector cp(pickAtts.GetPickPoint());
+        pp = m * pp;
+        cp = m * cp;
+        double ppt[3] = { pp.x, pp.y, pp.z };
+        double cpt[3] = { cp.x, cp.y, cp.z };
+        //
+        // Need to set both the point used for info, and the point used
+        // for the visual cue
+        //
+        pickAtts.SetCellPoint(cpt);
+        pickAtts.SetPickPoint(ppt);
+    }
 }
 
 
