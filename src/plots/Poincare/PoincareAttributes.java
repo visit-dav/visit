@@ -430,7 +430,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     }
 
     public String GetName() { return "Poincare"; }
-    public String GetVersion() { return "2.0"; }
+    public String GetVersion() { return "3.0"; }
 
     // Property setting methods
     public void SetOpacityType(int opacityType_)
