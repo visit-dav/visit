@@ -186,7 +186,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       sprintf( level, "_%d", m_refinement );
     }
     else
-      sprintf( level, "" );
+      level[0] = '\0';
 
 
     // Original meshes for the user to see.
@@ -450,7 +450,7 @@ avtM3DC1FileFormat::GetMeshPoints(float *elements,
     // is set.  For example, e=0 means no edges are on the domain
     // boundary, e=5 means the first and third edges are on the
     // domain boundary.
-    unsigned int e = element[6];
+    //unsigned int e = element[6];
 
     if( element_dimension == 3 )
       phi = element[8];
@@ -1699,7 +1699,7 @@ avtM3DC1FileFormat::ReadAttribute( hid_t parentID,
     if ( spaceID < 0 )
         return false;
 
-    hsize_t nelem = H5Sget_simple_extent_npoints( spaceID );
+    hssize_t nelem = H5Sget_simple_extent_npoints( spaceID );
     if ( nelem < 0 )
         return false;
 
@@ -1769,6 +1769,7 @@ herr_t groupIterator(hid_t locId, const char* name, void* opdata) {
       }
     }
   }
+  return 0;
 }
 
 

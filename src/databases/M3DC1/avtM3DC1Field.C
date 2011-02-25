@@ -958,15 +958,60 @@ float avtM3DC1Field::interpdz2(float *var, int el, double *lcoords) const
 // ****************************************************************************
 float avtM3DC1Field::interpdRdz(float *var, int el, double *lcoords) const
 {
+  float *a = var + scalar_size*el;
+  double xi = lcoords[0], eta = lcoords[1];
   double xixicoef, etaetacoef, xietacoef;
   int index;
 
   if( element_dimension == 2 )
+  {
     index = 2 * el;
+
+    xixicoef = 2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
+      xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
+          xi*(12.0*a[10] + xi*20.0*a[15]));
+
+    etaetacoef = 2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
+      eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
+           eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19]));
+
+    xietacoef = a[4] +
+      eta*(2.0*a[8] + xi*(4.0*a[12] + 6.0*xi*a[16]) +
+           eta*(3.0*a[13] + 6.0*xi*a[17] + 4.0*eta*a[18])) +
+      xi*(2.0*a[7] + 3.0*xi*a[11]);
+
+  }
   else //if( element_dimension == 3 )
+  {
     index = 2*(el%tElements);
 
-  interpdX2(var, el, lcoords, xixicoef, etaetacoef, xietacoef);
+    double zi = lcoords[2];
+    double zi_q = 1;
+
+    xixicoef   = 0;
+    etaetacoef = 0;
+    xietacoef  = 0;
+
+    for( unsigned int q=0; q<4; ++q )
+    {
+      xixicoef += 2.0*(a[3] + eta*(a[7] + eta*(a[12] + eta*a[17]))) +
+        xi*(6.0*(a[6] + eta*(a[11] + eta*a[16])) +
+            xi*(12.0*a[10] + xi*20.0*a[15])) * zi_q;
+
+      etaetacoef += 2.0*(a[5] + xi*(a[8] + xi*(a[12] + xi*a[16]))) +
+        eta*(6.0*(a[9] + xi*(a[13] + xi*a[17])) +
+             eta*(12.0*(a[14] + xi*a[18]) + 20.0*eta*a[19])) * zi_q;
+
+      xietacoef += a[4] +
+        eta*(2.0*a[8] + xi*(4.0*a[12] + 6.0*xi*a[16]) +
+             eta*(3.0*a[13] + 6.0*xi*a[17] + 4.0*eta*a[18])) +
+        xi*(2.0*a[7] + 3.0*xi*a[11]) * zi_q;
+
+      zi_q *= zi; 
+
+      a += scalar_size/4;
+    }
+  }
 
   double co=trigtable[index], sn=trigtable[index + 1];
 
