@@ -2417,7 +2417,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         windingNumberMatchIndex = i;
         
       if( verboseFlag )
-        cerr << "Drawable   winding pair "
+        cerr << "**Drawable winding pair "
              << offsetWindingPairs[i].toroidal << ","
              << offsetWindingPairs[i].poloidal << "  ("
              << local_safetyFactor << " - "
@@ -2450,13 +2450,20 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       cerr << "Poor consistency - probably chaotic" << endl;
 
     if( overrideToroidalWinding && overridePoloidalWinding )
+    {
       windingGroupOffset = Blankinship( overrideToroidalWinding,
-                                      overridePoloidalWinding );
+                                        overridePoloidalWinding );
+
+      fi.analysisState = FieldlineProperties::UNKNOWN_STATE;
+      fi.type = FieldlineProperties::CHAOTIC;
+    }
     else
+    {
       windingGroupOffset = 0;
 
-    fi.analysisState = FieldlineProperties::UNKNOWN_STATE;
-    fi.type = FieldlineProperties::CHAOTIC;
+      fi.analysisState = FieldlineProperties::UNKNOWN_STATE;
+      fi.type = FieldlineProperties::CHAOTIC;
+    }
 
     fi.toroidalWinding = overrideToroidalWinding;
     fi.poloidalWinding = overridePoloidalWinding;
@@ -2730,8 +2737,71 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       cerr << endl;
   }
 
+
   if( drawableIndex == -1 )
   {
+    if( overrideToroidalWinding && overridePoloidalWinding )
+    {
+      toroidalWinding = overrideToroidalWinding;
+      poloidalWinding = overridePoloidalWinding;
+    }
+
+    else if( poloidal_puncture_pts.size() >= fi.maxPunctures )
+    {
+      toroidalWinding = offsetWindingPairs[ windingNumberMatchIndex ].toroidal;
+      poloidalWinding = offsetWindingPairs[ windingNumberMatchIndex ].poloidal;
+
+      analysisState = FieldlineProperties::TERMINATED;
+    }
+
+    else
+    {
+      toroidalWinding = 0;
+      poloidalWinding = 0;
+    }
+
+    if( toroidalWinding && poloidalWinding )
+    {
+      windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
+
+      nnodes  = poloidal_puncture_pts.size() / 2;
+
+      // Check to see if the fieldline is periodic. I.e. on a rational
+      // surface.  If within "delta" of the distance the fieldline is
+      // probably on a rational surface.
+      if( rationalCheck( poloidal_puncture_pts,
+                         toroidalWinding,
+                         nnodes, delta*0.1 ) ) 
+      {
+        type = FieldlineProperties::RATIONAL;
+        islands = 0;
+        
+        analysisState = FieldlineProperties::COMPLETED;
+        
+        if( verboseFlag )
+          cerr << "Appears to be a rational surface " << delta*0.1 << endl;
+      }
+      else
+      {
+        fi.analysisState = FieldlineProperties::UNKNOWN_STATE;
+        fi.type = FieldlineProperties::CHAOTIC;
+      }
+
+      fi.toroidalWinding = toroidalWinding;
+      fi.poloidalWinding = poloidalWinding;
+      fi.windingGroupOffset = windingGroupOffset;
+      fi.islands = 0;
+      fi.nnodes = poloidal_puncture_pts.size() / 2;
+
+      fi.confidence        = 0;
+      fi.nPuncturesNeeded  = 0;
+      fi.toroidalPeriod    = toroidalWinding;
+      fi.poloidalPeriod    = poloidalWinding;
+      fi.ridgelineVariance = 0;
+
+      return;
+    }
+  
     if( verboseFlag )
       cerr << "Garbage matches adding more points" << endl;
 
