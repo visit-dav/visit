@@ -560,6 +560,7 @@ void PoincareAttributes::Init()
     showRidgelines = false;
     showLines = true;
     lineWidth = 0;
+    lineStyle = 0;
     showPoints = false;
     pointSize = 1;
     pointSizePixels = 1;

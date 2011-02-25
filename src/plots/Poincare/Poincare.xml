@@ -217,6 +217,7 @@
         0
       </Field>
       <Field name="lineStyle" label="lineStyle" type="linestyle">
+        0
       </Field>
       <Field name="showPoints" label="Show Points" type="bool">
         false
