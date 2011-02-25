@@ -39,9 +39,7 @@
 #include <ViewerClientConnection.h>
 
 #include <QSocketNotifier>
-#ifdef _WIN32
 #include <QTimer>
-#endif
 
 #include <AttributeSubject.h>
 #include <ExistingRemoteProcess.h>
