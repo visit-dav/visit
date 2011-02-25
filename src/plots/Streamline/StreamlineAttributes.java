@@ -104,8 +104,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public final static int INTEGRATIONTYPE_DORMANDPRINCE = 0;
     public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
-    public final static int INTEGRATIONTYPE_M3DC1INTEGRATOR = 2;
-    public final static int INTEGRATIONTYPE_NIMRODINTEGRATOR = 3;
+    public final static int INTEGRATIONTYPE_M3DC12DINTEGRATOR = 2;
+    public final static int INTEGRATIONTYPE_M3DC13DINTEGRATOR = 3;
+    public final static int INTEGRATIONTYPE_NIMRODINTEGRATOR = 4;
 
     public final static int OPACITYTYPE_FULLYOPAQUE = 0;
     public final static int OPACITYTYPE_CONSTANT = 1;
@@ -1985,8 +1986,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             str = str + "INTEGRATIONTYPE_DORMANDPRINCE";
         if(integrationType == INTEGRATIONTYPE_ADAMSBASHFORTH)
             str = str + "INTEGRATIONTYPE_ADAMSBASHFORTH";
-        if(integrationType == INTEGRATIONTYPE_M3DC1INTEGRATOR)
-            str = str + "INTEGRATIONTYPE_M3DC1INTEGRATOR";
+        if(integrationType == INTEGRATIONTYPE_M3DC12DINTEGRATOR)
+            str = str + "INTEGRATIONTYPE_M3DC12DINTEGRATOR";
+        if(integrationType == INTEGRATIONTYPE_M3DC13DINTEGRATOR)
+            str = str + "INTEGRATIONTYPE_M3DC13DINTEGRATOR";
         if(integrationType == INTEGRATIONTYPE_NIMRODINTEGRATOR)
             str = str + "INTEGRATIONTYPE_NIMRODINTEGRATOR";
         str = str + "\n";
