@@ -39,13 +39,18 @@ list of changes in release 2.2.</p>
 was too lax, causing special case code to apply to other machines.</li>
 <li>VisIt no longer forces out-of-tree plugins to use the same compiler VisIt
 was compiled against, working around issues with compiler wrappers on some
-supercomputers.<li>
+supercomputers.</li>
 <li>A problem was fixed where using Box Operator didn't work correctly on a Point Mesh after Index Select Operator was applied.</li>
 <li>The UltraWrapper will now manipulate curves correctly when multiple ultra files are opened and plotted.</li> 
 <li>Pick through time after creating a time-history curve once, then changing the plotted variable now operators on the correct variable.</li>
 <li>All simulation example programs now build.</li>
 <li>The node_degree expression caused an exception when operating on 2D cell types.</li>
 <li>A memory corruption error was fixed in the FLASH reader.</li>
+<li>A bug preventing EvalCubicSpline and similar functions from being used in VisIt's CLI was resolved.</li>
+<li>Exporting a plot to a Silo database now preseves existing axis labels.</li>
+<li>The y-axis label created for 1D DataBinning results was improved.</li>
+<li>'make package' now works correctly for out-of-source builds.</li>
+<li>The process for creating compatible SIL restrictions between timesteps and similar databases was improved.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.2.1</font></b></p>
