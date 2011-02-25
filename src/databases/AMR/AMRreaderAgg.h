@@ -34,6 +34,7 @@ public:
     nagg_=aggdat_=0;
     aggbid_=NULL;
     aggsft_=NULL;
+    return 0;
   }
   int  getInfo( const char* filename ) {
     int err = AMRreader::getInfo( filename );
