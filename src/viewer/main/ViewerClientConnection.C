@@ -39,6 +39,10 @@
 #include <ViewerClientConnection.h>
 
 #include <QSocketNotifier>
+#ifdef _WIN32
+#include <QTimer>
+#endif
+
 #include <AttributeSubject.h>
 #include <ExistingRemoteProcess.h>
 #include <LostConnectionException.h>
@@ -82,6 +86,7 @@ ViewerClientConnection::ViewerClientConnection(const ViewerState *s,
     ownsNotifier = false;
     remoteProcess = 0;
     parentProcess = 0;
+    initialStateStage = 0;
 
     viewerState = new ViewerState(*s);
 
@@ -137,6 +142,7 @@ ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
 
     remoteProcess = 0;
     parentProcess = p;
+    initialStateStage = 0;
 
     // Hook Xfer up to the objects in the viewerState object.
     xfer = new Xfer;
@@ -217,6 +223,11 @@ ViewerClientConnection::~ViewerClientConnection()
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile.
 //
+//   Brad Whitlock, Thu Feb 24 23:52:23 PST 2011
+//   Send state objects out 1 by 1 on Windows to make it less likely that we
+//   clog the socket. It also gives more time for the gui to make requests
+//   from the viewer.
+//
 // ****************************************************************************
 
 void
@@ -279,18 +290,6 @@ ViewerClientConnection::LaunchClient(const std::string &program,
     xfer->SetInputConnection(remoteProcess->GetWriteConnection());
     xfer->SetOutputConnection(remoteProcess->GetReadConnection());
 
-    // Send all of the state except for the first 7 state objects, which
-    // are: ViewerRPC, PostponedRPC, syncAtts, messageAtts, statusAtts,
-    // metaData, silAtts.
-    debug1 << mName << "Sending state objects to client." << endl;
-    for(int i = viewerState->FreelyExchangedState(); 
-        i < viewerState->GetNumStateObjects(); ++i)
-    {
-        viewerState->GetStateObject(i)->SelectAll();
-        SetUpdate(false);
-        viewerState->GetStateObject(i)->Notify();
-    }
-
     //
     // Create a QSocketNotifier that tells us to call ReadFromClientAndProcess.
     //
@@ -308,7 +307,53 @@ ViewerClientConnection::LaunchClient(const std::string &program,
         }
     }
 
+#ifdef _WIN32
+    // Initiate sending state objects to the client.
+    initialStateStage = viewerState->FreelyExchangedState();
+    QTimer::singleShot(50, this, SLOT(sendInitialState()));
+#else
+    // Send all of the state except for the first 7 state objects, which
+    // are: ViewerRPC, PostponedRPC, syncAtts, messageAtts, statusAtts,
+    // metaData, silAtts.
+    debug1 << mName << "Sending state objects to client." << endl;
+    for(int i = viewerState->FreelyExchangedState(); 
+        i < viewerState->GetNumStateObjects(); ++i)
+    {
+        viewerState->GetStateObject(i)->SelectAll();
+        SetUpdate(false);
+        viewerState->GetStateObject(i)->Notify();
+    }
+#endif
+
     debug1 << mName << "Done" << endl;
+}
+
+// ****************************************************************************
+// Method: ViewerClientConnection::sendInitialState
+//
+// Purpose: 
+//   This is a Qt slot function that we can use to send state out to the client
+//   one state object at a time from the main event loop.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 24 23:52:23 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerClientConnection::sendInitialState()
+{
+    // Send one state object.
+    viewerState->GetStateObject(initialStateStage)->SelectAll();
+    SetUpdate(false);
+    viewerState->GetStateObject(initialStateStage)->Notify();
+
+    // See if we should send another state object in a deferred manner.
+    initialStateStage++;
+    if(initialStateStage < viewerState->GetNumStateObjects())
+        QTimer::singleShot(50, this, SLOT(sendInitialState()));
 }
 
 // ****************************************************************************

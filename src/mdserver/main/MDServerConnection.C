@@ -1178,6 +1178,8 @@ MDServerConnection::ExpandPath(const std::string &path)
 //   Kathleen Bonnell, Wed Nov 5 18:59:26 PST 2008  
 //   Modified how absolute path is determined on Windows. 
 //
+//   Brad Whitlock, Thu Feb 24 23:31:32 PST 2011
+//   Make sure that the path is at least 1 character long
 // ****************************************************************************
 
 std::string
@@ -1187,8 +1189,7 @@ MDServerConnection::ExpandPathHelper(const std::string &path,
     std::string newPath;
 
 #if defined(_WIN32)
-
-    if(path[0] == '~')
+    if(path.size() > 0 && path[0] == '~')
     {
         newPath = ExpandUserPath(path);
     }
@@ -1197,7 +1198,7 @@ MDServerConnection::ExpandPathHelper(const std::string &path,
         // Filter out the "My Computer" part of the path.
         newPath = path.substr(12);
     }
-    else if(path[1] == ':')
+    else if(path.size() > 1 && path[1] == ':')
     {
         // absolute path. do nothing
         newPath = path;

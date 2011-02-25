@@ -255,6 +255,8 @@ QvisSourceManagerWidget::Update(Subject *TheChangedSubject)
 // Note: Taken/Refactored from QvisPlotManager.
 //
 // Modifications:
+//   Brad Whitlock, 23:37:23 PST 2011
+//   Special case for 1 item as quick fix for Windows.
 //
 // ****************************************************************************
 
@@ -286,14 +288,22 @@ QvisSourceManagerWidget::UpdateSourceList(bool updateActiveSourceOnly)
         // Simplify the current source names and put the short names into
         // the source combo box.
         //
-        NameSimplifier simplifier;
-        for(i = 0; i < sources.size(); ++i)
-            simplifier.AddName(sources[i]);
-        stringVector shortSources;
-        simplifier.GetSimplifiedNames(shortSources);
         sourceComboBox->clear();
-        for(i = 0; i < shortSources.size(); ++i)
-            sourceComboBox->addItem(shortSources[i].c_str());
+        if(sources.size() == 1)
+        {
+            QualifiedFilename qfn(sources[0]);
+            sourceComboBox->addItem(qfn.filename.c_str());
+        }
+        else
+        {
+            NameSimplifier simplifier;
+            for(i = 0; i < sources.size(); ++i)
+                simplifier.AddName(sources[i]);
+            stringVector shortSources;
+            simplifier.GetSimplifiedNames(shortSources);
+            for(i = 0; i < shortSources.size(); ++i)
+                sourceComboBox->addItem(shortSources[i].c_str());
+        }
     }
 
     //

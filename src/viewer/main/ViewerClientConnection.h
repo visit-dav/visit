@@ -73,6 +73,10 @@ class ViewerState;
 //   Brad Whitlock, Fri May  9 14:42:00 PDT 2008
 //   Added name since Qt 4 does not have it.
 //
+//   Brad Whitlock, Thu Feb 24 23:49:34 PST 2011
+//   I added a slot that we can use to trickle state objects out to the client
+//   that we launch.
+//
 // ****************************************************************************
 
 class ViewerClientConnection : public ViewerBase, public SimpleObserver
@@ -105,6 +109,7 @@ signals:
     void InputFromClient(ViewerClientConnection *, AttributeSubject *);
 private slots:
     void ReadFromClientAndProcess(int);
+    void sendInitialState();
 private:
     QString            name;
     Xfer              *xfer;
@@ -114,6 +119,8 @@ private:
     ViewerState       *viewerState;
     bool               emitSignalsOnUpdate;
     bool               ownsNotifier;
+
+    int                initialStateStage;
 };
 
 #endif
