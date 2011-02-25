@@ -99,14 +99,28 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
 
   avtVector operator()( const double &t, const avtVector &v ) const;
 
-  float interp    (float *var, int el, double *lcoords) const;
+  void interpBcomps(float *B, double *x, int element, double *xieta) const;
+
+  float interp(float *var, int el, double *lcoords) const;
+
+  void interpdX(float *var, int el, double *lcoords,
+               double &xicoef, double &etacoef) const;
+  void interpdX2(float *var, int el, double *lcoords,
+                 double &xixicoef, double &etaetacoef,
+                 double &xietacoef ) const;
+  void interpdXdPhi(float *var, int el, double *lcoords,
+                    double &xicoef, double &etacoef) const;
+
   float interpdR  (float *var, int el, double *lcoords) const;
   float interpdz  (float *var, int el, double *lcoords) const;
+  float interpdPhi(float *var, int el, double *lcoords) const;
+
   float interpdR2 (float *var, int el, double *lcoords) const;
   float interpdz2 (float *var, int el, double *lcoords) const;
-  float interpdRdz(float *var, int el, double *lcoords) const;
 
-  void interpBcomps(float *B, double *x, int element, double *xieta) const;
+  float interpdRdz  (float *var, int el, double *lcoords) const;
+  float interpdRdPhi(float *var, int el, double *lcoords) const;
+  float interpdzdPhi(float *var, int el, double *lcoords) const;
 
  protected:
   template< class type >
@@ -130,29 +144,35 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   int scalar_size;
 
  public:
-  //  variables on the mesh
-  float *psi0, *f0;                  /* Equilibrium field */
+
+
+  // 2D Variables variables on the mesh
+  float *psi0, *f0;                  /* Equilibrium B field conponents */
   float *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
   
-  // variable based on attributes (bzero and rzero)
-  double F0;                      /* Strength of vacuum toroidal field */
-    
+  // 3D Variables variables on the mesh
+  float *I0;                         /* Equilibrium B field conponents */
+  float *f, *psi, *I;                /* Perturbed field */
+
   // Variables calculated in findElementNeighbors
-//  double Rmin, Rmax, zmin, zmax;  /* Mesh bounds */
+//double Rmin, Rmax, zmin, zmax;  /* Mesh bounds */
 
   // unused variables read from header attributes
   // (xlim, zlim) or explicitly set (psilim).
-//  double xlim, zlim, psilim;      /* Information about limiting surface */
+//double xlim, zlim, psilim;      /* Information about limiting surface */
 
   // unused variables read from header attributes (ntime == nframes)
-//  int    nframes;
+//int    nframes;
 
   // variables read from header attributes (linear == linflag,
   // ntor == tmode) or part of the mesh (nelms).
-  int linflag, nelms, tmode;
+  int eqsubtract, linflag, nelms, tmode;
   
   // variables read from header attributes.
   double bzero, rzero;
+
+  // variable based on attributes (bzero and rzero)
+  double F0;                      /* Strength of vacuum toroidal field */  
 };
 
 #endif

@@ -84,7 +84,6 @@ class avtM3DC1FileFormat : public avtMTSDFileFormat
     //
     virtual void        GetCycles(std::vector<int> &);
     virtual void        GetTimes(std::vector<double> &);
-    //
 
     virtual int            GetNTimesteps(void);
 
