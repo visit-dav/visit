@@ -83,6 +83,9 @@
 //   Brad Whitlock, Tue Jun 24 14:30:50 PDT 2008
 //   Get the plugin managers from the viewer proxy. Load the plugin info.
 //
+//   Brad Whitlock, Thu Feb 24 16:43:44 PST 2011
+//   I added a -dir command line argument.
+//
 // ****************************************************************************
 
 class VisItClient
@@ -107,13 +110,26 @@ public:
     // Starts the viewer and executes your Work function
     void Execute(int *argc, char ***argv)
     {
+        std::string visitProgram("visit");
+
         if(viewer != 0)
             return;
+
+        // Let the user override the program we use for VisIt on the command line.
+        for(int i = 0; i < *argc; ++i)
+        {
+            char **argv2 = *argv;
+            if(strcmp(argv2[i], "-dir") == 0 && (i+1) < *argc)
+            {
+                visitProgram = std::string(argv2[i+1]) + "/bin/visit";
+                ++i;
+            }
+        }
 
         // Create the viewer proxy and launch the viewer.
         viewer = new ViewerProxy;
         viewer->InitializePlugins(PluginManager::Scripting);
-        viewer->Create(argc, argv);
+        viewer->Create(visitProgram.c_str(), argc, argv);
 
         // Set up an observer that will call our LoadPlugins method
         // when the plugin manager attributes come from the viewer.
@@ -369,7 +385,7 @@ main(int argc, char *argv[])
 //
 //   CPPFLAGS=-I/path/to/visit/version/platform/include/visit
 //   LD_FLAGS=-L/path/to/visit/version/platform/lib
-//   LIBS=-ldbatts -lavtexceptions -lviewerrpc -lcomm -lmisc -lstate -lplugin -lexpr -lparser -lutility -lviewerproxy -lpython2.5
+//   LIBS=-lvisitcommon -lviewerproxy -lpython2.6
 //
 // Running:
 //   Your program needs to know where to pick up VisIt's libraries. You can use
