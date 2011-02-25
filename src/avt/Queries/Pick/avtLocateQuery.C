@@ -54,8 +54,8 @@
 #include <avtOriginatingSource.h>
 #include <avtExpressionEvaluatorFilter.h>
 
-
 #include <avtParallel.h>
+#include <DebugStream.h>
 
 
 
@@ -133,6 +133,10 @@ avtLocateQuery::VerifyInput()
 //    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
 //    Call inherited PreExecute before everything else.
 //
+//    Kathleen Bonnell, Thu Feb 24 16:04:45 PST 2011
+//    Use rectilinearGridTransform matrix to transform cell/pick points to
+//    correct location if necessary.
+//
 // ****************************************************************************
 
 void
@@ -142,6 +146,36 @@ avtLocateQuery::PreExecute(void)
 
     foundElement = foundDomain = -1; 
     minDist = +FLT_MAX;
+
+    avtDataAttributes &dAtts = GetInput()->GetInfo().GetAttributes();
+ 
+    if (dAtts.GetRectilinearGridHasTransform())
+    {   
+        if (!(dAtts.HasInvTransform() && dAtts.GetCanUseInvTransform()) &&
+            !(dAtts.HasInvTransform() && dAtts.GetCanUseInvTransform()))
+        {
+            // mesh transformed in mapper, so need to apply the inverse
+            // of that transform to the ray points so that Pick will be
+            // working in the correct space.
+            debug3 << "Pick's ray points transformed by "
+                   << "rectilinearGridTransform." << endl;
+            avtMatrix m(dAtts.GetRectilinearGridTransform());
+            m.Inverse();
+            avtVector r1(pickAtts.GetRayPoint1());
+            avtVector r2(pickAtts.GetRayPoint2());
+            r1 = m * r1;
+            r2 = m * r2;
+            double rp1[3];
+            double rp2[3];
+            for (int i = 0; i < 3; ++i)
+            {
+                rp1[i] = r1[i];
+                rp2[i] = r2[i];
+            }
+            pickAtts.SetRayPoint1(rp1);
+            pickAtts.SetRayPoint2(rp2);
+        }
+    }
 }
 
 

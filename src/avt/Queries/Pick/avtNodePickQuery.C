@@ -145,10 +145,6 @@ avtNodePickQuery::~avtNodePickQuery()
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
 //
-//    Kathleen Bonnell, Thu Feb 24 11:54:13 PST 2011
-//    Use rectilinearGridTransform matrix to transform cell/pick points to
-//    correct location if necessary.
-//
 // ****************************************************************************
 
 void
@@ -330,20 +326,6 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
         //
         pickAtts.SetNeedTransformMessage(false);
         pickAtts.SetPickPoint(pickAtts.GetNodePoint());
-    }
-    else if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID &&
-        GetInput()->GetInfo().GetAttributes().GetRectilinearGridHasTransform())
-    {
-        avtMatrix m(GetInput()->GetInfo().GetAttributes().GetRectilinearGridTransform());
-        avtVector p(pickAtts.GetCellPoint());
-        p = m * p;
-        double ppt[3] = { p.x, p.y, p.z };
-        //
-        // Need to set both the point used for info, and the point used
-        // for the visual cue
-        //
-        pickAtts.SetCellPoint(ppt);
-        pickAtts.SetPickPoint(ppt);
     }
     else 
     {
