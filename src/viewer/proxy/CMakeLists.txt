@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -55,7 +55,7 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 ADD_LIBRARY(viewerproxy ${VIEWERPROXY_SOURCES})
 TARGET_LINK_LIBRARIES(viewerproxy viewerrpc visitcommon avtdbatts)
 
-ADD_LIBRARY(proxyexample EXCLUDE_FROM_ALL proxyexample.C)
+ADD_EXECUTABLE(proxyexample EXCLUDE_FROM_ALL proxyexample.C)
 TARGET_LINK_LIBRARIES(proxyexample viewerrpc viewerproxy visitcommon avtdbatts)
 
 VISIT_INSTALL_TARGETS(viewerproxy)
