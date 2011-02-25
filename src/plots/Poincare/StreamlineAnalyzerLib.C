@@ -1505,8 +1505,8 @@ thresholdStats( vector< pair< unsigned int, double > >& stats )
     }
   }
 
-  if( cutoffIndex > 1 )
-    stats.resize(cutoffIndex);
+//   if( cutoffIndex > 1 )
+//     stats.resize(cutoffIndex);
 }
 
 
