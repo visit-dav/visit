@@ -2297,9 +2297,10 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
               seedPt.y = 0; //atan2( pts[i].y, pts[i].x );
               seedPt.z = pts[i].z;
             }
-            else if ( integrationType == STREAMLINE_INTEGRATE_M3D_C1_3D_INTEGRATOR )
+            else if (integrationType ==
+                     STREAMLINE_INTEGRATE_M3D_C1_3D_INTEGRATOR)
             {
-              // Convert the seed to cylindrical coordiantes.
+              // Convert the seed to cylindrical coordinates
               seedPt.x = sqrt(pts[i].x*pts[i].x+pts[i].y*pts[i].y);
               seedPt.y = atan2( pts[i].y, pts[i].x );
               seedPt.z = pts[i].z;
@@ -2412,7 +2413,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         out_dr->AddSecondaryVariable("hidden/header/eqsubtract");// /eqsubtract
         out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
         out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
-        
+
         out_dr->AddSecondaryVariable("hidden/header/bzero");    // /bzero
         out_dr->AddSecondaryVariable("hidden/header/rzero");    // /rzero
 
@@ -2422,6 +2423,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         // Variables on the mesh - N elements x 20
         out_dr->AddSecondaryVariable("hidden/equilibrium/f");  // /equilibrium/fields/f
         out_dr->AddSecondaryVariable("hidden/equilibrium/psi");// /equilibrium/fields/psi
+
 
         out_dr->AddSecondaryVariable("hidden/f");      // /time_XXX/fields/f
         out_dr->AddSecondaryVariable("hidden/f_i");    // /time_XXX/fields/f_i
