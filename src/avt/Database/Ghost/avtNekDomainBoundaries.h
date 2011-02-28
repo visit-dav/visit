@@ -80,6 +80,10 @@ class avtMaterial;
 //    Inherit from avtDomainBoundaries.  Also add method 
 //    CanOnlyCreateGhostNodes.
 //   
+//    Hank Childs, Mon Feb 28 10:02:55 PST 2011
+//    Add data member for multiple blocks.  This is for the case where multiple
+//    domains have been put in the same VTK data set.
+//
 // ****************************************************************************
 
 class DATABASE_API avtNekDomainBoundaries : public avtDomainBoundaries
@@ -126,7 +130,8 @@ class DATABASE_API avtNekDomainBoundaries : public avtDomainBoundaries
 
     // These are unique to this class
     virtual void                      SetDomainInfo(int num_domains, 
-                                                    const int dims[3]);
+                                                    const int dims[3],
+                                                    bool multipleBlocks = false);
     virtual void                      SetCacheDomainAdjacency(bool bCache) 
                                           {bSaveDomainInfo = bCache;}
 
@@ -161,6 +166,8 @@ class DATABASE_API avtNekDomainBoundaries : public avtDomainBoundaries
 
     int  nDomains;
     int  iBlockSize[3];
+    int  ptsPerDomain;
+    bool multipleBlocks;
     int  aCornerOffsets[8];
 };
 
