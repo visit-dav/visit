@@ -42,12 +42,14 @@
 
 #include <avtCoordSystemConvert.h>
 
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
@@ -516,6 +518,11 @@ Transform(vtkDataSet *in_ds,
 //  Programmer: Hank Childs
 //  Creation:   July 7, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 28 15:04:00 PST 2011
+//    Fix wraparound for poly data as well.
+//
 // ****************************************************************************
 
 static vtkDataSet *
@@ -523,13 +530,40 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
 {
     int   i, j;
 
-    if (in_ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
+    vtkUnstructuredGrid *ugrid = NULL;
+    bool needDelete = false;
+    if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+        ugrid = (vtkUnstructuredGrid *) in_ds;
+    }
+    else if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
+    {
+        vtkPolyData *pd = (vtkPolyData *) in_ds;
+        ugrid = vtkUnstructuredGrid::New();
+        needDelete = true;
+        ugrid->SetPoints(pd->GetPoints());
+        ugrid->GetPointData()->ShallowCopy(pd->GetPointData());
+        ugrid->GetCellData()->ShallowCopy(pd->GetCellData());
+        ugrid->GetFieldData()->ShallowCopy(pd->GetFieldData());
+        int mSize = pd->GetLines()->GetSize() + 
+                    pd->GetVerts()->GetSize() + 
+                    pd->GetPolys()->GetSize() + 
+                    pd->GetStrips()->GetSize();
+        ugrid->Allocate(mSize);
+        vtkIdList *idlist = vtkIdList::New();
+        for (int i = 0 ; i < pd->GetNumberOfCells() ; i++)
+        {
+            pd->GetCellPoints(i, idlist);
+            ugrid->InsertNextCell(pd->GetCellType(i), idlist);
+        }
+        idlist->Delete();
+    }
+    else
     {
         in_ds->Register(NULL);
         return in_ds;
     }
 
-    vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
     vtkPoints *pts = ugrid->GetPoints();
     int npts = pts->GetNumberOfPoints();
 
@@ -562,8 +596,8 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
     out_cd->CopyAllocate(in_cd, 2*ncells);
    
     float pi = vtkMath::Pi();
-    float twoPiCutoff = 2*vtkMath::Pi()*0.95;
-    float zeroPiCutoff = vtkMath::Pi()*0.1;
+    float twoPiCutoff = 1.75*vtkMath::Pi();
+    float zeroPiCutoff = 0.25*vtkMath::Pi();
     int cellCnt = 0;
     for (i = 0 ; i < ncells ; i++)
     {
@@ -609,6 +643,8 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
     }
     new_grid->Squeeze();
     new_pts->Delete();
+    if (needDelete)
+        ugrid->Delete();
 
     return new_grid;
 }
