@@ -1119,6 +1119,9 @@ avtNek5000FileFormat::FreeUpResources(void)
 //    Hank Childs, Tue Jan 20 15:45:02 CST 2009
 //    Add velocity_mag.
 //
+//    Hank Childs, Mon Feb 28 10:02:55 PST 2011
+//    Re-enable connectivity.
+//
 // ****************************************************************************
 
 void
@@ -1154,18 +1157,16 @@ avtNek5000FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*ti
         SNPRINTF(scalarVarName, 32, "s%d", ii+1);
         AddScalarVarToMetaData(md, scalarVarName, meshname, AVT_NODECENT);
     }
-/*
-    // HANK: need to find a solution for abutting elements.
     if (!avtDatabase::OnlyServeUpMetaData())
     {
         avtNekDomainBoundaries *db = new avtNekDomainBoundaries;
-        db->SetDomainInfo(iNumBlocks, iBlockSize);
+        bool multipleBlocks = true;
+        db->SetDomainInfo(iNumBlocks, iBlockSize, multipleBlocks);
 
         void_ref_ptr vr = void_ref_ptr(db, avtNekDomainBoundaries::Destruct);
         cache->CacheVoidRef("any_mesh",
                        AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
     }
- */
 }
 
 

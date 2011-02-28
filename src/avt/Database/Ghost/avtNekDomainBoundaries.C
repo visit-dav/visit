@@ -118,23 +118,31 @@ avtNekDomainBoundaries::~avtNekDomainBoundaries()
 //  Arguments:
 //    num_domains:  total number of domains in the dataset
 //    dims:         dimensions of each domain
+//    mblocks:      whether or not there are multiple blocks in a VTK input.
 //
 //  Programmer:  Dave Bremer
 //  Creation:    Fri Jan 18 16:21:34 PST 2008
 //
 //  Modifications:
 //
+//    Hank Childs, Mon Feb 28 10:02:55 PST 2011
+//    Add argument for mulitple blocks in a single VTK input.
+//    Also calculate ptsPerDomain.
+//
 // ****************************************************************************
 
 void
 avtNekDomainBoundaries::SetDomainInfo(int num_domains, 
-                                      const int dims[3])
+                                      const int dims[3], bool mblocks)
 {
     iBlockSize[0] = dims[0];
     iBlockSize[1] = dims[1];
     iBlockSize[2] = dims[2];
+    ptsPerDomain = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
     
     nDomains = num_domains;
+
+    multipleBlocks = mblocks;
     
     aCornerOffsets[0] = 0; 
     aCornerOffsets[1] = iBlockSize[0]-1;
@@ -145,8 +153,6 @@ avtNekDomainBoundaries::SetDomainInfo(int num_domains,
     aCornerOffsets[6] = iBlockSize[0]*iBlockSize[1]*(iBlockSize[2]-1) + iBlockSize[0]*(iBlockSize[1]-1);
     aCornerOffsets[7] = iBlockSize[0]*iBlockSize[1]*(iBlockSize[2]-1) + iBlockSize[0]*(iBlockSize[1]-1) + iBlockSize[0]-1;
 }
-
-
 
 
 // ****************************************************************************
@@ -333,13 +339,22 @@ avtNekDomainBoundaries::CompareFaceProcs(const void *f0, const void *f1)
 //    sending them to proc 0 to perform much of the matching.  This allows
 //    much less memory to be used by proc 0, and also made the code run in
 //    about 0.4 instead of 1.4 seconds in one big test.
+//
+//    Hank Childs, Mon Feb 28 10:02:55 PST 2011
+//    Add support for the case where there are multiple blocks in a single
+//    VTK data set input.
+//
 // ****************************************************************************
 
 void
 avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
                                            const vector<vtkDataSet*> &meshes)
 {
-    int nLocalDomains = meshes.size();
+    int nLocalDomains;
+    if (multipleBlocks && meshes.size() == 1)
+        nLocalDomains = meshes[0]->GetNumberOfPoints()/ptsPerDomain;
+    else
+        nLocalDomains = meshes.size();
     int ii, ff, pp, cc;
     const int  f[6][4] = { {0, 2, 4, 6},
                            {1, 3, 5, 7},
@@ -360,8 +375,17 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
     
     for (ii = 0; ii < nLocalDomains; ii++)
     {
-        for (cc = 0; cc < 8; cc++)
-            meshes[ii]->GetPoint( aCornerOffsets[cc], corners+3*cc );
+        if (multipleBlocks && meshes.size() == 1)
+        {
+            int offset = ii*ptsPerDomain;
+            for (cc = 0; cc < 8; cc++)
+                meshes[0]->GetPoint( offset+aCornerOffsets[cc], corners+3*cc);
+        }
+        else
+        {
+            for (cc = 0; cc < 8; cc++)
+                meshes[ii]->GetPoint( aCornerOffsets[cc], corners+3*cc );
+        }
         
         for (ff = 0; ff < 6; ff++)
         {
@@ -404,7 +428,10 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
             aNeighborDomains[faces[ii].domain*6   + faces[ii].side]   = -1;
         }
     }
-    bFullDomainInfo = (nDomains == meshes.size());
+    if (multipleBlocks && meshes.size() == 1)
+        bFullDomainInfo = (nDomains == (meshes[0]->GetNumberOfPoints()/ptsPerDomain));
+    else
+        bFullDomainInfo = (nDomains == meshes.size());
 
 #else
     int jj;
@@ -666,11 +693,16 @@ avtNekDomainBoundaries::ExtractMatchingFaces(Face *faces, int nFaces,
 //  Creation:    Fri Jan 18 16:21:34 PST 2008
 //
 //  Modifications:
+//
 //    Dave Bremer, Thu Jan 24 14:53:27 PST 2008
 //    Only optionally cache aNeighborDomains now.
 //
 //    Mark C. Miller, Wed Jul 28 06:48:28 PDT 2010
 //    Fixed indexing of mm loop for j==2||j==3 case to use iBlockSize[2].
+//
+//    Hank Childs, Mon Feb 28 10:02:55 PST 2011
+//    Add support for having multiple blocks stuffed into a single VTK DS.
+//
 // ****************************************************************************
 
 void                      
@@ -678,6 +710,53 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
                                          vector<vtkDataSet*>  meshes,
                                          vector<int>         &allDomains)
 {
+    if (multipleBlocks && meshes.size() == 1)
+    {
+        int i;
+        int num = meshes[0]->GetNumberOfPoints()/ptsPerDomain;
+        int totalNum = num;
+        int myStart = 0;
+
+#ifdef PARALLEL
+        // get the processor id and # of processors
+        int procid = PAR_Rank();
+        int nprocs = PAR_Size();
+
+        // get number of blocks from all other processors
+        int *rcv_buffer = new int[nprocs];
+        // send number of components per processor, gather to all processors
+        MPI_Allgather(&num,1,MPI_INT,
+                      rcv_buffer,1,MPI_INT,
+                      VISIT_MPI_COMM);
+    
+        // using the received component counts, calculate the shift for this
+        // processor
+        totalNum = 0;
+        int shift = 0;
+        for (i=0;i<nprocs;i++)
+        {
+            // shift using component count from processors with a lower rank
+            if (i < procid)
+            {
+                shift += rcv_buffer[i];
+            }
+            // keep a count of the total number of components
+            totalNum  += rcv_buffer[i];
+        }
+
+        delete [] rcv_buffer;
+
+        num = totalNum;
+        myStart = shift;
+#endif
+        domainNum.clear();
+        for (i = 0 ; i < num ; i++)
+            domainNum.push_back(i+myStart);
+        allDomains.clear();
+        for (i = 0 ; i < totalNum ; i++)
+            allDomains.push_back(i);
+    }
+
     if (!aNeighborDomains)
     {
         CreateNeighborList(domainNum, meshes);
@@ -700,20 +779,52 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
         }
     }
     
-    for (size_t ii = 0; ii < meshes.size(); ii++)
+    int numToIterate = 0;
+    bool partOfLargerArray = false;
+    vtkUnsignedCharArray *gn = NULL;
+    if (multipleBlocks && meshes.size() == 1)
+    {
+        numToIterate = meshes[0]->GetNumberOfPoints() / ptsPerDomain;
+        partOfLargerArray = true;
+        int nPts = meshes[0]->GetNumberOfPoints();
+        gn = vtkUnsignedCharArray::New();
+        gn->SetNumberOfTuples(nPts);
+        unsigned char *gnp = gn->GetPointer(0);
+        for (int jj = 0; jj < nPts; jj++)
+            gnp[jj] = 0;
+        gn->SetName("avtGhostNodes");
+        meshes[0]->GetPointData()->AddArray(gn);
+        gn->Delete();
+    }
+    else
+    {
+        numToIterate = meshes.size();
+        partOfLargerArray = false;
+        gn = NULL;
+    }
+
+    for (size_t ii = 0; ii < numToIterate; ii++)
     {
         int dom = domainNum[ii];
     
-        vtkDataSet *ds = meshes[ii];
-        int nPts = ds->GetNumberOfPoints();
-
-        vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
-        gn->SetNumberOfTuples(nPts);
-        gn->SetName("avtGhostNodes");
-        unsigned char *gnp = gn->GetPointer(0);
-    
-        for (int jj = 0; jj < nPts; jj++)
-            gnp[jj] = 0;
+        unsigned char *gnp = NULL;
+        if (partOfLargerArray)
+        {
+            gnp = gn->GetPointer(ii*ptsPerDomain);
+        }
+        else
+        {
+            vtkDataSet *ds = meshes[ii];
+            int nPts = ds->GetNumberOfPoints();
+            vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
+            gn->SetNumberOfTuples(nPts);
+            gn->SetName("avtGhostNodes");
+            gnp = gn->GetPointer(0);
+            for (int jj = 0; jj < nPts; jj++)
+                gnp[jj] = 0;
+            ds->GetPointData()->AddArray(gn);
+            gn->Delete();
+        }
 
         for (int jj = 0; jj < 6; jj++)
         {
@@ -800,8 +911,6 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
                 }
             }
         }
-        ds->GetPointData()->AddArray(gn);
-        gn->Delete();
     }
 
     //Delete the table if it covers a subset of the data, otherwise 
