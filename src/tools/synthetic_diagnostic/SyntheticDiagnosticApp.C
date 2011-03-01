@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QListWidget>
+#include <QTabWidget>
 #include <QMenuBar>
 #include <QMenu>
 #include <QRadioButton>
@@ -57,40 +58,104 @@ SyntheticDiagnosticApp::SyntheticDiagnosticApp(VisItViewer *v) : QMainWindow()
     for(int i = 0; i < NWINDOWS + 1; ++i)
         viswindows[i] = 0;
 
-    setWindowTitle(tr("Multiwindow visualization"));
+    setWindowTitle(tr("Synthetic Diagnostic for Fusion"));
 
     // Create the window.
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
+    QHBoxLayout *Layout = new QHBoxLayout(central);
+    Layout->setMargin(10);
+    Layout->setSpacing(10);
 
-    QHBoxLayout *hLayout = new QHBoxLayout(central);
-    hLayout->setMargin(10);
-    hLayout->setSpacing(10);
-    QVBoxLayout *leftLayout = new QVBoxLayout(0);
-    leftLayout->setSpacing(10);
-    hLayout->addLayout(leftLayout);
+    //Create the left side controls.
+    QVBoxLayout *controlsLayout = new QVBoxLayout(0);
+    controlsLayout->setSpacing(10);
+    Layout->addLayout(controlsLayout);
 
-    QLabel *scalarLabel = new QLabel(tr("Scalar variables"), central);
-    leftLayout->addWidget(scalarLabel);
+    controlsLayout->addWidget(new QLabel(tr("Diagnostics"), central));
 
-    variables = new QListWidget(central);
-    leftLayout->addWidget(variables);
-    connect(variables, SIGNAL(currentTextChanged(const QString &)),
-            this, SLOT(onSelectVariable(const QString &)));
+    diagnostics = new QListWidget(central);
+    controlsLayout->addWidget(diagnostics);
+    connect(diagnostics, SIGNAL(currentTextChanged(const QString &)),
+            this, SLOT(onSelectDiagnostic(const QString &)));
 
-    // Create the visualization windows. Do an easy layout in this example.
-    QSplitter *splitter = new QSplitter(central);
-    splitter->setOrientation(Qt::Horizontal);
-    hLayout->addWidget(splitter, 100);
+    QHBoxLayout *buttonsLayout = new QHBoxLayout(0);
+    controlsLayout->addLayout(buttonsLayout);
+    buttonsLayout->addWidget(new QPushButton(tr("New Diagnostic"), central));
+    buttonsLayout->addWidget(new QPushButton(tr("Delete"), central));
 
-    viswindows[WINDOW_3D] = new vtkQtRenderWindow(splitter);
-    viswindows[WINDOW_3D]->setMinimumSize(QSize(300,400));
+    QTabWidget *controlTabs = new QTabWidget(central);
+    controlsLayout->addWidget(controlTabs);
+    QWidget *diagnosticTab = new QWidget(central);
+    controlTabs->addTab(diagnosticTab, tr("Diagnostic"));
+    QWidget *simulationTab = new QWidget(central);
+    controlTabs->addTab(simulationTab, tr("Simulation"));
+    QWidget *miscTab = new QWidget(central);
+    controlTabs->addTab(miscTab, tr("Miscellaneous"));
 
-    viswindows[WINDOW_2D] = new vtkQtRenderWindow(splitter);
-    viswindows[WINDOW_2D]->setMinimumSize(QSize(300,400));
+    //Diagnostic tab.
+    QVBoxLayout *diagnosticLayout = new QVBoxLayout(diagnosticTab);
+    diagnosticLayout->addWidget(new QLabel(tr("Diagnostic source"), diagnosticTab));
+    QComboBox *diagnosticSource = new QComboBox(diagnosticTab);
+    diagnosticSource->addItem(tr("Red Barchetta"));
+    diagnosticSource->addItem(tr("The Pass"));
+    diagnosticSource->addItem(tr("La Villa Strangiato"));
+    diagnosticLayout->addWidget(diagnosticSource);
     
-    viswindows[WINDOW_1D] = new vtkQtRenderWindow(splitter);
-    viswindows[WINDOW_1D]->setMinimumSize(QSize(300,400));
+    diagnosticLayout->addWidget(new QLabel(tr("Post processing"), diagnosticTab));
+
+    diagnosticLayout->addWidget(new QLabel(tr("View"), diagnosticTab));
+    QHBoxLayout *diagViewLayout = new QHBoxLayout(0);
+    diagnosticLayout->addLayout(diagViewLayout);
+    diagViewLayout->addWidget(new QCheckBox(tr("1D"), diagnosticTab));
+    diagViewLayout->addWidget(new QCheckBox(tr("2D"), diagnosticTab));
+    diagViewLayout->addWidget(new QCheckBox(tr("3D"), diagnosticTab));
+    
+    diagnosticLayout->addWidget(new QLabel(tr("Options"), diagnosticTab));
+
+    //Simulation tab.
+    QVBoxLayout *simulationLayout = new QVBoxLayout(simulationTab);
+    simulationLayout->addWidget(new QLabel(tr("Simulation source"), simulationTab));
+    QComboBox *simulationSource = new QComboBox(simulationTab);
+    simulationSource->addItem(tr("YYZ"));
+    simulationSource->addItem(tr("Limelight"));
+    simulationSource->addItem(tr("Witch Hunt"));
+    simulationSource->addItem(tr("New World Man"));
+    simulationLayout->addWidget(simulationSource);
+    simulationLayout->addWidget(new QPushButton(tr("Line Probe Properties"), simulationTab));
+
+    simulationLayout->addWidget(new QLabel(tr("View"), simulationTab));
+    QHBoxLayout *simViewLayout = new QHBoxLayout(0);
+    simulationLayout->addLayout(simViewLayout);
+    simViewLayout->addWidget(new QCheckBox(tr("1D"), simulationTab));
+    simViewLayout->addWidget(new QCheckBox(tr("2D"), simulationTab));
+    simViewLayout->addWidget(new QCheckBox(tr("3D"), simulationTab));
+    
+    simulationLayout->addWidget(new QLabel(tr("Options"), simulationTab));
+
+    //Misc tab.
+    QVBoxLayout *miscLayout = new QVBoxLayout(miscTab);
+    miscLayout->addWidget(new QLabel(tr("misc"), miscTab));
+    miscLayout->addWidget(new QLabel(tr("misc"), miscTab));
+    miscLayout->addWidget(new QLabel(tr("misc"), miscTab));
+    
+    //Create the viz windows.
+    QSplitter *splitter1 = new QSplitter(central);
+    splitter1->setOrientation(Qt::Horizontal);
+    Layout->addWidget(splitter1, 100);
+
+    viswindows[WINDOW_2D] = new vtkQtRenderWindow(splitter1);
+    viswindows[WINDOW_2D]->setMinimumSize(QSize(100,150));
+
+    QSplitter *splitter2 = new QSplitter(central);
+    splitter2->setOrientation(Qt::Vertical);
+    Layout->addWidget(splitter2, 100);
+
+    viswindows[WINDOW_3D] = new vtkQtRenderWindow(splitter2);
+    viswindows[WINDOW_3D]->setMinimumSize(QSize(100,150));
+    
+    viswindows[WINDOW_1D] = new vtkQtRenderWindow(splitter2);
+    viswindows[WINDOW_1D]->setMinimumSize(QSize(100,150));
  
     //
     // Register a window creation function (before Setup) that will
@@ -107,8 +172,6 @@ SyntheticDiagnosticApp::SyntheticDiagnosticApp(VisItViewer *v) : QMainWindow()
 
     QMenu *controlsMenu = menuBar()->addMenu(tr("Controls"));
     controlsMenu->addAction(tr("Open GUI"), this, SLOT(openGUI()));
-
-
 }
 
 SyntheticDiagnosticApp::~SyntheticDiagnosticApp()
@@ -164,11 +227,11 @@ SyntheticDiagnosticApp::openFile(const QString &filename)
         const avtDatabaseMetaData *md = viewer->GetMetaData(filename.toStdString());
         if(md != 0)
         {
-            variables->blockSignals(true);
+            diagnostics->blockSignals(true);
             for(int i = 0; i < md->GetNumScalars(); ++i)
-                variables->addItem(md->GetScalar(i)->name.c_str());
-            variables->blockSignals(false);
-            variables->setEnabled(md->GetNumScalars() > 0);
+                diagnostics->addItem(md->GetScalar(i)->name.c_str());
+            diagnostics->blockSignals(false);
+            diagnostics->setEnabled(md->GetNumScalars() > 0);
         }
     }
 }
@@ -176,9 +239,9 @@ SyntheticDiagnosticApp::openFile(const QString &filename)
 void
 SyntheticDiagnosticApp::resetWindow()
 {
-    variables->blockSignals(true);
-    variables->clear();
-    variables->blockSignals(false);
+    diagnostics->blockSignals(true);
+    diagnostics->clear();
+    diagnostics->blockSignals(false);
 
     viewer->Methods()->SetActiveWindow(WINDOW_1D);
     viewer->Methods()->DeleteActivePlots();
@@ -189,8 +252,9 @@ SyntheticDiagnosticApp::resetWindow()
 }
 
 void
-SyntheticDiagnosticApp::onSelectVariable(const QString &var)
+SyntheticDiagnosticApp::onSelectDiagnostic(const QString &var)
 {
+    /*
     viewer->State()->GetGlobalAttributes()->SetApplyOperator(false);
 
     if(viewer->State()->GetPlotList()->GetNumPlots() == 1)
@@ -229,6 +293,7 @@ SyntheticDiagnosticApp::onSelectVariable(const QString &var)
                                           var.toStdString());
         viewer->DelayedMethods()->DrawPlots();
     }
+    */
 }
 
 void
