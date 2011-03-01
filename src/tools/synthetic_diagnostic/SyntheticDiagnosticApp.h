@@ -27,7 +27,7 @@ public slots:
 private slots:
     void selectFile();
     void openFile(const QString &);
-    void onSelectVariable(const QString &var);
+    void onSelectDiagnostic(const QString &var);
     void resetWindow();
     void openGUI();
     void showTheWindow();
@@ -35,7 +35,7 @@ private:
     bool               windowsAdded;
     QString            activeFile;
     VisItViewer       *viewer;
-    QListWidget       *variables;
+    QListWidget       *diagnostics;
     int                currentWindow;
     vtkQtRenderWindow *viswindows[NWINDOWS+1];
 };
