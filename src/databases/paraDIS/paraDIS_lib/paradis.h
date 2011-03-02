@@ -1258,7 +1258,7 @@ namespace paraDIS {
 #if LINKED_LOOPS
     bool mPartOfLinkedLoop, mCheckedForLinkedLoop; 
 #endif
-
+    static double mLongestLength; // for binning
 #ifdef DEBUG
     /*! 
       purely for debugging
@@ -1320,6 +1320,10 @@ namespace paraDIS {
       return; 
     }
 
+    void SetNumBins(long numbins) {
+      mNumBins = numbins; 
+      return; 
+    } 
     /*!
       Print out arm statistics
     */
@@ -1456,7 +1460,8 @@ s      Tell the data set which file to read
     /*!
       Initialize things to virginal values. 
     */ 
-    void init(void) {    
+    void init(void) {  
+      mNumBins = 0; 
       mThreshold = -1.0;
       mFileVersion = 0; 
       mMinimalNodes.clear(); 
@@ -1690,6 +1695,10 @@ s      Tell the data set which file to read
       it is part of a particular loop configuration I call a "linked loop."  
     */ 
     double mThreshold; 
+    /*!
+      Moono would like to print out binned arm lengths.  He will give a number of bins and I will bin the arms into those many buckets when examining them at the end. 
+    */ 
+    int mNumBins; 
   };
 
 

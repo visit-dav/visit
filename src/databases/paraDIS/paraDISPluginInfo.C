@@ -95,7 +95,7 @@ paraDISGeneralPluginInfo::GetName() const
 const char *
 paraDISGeneralPluginInfo::GetVersion() const
 {
-    return "1.0a1";
+    return "2.0";
 }
 
 // ****************************************************************************
@@ -114,7 +114,7 @@ paraDISGeneralPluginInfo::GetVersion() const
 const char *
 paraDISGeneralPluginInfo::GetID() const
 {
-    return "paraDIS_1.0a1";
+    return "paraDIS_2.0";
 }
 // ****************************************************************************
 //  Method: paraDISGeneralPluginInfo::EnabledByDefault
@@ -169,6 +169,7 @@ paraDISGeneralPluginInfo::GetDefaultFilePatterns() const
     defaultPatterns.push_back("*.prds");
     defaultPatterns.push_back("*.dat");
     defaultPatterns.push_back("*.data");
+    defaultPatterns.push_back("*.meta");
 
     return defaultPatterns;
 }

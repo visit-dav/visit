@@ -1,7 +1,9 @@
 #ifndef TSB_STRING_UTIL_H
 #define TSB_STRING_UTIL_H
+#include <iostream>
+#include <sstream>
 #include <string>
-#include <string>
+#include <vector>
 #include <stdio.h>
 #include <algorithm>
 //#include <inttypes.h>
@@ -12,51 +14,23 @@ using namespace std;
 #define errout if (0) cerr
 #define debugout if (0) cerr
 
-  
 //===============================================================
-inline vector<string> Split(const string &s, char delimchar = ' ') {
-  vector <string> sv; 
-  vector<string::size_type> delims; 
-  string sub; 
-  errout << "Split(\""<<s<<"\", '"<<delimchar<<"')"<<endl;
-  // build a list of where the delims occur in the string
-  string::size_type found = s.find(delimchar), previous=string::npos; 
-  errout << "initially found " << found<<endl;
-  if (found == string::npos) {
-    errout << "No delimchar found in string" << endl; 
-    if (s.size()) {
-      sv.push_back(s); 
-    }
-    return sv; 
+// New versions of Split from http://stackoverflow.com/questions/236129/how-to-split-a-string
+// The first one splits a string into an existing vector and returns that
+inline std::vector<std::string> &Split(const std::string &s, char delim, std::vector<std::string> &elems) {
+  std::stringstream ss(s);
+  std::string item;
+  while(std::getline(ss, item, delim)) {
+    elems.push_back(item);
   }
+  return elems;
+}
 
-  while (1) {
-    errout << "Loop: found is "<< found << endl;
-    if (found == string::npos) {
-      if (previous < s.size()-1) {
-        sub=s.substr(previous+1); 
-        errout << "1. Pushing back \""<<sub<<"\""<<endl;
-        sv.push_back(sub);
-      }
-      return sv; 
-    } 
-    if (previous == string::npos) {
-      if (found > 0) {
-        sub=s.substr(0, found);
-        errout << "2. Pushing back \""<<sub<<"\""<<endl;
-        sv.push_back(sub); 
-      }
-    }
-    else if (found - previous > 1) {
-      sub=s.substr(previous+1, found-(previous+1));
-      errout << "2. Pushing back \""<<sub<<"\""<<endl;
-      sv.push_back(sub); 
-    }
-    previous=found;
-    found = s.find(delimchar, found+1); 
-  }
 
-  return sv;             
+// This version returns a new string vector
+inline std::vector<std::string> Split(const std::string &s, char delim = ' ') {
+    std::vector<std::string> elems;
+    return Split(s, delim, elems);
 }
 
 //===============================================================
