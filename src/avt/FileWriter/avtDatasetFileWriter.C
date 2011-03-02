@@ -57,6 +57,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPLYWriter.h>
+#include <vtkColorTransferFunction.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItSTLWriter.h>
 #include <vtkTriangleFilter.h>
@@ -87,7 +88,7 @@ const char *avtDatasetFileWriter::extensions[] = { ".curve", ".obj",
 
 static void SortLineSegments(vtkPolyData *, std::vector< std::vector<int> > &);
 static void TakeOffPolyLine(int *, int, std::vector< std::vector<int> > &);
-
+static vtkScalarsToColors * GetColorTableFromEnv();
 
 using   std::string;
 using   std::vector;
@@ -650,6 +651,9 @@ avtDatasetFileWriter::WriteSTLFile(const char *filename, bool binary)
 //
 //  Modifications:
 //
+//   Dave Pugmire, Wed Mar  2 09:20:02 EST 2011
+//   Add colortable output, if present in user environment.
+//
 // ****************************************************************************
 
 void
@@ -669,6 +673,7 @@ avtDatasetFileWriter::WritePLYFile(const char *filename, bool binary)
         writer->SetFileTypeToASCII();
 
     vtkDataArray *arr = ds->GetPointData()->GetScalars();
+    
     if (arr == NULL)
         arr = ds->GetCellData()->GetScalars();
     if (arr)
@@ -676,9 +681,16 @@ avtDatasetFileWriter::WritePLYFile(const char *filename, bool binary)
     
     writer->SetInput(ds);
     writer->SetFileName(filename);
+    
+    vtkScalarsToColors *lut = (arr ? GetColorTableFromEnv() : NULL);
+    if (lut)
+        writer->SetLookupTable(lut);
+
     writer->Write();
     writer->Delete();
     ds->Delete();
+    if (lut)
+        lut->Delete();
 }
 
 
@@ -2367,4 +2379,52 @@ avtDatasetFileWriter::WritePOVRayDF3File(vtkRectilinearGrid *rgrid,
     return true;
 }
 
+// ****************************************************************************
+// Method:  GetColorTableFromEnv
+//
+// Purpose:
+//   Get colortable information from user environment.
+//
+// Programmer:  Dave Pugmire
+// Creation:    March  2, 2011
+//
+// ****************************************************************************
 
+static vtkScalarsToColors * GetColorTableFromEnv()
+{
+    char *ctName = getenv("VISIT_EXPORT_COLORTABLE");
+    char *ctMin = getenv("VISIT_EXPORT_COLORTABLE_MIN");
+    char *ctMax = getenv("VISIT_EXPORT_COLORTABLE_MAX");
+    
+    if (ctName == NULL || ctMin == NULL || ctMax == NULL)
+        return NULL;
+
+    float tableMin = atof(ctMin);
+    float tableMax = atof(ctMax);
+    
+    const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
+    int nCT = colorTables->GetNumColorTables();
+    for (int i=0; i<nCT; i++)
+    {
+        if (colorTables->GetNames()[i] == ctName)
+        {
+            const ColorControlPointList &table = colorTables->GetColorTables(i);
+            vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
+
+            double *vals = new double[3*table.GetNumControlPoints()];
+            for (int j=0; j<table.GetNumControlPoints(); j++)
+            {
+                const ColorControlPoint &pt = table.GetControlPoints(j);
+                vals[j*3 + 0] = pt.GetColors()[0]/255.0;
+                vals[j*3 + 1] = pt.GetColors()[1]/255.0;
+                vals[j*3 + 2] = pt.GetColors()[2]/255.0;
+            }
+            
+            lut->BuildFunctionFromTable(tableMin, tableMax, table.GetNumControlPoints(), vals);
+            delete [] vals;
+
+            return lut;
+        }
+    }
+    return NULL;
+}
