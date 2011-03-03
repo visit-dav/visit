@@ -4607,6 +4607,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 //    Kathleen Bonnell, Tue Mar  1 16:09:50 PST 2011
 //    Add curvePlotType argument.
 //
+//    Kathleen Bonnell, Thu Mar  3 13:15:22 PST 2011
+//    Added warning if curvePlotType is 'Multiple y axes' when only using
+//    1 variable, and revert to 'Single y axis' for the Time pick.
+//
 // ****************************************************************************
 
 void
@@ -4718,17 +4722,23 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
                             pickAtts->GetDomain() : 0);
             qatts.SetElement(pickAtts->GetElementNumber());
         }
-        if (curvePlotType != -1)
-            qatts.SetTimeCurvePlotType((QueryAttributes::TimeCurveType)curvePlotType);
-        else
-            qatts.SetTimeCurvePlotType((QueryAttributes::TimeCurveType)pickAtts->GetTimeCurveType());
-
         qatts.SetDataType(QueryAttributes::OriginalData);
         stringVector pvars = pickAtts->GetVariables();
         for (size_t i = 0; i < pvars.size(); ++i)
             if (pvars[i] == "default")
                 pvars[i] = pvarName;
         qatts.SetVariables(pvars);
+        int cpt;
+        if (curvePlotType != -1)
+            cpt = curvePlotType;
+        else
+            cpt = pickAtts->GetTimeCurveType();
+        if (cpt == 1 && pvars.size() < 2)
+        {
+           cpt = 0;
+           Warning(tr("Multiple-Y-Axes time query availble only with multiple variable selected.  Using Single-Y-Axis instead."));
+        }
+        qatts.SetTimeCurvePlotType((QueryAttributes::TimeCurveType)cpt);
         if (type == PickAttributes::Zone || type == PickAttributes::DomainZone) 
         {
             if (pickAtts->GetTimePreserveCoord())
