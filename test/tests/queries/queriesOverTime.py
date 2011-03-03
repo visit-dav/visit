@@ -51,6 +51,9 @@
 #    Turn off color cycling to avoid possible propagation of error from
 #    one failed test to several.
 #
+#    Kathleen Bonnell, Thu Mar  3 11:47:09 PST 2011
+#    Added MultiVarTimePick tests.
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -545,6 +548,64 @@ def TestMili():
     SetActiveWindow(1)
     DeleteAllPlots()
 
+def MultiVarTimePick():
+    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+    AddPlot("Pseudocolor", "pressure")
+    DrawPlots()
+
+    pa = GetPickAttributes()
+    pa.doTimeCurve = 1
+    pa.timeCurveType = pa.Single_Y_Axis
+    SetPickAttributes(pa)
+
+    vars =("pressure", "v", "direction_magnitude")
+    PickByNode(8837, vars)
+
+    SetActiveWindow(2);
+    InitAnnotation()
+    Test("TimePick_MultiVar_01")
+    DeleteAllPlots()
+
+    SetActiveWindow(1)
+    pa.timeCurveType = pa.Multiple_Y_Axes
+    SetPickAttributes(pa)
+    PickByNode(8837, vars)
+
+    SetActiveWindow(2);
+    Test("TimePick_MultiVar_02")
+    DeleteAllPlots()
+
+    # remove plots from window 1
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+    OpenDatabase("../data/mili_test_data/m_plot.mili")
+    AddPlot("Pseudocolor", "inteng")
+    DrawPlots()
+
+    pa.timePreserveCoord = 0
+    pa.timeCurveType = pa.Single_Y_Axis
+    SetPickAttributes(pa)
+
+    vars = ("default", "normal_magnitude")
+    PickByZone(233, vars)
+
+    SetActiveWindow(2);
+    Test("TimePick_MultiVar_03")
+    DeleteAllPlots()
+
+    SetActiveWindow(1)
+    pa.timeCurveType = pa.Multiple_Y_Axes
+    SetPickAttributes(pa)
+    PickByZone(233, vars)
+
+    SetActiveWindow(2);
+    Test("TimePick_MultiVar_04")
+    DeleteAllPlots()
+
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
 def TimeQueryMain():
     TestAllTimeQueries()
     TestFilledBoundary()
@@ -555,6 +616,7 @@ def TimeQueryMain():
     TestTimeVaryingSIL()
     TestQueryAfterQueryOverTime()
     TestMili()
+    MultiVarTimePick()
 
 # main
 InitAnnotation()
