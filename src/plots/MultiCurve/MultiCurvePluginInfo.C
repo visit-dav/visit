@@ -133,5 +133,5 @@ MultiCurveGeneralPluginInfo::GetID() const
 bool
 MultiCurveGeneralPluginInfo::EnabledByDefault() const
 {
-    return false;
+    return true;
 }

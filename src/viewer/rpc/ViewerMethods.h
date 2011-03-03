@@ -139,6 +139,9 @@ class ViewerState;
 //   Dave Pugmire, Tue Nov  9 16:09:44 EST 2010
 //   Added dumpSteps for streamline info query.
 //
+//   Kathleen Bonnell, Tue Mar  1 11:12:51 PST 2011
+//   Added another int arg to PointQuery.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -383,8 +386,10 @@ public:
                        const doubleVector &darg1 = doubleVector(),
                        const doubleVector &darg2 = doubleVector());
     void PointQuery(const std::string &queryName, const double pt[3],
-                    const stringVector &vars, const bool = false,
-                    const int arg1 = -1, const int arg2 = -1,
+                    const stringVector &vars, const bool = false, 
+                    const int arg1 = 0,
+                    const int arg2 = -1, 
+                    const int arg3 = -1,
                     const bool = false);
     void LineQuery(const std::string &queryName, const double pt1[3],
                    const double pt2[3], const stringVector &vars,

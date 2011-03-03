@@ -235,8 +235,11 @@ typedef struct {
 //    Cyrus Harrison, Tue Sep 18 11:01:57 PDT 2007
 //    Added floatFormat 
 //
-//   Dave Pugmire, Tue Nov  9 14:57:53 EST 2010
-//   Added dumpSteps for StreamlineInfo query.
+//    Dave Pugmire, Tue Nov  9 14:57:53 EST 2010
+//    Added dumpSteps for StreamlineInfo query.
+//
+//    Kathleen Bonnell, Tue Mar  1 10:24:20 PST 2011
+//    Added arg curvePlotType to PointQuery and PickThroughTime methods.
 //
 // ****************************************************************************
     
@@ -272,6 +275,7 @@ class VIEWER_API ViewerQueryManager : public ViewerBase
                             const std::vector<std::string> &vars,
                             const int arg1, const int arg2, 
                             const bool doTimeQuery,
+                            const int curvePlotType,
                             const bool elementIsGlobal);
 
     void            Pick(PICK_POINT_INFO *pd, const int dom = -1,
@@ -368,7 +372,9 @@ class VIEWER_API ViewerQueryManager : public ViewerBase
 
     bool            ComputePick(PICK_POINT_INFO *pd, const int dom = -1,
                                 const int el = -1);
-    void            PickThroughTime(PICK_POINT_INFO *pd, const int dom = -1,
+    void            PickThroughTime(PICK_POINT_INFO *pd, 
+                                const int curvePlotType = 0,
+                                const int dom = -1,
                                 const int el = -1);
 
     void            DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA);

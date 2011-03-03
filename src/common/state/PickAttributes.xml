@@ -13,6 +13,10 @@
       RZ
       ZR
     </Enum>
+    <Enum name="TimeCurveType">
+      Single_Y_Axis
+      Multiple_Y_Axes
+    </Enum>
     <Field name="variables" label="variables" type="stringVector">
       default
     </Field>
@@ -203,6 +207,9 @@
     </Field>
     <Field name="timePreserveCoord" label="timePreserveCoord" type="bool">
       true
+    </Field>
+    <Field name="timeCurveType" label="timeCurveType" type="enum" subtype="TimeCurveType">
+      Single_Y_Axis
     </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>

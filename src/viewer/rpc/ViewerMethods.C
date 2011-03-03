@@ -4728,12 +4728,15 @@ ViewerMethods::DatabaseQuery(const std::string &queryName,
 //   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
 //   Added optional bool flag.
 //   
+//   Kathleen Bonnell, Tue Mar  1 11:14:05 PST 2011
+//   Added another int arg.
+//
 // ****************************************************************************
 
 void
 ViewerMethods::PointQuery(const std::string &queryName, const double pt[3],
     const stringVector &vars, const bool time, const int arg1, const int arg2,
-    const bool globalFlag) 
+    const int arg3, const bool globalFlag) 
 {
     //
     // Set the rpc type.
@@ -4745,13 +4748,15 @@ ViewerMethods::PointQuery(const std::string &queryName, const double pt[3],
     state->GetViewerRPC()->SetBoolFlag(time);
     state->GetViewerRPC()->SetIntArg1(arg1);
     state->GetViewerRPC()->SetIntArg2(arg2);
-    state->GetViewerRPC()->SetIntArg3((int)globalFlag);
+    state->GetViewerRPC()->SetIntArg3(arg3);
+    state->GetViewerRPC()->SetIntArg4((int)globalFlag);
 
     //
     // Issue the RPC.
     //
     state->GetViewerRPC()->Notify();
 }
+
 
 // ****************************************************************************
 // Method: ViewerMethods::LineQuery

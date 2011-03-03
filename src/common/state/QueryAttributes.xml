@@ -21,6 +21,10 @@
       ActualData
       OriginalData
     </Enum>
+    <Enum name="TimeCurveType">
+      Single_Y_Axis
+      Multiple_Y_Axes
+    </Enum>
     <Field name="name" label="name" type="string">
     </Field>
     <Field name="variables" label="variables" type="stringVector">
@@ -76,6 +80,9 @@
     </Field>
     <Field name="dumpSteps" label="dumpSteps" type="bool">
       false
+    </Field>
+    <Field name="timeCurvePlotType" label="timeCurvePlotType" type="enum" subtype="TimeCurveType">
+      Single_Y_Axis
     </Field>
     <Function name="Reset" user="true" member="true">
     </Function>

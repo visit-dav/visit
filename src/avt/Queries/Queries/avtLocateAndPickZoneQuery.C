@@ -264,3 +264,23 @@ avtLocateAndPickZoneQuery::SetPickAttsForTimeQuery(
     pickAtts.SetTimePreserveCoord(pa->GetTimePreserveCoord());
     pickAtts.SetPlotBounds(pa->GetPlotBounds());
 }
+
+// ****************************************************************************
+//  Method: avtLocateAndPickZoneQuery::SetNumVars
+//
+//  Purpose:
+//    Override default nResultsToStore in TimeCurveSpecs.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 1, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLocateAndPickZoneQuery::SetNumVars(int nv)
+{
+    timeCurveSpecs["nResultsToStore"] = nv;
+}
+

@@ -241,6 +241,10 @@ avtMultiCurveFilter::PostExecute(void)
 //    input a collection of poly data data sets representing the individual
 //    curves to display.
 //
+//    Kathleen Bonnell, Thu Feb 17 10:11:15 PST 2011
+//    Allow setting y-axis labels from input DataAtts labels if present, but
+//    only if the number of labels matches the number of y-axes beig creaed.
+//
 // ****************************************************************************
 
 void
@@ -410,6 +414,8 @@ avtMultiCurveFilter::Execute(void)
     }
     setYAxisTickSpacing = true;
 
+    stringVector inLabels;
+    GetInput()->GetInfo().GetAttributes().GetLabels(inLabels);
     for (int i = 0; i < ny; i++)
     {
         //
@@ -513,9 +519,15 @@ avtMultiCurveFilter::Execute(void)
         //
         // Create the label.
         //
-        char label[80];
-        SNPRINTF(label, 80, atts.GetYAxisTitleFormat().c_str(), ypts[i]);
-        labels.push_back(label);
+        if(inLabels.size() != ny)
+        {
+            char label[80];
+        
+            SNPRINTF(label, 80, atts.GetYAxisTitleFormat().c_str(), ypts[i]);
+            labels.push_back(label);
+        }
+        else
+            labels.push_back(inLabels[i]);
     }
 
     //

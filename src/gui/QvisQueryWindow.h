@@ -124,6 +124,9 @@ class QvisPythonFilterEditor;
 //   Eric Brugger, Fri Jul  2 15:52:13 PDT 2010
 //   Increased the number of text fields to support the x ray image query.
 //
+//   Kathleen Bonnell, Tue Mar  1 11:06:35 PST 2011
+//   Add widget for plotOpts, which controls the type of plot for Time Picks.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -205,6 +208,7 @@ private:
     QTextEdit           *resultText;
 
     QButtonGroup        *dataOpts;
+    QButtonGroup        *plotOpts;
 
     int                 saveCount;
     int                 queryVarTypes;

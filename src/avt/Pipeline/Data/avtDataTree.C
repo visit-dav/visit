@@ -1540,3 +1540,30 @@ avtDataTree::DebugDump(avtWebpage *webpage, const char *prefix,
 }
 
 
+// ****************************************************************************
+//  Method: avtDataTree::PruneTree
+//
+//  Purpose:
+//    Prunes tree based on single label.
+//
+//  Returns:
+//    The pruned tree.
+//      
+//  Arguments:
+//    label       The label that we want to include in the pruned tree.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 16, 2011 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtDataTree::PruneTree(const string &label)
+{
+    vector<string> sv;
+    sv.push_back(label);
+    return PruneTree(sv);
+}
+

@@ -297,6 +297,9 @@ avtCurvePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    If we have no designator, set the label from the varname.  This makes
 //    labeling of curves loaded from files work.
 //
+//    Kathleen Bonnell, Thu Feb 17 10:06:20 PST 2011
+//    Use multiple labels if present in the atts.
+//
 // ****************************************************************************
 
 void
@@ -306,9 +309,15 @@ avtCurvePlot::CustomizeBehavior(void)
     behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_CURVE);
     behavior->SetRenderOrder(MUST_GO_LAST);
 
+    stringVector labels;
+    behavior->GetInfo().GetAttributes().GetLabels(labels);
     if (atts.GetDesignator() != "")
     {
         decoMapper->SetLabel(atts.GetDesignator());
+    }
+    else if (labels.size() > 0)
+    {
+        decoMapper->SetLabels(labels);
     }
     else if (varname != NULL)
     {

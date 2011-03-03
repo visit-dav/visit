@@ -407,6 +407,9 @@ avtQueryOverTimeFilter::FilterSupportsTimeParallelization(void)
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Kathleen Bonnell, Thu Mar  3 12:40:41 PST 2011
+//    Set output Atts labels to be the variable names used for the query.
+//
 // ****************************************************************************
 
 void
@@ -457,7 +460,7 @@ avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
             outAtts.SetXUnits(atts.GetQueryAtts().GetXUnits());
             outAtts.SetYUnits(atts.GetQueryAtts().GetYUnits());
         }
-
+        outAtts.SetLabels(atts.GetQueryAtts().GetVariables());
         double bounds[6];
         avtDataset_p ds = GetTypedOutput();
         avtDatasetExaminer::GetSpatialExtents(ds, bounds);
@@ -507,6 +510,10 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 //
 //    Hank Childs, Fri Dec 24 21:01:29 PST 2010
 //    Add support for parallelization over time.
+//
+//    Kathleen Bonnell, Thu Mar  3 12:42:35 PST 2011
+//    In support of multiple-variable time picks, create an output Tree instead
+//    of a single grid.
 //
 // ****************************************************************************
 
@@ -575,7 +582,7 @@ avtQueryOverTimeFilter::CreateFinalOutput()
         SetOutputDataTree(dummy);
         return;
     }
-    if (useTimeForXAxis && qRes.size() != times.size())
+    if (useTimeForXAxis && qRes.size()/nResultsToStore != times.size())
     {
         debug4 << "QueryOverTime ERROR, number of results (" 
                << qRes.size() << ") does not equal number "
@@ -610,23 +617,25 @@ avtQueryOverTimeFilter::CreateFinalOutput()
         avtCallback::IssueWarning(osm.str());
     }
 
-    vtkRectilinearGrid *outgrid = CreateRGrid(times, qRes);
-    avtDataTree_p tree = new avtDataTree(outgrid, 0);
-    outgrid->Delete();
+    stringVector vars = atts.GetQueryAtts().GetVariables();
+    bool multiCurve = atts.GetQueryAtts().GetTimeCurvePlotType() == QueryAttributes::Multiple_Y_Axes;
+    avtDataTree_p tree = CreateTree(times, qRes, vars, multiCurve);
     SetOutputDataTree(tree);
     finalOutputCreated = true;
 }
 
 
 // ****************************************************************************
-//  Method: CreateRGrid
+//  Method: CreateTree
 //
 //  Purpose:
-//    Creates a 1D Rectilinear dataset with point data scalars.
+//    Creates a 1D Rectilinear datasets with point data scalars.
 //
 //  Arguments:
-//    x           The values to use for x-coordinates. 
-//    y           The values to use for point data scalars.
+//    times       The values to use for x-coordinates. 
+//    res         The values to use for point data scalars.
+//    vars        The variables associated with each output.
+//    doMultiCurvePlot   The type of plot to create. 
 //
 //  Programmer:   Kathleen Bonnell
 //  Creation:     March 15, 2004 
@@ -638,13 +647,20 @@ avtQueryOverTimeFilter::CreateFinalOutput()
 //    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
 //    Renamed from CreatePolys to CreateRGrid. 
 //
+//    Kathleen Bonnell, Thu Feb 17 09:43:16 PST 2011
+//    Renamed from CreateRGrid to CreateTree, to reflect the possibility
+//    of creating multiple outputs.  Added vars and doMultiCurvePlot args.
+//
 // ****************************************************************************
 
-vtkRectilinearGrid *
-avtQueryOverTimeFilter::CreateRGrid(const doubleVector &times, 
-                                    const doubleVector &res)
+avtDataTree_p 
+avtQueryOverTimeFilter::CreateTree(const doubleVector &times, 
+                                   const doubleVector &res,
+                                   stringVector &vars,
+                                   const bool doMultiCurvePlot)
 {
     int nPts = 0;
+    bool singleCurve = true;
     if (useTimeForXAxis && nResultsToStore == 1)
     {
        // Single curve with time for x axis.  NORMAL case.
@@ -658,44 +674,162 @@ avtQueryOverTimeFilter::CreateRGrid(const doubleVector &times,
     }
     else if (useTimeForXAxis && nResultsToStore > 1)
     {
-       // Create multiple curves with time as x-axis
-       // NOT IMPLEMENTED YET, need to create multiple
-       // vtkPolyData objects, but pipeline for the Curve
-       // plot not yet set up correctly.
+       singleCurve = false;
     }
     else if (!useTimeForXAxis && nResultsToStore > 2)
     {
        // multiple curves, res[odd] = x, res[even] = y.
     }
 
-    vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(nPts);
-
-    if (nPts == 0)
-        return rgrid;
-
-    vtkDataArray *xc = rgrid->GetXCoordinates();
-    vtkFloatArray *sc = vtkFloatArray::New();
-
-    sc->SetNumberOfComponents(1);
-    sc->SetNumberOfTuples(nPts);
-
-    rgrid->GetPointData()->SetScalars(sc);
-    rgrid->SetDimensions(nPts, 1 , 1);
-
-    sc->Delete();
-
-    for (int i = 0; i < nPts; i++)
+    if (singleCurve)
     {
-        if (useTimeForXAxis)
+  
+        vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(nPts);
+
+        if (nPts == 0)
+        {
+            avtDataTree_p tree = new avtDataTree(rgrid, 0);
+            rgrid->Delete();
+            return tree;
+        }
+
+        vtkDataArray *xc = rgrid->GetXCoordinates();
+        vtkFloatArray *sc = vtkFloatArray::New();
+
+        sc->SetNumberOfComponents(1);
+        sc->SetNumberOfTuples(nPts);
+
+        rgrid->GetPointData()->SetScalars(sc);
+        rgrid->SetDimensions(nPts, 1 , 1);
+
+        sc->Delete();
+
+        for (int i = 0; i < nPts; i++)
+        {
+            if (useTimeForXAxis)
+            {
+                xc->SetTuple1(i, times[i]);
+                sc->SetTuple1(i, res[i]);
+            }
+            else 
+            {
+                xc->SetTuple1(i, res[i*2]);
+                sc->SetTuple1(i, res[i*2+1]);
+            }
+        }
+        avtDataTree_p tree = new avtDataTree(rgrid, 0);
+        rgrid->Delete();
+        return tree;
+    }
+    else  if(doMultiCurvePlot)
+    {
+        // Setup for a MultiCurve plot
+        nPts = times.size();
+  
+        vtkRectilinearGrid *rgrid = 
+            vtkVisItUtility::CreateEmptyRGrid(nPts, nResultsToStore, 1, VTK_FLOAT);
+
+        if (nPts == 0)
+        {
+            avtDataTree_p tree = new avtDataTree(rgrid, 0);
+            rgrid->Delete();
+            return tree;
+        }
+
+        if (res.size() != nPts*nResultsToStore)
+        {
+            debug1 << "Mismatch in QOT times/results sizes: " << endl;
+            debug1 << "    times size:      " << times.size() << endl;
+            debug1 << "    nResultsToStore: " << nResultsToStore << endl;
+            debug1 << "    results size:    " << res.size() << endl;
+            avtDataTree_p tree = new avtDataTree(rgrid, 0);
+            rgrid->Delete();
+            return tree;
+        }
+
+        vtkDataArray *xc = rgrid->GetXCoordinates();
+        vtkDataArray *yc = rgrid->GetYCoordinates();
+        vtkFloatArray *sc = vtkFloatArray::New();
+
+        sc->SetNumberOfComponents(1);
+        sc->SetNumberOfTuples(nPts*nResultsToStore);
+
+        rgrid->GetPointData()->SetScalars(sc);
+
+        sc->Delete();
+
+        for (int i = 0; i < nPts; i++)
         {
             xc->SetTuple1(i, times[i]);
-            sc->SetTuple1(i, res[i]);
         }
-        else 
+        for (int i = 0; i < nResultsToStore; i++)
         {
-            xc->SetTuple1(i, res[i*2]);
-            sc->SetTuple1(i, res[i*2+1]);
+            yc->SetTuple1(i, i);
+            for (int j = 0; j < nPts; j++)
+                sc->SetTuple1(i*nPts+j, res[i + nResultsToStore*j]);
         }
+        avtDataTree_p tree = new avtDataTree(rgrid, 0);
+        rgrid->Delete();
+        return tree;
     }
-    return rgrid;
+    else  
+    {
+        // Setup for a Curve plot with multiple curves.
+        nPts = times.size();
+        if (nPts == 0)
+        {
+            vtkRectilinearGrid *rgrid = 
+                vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
+            avtDataTree_p tree = new avtDataTree(rgrid, 0);
+            rgrid->Delete();
+            return tree;
+        }
+        if (res.size() != nPts*nResultsToStore)
+        {
+            vtkRectilinearGrid *rgrid = 
+                vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
+            debug1 << "Mismatch in QOT times/results sizes: " << endl;
+            debug1 << "    times size:      " << times.size() << endl;
+            debug1 << "    nResultsToStore: " << nResultsToStore << endl;
+            debug1 << "    results size:    " << res.size() << endl;
+            avtDataTree_p tree = new avtDataTree(rgrid, 0);
+            rgrid->Delete();
+            return tree;
+        }
+        if (vars.size() != nResultsToStore)
+        {
+            vtkRectilinearGrid *rgrid = 
+                vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
+            debug1 << "Mismatch in QOT vars/nresults sizes: " << endl;
+            debug1 << "    vars size:       " << times.size() << endl;
+            debug1 << "    nResultsToStore: " << nResultsToStore << endl;
+            avtDataTree_p tree = new avtDataTree(rgrid, 0);
+            rgrid->Delete();
+            return tree;
+        }
+        int nVars = vars.size();
+        vtkDataSet **grids = new vtkDataSet *[nVars];
+        for (int i = 0; i< nVars; ++i)
+        {
+            grids[i] = vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
+            vtkDataArray *xc = ((vtkRectilinearGrid*)grids[i])->GetXCoordinates();
+            vtkFloatArray *sc = vtkFloatArray::New();
+            sc->SetNumberOfComponents(1);
+            sc->SetNumberOfTuples(nPts);
+            sc->SetName(vars[i].c_str());
+            grids[i]->GetPointData()->SetScalars(sc);
+            sc->Delete();
+            for (int j = 0; j < nPts; ++j)
+            {
+                xc->SetTuple1(j, times[j]);
+                sc->SetTuple1(j, res[i + nResultsToStore*j]);
+            }
+        }
+        avtDataTree_p tree = new avtDataTree(nVars, grids, -1, vars);
+        for (int i = 0; i< nVars; ++i)
+            grids[i]->Delete();
+        delete [] grids;
+        return tree;
+    }
 }
+

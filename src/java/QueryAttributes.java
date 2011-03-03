@@ -59,7 +59,7 @@ import java.lang.Integer;
 
 public class QueryAttributes extends AttributeSubject
 {
-    private static int QueryAttributes_numAdditionalAtts = 20;
+    private static int QueryAttributes_numAdditionalAtts = 21;
 
     // Enum values
     public final static int ELEMENTTYPE_ZONE = 0;
@@ -79,6 +79,9 @@ public class QueryAttributes extends AttributeSubject
 
     public final static int DATATYPE_ACTUALDATA = 0;
     public final static int DATATYPE_ORIGINALDATA = 1;
+
+    public final static int TIMECURVETYPE_SINGLE_Y_AXIS = 0;
+    public final static int TIMECURVETYPE_MULTIPLE_Y_AXES = 1;
 
 
     public QueryAttributes()
@@ -112,6 +115,7 @@ public class QueryAttributes extends AttributeSubject
         floatFormat = new String("%g");
         xmlResult = new String("");
         dumpSteps = false;
+        timeCurvePlotType = TIMECURVETYPE_SINGLE_Y_AXIS;
     }
 
     public QueryAttributes(int nMoreFields)
@@ -145,6 +149,7 @@ public class QueryAttributes extends AttributeSubject
         floatFormat = new String("%g");
         xmlResult = new String("");
         dumpSteps = false;
+        timeCurvePlotType = TIMECURVETYPE_SINGLE_Y_AXIS;
     }
 
     public QueryAttributes(QueryAttributes obj)
@@ -203,6 +208,7 @@ public class QueryAttributes extends AttributeSubject
         floatFormat = new String(obj.floatFormat);
         xmlResult = new String(obj.xmlResult);
         dumpSteps = obj.dumpSteps;
+        timeCurvePlotType = obj.timeCurvePlotType;
 
         SelectAll();
     }
@@ -291,7 +297,8 @@ public class QueryAttributes extends AttributeSubject
                 darg2_equal &&
                 (floatFormat.equals(obj.floatFormat)) &&
                 (xmlResult.equals(obj.xmlResult)) &&
-                (dumpSteps == obj.dumpSteps));
+                (dumpSteps == obj.dumpSteps) &&
+                (timeCurvePlotType == obj.timeCurvePlotType));
     }
 
     // Property setting methods
@@ -425,6 +432,12 @@ public class QueryAttributes extends AttributeSubject
         Select(19);
     }
 
+    public void SetTimeCurvePlotType(int timeCurvePlotType_)
+    {
+        timeCurvePlotType = timeCurvePlotType_;
+        Select(20);
+    }
+
     // Property getting methods
     public String   GetName() { return name; }
     public Vector   GetVariables() { return variables; }
@@ -446,6 +459,7 @@ public class QueryAttributes extends AttributeSubject
     public String   GetFloatFormat() { return floatFormat; }
     public String   GetXmlResult() { return xmlResult; }
     public boolean  GetDumpSteps() { return dumpSteps; }
+    public int      GetTimeCurvePlotType() { return timeCurvePlotType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -490,6 +504,8 @@ public class QueryAttributes extends AttributeSubject
             buf.WriteString(xmlResult);
         if(WriteSelect(19, buf))
             buf.WriteBool(dumpSteps);
+        if(WriteSelect(20, buf))
+            buf.WriteInt(timeCurvePlotType);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -556,6 +572,9 @@ public class QueryAttributes extends AttributeSubject
         case 19:
             SetDumpSteps(buf.ReadBool());
             break;
+        case 20:
+            SetTimeCurvePlotType(buf.ReadInt());
+            break;
         }
     }
 
@@ -592,6 +611,12 @@ public class QueryAttributes extends AttributeSubject
         str = str + stringToString("floatFormat", floatFormat, indent) + "\n";
         str = str + stringToString("xmlResult", xmlResult, indent) + "\n";
         str = str + boolToString("dumpSteps", dumpSteps, indent) + "\n";
+        str = str + indent + "timeCurvePlotType = ";
+        if(timeCurvePlotType == TIMECURVETYPE_SINGLE_Y_AXIS)
+            str = str + "TIMECURVETYPE_SINGLE_Y_AXIS";
+        if(timeCurvePlotType == TIMECURVETYPE_MULTIPLE_Y_AXES)
+            str = str + "TIMECURVETYPE_MULTIPLE_Y_AXES";
+        str = str + "\n";
         return str;
     }
 
@@ -617,5 +642,6 @@ public class QueryAttributes extends AttributeSubject
     private String   floatFormat;
     private String   xmlResult;
     private boolean  dumpSteps;
+    private int      timeCurvePlotType;
 }
 

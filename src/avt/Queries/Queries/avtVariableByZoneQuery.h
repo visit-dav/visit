@@ -69,6 +69,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Jul  8 15:40:45 PDT 2008
 //    Added GetTimeCurveSpecs method.
 //
+//    Kathleen Bonnell, Tue Mar  1 16:07:47 PST 2011
+//    Added SetNumVars method.
+//
 // ****************************************************************************
 
 class QUERY_API avtVariableByZoneQuery : public avtPickByZoneQuery
@@ -83,7 +86,8 @@ class QUERY_API avtVariableByZoneQuery : public avtPickByZoneQuery
     virtual const char       *GetDescription(void)
                               { return "Retrieving var information on mesh."; }
 
-    virtual const MapNode  &GetTimeCurveSpecs(); 
+    virtual const MapNode    &GetTimeCurveSpecs(); 
+    virtual void              SetNumVars(int v);
 
   protected:
     virtual void                    Preparation(const avtDataAttributes &);

@@ -86,6 +86,11 @@ public:
         ActualData,
         OriginalData
     };
+    enum TimeCurveType
+    {
+        Single_Y_Axis,
+        Multiple_Y_Axes
+    };
 
     // These constructors are for objects of this class
     QueryAttributes();
@@ -146,6 +151,7 @@ public:
     void SetFloatFormat(const std::string &floatFormat_);
     void SetXmlResult(const std::string &xmlResult_);
     void SetDumpSteps(bool dumpSteps_);
+    void SetTimeCurvePlotType(TimeCurveType timeCurvePlotType_);
 
     // Property getting methods
     const std::string  &GetName() const;
@@ -180,6 +186,7 @@ public:
     const std::string  &GetXmlResult() const;
           std::string  &GetXmlResult();
     bool               GetDumpSteps() const;
+    TimeCurveType      GetTimeCurvePlotType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -200,6 +207,11 @@ public:
     static bool DataType_FromString(const std::string &, DataType &);
 protected:
     static std::string DataType_ToString(int);
+public:
+    static std::string TimeCurveType_ToString(TimeCurveType);
+    static bool TimeCurveType_FromString(const std::string &, TimeCurveType &);
+protected:
+    static std::string TimeCurveType_ToString(int);
 public:
 
     // Keyframing methods
@@ -236,6 +248,7 @@ public:
         ID_floatFormat,
         ID_xmlResult,
         ID_dumpSteps,
+        ID_timeCurvePlotType,
         ID__LAST
     };
 
@@ -260,11 +273,12 @@ private:
     std::string  floatFormat;
     std::string  xmlResult;
     bool         dumpSteps;
+    int          timeCurvePlotType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define QUERYATTRIBUTES_TMFS "ss*sDiid*iii*iibssd*d*ssb"
+#define QUERYATTRIBUTES_TMFS "ss*sDiid*iii*iibssd*d*ssbi"
 
 #endif

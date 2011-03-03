@@ -2645,7 +2645,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
  
     if (pickAtts->GetDoTimeCurve())
     {
-        PickThroughTime(ppi, dom, el);
+        PickThroughTime(ppi, pickAtts->GetTimeCurveType(), dom, el);
         return;
     }
     PickAttributes::PickType oldPickType = pickAtts->GetPickType();
@@ -3238,12 +3238,16 @@ ViewerQueryManager::HandlePickCache()
 //    Reset the vars in pickAtts at the end of this method, to prevent
 //    query-set-vars to be applied to picks.
 //
+//    Kathleen Bonnell, Tue Mar  1 10:25:05 PST 2011
+//    Added arg curvePlotType.
+//
 // ****************************************************************************
 
 void         
 ViewerQueryManager::PointQuery(const string &qName, const double *pt, 
                     const stringVector &vars, const int arg1, const int arg2,
-                    const bool doTime, const bool elementIsGlobal)
+                    const bool doTime, const int curvePlotType,
+                    const bool elementIsGlobal)
 {
     // test for non-hidden active plot and running engine
     ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
@@ -3309,7 +3313,7 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
             bool tc = pickAtts->GetDoTimeCurve();
             pickAtts->SetTimePreserveCoord(true);
             pickAtts->SetDoTimeCurve(true);
-            PickThroughTime(&ppi);
+            PickThroughTime(&ppi, curvePlotType);
             pickAtts->SetDoTimeCurve(tc);
             pickAtts->SetTimePreserveCoord(tpc);
         }
@@ -3349,7 +3353,7 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
             bool tc = pickAtts->GetDoTimeCurve();
             pickAtts->SetTimePreserveCoord(false);
             pickAtts->SetDoTimeCurve(true);
-            PickThroughTime(&ppi, arg2, arg1);
+            PickThroughTime(&ppi, curvePlotType, arg2, arg1);
             pickAtts->SetTimePreserveCoord(tpc);
             pickAtts->SetDoTimeCurve(tc);
         }
@@ -4288,6 +4292,10 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Kathleen Bonnell, Tue Feb  8 12:25:14 PST 2011
 //    Reorder start/endTime tests to catch more errors.
 //
+//    Kathleen Bonnell, Thu Feb 17 10:03:27 PST 2011
+//    Add ability for TimeCurve to create MultiCurve plot if querying
+//    multiple variables.
+//
 // ***********************************************************************
 
 void
@@ -4439,7 +4447,12 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
         return;
     }
 
-    int plotType = GetPlotPluginManager()->GetEnabledIndex("Curve_1.0");
+    int plotType;
+    if (qA->GetTimeCurvePlotType() == QueryAttributes::Single_Y_Axis)
+      plotType = GetPlotPluginManager()->GetEnabledIndex("Curve_1.0");
+    else 
+      plotType = GetPlotPluginManager()->GetEnabledIndex("MultiCurve_1.0");
+
     ViewerPlotList *plotList =  resWin->GetPlotList();
 
     plotList->SetHostDatabaseName(hdbName);
@@ -4591,11 +4604,15 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 //    Kathleen Bonnell, Wed Feb 23 10:52:02 PST 2011
 //    Save the current vars from PickAtts to use for resetting at completion.
 //
+//    Kathleen Bonnell, Tue Mar  1 16:09:50 PST 2011
+//    Add curvePlotType argument.
+//
 // ****************************************************************************
 
 void
-ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom, 
-                                    const int el)
+ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, 
+                                    const int curvePlotType, 
+                                    const int dom, const int el)
 {
     ViewerWindow *origWin = (ViewerWindow *)ppi->callbackData;
 
@@ -4701,10 +4718,17 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
                             pickAtts->GetDomain() : 0);
             qatts.SetElement(pickAtts->GetElementNumber());
         }
+        if (curvePlotType != -1)
+            qatts.SetTimeCurvePlotType((QueryAttributes::TimeCurveType)curvePlotType);
+        else
+            qatts.SetTimeCurvePlotType((QueryAttributes::TimeCurveType)pickAtts->GetTimeCurveType());
+
         qatts.SetDataType(QueryAttributes::OriginalData);
-        stringVector vars;
-        vars.push_back(pvarName);
-        qatts.SetVariables(vars);
+        stringVector pvars = pickAtts->GetVariables();
+        for (size_t i = 0; i < pvars.size(); ++i)
+            if (pvars[i] == "default")
+                pvars[i] = pvarName;
+        qatts.SetVariables(pvars);
         if (type == PickAttributes::Zone || type == PickAttributes::DomainZone) 
         {
             if (pickAtts->GetTimePreserveCoord())

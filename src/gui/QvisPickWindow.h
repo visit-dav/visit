@@ -139,6 +139,9 @@ class PickAttributes;
 //   Added buttons, methods and variables for repick with and without
 //   bringing up a Spreadsheet plot.
 //
+//   Kathleen Bonnell, Thu Mar  3 08:09:10 PST 2011
+//   Added timeCurveType combo box.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -191,6 +194,7 @@ private slots:
     void addPickVariable(const QString &);
     void savePickText();
     void preserveCoordActivated(int);
+    void timeCurveTypeActivated(int);
     void clearPicks();
     void redoPickClicked();
     void redoPickWithSpreadsheetClicked();
@@ -227,6 +231,7 @@ private:
     QCheckBox          *showMeshNameCheckBox;
     QCheckBox          *showTimestepCheckBox;
     QComboBox          *preserveCoord;
+    QComboBox          *timeCurveType;
 
     QvisVariableButton *varsButton;
     QLineEdit          *varsLineEdit;

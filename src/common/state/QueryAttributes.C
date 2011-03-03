@@ -154,6 +154,43 @@ QueryAttributes::DataType_FromString(const std::string &s, QueryAttributes::Data
     return false;
 }
 
+//
+// Enum conversion methods for QueryAttributes::TimeCurveType
+//
+
+static const char *TimeCurveType_strings[] = {
+"Single_Y_Axis", "Multiple_Y_Axes"};
+
+std::string
+QueryAttributes::TimeCurveType_ToString(QueryAttributes::TimeCurveType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return TimeCurveType_strings[index];
+}
+
+std::string
+QueryAttributes::TimeCurveType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return TimeCurveType_strings[index];
+}
+
+bool
+QueryAttributes::TimeCurveType_FromString(const std::string &s, QueryAttributes::TimeCurveType &val)
+{
+    val = QueryAttributes::Single_Y_Axis;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == TimeCurveType_strings[i])
+        {
+            val = (TimeCurveType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: QueryAttributes::QueryAttributes
 //
@@ -187,6 +224,7 @@ void QueryAttributes::Init()
     darg2.push_back(0);
     floatFormat = "%g";
     dumpSteps = false;
+    timeCurvePlotType = Single_Y_Axis;
 
     QueryAttributes::SelectAll();
 }
@@ -231,6 +269,7 @@ void QueryAttributes::Copy(const QueryAttributes &obj)
     floatFormat = obj.floatFormat;
     xmlResult = obj.xmlResult;
     dumpSteps = obj.dumpSteps;
+    timeCurvePlotType = obj.timeCurvePlotType;
 
     QueryAttributes::SelectAll();
 }
@@ -412,7 +451,8 @@ QueryAttributes::operator == (const QueryAttributes &obj) const
             (darg2 == obj.darg2) &&
             (floatFormat == obj.floatFormat) &&
             (xmlResult == obj.xmlResult) &&
-            (dumpSteps == obj.dumpSteps));
+            (dumpSteps == obj.dumpSteps) &&
+            (timeCurvePlotType == obj.timeCurvePlotType));
 }
 
 // ****************************************************************************
@@ -556,26 +596,27 @@ QueryAttributes::NewInstance(bool copy) const
 void
 QueryAttributes::SelectAll()
 {
-    Select(ID_name,           (void *)&name);
-    Select(ID_variables,      (void *)&variables);
-    Select(ID_resultsMessage, (void *)&resultsMessage);
-    Select(ID_worldPoint,     (void *)worldPoint, 3);
-    Select(ID_domain,         (void *)&domain);
-    Select(ID_element,        (void *)&element);
-    Select(ID_resultsValue,   (void *)&resultsValue);
-    Select(ID_elementType,    (void *)&elementType);
-    Select(ID_timeStep,       (void *)&timeStep);
-    Select(ID_varTypes,       (void *)&varTypes);
-    Select(ID_dataType,       (void *)&dataType);
-    Select(ID_pipeIndex,      (void *)&pipeIndex);
-    Select(ID_useGlobalId,    (void *)&useGlobalId);
-    Select(ID_xUnits,         (void *)&xUnits);
-    Select(ID_yUnits,         (void *)&yUnits);
-    Select(ID_darg1,          (void *)&darg1);
-    Select(ID_darg2,          (void *)&darg2);
-    Select(ID_floatFormat,    (void *)&floatFormat);
-    Select(ID_xmlResult,      (void *)&xmlResult);
-    Select(ID_dumpSteps,      (void *)&dumpSteps);
+    Select(ID_name,              (void *)&name);
+    Select(ID_variables,         (void *)&variables);
+    Select(ID_resultsMessage,    (void *)&resultsMessage);
+    Select(ID_worldPoint,        (void *)worldPoint, 3);
+    Select(ID_domain,            (void *)&domain);
+    Select(ID_element,           (void *)&element);
+    Select(ID_resultsValue,      (void *)&resultsValue);
+    Select(ID_elementType,       (void *)&elementType);
+    Select(ID_timeStep,          (void *)&timeStep);
+    Select(ID_varTypes,          (void *)&varTypes);
+    Select(ID_dataType,          (void *)&dataType);
+    Select(ID_pipeIndex,         (void *)&pipeIndex);
+    Select(ID_useGlobalId,       (void *)&useGlobalId);
+    Select(ID_xUnits,            (void *)&xUnits);
+    Select(ID_yUnits,            (void *)&yUnits);
+    Select(ID_darg1,             (void *)&darg1);
+    Select(ID_darg2,             (void *)&darg2);
+    Select(ID_floatFormat,       (void *)&floatFormat);
+    Select(ID_xmlResult,         (void *)&xmlResult);
+    Select(ID_dumpSteps,         (void *)&dumpSteps);
+    Select(ID_timeCurvePlotType, (void *)&timeCurvePlotType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -728,6 +769,12 @@ QueryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("dumpSteps", dumpSteps));
     }
 
+    if(completeSave || !FieldsEqual(ID_timeCurvePlotType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timeCurvePlotType", TimeCurveType_ToString(timeCurvePlotType)));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -832,6 +879,22 @@ QueryAttributes::SetFromNode(DataNode *parentNode)
         SetXmlResult(node->AsString());
     if((node = searchNode->GetNode("dumpSteps")) != 0)
         SetDumpSteps(node->AsBool());
+    if((node = searchNode->GetNode("timeCurvePlotType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetTimeCurvePlotType(TimeCurveType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            TimeCurveType value;
+            if(TimeCurveType_FromString(node->AsString(), value))
+                SetTimeCurvePlotType(value);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -978,6 +1041,13 @@ QueryAttributes::SetDumpSteps(bool dumpSteps_)
 {
     dumpSteps = dumpSteps_;
     Select(ID_dumpSteps, (void *)&dumpSteps);
+}
+
+void
+QueryAttributes::SetTimeCurvePlotType(QueryAttributes::TimeCurveType timeCurvePlotType_)
+{
+    timeCurvePlotType = timeCurvePlotType_;
+    Select(ID_timeCurvePlotType, (void *)&timeCurvePlotType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1176,6 +1246,12 @@ QueryAttributes::GetDumpSteps() const
     return dumpSteps;
 }
 
+QueryAttributes::TimeCurveType
+QueryAttributes::GetTimeCurvePlotType() const
+{
+    return TimeCurveType(timeCurvePlotType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1276,26 +1352,27 @@ QueryAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_name:           return "name";
-    case ID_variables:      return "variables";
-    case ID_resultsMessage: return "resultsMessage";
-    case ID_worldPoint:     return "worldPoint";
-    case ID_domain:         return "domain";
-    case ID_element:        return "element";
-    case ID_resultsValue:   return "resultsValue";
-    case ID_elementType:    return "elementType";
-    case ID_timeStep:       return "timeStep";
-    case ID_varTypes:       return "varTypes";
-    case ID_dataType:       return "dataType";
-    case ID_pipeIndex:      return "pipeIndex";
-    case ID_useGlobalId:    return "useGlobalId";
-    case ID_xUnits:         return "xUnits";
-    case ID_yUnits:         return "yUnits";
-    case ID_darg1:          return "darg1";
-    case ID_darg2:          return "darg2";
-    case ID_floatFormat:    return "floatFormat";
-    case ID_xmlResult:      return "xmlResult";
-    case ID_dumpSteps:      return "dumpSteps";
+    case ID_name:              return "name";
+    case ID_variables:         return "variables";
+    case ID_resultsMessage:    return "resultsMessage";
+    case ID_worldPoint:        return "worldPoint";
+    case ID_domain:            return "domain";
+    case ID_element:           return "element";
+    case ID_resultsValue:      return "resultsValue";
+    case ID_elementType:       return "elementType";
+    case ID_timeStep:          return "timeStep";
+    case ID_varTypes:          return "varTypes";
+    case ID_dataType:          return "dataType";
+    case ID_pipeIndex:         return "pipeIndex";
+    case ID_useGlobalId:       return "useGlobalId";
+    case ID_xUnits:            return "xUnits";
+    case ID_yUnits:            return "yUnits";
+    case ID_darg1:             return "darg1";
+    case ID_darg2:             return "darg2";
+    case ID_floatFormat:       return "floatFormat";
+    case ID_xmlResult:         return "xmlResult";
+    case ID_dumpSteps:         return "dumpSteps";
+    case ID_timeCurvePlotType: return "timeCurvePlotType";
     default:  return "invalid index";
     }
 }
@@ -1320,26 +1397,27 @@ QueryAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_name:           return FieldType_string;
-    case ID_variables:      return FieldType_stringVector;
-    case ID_resultsMessage: return FieldType_string;
-    case ID_worldPoint:     return FieldType_doubleArray;
-    case ID_domain:         return FieldType_int;
-    case ID_element:        return FieldType_int;
-    case ID_resultsValue:   return FieldType_doubleVector;
-    case ID_elementType:    return FieldType_enum;
-    case ID_timeStep:       return FieldType_int;
-    case ID_varTypes:       return FieldType_intVector;
-    case ID_dataType:       return FieldType_enum;
-    case ID_pipeIndex:      return FieldType_int;
-    case ID_useGlobalId:    return FieldType_bool;
-    case ID_xUnits:         return FieldType_string;
-    case ID_yUnits:         return FieldType_string;
-    case ID_darg1:          return FieldType_doubleVector;
-    case ID_darg2:          return FieldType_doubleVector;
-    case ID_floatFormat:    return FieldType_string;
-    case ID_xmlResult:      return FieldType_string;
-    case ID_dumpSteps:      return FieldType_bool;
+    case ID_name:              return FieldType_string;
+    case ID_variables:         return FieldType_stringVector;
+    case ID_resultsMessage:    return FieldType_string;
+    case ID_worldPoint:        return FieldType_doubleArray;
+    case ID_domain:            return FieldType_int;
+    case ID_element:           return FieldType_int;
+    case ID_resultsValue:      return FieldType_doubleVector;
+    case ID_elementType:       return FieldType_enum;
+    case ID_timeStep:          return FieldType_int;
+    case ID_varTypes:          return FieldType_intVector;
+    case ID_dataType:          return FieldType_enum;
+    case ID_pipeIndex:         return FieldType_int;
+    case ID_useGlobalId:       return FieldType_bool;
+    case ID_xUnits:            return FieldType_string;
+    case ID_yUnits:            return FieldType_string;
+    case ID_darg1:             return FieldType_doubleVector;
+    case ID_darg2:             return FieldType_doubleVector;
+    case ID_floatFormat:       return FieldType_string;
+    case ID_xmlResult:         return FieldType_string;
+    case ID_dumpSteps:         return FieldType_bool;
+    case ID_timeCurvePlotType: return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -1364,26 +1442,27 @@ QueryAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_name:           return "string";
-    case ID_variables:      return "stringVector";
-    case ID_resultsMessage: return "string";
-    case ID_worldPoint:     return "doubleArray";
-    case ID_domain:         return "int";
-    case ID_element:        return "int";
-    case ID_resultsValue:   return "doubleVector";
-    case ID_elementType:    return "enum";
-    case ID_timeStep:       return "int";
-    case ID_varTypes:       return "intVector";
-    case ID_dataType:       return "enum";
-    case ID_pipeIndex:      return "int";
-    case ID_useGlobalId:    return "bool";
-    case ID_xUnits:         return "string";
-    case ID_yUnits:         return "string";
-    case ID_darg1:          return "doubleVector";
-    case ID_darg2:          return "doubleVector";
-    case ID_floatFormat:    return "string";
-    case ID_xmlResult:      return "string";
-    case ID_dumpSteps:      return "bool";
+    case ID_name:              return "string";
+    case ID_variables:         return "stringVector";
+    case ID_resultsMessage:    return "string";
+    case ID_worldPoint:        return "doubleArray";
+    case ID_domain:            return "int";
+    case ID_element:           return "int";
+    case ID_resultsValue:      return "doubleVector";
+    case ID_elementType:       return "enum";
+    case ID_timeStep:          return "int";
+    case ID_varTypes:          return "intVector";
+    case ID_dataType:          return "enum";
+    case ID_pipeIndex:         return "int";
+    case ID_useGlobalId:       return "bool";
+    case ID_xUnits:            return "string";
+    case ID_yUnits:            return "string";
+    case ID_darg1:             return "doubleVector";
+    case ID_darg2:             return "doubleVector";
+    case ID_floatFormat:       return "string";
+    case ID_xmlResult:         return "string";
+    case ID_dumpSteps:         return "bool";
+    case ID_timeCurvePlotType: return "enum";
     default:  return "invalid index";
     }
 }
@@ -1513,6 +1592,11 @@ QueryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_dumpSteps:
         {  // new scope
         retval = (dumpSteps == obj.dumpSteps);
+        }
+        break;
+    case ID_timeCurvePlotType:
+        {  // new scope
+        retval = (timeCurvePlotType == obj.timeCurvePlotType);
         }
         break;
     default: retval = false;

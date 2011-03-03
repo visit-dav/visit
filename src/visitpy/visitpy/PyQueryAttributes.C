@@ -199,6 +199,21 @@ PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%sdumpSteps = 0\n", prefix);
     str += tmpStr;
+    const char *timeCurvePlotType_names = "Single_Y_Axis, Multiple_Y_Axes";
+    switch (atts->GetTimeCurvePlotType())
+    {
+      case QueryAttributes::Single_Y_Axis:
+          SNPRINTF(tmpStr, 1000, "%stimeCurvePlotType = %sSingle_Y_Axis  # %s\n", prefix, prefix, timeCurvePlotType_names);
+          str += tmpStr;
+          break;
+      case QueryAttributes::Multiple_Y_Axes:
+          SNPRINTF(tmpStr, 1000, "%stimeCurvePlotType = %sMultiple_Y_Axes  # %s\n", prefix, prefix, timeCurvePlotType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -800,6 +815,39 @@ QueryAttributes_GetDumpSteps(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+QueryAttributes_SetTimeCurvePlotType(PyObject *self, PyObject *args)
+{
+    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the timeCurvePlotType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetTimeCurvePlotType(QueryAttributes::TimeCurveType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid timeCurvePlotType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Single_Y_Axis, Multiple_Y_Axes.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+QueryAttributes_GetTimeCurvePlotType(PyObject *self, PyObject *args)
+{
+    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeCurvePlotType()));
+    return retval;
+}
+
 
 
 PyMethodDef PyQueryAttributes_methods[QUERYATTRIBUTES_NMETH] = {
@@ -838,6 +886,8 @@ PyMethodDef PyQueryAttributes_methods[QUERYATTRIBUTES_NMETH] = {
     {"GetXmlResult", QueryAttributes_GetXmlResult, METH_VARARGS},
     {"SetDumpSteps", QueryAttributes_SetDumpSteps, METH_VARARGS},
     {"GetDumpSteps", QueryAttributes_GetDumpSteps, METH_VARARGS},
+    {"SetTimeCurvePlotType", QueryAttributes_SetTimeCurvePlotType, METH_VARARGS},
+    {"GetTimeCurvePlotType", QueryAttributes_GetTimeCurvePlotType, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -905,6 +955,13 @@ PyQueryAttributes_getattr(PyObject *self, char *name)
         return QueryAttributes_GetXmlResult(self, NULL);
     if(strcmp(name, "dumpSteps") == 0)
         return QueryAttributes_GetDumpSteps(self, NULL);
+    if(strcmp(name, "timeCurvePlotType") == 0)
+        return QueryAttributes_GetTimeCurvePlotType(self, NULL);
+    if(strcmp(name, "Single_Y_Axis") == 0)
+        return PyInt_FromLong(long(QueryAttributes::Single_Y_Axis));
+    if(strcmp(name, "Multiple_Y_Axes") == 0)
+        return PyInt_FromLong(long(QueryAttributes::Multiple_Y_Axes));
+
 
     return Py_FindMethod(PyQueryAttributes_methods, self, name);
 }
@@ -953,6 +1010,8 @@ PyQueryAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = QueryAttributes_SetXmlResult(self, tuple);
     else if(strcmp(name, "dumpSteps") == 0)
         obj = QueryAttributes_SetDumpSteps(self, tuple);
+    else if(strcmp(name, "timeCurvePlotType") == 0)
+        obj = QueryAttributes_SetTimeCurvePlotType(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

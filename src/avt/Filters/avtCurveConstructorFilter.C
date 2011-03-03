@@ -174,6 +174,10 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Kathleen Bonnell, Tue Dec 14 12:57:14 PST 2010
 //    Ensure the output variable is named.
 //
+//    Kathleen Bonnell, Thu Feb 17 09:19:06 PST 2011
+//    Moved bulk of dataset construction into CreateSingleOutput method,
+//    which will allow creation of multiple outputs when necessary.
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -265,17 +269,82 @@ void avtCurveConstructorFilter::Execute()
         return; 
     }
 
+    avtDataTree_p outTree;
+    stringVector labels;
+    inTree->GetAllLabels(labels);
+    
+    if (labels.size() == 0)
+    {
+        vtkDataSet *outGrid;
+        outGrid = CreateSingleOutput(inTree);
+        if (outGrid == NULL)
+        {
+            SetOutputDataTree(inTree);
+            return; 
+        }
+        const char *vname = (pipelineVariable != NULL ? pipelineVariable : "");
+        avtDataRepresentation dr(outGrid, -1, vname);
+        outTree = new avtDataTree(dr);
+        outGrid->Delete();
+    }
+    else
+    {
+        vtkDataSet **ds = new vtkDataSet *[labels.size()];
+        for (size_t i = 0; i < labels.size(); ++i)
+        {
+            ds[i] = NULL;
+            avtDataTree_p oneTree = inTree->PruneTree(labels[i]);
+            ds[i] = CreateSingleOutput(oneTree);
+            if (ds[i] == NULL)
+            {
+                for (size_t j = 0; j < i; ++j)
+                {
+                    if (ds[j] != NULL)
+                        ds[j]->Delete(); 
+                }
+                delete [] ds;
+                SetOutputDataTree(inTree);
+                return; 
+            }
+        }
+        outTree = new avtDataTree(labels.size(), ds, -1, labels);
+    }
+
+    SetOutputDataTree(outTree);
+}
+ 
+ 
+// ****************************************************************************
+//  Method: avtCurveConstructorFilter::CreateSingleOutput
+//
+//  Notes:  Moved from Execute mthod.  
+//
+//  Purpose:
+//      Does the actual VTK code to modify the dataset.
+//
+//  Arguments:
+//      inTree    The input data tree.
+//
+//  Returns:      The output dataset.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 17, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
+{
     //
     //  This filter doesn't do much right now.  Basically just a 
     //  "connect-the-dots" between the vertices.  
     //
     int nleaves, j, k;
     double x;
-    avtDataTree_p outTree;
     vtkDataSet **ds;
     ds = inTree->GetAllLeaves(nleaves);
-
-
 
     if (nleaves == 0)
     {
@@ -283,10 +352,8 @@ void avtCurveConstructorFilter::Execute()
         // true.  This situation does occur, and it is a little dangerous to
         // change the behavior of IsEmpty, so just accomodate.
         delete [] ds;
-        SetOutputDataTree(inTree);
-        return;
+        return NULL;
     }
-
     DoubleIntMap minX;
 
     //
@@ -474,16 +541,12 @@ void avtCurveConstructorFilter::Execute()
     // make sure the outputvar is named.
     sortedVal->SetName(varname);
 
-    avtDataRepresentation dr(outGrid, -1, varname);
-    outTree = new avtDataTree(dr);
-    outGrid->Delete();
-
-    SetOutputDataTree(outTree);
 
     //
     //  Clean up.
     // 
     delete [] ds;
+    return outGrid;
 }
 
 // ****************************************************************************

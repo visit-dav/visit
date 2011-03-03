@@ -7172,6 +7172,13 @@ ViewerSubject::DatabaseQuery()
 //   Brad Whitlock, Wed Apr 30 09:27:46 PDT 2008
 //   Support for internationalization.
 //
+//   Kathleen Bonnell, Tue Mar  1 11:15:43 PST 2011
+//   Added another int arg (for time query plot type).
+//   IntArg1 is the curvePlotType.
+//   IntArg2 is the element.
+//   IntArg3 is the domain.
+//   IntArg4 is the globalElement flag.
+//
 // ****************************************************************************
 
 void
@@ -7186,10 +7193,11 @@ ViewerSubject::PointQuery()
     qm->PointQuery(GetViewerState()->GetViewerRPC()->GetQueryName(), 
                    GetViewerState()->GetViewerRPC()->GetQueryPoint1(),
                    GetViewerState()->GetViewerRPC()->GetQueryVariables(),
-                   GetViewerState()->GetViewerRPC()->GetIntArg1(), 
                    GetViewerState()->GetViewerRPC()->GetIntArg2(),
+                   GetViewerState()->GetViewerRPC()->GetIntArg3(),
                    GetViewerState()->GetViewerRPC()->GetBoolFlag(),
-                   (bool)GetViewerState()->GetViewerRPC()->GetIntArg3()); 
+                   GetViewerState()->GetViewerRPC()->GetIntArg1(), 
+                   (bool)GetViewerState()->GetViewerRPC()->GetIntArg4()); 
 
     // Clear the status
     ClearStatus();
