@@ -147,7 +147,7 @@ avtWholeImageCompositerNoZ::InitializeMPIStuff(void)
 {
    MPI_Type_contiguous(3, MPI_UNSIGNED_CHAR, &avtWholeImageCompositerNoZ::mpiTypeZFPixel);
    MPI_Type_commit(&avtWholeImageCompositerNoZ::mpiTypeZFPixel);
-   MPI_Op_create(MergeZFPixelBuffers, 1,
+   MPI_Op_create((MPI_User_function*)MergeZFPixelBuffers, 1,
       &avtWholeImageCompositerNoZ::mpiOpMergeZFPixelBuffers);
 }
 

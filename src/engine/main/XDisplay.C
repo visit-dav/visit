@@ -42,7 +42,9 @@
 #include <string>
 #include <sys/types.h>
 #include <sys/wait.h>
+#if !defined(_WIN32)
 #include <unistd.h>
+#endif
 #include <vector>
 
 #include <XDisplay.h>
