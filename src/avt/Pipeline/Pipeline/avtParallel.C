@@ -363,7 +363,7 @@ UnifyMinMax(double *buff, int size, int altsize)
 
     // if it hasn't been created yet, create the min/max MPI reduction operator
     if (AVT_MPI_MINMAX == MPI_OP_NULL)
-        MPI_Op_create(MinMaxOp, true, &AVT_MPI_MINMAX);
+        MPI_Op_create((MPI_User_function *)MinMaxOp, true, &AVT_MPI_MINMAX);
 
     // we do this 'extra' communication if we can't be sure all processors
     // have an agreed upon size to work with. This will have effect of 

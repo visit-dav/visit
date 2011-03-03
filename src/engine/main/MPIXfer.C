@@ -48,6 +48,10 @@
 #include <visitstream.h>
 #include <visit-config.h>
 
+#if defined(_WIN32)
+#include <windows.h> // needed for Win32 SleepEx()
+#endif
+
 #if defined(HAVE_SELECT) && defined(VISIT_USE_NOSPIN_BCAST)
 int MPIXfer::nanoSecsOfSleeps = 50000000; // 1/20th of a second
 #else
@@ -539,8 +543,12 @@ MPIXfer::VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype, int root,
                     debug5 << "VisIt_MPI_Bcast started using " << nanoSecsOfSleeps / 1.0e9
                            << " seconds of nanosleep" << endl;
                 first = false;
+#if defined(_WIN32)
+                SleepEx((DWORD)(nanoSecsOfSleeps/1e6), false);
+#else
                 struct timespec ts = {0, nanoSecsOfSleeps};
                 nanosleep(&ts, 0);
+#endif
             }
         }
     }

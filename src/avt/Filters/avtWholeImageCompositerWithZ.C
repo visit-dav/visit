@@ -184,7 +184,7 @@ avtWholeImageCompositerWithZ::InitializeMPIStuff(void)
    MPI_Type_struct(n, lengths, displacements, types,
       &avtWholeImageCompositerWithZ::mpiTypeZFPixel);
    MPI_Type_commit(&avtWholeImageCompositerWithZ::mpiTypeZFPixel);
-   MPI_Op_create(MergeZFPixelBuffers, 1,
+   MPI_Op_create((MPI_User_function *)MergeZFPixelBuffers, 1,
       &avtWholeImageCompositerWithZ::mpiOpMergeZFPixelBuffers);
 }
 

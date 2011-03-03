@@ -25,7 +25,12 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <limits.h>
+
+#if defined(_WIN32)
+#include <win32-hostid.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <mpi.h>
 
