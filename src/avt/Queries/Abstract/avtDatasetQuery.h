@@ -102,6 +102,9 @@ class vtkDataSet;
 //    Cyrus Harrison, Tue Dec 18 08:16:10 PST 2007
 //    Added GetXmlResult(), SetXmlResult() and xmlResult.
 //
+//    Kathleen Bonnell, Tue Mar  1 15:59:48 PST 2011
+//    Removed AddResultValue, not used.
+//
 // ****************************************************************************
 
 class QUERY_API avtDatasetQuery : public avtDataObjectQuery, 
@@ -120,8 +123,6 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
     virtual double           GetResultValue(const int i = 0); 
     virtual void             SetResultValue(const double &d, const int i = 0);
 
-    virtual void             AddResultValue(const double &d)
-                                 { resValue.push_back(d); };
     virtual doubleVector     GetResultValues(void) { return resValue; };
     virtual void             SetResultValues(const doubleVector &d)
                                  { resValue = d; };

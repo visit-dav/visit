@@ -203,6 +203,21 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%stimePreserveCoord = 0\n", prefix);
     str += tmpStr;
+    const char *timeCurveType_names = "Single_Y_Axis, Multiple_Y_Axes";
+    switch (atts->GetTimeCurveType())
+    {
+      case PickAttributes::Single_Y_Axis:
+          SNPRINTF(tmpStr, 1000, "%stimeCurveType = %sSingle_Y_Axis  # %s\n", prefix, prefix, timeCurveType_names);
+          str += tmpStr;
+          break;
+      case PickAttributes::Multiple_Y_Axes:
+          SNPRINTF(tmpStr, 1000, "%stimeCurveType = %sMultiple_Y_Axes  # %s\n", prefix, prefix, timeCurveType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -777,6 +792,39 @@ PickAttributes_GetTimePreserveCoord(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+PickAttributes_SetTimeCurveType(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the timeCurveType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetTimeCurveType(PickAttributes::TimeCurveType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid timeCurveType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Single_Y_Axis, Multiple_Y_Axes.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PickAttributes_GetTimeCurveType(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeCurveType()));
+    return retval;
+}
+
 
 
 PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
@@ -825,6 +873,8 @@ PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
     {"GetFloatFormat", PickAttributes_GetFloatFormat, METH_VARARGS},
     {"SetTimePreserveCoord", PickAttributes_SetTimePreserveCoord, METH_VARARGS},
     {"GetTimePreserveCoord", PickAttributes_GetTimePreserveCoord, METH_VARARGS},
+    {"SetTimeCurveType", PickAttributes_SetTimeCurveType, METH_VARARGS},
+    {"GetTimeCurveType", PickAttributes_GetTimeCurveType, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -904,6 +954,13 @@ PyPickAttributes_getattr(PyObject *self, char *name)
         return PickAttributes_GetFloatFormat(self, NULL);
     if(strcmp(name, "timePreserveCoord") == 0)
         return PickAttributes_GetTimePreserveCoord(self, NULL);
+    if(strcmp(name, "timeCurveType") == 0)
+        return PickAttributes_GetTimeCurveType(self, NULL);
+    if(strcmp(name, "Single_Y_Axis") == 0)
+        return PyInt_FromLong(long(PickAttributes::Single_Y_Axis));
+    if(strcmp(name, "Multiple_Y_Axes") == 0)
+        return PyInt_FromLong(long(PickAttributes::Multiple_Y_Axes));
+
 
     return Py_FindMethod(PyPickAttributes_methods, self, name);
 }
@@ -962,6 +1019,8 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PickAttributes_SetFloatFormat(self, tuple);
     else if(strcmp(name, "timePreserveCoord") == 0)
         obj = PickAttributes_SetTimePreserveCoord(self, tuple);
+    else if(strcmp(name, "timeCurveType") == 0)
+        obj = PickAttributes_SetTimeCurveType(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

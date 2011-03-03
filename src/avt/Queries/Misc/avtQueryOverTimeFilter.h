@@ -97,6 +97,9 @@ class vtkRectilinearGrid;
 //    Hank Childs, Fri Dec 24 17:59:02 PST 2010
 //    Add method FilterSupportsTimeParallelization.
 //
+//    Kathleen Bonnell, Thu Feb 17 09:50:28 PST 2011
+//    Replace CreateRGrid with CreateTree, to allow multiple outputs.
+//
 // ****************************************************************************
 
 class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
@@ -136,8 +139,10 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
 
     virtual void          CreateFinalOutput(void);
     virtual bool          ExecutionSuccessful(void) { return success; } ;
-    vtkRectilinearGrid   *CreateRGrid(const doubleVector &, 
-                                      const doubleVector &);
+    avtDataTree_p         CreateTree(const doubleVector &, 
+                                     const doubleVector &,
+                                     stringVector &,
+                                     const bool);
 };
 
 

@@ -120,6 +120,43 @@ PickAttributes::CoordinateType_FromString(const std::string &s, PickAttributes::
     return false;
 }
 
+//
+// Enum conversion methods for PickAttributes::TimeCurveType
+//
+
+static const char *TimeCurveType_strings[] = {
+"Single_Y_Axis", "Multiple_Y_Axes"};
+
+std::string
+PickAttributes::TimeCurveType_ToString(PickAttributes::TimeCurveType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return TimeCurveType_strings[index];
+}
+
+std::string
+PickAttributes::TimeCurveType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return TimeCurveType_strings[index];
+}
+
+bool
+PickAttributes::TimeCurveType_FromString(const std::string &s, PickAttributes::TimeCurveType &val)
+{
+    val = PickAttributes::Single_Y_Axis;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == TimeCurveType_strings[i])
+        {
+            val = (TimeCurveType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: PickAttributes::PickAttributes
 //
@@ -194,6 +231,7 @@ void PickAttributes::Init()
     createSpreadsheet = false;
     floatFormat = "%g";
     timePreserveCoord = true;
+    timeCurveType = Single_Y_Axis;
 
     PickAttributes::SelectAll();
 }
@@ -313,6 +351,7 @@ void PickAttributes::Copy(const PickAttributes &obj)
     subsetName = obj.subsetName;
     floatFormat = obj.floatFormat;
     timePreserveCoord = obj.timePreserveCoord;
+    timeCurveType = obj.timeCurveType;
 
     PickAttributes::SelectAll();
 }
@@ -574,7 +613,8 @@ PickAttributes::operator == (const PickAttributes &obj) const
             (createSpreadsheet == obj.createSpreadsheet) &&
             (subsetName == obj.subsetName) &&
             (floatFormat == obj.floatFormat) &&
-            (timePreserveCoord == obj.timePreserveCoord));
+            (timePreserveCoord == obj.timePreserveCoord) &&
+            (timeCurveType == obj.timeCurveType));
 }
 
 // ****************************************************************************
@@ -785,6 +825,7 @@ PickAttributes::SelectAll()
     Select(ID_subsetName,                  (void *)&subsetName);
     Select(ID_floatFormat,                 (void *)&floatFormat);
     Select(ID_timePreserveCoord,           (void *)&timePreserveCoord);
+    Select(ID_timeCurveType,               (void *)&timeCurveType);
 }
 
 // ****************************************************************************
@@ -1511,6 +1552,13 @@ PickAttributes::SetTimePreserveCoord(bool timePreserveCoord_)
     Select(ID_timePreserveCoord, (void *)&timePreserveCoord);
 }
 
+void
+PickAttributes::SetTimeCurveType(PickAttributes::TimeCurveType timeCurveType_)
+{
+    timeCurveType = timeCurveType_;
+    Select(ID_timeCurveType, (void *)&timeCurveType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2079,6 +2127,12 @@ PickAttributes::GetTimePreserveCoord() const
     return timePreserveCoord;
 }
 
+PickAttributes::TimeCurveType
+PickAttributes::GetTimeCurveType() const
+{
+    return TimeCurveType(timeCurveType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2533,6 +2587,7 @@ PickAttributes::GetFieldName(int index) const
     case ID_subsetName:                  return "subsetName";
     case ID_floatFormat:                 return "floatFormat";
     case ID_timePreserveCoord:           return "timePreserveCoord";
+    case ID_timeCurveType:               return "timeCurveType";
     default:  return "invalid index";
     }
 }
@@ -2624,6 +2679,7 @@ PickAttributes::GetFieldType(int index) const
     case ID_subsetName:                  return FieldType_string;
     case ID_floatFormat:                 return FieldType_string;
     case ID_timePreserveCoord:           return FieldType_bool;
+    case ID_timeCurveType:               return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -2715,6 +2771,7 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_subsetName:                  return "string";
     case ID_floatFormat:                 return "string";
     case ID_timePreserveCoord:           return "bool";
+    case ID_timeCurveType:               return "enum";
     default:  return "invalid index";
     }
 }
@@ -3110,6 +3167,11 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (timePreserveCoord == obj.timePreserveCoord);
         }
         break;
+    case ID_timeCurveType:
+        {  // new scope
+        retval = (timeCurveType == obj.timeCurveType);
+        }
+        break;
     default: retval = false;
     }
 
@@ -3362,6 +3424,11 @@ PickAttributes::PrintSelf(ostream &os)
 
     if (timePreserveCoord)
         os << "Set up for time-curve to preserve picked coord.\n";
+
+    if (timeCurveType == PickAttributes::Single_Y_Axis)
+        os << "Set up for time-curve to create a curve plot with single y axis.\n";
+    else 
+        os << "Set up for time-curve to create a curve plot with multiple y axes.\n";
 
     if (createSpreadsheet)
         os << "Create a spreadsheet with this pick.\n";

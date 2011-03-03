@@ -53,7 +53,6 @@
 //  Method: avtLabeledCurveMapper constructor
 //
 //  Arguments:
-//      l       The label this mapper should use.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   July 12, 2002
@@ -68,7 +67,7 @@
 //
 // ****************************************************************************
 
-avtLabeledCurveMapper::avtLabeledCurveMapper()
+avtLabeledCurveMapper::avtLabeledCurveMapper(): labels(), actorsInputNum()
 {
     label         = "";
     labelVis      = true;
@@ -181,6 +180,10 @@ avtLabeledCurveMapper::SetUpFilters(int nInputs)
 //    Kathleen Bonnell, Mon Sep 15 13:33:52 PDT 2003
 //    Don't assume input contains cells and/or points.
 //
+//    Kathleen Bonnell, Thu Feb 17 09:14:55 PST 2011
+//    Use label associated with input if multiple labels set.
+//    Keep track of input number an actor is associated with.
+//
 // ****************************************************************************
 
 void
@@ -213,10 +216,18 @@ avtLabeledCurveMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
         points->GetPoint(i, pos);
         avtLabelActor_p la = new avtLabelActor;
         la->SetAttachmentPoint(pos);
-        la->SetDesignator(label.c_str());
+        if (labels.size() > 0)
+        {
+            la->SetDesignator(labels[inNum].c_str());
+        }
+        else
+        {
+            la->SetDesignator(label.c_str());
+        }
         la->SetForegroundColor(labelColor);
         la->SetScale(scale);
         actors.push_back(la);
+        actorsInputNum.push_back(inNum);
     }
 }
 
@@ -371,3 +382,28 @@ avtLabeledCurveMapper::SetLabelVisibility(bool labelsOn)
    } 
 }
 
+// ****************************************************************************
+//  Method: avtLabeledCurveMapper::SetLabels
+//
+//  Purpose:
+//      Sets the labels to be used by this mapper. 
+//
+//  Arguments:
+//      l         The new labels.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     February 16, 2011l
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLabeledCurveMapper::SetLabels(std::vector<std::string> &l)
+{
+    labels = l;
+    for (int i = 0; i < actors.size(); i++)
+    {
+        actors[i]->SetDesignator(labels[actorsInputNum[i]].c_str());
+    }
+}

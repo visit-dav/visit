@@ -228,6 +228,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Add buttons for redoing pick with and without opening a Spreadsheet plot.
 //   Added a missing tr() for "Clear Picks".
 //
+//   Kathleen Bonnell, Thu Mar  3 08:07:31 PST 2011
+//   Added timeCurveType combo box.
+//
 // ****************************************************************************
 
 void
@@ -409,17 +412,25 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(preserveCoordActivated(int)));
     gLayout->addWidget(preserveCoord, 13, 0, 1, 4);
 
+    timeCurveType= new QComboBox(central);
+    timeCurveType->addItem(tr("Time curve use single Y axis"));
+    timeCurveType->addItem(tr("Time curve use multiple Y axes"));
+    timeCurveType->setCurrentIndex(0);
+    connect(timeCurveType, SIGNAL(activated(int)),
+            this, SLOT(timeCurveTypeActivated(int)));
+    gLayout->addWidget(timeCurveType, 14, 0, 1, 4);
+
     spreadsheetCheckBox = new QCheckBox(tr("Create spreadsheet with next pick"), 
                                         central);
     connect(spreadsheetCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(spreadsheetToggled(bool)));
-    gLayout->addWidget(spreadsheetCheckBox, 14, 0, 1, 2);
+    gLayout->addWidget(spreadsheetCheckBox, 15, 0, 1, 2);
 
     QPushButton *redoPickWithSpreadsheetButton =
         new QPushButton(tr("Display in Spreadsheet"), central);
     connect(redoPickWithSpreadsheetButton, SIGNAL(clicked()),
             this, SLOT(redoPickWithSpreadsheetClicked()));
-    gLayout->addWidget(redoPickWithSpreadsheetButton, 14, 2, 1, 2);
+    gLayout->addWidget(redoPickWithSpreadsheetButton, 15, 2, 1, 2);
 }
 
 // ****************************************************************************
@@ -483,6 +494,9 @@ QvisPickWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Mon Dec 17 09:33:48 PST 2007
 //   Made it use ids.
+//
+//   Kathleen Bonnell, Thu Mar  3 08:08:03 PST 2011
+//   Added timeCurveType.
 //
 // ****************************************************************************
 
@@ -607,6 +621,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
         timeCurveCheckBox->blockSignals(true);
         timeCurveCheckBox->setChecked(pickAtts->GetDoTimeCurve());
         preserveCoord->setEnabled(pickAtts->GetDoTimeCurve());
+        timeCurveType->setEnabled(pickAtts->GetDoTimeCurve());
         timeCurveCheckBox->blockSignals(false);
     }
 
@@ -672,6 +687,14 @@ QvisPickWindow::UpdateWindow(bool doAll)
         preserveCoord->blockSignals(true);
         preserveCoord->setCurrentIndex((int)pickAtts->GetTimePreserveCoord());
         preserveCoord->blockSignals(false);
+    }
+
+    // timeCurveType
+    if (pickAtts->IsSelected(PickAttributes::ID_timePreserveCoord) || doAll)
+    {
+        timeCurveType->blockSignals(true);
+        timeCurveType->setCurrentIndex((int)pickAtts->GetTimeCurveType());
+        timeCurveType->blockSignals(false);
     }
 }
 
@@ -1562,7 +1585,7 @@ QvisPickWindow::displayPickLetterToggled(bool val)
 
 
 // ****************************************************************************
-// Method: QvisPickWindow::preserveCoordToggled
+// Method: QvisPickWindow::preserveCoordActivated
 //
 // Purpose: 
 //   This is a Qt slot function that sets the flag indicating whether
@@ -1582,6 +1605,31 @@ void
 QvisPickWindow::preserveCoordActivated(int val)
 {
     pickAtts->SetTimePreserveCoord((bool)val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::timeCurveTypeActivated
+//
+// Purpose: 
+//   This is a Qt slot function that sets the value indicating whether
+//   a time-curve pick will generate a curve with single-y axis (Curve plot)
+//   or multiple y axes (MultiCurve plot).
+//
+// Arguments:
+//   val : The new timeCurveType value.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 3, 2011 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::timeCurveTypeActivated(int val)
+{
+    pickAtts->SetTimeCurveType((PickAttributes::TimeCurveType)val);
     Apply();
 }
 

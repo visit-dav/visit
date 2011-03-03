@@ -10638,6 +10638,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Dave Pugmire, Tue Nov  9 16:11:06 EST 2010
 //   Added streamline info query.
 //
+//   Kathleen Bonnell, Wed Mar  2 17:37:47 PST 2011
+//   Remove test for queryName == 'Pick'.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -10783,8 +10786,6 @@ visit_Query(PyObject *self, PyObject *args)
 
     // Check for global flag.
     std::string qname(queryName);
-    if (qname == "Pick")
-        qname = "ZonePick";
 
     bool doGlobal = false;
 #if defined(_WIN32)
@@ -11186,6 +11187,9 @@ visit_SetQueryFloatFormat(PyObject *self, PyObject *args)
 //
 //   Brad Whitlock, Tue Jan 10 14:04:35 PST 2006
 //   Changed logging.
+//  
+//   Kathleen Bonnell, Wed Mar  2 17:37:47 PST 2011
+//   Remove test for queryName == 'Pick'.
 //
 // ****************************************************************************
 
@@ -11227,9 +11231,6 @@ visit_QueryOverTime(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        if (queryName == "Pick")
-            queryName = "ZonePick";
-
         GetViewerMethods()->DatabaseQuery(queryName, vars, true, arg1, arg2);
 
         char tmp[1024];
@@ -11277,6 +11278,9 @@ visit_QueryOverTime(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Thu Dec  9 10:17:24 PST 2010
 //   Renamed to ZonePick, as that is its actual functionality.
 //
+//   Kathleen Bonnell, Thu Mar  3 09:30:46 PST 2011
+//   Separate logging based on pick args.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -11316,14 +11320,23 @@ visit_ZonePick(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         if (!wp)
+        {
             GetViewerMethods()->ZonePick(x, y, vars);
+            char tmp[1024];
+            SNPRINTF(tmp, 1024, "ZonePick(%d, %d, %s)\n", x, y,
+                     StringVectorToTupleString(vars).c_str());
+            LogFile_Write(tmp);
+        }
         else
-            GetViewerMethods()->ZonePick(pt,  vars);
+        {
+            GetViewerMethods()->ZonePick(pt, vars);
+            char tmp[1024];
+            SNPRINTF(tmp, 1024, "ZonePick((%g, %g, %g), %s)\n",
+                     pt[0], pt[1], pt[2], 
+                     StringVectorToTupleString(vars).c_str());
+            LogFile_Write(tmp);
+        }
 
-        char tmp[1024];
-        SNPRINTF(tmp, 1024, "Pick(%d, %d, %s)\n", x, y,
-                 StringVectorToTupleString(vars).c_str());
-        LogFile_Write(tmp);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -11354,6 +11367,9 @@ visit_ZonePick(PyObject *self, PyObject *args)
 //
 //   Brad Whitlock, Tue Jan 10 14:07:43 PST 2006
 //   Changed logging.
+//
+//   Kathleen Bonnell, Thu Mar  3 09:30:46 PST 2011
+//   Separate logging based on pick args.
 //
 // ****************************************************************************
 
@@ -11393,14 +11409,21 @@ visit_NodePick(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         if (!wp)
-            GetViewerMethods()->NodePick(x, y, vars);
+        {
+           GetViewerMethods()->NodePick(x, y, vars);
+           char tmp[1024];
+           SNPRINTF(tmp, 1024, "NodePick(%d, %d, %s)\n", x, y,
+                    StringVectorToTupleString(vars).c_str());
+           LogFile_Write(tmp);
+        }
         else
-            GetViewerMethods()->NodePick(pt, vars);
-
-        char tmp[1024];
-        SNPRINTF(tmp, 1024, "Pick(%d, %d, %s)\n", x, y,
-                 StringVectorToTupleString(vars).c_str());
-        LogFile_Write(tmp);
+        {
+           GetViewerMethods()->NodePick(pt, vars);
+           char tmp[1024];
+           SNPRINTF(tmp, 1024, "NodePick((%g, %g, %g) %s)\n", pt[0], pt[1], 
+                    pt[2], StringVectorToTupleString(vars).c_str());
+           LogFile_Write(tmp);
+        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -12048,6 +12071,9 @@ visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Thu Dec 16 17:31:10 PST 2004
 //   Added bool arg, indicating of node/zone is global or not.
 //
+//   Kathleen Bonnell, Tue Mar  1 18:32:50 PST 2011
+//   Send default value (-1) for timeCurvePlotType.
+// 
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12057,7 +12083,7 @@ visit_DomainPick(const char *type, int el, int dom, stringVector vars,
     double pt[3] = {0., 0., 0};
 
     MUTEX_LOCK();
-       GetViewerMethods()->PointQuery(type, pt, vars, false, el, dom, doGlobal);
+       GetViewerMethods()->PointQuery(type, pt, vars, false, -1, el, dom, doGlobal);
     MUTEX_UNLOCK();
 
     // Return the success value.

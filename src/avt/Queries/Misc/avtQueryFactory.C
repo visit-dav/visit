@@ -299,8 +299,12 @@ avtQueryFactory::Instance()
 //    Cyrus Harrison, Tue Sep 21 11:12:17 PDT 2010
 //    Added explicit passing of args to the python filter query.
 //
-//   Dave Pugmire, Tue Nov  9 14:57:20 EST 2010
-//   Add Streamline Info query.
+//    Dave Pugmire, Tue Nov  9 14:57:20 EST 2010
+//    Add Streamline Info query.
+//
+//    Kathleen Bonnell, Thu Feb 17 09:51:44 PST 2011
+//    Set number of vars for LocateAndPickNode/Zone queries, and 
+//    VariableyByNode/Zone queries.
 //
 // ****************************************************************************
 
@@ -484,11 +488,15 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     }
     else if (qname == "Variable by Zone")
     {
-        query = new avtVariableByZoneQuery();
+        avtVariableByZoneQuery *vzq = new avtVariableByZoneQuery();
+        vzq->SetNumVars((int)qa->GetVariables().size());
+        query = vzq;
     }
     else if (qname == "Variable by Node")
     {
-        query = new avtVariableByNodeQuery();
+        avtVariableByNodeQuery *vnq = new avtVariableByNodeQuery();
+        vnq->SetNumVars((int)qa->GetVariables().size());
+        query = vnq;
     }
     else if (qname == "MinMax")
     {
@@ -619,11 +627,15 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     }
     else if( qname == "Locate and Pick Zone")
     {
-        query = new avtLocateAndPickZoneQuery();
+        avtLocateAndPickZoneQuery *lpzq = new avtLocateAndPickZoneQuery();
+        lpzq->SetNumVars((int)qa->GetVariables().size());
+        query = lpzq;
     }
     else if( qname == "Locate and Pick Node")
     {
-        query = new avtLocateAndPickNodeQuery();
+        avtLocateAndPickNodeQuery *lpnq = new avtLocateAndPickNodeQuery();
+        lpnq->SetNumVars((int)qa->GetVariables().size());
+        query = lpnq;
     }
     else if( qname == "Shapelet Decomposition")
     {

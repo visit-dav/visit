@@ -60,6 +60,8 @@ class vtkDataSet;
 //  Creation:   October 22, 2007 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Feb 17 09:55:14 PST 2011
+//    Added SetNumVars.
 //
 // ****************************************************************************
 
@@ -86,7 +88,7 @@ class QUERY_API avtLocateAndPickNodeQuery : public avtDatasetQuery
 
     virtual void              SetInvTransform(const avtMatrix *m);
     virtual void              SetNeedTransform(const bool v);
-
+    virtual void              SetNumVars(int v);
 
   protected:
     virtual void              Execute(vtkDataSet*, const int){;}

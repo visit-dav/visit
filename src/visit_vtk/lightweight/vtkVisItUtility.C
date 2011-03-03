@@ -1006,7 +1006,7 @@ vtkVisItUtility::WriteDataSet(vtkDataSet *ds, const char *fname)
 //    type      The data type for the coordinate arrays. 
 //
 //  Returns:
-//    A 1-dimenional vtkRectilinearGrid
+//    A 1-dimensional vtkRectilinearGrid
 // 
 //  Programmer: Kathleen Bonnell 
 //  Creation:   July 12, 2006
@@ -1015,52 +1015,105 @@ vtkVisItUtility::WriteDataSet(vtkDataSet *ds, const char *fname)
 //    Kathleen Bonnell, Mon Jul 14 15:02:11 PDT 2008
 //    Expanded the data types supported.
 //
+//    Kathleen Bonnell, Thu Feb 17 08:55:52 PST 2011
+//    Call CreateEmptyRGrid.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid * 
 vtkVisItUtility::Create1DRGrid(int nXCoords, int type)
 {
+    return CreateEmptyRGrid(nXCoords, 1, 1, type);
+}
+
+
+// ****************************************************************************
+//  Function: CreateEmptyRGrid
+//
+//  Purpose:
+//    Creates a vtkRectilinearGrid of the specified dimensions and type.
+//
+//  Arguments:
+//    nXCoords  The number of X coordinates in the grid.
+//    nYCoords  The number of Y coordinates in the grid.
+//    nZCoords  The number of Z coordinates in the grid.
+//    type      The data type for the coordinate arrays. 
+//
+//  Returns:
+//    A vtkRectilinearGrid
+// 
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 12, 2006
+//
+//  Modifications:
+//    Kathleen Bonnell, Mon Jul 14 15:02:11 PDT 2008
+//    Expanded the data types supported.
+//
+//    Kathleen Bonnell, Thu Feb 17 08:55:52 PST 2011
+//    Copied from original Create1DRgrid, and expanded to create any size.
+//
+// ****************************************************************************
+
+vtkRectilinearGrid * 
+vtkVisItUtility::CreateEmptyRGrid(int nXCoords, int nYCoords, 
+                                  int nZCoords, int type)
+{
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
-    rgrid->SetDimensions(nXCoords, 1, 1);
-    vtkDataArray *yz = NULL;
+    rgrid->SetDimensions(nXCoords, nYCoords, nZCoords);
+    vtkDataArray *zc = NULL;
+    vtkDataArray *yc = NULL;
     vtkDataArray *xc = NULL;
     if (type == VTK_FLOAT)
     {
         xc = vtkFloatArray::New();
-        yz = vtkFloatArray::New();
+        yc = vtkFloatArray::New();
+        zc = vtkFloatArray::New();
     }
     else if (type == VTK_DOUBLE)
     {
         xc = vtkDoubleArray::New();
-        yz = vtkDoubleArray::New();
+        yc = vtkDoubleArray::New();
+        zc = vtkDoubleArray::New();
     }
     else if (type == VTK_INT)
     {
         xc = vtkIntArray::New();
-        yz = vtkIntArray::New();
+        yc = vtkIntArray::New();
+        zc = vtkIntArray::New();
     }
     else if (type == VTK_SHORT)
     {
         xc = vtkShortArray::New();
-        yz = vtkShortArray::New();
+        yc = vtkShortArray::New();
+        zc = vtkShortArray::New();
     }
     else if (type == VTK_CHAR)
     {
         xc = vtkCharArray::New();
-        yz = vtkCharArray::New();
+        yc = vtkCharArray::New();
+        zc = vtkCharArray::New();
     }
-    yz->SetNumberOfComponents(1);
-    yz->SetNumberOfTuples(1);
-    yz->SetTuple1(0, 0.);
     xc->SetNumberOfComponents(1);
     xc->SetNumberOfTuples(nXCoords);
+    if (nXCoords == 1)
+        xc->SetTuple1(0, 0.);
+    yc->SetNumberOfComponents(1);
+    yc->SetNumberOfTuples(nYCoords);
+    if (nYCoords == 1)
+        yc->SetTuple1(0, 0.);
+    zc->SetNumberOfComponents(1);
+    zc->SetNumberOfTuples(nZCoords);
+    if (nZCoords == 1)
+      zc->SetTuple1(0, 0.);
     rgrid->SetXCoordinates(xc); 
-    rgrid->SetYCoordinates(yz); 
-    rgrid->SetZCoordinates(yz); 
+    rgrid->SetYCoordinates(yc); 
+    rgrid->SetZCoordinates(zc); 
     xc->Delete(); 
-    yz->Delete(); 
+    yc->Delete(); 
+    zc->Delete(); 
     return rgrid;
 }
+
 
 // ****************************************************************************
 //  Function: PointsEqual
@@ -1098,3 +1151,4 @@ vtkVisItUtility::PointsEqual(double pt1[3], double pt2[3], const double *_eps)
         e3 = true;
     return e1 && e2 && e3;
 }
+

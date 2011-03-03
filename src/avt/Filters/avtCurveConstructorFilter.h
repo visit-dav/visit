@@ -78,6 +78,9 @@
 //    Kathleen Bonnell, Mon Mar 23 09:53:17 PDT 2009
 //    Removed 'ForceConstruction'.
 //
+//    Kathleen Bonnell, Thu Feb 17 09:18:43 PST 2011
+//    Added CreateSingeOutput method.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilter
@@ -93,6 +96,8 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
 
   protected:
     doubleVector              outputArray;
+    vtkDataSet               *CreateSingleOutput(avtDataTree_p inTree);
+
     virtual void              Execute(void);
     virtual void              PostExecute(void);
     virtual void              VerifyInput(void);

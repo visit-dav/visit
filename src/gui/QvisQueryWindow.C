@@ -258,6 +258,10 @@ QvisQueryWindow::CreateWindowContents()
 //
 //   Dave Pugmire, Tue Nov  9 16:11:37 EST 2010
 //   Added streamline info query.
+//
+//   Kathleen Bonnell, Tue Mar  1 11:07:20 PST 2011
+//   Added plotOpts.
+//
 // ****************************************************************************
 
 void
@@ -354,11 +358,21 @@ QvisQueryWindow::CreateStandardQueryWidget()
     dataOpts->button(0)->setChecked(true);
     sLayout->addWidget(actualData, 10, 0);
 
+    // Add the plot options radio button group to the argument panel.
+    plotOpts = new QButtonGroup(argPanel);
+    QRadioButton *singleAxis = new QRadioButton(tr("Single Y-Axis (for time curve)"), argPanel);
+    plotOpts->addButton(singleAxis,0);
+    sLayout->addWidget(singleAxis, 11, 0, 1, 2);
+    QRadioButton *multiAxes = new QRadioButton(tr("Multiple Y-Axes (for time curve)"), argPanel);
+    plotOpts->addButton(multiAxes,1);
+    plotOpts->button(0)->setChecked(true);
+    sLayout->addWidget(multiAxes, 12, 0, 1, 2);
+
     dumpSteps = new QCheckBox(tr("Dump Steps"), argPanel);
     connect(dumpSteps, SIGNAL(toggled(bool)), this, 
             SLOT(dumpStepsToggled(bool)));
     dumpSteps->hide();
-    sLayout->addWidget(dumpSteps, 11, 0, 1, 2);
+    sLayout->addWidget(dumpSteps, 13, 0, 1, 2);
 
     // Add the time button to the argument panel.
     gLayout->addStretch(10);
@@ -874,6 +888,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Eric Brugger, Fri Jul  2 15:54:23 PDT 2010
 //   I added the x ray image query.
 //
+//   Kathleen Bonnell, Tue Mar  1 11:07:43 PST 2011
+//   Added plotOpts.
+//
 // ****************************************************************************
 
 void
@@ -898,6 +915,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     dumpSteps->setChecked(0);
     labels[0]->setEnabled(true);
     textFields[0]->setEnabled(true);
+    plotOpts->button(0)->setChecked(true);
 
     if(index >= 0 && index < winType.size())
     {
@@ -909,6 +927,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         bool showTime = queryMode[index] != QueryList::QueryOnly;
         bool showQuery = queryMode[index] != QueryList::TimeOnly;
         bool showVars = false;
+        bool showTimeCurvePlotType = false;
         varsLineEdit->setText("default");
         varsButton->setVarTypes(queryVarTypes);
 
@@ -918,6 +937,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[0]->setText("0 0 0");
             showWidgets[0] = true;
             showVars = true;
+            showTimeCurvePlotType = true;
         }
         else if (winT == QueryList::DoublePoint)
         {
@@ -952,6 +972,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             showVars = true;
             useGlobal->setText("Use Global Zone");
             showGlobal = true;
+            showTimeCurvePlotType = (queries->GetNumVars()[index] < 2);
         }
         else if (winT == QueryList::DomainNode)
         {
@@ -975,6 +996,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             showVars = true;
             useGlobal->setText("Use Global Node");
             showGlobal = true;
+            showTimeCurvePlotType = (queries->GetNumVars()[index] < 2);
         }
         else if (winT == QueryList::ActualData)
         {
@@ -1124,6 +1146,18 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             dataOpts->button(0)->hide();
             dataOpts->button(1)->hide();
         }
+
+        if (showTimeCurvePlotType)
+        {
+            plotOpts->button(0)->show();
+            plotOpts->button(1)->show();
+        }
+        else
+        {
+            plotOpts->button(0)->hide();
+            plotOpts->button(1)->hide();
+        }
+            
 
         if (showTime)
             timeQueryButton->show();
@@ -1332,6 +1366,9 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
 // Modifications:
 //   Eric Brugger, Fri Jul  2 15:54:23 PDT 2010
 //   I added the x ray image query.
+//  
+//   Kathleen Bonnell, Tue Mar  1 11:08:16 PST 2011
+//   For TimePicks, send along curvePlotType.
 //
 // ****************************************************************************
 
@@ -1339,6 +1376,8 @@ void
 QvisQueryWindow::ExecuteStandardQuery(bool doTime)
 {
     int useActualData = dataOpts->id(dataOpts->checkedButton());
+    int curvePlotType = plotOpts->id(plotOpts->checkedButton());
+
     const stringVector &names = queries->GetNames();
     const intVector &types = queries->GetTypes();
     const intVector &winType = queries->GetWinType();
@@ -1384,9 +1423,9 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
             }
         }
         else if ((winT == QueryList::DomainZone) ||
-                    (winT == QueryList::DomainNode) || 
-                    (winT == QueryList::DomainZoneVars) ||
-                    (winT == QueryList::DomainNodeVars))
+                 (winT == QueryList::DomainNode) || 
+                 (winT == QueryList::DomainZoneVars) ||
+                 (winT == QueryList::DomainNodeVars))
         {
             int dom = 0, el = 0;
             bool goodDomain = GetNumber(0, &dom);
@@ -1423,7 +1462,7 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
                 else if (t == QueryList::PointQuery)
                 {
                     GetViewerMethods()->PointQuery(names[index], p0, 
-                        vars, doTime, el, dom, useGlobal->isChecked());
+                        vars, doTime, curvePlotType, el, dom, useGlobal->isChecked());
                 }
                 else 
                 {
@@ -1445,7 +1484,7 @@ QvisQueryWindow::ExecuteStandardQuery(bool doTime)
                 if (t == QueryList::PointQuery)
                 {
                     GetViewerMethods()->PointQuery(names[index], p0,
-                        vars, doTime);
+                        vars, doTime, curvePlotType);
                 }
                 else 
                 {

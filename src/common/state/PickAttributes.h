@@ -78,6 +78,11 @@ public:
         RZ,
         ZR
     };
+    enum TimeCurveType
+    {
+        Single_Y_Axis,
+        Multiple_Y_Axes
+    };
 
     // These constructors are for objects of this class
     PickAttributes();
@@ -199,6 +204,7 @@ public:
     void SetSubsetName(const std::string &subsetName_);
     void SetFloatFormat(const std::string &floatFormat_);
     void SetTimePreserveCoord(bool timePreserveCoord_);
+    void SetTimeCurveType(TimeCurveType timeCurveType_);
 
     // Property getting methods
     const stringVector &GetVariables() const;
@@ -295,6 +301,7 @@ public:
     const std::string  &GetFloatFormat() const;
           std::string  &GetFloatFormat();
     bool               GetTimePreserveCoord() const;
+    TimeCurveType      GetTimeCurveType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -322,6 +329,11 @@ public:
     static bool CoordinateType_FromString(const std::string &, CoordinateType &);
 protected:
     static std::string CoordinateType_ToString(int);
+public:
+    static std::string TimeCurveType_ToString(TimeCurveType);
+    static bool TimeCurveType_FromString(const std::string &, TimeCurveType &);
+protected:
+    static std::string TimeCurveType_ToString(int);
 public:
 
     // Keyframing methods
@@ -407,6 +419,7 @@ public:
         ID_subsetName,
         ID_floatFormat,
         ID_timePreserveCoord,
+        ID_timeCurveType,
         ID__LAST
     };
 
@@ -480,11 +493,12 @@ private:
     std::string          subsetName;
     std::string          floatFormat;
     bool                 timePreserveCoord;
+    int                  timeCurveType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssb"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssbi"
 
 #endif

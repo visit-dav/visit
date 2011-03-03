@@ -147,6 +147,9 @@ avtVariableByZoneQuery::Preparation(const avtDataAttributes &inAtts)
 //    Kathleen Bonnell, Thu Feb  3 16:20:38 PST 2011
 //    Ensure pickvarinfo's values is non-empty before referencing an element.
 //
+//    Kathleen Bonnell, Tue Mar  1 16:06:04 PST 2011
+//    Allow output for multiple vars.
+//
 // ****************************************************************************
 
 void
@@ -165,7 +168,7 @@ avtVariableByZoneQuery::PostExecute(void)
             pickAtts.SetCellPoint(cp);
             pickAtts.CreateOutputString(msg);
             SetResultMessage(msg.c_str());
-            if(pickAtts.GetNumVarInfos() > 0)
+            if(pickAtts.GetNumVarInfos() == 1)
             {
                 doubleVector dvals = pickAtts.GetVarInfo(0).GetValues();
                 if (dvals.size() > 0)
@@ -174,15 +177,27 @@ avtVariableByZoneQuery::PostExecute(void)
                 }
                 else
                 {
-                    debug3 << "Variable by Zone query reports a fulfilled pick "
-                           << "and has varInfo's, but the values vector is empty. " 
-                           << "This could happen when Picking on a Material."
-                           << endl;
+                    debug3 << "Variable by Zone query reports a fulfilled "
+                           << "pick and has varInfo's, but the values "
+                           << "vector is empty. This could happen when "
+                           << "Picking on a Material." << endl;
                     SetResultValues(vals);
                 }
             }
+            else if(pickAtts.GetNumVarInfos() > 1)
+            {
+                doubleVector dvals;
+                for (int i = 0; i < pickAtts.GetNumVarInfos(); ++i)
+                {
+                    if (pickAtts.GetVarInfo(i).GetValues().size() > 0)
+                        dvals.push_back(pickAtts.GetVarInfo(i).GetValues()[0]);
+                }
+                SetResultValues(dvals);
+            }
             else
+            {
                 SetResultValues(vals);
+            }
         }
         else
         {
@@ -216,3 +231,23 @@ avtVariableByZoneQuery::GetTimeCurveSpecs()
     timeCurveSpecs["useVarForYAxis"] = true;
     return timeCurveSpecs;
 }
+
+// ****************************************************************************
+//  Method: avtVariableByZoneQuery::SetNumVars
+//
+//  Purpose:
+//    Override default nResultsToStore in TimeCurveSpecs.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 1, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtVariableByZoneQuery::SetNumVars(int nv)
+{
+    timeCurveSpecs["nResultsToStore"] = nv;
+}
+

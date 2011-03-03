@@ -65,6 +65,10 @@ class     vtkDataSet;
 //    Kathleen Bonnell, Tue Jul 23 15:01:55 PDT 2002 
 //    Added member to keep track of label visibility.
 // 
+//    Kathleen Bonnell, Thu Feb 17 09:09:41 PST 2011
+//    Add ability to set multiple labels, keep track of which input an actor
+//    is associated with.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtLabeledCurveMapper : public avtDecorationsMapper
@@ -76,11 +80,14 @@ class PLOTTER_API  avtLabeledCurveMapper : public avtDecorationsMapper
     void                       SetLabelColor(double [3]);
     void                       SetLabelColor(double, double, double);
     void                       SetLabel(std::string &);
+    void                       SetLabels(std::vector<std::string> &);
     void                       SetScale(double);
     void                       SetLabelVisibility(bool);
 
   protected:
     std::string                label; 
+    std::vector<std::string>   labels; 
+    std::vector<int>           actorsInputNum; 
     bool                       labelVis;
     double                     labelColor[3];
     double                     scale;

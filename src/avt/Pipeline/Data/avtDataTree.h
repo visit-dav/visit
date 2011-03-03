@@ -124,6 +124,9 @@ typedef void (*TraverseFunc)(avtDataRepresentation &, void *, bool &);
 //    won't insert a second, undesired assignment operator that does have
 //    a const argument (and is used unexpectedly).
 //
+//    Kathleen Bonnell, Thu Feb 17 09:16:46 PST 2011
+//    Added a PruneTree method that accepts a single string.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataTree
@@ -171,6 +174,7 @@ class PIPELINE_API avtDataTree
     avtDataTree_p            PruneTree(const vector<int> &);
     avtDataTree_p            PruneTree(const vector<int> &, vector<int> &);
     avtDataTree_p            PruneTree(const vector<string> &);
+    avtDataTree_p            PruneTree(const string &);
     avtDataTree_p            PruneTree(const vector<string> &, vector<string>&);
 
     void                     WriteTreeStructure(ostream &, int indent = 0);

@@ -60,6 +60,9 @@ class vtkRectilinearGrid;
 //    Kathleen Bonnell, Thu Jun 11 08:20:11 PDT 2009
 //    Added optional tolerance argument to PointsEqual.
 //
+//    Kathleen Bonnell, Thu Feb 17 08:53:30 PST 2011
+//    Added CreateEmptyRGrid.
+//
 // ****************************************************************************
 
 namespace vtkVisItUtility
@@ -93,8 +96,14 @@ namespace vtkVisItUtility
     VISIT_VTK_LIGHT_API bool       ContainsMixedGhostZoneTypes(vtkDataSet *);
     VISIT_VTK_LIGHT_API bool       CellContainsPoint(vtkCell *, const double *);
     VISIT_VTK_LIGHT_API void       WriteDataSet(vtkDataSet*, const char *);
-    VISIT_VTK_LIGHT_API vtkRectilinearGrid *Create1DRGrid(int nXCoords,
-                                                          int type = VTK_FLOAT); 
+    VISIT_VTK_LIGHT_API vtkRectilinearGrid * 
+                                   Create1DRGrid(int nXCoords,
+                                                 int type = VTK_FLOAT); 
+    VISIT_VTK_LIGHT_API vtkRectilinearGrid *
+                                   CreateEmptyRGrid(int nXCoords,
+                                                    int nYCoords = 1,
+                                                    int nZCoords = 1,
+                                                    int type = VTK_FLOAT); 
     VISIT_VTK_LIGHT_API bool       PointsEqual(double p1[3], double p2[3],
                                                const double *_eps = 0);
 }

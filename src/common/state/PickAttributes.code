@@ -244,6 +244,11 @@ PickAttributes::PrintSelf(ostream &os)
     if (timePreserveCoord)
         os << "Set up for time-curve to preserve picked coord.\n";
 
+    if (timeCurveType == PickAttributes::Single_Y_Axis)
+        os << "Set up for time-curve to create a curve plot with single y axis.\n";
+    else 
+        os << "Set up for time-curve to create a curve plot with multiple y axes.\n";
+
     if (createSpreadsheet)
         os << "Create a spreadsheet with this pick.\n";
 

@@ -111,6 +111,9 @@ avtLocateAndPickNodeQuery::~avtLocateAndPickNodeQuery()
 //    Ensure magnitude of vectors/tensors gets reported as the result, instead
 //    of the first component.  Also ensure a failed query gets reported.
 //
+//    Kathleen Bonnell, Thu Feb 17 09:57:58 PST 2011
+//    Allow multiple outputs / results.
+//
 // ****************************************************************************
 
 void
@@ -167,8 +170,19 @@ avtLocateAndPickNodeQuery::PerformQuery(QueryAttributes *qa)
             pickAtts.SetCellPoint(cp);
             pickAtts.CreateOutputString(msg);
             qa->SetResultsMessage(msg);
-            vals = pickAtts.GetVarInfo(0).GetValues();
-            qa->SetResultsValue(vals[vals.size()-1]);
+            if ( pickAtts.GetNumVarInfos() == 1)
+            {
+                vals = pickAtts.GetVarInfo(0).GetValues();
+                qa->SetResultsValue(vals[vals.size()-1]);
+            }
+            else
+            {
+                for (int i = 0; i < pickAtts.GetNumVarInfos(); ++i)
+                {
+                    vals.push_back(pickAtts.GetVarInfo(i).GetValues()[0]);
+                }
+                qa->SetResultsValues(&vals[0], (int)vals.size());
+            }
         }
         else
         {
@@ -263,3 +277,24 @@ avtLocateAndPickNodeQuery::SetPickAttsForTimeQuery(
     pickAtts.SetTimePreserveCoord(pa->GetTimePreserveCoord());
     pickAtts.SetPlotBounds(pa->GetPlotBounds());
 }
+
+
+// ****************************************************************************
+//  Method: avtLocateAndPickNodeQuery::SetNumVars
+//
+//  Purpose:
+//    Override default nResultsToStore in TimeCurveSpecs.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    February 17, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLocateAndPickNodeQuery::SetNumVars(int nv)
+{
+    timeCurveSpecs["nResultsToStore"] = nv;
+}
+
