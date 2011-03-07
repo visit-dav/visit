@@ -1999,7 +1999,10 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "        return NULL;" << Endl;
             c << "    }" << Endl;
             c << Endl;
-            c << "    obj->data->Set" << Name << "(*Py" << attType << "_FromPyObject(newValue));" << Endl;
+            if(accessType == Field::AccessPublic)
+                c << "    obj->data->" << name << " = *Py" << attType << "_FromPyObject(newValue);" << Endl;
+            else
+                c << "    obj->data->Set" << Name << "(*Py" << attType << "_FromPyObject(newValue));" << Endl;
         }
     }
 
@@ -2089,7 +2092,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "        objPrefix += \"" << name << ".\";" << Endl;
             c << "        str += Py" << attType << "_ToString(";
             if(accessType == Field::AccessPublic)
-                c << "atts->" << name;
+                c << "&atts->" << name;
             else
                 c << "&atts->" << MethodNameGet() << "()";
             c << ", objPrefix.c_str());" << Endl;
