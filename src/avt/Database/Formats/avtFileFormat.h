@@ -267,7 +267,7 @@ class DATABASE_API avtFileFormat
 
     void       AddMeshToMetaData(avtDatabaseMetaData *, std::string,
                                  avtMeshType, const double * = NULL, int = 1,
-                                 int = 0, int = 3, int = 3);
+                                 int = 0, int = 3, int = 3, const int * = NULL);
     void       AddScalarVarToMetaData(avtDatabaseMetaData *, std::string,
                                       std::string, avtCentering,
                                       const double * = NULL,

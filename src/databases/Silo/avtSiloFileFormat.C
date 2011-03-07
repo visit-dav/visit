@@ -2044,7 +2044,8 @@ avtSiloFileFormat::ReadQuadmeshes(DBfile *dbfile,
                 extents_to_use = extents;
             }
 
-            avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use,
+            avtMeshMetaData *mmd = new avtMeshMetaData(NULL,
+                                                       extents_to_use,
                                                        name_w_dir, 1, 0,
                                                        qm->origin, 0,
                                                        qm->ndims, qm->ndims,
@@ -2156,7 +2157,9 @@ avtSiloFileFormat::ReadUcdmeshes(DBfile *dbfile,
 #endif
 #endif
 
-            avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
+            avtMeshMetaData *mmd = new avtMeshMetaData(NULL,
+                                                       extents_to_use,
+                                                       name_w_dir,
                                 1, 0, um->origin, 0, um->ndims, tdims,
                                 AVT_UNSTRUCTURED_MESH);
             if (um->units[0] != NULL)
@@ -2397,7 +2400,9 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
                extents_to_use = extents;
            }
 
-           avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
+           avtMeshMetaData *mmd = new avtMeshMetaData(NULL,
+                                                      extents_to_use,
+                                                      name_w_dir,
                                csgm->zones->nzones, 0, csgm->origin, 0,
                                csgm->ndims, csgm->ndims, AVT_CSG_MESH);
            if (csgm->units[0] != NULL)
@@ -5496,7 +5501,8 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname,
     {
 
         char *name_w_dir = GenerateName(dirname, multimesh_name, topDir.c_str());
-        avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
+        avtMeshMetaData *mmd = new avtMeshMetaData(NULL,
+                                                   extents_to_use, name_w_dir,
                                        nregions, 0, 0, 0, ndims, ndims, AVT_CSG_MESH);
 
         mmd->blockTitle = "regions";

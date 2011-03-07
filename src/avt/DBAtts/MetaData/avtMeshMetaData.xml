@@ -20,6 +20,14 @@
     <Field name="spatialDimension" label="Spatial dimension" type="int" access="public">
       3
     </Field>
+    <Field name="hasSpatialBounds" label="Has spatial bounds" type="bool" access="public">
+      false
+    </Field>
+    <Field name="spatialBounds" label="Spatial bounds" type="intArray" length="3" access="public">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
     <Field name="topologicalDimension" label="Topological dimension" type="int" access="public">
       3
     </Field>
@@ -163,6 +171,10 @@
     <Function name="SetExtents" user="true" member="true">
     </Function>
     <Function name="UnsetExtents" user="true" member="true">
+    </Function>
+    <Function name="SetBounds" user="true" member="true">
+    </Function>
+    <Function name="UnsetBounds" user="true" member="true">
     </Function>
     <Function name="Print" user="true" member="true">
     </Function>
