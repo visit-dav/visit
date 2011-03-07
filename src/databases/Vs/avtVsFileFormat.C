@@ -47,6 +47,9 @@
 #include <InvalidDBTypeException.h>
 #include <VsPluginInfo.h>
 
+#include <avtLogicalSelection.h>
+#include <avtSpatialBoxSelection.h>
+
 // definition of VISIT_VERSION
 #include <visit-config.h>
 
@@ -156,7 +159,122 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
     VsLog::debugLog() <<"avtVsFileFormat::destructor() - exiting" <<std::endl;
   }
 
+// ****************************************************************************
+//  Method: avtVsFileFormat::RegisterDataSelections
+//
+//  Purpose:
+//      The Vs format can exploit some data selections so get them. 
+//      
+//  Programmer: Allen Sanderson
+//  Creation:   March 4, 2011
+//
+// ****************************************************************************
+void
+avtVsFileFormat::RegisterDataSelections(const vector<avtDataSelection_p> &sels,
+                                        vector<bool> *selectionsApplied)
+{
+  selList     = sels;
+  selsApplied = selectionsApplied;
+}
+
+
+// ****************************************************************************
+//  Method: avtVsFileFormat::ProcessDataSelections
+//
+//  Purpose:
+//      The Vs format can exploit some data selections so process them. 
+//      
+//  Programmer: Allen Sanderson
+//  Creation:   March 4, 2011
+//
+// ****************************************************************************
+bool
+avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
+{
+    bool retval = false;
+
+    avtLogicalSelection composedSel;
+    for (int i = 0; i < selList.size(); i++)
+    {
+        if (string(selList[i]->GetType()) == "Logical Data Selection")
+        {
+            avtLogicalSelection *sel = (avtLogicalSelection *) *(selList[i]);
+
+            // overrwrite method-scope arrays with the new indexing
+            composedSel.Compose(*sel);
+            (*selsApplied)[i] = true;
+            retval = true;
+        }
+        else if (string(selList[i]->GetType()) == "Spatial Box Data Selection")
+        {
+            avtSpatialBoxSelection *sel = (avtSpatialBoxSelection *) *(selList[i]);
+
+            double dmins[3], dmaxs[3];
+            sel->GetMins(dmins);
+            sel->GetMaxs(dmaxs);
+            avtSpatialBoxSelection::InclusionMode imode =
+                sel->GetInclusionMode();
+
+            // we won't handle clipping of zones here
+            if ((imode != avtSpatialBoxSelection::Whole) &&
+                (imode != avtSpatialBoxSelection::Partial))
+            {
+                (*selsApplied)[i] = false;
+                continue;
+            }
+
+            int imins[3], imaxs[3];
+            for (int j = 0; j < 3; j++)
+            {
+                int imin = (int) dmins[j];
+                if (((double) imin < dmins[j]) &&
+                    (imode == avtSpatialBoxSelection::Whole))
+                    imin++;
+                
+                int imax = (int) dmaxs[j];
+                if (((double) imax < dmaxs[j]) &&
+                    (imode == avtSpatialBoxSelection::Partial))
+                    imax++;
+
+                imins[j] = imin;
+                imaxs[j] = imax;
+            }
+
+            avtLogicalSelection newSel;
+            newSel.SetStarts(imins);
+            newSel.SetStops(imaxs);
+
+            composedSel.Compose(newSel);
+            (*selsApplied)[i] = true;
+            retval = true;
+        }
+        else
+        {
+            // indicate we won't handle this selection
+            (*selsApplied)[i] = false;
+        }
+    }
+
+    composedSel.GetStarts(mins);
+    composedSel.GetStops(maxs);
+    composedSel.GetStrides(strides);
+
+    return retval;
+}
+
+
   vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name) {
+
+    int mins[3], maxs[3], strides[3];
+    if( 0 && ProcessDataSelections(mins, maxs, strides) )
+    {
+      cerr << "have a data selection "<< endl
+           << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
+           << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
+           << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
+           << endl;
+    }
+
     std::stringstream sstr;
     sstr <<"avtVsFileFormat::GetMesh(" <<domain <<", " <<name <<") - ";
     std::string methodSig = sstr.str();
@@ -1626,6 +1744,17 @@ avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
   }
 
   vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName) {
+
+    int mins[3], maxs[3], strides[3];
+    if( 0 && ProcessDataSelections(mins, maxs, strides) )
+    {
+      cerr << "have a data selection "<< endl
+           << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
+           << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
+           << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
+           << endl;
+    }
+
     std::string name = requestedName;
 
     std::stringstream sstr;
