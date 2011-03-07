@@ -310,6 +310,7 @@ avtFileFormat::SetCache(avtVariableCache *c)
 //      origin    The origin of the block numbers. (optional, = 0)
 //      spatial   The spatial dimension of the mesh. (optional, = 3)
 //      topo      The topological dimension of the mesh. (optional, = 3)
+//      bounds    The bounds of the mesh. (optional)
 //
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2001
@@ -331,7 +332,8 @@ avtFileFormat::SetCache(avtVariableCache *c)
 void
 avtFileFormat::AddMeshToMetaData(avtDatabaseMetaData *md, string name,
                                  avtMeshType type, const double *extents,
-                                 int blocks, int origin, int spatial, int topo)
+                                 int blocks, int origin, int spatial, int topo,
+                                 const int* bounds)
 {
     if (type == AVT_POINT_MESH)
         topo = 0;
@@ -345,6 +347,16 @@ avtFileFormat::AddMeshToMetaData(avtDatabaseMetaData *md, string name,
     mesh->topologicalDimension = topo;
     mesh->blockTitle = "blocks";
     mesh->blockPieceName = "block";
+    if (bounds != NULL)
+    {
+        mesh->SetBounds(bounds);
+        mesh->hasSpatialBounds = true;
+    }
+    else
+    {
+        mesh->hasSpatialBounds = false;
+    }
+
     if (extents != NULL)
     {
         mesh->SetExtents(extents);

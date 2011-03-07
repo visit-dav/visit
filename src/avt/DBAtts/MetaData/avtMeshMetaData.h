@@ -90,10 +90,12 @@ public:
     virtual void SelectAll();
 
     // User-defined methods
-    avtMeshMetaData(const double *, std::string, int, int, int, int, int, int, avtMeshType);
+    avtMeshMetaData(const int *, const double *, std::string, int, int, int, int, int, int, avtMeshType);
     avtMeshMetaData(std::string, int, int, int, int, int, int, avtMeshType);
     void SetExtents(const double *);
     void UnsetExtents();
+    void SetBounds(const int *);
+    void UnsetBounds();
     void Print(ostream &, int = 0) const;
     void SetAMRInfo(const std::string &levelName, const std::string &patchName, int origin,const std::vector<int> &patchesPerLevel);
 
@@ -106,6 +108,8 @@ public:
         ID_meshCoordType,
         ID_cellOrigin,
         ID_spatialDimension,
+        ID_hasSpatialBounds,
+        ID_spatialBounds,
         ID_topologicalDimension,
         ID_xUnits,
         ID_yUnits,
@@ -155,6 +159,8 @@ public:
     avtMeshCoordType     meshCoordType;
     int                  cellOrigin;
     int                  spatialDimension;
+    bool                 hasSpatialBounds;
+    int                  spatialBounds[3];
     int                  topologicalDimension;
     std::string          xUnits;
     std::string          yUnits;
@@ -199,6 +205,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTMESHMETADATA_TMFS "ssbiiiiissssssbDDiisss*aiissi*i*bibbbbibFFbDibbi"
+#define AVTMESHMETADATA_TMFS "ssbiiiibIissssssbDDiisss*aiissi*i*bibbbbibFFbDibbi"
 
 #endif

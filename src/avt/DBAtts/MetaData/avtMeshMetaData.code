@@ -1,10 +1,11 @@
 Function: avtMeshMetaData2
-Declaration: avtMeshMetaData(const double *, std::string, int, int, int, int, int, int, avtMeshType);
+Declaration: avtMeshMetaData(const int *, const double *, std::string, int, int, int, int, int, int, avtMeshType);
 Definition:
 // ****************************************************************************
 //  Method: avtMeshMetaData constructor
 //
 //  Arguments:
+//      bounds      Strunctured mesh bounds as < max_i, max_j, max_k>.
 //      extents     Mesh extents as <min_x, max_x, min_y, max_y, min_z, max_z>.
 //      s           The name of the mesh.
 //      nb          The number of blocks.
@@ -77,7 +78,8 @@ Definition:
 //
 // ****************************************************************************
 
-avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
+avtMeshMetaData::avtMeshMetaData(const int *bounds, const double *extents,
+                                 std::string s, int nb,
                                  int bo, int co, int go, int sd, int td,
                                  avtMeshType mt)
     : AttributeSubject(avtMeshMetaData::TypeMapFormatString)
@@ -98,6 +100,7 @@ avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
     numGroups            = 0;
     containsExteriorBoundaryGhosts = false;
     SetExtents(extents);
+    SetBounds(bounds);
 }
 
 Function: avtMeshMetaData3
@@ -200,6 +203,7 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
     meshType             = mt;
     containsExteriorBoundaryGhosts = false;
     SetExtents(0);
+    SetBounds(0);
 }
 
 Function: SetExtents
@@ -260,6 +264,53 @@ void
 avtMeshMetaData::UnsetExtents()
 {
     hasSpatialExtents = false;
+}
+
+Function: SetBounds
+Declaration: void SetBounds(const int *);
+Definition:
+// ****************************************************************************
+//  Method: avtMeshMetaData::SetBounds
+//
+//  Purpose:
+//      Sets the bounds of the mesh.
+//
+//  Arguments:
+//      bounds     Mesh bounds as < i_max, j_max, k_max>.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2000
+//
+// ****************************************************************************
+
+void
+avtMeshMetaData::SetBounds(const int *bounds)
+{
+    if (bounds == NULL)
+    {
+        hasSpatialBounds = false;
+        for (int i = 0 ; i < std::min(spatialDimension, 3) ; i++)
+        {
+            spatialBounds[i] = 0.0;  
+        }
+    }
+    else
+    {
+        hasSpatialBounds = true;
+        for (int i = 0 ; i < std::min(spatialDimension, 3) ; i++)
+        {
+            spatialBounds[i] = bounds[i];
+        }
+    }
+}
+
+Function: UnsetBounds
+Declaration: void UnsetBounds();
+Definition:
+void
+avtMeshMetaData::UnsetBounds()
+{
+    hasSpatialBounds = false;
 }
 
 Function: Print
@@ -463,6 +514,26 @@ avtMeshMetaData::Print(ostream &out, int indent) const
 
     Indent(out, indent);
     out << "Spatial Dimension = " << spatialDimension << endl;
+
+    if (hasSpatialBounds)
+    {
+        Indent(out, indent);
+        out << "Bounds are: (";
+        for (int j = 0 ; j < std::min(spatialDimension, 3) ; j++)
+        {
+            out << spatialBounds[j];
+            if(j < spatialDimension-1)
+                out << ", ";
+        }
+        out << ")" << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "The spatial bounds are not set." << endl;
+    }
+
+
     Indent(out, indent);
     out << "Topological Dimension = " << topologicalDimension << endl;
     if (hasSpatialExtents)
