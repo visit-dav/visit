@@ -750,6 +750,10 @@ avtCHGCARFileFormat::DoDomainDecomposition()
 //    type.  We don't yet use it here, but we need to see if it's there, and
 //    skip it if it is.
 //
+//    Jeremy Meredith, Mon Mar  7 11:57:28 EST 2011
+//    Account for the possible extra atomic symbol line for
+//    multi-timestep files.
+//
 // ****************************************************************************
 void
 avtCHGCARFileFormat::ReadAllMetaData()
@@ -801,6 +805,7 @@ avtCHGCARFileFormat::ReadAllMetaData()
 
     std::istringstream type_in(atomtypeline);
     string tmp_element;
+    bool had_species_line = false;
     if ((type_in >> tmp_element) &&
         ElementNameToAtomicNumber(tmp_element.c_str()) > 0)
     {
@@ -811,6 +816,9 @@ avtCHGCARFileFormat::ReadAllMetaData()
         // to use this past line in the event we didn't have a species line:
         in.getline(line, 2048);
         atomcountline = line;
+
+        // But: also flag it so we can account for the extra line
+        had_species_line = true;
     }
 
     natoms = 0;
@@ -871,7 +879,8 @@ avtCHGCARFileFormat::ReadAllMetaData()
     // Mark the start of the volumetric grid data
     int values_per_vol = globalZDims[0]*globalZDims[1]*globalZDims[2];
     int lines_per_vol = (values_per_vol+values_per_line-1)/values_per_line;
-    int lines_per_step = 7 + natoms + 2 + lines_per_vol;
+    int lines_per_step = 7 + natoms + 2 + lines_per_vol +
+                         (had_species_line ? 1 : 0);
 
     in.seekg(start_of_data);
     while (in)
