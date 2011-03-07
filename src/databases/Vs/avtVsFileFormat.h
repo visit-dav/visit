@@ -18,6 +18,10 @@
 #ifndef VS_FILE_FORMAT_H
 #define VS_FILE_FORMAT_H
 
+#include <vector>
+using std::vector;
+
+
 //#include <VsH5Reader.h>
 #include <avtSTMDFileFormat.h>
 #include <hdf5.h>
@@ -69,6 +73,19 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   virtual const char* GetType(void) {
     return "Vs";
   };
+
+  /**
+   * Get the data selections
+   *
+   */
+  virtual void RegisterDataSelections( const vector<avtDataSelection_p> &sels,
+                                       vector<bool> *selectionsApplied );
+
+  /**
+   * Process the data selections
+   *
+   */
+  bool ProcessDataSelections(int *mins, int *maxs, int *strides);
 
   /**
    * Get a mesh by name
@@ -125,6 +142,9 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   std::vector<int> stride;
 
   VsRegistry* registry;
+
+    vector<avtDataSelection_p> selList;
+    vector<bool>              *selsApplied;
 
   /**
    * Set the axis labels for a mesh.
