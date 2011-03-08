@@ -71,11 +71,11 @@ public class avtMeshMetaData extends AttributeSubject
         meshCoordType = 0;
         cellOrigin = 0;
         spatialDimension = 3;
-        hasSpatialBounds = false;
-        spatialBounds = new int[3];
-        spatialBounds[0] = 0;
-        spatialBounds[1] = 0;
-        spatialBounds[2] = 0;
+        hasLogicalBounds = false;
+        logicalBounds = new int[3];
+        logicalBounds[0] = 0;
+        logicalBounds[1] = 0;
+        logicalBounds[2] = 0;
         topologicalDimension = 3;
         xUnits = new String("");
         yUnits = new String("");
@@ -161,11 +161,11 @@ public class avtMeshMetaData extends AttributeSubject
         meshCoordType = 0;
         cellOrigin = 0;
         spatialDimension = 3;
-        hasSpatialBounds = false;
-        spatialBounds = new int[3];
-        spatialBounds[0] = 0;
-        spatialBounds[1] = 0;
-        spatialBounds[2] = 0;
+        hasLogicalBounds = false;
+        logicalBounds = new int[3];
+        logicalBounds[0] = 0;
+        logicalBounds[1] = 0;
+        logicalBounds[2] = 0;
         topologicalDimension = 3;
         xUnits = new String("");
         yUnits = new String("");
@@ -253,11 +253,11 @@ public class avtMeshMetaData extends AttributeSubject
         meshCoordType = obj.meshCoordType;
         cellOrigin = obj.cellOrigin;
         spatialDimension = obj.spatialDimension;
-        hasSpatialBounds = obj.hasSpatialBounds;
-        spatialBounds = new int[3];
-        spatialBounds[0] = obj.spatialBounds[0];
-        spatialBounds[1] = obj.spatialBounds[1];
-        spatialBounds[2] = obj.spatialBounds[2];
+        hasLogicalBounds = obj.hasLogicalBounds;
+        logicalBounds = new int[3];
+        logicalBounds[0] = obj.logicalBounds[0];
+        logicalBounds[1] = obj.logicalBounds[1];
+        logicalBounds[2] = obj.logicalBounds[2];
 
         topologicalDimension = obj.topologicalDimension;
         xUnits = new String(obj.xUnits);
@@ -346,10 +346,10 @@ public class avtMeshMetaData extends AttributeSubject
     {
         int i;
 
-        // Compare the spatialBounds arrays.
-        boolean spatialBounds_equal = true;
-        for(i = 0; i < 3 && spatialBounds_equal; ++i)
-            spatialBounds_equal = (spatialBounds[i] == obj.spatialBounds[i]);
+        // Compare the logicalBounds arrays.
+        boolean logicalBounds_equal = true;
+        for(i = 0; i < 3 && logicalBounds_equal; ++i)
+            logicalBounds_equal = (logicalBounds[i] == obj.logicalBounds[i]);
 
         // Compare the minSpatialExtents arrays.
         boolean minSpatialExtents_equal = true;
@@ -411,8 +411,8 @@ public class avtMeshMetaData extends AttributeSubject
                 (meshCoordType == obj.meshCoordType) &&
                 (cellOrigin == obj.cellOrigin) &&
                 (spatialDimension == obj.spatialDimension) &&
-                (hasSpatialBounds == obj.hasSpatialBounds) &&
-                spatialBounds_equal &&
+                (hasLogicalBounds == obj.hasLogicalBounds) &&
+                logicalBounds_equal &&
                 (topologicalDimension == obj.topologicalDimension) &&
                 (xUnits.equals(obj.xUnits)) &&
                 (yUnits.equals(obj.yUnits)) &&
@@ -496,25 +496,25 @@ public class avtMeshMetaData extends AttributeSubject
         Select(6);
     }
 
-    public void SetHasSpatialBounds(boolean hasSpatialBounds_)
+    public void SetHasLogicalBounds(boolean hasLogicalBounds_)
     {
-        hasSpatialBounds = hasSpatialBounds_;
+        hasLogicalBounds = hasLogicalBounds_;
         Select(7);
     }
 
-    public void SetSpatialBounds(int[] spatialBounds_)
+    public void SetLogicalBounds(int[] logicalBounds_)
     {
-        spatialBounds[0] = spatialBounds_[0];
-        spatialBounds[1] = spatialBounds_[1];
-        spatialBounds[2] = spatialBounds_[2];
+        logicalBounds[0] = logicalBounds_[0];
+        logicalBounds[1] = logicalBounds_[1];
+        logicalBounds[2] = logicalBounds_[2];
         Select(8);
     }
 
-    public void SetSpatialBounds(int e0, int e1, int e2)
+    public void SetLogicalBounds(int e0, int e1, int e2)
     {
-        spatialBounds[0] = e0;
-        spatialBounds[1] = e1;
-        spatialBounds[2] = e2;
+        logicalBounds[0] = e0;
+        logicalBounds[1] = e1;
+        logicalBounds[2] = e2;
         Select(8);
     }
 
@@ -786,8 +786,8 @@ public class avtMeshMetaData extends AttributeSubject
     public int                  GetMeshCoordType() { return meshCoordType; }
     public int                  GetCellOrigin() { return cellOrigin; }
     public int                  GetSpatialDimension() { return spatialDimension; }
-    public boolean              GetHasSpatialBounds() { return hasSpatialBounds; }
-    public int[]                GetSpatialBounds() { return spatialBounds; }
+    public boolean              GetHasLogicalBounds() { return hasLogicalBounds; }
+    public int[]                GetLogicalBounds() { return logicalBounds; }
     public int                  GetTopologicalDimension() { return topologicalDimension; }
     public String               GetXUnits() { return xUnits; }
     public String               GetYUnits() { return yUnits; }
@@ -845,9 +845,9 @@ public class avtMeshMetaData extends AttributeSubject
         if(WriteSelect(6, buf))
             buf.WriteInt(spatialDimension);
         if(WriteSelect(7, buf))
-            buf.WriteBool(hasSpatialBounds);
+            buf.WriteBool(hasLogicalBounds);
         if(WriteSelect(8, buf))
-            buf.WriteIntArray(spatialBounds);
+            buf.WriteIntArray(logicalBounds);
         if(WriteSelect(9, buf))
             buf.WriteInt(topologicalDimension);
         if(WriteSelect(10, buf))
@@ -952,10 +952,10 @@ public class avtMeshMetaData extends AttributeSubject
             SetSpatialDimension(buf.ReadInt());
             break;
         case 7:
-            SetHasSpatialBounds(buf.ReadBool());
+            SetHasLogicalBounds(buf.ReadBool());
             break;
         case 8:
-            SetSpatialBounds(buf.ReadIntArray());
+            SetLogicalBounds(buf.ReadIntArray());
             break;
         case 9:
             SetTopologicalDimension(buf.ReadInt());
@@ -1085,8 +1085,8 @@ public class avtMeshMetaData extends AttributeSubject
         str = str + intToString("meshCoordType", meshCoordType, indent) + "\n";
         str = str + intToString("cellOrigin", cellOrigin, indent) + "\n";
         str = str + intToString("spatialDimension", spatialDimension, indent) + "\n";
-        str = str + boolToString("hasSpatialBounds", hasSpatialBounds, indent) + "\n";
-        str = str + intArrayToString("spatialBounds", spatialBounds, indent) + "\n";
+        str = str + boolToString("hasLogicalBounds", hasLogicalBounds, indent) + "\n";
+        str = str + intArrayToString("logicalBounds", logicalBounds, indent) + "\n";
         str = str + intToString("topologicalDimension", topologicalDimension, indent) + "\n";
         str = str + stringToString("xUnits", xUnits, indent) + "\n";
         str = str + stringToString("yUnits", yUnits, indent) + "\n";
@@ -1137,8 +1137,8 @@ public class avtMeshMetaData extends AttributeSubject
     private int                  meshCoordType;
     private int                  cellOrigin;
     private int                  spatialDimension;
-    private boolean              hasSpatialBounds;
-    private int[]                spatialBounds;
+    private boolean              hasLogicalBounds;
+    private int[]                logicalBounds;
     private int                  topologicalDimension;
     private String               xUnits;
     private String               yUnits;

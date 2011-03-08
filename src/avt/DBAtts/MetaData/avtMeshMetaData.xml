@@ -20,10 +20,10 @@
     <Field name="spatialDimension" label="Spatial dimension" type="int" access="public">
       3
     </Field>
-    <Field name="hasSpatialBounds" label="Has spatial bounds" type="bool" access="public">
+    <Field name="hasLogicalBounds" label="Has logical bounds" type="bool" access="public">
       false
     </Field>
-    <Field name="spatialBounds" label="Spatial bounds" type="intArray" length="3" access="public">
+    <Field name="logicalBounds" label="Logical bounds for structured meshes" type="intArray" length="3" access="public">
       0.000000
       0.000000
       0.000000

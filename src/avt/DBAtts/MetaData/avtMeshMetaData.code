@@ -273,13 +273,13 @@ Definition:
 //  Method: avtMeshMetaData::SetBounds
 //
 //  Purpose:
-//      Sets the bounds of the mesh.
+//      Sets the logical bounds of a structured mesh.
 //
 //  Arguments:
 //      bounds     Mesh bounds as < i_max, j_max, k_max>.
 //
-//  Programmer: Hank Childs
-//  Creation:   August 30, 2000
+//  Creationist: Allen Sanderson
+//  Creation:    March 3, 2011
 //
 // ****************************************************************************
 
@@ -288,18 +288,18 @@ avtMeshMetaData::SetBounds(const int *bounds)
 {
     if (bounds == NULL)
     {
-        hasSpatialBounds = false;
-        for (int i = 0 ; i < std::min(spatialDimension, 3) ; i++)
+        hasLogicalBounds = false;
+        for (int i = 0 ; i < std::min(topologicalDimension, 3) ; i++)
         {
-            spatialBounds[i] = 0.0;  
+            logicalBounds[i] = 0.0;  
         }
     }
     else
     {
-        hasSpatialBounds = true;
-        for (int i = 0 ; i < std::min(spatialDimension, 3) ; i++)
+        hasLogicalBounds = true;
+        for (int i = 0 ; i < std::min(topologicalDimension, 3) ; i++)
         {
-            spatialBounds[i] = bounds[i];
+            logicalBounds[i] = bounds[i];
         }
     }
 }
@@ -310,7 +310,7 @@ Definition:
 void
 avtMeshMetaData::UnsetBounds()
 {
-    hasSpatialBounds = false;
+    hasLogicalBounds = false;
 }
 
 Function: Print
@@ -515,31 +515,10 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "Spatial Dimension = " << spatialDimension << endl;
 
-    if (hasSpatialBounds)
-    {
-        Indent(out, indent);
-        out << "Bounds are: (";
-        for (int j = 0 ; j < std::min(spatialDimension, 3) ; j++)
-        {
-            out << spatialBounds[j];
-            if(j < spatialDimension-1)
-                out << ", ";
-        }
-        out << ")" << endl;
-    }
-    else
-    {
-        Indent(out, indent);
-        out << "The spatial bounds are not set." << endl;
-    }
-
-
-    Indent(out, indent);
-    out << "Topological Dimension = " << topologicalDimension << endl;
     if (hasSpatialExtents)
     {
         Indent(out, indent);
-        out << "Extents are: (";
+        out << "Spatial extents are: (";
         for (int j = 0 ; j < std::min(spatialDimension, 3) ; j++)
         {
             out << "(" << minSpatialExtents[j] << ", " << maxSpatialExtents[j]
@@ -554,6 +533,40 @@ avtMeshMetaData::Print(ostream &out, int indent) const
         Indent(out, indent);
         out << "The spatial extents are not set." << endl;
     }
+
+    Indent(out, indent);
+    out << "Topological Dimension = " << topologicalDimension << endl;
+
+    if (hasLogicalBounds)
+    {
+        Indent(out, indent);
+        out << "Logical bounds are: (";
+        for (int j = 0 ; j < std::min(topologicalDimension, 3) ; j++)
+        {
+            out << logicalBounds[j];
+            if(j < topologicalDimension-1)
+                out << ", ";
+        }
+        out << ")" << endl;
+    }
+    else
+    {
+        switch (meshType)
+        {
+          case AVT_RECTILINEAR_MESH:
+          case AVT_CURVILINEAR_MESH:
+          case AVT_POINT_MESH:
+            Indent(out, indent);
+            out << "The logical bounds are not set." << endl;
+            break;
+
+//          Report nothing as the logical bounds are not applicable
+//          default:
+//            out << "The logical bounds are not applicable." << endl;
+//            break;
+        }
+    }
+
 
     if (blockNames.size() == numBlocks)
     {
