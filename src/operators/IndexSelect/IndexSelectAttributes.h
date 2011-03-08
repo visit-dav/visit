@@ -99,14 +99,17 @@ public:
     void SetDim(Dimension dim_);
     void SetXMin(int xMin_);
     void SetXMax(int xMax_);
+    void SetXAbsMax(int xAbsMax_);
     void SetXIncr(int xIncr_);
     void SetXWrap(bool xWrap_);
     void SetYMin(int yMin_);
     void SetYMax(int yMax_);
+    void SetYAbsMax(int yAbsMax_);
     void SetYIncr(int yIncr_);
     void SetYWrap(bool yWrap_);
     void SetZMin(int zMin_);
     void SetZMax(int zMax_);
+    void SetZAbsMax(int zAbsMax_);
     void SetZIncr(int zIncr_);
     void SetZWrap(bool zWrap_);
     void SetUseWholeCollection(bool useWholeCollection_);
@@ -117,14 +120,17 @@ public:
     Dimension         GetDim() const;
     int               GetXMin() const;
     int               GetXMax() const;
+    int               GetXAbsMax() const;
     int               GetXIncr() const;
     bool              GetXWrap() const;
     int               GetYMin() const;
     int               GetYMax() const;
+    int               GetYAbsMax() const;
     int               GetYIncr() const;
     bool              GetYWrap() const;
     int               GetZMin() const;
     int               GetZMax() const;
+    int               GetZAbsMax() const;
     int               GetZIncr() const;
     bool              GetZWrap() const;
     bool              GetUseWholeCollection() const;
@@ -158,14 +164,17 @@ public:
         ID_dim = 0,
         ID_xMin,
         ID_xMax,
+        ID_xAbsMax,
         ID_xIncr,
         ID_xWrap,
         ID_yMin,
         ID_yMax,
+        ID_yAbsMax,
         ID_yIncr,
         ID_yWrap,
         ID_zMin,
         ID_zMax,
+        ID_zAbsMax,
         ID_zIncr,
         ID_zWrap,
         ID_useWholeCollection,
@@ -178,14 +187,17 @@ private:
     int         dim;
     int         xMin;
     int         xMax;
+    int         xAbsMax;
     int         xIncr;
     bool        xWrap;
     int         yMin;
     int         yMax;
+    int         yAbsMax;
     int         yIncr;
     bool        yWrap;
     int         zMin;
     int         zMax;
+    int         zAbsMax;
     int         zIncr;
     bool        zWrap;
     bool        useWholeCollection;
@@ -196,6 +208,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define INDEXSELECTATTRIBUTES_TMFS "iiiibiiibiiibbss"
+#define INDEXSELECTATTRIBUTES_TMFS "iiiiibiiiibiiiibbss"
 
 #endif
