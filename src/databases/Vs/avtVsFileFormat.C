@@ -268,7 +268,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
     int mins[3], maxs[3], strides[3];
     if( 0 && ProcessDataSelections(mins, maxs, strides) )
     {
-      cerr << "have a data selection "<< endl
+      cerr << "have a data selection for mesh "<< endl
            << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
            << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
            << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
@@ -1748,7 +1748,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
     int mins[3], maxs[3], strides[3];
     if( 0 && ProcessDataSelections(mins, maxs, strides) )
     {
-      cerr << "have a data selection "<< endl
+      cerr << "have a data selection for a variable "<< endl
            << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
            << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
            << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
@@ -2498,13 +2498,13 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
       << *it << "' of kind '" << meta->getKind() << "'." << endl;
 
       if (meta->isUniformMesh()) {
-        // 09.06.01 Marc Durant
-        // We used to report uniform cartesian meshes as being 3d no matter what
-        // I have changed this to use the correct mesh dimensions
-        // The changed plugin passes vstests, and is motivated because
-        // the VisIt Lineout operator requires 2-d data.
-        // EXCEPT! then we can't plot 3-d vectors on the 2-d data, so for now we continue to report 3
-        //mdims = dims.size();
+        // 09.06.01 Marc Durant We used to report uniform cartesian
+        // meshes as being 3d no matter what I have changed this to
+        // use the correct mesh dimensions The changed plugin passes
+        // vstests, and is motivated because the VisIt Lineout
+        // operator requires 2-d data.  EXCEPT! then we can't plot 3-d
+        // vectors on the 2-d data, so for now we continue to report 3
+        // mdims = dims.size();
         VsLog::debugLog() <<methodSig <<"Mesh's dimension = " << mdims << endl;
         if (mdims != 3) {
           VsLog::debugLog() <<methodSig <<"But reporting as dimension 3 to side-step VisIt bug." <<std::endl;
@@ -2512,7 +2512,14 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
         }
         
         VsLog::debugLog() <<methodSig <<"Adding uniform mesh " <<*it <<"." <<endl;
-        avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
+        // Add in the logical bounds of the data.
+        std::vector<int> dims;
+        meta->getMeshDims(&dims, reader->useStride, this->stride);
+        int bounds[3] = {1,1,1};
+        for( int i=0; i<dims.size(); ++i )
+          bounds[i] = dims[i];
+
+        avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
             1, 1, 1, 0, mdims, mdims, AVT_RECTILINEAR_MESH);
         setAxisLabels(vmd);
         md->Add(vmd);
@@ -2540,7 +2547,15 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
       }
       else if (meta->isStructuredMesh()) {
         VsLog::debugLog() <<methodSig <<"Adding structured mesh " <<*it <<"." <<endl;
-        avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
+
+        // Add in the logical bounds of the data.
+        std::vector<int> dims;
+        meta->getMeshDims(&dims, reader->useStride, this->stride);
+        int bounds[3] = {1,1,1};
+        for( int i=0; i<dims.size(); ++i )
+          bounds[i] = dims[i];
+
+        avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
             1, 1, 1, 0, mdims, mdims, AVT_CURVILINEAR_MESH);
         setAxisLabels(vmd);
         md->Add(vmd);
@@ -2548,7 +2563,15 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
       else if (meta->isRectilinearMesh()) {
         VsLog::debugLog() <<methodSig <<"Adding rectilinear mesh" <<*it <<"." <<std::endl;
         VsLog::debugLog() <<methodSig <<"MDims = " <<mdims <<"." <<std::endl;
-        avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
+
+        // Add in the logical bounds of the data.
+        std::vector<int> dims;
+        meta->getMeshDims(&dims, reader->useStride, this->stride);
+        int bounds[3] = {1,1,1};
+        for( int i=0; i<dims.size(); ++i )
+          bounds[i] = dims[i];
+
+        avtMeshMetaData* vmd = new avtMeshMetaData(bounds, 0, it->c_str(),
             1, 1, 1, 0, mdims, mdims, AVT_RECTILINEAR_MESH);
         setAxisLabels(vmd);
         md->Add(vmd);
@@ -2674,7 +2697,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 
       VsLog::debugLog() << methodSig <<"Mesh has dimension " <<meta->getNumSpatialDims() <<"." <<std::endl;
 
-      avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
+      avtMeshMetaData* vmd =new avtMeshMetaData(it->c_str(),
           meta->getNumBlocks(), 1, 1, 0, meta->getNumSpatialDims(), meta->getNumSpatialDims(), meshType);
       setAxisLabels(vmd);
       md->Add(vmd);
