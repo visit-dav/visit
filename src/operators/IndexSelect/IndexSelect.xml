@@ -15,6 +15,9 @@
       <Field name="xMax" label="X-Max" type="int">
         -1
       </Field>
+      <Field name="xAbsMax" label="X-absolute-Max" type="int">
+        -1
+      </Field>
       <Field name="xIncr" label="X-Incr" type="int">
         1
       </Field>
@@ -27,6 +30,9 @@
       <Field name="yMax" label="Y-Max" type="int">
         -1
       </Field>
+      <Field name="yAbsMax" label="Y-absolute-Max" type="int">
+        -1
+      </Field>
       <Field name="yIncr" label="Y-Incr" type="int">
         1
       </Field>
@@ -37,6 +43,9 @@
         0
       </Field>
       <Field name="zMax" label="Z-Max" type="int">
+        -1
+      </Field>
+      <Field name="zAbsMax" label="Z-absolute-Max" type="int">
         -1
       </Field>
       <Field name="zIncr" label="Z-Incr" type="int">
