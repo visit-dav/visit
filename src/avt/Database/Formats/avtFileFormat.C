@@ -350,11 +350,11 @@ avtFileFormat::AddMeshToMetaData(avtDatabaseMetaData *md, string name,
     if (bounds != NULL)
     {
         mesh->SetBounds(bounds);
-        mesh->hasSpatialBounds = true;
+        mesh->hasLogicalBounds = true;
     }
     else
     {
-        mesh->hasSpatialBounds = false;
+        mesh->hasLogicalBounds = false;
     }
 
     if (extents != NULL)

@@ -108,8 +108,8 @@ public:
         ID_meshCoordType,
         ID_cellOrigin,
         ID_spatialDimension,
-        ID_hasSpatialBounds,
-        ID_spatialBounds,
+        ID_hasLogicalBounds,
+        ID_logicalBounds,
         ID_topologicalDimension,
         ID_xUnits,
         ID_yUnits,
@@ -159,8 +159,8 @@ public:
     avtMeshCoordType     meshCoordType;
     int                  cellOrigin;
     int                  spatialDimension;
-    bool                 hasSpatialBounds;
-    int                  spatialBounds[3];
+    bool                 hasLogicalBounds;
+    int                  logicalBounds[3];
     int                  topologicalDimension;
     std::string          xUnits;
     std::string          yUnits;
