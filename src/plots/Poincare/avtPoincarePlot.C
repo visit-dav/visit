@@ -446,7 +446,6 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetOverrideToroidalWinding( atts.GetOverrideToroidalWinding() );
     poincareFilter->SetOverridePoloidalWinding( atts.GetOverridePoloidalWinding() );
     poincareFilter->SetWindingPairConfidence( atts.GetWindingPairConfidence() );
-    poincareFilter->SetPeriodicityConsistency( atts.GetPeriodicityConsistency() );
     poincareFilter->SetOverlaps( atts.GetOverlaps() );
     poincareFilter->SetAdjustPlane( atts.GetAdjustPlane() );
 
@@ -479,7 +478,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetShowLines(atts.GetShowLines());
     poincareFilter->SetShowPoints(atts.GetShowPoints());
     poincareFilter->SetPointScale(atts.GetPointSize());
-    poincareFilter->SetShowRidgelines(atts.GetShowRidgelines());
+    poincareFilter->SetShow1DPlots(atts.GetShow1DPlots());
     poincareFilter->SetVerboseFlag( atts.GetVerboseFlag() );
 #endif
 

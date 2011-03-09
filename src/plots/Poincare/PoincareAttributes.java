@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int PoincareAttributes_numAdditionalAtts = 56;
+    private static int PoincareAttributes_numAdditionalAtts = 55;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -154,7 +154,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overrideToroidalWinding = 0;
         overridePoloidalWinding = 0;
         windingPairConfidence = 0.9;
-        periodicityConsistency = 0.8;
         adjustPlane = -1;
         overlaps = OVERLAPTYPE_REMOVE;
         meshType = SHOWMESHTYPE_CURVES;
@@ -175,7 +174,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showChaotic = false;
         showIslands = false;
         verboseFlag = true;
-        showRidgelines = false;
+        show1DPlots = false;
         showLines = true;
         lineWidth = 0;
         lineStyle = 0;
@@ -225,7 +224,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overrideToroidalWinding = 0;
         overridePoloidalWinding = 0;
         windingPairConfidence = 0.9;
-        periodicityConsistency = 0.8;
         adjustPlane = -1;
         overlaps = OVERLAPTYPE_REMOVE;
         meshType = SHOWMESHTYPE_CURVES;
@@ -246,7 +244,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showChaotic = false;
         showIslands = false;
         verboseFlag = true;
-        showRidgelines = false;
+        show1DPlots = false;
         showLines = true;
         lineWidth = 0;
         lineStyle = 0;
@@ -301,7 +299,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overrideToroidalWinding = obj.overrideToroidalWinding;
         overridePoloidalWinding = obj.overridePoloidalWinding;
         windingPairConfidence = obj.windingPairConfidence;
-        periodicityConsistency = obj.periodicityConsistency;
         adjustPlane = obj.adjustPlane;
         overlaps = obj.overlaps;
         meshType = obj.meshType;
@@ -322,7 +319,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showChaotic = obj.showChaotic;
         showIslands = obj.showIslands;
         verboseFlag = obj.verboseFlag;
-        showRidgelines = obj.showRidgelines;
+        show1DPlots = obj.show1DPlots;
         showLines = obj.showLines;
         lineWidth = obj.lineWidth;
         lineStyle = obj.lineStyle;
@@ -391,7 +388,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (overrideToroidalWinding == obj.overrideToroidalWinding) &&
                 (overridePoloidalWinding == obj.overridePoloidalWinding) &&
                 (windingPairConfidence == obj.windingPairConfidence) &&
-                (periodicityConsistency == obj.periodicityConsistency) &&
                 (adjustPlane == obj.adjustPlane) &&
                 (overlaps == obj.overlaps) &&
                 (meshType == obj.meshType) &&
@@ -412,7 +408,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (showChaotic == obj.showChaotic) &&
                 (showIslands == obj.showIslands) &&
                 (verboseFlag == obj.verboseFlag) &&
-                (showRidgelines == obj.showRidgelines) &&
+                (show1DPlots == obj.show1DPlots) &&
                 (showLines == obj.showLines) &&
                 (lineWidth == obj.lineWidth) &&
                 (lineStyle == obj.lineStyle) &&
@@ -583,220 +579,214 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(19);
     }
 
-    public void SetPeriodicityConsistency(double periodicityConsistency_)
-    {
-        periodicityConsistency = periodicityConsistency_;
-        Select(20);
-    }
-
     public void SetAdjustPlane(int adjustPlane_)
     {
         adjustPlane = adjustPlane_;
-        Select(21);
+        Select(20);
     }
 
     public void SetOverlaps(int overlaps_)
     {
         overlaps = overlaps_;
-        Select(22);
+        Select(21);
     }
 
     public void SetMeshType(int meshType_)
     {
         meshType = meshType_;
-        Select(23);
+        Select(22);
     }
 
     public void SetNumberPlanes(int numberPlanes_)
     {
         numberPlanes = numberPlanes_;
-        Select(24);
+        Select(23);
     }
 
     public void SetSinglePlane(double singlePlane_)
     {
         singlePlane = singlePlane_;
-        Select(25);
+        Select(24);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(26);
+        Select(25);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(27);
+        Select(26);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(28);
+        Select(27);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(29);
+        Select(28);
     }
 
     public void SetColorType(int colorType_)
     {
         colorType = colorType_;
-        Select(30);
+        Select(29);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(31);
+        Select(30);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(32);
+        Select(31);
     }
 
     public void SetDataValue(int dataValue_)
     {
         dataValue = dataValue_;
-        Select(33);
+        Select(32);
     }
 
     public void SetShowOPoints(boolean showOPoints_)
     {
         showOPoints = showOPoints_;
-        Select(34);
+        Select(33);
     }
 
     public void SetOPointMaxInterations(int OPointMaxInterations_)
     {
         OPointMaxInterations = OPointMaxInterations_;
-        Select(35);
+        Select(34);
     }
 
     public void SetShowXPoints(boolean showXPoints_)
     {
         showXPoints = showXPoints_;
-        Select(36);
+        Select(35);
     }
 
     public void SetXPointMaxInterations(int XPointMaxInterations_)
     {
         XPointMaxInterations = XPointMaxInterations_;
-        Select(37);
+        Select(36);
     }
 
     public void SetShowChaotic(boolean showChaotic_)
     {
         showChaotic = showChaotic_;
-        Select(38);
+        Select(37);
     }
 
     public void SetShowIslands(boolean showIslands_)
     {
         showIslands = showIslands_;
-        Select(39);
+        Select(38);
     }
 
     public void SetVerboseFlag(boolean verboseFlag_)
     {
         verboseFlag = verboseFlag_;
-        Select(40);
+        Select(39);
     }
 
-    public void SetShowRidgelines(boolean showRidgelines_)
+    public void SetShow1DPlots(boolean show1DPlots_)
     {
-        showRidgelines = showRidgelines_;
-        Select(41);
+        show1DPlots = show1DPlots_;
+        Select(40);
     }
 
     public void SetShowLines(boolean showLines_)
     {
         showLines = showLines_;
-        Select(42);
+        Select(41);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(43);
+        Select(42);
     }
 
     public void SetLineStyle(int lineStyle_)
     {
         lineStyle = lineStyle_;
-        Select(44);
+        Select(43);
     }
 
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(45);
+        Select(44);
     }
 
     public void SetPointSize(double pointSize_)
     {
         pointSize = pointSize_;
-        Select(46);
+        Select(45);
     }
 
     public void SetPointSizePixels(int pointSizePixels_)
     {
         pointSizePixels = pointSizePixels_;
-        Select(47);
+        Select(46);
     }
 
     public void SetPointType(int pointType_)
     {
         pointType = pointType_;
-        Select(48);
+        Select(47);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(49);
+        Select(48);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(50);
+        Select(49);
     }
 
     public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
     {
         streamlineAlgorithmType = streamlineAlgorithmType_;
-        Select(51);
+        Select(50);
     }
 
     public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
     {
         maxStreamlineProcessCount = maxStreamlineProcessCount_;
-        Select(52);
+        Select(51);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(53);
+        Select(52);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(54);
+        Select(53);
     }
 
     public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
     {
         forceNodeCenteredData = forceNodeCenteredData_;
-        Select(55);
+        Select(54);
     }
 
     // Property getting methods
@@ -820,7 +810,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetOverrideToroidalWinding() { return overrideToroidalWinding; }
     public int            GetOverridePoloidalWinding() { return overridePoloidalWinding; }
     public double         GetWindingPairConfidence() { return windingPairConfidence; }
-    public double         GetPeriodicityConsistency() { return periodicityConsistency; }
     public int            GetAdjustPlane() { return adjustPlane; }
     public int            GetOverlaps() { return overlaps; }
     public int            GetMeshType() { return meshType; }
@@ -841,7 +830,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public boolean        GetShowChaotic() { return showChaotic; }
     public boolean        GetShowIslands() { return showIslands; }
     public boolean        GetVerboseFlag() { return verboseFlag; }
-    public boolean        GetShowRidgelines() { return showRidgelines; }
+    public boolean        GetShow1DPlots() { return show1DPlots; }
     public boolean        GetShowLines() { return showLines; }
     public int            GetLineWidth() { return lineWidth; }
     public int            GetLineStyle() { return lineStyle; }
@@ -901,76 +890,74 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(19, buf))
             buf.WriteDouble(windingPairConfidence);
         if(WriteSelect(20, buf))
-            buf.WriteDouble(periodicityConsistency);
-        if(WriteSelect(21, buf))
             buf.WriteInt(adjustPlane);
-        if(WriteSelect(22, buf))
+        if(WriteSelect(21, buf))
             buf.WriteInt(overlaps);
-        if(WriteSelect(23, buf))
+        if(WriteSelect(22, buf))
             buf.WriteInt(meshType);
-        if(WriteSelect(24, buf))
+        if(WriteSelect(23, buf))
             buf.WriteInt(numberPlanes);
-        if(WriteSelect(25, buf))
+        if(WriteSelect(24, buf))
             buf.WriteDouble(singlePlane);
-        if(WriteSelect(26, buf))
+        if(WriteSelect(25, buf))
             buf.WriteDouble(min);
-        if(WriteSelect(27, buf))
+        if(WriteSelect(26, buf))
             buf.WriteDouble(max);
-        if(WriteSelect(28, buf))
+        if(WriteSelect(27, buf))
             buf.WriteBool(minFlag);
-        if(WriteSelect(29, buf))
+        if(WriteSelect(28, buf))
             buf.WriteBool(maxFlag);
-        if(WriteSelect(30, buf))
+        if(WriteSelect(29, buf))
             buf.WriteInt(colorType);
-        if(WriteSelect(31, buf))
+        if(WriteSelect(30, buf))
             singleColor.Write(buf);
-        if(WriteSelect(32, buf))
+        if(WriteSelect(31, buf))
             buf.WriteString(colorTableName);
-        if(WriteSelect(33, buf))
+        if(WriteSelect(32, buf))
             buf.WriteInt(dataValue);
-        if(WriteSelect(34, buf))
+        if(WriteSelect(33, buf))
             buf.WriteBool(showOPoints);
-        if(WriteSelect(35, buf))
+        if(WriteSelect(34, buf))
             buf.WriteInt(OPointMaxInterations);
-        if(WriteSelect(36, buf))
+        if(WriteSelect(35, buf))
             buf.WriteBool(showXPoints);
-        if(WriteSelect(37, buf))
+        if(WriteSelect(36, buf))
             buf.WriteInt(XPointMaxInterations);
-        if(WriteSelect(38, buf))
+        if(WriteSelect(37, buf))
             buf.WriteBool(showChaotic);
-        if(WriteSelect(39, buf))
+        if(WriteSelect(38, buf))
             buf.WriteBool(showIslands);
-        if(WriteSelect(40, buf))
+        if(WriteSelect(39, buf))
             buf.WriteBool(verboseFlag);
+        if(WriteSelect(40, buf))
+            buf.WriteBool(show1DPlots);
         if(WriteSelect(41, buf))
-            buf.WriteBool(showRidgelines);
-        if(WriteSelect(42, buf))
             buf.WriteBool(showLines);
-        if(WriteSelect(43, buf))
+        if(WriteSelect(42, buf))
             buf.WriteInt(lineWidth);
-        if(WriteSelect(44, buf))
+        if(WriteSelect(43, buf))
             buf.WriteInt(lineStyle);
-        if(WriteSelect(45, buf))
+        if(WriteSelect(44, buf))
             buf.WriteBool(showPoints);
-        if(WriteSelect(46, buf))
+        if(WriteSelect(45, buf))
             buf.WriteDouble(pointSize);
-        if(WriteSelect(47, buf))
+        if(WriteSelect(46, buf))
             buf.WriteInt(pointSizePixels);
-        if(WriteSelect(48, buf))
+        if(WriteSelect(47, buf))
             buf.WriteInt(pointType);
-        if(WriteSelect(49, buf))
+        if(WriteSelect(48, buf))
             buf.WriteBool(legendFlag);
-        if(WriteSelect(50, buf))
+        if(WriteSelect(49, buf))
             buf.WriteBool(lightingFlag);
-        if(WriteSelect(51, buf))
+        if(WriteSelect(50, buf))
             buf.WriteInt(streamlineAlgorithmType);
-        if(WriteSelect(52, buf))
+        if(WriteSelect(51, buf))
             buf.WriteInt(maxStreamlineProcessCount);
-        if(WriteSelect(53, buf))
+        if(WriteSelect(52, buf))
             buf.WriteInt(maxDomainCacheSize);
-        if(WriteSelect(54, buf))
+        if(WriteSelect(53, buf))
             buf.WriteInt(workGroupSize);
-        if(WriteSelect(55, buf))
+        if(WriteSelect(54, buf))
             buf.WriteBool(forceNodeCenteredData);
     }
 
@@ -1039,112 +1026,109 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetWindingPairConfidence(buf.ReadDouble());
             break;
         case 20:
-            SetPeriodicityConsistency(buf.ReadDouble());
-            break;
-        case 21:
             SetAdjustPlane(buf.ReadInt());
             break;
-        case 22:
+        case 21:
             SetOverlaps(buf.ReadInt());
             break;
-        case 23:
+        case 22:
             SetMeshType(buf.ReadInt());
             break;
-        case 24:
+        case 23:
             SetNumberPlanes(buf.ReadInt());
             break;
-        case 25:
+        case 24:
             SetSinglePlane(buf.ReadDouble());
             break;
-        case 26:
+        case 25:
             SetMin(buf.ReadDouble());
             break;
-        case 27:
+        case 26:
             SetMax(buf.ReadDouble());
             break;
-        case 28:
+        case 27:
             SetMinFlag(buf.ReadBool());
             break;
-        case 29:
+        case 28:
             SetMaxFlag(buf.ReadBool());
             break;
-        case 30:
+        case 29:
             SetColorType(buf.ReadInt());
             break;
-        case 31:
+        case 30:
             singleColor.Read(buf);
-            Select(31);
+            Select(30);
             break;
-        case 32:
+        case 31:
             SetColorTableName(buf.ReadString());
             break;
-        case 33:
+        case 32:
             SetDataValue(buf.ReadInt());
             break;
-        case 34:
+        case 33:
             SetShowOPoints(buf.ReadBool());
             break;
-        case 35:
+        case 34:
             SetOPointMaxInterations(buf.ReadInt());
             break;
-        case 36:
+        case 35:
             SetShowXPoints(buf.ReadBool());
             break;
-        case 37:
+        case 36:
             SetXPointMaxInterations(buf.ReadInt());
             break;
-        case 38:
+        case 37:
             SetShowChaotic(buf.ReadBool());
             break;
-        case 39:
+        case 38:
             SetShowIslands(buf.ReadBool());
             break;
-        case 40:
+        case 39:
             SetVerboseFlag(buf.ReadBool());
             break;
-        case 41:
-            SetShowRidgelines(buf.ReadBool());
+        case 40:
+            SetShow1DPlots(buf.ReadBool());
             break;
-        case 42:
+        case 41:
             SetShowLines(buf.ReadBool());
             break;
-        case 43:
+        case 42:
             SetLineWidth(buf.ReadInt());
             break;
-        case 44:
+        case 43:
             SetLineStyle(buf.ReadInt());
             break;
-        case 45:
+        case 44:
             SetShowPoints(buf.ReadBool());
             break;
-        case 46:
+        case 45:
             SetPointSize(buf.ReadDouble());
             break;
-        case 47:
+        case 46:
             SetPointSizePixels(buf.ReadInt());
             break;
-        case 48:
+        case 47:
             SetPointType(buf.ReadInt());
             break;
-        case 49:
+        case 48:
             SetLegendFlag(buf.ReadBool());
             break;
-        case 50:
+        case 49:
             SetLightingFlag(buf.ReadBool());
             break;
-        case 51:
+        case 50:
             SetStreamlineAlgorithmType(buf.ReadInt());
             break;
-        case 52:
+        case 51:
             SetMaxStreamlineProcessCount(buf.ReadInt());
             break;
-        case 53:
+        case 52:
             SetMaxDomainCacheSize(buf.ReadInt());
             break;
-        case 54:
+        case 53:
             SetWorkGroupSize(buf.ReadInt());
             break;
-        case 55:
+        case 54:
             SetForceNodeCenteredData(buf.ReadBool());
             break;
         }
@@ -1211,7 +1195,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + intToString("overrideToroidalWinding", overrideToroidalWinding, indent) + "\n";
         str = str + intToString("overridePoloidalWinding", overridePoloidalWinding, indent) + "\n";
         str = str + doubleToString("windingPairConfidence", windingPairConfidence, indent) + "\n";
-        str = str + doubleToString("periodicityConsistency", periodicityConsistency, indent) + "\n";
         str = str + intToString("adjustPlane", adjustPlane, indent) + "\n";
         str = str + indent + "overlaps = ";
         if(overlaps == OVERLAPTYPE_RAW)
@@ -1278,7 +1261,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("showChaotic", showChaotic, indent) + "\n";
         str = str + boolToString("showIslands", showIslands, indent) + "\n";
         str = str + boolToString("verboseFlag", verboseFlag, indent) + "\n";
-        str = str + boolToString("showRidgelines", showRidgelines, indent) + "\n";
+        str = str + boolToString("show1DPlots", show1DPlots, indent) + "\n";
         str = str + boolToString("showLines", showLines, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + intToString("lineStyle", lineStyle, indent) + "\n";
@@ -1336,7 +1319,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            overrideToroidalWinding;
     private int            overridePoloidalWinding;
     private double         windingPairConfidence;
-    private double         periodicityConsistency;
     private int            adjustPlane;
     private int            overlaps;
     private int            meshType;
@@ -1357,7 +1339,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private boolean        showChaotic;
     private boolean        showIslands;
     private boolean        verboseFlag;
-    private boolean        showRidgelines;
+    private boolean        show1DPlots;
     private boolean        showLines;
     private int            lineWidth;
     private int            lineStyle;

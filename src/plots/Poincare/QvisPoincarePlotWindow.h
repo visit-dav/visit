@@ -123,7 +123,6 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void overrideToroidalWindingChanged(int val);
     void overridePoloidalWindingChanged(int val);
     void windingPairConfidenceProcessText();
-    void periodicityConsistencyProcessText();
     void adjustPlaneChanged(int val);
     void overlapsChanged(int val);
     void meshTypeChanged(int val);
@@ -151,7 +150,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void pointSizePixelsChanged(int val);
     void pointTypeChanged(int val);
     void verboseFlagChanged(bool val);
-    void showRidgelinesChanged(bool val);
+    void show1DPlotsChanged(bool val);
     void legendToggled(bool val);
     void lightingToggled(bool val);
     void streamlineAlgorithmChanged(int val);
@@ -186,7 +185,6 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QSpinBox *overrideToroidalWinding;
     QSpinBox *overridePoloidalWinding;
     QLineEdit *windingPairConfidence;
-    QLineEdit *periodicityConsistency;
     QWidget      *overlaps;
     QButtonGroup *overlapsButtonGroup;
     QWidget      *meshType;
@@ -222,7 +220,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QvisLineWidthWidget *lineWidth;
     QvisLineStyleWidget *lineStyle;
 
-    QCheckBox *showRidgelines;
+    QCheckBox *show1DPlots;
     QCheckBox *verboseFlag;
     QCheckBox *legendToggle;
     QCheckBox *lightingToggle;
@@ -244,7 +242,6 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *overrideToroidalWindingLabel;
     QLabel *overridePoloidalWindingLabel;
     QLabel *windingPairConfidenceLabel;
-    QLabel *periodicityConsistencyLabel;
     QLabel *adjustPlaneLabel;
     QLabel *overlapsLabel;
     QLabel *meshTypeLabel;

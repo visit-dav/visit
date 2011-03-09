@@ -325,7 +325,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     
     mainLayout = new QGridLayout(secondTab);
 
-    analysisLabel = new QLabel(tr("Analysis"), secondTab);
+    analysisLabel = new QLabel(tr("Analysis type"), secondTab);
     mainLayout->addWidget(analysisLabel, 0, 0, Qt::AlignTop);
     analysis = new QWidget(secondTab);
     analysisButtonGroup= new QButtonGroup(analysis);
@@ -333,7 +333,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     analysisTypeLayout->setMargin(0);
     analysisTypeLayout->setSpacing(10);
     QRadioButton *analysisTypeNone =
-      new QRadioButton(tr("Punctures only"), analysis);
+      new QRadioButton(tr("None - Punctures only"), analysis);
     analysisButtonGroup->addButton(analysisTypeNone,0);
     analysisTypeLayout->addWidget(analysisTypeNone);
     QRadioButton *analysisTypeNormal =
@@ -391,14 +391,6 @@ QvisPoincarePlotWindow::CreateWindowContents()
     connect(windingPairConfidence, SIGNAL(returnPressed()),
             this, SLOT(windingPairConfidenceProcessText()));
     analysisLayout->addWidget(windingPairConfidence, 3, 1);
-
-    periodicityConsistencyLabel =
-      new QLabel(tr("Periodicity consistency"), secondTab);
-    analysisLayout->addWidget(periodicityConsistencyLabel, 4, 0);
-    periodicityConsistency = new QLineEdit(secondTab);
-    connect(periodicityConsistency, SIGNAL(returnPressed()),
-            this, SLOT(periodicityConsistencyProcessText()));
-    analysisLayout->addWidget(periodicityConsistency, 4, 1);
 
    // Create the O/X Point group box.
     QGroupBox *criticalPointGroup = new QGroupBox(secondTab);
@@ -484,10 +476,10 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(showChaoticChanged(bool)));
     analysisOptionsLayout->addWidget(showChaotic, 0, 1);
 
-    showRidgelines = new QCheckBox(tr("Show ridgelines"), analysisOptionsGroup);
-    connect(showRidgelines, SIGNAL(toggled(bool)),
-            this, SLOT(showRidgelinesChanged(bool)));
-    analysisOptionsLayout->addWidget(showRidgelines, 1, 0);
+    show1DPlots = new QCheckBox(tr("Show 1D plots (distance/ridgelines)"), analysisOptionsGroup);
+    connect(show1DPlots, SIGNAL(toggled(bool)),
+            this, SLOT(show1DPlotsChanged(bool)));
+    analysisOptionsLayout->addWidget(show1DPlots, 1, 0);
 
     verboseFlag = new QCheckBox(tr("Verbose"), analysisOptionsGroup);
     connect(verboseFlag, SIGNAL(toggled(bool)),
@@ -519,18 +511,18 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
     dataValueCombo = new QComboBox(dataGroup);
     dataValueCombo->addItem(tr("None"));
-    dataValueCombo->addItem(tr("OriginalValue"));
-    dataValueCombo->addItem(tr("InputOrder"));
-    dataValueCombo->addItem(tr("PointIndex"));
+    dataValueCombo->addItem(tr("Original Value"));
+    dataValueCombo->addItem(tr("Input Order"));
+    dataValueCombo->addItem(tr("Point Index"));
     dataValueCombo->addItem(tr("Plane"));
-    dataValueCombo->addItem(tr("WindingGroup"));
-    dataValueCombo->addItem(tr("WindingPointOrder"));
-    dataValueCombo->addItem(tr("WindingPointOrderModulo"));
-    dataValueCombo->addItem(tr("ToroidalWindings"));
-    dataValueCombo->addItem(tr("PoloidalWindings"));
-    dataValueCombo->addItem(tr("SafetyFactor"));
-    dataValueCombo->addItem(tr("Confidence"));
-    dataValueCombo->addItem(tr("RidgelineVariance"));
+    dataValueCombo->addItem(tr("Winding Group"));
+    dataValueCombo->addItem(tr("Winding Point Order"));
+    dataValueCombo->addItem(tr("Winding Point Order Modulo"));
+    dataValueCombo->addItem(tr("Toroidal Windings"));
+    dataValueCombo->addItem(tr("Poloidal Windings"));
+    dataValueCombo->addItem(tr("Safety Factor"));
+//    dataValueCombo->addItem(tr("Confidence"));
+//    dataValueCombo->addItem(tr("Ridgeline Variance"));
     connect(dataValueCombo, SIGNAL(activated(int)),
            this, SLOT(dataValueChanged(int)));
     dataLayout->addWidget(dataValueCombo, 0, 1);
@@ -958,9 +950,6 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
           case PoincareAttributes::ID_windingPairConfidence:
             windingPairConfidence->setText(DoubleToQString(atts->GetWindingPairConfidence()));
             break;
-          case PoincareAttributes::ID_periodicityConsistency:
-            periodicityConsistency->setText(DoubleToQString(atts->GetPeriodicityConsistency()));
-            break;
           case PoincareAttributes::ID_adjustPlane:
             adjustPlane->blockSignals(true);
             adjustPlane->setValue(atts->GetAdjustPlane());
@@ -1137,10 +1126,10 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             pointControl->SetPointType(atts->GetPointType());
             pointControl->blockSignals(false);
             break;
-          case PoincareAttributes::ID_showRidgelines:
-            showRidgelines->blockSignals(true);
-            showRidgelines->setChecked(atts->GetShowRidgelines());
-            showRidgelines->blockSignals(false);
+          case PoincareAttributes::ID_show1DPlots:
+            show1DPlots->blockSignals(true);
+            show1DPlots->setChecked(atts->GetShow1DPlots());
+            show1DPlots->blockSignals(false);
             break;
           case PoincareAttributes::ID_verboseFlag:
             verboseFlag->blockSignals(true);
@@ -1306,20 +1295,6 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("windingPairConfidence"),
                 DoubleToQString(atts->GetWindingPairConfidence()));
             atts->SetWindingPairConfidence(atts->GetWindingPairConfidence());
-        }
-    }
-
-    // Do periodicityConsistency
-    if(which_widget == PoincareAttributes::ID_periodicityConsistency || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(periodicityConsistency, val))
-            atts->SetPeriodicityConsistency(val);
-        else
-        {
-            ResettingError(tr("periodicityConsistency"),
-                DoubleToQString(atts->GetPeriodicityConsistency()));
-            atts->SetPeriodicityConsistency(atts->GetPeriodicityConsistency());
         }
     }
 
@@ -1767,14 +1742,6 @@ QvisPoincarePlotWindow::windingPairConfidenceProcessText()
 
 
 void
-QvisPoincarePlotWindow::periodicityConsistencyProcessText()
-{
-    GetCurrentValues(PoincareAttributes::ID_periodicityConsistency);
-    Apply();
-}
-
-
-void
 QvisPoincarePlotWindow::overlapsChanged(int val)
 {
     if(val != atts->GetOverlaps())
@@ -1955,9 +1922,9 @@ QvisPoincarePlotWindow::showLinesChanged(bool val)
 
 
 void
-QvisPoincarePlotWindow::showRidgelinesChanged(bool val)
+QvisPoincarePlotWindow::show1DPlotsChanged(bool val)
 {
-    atts->SetShowRidgelines(val);
+    atts->SetShow1DPlots(val);
     Apply();
 }
 

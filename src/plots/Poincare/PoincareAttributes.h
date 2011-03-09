@@ -195,7 +195,6 @@ public:
     void SetOverrideToroidalWinding(int overrideToroidalWinding_);
     void SetOverridePoloidalWinding(int overridePoloidalWinding_);
     void SetWindingPairConfidence(double windingPairConfidence_);
-    void SetPeriodicityConsistency(double periodicityConsistency_);
     void SetAdjustPlane(int adjustPlane_);
     void SetOverlaps(OverlapType overlaps_);
     void SetMeshType(ShowMeshType meshType_);
@@ -216,7 +215,7 @@ public:
     void SetShowChaotic(bool showChaotic_);
     void SetShowIslands(bool showIslands_);
     void SetVerboseFlag(bool verboseFlag_);
-    void SetShowRidgelines(bool showRidgelines_);
+    void SetShow1DPlots(bool show1DPlots_);
     void SetShowLines(bool showLines_);
     void SetLineWidth(int lineWidth_);
     void SetLineStyle(int lineStyle_);
@@ -256,7 +255,6 @@ public:
     int                  GetOverrideToroidalWinding() const;
     int                  GetOverridePoloidalWinding() const;
     double               GetWindingPairConfidence() const;
-    double               GetPeriodicityConsistency() const;
     int                  GetAdjustPlane() const;
     OverlapType          GetOverlaps() const;
     ShowMeshType         GetMeshType() const;
@@ -279,7 +277,7 @@ public:
     bool                 GetShowChaotic() const;
     bool                 GetShowIslands() const;
     bool                 GetVerboseFlag() const;
-    bool                 GetShowRidgelines() const;
+    bool                 GetShow1DPlots() const;
     bool                 GetShowLines() const;
     int                  GetLineWidth() const;
     int                  GetLineStyle() const;
@@ -394,7 +392,6 @@ public:
         ID_overrideToroidalWinding,
         ID_overridePoloidalWinding,
         ID_windingPairConfidence,
-        ID_periodicityConsistency,
         ID_adjustPlane,
         ID_overlaps,
         ID_meshType,
@@ -415,7 +412,7 @@ public:
         ID_showChaotic,
         ID_showIslands,
         ID_verboseFlag,
-        ID_showRidgelines,
+        ID_show1DPlots,
         ID_showLines,
         ID_lineWidth,
         ID_lineStyle,
@@ -454,7 +451,6 @@ private:
     int            overrideToroidalWinding;
     int            overridePoloidalWinding;
     double         windingPairConfidence;
-    double         periodicityConsistency;
     int            adjustPlane;
     int            overlaps;
     int            meshType;
@@ -475,7 +471,7 @@ private:
     bool           showChaotic;
     bool           showIslands;
     bool           verboseFlag;
-    bool           showRidgelines;
+    bool           show1DPlots;
     bool           showLines;
     int            lineWidth;
     int            lineStyle;
@@ -495,6 +491,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiiidddiiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiiidddiiiidiiiidddbbiasibibibbbbbiibdiibbiiiib"
 
 #endif

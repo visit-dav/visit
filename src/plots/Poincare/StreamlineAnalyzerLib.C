@@ -57,409 +57,6 @@ namespace FusionPSE {
 #define SIGN(x) ((x) < 0.0 ? (int) -1 : (int) 1)
 
 
-// Adapted from Tolga Birdal
-
-class Otsu
-{
-  // Compute the q values in the equation
-  double Px( unsigned int init, unsigned int end, vector< unsigned int > &histo)
-  {
-    int sum = 0;
-
-    for (unsigned int i=init; i<end; ++i)
-      sum += histo[i];
-
-    return (double) sum;
-  }
-
-  // Compute the mean values in the equation (mu)
-  double Mx( unsigned int init, unsigned int end, vector< unsigned int > &histo)
-  {
-    int sum = 0;
-
-    for (unsigned int i=init; i<end; ++i)
-      sum += i * histo[i];
-      
-    return (double) sum;
-  }
-
-  // Find the maximum element in a vector
-  unsigned int findMaxVet( vector< double > &vet, double &maxVet)
-  {
-    maxVet = 0;
-    unsigned int index = 0;
-      
-    for (unsigned int i=1; i<vet.size()-1; ++i)
-    {
-      if( maxVet < vet[i] )
-      {
-        maxVet = vet[i];
-        index = i;
-      }
-    }
-
-    return index;
-  }
-    
-  // Compute the histogram
-  void getHistogram( vector< pair< unsigned int, double > >& stats,
-                     vector< unsigned int > &histo )
-  {
-    unsigned int nbins = stats.size() / 2;
-
-    double min = 1.0e9, max = -1.0e9;
-    
-    for( unsigned int i=0; i<stats.size(); ++i )
-    {
-      if( min > stats[i].second )
-        min = stats[i].second;
-      
-      if( max < stats[i].second )
-        max = stats[i].second;
-    }
-
-    histo.resize( nbins );
-    
-    for( unsigned int i=0; i<nbins; ++i )
-      histo[i] = 0;
-    
-    for( unsigned int i=0; i<stats.size(); ++i )
-    {
-      unsigned int index =
-        ( ((double) nbins-1.0) * (stats[i].second-min) / (max-min) );
-      
-      histo[index]++;
-    }
-
-
-    pair< unsigned int, unsigned int > zeropair[2];
-
-    zeropair[0] = pair< unsigned int, unsigned int >(0,0);
-    zeropair[1] = pair< unsigned int, unsigned int >(0,0);
-
-    unsigned int zerostart=nbins, zerostop=nbins;
-
-    for( unsigned int i=0; i<nbins; ++i )
-    {
-      if( histo[i] == 0 && zerostart == nbins )
-      {
-        zerostart = i;
-        zerostop  = i;
-      }
-      else if( histo[i] != 0 && zerostart != nbins )
-      {
-        zerostop = i-1;
-
-        if( zerostop-zerostart > zeropair[0].second-zeropair[0].first )
-        {
-          zeropair[1] = zeropair[0];
-          zeropair[0] = pair< unsigned int, unsigned int >(zerostart, zerostop);
-        }
-        else if( zerostop-zerostart > zeropair[1].second-zeropair[1].first )
-        {
-          zeropair[1] = pair< unsigned int, unsigned int >(zerostart, zerostop);
-        }
-
-        zerostart = nbins;
-      }
-
-      int diff;
-
-      if( i )
-        diff = abs((int)histo[i] - (int)histo[i-1]);
-      else
-        diff = 0;
-
-      cerr << i << "  " << histo[i] << "  " << diff << "  " << histo[i] << endl;
-    }
-
-    cerr << endl
-         << "zero pairs  "
-         << zeropair[0].first << "-" << zeropair[0].second << "  "
-         << zeropair[0].second-zeropair[0].first+1 << "     "
-         << zeropair[1].first << "-" << zeropair[1].second << "  "
-         << zeropair[1].second-zeropair[1].first+1 << endl;
-  }
-
-public:
-  // find otsu threshold
-  void getOtsuThreshold2(vector< pair< unsigned int, double > >& stats,
-                         double &threshold, double &maxVet )
-  {
-    if( stats.size() == 1 )
-    {
-      threshold = stats[0].second;
-      maxVet = 0;
-
-      return;
-    }
-
-    else if( stats.size() == 2 )
-    {
-      threshold = (stats[0].second+stats[1].second)/2.0;
-      maxVet = 0;
-
-      return;
-    }
-
-    vector< unsigned int > histo;
-    getHistogram( stats, histo );
-
-    unsigned int nbins = histo.size();
-
-    unsigned int index;
-    maxVet = 0;
-
-    // loop through all possible t values and maximize between class variance
-    for( unsigned int i=1; i<nbins-1; ++i )
-    {
-      double p0 = Px(0,     i, histo);
-      double p1 = Px(i, nbins, histo);
-
-      double p01 = p0 * p1;
-
-      if (p01 == 0) p01 = 1.0;
-        
-      double m0 = Mx(0,     i, histo);
-      double m1 = Mx(i, nbins, histo);
-
-      double diff = m0 * p1 - m1 * p0;
-      
-      double vet = diff * diff / p01;
-
-      if( maxVet < vet )
-      {
-        maxVet = vet;
-        index = i;
-      }
-    }
-
-    double min = 1.0e9, max = -1.0e9;
-      
-    for( unsigned int i=0; i<stats.size(); ++i )
-    {
-      if( min > stats[i].second )
-        min = stats[i].second;
-
-      if( max < stats[i].second )
-        max = stats[i].second;
-    }
-
-    threshold = min + (double) index / ((double) nbins - 1.0) * (max-min);
-  }
-
-
-  // find otsu threshold
-  void getOtsuThreshold3(vector< pair< unsigned int, double > >& stats,
-                         double &threshold0, double &threshold1,
-                         double &maxVet )
-  {
-    vector< unsigned int > histo;
-    getHistogram( stats, histo );
-
-    unsigned int nbins = histo.size();
-
-    unsigned int index0;
-    unsigned int index1;
-
-    maxVet = 0;
-
-    // loop through all possible t values and maximize between class variance
-    for ( unsigned int i=1; i<nbins-2; ++i )
-    {
-      double p0 = Px(0, i, histo);
-      double m0 = Mx(0, i, histo);
-
-      for ( unsigned int j=i+1; j<nbins-1; ++j )
-      {
-        double p1 = Px(i,     j, histo);
-        double p2 = Px(j, nbins, histo);
-
-        double p01 = p0 * p1;
-        double p12 = p1 * p2;
-
-        if (p01 == 0) p01 = 1;
-        if (p12 == 0) p12 = 1;
-
-        double m1 = Mx(i,     j, histo);
-        double m2 = Mx(j, nbins, histo);
-        
-        double diff0 = (m0 * p1 - m1 * p0);
-        double vet0 = diff0 * diff0 / p01;
-
-        double diff1 = (m1 * p2 - m2 * p1);
-        double vet1 = diff1 * diff1 / p12;
-
-        if( maxVet < vet0 + vet1 )
-        {
-          maxVet = vet0 + vet1;
-          index0 = i;
-          index1 = j;
-        }
-      }
-    }
-
-    double min = 1.0e9, max = -1.0e9;
-    
-    for( unsigned int i=0; i<stats.size(); ++i )
-    {
-      if( min > stats[i].second )
-        min = stats[i].second;
-      
-      if( max < stats[i].second )
-        max = stats[i].second;
-    }
-
-    threshold0 = min + (double) index0 / ((double) nbins-1.0) * (max-min);
-    threshold1 = min + (double) index1 / ((double) nbins-1.0) * (max-min);
-  }
-};
-
-
-//===================================================================
-// Copyright 2001, softSurfer (www.softsurfer.com)
-// This code may be freely used and modified for any purpose
-// providing that this copyright notice is included with it.
-// SoftSurfer makes no warranty for this code, and cannot be held
-// liable for any real or imagined damage resulting from its use.
-// Users of this code must verify correctness for their application.
-
-//===================================================================
-// isLeft(): tests if a point is Left|On|Right of an infinite line.
-//    Input:  three points P0, P1, and P2
-//    Return: >0 for P2 left of the line through P0 and P1
-//            =0 for P2 on the line
-//            <0 for P2 right of the line
-//    See: the January 2001 Algorithm on Area of Triangles
-inline float
-isLeft( Point P0, Point P1, Point P2 )
-{
-    return (P1.x - P0.x)*(P2.z - P0.z) - (P2.x - P0.x)*(P1.z - P0.z);
-}
-
-//===================================================================
-// ptcmp(): 
-//     Input:  two points to compare
-//
-//     Return: 1 if point 0 is "greater than" point 1
-//            -1 if point 0 is "less than" point 1
-//             0 if point 0 is "equal to" point 1
-inline int ptcmp( const void* v0, const void* v1 )
-{
-  Point *p0 = (Point *) v0;
-  Point *p1 = (Point *) v1;
-
-  if( p0->x > p1->x ) return 1;
-  else if( p0->x < p1->x ) return -1;
-  else if( p0->y > p1->y ) return 1;
-  else if( p0->y < p1->y ) return -1;
-  else return 0;
-}
-
-//===================================================================
-// chainHull_2D(): Andrew's monotone chain 2D convex hull algorithm
-//     Input:  pts = an array of 2D points 
-//
-//     Output: hullPts = an array of the convex hull vertices
-//                       in a clockwise order
-//     Return: the number of points in hullPts
-int chainHull_2D( vector< pair< Point, unsigned int > > &pts,
-                  vector< pair< Point, unsigned int > > &hullPts,
-                  int direction  )
-{
-    //  Presorted by increasing x- and y-coordinates
-    qsort( &(pts[0]), pts.size(),
-           sizeof( pair< Point, unsigned int > ), ptcmp );
-
-    int n = pts.size();
-
-    hullPts.resize( n );
-
-    // the output array hullPts[] will be used as the stack
-    int    bot=0, top=(-1);  // indices for bottom and top of the stack
-    int    i;                // array scan index
-
-    // Get the indices of points with min x-coord and min|max y-coord
-    int minmin = 0, minmax;
-    float xmin = pts[0].first.x;
-    for (i=1; i<n; i++)
-        if (pts[i].first.x != xmin) break;
-    minmax = i-1;
-    if (minmax == n-1) {       // degenerate case: all x-coords == xmin
-        hullPts[++top] = pts[minmin];
-        if (pts[minmax].first.z != pts[minmin].first.z) // a nontrivial segment
-            hullPts[++top] = pts[minmax];
-        hullPts[++top] = pts[minmin];           // add polygon endpoint
-        return top+1;
-    }
-
-    // Get the indices of points with max x-coord and min|max y-coord
-    int maxmin, maxmax = n-1;
-    float xmax = pts[n-1].first.x;
-    for (i=n-2; i>=0; i--)
-        if (pts[i].first.x != xmax) break;
-    maxmin = i+1;
-
-    // Compute the lower hull on the stack H
-    hullPts[++top] = pts[minmin];      // push minmin point onto stack
-    i = minmax;
-    while (++i <= maxmin)
-    {
-        // the lower line joins pts[minmin] with pts[maxmin]
-        if (isLeft( pts[minmin].first,
-                    pts[maxmin].first, pts[i].first) >= 0 && i < maxmin)
-            continue;          // ignore pts[i] above or on the lower line
-
-        while (top > 0)        // there are at least 2 points on the stack
-        {
-            // test if pts[i] is left of the line at the stack top
-            if (isLeft( hullPts[top-1].first,
-                        hullPts[top].first, pts[i].first) > 0)
-                break;         // pts[i] is a new hull vertex
-            else
-                top--;         // pop top point off stack
-        }
-        hullPts[++top] = pts[i];       // push pts[i] onto stack
-    }
-
-    // Next, compute the upper hull on the stack H above the bottom hull
-    if (maxmax != maxmin)      // if distinct xmax points
-        hullPts[++top] = pts[maxmax];  // push maxmax point onto stack
-    bot = top;                 // the bottom point of the upper hull stack
-    i = maxmin;
-    while (--i >= minmax)
-    {
-        // the upper line joins pts[maxmax] with pts[minmax]
-        if (isLeft( pts[maxmax].first,
-                    pts[minmax].first, pts[i].first) >= 0 && i > minmax)
-            continue;          // ignore pts[i] below or on the upper line
-
-        while (top > bot)    // at least 2 points on the upper stack
-        {
-            // test if pts[i] is left of the line at the stack top
-            if (isLeft( hullPts[top-1].first,
-                        hullPts[top].first, pts[i].first) > 0)
-                break;         // pts[i] is a new hull vertex
-            else
-                top--;         // pop top point off stack
-        }
-        hullPts[++top] = pts[i];       // push pts[i] onto stack
-    }
-    if (minmax != minmin)
-        hullPts[++top] = pts[minmin];  // push joining endpoint onto stack
-
-    hullPts.resize( top+1 );
-
-    return hullPts.size();
-}
-
-//===================================================================
-
-
-
-
-
-
 
 #ifdef COMMENT_OUT
 /////////// Begin Guoning Code
@@ -856,7 +453,6 @@ void FieldlineLib::convexHull( vector< pair< Point, unsigned int > > &hullPts,
 
 bool FieldlineLib::hullCheck( vector< Point > &points, int &direction )
 {
-
   // If one, two, or three points the ordering makes no difference and
   // it is convex.
   if( points.size() <= 2 ) {
@@ -2097,14 +1693,68 @@ islandChecks( vector< Point >& points,
 
 
 void
+FieldlineLib::getPunctures( vector< Point > &ptList,
+                            Vector planeN,
+                            vector< Point > &puncturePts )
+{
+  unsigned int startIndex = 0;
+
+  // Set up the plane equation.
+  Vector planePt(0,0,0);
+  double plane[4];
+            
+  plane[0] = planeN.x;
+  plane[1] = planeN.y;
+  plane[2] = planeN.z;
+  plane[3] = planePt.dot(planeN);
+  
+  int bin = 0;
+  
+  // So to get the winding groups consistant start examining
+  // the streamline in the same place for each plane.
+  Point lastPt, currPt = ptList[startIndex];
+  double lastDist, currDist = planeN.dot( currPt ) - plane[3];
+            
+  for( unsigned int i=startIndex+1; i<ptList.size(); ++i )
+  {
+    lastPt = currPt;
+    currPt = Vector(ptList[i]);
+                
+    lastDist = currDist;
+    currDist = Dot( planeN, currPt ) - plane[3];
+    
+    // First look at only points that intersect the plane.
+    if( SIGN(lastDist) != SIGN(currDist) ) 
+    {
+      Vector dir(currPt-lastPt);
+                    
+      double dot = Dot(planeN, dir);
+                    
+      // If the segment is in the same direction as the plane then
+      // find where it intersects the plane.
+      if( dot > 0.0 )
+      {
+        Vector w = lastPt - planePt;
+        
+        double t = -Dot(planeN, w ) / dot;
+        
+        Point point = Point(lastPt + dir * t);
+        
+        puncturePts.push_back( point );
+      }
+    }
+  }
+} 
+
+
+void
 FieldlineLib::fieldlineProperties( vector< Point > &ptList,
                                    FieldlineProperties &fi,
                                    unsigned int overrideToroidalWinding,
                                    unsigned int overridePoloidalWinding,
                                    unsigned int maxToroidalWinding,
                                    double windingPairConfidence,
-                                   double periodicityConsistency,
-                                   bool findIslandCenters )
+                                   bool detectIslandCenters )
 {
   vector< Point > poloidal_puncture_pts;
   vector< Point > ridgeline_points;
@@ -2298,6 +1948,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     fi.poloidalPeriod    = 0;
     fi.ridgelineVariance = 0;
 
+    fi.OPoints.clear();
+
     return;
   }
 
@@ -2477,6 +2129,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     fi.poloidalPeriod    = overridePoloidalWinding;
     fi.ridgelineVariance = 0;
 
+    fi.OPoints.clear();
+
     return;
   }
 
@@ -2569,7 +2223,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
          << "max period " << toroidalWindingMax
          << endl;
 
-  periodicityStats( poloidal_puncture_pts, toroidalStats, toroidalWindingMax, 3 );
+  periodicityStats( poloidal_puncture_pts, toroidalStats, toroidalWindingMax, 2 );
 
   // Find the best poloidal periodicity. For a flux surface the period
   // will be the poloidal winding number. For an island chain the
@@ -2798,6 +2452,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       fi.toroidalPeriod    = toroidalWinding;
       fi.poloidalPeriod    = poloidalWinding;
       fi.ridgelineVariance = 0;
+
+      fi.OPoints.clear();
 
       return;
     }
@@ -3064,14 +2720,21 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         }
       }
 
-      else if( !islandCenters.empty() )
-      {
-        fi.analysisState = FieldlineProperties::ADD_O_POINTS;
-            
-        fi.OPoints = islandCenters;
-      }
       else if( nPuncturesNeeded == 0 )
-        analysisState = FieldlineProperties::COMPLETED;
+      {
+        if( detectIslandCenters )
+        {
+          findIslandCenters( poloidal_puncture_pts, toroidalWinding, nnodes,
+                             islandCenters );
+          
+          if( islandCenters.empty() )
+            analysisState = FieldlineProperties::COMPLETED;
+          else
+            analysisState = FieldlineProperties::ADD_O_POINTS;
+        }
+        else
+          analysisState = FieldlineProperties::COMPLETED;
+      }
     }
 
     // Check to see if the fieldline is periodic. I.e. on a rational
@@ -3215,14 +2878,21 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         }
       }
 
-      else if( !islandCenters.empty() )
+      else if( nPuncturesNeeded == 0 )
       {
-        fi.analysisState = FieldlineProperties::ADD_O_POINTS;
-            
-        fi.OPoints = islandCenters;
+        if( detectIslandCenters )
+        {
+          findIslandCenters( poloidal_puncture_pts, toroidalWinding, nnodes,
+                             islandCenters );
+          
+          if( islandCenters.empty() )
+            analysisState = FieldlineProperties::COMPLETED;
+          else
+            analysisState = FieldlineProperties::ADD_O_POINTS;
+        }
+        else
+          analysisState = FieldlineProperties::COMPLETED;
       }
-      else
-        analysisState = FieldlineProperties::COMPLETED;
     }
 
     // Check to see if the fieldline is periodic. I.e. on a rational
@@ -3239,143 +2909,6 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     }
 
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
-
-    // COMMENTED OUT CODE - used in the past but not needed now with
-    // the other checks above.
-    /***********************************************************************
-    if( nPuncturesNeeded == 0 )
-    {
-      unsigned int additionalPts = 0;
-
-      for( unsigned int i=0; i<toroidalWinding; ++i ) 
-      {
-        Vector firstPoint = (Vector) poloidal_puncture_pts[i];
-        Vector nextPoint  = (Vector) poloidal_puncture_pts[i+toroidalWinding];
-          
-        Vector  lastPoint =
-          (Vector) poloidal_puncture_pts[i+(nnodes-1)*toroidalWinding];
-        Vector  prevPoint =
-          (Vector) poloidal_puncture_pts[i+(nnodes-2)*toroidalWinding];
-
-        double gap = (firstPoint-lastPoint).length();
-
-        // Average distance between the first and last span.
-        double length = ( (firstPoint-nextPoint).length() +
-                          (prevPoint -lastPoint).length() ) / 2.0;
-
-        unsigned int needPts = ((gap / length) + 0.5);
-
-        if( verboseFlag )
-          cerr << nnodes << "  " << gap << "  " << length << "  "
-               << "needPts  " << needPts << "  "
-               << "additionalPts  " << additionalPts << endl;
-      
-        if( additionalPts > 1 && additionalPts < needPts )
-          additionalPts = needPts;
-      }
-    
-      if( additionalPts )
-      {
-        if( nPuncturesNeeded == 0 )
-        {
-          nPuncturesNeeded = (nnodes+additionalPts) * toroidalWinding * 2;
-
-          // When the number of puncture points needed per island is
-          // less than the current number supplied then we are in a
-          // local minimum. As such arbitrarily add 10% more.
-          unsigned int maxPoints =
-            poloidal_puncture_pts.size() / 2 / toroidalWinding;
-
-          if( nnodes+additionalPts < maxPoints + 1 )
-            nPuncturesNeeded = (maxPoints +1) * toroidalWinding * 2;
-
-          if( verboseFlag )
-            cerr << "maxPoints  " << maxPoints << "  "
-                 << "nPuncturesNeeded  " << nPuncturesNeeded << endl;      
-        }
-
-        if( verboseFlag )
-          cerr << "Too few puncture points, at least " << nPuncturesNeeded
-               << " are needed to complete the boundary."
-               << endl;
-      }
-
-      // Check the point stability based on the new and old number of nodes.
-      else if( nnodes > fi.nnodes )
-      {
-        unsigned int pts;
-
-        if( fi.nnodes )
-          pts = (nnodes + (nnodes-fi.nnodes) ) * poloidalWinding;
-        else
-          pts = (nnodes + (nnodes/2) ) * poloidalWinding;
-
-        if( nPuncturesNeeded < 2.0 * (pts+1) * local_safetyFactor + 1)
-          nPuncturesNeeded = 2.0 * (pts+1) * local_safetyFactor + 1;
- 
-        analysisState = FieldlineProperties::ADDING_POINTS;
-
-        if( verboseFlag )
-          cerr << "Island node instability (more points added) asking for "
-               << nPuncturesNeeded << " puncture points"
-               << endl;
-      }
-
-      // Check the point stability
-      else if( nnodes < fi.nnodes )
-      {
-        unsigned int pts = nnodes * poloidalWinding;
-
-        if( fi.type != FieldlineProperties::ISLAND_CHAIN )
-        {
-          if( nPuncturesNeeded < 1.25 * poloidal_puncture_pts.size() )
-            nPuncturesNeeded = 1.25 * poloidal_puncture_pts.size();
-        }
-        else
-        {
-          if( nPuncturesNeeded < 2.0 * (pts+1) * local_safetyFactor + 1)
-            nPuncturesNeeded = 2.0 * (pts+1) * local_safetyFactor + 1;
-        }
-
-        analysisState = FieldlineProperties::ADDING_POINTS;
-
-        if( verboseFlag )
-          cerr << "Island node instability (reduce number of points) asking for "
-               << nPuncturesNeeded << " puncture points"
-               << endl;
-      }
-
-      // Check the point stability
-      else //if( nnodes == fi.nnodes )
-      {
-        if( fi.analysisState != FieldlineProperties::NODE_COUNT_STABILITY_TEST )
-        {
-          unsigned int pts = nnodes * poloidalWinding;
-
-          if( nPuncturesNeeded < 2.25 * (pts+1) * local_safetyFactor + 1)
-            nPuncturesNeeded = 2.25 * (pts+1) * local_safetyFactor + 1;
-        
-          analysisState = FieldlineProperties::NODE_COUNT_STABILITY_TEST;
-
-          if( verboseFlag )
-            cerr << "Island node stability test asking for "
-                 << nPuncturesNeeded << " puncture points"
-                 << endl;
-        }
-        else
-        {
-          if( !islandCenters.empty() )
-          {
-            fi.analysisState = FieldlineProperties::ADD_O_POINTS;
-            
-            fi.OPoints = islandCenters;
-          }
-          else
-            analysisState = FieldlineProperties::COMPLETED;
-        }
-      }
-    }
-    ***********************************************************************/
   }
 
   // Check to see if the fieldline is periodic. I.e. on a rational
@@ -3635,7 +3168,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
            << " %" << endl;
   }
 
-  // Receord the analysis.
+  // Record the analysis.
   fi.analysisState = analysisState;
 
   fi.type = type;
@@ -3652,6 +3185,19 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   fi.toroidalPeriod   = toroidalPeriod;
   fi.poloidalPeriod   = poloidalPeriod;
   fi.ridgelineVariance = ridgelineVariance;
+
+  fi.OPoints.clear();
+
+   if( !(islandCenters.empty()) )
+   {
+     for( unsigned int i=0; i<islandCenters.size(); ++i )
+     {
+       cerr << islandCenters[i] << endl;
+       fi.OPoints.push_back( Point( islandCenters[i].x, 
+                                    islandCenters[i].y,
+                                    islandCenters[i].z) );
+     }
+   }
 }
 
 
@@ -4722,9 +4268,9 @@ mergeOverlap( vector< vector < Point > > &bins,
 }
 
 // ****************************************************************************
-//  Method: FieldlineLib::findIslandCenter
+//  Method: FieldlineLib::findIslandCenters
 //
-//  Purpose: Finds the geometric center of an island.
+//  Purpose: Finds the geometric centers of an island chain.
 //
 //  Arguments:
 //
@@ -4738,11 +4284,10 @@ mergeOverlap( vector< vector < Point > > &bins,
 // ****************************************************************************
 
 void
-FieldlineLib::findIslandCenter( vector < Point > &points,
-                                unsigned int nnodes,
-                                unsigned int toroidalWinding,
-                                unsigned int poloidalWinding,
-                                vector< Point > &centers )
+FieldlineLib::findIslandCenters( vector < Point > &puncturePts,
+                                 unsigned int toroidalWinding,
+                                 unsigned int nnodes,
+                                 vector< Point > &centers )
 {
 #ifdef STRAIGHTLINE_SKELETON
 
@@ -4759,10 +4304,10 @@ FieldlineLib::findIslandCenter( vector < Point > &points,
 
     // Loop through each point in toroidial group
     for( unsigned int j=i, jc=0;
-         j<points.size() && jc<nnodes;
+         j<puncturePts.size() && jc<nnodes;
          j+=toroidalWinding, ++jc )
     {
-      tmp_points.push_back( points[j] );
+      tmp_points.push_back( puncturePts[j] );
     }
 
     // Points for the convex hull check
@@ -4795,7 +4340,7 @@ FieldlineLib::findIslandCenter( vector < Point > &points,
       continue;
 
     // Get the convex hull and the direction.
-    int direction;
+    int direction = 0;
     hullCheck( tmp_points, direction );
       
     // Store the points a 2D vector.
@@ -5072,4 +4617,401 @@ FieldlineLib::findIslandCenter( vector < Point > &points,
   }
 #endif
 }
+
+
+
+//===================================================================
+// Adapted from Tolga Birdal
+
+// Compute the q values in the equation
+double Otsu::Px( unsigned int init, unsigned int end, vector< unsigned int > &histo)
+{
+  int sum = 0;
+
+  for (unsigned int i=init; i<end; ++i)
+    sum += histo[i];
+
+  return (double) sum;
+}
+
+// Compute the mean values in the equation (mu)
+double Otsu::Mx( unsigned int init, unsigned int end, vector< unsigned int > &histo)
+{
+  int sum = 0;
+
+  for (unsigned int i=init; i<end; ++i)
+    sum += i * histo[i];
+      
+  return (double) sum;
+}
+
+// Find the maximum element in a vector
+unsigned int Otsu::findMaxVet( vector< double > &vet, double &maxVet)
+{
+  maxVet = 0;
+  unsigned int index = 0;
+      
+  for (unsigned int i=1; i<vet.size()-1; ++i)
+  {
+    if( maxVet < vet[i] )
+    {
+      maxVet = vet[i];
+      index = i;
+    }
+  }
+
+  return index;
+}
+    
+// Compute the histogram
+void Otsu::getHistogram( vector< pair< unsigned int, double > >& stats,
+                         vector< unsigned int > &histo )
+{
+  unsigned int nbins = stats.size() / 2;
+
+  double min = 1.0e9, max = -1.0e9;
+    
+  for( unsigned int i=0; i<stats.size(); ++i )
+  {
+    if( min > stats[i].second )
+      min = stats[i].second;
+    
+    if( max < stats[i].second )
+      max = stats[i].second;
+  }
+
+  histo.resize( nbins );
+    
+  for( unsigned int i=0; i<nbins; ++i )
+    histo[i] = 0;
+    
+  for( unsigned int i=0; i<stats.size(); ++i )
+  {
+    unsigned int index =
+      ( ((double) nbins-1.0) * (stats[i].second-min) / (max-min) );
+      
+    histo[index]++;
+  }
+  
+  pair< unsigned int, unsigned int > zeropair[2];
+
+  zeropair[0] = pair< unsigned int, unsigned int >(0,0);
+  zeropair[1] = pair< unsigned int, unsigned int >(0,0);
+
+  unsigned int zerostart=nbins, zerostop=nbins;
+
+  for( unsigned int i=0; i<nbins; ++i )
+  {
+    if( histo[i] == 0 && zerostart == nbins )
+    {
+      zerostart = i;
+      zerostop  = i;
+    }
+    else if( histo[i] != 0 && zerostart != nbins )
+    {
+      zerostop = i-1;
+      
+      if( zerostop-zerostart > zeropair[0].second-zeropair[0].first )
+      {
+        zeropair[1] = zeropair[0];
+        zeropair[0] = pair< unsigned int, unsigned int >(zerostart, zerostop);
+      }
+      else if( zerostop-zerostart > zeropair[1].second-zeropair[1].first )
+      {
+        zeropair[1] = pair< unsigned int, unsigned int >(zerostart, zerostop);
+      }
+      
+      zerostart = nbins;
+    }
+
+    int diff;
+    
+    if( i )
+      diff = abs((int)histo[i] - (int)histo[i-1]);
+    else
+      diff = 0;
+    
+    cerr << i << "  " << histo[i] << "  " << diff << "  " << histo[i] << endl;
+  }
+
+  cerr << endl
+       << "zero pairs  "
+       << zeropair[0].first << "-" << zeropair[0].second << "  "
+       << zeropair[0].second-zeropair[0].first+1 << "     "
+       << zeropair[1].first << "-" << zeropair[1].second << "  "
+       << zeropair[1].second-zeropair[1].first+1 << endl;
+}
+  // find otsu threshold
+void Otsu::getOtsuThreshold2(vector< pair< unsigned int, double > >& stats,
+                             double &threshold, double &maxVet )
+{
+  if( stats.size() == 1 )
+  {
+    threshold = stats[0].second;
+    maxVet = 0;
+    
+    return;
+  }
+  
+  else if( stats.size() == 2 )
+  {
+    threshold = (stats[0].second+stats[1].second)/2.0;
+    maxVet = 0;
+    
+    return;
+  }
+
+  vector< unsigned int > histo;
+  getHistogram( stats, histo );
+  
+  unsigned int nbins = histo.size();
+  
+  unsigned int index;
+  maxVet = 0;
+  
+  // loop through all possible t values and maximize between class variance
+  for( unsigned int i=1; i<nbins-1; ++i )
+  {
+    double p0 = Px(0,     i, histo);
+    double p1 = Px(i, nbins, histo);
+    
+    double p01 = p0 * p1;
+    
+    if (p01 == 0) p01 = 1.0;
+    
+    double m0 = Mx(0,     i, histo);
+    double m1 = Mx(i, nbins, histo);
+
+    double diff = m0 * p1 - m1 * p0;
+      
+    double vet = diff * diff / p01;
+
+    if( maxVet < vet )
+    {
+      maxVet = vet;
+      index = i;
+    }
+  }
+
+  double min = 1.0e9, max = -1.0e9;
+  
+  for( unsigned int i=0; i<stats.size(); ++i )
+  {
+    if( min > stats[i].second )
+      min = stats[i].second;
+    
+    if( max < stats[i].second )
+      max = stats[i].second;
+  }
+
+  threshold = min + (double) index / ((double) nbins - 1.0) * (max-min);
+}
+
+
+// find otsu threshold
+void Otsu::getOtsuThreshold3(vector< pair< unsigned int, double > >& stats,
+                             double &threshold0, double &threshold1,
+                             double &maxVet )
+{
+  vector< unsigned int > histo;
+  getHistogram( stats, histo );
+
+  unsigned int nbins = histo.size();
+
+  unsigned int index0;
+  unsigned int index1;
+
+  maxVet = 0;
+
+  // loop through all possible t values and maximize between class variance
+  for ( unsigned int i=1; i<nbins-2; ++i )
+  {
+    double p0 = Px(0, i, histo);
+    double m0 = Mx(0, i, histo);
+
+    for ( unsigned int j=i+1; j<nbins-1; ++j )
+    {
+      double p1 = Px(i,     j, histo);
+      double p2 = Px(j, nbins, histo);
+
+      double p01 = p0 * p1;
+      double p12 = p1 * p2;
+
+      if (p01 == 0) p01 = 1;
+      if (p12 == 0) p12 = 1;
+
+      double m1 = Mx(i,     j, histo);
+      double m2 = Mx(j, nbins, histo);
+        
+      double diff0 = (m0 * p1 - m1 * p0);
+      double vet0 = diff0 * diff0 / p01;
+
+      double diff1 = (m1 * p2 - m2 * p1);
+      double vet1 = diff1 * diff1 / p12;
+
+      if( maxVet < vet0 + vet1 )
+      {
+        maxVet = vet0 + vet1;
+        index0 = i;
+        index1 = j;
+      }
+    }
+  }
+
+  double min = 1.0e9, max = -1.0e9;
+    
+  for( unsigned int i=0; i<stats.size(); ++i )
+  {
+    if( min > stats[i].second )
+      min = stats[i].second;
+      
+    if( max < stats[i].second )
+      max = stats[i].second;
+  }
+
+  threshold0 = min + (double) index0 / ((double) nbins-1.0) * (max-min);
+  threshold1 = min + (double) index1 / ((double) nbins-1.0) * (max-min);
+  }
+
+//===================================================================
+
+//===================================================================
+// Copyright 2001, softSurfer (www.softsurfer.com)
+// This code may be freely used and modified for any purpose
+// providing that this copyright notice is included with it.
+// SoftSurfer makes no warranty for this code, and cannot be held
+// liable for any real or imagined damage resulting from its use.
+// Users of this code must verify correctness for their application.
+
+//===================================================================
+// isLeft(): tests if a point is Left|On|Right of an infinite line.
+//    Input:  three points P0, P1, and P2
+//    Return: >0 for P2 left of the line through P0 and P1
+//            =0 for P2 on the line
+//            <0 for P2 right of the line
+//    See: the January 2001 Algorithm on Area of Triangles
+inline float
+isLeft( Point P0, Point P1, Point P2 )
+{
+    return (P1.x - P0.x)*(P2.z - P0.z) - (P2.x - P0.x)*(P1.z - P0.z);
+}
+
+//===================================================================
+// ptcmp(): 
+//     Input:  two points to compare
+//
+//     Return: 1 if point 0 is "greater than" point 1
+//            -1 if point 0 is "less than" point 1
+//             0 if point 0 is "equal to" point 1
+inline int ptcmp( const void* v0, const void* v1 )
+{
+  Point *p0 = (Point *) v0;
+  Point *p1 = (Point *) v1;
+
+  if( p0->x > p1->x ) return 1;
+  else if( p0->x < p1->x ) return -1;
+  else if( p0->y > p1->y ) return 1;
+  else if( p0->y < p1->y ) return -1;
+  else return 0;
+}
+
+//===================================================================
+// chainHull_2D(): Andrew's monotone chain 2D convex hull algorithm
+//     Input:  pts = an array of 2D points 
+//
+//     Output: hullPts = an array of the convex hull vertices
+//                       in a clockwise order
+//     Return: the number of points in hullPts
+int chainHull_2D( vector< pair< Point, unsigned int > > &pts,
+                  vector< pair< Point, unsigned int > > &hullPts,
+                  int direction  )
+{
+    //  Presorted by increasing x- and y-coordinates
+    qsort( &(pts[0]), pts.size(),
+           sizeof( pair< Point, unsigned int > ), ptcmp );
+
+    int n = pts.size();
+
+    hullPts.resize( n );
+
+    // the output array hullPts[] will be used as the stack
+    int    bot=0, top=(-1);  // indices for bottom and top of the stack
+    int    i;                // array scan index
+
+    // Get the indices of points with min x-coord and min|max y-coord
+    int minmin = 0, minmax;
+    float xmin = pts[0].first.x;
+    for (i=1; i<n; i++)
+        if (pts[i].first.x != xmin) break;
+    minmax = i-1;
+    if (minmax == n-1) {       // degenerate case: all x-coords == xmin
+        hullPts[++top] = pts[minmin];
+        if (pts[minmax].first.z != pts[minmin].first.z) // a nontrivial segment
+            hullPts[++top] = pts[minmax];
+        hullPts[++top] = pts[minmin];           // add polygon endpoint
+        return top+1;
+    }
+
+    // Get the indices of points with max x-coord and min|max y-coord
+    int maxmin, maxmax = n-1;
+    float xmax = pts[n-1].first.x;
+    for (i=n-2; i>=0; i--)
+        if (pts[i].first.x != xmax) break;
+    maxmin = i+1;
+
+    // Compute the lower hull on the stack H
+    hullPts[++top] = pts[minmin];      // push minmin point onto stack
+    i = minmax;
+    while (++i <= maxmin)
+    {
+        // the lower line joins pts[minmin] with pts[maxmin]
+        if (isLeft( pts[minmin].first,
+                    pts[maxmin].first, pts[i].first) >= 0 && i < maxmin)
+            continue;          // ignore pts[i] above or on the lower line
+
+        while (top > 0)        // there are at least 2 points on the stack
+        {
+            // test if pts[i] is left of the line at the stack top
+            if (isLeft( hullPts[top-1].first,
+                        hullPts[top].first, pts[i].first) > 0)
+                break;         // pts[i] is a new hull vertex
+            else
+                top--;         // pop top point off stack
+        }
+        hullPts[++top] = pts[i];       // push pts[i] onto stack
+    }
+
+    // Next, compute the upper hull on the stack H above the bottom hull
+    if (maxmax != maxmin)      // if distinct xmax points
+        hullPts[++top] = pts[maxmax];  // push maxmax point onto stack
+    bot = top;                 // the bottom point of the upper hull stack
+    i = maxmin;
+    while (--i >= minmax)
+    {
+        // the upper line joins pts[maxmax] with pts[minmax]
+        if (isLeft( pts[maxmax].first,
+                    pts[minmax].first, pts[i].first) >= 0 && i > minmax)
+            continue;          // ignore pts[i] below or on the upper line
+
+        while (top > bot)    // at least 2 points on the upper stack
+        {
+            // test if pts[i] is left of the line at the stack top
+            if (isLeft( hullPts[top-1].first,
+                        hullPts[top].first, pts[i].first) > 0)
+                break;         // pts[i] is a new hull vertex
+            else
+                top--;         // pop top point off stack
+        }
+        hullPts[++top] = pts[i];       // push pts[i] onto stack
+    }
+
+    if (minmax != minmin)
+      hullPts[++top] = pts[minmin];  // push joining endpoint onto stack
+
+    hullPts.resize( top+1 );
+
+    return hullPts.size();
+}
+
+//===================================================================
 }

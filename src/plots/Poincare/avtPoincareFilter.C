@@ -158,7 +158,6 @@ avtPoincareFilter::avtPoincareFilter() :
     overrideToroidalWinding( 0 ),
     overridePoloidalWinding( 0 ),
     windingPairConfidence( 0.90 ),
-    periodicityConsistency( 0.80 ),
     adjust_plane(-1),
     overlaps(1),
 
@@ -320,6 +319,7 @@ avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic)
           ICHelper icHelper;
 
           icHelper.id = sric->id;
+          icHelper.properties.source = FieldlineProperties::ORIGINAL_SEED;
 
           fieldlines[ sric->id ] = icHelper;
 
@@ -337,6 +337,44 @@ avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic)
         for( size_t p=0; p<(*iter).second.points.size(); ++p )
           (*iter).second.points[p] = sric->GetSample( p ).position;
     }
+
+    // Search for fieldlines that do not have an integral curve
+    // attached to them. These would be from new seeds that initially
+    // spawned mutliple ids but then were deleted. This event occurs
+    // when there is an unstructured grid, you can't tell by doing
+    // bounding box tests which domain (and thus which processor) the
+    // seed lies in. So, each seed will have a list of ids.  Once
+    // integration starts, the integral curves that don't lie in the
+    // domain to which it was assigned are killed, so there will be
+    // only one per seed.
+ 
+    vector< int > ids_to_delete;
+
+    map< long int, ICHelper >::iterator iter = fieldlines.begin();
+    
+    while( iter != fieldlines.end() )
+    {
+//       cerr << "Looking at seed " << iter->second.id << "  "
+//         << iter->second.properties.type << "  " <<
+//      iter->second.properties.analysisState << endl;
+
+      if( iter->second.properties.type ==
+          FieldlineProperties::UNKNOWN_TYPE &&
+          iter->second.properties.analysisState ==
+          FieldlineProperties::UNKNOWN_STATE &&
+          iter->second.ic == 0 )
+      {
+//      cerr << "No integral curve found deleting " <<  iter->second.id << endl;
+        
+        ids_to_delete.push_back( iter->second.id );
+      }
+
+      ++iter;
+    }
+
+    // Now delete all of the fieldlines without an integral curve.
+    for( unsigned int i=0; i<ids_to_delete.size(); ++i )
+      fieldlines.erase( ids_to_delete[i] );
 }
 
 // ****************************************************************************
@@ -399,38 +437,101 @@ avtPoincareFilter::ContinueExecute()
 
     if (analysis && ! ClassifyStreamlines())
     {
+      vector< int > ids_to_delete;
+
       map< long int, ICHelper >::iterator iter = fieldlines.begin();
 
       while( iter != fieldlines.end() )
       {
+        cerr << "Looking at seed " << iter->second.id << "  "
+             << iter->second.properties.type << "  " <<
+          iter->second.properties.analysisState << endl;
+
+#ifdef STRAIGHTLINE_SKELETON
         // For Island Chains add in the O Points.
-        if( 0 && 
+        if( showOPoints &&
 
             (iter->second.properties.type ==
-             FieldlineProperties::ISLAND_CHAIN && showOPoints ||
+             FieldlineProperties::ISLAND_CHAIN ||
+
              iter->second.properties.type ==
              FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
 
             iter->second.properties.analysisState ==
-            FieldlineProperties::ADD_O_POINTS)
+            FieldlineProperties::ADD_O_POINTS &&
+
+            !(iter->second.properties.OPoints.empty()) )
         {
           iter->second.properties.analysisState =
-            FieldlineProperties::TERMINATED;
+            FieldlineProperties::COMPLETED;
 
+          cerr << "Adding seed points" << endl;
+            
+          vector< Point > newSeeds;
           std::vector<std::vector<int> > ids;
           
-          AddSeedpoints( iter->second.properties.OPoints, ids);
-        }
+          newSeeds.push_back( iter->second.properties.OPoints[0] );
+          AddSeedPoints( newSeeds, ids );
+          
+          for( unsigned int i=0; i<ids.size(); i++ )
+          {
+            for( unsigned int j=0; j<ids[i].size(); j++ )
+            {
+              cerr << "New seed ids " << i << "  " << j << "  " << ids[i][j] <<endl;
+              
+              // Use the curve id because the number of curves will change
+              // over time.
+              map< long int, ICHelper >::iterator seed_iter =
+                fieldlines.find( ids[i][j] );
+                
+              if( seed_iter == fieldlines.end() )
+              {
+                cerr << "Adding seed to the fieldline list" << endl;
 
+                ICHelper icHelper;
+                
+                icHelper.id = ids[i][j];
+                
+                fieldlines[ ids[i][j] ] = icHelper;
+                
+                seed_iter = fieldlines.find( ids[i][j] );
+              }
+              else
+              {
+                cerr << "New seed is already in the fieldline list" << endl;
+              }
+              
+              seed_iter->second.properties.source =
+                FieldlineProperties::ISLAND_CHAIN;
+            }
+          }
+
+          // The source was an island_chain so delete it as it was an
+          // iterative process.
+          if( iter->second.properties.source ==
+              FieldlineProperties::ISLAND_CHAIN )
+          {
+            cerr << "Deleting " <<  iter->second.id << endl;
+
+            ids_to_delete.push_back( iter->second.id );
+          }
+        }
+#endif
         ++iter;
       }
+
+      // Now delete all of the fieldlines and Integral Curves.
+      for( unsigned int i=0; i<ids_to_delete.size(); ++i )
+        fieldlines.erase( ids_to_delete[i] );
+
+      DeleteIntegralCurves( ids_to_delete );
 
       return true;
     }
     // No analysis requested or analysis complete, no need to
     // continue.
     else 
-      return false;
+       return false;
 }
 
 
@@ -538,7 +639,6 @@ avtPoincareFilter::ClassifyStreamlines()
                                    overridePoloidalWinding,
                                    maximumToroidalWinding,
                                    windingPairConfidence,
-                                   periodicityConsistency,
                                    showOPoints );
 
         fp = iter->second.properties;
@@ -564,9 +664,11 @@ avtPoincareFilter::ClassifyStreamlines()
           iter->second.ic->status = avtIntegralCurve::STATUS_FINISHED;
         }
 
+        cerr << fp.analysisState << endl;
+
         // See if O Points from an island need to be added.
-//         if( fp.analysisState & FieldlineProperties::ADD_O_POINTS )
-//           analysisComplete = false;
+        if( fp.analysisState & FieldlineProperties::ADD_O_POINTS )
+          analysisComplete = false;
 
         double safetyFactor;
         
@@ -697,7 +799,7 @@ avtPoincareFilter::CreatePoincareOutput()
 
     while( iter != fieldlines.end() )
     {
-        FieldlineProperties properties = iter->second.properties;
+        FieldlineProperties &properties = iter->second.properties;
 
         FieldlineProperties::FieldlineType type = properties.type;
         bool complete =
@@ -713,7 +815,7 @@ avtPoincareFilter::CreatePoincareOutput()
         unsigned int poloidalPeriod     = properties.poloidalPeriod;
         double ridgelineVariance        = properties.ridgelineVariance;
 
-        vector< Point > OPoints         = properties.OPoints;
+        vector< Point > &OPoints         = properties.OPoints;
 
         bool completeIslands = true;
 
@@ -750,7 +852,7 @@ avtPoincareFilter::CreatePoincareOutput()
 //               << "confidence " << confidence
                << endl;
 
-          if( (type == FieldlineProperties::ISLAND_CHAIN && showOPoints ||
+          if( (type == FieldlineProperties::ISLAND_CHAIN ||
                type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
               islands != toroidalWinding ) 
             cerr << "WARNING - The island count does not match the toroidalWinding count" << endl;
@@ -917,30 +1019,29 @@ avtPoincareFilter::CreatePoincareOutput()
                 }
             }
 
-         if( p == 0 && islands )
-         {
-           int offset = nnodes;
-
-           islandPts.resize( toroidalWinding );
-
-           for( unsigned int i=0; i<toroidalWinding; ++i )
-           {
-             for( unsigned int j=offset; j<puncturePts[p][i].size(); ++j )
-             {
-               double len = (puncturePts[p][i][j-offset]-
-                             puncturePts[p][i][j]).length();
-
-               islandPts[i].push_back( Point( (float) islandPts[i].size()/50.0,
-                                              0,
-                                              -1.5+(float)i*.1+len) );
-
-             }
-
-             vector< pair< unsigned int, double > > stats;
-
-//             FLlib.periodicityStats( islandPts[i], stats, 2 );
-           }
-         }
+            if( p == 0 && islands )
+            {
+              int offset = nnodes;
+              
+              islandPts.resize( toroidalWinding );
+              
+              for( unsigned int i=0; i<toroidalWinding; ++i )
+              {
+                for( unsigned int j=offset; j<puncturePts[p][i].size(); ++j )
+                {
+                  double len = (puncturePts[p][i][j-offset]-
+                                puncturePts[p][i][j]).length();
+                  
+                  islandPts[i].push_back( Point( (float) islandPts[i].size()/50.0,
+                                                 0,
+                                                 -1.5+(float)i*.1+len) );
+                  
+                }
+                
+//              vector< pair< unsigned int, double > > stats;           
+//              FLlib.periodicityStats( islandPts[i], stats, 2 );
+              }
+            }
         }
         
 
@@ -1326,11 +1427,12 @@ avtPoincareFilter::CreatePoincareOutput()
                                      dataValue == DATA_WindingPointOrderModulo );
               }
 
-              if( (type == FieldlineProperties::ISLAND_CHAIN && showOPoints ||
-                   type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
-                  showOPoints )
-                findIslandCenter( dt, puncturePts, dataValue, color_value );
-//              drawPoints( dt, OPoints );
+              if( showOPoints &&
+                  (type == FieldlineProperties::ISLAND_CHAIN ||
+                   type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS) )
+              {
+                drawPoints( dt, OPoints );
+              }
             }
             else
             {
@@ -1339,7 +1441,7 @@ avtPoincareFilter::CreatePoincareOutput()
                            dataValue, color_value );
             }
 
-            if( showRidgelines )
+            if( show1DPlots )
               drawPeriodicity( dt, tempPts,
                                toroidalPeriod,
 //                             tempPts.size(),
@@ -1347,7 +1449,7 @@ avtPoincareFilter::CreatePoincareOutput()
                                dataValue, color_value, true );
 
             
-            if( showRidgelines )
+            if( show1DPlots )
               drawPeriodicity( dt, ridgelinePts,
                                poloidalPeriod,
 //                             ridgelinePts.size(),
@@ -1355,7 +1457,7 @@ avtPoincareFilter::CreatePoincareOutput()
                                dataValue, color_value, true );
             
 
-            if( islands && showRidgelines )
+            if( islands && show1DPlots )
             {
               for( unsigned int i=0; i<toroidalWinding; ++i )
               {
@@ -2062,428 +2164,6 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
     dt->Merge( new avtDataTree(outPD, 0) );
 }
 
-
-// ****************************************************************************
-//  Method: avtPoincareFilter::findIslandCenter
-//
-//  Purpose: Creates a curve from the puncture points. Each curve represent one
-//           toroidal winding group.
-//
-//  Arguments:
-//
-//  Returns:      void
-//
-//  Programmer: Allen Sanderson
-//  Creation:   Wed Feb 25 09:52:11 EST 2009
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtPoincareFilter::findIslandCenter( avtDataTree *dt,
-                                     vector< vector < vector < Point > > > &nodes,
-                                     unsigned int color,
-                                     double color_value ) 
-{
-#ifdef STRAIGHTLINE_SKELETON
-    vtkAppendPolyData *append = vtkAppendPolyData::New();
-    
-    unsigned int nplanes = nodes.size();
-    unsigned int toroidalWindings = nodes[0].size();
-
-    
-    for( unsigned int p=0; p<nplanes; ++p ) 
-    {
-      if( color == DATA_Plane )
-        color_value = p;
-      
-      if( nodes[p][0][0].y < -1.0e-8 || 1.0e-8 < nodes[p][0][0].y )
-        continue;
-
-      // Loop through each toroidial group
-      for( unsigned int j=0; j<toroidalWindings; ++j ) 
-      {
-        cerr << "Island " << j << "  ";
-
-        if( color == DATA_WindingOrder )
-          color_value = j;
-
-        vector< Point > points;
-
-        bool selfIntersect = false;
-
-        // Loop through each point in toroidial group
-        for( unsigned int i=0; i<nodes[p][j].size()-1; ++i ) 
-        {
-          // Check for self intersections
-          for( unsigned int k=i+2; k<nodes[p][j].size()-2; ++k ) 
-          {
-            int result;
-
-            if( result = FLlib.intersect( nodes[p][j][i], nodes[p][j][i+1],
-                                          nodes[p][j][k], nodes[p][j][k+1] ) )
-            {
-              cerr << "Island " << j << " self intersects  "
-                   << i << "  " << k << "  " << result << endl;
-
-              // Self intersection found so skip this island.
-              selfIntersect = true;
-              break;
-            }
-          }
-
-          // Self intersection found so skip this island.
-          if( selfIntersect )
-            break;
-         
-          // Points for the convex hull check
-          points.push_back( Point( nodes[p][j][i].x,
-                                   nodes[p][j][i].y,
-                                   nodes[p][j][i].z) );
-        }
-        
-        // Self intersection found so skip this island as the skeleton
-        // will not work.
-        if( selfIntersect )
-          continue;
-
-        // Get the convex hull and the direction.
-        int direction;
-        FLlib.hullCheck( points, direction );
-
-        // Store the points a 2D.
-        Skeleton::PointVector pointVec;
-
-        for( unsigned int i=0; i<points.size(); ++i ) 
-           pointVec.push_back( Skeleton::Point( points[i].x, points[i].z ) );
-
-        // If the points are clockwise reverse them as the skeleton
-        // needs the points to be in a counter clockwise direction.
-        if( direction == 1 )
-          reverse( pointVec.begin(), pointVec.end() );
-
-        cerr << " Skeleton check ";
-
-        Skeleton::Skeleton s (Skeleton::makeSkeleton (pointVec));
-                                
-        // Delete all of the hull points.
-        list<Skeleton::SkeletonLine>::iterator SL = s.begin();
-        list<Skeleton::SkeletonLine>::iterator deleteSL;
-
-        // Remove all of the points on the boundary while getting
-        // the cord length of the remains interior segments.
-
-        double cordLength = 0;
-
-        map< int, int > indexCount;
-        map<int, int>::iterator ic;
-
-        cerr << " cordLength ";
-
-        while ( SL != s.end() )
-        {
-          if( (*SL).lower.vertex->ID < pointVec.size() ||
-              (*SL).higher.vertex->ID < pointVec.size() ) 
-          {
-            // Boundary point so delete it.
-            deleteSL = SL;
-            ++SL;
-            s.erase( deleteSL );
-          }
-          else
-          {
-            // Running cord length.
-            cordLength += sqrt( ((*SL).higher.vertex->point.x-
-                                 (*SL).lower.vertex->point.x) *
-                                ((*SL).higher.vertex->point.x-
-                                 (*SL).lower.vertex->point.x) +
-
-                                 ((*SL).higher.vertex->point.y -
-                                  (*SL).lower.vertex->point.y) * 
-                                 ((*SL).higher.vertex->point.y -
-                                  (*SL).lower.vertex->point.y) );
-
-
-            // Count the number of times each end point is used
-
-            // Lower end point
-            int index = (*SL).lower.vertex->ID;
-
-            ic = indexCount.find( index );
-
-            if( ic == indexCount.end() )
-              indexCount.insert( pair<int, int>( index,1) );
-            else (*ic).second++;
-
-            // Higher end point
-            index = (*SL).higher.vertex->ID;
-
-            ic = indexCount.find( index );
-
-            if( ic == indexCount.end() )
-              indexCount.insert( pair<int, int>( index,1) );
-            else (*ic).second++;
-
-            ++SL;
-          }
-        }                   
-        
-
-        int startIndex, endIndex;
-        int cc = 0;
-        ic = indexCount.begin();
-
-        while( ic != indexCount.end() )
-        {
-          // Find the end points that are used but once. 
-          // There should only be two.
-          if( (*ic).second == 1 )
-          {
-            if( cc == 1 )
-              startIndex = (*ic).first;
-            else if( cc == 0 )
-              endIndex = (*ic).first;
-
-            ++cc;
-          }
-
-          if( (*ic).second > 2 )
-          {
-            cerr << "double segment ??? " << (*ic).first << endl;
-
-            SL = s.begin();
-
-            while( SL != s.end() &&
-                   (*SL).lower.vertex->ID != (*ic).first &&
-                   (*SL).higher.vertex->ID != (*ic).first )
-              SL++;
-                    
-            // Have an index so process
-            if( SL != s.end() )
-            {
-
-              // Remove double segments;
-              if( (*SL).lower.vertex->ID == (*ic).first &&
-                  (*indexCount.find( (*SL).higher.vertex->ID )).second > 2 )
-              {
-                cerr << "removing double segment ??? " << (*ic).first << "  "
-                     << (*indexCount.find( (*SL).higher.vertex->ID )).first
-                     << endl;
-                
-                (*ic).second--;
-                (*indexCount.find( (*SL).higher.vertex->ID )).second--;
-                
-                s.erase( SL );
-              }
-                  
-              // Remove double segments;
-              if( (*SL).higher.vertex->ID == (*ic).first &&
-                  
-                  (*indexCount.find( (*SL).lower.vertex->ID )).second > 2 )
-              {
-                cerr << "removing double segment ??? " << (*ic).first << "  "
-                     << (*indexCount.find( (*SL).lower.vertex->ID )).first
-                     << endl;
-                
-                
-                (*ic).second--;
-                (*indexCount.find( (*SL).lower.vertex->ID )).second--;
-                
-                s.erase( SL );
-              }
-            }                
-          }
-
-          ++ic;
-        }
-
-        double lastpt[3];
-
-        if( cc < 2 )
-        {
-          cerr << "Not enough start points " << cc << endl;
-          continue;
-        }
-
-        else if( cc > 2 )
-        {
-          cerr << "Too many start points " << cc << endl;
-          continue;
-        }
-
-        cerr << "Island " << j << " New skeleton "
-             << "start index " << startIndex
-             << "  end index " << endIndex
-             << endl;
-        
-
-        double currentCord = 0;
-
-        int nextIndex = startIndex;
-
-        unsigned int nlines = 0;
-
-        // Loop through all of the lines which are described
-        // as set of paired points.
-        while ( s.begin() != s.end() )
-        {
-          // Index of the first point.
-          SL = s.begin();
-
-          while( SL != s.end() &&
-                 (*SL).lower.vertex->ID != nextIndex &&
-                 (*SL).higher.vertex->ID != nextIndex )
-            SL++;
-                    
-          // Have an index so process
-          if( SL != s.end() )
-          {
-//          cerr << "Island " << j
-//               << " Line segment " << nlines++
-//               << " index " << nextIndex;
-
-            int lastIndex = nextIndex;
-
-            // Index of the leading point.
-            if( (*SL).lower.vertex->ID == nextIndex )
-              nextIndex = (*SL).higher.vertex->ID;
-            else // if( (*SL).higher.vertex->ID == startIndex )
-              nextIndex = (*SL).lower.vertex->ID;
-            
-//          cerr << " index " << nextIndex
-//               << endl;
-
-            double localCord = sqrt( ((*SL).higher.vertex->point.x-
-                                      (*SL).lower.vertex->point.x) *
-                                     ((*SL).higher.vertex->point.x-
-                                      (*SL).lower.vertex->point.x) +
-                                     
-                                     ((*SL).higher.vertex->point.y -
-                                      (*SL).lower.vertex->point.y) * 
-                                     ((*SL).higher.vertex->point.y -
-                                      (*SL).lower.vertex->point.y) );
-
-            // Check to see if the segment spans the mid cord.
-            if( currentCord < cordLength/2 &&
-                cordLength/2.0 <= currentCord + localCord )
-            {
-              double t = (cordLength/2.0 - currentCord) / localCord;
-
-              // Already updated the nextIndex so use the lastIndex
-              // for figuring out the closest to the cordlength center.
-              if( (*SL).lower.vertex->ID == lastIndex )
-              {
-                lastpt[0] = (*SL).lower.vertex->point.x + t *
-                  ((*SL).higher.vertex->point.x-(*SL).lower.vertex->point.x);
-                lastpt[1] = 0;
-                lastpt[2] = (*SL).lower.vertex->point.y + t *
-                  ((*SL).higher.vertex->point.y-(*SL).lower.vertex->point.y);
-              }
-
-              else //if( (*SL).higher.vertex->ID == lastIndex )
-              {
-                lastpt[0] = (*SL).higher.vertex->point.x + t *
-                  ((*SL).lower.vertex->point.x-(*SL).higher.vertex->point.x);
-                lastpt[1] = 0;
-                lastpt[2] = (*SL).higher.vertex->point.y + t *
-                  ((*SL).lower.vertex->point.y-(*SL).higher.vertex->point.y);
-              }
-            }
-
-            // Update the running cord length so that the mid cord is
-            // not calculated again.
-            currentCord += localCord;
-
-            if( 0 ) // Points
-            {
-                double pt[3] = { (*SL).lower.vertex->point.x,
-                                 0,
-                                 (*SL).lower.vertex->point.y };
-
-                vtkPolyData *ball = CreateSphere(nlines, pt);
-                      
-                append->AddInput(ball);
-                ball->Delete();
-            }
-
-            if( 0 ) // Lines
-            {
-                vtkPoints *points = vtkPoints::New();
-                vtkCellArray *cells = vtkCellArray::New();
-                vtkFloatArray *scalars = vtkFloatArray::New();
-
-                cells->InsertNextCell( 2 );
-                scalars->Allocate    ( 2 );
-
-                points->InsertPoint(0,
-                                    (*SL).lower.vertex->point.x,
-                                    0,
-                                    (*SL).lower.vertex->point.y);
-
-                cells->InsertCellPoint(0);
-                scalars->InsertTuple1(0, nlines);
-
-                points->InsertPoint(1,
-                                    (*SL).higher.vertex->point.x,
-                                    0,
-                                    (*SL).higher.vertex->point.y);
-
-
-                cells->InsertCellPoint(1);
-                scalars->InsertTuple1(1, nlines);
-
-                // Create a new VTK polyline.
-                vtkPolyData *pd = vtkPolyData::New();
-                pd->SetPoints(points);
-                pd->SetLines(cells);
-                scalars->SetName("colorVar");
-                pd->GetPointData()->SetScalars(scalars);
-                append->AddInput(pd);
-            }
-
-            // Remove this point from the list so that it is
-            // not touched again.
-            deleteSL = SL;
-            ++SL;
-            s.erase( deleteSL );
-          }
-          else
-          {
-            if( nextIndex != endIndex )
-            {
-              cerr << "Did not find end index  "
-                   << nextIndex << "  " <<  endIndex
-                   << endl;
-              
-              break;
-            }
-          }
-        }
-        
-        cerr << "O Point "
-             << lastpt[0] << "  " << lastpt[1] << "  " << lastpt[2]
-             << endl;
-        
-        vtkPolyData *ball = CreateSphere(nlines, lastpt);
-        
-        append->AddInput(ball);
-        ball->Delete();
-      }
-      
-      // Do only one plane
-      break;
-    }
-    
-    append->Update();
-    vtkPolyData *outPD = append->GetOutput();
-    outPD->Register(NULL);
-    outPD->SetSource(NULL);
-    append->Delete();
-    
-    dt->Merge( new avtDataTree(outPD, 0) );
-#endif
-}
 
 
 // ****************************************************************************
