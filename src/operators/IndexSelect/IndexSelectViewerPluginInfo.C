@@ -311,21 +311,21 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
        const avtMeshMetaData *mmd = md->GetMesh(plot->GetMeshName());
        if(mmd && mmd->hasLogicalBounds)
        {
-           if( mmd->topologicalDimension >= 1 )
+           if( mmd->topologicalDimension >= 1 && mmd->logicalBounds[0] > 1)
            {
                isAtts->SetDim(IndexSelectAttributes::OneD);
                isAtts->SetXAbsMax(mmd->logicalBounds[0]-1);
                if( isAtts->GetXMax() == -1 )
                    isAtts->SetXMax(mmd->logicalBounds[0]-1);
            }
-           if( mmd->topologicalDimension >= 2 )
+           if( mmd->topologicalDimension >= 2 && mmd->logicalBounds[1] > 1 )
            {
                isAtts->SetDim(IndexSelectAttributes::TwoD);
                isAtts->SetYAbsMax(mmd->logicalBounds[1]-1);
                if( isAtts->GetYMax() == -1 )
                    isAtts->SetYMax(mmd->logicalBounds[1]-1);
            }
-           if( mmd->topologicalDimension >= 3 )
+           if( mmd->topologicalDimension >= 3 && mmd->logicalBounds[2] > 1 )
            {
                isAtts->SetDim(IndexSelectAttributes::ThreeD);
                isAtts->SetZAbsMax(mmd->logicalBounds[2]-1);
