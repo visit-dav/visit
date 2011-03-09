@@ -212,7 +212,7 @@ QvisIndexSelectWindow::CreateWindowContents()
       oneDMax->setRange(0,atts->GetXAbsMax());
 
     oneDMax->setSingleStep(1);
-    if( atts->GetYAbsMax() == -1 )
+    if( atts->GetXAbsMax() == -1 )
     {
       oneDMax->setSpecialValueText(tr("max"));
       oneDMax->setValue(-1);
