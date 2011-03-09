@@ -253,8 +253,6 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%swindingPairConfidence = %g\n", prefix, atts->GetWindingPairConfidence());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%speriodicityConsistency = %g\n", prefix, atts->GetPeriodicityConsistency());
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sadjustPlane = %d\n", prefix, atts->GetAdjustPlane());
     str += tmpStr;
     const char *overlaps_names = "Raw, Remove, Merge, Smooth";
@@ -423,10 +421,10 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     else
         SNPRINTF(tmpStr, 1000, "%sverboseFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetShowRidgelines())
-        SNPRINTF(tmpStr, 1000, "%sshowRidgelines = 1\n", prefix);
+    if(atts->GetShow1DPlots())
+        SNPRINTF(tmpStr, 1000, "%sshow1DPlots = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%sshowRidgelines = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%sshow1DPlots = 0\n", prefix);
     str += tmpStr;
     if(atts->GetShowLines())
         SNPRINTF(tmpStr, 1000, "%sshowLines = 1\n", prefix);
@@ -1152,30 +1150,6 @@ PoincareAttributes_GetWindingPairConfidence(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetPeriodicityConsistency(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the periodicityConsistency in the object.
-    obj->data->SetPeriodicityConsistency(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PoincareAttributes_GetPeriodicityConsistency(PyObject *self, PyObject *args)
-{
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetPeriodicityConsistency());
-    return retval;
-}
-
-/*static*/ PyObject *
 PoincareAttributes_SetAdjustPlane(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -1748,7 +1722,7 @@ PoincareAttributes_GetVerboseFlag(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetShowRidgelines(PyObject *self, PyObject *args)
+PoincareAttributes_SetShow1DPlots(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
@@ -1756,18 +1730,18 @@ PoincareAttributes_SetShowRidgelines(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the showRidgelines in the object.
-    obj->data->SetShowRidgelines(ival != 0);
+    // Set the show1DPlots in the object.
+    obj->data->SetShow1DPlots(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetShowRidgelines(PyObject *self, PyObject *args)
+PoincareAttributes_GetShow1DPlots(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetShowRidgelines()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetShow1DPlots()?1L:0L);
     return retval;
 }
 
@@ -2179,8 +2153,6 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetOverridePoloidalWinding", PoincareAttributes_GetOverridePoloidalWinding, METH_VARARGS},
     {"SetWindingPairConfidence", PoincareAttributes_SetWindingPairConfidence, METH_VARARGS},
     {"GetWindingPairConfidence", PoincareAttributes_GetWindingPairConfidence, METH_VARARGS},
-    {"SetPeriodicityConsistency", PoincareAttributes_SetPeriodicityConsistency, METH_VARARGS},
-    {"GetPeriodicityConsistency", PoincareAttributes_GetPeriodicityConsistency, METH_VARARGS},
     {"SetAdjustPlane", PoincareAttributes_SetAdjustPlane, METH_VARARGS},
     {"GetAdjustPlane", PoincareAttributes_GetAdjustPlane, METH_VARARGS},
     {"SetOverlaps", PoincareAttributes_SetOverlaps, METH_VARARGS},
@@ -2221,8 +2193,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetShowIslands", PoincareAttributes_GetShowIslands, METH_VARARGS},
     {"SetVerboseFlag", PoincareAttributes_SetVerboseFlag, METH_VARARGS},
     {"GetVerboseFlag", PoincareAttributes_GetVerboseFlag, METH_VARARGS},
-    {"SetShowRidgelines", PoincareAttributes_SetShowRidgelines, METH_VARARGS},
-    {"GetShowRidgelines", PoincareAttributes_GetShowRidgelines, METH_VARARGS},
+    {"SetShow1DPlots", PoincareAttributes_SetShow1DPlots, METH_VARARGS},
+    {"GetShow1DPlots", PoincareAttributes_GetShow1DPlots, METH_VARARGS},
     {"SetShowLines", PoincareAttributes_SetShowLines, METH_VARARGS},
     {"GetShowLines", PoincareAttributes_GetShowLines, METH_VARARGS},
     {"SetLineWidth", PoincareAttributes_SetLineWidth, METH_VARARGS},
@@ -2357,8 +2329,6 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetOverridePoloidalWinding(self, NULL);
     if(strcmp(name, "windingPairConfidence") == 0)
         return PoincareAttributes_GetWindingPairConfidence(self, NULL);
-    if(strcmp(name, "periodicityConsistency") == 0)
-        return PoincareAttributes_GetPeriodicityConsistency(self, NULL);
     if(strcmp(name, "adjustPlane") == 0)
         return PoincareAttributes_GetAdjustPlane(self, NULL);
     if(strcmp(name, "overlaps") == 0)
@@ -2445,8 +2415,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetShowIslands(self, NULL);
     if(strcmp(name, "verboseFlag") == 0)
         return PoincareAttributes_GetVerboseFlag(self, NULL);
-    if(strcmp(name, "showRidgelines") == 0)
-        return PoincareAttributes_GetShowRidgelines(self, NULL);
+    if(strcmp(name, "show1DPlots") == 0)
+        return PoincareAttributes_GetShow1DPlots(self, NULL);
     if(strcmp(name, "showLines") == 0)
         return PoincareAttributes_GetShowLines(self, NULL);
     if(strcmp(name, "lineWidth") == 0)
@@ -2556,8 +2526,6 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetOverridePoloidalWinding(self, tuple);
     else if(strcmp(name, "windingPairConfidence") == 0)
         obj = PoincareAttributes_SetWindingPairConfidence(self, tuple);
-    else if(strcmp(name, "periodicityConsistency") == 0)
-        obj = PoincareAttributes_SetPeriodicityConsistency(self, tuple);
     else if(strcmp(name, "adjustPlane") == 0)
         obj = PoincareAttributes_SetAdjustPlane(self, tuple);
     else if(strcmp(name, "overlaps") == 0)
@@ -2598,8 +2566,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetShowIslands(self, tuple);
     else if(strcmp(name, "verboseFlag") == 0)
         obj = PoincareAttributes_SetVerboseFlag(self, tuple);
-    else if(strcmp(name, "showRidgelines") == 0)
-        obj = PoincareAttributes_SetShowRidgelines(self, tuple);
+    else if(strcmp(name, "show1DPlots") == 0)
+        obj = PoincareAttributes_SetShow1DPlots(self, tuple);
     else if(strcmp(name, "showLines") == 0)
         obj = PoincareAttributes_SetShowLines(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)

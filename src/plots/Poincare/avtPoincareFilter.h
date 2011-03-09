@@ -109,7 +109,6 @@ class avtPoincareFilter : public avtStreamlineFilter
       overridePoloidalWinding = value; }
 
     void SetWindingPairConfidence( double val ) { windingPairConfidence = val; }
-    void SetPeriodicityConsistency( double val ) { periodicityConsistency = val; }
 
     void SetAdjustPlane( int val ) { adjust_plane = val; }
 
@@ -130,7 +129,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     void SetShowPoints( bool val )  { showPoints = val; }
     void SetPointScale(int scale)   { pointScale = scale; }
     void SetVerboseFlag( bool val ) { verboseFlag = val; }
-    void SetShowRidgelines( bool val )   { showRidgelines = val; }
+    void SetShow1DPlots( bool val )   { show1DPlots = val; }
 
     // Methods to set the filter's attributes.
     void                      SetIntersectionCriteria(vtkObject *obj, int);
@@ -150,11 +149,6 @@ class avtPoincareFilter : public avtStreamlineFilter
 
   virtual void drawPoints( avtDataTree *dt,
                            vector < Point > &nodes );
-
-  virtual void findIslandCenter( avtDataTree *dt,
-                                 vector< vector < vector < Point > > > &nodes,
-                                 unsigned int color,
-                                 double color_value );
 
   virtual void drawRationalCurve( avtDataTree *dt,
                                   vector< vector < vector < Point > > > &nodes,
@@ -212,7 +206,6 @@ class avtPoincareFilter : public avtStreamlineFilter
     unsigned int overridePoloidalWinding;
 
     double windingPairConfidence;
-    double periodicityConsistency;
 
     unsigned int overlaps;
 
@@ -226,13 +219,13 @@ class avtPoincareFilter : public avtStreamlineFilter
     int maxIntersections;
 
     bool showOPoints, showIslands, showChaotic;
-    bool showLines, showPoints, showRidgelines, verboseFlag;
+    bool showLines, showPoints, show1DPlots, verboseFlag;
     int  pointScale;
 
     class ICHelper
     {
       public:
-        ICHelper() {}
+        ICHelper() : ic(0) {}
         ~ICHelper() {}
 
         avtPoincareIC *ic;

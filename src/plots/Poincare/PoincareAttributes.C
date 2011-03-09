@@ -538,7 +538,6 @@ void PoincareAttributes::Init()
     overrideToroidalWinding = 0;
     overridePoloidalWinding = 0;
     windingPairConfidence = 0.9;
-    periodicityConsistency = 0.8;
     adjustPlane = -1;
     overlaps = Remove;
     meshType = Curves;
@@ -557,7 +556,7 @@ void PoincareAttributes::Init()
     showChaotic = false;
     showIslands = false;
     verboseFlag = true;
-    showRidgelines = false;
+    show1DPlots = false;
     showLines = true;
     lineWidth = 0;
     lineStyle = 0;
@@ -622,7 +621,6 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     overrideToroidalWinding = obj.overrideToroidalWinding;
     overridePoloidalWinding = obj.overridePoloidalWinding;
     windingPairConfidence = obj.windingPairConfidence;
-    periodicityConsistency = obj.periodicityConsistency;
     adjustPlane = obj.adjustPlane;
     overlaps = obj.overlaps;
     meshType = obj.meshType;
@@ -643,7 +641,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     showChaotic = obj.showChaotic;
     showIslands = obj.showIslands;
     verboseFlag = obj.verboseFlag;
-    showRidgelines = obj.showRidgelines;
+    show1DPlots = obj.show1DPlots;
     showLines = obj.showLines;
     lineWidth = obj.lineWidth;
     lineStyle = obj.lineStyle;
@@ -852,7 +850,6 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (overrideToroidalWinding == obj.overrideToroidalWinding) &&
             (overridePoloidalWinding == obj.overridePoloidalWinding) &&
             (windingPairConfidence == obj.windingPairConfidence) &&
-            (periodicityConsistency == obj.periodicityConsistency) &&
             (adjustPlane == obj.adjustPlane) &&
             (overlaps == obj.overlaps) &&
             (meshType == obj.meshType) &&
@@ -873,7 +870,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (showChaotic == obj.showChaotic) &&
             (showIslands == obj.showIslands) &&
             (verboseFlag == obj.verboseFlag) &&
-            (showRidgelines == obj.showRidgelines) &&
+            (show1DPlots == obj.show1DPlots) &&
             (showLines == obj.showLines) &&
             (lineWidth == obj.lineWidth) &&
             (lineStyle == obj.lineStyle) &&
@@ -1076,7 +1073,6 @@ PoincareAttributes::SelectAll()
     Select(ID_overrideToroidalWinding,   (void *)&overrideToroidalWinding);
     Select(ID_overridePoloidalWinding,   (void *)&overridePoloidalWinding);
     Select(ID_windingPairConfidence,     (void *)&windingPairConfidence);
-    Select(ID_periodicityConsistency,    (void *)&periodicityConsistency);
     Select(ID_adjustPlane,               (void *)&adjustPlane);
     Select(ID_overlaps,                  (void *)&overlaps);
     Select(ID_meshType,                  (void *)&meshType);
@@ -1097,7 +1093,7 @@ PoincareAttributes::SelectAll()
     Select(ID_showChaotic,               (void *)&showChaotic);
     Select(ID_showIslands,               (void *)&showIslands);
     Select(ID_verboseFlag,               (void *)&verboseFlag);
-    Select(ID_showRidgelines,            (void *)&showRidgelines);
+    Select(ID_show1DPlots,               (void *)&show1DPlots);
     Select(ID_showLines,                 (void *)&showLines);
     Select(ID_lineWidth,                 (void *)&lineWidth);
     Select(ID_lineStyle,                 (void *)&lineStyle);
@@ -1264,12 +1260,6 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("windingPairConfidence", windingPairConfidence));
     }
 
-    if(completeSave || !FieldsEqual(ID_periodicityConsistency, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("periodicityConsistency", periodicityConsistency));
-    }
-
     if(completeSave || !FieldsEqual(ID_adjustPlane, &defaultObject))
     {
         addToParent = true;
@@ -1392,10 +1382,10 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("verboseFlag", verboseFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_showRidgelines, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_show1DPlots, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("showRidgelines", showRidgelines));
+        node->AddNode(new DataNode("show1DPlots", show1DPlots));
     }
 
     if(completeSave || !FieldsEqual(ID_showLines, &defaultObject))
@@ -1642,8 +1632,6 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetOverridePoloidalWinding(node->AsInt());
     if((node = searchNode->GetNode("windingPairConfidence")) != 0)
         SetWindingPairConfidence(node->AsDouble());
-    if((node = searchNode->GetNode("periodicityConsistency")) != 0)
-        SetPeriodicityConsistency(node->AsDouble());
     if((node = searchNode->GetNode("adjustPlane")) != 0)
         SetAdjustPlane(node->AsInt());
     if((node = searchNode->GetNode("overlaps")) != 0)
@@ -1740,8 +1728,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetShowIslands(node->AsBool());
     if((node = searchNode->GetNode("verboseFlag")) != 0)
         SetVerboseFlag(node->AsBool());
-    if((node = searchNode->GetNode("showRidgelines")) != 0)
-        SetShowRidgelines(node->AsBool());
+    if((node = searchNode->GetNode("show1DPlots")) != 0)
+        SetShow1DPlots(node->AsBool());
     if((node = searchNode->GetNode("showLines")) != 0)
         SetShowLines(node->AsBool());
     if((node = searchNode->GetNode("lineWidth")) != 0)
@@ -1951,13 +1939,6 @@ PoincareAttributes::SetWindingPairConfidence(double windingPairConfidence_)
 }
 
 void
-PoincareAttributes::SetPeriodicityConsistency(double periodicityConsistency_)
-{
-    periodicityConsistency = periodicityConsistency_;
-    Select(ID_periodicityConsistency, (void *)&periodicityConsistency);
-}
-
-void
 PoincareAttributes::SetAdjustPlane(int adjustPlane_)
 {
     adjustPlane = adjustPlane_;
@@ -2098,10 +2079,10 @@ PoincareAttributes::SetVerboseFlag(bool verboseFlag_)
 }
 
 void
-PoincareAttributes::SetShowRidgelines(bool showRidgelines_)
+PoincareAttributes::SetShow1DPlots(bool show1DPlots_)
 {
-    showRidgelines = showRidgelines_;
-    Select(ID_showRidgelines, (void *)&showRidgelines);
+    show1DPlots = show1DPlots_;
+    Select(ID_show1DPlots, (void *)&show1DPlots);
 }
 
 void
@@ -2344,12 +2325,6 @@ PoincareAttributes::GetWindingPairConfidence() const
     return windingPairConfidence;
 }
 
-double
-PoincareAttributes::GetPeriodicityConsistency() const
-{
-    return periodicityConsistency;
-}
-
 int
 PoincareAttributes::GetAdjustPlane() const
 {
@@ -2483,9 +2458,9 @@ PoincareAttributes::GetVerboseFlag() const
 }
 
 bool
-PoincareAttributes::GetShowRidgelines() const
+PoincareAttributes::GetShow1DPlots() const
 {
-    return showRidgelines;
+    return show1DPlots;
 }
 
 bool
@@ -2650,7 +2625,6 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_overrideToroidalWinding:   return "overrideToroidalWinding";
     case ID_overridePoloidalWinding:   return "overridePoloidalWinding";
     case ID_windingPairConfidence:     return "windingPairConfidence";
-    case ID_periodicityConsistency:    return "periodicityConsistency";
     case ID_adjustPlane:               return "adjustPlane";
     case ID_overlaps:                  return "overlaps";
     case ID_meshType:                  return "meshType";
@@ -2671,7 +2645,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_showChaotic:               return "showChaotic";
     case ID_showIslands:               return "showIslands";
     case ID_verboseFlag:               return "verboseFlag";
-    case ID_showRidgelines:            return "showRidgelines";
+    case ID_show1DPlots:               return "show1DPlots";
     case ID_showLines:                 return "showLines";
     case ID_lineWidth:                 return "lineWidth";
     case ID_lineStyle:                 return "lineStyle";
@@ -2730,7 +2704,6 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_overrideToroidalWinding:   return FieldType_int;
     case ID_overridePoloidalWinding:   return FieldType_int;
     case ID_windingPairConfidence:     return FieldType_double;
-    case ID_periodicityConsistency:    return FieldType_double;
     case ID_adjustPlane:               return FieldType_int;
     case ID_overlaps:                  return FieldType_enum;
     case ID_meshType:                  return FieldType_enum;
@@ -2751,7 +2724,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_showChaotic:               return FieldType_bool;
     case ID_showIslands:               return FieldType_bool;
     case ID_verboseFlag:               return FieldType_bool;
-    case ID_showRidgelines:            return FieldType_bool;
+    case ID_show1DPlots:               return FieldType_bool;
     case ID_showLines:                 return FieldType_bool;
     case ID_lineWidth:                 return FieldType_linewidth;
     case ID_lineStyle:                 return FieldType_linestyle;
@@ -2810,7 +2783,6 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_overrideToroidalWinding:   return "int";
     case ID_overridePoloidalWinding:   return "int";
     case ID_windingPairConfidence:     return "double";
-    case ID_periodicityConsistency:    return "double";
     case ID_adjustPlane:               return "int";
     case ID_overlaps:                  return "enum";
     case ID_meshType:                  return "enum";
@@ -2831,7 +2803,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_showChaotic:               return "bool";
     case ID_showIslands:               return "bool";
     case ID_verboseFlag:               return "bool";
-    case ID_showRidgelines:            return "bool";
+    case ID_show1DPlots:               return "bool";
     case ID_showLines:                 return "bool";
     case ID_lineWidth:                 return "linewidth";
     case ID_lineStyle:                 return "linestyle";
@@ -2987,11 +2959,6 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (windingPairConfidence == obj.windingPairConfidence);
         }
         break;
-    case ID_periodicityConsistency:
-        {  // new scope
-        retval = (periodicityConsistency == obj.periodicityConsistency);
-        }
-        break;
     case ID_adjustPlane:
         {  // new scope
         retval = (adjustPlane == obj.adjustPlane);
@@ -3092,9 +3059,9 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (verboseFlag == obj.verboseFlag);
         }
         break;
-    case ID_showRidgelines:
+    case ID_show1DPlots:
         {  // new scope
-        retval = (showRidgelines == obj.showRidgelines);
+        retval = (show1DPlots == obj.show1DPlots);
         }
         break;
     case ID_showLines:
@@ -3272,7 +3239,6 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            overrideToroidalWinding != obj.overrideToroidalWinding ||
            overridePoloidalWinding != obj.overridePoloidalWinding ||
            windingPairConfidence != obj.windingPairConfidence ||
-           periodicityConsistency != obj.periodicityConsistency ||
 
            showOPoints != obj.showOPoints ||
            OPointMaxInterations != obj.OPointMaxInterations ||
@@ -3280,7 +3246,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            overlaps != obj.overlaps ||
 
            showIslands != obj.showIslands ||
-           showRidgelines != obj.showRidgelines ||
+           show1DPlots != obj.show1DPlots ||
            showChaotic != obj.showChaotic ||
            verboseFlag != obj.verboseFlag ||
  

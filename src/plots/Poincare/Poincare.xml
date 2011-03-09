@@ -142,9 +142,6 @@
       <Field name="windingPairConfidence" label="Winding Pair Confidence" type="double">
         0.900000
       </Field>
-      <Field name="periodicityConsistency" label="Periodicity Consistency" type="double">
-        0.800000
-      </Field>
       <Field name="adjustPlane" label="Adjust plane" type="int">
         -1
       </Field>
@@ -208,7 +205,7 @@
       <Field name="verboseFlag" label="Verbose" type="bool">
         true
       </Field>
-      <Field name="showRidgelines" label="Show Ridgelines" type="bool">
+      <Field name="show1DPlots" label="Show 1D Plots" type="bool">
         false
       </Field>
       <Field name="showLines" label="Show Lines" type="bool">
