@@ -198,6 +198,7 @@ QvisIndexSelectWindow::CreateWindowContents()
       oneDMin->setRange(0,MAX_VAL);
     else
       oneDMin->setRange(0,atts->GetXAbsMax());
+
     oneDMin->setSingleStep(1);
     connect(oneDMin, SIGNAL(valueChanged(int)),
              this, SLOT(oneDMinChanged(int)));
@@ -467,11 +468,18 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
             oneDMin->blockSignals(false);
             break;
           case IndexSelectAttributes::ID_xAbsMax:
-            oneDMax->blockSignals(true);
+            oneDMin->blockSignals(true);
             oneDMin->setRange(0,atts->GetXAbsMax());
+            oneDMin->blockSignals(false);
+
+            oneDMax->blockSignals(true);
             oneDMax->setRange(0,atts->GetXAbsMax());
             oneDMax->setSpecialValueText(tr(""));
             oneDMax->blockSignals(false);
+
+            oneDIncr->blockSignals(true);
+            oneDIncr->setRange(1,atts->GetXAbsMax()+1);
+            oneDIncr->blockSignals(false);
             break;
           case IndexSelectAttributes::ID_xIncr:
             oneDIncr->blockSignals(true);
@@ -507,11 +515,18 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
             twoDMin->blockSignals(false);
             break;
           case IndexSelectAttributes::ID_yAbsMax:
-            twoDMax->blockSignals(true);
+            twoDMin->blockSignals(true);
             twoDMin->setRange(0,atts->GetYAbsMax());
+            twoDMin->blockSignals(false);
+
+            twoDMax->blockSignals(true);
             twoDMax->setRange(0,atts->GetYAbsMax());
             twoDMax->setSpecialValueText(tr(""));
             twoDMax->blockSignals(false);
+
+            twoDIncr->blockSignals(true);
+            twoDIncr->setRange(1,atts->GetYAbsMax()+1);
+            twoDIncr->blockSignals(false);
             break;
           case IndexSelectAttributes::ID_yIncr:
             twoDIncr->blockSignals(true);
@@ -547,11 +562,18 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
             threeDMin->blockSignals(false);
             break;
           case IndexSelectAttributes::ID_zAbsMax:
-            threeDMax->blockSignals(true);
+            threeDMin->blockSignals(true);
             threeDMin->setRange(0,atts->GetZAbsMax());
+            threeDMin->blockSignals(false);
+
+            threeDMax->blockSignals(true);
             threeDMax->setRange(0,atts->GetZAbsMax());
             threeDMax->setSpecialValueText(tr(""));
             threeDMax->blockSignals(false);
+
+            threeDIncr->blockSignals(true);
+            threeDIncr->setRange(1,atts->GetZAbsMax()+1);
+            threeDIncr->blockSignals(false);
             break;
           case IndexSelectAttributes::ID_zIncr:
             threeDIncr->blockSignals(true);
