@@ -550,9 +550,9 @@ void PoincareAttributes::Init()
     colorType = ColorByColorTable;
     dataValue = SafetyFactor;
     showOPoints = false;
-    OPointMaxInterations = 2;
+    OPointMaxIterations = 2;
     showXPoints = false;
-    XPointMaxInterations = 2;
+    XPointMaxIterations = 2;
     showChaotic = false;
     showIslands = false;
     verboseFlag = true;
@@ -635,9 +635,9 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     colorTableName = obj.colorTableName;
     dataValue = obj.dataValue;
     showOPoints = obj.showOPoints;
-    OPointMaxInterations = obj.OPointMaxInterations;
+    OPointMaxIterations = obj.OPointMaxIterations;
     showXPoints = obj.showXPoints;
-    XPointMaxInterations = obj.XPointMaxInterations;
+    XPointMaxIterations = obj.XPointMaxIterations;
     showChaotic = obj.showChaotic;
     showIslands = obj.showIslands;
     verboseFlag = obj.verboseFlag;
@@ -864,9 +864,9 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (colorTableName == obj.colorTableName) &&
             (dataValue == obj.dataValue) &&
             (showOPoints == obj.showOPoints) &&
-            (OPointMaxInterations == obj.OPointMaxInterations) &&
+            (OPointMaxIterations == obj.OPointMaxIterations) &&
             (showXPoints == obj.showXPoints) &&
-            (XPointMaxInterations == obj.XPointMaxInterations) &&
+            (XPointMaxIterations == obj.XPointMaxIterations) &&
             (showChaotic == obj.showChaotic) &&
             (showIslands == obj.showIslands) &&
             (verboseFlag == obj.verboseFlag) &&
@@ -1087,9 +1087,9 @@ PoincareAttributes::SelectAll()
     Select(ID_colorTableName,            (void *)&colorTableName);
     Select(ID_dataValue,                 (void *)&dataValue);
     Select(ID_showOPoints,               (void *)&showOPoints);
-    Select(ID_OPointMaxInterations,      (void *)&OPointMaxInterations);
+    Select(ID_OPointMaxIterations,       (void *)&OPointMaxIterations);
     Select(ID_showXPoints,               (void *)&showXPoints);
-    Select(ID_XPointMaxInterations,      (void *)&XPointMaxInterations);
+    Select(ID_XPointMaxIterations,       (void *)&XPointMaxIterations);
     Select(ID_showChaotic,               (void *)&showChaotic);
     Select(ID_showIslands,               (void *)&showIslands);
     Select(ID_verboseFlag,               (void *)&verboseFlag);
@@ -1346,10 +1346,10 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("showOPoints", showOPoints));
     }
 
-    if(completeSave || !FieldsEqual(ID_OPointMaxInterations, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OPointMaxIterations, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("OPointMaxInterations", OPointMaxInterations));
+        node->AddNode(new DataNode("OPointMaxIterations", OPointMaxIterations));
     }
 
     if(completeSave || !FieldsEqual(ID_showXPoints, &defaultObject))
@@ -1358,10 +1358,10 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("showXPoints", showXPoints));
     }
 
-    if(completeSave || !FieldsEqual(ID_XPointMaxInterations, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_XPointMaxIterations, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("XPointMaxInterations", XPointMaxInterations));
+        node->AddNode(new DataNode("XPointMaxIterations", XPointMaxIterations));
     }
 
     if(completeSave || !FieldsEqual(ID_showChaotic, &defaultObject))
@@ -1716,12 +1716,12 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("showOPoints")) != 0)
         SetShowOPoints(node->AsBool());
-    if((node = searchNode->GetNode("OPointMaxInterations")) != 0)
-        SetOPointMaxInterations(node->AsInt());
+    if((node = searchNode->GetNode("OPointMaxIterations")) != 0)
+        SetOPointMaxIterations(node->AsInt());
     if((node = searchNode->GetNode("showXPoints")) != 0)
         SetShowXPoints(node->AsBool());
-    if((node = searchNode->GetNode("XPointMaxInterations")) != 0)
-        SetXPointMaxInterations(node->AsInt());
+    if((node = searchNode->GetNode("XPointMaxIterations")) != 0)
+        SetXPointMaxIterations(node->AsInt());
     if((node = searchNode->GetNode("showChaotic")) != 0)
         SetShowChaotic(node->AsBool());
     if((node = searchNode->GetNode("showIslands")) != 0)
@@ -2037,10 +2037,10 @@ PoincareAttributes::SetShowOPoints(bool showOPoints_)
 }
 
 void
-PoincareAttributes::SetOPointMaxInterations(int OPointMaxInterations_)
+PoincareAttributes::SetOPointMaxIterations(int OPointMaxIterations_)
 {
-    OPointMaxInterations = OPointMaxInterations_;
-    Select(ID_OPointMaxInterations, (void *)&OPointMaxInterations);
+    OPointMaxIterations = OPointMaxIterations_;
+    Select(ID_OPointMaxIterations, (void *)&OPointMaxIterations);
 }
 
 void
@@ -2051,10 +2051,10 @@ PoincareAttributes::SetShowXPoints(bool showXPoints_)
 }
 
 void
-PoincareAttributes::SetXPointMaxInterations(int XPointMaxInterations_)
+PoincareAttributes::SetXPointMaxIterations(int XPointMaxIterations_)
 {
-    XPointMaxInterations = XPointMaxInterations_;
-    Select(ID_XPointMaxInterations, (void *)&XPointMaxInterations);
+    XPointMaxIterations = XPointMaxIterations_;
+    Select(ID_XPointMaxIterations, (void *)&XPointMaxIterations);
 }
 
 void
@@ -2422,9 +2422,9 @@ PoincareAttributes::GetShowOPoints() const
 }
 
 int
-PoincareAttributes::GetOPointMaxInterations() const
+PoincareAttributes::GetOPointMaxIterations() const
 {
-    return OPointMaxInterations;
+    return OPointMaxIterations;
 }
 
 bool
@@ -2434,9 +2434,9 @@ PoincareAttributes::GetShowXPoints() const
 }
 
 int
-PoincareAttributes::GetXPointMaxInterations() const
+PoincareAttributes::GetXPointMaxIterations() const
 {
-    return XPointMaxInterations;
+    return XPointMaxIterations;
 }
 
 bool
@@ -2639,9 +2639,9 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_colorTableName:            return "colorTableName";
     case ID_dataValue:                 return "dataValue";
     case ID_showOPoints:               return "showOPoints";
-    case ID_OPointMaxInterations:      return "OPointMaxInterations";
+    case ID_OPointMaxIterations:       return "OPointMaxIterations";
     case ID_showXPoints:               return "showXPoints";
-    case ID_XPointMaxInterations:      return "XPointMaxInterations";
+    case ID_XPointMaxIterations:       return "XPointMaxIterations";
     case ID_showChaotic:               return "showChaotic";
     case ID_showIslands:               return "showIslands";
     case ID_verboseFlag:               return "verboseFlag";
@@ -2718,9 +2718,9 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_colorTableName:            return FieldType_colortable;
     case ID_dataValue:                 return FieldType_enum;
     case ID_showOPoints:               return FieldType_bool;
-    case ID_OPointMaxInterations:      return FieldType_int;
+    case ID_OPointMaxIterations:       return FieldType_int;
     case ID_showXPoints:               return FieldType_bool;
-    case ID_XPointMaxInterations:      return FieldType_int;
+    case ID_XPointMaxIterations:       return FieldType_int;
     case ID_showChaotic:               return FieldType_bool;
     case ID_showIslands:               return FieldType_bool;
     case ID_verboseFlag:               return FieldType_bool;
@@ -2797,9 +2797,9 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_colorTableName:            return "colortable";
     case ID_dataValue:                 return "enum";
     case ID_showOPoints:               return "bool";
-    case ID_OPointMaxInterations:      return "int";
+    case ID_OPointMaxIterations:       return "int";
     case ID_showXPoints:               return "bool";
-    case ID_XPointMaxInterations:      return "int";
+    case ID_XPointMaxIterations:       return "int";
     case ID_showChaotic:               return "bool";
     case ID_showIslands:               return "bool";
     case ID_verboseFlag:               return "bool";
@@ -3029,9 +3029,9 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (showOPoints == obj.showOPoints);
         }
         break;
-    case ID_OPointMaxInterations:
+    case ID_OPointMaxIterations:
         {  // new scope
-        retval = (OPointMaxInterations == obj.OPointMaxInterations);
+        retval = (OPointMaxIterations == obj.OPointMaxIterations);
         }
         break;
     case ID_showXPoints:
@@ -3039,9 +3039,9 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (showXPoints == obj.showXPoints);
         }
         break;
-    case ID_XPointMaxInterations:
+    case ID_XPointMaxIterations:
         {  // new scope
-        retval = (XPointMaxInterations == obj.XPointMaxInterations);
+        retval = (XPointMaxIterations == obj.XPointMaxIterations);
         }
         break;
     case ID_showChaotic:
@@ -3241,7 +3241,10 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            windingPairConfidence != obj.windingPairConfidence ||
 
            showOPoints != obj.showOPoints ||
-           OPointMaxInterations != obj.OPointMaxInterations ||
+           OPointMaxIterations != obj.OPointMaxIterations ||
+
+           showXPoints != obj.showXPoints ||
+           XPointMaxIterations != obj.XPointMaxIterations ||
 
            overlaps != obj.overlaps ||
 

@@ -68,7 +68,11 @@ public:
   {
     type = FieldlineProperties::UNKNOWN_TYPE;
     analysisState = FieldlineProperties::UNKNOWN_STATE;
+
+    source = FieldlineProperties::UNKNOWN_TYPE;
     
+    iteration = 0;
+
     toroidalWinding = 0;
     poloidalWinding = 0;
 
@@ -131,6 +135,8 @@ public:
   FieldlineType source;
 
   AnalysisState analysisState;
+
+  unsigned int iteration;
 
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;

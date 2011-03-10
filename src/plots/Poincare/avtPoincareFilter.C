@@ -165,6 +165,8 @@ avtPoincareFilter::avtPoincareFilter() :
     dataValue(DATA_SafetyFactor),
 
     showOPoints( false ),
+    OPointMaxIterations(2),
+    XPointMaxIterations(2),
     showIslands( false ),
     showLines( true ),
     showPoints( false ),
@@ -443,11 +445,11 @@ avtPoincareFilter::ContinueExecute()
 
       while( iter != fieldlines.end() )
       {
+#ifdef STRAIGHTLINE_SKELETON
         cerr << "Looking at seed " << iter->second.id << "  "
              << iter->second.properties.type << "  " <<
           iter->second.properties.analysisState << endl;
 
-#ifdef STRAIGHTLINE_SKELETON
         // For Island Chains add in the O Points.
         if( showOPoints &&
 
@@ -465,45 +467,54 @@ avtPoincareFilter::ContinueExecute()
           iter->second.properties.analysisState =
             FieldlineProperties::COMPLETED;
 
-          cerr << "Adding seed points" << endl;
+         cerr << "Adding seed points" << endl;
             
           vector< Point > newSeeds;
           std::vector<std::vector<int> > ids;
-          
-          newSeeds.push_back( iter->second.properties.OPoints[0] );
-          AddSeedPoints( newSeeds, ids );
-          
-          for( unsigned int i=0; i<ids.size(); i++ )
-          {
-            for( unsigned int j=0; j<ids[i].size(); j++ )
-            {
-              cerr << "New seed ids " << i << "  " << j << "  " << ids[i][j] <<endl;
-              
-              // Use the curve id because the number of curves will change
-              // over time.
-              map< long int, ICHelper >::iterator seed_iter =
-                fieldlines.find( ids[i][j] );
-                
-              if( seed_iter == fieldlines.end() )
-              {
-                cerr << "Adding seed to the fieldline list" << endl;
 
-                ICHelper icHelper;
-                
-                icHelper.id = ids[i][j];
-                
-                fieldlines[ ids[i][j] ] = icHelper;
-                
-                seed_iter = fieldlines.find( ids[i][j] );
-              }
-              else
+          cerr << "Iterations " << iter->second.properties.iteration << "  " <<
+            OPointMaxIterations << endl;
+
+          if( iter->second.properties.iteration < OPointMaxIterations )
+          {
+            newSeeds.push_back( iter->second.properties.OPoints[0] );
+            AddSeedPoints( newSeeds, ids );
+          
+            for( unsigned int i=0; i<ids.size(); i++ )
+            {
+              for( unsigned int j=0; j<ids[i].size(); j++ )
               {
-                cerr << "New seed is already in the fieldline list" << endl;
-              }
+                cerr << "New island seed ids " << ids[i][j] << "  ";
               
-              seed_iter->second.properties.source =
-                FieldlineProperties::ISLAND_CHAIN;
+                // Use the curve id because the number of curves will change
+                // over time.
+                map< long int, ICHelper >::iterator seed_iter =
+                  fieldlines.find( ids[i][j] );
+                
+                if( seed_iter == fieldlines.end() )
+                {
+                  ICHelper icHelper;
+                
+                  icHelper.id = ids[i][j];
+                
+                  fieldlines[ ids[i][j] ] = icHelper;
+                
+                  seed_iter = fieldlines.find( ids[i][j] );
+                }
+                else
+                {
+                  cerr << "New island seed is already in the fieldline list" << endl;
+                }
+              
+                seed_iter->second.properties.source =
+                  FieldlineProperties::ISLAND_CHAIN;
+
+                seed_iter->second.properties.iteration =
+                  iter->second.properties.iteration + 1;
+              }
             }
+
+            cerr << endl;
           }
 
           // The source was an island_chain so delete it as it was an
@@ -511,9 +522,9 @@ avtPoincareFilter::ContinueExecute()
           if( iter->second.properties.source ==
               FieldlineProperties::ISLAND_CHAIN )
           {
-            cerr << "Deleting " <<  iter->second.id << endl;
+            cerr << "Deleting old O Point seed " <<  iter->second.id << endl;
 
-            ids_to_delete.push_back( iter->second.id );
+//            ids_to_delete.push_back( iter->second.id );
           }
         }
 #endif

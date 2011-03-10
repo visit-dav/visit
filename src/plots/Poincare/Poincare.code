@@ -189,7 +189,10 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            windingPairConfidence != obj.windingPairConfidence ||
 
            showOPoints != obj.showOPoints ||
-           OPointMaxInterations != obj.OPointMaxInterations ||
+           OPointMaxIterations != obj.OPointMaxIterations ||
+
+           showXPoints != obj.showXPoints ||
+           XPointMaxIterations != obj.XPointMaxIterations ||
 
            overlaps != obj.overlaps ||
 

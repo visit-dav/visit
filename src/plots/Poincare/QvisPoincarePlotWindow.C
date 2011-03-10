@@ -409,8 +409,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     OPointMaxIterationsLabel =
       new QLabel(tr(" Maximum iterations"), criticalPointGroup);
     OPointMaxIterations = new QSpinBox(criticalPointGroup);
-    OPointMaxIterations->setMinimum(1);
-    OPointMaxIterations->setMaximum(10);
+    OPointMaxIterations->setRange(0, 10);
     connect(OPointMaxIterations, SIGNAL(valueChanged(int)), 
             this, SLOT(OPointMaxIterationsChanged(int)));
     criticalPointLayout->addWidget( OPointMaxIterationsLabel, 0, 2);
@@ -1081,6 +1080,11 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             showOPoints->blockSignals(true);
             showOPoints->setChecked(atts->GetShowOPoints());
             showOPoints->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_OPointMaxIterations:
+            OPointMaxIterations->blockSignals(true);
+            OPointMaxIterations->setValue(atts->GetOPointMaxIterations());
+            OPointMaxIterations->blockSignals(false);
             break;
           case PoincareAttributes::ID_showIslands:
             showIslands->blockSignals(true);
@@ -1892,7 +1896,7 @@ QvisPoincarePlotWindow::showOPointsChanged(bool val)
 void
 QvisPoincarePlotWindow::OPointMaxIterationsChanged(int val)
 {
-    atts->SetOPointMaxInterations(val);
+    atts->SetOPointMaxIterations(val);
     Apply();
 }
 

@@ -123,6 +123,9 @@ class avtPoincareFilter : public avtStreamlineFilter
     void SetDataValue( unsigned int val ) { dataValue = val; }
 
     void SetShowOPoints( bool val ) { showOPoints = val; }
+    void SetOPointMaxIterations( int val ) { OPointMaxIterations = val; }
+    void SetShowXPoints( bool val ) { showXPoints = val; }
+    void SetXPointMaxIterations( int val ) { XPointMaxIterations = val; }
     void SetShowChaotic( bool val ) { showChaotic = val; }
     void SetShowIslands( bool val ) { showIslands = val; }
     void SetShowLines( bool val )   { showLines = val; }
@@ -218,9 +221,12 @@ class avtPoincareFilter : public avtStreamlineFilter
     vtkObject *intersectObj; 
     int maxIntersections;
 
-    bool showOPoints, showIslands, showChaotic;
+    bool showOPoints, showXPoints, showIslands, showChaotic;
     bool showLines, showPoints, show1DPlots, verboseFlag;
     int  pointScale;
+
+    unsigned int OPointMaxIterations;
+    unsigned int XPointMaxIterations;
 
     class ICHelper
     {
