@@ -209,9 +209,9 @@ public:
     void SetColorTableName(const std::string &colorTableName_);
     void SetDataValue(DataValue dataValue_);
     void SetShowOPoints(bool showOPoints_);
-    void SetOPointMaxInterations(int OPointMaxInterations_);
+    void SetOPointMaxIterations(int OPointMaxIterations_);
     void SetShowXPoints(bool showXPoints_);
-    void SetXPointMaxInterations(int XPointMaxInterations_);
+    void SetXPointMaxIterations(int XPointMaxIterations_);
     void SetShowChaotic(bool showChaotic_);
     void SetShowIslands(bool showIslands_);
     void SetVerboseFlag(bool verboseFlag_);
@@ -271,9 +271,9 @@ public:
           std::string    &GetColorTableName();
     DataValue            GetDataValue() const;
     bool                 GetShowOPoints() const;
-    int                  GetOPointMaxInterations() const;
+    int                  GetOPointMaxIterations() const;
     bool                 GetShowXPoints() const;
-    int                  GetXPointMaxInterations() const;
+    int                  GetXPointMaxIterations() const;
     bool                 GetShowChaotic() const;
     bool                 GetShowIslands() const;
     bool                 GetVerboseFlag() const;
@@ -406,9 +406,9 @@ public:
         ID_colorTableName,
         ID_dataValue,
         ID_showOPoints,
-        ID_OPointMaxInterations,
+        ID_OPointMaxIterations,
         ID_showXPoints,
-        ID_XPointMaxInterations,
+        ID_XPointMaxIterations,
         ID_showChaotic,
         ID_showIslands,
         ID_verboseFlag,
@@ -465,9 +465,9 @@ private:
     std::string    colorTableName;
     int            dataValue;
     bool           showOPoints;
-    int            OPointMaxInterations;
+    int            OPointMaxIterations;
     bool           showXPoints;
-    int            XPointMaxInterations;
+    int            XPointMaxIterations;
     bool           showChaotic;
     bool           showIslands;
     bool           verboseFlag;

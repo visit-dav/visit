@@ -473,6 +473,9 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetDataValue( atts.GetDataValue() );
 
     poincareFilter->SetShowOPoints( atts.GetShowOPoints() );
+    poincareFilter->SetOPointMaxIterations( atts.GetOPointMaxIterations() );
+    poincareFilter->SetShowXPoints( atts.GetShowXPoints() );
+    poincareFilter->SetXPointMaxIterations( atts.GetXPointMaxIterations() );
     poincareFilter->SetShowChaotic( atts.GetShowChaotic() );
     poincareFilter->SetShowIslands( atts.GetShowIslands() );
     poincareFilter->SetShowLines(atts.GetShowLines());

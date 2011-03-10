@@ -4932,7 +4932,7 @@ int chainHull_2D( vector< pair< Point, unsigned int > > &pts,
 
     int n = pts.size();
 
-    hullPts.resize( n );
+    hullPts.resize( n+1 );
 
     // the output array hullPts[] will be used as the stack
     int    bot=0, top=(-1);  // indices for bottom and top of the stack

@@ -187,13 +187,13 @@
       <Field name="showOPoints" label="Detect O Points" type="bool">
         false
       </Field>
-      <Field name="OPointMaxInterations" label="Maximum Interations" type="int">
+      <Field name="OPointMaxIterations" label="Maximum Iterations" type="int">
         2
       </Field>
       <Field name="showXPoints" label="Detect X Points" type="bool">
         false
       </Field>
-      <Field name="XPointMaxInterations" label="Maximum Interations" type="int">
+      <Field name="XPointMaxIterations" label="Maximum Iterations" type="int">
         2
       </Field>
       <Field name="showChaotic" label="Show Chaotic Fieldlines" type="bool">

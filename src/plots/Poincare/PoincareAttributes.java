@@ -168,9 +168,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorTableName = new String("Default");
         dataValue = DATAVALUE_SAFETYFACTOR;
         showOPoints = false;
-        OPointMaxInterations = 2;
+        OPointMaxIterations = 2;
         showXPoints = false;
-        XPointMaxInterations = 2;
+        XPointMaxIterations = 2;
         showChaotic = false;
         showIslands = false;
         verboseFlag = true;
@@ -238,9 +238,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorTableName = new String("Default");
         dataValue = DATAVALUE_SAFETYFACTOR;
         showOPoints = false;
-        OPointMaxInterations = 2;
+        OPointMaxIterations = 2;
         showXPoints = false;
-        XPointMaxInterations = 2;
+        XPointMaxIterations = 2;
         showChaotic = false;
         showIslands = false;
         verboseFlag = true;
@@ -313,9 +313,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorTableName = new String(obj.colorTableName);
         dataValue = obj.dataValue;
         showOPoints = obj.showOPoints;
-        OPointMaxInterations = obj.OPointMaxInterations;
+        OPointMaxIterations = obj.OPointMaxIterations;
         showXPoints = obj.showXPoints;
-        XPointMaxInterations = obj.XPointMaxInterations;
+        XPointMaxIterations = obj.XPointMaxIterations;
         showChaotic = obj.showChaotic;
         showIslands = obj.showIslands;
         verboseFlag = obj.verboseFlag;
@@ -402,9 +402,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (colorTableName.equals(obj.colorTableName)) &&
                 (dataValue == obj.dataValue) &&
                 (showOPoints == obj.showOPoints) &&
-                (OPointMaxInterations == obj.OPointMaxInterations) &&
+                (OPointMaxIterations == obj.OPointMaxIterations) &&
                 (showXPoints == obj.showXPoints) &&
-                (XPointMaxInterations == obj.XPointMaxInterations) &&
+                (XPointMaxIterations == obj.XPointMaxIterations) &&
                 (showChaotic == obj.showChaotic) &&
                 (showIslands == obj.showIslands) &&
                 (verboseFlag == obj.verboseFlag) &&
@@ -663,9 +663,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(33);
     }
 
-    public void SetOPointMaxInterations(int OPointMaxInterations_)
+    public void SetOPointMaxIterations(int OPointMaxIterations_)
     {
-        OPointMaxInterations = OPointMaxInterations_;
+        OPointMaxIterations = OPointMaxIterations_;
         Select(34);
     }
 
@@ -675,9 +675,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(35);
     }
 
-    public void SetXPointMaxInterations(int XPointMaxInterations_)
+    public void SetXPointMaxIterations(int XPointMaxIterations_)
     {
-        XPointMaxInterations = XPointMaxInterations_;
+        XPointMaxIterations = XPointMaxIterations_;
         Select(36);
     }
 
@@ -824,9 +824,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public String         GetColorTableName() { return colorTableName; }
     public int            GetDataValue() { return dataValue; }
     public boolean        GetShowOPoints() { return showOPoints; }
-    public int            GetOPointMaxInterations() { return OPointMaxInterations; }
+    public int            GetOPointMaxIterations() { return OPointMaxIterations; }
     public boolean        GetShowXPoints() { return showXPoints; }
-    public int            GetXPointMaxInterations() { return XPointMaxInterations; }
+    public int            GetXPointMaxIterations() { return XPointMaxIterations; }
     public boolean        GetShowChaotic() { return showChaotic; }
     public boolean        GetShowIslands() { return showIslands; }
     public boolean        GetVerboseFlag() { return verboseFlag; }
@@ -918,11 +918,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(33, buf))
             buf.WriteBool(showOPoints);
         if(WriteSelect(34, buf))
-            buf.WriteInt(OPointMaxInterations);
+            buf.WriteInt(OPointMaxIterations);
         if(WriteSelect(35, buf))
             buf.WriteBool(showXPoints);
         if(WriteSelect(36, buf))
-            buf.WriteInt(XPointMaxInterations);
+            buf.WriteInt(XPointMaxIterations);
         if(WriteSelect(37, buf))
             buf.WriteBool(showChaotic);
         if(WriteSelect(38, buf))
@@ -1069,13 +1069,13 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetShowOPoints(buf.ReadBool());
             break;
         case 34:
-            SetOPointMaxInterations(buf.ReadInt());
+            SetOPointMaxIterations(buf.ReadInt());
             break;
         case 35:
             SetShowXPoints(buf.ReadBool());
             break;
         case 36:
-            SetXPointMaxInterations(buf.ReadInt());
+            SetXPointMaxIterations(buf.ReadInt());
             break;
         case 37:
             SetShowChaotic(buf.ReadBool());
@@ -1255,9 +1255,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "DATAVALUE_RIDGELINEVARIANCE";
         str = str + "\n";
         str = str + boolToString("showOPoints", showOPoints, indent) + "\n";
-        str = str + intToString("OPointMaxInterations", OPointMaxInterations, indent) + "\n";
+        str = str + intToString("OPointMaxIterations", OPointMaxIterations, indent) + "\n";
         str = str + boolToString("showXPoints", showXPoints, indent) + "\n";
-        str = str + intToString("XPointMaxInterations", XPointMaxInterations, indent) + "\n";
+        str = str + intToString("XPointMaxIterations", XPointMaxIterations, indent) + "\n";
         str = str + boolToString("showChaotic", showChaotic, indent) + "\n";
         str = str + boolToString("showIslands", showIslands, indent) + "\n";
         str = str + boolToString("verboseFlag", verboseFlag, indent) + "\n";
@@ -1333,9 +1333,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private String         colorTableName;
     private int            dataValue;
     private boolean        showOPoints;
-    private int            OPointMaxInterations;
+    private int            OPointMaxIterations;
     private boolean        showXPoints;
-    private int            XPointMaxInterations;
+    private int            XPointMaxIterations;
     private boolean        showChaotic;
     private boolean        showIslands;
     private boolean        verboseFlag;

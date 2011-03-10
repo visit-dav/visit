@@ -397,14 +397,14 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     else
         SNPRINTF(tmpStr, 1000, "%sshowOPoints = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sOPointMaxInterations = %d\n", prefix, atts->GetOPointMaxInterations());
+    SNPRINTF(tmpStr, 1000, "%sOPointMaxIterations = %d\n", prefix, atts->GetOPointMaxIterations());
     str += tmpStr;
     if(atts->GetShowXPoints())
         SNPRINTF(tmpStr, 1000, "%sshowXPoints = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%sshowXPoints = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sXPointMaxInterations = %d\n", prefix, atts->GetXPointMaxInterations());
+    SNPRINTF(tmpStr, 1000, "%sXPointMaxIterations = %d\n", prefix, atts->GetXPointMaxIterations());
     str += tmpStr;
     if(atts->GetShowChaotic())
         SNPRINTF(tmpStr, 1000, "%sshowChaotic = 1\n", prefix);
@@ -1578,7 +1578,7 @@ PoincareAttributes_GetShowOPoints(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetOPointMaxInterations(PyObject *self, PyObject *args)
+PoincareAttributes_SetOPointMaxIterations(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
@@ -1586,18 +1586,18 @@ PoincareAttributes_SetOPointMaxInterations(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the OPointMaxInterations in the object.
-    obj->data->SetOPointMaxInterations((int)ival);
+    // Set the OPointMaxIterations in the object.
+    obj->data->SetOPointMaxIterations((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetOPointMaxInterations(PyObject *self, PyObject *args)
+PoincareAttributes_GetOPointMaxIterations(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetOPointMaxInterations()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOPointMaxIterations()));
     return retval;
 }
 
@@ -1626,7 +1626,7 @@ PoincareAttributes_GetShowXPoints(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PoincareAttributes_SetXPointMaxInterations(PyObject *self, PyObject *args)
+PoincareAttributes_SetXPointMaxIterations(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
 
@@ -1634,18 +1634,18 @@ PoincareAttributes_SetXPointMaxInterations(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the XPointMaxInterations in the object.
-    obj->data->SetXPointMaxInterations((int)ival);
+    // Set the XPointMaxIterations in the object.
+    obj->data->SetXPointMaxIterations((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PoincareAttributes_GetXPointMaxInterations(PyObject *self, PyObject *args)
+PoincareAttributes_GetXPointMaxIterations(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetXPointMaxInterations()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetXPointMaxIterations()));
     return retval;
 }
 
@@ -2181,12 +2181,12 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetDataValue", PoincareAttributes_GetDataValue, METH_VARARGS},
     {"SetShowOPoints", PoincareAttributes_SetShowOPoints, METH_VARARGS},
     {"GetShowOPoints", PoincareAttributes_GetShowOPoints, METH_VARARGS},
-    {"SetOPointMaxInterations", PoincareAttributes_SetOPointMaxInterations, METH_VARARGS},
-    {"GetOPointMaxInterations", PoincareAttributes_GetOPointMaxInterations, METH_VARARGS},
+    {"SetOPointMaxIterations", PoincareAttributes_SetOPointMaxIterations, METH_VARARGS},
+    {"GetOPointMaxIterations", PoincareAttributes_GetOPointMaxIterations, METH_VARARGS},
     {"SetShowXPoints", PoincareAttributes_SetShowXPoints, METH_VARARGS},
     {"GetShowXPoints", PoincareAttributes_GetShowXPoints, METH_VARARGS},
-    {"SetXPointMaxInterations", PoincareAttributes_SetXPointMaxInterations, METH_VARARGS},
-    {"GetXPointMaxInterations", PoincareAttributes_GetXPointMaxInterations, METH_VARARGS},
+    {"SetXPointMaxIterations", PoincareAttributes_SetXPointMaxIterations, METH_VARARGS},
+    {"GetXPointMaxIterations", PoincareAttributes_GetXPointMaxIterations, METH_VARARGS},
     {"SetShowChaotic", PoincareAttributes_SetShowChaotic, METH_VARARGS},
     {"GetShowChaotic", PoincareAttributes_GetShowChaotic, METH_VARARGS},
     {"SetShowIslands", PoincareAttributes_SetShowIslands, METH_VARARGS},
@@ -2403,12 +2403,12 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "showOPoints") == 0)
         return PoincareAttributes_GetShowOPoints(self, NULL);
-    if(strcmp(name, "OPointMaxInterations") == 0)
-        return PoincareAttributes_GetOPointMaxInterations(self, NULL);
+    if(strcmp(name, "OPointMaxIterations") == 0)
+        return PoincareAttributes_GetOPointMaxIterations(self, NULL);
     if(strcmp(name, "showXPoints") == 0)
         return PoincareAttributes_GetShowXPoints(self, NULL);
-    if(strcmp(name, "XPointMaxInterations") == 0)
-        return PoincareAttributes_GetXPointMaxInterations(self, NULL);
+    if(strcmp(name, "XPointMaxIterations") == 0)
+        return PoincareAttributes_GetXPointMaxIterations(self, NULL);
     if(strcmp(name, "showChaotic") == 0)
         return PoincareAttributes_GetShowChaotic(self, NULL);
     if(strcmp(name, "showIslands") == 0)
@@ -2554,12 +2554,12 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetDataValue(self, tuple);
     else if(strcmp(name, "showOPoints") == 0)
         obj = PoincareAttributes_SetShowOPoints(self, tuple);
-    else if(strcmp(name, "OPointMaxInterations") == 0)
-        obj = PoincareAttributes_SetOPointMaxInterations(self, tuple);
+    else if(strcmp(name, "OPointMaxIterations") == 0)
+        obj = PoincareAttributes_SetOPointMaxIterations(self, tuple);
     else if(strcmp(name, "showXPoints") == 0)
         obj = PoincareAttributes_SetShowXPoints(self, tuple);
-    else if(strcmp(name, "XPointMaxInterations") == 0)
-        obj = PoincareAttributes_SetXPointMaxInterations(self, tuple);
+    else if(strcmp(name, "XPointMaxIterations") == 0)
+        obj = PoincareAttributes_SetXPointMaxIterations(self, tuple);
     else if(strcmp(name, "showChaotic") == 0)
         obj = PoincareAttributes_SetShowChaotic(self, tuple);
     else if(strcmp(name, "showIslands") == 0)
