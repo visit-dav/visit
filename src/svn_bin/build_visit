@@ -4388,7 +4388,9 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
          echo "Copying MangleMesaInclude directory"
          mkdir -p VISIT_VTK_MANGLED_MESA_MOVE_DIR
          cd VISIT_VTK_MANGLED_MESA_MOVE_DIR
-         /bin/echo -e "cmake_minimum_required(version 2.8)\nuse_mangled_mesa($VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include/GL $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude)\n" > CMakeLists.txt
+         echo "cmake_minimum_required(version 2.8)" > CMakeLists.txt
+         echo "use_mangled_mesa($VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include/GL $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude)" >> CMakeLists.txt
+         
          #this will call cmake to copy the MesaGL to the VTK install directory
          ${CMAKE_INSTALL}/cmake .
          cd ../
