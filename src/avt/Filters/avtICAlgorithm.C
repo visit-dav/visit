@@ -465,6 +465,9 @@ avtICAlgorithm::GetTerminatedICs(vector<avtIntegralCurve *> &v)
 //   Rename this method to reflect the new emphasis in particle advection, as
 //   opposed to streamlines.
 //
+//   Dave Pugmire, Fri Mar 11 12:57:08 EST 2011
+//   Fixed a crash. Iterator invalidated after erase.
+//
 // ****************************************************************************
 
 void
@@ -473,16 +476,17 @@ avtICAlgorithm::DeleteIntegralCurves(std::vector<int> &icIDs)
     list<avtIntegralCurve *>::iterator s;
     vector<int>::const_iterator i;
 
-    for (s=terminatedICs.begin(); s != terminatedICs.end(); ++s)
-    {
-        for (i=icIDs.begin(); i != icIDs.end(); i++)
+    for (i=icIDs.begin(); i != icIDs.end(); i++)
+        for (s=terminatedICs.begin(); s != terminatedICs.end(); ++s)
+        {
             if ((*s)->id == (*i))
             {
-                terminatedICs.erase(s);
-                delete *s;
+                avtIntegralCurve *ic = *s;
+                s = terminatedICs.erase(s);
+                delete ic;
                 break;
             }
-    }
+        }
 }
 
 
