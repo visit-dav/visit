@@ -1094,13 +1094,13 @@
 #     silo's dependent libraries in the config site file it generates if
 #     the script is building hdf5.
 #
+#     Dave Pugmire, Thu Feb 17 15:55:03 EST 2011
+#     Add ADIOS build.
+#
 #     Eric Brugger, Fri Feb 18 13:42:05 PST 2011
 #     I modified the script to lower the optimization for VTK if using gcc
 #     4.5.1 to avoid a compiler bug that is encountered compiling one of
 #     the VTK source files.
-#
-#     Dave Pugmire, Thu Feb 17 15:55:03 EST 2011
-#     Add ADIOS build.
 #
 #     Eric Brugger, Wed Jan 19 10:13:02 PST 2011
 #     I changed the visit version number to 2.2.1.
@@ -1619,7 +1619,7 @@ export ADIOS_VERSION=${ADIOS_VERSION:-"1.2.1"}
 export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.2.1"}
 export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.2.1"}
 
-export MXML_FILE=${ADIOS_FILE:-"mxml-2.6.tar.gz"}
+export MXML_FILE=${MXML_FILE:-"mxml-2.6.tar.gz"}
 export MXML_VERSION=${MXML_VERSION:-"2.6"}
 export MXML_COMPATIBILITY_VERSION=${MXML_COMPATIBILITY_VERSION:-"2.6"}
 export MXML_BUILD_DIR=${MXML_BUILD_DIR:-"mxml-2.6"}
@@ -2514,6 +2514,16 @@ function check_optional_3rdparty
             ANY_ERRORS="yes"
             DO_XDMF="no"
             error "Unable to build XDMF.  ${XDMF_FILE} not found."
+        fi
+    fi
+
+    if [[ "$DO_MXML" == "yes" ]] ; then
+        ensure_built_or_ready "MXML" $MXML_VERSION $MXML_BUILD_DIR $MXML_FILE
+            
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_MXML="no"
+            error "Unable to build MXML.  ${MXML_FILE} not found."
         fi
     fi
 
@@ -4371,21 +4381,16 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
     #
 
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-        cd MangleMesaInclude
-        export BAD_MESA="$PWD"
-        cd ..
-        mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude"
-        cp MangleMesaInclude/*.h  "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude"
-        cd "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude"
-        SED_STR1=$(echo "$BAD_MESA" | sed 's/\//\\\//g')  
-        # Converts all '/' to "\/" for later sed'ding 
-        SED_STR2=$(echo "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude" | sed 's/\//\\\//g')
-        for i in *.h ; do
-           cat $i | sed 's/'${SED_STR1}'/'${SED_STR2}'/g' > tmp.h
-           mv -f tmp.h $i
-        done
-        cd $BAD_MESA
-        cd ../
+         echo "Copying MangleMesaInclude directory"
+         mkdir -p VISIT_VTK_MANGLED_MESA_MOVE_DIR
+         cd VISIT_VTK_MANGLED_MESA_MOVE_DIR
+         /bin/echo -e "cmake_minimum_required(version 2.8)\nuse_mangled_mesa($VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include/GL $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/include/MangleMesaInclude)\n" > CMakeLists.txt
+         #this will call cmake to copy the MesaGL to the VTK install directory
+         ${CMAKE_INSTALL}/cmake .
+         cd ../
+
+         #remove the tmp directory
+         rm -fR VISIT_VTK_MANGLED_MESA_MOVE_DIR
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
@@ -9433,7 +9438,7 @@ for arg in "${arguments[@]}" ; do
     case $arg in
         --absolute) ABS_PATH="yes"; ON_ABS_PATH="on";;
         --all-io) DO_ALLIO="yes";;
-        --adios) DO_ADIOS="yes"; ON_ADIOS="on";;
+        --adios) DO_ADIOS="yes"; ON_ADIOS="on"; DO_MXML="yes"; ON_MXML="yes";;
         --advio) DO_ADVIO="yes"; ON_ADVIO="on";;
         --arch) next_arg="arch";;
         --boxlib) DO_BOXLIB="yes"; ON_BOXLIB="on";;
@@ -9593,6 +9598,8 @@ if [[ "$DO_DBIO_ONLY" == "yes" || "$DO_ALLIO" == "yes" ]]; then
     ON_XDMF="on"
     DO_ADIOS="yes"
     ON_ADIOS="on"
+    DO_MXML="yes"
+    ON_MXML="on"
 
     #
     # Releasibility of these libs is not yet understood
