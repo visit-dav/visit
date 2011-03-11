@@ -2233,7 +2233,7 @@ avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *>
 // ****************************************************************************
 
 void
-avtPICSFilter::AddSeedpoints(std::vector<avtVector> &pts,
+avtPICSFilter::AddSeedPoints(std::vector<avtVector> &pts,
                              std::vector<std::vector<int> > &ids)
 {
     if (icAlgo == NULL)
