@@ -177,7 +177,6 @@ avtPoincareFilter::avtPoincareFilter() :
 {
     planes.resize(1);
     planes[0] = 0;
-//    fieldlines.erase( fieldlines.begin(), fieldlines.end() );
     intersectObj = NULL;
     maxIntersections = 0;
 }
@@ -198,7 +197,6 @@ avtPoincareFilter::avtPoincareFilter() :
 
 avtPoincareFilter::~avtPoincareFilter()
 {
-//    fieldlines.erase( fieldlines.begin(), fieldlines.end() );
     if (intersectObj)
         intersectObj->Delete();
 }
@@ -386,15 +384,13 @@ avtPoincareFilter::ContinueExecute()
     {
       vector< int > ids_to_delete;
 
-      for ( int i=0; i<ics.size(); ++i )
+      unsigned int nics = ics.size();
+
+      for ( int i=0; i<nics; ++i )
       {
         avtPoincareIC * poincare_ic = (avtPoincareIC *) ics[i];
 
-#ifdef STRAIGHTLINE_SKELETON
-        cerr << "Looking at seed " << poincare_ic->id << "  "
-             << poincare_ic->properties.type << "  " <<
-          poincare_ic->properties.analysisState << endl;
-
+#ifdef STRAIGHTLINE_SKELETON    
         // For Island Chains add in the O Points.
         if( showOPoints &&
 
@@ -409,28 +405,29 @@ avtPoincareFilter::ContinueExecute()
 
             !(poincare_ic->properties.OPoints.empty()) )
         {
+
+          // Change the state of the properties to complete now that
+          // the seed point has been stripped off.
           poincare_ic->properties.analysisState =
             FieldlineProperties::COMPLETED;
-
-          cerr << "Adding seed points" << endl;
-            
-          cerr << "Iterations " << poincare_ic->properties.iteration << "  " <<
-            OPointMaxIterations << endl;
 
           if( poincare_ic->properties.iteration < OPointMaxIterations )
           {
             vector<avtIntegralCurve *> new_ics;
-            AddSeedPoint( poincare_ic->properties.OPoints[0], ics );
+            AddSeedPoint( poincare_ic->properties.OPoints[0], new_ics );
           
-            for( unsigned int i=0; i<new_ics.size(); i++ )
+            for( unsigned int j=0; j<new_ics.size(); j++ )
             {
-                cerr << "New island seed ids " << new_ics[i]->id << "  ";
+                cerr << "New island seed ids " << new_ics[j]->id << "  ";
 
-                avtPoincareIC * seed_poincare_ic = (avtPoincareIC *) new_ics[i];
+                avtPoincareIC * seed_poincare_ic = (avtPoincareIC *) new_ics[j];
 
                 // Transfer and update properties.
                 seed_poincare_ic->properties = poincare_ic->properties;
-              
+                
+                seed_poincare_ic->properties.analysisState =
+                  FieldlineProperties::UNKNOWN_STATE;
+
                 seed_poincare_ic->properties.source =
                   FieldlineProperties::ISLAND_CHAIN;
 
@@ -441,8 +438,8 @@ avtPoincareFilter::ContinueExecute()
             cerr << endl;
           }
 
-          // The source was an island_chain so delete it as it was an
-          // iterative process.
+          // The source was an island_chain which meant the seed was
+          // an intermediate seed so delete it.
           if( poincare_ic->properties.source ==
               FieldlineProperties::ISLAND_CHAIN )
           {
@@ -551,11 +548,9 @@ avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
     {
         avtPoincareIC * poincare_ic = (avtPoincareIC *) ics[i];
 
-        FieldlineProperties fp = poincare_ic->properties;
-
         // If the analysis is completed then skip it.
-        if( fp.analysisState == FieldlineProperties::COMPLETED ||
-            fp.analysisState == FieldlineProperties::TERMINATED )
+        if( poincare_ic->properties.analysisState == FieldlineProperties::COMPLETED ||
+            poincare_ic->properties.analysisState == FieldlineProperties::TERMINATED )
         {
           cerr <<"Skipping Classified Streamline: id = "
                << poincare_ic->id << endl;
@@ -573,22 +568,20 @@ avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
                                    windingPairConfidence,
                                    showOPoints );
 
-        fp = poincare_ic->properties;
-
         // Make the number of punctures 2x because the Poincare analysis
         // uses only the punctures in the same direction as the plane normal
         // while the streamline uses the plane regardless of the normal.
 
-        if( fp.nPuncturesNeeded > maxPunctures )
-          fp.nPuncturesNeeded = maxPunctures;
+        if( poincare_ic->properties.nPuncturesNeeded > maxPunctures )
+          poincare_ic->properties.nPuncturesNeeded = maxPunctures;
 
         // Check to see if there are enough points for the analysis.
-        if( fp.nPuncturesNeeded != 0 &&
-            fp.nPuncturesNeeded != poincare_ic->maxIntersections/2 )
+        if( poincare_ic->properties.nPuncturesNeeded != 0 &&
+            poincare_ic->properties.nPuncturesNeeded != poincare_ic->maxIntersections/2 )
         {
           analysisComplete = false;
 
-          poincare_ic->maxIntersections = 2 * fp.nPuncturesNeeded;
+          poincare_ic->maxIntersections = 2 * poincare_ic->properties.nPuncturesNeeded;
           poincare_ic->status = avtIntegralCurve::STATUS_OK;
         }
         else
@@ -596,34 +589,34 @@ avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
           poincare_ic->status = avtIntegralCurve::STATUS_FINISHED;
         }
 
-        cerr << fp.analysisState << endl;
+        cerr << poincare_ic->properties.analysisState << endl;
 
         // See if O Points from an island need to be added.
-        if( fp.analysisState & FieldlineProperties::ADD_O_POINTS )
+        if( poincare_ic->properties.analysisState & FieldlineProperties::ADD_O_POINTS )
           analysisComplete = false;
 
         double safetyFactor;
         
-        if ( fp.poloidalWinding > 0 )
+        if ( poincare_ic->properties.poloidalWinding > 0 )
             safetyFactor =
-              (double) fp.toroidalWinding / (double) fp.poloidalWinding;
+              (double) poincare_ic->properties.toroidalWinding / (double) poincare_ic->properties.poloidalWinding;
         else
             safetyFactor = 0;
 
         if(verboseFlag )
           cerr << "Classify Streamline: id = "<< poincare_ic->id
                << "  ptCnt = " << poincare_ic->points.size()
-               << "  type = " << fp.type
-               << "  toroidal/poloidal windings = " <<  fp.toroidalWinding
-               << "/" << fp.poloidalWinding
+               << "  type = " << poincare_ic->properties.type
+               << "  toroidal/poloidal windings = " <<  poincare_ic->properties.toroidalWinding
+               << "/" << poincare_ic->properties.poloidalWinding
                << "  (" << safetyFactor << ")"
-               << "  windingGroupOffset = " << fp.windingGroupOffset
-               << "  islands = " << fp.islands
-               << "  nodes = " << fp.nnodes
-               << "  confidence = " << fp.confidence
-               << "  toroidalPeriod = " << fp.toroidalPeriod
-               << "  poloidalPeriod = " << fp.poloidalPeriod
-               << "  complete " << (fp.analysisState == FieldlineProperties::COMPLETED ? "Yes " : "No ")
+               << "  windingGroupOffset = " << poincare_ic->properties.windingGroupOffset
+               << "  islands = " << poincare_ic->properties.islands
+               << "  nodes = " << poincare_ic->properties.nnodes
+               << "  confidence = " << poincare_ic->properties.confidence
+               << "  toroidalPeriod = " << poincare_ic->properties.toroidalPeriod
+               << "  poloidalPeriod = " << poincare_ic->properties.poloidalPeriod
+               << "  complete " << (poincare_ic->properties.analysisState == FieldlineProperties::COMPLETED ? "Yes " : "No ")
 //               << (poincare_ic->ic->status == avtIntegralCurve::STATUS_FINISHED ? 
 //                   0 : poincare_ic->ic->maxIntersections )
                << endl << endl;
@@ -955,21 +948,21 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
               
               islandPts.resize( toroidalWinding );
               
-              for( unsigned int i=0; i<toroidalWinding; ++i )
+              for( unsigned int j=0; j<toroidalWinding; ++j )
               {
-                for( unsigned int j=offset; j<puncturePts[p][i].size(); ++j )
+                for( unsigned int k=offset; k<puncturePts[p][j].size(); ++k )
                 {
-                  double len = (puncturePts[p][i][j-offset]-
-                                puncturePts[p][i][j]).length();
+                  double len = (puncturePts[p][j][k-offset]-
+                                puncturePts[p][j][k]).length();
                   
-                  islandPts[i].push_back( Point( (float) islandPts[i].size()/50.0,
+                  islandPts[j].push_back( Point( (float) islandPts[j].size()/50.0,
                                                  0,
                                                  -1.5+(float)i*.1+len) );
                   
                 }
                 
 //              vector< pair< unsigned int, double > > stats;           
-//              FLlib.periodicityStats( islandPts[i], stats, 2 );
+//              FLlib.periodicityStats( islandPts[j], stats, 2 );
               }
             }
         }
@@ -1232,14 +1225,14 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
                 if( properties.analysisState == FieldlineProperties::COMPLETED )
                 {
                   // Loop through each island.
-                  for( unsigned int i=0; i<toroidalWinding; i++ )
+                  for( unsigned int j=0; j<toroidalWinding; j++ )
                   {
                     // Erase all of the overlapping points.
-                    puncturePts[p][i].erase( puncturePts[p][i].begin()+nnodes,
-                                             puncturePts[p][i].end() );
+                    puncturePts[p][j].erase( puncturePts[p][j].begin()+nnodes,
+                                             puncturePts[p][j].end() );
                     
                     // Close the island if it is complete
-                    puncturePts[p][i].push_back( puncturePts[p][i][0] );
+                    puncturePts[p][j].push_back( puncturePts[p][j][0] );
                   }
                 }
                 else
@@ -1389,10 +1382,10 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
             if( islands && show1DPlots )
             {
-              for( unsigned int i=0; i<toroidalWinding; ++i )
+              for( unsigned int j=0; j<toroidalWinding; ++j )
               {
-                drawPeriodicity( dt, islandPts[i],
-                                 islandPts[i].size(),
+                drawPeriodicity( dt, islandPts[j],
+                                 islandPts[j].size(),
                                  nnodes, islands, poloidalWinding,
                                  dataValue, color_value, true );
               }
