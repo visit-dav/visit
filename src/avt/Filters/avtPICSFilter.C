@@ -2256,19 +2256,26 @@ avtPICSFilter::AddSeedPoint(avtVector &pt,
 //
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
+//  
 //
+//  Modifications:
+//
+//  Dave Pugmire, Mon Mar 14 01:56:00 EDT 2011
+//  Use AddSeedPoint() to add each point.
+//  
 // ****************************************************************************
 
 void
 avtPICSFilter::AddSeedPoints(std::vector<avtVector> &pts,
-                             std::vector<std::vector<int> > &ids)
+                             std::vector<std::vector<avtIntegralCurve *> > &ics)
 {
-    if (icAlgo == NULL)
-        EXCEPTION1(ImproperUseException, "Improper call of avtPICSFilter::AddSeedpoints");
-    
-    vector<avtIntegralCurve *> ics;
-    CreateIntegralCurvesFromSeeds(pts, ics, ids);
-    icAlgo->AddIntegralCurves(ics);
+    for (int i = 0; i < pts.size(); i++)
+    {
+        vector<avtIntegralCurve *> icsFromPt;
+        AddSeedPoint(pts[i], icsFromPt);
+        
+        ics.push_back(icsFromPt);
+    }
 }
 
 // ****************************************************************************
