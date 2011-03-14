@@ -609,40 +609,6 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     connect(absTolSizeType, SIGNAL(activated(int)), this, SLOT(absTolSizeTypeChanged(int)));
     toleranceLayout->addWidget(absTolSizeType, 1, 2);
 
-    // Create the coordinate group
-    QGroupBox *coordinateGrp = new QGroupBox(central);
-    coordinateGrp->setTitle(tr("Coordinate System"));
-    mainLayout->addWidget(coordinateGrp);
-
-    QGridLayout *coordinateLayout = new QGridLayout(coordinateGrp);
-    coordinateLayout->setMargin(5);
-    coordinateLayout->setSpacing(10);
-    coordinateLayout->setColumnStretch(2,10);
-
-    coordinateButtonGroup = new QButtonGroup(coordinateGrp);
-    QRadioButton *asIsButton = new QRadioButton(tr("As generated"), coordinateGrp);
-    QRadioButton *toCartesianButton = new QRadioButton(tr("Cylindrical to Cartesian"), coordinateGrp);
-    QRadioButton *toCylindricalButton = new QRadioButton(tr("Cartesian to Cylindrical"), coordinateGrp);
-    coordinateButtonGroup->addButton(asIsButton, 0);
-    coordinateButtonGroup->addButton(toCartesianButton, 1);
-    coordinateButtonGroup->addButton(toCylindricalButton, 2);
-
-    coordinateLayout->addWidget(asIsButton, 0, 0);
-    coordinateLayout->addWidget(toCartesianButton, 0, 1);
-    coordinateLayout->addWidget(toCylindricalButton, 0, 2);
-
-    connect(coordinateButtonGroup, SIGNAL(buttonClicked(int)), this,
-            SLOT(coordinateButtonGroupChanged(int)));
-
-    // Create the widgets that specify a phi factor.
-    phiFactor = new QLineEdit(coordinateGrp);
-    connect(pointSource, SIGNAL(returnPressed()),
-            this, SLOT(phiFactorProcessText()));
-    phiFactorLabel = new QLabel(tr("Phi factor"), coordinateGrp);
-    phiFactorLabel->setBuddy(phiFactor);
-    coordinateLayout->addWidget(phiFactorLabel, 0, 3);
-    coordinateLayout->addWidget(phiFactor, 0, 4);
-
 // ----------------------------------------------------------------------
     // Appearance tab
     // ----------------------------------------------------------------------
@@ -695,6 +661,44 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     QGridLayout *appearanceLayout = new QGridLayout(pageAppearance);
     appearanceLayout->setMargin(5);
     appearanceLayout->setSpacing(10);
+
+    // Create the coordinate group
+    QGroupBox *coordinateGrp = new QGroupBox(central);
+    coordinateGrp->setTitle(tr("Coordinate transform"));
+    appearanceLayout->addWidget(coordinateGrp);
+
+    QGridLayout *coordinateLayout = new QGridLayout(coordinateGrp);
+    coordinateLayout->setMargin(5);
+    coordinateLayout->setSpacing(10);
+    coordinateLayout->setColumnStretch(2,10);
+
+    coordinateButtonGroup = new QButtonGroup(coordinateGrp);
+    QRadioButton *asIsButton = new QRadioButton(tr("None"), coordinateGrp);
+    QRadioButton *toCartesianButton = new QRadioButton(tr("Cylindrical to Cartesian"), coordinateGrp);
+    QRadioButton *toCylindricalButton = new QRadioButton(tr("Cartesian to Cylindrical"), coordinateGrp);
+    coordinateButtonGroup->addButton(asIsButton, 0);
+    coordinateButtonGroup->addButton(toCartesianButton, 1);
+    coordinateButtonGroup->addButton(toCylindricalButton, 2);
+
+    coordinateLayout->addWidget(asIsButton, 0, 0);
+    coordinateLayout->addWidget(toCartesianButton, 0, 1);
+    coordinateLayout->addWidget(toCylindricalButton, 0, 2);
+
+    connect(coordinateButtonGroup, SIGNAL(buttonClicked(int)), this,
+            SLOT(coordinateButtonGroupChanged(int)));
+
+    // Create the widgets that specify a phi scaling.
+    phiScalingToggle = new QCheckBox(tr("Phi scaling"), central);
+    coordinateLayout->addWidget(phiScalingToggle, 1, 0);
+    connect(phiScalingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(phiScalingToggled(bool)));
+
+    phiScaling = new QLineEdit(coordinateGrp);
+    connect(pointSource, SIGNAL(returnPressed()),
+            this, SLOT(phiScalingProcessText()));
+    coordinateLayout->addWidget(phiScaling, 1, 1);
+
+    coordinateLayout->addWidget(new QLabel(tr("(When displaying in cylindrical coordinates.)"), central), 1, 2, 1, 2);
 
     // Create the data group
     QGroupBox *dataGroup = new QGroupBox(pageAppearance);
@@ -1969,12 +1973,17 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
         case StreamlineAttributes::ID_coordinateSystem:
             coordinateButtonGroup->blockSignals(true);
             coordinateButtonGroup->button(streamAtts->GetCoordinateSystem())->setChecked(true);
-            phiFactor->setEnabled(streamAtts->GetCoordinateSystem()==2);
-            phiFactorLabel->setEnabled(streamAtts->GetCoordinateSystem()==2);
+            phiScalingToggle->setEnabled(streamAtts->GetCoordinateSystem()!=1);
+            phiScaling->setEnabled(streamAtts->GetCoordinateSystem()!=1 &&
+                                   streamAtts->GetPhiScalingFlag());
             coordinateButtonGroup->blockSignals(false);
             break;
-        case StreamlineAttributes::ID_phiFactor:
-            phiFactor->setText(DoubleToQString(streamAtts->GetPhiFactor()));
+        case StreamlineAttributes::ID_phiScalingFlag:
+            phiScaling->setEnabled(streamAtts->GetCoordinateSystem()!=1 &&
+                                   streamAtts->GetPhiScalingFlag());
+            break;
+        case StreamlineAttributes::ID_phiScaling:
+            phiScaling->setText(DoubleToQString(streamAtts->GetPhiScaling()));
             break;
         case StreamlineAttributes::ID_maxStreamlineProcessCount:
             maxSLCount->blockSignals(true);
@@ -3024,16 +3033,16 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetWorkGroupSize(val);
     }
     
-    if(which_widget == StreamlineAttributes::ID_phiFactor || doAll)
+    if(which_widget == StreamlineAttributes::ID_phiScaling || doAll)
     {
         double val;
-        if(LineEditGetDouble(phiFactor, val))
-            streamAtts->SetPhiFactor(val);
+        if(LineEditGetDouble(phiScaling, val) && val != 0)
+            streamAtts->SetPhiScaling(val);
         else
         {
             ResettingError(tr("phi factor"),
-                DoubleToQString(streamAtts->GetPhiFactor()));
-            streamAtts->SetPhiFactor(streamAtts->GetPhiFactor());
+                DoubleToQString(streamAtts->GetPhiScaling()));
+            streamAtts->SetPhiScaling(streamAtts->GetPhiScaling());
         }
     }
 
@@ -3862,9 +3871,16 @@ QvisStreamlinePlotWindow::coordinateButtonGroupChanged(int val)
 
 
 void
-QvisStreamlinePlotWindow::phiFactorProcessText()
+QvisStreamlinePlotWindow::phiScalingToggled(bool val)
 {
-    GetCurrentValues(StreamlineAttributes::ID_phiFactor);
+    streamAtts->SetPhiScalingFlag(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::phiScalingProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_phiScaling);
     Apply();
 }
 

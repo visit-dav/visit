@@ -230,7 +230,8 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         streamlineDirection != obj.streamlineDirection ||
         integrationType != obj.integrationType ||
         coordinateSystem != obj.coordinateSystem ||
-        phiFactor != obj.phiFactor ||
+        phiScalingFlag != obj.phiScalingFlag ||
+        phiScaling != obj.phiScaling ||
         maxStepLength != obj.maxStepLength ||
         maxTimeStep != obj.maxTimeStep ||
         limitMaximumTimestep != obj.limitMaximumTimestep ||
