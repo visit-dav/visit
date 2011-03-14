@@ -60,6 +60,14 @@ struct WindingPair {
   int ranking;
 };
 
+
+class FieldlineProperties;
+
+#include <avtPoincareIC.h>
+
+#ifndef POINCARE_FIELDLINE_PROPERTIES_H
+#define POINCARE_FIELDLINE_PROPERTIES_H
+
 class FieldlineProperties {
 
 public:
@@ -161,6 +169,7 @@ public:
   std::vector< int > parentIds;
   std::vector< int > childIds;
 };
+#endif
 
 namespace FusionPSE {
 

@@ -2222,6 +2222,33 @@ avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *>
 }
 
 // ****************************************************************************
+//  Method: avtPICSFilter::AddSeedpoint
+//
+//  Purpose:
+//      Add additional seed points.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+// ****************************************************************************
+
+void
+avtPICSFilter::AddSeedPoint(avtVector &pt,
+                            std::vector<avtIntegralCurve *> &ics)
+{
+    if (icAlgo == NULL)
+        EXCEPTION1(ImproperUseException, "Improper call of avtPICSFilter::AddSeedpoints");
+
+    std::vector<std::vector<int> > ids;
+
+    std::vector<avtVector> pts;
+    pts.push_back( pt );
+
+    CreateIntegralCurvesFromSeeds(pts, ics, ids);
+    icAlgo->AddIntegralCurves(ics);
+}
+
+// ****************************************************************************
 //  Method: avtPICSFilter::AddSeedpoints
 //
 //  Purpose:

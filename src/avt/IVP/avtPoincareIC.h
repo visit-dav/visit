@@ -62,6 +62,112 @@
 //
 // ****************************************************************************
 
+#ifndef POINCARE_FIELDLINE_PROPERTIES_H
+#define POINCARE_FIELDLINE_PROPERTIES_H
+
+class FieldlineProperties {
+
+public:
+
+  FieldlineProperties()
+  {
+    type = FieldlineProperties::UNKNOWN_TYPE;
+    analysisState = FieldlineProperties::UNKNOWN_STATE;
+
+    source = FieldlineProperties::UNKNOWN_TYPE;
+    
+    iteration = 0;
+
+    toroidalWinding = 0;
+    poloidalWinding = 0;
+
+    toroidalPeriod    = 0;
+    poloidalPeriod    = 0;
+
+    windingGroupOffset = 0;
+    islands = 0;
+
+    nnodes  = 0;
+    
+    confidence        = 0;
+    ridgelineVariance = 0;
+
+    maxPunctures      = 0;
+    nPuncturesNeeded  = 0;
+  };
+
+enum FieldlineType { UNKNOWN_TYPE  = 0,
+
+                     ORIGINAL_SEED = 1,
+
+                     PERIODIC = 10,
+                     RATIONAL = 11,
+                     O_POINT  = 12,
+                     X_POINT  = 13,
+                     
+                     QUASI_PERIODIC = 20,
+                     IRRATIONAL     = 20,
+                     FLUX_SURFACE   = 21,
+                     ISLAND_CHAIN   = 22,
+                     ISLANDS_WITHIN_ISLANDS = 23,
+                     
+                     CHAOTIC = 30 };
+  
+enum AnalysisState { UNKNOWN_STATE = 0,
+
+                     ADDING_POINTS = 10,
+                     RATIONAL_TEMPLATE_SEED = 11,
+                     RATIONAL_SURFACE_SEED = 12,
+
+                     O_POINT_SEED = 22,
+                     X_POINT_SEED = 23,
+
+                     COMPLETED  = 30,
+                     TERMINATED = 40,
+                     
+                     DELETE     = 99,
+
+                     ADD          = 50,
+                     ADD_O_POINTS = 51,
+                     ADD_X_POINTS = 52,
+
+                     ADD_RATIONAL_SEED_POINT = 55 };
+
+public:
+
+  FieldlineType type;
+
+  FieldlineType source;
+
+  AnalysisState analysisState;
+
+  unsigned int iteration;
+
+  unsigned int toroidalWinding;
+  unsigned int poloidalWinding;
+
+  unsigned int toroidalPeriod;
+  unsigned int poloidalPeriod;
+
+  unsigned int windingGroupOffset;
+  unsigned int islands;
+
+  float nnodes;
+
+  float confidence;
+  float ridgelineVariance;
+
+  unsigned int maxPunctures;
+  unsigned int nPuncturesNeeded;
+
+  std::vector< avtVector > OPoints;
+  bool seedOPoints;
+
+  std::vector< int > parentIds;
+  std::vector< int > childIds;
+};
+#endif
+
 class IVP_API avtPoincareIC : public avtStateRecorderIntegralCurve
 {
 public:
@@ -91,6 +197,10 @@ public:
     int    maxIntersections;
     int    numIntersections;
     double intersectPlaneEq[4];
+
+    std::vector<avtVector> points;
+
+    FieldlineProperties properties;
 };
 
 
