@@ -257,7 +257,7 @@ class AVTFILTERS_API avtPICSFilter :
     void                      AddSeedPoint(avtVector &pt,
                                            std::vector<avtIntegralCurve *> &ics);
     void                      AddSeedPoints(std::vector<avtVector> &pts,
-                                            std::vector<std::vector<int> > &ids);
+                                            std::vector<std::vector<avtIntegralCurve *> > &ics);
     void                      DeleteIntegralCurves(std::vector<int> &icIDs);
     virtual void              CreateIntegralCurveOutput(vector<avtIntegralCurve *> &ics) = 0;
     void                      GetTerminatedIntegralCurves(vector<avtIntegralCurve *> &ics);
