@@ -84,8 +84,6 @@ class avtPoincareIC;
 //
 // ****************************************************************************
 
-#include "StreamlineAnalyzerLib.h"
-
 class avtPoincareFilter : public avtStreamlineFilter
 {
   public:
@@ -151,10 +149,10 @@ class avtPoincareFilter : public avtStreamlineFilter
                                                    const avtVector &p_start, long ID );
 
   virtual void drawPoints( avtDataTree *dt,
-                           vector < Point > &nodes );
+                           vector < avtVector > &nodes );
 
   virtual void drawRationalCurve( avtDataTree *dt,
-                                  vector< vector < vector < Point > > > &nodes,
+                                  vector< vector < vector < avtVector > > > &nodes,
                                   unsigned int nnodes,
                                   unsigned int islands,
                                   unsigned int skip,
@@ -162,7 +160,7 @@ class avtPoincareFilter : public avtStreamlineFilter
                                   double color_value );
   
   virtual void drawIrrationalCurve( avtDataTree *dt,
-                                    vector< vector < vector < Point > > > &nodes,
+                                    vector< vector < vector < avtVector > > > &nodes,
                                     unsigned int nnodes,
                                     unsigned int islands,
                                     unsigned int skip,
@@ -172,7 +170,7 @@ class avtPoincareFilter : public avtStreamlineFilter
                                     bool modulo = false);
   
   virtual void drawSurface( avtDataTree *dt,
-                            vector< vector < vector < Point > > > &nodes,
+                            vector< vector < vector < avtVector > > > &nodes,
                             unsigned int nnodes,
                             unsigned int islands,
                             unsigned int skip,
@@ -181,7 +179,7 @@ class avtPoincareFilter : public avtStreamlineFilter
                             bool modulo = false);
 
   virtual void drawPeriodicity( avtDataTree *dt,
-                                vector < Point  > &nodes,
+                                vector < avtVector > &nodes,
                                 unsigned int period,
                                 unsigned int nnodes,
                                 unsigned int islands,
@@ -191,13 +189,11 @@ class avtPoincareFilter : public avtStreamlineFilter
                                 bool ptFlag );
 
     // Poincare filter methods.
-    bool                      ClassifyStreamlines();
-    avtDataTree               *CreatePoincareOutput();
+    bool          ClassifyStreamlines(vector<avtIntegralCurve *> &ic);
+    avtDataTree *CreatePoincareOutput(vector<avtIntegralCurve *> &ic);
 
     void CreateIntegralCurveOutput(std::vector<avtIntegralCurve*,
                                    std::allocator<avtIntegralCurve*> >&) {};
-
-    FusionPSE::FieldlineLib FLlib;         
 
     unsigned int puncturePlane;
     unsigned int analysis;
@@ -228,19 +224,19 @@ class avtPoincareFilter : public avtStreamlineFilter
     unsigned int OPointMaxIterations;
     unsigned int XPointMaxIterations;
 
-    class ICHelper
-    {
-      public:
-        ICHelper() : ic(0) {}
-        ~ICHelper() {}
+//     class ICHelper
+//     {
+//       public:
+//         ICHelper() : ic(0) {}
+//         ~ICHelper() {}
 
-        avtPoincareIC *ic;
-        std::vector<avtVector> points;
-        FieldlineProperties properties;
-        long int id;
-    };
+//         avtPoincareIC *ic;
+//         std::vector<avtVector> points;
+//         FieldlineProperties properties;
+//         long int id;
+//     };
 
-    std::map< long int, ICHelper > fieldlines;
+//     std::map< long int, ICHelper > fieldlines;
 };
 
 

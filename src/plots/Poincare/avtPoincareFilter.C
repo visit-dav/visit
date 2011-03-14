@@ -62,6 +62,8 @@
 #include <avtPoincareIC.h>
 #include <utility>
 
+#include "StreamlineAnalyzerLib.h"
+
 #ifdef STRAIGHTLINE_SKELETON
 #include "skelet.h"
 #endif
@@ -175,7 +177,7 @@ avtPoincareFilter::avtPoincareFilter() :
 {
     planes.resize(1);
     planes[0] = 0;
-    fieldlines.erase( fieldlines.begin(), fieldlines.end() );
+//    fieldlines.erase( fieldlines.begin(), fieldlines.end() );
     intersectObj = NULL;
     maxIntersections = 0;
 }
@@ -196,7 +198,7 @@ avtPoincareFilter::avtPoincareFilter() :
 
 avtPoincareFilter::~avtPoincareFilter()
 {
-    fieldlines.erase( fieldlines.begin(), fieldlines.end() );
+//    fieldlines.erase( fieldlines.begin(), fieldlines.end() );
     if (intersectObj)
         intersectObj->Delete();
 }
@@ -305,78 +307,20 @@ avtPoincareFilter::CreateIntegralCurve( const avtIVPSolver* model,
 // ****************************************************************************
 
 void
-avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic)
+avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ics)
 {
-    for ( int i=0; i<ic.size(); ++i )
+    for ( int i=0; i<ics.size(); ++i )
     {
-        avtPoincareIC * sric = (avtPoincareIC *) ic[i];
-
-        // Use the curve id because the number of curves will change
-        // over time.
-        map< long int, ICHelper >::iterator iter =
-          fieldlines.find( sric->id );
-
-        if( iter == fieldlines.end() )
-        {
-          ICHelper icHelper;
-
-          icHelper.id = sric->id;
-          icHelper.properties.source = FieldlineProperties::ORIGINAL_SEED;
-
-          fieldlines[ sric->id ] = icHelper;
-
-          iter = fieldlines.find( sric->id );
-        }
-
-        // Save off the streamline wrapper
-        (*iter).second.ic = sric;
+        avtPoincareIC * poincare_ic = (avtPoincareIC *) ics[i];
 
         // Get all of the points from the streamline which are stored
         // as an array and move them into a vector for easier
         // manipulation by the analsysi code.
-        (*iter).second.points.resize( sric->GetNumberOfSamples() );
+        poincare_ic->points.resize( poincare_ic->GetNumberOfSamples() );
 
-        for( size_t p=0; p<(*iter).second.points.size(); ++p )
-          (*iter).second.points[p] = sric->GetSample( p ).position;
+        for( size_t p=0; p<poincare_ic->points.size(); ++p )
+          poincare_ic->points[p] = poincare_ic->GetSample( p ).position;
     }
-
-    // Search for fieldlines that do not have an integral curve
-    // attached to them. These would be from new seeds that initially
-    // spawned mutliple ids but then were deleted. This event occurs
-    // when there is an unstructured grid, you can't tell by doing
-    // bounding box tests which domain (and thus which processor) the
-    // seed lies in. So, each seed will have a list of ids.  Once
-    // integration starts, the integral curves that don't lie in the
-    // domain to which it was assigned are killed, so there will be
-    // only one per seed.
- 
-    vector< int > ids_to_delete;
-
-    map< long int, ICHelper >::iterator iter = fieldlines.begin();
-    
-    while( iter != fieldlines.end() )
-    {
-//       cerr << "Looking at seed " << iter->second.id << "  "
-//         << iter->second.properties.type << "  " <<
-//      iter->second.properties.analysisState << endl;
-
-      if( iter->second.properties.type ==
-          FieldlineProperties::UNKNOWN_TYPE &&
-          iter->second.properties.analysisState ==
-          FieldlineProperties::UNKNOWN_STATE &&
-          iter->second.ic == 0 )
-      {
-//      cerr << "No integral curve found deleting " <<  iter->second.id << endl;
-        
-        ids_to_delete.push_back( iter->second.id );
-      }
-
-      ++iter;
-    }
-
-    // Now delete all of the fieldlines without an integral curve.
-    for( unsigned int i=0; i<ids_to_delete.size(); ++i )
-      fieldlines.erase( ids_to_delete[i] );
 }
 
 // ****************************************************************************
@@ -403,11 +347,12 @@ avtPoincareFilter::GetIntegralCurvePoints(vector<avtIntegralCurve *> &ic)
 void
 avtPoincareFilter::Execute()
 {
-    FLlib.verboseFlag = verboseFlag;
-
     avtStreamlineFilter::Execute();
 
-    avtDataTree *dt = CreatePoincareOutput();
+    vector<avtIntegralCurve *> ics;
+    GetTerminatedIntegralCurves(ics);
+
+    avtDataTree *dt = CreatePoincareOutput( ics );
     SetOutputDataTree(dt);
 }
 
@@ -432,86 +377,65 @@ avtPoincareFilter::ContinueExecute()
 {
     debug5 << "Continue execute " << endl;
 
-    vector<avtIntegralCurve *> ic;
+    vector<avtIntegralCurve *> ics;
     
-    GetTerminatedIntegralCurves(ic);
-    GetIntegralCurvePoints(ic);
+    GetTerminatedIntegralCurves(ics);
+    GetIntegralCurvePoints(ics);
 
-    if (analysis && ! ClassifyStreamlines())
+    if (analysis && ! ClassifyStreamlines(ics))
     {
       vector< int > ids_to_delete;
 
-      map< long int, ICHelper >::iterator iter = fieldlines.begin();
-
-      while( iter != fieldlines.end() )
+      for ( int i=0; i<ics.size(); ++i )
       {
+        avtPoincareIC * poincare_ic = (avtPoincareIC *) ics[i];
+
 #ifdef STRAIGHTLINE_SKELETON
-        cerr << "Looking at seed " << iter->second.id << "  "
-             << iter->second.properties.type << "  " <<
-          iter->second.properties.analysisState << endl;
+        cerr << "Looking at seed " << poincare_ic->id << "  "
+             << poincare_ic->properties.type << "  " <<
+          poincare_ic->properties.analysisState << endl;
 
         // For Island Chains add in the O Points.
         if( showOPoints &&
 
-            (iter->second.properties.type ==
+            (poincare_ic->properties.type ==
              FieldlineProperties::ISLAND_CHAIN ||
 
-             iter->second.properties.type ==
+             poincare_ic->properties.type ==
              FieldlineProperties::ISLANDS_WITHIN_ISLANDS) &&
 
-            iter->second.properties.analysisState ==
+            poincare_ic->properties.analysisState ==
             FieldlineProperties::ADD_O_POINTS &&
 
-            !(iter->second.properties.OPoints.empty()) )
+            !(poincare_ic->properties.OPoints.empty()) )
         {
-          iter->second.properties.analysisState =
+          poincare_ic->properties.analysisState =
             FieldlineProperties::COMPLETED;
 
-         cerr << "Adding seed points" << endl;
+          cerr << "Adding seed points" << endl;
             
-          vector< Point > newSeeds;
-          std::vector<std::vector<int> > ids;
-
-          cerr << "Iterations " << iter->second.properties.iteration << "  " <<
+          cerr << "Iterations " << poincare_ic->properties.iteration << "  " <<
             OPointMaxIterations << endl;
 
-          if( iter->second.properties.iteration < OPointMaxIterations )
+          if( poincare_ic->properties.iteration < OPointMaxIterations )
           {
-            newSeeds.push_back( iter->second.properties.OPoints[0] );
-            AddSeedPoints( newSeeds, ids );
+            vector<avtIntegralCurve *> new_ics;
+            AddSeedPoint( poincare_ic->properties.OPoints[0], ics );
           
-            for( unsigned int i=0; i<ids.size(); i++ )
+            for( unsigned int i=0; i<new_ics.size(); i++ )
             {
-              for( unsigned int j=0; j<ids[i].size(); j++ )
-              {
-                cerr << "New island seed ids " << ids[i][j] << "  ";
+                cerr << "New island seed ids " << new_ics[i]->id << "  ";
+
+                avtPoincareIC * seed_poincare_ic = (avtPoincareIC *) new_ics[i];
+
+                // Transfer and update properties.
+                seed_poincare_ic->properties = poincare_ic->properties;
               
-                // Use the curve id because the number of curves will change
-                // over time.
-                map< long int, ICHelper >::iterator seed_iter =
-                  fieldlines.find( ids[i][j] );
-                
-                if( seed_iter == fieldlines.end() )
-                {
-                  ICHelper icHelper;
-                
-                  icHelper.id = ids[i][j];
-                
-                  fieldlines[ ids[i][j] ] = icHelper;
-                
-                  seed_iter = fieldlines.find( ids[i][j] );
-                }
-                else
-                {
-                  cerr << "New island seed is already in the fieldline list" << endl;
-                }
-              
-                seed_iter->second.properties.source =
+                seed_poincare_ic->properties.source =
                   FieldlineProperties::ISLAND_CHAIN;
 
-                seed_iter->second.properties.iteration =
-                  iter->second.properties.iteration + 1;
-              }
+                seed_poincare_ic->properties.iteration =
+                  poincare_ic->properties.iteration + 1;
             }
 
             cerr << endl;
@@ -519,21 +443,16 @@ avtPoincareFilter::ContinueExecute()
 
           // The source was an island_chain so delete it as it was an
           // iterative process.
-          if( iter->second.properties.source ==
+          if( poincare_ic->properties.source ==
               FieldlineProperties::ISLAND_CHAIN )
           {
-            cerr << "Deleting old O Point seed " <<  iter->second.id << endl;
+            cerr << "Deleting old O Point seed " <<  poincare_ic->id << endl;
 
-//            ids_to_delete.push_back( iter->second.id );
+            ids_to_delete.push_back( poincare_ic->id );
           }
         }
 #endif
-        ++iter;
       }
-
-      // Now delete all of the fieldlines and Integral Curves.
-      for( unsigned int i=0; i<ids_to_delete.size(); ++i )
-        fieldlines.erase( ids_to_delete[i] );
 
       DeleteIntegralCurves( ids_to_delete );
 
@@ -619,40 +538,42 @@ avtPoincareFilter::UpdateDataObjectInfo(void)
 // ****************************************************************************
 
 bool
-avtPoincareFilter::ClassifyStreamlines()
+avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
 {
+    FusionPSE::FieldlineLib FLlib;
+    FLlib.verboseFlag = verboseFlag;
+
     debug5 << "Classifying Fieldlines " << endl;
 
     bool analysisComplete = true;
 
-    map< long int, ICHelper >::iterator iter = fieldlines.begin();
-
-    while( iter != fieldlines.end() )
+    for ( int i=0; i<ics.size(); ++i )
     {
-        FieldlineProperties fp = iter->second.properties;
+        avtPoincareIC * poincare_ic = (avtPoincareIC *) ics[i];
+
+        FieldlineProperties fp = poincare_ic->properties;
 
         // If the analysis is completed then skip it.
         if( fp.analysisState == FieldlineProperties::COMPLETED ||
             fp.analysisState == FieldlineProperties::TERMINATED )
         {
           cerr <<"Skipping Classified Streamline: id = "
-               << iter->second.id << endl;
+               << poincare_ic->id << endl;
 
-          ++iter;
           continue;
         }
 
-        iter->second.properties.maxPunctures = maxPunctures;
+        poincare_ic->properties.maxPunctures = maxPunctures;
 
-        FLlib.fieldlineProperties( iter->second.points,
-                                   iter->second.properties,
+        FLlib.fieldlineProperties( poincare_ic->points,
+                                   poincare_ic->properties,
                                    overrideToroidalWinding,
                                    overridePoloidalWinding,
                                    maximumToroidalWinding,
                                    windingPairConfidence,
                                    showOPoints );
 
-        fp = iter->second.properties;
+        fp = poincare_ic->properties;
 
         // Make the number of punctures 2x because the Poincare analysis
         // uses only the punctures in the same direction as the plane normal
@@ -663,16 +584,16 @@ avtPoincareFilter::ClassifyStreamlines()
 
         // Check to see if there are enough points for the analysis.
         if( fp.nPuncturesNeeded != 0 &&
-            fp.nPuncturesNeeded != iter->second.ic->maxIntersections/2 )
+            fp.nPuncturesNeeded != poincare_ic->maxIntersections/2 )
         {
           analysisComplete = false;
 
-          iter->second.ic->maxIntersections = 2 * fp.nPuncturesNeeded;
-          iter->second.ic->status = avtIntegralCurve::STATUS_OK;
+          poincare_ic->maxIntersections = 2 * fp.nPuncturesNeeded;
+          poincare_ic->status = avtIntegralCurve::STATUS_OK;
         }
         else
         {
-          iter->second.ic->status = avtIntegralCurve::STATUS_FINISHED;
+          poincare_ic->status = avtIntegralCurve::STATUS_FINISHED;
         }
 
         cerr << fp.analysisState << endl;
@@ -690,8 +611,8 @@ avtPoincareFilter::ClassifyStreamlines()
             safetyFactor = 0;
 
         if(verboseFlag )
-          cerr << "Classify Streamline: id = "<< iter->second.id
-               << "  ptCnt = " << iter->second.points.size()
+          cerr << "Classify Streamline: id = "<< poincare_ic->id
+               << "  ptCnt = " << poincare_ic->points.size()
                << "  type = " << fp.type
                << "  toroidal/poloidal windings = " <<  fp.toroidalWinding
                << "/" << fp.poloidalWinding
@@ -703,11 +624,9 @@ avtPoincareFilter::ClassifyStreamlines()
                << "  toroidalPeriod = " << fp.toroidalPeriod
                << "  poloidalPeriod = " << fp.poloidalPeriod
                << "  complete " << (fp.analysisState == FieldlineProperties::COMPLETED ? "Yes " : "No ")
-//               << (iter->second.ic->status == avtIntegralCurve::STATUS_FINISHED ? 
-//                   0 : iter->second.ic->maxIntersections )
+//               << (poincare_ic->ic->status == avtIntegralCurve::STATUS_FINISHED ? 
+//                   0 : poincare_ic->ic->maxIntersections )
                << endl << endl;
-
-        ++iter;
     }
 
     debug5 << "Classifying Streaming "
@@ -800,17 +719,20 @@ void realDFTamp( vector< double > &g, vector< double > &G )
 //
 // ****************************************************************************
 avtDataTree *
-avtPoincareFilter::CreatePoincareOutput()
+avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 {
+    FusionPSE::FieldlineLib FLlib;
+    FLlib.verboseFlag = verboseFlag;
+
     debug5 << "Creating output " << endl;
 
     avtDataTree *dt = new avtDataTree();
     
-    map< long int, ICHelper >::iterator iter = fieldlines.begin();
-
-    while( iter != fieldlines.end() )
+    for ( int i=0; i<ic.size(); ++i )
     {
-        FieldlineProperties &properties = iter->second.properties;
+        avtPoincareIC * poincare_ic = (avtPoincareIC *) ic[i];
+
+        FieldlineProperties &properties = poincare_ic->properties;
 
         FieldlineProperties::FieldlineType type = properties.type;
         bool complete =
@@ -826,16 +748,16 @@ avtPoincareFilter::CreatePoincareOutput()
         unsigned int poloidalPeriod     = properties.poloidalPeriod;
         double ridgelineVariance        = properties.ridgelineVariance;
 
-        vector< Point > &OPoints         = properties.OPoints;
+        vector< avtVector > &OPoints         = properties.OPoints;
 
         bool completeIslands = true;
 
         if( verboseFlag ) 
         {
-          cerr << "Surface id = " << iter->second.id << "  "
-               << "< " << iter->second.points[0].x << " "
-               << iter->second.points[0].y << " "
-               << iter->second.points[0].z << " >  "
+          cerr << "Surface id = " << poincare_ic->id << "  "
+               << "< " << poincare_ic->points[0].x << " "
+               << poincare_ic->points[0].y << " "
+               << poincare_ic->points[0].z << " >  "
                << toroidalPeriod << ":" << poloidalPeriod << "  "
                << toroidalWinding << ":" << poloidalWinding << " ("
                << (double) toroidalWinding / (double) poloidalWinding << ")  ";
@@ -881,7 +803,6 @@ avtPoincareFilter::CreatePoincareOutput()
           }
           else
           {
-            ++iter;
             continue;
           }
         }
@@ -894,30 +815,28 @@ avtPoincareFilter::CreatePoincareOutput()
           else
           {
             if( verboseFlag ) 
-              cerr << " id = " << iter->second.id
+              cerr << " id = " << poincare_ic->id
                    << " SKIPPING UNKNOWN TYPE " << endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
             
-            ++iter;
             continue;
           }
         }
         else if( toroidalWinding == 0 ) 
         {
             if( verboseFlag ) 
-              cerr << " id = " << iter->second.id
+              cerr << " id = " << poincare_ic->id
                    << " SKIPPING TOROIDALWINDING OF 0" << endl;
             
             std::pair< unsigned int, unsigned int > topo( 0, 0 );
             
-            ++iter;
             continue;
         }
 
         // Get the direction of the streamline toroidalWinding.
-        Point lastPt = iter->second.points[0];
-        Point currPt = iter->second.points[1];
+        Point lastPt = poincare_ic->points[0];
+        Point currPt = poincare_ic->points[1];
         
         bool CCWstreamline = (atan2( lastPt.y, lastPt.x ) <
                               atan2( currPt.y, currPt.x ));
@@ -925,13 +844,13 @@ avtPoincareFilter::CreatePoincareOutput()
         double lastDist, currDist;
 
         // Put all of the points into the bins for each plane.
-        std::vector< std::vector< std::vector < Point > > > puncturePts;
+        std::vector< std::vector< std::vector < avtVector > > > puncturePts;
         
         puncturePts.resize( planes.size() );
 
-        std::vector < Point > tempPts;
+        std::vector < avtVector > tempPts;
 
-        std::vector< std::vector < Point > > islandPts;
+        std::vector< std::vector < avtVector > > islandPts;
         
         unsigned int startIndex = 0;
         
@@ -975,13 +894,13 @@ avtPoincareFilter::CreatePoincareOutput()
             
             // So to get the winding groups consistant start examining
             // the streamline in the same place for each plane.
-            currPt = iter->second.points[startIndex];
+            currPt = poincare_ic->points[startIndex];
             currDist = planeN.dot( currPt ) - plane[3];
             
-            for( unsigned int j=startIndex+1; j<iter->second.points.size(); ++j )
+            for( unsigned int j=startIndex+1; j<poincare_ic->points.size(); ++j )
             {
                 lastPt = currPt;
-                currPt = Vector(iter->second.points[j]);
+                currPt = Vector(poincare_ic->points[j]);
                 
                 lastDist = currDist;
                 currDist = Dot( planeN, currPt ) - plane[3];
@@ -1069,7 +988,7 @@ avtPoincareFilter::CreatePoincareOutput()
         plane[2] = planeN.z;
         plane[3] = planePt.dot(planeN);
             
-        std::vector < Point > ridgelinePts;
+        std::vector < avtVector > ridgelinePts;
 
         // Start looking for the z max after the first Z plane
         // intersetion is found.
@@ -1078,15 +997,15 @@ avtPoincareFilter::CreatePoincareOutput()
 
         // To get the winding groups consistant start examining the
         // streamline in the same place for each plane.
-        currPt = iter->second.points[0];
+        currPt = poincare_ic->points[0];
         currDist = planeN.dot( currPt ) - plane[3];
             
         for( unsigned int j=startIndex+1;
-             j<iter->second.points.size();
+             j<poincare_ic->points.size();
              ++j )
         {
           lastPt = currPt;
-          currPt = Vector(iter->second.points[j]);
+          currPt = Vector(poincare_ic->points[j]);
           
           lastDist = currDist;
           currDist = Dot( planeN, currPt ) - plane[3];
@@ -1377,7 +1296,7 @@ avtPoincareFilter::CreatePoincareOutput()
             
             if( dataValue == DATA_OriginalValue ||
                 dataValue == DATA_InputOrder )
-                color_value = iter->second.id;
+                color_value = poincare_ic->id;
             else if( dataValue == DATA_ToroidalWindings )
                 color_value = toroidalWinding;
             else if( dataValue == DATA_PoloidalWindings )
@@ -1640,12 +1559,10 @@ avtPoincareFilter::CreatePoincareOutput()
 //              nnodes, islands, poloidalWinding,
 //              dataValue, color_value, true );
         }
-    
-        ++iter;
     }
     
     if( verboseFlag ) 
-        cerr << endl << endl << "count " << fieldlines.size() << endl << endl;
+        cerr << endl << endl << "count " << ic.size() << endl << endl;
 
     debug5 << "Finished creating output " << endl;
     
@@ -1672,7 +1589,7 @@ avtPoincareFilter::CreatePoincareOutput()
 
 void
 avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
-                                      vector< vector < vector < Point > > > &nodes,
+                                      vector< vector < vector < avtVector > > > &nodes,
                                       unsigned int nnodes,
                                       unsigned int islands,
                                       unsigned int skip,
@@ -1869,7 +1786,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
 
 void
 avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
-                                        vector< vector < vector < Point > > > &nodes,
+                                        vector< vector < vector < avtVector > > > &nodes,
                                         unsigned int nnodes,
                                         unsigned int islands,
                                         unsigned int skip,
@@ -2198,7 +2115,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
 
 void
 avtPoincareFilter::drawSurface( avtDataTree *dt,
-                                vector< vector < vector < Point > > > &nodes,
+                                vector< vector < vector < avtVector > > > &nodes,
                                 unsigned int nnodes,
                                 unsigned int islands,
                                 unsigned int skip,
@@ -2615,7 +2532,7 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
 
 void
 avtPoincareFilter::drawPoints( avtDataTree *dt,
-                               vector < Point > &nodes ) 
+                               vector < avtVector > &nodes ) 
 {
   vtkAppendPolyData *append = vtkAppendPolyData::New();
 
