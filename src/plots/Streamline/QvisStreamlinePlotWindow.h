@@ -233,7 +233,8 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void lightingFlagChanged(bool val);
     void icButtonGroupChanged(int val);
     void coordinateButtonGroupChanged(int val);
-    void phiFactorProcessText();
+    void phiScalingToggled(bool);
+    void phiScalingProcessText();
     void pathlineOverrideStartingTimeFlagChanged(bool val);
     void pathlineOverrideStartingTimeProcessText();
     void pathlineCMFEButtonGroupChanged(int val);
@@ -371,8 +372,8 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QCheckBox *lightingFlag;
     QButtonGroup *icButtonGroup;
     QButtonGroup *coordinateButtonGroup;
-    QLineEdit *phiFactor;
-    QLabel    *phiFactorLabel;
+    QLineEdit *phiScaling;
+    QCheckBox *phiScalingToggle;
     QCheckBox *pathlineOverrideStartingTimeFlag;
     QLineEdit *pathlineOverrideStartingTime;
     QButtonGroup *pathlineCMFEButtonGroup;

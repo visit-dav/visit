@@ -92,7 +92,7 @@ class avtStateRecorderIntegralCurve;
 class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
 {
   public:
-                              avtStreamlinePolyDataFilter() {}
+                              avtStreamlinePolyDataFilter();
     virtual                  ~avtStreamlinePolyDataFilter() {}
     static                    std::string colorvarArrayName;
     static                    std::string paramArrayName;
@@ -102,7 +102,8 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
     static                    std::string scaleRadiusArrayName;
 
     void                      SetCoordinateSystem(int c) {coordinateSystem = c;}
-    void                      SetPhiFactor(double pf) {phiFactor = pf;}
+    void                      SetPhiScaling(bool flag, double pf) {
+      phiScalingFlag = flag; phiScaling = pf;}
 
   protected:
     void                      CreateIntegralCurveOutput(vector<avtIntegralCurve *> &streamlines);
@@ -110,10 +111,7 @@ class AVTFILTERS_API avtStreamlinePolyDataFilter : public avtStreamlineFilter
                                                          double angTol, double minDist);
 
     int    coordinateSystem;
-    double phiFactor;
+    bool   phiScalingFlag;
+    double phiScaling;
 };
-
-
 #endif
-
-

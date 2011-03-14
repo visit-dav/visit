@@ -661,7 +661,8 @@ void StreamlineAttributes::Init()
     pathlinesOverrideStartingTime = 0;
     pathlinesCMFE = POS_CMFE;
     coordinateSystem = AsIs;
-    phiFactor = 0;
+    phiScalingFlag = false;
+    phiScaling = 1;
     legendMinFlag = false;
     legendMaxFlag = false;
     legendMin = 0;
@@ -803,7 +804,8 @@ void StreamlineAttributes::Copy(const StreamlineAttributes &obj)
     pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
     pathlinesCMFE = obj.pathlinesCMFE;
     coordinateSystem = obj.coordinateSystem;
-    phiFactor = obj.phiFactor;
+    phiScalingFlag = obj.phiScalingFlag;
+    phiScaling = obj.phiScaling;
     coloringVariable = obj.coloringVariable;
     legendMinFlag = obj.legendMinFlag;
     legendMaxFlag = obj.legendMaxFlag;
@@ -1102,7 +1104,8 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
             (coordinateSystem == obj.coordinateSystem) &&
-            (phiFactor == obj.phiFactor) &&
+            (phiScalingFlag == obj.phiScalingFlag) &&
+            (phiScaling == obj.phiScaling) &&
             (coloringVariable == obj.coloringVariable) &&
             (legendMinFlag == obj.legendMinFlag) &&
             (legendMaxFlag == obj.legendMaxFlag) &&
@@ -1458,7 +1461,8 @@ StreamlineAttributes::SelectAll()
     Select(ID_pathlinesOverrideStartingTime,      (void *)&pathlinesOverrideStartingTime);
     Select(ID_pathlinesCMFE,                      (void *)&pathlinesCMFE);
     Select(ID_coordinateSystem,                   (void *)&coordinateSystem);
-    Select(ID_phiFactor,                          (void *)&phiFactor);
+    Select(ID_phiScalingFlag,                     (void *)&phiScalingFlag);
+    Select(ID_phiScaling,                         (void *)&phiScaling);
     Select(ID_coloringVariable,                   (void *)&coloringVariable);
     Select(ID_legendMinFlag,                      (void *)&legendMinFlag);
     Select(ID_legendMaxFlag,                      (void *)&legendMaxFlag);
@@ -1807,10 +1811,16 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("coordinateSystem", CoordinateSystem_ToString(coordinateSystem)));
     }
 
-    if(completeSave || !FieldsEqual(ID_phiFactor, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_phiScalingFlag, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("phiFactor", phiFactor));
+        node->AddNode(new DataNode("phiScalingFlag", phiScalingFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_phiScaling, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("phiScaling", phiScaling));
     }
 
     if(completeSave || !FieldsEqual(ID_coloringVariable, &defaultObject))
@@ -2383,8 +2393,10 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
                 SetCoordinateSystem(value);
         }
     }
-    if((node = searchNode->GetNode("phiFactor")) != 0)
-        SetPhiFactor(node->AsDouble());
+    if((node = searchNode->GetNode("phiScalingFlag")) != 0)
+        SetPhiScalingFlag(node->AsBool());
+    if((node = searchNode->GetNode("phiScaling")) != 0)
+        SetPhiScaling(node->AsDouble());
     if((node = searchNode->GetNode("coloringVariable")) != 0)
         SetColoringVariable(node->AsString());
     if((node = searchNode->GetNode("legendMinFlag")) != 0)
@@ -2974,10 +2986,17 @@ StreamlineAttributes::SetCoordinateSystem(StreamlineAttributes::CoordinateSystem
 }
 
 void
-StreamlineAttributes::SetPhiFactor(double phiFactor_)
+StreamlineAttributes::SetPhiScalingFlag(bool phiScalingFlag_)
 {
-    phiFactor = phiFactor_;
-    Select(ID_phiFactor, (void *)&phiFactor);
+    phiScalingFlag = phiScalingFlag_;
+    Select(ID_phiScalingFlag, (void *)&phiScalingFlag);
+}
+
+void
+StreamlineAttributes::SetPhiScaling(double phiScaling_)
+{
+    phiScaling = phiScaling_;
+    Select(ID_phiScaling, (void *)&phiScaling);
 }
 
 void
@@ -3700,10 +3719,16 @@ StreamlineAttributes::GetCoordinateSystem() const
     return CoordinateSystem(coordinateSystem);
 }
 
-double
-StreamlineAttributes::GetPhiFactor() const
+bool
+StreamlineAttributes::GetPhiScalingFlag() const
 {
-    return phiFactor;
+    return phiScalingFlag;
+}
+
+double
+StreamlineAttributes::GetPhiScaling() const
+{
+    return phiScaling;
 }
 
 const std::string &
@@ -4215,7 +4240,8 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_pathlinesOverrideStartingTime:      return "pathlinesOverrideStartingTime";
     case ID_pathlinesCMFE:                      return "pathlinesCMFE";
     case ID_coordinateSystem:                   return "coordinateSystem";
-    case ID_phiFactor:                          return "phiFactor";
+    case ID_phiScalingFlag:                     return "phiScalingFlag";
+    case ID_phiScaling:                         return "phiScaling";
     case ID_coloringVariable:                   return "coloringVariable";
     case ID_legendMinFlag:                      return "legendMinFlag";
     case ID_legendMaxFlag:                      return "legendMaxFlag";
@@ -4339,7 +4365,8 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_pathlinesOverrideStartingTime:      return FieldType_double;
     case ID_pathlinesCMFE:                      return FieldType_enum;
     case ID_coordinateSystem:                   return FieldType_enum;
-    case ID_phiFactor:                          return FieldType_double;
+    case ID_phiScalingFlag:                     return FieldType_bool;
+    case ID_phiScaling:                         return FieldType_double;
     case ID_coloringVariable:                   return FieldType_string;
     case ID_legendMinFlag:                      return FieldType_bool;
     case ID_legendMaxFlag:                      return FieldType_bool;
@@ -4463,7 +4490,8 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_pathlinesOverrideStartingTime:      return "double";
     case ID_pathlinesCMFE:                      return "enum";
     case ID_coordinateSystem:                   return "enum";
-    case ID_phiFactor:                          return "double";
+    case ID_phiScalingFlag:                     return "bool";
+    case ID_phiScaling:                         return "double";
     case ID_coloringVariable:                   return "string";
     case ID_legendMinFlag:                      return "bool";
     case ID_legendMaxFlag:                      return "bool";
@@ -4801,9 +4829,14 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (coordinateSystem == obj.coordinateSystem);
         }
         break;
-    case ID_phiFactor:
+    case ID_phiScalingFlag:
         {  // new scope
-        retval = (phiFactor == obj.phiFactor);
+        retval = (phiScalingFlag == obj.phiScalingFlag);
+        }
+        break;
+    case ID_phiScaling:
+        {  // new scope
+        retval = (phiScaling == obj.phiScaling);
         }
         break;
     case ID_coloringVariable:
@@ -5152,7 +5185,8 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         streamlineDirection != obj.streamlineDirection ||
         integrationType != obj.integrationType ||
         coordinateSystem != obj.coordinateSystem ||
-        phiFactor != obj.phiFactor ||
+        phiScalingFlag != obj.phiScalingFlag ||
+        phiScaling != obj.phiScaling ||
         maxStepLength != obj.maxStepLength ||
         maxTimeStep != obj.maxTimeStep ||
         limitMaximumTimestep != obj.limitMaximumTimestep ||

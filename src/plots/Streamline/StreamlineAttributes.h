@@ -240,7 +240,8 @@ public:
     void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
-    void SetPhiFactor(double phiFactor_);
+    void SetPhiScalingFlag(bool phiScalingFlag_);
+    void SetPhiScaling(double phiScaling_);
     void SetColoringVariable(const std::string &coloringVariable_);
     void SetLegendMinFlag(bool legendMinFlag_);
     void SetLegendMaxFlag(bool legendMaxFlag_);
@@ -353,7 +354,8 @@ public:
     double               GetPathlinesOverrideStartingTime() const;
     PathlinesCMFE        GetPathlinesCMFE() const;
     CoordinateSystem     GetCoordinateSystem() const;
-    double               GetPhiFactor() const;
+    bool                 GetPhiScalingFlag() const;
+    double               GetPhiScaling() const;
     const std::string    &GetColoringVariable() const;
           std::string    &GetColoringVariable();
     bool                 GetLegendMinFlag() const;
@@ -545,7 +547,8 @@ public:
         ID_pathlinesOverrideStartingTime,
         ID_pathlinesCMFE,
         ID_coordinateSystem,
-        ID_phiFactor,
+        ID_phiScalingFlag,
+        ID_phiScaling,
         ID_coloringVariable,
         ID_legendMinFlag,
         ID_legendMaxFlag,
@@ -649,7 +652,8 @@ private:
     double         pathlinesOverrideStartingTime;
     int            pathlinesCMFE;
     int            coordinateSystem;
-    double         phiFactor;
+    bool           phiScalingFlag;
+    double         phiScaling;
     std::string    coloringVariable;
     bool           legendMinFlag;
     bool           legendMaxFlag;
@@ -711,6 +715,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdiidsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddi"
+#define STREAMLINEATTRIBUTES_TMFS "iDDDDDDdDDbd*iiiisabbiibdbddbddiddiiiiibbdiibdsbbddddbbiiiddiddibiddbiidddisdddbbiidddbbiibbbbdidsdddi"
 
 #endif

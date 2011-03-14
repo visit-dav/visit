@@ -63,6 +63,23 @@ std::string avtStreamlinePolyDataFilter::thetaArrayName = "theta";
 std::string avtStreamlinePolyDataFilter::tangentsArrayName = "tangents";
 std::string avtStreamlinePolyDataFilter::scaleRadiusArrayName = "scaleRadius";
 
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::avtStreamlinePolyDataFilter
+//
+//  Purpose:
+//      Create the class.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 16, 2008
+//
+
+avtStreamlinePolyDataFilter::avtStreamlinePolyDataFilter():
+  coordinateSystem(0), phiScalingFlag( false ), phiScaling( 1.0 )
+{
+}
+
+
 // ****************************************************************************
 //  Method: avtStreamlineFilter::CreateIntegralCurveOutput
 //
@@ -284,7 +301,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
         float theta = 0.0, prevT = 0.0;
         avtVector lastPos;
 
-        //cerr << phiFactor << "  " << (phiFactor == 0.0) << endl;
+        //cerr << phiScaling << "  " << (phiScaling == 0.0) << endl;
 
         for (int j = 0; j < numSamps; j++)
         {
@@ -292,21 +309,33 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(vector<avtIntegralCurve *
             line->GetPointIds()->SetId(j, pIdx);
 
             if( coordinateSystem == 0 )
-              points->InsertPoint(pIdx, s.position.x, s.position.y, s.position.z);
+            {
+              if( phiScalingFlag && phiScaling != 0.0 )
+                points->InsertPoint(pIdx, s.position.x, s.position.y / phiScaling, s.position.z);
+              else
+                points->InsertPoint(pIdx, s.position.x, s.position.y, s.position.z);
+            }
             else if( coordinateSystem == 1 )
               points->InsertPoint(pIdx, 
                                   s.position.x*cos(s.position.y),
                                   s.position.x*sin(s.position.y),
                                   s.position.z);
             else if( coordinateSystem == 2 )
-              points->InsertPoint(pIdx, 
-                                  sqrt(s.position.x*s.position.x+
-                                       s.position.y*s.position.y),
-                                  (phiFactor == 0.0 ?
-                                   atan2( s.position.y, s.position.x ) :
-                                   (double) (j) / phiFactor),
-                                  s.position.z);
-            
+            {
+              if( phiScalingFlag && phiScaling != 0.0 )
+                points->InsertPoint(pIdx, 
+                                    sqrt(s.position.x*s.position.x+
+                                         s.position.y*s.position.y),
+                                    (double) (j) / phiScaling,
+                                    s.position.z);
+              else
+                points->InsertPoint(pIdx,
+                                    sqrt(s.position.x*s.position.x+
+                                         s.position.y*s.position.y),
+                                    atan2( s.position.y, s.position.x ),
+                                    s.position.z);
+            }
+
             float speed = s.velocity.length();
             if (speed > 0)
                 s.velocity *= 1.0f/speed;

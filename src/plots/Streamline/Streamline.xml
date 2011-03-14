@@ -262,8 +262,11 @@
       <Field name="coordinateSystem" label="coordinateSystem" type="enum" subtype="CoordinateSystem">
         AsIs
       </Field>
-      <Field name="phiFactor" label="Phi Factor" type="double">
-        0.000000
+      <Field name="phiScalingFlag" label="Phi scaling" type="bool">
+        false
+      </Field>
+      <Field name="phiScaling" label="Phi scaling" type="double">
+        1.000000
       </Field>
       <Field name="coloringVariable" label="unnamed1" type="string">
       </Field>

@@ -492,7 +492,12 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sphiFactor = %g\n", prefix, atts->GetPhiFactor());
+    if(atts->GetPhiScalingFlag())
+        SNPRINTF(tmpStr, 1000, "%sphiScalingFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sphiScalingFlag = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sphiScaling = %g\n", prefix, atts->GetPhiScaling());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scoloringVariable = \"%s\"\n", prefix, atts->GetColoringVariable().c_str());
     str += tmpStr;
@@ -2267,7 +2272,31 @@ StreamlineAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_SetPhiFactor(PyObject *self, PyObject *args)
+StreamlineAttributes_SetPhiScalingFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the phiScalingFlag in the object.
+    obj->data->SetPhiScalingFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_GetPhiScalingFlag(PyObject *self, PyObject *args)
+{
+    StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetPhiScalingFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+StreamlineAttributes_SetPhiScaling(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
 
@@ -2275,18 +2304,18 @@ StreamlineAttributes_SetPhiFactor(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the phiFactor in the object.
-    obj->data->SetPhiFactor(dval);
+    // Set the phiScaling in the object.
+    obj->data->SetPhiScaling(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_GetPhiFactor(PyObject *self, PyObject *args)
+StreamlineAttributes_GetPhiScaling(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetPhiFactor());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetPhiScaling());
     return retval;
 }
 
@@ -3823,8 +3852,10 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetPathlinesCMFE", StreamlineAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetCoordinateSystem", StreamlineAttributes_SetCoordinateSystem, METH_VARARGS},
     {"GetCoordinateSystem", StreamlineAttributes_GetCoordinateSystem, METH_VARARGS},
-    {"SetPhiFactor", StreamlineAttributes_SetPhiFactor, METH_VARARGS},
-    {"GetPhiFactor", StreamlineAttributes_GetPhiFactor, METH_VARARGS},
+    {"SetPhiScalingFlag", StreamlineAttributes_SetPhiScalingFlag, METH_VARARGS},
+    {"GetPhiScalingFlag", StreamlineAttributes_GetPhiScalingFlag, METH_VARARGS},
+    {"SetPhiScaling", StreamlineAttributes_SetPhiScaling, METH_VARARGS},
+    {"GetPhiScaling", StreamlineAttributes_GetPhiScaling, METH_VARARGS},
     {"SetColoringVariable", StreamlineAttributes_SetColoringVariable, METH_VARARGS},
     {"GetColoringVariable", StreamlineAttributes_GetColoringVariable, METH_VARARGS},
     {"SetLegendMinFlag", StreamlineAttributes_SetLegendMinFlag, METH_VARARGS},
@@ -4127,8 +4158,10 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "CartesianToCylindrical") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::CartesianToCylindrical));
 
-    if(strcmp(name, "phiFactor") == 0)
-        return StreamlineAttributes_GetPhiFactor(self, NULL);
+    if(strcmp(name, "phiScalingFlag") == 0)
+        return StreamlineAttributes_GetPhiScalingFlag(self, NULL);
+    if(strcmp(name, "phiScaling") == 0)
+        return StreamlineAttributes_GetPhiScaling(self, NULL);
     if(strcmp(name, "coloringVariable") == 0)
         return StreamlineAttributes_GetColoringVariable(self, NULL);
     if(strcmp(name, "legendMinFlag") == 0)
@@ -4408,8 +4441,10 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "coordinateSystem") == 0)
         obj = StreamlineAttributes_SetCoordinateSystem(self, tuple);
-    else if(strcmp(name, "phiFactor") == 0)
-        obj = StreamlineAttributes_SetPhiFactor(self, tuple);
+    else if(strcmp(name, "phiScalingFlag") == 0)
+        obj = StreamlineAttributes_SetPhiScalingFlag(self, tuple);
+    else if(strcmp(name, "phiScaling") == 0)
+        obj = StreamlineAttributes_SetPhiScaling(self, tuple);
     else if(strcmp(name, "coloringVariable") == 0)
         obj = StreamlineAttributes_SetColoringVariable(self, tuple);
     else if(strcmp(name, "legendMinFlag") == 0)
