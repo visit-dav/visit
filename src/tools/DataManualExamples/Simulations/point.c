@@ -55,6 +55,7 @@ void read_input_deck(void) { }
 /* Data Access Function prototypes */
 visit_handle SimGetMetaData(void *);
 visit_handle SimGetMesh(int, const char *, void *);
+visit_handle SimGetVariable(int, const char *, void *);
 
 /******************************************************************************
  * Simulation data and functions
@@ -76,6 +77,7 @@ typedef struct
     float   *x;
     float   *y;
     float   *z;
+    float   *var;
 } simulation_data;
 
 void
@@ -90,6 +92,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->x = (float *)malloc(sizeof(float) * NPTS);
     sim->y = (float *)malloc(sizeof(float) * NPTS);
     sim->z = (float *)malloc(sizeof(float) * NPTS);
+    sim->var = (float *)malloc(sizeof(float) * NPTS);
 }
 
 void
@@ -98,6 +101,7 @@ simulation_data_dtor(simulation_data *sim)
     free(sim->x);
     free(sim->y);
     free(sim->z);
+    free(sim->var);
 }
 
 const char *cmd_names[] = {"halt", "step", "run", "update"};
@@ -130,6 +134,9 @@ void simulate_one_timestep(simulation_data *sim)
         sim->x[i] = t * cos(a + (0.5 + 0.5 * t) * sim->angle);
         sim->y[i] = t * sin(a + (0.5 + 0.5 * t) * sim->angle);
         sim->z[i] = t;
+        sim->var[i] = sqrt(sim->x[i]*sim->x[i] + 
+                           sim->y[i]*sim->y[i] + 
+                           sim->z[i]*sim->z[i]);
     }
 
     sim->angle = sim->angle + 0.05;
@@ -213,6 +220,9 @@ void mainloop(simulation_data *sim)
 {
     int blocking, visitstate, err = 0;
 
+    /* Simulate one timestep upfront so we have coordinates. */
+    simulate_one_timestep(sim);
+
     /* main loop */
     fprintf(stderr, "command> ");
     fflush(stderr);
@@ -244,6 +254,7 @@ void mainloop(simulation_data *sim)
 
                 VisItSetGetMetaData(SimGetMetaData, (void*)sim);
                 VisItSetGetMesh(SimGetMesh, (void*)sim);
+                VisItSetGetVariable(SimGetVariable, (void*)sim);
             }
             else
                 fprintf(stderr, "VisIt did not connect\n");
@@ -339,7 +350,6 @@ SimGetMetaData(void *cbdata)
         visit_handle mmd = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
         visit_handle cmd = VISIT_INVALID_HANDLE;
-        visit_handle emd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
@@ -367,7 +377,18 @@ SimGetMetaData(void *cbdata)
 
             VisIt_SimulationMetaData_addMesh(md, mmd);
         }
-            
+
+        /* Add variable metadata. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "pointvar");
+            VisIt_VariableMetaData_setMeshName(vmd, "point3d");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_ZONE);
+
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+
         /* Add some commands. */
         for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
         {
@@ -414,6 +435,32 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             VisIt_VariableData_setDataF(hz, VISIT_OWNER_SIM, 1, NPTS, sim->z);
             VisIt_PointMesh_setCoordsXYZ(h, hx, hy, hz);
         }
+    }
+
+    return h;
+}
+
+/******************************************************************************
+ *
+ * Purpose: This callback function returns variables.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:37:17 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+visit_handle
+SimGetVariable(int domain, const char *name, void *cbdata)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    simulation_data *sim = (simulation_data *)cbdata;
+
+    if(strcmp(name, "pointvar") == 0)
+    {
+        if(VisIt_VariableData_alloc(&h) != VISIT_ERROR)
+            VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1, NPTS, sim->var);
     }
 
     return h;
