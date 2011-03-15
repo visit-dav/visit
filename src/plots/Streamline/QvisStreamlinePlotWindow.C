@@ -1446,7 +1446,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             maxTime->setEnabled(streamAtts->GetTerminateByTime());
             break;
         case StreamlineAttributes::ID_termTime:
-            temp.setNum(streamAtts->GetTermTime());
+            temp.setNum(streamAtts->GetTermTime(), 'g', 16);
             maxTime->setText(temp);
             break;
         case StreamlineAttributes::ID_pointSource:
@@ -2018,7 +2018,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             pathlineOverrideStartingTimeFlag->blockSignals(false);
             break;
         case StreamlineAttributes::ID_pathlinesOverrideStartingTime:
-            temp.setNum(streamAtts->GetPathlinesOverrideStartingTime());
+            temp.setNum(streamAtts->GetPathlinesOverrideStartingTime(), 'g', 16);
             pathlineOverrideStartingTime->setText(temp);
             break;
         case StreamlineAttributes::ID_pathlinesCMFE:
