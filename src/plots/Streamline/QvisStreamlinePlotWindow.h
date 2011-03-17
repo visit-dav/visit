@@ -209,7 +209,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void sampleDistance0ProcessText();
     void sampleDistance1ProcessText();
     void sampleDistance2ProcessText();
-    void randomSamplesChanged(bool);
+    void typeChanged(int);
     void randomSeedChanged(int);
     void numberOfRandomSamplesChanged(int);
     void fillChanged(int);
@@ -287,12 +287,10 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     int plotType;
     QComboBox *sourceType;
     QComboBox *directionType;
-    QLabel    *limitMaxTimeStepLabel;
     QCheckBox *limitMaxTimeStep;
     QLineEdit *maxStepLength;
     QLabel    *maxStepLengthLabel;
     QLineEdit *maxTimeStep;
-    QLabel    *maxTimeStepLabel;
     QLineEdit *maxSteps;
     QCheckBox *limitMaxTime;
     QLineEdit *maxTime;
@@ -303,7 +301,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLineEdit *absTol;
     QComboBox *absTolSizeType;
     QLabel    *absTolLabel;
-    QLabel    *forceNodalLabel;
     QCheckBox *forceNodal;
     QLineEdit *pointSource;
     QLabel    *pointSourceLabel;
@@ -331,14 +328,17 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLineEdit *sampleDistance[3];
 
     QGroupBox *samplingGroup;
-    QCheckBox *randomSamples;
+    QLabel    *fillLabel;
+    QButtonGroup *fillButtonGroup;
+    QRadioButton *fillButtons[2];
+    QLabel    *typeLabel;
+    QButtonGroup *typeButtonGroup;
+    QRadioButton *typeButtons[2];
     QSpinBox  *numberOfRandomSamples;
     QLabel    *numberOfRandomSamplesLabel;
     QSpinBox  *randomSeed;
     QLabel    *randomSeedLabel;
-    QLabel    *fillLabel;
-    QButtonGroup *fillButtonGroup;
-    QRadioButton *fillButtons[2];
+
 
     QComboBox *displayMethod;
     QCheckBox *tubeRadiusVary;
@@ -420,7 +420,4 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     StreamlineAttributes *streamAtts;
 };
 
-
 #endif
-
-
