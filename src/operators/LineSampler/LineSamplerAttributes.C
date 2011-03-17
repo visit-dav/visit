@@ -77,36 +77,36 @@ LineSamplerAttributes::CoordinateSystem_FromString(const std::string &s, LineSam
 }
 
 //
-// Enum conversion methods for LineSamplerAttributes::BeamType
+// Enum conversion methods for LineSamplerAttributes::BeamProjection
 //
 
-static const char *BeamType_strings[] = {
-"Parallel", "Fan"};
+static const char *BeamProjection_strings[] = {
+"Parallel", "Divergent"};
 
 std::string
-LineSamplerAttributes::BeamType_ToString(LineSamplerAttributes::BeamType t)
+LineSamplerAttributes::BeamProjection_ToString(LineSamplerAttributes::BeamProjection t)
 {
     int index = int(t);
     if(index < 0 || index >= 2) index = 0;
-    return BeamType_strings[index];
+    return BeamProjection_strings[index];
 }
 
 std::string
-LineSamplerAttributes::BeamType_ToString(int t)
+LineSamplerAttributes::BeamProjection_ToString(int t)
 {
     int index = (t < 0 || t >= 2) ? 0 : t;
-    return BeamType_strings[index];
+    return BeamProjection_strings[index];
 }
 
 bool
-LineSamplerAttributes::BeamType_FromString(const std::string &s, LineSamplerAttributes::BeamType &val)
+LineSamplerAttributes::BeamProjection_FromString(const std::string &s, LineSamplerAttributes::BeamProjection &val)
 {
     val = LineSamplerAttributes::Parallel;
     for(int i = 0; i < 2; ++i)
     {
-        if(s == BeamType_strings[i])
+        if(s == BeamProjection_strings[i])
         {
-            val = (BeamType)i;
+            val = (BeamProjection)i;
             return true;
         }
     }
@@ -226,6 +226,43 @@ LineSamplerAttributes::ViewDimension_FromString(const std::string &s, LineSample
     return false;
 }
 
+//
+// Enum conversion methods for LineSamplerAttributes::BeamType
+//
+
+static const char *BeamType_strings[] = {
+"TopHat", "Gaussian"};
+
+std::string
+LineSamplerAttributes::BeamType_ToString(LineSamplerAttributes::BeamType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return BeamType_strings[index];
+}
+
+std::string
+LineSamplerAttributes::BeamType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return BeamType_strings[index];
+}
+
+bool
+LineSamplerAttributes::BeamType_FromString(const std::string &s, LineSamplerAttributes::BeamType &val)
+{
+    val = LineSamplerAttributes::TopHat;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == BeamType_strings[i])
+        {
+            val = (BeamType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: LineSamplerAttributes::LineSamplerAttributes
 //
@@ -244,15 +281,13 @@ LineSamplerAttributes::ViewDimension_FromString(const std::string &s, LineSample
 void LineSamplerAttributes::Init()
 {
     coordinateSystem = Cylindrical;
-    beamType = Parallel;
     beamShape = Line;
     radius = 0.1;
     divergence = 1;
+    beamProjection = Parallel;
     nBeams = 5;
-    sampleDistance = 0.1;
-    sampleArc = 10;
-    offset = 5;
-    angle = 45;
+    offset = 0.1;
+    angle = 5;
     origin[0] = 0;
     origin[1] = 0;
     origin[2] = 0;
@@ -262,6 +297,10 @@ void LineSamplerAttributes::Init()
     poloialZTilt = 0;
     toroialAngle = 0;
     viewDimension = Three;
+    beamType = TopHat;
+    standardDeviation = 1;
+    sampleDistance = 0.1;
+    sampleArc = 10;
 
     LineSamplerAttributes::SelectAll();
 }
@@ -284,13 +323,11 @@ void LineSamplerAttributes::Init()
 void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
 {
     coordinateSystem = obj.coordinateSystem;
-    beamType = obj.beamType;
     beamShape = obj.beamShape;
     radius = obj.radius;
     divergence = obj.divergence;
+    beamProjection = obj.beamProjection;
     nBeams = obj.nBeams;
-    sampleDistance = obj.sampleDistance;
-    sampleArc = obj.sampleArc;
     offset = obj.offset;
     angle = obj.angle;
     origin[0] = obj.origin[0];
@@ -303,6 +340,10 @@ void LineSamplerAttributes::Copy(const LineSamplerAttributes &obj)
     poloialZTilt = obj.poloialZTilt;
     toroialAngle = obj.toroialAngle;
     viewDimension = obj.viewDimension;
+    beamType = obj.beamType;
+    standardDeviation = obj.standardDeviation;
+    sampleDistance = obj.sampleDistance;
+    sampleArc = obj.sampleArc;
 
     LineSamplerAttributes::SelectAll();
 }
@@ -466,13 +507,11 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
 
     // Create the return value
     return ((coordinateSystem == obj.coordinateSystem) &&
-            (beamType == obj.beamType) &&
             (beamShape == obj.beamShape) &&
             (radius == obj.radius) &&
             (divergence == obj.divergence) &&
+            (beamProjection == obj.beamProjection) &&
             (nBeams == obj.nBeams) &&
-            (sampleDistance == obj.sampleDistance) &&
-            (sampleArc == obj.sampleArc) &&
             (offset == obj.offset) &&
             (angle == obj.angle) &&
             origin_equal &&
@@ -481,7 +520,11 @@ LineSamplerAttributes::operator == (const LineSamplerAttributes &obj) const
             (poloialRTilt == obj.poloialRTilt) &&
             (poloialZTilt == obj.poloialZTilt) &&
             (toroialAngle == obj.toroialAngle) &&
-            (viewDimension == obj.viewDimension));
+            (viewDimension == obj.viewDimension) &&
+            (beamType == obj.beamType) &&
+            (standardDeviation == obj.standardDeviation) &&
+            (sampleDistance == obj.sampleDistance) &&
+            (sampleArc == obj.sampleArc));
 }
 
 // ****************************************************************************
@@ -625,23 +668,25 @@ LineSamplerAttributes::NewInstance(bool copy) const
 void
 LineSamplerAttributes::SelectAll()
 {
-    Select(ID_coordinateSystem, (void *)&coordinateSystem);
-    Select(ID_beamType,         (void *)&beamType);
-    Select(ID_beamShape,        (void *)&beamShape);
-    Select(ID_radius,           (void *)&radius);
-    Select(ID_divergence,       (void *)&divergence);
-    Select(ID_nBeams,           (void *)&nBeams);
-    Select(ID_sampleDistance,   (void *)&sampleDistance);
-    Select(ID_sampleArc,        (void *)&sampleArc);
-    Select(ID_offset,           (void *)&offset);
-    Select(ID_angle,            (void *)&angle);
-    Select(ID_origin,           (void *)origin, 3);
-    Select(ID_beamAxis,         (void *)&beamAxis);
-    Select(ID_poloialAngle,     (void *)&poloialAngle);
-    Select(ID_poloialRTilt,     (void *)&poloialRTilt);
-    Select(ID_poloialZTilt,     (void *)&poloialZTilt);
-    Select(ID_toroialAngle,     (void *)&toroialAngle);
-    Select(ID_viewDimension,    (void *)&viewDimension);
+    Select(ID_coordinateSystem,  (void *)&coordinateSystem);
+    Select(ID_beamShape,         (void *)&beamShape);
+    Select(ID_radius,            (void *)&radius);
+    Select(ID_divergence,        (void *)&divergence);
+    Select(ID_beamProjection,    (void *)&beamProjection);
+    Select(ID_nBeams,            (void *)&nBeams);
+    Select(ID_offset,            (void *)&offset);
+    Select(ID_angle,             (void *)&angle);
+    Select(ID_origin,            (void *)origin, 3);
+    Select(ID_beamAxis,          (void *)&beamAxis);
+    Select(ID_poloialAngle,      (void *)&poloialAngle);
+    Select(ID_poloialRTilt,      (void *)&poloialRTilt);
+    Select(ID_poloialZTilt,      (void *)&poloialZTilt);
+    Select(ID_toroialAngle,      (void *)&toroialAngle);
+    Select(ID_viewDimension,     (void *)&viewDimension);
+    Select(ID_beamType,          (void *)&beamType);
+    Select(ID_standardDeviation, (void *)&standardDeviation);
+    Select(ID_sampleDistance,    (void *)&sampleDistance);
+    Select(ID_sampleArc,         (void *)&sampleArc);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -680,12 +725,6 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("coordinateSystem", CoordinateSystem_ToString(coordinateSystem)));
     }
 
-    if(completeSave || !FieldsEqual(ID_beamType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("beamType", BeamType_ToString(beamType)));
-    }
-
     if(completeSave || !FieldsEqual(ID_beamShape, &defaultObject))
     {
         addToParent = true;
@@ -704,22 +743,16 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("divergence", divergence));
     }
 
+    if(completeSave || !FieldsEqual(ID_beamProjection, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("beamProjection", BeamProjection_ToString(beamProjection)));
+    }
+
     if(completeSave || !FieldsEqual(ID_nBeams, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("nBeams", nBeams));
-    }
-
-    if(completeSave || !FieldsEqual(ID_sampleDistance, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("sampleDistance", sampleDistance));
-    }
-
-    if(completeSave || !FieldsEqual(ID_sampleArc, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("sampleArc", sampleArc));
     }
 
     if(completeSave || !FieldsEqual(ID_offset, &defaultObject))
@@ -776,6 +809,30 @@ LineSamplerAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("viewDimension", ViewDimension_ToString(viewDimension)));
     }
 
+    if(completeSave || !FieldsEqual(ID_beamType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("beamType", BeamType_ToString(beamType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_standardDeviation, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("standardDeviation", standardDeviation));
+    }
+
+    if(completeSave || !FieldsEqual(ID_sampleDistance, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sampleDistance", sampleDistance));
+    }
+
+    if(completeSave || !FieldsEqual(ID_sampleArc, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("sampleArc", sampleArc));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -828,22 +885,6 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
                 SetCoordinateSystem(value);
         }
     }
-    if((node = searchNode->GetNode("beamType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
-                SetBeamType(BeamType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            BeamType value;
-            if(BeamType_FromString(node->AsString(), value))
-                SetBeamType(value);
-        }
-    }
     if((node = searchNode->GetNode("beamShape")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -864,12 +905,24 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
         SetRadius(node->AsDouble());
     if((node = searchNode->GetNode("divergence")) != 0)
         SetDivergence(node->AsDouble());
+    if((node = searchNode->GetNode("beamProjection")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetBeamProjection(BeamProjection(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            BeamProjection value;
+            if(BeamProjection_FromString(node->AsString(), value))
+                SetBeamProjection(value);
+        }
+    }
     if((node = searchNode->GetNode("nBeams")) != 0)
         SetNBeams(node->AsInt());
-    if((node = searchNode->GetNode("sampleDistance")) != 0)
-        SetSampleDistance(node->AsDouble());
-    if((node = searchNode->GetNode("sampleArc")) != 0)
-        SetSampleArc(node->AsDouble());
     if((node = searchNode->GetNode("offset")) != 0)
         SetOffset(node->AsDouble());
     if((node = searchNode->GetNode("angle")) != 0)
@@ -916,6 +969,28 @@ LineSamplerAttributes::SetFromNode(DataNode *parentNode)
                 SetViewDimension(value);
         }
     }
+    if((node = searchNode->GetNode("beamType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetBeamType(BeamType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            BeamType value;
+            if(BeamType_FromString(node->AsString(), value))
+                SetBeamType(value);
+        }
+    }
+    if((node = searchNode->GetNode("standardDeviation")) != 0)
+        SetStandardDeviation(node->AsDouble());
+    if((node = searchNode->GetNode("sampleDistance")) != 0)
+        SetSampleDistance(node->AsDouble());
+    if((node = searchNode->GetNode("sampleArc")) != 0)
+        SetSampleArc(node->AsDouble());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -927,13 +1002,6 @@ LineSamplerAttributes::SetCoordinateSystem(LineSamplerAttributes::CoordinateSyst
 {
     coordinateSystem = coordinateSystem_;
     Select(ID_coordinateSystem, (void *)&coordinateSystem);
-}
-
-void
-LineSamplerAttributes::SetBeamType(LineSamplerAttributes::BeamType beamType_)
-{
-    beamType = beamType_;
-    Select(ID_beamType, (void *)&beamType);
 }
 
 void
@@ -958,24 +1026,17 @@ LineSamplerAttributes::SetDivergence(double divergence_)
 }
 
 void
+LineSamplerAttributes::SetBeamProjection(LineSamplerAttributes::BeamProjection beamProjection_)
+{
+    beamProjection = beamProjection_;
+    Select(ID_beamProjection, (void *)&beamProjection);
+}
+
+void
 LineSamplerAttributes::SetNBeams(int nBeams_)
 {
     nBeams = nBeams_;
     Select(ID_nBeams, (void *)&nBeams);
-}
-
-void
-LineSamplerAttributes::SetSampleDistance(double sampleDistance_)
-{
-    sampleDistance = sampleDistance_;
-    Select(ID_sampleDistance, (void *)&sampleDistance);
-}
-
-void
-LineSamplerAttributes::SetSampleArc(double sampleArc_)
-{
-    sampleArc = sampleArc_;
-    Select(ID_sampleArc, (void *)&sampleArc);
 }
 
 void
@@ -1043,6 +1104,34 @@ LineSamplerAttributes::SetViewDimension(LineSamplerAttributes::ViewDimension vie
     Select(ID_viewDimension, (void *)&viewDimension);
 }
 
+void
+LineSamplerAttributes::SetBeamType(LineSamplerAttributes::BeamType beamType_)
+{
+    beamType = beamType_;
+    Select(ID_beamType, (void *)&beamType);
+}
+
+void
+LineSamplerAttributes::SetStandardDeviation(double standardDeviation_)
+{
+    standardDeviation = standardDeviation_;
+    Select(ID_standardDeviation, (void *)&standardDeviation);
+}
+
+void
+LineSamplerAttributes::SetSampleDistance(double sampleDistance_)
+{
+    sampleDistance = sampleDistance_;
+    Select(ID_sampleDistance, (void *)&sampleDistance);
+}
+
+void
+LineSamplerAttributes::SetSampleArc(double sampleArc_)
+{
+    sampleArc = sampleArc_;
+    Select(ID_sampleArc, (void *)&sampleArc);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1051,12 +1140,6 @@ LineSamplerAttributes::CoordinateSystem
 LineSamplerAttributes::GetCoordinateSystem() const
 {
     return CoordinateSystem(coordinateSystem);
-}
-
-LineSamplerAttributes::BeamType
-LineSamplerAttributes::GetBeamType() const
-{
-    return BeamType(beamType);
 }
 
 LineSamplerAttributes::BeamShape
@@ -1077,22 +1160,16 @@ LineSamplerAttributes::GetDivergence() const
     return divergence;
 }
 
+LineSamplerAttributes::BeamProjection
+LineSamplerAttributes::GetBeamProjection() const
+{
+    return BeamProjection(beamProjection);
+}
+
 int
 LineSamplerAttributes::GetNBeams() const
 {
     return nBeams;
-}
-
-double
-LineSamplerAttributes::GetSampleDistance() const
-{
-    return sampleDistance;
-}
-
-double
-LineSamplerAttributes::GetSampleArc() const
-{
-    return sampleArc;
 }
 
 double
@@ -1155,6 +1232,30 @@ LineSamplerAttributes::GetViewDimension() const
     return ViewDimension(viewDimension);
 }
 
+LineSamplerAttributes::BeamType
+LineSamplerAttributes::GetBeamType() const
+{
+    return BeamType(beamType);
+}
+
+double
+LineSamplerAttributes::GetStandardDeviation() const
+{
+    return standardDeviation;
+}
+
+double
+LineSamplerAttributes::GetSampleDistance() const
+{
+    return sampleDistance;
+}
+
+double
+LineSamplerAttributes::GetSampleArc() const
+{
+    return sampleArc;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1189,23 +1290,25 @@ LineSamplerAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_coordinateSystem: return "coordinateSystem";
-    case ID_beamType:         return "beamType";
-    case ID_beamShape:        return "beamShape";
-    case ID_radius:           return "radius";
-    case ID_divergence:       return "divergence";
-    case ID_nBeams:           return "nBeams";
-    case ID_sampleDistance:   return "sampleDistance";
-    case ID_sampleArc:        return "sampleArc";
-    case ID_offset:           return "offset";
-    case ID_angle:            return "angle";
-    case ID_origin:           return "origin";
-    case ID_beamAxis:         return "beamAxis";
-    case ID_poloialAngle:     return "poloialAngle";
-    case ID_poloialRTilt:     return "poloialRTilt";
-    case ID_poloialZTilt:     return "poloialZTilt";
-    case ID_toroialAngle:     return "toroialAngle";
-    case ID_viewDimension:    return "viewDimension";
+    case ID_coordinateSystem:  return "coordinateSystem";
+    case ID_beamShape:         return "beamShape";
+    case ID_radius:            return "radius";
+    case ID_divergence:        return "divergence";
+    case ID_beamProjection:    return "beamProjection";
+    case ID_nBeams:            return "nBeams";
+    case ID_offset:            return "offset";
+    case ID_angle:             return "angle";
+    case ID_origin:            return "origin";
+    case ID_beamAxis:          return "beamAxis";
+    case ID_poloialAngle:      return "poloialAngle";
+    case ID_poloialRTilt:      return "poloialRTilt";
+    case ID_poloialZTilt:      return "poloialZTilt";
+    case ID_toroialAngle:      return "toroialAngle";
+    case ID_viewDimension:     return "viewDimension";
+    case ID_beamType:          return "beamType";
+    case ID_standardDeviation: return "standardDeviation";
+    case ID_sampleDistance:    return "sampleDistance";
+    case ID_sampleArc:         return "sampleArc";
     default:  return "invalid index";
     }
 }
@@ -1230,23 +1333,25 @@ LineSamplerAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_coordinateSystem: return FieldType_enum;
-    case ID_beamType:         return FieldType_enum;
-    case ID_beamShape:        return FieldType_enum;
-    case ID_radius:           return FieldType_double;
-    case ID_divergence:       return FieldType_double;
-    case ID_nBeams:           return FieldType_int;
-    case ID_sampleDistance:   return FieldType_double;
-    case ID_sampleArc:        return FieldType_double;
-    case ID_offset:           return FieldType_double;
-    case ID_angle:            return FieldType_double;
-    case ID_origin:           return FieldType_doubleArray;
-    case ID_beamAxis:         return FieldType_enum;
-    case ID_poloialAngle:     return FieldType_double;
-    case ID_poloialRTilt:     return FieldType_double;
-    case ID_poloialZTilt:     return FieldType_double;
-    case ID_toroialAngle:     return FieldType_double;
-    case ID_viewDimension:    return FieldType_enum;
+    case ID_coordinateSystem:  return FieldType_enum;
+    case ID_beamShape:         return FieldType_enum;
+    case ID_radius:            return FieldType_double;
+    case ID_divergence:        return FieldType_double;
+    case ID_beamProjection:    return FieldType_enum;
+    case ID_nBeams:            return FieldType_int;
+    case ID_offset:            return FieldType_double;
+    case ID_angle:             return FieldType_double;
+    case ID_origin:            return FieldType_doubleArray;
+    case ID_beamAxis:          return FieldType_enum;
+    case ID_poloialAngle:      return FieldType_double;
+    case ID_poloialRTilt:      return FieldType_double;
+    case ID_poloialZTilt:      return FieldType_double;
+    case ID_toroialAngle:      return FieldType_double;
+    case ID_viewDimension:     return FieldType_enum;
+    case ID_beamType:          return FieldType_enum;
+    case ID_standardDeviation: return FieldType_double;
+    case ID_sampleDistance:    return FieldType_double;
+    case ID_sampleArc:         return FieldType_double;
     default:  return FieldType_unknown;
     }
 }
@@ -1271,23 +1376,25 @@ LineSamplerAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_coordinateSystem: return "enum";
-    case ID_beamType:         return "enum";
-    case ID_beamShape:        return "enum";
-    case ID_radius:           return "double";
-    case ID_divergence:       return "double";
-    case ID_nBeams:           return "int";
-    case ID_sampleDistance:   return "double";
-    case ID_sampleArc:        return "double";
-    case ID_offset:           return "double";
-    case ID_angle:            return "double";
-    case ID_origin:           return "doubleArray";
-    case ID_beamAxis:         return "enum";
-    case ID_poloialAngle:     return "double";
-    case ID_poloialRTilt:     return "double";
-    case ID_poloialZTilt:     return "double";
-    case ID_toroialAngle:     return "double";
-    case ID_viewDimension:    return "enum";
+    case ID_coordinateSystem:  return "enum";
+    case ID_beamShape:         return "enum";
+    case ID_radius:            return "double";
+    case ID_divergence:        return "double";
+    case ID_beamProjection:    return "enum";
+    case ID_nBeams:            return "int";
+    case ID_offset:            return "double";
+    case ID_angle:             return "double";
+    case ID_origin:            return "doubleArray";
+    case ID_beamAxis:          return "enum";
+    case ID_poloialAngle:      return "double";
+    case ID_poloialRTilt:      return "double";
+    case ID_poloialZTilt:      return "double";
+    case ID_toroialAngle:      return "double";
+    case ID_viewDimension:     return "enum";
+    case ID_beamType:          return "enum";
+    case ID_standardDeviation: return "double";
+    case ID_sampleDistance:    return "double";
+    case ID_sampleArc:         return "double";
     default:  return "invalid index";
     }
 }
@@ -1319,11 +1426,6 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (coordinateSystem == obj.coordinateSystem);
         }
         break;
-    case ID_beamType:
-        {  // new scope
-        retval = (beamType == obj.beamType);
-        }
-        break;
     case ID_beamShape:
         {  // new scope
         retval = (beamShape == obj.beamShape);
@@ -1339,19 +1441,14 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (divergence == obj.divergence);
         }
         break;
+    case ID_beamProjection:
+        {  // new scope
+        retval = (beamProjection == obj.beamProjection);
+        }
+        break;
     case ID_nBeams:
         {  // new scope
         retval = (nBeams == obj.nBeams);
-        }
-        break;
-    case ID_sampleDistance:
-        {  // new scope
-        retval = (sampleDistance == obj.sampleDistance);
-        }
-        break;
-    case ID_sampleArc:
-        {  // new scope
-        retval = (sampleArc == obj.sampleArc);
         }
         break;
     case ID_offset:
@@ -1402,6 +1499,26 @@ LineSamplerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_viewDimension:
         {  // new scope
         retval = (viewDimension == obj.viewDimension);
+        }
+        break;
+    case ID_beamType:
+        {  // new scope
+        retval = (beamType == obj.beamType);
+        }
+        break;
+    case ID_standardDeviation:
+        {  // new scope
+        retval = (standardDeviation == obj.standardDeviation);
+        }
+        break;
+    case ID_sampleDistance:
+        {  // new scope
+        retval = (sampleDistance == obj.sampleDistance);
+        }
+        break;
+    case ID_sampleArc:
+        {  // new scope
+        retval = (sampleArc == obj.sampleArc);
         }
         break;
     default: retval = false;

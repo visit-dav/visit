@@ -87,13 +87,11 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void coordinateSystemChanged(int val);
-    void beamTypeChanged(int val);
     void beamShapeChanged(int val);
     void radiusProcessText();
     void divergenceProcessText();
+    void beamProjectionChanged(int val);
     void nBeamsProcessText();
-    void sampleDistanceProcessText();
-    void sampleArcProcessText();
     void offsetProcessText();
     void angleProcessText();
     void originProcessText();
@@ -103,18 +101,20 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     void poloialZTiltProcessText();
     void toroialAngleProcessText();
     void viewDimensionChanged(int val);
+    void beamTypeChanged(int val);
+    void standardDeviationProcessText();
+    void sampleDistanceProcessText();
+    void sampleArcProcessText();
   private:
     QWidget      *coordinateSystem;
     QButtonGroup *coordinateSystemButtonGroup;
-    QWidget      *beamType;
-    QButtonGroup *beamTypeButtonGroup;
     QWidget      *beamShape;
     QButtonGroup *beamShapeButtonGroup;
     QLineEdit *radius;
     QLineEdit *divergence;
+    QWidget      *beamProjection;
+    QButtonGroup *beamProjectionButtonGroup;
     QLineEdit *nBeams;
-    QLineEdit *sampleDistance;
-    QLineEdit *sampleArc;
     QLineEdit *offset;
     QLineEdit *angle;
     QLineEdit *origin;
@@ -126,14 +126,17 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLineEdit *toroialAngle;
     QWidget      *viewDimension;
     QButtonGroup *viewDimensionButtonGroup;
+    QWidget      *beamType;
+    QButtonGroup *beamTypeButtonGroup;
+    QLineEdit *standardDeviation;
+    QLineEdit *sampleDistance;
+    QLineEdit *sampleArc;
     QLabel *coordinateSystemLabel;
-    QLabel *beamTypeLabel;
     QLabel *beamShapeLabel;
     QLabel *radiusLabel;
     QLabel *divergenceLabel;
+    QLabel *beamProjectionLabel;
     QLabel *nBeamsLabel;
-    QLabel *sampleDistanceLabel;
-    QLabel *sampleArcLabel;
     QLabel *offsetLabel;
     QLabel *angleLabel;
     QLabel *originLabel;
@@ -143,6 +146,10 @@ class QvisLineSamplerWindow : public QvisOperatorWindow
     QLabel *poloialZTiltLabel;
     QLabel *toroialAngleLabel;
     QLabel *viewDimensionLabel;
+    QLabel *beamTypeLabel;
+    QLabel *standardDeviationLabel;
+    QLabel *sampleDistanceLabel;
+    QLabel *sampleArcLabel;
 
     LineSamplerAttributes *atts;
 };

@@ -59,14 +59,14 @@ import llnl.visit.Plugin;
 
 public class LineSamplerAttributes extends AttributeSubject implements Plugin
 {
-    private static int LineSamplerAttributes_numAdditionalAtts = 17;
+    private static int LineSamplerAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int COORDINATESYSTEM_CARTESIAN = 0;
     public final static int COORDINATESYSTEM_CYLINDRICAL = 1;
 
-    public final static int BEAMTYPE_PARALLEL = 0;
-    public final static int BEAMTYPE_FAN = 1;
+    public final static int BEAMPROJECTION_PARALLEL = 0;
+    public final static int BEAMPROJECTION_DIVERGENT = 1;
 
     public final static int BEAMAXIS_R = 0;
     public final static int BEAMAXIS_Z = 1;
@@ -79,21 +79,22 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public final static int VIEWDIMENSION_TWO = 1;
     public final static int VIEWDIMENSION_THREE = 2;
 
+    public final static int BEAMTYPE_TOPHAT = 0;
+    public final static int BEAMTYPE_GAUSSIAN = 1;
+
 
     public LineSamplerAttributes()
     {
         super(LineSamplerAttributes_numAdditionalAtts);
 
         coordinateSystem = COORDINATESYSTEM_CYLINDRICAL;
-        beamType = BEAMTYPE_PARALLEL;
         beamShape = BEAMSHAPE_LINE;
         radius = 0.1;
         divergence = 1;
+        beamProjection = BEAMPROJECTION_PARALLEL;
         nBeams = 5;
-        sampleDistance = 0.1;
-        sampleArc = 10;
-        offset = 5;
-        angle = 45;
+        offset = 0.1;
+        angle = 5;
         origin = new double[3];
         origin[0] = 0;
         origin[1] = 0;
@@ -104,6 +105,10 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         poloialZTilt = 0;
         toroialAngle = 0;
         viewDimension = VIEWDIMENSION_THREE;
+        beamType = BEAMTYPE_TOPHAT;
+        standardDeviation = 1;
+        sampleDistance = 0.1;
+        sampleArc = 10;
     }
 
     public LineSamplerAttributes(int nMoreFields)
@@ -111,15 +116,13 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         super(LineSamplerAttributes_numAdditionalAtts + nMoreFields);
 
         coordinateSystem = COORDINATESYSTEM_CYLINDRICAL;
-        beamType = BEAMTYPE_PARALLEL;
         beamShape = BEAMSHAPE_LINE;
         radius = 0.1;
         divergence = 1;
+        beamProjection = BEAMPROJECTION_PARALLEL;
         nBeams = 5;
-        sampleDistance = 0.1;
-        sampleArc = 10;
-        offset = 5;
-        angle = 45;
+        offset = 0.1;
+        angle = 5;
         origin = new double[3];
         origin[0] = 0;
         origin[1] = 0;
@@ -130,6 +133,10 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         poloialZTilt = 0;
         toroialAngle = 0;
         viewDimension = VIEWDIMENSION_THREE;
+        beamType = BEAMTYPE_TOPHAT;
+        standardDeviation = 1;
+        sampleDistance = 0.1;
+        sampleArc = 10;
     }
 
     public LineSamplerAttributes(LineSamplerAttributes obj)
@@ -139,13 +146,11 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         int i;
 
         coordinateSystem = obj.coordinateSystem;
-        beamType = obj.beamType;
         beamShape = obj.beamShape;
         radius = obj.radius;
         divergence = obj.divergence;
+        beamProjection = obj.beamProjection;
         nBeams = obj.nBeams;
-        sampleDistance = obj.sampleDistance;
-        sampleArc = obj.sampleArc;
         offset = obj.offset;
         angle = obj.angle;
         origin = new double[3];
@@ -159,6 +164,10 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         poloialZTilt = obj.poloialZTilt;
         toroialAngle = obj.toroialAngle;
         viewDimension = obj.viewDimension;
+        beamType = obj.beamType;
+        standardDeviation = obj.standardDeviation;
+        sampleDistance = obj.sampleDistance;
+        sampleArc = obj.sampleArc;
 
         SelectAll();
     }
@@ -184,13 +193,11 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
 
         // Create the return value
         return ((coordinateSystem == obj.coordinateSystem) &&
-                (beamType == obj.beamType) &&
                 (beamShape == obj.beamShape) &&
                 (radius == obj.radius) &&
                 (divergence == obj.divergence) &&
+                (beamProjection == obj.beamProjection) &&
                 (nBeams == obj.nBeams) &&
-                (sampleDistance == obj.sampleDistance) &&
-                (sampleArc == obj.sampleArc) &&
                 (offset == obj.offset) &&
                 (angle == obj.angle) &&
                 origin_equal &&
@@ -199,7 +206,11 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
                 (poloialRTilt == obj.poloialRTilt) &&
                 (poloialZTilt == obj.poloialZTilt) &&
                 (toroialAngle == obj.toroialAngle) &&
-                (viewDimension == obj.viewDimension));
+                (viewDimension == obj.viewDimension) &&
+                (beamType == obj.beamType) &&
+                (standardDeviation == obj.standardDeviation) &&
+                (sampleDistance == obj.sampleDistance) &&
+                (sampleArc == obj.sampleArc));
     }
 
     public String GetName() { return "LineSampler"; }
@@ -212,27 +223,27 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
-    public void SetBeamType(int beamType_)
-    {
-        beamType = beamType_;
-        Select(1);
-    }
-
     public void SetBeamShape(int beamShape_)
     {
         beamShape = beamShape_;
-        Select(2);
+        Select(1);
     }
 
     public void SetRadius(double radius_)
     {
         radius = radius_;
-        Select(3);
+        Select(2);
     }
 
     public void SetDivergence(double divergence_)
     {
         divergence = divergence_;
+        Select(3);
+    }
+
+    public void SetBeamProjection(int beamProjection_)
+    {
+        beamProjection = beamProjection_;
         Select(4);
     }
 
@@ -242,28 +253,16 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         Select(5);
     }
 
-    public void SetSampleDistance(double sampleDistance_)
-    {
-        sampleDistance = sampleDistance_;
-        Select(6);
-    }
-
-    public void SetSampleArc(double sampleArc_)
-    {
-        sampleArc = sampleArc_;
-        Select(7);
-    }
-
     public void SetOffset(double offset_)
     {
         offset = offset_;
-        Select(8);
+        Select(6);
     }
 
     public void SetAngle(double angle_)
     {
         angle = angle_;
-        Select(9);
+        Select(7);
     }
 
     public void SetOrigin(double[] origin_)
@@ -271,7 +270,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         origin[0] = origin_[0];
         origin[1] = origin_[1];
         origin[2] = origin_[2];
-        Select(10);
+        Select(8);
     }
 
     public void SetOrigin(double e0, double e1, double e2)
@@ -279,54 +278,76 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         origin[0] = e0;
         origin[1] = e1;
         origin[2] = e2;
-        Select(10);
+        Select(8);
     }
 
     public void SetBeamAxis(int beamAxis_)
     {
         beamAxis = beamAxis_;
-        Select(11);
+        Select(9);
     }
 
     public void SetPoloialAngle(double poloialAngle_)
     {
         poloialAngle = poloialAngle_;
-        Select(12);
+        Select(10);
     }
 
     public void SetPoloialRTilt(double poloialRTilt_)
     {
         poloialRTilt = poloialRTilt_;
-        Select(13);
+        Select(11);
     }
 
     public void SetPoloialZTilt(double poloialZTilt_)
     {
         poloialZTilt = poloialZTilt_;
-        Select(14);
+        Select(12);
     }
 
     public void SetToroialAngle(double toroialAngle_)
     {
         toroialAngle = toroialAngle_;
-        Select(15);
+        Select(13);
     }
 
     public void SetViewDimension(int viewDimension_)
     {
         viewDimension = viewDimension_;
+        Select(14);
+    }
+
+    public void SetBeamType(int beamType_)
+    {
+        beamType = beamType_;
+        Select(15);
+    }
+
+    public void SetStandardDeviation(double standardDeviation_)
+    {
+        standardDeviation = standardDeviation_;
         Select(16);
+    }
+
+    public void SetSampleDistance(double sampleDistance_)
+    {
+        sampleDistance = sampleDistance_;
+        Select(17);
+    }
+
+    public void SetSampleArc(double sampleArc_)
+    {
+        sampleArc = sampleArc_;
+        Select(18);
     }
 
     // Property getting methods
     public int      GetCoordinateSystem() { return coordinateSystem; }
-    public int      GetBeamType() { return beamType; }
     public int      GetBeamShape() { return beamShape; }
     public double   GetRadius() { return radius; }
     public double   GetDivergence() { return divergence; }
+    public int      GetBeamProjection() { return beamProjection; }
     public int      GetNBeams() { return nBeams; }
-    public double   GetSampleDistance() { return sampleDistance; }
-    public double   GetSampleArc() { return sampleArc; }
     public double   GetOffset() { return offset; }
     public double   GetAngle() { return angle; }
     public double[] GetOrigin() { return origin; }
@@ -336,6 +357,10 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     public double   GetPoloialZTilt() { return poloialZTilt; }
     public double   GetToroialAngle() { return toroialAngle; }
     public int      GetViewDimension() { return viewDimension; }
+    public int      GetBeamType() { return beamType; }
+    public double   GetStandardDeviation() { return standardDeviation; }
+    public double   GetSampleDistance() { return sampleDistance; }
+    public double   GetSampleArc() { return sampleArc; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -343,37 +368,41 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(0, buf))
             buf.WriteInt(coordinateSystem);
         if(WriteSelect(1, buf))
-            buf.WriteInt(beamType);
-        if(WriteSelect(2, buf))
             buf.WriteInt(beamShape);
-        if(WriteSelect(3, buf))
+        if(WriteSelect(2, buf))
             buf.WriteDouble(radius);
-        if(WriteSelect(4, buf))
+        if(WriteSelect(3, buf))
             buf.WriteDouble(divergence);
+        if(WriteSelect(4, buf))
+            buf.WriteInt(beamProjection);
         if(WriteSelect(5, buf))
             buf.WriteInt(nBeams);
         if(WriteSelect(6, buf))
-            buf.WriteDouble(sampleDistance);
-        if(WriteSelect(7, buf))
-            buf.WriteDouble(sampleArc);
-        if(WriteSelect(8, buf))
             buf.WriteDouble(offset);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(7, buf))
             buf.WriteDouble(angle);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(8, buf))
             buf.WriteDoubleArray(origin);
-        if(WriteSelect(11, buf))
+        if(WriteSelect(9, buf))
             buf.WriteInt(beamAxis);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(10, buf))
             buf.WriteDouble(poloialAngle);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(11, buf))
             buf.WriteDouble(poloialRTilt);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(12, buf))
             buf.WriteDouble(poloialZTilt);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(13, buf))
             buf.WriteDouble(toroialAngle);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(14, buf))
             buf.WriteInt(viewDimension);
+        if(WriteSelect(15, buf))
+            buf.WriteInt(beamType);
+        if(WriteSelect(16, buf))
+            buf.WriteDouble(standardDeviation);
+        if(WriteSelect(17, buf))
+            buf.WriteDouble(sampleDistance);
+        if(WriteSelect(18, buf))
+            buf.WriteDouble(sampleArc);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -384,52 +413,58 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
             SetCoordinateSystem(buf.ReadInt());
             break;
         case 1:
-            SetBeamType(buf.ReadInt());
-            break;
-        case 2:
             SetBeamShape(buf.ReadInt());
             break;
-        case 3:
+        case 2:
             SetRadius(buf.ReadDouble());
             break;
-        case 4:
+        case 3:
             SetDivergence(buf.ReadDouble());
+            break;
+        case 4:
+            SetBeamProjection(buf.ReadInt());
             break;
         case 5:
             SetNBeams(buf.ReadInt());
             break;
         case 6:
-            SetSampleDistance(buf.ReadDouble());
-            break;
-        case 7:
-            SetSampleArc(buf.ReadDouble());
-            break;
-        case 8:
             SetOffset(buf.ReadDouble());
             break;
-        case 9:
+        case 7:
             SetAngle(buf.ReadDouble());
             break;
-        case 10:
+        case 8:
             SetOrigin(buf.ReadDoubleArray());
             break;
-        case 11:
+        case 9:
             SetBeamAxis(buf.ReadInt());
             break;
-        case 12:
+        case 10:
             SetPoloialAngle(buf.ReadDouble());
             break;
-        case 13:
+        case 11:
             SetPoloialRTilt(buf.ReadDouble());
             break;
-        case 14:
+        case 12:
             SetPoloialZTilt(buf.ReadDouble());
             break;
-        case 15:
+        case 13:
             SetToroialAngle(buf.ReadDouble());
             break;
-        case 16:
+        case 14:
             SetViewDimension(buf.ReadInt());
+            break;
+        case 15:
+            SetBeamType(buf.ReadInt());
+            break;
+        case 16:
+            SetStandardDeviation(buf.ReadDouble());
+            break;
+        case 17:
+            SetSampleDistance(buf.ReadDouble());
+            break;
+        case 18:
+            SetSampleArc(buf.ReadDouble());
             break;
         }
     }
@@ -443,12 +478,6 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(coordinateSystem == COORDINATESYSTEM_CYLINDRICAL)
             str = str + "COORDINATESYSTEM_CYLINDRICAL";
         str = str + "\n";
-        str = str + indent + "beamType = ";
-        if(beamType == BEAMTYPE_PARALLEL)
-            str = str + "BEAMTYPE_PARALLEL";
-        if(beamType == BEAMTYPE_FAN)
-            str = str + "BEAMTYPE_FAN";
-        str = str + "\n";
         str = str + indent + "beamShape = ";
         if(beamShape == BEAMSHAPE_LINE)
             str = str + "BEAMSHAPE_LINE";
@@ -459,9 +488,13 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + doubleToString("radius", radius, indent) + "\n";
         str = str + doubleToString("divergence", divergence, indent) + "\n";
+        str = str + indent + "beamProjection = ";
+        if(beamProjection == BEAMPROJECTION_PARALLEL)
+            str = str + "BEAMPROJECTION_PARALLEL";
+        if(beamProjection == BEAMPROJECTION_DIVERGENT)
+            str = str + "BEAMPROJECTION_DIVERGENT";
+        str = str + "\n";
         str = str + intToString("nBeams", nBeams, indent) + "\n";
-        str = str + doubleToString("sampleDistance", sampleDistance, indent) + "\n";
-        str = str + doubleToString("sampleArc", sampleArc, indent) + "\n";
         str = str + doubleToString("offset", offset, indent) + "\n";
         str = str + doubleToString("angle", angle, indent) + "\n";
         str = str + doubleArrayToString("origin", origin, indent) + "\n";
@@ -483,19 +516,26 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
         if(viewDimension == VIEWDIMENSION_THREE)
             str = str + "VIEWDIMENSION_THREE";
         str = str + "\n";
+        str = str + indent + "beamType = ";
+        if(beamType == BEAMTYPE_TOPHAT)
+            str = str + "BEAMTYPE_TOPHAT";
+        if(beamType == BEAMTYPE_GAUSSIAN)
+            str = str + "BEAMTYPE_GAUSSIAN";
+        str = str + "\n";
+        str = str + doubleToString("standardDeviation", standardDeviation, indent) + "\n";
+        str = str + doubleToString("sampleDistance", sampleDistance, indent) + "\n";
+        str = str + doubleToString("sampleArc", sampleArc, indent) + "\n";
         return str;
     }
 
 
     // Attributes
     private int      coordinateSystem;
-    private int      beamType;
     private int      beamShape;
     private double   radius;
     private double   divergence;
+    private int      beamProjection;
     private int      nBeams;
-    private double   sampleDistance;
-    private double   sampleArc;
     private double   offset;
     private double   angle;
     private double[] origin;
@@ -505,5 +545,9 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
     private double   poloialZTilt;
     private double   toroialAngle;
     private int      viewDimension;
+    private int      beamType;
+    private double   standardDeviation;
+    private double   sampleDistance;
+    private double   sampleArc;
 }
 

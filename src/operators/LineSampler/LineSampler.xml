@@ -7,9 +7,9 @@
         Cartesian
         Cylindrical
       </Enum>
-      <Enum name="BeamType">
+      <Enum name="BeamProjection">
         Parallel
-        Fan
+        Divergent
       </Enum>
       <Enum name="BeamAxis">
         R
@@ -25,11 +25,12 @@
         Two
         Three
       </Enum>
+      <Enum name="BeamType">
+        TopHat
+        Gaussian
+      </Enum>
       <Field name="coordinateSystem" label="Coordinate Systems" type="enum" subtype="CoordinateSystem">
         Cylindrical
-      </Field>
-      <Field name="beamType" label="Beam type" type="enum" subtype="BeamType">
-        Parallel
       </Field>
       <Field name="beamShape" label="Beam shape" type="enum" subtype="BeamShape">
         Line
@@ -43,24 +44,21 @@
       <Field name="nBeams" label="Number of beams" type="int">
         5
       </Field>
-      <Field name="sampleDistance" label="Linear sample distance" type="double">
-        0.1
+      <Field name="beamProjection" label="Beam group projection" type="enum" subtype="BeamProjection">
+        Parallel
       </Field>
-      <Field name="sampleArc" label="Radial sample arc (degrees)" type="double">
-        10.0
+      <Field name="offset" label="Offset between beams" type="double">
+        0.100
       </Field>
-      <Field name="offset" label="Parallel beam offset" type="double">
+      <Field name="angle" label="Angle between beams (degrees)" type="double">
         5.000000
-      </Field>
-      <Field name="angle" label="Fan Angle (degrees)" type="double">
-        45.000000
       </Field>
       <Field name="origin" label="Origin" type="doubleArray" length="3">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="beamAxis" label="Beam axis" type="enum" subtype="BeamAxis">
+      <Field name="beamAxis" label="Beam axis direction" type="enum" subtype="BeamAxis">
         Z
       </Field>
       <Field name="poloialAngle" label="Poloidal angle (degrees)" type="double">
@@ -77,6 +75,18 @@
       </Field>
       <Field name="viewDimension" label="View dimension" type="enum" subtype="ViewDimension">
         Three
+      </Field>
+      <Field name="beamType" label="Beam Type" type="enum" subtype="BeamType">
+        TopHat
+      </Field>
+      <Field name="standardDeviation" label="Standard deviation" type="double">
+        1.000000
+      </Field>
+      <Field name="sampleDistance" label="Linear sample distance" type="double">
+        0.1
+      </Field>
+      <Field name="sampleArc" label="Radial sample arc (degrees)" type="double">
+        10.0
       </Field>
     </Attribute>
   </Plugin>
