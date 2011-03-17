@@ -91,21 +91,6 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
           break;
     }
 
-    const char *beamType_names = "Parallel, Fan";
-    switch (atts->GetBeamType())
-    {
-      case LineSamplerAttributes::Parallel:
-          SNPRINTF(tmpStr, 1000, "%sbeamType = %sParallel  # %s\n", prefix, prefix, beamType_names);
-          str += tmpStr;
-          break;
-      case LineSamplerAttributes::Fan:
-          SNPRINTF(tmpStr, 1000, "%sbeamType = %sFan  # %s\n", prefix, prefix, beamType_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     const char *beamShape_names = "Line, Cylinder, Cone";
     switch (atts->GetBeamShape())
     {
@@ -129,11 +114,22 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sdivergence = %g\n", prefix, atts->GetDivergence());
     str += tmpStr;
+    const char *beamProjection_names = "Parallel, Divergent";
+    switch (atts->GetBeamProjection())
+    {
+      case LineSamplerAttributes::Parallel:
+          SNPRINTF(tmpStr, 1000, "%sbeamProjection = %sParallel  # %s\n", prefix, prefix, beamProjection_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::Divergent:
+          SNPRINTF(tmpStr, 1000, "%sbeamProjection = %sDivergent  # %s\n", prefix, prefix, beamProjection_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     SNPRINTF(tmpStr, 1000, "%snBeams = %d\n", prefix, atts->GetNBeams());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssampleDistance = %g\n", prefix, atts->GetSampleDistance());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%ssampleArc = %g\n", prefix, atts->GetSampleArc());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%soffset = %g\n", prefix, atts->GetOffset());
     str += tmpStr;
@@ -197,6 +193,27 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
           break;
     }
 
+    const char *beamType_names = "TopHat, Gaussian";
+    switch (atts->GetBeamType())
+    {
+      case LineSamplerAttributes::TopHat:
+          SNPRINTF(tmpStr, 1000, "%sbeamType = %sTopHat  # %s\n", prefix, prefix, beamType_names);
+          str += tmpStr;
+          break;
+      case LineSamplerAttributes::Gaussian:
+          SNPRINTF(tmpStr, 1000, "%sbeamType = %sGaussian  # %s\n", prefix, prefix, beamType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sstandardDeviation = %g\n", prefix, atts->GetStandardDeviation());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%ssampleDistance = %g\n", prefix, atts->GetSampleDistance());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%ssampleArc = %g\n", prefix, atts->GetSampleArc());
+    str += tmpStr;
     return str;
 }
 
@@ -239,39 +256,6 @@ LineSamplerAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCoordinateSystem()));
-    return retval;
-}
-
-/*static*/ PyObject *
-LineSamplerAttributes_SetBeamType(PyObject *self, PyObject *args)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the beamType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetBeamType(LineSamplerAttributes::BeamType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid beamType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Parallel, Fan.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-LineSamplerAttributes_GetBeamType(PyObject *self, PyObject *args)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetBeamType()));
     return retval;
 }
 
@@ -357,6 +341,39 @@ LineSamplerAttributes_GetDivergence(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LineSamplerAttributes_SetBeamProjection(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the beamProjection in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetBeamProjection(LineSamplerAttributes::BeamProjection(ival));
+    else
+    {
+        fprintf(stderr, "An invalid beamProjection value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Parallel, Divergent.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetBeamProjection(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetBeamProjection()));
+    return retval;
+}
+
+/*static*/ PyObject *
 LineSamplerAttributes_SetNBeams(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
@@ -377,54 +394,6 @@ LineSamplerAttributes_GetNBeams(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNBeams()));
-    return retval;
-}
-
-/*static*/ PyObject *
-LineSamplerAttributes_SetSampleDistance(PyObject *self, PyObject *args)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the sampleDistance in the object.
-    obj->data->SetSampleDistance(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-LineSamplerAttributes_GetSampleDistance(PyObject *self, PyObject *args)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance());
-    return retval;
-}
-
-/*static*/ PyObject *
-LineSamplerAttributes_SetSampleArc(PyObject *self, PyObject *args)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the sampleArc in the object.
-    obj->data->SetSampleArc(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-LineSamplerAttributes_GetSampleArc(PyObject *self, PyObject *args)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleArc());
     return retval;
 }
 
@@ -692,26 +661,127 @@ LineSamplerAttributes_GetViewDimension(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+LineSamplerAttributes_SetBeamType(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the beamType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetBeamType(LineSamplerAttributes::BeamType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid beamType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "TopHat, Gaussian.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetBeamType(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetBeamType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetStandardDeviation(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the standardDeviation in the object.
+    obj->data->SetStandardDeviation(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetStandardDeviation(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetStandardDeviation());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetSampleDistance(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the sampleDistance in the object.
+    obj->data->SetSampleDistance(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetSampleDistance(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance());
+    return retval;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_SetSampleArc(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the sampleArc in the object.
+    obj->data->SetSampleArc(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LineSamplerAttributes_GetSampleArc(PyObject *self, PyObject *args)
+{
+    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleArc());
+    return retval;
+}
+
 
 
 PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"Notify", LineSamplerAttributes_Notify, METH_VARARGS},
     {"SetCoordinateSystem", LineSamplerAttributes_SetCoordinateSystem, METH_VARARGS},
     {"GetCoordinateSystem", LineSamplerAttributes_GetCoordinateSystem, METH_VARARGS},
-    {"SetBeamType", LineSamplerAttributes_SetBeamType, METH_VARARGS},
-    {"GetBeamType", LineSamplerAttributes_GetBeamType, METH_VARARGS},
     {"SetBeamShape", LineSamplerAttributes_SetBeamShape, METH_VARARGS},
     {"GetBeamShape", LineSamplerAttributes_GetBeamShape, METH_VARARGS},
     {"SetRadius", LineSamplerAttributes_SetRadius, METH_VARARGS},
     {"GetRadius", LineSamplerAttributes_GetRadius, METH_VARARGS},
     {"SetDivergence", LineSamplerAttributes_SetDivergence, METH_VARARGS},
     {"GetDivergence", LineSamplerAttributes_GetDivergence, METH_VARARGS},
+    {"SetBeamProjection", LineSamplerAttributes_SetBeamProjection, METH_VARARGS},
+    {"GetBeamProjection", LineSamplerAttributes_GetBeamProjection, METH_VARARGS},
     {"SetNBeams", LineSamplerAttributes_SetNBeams, METH_VARARGS},
     {"GetNBeams", LineSamplerAttributes_GetNBeams, METH_VARARGS},
-    {"SetSampleDistance", LineSamplerAttributes_SetSampleDistance, METH_VARARGS},
-    {"GetSampleDistance", LineSamplerAttributes_GetSampleDistance, METH_VARARGS},
-    {"SetSampleArc", LineSamplerAttributes_SetSampleArc, METH_VARARGS},
-    {"GetSampleArc", LineSamplerAttributes_GetSampleArc, METH_VARARGS},
     {"SetOffset", LineSamplerAttributes_SetOffset, METH_VARARGS},
     {"GetOffset", LineSamplerAttributes_GetOffset, METH_VARARGS},
     {"SetAngle", LineSamplerAttributes_SetAngle, METH_VARARGS},
@@ -730,6 +800,14 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
     {"GetToroialAngle", LineSamplerAttributes_GetToroialAngle, METH_VARARGS},
     {"SetViewDimension", LineSamplerAttributes_SetViewDimension, METH_VARARGS},
     {"GetViewDimension", LineSamplerAttributes_GetViewDimension, METH_VARARGS},
+    {"SetBeamType", LineSamplerAttributes_SetBeamType, METH_VARARGS},
+    {"GetBeamType", LineSamplerAttributes_GetBeamType, METH_VARARGS},
+    {"SetStandardDeviation", LineSamplerAttributes_SetStandardDeviation, METH_VARARGS},
+    {"GetStandardDeviation", LineSamplerAttributes_GetStandardDeviation, METH_VARARGS},
+    {"SetSampleDistance", LineSamplerAttributes_SetSampleDistance, METH_VARARGS},
+    {"GetSampleDistance", LineSamplerAttributes_GetSampleDistance, METH_VARARGS},
+    {"SetSampleArc", LineSamplerAttributes_SetSampleArc, METH_VARARGS},
+    {"GetSampleArc", LineSamplerAttributes_GetSampleArc, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -765,13 +843,6 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Cylindrical") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Cylindrical));
 
-    if(strcmp(name, "beamType") == 0)
-        return LineSamplerAttributes_GetBeamType(self, NULL);
-    if(strcmp(name, "Parallel") == 0)
-        return PyInt_FromLong(long(LineSamplerAttributes::Parallel));
-    if(strcmp(name, "Fan") == 0)
-        return PyInt_FromLong(long(LineSamplerAttributes::Fan));
-
     if(strcmp(name, "beamShape") == 0)
         return LineSamplerAttributes_GetBeamShape(self, NULL);
     if(strcmp(name, "Line") == 0)
@@ -785,12 +856,15 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetRadius(self, NULL);
     if(strcmp(name, "divergence") == 0)
         return LineSamplerAttributes_GetDivergence(self, NULL);
+    if(strcmp(name, "beamProjection") == 0)
+        return LineSamplerAttributes_GetBeamProjection(self, NULL);
+    if(strcmp(name, "Parallel") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Parallel));
+    if(strcmp(name, "Divergent") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Divergent));
+
     if(strcmp(name, "nBeams") == 0)
         return LineSamplerAttributes_GetNBeams(self, NULL);
-    if(strcmp(name, "sampleDistance") == 0)
-        return LineSamplerAttributes_GetSampleDistance(self, NULL);
-    if(strcmp(name, "sampleArc") == 0)
-        return LineSamplerAttributes_GetSampleArc(self, NULL);
     if(strcmp(name, "offset") == 0)
         return LineSamplerAttributes_GetOffset(self, NULL);
     if(strcmp(name, "angle") == 0)
@@ -821,6 +895,19 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Three") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::Three));
 
+    if(strcmp(name, "beamType") == 0)
+        return LineSamplerAttributes_GetBeamType(self, NULL);
+    if(strcmp(name, "TopHat") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::TopHat));
+    if(strcmp(name, "Gaussian") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::Gaussian));
+
+    if(strcmp(name, "standardDeviation") == 0)
+        return LineSamplerAttributes_GetStandardDeviation(self, NULL);
+    if(strcmp(name, "sampleDistance") == 0)
+        return LineSamplerAttributes_GetSampleDistance(self, NULL);
+    if(strcmp(name, "sampleArc") == 0)
+        return LineSamplerAttributes_GetSampleArc(self, NULL);
 
     return Py_FindMethod(PyLineSamplerAttributes_methods, self, name);
 }
@@ -837,20 +924,16 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "coordinateSystem") == 0)
         obj = LineSamplerAttributes_SetCoordinateSystem(self, tuple);
-    else if(strcmp(name, "beamType") == 0)
-        obj = LineSamplerAttributes_SetBeamType(self, tuple);
     else if(strcmp(name, "beamShape") == 0)
         obj = LineSamplerAttributes_SetBeamShape(self, tuple);
     else if(strcmp(name, "radius") == 0)
         obj = LineSamplerAttributes_SetRadius(self, tuple);
     else if(strcmp(name, "divergence") == 0)
         obj = LineSamplerAttributes_SetDivergence(self, tuple);
+    else if(strcmp(name, "beamProjection") == 0)
+        obj = LineSamplerAttributes_SetBeamProjection(self, tuple);
     else if(strcmp(name, "nBeams") == 0)
         obj = LineSamplerAttributes_SetNBeams(self, tuple);
-    else if(strcmp(name, "sampleDistance") == 0)
-        obj = LineSamplerAttributes_SetSampleDistance(self, tuple);
-    else if(strcmp(name, "sampleArc") == 0)
-        obj = LineSamplerAttributes_SetSampleArc(self, tuple);
     else if(strcmp(name, "offset") == 0)
         obj = LineSamplerAttributes_SetOffset(self, tuple);
     else if(strcmp(name, "angle") == 0)
@@ -869,6 +952,14 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetToroialAngle(self, tuple);
     else if(strcmp(name, "viewDimension") == 0)
         obj = LineSamplerAttributes_SetViewDimension(self, tuple);
+    else if(strcmp(name, "beamType") == 0)
+        obj = LineSamplerAttributes_SetBeamType(self, tuple);
+    else if(strcmp(name, "standardDeviation") == 0)
+        obj = LineSamplerAttributes_SetStandardDeviation(self, tuple);
+    else if(strcmp(name, "sampleDistance") == 0)
+        obj = LineSamplerAttributes_SetSampleDistance(self, tuple);
+    else if(strcmp(name, "sampleArc") == 0)
+        obj = LineSamplerAttributes_SetSampleArc(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

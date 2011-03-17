@@ -177,8 +177,6 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkVisItProbeFilter *probeFilter = vtkVisItProbeFilter::New();
     probeFilter->SetSource( in_ds );
 
-    double offset = atts.GetOffset();
-    double angle = atts.GetAngle();
     int nBeams = atts.GetNBeams();
     double *origin = atts.GetOrigin();
     double poloidalAngle = atts.GetPoloialAngle();
@@ -189,25 +187,25 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     double radius = atts.GetRadius();
     double divergence = atts.GetDivergence();
 
+    // Get the indexing offset so that it is easy to calculate the
+    // beam location based on a 0 to nBeans loop.
+    double indexOffset;
 
-    avtVector beamDirection;
+    // Even number of beams
+    if( nBeams % 2 == 1 )
+      indexOffset = nBeams / 2.0 - 0.5;
+    else
+      indexOffset = nBeams / 2.0 - 1.0;
 
-    // Set the beam direction
-    if( atts.GetBeamAxis() == LineSamplerAttributes::R )
-    {
-      beamDirection = avtVector(-1, 0, 0 );
-    }
-    else // if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
-    {
-      beamDirection = avtVector(0, 0, -1);
-    }
 
     avtVector beamOffset(0,0,0);
     double beamAngle(0);
 
     // For a parallel set of beams set the offset between beams
-    if( atts.GetBeamType() == LineSamplerAttributes::Parallel )
+    if( atts.GetBeamProjection() == LineSamplerAttributes::Parallel )
     {
+      double offset = atts.GetOffset();
+
       // When the beam is in the R direction we also need to include the
       // rTilt into the offset otherwise it is a rotation about itself.
       if( atts.GetBeamAxis() == LineSamplerAttributes::R )
@@ -230,21 +228,23 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
       }
     }
 
-    // For a fan beam set set the angle between beams
-    else if( atts.GetBeamType() == LineSamplerAttributes::Fan )
+    // For a divergent beam set set the angle between beams
+    else //if( atts.GetBeamProjection() == LineSamplerAttributes::Divergent )
     {
-      beamAngle = angle / (double) (nBeams - 1);
+      beamAngle = atts.GetAngle();
     }
 
-    // Get the indexing offset so that it is easy to calculate the
-    // beam location based on a 0 to nBeans loop.
-    double indexOffset;
+    avtVector beamDirection;
 
-    // Even number of beams
-    if( nBeams % 2 == 1 )
-      indexOffset = nBeams / 2.0 - 0.5;
-    else
-      indexOffset = nBeams / 2.0 - 1.0;
+    // Set the beam direction
+    if( atts.GetBeamAxis() == LineSamplerAttributes::R )
+    {
+      beamDirection = avtVector(-1, 0, 0 );
+    }
+    else // if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
+    {
+      beamDirection = avtVector(0, 0, -1);
+    }
 
     // Loop through each beam.
     for( int b=0; b<nBeams; ++b ) 
@@ -276,11 +276,11 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
       double poloidalBeamAngle = 0;
 
       // For a parallel beam set add the offset to the next beam.
-      if( atts.GetBeamType() == LineSamplerAttributes::Parallel )
+      if( atts.GetBeamProjection() == LineSamplerAttributes::Parallel )
         translate += ((double) (b) - indexOffset) * beamOffset;
 
-      // For a fan beam set, set the angle to the next beam.
-      else //if( atts.GetBeamType() == LineSamplerAttributes::Fan )
+      // For a divergent beam set, set the angle to the next beam.
+      else //if( atts.GetBeamProjection() == LineSamplerAttributes::Divergent )
         poloidalBeamAngle = ((double) (b) - indexOffset) * beamAngle;
 
       // Now apply the transformations.
@@ -382,24 +382,23 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
       // Create the appropriate goemetry.
       if( atts.GetBeamShape() == LineSamplerAttributes::Line )
       {
-        out_ds = (vtkPolyData *) createLine( startPoint, stopPoint );
+        out_ds = createLine( startPoint, stopPoint );
       }
       else if( atts.GetBeamShape() == LineSamplerAttributes::Cylinder )
       {
-        out_ds = (vtkUnstructuredGrid *) 
-          createCone( startPoint, stopPoint, normal, radius, 0 );
+        out_ds = createCone( startPoint, stopPoint, normal, radius, 0 );
       }
       else if( atts.GetBeamShape() == LineSamplerAttributes::Cone )
       {
-        out_ds = (vtkUnstructuredGrid *)
-          createCone( startPoint, stopPoint, normal, 0, divergence );
+        out_ds = createCone( startPoint, stopPoint, normal, 0, divergence );
       }
 
-      // Do the sampling
+      // Do the sampling of the original dataset
       probeFilter->SetInput( out_ds );
       probeFilter->Update();
 
       out_ds = probeFilter->GetOutput();
+
 
       // If the user has elected to display the geometry in the Phi=0
       // plane then back out the toroidal rotation.
@@ -455,15 +454,42 @@ avtLineSamplerFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
           transform->RotateY( -(poloidalBeamAngle + poloidalAngle) );
 
         // Rotate to be along the x axis.
-        transform->RotateY( -90 );
+
+        if( atts.GetBeamAxis() == LineSamplerAttributes::R )
+          transform->RotateY( 180 );
+        else if( atts.GetBeamAxis() == LineSamplerAttributes::Z )
+          transform->RotateY( -90 );
+
         // translate so each beam can be seen.
-        transform->Translate( 0, (double) b*0.1, 0 );
+        if( atts.GetBeamShape() == LineSamplerAttributes::Cylinder ||
+            atts.GetBeamShape() == LineSamplerAttributes::Cone )
+          transform->Translate( 0, (double) b*0.1, 0 );
         
         transformFilter->SetTransform( transform );
         transformFilter->SetInput( out_ds );
 
         out_ds = transformFilter->GetOutput();
         out_ds->Update();
+
+        // At this point the data can now be elevated.
+        if( atts.GetBeamShape() == LineSamplerAttributes::Line )
+        {
+          double pt[3];
+
+          vtkPolyData* out_pd = vtkPolyData::SafeDownCast(out_ds);
+
+          float *points_ptr =
+            (float *) out_pd->GetPoints()->GetVoidPointer(0);
+          
+          vtkDataArray *scalars = out_pd->GetPointData()->GetScalars();
+
+          int nPts = scalars->GetNumberOfTuples();
+
+          for( unsigned int i=0, j=1; i<nPts; ++i, j+=3)
+          {
+            points_ptr[j] = (double) b*0.4 + *(scalars->GetTuple(i));
+          }
+        }
       }
 
       out_ds->Register(NULL);
@@ -742,7 +768,7 @@ avtLineSamplerFilter::checkExtents( avtVector &startPoint,
   }
 
 //   // Make sure the bounds of the beam are correct.
-//   if( atts.GetBeamType() == LineSamplerAttributes::Parallel )
+//   if( atts.GetBeamProjection() == LineSamplerAttributes::Parallel )
 //   {
 //     if( atts.GetBeamAxis() == LineSamplerAttributes::R )
 //     {

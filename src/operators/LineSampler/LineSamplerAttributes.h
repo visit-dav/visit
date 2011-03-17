@@ -65,10 +65,10 @@ public:
         Cartesian,
         Cylindrical
     };
-    enum BeamType
+    enum BeamProjection
     {
         Parallel,
-        Fan
+        Divergent
     };
     enum BeamAxis
     {
@@ -86,6 +86,11 @@ public:
         One,
         Two,
         Three
+    };
+    enum BeamType
+    {
+        TopHat,
+        Gaussian
     };
 
     // These constructors are for objects of this class
@@ -117,13 +122,11 @@ public:
 
     // Property setting methods
     void SetCoordinateSystem(CoordinateSystem coordinateSystem_);
-    void SetBeamType(BeamType beamType_);
     void SetBeamShape(BeamShape beamShape_);
     void SetRadius(double radius_);
     void SetDivergence(double divergence_);
+    void SetBeamProjection(BeamProjection beamProjection_);
     void SetNBeams(int nBeams_);
-    void SetSampleDistance(double sampleDistance_);
-    void SetSampleArc(double sampleArc_);
     void SetOffset(double offset_);
     void SetAngle(double angle_);
     void SetOrigin(const double *origin_);
@@ -133,16 +136,18 @@ public:
     void SetPoloialZTilt(double poloialZTilt_);
     void SetToroialAngle(double toroialAngle_);
     void SetViewDimension(ViewDimension viewDimension_);
+    void SetBeamType(BeamType beamType_);
+    void SetStandardDeviation(double standardDeviation_);
+    void SetSampleDistance(double sampleDistance_);
+    void SetSampleArc(double sampleArc_);
 
     // Property getting methods
     CoordinateSystem GetCoordinateSystem() const;
-    BeamType     GetBeamType() const;
     BeamShape    GetBeamShape() const;
     double       GetRadius() const;
     double       GetDivergence() const;
+    BeamProjection GetBeamProjection() const;
     int          GetNBeams() const;
-    double       GetSampleDistance() const;
-    double       GetSampleArc() const;
     double       GetOffset() const;
     double       GetAngle() const;
     const double *GetOrigin() const;
@@ -153,6 +158,10 @@ public:
     double       GetPoloialZTilt() const;
     double       GetToroialAngle() const;
     ViewDimension GetViewDimension() const;
+    BeamType     GetBeamType() const;
+    double       GetStandardDeviation() const;
+    double       GetSampleDistance() const;
+    double       GetSampleArc() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -164,10 +173,10 @@ public:
 protected:
     static std::string CoordinateSystem_ToString(int);
 public:
-    static std::string BeamType_ToString(BeamType);
-    static bool BeamType_FromString(const std::string &, BeamType &);
+    static std::string BeamProjection_ToString(BeamProjection);
+    static bool BeamProjection_FromString(const std::string &, BeamProjection &);
 protected:
-    static std::string BeamType_ToString(int);
+    static std::string BeamProjection_ToString(int);
 public:
     static std::string BeamAxis_ToString(BeamAxis);
     static bool BeamAxis_FromString(const std::string &, BeamAxis &);
@@ -184,6 +193,11 @@ public:
 protected:
     static std::string ViewDimension_ToString(int);
 public:
+    static std::string BeamType_ToString(BeamType);
+    static bool BeamType_FromString(const std::string &, BeamType &);
+protected:
+    static std::string BeamType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -195,13 +209,11 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_coordinateSystem = 0,
-        ID_beamType,
         ID_beamShape,
         ID_radius,
         ID_divergence,
+        ID_beamProjection,
         ID_nBeams,
-        ID_sampleDistance,
-        ID_sampleArc,
         ID_offset,
         ID_angle,
         ID_origin,
@@ -211,18 +223,20 @@ public:
         ID_poloialZTilt,
         ID_toroialAngle,
         ID_viewDimension,
+        ID_beamType,
+        ID_standardDeviation,
+        ID_sampleDistance,
+        ID_sampleArc,
         ID__LAST
     };
 
 private:
     int    coordinateSystem;
-    int    beamType;
     int    beamShape;
     double radius;
     double divergence;
+    int    beamProjection;
     int    nBeams;
-    double sampleDistance;
-    double sampleArc;
     double offset;
     double angle;
     double origin[3];
@@ -232,11 +246,15 @@ private:
     double poloialZTilt;
     double toroialAngle;
     int    viewDimension;
+    int    beamType;
+    double standardDeviation;
+    double sampleDistance;
+    double sampleArc;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LINESAMPLERATTRIBUTES_TMFS "iiiddiddddDiddddi"
+#define LINESAMPLERATTRIBUTES_TMFS "iiddiiddDiddddiiddd"
 
 #endif

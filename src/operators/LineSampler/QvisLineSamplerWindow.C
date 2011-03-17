@@ -144,25 +144,8 @@ QvisLineSamplerWindow::CreateWindowContents()
             this, SLOT(coordinateSystemChanged(int)));
     mainLayout->addWidget(coordinateSystem, 0,1);
 
-    beamTypeLabel = new QLabel(tr("Beam type"), central);
-    mainLayout->addWidget(beamTypeLabel,1,0);
-    beamType = new QWidget(central);
-    beamTypeButtonGroup= new QButtonGroup(beamType);
-    QHBoxLayout *beamTypeLayout = new QHBoxLayout(beamType);
-    beamTypeLayout->setMargin(0);
-    beamTypeLayout->setSpacing(10);
-    QRadioButton *beamTypeBeamTypeParallel = new QRadioButton(tr("Parallel"), beamType);
-    beamTypeButtonGroup->addButton(beamTypeBeamTypeParallel,0);
-    beamTypeLayout->addWidget(beamTypeBeamTypeParallel);
-    QRadioButton *beamTypeBeamTypeFan = new QRadioButton(tr("Fan"), beamType);
-    beamTypeButtonGroup->addButton(beamTypeBeamTypeFan,1);
-    beamTypeLayout->addWidget(beamTypeBeamTypeFan);
-    connect(beamTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(beamTypeChanged(int)));
-    mainLayout->addWidget(beamType, 1,1);
-
     beamShapeLabel = new QLabel(tr("Beam shape"), central);
-    mainLayout->addWidget(beamShapeLabel,2,0);
+    mainLayout->addWidget(beamShapeLabel,1,0);
     beamShape = new QWidget(central);
     beamShapeButtonGroup= new QButtonGroup(beamShape);
     QHBoxLayout *beamShapeLayout = new QHBoxLayout(beamShape);
@@ -179,66 +162,69 @@ QvisLineSamplerWindow::CreateWindowContents()
     beamShapeLayout->addWidget(beamShapeBeamShapeCone);
     connect(beamShapeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(beamShapeChanged(int)));
-    mainLayout->addWidget(beamShape, 2,1);
+    mainLayout->addWidget(beamShape, 1,1);
 
     radiusLabel = new QLabel(tr("Cylinder radius"), central);
-    mainLayout->addWidget(radiusLabel,3,0);
+    mainLayout->addWidget(radiusLabel,2,0);
     radius = new QLineEdit(central);
     connect(radius, SIGNAL(returnPressed()),
             this, SLOT(radiusProcessText()));
-    mainLayout->addWidget(radius, 3,1);
+    mainLayout->addWidget(radius, 2,1);
 
     divergenceLabel = new QLabel(tr("Cone divergence (degrees)"), central);
-    mainLayout->addWidget(divergenceLabel,4,0);
+    mainLayout->addWidget(divergenceLabel,3,0);
     divergence = new QLineEdit(central);
     connect(divergence, SIGNAL(returnPressed()),
             this, SLOT(divergenceProcessText()));
-    mainLayout->addWidget(divergence, 4,1);
+    mainLayout->addWidget(divergence, 3,1);
 
     nBeamsLabel = new QLabel(tr("Number of beams"), central);
-    mainLayout->addWidget(nBeamsLabel,5,0);
+    mainLayout->addWidget(nBeamsLabel,4,0);
     nBeams = new QLineEdit(central);
     connect(nBeams, SIGNAL(returnPressed()),
             this, SLOT(nBeamsProcessText()));
-    mainLayout->addWidget(nBeams, 5,1);
+    mainLayout->addWidget(nBeams, 4,1);
 
-    sampleDistanceLabel = new QLabel(tr("Linear sample distance"), central);
-    mainLayout->addWidget(sampleDistanceLabel,6,0);
-    sampleDistance = new QLineEdit(central);
-    connect(sampleDistance, SIGNAL(returnPressed()),
-            this, SLOT(sampleDistanceProcessText()));
-    mainLayout->addWidget(sampleDistance, 6,1);
+    beamProjectionLabel = new QLabel(tr("Beam group projection"), central);
+    mainLayout->addWidget(beamProjectionLabel,5,0);
+    beamProjection = new QWidget(central);
+    beamProjectionButtonGroup= new QButtonGroup(beamProjection);
+    QHBoxLayout *beamProjectionLayout = new QHBoxLayout(beamProjection);
+    beamProjectionLayout->setMargin(0);
+    beamProjectionLayout->setSpacing(10);
+    QRadioButton *beamProjectionBeamProjectionParallel = new QRadioButton(tr("Parallel"), beamProjection);
+    beamProjectionButtonGroup->addButton(beamProjectionBeamProjectionParallel,0);
+    beamProjectionLayout->addWidget(beamProjectionBeamProjectionParallel);
+    QRadioButton *beamProjectionBeamProjectionDivergent = new QRadioButton(tr("Divergent"), beamProjection);
+    beamProjectionButtonGroup->addButton(beamProjectionBeamProjectionDivergent,1);
+    beamProjectionLayout->addWidget(beamProjectionBeamProjectionDivergent);
+    connect(beamProjectionButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(beamProjectionChanged(int)));
+    mainLayout->addWidget(beamProjection, 5,1);
 
-    sampleArcLabel = new QLabel(tr("Radial sample arc (degrees)"), central);
-    mainLayout->addWidget(sampleArcLabel,7,0);
-    sampleArc = new QLineEdit(central);
-    connect(sampleArc, SIGNAL(returnPressed()),
-            this, SLOT(sampleArcProcessText()));
-    mainLayout->addWidget(sampleArc, 7,1);
-
-    offsetLabel = new QLabel(tr("Parallel beam offset"), central);
-    mainLayout->addWidget(offsetLabel,8,0);
+    offsetLabel = new QLabel(tr("Offset between beams"), central);
+    mainLayout->addWidget(offsetLabel,6,0);
     offset = new QLineEdit(central);
     connect(offset, SIGNAL(returnPressed()),
             this, SLOT(offsetProcessText()));
-    mainLayout->addWidget(offset, 8,1);
+    mainLayout->addWidget(offset, 6,1);
 
-    angleLabel = new QLabel(tr("Fan Angle (degrees)"), central);
-    mainLayout->addWidget(angleLabel,9,0);
+    angleLabel = new QLabel(tr("Angle between beams (degrees)"), central);
+    mainLayout->addWidget(angleLabel,7,0);
     angle = new QLineEdit(central);
     connect(angle, SIGNAL(returnPressed()),
             this, SLOT(angleProcessText()));
-    mainLayout->addWidget(angle, 9,1);
+    mainLayout->addWidget(angle, 7,1);
 
     originLabel = new QLabel(tr("Origin"), central);
-    mainLayout->addWidget(originLabel,10,0);
+    mainLayout->addWidget(originLabel,8,0);
     origin = new QLineEdit(central);
     connect(origin, SIGNAL(returnPressed()),
             this, SLOT(originProcessText()));
-    mainLayout->addWidget(origin, 10,1);
+    mainLayout->addWidget(origin, 8,1);
 
-    beamAxisLabel = new QLabel(tr("Beam axis"), central);
-    mainLayout->addWidget(beamAxisLabel,11,0);
+    beamAxisLabel = new QLabel(tr("Beam axis direction"), central);
+    mainLayout->addWidget(beamAxisLabel,9,0);
     beamAxis = new QWidget(central);
     beamAxisButtonGroup= new QButtonGroup(beamAxis);
     QHBoxLayout *beamAxisLayout = new QHBoxLayout(beamAxis);
@@ -252,38 +238,38 @@ QvisLineSamplerWindow::CreateWindowContents()
     beamAxisLayout->addWidget(beamAxisBeamAxisZ);
     connect(beamAxisButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(beamAxisChanged(int)));
-    mainLayout->addWidget(beamAxis, 11,1);
+    mainLayout->addWidget(beamAxis, 9,1);
 
     poloialAngleLabel = new QLabel(tr("Poloidal angle (degrees)"), central);
-    mainLayout->addWidget(poloialAngleLabel,12,0);
+    mainLayout->addWidget(poloialAngleLabel,10,0);
     poloialAngle = new QLineEdit(central);
     connect(poloialAngle, SIGNAL(returnPressed()),
             this, SLOT(poloialAngleProcessText()));
-    mainLayout->addWidget(poloialAngle, 12,1);
+    mainLayout->addWidget(poloialAngle, 10,1);
 
     poloialRTiltLabel = new QLabel(tr("Poloidal plane R-tilt (degrees)"), central);
-    mainLayout->addWidget(poloialRTiltLabel,13,0);
+    mainLayout->addWidget(poloialRTiltLabel,11,0);
     poloialRTilt = new QLineEdit(central);
     connect(poloialRTilt, SIGNAL(returnPressed()),
             this, SLOT(poloialRTiltProcessText()));
-    mainLayout->addWidget(poloialRTilt, 13,1);
+    mainLayout->addWidget(poloialRTilt, 11,1);
 
     poloialZTiltLabel = new QLabel(tr("Poloidal plane Z-tilt (degrees)"), central);
-    mainLayout->addWidget(poloialZTiltLabel,14,0);
+    mainLayout->addWidget(poloialZTiltLabel,12,0);
     poloialZTilt = new QLineEdit(central);
     connect(poloialZTilt, SIGNAL(returnPressed()),
             this, SLOT(poloialZTiltProcessText()));
-    mainLayout->addWidget(poloialZTilt, 14,1);
+    mainLayout->addWidget(poloialZTilt, 12,1);
 
     toroialAngleLabel = new QLabel(tr("Toroidal angle (degrees)"), central);
-    mainLayout->addWidget(toroialAngleLabel,15,0);
+    mainLayout->addWidget(toroialAngleLabel,13,0);
     toroialAngle = new QLineEdit(central);
     connect(toroialAngle, SIGNAL(returnPressed()),
             this, SLOT(toroialAngleProcessText()));
-    mainLayout->addWidget(toroialAngle, 15,1);
+    mainLayout->addWidget(toroialAngle, 13,1);
 
     viewDimensionLabel = new QLabel(tr("View dimension"), central);
-    mainLayout->addWidget(viewDimensionLabel,16,0);
+    mainLayout->addWidget(viewDimensionLabel,14,0);
     viewDimension = new QWidget(central);
     viewDimensionButtonGroup= new QButtonGroup(viewDimension);
     QHBoxLayout *viewDimensionLayout = new QHBoxLayout(viewDimension);
@@ -300,7 +286,45 @@ QvisLineSamplerWindow::CreateWindowContents()
     viewDimensionLayout->addWidget(viewDimensionViewDimensionThree);
     connect(viewDimensionButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(viewDimensionChanged(int)));
-    mainLayout->addWidget(viewDimension, 16,1);
+    mainLayout->addWidget(viewDimension, 14,1);
+
+    beamTypeLabel = new QLabel(tr("Beam Type"), central);
+    mainLayout->addWidget(beamTypeLabel,15,0);
+    beamType = new QWidget(central);
+    beamTypeButtonGroup= new QButtonGroup(beamType);
+    QHBoxLayout *beamTypeLayout = new QHBoxLayout(beamType);
+    beamTypeLayout->setMargin(0);
+    beamTypeLayout->setSpacing(10);
+    QRadioButton *beamTypeBeamTypeTopHat = new QRadioButton(tr("TopHat"), beamType);
+    beamTypeButtonGroup->addButton(beamTypeBeamTypeTopHat,0);
+    beamTypeLayout->addWidget(beamTypeBeamTypeTopHat);
+    QRadioButton *beamTypeBeamTypeGaussian = new QRadioButton(tr("Gaussian"), beamType);
+    beamTypeButtonGroup->addButton(beamTypeBeamTypeGaussian,1);
+    beamTypeLayout->addWidget(beamTypeBeamTypeGaussian);
+    connect(beamTypeButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(beamTypeChanged(int)));
+    mainLayout->addWidget(beamType, 15,1);
+
+    standardDeviationLabel = new QLabel(tr("Standard deviation"), central);
+    mainLayout->addWidget(standardDeviationLabel,16,0);
+    standardDeviation = new QLineEdit(central);
+    connect(standardDeviation, SIGNAL(returnPressed()),
+            this, SLOT(standardDeviationProcessText()));
+    mainLayout->addWidget(standardDeviation, 16,1);
+
+    sampleDistanceLabel = new QLabel(tr("Linear sample distance"), central);
+    mainLayout->addWidget(sampleDistanceLabel,17,0);
+    sampleDistance = new QLineEdit(central);
+    connect(sampleDistance, SIGNAL(returnPressed()),
+            this, SLOT(sampleDistanceProcessText()));
+    mainLayout->addWidget(sampleDistance, 17,1);
+
+    sampleArcLabel = new QLabel(tr("Radial sample arc (degrees)"), central);
+    mainLayout->addWidget(sampleArcLabel,18,0);
+    sampleArc = new QLineEdit(central);
+    connect(sampleArc, SIGNAL(returnPressed()),
+            this, SLOT(sampleArcProcessText()));
+    mainLayout->addWidget(sampleArc, 18,1);
 
 }
 
@@ -342,12 +366,6 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 coordinateSystemButtonGroup->button((int)atts->GetCoordinateSystem())->setChecked(true);
             coordinateSystemButtonGroup->blockSignals(false);
             break;
-          case LineSamplerAttributes::ID_beamType:
-            beamTypeButtonGroup->blockSignals(true);
-            if(beamTypeButtonGroup->button((int)atts->GetBeamType()) != 0)
-                beamTypeButtonGroup->button((int)atts->GetBeamType())->setChecked(true);
-            beamTypeButtonGroup->blockSignals(false);
-            break;
           case LineSamplerAttributes::ID_beamShape:
             beamShapeButtonGroup->blockSignals(true);
             if(beamShapeButtonGroup->button((int)atts->GetBeamShape()) != 0)
@@ -360,14 +378,14 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
           case LineSamplerAttributes::ID_divergence:
             divergence->setText(DoubleToQString(atts->GetDivergence()));
             break;
+          case LineSamplerAttributes::ID_beamProjection:
+            beamProjectionButtonGroup->blockSignals(true);
+            if(beamProjectionButtonGroup->button((int)atts->GetBeamProjection()) != 0)
+                beamProjectionButtonGroup->button((int)atts->GetBeamProjection())->setChecked(true);
+            beamProjectionButtonGroup->blockSignals(false);
+            break;
           case LineSamplerAttributes::ID_nBeams:
             nBeams->setText(IntToQString(atts->GetNBeams()));
-            break;
-          case LineSamplerAttributes::ID_sampleDistance:
-            sampleDistance->setText(DoubleToQString(atts->GetSampleDistance()));
-            break;
-          case LineSamplerAttributes::ID_sampleArc:
-            sampleArc->setText(DoubleToQString(atts->GetSampleArc()));
             break;
           case LineSamplerAttributes::ID_offset:
             offset->setText(DoubleToQString(atts->GetOffset()));
@@ -401,6 +419,21 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             if(viewDimensionButtonGroup->button((int)atts->GetViewDimension()) != 0)
                 viewDimensionButtonGroup->button((int)atts->GetViewDimension())->setChecked(true);
             viewDimensionButtonGroup->blockSignals(false);
+            break;
+          case LineSamplerAttributes::ID_beamType:
+            beamTypeButtonGroup->blockSignals(true);
+            if(beamTypeButtonGroup->button((int)atts->GetBeamType()) != 0)
+                beamTypeButtonGroup->button((int)atts->GetBeamType())->setChecked(true);
+            beamTypeButtonGroup->blockSignals(false);
+            break;
+          case LineSamplerAttributes::ID_standardDeviation:
+            standardDeviation->setText(DoubleToQString(atts->GetStandardDeviation()));
+            break;
+          case LineSamplerAttributes::ID_sampleDistance:
+            sampleDistance->setText(DoubleToQString(atts->GetSampleDistance()));
+            break;
+          case LineSamplerAttributes::ID_sampleArc:
+            sampleArc->setText(DoubleToQString(atts->GetSampleArc()));
             break;
         }
     }
@@ -469,34 +502,6 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do sampleDistance
-    if(which_widget == LineSamplerAttributes::ID_sampleDistance || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(sampleDistance, val))
-            atts->SetSampleDistance(val);
-        else
-        {
-            ResettingError(tr("Linear sample distance"),
-                DoubleToQString(atts->GetSampleDistance()));
-            atts->SetSampleDistance(atts->GetSampleDistance());
-        }
-    }
-
-    // Do sampleArc
-    if(which_widget == LineSamplerAttributes::ID_sampleArc || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(sampleArc, val))
-            atts->SetSampleArc(val);
-        else
-        {
-            ResettingError(tr("Radial sample arc (degrees)"),
-                DoubleToQString(atts->GetSampleArc()));
-            atts->SetSampleArc(atts->GetSampleArc());
-        }
-    }
-
     // Do offset
     if(which_widget == LineSamplerAttributes::ID_offset || doAll)
     {
@@ -505,7 +510,7 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
             atts->SetOffset(val);
         else
         {
-            ResettingError(tr("Parallel beam offset"),
+            ResettingError(tr("Offset between beams"),
                 DoubleToQString(atts->GetOffset()));
             atts->SetOffset(atts->GetOffset());
         }
@@ -519,7 +524,7 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
             atts->SetAngle(val);
         else
         {
-            ResettingError(tr("Fan Angle (degrees)"),
+            ResettingError(tr("Angle between beams (degrees)"),
                 DoubleToQString(atts->GetAngle()));
             atts->SetAngle(atts->GetAngle());
         }
@@ -595,6 +600,48 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do standardDeviation
+    if(which_widget == LineSamplerAttributes::ID_standardDeviation || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(standardDeviation, val))
+            atts->SetStandardDeviation(val);
+        else
+        {
+            ResettingError(tr("Standard deviation"),
+                DoubleToQString(atts->GetStandardDeviation()));
+            atts->SetStandardDeviation(atts->GetStandardDeviation());
+        }
+    }
+
+    // Do sampleDistance
+    if(which_widget == LineSamplerAttributes::ID_sampleDistance || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(sampleDistance, val))
+            atts->SetSampleDistance(val);
+        else
+        {
+            ResettingError(tr("Linear sample distance"),
+                DoubleToQString(atts->GetSampleDistance()));
+            atts->SetSampleDistance(atts->GetSampleDistance());
+        }
+    }
+
+    // Do sampleArc
+    if(which_widget == LineSamplerAttributes::ID_sampleArc || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(sampleArc, val))
+            atts->SetSampleArc(val);
+        else
+        {
+            ResettingError(tr("Radial sample arc (degrees)"),
+                DoubleToQString(atts->GetSampleArc()));
+            atts->SetSampleArc(atts->GetSampleArc());
+        }
+    }
+
 }
 
 
@@ -609,18 +656,6 @@ QvisLineSamplerWindow::coordinateSystemChanged(int val)
     if(val != atts->GetCoordinateSystem())
     {
         atts->SetCoordinateSystem(LineSamplerAttributes::CoordinateSystem(val));
-        SetUpdate(false);
-        Apply();
-    }
-}
-
-
-void
-QvisLineSamplerWindow::beamTypeChanged(int val)
-{
-    if(val != atts->GetBeamType())
-    {
-        atts->SetBeamType(LineSamplerAttributes::BeamType(val));
         SetUpdate(false);
         Apply();
     }
@@ -656,25 +691,21 @@ QvisLineSamplerWindow::divergenceProcessText()
 
 
 void
+QvisLineSamplerWindow::beamProjectionChanged(int val)
+{
+    if(val != atts->GetBeamProjection())
+    {
+        atts->SetBeamProjection(LineSamplerAttributes::BeamProjection(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
 QvisLineSamplerWindow::nBeamsProcessText()
 {
     GetCurrentValues(LineSamplerAttributes::ID_nBeams);
-    Apply();
-}
-
-
-void
-QvisLineSamplerWindow::sampleDistanceProcessText()
-{
-    GetCurrentValues(LineSamplerAttributes::ID_sampleDistance);
-    Apply();
-}
-
-
-void
-QvisLineSamplerWindow::sampleArcProcessText()
-{
-    GetCurrentValues(LineSamplerAttributes::ID_sampleArc);
     Apply();
 }
 
@@ -756,6 +787,42 @@ QvisLineSamplerWindow::viewDimensionChanged(int val)
         SetUpdate(false);
         Apply();
     }
+}
+
+
+void
+QvisLineSamplerWindow::beamTypeChanged(int val)
+{
+    if(val != atts->GetBeamType())
+    {
+        atts->SetBeamType(LineSamplerAttributes::BeamType(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisLineSamplerWindow::standardDeviationProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_standardDeviation);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::sampleDistanceProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_sampleDistance);
+    Apply();
+}
+
+
+void
+QvisLineSamplerWindow::sampleArcProcessText()
+{
+    GetCurrentValues(LineSamplerAttributes::ID_sampleArc);
+    Apply();
 }
 
 
