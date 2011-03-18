@@ -76,6 +76,11 @@
 //    of line segments representing the intersections of a collection of lines
 //    with the cells in the dataset.
 //
+//    Eric Brugger, Fri Mar 18 14:10:42 PDT 2011
+//    I corrected a bug where the filter would crash when running in parallel
+//    and the number of pixels processed in a pass was divisible by the
+//    number of processors.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
@@ -109,6 +114,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     std::string                     emisVarName;
 
     int                             linesForThisPass;
+    int                             linesForThisPassFirstProc;
     int                             lineOffset;
     double                         *lines;
 
