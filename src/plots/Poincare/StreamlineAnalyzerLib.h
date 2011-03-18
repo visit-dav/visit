@@ -41,7 +41,7 @@
 #if !defined(StreamlineAnalyzerLib_h)
 #define StreamlineAnalyzerLib_h
 
-//#define STRAIGHTLINE_SKELETON 1
+#define STRAIGHTLINE_SKELETON 1
 
 #include <avtVector.h>
 #include <DebugStream.h>
@@ -92,9 +92,6 @@ public:
 
     nnodes  = 0;
     
-    confidence        = 0;
-    ridgelineVariance = 0;
-
     maxPunctures      = 0;
     nPuncturesNeeded  = 0;
   };
@@ -156,9 +153,6 @@ public:
   unsigned int islands;
 
   float nnodes;
-
-  float confidence;
-  float ridgelineVariance;
 
   unsigned int maxPunctures;
   unsigned int nPuncturesNeeded;
@@ -236,10 +230,12 @@ public:
   periodicityStats( vector< Point >& points,
                     vector< pair< unsigned int, double > >& stats,
                     unsigned int max_period,
-                    unsigned int checkType );
+                    unsigned int checkType,
+                    unsigned int num_groups );
 
 
-  void thresholdStats( vector< pair< unsigned int, double > >& stats );
+  void thresholdStats( vector< pair< unsigned int, double > >& stats,
+                       bool erase );
 
   double
   calculateSumOfSquares( vector< Point >& poloidalWinding_points,

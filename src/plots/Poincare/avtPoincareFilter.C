@@ -84,8 +84,6 @@ static const int DATA_WindingPointOrderModulo = 7;
 static const int DATA_ToroidalWindings = 8;
 static const int DATA_PoloidalWindings = 9;
 static const int DATA_SafetyFactor = 10;
-static const int DATA_Confidence = 11;
-static const int DATA_RidgelineVariance = 12;
 
 // ****************************************************************************
 //  Method: CreateSphere
@@ -384,6 +382,9 @@ avtPoincareFilter::ContinueExecute()
     {
       vector< int > ids_to_delete;
 
+      // Because points are added the size will change so get the
+      // inital size so that we do try to dao anything with the new
+      // seeds.
       unsigned int nics = ics.size();
 
       for ( int i=0; i<nics; ++i )
@@ -613,7 +614,6 @@ avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
                << "  windingGroupOffset = " << poincare_ic->properties.windingGroupOffset
                << "  islands = " << poincare_ic->properties.islands
                << "  nodes = " << poincare_ic->properties.nnodes
-               << "  confidence = " << poincare_ic->properties.confidence
                << "  toroidalPeriod = " << poincare_ic->properties.toroidalPeriod
                << "  poloidalPeriod = " << poincare_ic->properties.poloidalPeriod
                << "  complete " << (poincare_ic->properties.analysisState == FieldlineProperties::COMPLETED ? "Yes " : "No ")
@@ -733,13 +733,11 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
         unsigned int toroidalWinding    = properties.toroidalWinding;
         unsigned int poloidalWinding    = properties.poloidalWinding;
-        unsigned int islands            = properties.islands;
-        unsigned int windingGroupOffset = properties.windingGroupOffset;
-        unsigned int nnodes             = properties.nnodes;
-        double confidence               = properties.confidence;
         unsigned int toroidalPeriod     = properties.toroidalPeriod;
         unsigned int poloidalPeriod     = properties.poloidalPeriod;
-        double ridgelineVariance        = properties.ridgelineVariance;
+        unsigned int windingGroupOffset = properties.windingGroupOffset;
+        unsigned int islands            = properties.islands;
+        unsigned int nnodes             = properties.nnodes;
 
         vector< avtVector > &OPoints         = properties.OPoints;
 
@@ -775,7 +773,6 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
           cerr << "with " << nnodes << " nodes"
                << (complete ? " (Complete)  " : "  ")
-//               << "confidence " << confidence
                << endl;
 
           if( (type == FieldlineProperties::ISLAND_CHAIN ||
@@ -1296,10 +1293,6 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
                 color_value = poloidalWinding;
             else if( dataValue == DATA_SafetyFactor )
                 color_value = (double) toroidalWinding / (double) poloidalWinding;
-            else if( dataValue == DATA_Confidence )
-              color_value = confidence;
-            else if( dataValue == DATA_RidgelineVariance )
-              color_value = ridgelineVariance;
             else
               color_value = 0;
 

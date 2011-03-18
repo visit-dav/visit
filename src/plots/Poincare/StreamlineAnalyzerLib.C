@@ -1006,7 +1006,8 @@ void FieldlineLib::
 periodicityStats( vector< Point >& points,
                   vector< pair< unsigned int, double > >& stats,
                   unsigned int max_period,
-                  unsigned int checkType )
+                  unsigned int checkType,
+                  unsigned int num_groups )
 {
   stats.clear();
 
@@ -1052,26 +1053,38 @@ periodicityStats( vector< Point >& points,
 //       << 0 << "  " << stats[i].second << "  "
 //       << endl;
 
-  thresholdStats( stats );
+  // Divide the stats up into num_groups and keep the first two groups.
+  if( num_groups > 2 )
+  {
+    if( verboseFlag )
+      cerr << "Splitting into " << num_groups << " groups " << endl;
+    
+    unsigned int num_entries = 2 * stats.size() / num_groups;
+    
+    if( num_entries && num_entries < stats.size() )
+    {
+      if( verboseFlag )
+        cerr << "Erasing entries " << num_entries << " to "
+             << stats.size() << endl;
+      
+      stats.erase(stats.begin()+num_entries, stats.end() );
+    }
+  }
+
+  thresholdStats( stats, num_groups>1 );
 }
 
 
 void FieldlineLib::
-thresholdStats( vector< pair< unsigned int, double > >& stats )
+thresholdStats( vector< pair< unsigned int, double > >& stats,
+                bool erase )
 {
   Otsu otsu;
   double maxVet, cutoff;
 
   otsu.getOtsuThreshold2( stats, cutoff, maxVet );
 
-  cerr << "Threshold " << cutoff << "  "
-       << "vet max  " << maxVet << endl;
-  
-//   double cutoff0, cutoff1;
-
-//   otsu.getOtsuThreshold3( stats, cutoff0, cutoff1, maxVet );
-//   cerr << "Threshold " << cutoff0 << "  " << cutoff1 << "  "
-//        << "vet max  " << maxVet << endl;
+  cerr << "Threshold " << cutoff << "  " << "vet max  " << maxVet << endl;
   
   unsigned int cutoffIndex = stats.size();
 
@@ -1101,8 +1114,8 @@ thresholdStats( vector< pair< unsigned int, double > >& stats )
     }
   }
 
-//   if( cutoffIndex > 1 )
-//     stats.resize(cutoffIndex);
+  if( erase && cutoffIndex > 1 )
+    stats.resize(cutoffIndex);
 }
 
 
@@ -1938,15 +1951,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
     fi.toroidalWinding = 0;
     fi.poloidalWinding = 0;
+    fi.toroidalPeriod  = 0;
+    fi.poloidalPeriod  = 0;
     fi.windingGroupOffset = 0;
     fi.islands = 0;
     fi.nnodes  = 0;
 
-    fi.confidence        = 0;
     fi.nPuncturesNeeded  = 0;
-    fi.toroidalPeriod    = 0;
-    fi.poloidalPeriod    = 0;
-    fi.ridgelineVariance = 0;
 
     fi.OPoints.clear();
 
@@ -2002,7 +2013,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   {
     cerr << "Limit Rotational Sum Safety Factor    "
          << LRS_SafetyFactor << endl
- << "Average Rotational Sum Safety Factor         "
+         << "Average Rotational Sum Safety Factor         "
          << averageRotationalSum << endl
          << "Least Square Rotational Sum Safety Factor    "
          << LSRS_SafetyFactor << endl
@@ -2011,26 +2022,21 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   }
 
   unsigned int toroidalWinding = 0, poloidalWinding = 0;
-  unsigned int windingGroupOffset = 0, islands = 0;
-  unsigned int nnodes = 0;
-  float confidence = 0, ridgelineVariance = 0;
+  unsigned int toroidalPeriod = 0, poloidalPeriod = 0;
 
+  unsigned int toroidalBase = 1e8, poloidalBase = 1e8;
+
+  unsigned int windingGroupOffset = 0, islands = 0, nnodes = 0;
   unsigned int nPuncturesNeeded = 0;
-  unsigned int toroidalPeriod = 0;
-  unsigned int poloidalPeriod = 0;
 
-  unsigned int toroidalGCD = 0;
-  unsigned int poloidalGCD = 0;
-  unsigned int periodGCD = 0;
+  unsigned int toroidalGCD = 0, poloidalGCD = 0, periodGCD = 0;
 
   unsigned int windingNumberMatchIndex = -1;
-  unsigned int toroidalMatchIndex = -1;
-  unsigned int poloidalMatchIndex = -1;
+  unsigned int toroidalMatchIndex = -1, poloidalMatchIndex = -1;
 
-  unsigned int toroidalWindingMax = 0;
-  unsigned int poloidalWindingMax = 0;
+  unsigned int toroidalWindingMax = 0, poloidalWindingMax = 0;
 
-  vector< WindingPair > offsetWindingPairs, approximateWindingPairs,
+  vector< WindingPair > offsetWindingPairs, //approximateWindingPairs,
     periodWindingPairs, mergedWindingPairs;
 
   vector< Point > islandCenters;
@@ -2077,6 +2083,16 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
              << "consistency "
              << 100.0 * offsetWindingPairs[i].stat
              << "%" << endl;
+
+      unsigned int cgd = GCD( offsetWindingPairs[i].toroidal,
+                              offsetWindingPairs[i].poloidal );
+      if( toroidalBase > offsetWindingPairs[i].toroidal / cgd &&
+          poloidalBase > offsetWindingPairs[i].poloidal / cgd )
+      {
+        toroidalBase = offsetWindingPairs[i].toroidal / cgd;
+        poloidalBase = offsetWindingPairs[i].poloidal / cgd;
+      }
+
     }
     else
     {
@@ -2119,96 +2135,93 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
     fi.toroidalWinding = overrideToroidalWinding;
     fi.poloidalWinding = overridePoloidalWinding;
+    fi.toroidalPeriod  = overrideToroidalWinding;
+    fi.poloidalPeriod  = overridePoloidalWinding;
     fi.windingGroupOffset = windingGroupOffset;
     fi.islands = 0;
     fi.nnodes  = 0;
 
-    fi.confidence        = 0;
     fi.nPuncturesNeeded  = 0;
-    fi.toroidalPeriod    = overrideToroidalWinding;
-    fi.poloidalPeriod    = overridePoloidalWinding;
-    fi.ridgelineVariance = 0;
 
     fi.OPoints.clear();
 
     return;
   }
 
-
   // Remove the winding number sets that are below the limit.
   if( iter != offsetWindingPairs.end() )
     offsetWindingPairs.erase( iter, offsetWindingPairs.end() );
 
-  // Copy the list and sort based on the best rational approximation.
-  approximateWindingPairs = offsetWindingPairs;
+//   // Copy the list and sort based on the best rational approximation.
+//   approximateWindingPairs = offsetWindingPairs;
 
-  for( unsigned int i=0; i<approximateWindingPairs.size(); ++i )
-  {
-    double local_safetyFactor =
-      (double) approximateWindingPairs[i].toroidal /
-      (double) approximateWindingPairs[i].poloidal;
+//   for( unsigned int i=0; i<approximateWindingPairs.size(); ++i )
+//   {
+//     double local_safetyFactor =
+//       (double) approximateWindingPairs[i].toroidal /
+//       (double) approximateWindingPairs[i].poloidal;
 
-    approximateWindingPairs[i].stat = fabs(safetyFactor - local_safetyFactor);
-    approximateWindingPairs[i].ranking = 0;
-  }
+//     approximateWindingPairs[i].stat = fabs(safetyFactor - local_safetyFactor);
+//     approximateWindingPairs[i].ranking = 0;
+//   }
 
-  // Sort and rank the approximate values.
-  SortWindingPairs( approximateWindingPairs, true );
-  RankWindingPairs( approximateWindingPairs, false );
+//   // Sort and rank the approximate values.
+//   SortWindingPairs( approximateWindingPairs, true );
+//   RankWindingPairs( approximateWindingPairs, false );
 
-  // Look for similar rankings as an indication of islands.
-  unsigned int nSimilarWindingsPairs = 0;
-  unsigned int similarRank = 0;
+//   // Look for similar rankings as an indication of islands.
+//   unsigned int nSimilarWindingsPairs = 0;
+//   unsigned int similarRank = 0;
 
-  unsigned int maxSimilarWindingsPairs = 0;
-  unsigned int maxSimilarRank = 0;
+//   unsigned int maxSimilarWindingsPairs = 0;
+//   unsigned int maxSimilarRank = 0;
   
-  for( unsigned int i=0; i<approximateWindingPairs.size(); ++i )
-  {
-    if( similarRank != approximateWindingPairs[i].ranking )
-    {
-      if( maxSimilarWindingsPairs < nSimilarWindingsPairs )
-      {
-        maxSimilarRank = similarRank;
-        maxSimilarWindingsPairs = nSimilarWindingsPairs;
-      }
+//   for( unsigned int i=0; i<approximateWindingPairs.size(); ++i )
+//   {
+//     if( similarRank != approximateWindingPairs[i].ranking )
+//     {
+//       if( maxSimilarWindingsPairs < nSimilarWindingsPairs )
+//       {
+//         maxSimilarRank = similarRank;
+//         maxSimilarWindingsPairs = nSimilarWindingsPairs;
+//       }
 
-      similarRank = approximateWindingPairs[i].ranking;
-      nSimilarWindingsPairs = 1;
-    }
-    else
-    {
-      ++nSimilarWindingsPairs;
-    }
+//       similarRank = approximateWindingPairs[i].ranking;
+//       nSimilarWindingsPairs = 1;
+//     }
+//     else
+//     {
+//       ++nSimilarWindingsPairs;
+//     }
     
-    double local_safetyFactor =
-      (double) approximateWindingPairs[i].toroidal /
-      (double) approximateWindingPairs[i].poloidal;
+//     double local_safetyFactor =
+//       (double) approximateWindingPairs[i].toroidal /
+//       (double) approximateWindingPairs[i].poloidal;
 
-      // Debug info
-      if( verboseFlag )
-        cerr << "winding pair "
-             << approximateWindingPairs[i].toroidal << ","
-             << approximateWindingPairs[i].poloidal << "  ("
-             << local_safetyFactor << ")  "
-             << "Difference  " << approximateWindingPairs[i].stat << "  "
-             << "Rank  " << approximateWindingPairs[i].ranking << "  "
-             << endl;
-  }
+//       // Debug info
+//       if( verboseFlag )
+//         cerr << "winding pair "
+//              << approximateWindingPairs[i].toroidal << ","
+//              << approximateWindingPairs[i].poloidal << "  ("
+//              << local_safetyFactor << ")  "
+//              << "Difference  " << approximateWindingPairs[i].stat << "  "
+//              << "Rank  " << approximateWindingPairs[i].ranking << "  "
+//              << endl;
+//   }
 
-  if( maxSimilarWindingsPairs < nSimilarWindingsPairs )
-  {
-    maxSimilarRank = similarRank;
-    maxSimilarWindingsPairs = nSimilarWindingsPairs;
-  }
+//   if( maxSimilarWindingsPairs < nSimilarWindingsPairs )
+//   {
+//     maxSimilarRank = similarRank;
+//     maxSimilarWindingsPairs = nSimilarWindingsPairs;
+//   }
 
-  if( verboseFlag )
-    cerr << maxSimilarWindingsPairs << " / " << approximateWindingPairs.size()
-         << "  winding pairs have the same ranking of "
-         << maxSimilarRank << endl;
+//   if( verboseFlag )
+//     cerr << maxSimilarWindingsPairs << " / " << approximateWindingPairs.size()
+//          << "  winding pairs have the same ranking of "
+//          << maxSimilarRank << endl;
   
-  vector< pair< unsigned int, double > > poloidalStats;
   vector< pair< unsigned int, double > > toroidalStats;
+  vector< pair< unsigned int, double > > poloidalStats;
 
   double consistency;
 
@@ -2223,7 +2236,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
          << "max period " << toroidalWindingMax
          << endl;
 
-  periodicityStats( poloidal_puncture_pts, toroidalStats, toroidalWindingMax, 2 );
+  periodicityStats( poloidal_puncture_pts, toroidalStats,
+                    toroidalWindingMax, 2, toroidalBase );
 
   // Find the best poloidal periodicity. For a flux surface the period
   // will be the poloidal winding number. For an island chain the
@@ -2236,7 +2250,8 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
          << "max period " << poloidalWindingMax
          << endl;
   
-  periodicityStats( ridgeline_points, poloidalStats, poloidalWindingMax, 1 );
+  periodicityStats( ridgeline_points, poloidalStats,
+                    poloidalWindingMax, 1, poloidalBase );
   
   // Form a second winding number list that is ranked based on the
   // euclidian distance of each of the period lists.
@@ -2302,16 +2317,16 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
     // Search for the same sibling pair in the period based winding
     // pair list.
-    int kk = -1;
-    for( unsigned int k=0; k<approximateWindingPairs.size(); ++k )
-    {
-      if( offsetWindingPairs[i].toroidal == approximateWindingPairs[k].toroidal &&
-          offsetWindingPairs[i].poloidal == approximateWindingPairs[k].poloidal )
-      {
-        kk = approximateWindingPairs[k].ranking;
-        break;
-      }
-    }
+//     int kk = -1;
+//     for( unsigned int k=0; k<approximateWindingPairs.size(); ++k )
+//     {
+//       if( offsetWindingPairs[i].toroidal == approximateWindingPairs[k].toroidal &&
+//           offsetWindingPairs[i].poloidal == approximateWindingPairs[k].poloidal )
+//       {
+//         kk = approximateWindingPairs[k].ranking;
+//         break;
+//       }
+//     }
 
     // Search for the same sibling pair in the best rational
     // approximation winding pair list.
@@ -2327,11 +2342,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     }
 
     // Found all three pairs so compute the index Euclidian distance.
-    if( jj != -1 && kk != -1 )
+    if( jj != -1 )
+//    if( jj != -1 && kk != -1 )
     {
       WindingPair windingPair = offsetWindingPairs[i];
 
-      windingPair.stat = sqrt((double)(ii*ii+jj*jj+kk*kk));
+      windingPair.stat = sqrt((double)(ii*ii+jj*jj));
+//      windingPair.stat = sqrt((double)(ii*ii+jj*jj+kk*kk));
       windingPair.ranking = 0;
             
       mergedWindingPairs.push_back( windingPair );
@@ -2443,15 +2460,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
       fi.toroidalWinding = toroidalWinding;
       fi.poloidalWinding = poloidalWinding;
+      fi.toroidalPeriod  = toroidalWinding;
+      fi.poloidalPeriod  = poloidalWinding;
       fi.windingGroupOffset = windingGroupOffset;
       fi.islands = 0;
       fi.nnodes = poloidal_puncture_pts.size() / 2;
 
-      fi.confidence        = 0;
       fi.nPuncturesNeeded  = 0;
-      fi.toroidalPeriod    = toroidalWinding;
-      fi.poloidalPeriod    = poloidalWinding;
-      fi.ridgelineVariance = 0;
 
       fi.OPoints.clear();
 
@@ -2502,38 +2517,43 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     if( (toroidalGCD == toroidalWinding / windingGCD &&
          poloidalGCD == poloidalWinding / windingGCD) )
     {
-      vector< pair< unsigned int, double > >::iterator iter;
+      // Search for the toroidal harmonic
+      unsigned int gcd, gcd0, gcd1, gcd2;
 
-      // Remove all of the stats that are not part of the merged stats
-      // or part of the base period.
-      iter = toroidalStats.begin();
+      // Force the first three entires to have the same harmonic.
+      gcd0 = GCD( toroidalStats[0].first, toroidalStats[1].first );
+      gcd1 = GCD( toroidalStats[1].first, toroidalStats[2].first );
+      gcd2 = GCD( toroidalStats[2].first, toroidalStats[0].first );
 
-      for( unsigned int i=0; i<toroidalStats.size(); ++i, ++iter )
+      if( (gcd0 > gcd1 ? (gcd0 % gcd1) : (gcd1 % gcd0) ) == 0 &&
+          (gcd1 > gcd2 ? (gcd1 % gcd2) : (gcd2 % gcd1) ) == 0 &&
+          (gcd2 > gcd0 ? (gcd2 % gcd0) : (gcd0 % gcd2) ) == 0 )
+        gcd = (gcd0 < gcd1 ? (gcd0<gcd2 ? gcd0 : gcd2 ) :
+                             (gcd1<gcd2 ? gcd1 : gcd2 ) ) / toroidalBase;
+      else
+        gcd = toroidalBase;
+
+      // Divide the stats up into num_groups and keep the first two groups.
+      if( gcd > 2 )
       {
-        bool found = false;
-
-        // Part of the merged stats? 
-        for( unsigned int j=0; j<mergedWindingPairs.size(); ++j )
+        if( verboseFlag )
+          cerr << "Splitting into " << gcd << " groups " << endl;
+        
+        unsigned int num_entries = 3 * toroidalStats.size() / gcd / 2;
+        
+        if( num_entries && num_entries < toroidalStats.size() )
         {
-          if( toroidalStats[i].first == mergedWindingPairs[j].toroidal )
-          {
-            found = true;
-            break;
-          }
-        }
-
-        // The later removes those not part of any harmonics.
-        if( !found || toroidalStats[i].first % (toroidalWinding/windingGCD) )
-        {
-          toroidalStats.erase(iter);
-          --i;
-          --iter;
+          if( verboseFlag )
+            cerr << "Erasing entries " << num_entries << " to "
+                 << toroidalStats.size() << endl;
+          
+          toroidalStats.resize( num_entries );
         }
       }
 
       // If present, thresholding should leave only higher order
       // harmonics.
-      thresholdStats( toroidalStats );
+      thresholdStats( toroidalStats, true );
 
       values.resize( toroidalStats.size() );
 
@@ -2543,36 +2563,42 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
       toroidalGCD = GCD( values );
 
 
-      // Remove all of the stats that are not part of the merged stats
-      // or part of the base period.
-      iter = poloidalStats.begin();
-  
-      for( unsigned int i=0; i<poloidalStats.size(); ++i, ++iter )
+      // Search for the poloidal harmonic
+
+      // Force the first three entires to have the same harmonic.
+      gcd0 = GCD( poloidalStats[0].first, poloidalStats[1].first );
+      gcd1 = GCD( poloidalStats[1].first, poloidalStats[2].first );
+      gcd2 = GCD( poloidalStats[2].first, poloidalStats[0].first );
+
+      if( (gcd0 > gcd1 ? (gcd0 % gcd1) : (gcd1 % gcd0) ) == 0 &&
+          (gcd1 > gcd2 ? (gcd1 % gcd2) : (gcd2 % gcd1) ) == 0 &&
+          (gcd2 > gcd0 ? (gcd2 % gcd0) : (gcd0 % gcd2) ) == 0 )
+        gcd = (gcd0 < gcd1 ? (gcd0<gcd2 ? gcd0 : gcd2 ) :
+                             (gcd1<gcd2 ? gcd1 : gcd2 ) ) / poloidalBase;
+      else
+        gcd = poloidalBase;
+
+      // Divide the stats up into num_groups and keep the first two groups.
+      if( gcd > 2 )
       {
-        bool found = false;
-
-        // Part of the merged stats? 
-        for( unsigned int j=0; j<mergedWindingPairs.size(); ++j )
+        if( verboseFlag )
+          cerr << "Splitting into " << gcd << " groups " << endl;
+        
+        unsigned int num_entries = 3 * poloidalStats.size() / gcd / 2;
+        
+        if( num_entries && num_entries < poloidalStats.size() )
         {
-          if( poloidalStats[i].first == mergedWindingPairs[j].poloidal )
-          {
-            found = true;
-            break;
-          }
-        }
-
-        // The later removes those not part of any harmonics.
-        if( poloidalStats[i].first % (poloidalWinding/windingGCD) )
-        {
-          poloidalStats.erase(iter);
-          --i;
-          --iter;
+          if( verboseFlag )
+            cerr << "Erasing entries " << num_entries << " to "
+                 << poloidalStats.size() << endl;
+          
+          poloidalStats.resize( num_entries );
         }
       }
 
       // If present, thresholding should leave only higher order
       // harmonics.
-      thresholdStats( poloidalStats );
+      thresholdStats( poloidalStats, true );
 
       values.resize( poloidalStats.size() );
 
@@ -2639,7 +2665,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         analysisState = FieldlineProperties::TERMINATED;
 
         if( verboseFlag )
-          cerr << "Potentially withn the chaotic regime." << endl;
+          cerr << "Potentially within the chaotic regime." << endl;
       }
       else
       {
@@ -2792,7 +2818,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
         analysisState = FieldlineProperties::TERMINATED;
 
         if( verboseFlag )
-          cerr << "Potentially withn the chaotic regime." << endl;
+          cerr << "Potentially within the chaotic regime." << endl;
       }
       else
       {
@@ -3175,16 +3201,13 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
   fi.toroidalWinding = toroidalWinding;
   fi.poloidalWinding = poloidalWinding;
+  fi.toroidalPeriod  = toroidalPeriod;
+  fi.poloidalPeriod  = poloidalPeriod;
   fi.windingGroupOffset = windingGroupOffset;
   fi.islands = islands;
   fi.nnodes  = nnodes;
 
-  fi.confidence       = confidence;
-
   fi.nPuncturesNeeded = nPuncturesNeeded + (nPuncturesNeeded ? 1 : 0);
-  fi.toroidalPeriod   = toroidalPeriod;
-  fi.poloidalPeriod   = poloidalPeriod;
-  fi.ridgelineVariance = ridgelineVariance;
 
   fi.OPoints.clear();
 
@@ -4669,6 +4692,9 @@ void Otsu::getHistogram( vector< pair< unsigned int, double > >& stats,
 {
   unsigned int nbins = stats.size() / 2;
 
+  if( nbins < 10 )
+    nbins = stats.size();
+
   double min = 1.0e9, max = -1.0e9;
     
   for( unsigned int i=0; i<stats.size(); ++i )
@@ -4741,7 +4767,8 @@ void Otsu::getHistogram( vector< pair< unsigned int, double > >& stats,
        << zeropair[1].first << "-" << zeropair[1].second << "  "
        << zeropair[1].second-zeropair[1].first+1 << endl;
 }
-  // find otsu threshold
+
+// find otsu threshold
 void Otsu::getOtsuThreshold2(vector< pair< unsigned int, double > >& stats,
                              double &threshold, double &maxVet )
 {

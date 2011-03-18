@@ -61,8 +61,6 @@
         ToroidalWindings
         PoloidalWindings
         SafetyFactor
-        Confidence
-        RidgelineVariance
       </Enum>
       <Enum name="StreamlineAlgorithmType">
         LoadOnDemand

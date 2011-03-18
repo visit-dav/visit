@@ -107,8 +107,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int DATAVALUE_TOROIDALWINDINGS = 8;
     public final static int DATAVALUE_POLOIDALWINDINGS = 9;
     public final static int DATAVALUE_SAFETYFACTOR = 10;
-    public final static int DATAVALUE_CONFIDENCE = 11;
-    public final static int DATAVALUE_RIDGELINEVARIANCE = 12;
 
     public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
@@ -1249,10 +1247,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "DATAVALUE_POLOIDALWINDINGS";
         if(dataValue == DATAVALUE_SAFETYFACTOR)
             str = str + "DATAVALUE_SAFETYFACTOR";
-        if(dataValue == DATAVALUE_CONFIDENCE)
-            str = str + "DATAVALUE_CONFIDENCE";
-        if(dataValue == DATAVALUE_RIDGELINEVARIANCE)
-            str = str + "DATAVALUE_RIDGELINEVARIANCE";
         str = str + "\n";
         str = str + boolToString("showOPoints", showOPoints, indent) + "\n";
         str = str + intToString("OPointMaxIterations", OPointMaxIterations, indent) + "\n";

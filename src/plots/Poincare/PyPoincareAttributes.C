@@ -333,7 +333,7 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     const char *dataValue_names = "Solid, OriginalValue, InputOrder, PointIndex, Plane, "
         "WindingOrder, WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, "
-        "PoloidalWindings, SafetyFactor, Confidence, RidgelineVariance";
+        "PoloidalWindings, SafetyFactor";
     switch (atts->GetDataValue())
     {
       case PoincareAttributes::Solid:
@@ -378,14 +378,6 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           break;
       case PoincareAttributes::SafetyFactor:
           SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactor  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::Confidence:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sConfidence  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::RidgelineVariance:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sRidgelineVariance  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       default:
@@ -1527,17 +1519,16 @@ PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the dataValue in the object.
-    if(ival >= 0 && ival < 13)
+    if(ival >= 0 && ival < 11)
         obj->data->SetDataValue(PoincareAttributes::DataValue(ival));
     else
     {
         fprintf(stderr, "An invalid dataValue value was given. "
-                        "Valid values are in the range of [0,12]. "
+                        "Valid values are in the range of [0,10]. "
                         "You can also use the following names: "
                         "Solid, OriginalValue, InputOrder, PointIndex, Plane, "
                         "WindingOrder, WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, "
-                        "PoloidalWindings, SafetyFactor, Confidence, RidgelineVariance"
-                        ".");
+                        "PoloidalWindings, SafetyFactor.");
         return NULL;
     }
 
@@ -2396,10 +2387,6 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PoincareAttributes::PoloidalWindings));
     if(strcmp(name, "SafetyFactor") == 0)
         return PyInt_FromLong(long(PoincareAttributes::SafetyFactor));
-    if(strcmp(name, "Confidence") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::Confidence));
-    if(strcmp(name, "RidgelineVariance") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::RidgelineVariance));
 
     if(strcmp(name, "showOPoints") == 0)
         return PoincareAttributes_GetShowOPoints(self, NULL);
