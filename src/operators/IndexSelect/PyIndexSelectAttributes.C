@@ -95,11 +95,11 @@ PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%sxAbsMax = %d\n", prefix, atts->GetXAbsMax());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sxMin = %d\n", prefix, atts->GetXMin());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sxMax = %d\n", prefix, atts->GetXMax());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sxAbsMax = %d\n", prefix, atts->GetXAbsMax());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sxIncr = %d\n", prefix, atts->GetXIncr());
     str += tmpStr;
@@ -108,11 +108,11 @@ PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *
     else
         SNPRINTF(tmpStr, 1000, "%sxWrap = 0\n", prefix);
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%syAbsMax = %d\n", prefix, atts->GetYAbsMax());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%syMin = %d\n", prefix, atts->GetYMin());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%syMax = %d\n", prefix, atts->GetYMax());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%syAbsMax = %d\n", prefix, atts->GetYAbsMax());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%syIncr = %d\n", prefix, atts->GetYIncr());
     str += tmpStr;
@@ -121,11 +121,11 @@ PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *
     else
         SNPRINTF(tmpStr, 1000, "%syWrap = 0\n", prefix);
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%szAbsMax = %d\n", prefix, atts->GetZAbsMax());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%szMin = %d\n", prefix, atts->GetZMin());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%szMax = %d\n", prefix, atts->GetZMax());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%szAbsMax = %d\n", prefix, atts->GetZAbsMax());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%szIncr = %d\n", prefix, atts->GetZIncr());
     str += tmpStr;
@@ -189,6 +189,30 @@ IndexSelectAttributes_GetDim(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+IndexSelectAttributes_SetXAbsMax(PyObject *self, PyObject *args)
+{
+    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the xAbsMax in the object.
+    obj->data->SetXAbsMax((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IndexSelectAttributes_GetXAbsMax(PyObject *self, PyObject *args)
+{
+    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetXAbsMax()));
+    return retval;
+}
+
+/*static*/ PyObject *
 IndexSelectAttributes_SetXMin(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
@@ -233,30 +257,6 @@ IndexSelectAttributes_GetXMax(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXMax()));
-    return retval;
-}
-
-/*static*/ PyObject *
-IndexSelectAttributes_SetXAbsMax(PyObject *self, PyObject *args)
-{
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the xAbsMax in the object.
-    obj->data->SetXAbsMax((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-IndexSelectAttributes_GetXAbsMax(PyObject *self, PyObject *args)
-{
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetXAbsMax()));
     return retval;
 }
 
@@ -309,6 +309,30 @@ IndexSelectAttributes_GetXWrap(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+IndexSelectAttributes_SetYAbsMax(PyObject *self, PyObject *args)
+{
+    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the yAbsMax in the object.
+    obj->data->SetYAbsMax((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IndexSelectAttributes_GetYAbsMax(PyObject *self, PyObject *args)
+{
+    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetYAbsMax()));
+    return retval;
+}
+
+/*static*/ PyObject *
 IndexSelectAttributes_SetYMin(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
@@ -353,30 +377,6 @@ IndexSelectAttributes_GetYMax(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetYMax()));
-    return retval;
-}
-
-/*static*/ PyObject *
-IndexSelectAttributes_SetYAbsMax(PyObject *self, PyObject *args)
-{
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the yAbsMax in the object.
-    obj->data->SetYAbsMax((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-IndexSelectAttributes_GetYAbsMax(PyObject *self, PyObject *args)
-{
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetYAbsMax()));
     return retval;
 }
 
@@ -429,6 +429,30 @@ IndexSelectAttributes_GetYWrap(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+IndexSelectAttributes_SetZAbsMax(PyObject *self, PyObject *args)
+{
+    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the zAbsMax in the object.
+    obj->data->SetZAbsMax((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IndexSelectAttributes_GetZAbsMax(PyObject *self, PyObject *args)
+{
+    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetZAbsMax()));
+    return retval;
+}
+
+/*static*/ PyObject *
 IndexSelectAttributes_SetZMin(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
@@ -473,30 +497,6 @@ IndexSelectAttributes_GetZMax(PyObject *self, PyObject *args)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetZMax()));
-    return retval;
-}
-
-/*static*/ PyObject *
-IndexSelectAttributes_SetZAbsMax(PyObject *self, PyObject *args)
-{
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the zAbsMax in the object.
-    obj->data->SetZAbsMax((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-IndexSelectAttributes_GetZAbsMax(PyObject *self, PyObject *args)
-{
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetZAbsMax()));
     return retval;
 }
 
@@ -626,32 +626,32 @@ PyMethodDef PyIndexSelectAttributes_methods[INDEXSELECTATTRIBUTES_NMETH] = {
     {"Notify", IndexSelectAttributes_Notify, METH_VARARGS},
     {"SetDim", IndexSelectAttributes_SetDim, METH_VARARGS},
     {"GetDim", IndexSelectAttributes_GetDim, METH_VARARGS},
+    {"SetXAbsMax", IndexSelectAttributes_SetXAbsMax, METH_VARARGS},
+    {"GetXAbsMax", IndexSelectAttributes_GetXAbsMax, METH_VARARGS},
     {"SetXMin", IndexSelectAttributes_SetXMin, METH_VARARGS},
     {"GetXMin", IndexSelectAttributes_GetXMin, METH_VARARGS},
     {"SetXMax", IndexSelectAttributes_SetXMax, METH_VARARGS},
     {"GetXMax", IndexSelectAttributes_GetXMax, METH_VARARGS},
-    {"SetXAbsMax", IndexSelectAttributes_SetXAbsMax, METH_VARARGS},
-    {"GetXAbsMax", IndexSelectAttributes_GetXAbsMax, METH_VARARGS},
     {"SetXIncr", IndexSelectAttributes_SetXIncr, METH_VARARGS},
     {"GetXIncr", IndexSelectAttributes_GetXIncr, METH_VARARGS},
     {"SetXWrap", IndexSelectAttributes_SetXWrap, METH_VARARGS},
     {"GetXWrap", IndexSelectAttributes_GetXWrap, METH_VARARGS},
+    {"SetYAbsMax", IndexSelectAttributes_SetYAbsMax, METH_VARARGS},
+    {"GetYAbsMax", IndexSelectAttributes_GetYAbsMax, METH_VARARGS},
     {"SetYMin", IndexSelectAttributes_SetYMin, METH_VARARGS},
     {"GetYMin", IndexSelectAttributes_GetYMin, METH_VARARGS},
     {"SetYMax", IndexSelectAttributes_SetYMax, METH_VARARGS},
     {"GetYMax", IndexSelectAttributes_GetYMax, METH_VARARGS},
-    {"SetYAbsMax", IndexSelectAttributes_SetYAbsMax, METH_VARARGS},
-    {"GetYAbsMax", IndexSelectAttributes_GetYAbsMax, METH_VARARGS},
     {"SetYIncr", IndexSelectAttributes_SetYIncr, METH_VARARGS},
     {"GetYIncr", IndexSelectAttributes_GetYIncr, METH_VARARGS},
     {"SetYWrap", IndexSelectAttributes_SetYWrap, METH_VARARGS},
     {"GetYWrap", IndexSelectAttributes_GetYWrap, METH_VARARGS},
+    {"SetZAbsMax", IndexSelectAttributes_SetZAbsMax, METH_VARARGS},
+    {"GetZAbsMax", IndexSelectAttributes_GetZAbsMax, METH_VARARGS},
     {"SetZMin", IndexSelectAttributes_SetZMin, METH_VARARGS},
     {"GetZMin", IndexSelectAttributes_GetZMin, METH_VARARGS},
     {"SetZMax", IndexSelectAttributes_SetZMax, METH_VARARGS},
     {"GetZMax", IndexSelectAttributes_GetZMax, METH_VARARGS},
-    {"SetZAbsMax", IndexSelectAttributes_SetZAbsMax, METH_VARARGS},
-    {"GetZAbsMax", IndexSelectAttributes_GetZAbsMax, METH_VARARGS},
     {"SetZIncr", IndexSelectAttributes_SetZIncr, METH_VARARGS},
     {"GetZIncr", IndexSelectAttributes_GetZIncr, METH_VARARGS},
     {"SetZWrap", IndexSelectAttributes_SetZWrap, METH_VARARGS},
@@ -699,32 +699,32 @@ PyIndexSelectAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "ThreeD") == 0)
         return PyInt_FromLong(long(IndexSelectAttributes::ThreeD));
 
+    if(strcmp(name, "xAbsMax") == 0)
+        return IndexSelectAttributes_GetXAbsMax(self, NULL);
     if(strcmp(name, "xMin") == 0)
         return IndexSelectAttributes_GetXMin(self, NULL);
     if(strcmp(name, "xMax") == 0)
         return IndexSelectAttributes_GetXMax(self, NULL);
-    if(strcmp(name, "xAbsMax") == 0)
-        return IndexSelectAttributes_GetXAbsMax(self, NULL);
     if(strcmp(name, "xIncr") == 0)
         return IndexSelectAttributes_GetXIncr(self, NULL);
     if(strcmp(name, "xWrap") == 0)
         return IndexSelectAttributes_GetXWrap(self, NULL);
+    if(strcmp(name, "yAbsMax") == 0)
+        return IndexSelectAttributes_GetYAbsMax(self, NULL);
     if(strcmp(name, "yMin") == 0)
         return IndexSelectAttributes_GetYMin(self, NULL);
     if(strcmp(name, "yMax") == 0)
         return IndexSelectAttributes_GetYMax(self, NULL);
-    if(strcmp(name, "yAbsMax") == 0)
-        return IndexSelectAttributes_GetYAbsMax(self, NULL);
     if(strcmp(name, "yIncr") == 0)
         return IndexSelectAttributes_GetYIncr(self, NULL);
     if(strcmp(name, "yWrap") == 0)
         return IndexSelectAttributes_GetYWrap(self, NULL);
+    if(strcmp(name, "zAbsMax") == 0)
+        return IndexSelectAttributes_GetZAbsMax(self, NULL);
     if(strcmp(name, "zMin") == 0)
         return IndexSelectAttributes_GetZMin(self, NULL);
     if(strcmp(name, "zMax") == 0)
         return IndexSelectAttributes_GetZMax(self, NULL);
-    if(strcmp(name, "zAbsMax") == 0)
-        return IndexSelectAttributes_GetZAbsMax(self, NULL);
     if(strcmp(name, "zIncr") == 0)
         return IndexSelectAttributes_GetZIncr(self, NULL);
     if(strcmp(name, "zWrap") == 0)
@@ -751,32 +751,32 @@ PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "dim") == 0)
         obj = IndexSelectAttributes_SetDim(self, tuple);
+    else if(strcmp(name, "xAbsMax") == 0)
+        obj = IndexSelectAttributes_SetXAbsMax(self, tuple);
     else if(strcmp(name, "xMin") == 0)
         obj = IndexSelectAttributes_SetXMin(self, tuple);
     else if(strcmp(name, "xMax") == 0)
         obj = IndexSelectAttributes_SetXMax(self, tuple);
-    else if(strcmp(name, "xAbsMax") == 0)
-        obj = IndexSelectAttributes_SetXAbsMax(self, tuple);
     else if(strcmp(name, "xIncr") == 0)
         obj = IndexSelectAttributes_SetXIncr(self, tuple);
     else if(strcmp(name, "xWrap") == 0)
         obj = IndexSelectAttributes_SetXWrap(self, tuple);
+    else if(strcmp(name, "yAbsMax") == 0)
+        obj = IndexSelectAttributes_SetYAbsMax(self, tuple);
     else if(strcmp(name, "yMin") == 0)
         obj = IndexSelectAttributes_SetYMin(self, tuple);
     else if(strcmp(name, "yMax") == 0)
         obj = IndexSelectAttributes_SetYMax(self, tuple);
-    else if(strcmp(name, "yAbsMax") == 0)
-        obj = IndexSelectAttributes_SetYAbsMax(self, tuple);
     else if(strcmp(name, "yIncr") == 0)
         obj = IndexSelectAttributes_SetYIncr(self, tuple);
     else if(strcmp(name, "yWrap") == 0)
         obj = IndexSelectAttributes_SetYWrap(self, tuple);
+    else if(strcmp(name, "zAbsMax") == 0)
+        obj = IndexSelectAttributes_SetZAbsMax(self, tuple);
     else if(strcmp(name, "zMin") == 0)
         obj = IndexSelectAttributes_SetZMin(self, tuple);
     else if(strcmp(name, "zMax") == 0)
         obj = IndexSelectAttributes_SetZMax(self, tuple);
-    else if(strcmp(name, "zAbsMax") == 0)
-        obj = IndexSelectAttributes_SetZAbsMax(self, tuple);
     else if(strcmp(name, "zIncr") == 0)
         obj = IndexSelectAttributes_SetZIncr(self, tuple);
     else if(strcmp(name, "zWrap") == 0)
