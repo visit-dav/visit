@@ -77,13 +77,13 @@
 using     std::vector;
 
 
-static bool      PlaneIntersectsCube(float plane[4], float bounds[6]);
-static void      FindCells(float *x, float *y, float *z, int nx, int ny, 
-                           int nz, int *clist, int &ncells, float *plane, 
-                           int dim, int ax, int ay, int az, int onx, int ony,
-                           int onz);
-static void      ProjectExtentsCallback(const double *in, double *out,
-                                        void *args);
+static bool   PlaneIntersectsCube(float plane[4], float bounds[6]);
+static void   FindCells(float *x, float *y, float *z, int nx, int ny, int nz,
+                        int *clist, int clistlen, int &ncells, float *plane, 
+                        int dim, int ax, int ay, int az, int onx, int ony,
+                        int onz);
+static void   ProjectExtentsCallback(const double *in, double *out,
+                                     void *args);
 
 // ****************************************************************************
 // Class: vtkVisItMatrixToLinearTransform
@@ -2367,6 +2367,10 @@ avtSliceFilter::SetPlaneOrientation(double *b)
 //    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
 //    Normal is cached, so use that value instead.
 //
+//    Jeremy Meredith, Fri Mar 18 10:42:53 EDT 2011
+//    Change the upper limit for number of cells, and pass it along
+//    down the line so we don't walk off the end of the array.
+//
 // ****************************************************************************
 
 void
@@ -2404,7 +2408,7 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
     //
     if (celllist != NULL)
         delete [] celllist;
-    int totalcells = nx*nx + ny*ny + nz*nz;
+    int totalcells = 2*(nx*ny + nx*nz + ny*nz);
     celllist   = new int[totalcells];
 
     float plane[4];
@@ -2414,7 +2418,8 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
     plane[3] = D;
 
     int numcells = 0;
-    FindCells(x, y, z, nx-1, ny-1, nz-1,celllist, numcells, plane, 0, 0, 0, 0,
+    FindCells(x, y, z, nx-1, ny-1, nz-1, celllist, totalcells,
+              numcells, plane, 0, 0, 0, 0,
               nx-1,ny-1,nz-1);
     debug5 << "The slice intersected " << numcells << " cells." << endl;
 
@@ -2442,6 +2447,7 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
 //      ny      The number of y values.
 //      nz      The number of z values.
 //      clist   A place to store the cell list.
+//      clistlen The number of allocated spots in clist.
 //      ncells  The number of cells in clist.
 //      plane   The equation of a plane in (A,B,C,D).
 //      dim     A hint as to what dimension to split the cube in.
@@ -2455,12 +2461,21 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
 //  Programmer: Hank Childs
 //  Creation:   August 5, 2002
 //
+//  Modifications:
+//   Jeremy Meredith, Fri Mar 18 10:46:54 EDT 2011
+//   Don't walk off the end of the clist array.  We should already have 
+//   a safe upper limit, so the odds of this happening are extremely low
+//   (first time this occurred was after almost a decade of use), and
+//   I bumped the upper limit by a factor of roughly 2x to account for
+//   degenerate cases, so don't worry about trying to grow the array or
+//   make it more prominent: just log it in the debug logs, and don't crash.
+//
 // ****************************************************************************
 
 void
 FindCells(float *x, float *y, float *z, int nx, int ny, int nz, int *clist, 
-          int &ncells, float *plane, int dim, int ax, int ay, int az, int onx,
-          int ony, int onz)
+          int clistlen, int &ncells, float *plane, int dim,
+          int ax, int ay, int az, int onx, int ony, int onz)
 {
     if (nx <= 0 || ny <= 0 || nz <= 0)
     {
@@ -2485,8 +2500,18 @@ FindCells(float *x, float *y, float *z, int nx, int ny, int nz, int *clist,
         // Here is the base case -- see if this one cell intersects the plane.
         //
         int cell = az*onx*ony + ay*onx + ax;
-        clist[ncells] = cell;
-        ncells++;  
+        if (ncells >= clistlen)
+        {
+            static bool showed_error = false;
+            if (showed_error == false)
+                debug1<<"ERROR: avtSliceFilter didn't allocate enough cells\n";
+            showed_error = true;
+        }
+        else
+        {
+            clist[ncells] = cell;
+            ncells++;
+        }
     }
     else
     {
@@ -2499,9 +2524,9 @@ FindCells(float *x, float *y, float *z, int nx, int ny, int nz, int *clist,
             // Split along x.
             //
             int split = nx/2;
-            FindCells(x,y,z,split,ny,nz,clist,ncells,plane,1,ax,ay,az,onx,ony,
-                      onz);
-            FindCells(x+split,y,z,nx-split,ny,nz,clist,ncells,plane,1,
+            FindCells(x,y,z,split,ny,nz,clist,clistlen,ncells,plane,1,
+                      ax,ay,az,onx,ony,onz);
+            FindCells(x+split,y,z,nx-split,ny,nz,clist,clistlen,ncells,plane,1,
                       ax+split,ay,az, onx, ony, onz);
         }
         else if (dim == 1)
@@ -2510,9 +2535,9 @@ FindCells(float *x, float *y, float *z, int nx, int ny, int nz, int *clist,
             // Split along y.
             //
             int split = ny/2;
-            FindCells(x,y,z,nx,split,nz,clist,ncells,plane,1,ax,ay,az,
+            FindCells(x,y,z,nx,split,nz,clist,clistlen,ncells,plane,1,ax,ay,az,
                       onx,ony,onz);
-            FindCells(x,y+split,z,nx,ny-split,nz,clist,ncells,plane,2,
+            FindCells(x,y+split,z,nx,ny-split,nz,clist,clistlen,ncells,plane,2,
                       ax,ay+split,az, onx, ony, onz);
         }
         else if (dim == 2)
@@ -2521,9 +2546,9 @@ FindCells(float *x, float *y, float *z, int nx, int ny, int nz, int *clist,
             // Split along z.
             //
             int split = nz/2;
-            FindCells(x,y,z,nx,ny,split,clist,ncells,plane,1,ax,ay,az,
+            FindCells(x,y,z,nx,ny,split,clist,clistlen,ncells,plane,1,ax,ay,az,
                       onx,ony,onz);
-            FindCells(x,y,z+split,nx,ny,nz-split,clist,ncells,plane,0,
+            FindCells(x,y,z+split,nx,ny,nz-split,clist,clistlen,ncells,plane,0,
                       ax,ay,az+split, onx, ony, onz);
         }
     }
