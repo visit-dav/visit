@@ -95,19 +95,19 @@ IndexSelectAttributes::Dimension_FromString(const std::string &s, IndexSelectAtt
 void IndexSelectAttributes::Init()
 {
     dim = TwoD;
+    xAbsMax = -1;
     xMin = 0;
     xMax = -1;
-    xAbsMax = -1;
     xIncr = 1;
     xWrap = false;
+    yAbsMax = -1;
     yMin = 0;
     yMax = -1;
-    yAbsMax = -1;
     yIncr = 1;
     yWrap = false;
+    zAbsMax = -1;
     zMin = 0;
     zMax = -1;
-    zAbsMax = -1;
     zIncr = 1;
     zWrap = false;
     useWholeCollection = true;
@@ -135,19 +135,19 @@ void IndexSelectAttributes::Init()
 void IndexSelectAttributes::Copy(const IndexSelectAttributes &obj)
 {
     dim = obj.dim;
+    xAbsMax = obj.xAbsMax;
     xMin = obj.xMin;
     xMax = obj.xMax;
-    xAbsMax = obj.xAbsMax;
     xIncr = obj.xIncr;
     xWrap = obj.xWrap;
+    yAbsMax = obj.yAbsMax;
     yMin = obj.yMin;
     yMax = obj.yMax;
-    yAbsMax = obj.yAbsMax;
     yIncr = obj.yIncr;
     yWrap = obj.yWrap;
+    zAbsMax = obj.zAbsMax;
     zMin = obj.zMin;
     zMax = obj.zMax;
-    zAbsMax = obj.zAbsMax;
     zIncr = obj.zIncr;
     zWrap = obj.zWrap;
     useWholeCollection = obj.useWholeCollection;
@@ -311,19 +311,19 @@ IndexSelectAttributes::operator == (const IndexSelectAttributes &obj) const
 {
     // Create the return value
     return ((dim == obj.dim) &&
+            (xAbsMax == obj.xAbsMax) &&
             (xMin == obj.xMin) &&
             (xMax == obj.xMax) &&
-            (xAbsMax == obj.xAbsMax) &&
             (xIncr == obj.xIncr) &&
             (xWrap == obj.xWrap) &&
+            (yAbsMax == obj.yAbsMax) &&
             (yMin == obj.yMin) &&
             (yMax == obj.yMax) &&
-            (yAbsMax == obj.yAbsMax) &&
             (yIncr == obj.yIncr) &&
             (yWrap == obj.yWrap) &&
+            (zAbsMax == obj.zAbsMax) &&
             (zMin == obj.zMin) &&
             (zMax == obj.zMax) &&
-            (zAbsMax == obj.zAbsMax) &&
             (zIncr == obj.zIncr) &&
             (zWrap == obj.zWrap) &&
             (useWholeCollection == obj.useWholeCollection) &&
@@ -473,19 +473,19 @@ void
 IndexSelectAttributes::SelectAll()
 {
     Select(ID_dim,                (void *)&dim);
+    Select(ID_xAbsMax,            (void *)&xAbsMax);
     Select(ID_xMin,               (void *)&xMin);
     Select(ID_xMax,               (void *)&xMax);
-    Select(ID_xAbsMax,            (void *)&xAbsMax);
     Select(ID_xIncr,              (void *)&xIncr);
     Select(ID_xWrap,              (void *)&xWrap);
+    Select(ID_yAbsMax,            (void *)&yAbsMax);
     Select(ID_yMin,               (void *)&yMin);
     Select(ID_yMax,               (void *)&yMax);
-    Select(ID_yAbsMax,            (void *)&yAbsMax);
     Select(ID_yIncr,              (void *)&yIncr);
     Select(ID_yWrap,              (void *)&yWrap);
+    Select(ID_zAbsMax,            (void *)&zAbsMax);
     Select(ID_zMin,               (void *)&zMin);
     Select(ID_zMax,               (void *)&zMax);
-    Select(ID_zAbsMax,            (void *)&zAbsMax);
     Select(ID_zIncr,              (void *)&zIncr);
     Select(ID_zWrap,              (void *)&zWrap);
     Select(ID_useWholeCollection, (void *)&useWholeCollection);
@@ -529,6 +529,12 @@ IndexSelectAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("dim", Dimension_ToString(dim)));
     }
 
+    if(completeSave || !FieldsEqual(ID_xAbsMax, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("xAbsMax", xAbsMax));
+    }
+
     if(completeSave || !FieldsEqual(ID_xMin, &defaultObject))
     {
         addToParent = true;
@@ -539,12 +545,6 @@ IndexSelectAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("xMax", xMax));
-    }
-
-    if(completeSave || !FieldsEqual(ID_xAbsMax, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("xAbsMax", xAbsMax));
     }
 
     if(completeSave || !FieldsEqual(ID_xIncr, &defaultObject))
@@ -559,6 +559,12 @@ IndexSelectAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("xWrap", xWrap));
     }
 
+    if(completeSave || !FieldsEqual(ID_yAbsMax, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("yAbsMax", yAbsMax));
+    }
+
     if(completeSave || !FieldsEqual(ID_yMin, &defaultObject))
     {
         addToParent = true;
@@ -569,12 +575,6 @@ IndexSelectAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("yMax", yMax));
-    }
-
-    if(completeSave || !FieldsEqual(ID_yAbsMax, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("yAbsMax", yAbsMax));
     }
 
     if(completeSave || !FieldsEqual(ID_yIncr, &defaultObject))
@@ -589,6 +589,12 @@ IndexSelectAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("yWrap", yWrap));
     }
 
+    if(completeSave || !FieldsEqual(ID_zAbsMax, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("zAbsMax", zAbsMax));
+    }
+
     if(completeSave || !FieldsEqual(ID_zMin, &defaultObject))
     {
         addToParent = true;
@@ -599,12 +605,6 @@ IndexSelectAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("zMax", zMax));
-    }
-
-    if(completeSave || !FieldsEqual(ID_zAbsMax, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("zAbsMax", zAbsMax));
     }
 
     if(completeSave || !FieldsEqual(ID_zIncr, &defaultObject))
@@ -689,32 +689,32 @@ IndexSelectAttributes::SetFromNode(DataNode *parentNode)
                 SetDim(value);
         }
     }
+    if((node = searchNode->GetNode("xAbsMax")) != 0)
+        SetXAbsMax(node->AsInt());
     if((node = searchNode->GetNode("xMin")) != 0)
         SetXMin(node->AsInt());
     if((node = searchNode->GetNode("xMax")) != 0)
         SetXMax(node->AsInt());
-    if((node = searchNode->GetNode("xAbsMax")) != 0)
-        SetXAbsMax(node->AsInt());
     if((node = searchNode->GetNode("xIncr")) != 0)
         SetXIncr(node->AsInt());
     if((node = searchNode->GetNode("xWrap")) != 0)
         SetXWrap(node->AsBool());
+    if((node = searchNode->GetNode("yAbsMax")) != 0)
+        SetYAbsMax(node->AsInt());
     if((node = searchNode->GetNode("yMin")) != 0)
         SetYMin(node->AsInt());
     if((node = searchNode->GetNode("yMax")) != 0)
         SetYMax(node->AsInt());
-    if((node = searchNode->GetNode("yAbsMax")) != 0)
-        SetYAbsMax(node->AsInt());
     if((node = searchNode->GetNode("yIncr")) != 0)
         SetYIncr(node->AsInt());
     if((node = searchNode->GetNode("yWrap")) != 0)
         SetYWrap(node->AsBool());
+    if((node = searchNode->GetNode("zAbsMax")) != 0)
+        SetZAbsMax(node->AsInt());
     if((node = searchNode->GetNode("zMin")) != 0)
         SetZMin(node->AsInt());
     if((node = searchNode->GetNode("zMax")) != 0)
         SetZMax(node->AsInt());
-    if((node = searchNode->GetNode("zAbsMax")) != 0)
-        SetZAbsMax(node->AsInt());
     if((node = searchNode->GetNode("zIncr")) != 0)
         SetZIncr(node->AsInt());
     if((node = searchNode->GetNode("zWrap")) != 0)
@@ -739,6 +739,13 @@ IndexSelectAttributes::SetDim(IndexSelectAttributes::Dimension dim_)
 }
 
 void
+IndexSelectAttributes::SetXAbsMax(int xAbsMax_)
+{
+    xAbsMax = xAbsMax_;
+    Select(ID_xAbsMax, (void *)&xAbsMax);
+}
+
+void
 IndexSelectAttributes::SetXMin(int xMin_)
 {
     xMin = xMin_;
@@ -750,13 +757,6 @@ IndexSelectAttributes::SetXMax(int xMax_)
 {
     xMax = xMax_;
     Select(ID_xMax, (void *)&xMax);
-}
-
-void
-IndexSelectAttributes::SetXAbsMax(int xAbsMax_)
-{
-    xAbsMax = xAbsMax_;
-    Select(ID_xAbsMax, (void *)&xAbsMax);
 }
 
 void
@@ -774,6 +774,13 @@ IndexSelectAttributes::SetXWrap(bool xWrap_)
 }
 
 void
+IndexSelectAttributes::SetYAbsMax(int yAbsMax_)
+{
+    yAbsMax = yAbsMax_;
+    Select(ID_yAbsMax, (void *)&yAbsMax);
+}
+
+void
 IndexSelectAttributes::SetYMin(int yMin_)
 {
     yMin = yMin_;
@@ -785,13 +792,6 @@ IndexSelectAttributes::SetYMax(int yMax_)
 {
     yMax = yMax_;
     Select(ID_yMax, (void *)&yMax);
-}
-
-void
-IndexSelectAttributes::SetYAbsMax(int yAbsMax_)
-{
-    yAbsMax = yAbsMax_;
-    Select(ID_yAbsMax, (void *)&yAbsMax);
 }
 
 void
@@ -809,6 +809,13 @@ IndexSelectAttributes::SetYWrap(bool yWrap_)
 }
 
 void
+IndexSelectAttributes::SetZAbsMax(int zAbsMax_)
+{
+    zAbsMax = zAbsMax_;
+    Select(ID_zAbsMax, (void *)&zAbsMax);
+}
+
+void
 IndexSelectAttributes::SetZMin(int zMin_)
 {
     zMin = zMin_;
@@ -820,13 +827,6 @@ IndexSelectAttributes::SetZMax(int zMax_)
 {
     zMax = zMax_;
     Select(ID_zMax, (void *)&zMax);
-}
-
-void
-IndexSelectAttributes::SetZAbsMax(int zAbsMax_)
-{
-    zAbsMax = zAbsMax_;
-    Select(ID_zAbsMax, (void *)&zAbsMax);
 }
 
 void
@@ -875,6 +875,12 @@ IndexSelectAttributes::GetDim() const
 }
 
 int
+IndexSelectAttributes::GetXAbsMax() const
+{
+    return xAbsMax;
+}
+
+int
 IndexSelectAttributes::GetXMin() const
 {
     return xMin;
@@ -884,12 +890,6 @@ int
 IndexSelectAttributes::GetXMax() const
 {
     return xMax;
-}
-
-int
-IndexSelectAttributes::GetXAbsMax() const
-{
-    return xAbsMax;
 }
 
 int
@@ -905,6 +905,12 @@ IndexSelectAttributes::GetXWrap() const
 }
 
 int
+IndexSelectAttributes::GetYAbsMax() const
+{
+    return yAbsMax;
+}
+
+int
 IndexSelectAttributes::GetYMin() const
 {
     return yMin;
@@ -914,12 +920,6 @@ int
 IndexSelectAttributes::GetYMax() const
 {
     return yMax;
-}
-
-int
-IndexSelectAttributes::GetYAbsMax() const
-{
-    return yAbsMax;
 }
 
 int
@@ -935,6 +935,12 @@ IndexSelectAttributes::GetYWrap() const
 }
 
 int
+IndexSelectAttributes::GetZAbsMax() const
+{
+    return zAbsMax;
+}
+
+int
 IndexSelectAttributes::GetZMin() const
 {
     return zMin;
@@ -944,12 +950,6 @@ int
 IndexSelectAttributes::GetZMax() const
 {
     return zMax;
-}
-
-int
-IndexSelectAttributes::GetZAbsMax() const
-{
-    return zAbsMax;
 }
 
 int
@@ -1035,19 +1035,19 @@ IndexSelectAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_dim:                return "dim";
+    case ID_xAbsMax:            return "xAbsMax";
     case ID_xMin:               return "xMin";
     case ID_xMax:               return "xMax";
-    case ID_xAbsMax:            return "xAbsMax";
     case ID_xIncr:              return "xIncr";
     case ID_xWrap:              return "xWrap";
+    case ID_yAbsMax:            return "yAbsMax";
     case ID_yMin:               return "yMin";
     case ID_yMax:               return "yMax";
-    case ID_yAbsMax:            return "yAbsMax";
     case ID_yIncr:              return "yIncr";
     case ID_yWrap:              return "yWrap";
+    case ID_zAbsMax:            return "zAbsMax";
     case ID_zMin:               return "zMin";
     case ID_zMax:               return "zMax";
-    case ID_zAbsMax:            return "zAbsMax";
     case ID_zIncr:              return "zIncr";
     case ID_zWrap:              return "zWrap";
     case ID_useWholeCollection: return "useWholeCollection";
@@ -1078,19 +1078,19 @@ IndexSelectAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_dim:                return FieldType_enum;
+    case ID_xAbsMax:            return FieldType_int;
     case ID_xMin:               return FieldType_int;
     case ID_xMax:               return FieldType_int;
-    case ID_xAbsMax:            return FieldType_int;
     case ID_xIncr:              return FieldType_int;
     case ID_xWrap:              return FieldType_bool;
+    case ID_yAbsMax:            return FieldType_int;
     case ID_yMin:               return FieldType_int;
     case ID_yMax:               return FieldType_int;
-    case ID_yAbsMax:            return FieldType_int;
     case ID_yIncr:              return FieldType_int;
     case ID_yWrap:              return FieldType_bool;
+    case ID_zAbsMax:            return FieldType_int;
     case ID_zMin:               return FieldType_int;
     case ID_zMax:               return FieldType_int;
-    case ID_zAbsMax:            return FieldType_int;
     case ID_zIncr:              return FieldType_int;
     case ID_zWrap:              return FieldType_bool;
     case ID_useWholeCollection: return FieldType_bool;
@@ -1121,19 +1121,19 @@ IndexSelectAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_dim:                return "enum";
+    case ID_xAbsMax:            return "int";
     case ID_xMin:               return "int";
     case ID_xMax:               return "int";
-    case ID_xAbsMax:            return "int";
     case ID_xIncr:              return "int";
     case ID_xWrap:              return "bool";
+    case ID_yAbsMax:            return "int";
     case ID_yMin:               return "int";
     case ID_yMax:               return "int";
-    case ID_yAbsMax:            return "int";
     case ID_yIncr:              return "int";
     case ID_yWrap:              return "bool";
+    case ID_zAbsMax:            return "int";
     case ID_zMin:               return "int";
     case ID_zMax:               return "int";
-    case ID_zAbsMax:            return "int";
     case ID_zIncr:              return "int";
     case ID_zWrap:              return "bool";
     case ID_useWholeCollection: return "bool";
@@ -1170,6 +1170,11 @@ IndexSelectAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (dim == obj.dim);
         }
         break;
+    case ID_xAbsMax:
+        {  // new scope
+        retval = (xAbsMax == obj.xAbsMax);
+        }
+        break;
     case ID_xMin:
         {  // new scope
         retval = (xMin == obj.xMin);
@@ -1178,11 +1183,6 @@ IndexSelectAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_xMax:
         {  // new scope
         retval = (xMax == obj.xMax);
-        }
-        break;
-    case ID_xAbsMax:
-        {  // new scope
-        retval = (xAbsMax == obj.xAbsMax);
         }
         break;
     case ID_xIncr:
@@ -1195,6 +1195,11 @@ IndexSelectAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (xWrap == obj.xWrap);
         }
         break;
+    case ID_yAbsMax:
+        {  // new scope
+        retval = (yAbsMax == obj.yAbsMax);
+        }
+        break;
     case ID_yMin:
         {  // new scope
         retval = (yMin == obj.yMin);
@@ -1203,11 +1208,6 @@ IndexSelectAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_yMax:
         {  // new scope
         retval = (yMax == obj.yMax);
-        }
-        break;
-    case ID_yAbsMax:
-        {  // new scope
-        retval = (yAbsMax == obj.yAbsMax);
         }
         break;
     case ID_yIncr:
@@ -1220,6 +1220,11 @@ IndexSelectAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (yWrap == obj.yWrap);
         }
         break;
+    case ID_zAbsMax:
+        {  // new scope
+        retval = (zAbsMax == obj.zAbsMax);
+        }
+        break;
     case ID_zMin:
         {  // new scope
         retval = (zMin == obj.zMin);
@@ -1228,11 +1233,6 @@ IndexSelectAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_zMax:
         {  // new scope
         retval = (zMax == obj.zMax);
-        }
-        break;
-    case ID_zAbsMax:
-        {  // new scope
-        retval = (zAbsMax == obj.zAbsMax);
         }
         break;
     case ID_zIncr:

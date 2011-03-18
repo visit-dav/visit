@@ -9,13 +9,13 @@
       <Field name="dim" label="Dimension" type="enum" subtype="Dimension">
         TwoD
       </Field>
+      <Field name="xAbsMax" label="X-absolute-Max" type="int">
+        -1
+      </Field>
       <Field name="xMin" label="X-Min" type="int">
         0
       </Field>
       <Field name="xMax" label="X-Max" type="int">
-        -1
-      </Field>
-      <Field name="xAbsMax" label="X-absolute-Max" type="int">
         -1
       </Field>
       <Field name="xIncr" label="X-Incr" type="int">
@@ -24,13 +24,13 @@
       <Field name="xWrap" label="X-Wrap" type="bool">
         false
       </Field>
+      <Field name="yAbsMax" label="Y-absolute-Max" type="int">
+        -1
+      </Field>
       <Field name="yMin" label="Y-Min" type="int" enabler="dim:TwoD,ThreeD">
         0
       </Field>
       <Field name="yMax" label="Y-Max" type="int">
-        -1
-      </Field>
-      <Field name="yAbsMax" label="Y-absolute-Max" type="int">
         -1
       </Field>
       <Field name="yIncr" label="Y-Incr" type="int">
@@ -39,13 +39,13 @@
       <Field name="yWrap" label="Y-Wrap" type="bool">
         false
       </Field>
+      <Field name="zAbsMax" label="Z-absolute-Max" type="int">
+        -1
+      </Field>
       <Field name="zMin" label="Z-Min" type="int" enabler="dim:ThreeD">
         0
       </Field>
       <Field name="zMax" label="Z-Max" type="int">
-        -1
-      </Field>
-      <Field name="zAbsMax" label="Z-absolute-Max" type="int">
         -1
       </Field>
       <Field name="zIncr" label="Z-Incr" type="int">
