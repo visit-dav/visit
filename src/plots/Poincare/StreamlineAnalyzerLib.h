@@ -41,7 +41,7 @@
 #if !defined(StreamlineAnalyzerLib_h)
 #define StreamlineAnalyzerLib_h
 
-#define STRAIGHTLINE_SKELETON 1
+//#define STRAIGHTLINE_SKELETON 1
 
 #include <avtVector.h>
 #include <DebugStream.h>
