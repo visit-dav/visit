@@ -520,8 +520,6 @@ QvisPoincarePlotWindow::CreateWindowContents()
     dataValueCombo->addItem(tr("Toroidal Windings"));
     dataValueCombo->addItem(tr("Poloidal Windings"));
     dataValueCombo->addItem(tr("Safety Factor"));
-//    dataValueCombo->addItem(tr("Confidence"));
-//    dataValueCombo->addItem(tr("Ridgeline Variance"));
     connect(dataValueCombo, SIGNAL(activated(int)),
            this, SLOT(dataValueChanged(int)));
     dataLayout->addWidget(dataValueCombo, 0, 1);
@@ -559,55 +557,10 @@ QvisPoincarePlotWindow::CreateWindowContents()
     limitsLayout->addWidget(max, 0, 4);
 
 
-    // Create the display group box.
-    QGroupBox *displayGroup = new QGroupBox(thirdTab);
-    displayGroup->setTitle(tr("Display"));
-    mainLayout->addWidget(displayGroup, 1, 0);
-//    mainLayout->setStretchFactor(displayGroup, 100);
-    QGridLayout *displayLayout = new QGridLayout(displayGroup);
-    displayLayout->setMargin(5);
-    displayLayout->setSpacing(10);
-
-    meshTypeLabel = new QLabel(tr("Mesh type:"), displayGroup);
-    displayLayout->addWidget(meshTypeLabel, 0, 0);
-
-    meshTypeCombo = new QComboBox(displayGroup);
-    meshTypeCombo->addItem(tr("Curves"));
-    meshTypeCombo->addItem(tr("Surfaces"));
-    connect(meshTypeCombo, SIGNAL(activated(int)),
-           this, SLOT(meshTypeChanged(int)));
-    displayLayout->addWidget(meshTypeCombo, 0, 1);
-
-    numberPlanesLabel = new QLabel(tr("Number of planes"), displayGroup);
-    displayLayout->addWidget(numberPlanesLabel, 1, 0);
-    numberPlanes = new QSpinBox(displayGroup);
-    numberPlanes->setMinimum(1);
-    numberPlanes->setMaximum(250);
-    connect(numberPlanes, SIGNAL(valueChanged(int)),
-            this, SLOT(numberPlanesChanged(int)));
-    displayLayout->addWidget(numberPlanes, 1, 1);
-
-    singlePlaneLabel = new QLabel(tr("Base plane (degrees)"), displayGroup);
-    displayLayout->addWidget(singlePlaneLabel, 1, 2);
-    singlePlane = new QLineEdit(displayGroup);
-    connect(singlePlane, SIGNAL(returnPressed()),
-            this, SLOT(singlePlaneProcessText()));
-    displayLayout->addWidget(singlePlane, 1, 3);
-
-    adjustPlaneLabel = new QLabel(tr("Adjust plane index"), displayGroup);
-    displayLayout->addWidget(adjustPlaneLabel, 1, 2);
-    adjustPlane = new QSpinBox(displayGroup);
-    adjustPlane->setMinimum(-1);
-    adjustPlane->setMaximum(250);
-    connect(adjustPlane, SIGNAL(valueChanged(int)),
-            this, SLOT(adjustPlaneChanged(int)));
-    displayLayout->addWidget(adjustPlane, 1, 3);
-
-
    // Create the color group box.
     QGroupBox *colorGroup = new QGroupBox(thirdTab);
     colorGroup->setTitle(tr("Color"));
-    mainLayout->addWidget(colorGroup, 2, 0);
+    mainLayout->addWidget(colorGroup, 1, 0);
 //    mainLayout->setStretchFactor(colorGroup, 100);
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
     colorLayout->setMargin(5);
@@ -661,6 +614,51 @@ QvisPoincarePlotWindow::CreateWindowContents()
     connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(changedOpacity(int, const void*)));
     colorLayout->addWidget(opacitySlider, 1, 3, 1, 2);
+
+
+    // Create the display group box.
+    QGroupBox *displayGroup = new QGroupBox(thirdTab);
+    displayGroup->setTitle(tr("Display"));
+    mainLayout->addWidget(displayGroup, 2, 0);
+//    mainLayout->setStretchFactor(displayGroup, 100);
+    QGridLayout *displayLayout = new QGridLayout(displayGroup);
+    displayLayout->setMargin(5);
+    displayLayout->setSpacing(10);
+
+    meshTypeLabel = new QLabel(tr("Mesh type:"), displayGroup);
+    displayLayout->addWidget(meshTypeLabel, 0, 0);
+
+    meshTypeCombo = new QComboBox(displayGroup);
+    meshTypeCombo->addItem(tr("Curves"));
+    meshTypeCombo->addItem(tr("Surfaces"));
+    connect(meshTypeCombo, SIGNAL(activated(int)),
+           this, SLOT(meshTypeChanged(int)));
+    displayLayout->addWidget(meshTypeCombo, 0, 1);
+
+    numberPlanesLabel = new QLabel(tr("Number of planes"), displayGroup);
+    displayLayout->addWidget(numberPlanesLabel, 1, 0);
+    numberPlanes = new QSpinBox(displayGroup);
+    numberPlanes->setMinimum(1);
+    numberPlanes->setMaximum(250);
+    connect(numberPlanes, SIGNAL(valueChanged(int)),
+            this, SLOT(numberPlanesChanged(int)));
+    displayLayout->addWidget(numberPlanes, 1, 1);
+
+    singlePlaneLabel = new QLabel(tr("Base plane (degrees)"), displayGroup);
+    displayLayout->addWidget(singlePlaneLabel, 1, 2);
+    singlePlane = new QLineEdit(displayGroup);
+    connect(singlePlane, SIGNAL(returnPressed()),
+            this, SLOT(singlePlaneProcessText()));
+    displayLayout->addWidget(singlePlane, 1, 3);
+
+    adjustPlaneLabel = new QLabel(tr("Adjust plane index"), displayGroup);
+    displayLayout->addWidget(adjustPlaneLabel, 1, 2);
+    adjustPlane = new QSpinBox(displayGroup);
+    adjustPlane->setMinimum(-1);
+    adjustPlane->setMaximum(250);
+    connect(adjustPlane, SIGNAL(valueChanged(int)),
+            this, SLOT(adjustPlaneChanged(int)));
+    displayLayout->addWidget(adjustPlane, 1, 3);
 
 
    // Create the options group box.
