@@ -448,6 +448,11 @@ avtXRayFilter::SetDivideEmisByAbsorb(bool flag)
 //    of line segments representing the intersections of a collection of lines
 //    with the cells in the dataset.
 //
+//    Eric Brugger, Fri Mar 18 14:13:56 PDT 2011
+//    I corrected a bug where the filter would crash when running in parallel
+//    and the number of pixels processed in a pass was divisible by the
+//    number of processors.
+//
 // ****************************************************************************
 
 void
@@ -465,12 +470,16 @@ avtXRayFilter::Execute(void)
     pixelsForLastPass = ((numPixels % actualPixelsPerIteration) == 0) ?
         actualPixelsPerIteration : numPixels % actualPixelsPerIteration;
 
-    pixelsForFirstPassFirstProc = pixelsForFirstPass / PAR_Size() + 1;
+    pixelsForFirstPassFirstProc = ((pixelsForFirstPass % PAR_Size()) == 0) ?
+        (pixelsForFirstPass / PAR_Size()) :
+        (pixelsForFirstPass / PAR_Size() + 1);
     pixelsForFirstPassLastProc =
         ((pixelsForFirstPass % pixelsForFirstPassFirstProc) == 0) ?
         pixelsForFirstPassFirstProc :
         pixelsForFirstPass % pixelsForFirstPassFirstProc;
-    pixelsForLastPassFirstProc = pixelsForLastPass / PAR_Size() + 1;
+    pixelsForLastPassFirstProc = ((pixelsForLastPass % PAR_Size()) == 0) ?
+        (pixelsForLastPass / PAR_Size()) :
+        (pixelsForLastPass / PAR_Size() + 1);
     pixelsForLastPassLastProc =
         ((pixelsForLastPass % pixelsForLastPassFirstProc) == 0) ?
         pixelsForLastPassFirstProc :
@@ -505,10 +514,15 @@ avtXRayFilter::Execute(void)
     {
         int pixelsForThisPass = (iPass == numPasses - 1) ?
             pixelsForLastPass : pixelsForFirstPass;
+        int pixelsForThisPassFirstProc = (iPass == numPasses - 1) ?
+            pixelsForLastPassFirstProc : pixelsForFirstPassFirstProc;
 
         linesForThisPass = pixelsForThisPass;
+        linesForThisPassFirstProc = pixelsForThisPassFirstProc;
 
-        int pixelsForThisProc = pixelsForThisPass / PAR_Size() + 1;
+        int pixelsForThisProc = ((pixelsForThisPass % PAR_Size()) == 0) ?
+            (pixelsForThisPass / PAR_Size()) :
+            (pixelsForThisPass / PAR_Size() + 1);
         if (PAR_Rank() == PAR_Size() - 1)
             if (pixelsForThisPass % pixelsForThisProc != 0)
                 pixelsForThisProc = pixelsForThisPass % pixelsForThisProc;
@@ -560,7 +574,10 @@ avtXRayFilter::Execute(void)
         //
         for (int i = 0; i < nImageFragments; i++)
             delete [] imageFragments[i];
-        nImageFragments = 1;
+        if (PAR_Rank() == 0)
+            nImageFragments = 1;
+        else
+            nImageFragments = 0;
         imageFragmentSizes[0] = numPixels;
         imageFragments[0] = image;
     }
@@ -1471,11 +1488,8 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
 #ifdef PARALLEL
 static int
-AssignToProc(int val, int nlines)
+AssignToProc(int val, int linesPerProc)
 {
-    static int nprocs = PAR_Size();
-
-    int linesPerProc = nlines/nprocs + 1;
     int proc = val / linesPerProc;
     return proc;
 }
@@ -1501,6 +1515,11 @@ AssignToProc(int val, int nlines)
 //    of line segments representing the intersections of a collection of lines
 //    with the cells in the dataset.
 //
+//    Eric Brugger, Fri Mar 18 14:13:56 PDT 2011
+//    I corrected a bug where the filter would crash when running in parallel
+//    and the number of pixels processed in a pass was divisible by the
+//    number of processors.
+//
 // ****************************************************************************
 
 void 
@@ -1521,7 +1540,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     {
         vector<int> inLineIds = line_ids[i];
         for (int j = 0; j < nLinesPerDataset[i]; j++)
-            sendCounts[AssignToProc(inLineIds[j], linesForThisPass)]++;
+            sendCounts[AssignToProc(inLineIds[j], linesForThisPassFirstProc)]++;
     }
 
     //
@@ -1555,7 +1574,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
         float **inCellData = cellData[i];
         for (int j = 0; j < nLinesPerDataset[i]; j++)
         {
-            int iProc = AssignToProc(inLineIds[j], linesForThisPass);
+            int iProc = AssignToProc(inLineIds[j], linesForThisPassFirstProc);
             int iOffset = sendOffsets[iProc];
             sendLineIds[iOffset] = inLineIds[j];
             sendDists[iOffset*2] = inDists[j*2];
@@ -2160,6 +2179,10 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 //    of line segments representing the intersections of a collection of lines
 //    with the cells in the dataset.
 //
+//    Eric Brugger, Fri Mar 18 14:13:56 PDT 2011
+//    I modified the routine to only create the final image on processor
+//    zero. This didn't seem to cause any problems, but was wasteful.
+//
 // ****************************************************************************
 
 float *
@@ -2206,21 +2229,45 @@ avtXRayFilter::CollectImages(int root, int nImageFragments,
         pixelsForLastPassLastProc) * numBins;
     displs[nProcs-1] = displs[nProcs-1-1] + recvCounts[nProcs-1-1];
 
-    float *recvBuf = new float[numPixels * numBins];
+    float *recvBuf = NULL;
+    if (PAR_Rank() == 0)
+    {
+        recvBuf = new float[numPixels * numBins];
+    }
 
     MPI_Gatherv(sendBuf, sendCount, MPI_FLOAT, recvBuf, recvCounts,
         displs, MPI_FLOAT, root, VISIT_MPI_COMM);
 
-    //
-    // Reorganize the receive buffer in the correct order.
-    //
-    float *image = new float[numPixels * numBins];
-    int ii = 0;
-    for (int i = 0; i < nImageFragments-1; i++)
+    if (PAR_Rank() == 0)
     {
+        //
+        // Reorganize the receive buffer in the correct order.
+        //
+        float *image = new float[numPixels * numBins];
+        int ii = 0;
+        for (int i = 0; i < nImageFragments-1; i++)
+        {
+            for (int j = 0; j < nProcs-1; j++)
+            {
+                for (int k = 0; k < pixelsForFirstPassFirstProc*numBins; k++)
+                {
+                    image[ii] = recvBuf[displs[j]];
+                    ii++;
+                    displs[j]++;
+                }
+            }
+            int j = nProcs - 1;
+            for (int k = 0; k < pixelsForFirstPassLastProc*numBins; k++)
+            {
+                image[ii] = recvBuf[displs[j]];
+                ii++;
+                displs[j]++;
+            }
+        }
+        int i = nImageFragments - 1;
         for (int j = 0; j < nProcs-1; j++)
         {
-            for (int k = 0; k < pixelsForFirstPassFirstProc*numBins; k++)
+            for (int k = 0; k < pixelsForLastPassFirstProc*numBins; k++)
             {
                 image[ii] = recvBuf[displs[j]];
                 ii++;
@@ -2228,34 +2275,21 @@ avtXRayFilter::CollectImages(int root, int nImageFragments,
             }
         }
         int j = nProcs - 1;
-        for (int k = 0; k < pixelsForFirstPassLastProc*numBins; k++)
+        for (int k = 0; k < pixelsForLastPassLastProc*numBins; k++)
         {
             image[ii] = recvBuf[displs[j]];
             ii++;
             displs[j]++;
         }
-    }
-    int i = nImageFragments - 1;
-    for (int j = 0; j < nProcs-1; j++)
-    {
-        for (int k = 0; k < pixelsForLastPassFirstProc*numBins; k++)
-        {
-            image[ii] = recvBuf[displs[j]];
-            ii++;
-            displs[j]++;
-        }
-    }
-    int j = nProcs - 1;
-    for (int k = 0; k < pixelsForLastPassLastProc*numBins; k++)
-    {
-        image[ii] = recvBuf[displs[j]];
-        ii++;
-        displs[j]++;
-    }
 
-    delete [] recvBuf;
+        delete [] recvBuf;
 
-    return image;
+        return image;
+    }
+    else
+    {
+        return 0;
+    }
 #else
     return 0;
 #endif
