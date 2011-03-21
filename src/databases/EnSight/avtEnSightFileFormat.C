@@ -112,6 +112,11 @@ avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
 //    Jeremy Meredith, Thu Jan  7 12:34:08 EST 2010
 //    File reading can generated errors instead of eofs.  Changed the test.
 //
+//    Cyrus Harrison, Mon Mar 21 13:19:32 PDT 2011
+//    Extended the binary file header check to include the strings
+//     "binary" && "BINARY"
+//
+//
 // ****************************************************************************
 
 void
@@ -229,12 +234,14 @@ avtEnSightFileFormat::InstantiateReader(const char *fname)
 
     char buff[256];
     geo_file.read(buff, 256);
-    
+
     bool isBinary = false;
     int bin_str_len = strlen("Binary");
     int end = 256 - bin_str_len;
     for (i = 0 ; i < end ; i++)
-        if (strncmp(buff + i, "Binary", bin_str_len) == 0)
+        if (strncmp(buff + i, "Binary", bin_str_len) == 0 ||
+            strncmp(buff + i, "BINARY", bin_str_len) == 0 ||
+            strncmp(buff + i, "binary", bin_str_len) == 0)
             isBinary = true;
 
     if (isBinary)
