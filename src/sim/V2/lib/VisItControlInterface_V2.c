@@ -1943,6 +1943,11 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
 *   Change 500000us (1/2 second) timeout to zero. The 500000 must have been
 *   left in during an old debugging exercise.
 *
+*   Brad Whitlock, Fri Mar 18 13:52:19 PDT 2011
+*   Fix for Windows VisItDetectInputWithTimeout so it returns the same value
+*   over and over again until the user calls the routine that handles the 
+*   event that we detected.
+*
 *******************************************************************************/
 
 int
@@ -1955,6 +1960,7 @@ VisItDetectInput(int blocking, int consoleFileDescriptor)
 /*
  * Win32 implementation of VisItDetectInputWithTimeout.
  */
+static int VisItDetectInput_return_value = 0;
 static int selectThreadStarted = 0;
 static int consoleThreadStarted = 0;
 static WSAEVENT listenevent = 0;
@@ -2167,6 +2173,21 @@ VisItDetectInputWithTimeout(int blocking, int timeoutVal,
         selectThreadStarted = 1;
     }
 
+    /* If the last call to VisItDetectInput returned 1 or 2 then we need to
+     * return those values again if VisItDetectInput_return_value is still
+     * set to those values. It means that the user called VisItDetectInput
+     * again without first calling the routines that clear this flag
+     * (VisItAttemptToCompleteConnection, VisItProcessEngineCommand).
+     */
+    if(VisItDetectInput_return_value == 1 ||
+       VisItDetectInput_return_value == 2)
+    {
+        LIBSIM_API_LEAVE1(VisItDetectInput,
+                          "return previous value %d",
+                          VisItDetectInput_return_value);
+        return VisItDetectInput_return_value;
+    }
+
     /* Wait for any of these events to occur. */
 waitforevents:
     n0 = 2;
@@ -2185,7 +2206,7 @@ waitforevents:
         LIBSIM_API_LEAVE1(VisItDetectInput,
                           "Okay - Timed out. return %d",
                           0);
-        return 0;
+        VisItDetectInput_return_value = 0;
     }
     else if(n == WAIT_OBJECT_0)
     {
@@ -2196,7 +2217,7 @@ waitforevents:
         LIBSIM_API_LEAVE1(VisItDetectInput,
                           "WAIT_OBJECT_0: Listen socket input. return %d",
                           1);
-        return 1;
+        VisItDetectInput_return_value = 1;
     }
     else if(n == WAIT_OBJECT_0+1)
     {
@@ -2207,7 +2228,7 @@ waitforevents:
         LIBSIM_API_LEAVE1(VisItDetectInput,
                           "WAIT_OBJECT_0+1: Engine socket input. return %d",
                           2);
-        return 2;
+        VisItDetectInput_return_value = 2;
     }
     else if(n == WAIT_OBJECT_0+2)
     {
@@ -2244,13 +2265,18 @@ waitforevents:
         LIBSIM_API_LEAVE1(VisItDetectInput,
                           "WAIT_OBJECT_0+2: Console input. return %d",
                           3);
-        return 3;
+        VisItDetectInput_return_value = 3;
+    }
+    else
+    {
+        VisItDetectInput_return_value = -5;
+
+        LIBSIM_API_LEAVE1(VisItDetectInput,
+                          "Unspecified error. return %d",
+                          -5);
     }
 
-    LIBSIM_API_LEAVE1(VisItDetectInput,
-                      "Unspecified error. return %d",
-                      -5);
-    return -5;
+    return VisItDetectInput_return_value;
 }
 #else
 int
@@ -2462,6 +2488,9 @@ VisItReadConsole(int maxlen, char *buffer)
 *   Brad Whitlock, Fri Nov 26 00:23:34 PDT 2010
 *   Add Windows code
 *
+*   Brad Whitlock, Fri Mar 18 13:49:01 PDT 2011
+*   Fix for Windows VisItDetectInput.
+*
 *******************************************************************************/
 int VisItAttemptToCompleteConnection(void)
 {
@@ -2521,6 +2550,10 @@ int VisItAttemptToCompleteConnection(void)
         engineSocket = callbacks->control.get_descriptor(engine);
         LIBSIM_MESSAGE1("visit_getdescriptor returned %d", (int)engineSocket);
 #ifdef _WIN32
+        /* Clear the value from VisItDetectInput so it can return a new value. */
+        if(VisItDetectInput_return_value == 1)
+            VisItDetectInput_return_value = 0;
+
         /* Send an event back to the select_thread telling it that it is okay
          * to proceed.
          */
@@ -2609,6 +2642,9 @@ void VisItSetCommandCallback(void (*scc)(const char*,const char*,void*),
 *  Brad Whitlock, Fri Nov 26 00:25:24 PDT 2010
 *  Add Windows code.
 *
+*  Brad Whitlock, Fri Mar 18 13:50:23 PDT 2011
+*  Fix for Windows VisItDetectInput.
+*
 *******************************************************************************/
 int VisItProcessEngineCommand(void)
 {
@@ -2623,11 +2659,17 @@ int VisItProcessEngineCommand(void)
     {
         LIBSIM_MESSAGE("Calling visit_processinput");
 #ifdef _WIN32
-        /* Send an event back to select_thread telling it that it is okay to
-           proceed
-         */
         if(parallelRank == 0)
+        {
+            /* Clear the value from VisItDetectInput so it can return a new value. */
+            if(VisItDetectInput_return_value == 2)
+                VisItDetectInput_return_value = 0;
+
+            /* Send an event back to select_thread telling it that it is okay to
+             * proceed
+             */
             SetEvent(engineeventCB);
+        }
 #endif
         retval = ((*callbacks->control.process_input)(engine) == 1) ?
             VISIT_OKAY : VISIT_ERROR;
