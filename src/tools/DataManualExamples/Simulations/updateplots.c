@@ -406,26 +406,40 @@ void mainloop(simulation_data *sim)
 
 int main(int argc, char **argv)
 {
+    char *env = NULL;
     simulation_data sim;
     simulation_data_ctor(&sim);
-
-    /* Initialize environment variables. */
-    SimulationArguments(argc, argv);
-    VisItSetupEnvironment();
 
 #ifdef PARALLEL
     /* Initialize MPI */
     MPI_Init(&argc, &argv);
     MPI_Comm_rank (MPI_COMM_WORLD, &sim.par_rank);
     MPI_Comm_size (MPI_COMM_WORLD, &sim.par_size);
+#endif
 
+    /* Initialize environment variables. */
+    SimulationArguments(argc, argv);
+
+#ifdef PARALLEL
     /* Install callback functions for global communication. */
     VisItSetBroadcastIntFunction(visit_broadcast_int_callback);
     VisItSetBroadcastStringFunction(visit_broadcast_string_callback);
-    /* Tell VSIL whether the simulation is parallel. */
+    /* Tell libsim whether the simulation is parallel. */
     VisItSetParallel(sim.par_size > 1);
     VisItSetParallelRank(sim.par_rank);
 #endif
+
+    /* Only read the environment on rank 0. This could happen before MPI_Init if
+     * we are using an MPI that does not like to let us spawn processes but we
+     * would not know our processor rank.
+     */
+    if(sim.par_rank == 0)
+        env = VisItGetEnvironment();
+
+    /* Pass the environment to all other processors collectively. */
+    VisItSetupEnvironment2(env);
+    if(env != NULL)
+        free(env);
 
     /* Write out .sim file that VisIt uses to connect. Only do it
      * on processor 0.
