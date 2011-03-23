@@ -224,6 +224,12 @@
 #    Kathleen Bonnell, Wed Feb 16 08:33:33 PST 2011
 #    Set CMAKE_BUILD_TYPE to Release, if not already set.
 #
+#    Mark C. Miller, Tue Mar 22 17:42:35 PDT 2011
+#    I fixed problems overriding behavior of VISIT_3RDPARTY_VAR/DEP macros
+#    when cmake is invoked with -DFOO_DIR:PATH=<path> to specify path to a
+#    3rd party FOO lib. It was not working previously. I also removed
+#    redundancy in args passed to VISIT_3RDPARTY_VAR/DEP macros
+#    (VISIT_FOO_DIR and FOO_DIR replaced with just FOO_DIR).
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -424,42 +430,50 @@ OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 
 
-MACRO(VISIT_3RDPARTY_VAR vvar comment libvar)
-    # Create a path variable 
-    SET(${vvar} "${vvar}-NOTFOUND" CACHE PATH "${comment}")
-    # If the variable is not set to NOTFOUND (this means that the user passed 
-    # it on the cmake command line or defined it in a config-site) then we 
-    # define libvar so our find routines can later use it.
-    IF(NOT "${${vvar}}" STREQUAL "${vvar}-NOTFOUND")
-        SET(${libvar} ${${vvar}})
-    ENDIF(NOT "${${vvar}}" STREQUAL "${vvar}-NOTFOUND")
-ENDMACRO(VISIT_3RDPARTY_VAR vvar comment libvar)
+MACRO(VISIT_3RDPARTY_VAR libvar comment)
+    IF(NOT DEFINED VISIT_${libvar})
+        # Create an entry for this path variable 
+        SET(VISIT_${libvar} "VISIT_${libvar}-NOTFOUND" CACHE PATH "${comment}")
+    ELSE(NOT DEFINED VISIT_${libvar})
+        IF(DEFINED ${libvar})
+            # Ensure VISIT_FOO_DIR=FOO_DIR (override from CL)
+            SET(VISIT_${libvar} ${${libvar}} CACHE PATH "${comment}" FORCE)
+        ELSE(DEFINED ${libvar})
+            # Set FOO_DIR=VISIT_FOO_DIR (default from config-site file)
+            SET(${libvar} ${VISIT_${libvar}})
+        ENDIF(DEFINED ${libvar})
+    ENDIF(NOT DEFINED VISIT_${libvar})
+ENDMACRO(VISIT_3RDPARTY_VAR libvar comment)
 
-MACRO(VISIT_3RDPARTY_DEP vvar comment libvar)
-    # Create a string variable 
-    SET(${vvar} "${vvar}-NOTSET" CACHE STRING "${comment}")
-    # If the var is not set to NOTSET (this means that the user passed it on 
-    # the cmake command line or defined it in a config-site) then we define 
-    # libvar so our find routines can later use it.
-    IF(NOT "${${vvar}}" STREQUAL "${vvar}-NOTSET")
-        SET(${libvar} ${${vvar}})
-    ENDIF(NOT "${${vvar}}" STREQUAL "${vvar}-NOTSET")
-ENDMACRO(VISIT_3RDPARTY_DEP vvar comment libvar)
+MACRO(VISIT_3RDPARTY_DEP libvar comment)
+    IF(NOT DEFINED VISIT_${libvar})
+        # Create an entry for this string variable 
+        SET(VISIT_${libvar} "VISIT_${libvar}-NOTSET" CACHE STRING "${comment}")
+    ELSE(NOT DEFINED VISIT_${libvar})
+        IF(DEFINED ${libvar})
+            # Ensure VISIT_FOO_LIBDEP=FOO_LIBDEP (override from CL)
+            SET(VISIT_${libvar} ${${libvar}} CACHE STRING "${comment}" FORCE)
+        ELSE(DEFINED ${libvar})
+            # Set FOO_LIBDEP=VISIT_FOO_LIBDEP (default from config-site file)
+            SET(${libvar} ${VISIT_${libvar}})
+        ENDIF(DEFINED ${libvar})
+    ENDIF(NOT DEFINED VISIT_${libvar})
+ENDMACRO(VISIT_3RDPARTY_DEP libvar comment)
 
 # Define options that let us pick our standard libraries: VTK,Mesa,Qt,Python 
 # and so on.
-VISIT_3RDPARTY_VAR(VISIT_VTK_DIR    "Path containing the VTK library's bin and lib" VTK_DIR)
-VISIT_3RDPARTY_VAR(VISIT_QT_BIN     "Path to the Qt library's bin (path containing qmake)" QT_BIN)
-VISIT_3RDPARTY_VAR(VISIT_PYTHON_DIR "Path containing the Python library's include and lib" PYTHON_DIR)
-VISIT_3RDPARTY_VAR(VISIT_MESA_DIR   "Path containing the Mesa library's include and lib" MESA_DIR)
-VISIT_3RDPARTY_VAR(VISIT_ICET_DIR   "Path containing the Ice-T library's include and lib" ICET_DIR)
-VISIT_3RDPARTY_VAR(VISIT_TCMALLOC_DIR   "Path containing the tcmalloc library's include and lib" TCMALLOC_DIR)
+VISIT_3RDPARTY_VAR(VTK_DIR    "Path containing the VTK library's bin and lib")
+VISIT_3RDPARTY_VAR(QT_BIN     "Path to the Qt library's bin (path containing qmake)")
+VISIT_3RDPARTY_VAR(PYTHON_DIR "Path containing the Python library's include and lib")
+VISIT_3RDPARTY_VAR(MESA_DIR   "Path containing the Mesa library's include and lib")
+VISIT_3RDPARTY_VAR(ICET_DIR   "Path containing the Ice-T library's include and lib")
+VISIT_3RDPARTY_VAR(TCMALLOC_DIR   "Path containing the tcmalloc library's include and lib")
 
 # Libraries some third-parties are dependent upon
 IF(WIN32)
-  VISIT_3RDPARTY_VAR(VISIT_JPEG_DIR   "Path containing the jpeg library's include and lib" JPEG_DIR)
-  VISIT_3RDPARTY_VAR(VISIT_SZIP_DIR   "Path containing the szip library's include and lib" SZIP_DIR)
-  VISIT_3RDPARTY_VAR(VISIT_ZLIB_DIR   "Path containing the zlib library's include and lib" ZLIB_DIR)
+  VISIT_3RDPARTY_VAR(JPEG_DIR   "Path containing the jpeg library's include and lib")
+  VISIT_3RDPARTY_VAR(SZIP_DIR   "Path containing the szip library's include and lib")
+  VISIT_3RDPARTY_VAR(ZLIB_DIR   "Path containing the zlib library's include and lib")
 ENDIF(WIN32)
 
 # Define the options that let us pick I/O library installation locations. When 
@@ -470,32 +484,32 @@ ENDIF(WIN32)
 #       needs to link but not to compile). Use the plugin's .xml file for
 #       libs a plugin is DIRECTLY dependent on (e.g. needs to both compile
 #       and link).
-VISIT_3RDPARTY_VAR(VISIT_ADIOS_DIR     "Path containing the ADIOS library's include and lib" ADIOS_DIR)
-VISIT_3RDPARTY_VAR(VISIT_ADVIO_DIR     "Path containing the AdvIO library's include and lib" ADVIO_DIR)
-VISIT_3RDPARTY_VAR(VISIT_BOXLIB_DIR    "Path containing the Boxlib library's include and lib" BOXLIB_DIR)
-VISIT_3RDPARTY_VAR(VISIT_CCMIO_DIR     "Path containing the CCMIO library's include and lib" CCMIO_DIR)
-VISIT_3RDPARTY_VAR(VISIT_CFITSIO_DIR   "Path containing the CFITSIO library's include and lib" CFITSIO_DIR)
-VISIT_3RDPARTY_VAR(VISIT_CGNS_DIR      "Path containing the CGNS library's include and lib" CGNS_DIR)
-VISIT_3RDPARTY_VAR(VISIT_CGNS_LIBDEP   "CGNS library dependencies" CGNS_LIBDEP)
-VISIT_3RDPARTY_VAR(VISIT_EXODUSII_DIR  "Path containing the ExodusII library's include and lib" EXODUSII_DIR)
-VISIT_3RDPARTY_VAR(VISIT_EXODUSII_LIBDEP "ExodusII library dependencies" EXODUSII_LIBDEP)
-VISIT_3RDPARTY_VAR(VISIT_FASTBIT_DIR   "Path containing the Fastbit library's include and lib" FASTBIT_DIR)
-VISIT_3RDPARTY_VAR(VISIT_GDAL_DIR      "Path containing the GDAL library's include and lib" GDAL_DIR)
-VISIT_3RDPARTY_VAR(VISIT_HDF4_DIR      "Path containing the HDF4 library's include and lib" HDF4_DIR)
-VISIT_3RDPARTY_DEP(VISIT_HDF4_LIBDEP   "HDF4 library dependencies" HDF4_LIBDEP)
-VISIT_3RDPARTY_VAR(VISIT_HDF5_DIR      "Path containing the HDF5 library's include and lib" HDF5_DIR)
-VISIT_3RDPARTY_DEP(VISIT_HDF5_LIBDEP   "HDF5 library dependencies" HDF5_LIBDEP)
-VISIT_3RDPARTY_VAR(VISIT_H5PART_DIR    "Path containing the H5Part library's include and lib" H5PART_DIR)
-VISIT_3RDPARTY_VAR(VISIT_H5PART_LIBDEP "H5Part library dependencies" H5PART_LIBDEP)
-VISIT_3RDPARTY_VAR(VISIT_MILI_DIR      "Path containing the Mili library's include and lib" MILI_DIR)
-VISIT_3RDPARTY_VAR(VISIT_NETCDF_DIR    "Path containing the NETCDF library's include and lib" NETCDF_DIR)
-VISIT_3RDPARTY_VAR(VISIT_NETCDF_LIBDEP "NETCDF library dependencies" NETCDF_LIBDEP)
-VISIT_3RDPARTY_VAR(VISIT_SILO_DIR      "Path containing the Silo library's include and lib" SILO_DIR)
-VISIT_3RDPARTY_DEP(VISIT_SILO_LIBDEP   "Silo library dependencies" SILO_LIBDEP)
-VISIT_3RDPARTY_VAR(VISIT_VISUS_DIR     "Path containing the ViSUS library's include and lib" VISUS_DIR)
-VISIT_3RDPARTY_VAR(VISIT_XDMF_DIR      "Path containing the Xdmf library's include and lib" XDMF_DIR)
-VISIT_3RDPARTY_VAR(VISIT_XDMF_LIBDEP   "Xdmf library dependencies" XDMF_LIBDEP)
-VISIT_3RDPARTY_VAR(VISIT_MDSPLUS_DIR   "Path containing the MDSplus library's include and lib" MDSPLUS_DIR)
+VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include and lib")
+VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
+VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
+VISIT_3RDPARTY_VAR(CCMIO_DIR     "Path containing the CCMIO library's include and lib")
+VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
+VISIT_3RDPARTY_VAR(CGNS_DIR      "Path containing the CGNS library's include and lib")
+VISIT_3RDPARTY_VAR(CGNS_LIBDEP   "CGNS library dependencies")
+VISIT_3RDPARTY_VAR(EXODUSII_DIR  "Path containing the ExodusII library's include and lib")
+VISIT_3RDPARTY_VAR(EXODUSII_LIBDEP "ExodusII library dependencies")
+VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the Fastbit library's include and lib")
+VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
+VISIT_3RDPARTY_VAR(HDF4_DIR      "Path containing the HDF4 library's include and lib")
+VISIT_3RDPARTY_DEP(HDF4_LIBDEP   "HDF4 library dependencies")
+VISIT_3RDPARTY_VAR(HDF5_DIR      "Path containing the HDF5 library's include and lib")
+VISIT_3RDPARTY_DEP(HDF5_LIBDEP   "HDF5 library dependencies")
+VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include and lib")
+VISIT_3RDPARTY_VAR(H5PART_LIBDEP "H5Part library dependencies")
+VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
+VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
+VISIT_3RDPARTY_VAR(NETCDF_LIBDEP "NETCDF library dependencies")
+VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
+VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
+VISIT_3RDPARTY_VAR(VISUS_DIR     "Path containing the ViSUS library's include and lib")
+VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and lib")
+VISIT_3RDPARTY_VAR(XDMF_LIBDEP   "Xdmf library dependencies")
+VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
 #-----------------------------------------------------------------------------
 # Read the version
 #-----------------------------------------------------------------------------
