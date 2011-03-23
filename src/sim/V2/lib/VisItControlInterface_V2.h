@@ -199,13 +199,69 @@ void  VisItSetOptions(char *);
  *
  * Arguments: None
  *
- * Returns:   None
+ * Returns:   TRUE, FALSE
  *
  * Note:      All processors must call this function and they must call it
  *            before VisItInitializeSocketAndDumpSimFile and VisItDetectInput.
  *
+ *            If is recommended that parallel simulations call these functions
+ *            beforehand so this function will be able to use a collective
+ *            broadcast internally to speed up sending the environment to
+ *            other processors: VisItSetParallel, VisItSetParallelRank,
+ *            VisItSetBroadcastStringFunction.
+ *
  * ****************************************************************************/
 int   VisItSetupEnvironment(void);
+
+/******************************************************************************
+ * Function: VisItSetupEnvironment2
+ *
+ * Purpose: 
+ *   Sets up the environment so VisIt can be loaded into libsim when the
+ *   VisIt client wants to connect. This function does the same thing as 
+ *   VisItSetupEnvironment but it lets you pass in the environment string
+ *   discovered by VisItGetEnvironment.
+ *
+ *   You would use this version when your MPI does not like to let your 
+ *   application spawn processes to discover the environment.
+ *
+ * Arguments: env : The environment returned by
+ *
+ * Returns:   TRUE, FALSE
+ *
+ * Note:      All processors must call this function and they must call it
+ *            before VisItInitializeSocketAndDumpSimFile and VisItDetectInput.
+ *            
+ *            Non-rank 0 processors may pass NULL for the environment if they
+ *            wish to inherit the environment read by processor 0.
+ *
+ *            If is recommended that parallel simulations call these functions
+ *            beforehand so this function will be able to use a collective
+ *            broadcast internally to speed up sending the environment to
+ *            other processors: VisItSetParallel, VisItSetParallelRank,
+ *            VisItSetBroadcastStringFunction.
+ *
+ *            Non-rank 0 processors may pass NULL for the environment if they
+ *            wish to inherit the environment read by processor 0. (Only if
+ *            you have set up collective broadcast). Otherwise, passing NULL
+ *            will cause an implicit call to VisItGetEnvironment.
+ *
+ * ****************************************************************************/
+int   VisItSetupEnvironment2(char *env);
+
+/******************************************************************************
+ * Function: VisItGetEnvironment
+ *
+ * Purpose: 
+ *   Discover the environment needed so VisIt can be loaded into libsim when 
+ *   the VisIt client wants to connect. 
+ *
+ * Arguments: None
+ *
+ * Returns:   A user-owned character buffer containing the environment strings.
+ *
+ * ****************************************************************************/
+char *VisItGetEnvironment(void);
 
 /******************************************************************************
  * Function: VisItInitializeSocketAndDumpSimFile
