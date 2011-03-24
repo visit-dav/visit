@@ -587,20 +587,33 @@ avtMinMaxQuery::PostExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   December 26, 2010
 // 
+//  Modifications:
+//    Brad Whitlock, Thu Mar 24 11:01:59 PDT 2011
+//    I changed the logic so resVals will use values that have been set.
+//
 // ****************************************************************************
 
 void
 avtMinMaxQuery::TimeVaryingPostExecute(void)
 {
     doubleVector resVals;
-    if (nodeCentered && doMax)
-        resVals.push_back(maxInfo1.GetValue());
-    else if (!nodeCentered && doMax)
-        resVals.push_back(maxInfo2.GetValue());
-    if (nodeCentered && doMin)
-        resVals.push_back(minInfo1.GetValue());
-    else if (!nodeCentered && doMin)
-        resVals.push_back(minInfo2.GetValue());
+
+    if(doMax)
+    {
+        if (!nodeCentered)
+            resVals.push_back(maxInfo1.GetValue());
+        else
+            resVals.push_back(maxInfo2.GetValue());
+    }
+
+    if(doMin)
+    {
+        if (!nodeCentered)
+            resVals.push_back(minInfo1.GetValue());
+        else
+            resVals.push_back(minInfo2.GetValue());
+    }
+
     SetResultValues(resVals);
 }
 
