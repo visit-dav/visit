@@ -505,10 +505,12 @@ unsigned int FieldlineLib::GCD( unsigned int a, unsigned int b )
 
 // Find the great comon denominator in a list of numbers.
 unsigned int FieldlineLib::GCD( vector< unsigned int > values,
+                                unsigned int &freq,
                                 unsigned int minGCD )
 {
   if( values.size() == 1 )
   {
+    freq = 1;
     return values[0];
   }
 
@@ -536,30 +538,122 @@ unsigned int FieldlineLib::GCD( vector< unsigned int > values,
     
   // Find the most frequent greatest common denominator
   unsigned int gcd = 1;
-  unsigned int cc = 0;
+  freq = 0;
 
   ic = GCDCount.begin();
 
   while( ic != GCDCount.end() )
   {
     // Two GCD have the same count so take the larger GCD.
-    if( cc == (*ic).second && gcd < (*ic).first )
+    if( freq == (*ic).second && gcd < (*ic).first )
     {
       gcd = (*ic).first;
     }
 
     // GCD with a larger count
-    else if( cc < (*ic).second )
+    else if( freq < (*ic).second )
     {
       gcd = (*ic).first;
       
-      cc = (*ic).second;
+      freq = (*ic).second;
     }
 
     ++ic;
   }
   
   return gcd;
+}
+
+
+// Find the great comon denominator in a list of numbers.
+unsigned int FieldlineLib::HarmonicCheck( vector< pair< unsigned int,
+                                                        double > > &stats,
+                                          unsigned int baseHarmonic,
+                                          unsigned int max_samples )
+{
+  unsigned int freq;
+  vector< unsigned int > values;
+
+  unsigned int max_groups = stats.size() / max_samples;
+  unsigned int mult = 1;
+
+  // For a secondary harmonic to exists the group times the
+  // baseHarmonic should equal the harmonic.
+  for( unsigned int group=max_groups; group>1; --group )
+  {
+    unsigned int num_entries = stats.size() / group;
+    
+    values.resize( num_entries );
+    
+    for( unsigned int i=0; i<num_entries; ++i )
+      values[i] = stats[i].first;
+
+    unsigned int gcd = GCD( values, freq );
+
+    if( gcd  == group * baseHarmonic )
+    {
+      unsigned int cc = 0;
+
+      // Make the majority of the integer mutliples can be divided by
+      // the harmonic. Sometimes odd gcd values can sneak in as well
+      // as odd harmonics when near a separtrice.
+      for( unsigned int i=0; i<num_entries; ++i )
+      {
+        if( values[i] % gcd == 0 )
+          ++cc;
+      }
+
+      // Set a 0.90 threshold for now.
+      if( (double) cc / (double) num_entries > 0.90)
+      {
+        mult = group;
+        break;
+      }
+    }
+  }
+
+  
+  // The multiplier is not greater than 1 then there is no second
+  // order harmonic present.
+  if( mult > 1 )
+  {
+    unsigned int entries = stats.size() / mult;
+    
+    // Divide the stats up into groups and keep the first two groups.
+    if( mult > 2 )
+    {
+      if( verboseFlag )
+        cerr << "Splitting into " << mult << " groups " << endl;
+      
+      unsigned int num_entries = 2 * stats.size() / mult;
+      
+      if( num_entries && num_entries < stats.size() )
+      {
+        if( verboseFlag )
+          cerr << "Erasing entries " << num_entries << " to "
+               << stats.size() << endl;
+        
+        stats.resize( num_entries );
+      }
+    }
+    
+    // If present, thresholding should leave only higher order
+    // harmonics.
+    thresholdStats( stats, true, 2 );
+        
+//  values.resize( stats.size() );
+    values.resize( entries );
+        
+//  for( unsigned int i=0; i<stats.size(); ++i )
+    for( unsigned int i=0; i<entries; ++i )
+      values[i] = stats[i].first;
+    
+    unsigned int harmonic = GCD( values, freq );
+
+    return mult * baseHarmonic;
+  }
+  else
+    return baseHarmonic;
 }
 
 
@@ -929,11 +1023,13 @@ calculateSumOfSquares( vector< Point >& points,
       // Find the centroid of the points based on the period.
       for( unsigned int j=i; j<points.size(); j+=period )
       {
+        // Centroid or Z difference.
         if( checkType == 0 || checkType == 1 )
         {
           centroid += points[j];
           ++nSamples;
         }
+
         // Find the average length of the distance between points
         // based on the period.
         else if( checkType == 3 && j>period )
@@ -1039,7 +1135,8 @@ periodicityStats( vector< Point >& points,
 
   if( verboseFlag )
     cerr << "Best period " << best_period << "  "
-         << "variance  " << calculateSumOfSquares( points, best_period, checkType )
+         <<  (checkType == 2 ? "distance  " :  "variance  " )
+         << calculateSumOfSquares( points, best_period, checkType )
          << endl;
 
   if( stats.size() == 0 )
@@ -1066,35 +1163,45 @@ periodicityStats( vector< Point >& points,
       if( verboseFlag )
         cerr << "Erasing entries " << num_entries << " to "
              << stats.size() << endl;
-      
+
       stats.erase(stats.begin()+num_entries, stats.end() );
     }
   }
+  else
+  {
+    if( verboseFlag )
+      cerr << "No splitting required for " << num_groups << " groups " << endl;
+  }
 
-  thresholdStats( stats, num_groups>1 );
+  thresholdStats( stats, num_groups>1, checkType );
 }
 
 
 void FieldlineLib::
 thresholdStats( vector< pair< unsigned int, double > >& stats,
-                bool erase )
+                bool erase,
+                unsigned int checkType )
 {
   Otsu otsu;
   double maxVet, cutoff;
 
   otsu.getOtsuThreshold2( stats, cutoff, maxVet );
 
-  cerr << "Threshold " << cutoff << "  " << "vet max  " << maxVet << endl;
-  
-  unsigned int cutoffIndex = stats.size();
+//  unsigned int cutoffIndex = stats.size();
+  unsigned int cutoffIndex;
+
+  if( erase ) cutoffIndex = stats.size() / 2;
+  else        cutoffIndex = stats.size();
 
   for( unsigned int i=0; i<stats.size(); ++i )
   {
-    if( stats[i].second <= cutoff ) 
+//    if( stats[i].second <= cutoff ) 
+    if( i < cutoffIndex ) 
     {
       if( verboseFlag )
         cerr << "period  " << stats[i].first << "  "
-             << "variance  " << stats[i].second << "  "
+             <<  (checkType == 2 ? "distance  " :  "variance  " )
+             << stats[i].second << "  "
              << endl;
     }
     else
@@ -1102,6 +1209,12 @@ thresholdStats( vector< pair< unsigned int, double > >& stats,
       cutoffIndex = i;
       break;
     }
+
+    if( stats[i].second <= cutoff && stats[i+1].second > cutoff )
+    {
+      if( verboseFlag )
+        cerr << "vet max  " << maxVet << "  " << "Threshold " << cutoff << endl;
+      }
   }
 
   for( unsigned int i=cutoffIndex; i<stats.size(); ++i )
@@ -1110,7 +1223,15 @@ thresholdStats( vector< pair< unsigned int, double > >& stats,
     {
       // Print the cutoff entries
       cerr << "period  " << stats[i].first << "  "
-           << "variance  " << stats[i].second << "  **" << endl;
+           <<  (checkType == 2 ? "distance  " :  "variance  " )
+           << stats[i].second
+           << (erase ? "  **" : "  *") << endl;
+    }
+
+    if( stats[i].second <= cutoff && stats[i+1].second > cutoff )
+    {
+      if( verboseFlag )
+        cerr << "vet max  " << maxVet << "  " << "Threshold " << cutoff << endl;
     }
   }
 
@@ -2024,7 +2145,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
   unsigned int toroidalWinding = 0, poloidalWinding = 0;
   unsigned int toroidalPeriod = 0, poloidalPeriod = 0;
 
-  unsigned int toroidalBase = 1e8, poloidalBase = 1e8;
+  unsigned int toroidalBase = 0, poloidalBase = 0;
 
   unsigned int windingGroupOffset = 0, islands = 0, nnodes = 0;
   unsigned int nPuncturesNeeded = 0;
@@ -2086,8 +2207,9 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
       unsigned int cgd = GCD( offsetWindingPairs[i].toroidal,
                               offsetWindingPairs[i].poloidal );
-      if( toroidalBase > offsetWindingPairs[i].toroidal / cgd &&
-          poloidalBase > offsetWindingPairs[i].poloidal / cgd )
+
+      if( toroidalBase == 0 && // offsetWindingPairs[i].toroidal / cgd &&
+          poloidalBase == 0 ) // offsetWindingPairs[i].poloidal / cgd )
       {
         toroidalBase = offsetWindingPairs[i].toroidal / cgd;
         poloidalBase = offsetWindingPairs[i].poloidal / cgd;
@@ -2109,6 +2231,7 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     }
   }
 
+  cerr << "Base winding pair " << toroidalBase << "," << poloidalBase << endl;
 
   // Match consistency is less than the user set value. Run more
   // expensive tests to identify the fieldline.
@@ -2494,18 +2617,20 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
 
   if( mergedWindingPairs.size() > 1 )
   {
+    unsigned int freq;
+
     vector< unsigned int > values;
     values.resize( mergedWindingPairs.size() );
 
     for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
       values[i] = mergedWindingPairs[i].toroidal;
     
-    toroidalGCD = GCD( values );
+    toroidalGCD = GCD( values, freq );
     
     for( unsigned int i=0; i<mergedWindingPairs.size(); ++i )
       values[i] = mergedWindingPairs[i].poloidal;
 
-    poloidalGCD = GCD( values );
+    poloidalGCD = GCD( values, freq );
 
     // A period GCD greater than 1 is evidence of higher order hamonic.
     periodGCD = GCD( toroidalGCD, poloidalGCD );
@@ -2517,95 +2642,15 @@ FieldlineLib::fieldlineProperties( vector< Point > &ptList,
     if( (toroidalGCD == toroidalWinding / windingGCD &&
          poloidalGCD == poloidalWinding / windingGCD) )
     {
-      // Search for the toroidal harmonic
-      unsigned int gcd, gcd0, gcd1, gcd2;
+      toroidalGCD = HarmonicCheck( toroidalStats, toroidalBase, 3 );
+      poloidalGCD = HarmonicCheck( poloidalStats, poloidalBase, 3 );
 
-      // Force the first three entires to have the same harmonic.
-      gcd0 = GCD( toroidalStats[0].first, toroidalStats[1].first );
-      gcd1 = GCD( toroidalStats[1].first, toroidalStats[2].first );
-      gcd2 = GCD( toroidalStats[2].first, toroidalStats[0].first );
-
-      if( (gcd0 > gcd1 ? (gcd0 % gcd1) : (gcd1 % gcd0) ) == 0 &&
-          (gcd1 > gcd2 ? (gcd1 % gcd2) : (gcd2 % gcd1) ) == 0 &&
-          (gcd2 > gcd0 ? (gcd2 % gcd0) : (gcd0 % gcd2) ) == 0 )
-        gcd = (gcd0 < gcd1 ? (gcd0<gcd2 ? gcd0 : gcd2 ) :
-                             (gcd1<gcd2 ? gcd1 : gcd2 ) ) / toroidalBase;
-      else
-        gcd = toroidalBase;
-
-      // Divide the stats up into num_groups and keep the first two groups.
-      if( gcd > 2 )
+      // Test of a complete mismatch of the periods.
+      if( toroidalWinding / poloidalWinding != toroidalGCD / poloidalGCD )
       {
-        if( verboseFlag )
-          cerr << "Splitting into " << gcd << " groups " << endl;
-        
-        unsigned int num_entries = 3 * toroidalStats.size() / gcd / 2;
-        
-        if( num_entries && num_entries < toroidalStats.size() )
-        {
-          if( verboseFlag )
-            cerr << "Erasing entries " << num_entries << " to "
-                 << toroidalStats.size() << endl;
-          
-          toroidalStats.resize( num_entries );
-        }
+        toroidalGCD = toroidalBase;
+        poloidalGCD = poloidalBase;
       }
-
-      // If present, thresholding should leave only higher order
-      // harmonics.
-      thresholdStats( toroidalStats, true );
-
-      values.resize( toroidalStats.size() );
-
-      for( unsigned int i=0; i<toroidalStats.size(); ++i )
-        values[i] = toroidalStats[i].first;
-
-      toroidalGCD = GCD( values );
-
-
-      // Search for the poloidal harmonic
-
-      // Force the first three entires to have the same harmonic.
-      gcd0 = GCD( poloidalStats[0].first, poloidalStats[1].first );
-      gcd1 = GCD( poloidalStats[1].first, poloidalStats[2].first );
-      gcd2 = GCD( poloidalStats[2].first, poloidalStats[0].first );
-
-      if( (gcd0 > gcd1 ? (gcd0 % gcd1) : (gcd1 % gcd0) ) == 0 &&
-          (gcd1 > gcd2 ? (gcd1 % gcd2) : (gcd2 % gcd1) ) == 0 &&
-          (gcd2 > gcd0 ? (gcd2 % gcd0) : (gcd0 % gcd2) ) == 0 )
-        gcd = (gcd0 < gcd1 ? (gcd0<gcd2 ? gcd0 : gcd2 ) :
-                             (gcd1<gcd2 ? gcd1 : gcd2 ) ) / poloidalBase;
-      else
-        gcd = poloidalBase;
-
-      // Divide the stats up into num_groups and keep the first two groups.
-      if( gcd > 2 )
-      {
-        if( verboseFlag )
-          cerr << "Splitting into " << gcd << " groups " << endl;
-        
-        unsigned int num_entries = 3 * poloidalStats.size() / gcd / 2;
-        
-        if( num_entries && num_entries < poloidalStats.size() )
-        {
-          if( verboseFlag )
-            cerr << "Erasing entries " << num_entries << " to "
-                 << poloidalStats.size() << endl;
-          
-          poloidalStats.resize( num_entries );
-        }
-      }
-
-      // If present, thresholding should leave only higher order
-      // harmonics.
-      thresholdStats( poloidalStats, true );
-
-      values.resize( poloidalStats.size() );
-
-      for( unsigned int i=0; i<poloidalStats.size(); ++i )
-        values[i] = poloidalStats[i].first;
-    
-      poloidalGCD = GCD( values );
 
       // A GCD greater than 1 is evidence of higher order hamonic.
       periodGCD = GCD( toroidalGCD, poloidalGCD );
@@ -4647,7 +4692,8 @@ FieldlineLib::findIslandCenters( vector < Point > &puncturePts,
 // Adapted from Tolga Birdal
 
 // Compute the q values in the equation
-double Otsu::Px( unsigned int init, unsigned int end, vector< unsigned int > &histo)
+double Otsu::Px( unsigned int init, unsigned int end,
+                 vector< unsigned int > &histo)
 {
   int sum = 0;
 
@@ -4658,7 +4704,8 @@ double Otsu::Px( unsigned int init, unsigned int end, vector< unsigned int > &hi
 }
 
 // Compute the mean values in the equation (mu)
-double Otsu::Mx( unsigned int init, unsigned int end, vector< unsigned int > &histo)
+double Otsu::Mx( unsigned int init, unsigned int end,
+                 vector< unsigned int > &histo)
 {
   int sum = 0;
 
@@ -4719,53 +4766,53 @@ void Otsu::getHistogram( vector< pair< unsigned int, double > >& stats,
     histo[index]++;
   }
   
-  pair< unsigned int, unsigned int > zeropair[2];
+//   pair< unsigned int, unsigned int > zeropair[2];
 
-  zeropair[0] = pair< unsigned int, unsigned int >(0,0);
-  zeropair[1] = pair< unsigned int, unsigned int >(0,0);
+//   zeropair[0] = pair< unsigned int, unsigned int >(0,0);
+//   zeropair[1] = pair< unsigned int, unsigned int >(0,0);
 
-  unsigned int zerostart=nbins, zerostop=nbins;
+//   unsigned int zerostart=nbins, zerostop=nbins;
 
-  for( unsigned int i=0; i<nbins; ++i )
-  {
-    if( histo[i] == 0 && zerostart == nbins )
-    {
-      zerostart = i;
-      zerostop  = i;
-    }
-    else if( histo[i] != 0 && zerostart != nbins )
-    {
-      zerostop = i-1;
+//   for( unsigned int i=0; i<nbins; ++i )
+//   {
+//     if( histo[i] == 0 && zerostart == nbins )
+//     {
+//       zerostart = i;
+//       zerostop  = i;
+//     }
+//     else if( histo[i] != 0 && zerostart != nbins )
+//     {
+//       zerostop = i-1;
       
-      if( zerostop-zerostart > zeropair[0].second-zeropair[0].first )
-      {
-        zeropair[1] = zeropair[0];
-        zeropair[0] = pair< unsigned int, unsigned int >(zerostart, zerostop);
-      }
-      else if( zerostop-zerostart > zeropair[1].second-zeropair[1].first )
-      {
-        zeropair[1] = pair< unsigned int, unsigned int >(zerostart, zerostop);
-      }
+//       if( zerostop-zerostart > zeropair[0].second-zeropair[0].first )
+//       {
+//         zeropair[1] = zeropair[0];
+//         zeropair[0] = pair< unsigned int, unsigned int >(zerostart, zerostop);
+//       }
+//       else if( zerostop-zerostart > zeropair[1].second-zeropair[1].first )
+//       {
+//         zeropair[1] = pair< unsigned int, unsigned int >(zerostart, zerostop);
+//       }
       
-      zerostart = nbins;
-    }
+//       zerostart = nbins;
+//     }
 
-    int diff;
+//     int diff;
     
-    if( i )
-      diff = abs((int)histo[i] - (int)histo[i-1]);
-    else
-      diff = 0;
+//     if( i )
+//       diff = abs((int)histo[i] - (int)histo[i-1]);
+//     else
+//       diff = 0;
     
-    cerr << i << "  " << histo[i] << "  " << diff << "  " << histo[i] << endl;
-  }
+//     cerr << i << "  " << histo[i] << "  " << diff << "  " << histo[i] << endl;
+//   }
 
-  cerr << endl
-       << "zero pairs  "
-       << zeropair[0].first << "-" << zeropair[0].second << "  "
-       << zeropair[0].second-zeropair[0].first+1 << "     "
-       << zeropair[1].first << "-" << zeropair[1].second << "  "
-       << zeropair[1].second-zeropair[1].first+1 << endl;
+//   cerr << endl
+//        << "zero pairs  "
+//        << zeropair[0].first << "-" << zeropair[0].second << "  "
+//        << zeropair[0].second-zeropair[0].first+1 << "     "
+//        << zeropair[1].first << "-" << zeropair[1].second << "  "
+//        << zeropair[1].second-zeropair[1].first+1 << endl;
 }
 
 // find otsu threshold
@@ -4796,7 +4843,7 @@ void Otsu::getOtsuThreshold2(vector< pair< unsigned int, double > >& stats,
   unsigned int index;
   maxVet = 0;
   
-  // loop through all possible t values and maximize between class variance
+  // Loop through all possible t values and maximize between class variance.
   for( unsigned int i=1; i<nbins-1; ++i )
   {
     double p0 = Px(0,     i, histo);
@@ -4820,6 +4867,7 @@ void Otsu::getOtsuThreshold2(vector< pair< unsigned int, double > >& stats,
     }
   }
 
+  // Calculate the min and max from the values to get the threshold.
   double min = 1.0e9, max = -1.0e9;
   
   for( unsigned int i=0; i<stats.size(); ++i )
@@ -4835,7 +4883,7 @@ void Otsu::getOtsuThreshold2(vector< pair< unsigned int, double > >& stats,
 }
 
 
-// find otsu threshold
+// Find the Otsu threshold for three division
 void Otsu::getOtsuThreshold3(vector< pair< unsigned int, double > >& stats,
                              double &threshold0, double &threshold1,
                              double &maxVet )
@@ -4850,7 +4898,7 @@ void Otsu::getOtsuThreshold3(vector< pair< unsigned int, double > >& stats,
 
   maxVet = 0;
 
-  // loop through all possible t values and maximize between class variance
+  // Loop through all possible t values and maximize between class variance
   for ( unsigned int i=1; i<nbins-2; ++i )
   {
     double p0 = Px(0, i, histo);
@@ -4885,6 +4933,7 @@ void Otsu::getOtsuThreshold3(vector< pair< unsigned int, double > >& stats,
     }
   }
 
+  // Calculate the min and max from the values to get the thresholds.
   double min = 1.0e9, max = -1.0e9;
     
   for( unsigned int i=0; i<stats.size(); ++i )
@@ -4898,7 +4947,9 @@ void Otsu::getOtsuThreshold3(vector< pair< unsigned int, double > >& stats,
 
   threshold0 = min + (double) index0 / ((double) nbins-1.0) * (max-min);
   threshold1 = min + (double) index1 / ((double) nbins-1.0) * (max-min);
-  }
+}
+
+
 
 //===================================================================
 
