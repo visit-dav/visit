@@ -191,7 +191,12 @@ public:
   unsigned int GCD( unsigned int a, unsigned int b );
 
   unsigned int GCD( vector< unsigned int > values,
+                    unsigned int &freq,
                     unsigned int minGCD = 1 );
+
+  unsigned int HarmonicCheck( vector< pair< unsigned int, double > > &stats,
+                              unsigned int baseHarmonic,
+                              unsigned int max_samples = 3 );
 
   Point circle(Point &pt1, Point &pt2, Point &pt3);
 
@@ -235,7 +240,8 @@ public:
 
 
   void thresholdStats( vector< pair< unsigned int, double > >& stats,
-                       bool erase );
+                       bool erase,
+                       unsigned int checkType );
 
   double
   calculateSumOfSquares( vector< Point >& poloidalWinding_points,
