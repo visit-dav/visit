@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -38,6 +38,33 @@
 #
 #****************************************************************************/
 
-ADD_SUBDIRECTORY(lib)
-ADD_SUBDIRECTORY(runtime)
-ADD_SUBDIRECTORY(swig)
+INCLUDE_DIRECTORIES(
+${VISIT_SOURCE_DIR}/sim/V2/lib
+${PYTHON_INCLUDE_PATH}
+)
+
+PYTHON_ADD_MODULE(pysimV2
+    simV2_wrap.c
+    simV2_custom.c
+)
+# We pick "pysimV2" as the target name because "simV2" is already taken by
+# libsimV2. We then reset its output name to _simV2 since that's what SWIG
+# wants us to call it.
+SET_TARGET_PROPERTIES(pysimV2 PROPERTIES PREFIX "" OUTPUT_NAME _simV2)
+TARGET_LINK_LIBRARIES(pysimV2 
+    simV2
+    ${PYTHON_LIBRARIES}
+)
+IF(NOT APPLE)
+    SET_TARGET_PROPERTIES(pysimV2 PROPERTIES INSTALL_RPATH "$ORIGIN")
+ENDIF(NOT APPLE)
+
+VISIT_INSTALL_TARGETS(pysimV2)
+INSTALL(FILES simV2.py
+        DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+        COMPONENT RUNTIME
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                    GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                    WORLD_READ             WORLD_EXECUTE
+       )
+
