@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-400142
 # All rights reserved.
@@ -38,6 +38,6 @@
 #
 #****************************************************************************/
 
-ADD_SUBDIRECTORY(lib)
-ADD_SUBDIRECTORY(runtime)
-ADD_SUBDIRECTORY(swig)
+IF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
+    ADD_SUBDIRECTORY(python)
+ENDIF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)

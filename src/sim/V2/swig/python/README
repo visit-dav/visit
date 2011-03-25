@@ -1,0 +1,11 @@
+Regenerating bindings
+======================
+cd ..
+swig -python -I../lib simV2.i
+mv simV2_wrap.c python
+mv *.py python
+cd python
+
+Running
+========
+~/Development/thirdparty_shared/python/2.6.4/i386-apple-darwin10_gcc-4.2/bin/python2.6 updateplots.py
