@@ -43,6 +43,9 @@
 #   Pass types on command line for cmake vars:
 #      CMAKE_BUILD_TYPE & VISIT_THIRD_PARTY_INSTALL
 #
+#   Eric Brugger, Fri Mar 25 10:20:22 PDT 2011
+#   Added cielo.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -55,6 +58,7 @@ user=`whoami`
 termite=true
 terminator=false
 inca=true
+cielo=true
 
 dist=undefined
 
@@ -70,6 +74,7 @@ do
          termite=false
          terminator=false
          inca=false
+         cielo=false
          shift
          ;;
       -termite)
@@ -96,6 +101,14 @@ do
          inca=true
          shift
          ;;
+      -cielo)
+         cielo=false
+         shift
+         ;;
+      +cielo)
+         cielo=true
+         shift
+         ;;
       -d)
          dist=$2
          shift 2
@@ -113,6 +126,7 @@ then
    echo "    termite (B-Div, Linux),"
    echo "    terminator (B-Div, Linux),"
    echo "    inca (LC, x86_64)"
+   echo "    cielo (LANL, x86_64)"
    exit
 fi
 
@@ -273,9 +287,59 @@ then
 fi
 
 #
+# Build on cielo.
+#
+rm -f cielo
+cat <<EOF > cielo
+#!/bin/sh
+if test ! -d /tmp/$user ; then
+   mkdir /tmp/$user
+fi
+if test ! -d /tmp/$user/cielo ; then
+   mkdir /tmp/$user/cielo
+fi
+rm -rf /tmp/$user/cielo/visitbuild
+mkdir /tmp/$user/cielo/visitbuild
+mv cielo_$dist.tar.gz /tmp/$user/cielo/visitbuild/$dist.tar.gz
+cd /tmp/$user/cielo/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/usr/projects/views/visit/cmake/2.8.3/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make -j 6 >> ../../buildlog 2>&1
+make -j 6 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on cielo"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $cielo = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on cielo"
+      scp cielo red-fta05.lanl.gov:cielo_buildit
+      scp $dist.tar.gz red-fta05.lanl.gov:cielo_$dist.tar.gz
+      ssh red-fta05.lanl.gov "ssh ci-fe3 'chmod 750 cielo_buildit;module swap PrgEnv-pgi PrgEnv-gnu;module swap xt-mpt xt-mpich2;./cielo_buildit'" &
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f termite terminator inca
+   rm -f termite terminator inca cielo
 fi
