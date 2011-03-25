@@ -26,6 +26,9 @@
 #   Eric Brugger, Wed Jan  5 09:40:00 PST 2011
 #   Added terminator.
 #
+#   Eric Brugger, Fri Mar 25 10:20:49 PDT 2011
+#   Added cielo.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -38,6 +41,7 @@ user=`whoami`
 termite=true
 terminator=false
 inca=true
+cielo=true
 
 ver=undefined
 
@@ -53,6 +57,7 @@ do
          termite=false
          terminator=false
          inca=false
+         cielo=false
          shift
          ;;
       -termite)
@@ -77,6 +82,14 @@ do
          ;;
       +inca)
          inca=true
+         shift
+         ;;
+      -cielo)
+         cielo=false
+         shift
+         ;;
+      +cielo)
+         cielo=true
          shift
          ;;
       -v)
@@ -219,9 +232,47 @@ then
 fi
 
 #
+# Install on cielo.
+#
+rm -f cielo
+cat <<EOF > cielo
+#!/bin/sh
+./visit-install -private -c llnl_closed -l $ver linux-x86_64-cielo /usr/projects/views/visit > installlog 2>&1
+rm -f resultlog
+echo ""                                                > resultlog 2>&1
+echo "        install of visit on cielo"               >> resultlog 2>&1
+echo "       ---------------------------"              >> resultlog 2>&1
+echo ""                                                >> resultlog 2>&1
+df -k /usr/projects/views/visit                        >> resultlog 2>&1
+echo ""                                                >> resultlog 2>&1
+ls -l /usr/projects/views/visit/$ver+/linux-x86_64/bin >> resultlog 2>&1
+echo ""                                                >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/projects/views/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/projects/views/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/projects/views/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/projects/views/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/projects\/views\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.cielo
+EOF
+
+if [ $cielo = true ]
+then
+   if [ $test = no ]
+   then
+      ssh red-fta05.lanl.gov "ssh ci-fe3 'cp /tmp/$user/cielo/visitbuild/visit$ver2.linux-x86_64.tar.gz .'"
+      scp red-fta05.lanl.gov:visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-cielo.tar.gz
+      scp visit$ver2.linux-x86_64-cielo.tar.gz red-fta05.lanl.gov:
+      scp visit-install red-fta05.lanl.gov:
+      scp cielo red-fta05.lanl.gov:cielo_install
+      ssh red-fta05.lanl.gov "ssh ci-fe3 'chmod 750 cielo_install;./cielo_install'"
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f termite terminator inca
+   rm -f termite terminator inca cielo
 fi
