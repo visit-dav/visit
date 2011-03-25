@@ -695,6 +695,10 @@ $0 = shift @ARGV;
 #    If we can't locate the current machine's architecture, at least tell them
 #    which architectures we could locate.
 #
+#    Eric Brugger, Fri Mar 25 09:17:16 PDT 2011
+#    I made the logic that distinguishes between 32 and 64 bits on Mac OS X
+#    smarter since it was overly aggressive in selecting the 64 bit version.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2081,13 +2085,38 @@ for ($os) {
         }
         else
         {
+            #
+            # The logic below should be simplified to only use
+            # system_profiler when we decide to permanently remove
+            # support for power pc systems.
+            #
             chomp( $mach    = `uname -p` );
             if ($mach =~ /i386/) {
-                # For MacOS X 10.6 and above, use x86_64.
+                #
+                # Sometimes uname returns i386 even when it is a 64 bit
+                # processor, so we use system_profiler to get the real
+                # answer. From http://support.apple.com/kb/ht3696 a
+                # Processor Name of "Intel Core Solo" or "Intel Core Duo"
+                # is 32 bits and a Processor Name of "Intel Core 2 Duo" or
+                # "Intel Quad-Core Xeon" or "Dual-Core Intel Xeon" or
+                # "Quad-Core Intel Xeon" is 64 bits.
+                #
+                # Since we only support the 64 bit version with Mac OS X
+                # 10.6 or above, we always choose the 32 bit version prior
+                # to 10.6 and in the case of 10.6 or newer, distinguish
+                # between 32 and 64 bits using system_profiler.
+                #
                 chomp( $darwinver = `uname -r`);
                 my @darwinversions = split('\.', $darwinver);
-                if ($darwinversions[0] >= 10) {
-                    push @supportedarchs, "darwin-x86_64";
+                chomp( $darwinproc = `/usr/sbin/system_profiler -detailLevel -2 | grep "Processor Name"`);
+                if ($darwinversions[0] >= 10 and $darwinversions[1] >= 6) {
+                    if ($darwinproc =~ "Intel Core Solo" or
+                        $darwinproc =~ "Intel Core Duo") {
+                        push @supportedarchs, "darwin-i386";
+                    }
+                    else {
+                        push @supportedarchs, "darwin-x86_64";
+                    }
                 }
                 else {
                     push @supportedarchs, "darwin-i386";
