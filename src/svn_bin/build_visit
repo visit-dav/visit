@@ -43,7 +43,7 @@
 #          Qt       qt-everywhere-opensource-src-4.6.1.tar.gz
 #          Mesa     MesaLib-7.8.2.tar.gz
 #          Python   Python-2.6.4tgz
-#          VTK      vtk-5.0.0g.tar.gz
+#          VTK      vtk-5.0.0i.tar.gz
 #          CMake    cmake-2.8.0.tar.gz
 #
 #        The following optional libraries need to be in the current directory
@@ -1109,6 +1109,9 @@
 #     Eric Brugger, Wed Jan 19 10:13:02 PST 2011
 #     I changed the visit version number to 2.2.1.
 #
+#     Eric Brugger, Fri Mar 25 17:10:44 PDT 2011
+#     I modified the script to use vtk-5.0.0i and Xdmf 2.1.1.
+#
 # *****************************************************************************
 
 
@@ -1472,8 +1475,8 @@ if [[ "$VISIT_FILE" != "" ]] ; then
 fi
 export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
-export VTK_FILE=${VTK_FILE:-"vtk-5.0.0g.tar.gz"}
-export VTK_VERSION=${VTK_VERSION:-"5.0.0g"}
+export VTK_FILE=${VTK_FILE:-"vtk-5.0.0i.tar.gz"}
+export VTK_VERSION=${VTK_VERSION:-"5.0.0i"}
 export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK"}
 
 export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.3.tar.gz"}
@@ -1613,9 +1616,9 @@ export TCMALLOC_VERSION=${TCMALLOC_VERSION:-"0.97"}
 export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION:-"0.97"}
 export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR:-"google-perftools-0.97"}
 
-export XDMF_FILE=${XDMF_FILE:-"Xdmf-2.1.tar.gz"}
-export XDMF_VERSION=${XDMF_VERSION:-"2.1"}
-export XDMF_COMPATIBILITY_VERSION=${XDMF_COMPATIBILITY_VERSION:-"2.1"}
+export XDMF_FILE=${XDMF_FILE:-"Xdmf-2.1.1.tar.gz"}
+export XDMF_VERSION=${XDMF_VERSION:-"2.1.1"}
+export XDMF_COMPATIBILITY_VERSION=${XDMF_COMPATIBILITY_VERSION:-"2.1.1"}
 export XDMF_BUILD_DIR=${XDMF_BUILD_DIR:-"Xdmf"}
 
 export ADIOS_FILE=${ADIOS_FILE:-"adios-1.2.1.tar.gz"}
