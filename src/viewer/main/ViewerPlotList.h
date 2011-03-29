@@ -428,7 +428,7 @@ public:
                         const intVector &expandedPlots,
                         bool moreThanPlotsValid);
     void CopyActivePlots();
-    void SetPlotFollowsTime();
+    void SetPlotFollowsTime(bool);
     void SetPlotDescription(int plotId, const std::string &description);
     void SetPlotOrderToFirst(int plotId);
     void SetPlotOrderToLast(int plotId);

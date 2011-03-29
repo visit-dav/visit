@@ -2103,14 +2103,19 @@ ViewerMethods::HideActivePlots()
 //  Programmer: Ellen Tarwater
 //  Creation:   December 6, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Tue Mar 29 11:06:45 PDT 2011
+//    Add bool argument.
+//
 // ****************************************************************************
 void
-ViewerMethods::SetPlotFollowsTime()
+ViewerMethods::SetPlotFollowsTime(bool val)
 {
     //
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::SetPlotFollowsTimeRPC);
+    state->GetViewerRPC()->SetBoolFlag(val);
 
     //
     // Issue the RPC.

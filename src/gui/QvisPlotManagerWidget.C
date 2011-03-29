@@ -346,8 +346,8 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
             this, SLOT(cloneThisPlot()));
     connect(plotListBox, SIGNAL(redrawThisPlot()),
             this, SLOT(redrawThisPlot()));
-    connect(plotListBox, SIGNAL(disconnectThisPlot()),
-            this, SLOT(disconnectThisPlot()));
+    connect(plotListBox, SIGNAL(followTimeSliderThisPlot(bool)),
+            this, SLOT(followTimeSliderThisPlot(bool)));
 
     connect(plotListBox, SIGNAL(renamePlot(int, const QString &)),
             this, SLOT(setPlotDescription(int, const QString &)));
@@ -2850,26 +2850,26 @@ QvisPlotManagerWidget::redrawThisPlot()
 }
 
 // ****************************************************************************
-// Method: QvisPlotManagerWidget::disconnectThisPlot
+// Method: QvisPlotManagerWidget::followTimeSliderThisPlot
 //
 // Purpose: 
-//   This is a Qt slot function that tells the viewer to disconnect 
-//   the active plot from the TimeSlider
+//   This is a Qt slot function that tells the viewer to set whether 
+//   the active plots follow the TimeSlider
 //   (Used by the Right-Click Context Menu in the Plot List Box)
 //
 // Programmer: Ellen Tarwater
 // Creation:   Weds, Nov 28, 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 29 11:32:22 PDT 2011
+//   Renamed to followTimeSliderThisPlot and added a bool argument.
+//
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::disconnectThisPlot()
+QvisPlotManagerWidget::followTimeSliderThisPlot(bool val)
 {
-
-    // Disconnect the active plot from the time slider:
-    GetViewerMethods()->SetPlotFollowsTime();                              
+    GetViewerMethods()->SetPlotFollowsTime(val);                              
 }
 
 // ****************************************************************************

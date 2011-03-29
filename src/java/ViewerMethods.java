@@ -1111,11 +1111,13 @@ public class ViewerMethods
      * If a plot does not follow time then it is disconnected from its time slider
      * and updating the time slider will not have any effect on the plot.
      *
+     * @param Whether the plot should follow the time slider.
      * @return true on success; false otherwise.
      */
-    public boolean SetPlotFollowsTime()
+    public boolean SetPlotFollowsTime(boolean val)
     {
         GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTFOLLOWSTIMERPC);
+        GetViewerState().GetViewerRPC().SetBoolFlag(val);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();    
     }

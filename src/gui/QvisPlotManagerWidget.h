@@ -269,15 +269,6 @@ public:
     QMenu *getVariableMenu() { return (QMenu*) varMenu; };
 
 public slots:
-    void hideThisPlot();
-    void deleteThisPlot();
-    void drawThisPlot();
-    void clearThisPlot();
-    void cloneThisPlot();
-    void redrawThisPlot();
-    void disconnectThisPlot();
-    void setActivePlot();
-
     void UpdatePlotList();
 signals:
     void activateSubsetWindow();
@@ -303,6 +294,15 @@ private:
 
 
 private slots:
+    void hideThisPlot();
+    void deleteThisPlot();
+    void drawThisPlot();
+    void clearThisPlot();
+    void cloneThisPlot();
+    void redrawThisPlot();
+    void followTimeSliderThisPlot(bool);
+    void setActivePlot();
+
     void setActivePlots();
     void hidePlots();
     void deletePlots();

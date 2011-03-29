@@ -91,6 +91,9 @@ class PlotList;
 //   Brad Whitlock, Fri Jul 23 15:34:25 PDT 2010
 //   I added support for selections.
 //
+//   Brad Whitlock, Tue Mar 29 11:29:00 PDT 2011
+//   I renamed disconnectThisPlot to followTimeSliderThisPlot.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotListBox : public QListWidget
@@ -128,7 +131,7 @@ signals:
     void cloneThisPlot();
     void copyToWinThisPlot();
     void redrawThisPlot();
-    void disconnectThisPlot();
+    void followTimeSliderThisPlot(bool);
     void setActivePlot();
 
     void renamePlot(int row, const QString &);
@@ -157,7 +160,7 @@ private:
     QAction    *cloneAct;
     QAction    *copyToWinAct;
     QAction    *redrawAct;
-    QAction    *disconnectAct;
+    QAction    *followTimeSliderAct;
     QAction    *setPlotDescriptionAct;
     QAction    *moveThisPlotTowardFirstAct;
     QAction    *moveThisPlotTowardLastAct;

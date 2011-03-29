@@ -572,7 +572,6 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     bool SetCreateMeshQualityExpressions(bool val);
     bool SetCreateTimeDerivativeExpressions(bool val);
     bool SetCreateVectorMagnitudeExpressions(bool val);
-    void SetPlotFollowsTime();
 
     void ReplaceDatabase(const EngineKey &key,
                          const std::string &database,

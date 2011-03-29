@@ -142,6 +142,9 @@ class ViewerState;
 //   Kathleen Bonnell, Tue Mar  1 11:12:51 PST 2011
 //   Added another int arg to PointQuery.
 //
+//   Brad Whitlock, Tue Mar 29 11:05:58 PDT 2011
+//   Added a bool to SetPlotFollowsTime.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -235,7 +238,7 @@ public:
     void MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame);
     void DeleteActivePlots();
     void HideActivePlots();
-    void SetPlotFollowsTime();
+    void SetPlotFollowsTime(bool);
     void DrawPlots(bool drawAllPlots = true);
     void SetActivePlots(const intVector &activePlotIds);
     void SetActivePlots(const intVector &activePlotIds,
