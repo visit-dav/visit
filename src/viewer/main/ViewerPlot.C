@@ -4653,6 +4653,9 @@ ViewerPlot::CheckCache(const int i0, const int i1, const bool force)
 //   Brad Whitlock, Tue Oct 20 13:28:43 PDT 2009
 //   Added the plot description.
 //
+//   Brad Whitlock, Tue Mar 29 10:26:47 PDT 2011
+//   Save followsTime.
+//
 // ****************************************************************************
 
 void
@@ -4680,6 +4683,7 @@ ViewerPlot::CreateNode(DataNode *parentNode)
     plotNode->AddNode(new DataNode("bgColor", bgColor, 3));
     plotNode->AddNode(new DataNode("fgColor", fgColor, 3));
     plotNode->AddNode(new DataNode("expandedFlag", expandedFlag));
+    plotNode->AddNode(new DataNode("followsTime", followsTime));
 
     //
     // Store the current plot attributes.
@@ -4763,6 +4767,9 @@ ViewerPlot::CreateNode(DataNode *parentNode)
 //   Brad Whitlock, Tue Oct 20 13:30:14 PDT 2009
 //   Add plot description.
 //
+//   Brad Whitlock, Tue Mar 29 10:24:55 PDT 2011
+//   Restore followsTime.
+//
 // ****************************************************************************
 
 void
@@ -4780,6 +4787,11 @@ ViewerPlot::SetFromNode(DataNode *parentNode, const std::string &configVersion)
     if((node = plotNode->GetNode("plotDescription")) != 0)
     {
         plotDescription = node->AsString();
+    }
+
+    if((node = plotNode->GetNode("followsTime")) != 0)
+    {
+        followsTime = node->AsBool();
     }
 
     //
