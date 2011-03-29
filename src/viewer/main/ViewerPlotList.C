@@ -4131,12 +4131,14 @@ ViewerPlotList::HideActivePlots()
 //    Reindented, removed UpdateFrame since disconnecting should not cause a
 //    redraw because time has not changed.
 //
+//    Brad Whitlock, Tue Mar 29 11:18:19 PDT 2011
+//    I added a bool argument so we're no longer toggling.
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::SetPlotFollowsTime()
+ViewerPlotList::SetPlotFollowsTime(bool follows)
 {
-
     //
     // Loop over the list, toggling the disconnect flag on any active plots.
     //
@@ -4146,12 +4148,7 @@ ViewerPlotList::SetPlotFollowsTime()
         // If the plot is active toggle the hide flag.
         //
         if (plots[i].active)
-        {
-            if (plots[i].plot->FollowsTime()) 
-                plots[i].plot->SetFollowsTime( false );
-            else
-                plots[i].plot->SetFollowsTime( true );
-        }
+            plots[i].plot->SetFollowsTime( follows );
     }
  
     //

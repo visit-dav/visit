@@ -10390,22 +10390,4 @@ bool ViewerWindowManager::SetCreateVectorMagnitudeExpressions(bool newVal)
     return oldVal;
 }
 
-// ****************************************************************************
-//  Method: ViewerWindowManager::SetPlotFollowsTime
-//
-//  Programmer: Ellen Tarwater
-//  Creation:   December 20, 2007 
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008
-//    Made return-type be void.
-//
-// ****************************************************************************
-
-void ViewerWindowManager::SetPlotFollowsTime()
-{
-    windows[activeWindow]->SetPlotFollowsTime();
-}
-
-
 

@@ -2377,12 +2377,14 @@ CopyPlotAction::Enabled() const
 // Creation:   Thurs, Dec 6, 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 29 11:16:58 PDT 2011
+//   Change the description.
+//
 // ****************************************************************************
 
 SetPlotFollowsTimeAction::SetPlotFollowsTimeAction(ViewerWindow *win) : ViewerAction(win)
 {
-    SetAllText(tr("Disconnect from time slider"));
+    SetAllText(tr("Plot follows time slider"));
     // Think of an icon...
 }
 
@@ -2413,13 +2415,15 @@ SetPlotFollowsTimeAction::~SetPlotFollowsTimeAction()
 // Creation:   Thurs, Dec 6, 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 29 11:16:42 PDT 2011
+//   Pass flag to SetPlotFollowsTime.
+//
 // ****************************************************************************
 
 void
 SetPlotFollowsTimeAction::Execute()
 {
-     window->GetPlotList()->SetPlotFollowsTime();
+     window->GetPlotList()->SetPlotFollowsTime(args.GetBoolFlag());
 }
 
 // ****************************************************************************

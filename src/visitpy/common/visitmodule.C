@@ -7406,6 +7406,8 @@ visit_SetPlotDescription(PyObject *self, PyObject *args)
 // Creation:   Wed Dec  8 16:02:51 PST 2010
 //
 // Modifications:
+//   Brad Whitlock, Tue Mar 29 11:12:11 PDT 2011
+//   We can pass a bool to SetPlotFollowsTime now.
 //
 // ****************************************************************************
 
@@ -7414,66 +7416,23 @@ visit_SetPlotFollowsTime(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    bool setPL = true;
-    int ifollowsTime = -1;
+    int ifollowsTime = 1;
     if (!PyArg_ParseTuple(args, "i", &ifollowsTime))
     {
         // We're just going to toggle the values.
         NO_ARGUMENTS();
         PyErr_Clear();
-        setPL = false;
     }
+    
+    MUTEX_LOCK();
 
-    intVector curAP, newAP;
-    int retval = 0;
-    if(setPL)
-    {
-        // We're going to try and set all active plots to a specific follows time
-        // value.
-        bool followsTime = (ifollowsTime != 0) ? true : false;
+    // Set the follows time value for the active plots.
+    GetViewerMethods()->SetPlotFollowsTime(ifollowsTime > 0);
 
-        // Get the current list of active plots and the list of active plots
-        // whose follow time does not match what we're setting.
-        retval = Synchronize();
-
-        PlotList *pL = GetViewerState()->GetPlotList();
-        for(int i = 0; i < pL->GetNumPlots(); ++i)
-        {
-            if(pL->GetPlots(i).GetActiveFlag())
-            {
-                curAP.push_back(i);
-
-                if(pL->GetPlots(i).GetFollowsTime() != followsTime)
-                    newAP.push_back(i);
-            }
-        }
-    }
-    if(setPL && newAP.empty())
-    {
-        // There were no plots that needed to be updated.
-        ;
-    }
-    else
-    {
-        MUTEX_LOCK();
-
-        if(!newAP.empty())
-            GetViewerMethods()->SetActivePlots(newAP);
-
-        // Toggle the "follows time" flag on the plots that did not match
-        // the desired setting.
-        GetViewerMethods()->SetPlotFollowsTime();
-
-        if(!newAP.empty())
-            GetViewerMethods()->SetActivePlots(curAP);
-
-        MUTEX_UNLOCK();
-
-        retval = Synchronize();
-    }
+    MUTEX_UNLOCK();
 
     // Return the success value.
-    return IntReturnValue(retval);
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************

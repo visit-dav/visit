@@ -529,6 +529,9 @@ QvisPlotListBox::activeOperatorIndex(int id) const
 //   Brad Whitlock, Fri Jul 23 15:37:30 PDT 2010
 //   Check selection and created selections.
 //
+//   Brad Whitlock, Tue Mar 29 12:09:12 PDT 2011
+//   Use follows time to regenerate too
+//
 // ****************************************************************************
 
 bool
@@ -563,7 +566,8 @@ QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl,
                    newPlot.GetDatabaseName() != currentPlot.GetDatabaseName() ||
                    newPlot.GetOperators() != currentPlot.GetOperators() ||
                    newPlot.GetDescription() != currentPlot.GetDescription() ||
-                   newPlot.GetSelection() != currentPlot.GetSelection();
+                   newPlot.GetSelection() != currentPlot.GetSelection() ||
+                   newPlot.GetFollowsTime() != currentPlot.GetFollowsTime();
 
             if(nu) return true;
         }
@@ -753,10 +757,10 @@ QvisPlotListBox::contextMenuCreateActions()
 //    win2Act->addTo(copyWinSubMenu);
 
      // Now, for the "Disconnect From TimeSlider" option:
-     disconnectAct = new QAction(tr("Disconnect From time slider"), this);
-     disconnectAct->setStatusTip(tr("Disconnect this plot from time slider"));
-     disconnectAct->setCheckable(true);
-     connect( disconnectAct, SIGNAL(toggled(bool)), this, SIGNAL(disconnectThisPlot()));
+     followTimeSliderAct = new QAction(tr("Follow time slider"), this);
+     followTimeSliderAct->setStatusTip(tr("Set whether this plot follows the time slider"));
+     followTimeSliderAct->setCheckable(true);
+     connect( followTimeSliderAct, SIGNAL(toggled(bool)), this, SIGNAL(followTimeSliderThisPlot(bool)));
 }
 
 // ****************************************************************************
@@ -811,7 +815,7 @@ QvisPlotListBox::contextMenuCreate()
     plotContextMenu->addAction(setPlotDescriptionAct);
     plotContextMenu->addSeparator();
  
-    plotContextMenu->addAction(disconnectAct);   
+    plotContextMenu->addAction(followTimeSliderAct);
 }
 
 // ****************************************************************************
@@ -837,6 +841,9 @@ QvisPlotListBox::contextMenuCreate()
 //    Brad Whitlock, Tue Oct 20 15:36:48 PDT 2009
 //    I added actions that modify the plot list.
 //
+//    Brad Whitlock, Tue Mar 29 11:27:54 PDT 2011
+//    Set the proper checked state for the time slider action.
+//
 // ****************************************************************************
 
 void
@@ -844,8 +851,8 @@ QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
 {
     // setEnabled(false) if no active plots (plots are 'active' without being
     // highlighted/selected, non-intuitive...??)
-    
     bool anyActive = false;
+    bool followTS = false;
     for(int i = 0; i < count(); ++i)
     {
         QvisPlotListBoxItem *lbi = (QvisPlotListBoxItem *)item(i);
@@ -854,6 +861,7 @@ QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
         if(currentPlot.GetActiveFlag())
         {
             anyActive = true;
+            followTS |= currentPlot.GetFollowsTime();
         }
     }
 
@@ -863,7 +871,12 @@ QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
     clearAct->setEnabled(anyActive);
     cloneAct->setEnabled(anyActive);
     redrawAct->setEnabled(anyActive);
-    disconnectAct->setEnabled(anyActive);
+
+
+    followTimeSliderAct->blockSignals(true);
+    followTimeSliderAct->setEnabled(anyActive);
+    followTimeSliderAct->setChecked(followTS);
+    followTimeSliderAct->blockSignals(false);
 
     makeThisPlotFirstAct->setEnabled(anyActive && count() > 1);
     moveThisPlotTowardFirstAct->setEnabled(anyActive && count() > 1);
