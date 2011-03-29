@@ -1000,6 +1000,11 @@ StringHelpers::split(const std::string input, const char separator)
 //
 //    Mark C. Miller, Mon Aug 31 14:38:18 PDT 2009
 //    Made function arg a reference.
+//
+//    Jeremy Meredith, Tue Mar 29 14:38:02 EDT 2011
+//    Added a new flavor of this function which only pluralizes if
+//    a passed integer is greater than one.
+//
 // ****************************************************************************
 typedef struct _plural_rule_t {
     const char *re;
@@ -1086,6 +1091,45 @@ StringHelpers::Plural(const string &s)
     }
     // We have no other choice but to simply try adding 's'
     return ps + "s";
+}
+
+string
+StringHelpers::Plural(int n, const std::string &s)
+{
+    if (n == 1)
+        return s;
+    else
+        return Plural(s);
+}
+
+// ****************************************************************************
+// Method:  StringHelpers::HumanReadableList
+//
+// Purpose:
+//   Turns a vector of strings into a comma-delimited single string
+//   appropriate for insertion into a paragraph of text.
+//
+// Arguments:
+//   sv         the string vector to turn into a single comma-delimited string
+//
+// Programmer:  Jeremy Meredith
+// Creation:    March 29, 2011
+//
+// ****************************************************************************
+string
+StringHelpers::HumanReadableList(const std::vector<std::string> &sv)
+{
+    int n = sv.size();
+    string s;
+    for (int i=0; i<n; i++)
+    {
+        if (i > 0 && i == n-1)
+            s += ", and "; // to serial comma, or not to serial comma?
+        else if (i > 0)
+            s += ", ";
+        s += sv[i];
+    }
+    return s;
 }
 
 
