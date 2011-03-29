@@ -863,7 +863,7 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     // Create the resample target value
     resampleTarget = new QSpinBox(central);
     resampleTarget->setMinimum(1000);
-    resampleTarget->setMaximum(10000000);
+    resampleTarget->setMaximum(1000000000);
     resampleTarget->setSingleStep(1000);
     connect(resampleTarget, SIGNAL(valueChanged(int)),
             this, SLOT(resampleTargetChanged(int)));
