@@ -105,6 +105,8 @@ namespace StringHelpers
                                     const std::string &before,
                                     const std::string &after);
     std::string UTILITY_API Plural(const std::string &noun);
+    std::string UTILITY_API Plural(int, const std::string &noun);
+    std::string UTILITY_API HumanReadableList(const std::vector<std::string>&);
     bool UTILITY_API IsPureASCII(const std::string &txt);
     bool UTILITY_API IsPureASCII(const char *const txt, int length);
 

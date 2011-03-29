@@ -53,18 +53,22 @@
 //  Programmer: Hank Childs
 //  Creation:   May 20, 2010
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 29 11:15:03 EDT 2011
+//    Simplified the error message since it no longer aborts the file
+//    opening process.  (Plus, more detailed help instructions are given
+//    in the higher-level messages.)
+//
 // ****************************************************************************
 
 NonCompliantFileException::NonCompliantFileException(const char *dbtype,
                                                      std::string err)
 {
     char t_str[1024];
-    sprintf(t_str, "VisIt believes this is a \"%s\" file.  Further, the reader"
-                   " for this format believes this is a non-compliant file of "
-                   "this type.  Its description of non-compliance is: \"%s\"."
-                   "  If you believe this file is of a different type, try to "
-                   "open this file with that type with the \"Open file as "
-                   "type\" option under File->Open.", dbtype, err.c_str());
+    sprintf(t_str, "When attempting to use \"%s\", the file "
+            "matched the general format expected by the reader but "
+            "eventually encountered this error: \"%s\".",
+            dbtype, err.c_str());
 
     msg = t_str;
 }

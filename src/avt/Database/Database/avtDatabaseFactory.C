@@ -61,6 +61,7 @@
 #include <DatabasePluginInfo.h>
 #include <FileFunctions.h>
 #include <DBOptionsAttributes.h>
+#include <StringHelpers.h>
 
 #include <BadPermissionException.h>
 #include <DBYieldedNoDataException.h>
@@ -80,6 +81,9 @@
 
 using std::string;
 using std::vector;
+using StringHelpers::Plural;
+using StringHelpers::HumanReadableList;
+
 
 //
 // Static data members
@@ -297,6 +301,15 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Also, removed whole TRY/CATCH construct from the format!=NULL case as
 //    per Jeremy's advice that none of the exceptions in that case require
 //    special handling here.
+//
+//    Jeremy Meredith, Tue Mar 29 14:30:23 EDT 2011
+//    NonCompliant exceptions are now no longer "fatal" -- i.e. the no longer
+//    abort the file opening process.  However, we still take these types
+//    of exceptions as special indications that their error message is
+//    meaningful and should be reported to the user, so we now collect any
+//    occurrences of them and report them prominently, even if a different
+//    file format was able to successfully open the file.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -307,6 +320,9 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                              bool forceReadAllCyclesAndTimes,
                              bool treatAllDBsAsTimeVarying)
 {
+    vector<string> noncompliantPlugins;
+    vector<string> noncompliantErrors;
+
     if (filelistN <= 0)
     {
         EXCEPTION1(InvalidFilesException, filelistN);
@@ -496,16 +512,34 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                                timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
                                treatAllDBsAsTimeVarying, true, times);
+            // If some file reader claimed this file, but couldn't open it,
+            // but another one could, then report a warning.
+            if (rv != NULL && noncompliantPlugins.size() > 0)
+            {
+                int n = noncompliantPlugins.size();
+                string warning = "While we were able to open the file "
+                    "with the " + string(info ? info->GetName() : "") + " reader, "+
+                    (n==1?"an":"") + "other file format "+Plural(n,"reader")+
+                    " believed "+(n==1?"it":"they")+" should be "
+                    "able to open it ("+HumanReadableList(noncompliantPlugins)+
+                    ") but found the following errors, which may be worth "
+                    "investigating:\n";
+                for (int i=0; i<n; i++)
+                    warning += noncompliantErrors[i] + "\n";
+                dbmgr->ReportWarning(warning);                
+            }
         }
-        CATCH(NonCompliantException)
+        CATCH(NonCompliantException &e)
         {
             rv = NULL;
-            RETHROW;
+            noncompliantPlugins.push_back(info ? info->GetName(): "");
+            noncompliantErrors.push_back(e.Message());
         }
-        CATCH(NonCompliantFileException)
+        CATCH(NonCompliantFileException &e)
         {
             rv = NULL;
-            RETHROW;
+            noncompliantPlugins.push_back(info ? info->GetName(): "");
+            noncompliantErrors.push_back(e.Message());
         }
         CATCHALL
         {
@@ -579,33 +613,46 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                         delete dbtmp;
                 }
             }
-            CATCH(NonCompliantException)
+            CATCH(NonCompliantException &e)
             {
                 rv = NULL;
-                RETHROW;
+                noncompliantPlugins.push_back(info ? info->GetName(): "");
+                noncompliantErrors.push_back(e.Message());
             }
-            CATCH(NonCompliantFileException)
+            CATCH(NonCompliantFileException &e)
             {
                 rv = NULL;
-                RETHROW;
+                noncompliantPlugins.push_back(info ? info->GetName(): "");
+                noncompliantErrors.push_back(e.Message());
             }
             CATCHALL
             {
             }
             ENDTRY
         }
-        if (succeeded.size() > 1)
+        // If some file reader claimed this file, but couldn't open it,
+        // but another one could, then report a warning.
+        if (succeeded.size() > 0 && noncompliantPlugins.size() > 0)
+        {
+
+            int n = noncompliantPlugins.size();
+            string warning = "While we were able to open the file "
+                "with the " + succeeded[0] + " reader, " + 
+                (n==1?"an":"") + "other file format "+Plural(n,"reader")+
+                " believed "+(n==1?"it":"they")+" should be "
+                "able to open it ("+HumanReadableList(noncompliantPlugins)+
+                ") but found the following errors, which may be worth "
+                "investigating:\n";
+            for (int i=0; i<n; i++)
+                warning += noncompliantErrors[i] + "\n";
+            dbmgr->ReportWarning(warning);
+        }
+        // And if more than one could open it, also report a warning.
+        else if (succeeded.size() > 1)
         {
             string used = succeeded[0];
             string warning = "Multiple file format reader plugins (";
-            for (int i=0; i<succeeded.size(); i++)
-            {
-                if (i > 0 && i == succeeded.size()-1)
-                    warning += " and ";
-                else if (i > 0)
-                    warning += ", ";
-                warning += succeeded[i];
-            }
+            warning += HumanReadableList(succeeded);
             warning += ") matched the filename and would have been able to "
                        "successfully open the file.\n\n";
             warning += "We will try the first successful one: "+used+".\n\n";
@@ -693,22 +740,56 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                                timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
                                treatAllDBsAsTimeVarying, true, times);
+            // If some file reader claimed this file, but couldn't open it,
+            // but another one could, then report a warning.
+            if (rv != NULL && noncompliantPlugins.size() > 0)
+            {
+                int n = noncompliantPlugins.size();
+                string warning = "While we were able to open the file "
+                    "with the " + string(info ? info->GetName() : "") + " reader, "+
+                    (n==1?"an":"") + "other file format "+Plural(n,"reader")+
+                    " believed "+(n==1?"it":"they")+" should be "
+                    "able to open it ("+HumanReadableList(noncompliantPlugins)+
+                    ") but found the following errors, which may be worth "
+                    "investigating:\n";
+                for (int i=0; i<n; i++)
+                    warning += noncompliantErrors[i] + "\n";
+                dbmgr->ReportWarning(warning);                
+            }
         }
-        CATCH(NonCompliantException)
+        CATCH(NonCompliantException &e)
         {
             rv = NULL;
-            RETHROW;
+            noncompliantPlugins.push_back(info ? info->GetName(): "");
+            noncompliantErrors.push_back(e.Message());
         }
-        CATCH(NonCompliantFileException)
+        CATCH(NonCompliantFileException &e)
         {
             rv = NULL;
-            RETHROW;
+            noncompliantPlugins.push_back(info ? info->GetName(): "");
+            noncompliantErrors.push_back(e.Message());
         }
         CATCHALL
         {
             rv = NULL;
         }
         ENDTRY
+    }
+
+    // If we couldn't open the file, always report details occurring
+    // from any NonCompliant exceptions.
+    if (rv == NULL && noncompliantPlugins.size() > 0)
+    {
+        int nNonCompl = noncompliantPlugins.size();
+        string error;
+        if (nNonCompl > 1)
+        {
+            error += "At least one file format reader claimed this file, "
+                     " but could not open it:\n";
+        }
+        for (int i=0; i<nNonCompl; i++)
+            error += noncompliantErrors[i] + "\n";
+        EXCEPTION2(InvalidFilesException,"the file",error);
     }
 
     return rv;

@@ -184,9 +184,8 @@ InvalidFilesException::InvalidFilesException(const char *filename,
     //
     if (strstr(msg2, "It may be an invalid file") == NULL)
     {
-        sprintf(strlen(str)+str, "\n\nThe file format reader issued the "
-                    "following error message, which may (or may not) be "
-                    "indicative of the problem:\n%s", msg2);
+        sprintf(strlen(str)+str, "\n\nThe following error(s) may be helpful "
+                "in identifying the problem:\n%s", msg2);
     }
 
     msg = str;
