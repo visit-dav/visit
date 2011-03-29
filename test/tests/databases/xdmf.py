@@ -303,6 +303,108 @@ def test6(datapath):
     DeleteAllPlots()
     CloseDatabase(db)
 
+def test7(datapath):
+    TestSection("Quadratic topology (no hdf5)")
+    OpenDatabase(datapath + "singleHex24.xmf")
+    AddPlot("Mesh", "singleHex24")
+    AddPlot("Pseudocolor", "GlobalNodeId")
+    DrawPlots()
+    v = View3DAttributes()
+    v.viewNormal = (-0.690415, 0.541158, 0.480078)
+    v.focus = (0, 0, 0)
+    v.viewUp = (0.123212, -0.565967, 0.815169)
+    v.viewAngle = 30
+    v.parallelScale = 1.73205
+    v.nearPlane = -3.4641
+    v.farPlane = 3.4641
+    v.imagePan = (0, 0.0352717)
+    v.imageZoom = 1
+    v.perspective = 1
+    v.eyeAngle = 2
+    v.centerOfRotationSet = 0
+    v.centerOfRotation = (0, 0, 0)
+    SetView3D(v)
+
+    Test("xdmf_7_00")
+
+    DeleteAllPlots()
+    CloseDatabase(datapath + "singleHex24.xmf")
+
+    OpenDatabase(datapath + "singleHex27.xmf")
+    AddPlot("Mesh", "singleHex27")
+    AddPlot("Pseudocolor", "GlobalNodeId")
+    DrawPlots()
+
+    Test("xdmf_7_01")
+
+    DeleteAllPlots()
+    CloseDatabase(datapath + "singleHex27.xmf")
+
+    OpenDatabase(datapath + "singleQuad6.xmf")
+    AddPlot("Mesh", "singleQuad6")
+    AddPlot("Pseudocolor", "GlobalNodeId")
+    DrawPlots()
+
+    Test("xdmf_7_02")
+
+    DeleteAllPlots()
+    CloseDatabase(datapath + "singleQuad6.xmf")
+
+    OpenDatabase(datapath + "singleQuad9.xmf")
+    AddPlot("Mesh", "singleQuad9")
+    AddPlot("Pseudocolor", "GlobalNodeId")
+    DrawPlots()
+
+    Test("xdmf_7_03")
+
+    DeleteAllPlots()
+    CloseDatabase(datapath + "singleQuad9.xmf")
+
+    OpenDatabase(datapath + "singleTri7.xmf")
+    AddPlot("Mesh", "singleTri7")
+    AddPlot("Pseudocolor", "GlobalNodeId")
+    DrawPlots()
+
+    Test("xdmf_7_04")
+
+    DeleteAllPlots()
+    CloseDatabase(datapath + "singleTri7.xmf")
+
+    OpenDatabase(datapath + "singleWedge12.xmf")
+    AddPlot("Mesh", "singleWedge12")
+    AddPlot("Pseudocolor", "GlobalNodeId")
+    DrawPlots()
+    v = View3DAttributes()
+    v.viewNormal = (0.69918, -0.142559, 0.700588)
+    v.focus = (0, 0, 0.5)
+    v.viewUp = (-0.216074, 0.89196, 0.397139)
+    v.viewAngle = 30
+    v.parallelScale = 1.5
+    v.nearPlane = -3
+    v.farPlane = 3
+    v.imagePan = (0, 0)
+    v.imageZoom = 1
+    v.perspective = 1
+    v.eyeAngle = 2
+    v.centerOfRotationSet = 0
+    v.centerOfRotation = (0, 0, 0)
+    SetView3D(v)
+
+    Test("xdmf_7_05")
+
+    DeleteAllPlots()
+    CloseDatabase(datapath + "singleWedge12.xmf")
+
+    OpenDatabase(datapath + "singleWedge18.xmf")
+    AddPlot("Mesh", "singleWedge18")
+    AddPlot("Pseudocolor", "GlobalNodeId")
+    DrawPlots()
+
+    Test("xdmf_7_06")
+
+    DeleteAllPlots()
+    CloseDatabase(datapath + "singleWedge18.xmf")
+
 def main():
     datapath = "../data/xdmf_test_data/"
     test0(datapath)
@@ -313,6 +415,7 @@ def main():
     test5(datapath)
 
     test6(datapath)
+    test7(datapath)
 
 main()
 Exit()
