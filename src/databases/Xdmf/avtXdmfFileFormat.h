@@ -115,6 +115,7 @@ class avtXdmfFileFormat: public avtMTMDFileFormat
         XdmfDOM *dom;
         int Stride[3];
         int numGrids;
+        std::vector<int> timesteps;
 
         void AddArrayExpressions(avtDatabaseMetaData *, std::string, std::vector<std::string> &);
         void AddTensorExpressions(avtDatabaseMetaData *, std::string, int, int);

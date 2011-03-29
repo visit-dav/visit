@@ -75,6 +75,8 @@
 #include <XdmfDOM.h>
 #include <XdmfGeometry.h>
 #include <XdmfGrid.h>
+#include <XdmfHex64Generator.h>
+#include <XdmfHex125Generator.h>
 #include <XdmfTime.h>
 #include <XdmfTopology.h>
 
@@ -93,7 +95,7 @@ using std::string;
 // ****************************************************************************
 
 avtXdmfFileFormat::avtXdmfFileFormat(const char *filename) :
-    avtMTMDFileFormat(filename), filename(filename), dom(NULL), currentGrid(NULL) 
+    avtMTMDFileFormat(filename), filename(filename), dom(NULL), currentGrid(NULL)
 {
     dom = new XdmfDOM();
 
@@ -110,6 +112,52 @@ avtXdmfFileFormat::avtXdmfFileFormat(const char *filename) :
 
     firstGrid = "/Xdmf/Domain/Grid";
     numGrids = 0;
+
+    //  Modifications:
+    //      Eric Brugger, Wed Jan 12 14:52:54 PST 2011
+    //      I modified the routine to return a single grid in the case of a
+    //      collection where the collection type was unset (since the default
+    //      type is spatial) and in the case of a tree. I also had it set the
+    //      time in the case of a single time state.
+
+    XdmfXmlNode gridElement = dom->FindElementByPath("/Xdmf/Domain/Grid");
+    XdmfGrid grid;
+    grid.SetDOM(dom);
+    grid.SetElement(gridElement);
+    grid.UpdateInformation();
+
+    if (grid.GetGridType() == XDMF_GRID_COLLECTION) {
+        if (grid.GetCollectionType() == XDMF_GRID_COLLECTION_TEMPORAL) {
+            firstGrid = "/Xdmf/Domain/Grid/Grid";
+            XdmfGrid childGrid;
+            for (int i = 0; i < grid.GetNumberOfChildren(); ++i) {
+                std::stringstream gridLocation;
+                gridLocation << firstGrid << "[" << i + 1 << "]";
+                childGrid.SetDOM(dom);
+                childGrid.SetElement(dom->FindElementByPath(gridLocation.str().c_str()));
+                childGrid.UpdateInformation();
+                timesteps.push_back(childGrid.GetTime()->GetValue());
+            }
+            numGrids = 1;
+        }
+        else if(grid.GetCollectionType() == XDMF_GRID_COLLECTION_SPATIAL ||
+                grid.GetCollectionType() == XDMF_GRID_COLLECTION_UNSET) {
+            numGrids = 1;
+            timesteps.push_back(grid.GetTime()->GetValue());
+        }
+    }
+    else if (grid.GetGridType() == XDMF_GRID_TREE)
+    {
+        numGrids = 1;
+        timesteps.push_back(grid.GetTime()->GetValue());
+    }
+    else
+    {
+        // Just throw an empty time in here because we only have one timestep
+        numGrids = dom->FindNumberOfElements("Grid", dom->FindElementByPath("/Xdmf/Domain"));
+        timesteps.push_back(grid.GetTime()->GetValue());
+    }
+
 }
 
 // ****************************************************************************
@@ -607,6 +655,7 @@ vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *m
         default:
             EXCEPTION1(InvalidVariableException, meshname);
     }
+    gridToRead->Release();
     return dataSet;
 }
 
@@ -655,9 +704,7 @@ int avtXdmfFileFormat::GetMeshDataType(XdmfGrid* grid)
 
 int avtXdmfFileFormat::GetNTimesteps(void)
 {
-    std::vector<double> times;
-    this->GetTimes(times);
-    return times.size();
+    return timesteps.size();
 }
 
 // ****************************************************************************
@@ -797,9 +844,15 @@ int avtXdmfFileFormat::GetNumberOfNodeComponents(XdmfGrid * grid, XdmfAttribute 
 
 int avtXdmfFileFormat::GetNumberOfPoints(XdmfGrid * grid)
 {
-    int numGeometryDataItems = grid->GetGeometry()->GetDOM()->FindNumberOfElements("DataItem",
-            grid->GetGeometry()->GetElement());
-
+    XdmfDOM * dom = grid->GetGeometry()->GetDOM();
+    XdmfXmlNode element = grid->GetGeometry()->GetElement();
+    int numGeometryDataItems = dom->FindNumberOfElements("DataItem",
+                                                         element);
+    numGeometryDataItems += dom->FindNumberOfElements("DataTransform",
+                                                      element);
+    numGeometryDataItems += dom->FindNumberOfElements("DataStructure",
+                                                      element);
+ 
     if (numGeometryDataItems == 0) {
         return 0;
     }
@@ -812,7 +865,7 @@ int avtXdmfFileFormat::GetNumberOfPoints(XdmfGrid * grid)
         for (int i = 0; i < numGeometryDataItems; ++i) {
             XdmfDataItem xmfDataItem;
             xmfDataItem.SetDOM(grid->GetGeometry()->GetDOM());
-            xmfDataItem.SetElement(grid->GetGeometry()->GetDOM()->FindDataElement(i, grid->GetGeometry()->GetElement()));
+            xmfDataItem.SetElement(dom->FindDataElement(i, element));
             xmfDataItem.UpdateInformation();
             int rank = xmfDataItem.GetRank();
             if (rank < 1) {
@@ -847,7 +900,6 @@ int avtXdmfFileFormat::GetNumberOfPoints(XdmfGrid * grid)
         }
     }
     else {
-        // numPoints = numberOfDataItemValues / numValuesPerPoints
         numPoints = this->GetNumberOfValues(grid->GetGeometry());
         if (grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_XY ||
             grid->GetGeometry()->GetGeometryType() == XDMF_GEOMETRY_X_Y) {
@@ -915,11 +967,21 @@ int avtXdmfFileFormat::GetNumberOfSymmetricalTensorComponents(int numComponents)
 int avtXdmfFileFormat::GetNumberOfValues(XdmfElement * element)
 {
     int numVals = 0;
-    for (int i = 0; i < element->GetDOM()->FindNumberOfElements("DataItem", element->GetElement()); ++i) {
+
+    XdmfDOM * dom = element->GetDOM();
+    XdmfXmlNode xmlElement = element->GetElement();
+    int numDataItems = dom->FindNumberOfElements("DataItem",
+                                                 xmlElement);
+    numDataItems += dom->FindNumberOfElements("DataTransform",
+                                              xmlElement);
+    numDataItems += dom->FindNumberOfElements("DataStructure",
+                                              xmlElement);
+
+    for (int i = 0; i < numDataItems; ++i) {
         int currNumVals = 1;
         XdmfDataItem xmfDataItem;
         xmfDataItem.SetDOM(element->GetDOM());
-        xmfDataItem.SetElement(element->GetDOM()->FindDataElement(i, element->GetElement()));
+        xmfDataItem.SetElement(dom->FindDataElement(i, xmlElement));
         xmfDataItem.UpdateInformation();
         int rank = xmfDataItem.GetRank();
         if (rank < 1) {
@@ -959,7 +1021,12 @@ int avtXdmfFileFormat::GetTopologicalDimensions(XdmfInt32 topologyType)
             return 1;
         case (XDMF_POLYGON):
         case (XDMF_TRI):
+        case (XDMF_TRI_6):
+        case (XDMF_TRI_7):
         case (XDMF_QUAD):
+        case (XDMF_QUAD_6):
+        case (XDMF_QUAD_8):
+        case (XDMF_QUAD_9):
         case (XDMF_2DSMESH):
         case (XDMF_2DRECTMESH):
         case (XDMF_2DCORECTMESH):
@@ -1009,53 +1076,16 @@ int avtXdmfFileFormat::GetSpatialDimensions(XdmfInt32 geometryType)
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
-//  Modifications:
-//      Eric Brugger, Wed Jan 12 14:52:54 PST 2011
-//      I modified the routine to return a single grid in the case of a
-//      collection where the collection type was unset (since the default
-//      type is spatial) and in the case of a tree. I also had it set the
-//      time in the case of a single time state.
+
 //
 // ****************************************************************************
 void avtXdmfFileFormat::GetTimes(std::vector<double> & times)
 {
-    XdmfXmlNode gridElement = dom->FindElementByPath("/Xdmf/Domain/Grid");
-    XdmfGrid grid;
-    grid.SetDOM(dom);
-    grid.SetElement(gridElement);
-    grid.UpdateInformation();
+    times.insert(times.begin(),
+                 timesteps.begin(),
+                 timesteps.end());
 
-    if (grid.GetGridType() == XDMF_GRID_COLLECTION) {
-        if (grid.GetCollectionType() == XDMF_GRID_COLLECTION_TEMPORAL) {
-            firstGrid = "/Xdmf/Domain/Grid/Grid";
-            XdmfGrid childGrid;
-            for (int i = 0; i < grid.GetNumberOfChildren(); ++i) {
-                std::stringstream gridLocation;
-                gridLocation << firstGrid << "[" << i + 1 << "]";
-                childGrid.SetDOM(dom);
-                childGrid.SetElement(dom->FindElementByPath(gridLocation.str().c_str()));
-                childGrid.UpdateInformation();
-                times.push_back(childGrid.GetTime()->GetValue());
-            }
-            numGrids = 1;
-        }
-        else if(grid.GetCollectionType() == XDMF_GRID_COLLECTION_SPATIAL ||
-                grid.GetCollectionType() == XDMF_GRID_COLLECTION_UNSET) {
-            numGrids = 1;
-            times.push_back(grid.GetTime()->GetValue());
-        }
-    }
-    else if (grid.GetGridType() == XDMF_GRID_TREE)
-    {
-        numGrids = 1;
-        times.push_back(grid.GetTime()->GetValue());
-    }
-    else
-    {
-        // Just throw an empty time in here because we only have one timestep
-        numGrids = dom->FindNumberOfElements("Grid", dom->FindElementByPath("/Xdmf/Domain"));
-        times.push_back(grid.GetTime()->GetValue());
-    }
+    return;
 }
 
 // ****************************************************************************
@@ -1262,22 +1292,30 @@ int avtXdmfFileFormat::GetVTKCellType(XdmfInt32 cellType)
             return VTK_QUADRATIC_EDGE;
         case XDMF_TRI_6:
             return VTK_QUADRATIC_TRIANGLE;
+        case XDMF_TRI_7:
+            return VTK_BIQUADRATIC_TRIANGLE;
+        case XDMF_QUAD_6:
+            return VTK_QUADRATIC_LINEAR_QUAD;
         case XDMF_QUAD_8:
             return VTK_QUADRATIC_QUAD;
+        case XDMF_QUAD_9:
+            return VTK_BIQUADRATIC_QUAD;
         case XDMF_TET_10:
             return VTK_QUADRATIC_TETRA;
         case XDMF_PYRAMID_13:
             return VTK_QUADRATIC_PYRAMID;
+        case XDMF_WEDGE_12:
+            return VTK_QUADRATIC_LINEAR_WEDGE;
         case XDMF_WEDGE_15:
             return VTK_QUADRATIC_WEDGE;
-//      case  XDMF_WEDGE_18 :
-//          return VTK_BIQUADRATIC_QUADRATIC_WEDGE ;
+        case  XDMF_WEDGE_18 :
+            return VTK_BIQUADRATIC_QUADRATIC_WEDGE;
         case XDMF_HEX_20:
             return VTK_QUADRATIC_HEXAHEDRON;
-//      case  XDMF_HEX_24 :
-//          return VTK_BIQUADRATIC_QUADRATIC_HEXAHEDRON ;
-//      case  XDMF_HEX_27 :
-//          return VTK_TRIQUADRATIC_HEXAHEDRON ;
+        case  XDMF_HEX_24 :
+            return VTK_BIQUADRATIC_QUADRATIC_HEXAHEDRON;
+        case  XDMF_HEX_27 :
+            return VTK_TRIQUADRATIC_HEXAHEDRON;
     }
     return VTK_EMPTY_CELL;
 }
@@ -1502,7 +1540,7 @@ vtkRectilinearGrid* avtXdmfFileFormat::ReadRectilinearGrid(XdmfGrid* grid)
     this->GetWholeExtent(grid, whole_extents);
 
     memcpy(update_extents, whole_extents, sizeof(int) * 6);
-    
+
     // convert to stridden update extents.
     int scaled_extents[6];
     this->ScaleExtents(update_extents, scaled_extents, this->Stride);
@@ -1510,7 +1548,7 @@ vtkRectilinearGrid* avtXdmfFileFormat::ReadRectilinearGrid(XdmfGrid* grid)
     int scaled_dims[3];
     this->GetDims(scaled_extents, scaled_dims);
 
-    // Now read rectilinear geometry.    
+    // Now read rectilinear geometry.
     XdmfGeometry* xmfGeometry = grid->GetGeometry();
 
     vtkDoubleArray * xarray = vtkDoubleArray::New();
@@ -1776,42 +1814,56 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
         delete[] xmfConnections;
     }
     else {
-        int vtkCellType = this->GetVTKCellType(grid->GetTopology()->GetTopologyType());
+        XdmfTopology * topology = grid->GetTopology();
 
+        XdmfInt32 topologyType = topology->GetTopologyType();
+        int vtkCellType = this->GetVTKCellType(topologyType);
+
+        XdmfGrid * newGrid = NULL;
         if (vtkCellType == VTK_EMPTY_CELL) {
+          if(topologyType == XDMF_HEX_64) {
+            vtkCellType = VTK_HEXAHEDRON;
+            XdmfHex64Generator generator;
+            XdmfGrid * newGrid = generator.Split(grid,
+                                   NULL,
+                                   false);
+            topology = newGrid->GetTopology();
+          }
+          else if(topologyType == XDMF_HEX_125) {
+            vtkCellType = VTK_HEXAHEDRON;
+            XdmfHex125Generator generator;
+            newGrid = generator.Split(grid,
+                                   NULL,
+                                   false);
+            topology = newGrid->GetTopology();
+          }
+          else {
             EXCEPTION0( InvalidSourceException);
+          }
         }
 
-        XdmfInt32 numPointsPerCell = grid->GetTopology()->GetNodesPerElement();
+        XdmfInt32 nodesPerElement = topology->GetNodesPerElement();
 
-        // Read Connectivity
-        XdmfInt64 conn_length = grid->GetTopology()->GetConnectivity()->GetNumberOfElements();
-        XdmfInt64 * xmfConnections = new XdmfInt64[conn_length];
-        grid->GetTopology()->GetConnectivity()->GetValues(0, xmfConnections, conn_length);
-
-        vtkIdType numCells = grid->GetTopology()->GetShapeDesc()->GetNumberOfElements();
-        int * cell_types = new int[numCells];
+        vtkIdType numCells = topology->GetNumberOfElements();
 
         /* Create Cell Array */
         vtkCellArray * cells = vtkCellArray::New();
 
         /* Get the pointer */
-        vtkIdType * cells_ptr = cells->WritePointer(numCells, numCells * (1 + numPointsPerCell));
+        vtkIdType * cells_ptr = cells->WritePointer(numCells, numCells * (1 + nodesPerElement));
 
-        /* xmfConnections: N p1 p2 ... pN */
-        /* i.e. Triangles : 3 0 1 2    3 3 4 5   3 6 7 8 */
-        vtkIdType index = 0;
-        for (vtkIdType cc = 0; cc < numCells; cc++) {
-            cell_types[cc] = vtkCellType;
-            *cells_ptr++ = numPointsPerCell;
-            for (vtkIdType i = 0; i < numPointsPerCell; i++) {
-                *cells_ptr++ = xmfConnections[index++];
-            }
+        XdmfInt32 arrayOffset = 0;
+        for(vtkIdType i=0; i<numCells; ++i) {
+          *cells_ptr++ = nodesPerElement;
+          topology->GetConnectivity()->GetValues(arrayOffset,
+                                                 cells_ptr,
+                                                 nodesPerElement);
+          cells_ptr += nodesPerElement;
+          arrayOffset += nodesPerElement;
         }
-        data->SetCells(cell_types, cells);
+        data->SetCells(vtkCellType, cells);
         cells->Delete();
-        delete[] xmfConnections;
-        delete[] cell_types;
+        delete newGrid;
     }
 
     // Read the geometry.
@@ -1822,6 +1874,7 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
     array->Delete();
     data->SetPoints(points);
     points->Delete();
+    grid->GetGeometry()->Release();
 
     return data;
 }
@@ -1859,7 +1912,7 @@ void avtXdmfFileFormat::ScaleExtents(int in_exts[6], int out_exts[6], int stride
 //  Purpose:
 //      Sets the current grid to the proper XdmfGrid needed to read from.
 //
-//  Arguments: 
+//  Arguments:
 //      int timestate --- current time being read.
 //      const char * meshname --- XdmfGrid name.
 //

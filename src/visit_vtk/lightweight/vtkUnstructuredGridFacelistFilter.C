@@ -496,6 +496,15 @@ static void AddQuadraticTetrahedron(vtkIdType *, int, HashEntryList &);
 static void AddQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
 static void AddQuadraticPyramid(vtkIdType *, int, HashEntryList &);
 static void AddQuadraticWedge(vtkIdType *, int, HashEntryList &);
+
+static void AddQuadraticLinearQuad(vtkIdType *, int, HashEntryList &);
+static void AddQuadraticLinearWedge(vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticTriangle(vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticQuad(vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticQuadraticWedge(vtkIdType *, int, HashEntryList &);
+static void AddBiQuadraticQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
+static void AddTriQuadraticHexahedron(vtkIdType *, int, HashEntryList &);
+
 static void AddUnknownCell(vtkCell *, int, HashEntryList &);
 
 static int  LoopOverAllCells(vtkUnstructuredGrid *, HashEntryList &);
@@ -2007,6 +2016,34 @@ LoopOverAllCells(vtkUnstructuredGrid *input, HashEntryList &list)
             AddQuadraticWedge(pts, cellId, list);
             break;
 
+          case VTK_QUADRATIC_LINEAR_QUAD:
+            AddQuadraticLinearQuad(pts, cellId, list);
+            break;
+
+          case VTK_QUADRATIC_LINEAR_WEDGE:
+            AddQuadraticLinearWedge(pts, cellId, list);
+            break;
+
+          case VTK_BIQUADRATIC_TRIANGLE:
+            AddBiQuadraticTriangle(pts, cellId, list);
+            break;         
+
+          case VTK_BIQUADRATIC_QUAD:
+            AddBiQuadraticQuad(pts, cellId, list);
+            break;
+
+          case VTK_BIQUADRATIC_QUADRATIC_WEDGE:
+            AddBiQuadraticQuadraticWedge(pts, cellId, list);
+            break;
+
+          case VTK_BIQUADRATIC_QUADRATIC_HEXAHEDRON:
+            AddBiQuadraticQuadraticHexahedron(pts, cellId, list);
+            break;
+
+          case VTK_TRIQUADRATIC_HEXAHEDRON:
+            AddTriQuadraticHexahedron(pts, cellId, list);
+            break;      
+
           default:
             AddUnknownCell(input->GetCell(cellId), cellId, list);
         }
@@ -2463,6 +2500,301 @@ AddQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
         nodes[2] = pts[quads[i][2]];
         nodes[3] = pts[quads[i][3]];
         list.AddQuad(nodes, cellId);
+    }
+}
+
+// ****************************************************************************
+// Function: AddQuadraticLinearQuad
+//
+// Purpose:
+//   Breaks up the faces of the quadratic linear quad into linear triangles and
+//   adds them to the list.
+//
+// Programmer: Kenneth Leiter
+// Creation:   Sun Feb 20 11:09:27 PST 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddQuadraticLinearQuad(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    vtkIdType nodes[3];
+    nodes[0] = pts[0];
+    nodes[1] = pts[5];
+    nodes[2] = pts[3];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[0];
+    nodes[1] = pts[4];
+    nodes[2] = pts[5];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[4];
+    nodes[1] = pts[1];
+    nodes[2] = pts[5];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[1];
+    nodes[1] = pts[2];
+    nodes[2] = pts[5];
+    list.AddTri(nodes, cellId);
+}
+
+// ****************************************************************************
+// Function: AddQuadraticLinearWedge
+//
+// Purpose:
+//   Breaks up the faces of the quadratic linear wedge into linear triangles and
+//   adds them to the list.
+//
+// Programmer: Kenneth Leiter
+// Creation:   Sun Feb 20 12:56:55 PST 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddQuadraticLinearWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    const int triangles[][3] = {
+        {0,6,8},{6,7,8},{6,1,7},{8,7,2},
+        {4,9,10},{9,11,10},{9,3,11},{10,11,5},
+    };
+    const int quads[][4] = {
+        {0,2,5,3},
+        {0,3,4,1},
+        {1,4,5,2}
+    };
+    vtkIdType nodes[4];
+    for(int i = 0; i < 8; ++i)
+    {
+        nodes[0] = pts[triangles[i][0]];
+        nodes[1] = pts[triangles[i][1]];
+        nodes[2] = pts[triangles[i][2]];
+        list.AddTri(nodes, cellId);
+    }
+    for(int i = 0; i < 3; ++i)
+    {
+        nodes[0] = pts[quads[i][0]];
+        nodes[1] = pts[quads[i][1]];
+        nodes[2] = pts[quads[i][2]];
+        nodes[3] = pts[quads[i][3]];
+        list.AddQuad(nodes, cellId);
+    }
+}
+
+// ****************************************************************************
+// Function: AddBiQuadraticTriangle
+//
+// Purpose:
+//   Breaks up the bi quadratic triangle into linear triangles and adds them
+//   to the hash entry list.
+//
+// Programmer: Kenneth Leiter
+// Creation:   Mon Feb 21 09:11:40 PST 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddBiQuadraticTriangle(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    vtkIdType nodes[3];
+    nodes[0] = pts[0];
+    nodes[1] = pts[3];
+    nodes[2] = pts[6];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[3];
+    nodes[1] = pts[1];
+    nodes[2] = pts[6];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[1];
+    nodes[1] = pts[4];
+    nodes[2] = pts[6];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[4];
+    nodes[1] = pts[2];
+    nodes[2] = pts[5];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[4];
+    nodes[1] = pts[5];
+    nodes[2] = pts[6];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[5];
+    nodes[1] = pts[0];
+    nodes[2] = pts[6];
+    list.AddTri(nodes, cellId);
+}
+
+// ****************************************************************************
+// Function: AddBiQuadraticQuad
+//
+// Purpose:
+//   Breaks up the bi quadratic quad into linear triangles and adds them
+//   to the hash entry list.
+//
+// Programmer: Kenneth Leiter
+// Creation:   Mon Feb 21 10:01:41 PST 2006
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddBiQuadraticQuad(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    vtkIdType nodes[3];
+    nodes[0] = pts[0];
+    nodes[1] = pts[4];
+    nodes[2] = pts[8];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[4];
+    nodes[1] = pts[1];
+    nodes[2] = pts[8];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[1];
+    nodes[1] = pts[5];
+    nodes[2] = pts[8];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[5];
+    nodes[1] = pts[2];
+    nodes[2] = pts[8];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[2];
+    nodes[1] = pts[6];
+    nodes[2] = pts[8];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[6];
+    nodes[1] = pts[3];
+    nodes[2] = pts[8];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[3];
+    nodes[1] = pts[7];
+    nodes[2] = pts[8];
+    list.AddTri(nodes, cellId);
+    nodes[0] = pts[7];
+    nodes[1] = pts[0];
+    nodes[2] = pts[8];
+    list.AddTri(nodes, cellId);
+}
+
+// ****************************************************************************
+// Function: AddBiQuadraticQuadraticWedge
+//
+// Purpose:
+//   Breaks up the faces of the bi quadratic wedge into linear triangles and
+//   adds them to the list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 29 14:32:38 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddBiQuadraticQuadraticWedge(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    const int triangles[][3] = {
+        {0,6,8},{6,7,8},{6,1,7},{8,7,2},
+        {4,9,10},{9,10,11},{9,3,11},{10,11,5},
+        {3,12,11},{11,14,5},{12,0,8},{14,8,2},
+        {5,14,10},{10,13,4},{14,2,7},{13,7,1},
+        {4,13,9},{9,12,3},{13,1,6},{12,6,0},
+        {6,15,13},{13,15,9},{9,15,12},{12,15,6},
+        {14,17,8},{11,17,14},{12,17,11},{8,17,12},
+        {14,7,16},{10,14,16},{13,10,16},{7,13,16}
+    };
+    vtkIdType nodes[3];
+    for(int i = 0; i < 32; ++i)
+    {
+        nodes[0] = pts[triangles[i][0]];
+        nodes[1] = pts[triangles[i][1]];
+        nodes[2] = pts[triangles[i][2]];
+        list.AddTri(nodes, cellId);
+    }
+}
+
+// ****************************************************************************
+// Function: AddBiQuadraticQuadraticHexahedron
+//
+// Purpose:
+//   Breaks up the faces of the bi quadratic hexahedron into linear triangles 
+//   and adds them to the list.
+//
+// Programmer: Kenneth Leiter
+// Creation:   Mon Feb 21 14:55:30 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddBiQuadraticQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    const int triangles[][3] = {
+        {0,8,16},{8,1,17},{17,5,12},{12,4,16},
+        {16,8,22},{8,17,22},{17,12,22},{12,16,22},
+        {1,9,17},{9,2,18},{18,6,13},{13,5,17},
+        {17,9,21},{9,18,21},{18,13,21},{13,17,21},
+        {2,10,18},{10,3,19},{19,7,14},{14,6,18},
+        {18,10,23},{10,19,23},{19,14,23},{14,18,23},
+        {3,11,19},{11,0,16},{16,4,15},{15,7,19},
+        {19,11,20},{11,16,20},{16,15,20},{15,19,20},
+        {4,12,15},{12,5,13},{13,6,14},{14,7,15},
+        {12,13,14},{12,14,15},
+        {3,10,11},{10,2,9},{9,1,8},{8,0,11},
+        {10,9,8},{10,8,11}        
+    };
+    vtkIdType nodes[3];
+    for(int i = 0; i < 44; ++i)
+    {
+        nodes[0] = pts[triangles[i][0]];
+        nodes[1] = pts[triangles[i][1]];
+        nodes[2] = pts[triangles[i][2]];
+        list.AddTri(nodes, cellId);
+    }
+}
+
+// ****************************************************************************
+// Function: AddTriQuadraticHexahedron
+//
+// Purpose:
+//   Breaks up the faces of the tri quadratic hexahedron into linear triangles 
+//   and adds them to the list.
+//
+// Programmer: Kenneth Leiter
+// Creation:   Mon Feb 21 14:55:30 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AddTriQuadraticHexahedron(vtkIdType *pts, int cellId, HashEntryList &list)
+{
+    const int triangles[][3] = {
+        {0,8,16},{8,1,17},{17,5,12},{12,4,16},
+        {16,8,22},{8,17,22},{17,12,22},{12,16,22},
+        {1,9,17},{9,2,18},{18,6,13},{13,5,17},
+        {17,9,21},{9,18,21},{18,13,21},{13,17,21},
+        {2,10,18},{10,3,19},{19,7,14},{14,6,18},
+        {18,10,23},{10,19,23},{19,14,23},{14,18,23},
+        {3,11,19},{11,0,16},{16,4,15},{15,7,19},
+        {19,11,20},{11,16,20},{16,15,20},{15,19,20},
+        {4,12,15},{12,5,13},{13,6,14},{14,7,15},
+        {15,12,25},{12,13,25},{13,14,25},{14,15,25},
+        {3,10,11},{10,2,9},{9,1,8},{8,0,11},
+        {9,8,24},{8,11,24},{11,10,24},{10,9,24}        
+    };
+    vtkIdType nodes[3];
+    for(int i = 0; i < 48; ++i)
+    {
+        nodes[0] = pts[triangles[i][0]];
+        nodes[1] = pts[triangles[i][1]];
+        nodes[2] = pts[triangles[i][2]];
+        list.AddTri(nodes, cellId);
     }
 }
 
