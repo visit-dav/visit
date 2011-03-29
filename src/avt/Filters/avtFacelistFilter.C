@@ -967,10 +967,13 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds, bool forceFaceConsolidation,
             int cellType = ug->GetCellType(i);
             switch (cellType)
             {
-              case VTK_QUADRATIC_EDGE:     noutcells += 1; break;
-              case VTK_QUADRATIC_TRIANGLE: noutcells += 4; break;
-              case VTK_QUADRATIC_QUAD:     noutcells += 6; break;
-              default:                     noutcells++;    break;
+              case VTK_QUADRATIC_EDGE:        noutcells += 1; break;
+              case VTK_QUADRATIC_TRIANGLE:    noutcells += 4; break;
+              case VTK_QUADRATIC_QUAD:        noutcells += 6; break;
+              case VTK_QUADRATIC_LINEAR_QUAD: noutcells += 4; break;
+              case VTK_BIQUADRATIC_TRIANGLE:  noutcells += 6; break;
+              case VTK_BIQUADRATIC_QUAD:      noutcells += 8; break;
+              default:                        noutcells++;    break;
             }
         }
 
@@ -1050,6 +1053,108 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds, bool forceFaceConsolidation,
                 idlist_cor->SetId(0, idlist->GetId(4));
                 idlist_cor->SetId(1, idlist->GetId(5));
                 idlist_cor->SetId(2, idlist->GetId(6));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+            }
+            else if (cellType == VTK_QUADRATIC_LINEAR_QUAD)
+            {
+                idlist_cor->SetNumberOfIds(3);
+                idlist_cor->SetId(0, idlist->GetId(0));
+                idlist_cor->SetId(1, idlist->GetId(5));
+                idlist_cor->SetId(2, idlist->GetId(3));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(0));
+                idlist_cor->SetId(1, idlist->GetId(4));
+                idlist_cor->SetId(2, idlist->GetId(5));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(4));
+                idlist_cor->SetId(1, idlist->GetId(1));
+                idlist_cor->SetId(2, idlist->GetId(5));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(1));
+                idlist_cor->SetId(1, idlist->GetId(2));
+                idlist_cor->SetId(2, idlist->GetId(5));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+            }
+            else if (cellType == VTK_BIQUADRATIC_TRIANGLE)
+            {
+                idlist_cor->SetNumberOfIds(3);
+                idlist_cor->SetId(0, idlist->GetId(0));
+                idlist_cor->SetId(1, idlist->GetId(3));
+                idlist_cor->SetId(2, idlist->GetId(6));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(3));
+                idlist_cor->SetId(1, idlist->GetId(1));
+                idlist_cor->SetId(2, idlist->GetId(6));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(1));
+                idlist_cor->SetId(1, idlist->GetId(4));
+                idlist_cor->SetId(2, idlist->GetId(6));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(4));
+                idlist_cor->SetId(1, idlist->GetId(2));
+                idlist_cor->SetId(2, idlist->GetId(5));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(4));
+                idlist_cor->SetId(1, idlist->GetId(5));
+                idlist_cor->SetId(2, idlist->GetId(6));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(5));
+                idlist_cor->SetId(1, idlist->GetId(0));
+                idlist_cor->SetId(2, idlist->GetId(6));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+            }
+            else if (cellType == VTK_BIQUADRATIC_QUAD)
+            {
+                idlist_cor->SetNumberOfIds(3);
+                idlist_cor->SetId(0, idlist->GetId(0));
+                idlist_cor->SetId(1, idlist->GetId(4));
+                idlist_cor->SetId(2, idlist->GetId(8));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(4));
+                idlist_cor->SetId(1, idlist->GetId(1));
+                idlist_cor->SetId(2, idlist->GetId(8));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(1));
+                idlist_cor->SetId(1, idlist->GetId(5));
+                idlist_cor->SetId(2, idlist->GetId(8));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(5));
+                idlist_cor->SetId(1, idlist->GetId(2));
+                idlist_cor->SetId(2, idlist->GetId(8));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(2));
+                idlist_cor->SetId(1, idlist->GetId(6));
+                idlist_cor->SetId(2, idlist->GetId(8));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(6));
+                idlist_cor->SetId(1, idlist->GetId(3));
+                idlist_cor->SetId(2, idlist->GetId(8));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(3));
+                idlist_cor->SetId(1, idlist->GetId(7));
+                idlist_cor->SetId(2, idlist->GetId(8));
+                newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
+                out_cd->CopyData(in_cd, i, newid);
+                idlist_cor->SetId(0, idlist->GetId(7));
+                idlist_cor->SetId(1, idlist->GetId(0));
+                idlist_cor->SetId(2, idlist->GetId(8));
                 newid = out_ds->InsertNextCell(VTK_TRIANGLE, idlist_cor);
                 out_cd->CopyData(in_cd, i, newid);
             }
