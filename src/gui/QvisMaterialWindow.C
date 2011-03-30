@@ -151,6 +151,10 @@ QvisMaterialWindow::~QvisMaterialWindow()
 //    Jeremy Meredith, Thu Mar 25 12:27:49 EDT 2010
 //    Renamed some algorithms, added some window hints.
 //
+//    Jeremy Meredith, Wed Mar 30 13:58:59 EDT 2011
+//    Re-enable clean-zones-only.  It seems to work fine, so I suspect it
+//    was disabled by accident, not intentionally.
+//
 // ****************************************************************************
 
 void
@@ -191,7 +195,6 @@ QvisMaterialWindow::CreateWindowContents()
     mainLayout->addWidget(forceMIR, 3,0);
 
     cleanZonesOnly = new QCheckBox(tr("Clean zones only"), central);
-    cleanZonesOnly->setEnabled(false);
     connect(cleanZonesOnly, SIGNAL(toggled(bool)),
             this, SLOT(cleanZonesOnlyChanged(bool)));
     mainLayout->addWidget(cleanZonesOnly, 4,0);
