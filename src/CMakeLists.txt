@@ -230,6 +230,10 @@
 #    3rd party FOO lib. It was not working previously. I also removed
 #    redundancy in args passed to VISIT_3RDPARTY_VAR/DEP macros
 #    (VISIT_FOO_DIR and FOO_DIR replaced with just FOO_DIR).
+#
+#    Mark C. Miller, Wed Mar 30 09:30:49 PDT 2011
+#    Fixed VISIT_3RDPARTY_VAR/DEP macros to define empty string ("") when
+#    a lib's symbols are not defined instead of -NOTFOUND.
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -432,8 +436,8 @@ OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third 
 
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
     IF(NOT DEFINED VISIT_${libvar})
-        # Create an entry for this path variable 
-        SET(VISIT_${libvar} "VISIT_${libvar}-NOTFOUND" CACHE PATH "${comment}")
+        # Create an empty entry for this path variable 
+        SET(VISIT_${libvar} "" CACHE PATH "${comment}")
     ELSE(NOT DEFINED VISIT_${libvar})
         IF(DEFINED ${libvar})
             # Ensure VISIT_FOO_DIR=FOO_DIR (override from CL)
@@ -448,7 +452,7 @@ ENDMACRO(VISIT_3RDPARTY_VAR libvar comment)
 MACRO(VISIT_3RDPARTY_DEP libvar comment)
     IF(NOT DEFINED VISIT_${libvar})
         # Create an entry for this string variable 
-        SET(VISIT_${libvar} "VISIT_${libvar}-NOTSET" CACHE STRING "${comment}")
+        SET(VISIT_${libvar} "" CACHE STRING "${comment}")
     ELSE(NOT DEFINED VISIT_${libvar})
         IF(DEFINED ${libvar})
             # Ensure VISIT_FOO_LIBDEP=FOO_LIBDEP (override from CL)

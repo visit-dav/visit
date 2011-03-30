@@ -2354,11 +2354,10 @@ vtkCSGGrid::GetMultiPassDiscretization(int specificZone)
 
 #endif
 
-
 bool
 vtkCSGGrid::AddCutZones(vtkUnstructuredGrid *cutBox,
     vtkPoints *points, vtkUnstructuredGrid *ugrid,
-    map<float, map<float, map<float, int> > >& nodemap)
+    coordmap_t& nodemap)
 {
     bool addedAPiece = false;
     for (int i = 0; i < cutBox->GetNumberOfCells(); i++)
@@ -2382,11 +2381,12 @@ vtkCSGGrid::AddCutZones(vtkUnstructuredGrid *cutBox,
             int Iz = (int) (z / epsTol * 10000.0 + 0.5);
             float fz = Iz * epsTol / 10000.0;
 
-            int mapId = nodemap[fx][fy][fz];
+            coord_t coord(fx,fy,fz);
+            int mapId = nodemap[coord];
             if (mapId == 0)
             {
                 points->InsertNextPoint(fx,fy,fz);
-                nodemap[fx][fy][fz] = points->GetNumberOfPoints()-1;
+                nodemap[coord] = points->GetNumberOfPoints()-1;
                 pointIds[j] = points->GetNumberOfPoints()-1;
             }
             else
@@ -2410,7 +2410,7 @@ vtkCSGGrid::AddCutZones(vtkUnstructuredGrid *cutBox,
 void
 vtkCSGGrid::MakeMeshZone(const Box *theBox,
     vtkPoints *points, vtkUnstructuredGrid *ugrid,
-    map<float, map<float, map<float, int> > >& nodemap)
+    coordmap_t& nodemap)
 {
     // Add points first
     int pointIds[8] = {0,0,0,0,0,0,0,0};
@@ -2437,11 +2437,12 @@ vtkCSGGrid::MakeMeshZone(const Box *theBox,
         int Iz = (int) (z / epsTol * 10000.0 + 0.5);
         float fz = Iz * epsTol / 10000.0;
 
-        int mapId = nodemap[fx][fy][fz];
+        coord_t coord(fx,fy,fz);
+        int mapId = nodemap[coord];
         if (mapId == 0)
         {
             points->InsertNextPoint(fx,fy,fz);
-            nodemap[fx][fy][fz] = points->GetNumberOfPoints()-1;
+            nodemap[coord] = points->GetNumberOfPoints()-1;
             pointIds[i] = points->GetNumberOfPoints()-1;
         }
         else
@@ -2495,7 +2496,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
     const map<int,int>& boundaryToStateMap,
     map<int,int>& boundaryToSenseMap, int zoneId,
     vtkPoints *points, vtkUnstructuredGrid *ugrid,
-    map<float, map<float, map<float, int> > >& nodemap)
+    coordmap_t& nodemap)
 {
     //
     // Start by making an initial vtkUnstructuredGrid from the box
@@ -2505,7 +2506,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
     vtkUnstructuredGrid *boxUgrid = vtkUnstructuredGrid::New();
     boxUgrid->SetPoints(boxPoints);
     boxPoints->Delete();
-    map<float, map<float, map<float, int> > > dummyNodemap;
+    coordmap_t dummyNodemap;
     MakeMeshZone(theBox, boxPoints, boxUgrid, dummyNodemap);
 
     //
@@ -2689,7 +2690,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox2(const Box *theBox,
     const map<int,int>& boundaryToStateMap,
     map<int,int>& boundaryToSenseMap, int zoneId,
     vtkPoints *points, vtkUnstructuredGrid *ugrid,
-    map<float, map<float, map<float, int> > >& nodemap)
+    coordmap_t& nodemap)
 {
     //
     // Start by making an initial vtkUnstructuredGrid from the box
@@ -2699,7 +2700,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox2(const Box *theBox,
     vtkUnstructuredGrid *boxUgrid = vtkUnstructuredGrid::New();
     boxUgrid->SetPoints(boxPoints);
     boxPoints->Delete();
-    map<float, map<float, map<float, int> > > dummyNodemap;
+    coordmap_t dummyNodemap;
     MakeMeshZone(theBox, boxPoints, boxUgrid, dummyNodemap);
 
     //
@@ -2779,7 +2780,7 @@ vtkCSGGrid::DiscretizeSpace3(
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(points);
     points->Delete();
-    map<float, map<float, map<float, int> > > nodemap;
+    coordmap_t nodemap;
 
     //
     // Convert list of zones to list of boundaries (leaves in

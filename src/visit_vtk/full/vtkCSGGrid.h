@@ -599,59 +599,109 @@ public:
     vector<int> zids;
 };
 
-  static bool AddCutZones(vtkUnstructuredGrid *cutBox, vtkPoints *points,
-                           vtkUnstructuredGrid *ugrid,
-                           map<float, map<float, map<float, int> > >& nodemap);
-  static void MakeMeshZone(const Box *aBox, vtkPoints *points,
-                           vtkUnstructuredGrid *ugrid,
-                           map<float, map<float, map<float, int> > >& nodemap);
-  bool MakeMeshZonesByCuttingBox4(const Box *aBox,
-                           const map<int,int>& boundaryToStateMap,
-                           map<int,int>& boundaryToSenseMap, int zoneId,
-                           vtkPoints *points, vtkUnstructuredGrid *ugrid,
-                           map<float, map<float, map<float, int> > >& nodemap);
-  bool MakeMeshZonesByCuttingBox2(const Box *aBox,
-                           const map<int,int>& boundaryToStateMap,
-                           map<int,int>& boundaryToSenseMap, int zoneId,
-                           vtkPoints *points, vtkUnstructuredGrid *ugrid,
-                           map<float, map<float, map<float, int> > >& nodemap);
-  static void MakeMeshZonesByCuttingBox(const Box *aBox,
-                           map<vtkImplicitFunction*,Box::FuncState> funcToStateMap,
-                           vector<RegionOp> senses,
-                           vtkPoints *points, vtkUnstructuredGrid *ugrid,
-                           map<float, map<float, map<float, int> > >& nodemap);
-  void AddBoundariesForZone2(int, vector<int> *bnds, vector<int> *senses);
-  void AddBoundariesForZone(vtkImplicitFunction *func,
-                                   vector<vtkImplicitFunction*> *bnds,
-                                   vector<RegionOp> *senses);
-  int EvalBoxStateOfRegion(const Box *const curBox, int regId,
-        map<int,int>& boundaryToStateMap, double tol);
+class coord_t {
+public:
+    float c[3];
+    coord_t() {c[0]=0; c[1]=0; c[2]=0;};
+    coord_t(const float c_[3])
+    {c[0]=c_[0]; c[1]=c_[1]; c[2]=c_[2];};
+    coord_t(float a0, float a1, float a2)
+    {c[0]=a0; c[1]=a1; c[2]=a2; };
+    coord_t& operator=(const coord_t& rhs)
+    { c[0]=rhs.c[0]; c[1]=rhs.c[1]; c[2]=rhs.c[2]; return *this;};
+};
 
-  double tmpFloats[32];                       // temporary storage to help satisfy interface
-                                             //    requirements of vtkDataSet
+struct coordcomp {
+    bool operator() (const coord_t& lhs, const coord_t& rhs) const
+    {
+        if (lhs.c[0] < rhs.c[0])
+        {
+            return true;
+        }
+        else if (lhs.c[0] == rhs.c[0])
+        {
+    if (lhs.c[1] < rhs.c[1])
+    {
+        return true;
+    }
+    else if (lhs.c[1] == rhs.c[1])
+    {
+        if (lhs.c[2] < rhs.c[2])
+        {
+            return true;
+        }
+        else 
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+else
+{
+    return false;
+}
+}
+};
 
-  vtkPlanes *Universe;                       // The "universe" set (a maximally sized box)
+typedef map<coord_t,int,coordcomp> coordmap_t;
 
-  map<vtkImplicitFunction *, vtkIdType> funcMap;
+static bool AddCutZones(vtkUnstructuredGrid *cutBox, vtkPoints *points,
+                   vtkUnstructuredGrid *ugrid,
+                   coordmap_t& nodemap);
+static void MakeMeshZone(const Box *aBox, vtkPoints *points,
+                   vtkUnstructuredGrid *ugrid,
+                   coordmap_t& nodemap);
+bool MakeMeshZonesByCuttingBox4(const Box *aBox,
+                   const map<int,int>& boundaryToStateMap,
+                   map<int,int>& boundaryToSenseMap, int zoneId,
+                   vtkPoints *points, vtkUnstructuredGrid *ugrid,
+                   coordmap_t& nodemap);
+bool MakeMeshZonesByCuttingBox2(const Box *aBox,
+                   const map<int,int>& boundaryToStateMap,
+                   map<int,int>& boundaryToSenseMap, int zoneId,
+                   vtkPoints *points, vtkUnstructuredGrid *ugrid,
+                   coordmap_t& nodemap);
+static void MakeMeshZonesByCuttingBox(const Box *aBox,
+                   map<vtkImplicitFunction*,Box::FuncState> funcToStateMap,
+                   vector<RegionOp> senses,
+                   vtkPoints *points, vtkUnstructuredGrid *ugrid,
+                   coordmap_t& nodemap);
+void AddBoundariesForZone2(int, vector<int> *bnds, vector<int> *senses);
+void AddBoundariesForZone(vtkImplicitFunction *func,
+                           vector<vtkImplicitFunction*> *bnds,
+                           vector<RegionOp> *senses);
+int EvalBoxStateOfRegion(const Box *const curBox, int regId,
+map<int,int>& boundaryToStateMap, double tol);
 
-  vtkImplicitFunction *GetBoundaryFunc(vtkIdType id) const;
-  vtkImplicitFunction *GetRegionFunc(vtkIdType id) const;
+double tmpFloats[32];                       // temporary storage to help satisfy interface
+                                     //    requirements of vtkDataSet
 
-  vtkCSGGrid(const vtkCSGGrid&);             // Not implemented.
-  void operator=(const vtkCSGGrid&);         // Not implemented.
+vtkPlanes *Universe;                       // The "universe" set (a maximally sized box)
+
+map<vtkImplicitFunction *, vtkIdType> funcMap;
+
+vtkImplicitFunction *GetBoundaryFunc(vtkIdType id) const;
+vtkImplicitFunction *GetRegionFunc(vtkIdType id) const;
+
+vtkCSGGrid(const vtkCSGGrid&);             // Not implemented.
+void operator=(const vtkCSGGrid&);         // Not implemented.
 };
 
 
 inline vtkIdType vtkCSGGrid::GetNumberOfPoints()
 {
-  vtkErrorMacro("GetNumberOfPoints() means GetNumberOfBoundaries()");
-  vtkErrorMacro("Use GetNumberOfBoundaries() to avoid this message");
-  return GetNumberOfBoundaries();
+vtkErrorMacro("GetNumberOfPoints() means GetNumberOfBoundaries()");
+vtkErrorMacro("Use GetNumberOfBoundaries() to avoid this message");
+return GetNumberOfBoundaries();
 };
 
 inline vtkIdType vtkCSGGrid::GetNumberOfBoundaries() const
 {
-  return (vtkIdType) this->Boundaries->GetNumberOfItems();
+return (vtkIdType) this->Boundaries->GetNumberOfItems();
 };
 
 inline vtkIdType vtkCSGGrid::GetNumberOfCells() 
