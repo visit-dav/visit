@@ -87,11 +87,19 @@ static std::string vecNames[3] = { "X-", "Y-", "Z-" };
 //    Add support for old-style PFLOTRAN files where the coordinate
 //    arrays represented cell centers.
 //
+//    Jeremy Meredith, Wed Mar 30 12:57:00 EDT 2011
+//    Initialize various HDF5 ids to -1.
+//
 // ****************************************************************************
 
 avtPFLOTRANFileFormat::avtPFLOTRANFileFormat(const char *fname):
     avtMTMDFileFormat(fname)
 {
+    fileID = -1;
+    dimID[0] = -1;
+    dimID[1] = -1;
+    dimID[2] = -1;
+
     filename = strdup(fname);
     opened = false;
     nTime = 0;
@@ -157,6 +165,10 @@ avtPFLOTRANFileFormat::GetNTimesteps(void)
 //    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
 //    Close all open ids when returning an exception.
 //
+//    Jeremy Meredith, Wed Mar 30 12:33:56 EDT 2011
+//    More ids left to close.  Also, open the file in a way that is more
+//    strict about detecting unclosed files/ids.
+//
 // ****************************************************************************
 
 void
@@ -168,8 +180,21 @@ avtPFLOTRANFileFormat::LoadFile(void)
     // Initialize HDF5.
     H5open();
 
+    // We want it to be aggressive about closing the file when we tell it to.
+    hid_t fileAccessPropListID = H5Pcreate(H5P_FILE_ACCESS);
+    if (fileAccessPropListID < 0)
+    {
+        EXCEPTION1(ImproperUseException, "Couldn't H5Pcreate");
+    }
+    herr_t err = H5Pset_fclose_degree(fileAccessPropListID, H5F_CLOSE_SEMI);
+    if (err < 0)
+    {
+        EXCEPTION1(ImproperUseException, "Couldn't set file close access");
+    }
+
     // Grab the file and begin.
-    fileID = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
+    fileID = H5Fopen(filename, H5F_ACC_RDONLY, fileAccessPropListID);
+    H5Pclose(fileAccessPropListID);
     if (fileID < 0)
     {
         debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open <" << filename << ">" << endl;
@@ -199,6 +224,7 @@ avtPFLOTRANFileFormat::LoadFile(void)
         hid_t dimSpaceID = H5Dget_space(dimID[dim]);
         if (dimSpaceID < 0)
         {
+            H5Gclose(coordsGID);
             H5Fclose(fileID);
             debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not get the space information for the " << coordNames[dim] << " coordinate in file " << filename << endl;
             EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have valid coordinates data.");
@@ -206,6 +232,7 @@ avtPFLOTRANFileFormat::LoadFile(void)
         int ndims = H5Sget_simple_extent_ndims(dimSpaceID);
         if (ndims != 1)
         {
+            H5Gclose(coordsGID);
             H5Fclose(fileID);
             debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "The " << coordNames[dim] << " coordinate is not one dimensional" << endl;
             EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since some coordinate data is not one dimensional.");
@@ -215,6 +242,7 @@ avtPFLOTRANFileFormat::LoadFile(void)
 
         globalDims[dim] = dims;
     }
+    H5Gclose(coordsGID);
 
     // Look for groups starting with "Time:".  They're our timesteps.
     hsize_t nObjs;
@@ -259,13 +287,40 @@ avtPFLOTRANFileFormat::LoadFile(void)
 //  Programmer: Sean Ahern
 //  Creation:   Thu Apr 24 14:00:58 PST 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Mar 30 12:30:09 EDT 2011
+//    Close the data sets we opened earlier.  Also, we can now check for an
+//    error during H5Fclose (due to file access property setting when opening
+//    the file), and report it if we encountered it.
+//
 // ****************************************************************************
 
 void
 avtPFLOTRANFileFormat::FreeUpResources(void)
 {
+    if (dimID[0] > 0)
+        H5Dclose(dimID[0]);
+    if (dimID[1] > 0)
+        H5Dclose(dimID[1]);
+    if (dimID[2] > 0)
+        H5Dclose(dimID[2]);
+    dimID[0] = -1;
+    dimID[1] = -1;
+    dimID[2] = -1;
+
     if (fileID > 0)
-        H5Fclose(fileID);
+    {
+        herr_t err = H5Fclose(fileID);
+        if (err < 0)
+        {
+            EXCEPTION1(ImproperUseException,
+                       "avtPFLOTRANFileFormat::FreeUpResources: "
+                       "Couldn't close the file properly; this is likely due "
+                       "to not closing all open objects in the file.  Please "
+                       "report this to a VisIt developer.");
+        }
+    }
+    fileID = -1;
     opened = false;
 }
 
@@ -486,6 +541,9 @@ avtPFLOTRANFileFormat::AddGhostCellInfo(vtkDataSet *ds)
 //    Daniel Schep, Thu Aug 26 15:30:18 EDT 2010
 //    Added support for returning vector and material data.
 //
+//    Jeremy Meredith, Wed Mar 30 12:58:02 EDT 2011
+//    Close any HDF5 group/dataset we open.
+//
 // ****************************************************************************
 
 void
@@ -514,13 +572,13 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
     md->Add(mesh);
 
     // Look in the timestep for the list of variables.
-    hid_t g = H5Gopen(fileID, times[timeState].second.c_str());
+    hid_t timeGID = H5Gopen(fileID, times[timeState].second.c_str());
     hsize_t nObjs;
-    H5Gget_num_objs(g, &nObjs);
+    H5Gget_num_objs(timeGID, &nObjs);
     for(int i=0;i<nObjs;i++)
     {
         char name[512];
-        H5Gget_objname_by_idx(g, i, name, 512);
+        H5Gget_objname_by_idx(timeGID, i, name, 512);
 
         // Check if variable is a Vector component
         char* vecMatch;
@@ -541,7 +599,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
             continue; // Don't add vectors components as scalars.
         }
 
-        hid_t ds = H5Dopen(g, name);
+        hid_t ds = H5Dopen(timeGID, name);
         hid_t dsSpace = H5Dget_space(ds);
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
         if (ndims != 3)
@@ -633,12 +691,15 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
             oldFileNeedingCoordFixup = (globalDims[0]==varDimsForOldFileTest[0]);
         }        
 
+        H5Dclose(ds);
+
         avtScalarMetaData *scalar = new avtScalarMetaData();
         scalar->name = name;
         scalar->meshName = "mesh";
         scalar->centering = AVT_ZONECENT;
         md->Add(scalar);
     }
+    H5Gclose(timeGID);
 
     //add metadata for vectors if they have 3 components
     for (map<string, vector<string> >::iterator iter=vectors.begin();
@@ -815,6 +876,9 @@ avtPFLOTRANFileFormat::GetMesh(int, int domain, const char *)
 //    Add support for old-style PFLOTRAN files where the coordinate
 //    arrays represented cell centers.
 //
+//    Jeremy Meredith, Wed Mar 30 12:58:02 EDT 2011
+//    Close any HDF5 group/dataset we open.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -830,6 +894,8 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
     int ndims = H5Sget_simple_extent_ndims(dsSpace);
     if (ndims != 3)
     {
+        H5Dclose(ds);
+        H5Gclose(ts);
         debug1 << "The variable " << varname << " had only " << ndims << " dimensions" << endl;
         EXCEPTION1(InvalidVariableException, varname);
     }
@@ -893,6 +959,9 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
         delete [] in;
     }
 
+    H5Dclose(ds);
+    H5Gclose(ts);
+
     return array;
 }
 
@@ -917,6 +986,9 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
 //    Daniel Schep, Thu Aug 26 15:30:18 EDT 2010
 //    Implemented support to return vector data.
 //
+//    Jeremy Meredith, Wed Mar 30 12:58:02 EDT 2011
+//    Close any HDF5 group/dataset we open.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -934,12 +1006,14 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
     hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
     vtkDoubleArray *array;
     for(int comp=0; comp<3; comp++)
-        {
+    {
         hid_t ds = H5Dopen(ts, varnames[comp].c_str());
         hid_t dsSpace = H5Dget_space(ds);
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
         if (ndims != 3)
         {
+            H5Dclose(ds);
+            H5Gclose(ts);
             debug1 << "The variable " << varname << " had only " << ndims << " dimensions" << endl;
             EXCEPTION1(InvalidVariableException, varname);
         }
@@ -1007,7 +1081,11 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
 
             delete [] in;
         }
+
+        H5Dclose(ds);
     }
+
+    H5Gclose(ts);
 
     return array;
 }
@@ -1036,6 +1114,10 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
 //  Programmer: Daniel Schep
 //  Creation:   Thu Aug 26 14:14:09 EDT 2010
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Mar 30 13:17:54 EDT 2011
+//    Close any HDF5 group/dataset we open.
+//
 // ****************************************************************************
 
 void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep, 
@@ -1043,7 +1125,6 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
                                     DestructorFunction &df)
 {
     void *retval = 0;
-
 
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
@@ -1057,6 +1138,8 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
         if (ndims != 3)
         {
+            H5Dclose(ds);
+            H5Gclose(ts);
             debug1 << "The variable " << var << " had only " << ndims << " dimensions" << endl;
             EXCEPTION1(InvalidVariableException, var);
         }
@@ -1134,6 +1217,10 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
 
         retval = (void*)mat;
         df = avtMaterial::Destruct;
+
+        H5Dclose(ds);
+        H5Gclose(ts);
+
     }
 
     return retval;

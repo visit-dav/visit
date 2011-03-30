@@ -397,6 +397,9 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Jeremy Meredith, Thu Jan  7 15:36:19 EST 2010
 //    Close all open ids when returning an exception.
 //
+//    Jeremy Meredith, Wed Mar 30 13:30:13 EDT 2011
+//    More of the previous: close the file when returing an exception.
+//
 // ****************************************************************************
 
 extern "C"  herr_t
@@ -444,12 +447,14 @@ avtChomboFileFormat::InitializeReader(void)
     hid_t global = H5Gopen(file_handle, "Chombo_global");
     if (global < 0)
     {
+        H5Fclose(file_handle);
         EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, does "
                                            "not have Chombo_global");
     }
     hid_t dim_id = H5Aopen_name(global, "SpaceDim");
     if (dim_id < 0)
     {
+        H5Fclose(file_handle);
         EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, does "
                                          "not have SpaceDim in Chombo_global");
     }
@@ -457,6 +462,7 @@ avtChomboFileFormat::InitializeReader(void)
     if (dimension != 2 && dimension != 3)
     {
         debug1 << "ERROR: Reader only supports 2D and 3D data sets." << endl;
+        H5Fclose(file_handle);
         EXCEPTION1(InvalidFilesException, filenames[0]);
     }
     H5Aclose(dim_id);
