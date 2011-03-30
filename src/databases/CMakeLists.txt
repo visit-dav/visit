@@ -95,6 +95,9 @@
 #    Brad Whitlock, Wed Feb 23 11:52:22 PST 2011
 #    Add VelodyneCLE "AMR" plugin from Corvid.
 #
+#    Eric Brugger, Wed Mar 30 11:58:31 PDT 2011
+#    I added the lata database reader contributed by CEA.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -257,6 +260,7 @@ VTK
 WavefrontOBJ
 XYZ
 Xmdv
+lata
 paraDIS
 paraDIS_tecplot
 )
