@@ -67,7 +67,7 @@
 using std::vector;
 
 // Programmer: John C. Anderson, Fri Oct 31 12:53:10 2008
-#define RANDOM ((double) rand() / (double) (RAND_MAX+1))
+#define RANDOM (double(rand()) / (double(RAND_MAX)+1.))
 
 
 // WARNING by John C. Anderson: The following arrays are probably
