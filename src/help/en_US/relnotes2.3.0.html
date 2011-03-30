@@ -1,11 +1,11 @@
 <!doctype html public "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta http-equiv="Content-Language" content="en-us">
-   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-   <meta name="ProgId" content="FrontPage.Editor.Document">
-   <title>VisIt 2.3 Release Notes</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <title>VisIt 2.3 Release Notes</title>
 </head>
 <body>
 
@@ -17,81 +17,96 @@ enhancements and bug-fixes that were added to this release.</p>
 
 <p><b>Sections</b></p>
 <ul>
-    <li><a href="#General_Features">Features for all users</a></li>
-    <li><a href="#Advanced_Features">Features for advanced users</a></li>
-    <li><a href="#File_format">Changes to file format readers</a></li>
-    <li><a href="#Plot_changes">Changes to plots</a></li>
-    <li><a href="#Operator_changes">Changes to operators</a></li>
-    <li><a href="#Expression_changes">Changes to expressions</a></li>
-    <li><a href="#Query_changes">Changes to picks and queries</a></li>
-    <li><a href="#Bugs_fixed">Other bug fixes</a></li>
-    <li><a href="#Config_changes">Changes to machine configuration files</a></li>
-    <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+  <li><a href="#General_Features">Features for all users</a></li>
+  <li><a href="#Advanced_Features">Features for advanced users</a></li>
+  <li><a href="#File_format">Changes to file format readers</a></li>
+  <li><a href="#Plot_changes">Changes to plots</a></li>
+  <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
+  <li><a href="#Query_changes">Changes to picks and queries</a></li>
+  <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Config_changes">Changes to machine configuration files</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 2.3</font></b></p>
 <ul>
-     <li></li>
+  <li></li>
 </ul>
 
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.3</font></b></p>
 <ul>
-     <li>VisIt now provides a SWIG-generated Python binding for libsim that allows you to instrument your Python simulations so VisIt can connect to them and access their data.</li>
-     <li>Libsim's <i>VisItSetupEnvironment</i> function was enhanced so it can automatically broadcast the environment from the rank 0 processor to other processors in order to reduce simulation startup time. To ensure that you benefit from this behavior, you must call <i>VisItSetupEnvironment</i> after making calls to <i>VisItSetParallel</i>, <i>VisItSetParallelRank</i>, and <i>VisItSetBroadcastStringFunction</i>.</li>
-     <li>Libsim has new <i>VisItGetEnvironment</i> and <i>VisItSetupEnvironment2</i> functions. The <i>VisItGetEnvironment</i> function returns the environment that VisIt needs to run. This string must be passed to <i>VisItSetupEnvironment2</i> which is identical to <i>VisItSetupEnvironment</i> except that it lets you pass in the environment string. This is useful in the event that you need to determine the environment prior to calling MPI_Init. If you pass NULL to <i>VisItSetupEnvironment2</i> for non rank 0 processes then they will participate in a broadcast of the environment from rank 0 if you have informed libsim that your simulation is parallel.</li>
+  <li>VisIt now provides a SWIG-generated Python binding for libsim that allows you to instrument your Python simulations so VisIt can connect to them and access their data.</li>
+  <li>Libsim's <i>VisItSetupEnvironment</i> function was enhanced so it can automatically broadcast the environment from the rank 0 processor to other processors in order to reduce simulation startup time. To ensure that you benefit from this behavior, you must call <i>VisItSetupEnvironment</i> after making calls to <i>VisItSetParallel</i>, <i>VisItSetParallelRank</i>, and <i>VisItSetBroadcastStringFunction</i>.</li>
+  <li>Libsim has new <i>VisItGetEnvironment</i> and <i>VisItSetupEnvironment2</i> functions. The <i>VisItGetEnvironment</i> function returns the environment that VisIt needs to run. This string must be passed to <i>VisItSetupEnvironment2</i> which is identical to <i>VisItSetupEnvironment</i> except that it lets you pass in the environment string. This is useful in the event that you need to determine the environment prior to calling MPI_Init. If you pass NULL to <i>VisItSetupEnvironment2</i> for non rank 0 processes then they will participate in a broadcast of the environment from rank 0 if you have informed libsim that your simulation is parallel.</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.3</font></b></p>
 <ul>
-     <li>Corvid Technologies contributed a VelodyneCLE <i>AMR</i> reader.</li>
-     <li>The Nek5000 reader now properly marks interior elements as "ghost", meaning they will not show up with transparent Pseudocolor plots.</li>
+  <li>Corvid Technologies contributed a VelodyneCLE <i>AMR</i> reader.</li>
+  <li>The Nek5000 reader now properly marks interior elements as "ghost", meaning they will not show up with transparent Pseudocolor plots.</li>
+  <li>Kenneth Leiter from ARL enhanced the Xdmf reader. The changes include:</li>
+    <ul>
+      <li>Fixed a bug that caused a seg fault when hyperslabs were read by the reader.</li>
+      <li>Improved the performance for reading spatially partitioned meshes. In one case, loading an Xdmf file composed of 1024 spatially partitioned blocks was taking around an hour. Now the load time for the same data is less than 30 seconds.</li>
+      <li>Support for additional topology types was added. These include:</li>
+        <ul>
+          <li>vtkQuadraticLinearQuad (quad 6)</li>
+          <li>vtkQuadraticLinearWedge (wedge 12)</li>
+          <li>vtkBiQuadraticQuad (quad 9)</li>
+          <li>vtkBiQuadraticQuadraticHexahedron (hex 24)</li>
+          <li>vtkBiQuadraticQuadraticWedge (wedge 18)</li>
+          <li>vtkBiQuadraiticTriangle (triangle 7)</li>
+          <li>vtkTriQuadraticHexahedron (hex 27)</li>
+        </ul>
+    </ul>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.3</font></b></p>
 <ul>
-     <li></li>
+  <li></li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 2.3</font></b></p>
 <ul>
-     <li>The coordinate transformation option in the Transform operator now correctly fixes up "wrap-arounds" over angles for polygonal data as well.  (It previously only worked with volumetric data.)</li>
+  <li>The coordinate transformation option in the Transform operator now correctly fixes up "wrap-arounds" over angles for polygonal data as well.  (It previously only worked with volumetric data.)</li>
 </ul>
 
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 2.3</font></b></p>
 <ul>
-   <li>There is now an <i>external_cell</i> expression that assigns 1.0 to cells on the exterior of a domain and 0.0 to cells on the interior.</li>
+  <li>There is now an <i>external_cell</i> expression that assigns 1.0 to cells on the exterior of a domain and 0.0 to cells on the interior.</li>
 </ul>
 
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.3</font></b></p>
 <ul>
-     <li></li>
+  <li></li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 2.3</font></b></p>
 <ul>
-     <li>Launching the gui from the viewer no longer causes the gui to hang on startup on Windows after having first opened a database.</li>
-     <li>The plot list's context menu now shows the right checked state that indicates whether the selected plot follows the time slider.</li>
+  <li>Launching the gui from the viewer no longer causes the gui to hang on startup on Windows after having first opened a database.</li>
+  <li>The plot list's context menu now shows the right checked state that indicates whether the selected plot follows the time slider.</li>
 </ul>
 
   
 <a name="Config_changes"></a>
 <p><b><font size="4">Changes to configuration files in version 2.3</font></b></p>
 <ul>
-   <li></li>
+  <li></li>
 </ul>
   
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.3</font></b></p>
 <ul>
-     <li></li>
+  <li></li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
