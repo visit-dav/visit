@@ -429,7 +429,7 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             iBase_EntityHandle oneEntity;
             int has_data;
-            iMesh_EntityIterator entIt;
+            iBase_EntityIterator entIt;
 
             // initialize an entity iterator and get the first entity
             iMesh_initEntIter(itapsMesh, domainSets[0], (iBase_EntityType) entTypeClass,
@@ -921,6 +921,55 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
 funcEnd: ;
 }
 
+class coord_t {
+public:
+    float c[3];
+    coord_t() {c[0]=0; c[1]=0; c[2]=0;};
+    coord_t(const float a[3])
+    {c[0]=a[0]; c[1]=a[1]; c[2]=a[2];};
+    coord_t(float a0, float a1, float a2)
+    {c[0]=a0; c[1]=a1; c[2]=a2; };
+    coord_t& operator=(const coord_t& rhs)
+    { c[0]=rhs.c[0]; c[1]=rhs.c[1]; c[2]=rhs.c[2]; return *this;};
+};
+
+struct coordcomp {
+    bool operator() (const coord_t& lhs, const coord_t& rhs) const
+    {
+        if (lhs.c[0] < rhs.c[0])
+        {
+            return true;
+        }
+        else if (lhs.c[0] == rhs.c[0])
+        {
+            if (lhs.c[1] < rhs.c[1])
+            {
+                return true;
+            }
+            else if (lhs.c[1] == rhs.c[1])
+            {
+                if (lhs.c[2] < rhs.c[2])
+                {
+                    return true;
+                }
+                else 
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+};
+
+typedef map<coord_t,int,coordcomp> coordmap_t;
 
 // ****************************************************************************
 //  Method: avtITAPS_CFileFormat::GetNodalSubsetVar
@@ -972,10 +1021,11 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
         result->SetNumberOfTuples(ugrid->GetPoints()->GetNumberOfPoints());
         float *p = (float *) result->GetVoidPointer(0);
         float *pts = (float *) ugrid->GetPoints()->GetVoidPointer(0);
-        map<float, map<float, map<float, int> > > coordToIndexMap;
+        coordmap_t coordToIndexMap;
         for (i = 0; i < ugrid->GetPoints()->GetNumberOfPoints(); i++)
         {
-            coordToIndexMap[pts[3*i+0]][pts[3*i+1]][pts[3*i+2]] = i;
+            coord_t coord(&pts[3*i]);
+            coordToIndexMap[coord] = i;
             p[i] = -1;
         }
 
@@ -1057,22 +1107,10 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
                     thePoint[l] = 0.0;
 
                 int entIndex = -1;
-                map<float, map<float, map<float, int> > >::const_iterator itx =
-                    coordToIndexMap.find(thePoint[0]);
+                coord_t coord(thePoint);
+                coordmap_t::const_iterator itx = coordToIndexMap.find(coord);
                 if (itx != coordToIndexMap.end())
-                {
-                    map<float, map<float, int> >::const_iterator ity =
-                        itx->second.find(thePoint[1]);
-                    if (ity != itx->second.end())
-                    {
-                        map<float, int>::const_iterator itz =
-                            ity->second.find(thePoint[2]);
-                        if (itz != ity->second.end())
-                        {
-                            entIndex = itz->second;
-                        }
-                    }
-                }
+                    entIndex = itx->second;
 
                 if (entIndex == -1)
                 {

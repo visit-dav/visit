@@ -121,759 +121,7 @@
 #
 #   Modifications:
 #
-#     Hank Childs, Mon Oct 30 17:18:24 PST 2006
-#     Fixed two bugs: (1) forgot to check return value of function that checks
-#     to make sure third party libraries are there.  (2) construction of
-#     "visit-arch" string involved undefined variable, which caused problems
-#     on some platforms.
-#
-#     Brad Whitlock, Fri Dec 15 11:51:40 PDT 2006
-#     Added support for Python 2.5.
-#
-#     Hank Childs, Sun Mar  4 11:14:54 PST 2007
-#     Add support for parallelization.  Also misc bug fixes.
-#
-#     Brad Whitlock, Fri Apr 6 14:09:00 PST 2007
-#     Added support for downloading missing source files and for graphical
-#     progress dialogs and menus for making choices about parallel, etc.
-#
-#     Thomas R. Treadway, Mon Apr 16 09:01:29 PDT 2007
-#     Added Gunther H. Weber changes for MacOS X support.
-#     Tuned for building under both i386 and ppc.
-#
-#     Thomas R. Treadway, Wed Apr 25 13:22:57 PDT 2007
-#     Added optional 3rd-party build information
-#     New argument options, dialog checklist
-#     Reordered logic to better support more architectures
-#     Went back to the HDF4.2r1.tar.gz release ffor the Mac.
-#
-#     Thomas R. Treadway, Mon May  7 16:51:58 PDT 2007
-#     More bug fixes, and argument options.
-#
-#     Thomas R. Treadway, Thu May 17 14:31:47 PDT 2007
-#     Support for multiple architectures
-#     Support bz2 uncompression
-#     Added a variable editing dialog
-#
-#     Thomas R. Treadway, Wed May 23 17:04:07 PDT 2007
-#     Using common libraries everywhere
-#     Now using stable Mesa-6.4.2, cmake-2.4.5
-#     Changes to support AIX (except for gdal)
-#     Added a MAKE variable
-#
-#     Thomas R. Treadway, Thu May 24 16:26:37 PDT 2007
-#     Added an option to disable building VisIt
-#     Missing required libraries cause immediate abort
-#
-#     Thomas R. Treadway, Fri May 25 15:41:42 PDT 2007
-#     Added an option to build from svn
-#     Added a build_hostconf function to create the host conf file
-#
-#     Thomas R. Treadway, Thu May 31 16:05:36 PDT 2007
-#     Modified Mesa install for 64-bit linux
-#     Change Boxlib install path back to the legacy path
-#
-#     Cyrus Harrison, Mon Jun 11 08:41:00 PDT 2007
-#     Added support for SVN_NERSC_NAME for svn mode
-#
-#     Thomas R. Treadway, Thu May 31 16:05:36 PDT 2007
-#     Modified access control on 3rd party libraries.
-#
-#     Hank Childs, Fri Jul  6 11:53:05 PDT 2007
-#     Fix inconsistency with Python.  It installs Python in a location that
-#     it can't find in later builds.  Also add a no-graphics mode (-z).  Also
-#     don't prompt for Qt license if it is already built.
-#
-#     Thomas R. Treadway, Fri Jul  6 12:58:58 PDT 2007
-#     Added option to redirect build log to /dev/tty
-#     Allow a mix of SVN for 3rd party libraries, and tar file for VisIt
-#     Added a skip of required 3rd party libraries.
-#
-#     Thomas R. Treadway, Mon Jul  9 17:26:26 PDT 2007
-#     Updated to VisIt 1.6.1
-#     Corrects some VisIt tarball vs SVN problems
-#
-#     Cyrus Harrison, Mon Jul  9 14:46:11 PDT 2007
-#     Switched from "svn export" to "svn cat" b/c of problems with old svn
-#     clients.
-#
-#     Thomas R. Treadway, Wed Jul 11 12:35:37 PDT 2007
-#     Cleanup and fix of many small errors
-#     Addition of H5Part third party library
-#
-#     Thomas R. Treadway, Fri Jul 13 11:19:32 PDT 2007
-#     Added options for VisIt builds with --enable-visitmodule and
-#     --enable-java
-#
-#     Thomas R. Treadway, Thu Jul 26 14:53:18 PDT 2007
-#     Modified sources path in VisIt tar file.
-#     Changed link options on Mac
-#
-#     Kathleen Bonnell, Mon Aug 27 08:42:06 PDT 2007
-#     Changed -DMANGLED_OSMESA_INCLUDE to -DMANGLED_OSMESA_INCLUDE_DIR
-#     in build_vtk.
-#
-#     Gunther H. Weber, Wed Aug 29 12:34:58 PDT 2007
-#     - Added rv=0 to beginning of check_parallel to fix error when trying
-#       to build a parallel version of VisIt.
-#     - Added missing VISITARCH component to path that is used for checking
-#       if Mili was already built.
-#     - Add processor architecture for Linux builds to VISITARCH
-#     - Do not specify a username for svn checkout if SVN_NERSC_USERNAME is
-#       not set, so that one can use .ssh/config for that purpose
-#     - Fix gcc version detection if ./configure line containts "version"
-#
-#     Hank Childs, Mon Sep 10 12:33:06 PDT 2007
-#     If you are building only an optional third party library, then don't
-#     download Qt, VTK, Mesa, VisIt source, etc.
-#
-#     Hank Childs, Thu Sep 13 06:15:07 PDT 2007
-#     If you are building Exodus, then build NetCDF too.  Otherwise the build
-#     will fail.  Also, install Exodus using relative paths for its symlinks.
-#
-#     Thomas R. Treadway, Thu Jul 26 14:53:18 PDT 2007
-#     szip library now required with HDF4 and HDF5
-#     Modified parallel options handeling, allowing non-GUI setting
-#
-#     Thomas R. Treadway, Sun Oct  7 19:21:48 PDT 2007
-#     Modify H5Part dynamic library build for PPC Mac
-#     Fixed a few typos
-#
-#     Hank Childs, Sat Oct 13 08:09:41 PDT 2007
-#     Commit numerous fixes pointed out by Matthew Wheeler.  Highlights include
-#     improved SunOS and AIX support.
-#
-#     Thomas R. Treadway, Fri Oct 19 13:37:00 PDT 2007
-#     Fixes for Linux build:
-#     - forcing static libraries in szip and hdf5
-#     - corrected problems with szip in Silo build
-#     Added information about visit-bin-dist and visit-install
-#
-#     Hank Childs, Mon Oct 22 10:09:42 PDT 2007
-#     Fix typo.  Compiler flage -> Compiler flags.
-#
-#     Thomas R. Treadway, Fri Oct 19 13:37:00 PDT 2007
-#     Added patches to support MacOS X 10.5. Note Qt-3.3.8 is not
-#     supported on MacOS X 10.5 and will not build, so use a 10.4 
-#     (or earlier) built version of Qt and install it in
-#     $VISITDIR/qt/${QT_VERSION}/$VISITARCH
-#
-#     Hank Childs, Thu Nov 15 09:14:58 PST 2007
-#     Update references from version 1.6.1 to version 1.7.
-#
-#     Hank Childs, Thu Nov 15 15:01:07 PST 2007
-#     Tweak name of visit file so it automatically gets updated when version
-#     changes.
-#
-#     Thomas R. Treadway, Fri Nov 15 16:37:00 PDT 2007
-#     Modified visit file to allow interactive updating.
-#
-#     Gunther H. Weber, Mon Nov 19 19:03:24 PST 2007
-#     Patch Qt to build on MacOS X 10.5 (based on patches used by the Fink
-#     project). 
-#
-#     Thomas R. Treadway, Mon Nov 26 10:03:38 PST 2007
-#     Changed web pages from www.llnl.gov/VisIt to wci.llnl.gov/codes/visit 
-#
-#     Sean Ahern, Wed Jan 16 15:47:12 EST 2008
-#     Fixed spelling, grammar, general prettying-up.
-#
-#     Thomas R. Treadway, Thu Jan  3 17:24:29 PST 2008
-#     Put a check for wget version 1.8
-#     Added explicit check for mesa 6.4.2
-#
-#     Thomas R. Treadway, Fri Jan  4 10:23:18 PST 2008
-#     Linux defaults to Mesa-5.0, because of driver problems
-#
-#     Eric Brugger, Fri Feb  1 08:57:04 PST 2008
-#     Changed the version to 1.8.0.
-#
-#     Hank Childs, Fri Feb  1 15:06:35 PST 2008
-#     Change MESA_TARGET from linux-x86 to linux, since linux-x86 does not
-#
-#     Thomas R. Treadway, Fri Feb  1 15:52:08 PST 2008
-#     Updated Silo release to 4.6.1
-#     Updated H5Part release to 1.4.0
-#     Added --enable-slivr support
-#     Added support for CCMIO library
-#     Hooks for ITAPS, and ViSUS libraries, but no implementation
-#     Modified the third party untar behavior
-#
-#     Hank Childs, Mon Feb  4 16:59:30 PST 2008
-#     Make it obvious that Mili cannot be downloaded from the web.
-#
-#     Hank Childs, Wed Feb  6 11:27:24 PST 2008
-#     1) Rename some variables that are conflicting with names used elsewhere.
-#     (QT_DIR by Linux, MILI_DIR by VisIt's configure script.)
-#     2) Do not do a parallel build for H5_part.
-#
-#     Thomas R. Treadway, Wed Feb  6 15:08:07 PST 2008
-#     Corrected the silo build
-#     Added an explicit CMake build step.
-#     Added a parallel make option
-#
-#     Thomas R. Treadway, Thu Feb  7 16:58:19 PST 2008
-#     Corrected the ccmio build for x86_64
-#
-#     Thomas R. Treadway, Fri Feb  8 15:30:08 PST 2008
-#     Added David Bremer's patch for fixing QT's OpenGL path problems.
-#
-#     Hank Childs, Sat Feb  9 14:18:54 PST 2008
-#     Change clearcase_bin to svn_bin in help section.
-#
-#     Hank Childs, Sat Feb  9 15:23:42 PST 2008
-#     Rename components directory to avt.
-#
-#     Brad Whitlock, Wed Mar 12 11:15:09 PDT 2008
-#     Fixed Mesa build on AIX.
-#
-#     Kathleen Bonnell, Wed Mar 26 17:10:12 PDT 2008 
-#     Moved calls to check_more_options, check_parallel and check_variables
-#     to BEFORE THIRD_PARTY_PATH is used to set VISITDIR.
-#
-#     Gabe Rockefeller & Steven Diehl, Mon March 24 15:00 PST 2008
-#     Fixed bug for setting the default values for parallel build flag. 
-#     Now uses mpic++ instead of mpicc, since these flags get passed into
-#     g++ during the build process.
-#
-#     Thomas R. Treadway, Thu Mar 27 12:16:19 PDT 2008
-#     Implemented the above.
-#     Merged in 1.8.1 changes, which included:
-#     - Added support to CCMIO for i386 MacOS X10.5, and 
-#       PPC MacOS X10.5, 10.4, and 10.3 
-#     - Patch for MacOS X10.5's problem with GLU during CCM database build
-#     Removed redundent THIRD_PARTY_PATH from GUI, rename More Variable
-#     Settings GUI screen.
-#     Changed version to 1.9.0.
-#     Fixed a few typos.
-#
-#     Brad Whitlock, Fri Apr  4 10:38:58 PDT 2008
-#     Fixed a bug with building Silo on the Mac when HDF5 is not used.
-#
-#     Thomas R. Treadway, Wed Apr 16 13:14:07 PDT 2008
-#     Modified parallel build routine, check for mpic++, mpicxx, mpiCC.
-#     Added option to display user settable environment variables
-#
-#     Gunther H. Weber, Wed Apr 16 16:26:21 PDT 2008
-#     Check whether Qt configure enables OpenGL support and fail if it
-#     does not.
-#
-#     Thomas R. Treadway, Fri Apr 18 14:03:06 PDT 2008
-#     Correct a printout problem with the -E, display user settable 
-#     environment variables option. Added PAR_INCLUDE and PAR_LIBS 
-#     to the variable list.
-#
-#     Thomas R. Treadway, Wed Apr 23 15:14:43 PDT 2008
-#     Fixed dialog text input box processing in parallel build dialog
-#     Modified Variable setting menu
-#     Changed implemented in More options and moved into a function
-#     Added a GUI, and -R option to specify an VisIt SVN revision argument
-#
-#     Thomas R. Treadway, Mon May  5 14:14:11 PDT 2008
-#     Check for wget version 9.x, because SSL options different from V10.
-#     Corrected problem with having QTDIR defined
-#
-#     Sean Ahern, Tue May  6 12:00:35 EDT 2008
-#     Made the Qt OpenGL patch apply more generally to 64-bit platforms.
-#
-#     Thomas R. Treadway, Wed May  7 15:15:58 PDT 2008
-#     Added better logic for VISITARCH variable feedback.
-#
-#     Thomas R. Treadway, Tue May 13 16:24:20 PDT 2008
-#     Fixed CCMIO library creation for Darwin.
-#     Commented out the SETPGRP_HAVE_ARG fix.
-#
-#     Thomas R. Treadway, Mon May 19 12:16:21 PDT 2008
-#     Support for poor MacOS X 10.3 and C99 additions.
-#
-#     Thomas R. Treadway, Wed May 21 15:51:51 PDT 2008
-#     Version changed to 1.9.1
-#
-#     Hank Childs, Fri Jun 13 14:22:30 PDT 2008
-#     Add support for libtcmalloc.
-#
-#     Jeremy Meredith, Tue Jun 24 14:34:38 EDT 2008
-#     Patch Mesa 6.4.2 to use a larger offscreen window size limit.
-#
-#     Eric Brugger, Wed Jul  2 13:57:28 PDT 2008
-#     Modified the logic that splits the output of "mpiCC -show" into
-#     parallel linker and compiler flags to select any strings that start
-#     with "-L", "-l" and "-Wl" as linker flags, any strings that start
-#     with "-I" and "-D" as compiler flags, and any remaining strings that
-#     start with "-" as both compiler and linker flags. 
-#
-#     Tom Fogal, Fri Jul 11 10:47:31 EDT 2008
-#     Added PIL to build_python.
-#
-#     Jeremy Meredith, Fri Aug  8 13:13:36 EDT 2008
-#     Added new "download_web_file" which lets us grab a file directly
-#     off the web instead of visit's 3rd party directory.
-#
-#     Hank Childs, Mon Aug 18 10:46:10 PDT 2008
-#     Patches for VTK and Silo for compilation issue with gcc 4.3.
-#
-#     Hank Childs, Thu Aug 28 10:11:34 PDT 2008
-#     Make szip build on FC9.  (szip is required for HDF5.)
-#
-#     Hank Childs, Mon Sep  1 09:21:27 PDT 2008
-#     Move all patches to their own function.  (Purpose is to improve
-#     readability and maintainability.)
-#
-#     Tom Fogal, Thu Oct  2 22:03:56 MDT 2008
-#     Move PIL out of build_python into its own function.
-#
-#     Tom Fogal, Fri Oct  3 11:01:28 MDT 2008
-#     Fix the PIL download URL, and add a dir variable.
-#     Added a set of functions for ease of use.
-#     Cleaned up the PIL build function, and don't redirect the function so it
-#     can easily use the new functions to log information.
-#
-#     Tom Fogal, Mon Oct  6 23:11:17 MDT 2008
-#     Force -fPIC in BoxLib for non-AIX.  Switch fortran to compiler to
-#     `gfortran' if `g77' is not found.
-#
-#     Tom Fogal, Thu Oct  9 16:11:56 MDT 2008
-#     Long options and parsing.
-#     Updated 'usage' message to account for long options, and greatly
-#     improved the formatting.
-#
-#     Tom Fogal, Fri Oct 10 11:20:24 MDT 2008
-#     Removed an embarassing oversight leftover from debugging my
-#     earlier work on the PIL.
-#
-#     Eric Brugger, Tue Oct 14 11:23:14 PDT 2008
-#     Changed the version to 1.11.0.
-#
-#     Mark C. Miller, Tue Oct 21 10:32:36 PDT 2008
-#     Modified to support VisIt's configure new way of handling hdf5.
-#     Modified to support shared hdf5.
-#
-#     Tom Fogal, Wed Oct 22 09:05:43 MDT 2008
-#     Add an --szip command line to enable SZip.  Don't force SZip if the user
-#     wants HDF5, but enable SZip if they ask for it.
-#
-#     Mark C. Miller, Tue Oct 28 11:14:17 PDT 2008
-#     Modified build of H5Part to use -DH5_USE_16_API. See notes in that func.
-#
-#     Mark C. Miller, Mon Nov 17 22:30:28 PST 2008
-#     Made Silo optional instead of required; removed Silo patching; upgraded
-#     Silo version to 4.6.2. Copied the pattern used for CCMIO.
-#
-#     Mark C. Miller, Thu Nov 20 10:03:12 PST 2008
-#     Fixed typo in DEFAULT_SILO symbols put in generated config-site file.
-#     Updated DEFAULT_SILO symbols to use LIBLOC/LIBDEP form.
-#
-#     Cyrus Harrison, Tue Nov 18 16:34:49 PST 2008
-#     Changes for Qt4 including:
-#      *Added build_qt4 (doesn't currently download the src tarball however)
-#      *Replaced the repeated "check for dir + try to unzip + try to untar" 
-#        chunk of code with new function: prepare_build_dir
-#      *Changed all build dirs vars to name [NAME]_BUILD_DIR, instead of 
-#        [NAME]_DIR.In some cases [NAME]_DIR caused problems and was previously 
-#        fixed with a special name BV_[NAME]_DIR, I just made everything 
-#        uniform.
-#
-#     Cyrus Harrison, Tue Dec  2 13:44:29 PST 2008
-#     Stopped creating symlink of szip static lib in hdf5 install.
-#
-#     Tom Fogal, Sat Dec  6 21:27:55 PST 2008
-#     A silo path variable was missing "silo".
-#
-#     Tom Fogal, Mon Dec  8 22:46:17 MST 2008
-#     Quoted compiler flags given to VTK.
-#
-#     Mark C. Miller, Thu Dec 11 08:38:41 PST 2008
-#     Made the auto-generated config-site file a little more portable by
-#     creating a VISITARCH variable in the file and using \$VISITARCH
-#     everywhere to refer to that variable in the config-site file and not
-#     the shell variable defined in build_visit.
-#
-#     Sean Ahern, Thu Dec 11 16:02:54 EST 2008
-#     Modified the variables in the auto-generated config-site file for
-#     Silo-HDF5 dependency.
-#
-#     Hank Childs, Fri Dec 12 09:11:07 PST 2008
-#     Added support for Ice-T.
-#
-#     Cyrus Harrison, Fri Dec 12 14:14:55 PST 2008
-#     Fixed problem with checking if cgns is already built/installed.
-#
-#     Cyrus Harrison, Fri Dec 12 14:14:55 PST 2008
-#     Changed version of google-perftools to 0.97 (from 0.98). 
-#     0.97 is the version already in our repo and I verified it was the 
-#     version Hank integrated into VisIt. 
-#
-#     Tom Fogal, Mon Dec 15 16:21:47 MST 2008
-#     Cleanups for the IceT macro: handle multiple options in PAR_INCLUDE,
-#     enable verbose makefiles so debugging IceT issues is possible, and
-#     install IceT instead of copying libraries manually.
-#
-#     Hank Childs, Mon Jan 26 15:57:02 PST 2009
-#     Add support for FastBit.
-#
-#     Jeremy Meredith, Thu Jan 29 13:24:34 EST 2009
-#     Fixing Mesa 6.4.2 patching.  (This is already fixed on the 2.0 branch?)
-#
-#     Tom Fogal, Sat Feb  7 15:40:49 EST 2009
-#     Die if we can't cd to a build directory.
-#     Use make option flags on Mesa's build.
-#     Document that Exodus requires NetCDF.
-#
-#     Mark C. Miller, Wed Feb 18 22:57:25 PST 2009
-#     Updated Silo to version 4.7 and added to build_silo logic to use Qt
-#     for silex. Installed some binaries for Mac OS
-#
-#     Mark C. Miller, Thu Feb 19 09:41:43 PST 2009
-#     Added ability to specify alternate download paths for downloading files.
-#     Set Silo functions to download silo from Silo's web site.
-#
-#     Mark C. Miller, Thu Feb 19 12:31:20 PST 2009
-#     Refactored the multiple places that downloads functions were implmeneted
-#     to download_file/try_download_file. The former either trys known places
-#     or loops over specified sites. The latter attempts a specific download.
-#
-#     Mark C. Miller, Thu Feb 19 14:51:07 PST 2009
-#     Fixed help message for --svn option. It DOES NOT assume HEAD and always
-#     reads the revision argument.
-#
-#     Mark C. Miller, Thu Mar  5 13:46:15 PST 2009
-#     Added this comment regarding recent changes that I neglected to comment
-#     about. Added support for a dbio-only (DO_DBIO_ONLY) build. Added logic
-#     in several places to disable stuff that is not needed for a dbio-only
-#     build as well as enable all 3rd party database plugin libs.
-#
-#     Mark C. Miller, Thu Mar  5 16:33:45 PST 2009
-#     I fixed problems that arose due to a bad commit.
-#
-#     Mark C. Miller, Wed Mar 11 14:24:36 PDT 2009
-#     Fixed convenience logic for enabling ALL third party I/O libs for
-#     dbio-only builds.
-#
-#     Patrick Shinpaugh, Wed Mar 11 11:38:55 MST 2009
-#     Set flags + Mesa && Qt targets for ppc64 systems.
-#
-#     Tom Fogal, Wed Mar 11 11:45:59 MST 2009
-#     Incorporated a patch from Patrick Shinpaugh which fixes the BoxLib build
-#     on Linux-ppc64.
-#
-#     Tom Fogal, Wed Mar 11 11:52:09 MST 2009
-#     Incorporated a patch from Patrick which fixes the Linux-ppc64 HDF4 build.
-#
-#     Mark C. Miller, Thu Mar 12 00:24:18 PDT 2009
-#     Eliminated Qt dependence for dbio-only builds.
-#
-#     Tom Fogal, Tue Mar 17 21:15:53 MST 2009
-#     Added a patch which sets the endianness properly on Linux-ppc systems
-#     (based on a patch from Patrick Shinpaugh).
-#
-#     Mark C. Miller, Thu Mar 19 09:08:28 PDT 2009
-#     Merged from RC. Added web path for fastbit.
-#     Fixed cut-n-paste typos in error messages from ITAPS configures.
-#     Set VisIt version number to 2.0.0
-#
-#     Mark C. Miller, Thu Mar 19 09:39:41 PDT 2009
-#     Merged from RC.
-#     Added ITAPS to graphical options for 3rd party libs. Updated HDF5 to
-#     1.8.1 and added web-links for HDF5 and HDF4 and GDAL. Made download_file
-#     fallback to getting from other sites if gets from svn/visit site fails.
-#
-#     Tom Fogal, Tue Mar 17 21:15:53 MST 2009
-#     Added a patch which sets the endianness properly on Linux-ppc systems
-#     (based on a patch from Patrick Shinpaugh).
-#
-#     Tom Fogal, Sun Mar 22 15:34:39 MST 2009
-#     Fix CCMIO builds on Linux-PPC. -- thanks to Patrick Shinpaugh.
-#
-#     Tom Fogal, Sun Mar 22 20:00:46 MST 2009
-#     Correct an earlier patch I had made to PPC HDF4 -- thanks P.S.
-#
-#     Eric Brugger, Mon Mar 23 17:09:00 PDT 2009
-#     Added -DH5_USE_16_API to the CFLAGS and CXXFLAGS for the gdal build
-#     so that it would build with hdf5 1.8.
-#
-#     Mark C. Miller, Tue Apr  7 14:56:44 PDT 2009
-#     Added missing surrounding quotes in creation of DEFAULT_ITAPS_IMPLS
-#     symbol for config.conf file that gets created.
-#
-#     Mark C. Miller, Tue Apr  7 15:02:19 PDT 2009
-#     Added missing path component for include path for ITAPS_FMDB symbol.
-#
-#     Mark C. Miller, Wed Apr  8 10:25:38 PDT 2009
-#     Fixed some problems with _IMPL symbol for ITAPS_GRUMMP. Fixed install
-#     of ITAPS_GRUMMP missing iMesh_protos.h
-#
-#     Mark C. Miller, Wed Apr  8 11:48:04 PDT 2009
-#     Removed shared libs from ITAPS installs to make it easier to package
-#     the build up using visit-bin-dist.
-#
-#     Mark C. Miller, Tue Apr 21 14:38:20 PDT 2009
-#     Updated to newest ITAPS implementations. Changed places where the string
-#     'build_visit' is explicilty used in 3-4 places with $0. That allows
-#     this script to be re-named (such as for ITAPS' iMeshIO tool) and things
-#     still make some sense. Changed configuration for build_grummp to use
-#     --enable-itaps instead of --enable-imesh --enable-ibase. Added a wee bit
-#     of logic to rename visitconvert tools in case we're using this script
-#     to build iMeshIO. 
-#
-#     Gunther H. Weber, Thu May  7 11:20:50 PDT 2009
-#     Update H5Part to 1.4.2 and FastBit to 1.0.8 as required by changes
-#     to the HDF_UC database plugin. Download FastBit automatically from
-#     LBNL Codeforge if TAR ball not present.
-#
-#     Jeremy Meredith, Thu May 14 15:56:44 EDT 2009
-#     HDF5 seemed to be updated to 1.8.2 in some places, but others were
-#     left as 1.8.1 or 1.6.5.  I updated *all* references to be to 1.8.2.
-#     At the very least, this fixed ftp downloading of HDF5.
-#
-#     Tom Fogal, Sat May 16 14:47:05 MDT 2009
-#     Enhanced downloadv to check subversion.
-#     Update NetCDF version to workaround compilation issues.
-#
-#     Mark C. Miller, Wed May 20 11:14:15 PDT 2009
-#     Removed all refs to functions 'webget' and 'downloadv'. Those were
-#     made obsolete following changes of Feb 19, 2009. Adjusted some text
-#     were explicit refs to 'VisIt Build Process' or 'VisIt' were used to
-#     use DLG_BACKTITLE and/or DLG_PKGNAME to make this script less
-#     confusing when being used to install visit-related capabilities but
-#     named differently (e.g. iMeshIO for ITAPS project).
-#
-#     Mark C. Miller, Wed May 20 11:40:55 PDT 2009
-#     Fixed typo in NETCDF_BUILD_DIR name. It was missing '_BUILD'.
-#
-#     Tom Fogal, Mon May 25 15:42:30 MDT 2009
-#     Fixed NetCDF downloading (mirror was missing).
-#
-#     Tom Fogal, Wed Jun 10 16:19:38 MDT 2009
-#     Update Mesa to 7.5.
-#
-#     Mark C. Miller, Mon Jun 22 13:56:05 PDT 2009
-#     Removed dup ON_SILO/DO_SILO lines.
-#
-#     Mark C. Miller, Mon Jun 22 21:54:25 PDT 2009
-#     Adjusted _VERSION/_FILE/_BUILD_DIR symbols for FastBit, H5Part, HDF5
-#     and Silo so that you don't have upteen different places to edit the
-#     version number, they are consistent with other lib symbols and they
-#     are correct and up to date.
-#
-#     Mark C. Miller, Wed Jun 24 15:40:59 PDT 2009
-#     Fixed missing opening double quote for call to info in build_silo.
-#
-#     Hank Childs, Tue Jul 14 15:32:09 PDT 2009
-#     Fix problem where .conf file is setting up CXXFLAGS and CFLAGS improperly.
-#
-#     Tom Fogal, Thu Jul 23 15:52:24 MDT 2009
-#     Make sure the user knows why we couldn't use the dialog interface.
-#
-#     Tom Fogal, Thu Jul 30 19:20:29 MDT 2009
-#     Unset CDPATH to make sure we don't inherit a bad setting.
-#
-#     Tom Fogal, Tue Aug  4 11:24:29 MDT 2009
-#     Make VTK link against mangled Mesa.
-#
-#     Mark C. Miller, Tue Aug  4 13:24:24 PDT 2009
-#     Changed MESA_MIRRORS to MESA_URL to make consistent with other symbols.
-#     Added $MESA_URL to ensure_built_or_ready invokation. I also made it
-#     possible to specify value for VISITDIR external to script so you can
-#     essentially tell build_visit where to install its libs to.
-# 
-#     Cyrus Harrison,  Tue Aug  4 16:06:20 PDT 2009
-#     Fixed a typo w/ MESA_URL - it was providing the full path for the sourceforge
-#     download, and because of this build_visit was putting the tarball in the path twice.
-#
-#     Brad Whitlock, Mon Aug 17 12:49:11 PDT 2009
-#     Use the regular build path for NetCDF on Darwin but fixup the library
-#     names after installation. Don't always assume szip for hdf5 on Darwin.
-#
-#     Mark C. Miller, Mon Aug 17 14:08:38 PDT 2009
-#     Added BUILD_VISIT_ENV to facilitate correct behavior of top-level
-#     Makefile's env-make var collision check when it is being run from within
-#     build_visit.
-#
-#     Gunther H. Weber, Thu Sep  3 10:14:33 PDT 2009
-#     Change install name for Qt 4 on Darwin so that TAR-balls created with
-#     visit-bin-dist work on other machines. Added comments for necessary changes
-#     to switch to Qt 4.5.
-#
-#     Gunther H. Weber, Tue Sep 15 11:35:19 PDT 2009
-#     Only use first two components of gcc version in architecture string
-#     since the "least significant" portion of the version number can
-#     be changed by gcc maintenance updates (at least on Ubuntu) and these
-#     updated maintain binary compatibility.
-#
-#     Brad Whitlock, Mon Sep 21 09:53:56 PDT 2009
-#     Adding support for AdvIO
-#
-#     Cyrus Harrison, Thu Oct 15 08:42:01 PDT 2009
-#     Modifications to build_mesa & its patches to support building on AIX.
-#
-#     Gunther H. Weber, Fri Oct 23 13:17:34 PDT 2009
-#     Specify explicit path to system curl so that we do not use another
-#     version without SSL support
-#     Support for build on Snow Leopard
-#
-#     Jed Brown, Sat Oct 24 21:57:05 CEST 2009
-#     Do not build QtSql components (they are not used and broke gcc-4.4.1/qt-4.4.3)
-#
-#     Gunther H. Weber, Fri Oct 30 14:19:57 PDT 2009
-#     Yet another Python fix: Use compatibility version in host.conf file instead
-#     of version.
-#
-#     Cyrus Harrison, Tue Nov  3 16:43:53 PST 2009
-#     Use of vtk-5.0.0d & transition to a "make install"ed vtk
-#
-#     Cyrus Harrison, Tue Nov  3 16:43:53 PST 2009
-#     Added support for using VisIt's anonymous svn server via "--svn-anonymous"
-#     Switched all versions of OSX to use Python 2.6.4 by default.
-#
-#     Hank Childs, Tue Nov 10 08:21:19 PST 2009
-#     Add support for "build_visit --no-thirdparty --vtk".  This was a
-#     supported option before, but it failed to properly download and/or build 
-#     Mesa, CMake, and Python.
-#
-#     Gunther H. Weber, Tue Nov 10 19:46:08 PST 2009
-#     Change install_name for VTK on MacOS.
-#
-#     Cyrus Harrison, Tue Nov 17 12:33:47 PST 2009
-#     Reverted back to custom creation of python shared library on AIX.
-#     Changed SO_EXT for AIX to ".a"
-#
-#     Hank Childs, Mon Nov 23 07:59:36 PST 2009
-#     Add parallel include to CFLAGS.
-#
-#     Hank Childs, Wed Nov 25 11:43:31 PST 2009
-#     Add some defense against using existing "VTK" directory from 5.0.0c.
-#     Quote the PYTHON_EXTRA_LIBS.  Remove CMakeCache.txt file.  Change
-#     the log file to be in the current directory.
-#
-#     Cyrus Harrison, Thu Dec 10 09:13:40 PST 2009
-#     Added rpath linker flags when python is built using gcc.
-#     This is necessary b/c python's build system does not build an exe that
-#     runs without setting LD_LIBRARY_PATH if a non standard prefix is used.
-#
-#     Jeremy Meredith, Mon Dec 21 12:42:52 EST 2009
-#     Removed one final use of .conf, changed to .cmake.
-#     Fixed a few bugs in the way the host .cmake file is generated.
-#
-#     Tom Fogal, Mon Dec 21 15:05:42 MST 2009
-#     Fix Mesa libraries used when building VTK.
-#
-#     Tom Fogal, Tue Dec 22 14:20:51 MST 2009
-#     Revert above change, at least on Linux.
-#     Add missing CMake type specifier.
-#
-#     Cyrus Harrison, Tue Dec 29 14:07:52 PST 2009
-#     Removed stray instance of $VISITDIR & changed hostconf generator to use
-#     ITAPS_FILE_PATTERNS  instead of ITAPS_FILE_EXTENSIONS to match
-#     Jeremy's change to db plugins.
-#
-#     Tom Fogal, Tue Jan  5 19:44:21 MST 2010
-#     Linux: Switch mangled Mesa and OSMesa library settings.
-#
-#     Tom Fogal, Wed Jan  6 18:53:08 MST 2010
-#     Add -pthread to python link flags.
-#
-#     Tom Fogal, Tue Jan 12 20:32:14 MST 2010
-#     Don't build some Qt subsystems that we don't need.
-#
-#     Tom Fogal, Wed Jan 13 14:05:59 MST 2010
-#     Fix the above change; only changed what *printed* before!
-#
-#     Tom Fogal, Wed Jan 13 19:53:25 MST 2010
-#     Get rid of OpenSSL too; we're not using QtNetwork.
-#
-#     Brad Whitlock, Thu Jan 28 10:16:29 PST 2010
-#     Added some small changes for MacOS X 10.4
-#
-#     Tom Fogal, Wed Jan 20 22:58:41 MST 2010
-#     Re-add QtXml to the list of Mac frameworks.
-#
-#     Tom Fogal, Thu Jan 21 20:27:37 MST 2010
-#     Re-add OpenSSL, it's used directly (not through QtNetwork!).
-#
-#     Jeremy Meredith, Thu Jan 28 10:23:10 EST 2010
-#     Changed VISIT_EXODUS_DIR in .cmake generation to EXODUSII, to
-#     match what the build system expects.
-#
-#     Jeremy Meredith, Thu Jan 28 17:47:24 EST 2010
-#     Couple changes for OS X 10.4: don't pass rpath to python since the
-#     linker doesn't understand it (python filters are disabled for 10.4),
-#     and don't pass the compatibility/current version flags to libtool
-#     since VTK/CMake seems to be setting them appropriately on its own.
-#
-#     Mark C. Miller, Tue Feb  2 11:20:33 PST 2010
-#     Updated Silo to 4.7.2 and HDF5 to 1.8.4. Also fixed a problem where the
-#     hostconf file was specifying a relative path for the first line for
-#     cmake. Configure didn't like that.
-#
-#     Mark C. Miller, Wed Feb  3 10:36:05 PST 2010
-#     Added -no-libtiff to qt build.
-#
-#     Brad Whitlock Wed Feb 3 10:00:36 PDT 2010
-#     I added Jean Favre's VISIT_STATIC patch.
-#
-#     Mark C. Miller, Wed Feb  3 11:00:11 PST 2010
-#     Averted breaking --thirdparty-path by changing logic that includes
-#     cmake path in hostconf file to compute absolute path from
-#     $THIRD_PARTY_PATH
-#
-#     Hank Childs, Thu Feb  4 08:21:27 PST 2010
-#     Add argument --svn-revision.
-#
-#     Brad Whitlock, Wed Feb 10 23:35:34 PST 2010
-#     Added a patch for Boxlib and upgraded GDAL to get them working on
-#     Ubuntu 9.10.
-#
-#     Gunther H. Weber, Tue Feb 16 11:07:08 PST 2010
-#     Adapted to new H5Part
-#
-#     Hank Childs and Paul Navratil, Sat Feb 20 17:31:54 CST 2010
-#     Fix for building Ice-T when PAR_INCLUDE has a -DDEFINE first.
-#
-#     Eric Brugger, Mon Feb 22 13:39:04 PST 2010
-#     I modified build_qt to build a 32 bit versoin of Qt if the OBJECT_MODE
-#     environment variable was 32.  I added a check to make sure that if we
-#     are building on AIX that we are using GNU tar.  I made the tar command
-#     be a variable so that it could be easily changed.  I modified the patch
-#     commands so that they would work on AIX systems.  I modified one of the
-#     mesa patches to add some AIX specific code from a later version of mesa
-#     (that Tom Fogal had contributed to mesa).
-#
-#     Hank Childs, Sun Feb 28 13:28:05 PST 2010
-#     Make IceT builds be automatic if you enable parallel builds.
-#
-#     Cyrus Harrison, Tue Mar  9 07:52:50 PST 2010
-#     Install name patching for vtk python module on OSX.
-#
-#     Eric Brugger, Fri Mar 12 14:18:26 PST 2010
-#     I modified build_exodus so that the netcdf header file and library
-#     are files instead of links in the installation directory so that make
-#     package works with VISIT_INSTALL_THIRD_PARTY defined.
-#
-#     Cyrus Harrison, Fri Mar 12 15:47:11 PST 2010
-#     Use qt 4.6.1 & python 2.6.4 on all platforms.
-#
-#     Eric Brugger, Mon Mar 15 14:27:23 PDT 2010
-#     I added a patch for ccmio 2.6.1 so that it would build in 32 bit mode
-#     on AIX.
-#
-#     Cyrus Harrison, Wed Mar 17 10:21:15 PDT 2010
-#     Use cmake 2.8.0.
-#
-#     Cyrus Harrison, Wed Mar 17 10:21:15 PDT 2010
-#     Fix python shared lib gen on AIX + removed old python patches.
-#
-#     Eric Brugger, Thu Mar 18 15:12:19 PDT 2010
-#     I added several patches for VTK so that VTK would compile under AIX
-#     with cmake 2.8.0.
-#
-#     Eric Brugger, Fri Mar 19 16:04:36 PDT 2010
-#     I added several patches and disabled javascript-jit, script, and
-#     scripttools for Qt 4.6.1 so that it would compile with gcc 3.2.3 on
-#     an x86 platform.
-#
-#     Cyrus Harrison, Tue Mar 23 09:21:32 PDT 2010
-#     Added support to set group permissions on:
-#      pil, tcmalloc, icet & advio
+#     ...Previous history truncated
 #
 #     Tom Fogal, Fri Mar 26 17:24:39 MDT 2010
 #     Add --cflag, --cxxflag.  These *append* a specific flag.
@@ -1112,6 +360,11 @@
 #     Eric Brugger, Fri Mar 25 17:10:44 PDT 2011
 #     I modified the script to use vtk-5.0.0i and Xdmf 2.1.1.
 #
+#     Mark C. Miller, Wed Mar 30 09:02:14 PDT 2011
+#     Deleted modifications comments older than 1 year.
+#     Updated ITAPS libraries to ITAPS-1.2 release. Made it download ITAPS
+#     ITAPS sources from ITAPS sites. Overhauled build_itaps_fmdb due to
+#     changes in ways FMDB is built.
 # *****************************************************************************
 
 
@@ -1591,19 +844,20 @@ export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.8"}
 export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
 export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
 
-export ITAPS_MOAB_FILE=${ITAPS_MOAB_FILE:-"ITAPS-MOAB-3.99-10Jun10.tar.gz"}
-export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION:-"3.99-10Jun10"}
-export ITAPS_MOAB_COMPATIBILITY_VERSION=${ITAPS_MOAB_COMPATIBILITY_VERSION:-"3.99-10Jun10"}
-export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR:-"${ITAPS_MOAB_FILE%.tar*}"}
+export ITAPS_VERSION=${ITAPS_VERSION:-"1.2"}
+export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION:-"4.0.1RC2"}
+export ITAPS_MOAB_FILE=${ITAPS_MOAB_FILE:-"moab-${ITAPS_MOAB_VERSION}.tar.gz"}
+export ITAPS_MOAB_URL=${ITAPS_MOAB_URL:-http://gnep.mcs.anl.gov:8010}
+export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR:-"moab-4.0.1"}
 
-export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE:-"ITAPS-FMDB-1.1-30Aug10.tar.gz"}
-export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.1-30Aug10"}
-export ITAPS_FMDB_COMPATIBILITY_VERSION=${ITAPS_FMDB_COMPATIBILITY_VERSION:-"1.1-30Aug10"}
+export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.2"}
+export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE:-"FMDB-${ITAPS_FMDB_VERSION}.tar.gz"}
+export ITAPS_FMDB_URL=${ITAPS_FMDB_URL:-http://www.scorec.rpi.edu/FMDB/source}
 export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR:-"${ITAPS_FMDB_FILE%.tar*}"}
 
-export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"ITAPS-GRUMMP-0.5.0-03Jun10.tar.gz"}
-export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"0.5.0-03Jun10"}
-export ITAPS_GRUMMP_COMPATIBILITY_VERSION=${ITAPS_GRUMMP_COMPATIBILITY_VERSION:-"0.5.0-03Jun10"}
+export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"0.6.3"}
+export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"GRUMMP-${ITAPS_GRUMMP_VERSION}.tar.gz"}
+export ITAPS_GRUMMP_URL=${ITAPS_GRUMMP_URL:-https://redmine.scorec.rpi.edu/anonsvn/itaps/software/tags/1.2/release_distros}
 export ITAPS_GRUMMP_BUILD_DIR=${ITAPS_GRUMMP_BUILD_DIR:-"${ITAPS_GRUMMP_FILE%.tar*}"}
 
 export VISUS_FILE=${VISUS_FILE:-"visus_26Feb07.tar.gz"}
@@ -2442,19 +1696,19 @@ function check_optional_3rdparty
     fi
     
     if [[ "$DO_ITAPS" == "yes" ]] ; then
-        ensure_built_or_ready "itaps" $ITAPS_MOAB_VERSION $ITAPS_MOAB_BUILD_DIR  $ITAPS_MOAB_FILE
+        ensure_built_or_ready "itaps"/$ITAPS_VERSION $ITAPS_MOAB_VERSION $ITAPS_MOAB_BUILD_DIR  $ITAPS_MOAB_FILE $ITAPS_MOAB_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ITAPS="no"
             error "Unable to build ITAPS_MOAB.  ${ITAPS_MOAB_FILE} not found."
         fi
-        ensure_built_or_ready "itaps" $ITAPS_FMDB_VERSION $ITAPS_FMDB_BUILD_DIR  $ITAPS_FMDB_FILE
+        ensure_built_or_ready "itaps"/$ITAPS_VERSION $ITAPS_FMDB_VERSION $ITAPS_FMDB_BUILD_DIR  $ITAPS_FMDB_FILE $ITAPS_FMDB_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ITAPS="no"
             error "Unable to build ITAPS_FMDB.  ${ITAPS_FMDB_FILE} not found."
         fi
-        ensure_built_or_ready "itaps" $ITAPS_GRUMMP_VERSION $ITAPS_GRUMMP_BUILD_DIR  $ITAPS_GRUMMP_FILE
+        ensure_built_or_ready "itaps"/$ITAPS_VERSION $ITAPS_GRUMMP_VERSION $ITAPS_GRUMMP_BUILD_DIR  $ITAPS_GRUMMP_FILE $ITAPS_GRUMMP_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ITAPS="no"
@@ -7925,17 +7179,102 @@ function build_itaps_fmdb
        warn "Unable to prepare ITAPS_FMDB build directory. Giving Up!"
        return 1
     fi
+
+    cd $ITAPS_FMDB_BUILD_DIR
+    abs_itaps_fmdb_build_dir=$(pwd)
+
+    if [[ ! -e GMI-1.0.tar.gz ]]; then
+        download_file GMI-1.0.tar.gz http://www.scorec.rpi.edu/FMDB/source
+        [[ $? -eq 0 ]] || { error "Unable to download GMI-1.0.tar.gz for ITAPS_FMDB" && return 1; }
+    fi
+    gunzip < GMI-1.0.tar.gz | tar xf -
+    [[ $? -eq 0 ]] || { error "Unable to untar GMI-1.0.tar.gz for ITAPS_FMDB" && return 1; }
+    if [[ ! -e SCUtil.tar.gz ]]; then
+        download_file SCUtil.tar.gz http://www.scorec.rpi.edu/FMDB/source
+        [[ $? -eq 0 ]] || { error "Unable to download SCUtil.tar.gz for ITAPS_FMDB" && return 1; }
+    fi
+    gunzip < SCUtil.tar.gz | tar xf -
+    [[ $? -eq 0 ]] || { error "Unable to untar SCUtil.tar.gz for ITAPS_FMDB" && return 1; }
+    pushd SCUtil >/dev/null 2>&1
+    gunzip < siter.tar.gz | tar xf -
+    [[ $? -eq 0 ]] || { error "Unable to untar siter.tar.gz for ITAPS_FMDB" && return 1; }
+    gunzip < SCORECUtil-0.1.tar.gz | tar xf -
+    [[ $? -eq 0 ]] || { error "Unable to untar SCORECUtil-0.1.tar.gz for ITAPS_FMDB" && return 1; }
+    popd >/dev/null 2>&1
+
+    #
+    # Configure GMI
+    #
+    info "Configuring GMI for ITAPS_FMDB. . ."
+    pushd GMI-1.0 >/dev/null 2>&1
+    ./configure \
+        --with-fmdb=$abs_itaps_fmdb_build_dir \
+        --with-scorecutil=$abs_itaps_fmdb_build_dir/SCUtil/SCORECUtil-0.1 \
+        --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
+        --prefix="$VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       warn "ITAPS_FMBD configure failed.  Giving up"
+       return 1
+    fi
+    info "Building GMI for ITAPS_FMDB. . ."
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+       warn "ITAPS_FMDB build failed.  Giving up"
+       return 1
+    fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        warn "I do not know how to install ITAPS_FMDB on a Mac. Giving up"
+    else
+        $MAKE install
+        if [[ $? != 0 ]] ; then
+           warn "ITAPS_FMDB install failed.  Giving up"
+           return 1
+        fi
+    fi
+    popd >/dev/null 2>&1
+
+    #
+    # Configure SCORECUtil
+    #
+    info "Configuring SCORECUtil for ITAPS_FMDB. . ."
+    pushd SCUtil/SCORECUtil-0.1 >/dev/null 2>&1
+    ./configure \
+        --with-gmi=$VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH \
+        --with-fmdb=$abs_itaps_fmdb_build_dir \
+        --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
+        --prefix="$VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       warn "ITAPS_FMBD configure failed.  Giving up"
+       return 1
+    fi
+    info "Building SCORECUtil for ITAPS_FMDB. . ."
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+       warn "ITAPS_FMDB build failed.  Giving up"
+       return 1
+    fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        warn "I do not know how to install ITAPS_FMDB on a Mac. Giving up"
+    else
+        $MAKE install
+        if [[ $? != 0 ]] ; then
+           warn "ITAPS_FMDB install failed.  Giving up"
+           return 1
+        fi
+    fi
+    popd >/dev/null 2>&1
     
     #
-    # Call configure
+    # Configure FMDB
     #
-    info "Configuring ITAPS_FMDB. . ."
-    cd $ITAPS_FMDB_BUILD_DIR || error "Cannot cd to $ITAPS_FMDB_BUILD_DIR build dir."
     info "Invoking command to configure ITAPS_FMDB"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+        --with-scorecutil=$VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH \
+        --with-gmi=$VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH \
+        --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
         --prefix="$VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH" \
-        --enable-iMesh
+        --enable-imesh
     if [[ $? != 0 ]] ; then
        warn "ITAPS_FMBD configure failed.  Giving up"
        return 1
@@ -8003,7 +7342,7 @@ function build_itaps_grummp
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH" \
-        --enable-itaps
+        --enable-imesh
     if [[ $? != 0 ]] ; then
        warn "ITAPS_GRUMMP configure failed.  Giving up"
        return 1
@@ -9156,17 +8495,14 @@ printvariables () {
 
   printf "%s%s\n" "ITAPS_FMDB_FILE=" "${ITAPS_FMDB_FILE}"
   printf "%s%s\n" "ITAPS_FMDB_VERSION=" "${ITAPS_FMDB_VERSION}"
-  printf "%s%s\n" "ITAPS_FMDB_COMPATIBILITY_VERSION=" "${ITAPS_FMDB_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "ITAPS_FMDB_BUILD_DIR=" "${ITAPS_FMDB_BUILD_DIR}"
 
   printf "%s%s\n" "ITAPS_GRUMMP_FILE=" "${ITAPS_GRUMMP_FILE}"
   printf "%s%s\n" "ITAPS_GRUMMP_VERSION=" "${ITAPS_GRUMMP_VERSION}"
-  printf "%s%s\n" "ITAPS_GRUMMP_COMPATIBILITY_VERSION=" "${ITAPS_GRUMMP_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "ITAPS_GRUMMP_BUILD_DIR=" "${ITAPS_GRUMMP_BUILD_DIR}"
 
   printf "%s%s\n" "ITAPS_MOAB_FILE=" "${ITAPS_MOAB_FILE}"
   printf "%s%s\n" "ITAPS_MOAB_VERSION=" "${ITAPS_MOAB_VERSION}"
-  printf "%s%s\n" "ITAPS_MOAB_COMPATIBILITY_VERSION=" "${ITAPS_MOAB_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "ITAPS_MOAB_BUILD_DIR=" "${ITAPS_MOAB_BUILD_DIR}"
 
   printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
@@ -9770,6 +9106,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "HDF4"     "$HDF4_VERSION  $HDF4_FILE"      $ON_HDF4 \
            "HDF5"     "$HDF5_VERSION  $HDF5_FILE"      $ON_HDF5 \
            "IceT"     "$ICET_VERSION  $ICET_FILE"      $ON_ICET \
+           "ITAPS"    "$ITAPS_VERSION GRUMMP/FMDB/MOAB" $ON_ITAPS \
            "NetCDF"   "$NETCDF_VERSION  $NETCDF_FILE"    $ON_NETCDF \
            "Silo"     "$SILO_VERSION    $SILO_FILE"      $ON_SILO \
            "SZip"     "$SZIP_VERSION    $SZIP_FILE"      $ON_SZIP \
@@ -9793,6 +9130,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         DO_HDF4="no"
         DO_HDF5="no"
         DO_ICET="no"
+        DO_ITAPS="no"
         DO_NETCDF="no"
         DO_SILO="no"
         DO_SZIP="no"
@@ -9829,6 +9167,10 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
                  DO_HDF5="yes";;
               IceT)
                  DO_ICET="yes";;
+              ITAPS)
+                 DO_NETCDF="yes"
+                 DO_HDF5="yes"
+                 DO_ITAPS="yes";;
               NetCDF)
                  DO_NETCDF="yes";;
               Silo)
@@ -9864,7 +9206,6 @@ if [[ "$DO_OPTIONAL2" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
 "Third party libs build_visit can't download "\
 "(you must download these prior to running build_visit):" 0 0 0  \
            "AdvIO"    "$ADVIO_VERSION    $ADVIO_FILE"      $ON_ADVIO \
-           "ITAPS"    "Jun-2010 Versions of MOAB, FMDB, GRUMMP"    $ON_ITAPS \
            "MDSplus"  "$MDSPLUS_VERSION  $MDSPLUS_FILE"    $ON_MDSPLUS \
            "Mili"     "$MILI_VERSION $MILI_FILE"      $ON_MILI \
            "TCMALLOC" "$TCMALLOC_VERSION   $TCMALLOC_FILE"      $ON_TCMALLOC \
@@ -9878,14 +9219,11 @@ if [[ "$DO_OPTIONAL2" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         DO_MDSPLUS="no"
         DO_MILI="no"
         DO_TCMALLOC="no"
-        DO_ITAPS="no"
         for OPTION in $choice
         do
             case $OPTION in
               AdvIO)
                  DO_ADVIO="yes";;
-              ITAPS)
-                 DO_ITAPS="yes";;
               MDSplus)
                  DO_MDSPLUS="yes";;
               Mili)
@@ -10434,17 +9772,6 @@ if [[ "$DO_ITAPS" == "yes" ]] ; then
         fi
         info "Done building ITAPS_MOAB"
     fi
-    # Setup the _IMPL symbol for ITAPS_MOAB
-    export ITAPS_MOAB_IMPL="MOAB:cub:-I\$VISITHOME/itaps/MOAB/$ITAPS_MOAB_VERSION/\$VISITARCH/include:-L\$VISITHOME/itaps/MOAB/$ITAPS_MOAB_VERSION/\$VISITARCH/lib,-liMesh,-lMOAB,-lvtkGraphics"
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-       ITAPS_MOAB_IMPL="$ITAPS_MOAB_IMPL,-L\$VISITHOME/hdf5/$HDF5_VERSION/\$VISITARCH/lib,-lhdf5,-lz"
-    fi
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-       ITAPS_MOAB_IMPL="$ITAPS_MOAB_IMPL,-L\$VISITHOME/szip/$SZIP_VERSION/\$VISITARCH/lib,-lsz"
-    fi
-    if [[ "$DO_NETCDF" == "yes" ]] ; then
-       ITAPS_MOAB_IMPL="$ITAPS_MOAB_IMPL,-L\$VISITHOME/netcdf/$NETCDF_VERSION/\$VISITARCH/lib,-lnetcdf_c++,-lnetcdf"
-    fi
 
     # handle FMDB implementation of ITAPS
     check_if_installed "itaps/FMDB" $ITAPS_FMDB_VERSION
@@ -10458,8 +9785,6 @@ if [[ "$DO_ITAPS" == "yes" ]] ; then
         fi
         info "Done building ITAPS_FMDB"
     fi
-    # Setup the _IMPL symbol for ITAPS_FMDB
-    export ITAPS_FMDB_IMPL="FMDB:sms:-I\$VISITHOME/itaps/FMDB/$ITAPS_FMDB_VERSION/\$VISITARCH/include/FMDB:-L\$VISITHOME/itaps/FMDB/$ITAPS_FMDB_VERSION/\$VISITARCH/lib,-lFMDB,-lSCORECModel,-lSCORECUtil,-lvtkGraphics"
 
     # handle GRUMMP implementation ot ITAPS
     check_if_installed "itaps/GRUMMP" $ITAPS_GRUMMP_VERSION
@@ -10473,8 +9798,6 @@ if [[ "$DO_ITAPS" == "yes" ]] ; then
         fi
         info "Done building ITAPS_GRUMMP"
     fi
-    # Setup the _IMPL symbol for ITAPS_GRUMMP
-    export ITAPS_GRUMMP_IMPL="GRUMMP:bdry,smesh,vmesh:-I\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/include:-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib,-L\$VISITHOME/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\$VISITARCH/lib,-liMesh_GRUMMP,-lGR_3D,-lGR_surf,-lGR_2D,-lGR_base,-lSUMAAlog_lite,-lOptMS,-lvtkGraphics"
 fi
 
 cd "$START_DIR"
