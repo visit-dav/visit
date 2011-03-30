@@ -94,6 +94,10 @@
 //    RegisterDataSelections(). Instead, use flag "queryResultsValid" to
 //    indicate whether current queryResults reflect current query.
 //
+//    Jeremy Meredith, Wed Mar 30 12:55:29 EDT 2011
+//    Close the file if it's no an H5Part file -- HDF5 can be sensitive about
+//    not closing files.
+//
 // ****************************************************************************
 
 avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
@@ -134,6 +138,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     {
         debug1 << "avtH5PartFileFormat::avtH5PartFileFormat(): ";
         debug1 << "H5PartFileIsValid check failed." << std::endl;
+        H5PartCloseFile(file);
         EXCEPTION1(InvalidFilesException, filename);
     }
 
@@ -147,6 +152,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
         debug1 << "avtH5PartFileFormat::avtH5PartFileFormat(): ";
         debug1 << "File contains " << numTimestepsInFile << " <= 0 time steps.";
         debug1 << std::endl;
+        H5PartCloseFile(file);
         EXCEPTION1(InvalidFilesException, filename);
     }
 
@@ -154,6 +160,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     activeTimeStep = 0;
     if (H5PartSetStep(file, activeTimeStep) != H5PART_SUCCESS)
     {
+        H5PartCloseFile(file);
         EXCEPTION1(InvalidFilesException, "Cannot activate time step 0.");
     }
 
@@ -161,6 +168,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     h5part_int64_t nPointVars = H5PartGetNumDatasets(file);
     if (nPointVars < 0)
     {
+        H5PartCloseFile(file);
         EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
                 "Could not obtain number of particle variables.");
     }
@@ -176,6 +184,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
         if (H5PartGetDatasetInfo(file, i, varName, maxVarNameLen, &type, &nElem)
                 != H5PART_SUCCESS)
         {
+            H5PartCloseFile(file);
             EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
                     "Could not obtain particle data set information.");
         }
@@ -183,6 +192,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
         // Store information about type in map so that we can access it in GetVar()
         if (particleVarNameToTypeMap.find(varName) != particleVarNameToTypeMap.end())
         {
+            H5PartCloseFile(file);
             EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
                     "Particle data contains two variables with the same name.");
         }
@@ -235,6 +245,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     h5part_int64_t nFieldVars = H5BlockGetNumFields(file);
     if (nFieldVars < 0)
     {
+        H5PartCloseFile(file);
         EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
                 "Could not read number of field variables.");
     }
@@ -251,6 +262,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
             if (H5BlockGetFieldInfo (file, idx, varName, maxVarNameLen,
                         &gridRank, gridDims, &fieldDims, &type) != H5PART_SUCCESS ) 
             {
+                H5PartCloseFile(file);
                 EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
                         "Could not read field information.");
             }
@@ -259,6 +271,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
             {
                 if (fieldScalarVarNameToTypeMap.find(varName) != fieldScalarVarNameToTypeMap.end())
                 {
+                    H5PartCloseFile(file);
                     EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
                             "Field data contains two scalar variables with the same name.");
                 }
@@ -271,6 +284,7 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
             {
                 if (fieldVectorVarNameToTypeMap.find(varName) != fieldVectorVarNameToTypeMap.end())
                 {
+                    H5PartCloseFile(file);
                     EXCEPTION2(NonCompliantFileException, "H5Part Constructor",
                             "Field data contains two vector variables with the same name.");
                 }

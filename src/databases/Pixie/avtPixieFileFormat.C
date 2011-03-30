@@ -298,6 +298,10 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Luis Chacon, Tue Mar 2 10:02:00 EST 2010
 //   Added code to sort time values
 //
+//   Jeremy Meredith, Wed Mar 30 11:24:30 EDT 2011
+//   Add a test to avoid opening PFLOTRAN files (though like the others tests,
+//   it will be skipped if the user does Open As so we're not in strict mode).
+//
 // ****************************************************************************
     
 void
@@ -339,6 +343,14 @@ avtPixieFileFormat::Initialize()
                 H5Fclose(fileId);
                 EXCEPTION1(InvalidDBTypeException,
                            "Cannot be a Pixie file because it looks like a Tetrad file.");
+            }
+            hid_t coordsGID = H5Gopen(fileId, "Coordinates");
+            if (coordsGID >= 0)
+            {
+                H5Gclose(coordsGID);
+                H5Fclose(fileId);
+                EXCEPTION1(InvalidDBTypeException,
+                           "Cannot be a Pixie file because it looks like a PFLOTRAN file.");
             }
             hid_t control = H5Dopen(fileId, "CONTROL");
             if (control >= 0)
