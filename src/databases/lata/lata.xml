@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+  <Plugin name="lata" type="database" label="lata import file" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      -O2 -DNDEBUG -Wall 
+    </CXXFLAGS>
+    
+   <FilePatterns>
+      *.lml
+      *.lata
+    </FilePatterns>
+    
+    <Files components="M">
+
+      avtlataFileFormat.C
+         LataDB.C
+         LataFilter.C
+         LataStructures.C
+         LataV1_field_definitions.C
+         LataWriter.C
+         Lata_tools.C
+         LmlReader.C
+         OpenDXWriter.C
+         OperatorBoundary.C
+         OperatorDualMesh.C
+         OperatorFacesMesh.C
+         OperatorReconnect.C
+         OperatorRegularize.C
+         Rebuild_virtual_layer.C
+         UserFields.C
+         ArrOfBit.C
+         ArrOfDouble.C
+         ArrOfFloat.C
+         ArrOfInt.C
+         Connectivite_som_elem.C
+         Motcle.C
+         Octree_Double.C
+         Octree_Int.C
+         Static_Int_Lists.C
+    </Files>
+    <Files components="E">
+      avtlataFileFormat.C
+         LataDB.C
+         LataFilter.C
+         LataStructures.C
+         LataV1_field_definitions.C
+         LataWriter.C
+         Lata_tools.C
+         LmlReader.C
+         OpenDXWriter.C
+         OperatorBoundary.C
+         OperatorDualMesh.C
+         OperatorFacesMesh.C
+         OperatorReconnect.C
+         OperatorRegularize.C
+         Rebuild_virtual_layer.C
+         UserFields.C
+         ArrOfBit.C
+         ArrOfDouble.C
+         ArrOfFloat.C
+         ArrOfInt.C
+         Connectivite_som_elem.C
+         Motcle.C
+         Octree_Double.C
+         Octree_Int.C
+         Static_Int_Lists.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

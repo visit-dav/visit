@@ -92,6 +92,9 @@
 #    Eric Brugger, Fri Jan  7 13:35:31 PST 2011
 #    I replaced the BOXLIB2D and BOXLIB3D variables with just BOXLIB.
 #
+#    Eric Brugger, Wed Mar 30 11:58:31 PDT 2011
+#    I added the lata database reader contributed by CEA.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
@@ -252,6 +255,7 @@ VTK
 WavefrontOBJ
 XYZ
 Xmdv
+lata
 paraDIS
 paraDIS_tecplot
 )
