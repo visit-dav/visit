@@ -924,6 +924,17 @@ avtMirandaFileFormat::GetCurvilinearMesh(int domain)
             delete[] aRawBlocks[ii];
     }
 
+    int iBlockX, iBlockY, iBlockZ;
+    DomainToIJK( domain, iBlockX, iBlockY, iBlockZ );
+    vtkIntArray *arr = vtkIntArray::New();
+    arr->SetNumberOfTuples(3);
+    arr->SetValue(0, iBlockX*iBlockSize[0]+1);
+    arr->SetValue(1, iBlockY*iBlockSize[1]+1);
+    arr->SetValue(2, iBlockZ*iBlockSize[2]+1);
+    arr->SetName("base_index");
+    sgrid->GetFieldData()->AddArray(arr);
+    arr->Delete();
+
     return sgrid;
 }
 
