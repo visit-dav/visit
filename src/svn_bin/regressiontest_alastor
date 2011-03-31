@@ -3,6 +3,9 @@
 # Modifications:
 #   Mark C. Miller, Thu Jul 29 23:35:19 PDT 2010
 #   Added option to ignore third party lib problems to cmake invokation.
+#
+#   Eric Brugger, Thu Mar 31 09:38:38 PDT 2011
+#   Modified the script to work with the 2.2RC instead of the 2.0RC.
 
 #
 # Determine the users name and e-mail address.
@@ -70,8 +73,8 @@ do
             branch="trunk"
             shift
             ;;
-        -2.0RC)
-            branch="2.0RC"
+        -2.2RC)
+            branch="2.2RC"
             shift
             ;;
         -serial)
@@ -163,13 +166,13 @@ if test "$branch" = "trunk" ; then
     fi
 else
     if test "$revision" = "latest" ; then
-        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/src > buildlog 2>&1
-        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/data >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/test >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.2RC/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.2RC/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.2RC/test >> buildlog 2>&1
     else
-        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/src -r $revision > buildlog 2>&1
-        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/data -r $revision >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.0RC/test -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.2RC/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.2RC/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@svn.nersc.gov/svn/visit/branches/2.2RC/test -r $revision >> buildlog 2>&1
     fi
 fi
 if test "$debug" = "true" ; then
