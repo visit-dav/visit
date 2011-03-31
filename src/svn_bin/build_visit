@@ -365,6 +365,10 @@
 #     Updated ITAPS libraries to ITAPS-1.2 release. Made it download ITAPS
 #     ITAPS sources from ITAPS sites. Overhauled build_itaps_fmdb due to
 #     changes in ways FMDB is built.
+#
+#     Eric Brugger, Thu Mar 31 09:36:14 PDT 2011
+#     I changed the visit version number to 2.2.2.
+#
 # *****************************************************************************
 
 
@@ -695,7 +699,7 @@ fi
 # release tag.
 ############################################################################
 
-export VISIT_VERSION=${VISIT_VERSION:-"2.2.1"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.2.2"}
 
 ####
 # Trunk:
