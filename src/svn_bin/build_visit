@@ -1105,6 +1105,9 @@
 #     Eric Brugger, Wed Jan 19 10:13:02 PST 2011
 #     I changed the visit version number to 2.2.1.
 #
+#     Eric Brugger, Thu Mar 31 09:36:14 PDT 2011
+#     I changed the visit version number to 2.2.2.
+#
 # *****************************************************************************
 
 
@@ -1435,7 +1438,7 @@ fi
 # release tag.
 ############################################################################
 
-export VISIT_VERSION=${VISIT_VERSION:-"2.2.1"}
+export VISIT_VERSION=${VISIT_VERSION:-"2.2.2"}
 
 ####
 # Trunk:
