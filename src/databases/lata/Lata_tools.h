@@ -47,6 +47,13 @@
 typedef __int64 BigEntier;
 
 #else
+#ifdef __APPLE__
+// Assume we only have x86, x86_64 based Macs.
+#define __BIG_ENDIAN    111
+#define __LITTLE_ENDIAN 121
+#define __BYTE_ORDER __LITTLE_ENDIAN
+#endif
+
 // This must be able to contain a total memory size
 // or a very big operation counter.
 typedef long long BigEntier;
