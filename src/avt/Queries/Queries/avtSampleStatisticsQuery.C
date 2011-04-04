@@ -171,12 +171,17 @@ avtSampleStatisticsQuery::Execute1(vtkDataSet *ds, const int dom)
 //  Creation:    March 11, 2009
 //
 //  Modifications:
+//
+//   Dave Pugmire, Mon Apr  4 12:29:32 EDT 2011
+//   Sum total number of values, and compute "sum" as the sum of each proc's "sum".
+//
 // ****************************************************************************
 
 void
 avtSampleStatisticsQuery::MidExecute(void)
 {
-    SumDoubleAcrossAllProcessors(mean);
+    SumDoubleAcrossAllProcessors(sum);
+    SumIntAcrossAllProcessors(totalvalues);
     mean = sum / double(totalvalues);
 }
 
@@ -238,6 +243,7 @@ avtSampleStatisticsQuery::PostExecute(void)
     SumDoubleAcrossAllProcessors(csum2);
     SumDoubleAcrossAllProcessors(csum3);
     SumDoubleAcrossAllProcessors(csum4);
+    
     double cmoment2 = csum2 / N;
     double cmoment3 = csum3 / N;
     double cmoment4 = csum4 / N;
