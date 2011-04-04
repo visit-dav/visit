@@ -2108,8 +2108,8 @@ for ($os) {
                 #
                 chomp( $darwinver = `uname -r`);
                 my @darwinversions = split('\.', $darwinver);
-                chomp( $darwinproc = `/usr/sbin/system_profiler -detailLevel -2 | grep "Processor Name"`);
-                if ($darwinversions[0] >= 10 and $darwinversions[1] >= 6) {
+                if ($darwinversions[0] >= 10) {
+                    chomp( $darwinproc = `/usr/sbin/system_profiler -detailLevel -2 | grep "Processor Name"`);
                     if ($darwinproc =~ "Intel Core Solo" or
                         $darwinproc =~ "Intel Core Duo") {
                         push @supportedarchs, "darwin-i386";
