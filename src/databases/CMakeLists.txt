@@ -98,6 +98,9 @@
 #    Eric Brugger, Wed Mar 30 11:58:31 PDT 2011
 #    I added the lata database reader contributed by CEA.
 #
+#    Eric Brugger, Mon Apr  4 10:05:55 PDT 2011
+#    I temporarily disabled the ITAPS readers since they aren't compiling.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -184,6 +187,8 @@ ENDIF (NOT WIN32)
 THIRDPARTY_DEPENDENT_PLUGINS(VISUS    ViSUS)
 THIRDPARTY_DEPENDENT_PLUGINS(XDMF     Xdmf)
 
+# Temporarily disable ITAPS
+SET(ITAPS_DIRS)
 # Add ITAPS
 IF(ITAPS_DIRS)
     SET(THIRDPARTY_DEPENDENT_PLUGINS ${THIRDPARTY_DEPENDENT_PLUGINS} ${ITAPS_DIRS})
