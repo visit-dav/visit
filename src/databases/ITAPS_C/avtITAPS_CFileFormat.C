@@ -1256,7 +1256,7 @@ tagFound:
         {
             case iBase_INTEGER:
             {
-                int *intArray; int intArray_allocated = 0;
+                int *intArray=0; int intArray_allocated = 0;
                 iMesh_getIntArrData(itapsMesh, varEnts, varEnts_size, tagToGet,
                     &intArray, &intArray_allocated, &arraySize, &itapsError); 
                 CheckITAPSError(itapsMesh, iMesh_getIntArrData, (intArray,EoL)); 
@@ -1279,7 +1279,7 @@ tagFound:
             }
             case iBase_DOUBLE:
             {
-                double *dblArray; int dblArray_allocated = 0;
+                double *dblArray=0; int dblArray_allocated = 0;
                 iMesh_getDblArrData(itapsMesh, varEnts, varEnts_size, tagToGet,
                     &dblArray, &dblArray_allocated, &arraySize, &itapsError); 
                 CheckITAPSError(itapsMesh, iMesh_getDblArrData, (dblArray,EoL)); 
@@ -1300,6 +1300,7 @@ tagFound:
                     free(dblArray);
                 break;
             }
+            case iBase_ENTITY_SET_HANDLE:
             case iBase_ENTITY_HANDLE:
             case iBase_BYTES:
             {
