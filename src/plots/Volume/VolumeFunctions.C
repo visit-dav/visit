@@ -953,7 +953,9 @@ VolumeCalculateGradient(const VolumeAttributes &atts,
 // Creation:   Tue Dec 16 14:48:44 PST 2008
 //
 // Modifications:
-//   
+//  Cyrus Harrison, Tue Apr  5 09:07:22 PDT 2011
+//  Guard against invalid mem access when the var range or grad range is zero.
+//
 // ****************************************************************************
 
 void
@@ -988,8 +990,8 @@ VolumeHistograms(const VolumeAttributes &atts,
     int N = data->GetNumberOfTuples();
     float hist_max = 0.;
     float hist2_max = 0.;
-    float s_scale = (hist_size - 1) / var_diff;
-    float m_scale = (hist_size - 1) / grad_diff;
+    float s_scale = var_diff  !=0 ? (hist_size - 1) / var_diff  : 0.0;
+    float m_scale = grad_diff !=0 ? (hist_size - 1) / grad_diff : 0.0;
     if(data->GetDataType() == VTK_FLOAT &&
        gm->GetDataType() == VTK_FLOAT)
     {
