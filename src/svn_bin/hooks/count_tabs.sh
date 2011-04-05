@@ -65,6 +65,9 @@
 #   Cyrus Harrison, Fri Jan 14 10:48:50 PST 2011
 #   Add docs to the skip list.
 #
+#   Eric Brugger, Tue Apr  5 11:36:22 PDT 2011
+#   Add releases to the skip list.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -111,6 +114,9 @@ while read fline; do
             continue
             ;;
         */vendor_branches/*)
+            continue
+            ;;
+        */releases/*)
             continue
             ;;
     esac
