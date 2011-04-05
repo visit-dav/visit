@@ -122,11 +122,12 @@ avtITAPS_CUtility::InitDataTypeNames()
     entTypes[iBase_ALL_TYPES] = "all types";
 
     // Ensure we map data type names to appropriate strings
-    int nDataTypes = 4;
+    int nDataTypes = 5;
     itapsDataTypeNames = new char*[nDataTypes];
     itapsDataTypeNames[iBase_INTEGER]       = "integer";
     itapsDataTypeNames[iBase_DOUBLE]        = "double";
     itapsDataTypeNames[iBase_ENTITY_HANDLE] = "ehandle";
+    itapsDataTypeNames[iBase_ENTITY_SET_HANDLE] = "eshandle";
     itapsDataTypeNames[iBase_BYTES]         = "bytes";
 }
 
