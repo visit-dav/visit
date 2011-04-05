@@ -403,9 +403,9 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                 char *theVal = 0; int theVal_allocated = 0;
                 int theValSize = 0;
                 if (isEntitySet)
-                    iMesh_getEntSetData(aMesh, esh, tags[t], &theVal, &theVal_allocated, &theValSize, &itapsError);
+                    iMesh_getEntSetData(aMesh, esh, tags[t], (void**)&theVal, &theVal_allocated, &theValSize, &itapsError);
                 else
-                    iMesh_getData(aMesh, eh, tags[t], &theVal, &theVal_allocated, &theValSize, &itapsError);
+                    iMesh_getData(aMesh, eh, tags[t], (void**)&theVal, &theVal_allocated, &theValSize, &itapsError);
                 if (level<2) CheckITAPSError(aMesh, iMesh_getXXData, (0,theVal,EoL));
                 std::string valBuf;
                 for (int k = 0; k < theValSize; k++)
@@ -655,9 +655,9 @@ avtITAPS_CUtility::GetTagsForEntity(iMesh_Instance aMesh, bool isEntitySet,
                 char *theVal = 0; int theVal_allocated = 0;
                 int theValSize = 0;
                 if (isEntitySet)
-                    iMesh_getEntSetData(aMesh, esh, tags[t], &theVal, &theVal_allocated, &theValSize, &itapsError);
+                    iMesh_getEntSetData(aMesh, esh, tags[t], (void**)&theVal, &theVal_allocated, &theValSize, &itapsError);
                 else
-                    iMesh_getData(aMesh, eh, tags[t], &theVal, &theVal_allocated, &theValSize, &itapsError);
+                    iMesh_getData(aMesh, eh, tags[t], (void**)&theVal, &theVal_allocated, &theValSize, &itapsError);
                 if (level<2) CheckITAPSError(aMesh, iMesh_getXXData, (0,theVal,EoL));
                 std::string valBuf;
                 for (int k = 0; k < theValSize; k++)
@@ -776,7 +776,7 @@ int avtITAPS_CUtility::GetTagStuff(iMesh_Instance ima, iBase_EntitySetHandle set
     {
         int has_data;
         iBase_EntityHandle oneEnt;
-        iMesh_EntityIterator entIt;
+        iBase_EntityIterator entIt;
 
         iMesh_initEntIter(ima, set, ent_type, iMesh_ALL_TOPOLOGIES, &entIt, &err);
         iMesh_getNextEntIter(ima, entIt, &oneEnt, &has_data, &err);
@@ -825,7 +825,7 @@ int avtITAPS_CUtility::GetTagStuff(iMesh_Instance ima, iBase_EntitySetHandle set
                             *vals = (void *) malloc(tmp_size * 1);
                             vals_allocated = tmp_size;
                         }
-                        iMesh_getEntSetData(ima, set, tags[i], (char**) vals, &vals_allocated, &vals_size, &err);
+                        iMesh_getEntSetData(ima, set, tags[i], (void**) vals, &vals_allocated, &vals_size, &err);
                         break;
                     }
                     case iBase_INTEGER:
@@ -846,7 +846,7 @@ int avtITAPS_CUtility::GetTagStuff(iMesh_Instance ima, iBase_EntitySetHandle set
                             *vals = (void *) malloc(tmp_size * sizeof(iBase_EntityHandle));
                             vals_allocated = tmp_size * sizeof(iBase_EntityHandle);
                         }
-                        iMesh_getEntSetData(ima, set, tags[i], (char**) vals, &vals_allocated, &vals_size, &err);
+                        iMesh_getEntSetData(ima, set, tags[i], (void**) vals, &vals_allocated, &vals_size, &err);
                         //iMesh_getEntSetEHData(ima, set, tags[i], *vals, &err);
                         break;
                     }
