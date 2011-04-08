@@ -369,6 +369,10 @@
 #     Eric Brugger, Thu Mar 31 09:36:14 PDT 2011
 #     I changed the visit version number to 2.2.2.
 #
+#     Eric Brugger, Fri Apr  8 16:04:57 PDT 2011
+#     I changed the script to download the visit source code from the
+#     releases directory in the anonymous svn site.
+#
 # *****************************************************************************
 
 
@@ -1145,7 +1149,7 @@ function download_file
 
     # If the visit source code is requested try that next.
     if [[ "$dfile" == "$VISIT_FILE" ]] ; then
-        try_download_file https://wci.llnl.gov/codes/visit/$VISIT_VERSION/$dfile $dfile
+        try_download_file $SVN_ANON_ROOT_PATH/trunk/releases/$VISIT_VERSION/$dfile $dfile
         if [[ $? == 0 ]] ; then
             return 0
         fi
