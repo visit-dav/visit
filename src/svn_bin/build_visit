@@ -373,6 +373,8 @@
 #     I changed the script to download the visit source code from the
 #     releases directory in the anonymous svn site.
 #
+#     Mark C. Miller, Mon Apr 11 10:11:30 PDT 2011
+#     Fixed problems building ITAPS FMDB plugin.
 # *****************************************************************************
 
 
@@ -7215,7 +7217,8 @@ function build_itaps_fmdb
     #
     info "Configuring GMI for ITAPS_FMDB. . ."
     pushd GMI-1.0 >/dev/null 2>&1
-    ./configure \
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --with-fmdb=$abs_itaps_fmdb_build_dir \
         --with-scorecutil=$abs_itaps_fmdb_build_dir/SCUtil/SCORECUtil-0.1 \
         --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
@@ -7246,7 +7249,8 @@ function build_itaps_fmdb
     #
     info "Configuring SCORECUtil for ITAPS_FMDB. . ."
     pushd SCUtil/SCORECUtil-0.1 >/dev/null 2>&1
-    ./configure \
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --with-gmi=$VISITDIR/itaps/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH \
         --with-fmdb=$abs_itaps_fmdb_build_dir \
         --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
@@ -8168,7 +8172,7 @@ function build_hostconf
              "\${VISITHOME}/szip/${SZIP_VERSION}/\${VISITARCH}/lib " \
              "\${VISITHOME}/netcdf/${NETCDF_VERSION}/\${VISITARCH}/lib)" >> $HOSTCONF
         echo "## FMDB implementation" >> $HOSTCONF
-        echo "ITAPS_INCLUDE_DIRECTORIES(FMDB \${VISITHOME}/itaps/FMDB/$ITAPS_FMDB_VERSION/\${VISITARCH}/include/FMDB)" \
+        echo "ITAPS_INCLUDE_DIRECTORIES(FMDB \${VISITHOME}/itaps/FMDB/$ITAPS_FMDB_VERSION/\${VISITARCH}/include)" \
         >> $HOSTCONF
         echo "ITAPS_FILE_PATTERNS(FMDB *.sms)" >> $HOSTCONF
         echo "ITAPS_LINK_LIBRARIES(FMDB FMDB SCORECModel SCORECUtil vtkGraphics)" >> $HOSTCONF
