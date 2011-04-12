@@ -34,6 +34,10 @@
 #
 #    Marc Durant, Tue Feb 23 16:44:46 MST 2010
 #    Added case for userid "mdurant".
+#
+#    Eric Brugger, Tue Apr 12 09:31:45 PDT 2011
+#    Added case for userid "oruebel".
+#
 # *****************************************************************************
 
 
@@ -117,6 +121,10 @@ case $1 in
     # Marc Durant, Tech-X Corp
     "mdurant")
         emaddr=mdurant@txcorp.com
+        ;;
+    # Oliver Ruebel, Lawrence Berkeley National Laboratory
+    "oruebel")
+        emaddr=oruebel@lbl.gov
         ;;
     *)
         emaddr=visit-developers@ornl.gov
