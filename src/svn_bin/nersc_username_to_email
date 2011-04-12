@@ -41,6 +41,10 @@
 #    Hank Childs, Mon Jan 31 07:45:07 PST 2011
 #    Switch myself to hchilds@lbl.gov, add loring and allens.
 #
+#
+#    Eric Brugger, Tue Apr 12 09:31:45 PDT 2011
+#    Added case for userid "oruebel".
+#
 # *****************************************************************************
 
 
@@ -129,6 +133,7 @@ case $1 in
     "hkrishna")
         emaddr=hkrishnan@lbl.gov
         ;;
+    # Rich Cook, Lawrence Livermore National Laboratory
     "cook47")
         emaddr=rcook@llnl.gov
         ;;
@@ -139,6 +144,10 @@ case $1 in
     # Allen Sanderson, University of Utah
     "allens")
         emaddr=allen@sci.utah.edu
+        ;;
+    # Oliver Ruebel, Lawrence Berkeley National Laboratory
+    "oruebel")
+        emaddr=oruebel@lbl.gov
         ;;
     *)
         emaddr=visit-developers@ornl.gov
