@@ -2570,7 +2570,6 @@ EOF
 
 function apply_mesa_7102_patch_1
 {
-   info "apply_mesa_7102_patch_1" 
    patch -p0 <<\EOF
 diff -c a/src/mesa/main/APIspec.py Mesa-7.10.2/src/mesa/main/APIspec.py
 *** a/src/mesa/main/APIspec.py
@@ -2609,7 +2608,6 @@ EOF
 
 function apply_mesa_7102_patch_2
 {
-   info "apply_mesa_7102_patch_2" 
    patch -p0 <<\EOF
 diff -c a/src/mesa/main/APIspecutil.py Mesa-7.10.2/src/mesa/main/APIspecutil.py
 *** a/src/mesa/main/APIspecutil.py
