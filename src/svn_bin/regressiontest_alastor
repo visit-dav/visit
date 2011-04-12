@@ -6,6 +6,9 @@
 #
 #   Eric Brugger, Thu Mar 31 09:38:38 PDT 2011
 #   Modified the script to work with the 2.2RC instead of the 2.0RC.
+#
+#   Eric Brugger, Tue Apr 12 10:53:02 PDT 2011
+#   Removed the specular lighting tests from the skip list.
 
 #
 # Determine the users name and e-mail address.
@@ -127,9 +130,6 @@ skipList_for_Alastor="\
     alastor,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
     alastor,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
     alastor,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
-    alastor,serial:tests/rendering/specular.py:specular_02,specular_03,specular_04,specular_05 \
-    alastor,parallel:tests/rendering/specular.py:specular_02,specular_03,specular_04,specular_05 \
-    alastor,scalable,parallel,icet:tests/rendering/specular.py:specular_02,specular_03,specular_04,specular_05 \
     alastor,serial:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
     alastor,parallel:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
     alastor,scalable,parallel,icet:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
