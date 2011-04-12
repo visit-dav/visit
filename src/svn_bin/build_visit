@@ -41,7 +41,7 @@
 #       try to download them.
 #       You must have:
 #          Qt       qt-everywhere-opensource-src-4.6.1.tar.gz
-#          Mesa     MesaLib-7.8.2.tar.gz
+#          Mesa     MesaLib-7.10.2.tar.gz
 #          Python   Python-2.6.4tgz
 #          VTK      vtk-5.0.0i.tar.gz
 #          CMake    cmake-2.8.0.tar.gz
@@ -375,6 +375,10 @@
 #
 #     Mark C. Miller, Mon Apr 11 10:11:30 PDT 2011
 #     Fixed problems building ITAPS FMDB plugin.
+#
+#     Eric Brugger, Tue Apr 12 10:12:16 PDT 2011
+#     I changed the script to use mesa 7.10.2.
+#
 # *****************************************************************************
 
 
@@ -746,10 +750,10 @@ export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.3.tar.gz"}
 export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.3"}
 export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.3"}
 
-export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
-export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
-export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2"
+export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
+export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
+export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
+export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.10.2"
 
 export PYTHON_FILE_SUFFIX="tgz"
 export PYTHON_VERSION="2.6.4"
@@ -2435,8 +2439,8 @@ function apply_mesa_782_patch_1
 {
    patch -p0 <<\EOF
 diff -c a/src/mesa/drivers/osmesa/osmesa.c Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c
-*** a/src/mesa/drivers/osmesa/osmesa.c	Tue Jun 15 10:43:47 2010
---- Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c	Tue Jan 11 10:13:25 2011
+*** a/src/mesa/drivers/osmesa/osmesa.c
+--- Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c
 ***************
 *** 1328,1336 ****
       * that converts rendering from CHAN_BITS to the user-requested channel
@@ -2470,6 +2474,7 @@ EOF
       return 0
    fi
 }
+
 
 function apply_mesa_782_patch_2
 {
@@ -2562,6 +2567,181 @@ EOF
    fi
 }
 
+
+function apply_mesa_7102_patch_1
+{
+   info "apply_mesa_7102_patch_1" 
+   patch -p0 <<\EOF
+diff -c a/src/mesa/main/APIspec.py Mesa-7.10.2/src/mesa/main/APIspec.py
+*** a/src/mesa/main/APIspec.py
+--- Mesa-7.10.2/src/mesa/main/APIspec.py
+***************
+*** 262,268 ****
+          args = []
+          if declaration:
+              for param in self.params:
+!                 sep = "" if param.type.endswith("*") else " "
+                  args.append("%s%s%s" % (param.type, sep, param.name))
+              if not args:
+                  args.append("void")
+--- 262,272 ----
+          args = []
+          if declaration:
+              for param in self.params:
+!                 #sep = "" if param.type.endswith("*") else " "
+!                 if param.type.endswith("*"):
+!                     sep = ""
+!                 else:
+!                     sep = " "
+                  args.append("%s%s%s" % (param.type, sep, param.name))
+              if not args:
+                  args.append("void")
+EOF
+
+   if [[ $? != 0 ]] ; then
+      warn "Unable to apply patch 1 to Mesa 7.10.2."
+      return 1
+   else
+      return 0
+   fi
+}
+
+
+function apply_mesa_7102_patch_2
+{
+   info "apply_mesa_7102_patch_2" 
+   patch -p0 <<\EOF
+diff -c a/src/mesa/main/APIspecutil.py Mesa-7.10.2/src/mesa/main/APIspecutil.py
+*** a/src/mesa/main/APIspecutil.py
+--- Mesa-7.10.2/src/mesa/main/APIspecutil.py
+***************
+*** 129,135 ****
+              if dep_desc.checker.switches:
+                  print >>sys.stderr, "%s: deep nested dependence" % func.name
+
+!             convert = None if dep_desc.convert else "noconvert"
+              for val in desc.values:
+                  valid_values.append((val, dep_desc.size_str, dep_desc.name,
+                                       dep_desc.values, dep_desc.error, convert))
+--- 129,139 ----
+              if dep_desc.checker.switches:
+                  print >>sys.stderr, "%s: deep nested dependence" % func.name
+
+!             #convert = None if dep_desc.convert else "noconvert"
+!             if dep_desc.convert:
+!                 convert = None
+!             else:
+!                 convert = "noconvert"
+              for val in desc.values:
+                  valid_values.append((val, dep_desc.size_str, dep_desc.name,
+                                       dep_desc.values, dep_desc.error, convert))
+***************
+*** 241,247 ****
+      """Return a C-style parameter declaration string."""
+      string = []
+      for p in params:
+!         sep = "" if p[1].endswith("*") else " "
+          string.append("%s%s%s" % (p[1], sep, p[0]))
+      if not string:
+          return "void"
+--- 245,255 ----
+      """Return a C-style parameter declaration string."""
+      string = []
+      for p in params:
+!         #sep = "" if p[1].endswith("*") else " "
+!         if p[1].endswith("*"):
+!             sep = ""
+!         else:
+!             sep = " "
+          string.append("%s%s%s" % (p[1], sep, p[0]))
+      if not string:
+          return "void"
+***************
+*** 257,269 ****
+  def Alias(funcname):
+      """Return the name of the function the named function is an alias of."""
+      alias, need_conv = __aliases[funcname]
+!     return alias.name if not need_conv else None
+
+
+  def ConversionFunction(funcname):
+      """Return the name of the function the named function converts to."""
+      alias, need_conv = __aliases[funcname]
+!     return alias.name if need_conv else None
+
+
+  def Categories(funcname):
+--- 265,285 ----
+  def Alias(funcname):
+      """Return the name of the function the named function is an alias of."""
+      alias, need_conv = __aliases[funcname]
+!     if need_conv:
+!         return None
+!     else:
+!         return alias.name
+!     #return alias.name if not need_conv else None
+
+
+  def ConversionFunction(funcname):
+      """Return the name of the function the named function converts to."""
+      alias, need_conv = __aliases[funcname]
+!     if need_conv:
+!         return alias.name
+!     else:
+!         return None
+!     #return alias.name if need_conv else None
+
+
+  def Categories(funcname):
+EOF
+
+   if [[ $? != 0 ]] ; then
+      warn "Unable to apply patch 2 to Mesa 7.10.2."
+      return 1
+   else
+      return 0
+   fi
+}
+
+
+function apply_mesa_7102_patch_3
+{
+   patch -p0 <<\EOF
+diff -c a/src/mesa/main/es_generator.py Mesa-7.10.2/src/mesa/main/es_generator.py
+*** a/src/mesa/main/es_generator.py
+--- Mesa-7.10.2/src/mesa/main/es_generator.py
+***************
+*** 741,747 ****
+  """ % (shortname, shortname, shortname, shortname)
+
+  for func in keys:
+!     prefix = "_es_" if func not in allSpecials else "_check_"
+      for spec in apiutil.Categories(func):
+          ext = spec.split(":")
+          # version does not match
+--- 741,751 ----
+  """ % (shortname, shortname, shortname, shortname)
+
+  for func in keys:
+!     #prefix = "_es_" if func not in allSpecials else "_check_"
+!     if func in allSpecials:
+!         prefix = "_check_"
+!     else:
+!         prefix = "_es_"
+      for spec in apiutil.Categories(func):
+          ext = spec.split(":")
+          # version does not match
+EOF
+
+   if [[ $? != 0 ]] ; then
+      warn "Unable to apply patch 3 to Mesa 7.10.2."
+      return 1
+   else
+      return 0
+   fi
+}
+
+
 function apply_mesa_patch
 {
    info "Patching Mesa . . ."
@@ -2588,6 +2768,19 @@ function apply_mesa_patch
         return 1
       fi
       apply_mesa_782_patch_2
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
+   elif [[ ${MESA_VERSION} == "7.10.2" ]] ; then
+      apply_mesa_7102_patch_1
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
+      apply_mesa_7102_patch_2
+      if [[ $? != 0 ]] ; then
+        return 1
+      fi
+      apply_mesa_7102_patch_3
       if [[ $? != 0 ]] ; then
         return 1
       fi
