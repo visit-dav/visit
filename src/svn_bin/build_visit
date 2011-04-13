@@ -1112,6 +1112,10 @@
 #     I changed the script to download the visit source code from the
 #     releases directory in the anonymous svn site.
 #
+#     Gunther H. Weber, Wed Apr 13 11:42:22 PDT 2011
+#     Disable Java in FastBit built (we do not use it, and some systems
+#     do not have a working Java install).
+#
 # *****************************************************************************
 
 
@@ -7793,7 +7797,7 @@ function build_fastbit
        CXX="$CXX_COMPILER" CC="$C_COMPILER" \
        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
        --prefix="$VISITDIR/fastbit/$FASTBIT_VERSION/$VISITARCH" \
-       --disable-shared
+       --disable-shared --with-java=no
     if [[ $? != 0 ]] ; then
        echo "FastBit configure failed.  Giving up"
        return 1

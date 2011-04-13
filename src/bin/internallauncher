@@ -699,6 +699,9 @@ $0 = shift @ARGV;
 #    I made the logic that distinguishes between 32 and 64 bits on Mac OS X
 #    smarter since it was overly aggressive in selecting the 64 bit version.
 #
+#    Gunther H. Weber, Wed Apr 13 11:43:51 PDT 2011
+#    Update LD_LIBRARY_PATH for franklin.nersc.gov
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1762,7 +1765,7 @@ if ( $host =~ /^nid/ )
     if ($nodename =~ /^franklin/)
     {
         $IsRunningOnFranklinNERSC = 1;
-        $ENV{LD_LIBRARY_PATH} = "/opt/gcc/4.4.1/snos/lib64";
+        $ENV{LD_LIBRARY_PATH} = "/opt/gcc/4.4.4/snos/lib64";
         if ($ENV{PATH} eq "")
         {
             $ENV{PATH} = "/opt/torque/2.3.4-200809011357/bin";
