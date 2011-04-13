@@ -57,7 +57,7 @@ function fixup_dylib
 #    echo "thisLibraryName1 = $thisLibraryName1"
 #    echo "thisLibraryName2 = $thisLibraryName2"
 
-    sharedLibs=$(otool -L $1 | grep -v "/usr/lib" | grep -v "$thisLibraryName1" | grep -v "$thisLibraryName2" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
+    sharedLibs=$(otool -L $1 | grep -v "/usr/lib" | grep -v "/opt/local/lib" | grep -v "/opt/local/Library" | grep -v "$thisLibraryName1" | grep -v "$thisLibraryName2" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
 #    echo "sharedLibs = $sharedLibs"
     command=""
     for library in $sharedLibs ; do
@@ -107,7 +107,7 @@ function fixup_exe
     sharedLibs=$(otool -L $1 | grep -v ":" | grep "/" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
     command=""
     for library in $sharedLibs ; do
-        s=$(echo $library | grep -v "/usr/lib" | grep -v "/usr/X11R6")
+        s=$(echo $library | grep -v "/usr/lib" | grep -v "/usr/X11R6" | grep -v "/opt/local/lib" | grep -v "/opt/local/Library")
         if [[ $s != "" ]] ; then
             framework=$(echo $library | grep ".framework")
             if [[ $framework != "" ]] ; then
