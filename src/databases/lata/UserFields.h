@@ -37,7 +37,7 @@ class FloatTab;
 typedef Field<FloatTab> FieldType;
 class Field_Id;
 class LataFilter;
-class LataFieldMetaData;
+struct LataFieldMetaData;
 class DomainUnstructured;
 class DomainIJK;
 
