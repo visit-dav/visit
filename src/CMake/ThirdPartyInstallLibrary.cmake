@@ -117,7 +117,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
         IF(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
             # We need to install a library and its symlinks
             GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
-            IF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
+            IF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
                 GET_FILENAME_COMPONENT(curNAMEWE ${LIBREALPATH} NAME_WE)
                 GET_FILENAME_COMPONENT(curEXT ${LIBREALPATH} EXT)
                 STRING(REPLACE "." ";" extList ${curEXT})
@@ -177,49 +177,52 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                     ENDIF(EXISTS ${curNAMEWithExt})
                 ENDFOREACH(curNAMEWithExt)
             # ENDIF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*"))
-            ENDIF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
+            ENDIF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
         ELSE(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
-            # We need to install just the library
-            IF(IS_DIRECTORY ${tmpLIBFILE})
-                # It is a framework, install as a directory.
-                INSTALL(DIRECTORY ${tmpLIBFILE}
-                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-                    PATTERN "Qt*_debug" EXCLUDE # Exclude Qt*_debug libraries in framework.
-                )
+            GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
+            IF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
+                # We need to install just the library
+                IF(IS_DIRECTORY ${tmpLIBFILE})
+                    # It is a framework, install as a directory.
+                    INSTALL(DIRECTORY ${tmpLIBFILE}
+                        DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                        PATTERN "Qt*_debug" EXCLUDE # Exclude Qt*_debug libraries in framework.
+                    )
 
-                # On Apple, we need to make the framework be executable relative
-                GET_FILENAME_COMPONENT(frameworkNameWE ${tmpLIBFILE} NAME_WE)
-                GET_FILENAME_COMPONENT(realFramework ${tmpLIBFILE}/${frameworkNameWE} REALPATH)
-                STRING(REGEX MATCH "${frameworkNameWE}[A-Za-z0-9._/-]*" frameworkMatch ${realFramework})
-                INSTALL(CODE 
-                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${frameworkMatch}\"
-                        OUTPUT_VARIABLE OSXOUT)
-                     MESSAGE(STATUS \"\${OSXOUT}\")
-                    ")
-            ELSE(IS_DIRECTORY ${tmpLIBFILE})
-                # Create an install target for just the library file
-                INSTALL(FILES ${tmpLIBFILE}
-                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-                )
-
-                # On Apple, we need to make the library be executable relative.
-                IF(APPLE)
-                    GET_FILENAME_COMPONENT(libName ${tmpLIBFILE} NAME)
+                    # On Apple, we need to make the framework be executable relative
+                    GET_FILENAME_COMPONENT(frameworkNameWE ${tmpLIBFILE} NAME_WE)
+                    GET_FILENAME_COMPONENT(realFramework ${tmpLIBFILE}/${frameworkNameWE} REALPATH)
+                    STRING(REGEX MATCH "${frameworkNameWE}[A-Za-z0-9._/-]*" frameworkMatch ${realFramework})
                     INSTALL(CODE 
                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                            COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libName}\"
+                            COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${frameworkMatch}\"
                             OUTPUT_VARIABLE OSXOUT)
                          MESSAGE(STATUS \"\${OSXOUT}\")
                         ")
-                ENDIF(APPLE)
-            ENDIF(IS_DIRECTORY ${tmpLIBFILE})
+                ELSE(IS_DIRECTORY ${tmpLIBFILE})
+                    # Create an install target for just the library file
+                    INSTALL(FILES ${tmpLIBFILE}
+                        DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                    )
+    
+                    # On Apple, we need to make the library be executable relative.
+                    IF(APPLE)
+                        GET_FILENAME_COMPONENT(libName ${tmpLIBFILE} NAME)
+                        INSTALL(CODE 
+                            "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libName}\"
+                                OUTPUT_VARIABLE OSXOUT)
+                             MESSAGE(STATUS \"\${OSXOUT}\")
+                            ")
+                    ENDIF(APPLE)
+                ENDIF(IS_DIRECTORY ${tmpLIBFILE})
 #            MESSAGE("**We need to install lib ${tmpLIBFILE}")
+            ENDIF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
         ENDIF(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
     ELSE(${isSHAREDLIBRARY} STREQUAL "YES")
         # We have a .a that we need to install to archives.
