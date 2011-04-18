@@ -41,9 +41,11 @@
 #    Hank Childs, Mon Jan 31 07:45:07 PST 2011
 #    Switch myself to hchilds@lbl.gov, add loring and allens.
 #
-#
 #    Eric Brugger, Tue Apr 12 09:31:45 PDT 2011
 #    Added case for userid "oruebel".
+#
+#    Mark C. Miller, Mon Apr 18 11:08:07 PDT 2011
+#    Removed Tom Treadway
 #
 # *****************************************************************************
 
@@ -76,10 +78,6 @@ case $1 in
     # David Bremer, Lawrence Livermore National Laboratory
     "dbremer")
         emaddr=bremer4@llnl.gov
-        ;;
-    # Tom Treadway, Lawrence Livermore National Laboratory
-    "treadway")
-        emaddr=treadway1@llnl.gov
         ;;
     # Gunther Weber, Lawrence Berkeley National Laboratory
     "ghweber")
