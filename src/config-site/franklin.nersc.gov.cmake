@@ -49,8 +49,8 @@ SET(VISIT_CXX_COMPILER g++)
 SET(VISIT_CXX_FLAGS "-march=barcelona -fPIC -DVIZSCHEMA_DECOMPOSE_DOMAINS")
 # Get these via CC -v
 SET(VISIT_MPI_CXX_FLAGS "-I/opt/mpt/default/xt/mpich2-gnu/include")
-SET(VISIT_MPI_LD_FLAGS "-L/opt/mpt/default/xt/mpich2-gnu/lib -L/opt/mpt/default/xt/pmi/lib -L/opt/mpt/default/xt/util/lib -L/opt/xt-pe/default/lib -Wl,--rpath,/opt/mpt/default/xt/mpich2-gnu/lib,--rpath,/opt/mpt/default/xt/pmi/lib,--rpath,/opt/mpt/default/xt/util/lib,--rpath,/opt/xt-pe/default/lib")
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/mpt/default/xt/mpich2-gnu/lib;/opt/mpt/default/xt/pmi/lib;/opt/mpt/default/xt/util/lib;/opt/xt-pe/default/lib")
+SET(VISIT_MPI_LD_FLAGS "-L/opt/mpt/default/xt/mpich2-gnu/lib -L/opt/mpt/default/xt/pmi/lib -L/opt/mpt/default/xt/util/lib -L/opt/xt-pe/default/lib -L/opt/cray/stat/default/lib")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/mpt/default/xt/mpich2-gnu/lib;/opt/mpt/default/xt/pmi/lib;/opt/mpt/default/xt/util/lib;/opt/xt-pe/default/lib;/opt/cray/stat/default/lib")
 SET(VISIT_MPI_LIBS mpich pmi alpslli alpsutil portals pthread rt)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 # Options for static MPI libraries
