@@ -66,7 +66,7 @@ libList = [ execName ] + pluginNameList
 # Examine dependencies
 for lib in libList:
    print "Examining dependencies for " + lib
-   lddOut = os.popen("env LD_LIBRARY_PATH=%s ldd %s" % (os.environ["LD_LIBRARY_PATH"]+":"+visitExecDir+"/lib"+MPIRPath, lib))
+   lddOut = os.popen("env LD_LIBRARY_PATH=%s ldd %s" % (visitExecDir+"/lib"+MPIRPath+":"+os.environ["LD_LIBRARY_PATH"], lib))
    for line in lddOut.readlines():
      if line.strip() != "statically linked":
        if len(line.strip().split()) == 4:
