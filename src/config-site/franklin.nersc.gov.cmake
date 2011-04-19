@@ -28,7 +28,7 @@ VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 ##
 ## Specify the location of the vtk include files and libraries.
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0g/${VISITARCH}/lib/vtk-5.0)
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0i/${VISITARCH}/lib/vtk-5.0)
 
 ##
 ## Specify the Qt4 binary dir. 
@@ -46,7 +46,7 @@ SET(VISIT_C_COMPILER gcc)
 SET(VISIT_C_FLAGS "-march=barcelona -fPIC -DVIZSCHEMA_DECOMPOSE_DOMAINS")
 SET(VISIT_MPI_C_FLAGS "-I/opt/mpt/default/xt/mpich2-gnu/include")
 SET(VISIT_CXX_COMPILER g++)
-SET(VISIT_CXX_FLAGS "-march=barcelona -fPIC -DVIZSCHEMA_DECOMPOSE_DOMAINS")
+SET(VISIT_CXX_FLAGS "-march=barcelona -fPIC -DVIZSCHEMA_DECOMPOSE_DOMAINS -Wno-deprecated")
 # Get these via CC -v
 SET(VISIT_MPI_CXX_FLAGS "-I/opt/mpt/default/xt/mpich2-gnu/include")
 SET(VISIT_MPI_LD_FLAGS "-L/opt/mpt/default/xt/mpich2-gnu/lib -L/opt/mpt/default/xt/pmi/lib -L/opt/mpt/default/xt/util/lib -L/opt/xt-pe/default/lib -Wl,--rpath,/opt/mpt/default/xt/mpich2-gnu/lib,--rpath,/opt/mpt/default/xt/pmi/lib,--rpath,/opt/mpt/default/xt/util/lib,--rpath,/opt/xt-pe/default/lib")
@@ -121,7 +121,7 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## Xdmf
 ##
-VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
 
