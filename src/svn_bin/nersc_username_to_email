@@ -107,10 +107,6 @@ case $1 in
     "rhudson")
         emaddr=hudson@mcs.anl.gov
         ;;
-    # John C. Anderson, UC Davis / LLNL
-    "jcanders")
-        emaddr=anderson@cs.ucdavis.edu
-        ;;
     # David Camp, Lawrence Berkeley National Laboratory
     "camp")
         emaddr=dcamp@lbl.gov
