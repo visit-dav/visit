@@ -99,7 +99,11 @@ contains
 
     if(par_rank == 0) then
       below = MPI_PROC_NULL        ! tells MPI not to perform send/recv
-      above = par_rank+1
+      if(par_size > 1) then
+         above = par_rank+1
+      else
+         above = MPI_PROC_NULL
+      endif
     else if(par_rank == par_size-1) then
       below = par_rank-1
       above = MPI_PROC_NULL        ! tells MPI not to perform send/recv
