@@ -8376,7 +8376,7 @@ function build_hostconf
         echo "ITAPS_INCLUDE_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/include)" \
         >> $HOSTCONF
         echo "ITAPS_FILE_PATTERNS(GRUMMP *.bdry *.smesh *.vmesh)" >> $HOSTCONF
-        echo "ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_base SUMAAlog_lite OptMS vtkGraphics)" \
+        echo "ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_geom GR_base SUMAAlog_lite OptMS vtkGraphics)" \
         >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/lib)" \
         >> $HOSTCONF
