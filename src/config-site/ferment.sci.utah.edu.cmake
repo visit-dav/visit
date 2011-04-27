@@ -1,15 +1,20 @@
-#/home/sci/allen/Projects/VisIt/trunk/visit/cmake/2.8.3/linux-x86_64_gcc-4.4/bin/cmake
+#/Users/allen/Projects/VisIt/trunk/visit/cmake/2.8.3/i386-apple-darwin10_gcc-4.2/bin/cmake
 ##
 ## build_visit generated host.cmake
-## created: Tue Oct 12 10:48:49 MDT 2010
-## system: Linux zymurgy 2.6.31.8-0.1-desktop #1 SMP PREEMPT 2009-12-15 23:55:40 +0100 x86_64 x86_64 x86_64 GNU/Linux
+## created: Fri Aug 20 10:43:50 MDT 2010
+## system: Darwin ferment.sci.utah.edu 9.8.0 Darwin Kernel Version 9.8.0: Wed Jul 15 16:55:01 PDT 2009; root:xnu-1228.15.4~1/RELEASE_I386 i386
 ## by: allen
+
+##
+## Enable verbose makefiles (show compiler & linker calls)
+##
+#SET(VISIT_VERBOSE_MAKEFILE TRUE)
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/sci/allen/Projects/VisIt/trunk/visit)
-SET(VISITARCH linux-x86_64_gcc-4.4)
+SET(VISITHOME /Users/allen/Projects/VisIt/trunk/visit)
+SET(VISITARCH i386-apple-darwin10_gcc-4.2)
 
 ##
 ## Specify the location of the mesa.
@@ -37,15 +42,15 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden")
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden")
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-O2 -fno-common -fexceptions -fvisibility=hidden")
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-O2 -fno-common -fexceptions -fvisibility=hidden")
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/local/bin/mpic++)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpic++)
 
 ##############################################################
 ##
@@ -84,6 +89,10 @@ VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.7.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.8/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
 
+##
+## Ice-T
+##
+#VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/0.5.4/${VISITARCH})
