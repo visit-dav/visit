@@ -105,12 +105,14 @@ void SaneEndDialog(HWND hwnd, int ret)
     SetWindowLong(hwnd, BOXFLAGS, DF_END);
 }
 
+#if 0
 BOOL init_winver(void)
 {
     ZeroMemory(&osVersion, sizeof(osVersion));
     osVersion.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
     return GetVersionEx ( (OSVERSIONINFO *) &osVersion);
 }
+#endif
 
 #ifdef DEBUG
 static FILE *debug_fp = NULL;

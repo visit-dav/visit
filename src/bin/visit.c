@@ -128,7 +128,7 @@ static const char usage[] =
 /*
  * Prototypes
  */
-char *AddEnvironment(const int, const int);
+char *AddEnvironment(const int, const int, bool &);
 void  AddPath(char *, const char *, const char*);
 int   ReadKey(const char *key, char **keyval);
 void  TestForConfigFiles(const char *component);
@@ -248,6 +248,7 @@ main(int argc, char *argv[])
     char *spawnargs[100];
     int nspawnargs = 0;
     char component[100];
+    bool freeVisItPath = false;
 
     /*
      * Default values.
@@ -423,7 +424,7 @@ main(int argc, char *argv[])
     /*
      * Add some stuff to the environment.
      */
-    visitpath = AddEnvironment(useShortFileName, addPluginVars);
+    visitpath = AddEnvironment(useShortFileName, addPluginVars, freeVisItPath);
 
     /*
      * Migrate config files 
@@ -607,7 +608,8 @@ printf("=============\n");
         free(componentArgs[i]);
     for(i = 0; i < nspawnargs; ++i)
         free(spawnargs[i]);
-    free(visitpath);
+    if (freeVisItPath)
+        free(visitpath);
     if(visitargs != 0)
         free(visitargs);
 
@@ -804,7 +806,7 @@ ReadKey(const char *key, char **keyval)
  *****************************************************************************/
 
 char *
-AddEnvironment(const int useShortFileName, const int addPluginVars)
+AddEnvironment(const int useShortFileName, const int addPluginVars, bool &freeVisItPath)
 {
     char *tmp, *visitpath = 0;
     char *visitdevdir = 0;
@@ -814,6 +816,8 @@ AddEnvironment(const int useShortFileName, const int addPluginVars)
 
     tmp = (char *)malloc(10000);
 
+
+    freeVisItPath = true;
     /*
      * Determine visit path
      */
@@ -824,7 +828,10 @@ AddEnvironment(const int useShortFileName, const int addPluginVars)
         free(visitpath);
         visitpath = 0;
         if ((visitpath = getenv("VISITHOME")) != NULL)
+        {
             haveVISITHOME = 1;
+            freeVisItPath = false;
+        }
     }
 
     /*
@@ -919,8 +926,10 @@ AddEnvironment(const int useShortFileName, const int addPluginVars)
     {
         char *vp2 = (char *)malloc(512);
         GetShortPathName(visitpath, vp2, 512);
-        free(visitpath);
+        if (freeVisItPath)
+            free(visitpath);
         visitpath = vp2;
+        freeVisItPath = true;
     }
 
 
