@@ -78,6 +78,7 @@
 #include <StringHelpers.h>
 #include <Logging.h>
 #include <SingleAttributeConfigManager.h>
+#include <InstallationFunctions.h>
 
 //
 // State object include files.
@@ -14274,17 +14275,17 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
         {
             // If onNewThread is true then we got into this method on the 2nd
             // thread, which means that xfer's update will be set to false. That
-            // means that calling Notify on the client information would not make
-            // xfer send it to the viewer. To combat this problem, we set xfer's
-            // update to true temporarily so we can send the object to the viewer.
-            // We only do it on the 2nd thread because if this method is called
-            // from the first thread, we did not arrive here from xfer and
-            // turning off its updates messes up Synchronize.
+            // means that calling Notify on the client information would not 
+            // make xfer send it to the viewer. To combat this problem, we set 
+            // xfer's update to true temporarily so we can send the object to 
+            // the viewer.  We only do it on the 2nd thread because if this 
+            // method is called from the first thread, we did not arrive here 
+            // from xfer and turning off its updates messes up Synchronize.
             if(onNewThread)
                GetViewerProxy()->SetXferUpdate(true);
 
-            // We don't want to get here re-entrantly so disable the client method
-            // observer temporarily.
+            // We don't want to get here re-entrantly so disable the client 
+            // method observer temporarily.
             clientMethodObserver->SetUpdate(false);
 
             stringVector args;
@@ -14339,8 +14340,9 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
                 {
                     delete m;
                     delete [] cbData;
-                    fprintf(stderr, "VisIt: Error - Could not create work thread to "
-                            "execute %s client method.\n", m->GetMethodName().c_str());
+                    fprintf(stderr, "VisIt: Error - Could not create work "
+                            "thread to execute %s client method.\n", 
+                            m->GetMethodName().c_str());
                 }
 #else
                 // Create the thread using PThreads.
@@ -14349,8 +14351,9 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
                 {
                     delete m;
                     delete [] cbData;
-                    fprintf(stderr, "VisIt: Error - Could not create work thread to "
-                            "execute %s client method.\n", m->GetMethodName().c_str());
+                    fprintf(stderr, "VisIt: Error - Could not create work "
+                            "thread to execute %s client method.\n", 
+                            m->GetMethodName().c_str());
                 }
 #endif
 #endif
@@ -15763,6 +15766,13 @@ NeedToLoadPlugins(Subject *, void *)
 //
 //   Mark C. Miller, Tue Apr 21 14:24:18 PDT 2009
 //   Added logic to manage buffering of debug logs; an extra 'b' after level.
+//
+//   Kathleen Bonnell, Thu Apr 28 13:34:55 MST 2011
+//   Change location of visitlog.py on Windows to be users' VisIt directory, as
+//   the '.' directory when running VisIt on Windows may be VisIt's install 
+//   directory, and user may not have write permissions there, making command 
+//   logging fail silently.
+//
 // ****************************************************************************
 
 static int
@@ -15867,7 +15877,12 @@ InitializeModule()
     //
     // Open the log file
     //
+#ifndef _WIN32
     const char *logName = "visitlog.py";
+#else
+    string vud = GetUserVisItDirectory() + "\\visitlog.py";
+    const char *logName = vud.c_str();
+#endif
     if(!LogFile_Open(logName))
         fprintf(stderr, "Could not open %s log file.\n", logName);
 
