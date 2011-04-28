@@ -81,17 +81,15 @@ public:
     toroidalWinding = 0;
     poloidalWinding = 0;
 
-    toroidalPeriod    = 0;
-    poloidalPeriod    = 0;
+    toroidalHarmonic = 0;
+    poloidalHarmonic = 0;
 
     windingGroupOffset = 0;
     islands = 0;
+    islandGroups = 0;
 
     nnodes  = 0;
     
-    confidence        = 0;
-    ridgelineVariance = 0;
-
     maxPunctures      = 0;
     nPuncturesNeeded  = 0;
   };
@@ -146,16 +144,16 @@ public:
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
 
-  unsigned int toroidalPeriod;
-  unsigned int poloidalPeriod;
+  unsigned int toroidalHarmonic;
+  unsigned int poloidalHarmonic;
+
+  std::vector< std::pair< unsigned int, unsigned int > > windingPairs;
 
   unsigned int windingGroupOffset;
   unsigned int islands;
+  unsigned int islandGroups;
 
   float nnodes;
-
-  float confidence;
-  float ridgelineVariance;
 
   unsigned int maxPunctures;
   unsigned int nPuncturesNeeded;
@@ -196,14 +194,15 @@ public:
     bool   intersectionsSet;
     int    maxIntersections;
     int    numIntersections;
-    double intersectPlaneEq[4];
+    double intersectPlaneEq[4]; // Typically the Y=0 plane i.e. 0, 1, 0
 
+    // These are the fieldline points as stripped out of the IC
+    // proper.  They are stored here for convience so the analysis can
+    // be done without schleping the whole integral curve around.
     std::vector<avtVector> points;
 
+    // The fieldline properties as returned from the analysis library.
     FieldlineProperties properties;
 };
 
-
 #endif 
-
-

@@ -578,19 +578,19 @@ avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
 
         // Check to see if there are enough points for the analysis.
         if( poincare_ic->properties.nPuncturesNeeded != 0 &&
-            poincare_ic->properties.nPuncturesNeeded != poincare_ic->maxIntersections/2 )
+            poincare_ic->properties.nPuncturesNeeded <= maxPunctures )
         {
           analysisComplete = false;
 
-          poincare_ic->maxIntersections = 2 * poincare_ic->properties.nPuncturesNeeded;
+          poincare_ic->maxIntersections =
+            2 * poincare_ic->properties.nPuncturesNeeded;
+
           poincare_ic->status = avtIntegralCurve::STATUS_OK;
         }
         else
         {
           poincare_ic->status = avtIntegralCurve::STATUS_FINISHED;
         }
-
-        cerr << poincare_ic->properties.analysisState << endl;
 
         // See if O Points from an island need to be added.
         if( poincare_ic->properties.analysisState & FieldlineProperties::ADD_O_POINTS )
@@ -608,14 +608,19 @@ avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
           cerr << "Classify Streamline: id = "<< poincare_ic->id
                << "  ptCnt = " << poincare_ic->points.size()
                << "  type = " << poincare_ic->properties.type
-               << "  toroidal/poloidal windings = " <<  poincare_ic->properties.toroidalWinding
-               << "/" << poincare_ic->properties.poloidalWinding
+               << "  toroidal/poloidal windings = "
+               << poincare_ic->properties.toroidalWinding << ","
+               << poincare_ic->properties.poloidalWinding
                << "  (" << safetyFactor << ")"
-               << "  windingGroupOffset = " << poincare_ic->properties.windingGroupOffset
+               << "  toroidalHarmonic = "
+               << poincare_ic->properties.toroidalHarmonic
+               << "  poloidalHarmonic = "
+               << poincare_ic->properties.poloidalHarmonic
+               << "  windingGroupOffset = "
+               << poincare_ic->properties.windingGroupOffset
                << "  islands = " << poincare_ic->properties.islands
                << "  nodes = " << poincare_ic->properties.nnodes
-               << "  toroidalPeriod = " << poincare_ic->properties.toroidalPeriod
-               << "  poloidalPeriod = " << poincare_ic->properties.poloidalPeriod
+               << "  nPuncturesNeeded = " << poincare_ic->properties.nPuncturesNeeded
                << "  complete " << (poincare_ic->properties.analysisState == FieldlineProperties::COMPLETED ? "Yes " : "No ")
 //               << (poincare_ic->ic->status == avtIntegralCurve::STATUS_FINISHED ? 
 //                   0 : poincare_ic->ic->maxIntersections )
@@ -733,10 +738,11 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
         unsigned int toroidalWinding    = properties.toroidalWinding;
         unsigned int poloidalWinding    = properties.poloidalWinding;
-        unsigned int toroidalPeriod     = properties.toroidalPeriod;
-        unsigned int poloidalPeriod     = properties.poloidalPeriod;
+        unsigned int toroidalHarmonic   = properties.toroidalHarmonic;
+        unsigned int poloidalHarmonic   = properties.poloidalHarmonic;
         unsigned int windingGroupOffset = properties.windingGroupOffset;
         unsigned int islands            = properties.islands;
+        unsigned int islandGroups       = properties.islandGroups;
         unsigned int nnodes             = properties.nnodes;
 
         vector< avtVector > &OPoints         = properties.OPoints;
@@ -749,9 +755,9 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
                << "< " << poincare_ic->points[0].x << " "
                << poincare_ic->points[0].y << " "
                << poincare_ic->points[0].z << " >  "
-               << toroidalPeriod << ":" << poloidalPeriod << "  "
-               << toroidalWinding << ":" << poloidalWinding << " ("
-               << (double) toroidalWinding / (double) poloidalWinding << ")  ";
+               << toroidalWinding << "," << poloidalWinding << " ("
+               << (double) toroidalWinding / (double) poloidalWinding << ")  "
+               << toroidalHarmonic << "," << poloidalHarmonic << "  ";
 
           if( type == FieldlineProperties::RATIONAL )
             cerr << "rational surface  ";
@@ -763,7 +769,8 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
             cerr << islands << " island chain  ";
 
           else if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
-            cerr << islands << " islands within islands  ";
+            cerr << islands << " islands around "
+                 << islandGroups << "islandGroups ";
 
           else if( type == FieldlineProperties::CHAOTIC )
             cerr << "chaotic  ";
@@ -1217,6 +1224,8 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
             }
             else if( type == FieldlineProperties::ISLAND_CHAIN )
             {
+              cerr << "Overlaps " << overlaps << "  " << nnodes << endl;
+
               if( overlaps != 0 )
               {
                 if( properties.analysisState == FieldlineProperties::COMPLETED )
@@ -1326,7 +1335,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
                                    windingGroupOffset,
                                    dataValue, color_value );
               }
-              else if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
+              else if( 0 && type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
               {
                 drawIrrationalCurve( dt, puncturePts, nnodes, islands,
                                      windingGroupOffset,
@@ -1359,7 +1368,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
             if( show1DPlots )
               drawPeriodicity( dt, tempPts,
-                               toroidalPeriod,
+                               toroidalHarmonic,
 //                             tempPts.size(),
                                nnodes, islands, poloidalWinding,
                                dataValue, color_value, true );
@@ -1367,7 +1376,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
             
             if( show1DPlots )
               drawPeriodicity( dt, ridgelinePts,
-                               poloidalPeriod,
+                               poloidalHarmonic,
 //                             ridgelinePts.size(),
                                nnodes, islands, poloidalWinding,
                                dataValue, color_value, true );
@@ -1901,6 +1910,9 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
           {
 //          unsigned int bb = 0;
 
+            if( color == DATA_WindingOrder )
+              color_value = j;
+            
             for( unsigned int n=0; n<nnodes; ++n ) 
             {
               //Create groups that represent the toroidial groups.

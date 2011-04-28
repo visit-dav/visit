@@ -84,11 +84,12 @@ public:
     toroidalWinding = 0;
     poloidalWinding = 0;
 
-    toroidalPeriod    = 0;
-    poloidalPeriod    = 0;
+    toroidalHarmonic = 0;
+    poloidalHarmonic = 0;
 
     windingGroupOffset = 0;
     islands = 0;
+    islandGroups = 0;
 
     nnodes  = 0;
     
@@ -149,8 +150,11 @@ public:
   unsigned int toroidalPeriod;
   unsigned int poloidalPeriod;
 
+  std::vector< std::pair< unsigned int, unsigned int > > windingPairs;
+
   unsigned int windingGroupOffset;
   unsigned int islands;
+  unsigned int islandGroups;
 
   float nnodes;
 
@@ -187,6 +191,8 @@ public:
 
   bool hullCheck( vector< Point > &points,
                   int &direction);
+
+  unsigned int isPrime( unsigned int a );
 
   unsigned int GCD( unsigned int a, unsigned int b );
 
@@ -235,8 +241,7 @@ public:
   periodicityStats( vector< Point >& points,
                     vector< pair< unsigned int, double > >& stats,
                     unsigned int max_period,
-                    unsigned int checkType,
-                    unsigned int num_groups );
+                    unsigned int checkType );
 
 
   void thresholdStats( vector< pair< unsigned int, double > >& stats,
@@ -267,6 +272,29 @@ public:
                 vector< Point > &puncturePts );
 
   void
+  getFieldlineBaseValues( vector< Point > &ptList,
+                          vector< Point > &poloidal_puncture_pts,
+                          vector< Point > &ridgeline_points,
+                          vector< double > &rotationalSums,
+                          vector< unsigned int > &poloidalWindingCounts,
+                          float &delta );
+
+  void
+  GetBaseWindingPairs( vector< unsigned int > &poloidalWindingCounts,
+                       vector< Point > &poloidal_puncture_pts,
+                       vector< WindingPair > &baseWindingPairs,
+                       double &windingPairConfidence,
+                       unsigned int &toroidalWindingMax,
+                       unsigned int &poloidalWindingMax,
+                       unsigned int &windingNumberMatchIndex );
+
+  void
+  GetPeriodWindingPairs( vector< WindingPair > &baseWindingPairs,
+                         vector< WindingPair > &periodWindingPairs,
+                         vector< pair< unsigned int, double > > &toroidalStats,
+                         vector< pair< unsigned int, double > > &poloidalStats );
+
+  void
   fieldlineProperties( vector< Point > &ptList,
                        FieldlineProperties &properties,
                        unsigned int overrideToroidalWinding,
@@ -274,6 +302,10 @@ public:
                        unsigned int maxToroidalWinding,
                        double windingPairConfidence,
                        bool detectIslandCenters );
+
+  void
+  fieldlineProperties2( vector< Point > &ptList,
+                        FieldlineProperties &fi );
 
   void findIslandCenters( vector< Point > &puncturePts,
                           unsigned int toroialWinding,
