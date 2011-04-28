@@ -3477,11 +3477,12 @@ echo " $PYTHON_INSTALL ${PYTHON_INSTALL}/python"
 
     if [[ -d $VTK_BUILD_DIR ]] ; then
         if [[ ! -f $VTK_FILE ]] ; then
-           if [[ -f vtk-5.0.0c.tar.gz ]] ; then
-               warn "I believe your VTK directory is from VTK5.0.0c.  Deleting"
+#           if [[ -f vtk-5.0.0g.tar.gz ]] ; then
+#               warn "I believe your VTK directory is from VTK5.0.0g.  Deleting"
+               warn "The directory VTK exists, deleting before uncompressing"
                rm -Rf $VTK_BUILD_DIR
                ensure_built_or_ready "vtk"    $VTK_VERSION    $VTK_BUILD_DIR    $VTK_FILE
-           fi
+#           fi
         fi
     fi
     prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
