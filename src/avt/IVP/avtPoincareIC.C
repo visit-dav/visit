@@ -241,5 +241,3 @@ avtPoincareIC::Serialize(MemStream::Mode mode, MemStream &buff,
 
     buff.io(mode, numIntersections);
 }
-
-
