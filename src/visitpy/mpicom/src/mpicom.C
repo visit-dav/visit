@@ -573,7 +573,7 @@ mpicom_send(PyObject *self, PyObject *args)
                        MPI_CHAR, des, 0,MPI_COMM_MAIN);
     if(err != 0)
     {
-        mpicom_error("mpicom_recv::MPI_Send message failed",err);
+        mpicom_error("mpicom_send::MPI_Send message failed",err);
         return NULL;
     }
 
@@ -590,6 +590,8 @@ mpicom_send(PyObject *self, PyObject *args)
  * Creation:   Wed Mar  4 16:39:49 PST 2009
  *
  * Modifications:
+ *  Cyrus Harrison, Thu Apr 28 11:52:05 PDT 2011
+ *  Guard against empty buffer w/ recv from MPI_PROC_NULL.
  *
  ****************************************************************************/
 static PyObject*
@@ -628,11 +630,23 @@ mpicom_recv(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    return rcv_obj.ToPyObject();
+    PyObject *py_rcv_obj = rcv_obj.ToPyObject();
+
+    if(py_rcv_obj == NULL)
+    {
+        if(src == MPI_PROC_NULL)
+            Py_RETURN_NONE;
+        else
+        {
+            mpicom_error("mpicom_recv::MPI_Recv unpacking python buffer failed",err);
+            return NULL;
+        }
+    }
+    return py_rcv_obj;
 }
 
 /*****************************************************************************
- * Function: mpicom_recv
+ * Function: mpicom_sendrecv
  *
  * Purpose:
  *   Receives a value to another proc.
@@ -641,6 +655,8 @@ mpicom_recv(PyObject *self, PyObject *args)
  * Creation:   Wed Mar  4 16:39:49 PST 2009
  *
  * Modifications:
+ *  Cyrus Harrison, Thu Apr 28 11:52:05 PDT 2011
+ *  Guard against empty buffer w/ recv from MPI_PROC_NULL.
  *
  ****************************************************************************/
 
@@ -658,7 +674,7 @@ mpicom_sendrecv(PyObject *self, PyObject *args)
     // use async send to send out the message.
     Buffer snd_obj(py_obj);
     int err = MPI_Isend(snd_obj.BufferPtr(),snd_obj.BufferSize(),
-                       MPI_CHAR, des, 0,MPI_COMM_MAIN,&request);
+                    MPI_CHAR, des, 0,MPI_COMM_MAIN,&request);
     if(err != 0)
     {
         mpicom_error("mpicom_sendrecv::MPI_ISend message failed",err);
@@ -687,14 +703,28 @@ mpicom_sendrecv(PyObject *self, PyObject *args)
     Buffer rcv_obj(bsize);
 
     err = MPI_Recv(rcv_obj.BufferPtr(),rcv_obj.BufferSize(),
-                   MPI_CHAR,src, MPI_ANY_TAG,MPI_COMM_MAIN,&status);
+                MPI_CHAR,src, MPI_ANY_TAG,MPI_COMM_MAIN,&status);
+
     if(err != 0)
     {
         mpicom_error("mpicom_sendrecv::MPI_Recv message failed",err);
         return NULL;
     }
 
-    return rcv_obj.ToPyObject();
+    PyObject *py_rcv_obj = rcv_obj.ToPyObject();
+
+    if(py_rcv_obj == NULL)
+    {
+        if(src == MPI_PROC_NULL)
+            Py_RETURN_NONE;
+        else
+        {
+            mpicom_error("mpicom_sendrecv::MPI_Recv unpacking python buffer failed",err);
+            return NULL;
+        }
+    }
+    return py_rcv_obj;
+
 }
 
 /*****************************************************************************
@@ -1174,6 +1204,8 @@ static PyMethodDef mpicom_funcs[] =
  * Creation:   Mon Jan  5 11:44:24 PST 2009
  *
  * Modifications:
+ *  Cyrus Harrison, Fri Apr 29 11:17:44 PDT 2011
+ *  Added "MPI_PROC_NULL" value to mpicom.
  *
  ****************************************************************************/
 void
@@ -1184,7 +1216,13 @@ __attribute__ ((visibility("default")))
 initmpicom(void)
 {
     Buffer::PickleInit();
-    Py_InitModule("mpicom", mpicom_funcs);
+    PyObject *mpicom_mod = Py_InitModule("mpicom", mpicom_funcs);
+
+    // create entry for MPI_PROC_NULL
+    PyObject *pyobj = PyLong_FromLong((long) MPI_PROC_NULL);
+    PyObject_SetAttrString(mpicom_mod, "MPI_PROC_NULL", pyobj);
+    Py_DECREF(pyobj);
+
 }
 
 

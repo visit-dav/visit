@@ -206,6 +206,7 @@ Buffer::Init(void *buff_ptr)
  * Creation:   Wed Jan  7 10:05:02 PST 2009
  *
  * Modifications:
+ *  Guard against invalid buffer sizes.
  *
  * ***************************************************************************/
 
@@ -215,13 +216,17 @@ Buffer::Init(int buffer_size)
     if(BufferSize() > 0)
         Reset();
 
-    this->size = buffer_size;
-    buffer = (void*) new char[this->size];
-    int *header_ptr = HeaderPtr();
-    header_ptr[0] = EMPTY;
-    header_ptr[1] = 0;
-    data = (void*)(((char*)buffer) + 2 * sizeof(int));
-    alloced = true;
+    // Any buffer size smaller than the header is invalid.
+    if(buffer_size >= (2 * sizeof(int) ))
+    {
+        this->size = buffer_size;
+        buffer = (void*) new char[this->size];
+        int *header_ptr = HeaderPtr();
+        header_ptr[0] = EMPTY;
+        header_ptr[1] = 0;
+        data = (void*)(((char*)buffer) + 2 * sizeof(int));
+        alloced = true;
+    }
 }
 
 /*****************************************************************************
@@ -427,6 +432,7 @@ Buffer::MPIType()
 PyObject *
 Buffer::ToPyObject()
 {
+    // These access functions take care of uninited case.
     int type_id   = TypeId();
     int data_size = DataSize();
 
