@@ -35,77 +35,18 @@
 # DAMAGE.
 #
 # Modifications:
-#   Kathleen Bonnell, Wed Jun 2 15:11:22 PST 2010
-#   Disable MakeMili on windows.
 #
-#   Kathleen Bonnell, Fri Jun  4 14:46:56 PDT 2010
-#   Change ${MILI_FOUND} to MILI_FOUND.
-#
-#   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
-#   Add FOLDER property.
-#
-#   Cyrus Harrison, Fri Apr 29 15:33:38 PDT 2011
-#   Added mrgtree2dot utility.
 #
 #****************************************************************************/
 
-MACRO(VISIT_TOOLS_ADD_FOLDER type)
-    IF(${ARGC} GREATER 1)
-        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES FOLDER tools/${type})
-    ELSE(${ARGC} GREATER 1)
-        SET_TARGET_PROPERTIES(${type} PROPERTIES FOLDER tools/${type})
-    ENDIF(${ARGC} GREATER 1)
-ENDMACRO(VISIT_TOOLS_ADD_FOLDER)
+INCLUDE_DIRECTORIES(
+${SILO_INCLUDE_DIR}
+)
 
-IF(VISIT_DBIO_ONLY)
-    ADD_SUBDIRECTORY(convert)
-ELSE(VISIT_DBIO_ONLY)
-    # We always want these to be built
-    ADD_SUBDIRECTORY(annotations)
-    ADD_SUBDIRECTORY(convert)
-    ADD_SUBDIRECTORY(embedviewer)
-    ADD_SUBDIRECTORY(synthetic_diagnostic)
-    ADD_SUBDIRECTORY(imagetools)
-    IF(MILI_FOUND AND NOT WIN32)
-        ADD_SUBDIRECTORY(makemili)
-    ENDIF(MILI_FOUND AND NOT WIN32)
-    IF(NOT WIN32)
-        ADD_SUBDIRECTORY(mcurvit)
-    ENDIF(NOT WIN32)
-    ADD_SUBDIRECTORY(mpeg2encode)
-    IF(SILO_FOUND)
-        ADD_SUBDIRECTORY(mrgtree2dot)
-    ENDIF(SILO_FOUND)
-    ADD_SUBDIRECTORY(protocol)
-    IF(WIN32)
-       ADD_SUBDIRECTORY(qtssh)
-    ENDIF(WIN32)
-    IF(VISIT_PYTHON_SCRIPTING)
-        ADD_SUBDIRECTORY(writer)
-    ENDIF(VISIT_PYTHON_SCRIPTING)
-    ADD_SUBDIRECTORY(xml)
-    ADD_SUBDIRECTORY(xmledit)
+# Add link directories
+LINK_DIRECTORIES(${SILO_LIBRARY_DIR})
 
-    ADD_SUBDIRECTORY(DataManualExamples)
-ENDIF(VISIT_DBIO_ONLY)
-
-# Maybe create a separate build system for all of these...
-# ADD_SUBDIRECTORY(DataManualExamples)
-
-# These do not need to be built:
-# antialiased_shadows
-# avt_do_add
-# avtprep
-# clidriver
-# clipeditor
-# curv3dprep
-# doxygenate
-# escan
-# surfcomp
-# vtk_debug_parser
-
-# These should be removed because they are obsolete:
-# windowmaker
-# mpeg_encode
-
-
+#********************************* SERIAL ************************************
+ADD_EXECUTABLE(mrgtree2dot mrgtree2dot.C)
+TARGET_LINK_LIBRARIES(mrgtree2dot ${SILO_LIB} )
+VISIT_INSTALL_TARGETS(mrgtree2dot)
