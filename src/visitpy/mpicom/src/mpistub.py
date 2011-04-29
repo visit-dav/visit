@@ -8,10 +8,14 @@
 #
 #
 # Modifications:
+#  Cyrus Harrison, Fri Apr 29 15:49:55 PDT 2011
+#  Added dummy value for MPI_PROC_NULL.
 #
 ###############################################################################
 
 _sval = None
+
+MPI_PROC_NULL = -2
 
 def init():
     pass
