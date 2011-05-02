@@ -3271,6 +3271,7 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            overrideToroidalWinding != obj.overrideToroidalWinding ||
            overridePoloidalWinding != obj.overridePoloidalWinding ||
            windingPairConfidence != obj.windingPairConfidence ||
+           rationalTemplateSeedParm != obj.rationalTemplateSeedParm ||
 
            showOPoints != obj.showOPoints ||
            OPointMaxIterations != obj.OPointMaxIterations ||
