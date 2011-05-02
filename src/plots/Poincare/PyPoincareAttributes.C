@@ -253,6 +253,8 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%swindingPairConfidence = %g\n", prefix, atts->GetWindingPairConfidence());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%srationalTemplateSeedParm = %g\n", prefix, atts->GetRationalTemplateSeedParm());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sadjustPlane = %d\n", prefix, atts->GetAdjustPlane());
     str += tmpStr;
     const char *overlaps_names = "Raw, Remove, Merge, Smooth";
@@ -1138,6 +1140,30 @@ PoincareAttributes_GetWindingPairConfidence(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetWindingPairConfidence());
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetRationalTemplateSeedParm(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the rationalTemplateSeedParm in the object.
+    obj->data->SetRationalTemplateSeedParm(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetRationalTemplateSeedParm(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetRationalTemplateSeedParm());
     return retval;
 }
 
@@ -2144,6 +2170,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetOverridePoloidalWinding", PoincareAttributes_GetOverridePoloidalWinding, METH_VARARGS},
     {"SetWindingPairConfidence", PoincareAttributes_SetWindingPairConfidence, METH_VARARGS},
     {"GetWindingPairConfidence", PoincareAttributes_GetWindingPairConfidence, METH_VARARGS},
+    {"SetRationalTemplateSeedParm", PoincareAttributes_SetRationalTemplateSeedParm, METH_VARARGS},
+    {"GetRationalTemplateSeedParm", PoincareAttributes_GetRationalTemplateSeedParm, METH_VARARGS},
     {"SetAdjustPlane", PoincareAttributes_SetAdjustPlane, METH_VARARGS},
     {"GetAdjustPlane", PoincareAttributes_GetAdjustPlane, METH_VARARGS},
     {"SetOverlaps", PoincareAttributes_SetOverlaps, METH_VARARGS},
@@ -2320,6 +2348,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetOverridePoloidalWinding(self, NULL);
     if(strcmp(name, "windingPairConfidence") == 0)
         return PoincareAttributes_GetWindingPairConfidence(self, NULL);
+    if(strcmp(name, "rationalTemplateSeedParm") == 0)
+        return PoincareAttributes_GetRationalTemplateSeedParm(self, NULL);
     if(strcmp(name, "adjustPlane") == 0)
         return PoincareAttributes_GetAdjustPlane(self, NULL);
     if(strcmp(name, "overlaps") == 0)
@@ -2513,6 +2543,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetOverridePoloidalWinding(self, tuple);
     else if(strcmp(name, "windingPairConfidence") == 0)
         obj = PoincareAttributes_SetWindingPairConfidence(self, tuple);
+    else if(strcmp(name, "rationalTemplateSeedParm") == 0)
+        obj = PoincareAttributes_SetRationalTemplateSeedParm(self, tuple);
     else if(strcmp(name, "adjustPlane") == 0)
         obj = PoincareAttributes_SetAdjustPlane(self, tuple);
     else if(strcmp(name, "overlaps") == 0)

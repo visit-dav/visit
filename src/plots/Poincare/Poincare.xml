@@ -140,6 +140,10 @@
       <Field name="windingPairConfidence" label="Winding Pair Confidence" type="double">
         0.900000
       </Field>
+      <Field name="rationalTemplateSeedParm" label="Rational Template
+                                                    Seed Parameter" type="double">
+        0.900000
+      </Field>
       <Field name="adjustPlane" label="Adjust plane" type="int">
         -1
       </Field>

@@ -123,6 +123,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void overrideToroidalWindingChanged(int val);
     void overridePoloidalWindingChanged(int val);
     void windingPairConfidenceProcessText();
+    void rationalTemplateSeedParmProcessText();
     void adjustPlaneChanged(int val);
     void overlapsChanged(int val);
     void meshTypeChanged(int val);
@@ -185,6 +186,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QSpinBox *overrideToroidalWinding;
     QSpinBox *overridePoloidalWinding;
     QLineEdit *windingPairConfidence;
+    QLineEdit *rationalTemplateSeedParm;
     QWidget      *overlaps;
     QButtonGroup *overlapsButtonGroup;
     QWidget      *meshType;
@@ -242,6 +244,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QLabel *overrideToroidalWindingLabel;
     QLabel *overridePoloidalWindingLabel;
     QLabel *windingPairConfidenceLabel;
+    QLabel *rationalTemplateSeedParmLabel;
     QLabel *adjustPlaneLabel;
     QLabel *overlapsLabel;
     QLabel *meshTypeLabel;

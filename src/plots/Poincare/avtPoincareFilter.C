@@ -158,6 +158,7 @@ avtPoincareFilter::avtPoincareFilter() :
     overrideToroidalWinding( 0 ),
     overridePoloidalWinding( 0 ),
     windingPairConfidence( 0.90 ),
+    rationalTemplateSeedParm( 0.90 ),
     adjust_plane(-1),
     overlaps(1),
 
