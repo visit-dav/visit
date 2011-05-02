@@ -193,6 +193,7 @@ public:
     void SetOverrideToroidalWinding(int overrideToroidalWinding_);
     void SetOverridePoloidalWinding(int overridePoloidalWinding_);
     void SetWindingPairConfidence(double windingPairConfidence_);
+    void SetRationalTemplateSeedParm(double rationalTemplateSeedParm_);
     void SetAdjustPlane(int adjustPlane_);
     void SetOverlaps(OverlapType overlaps_);
     void SetMeshType(ShowMeshType meshType_);
@@ -253,6 +254,7 @@ public:
     int                  GetOverrideToroidalWinding() const;
     int                  GetOverridePoloidalWinding() const;
     double               GetWindingPairConfidence() const;
+    double               GetRationalTemplateSeedParm() const;
     int                  GetAdjustPlane() const;
     OverlapType          GetOverlaps() const;
     ShowMeshType         GetMeshType() const;
@@ -390,6 +392,7 @@ public:
         ID_overrideToroidalWinding,
         ID_overridePoloidalWinding,
         ID_windingPairConfidence,
+        ID_rationalTemplateSeedParm,
         ID_adjustPlane,
         ID_overlaps,
         ID_meshType,
@@ -449,6 +452,7 @@ private:
     int            overrideToroidalWinding;
     int            overridePoloidalWinding;
     double         windingPairConfidence;
+    double         rationalTemplateSeedParm;
     int            adjustPlane;
     int            overlaps;
     int            meshType;
@@ -489,6 +493,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiiidddiiiidiiiidddbbiasibibibbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiiidddiiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
 
 #endif

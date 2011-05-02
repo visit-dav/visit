@@ -392,6 +392,15 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(windingPairConfidenceProcessText()));
     analysisLayout->addWidget(windingPairConfidence, 3, 1);
 
+
+    rationalTemplateSeedParmLabel =
+      new QLabel(tr("Rational Template Seed Parameter"), secondTab);
+    analysisLayout->addWidget(rationalTemplateSeedParmLabel, 4, 0);
+    rationalTemplateSeedParm = new QLineEdit(secondTab);
+    connect(rationalTemplateSeedParm, SIGNAL(returnPressed()),
+            this, SLOT(rationalTemplateSeedParmProcessText()));
+    analysisLayout->addWidget(rationalTemplateSeedParm, 4, 1);
+
    // Create the O/X Point group box.
     QGroupBox *criticalPointGroup = new QGroupBox(secondTab);
     criticalPointGroup->setTitle(tr("Critical Points"));
@@ -947,6 +956,10 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
           case PoincareAttributes::ID_windingPairConfidence:
             windingPairConfidence->setText(DoubleToQString(atts->GetWindingPairConfidence()));
             break;
+
+          case PoincareAttributes::ID_rationalTemplateSeedParm:
+            rationalTemplateSeedParm->setText(DoubleToQString(atts->GetWindingPairConfidence()));
+            break;
           case PoincareAttributes::ID_adjustPlane:
             adjustPlane->blockSignals(true);
             adjustPlane->setValue(atts->GetAdjustPlane());
@@ -1297,6 +1310,20 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("windingPairConfidence"),
                 DoubleToQString(atts->GetWindingPairConfidence()));
             atts->SetWindingPairConfidence(atts->GetWindingPairConfidence());
+        }
+    }
+
+    // Do rationalTemplateSeedParm
+    if(which_widget == PoincareAttributes::ID_rationalTemplateSeedParm || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(rationalTemplateSeedParm, val))
+            atts->SetRationalTemplateSeedParm(val);
+        else
+        {
+            ResettingError(tr("rationalTemplateSeedParm"),
+                DoubleToQString(atts->GetRationalTemplateSeedParm()));
+            atts->SetRationalTemplateSeedParm(atts->GetRationalTemplateSeedParm());
         }
     }
 
@@ -1739,6 +1766,14 @@ void
 QvisPoincarePlotWindow::windingPairConfidenceProcessText()
 {
     GetCurrentValues(PoincareAttributes::ID_windingPairConfidence);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::rationalTemplateSeedParmProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_rationalTemplateSeedParm);
     Apply();
 }
 
