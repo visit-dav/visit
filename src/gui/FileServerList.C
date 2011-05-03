@@ -841,6 +841,10 @@ FileServerList::SetHost(const string &host)
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile.
 //
+//   Eric Brugger, Mon May  2 17:03:39 PDT 2011
+//   I added the ability to use a gateway machine when connecting to a
+//   remote host.
+//
 // ****************************************************************************
 
 void
@@ -858,7 +862,7 @@ FileServerList::StartServer(const string &host)
             progressCallbackData);
         info->server->Create(host,
                              MachineProfile::MachineName, "", false, 0, false,
-                             connectCallback, connectCallbackData);
+                             false, "", connectCallback, connectCallbackData);
         connectingServer = false;
 
         // Get the current directory from the server

@@ -702,6 +702,9 @@ $0 = shift @ARGV;
 #    Gunther H. Weber, Wed Apr 13 11:43:51 PDT 2011
 #    Update LD_LIBRARY_PATH for franklin.nersc.gov
 #
+#    Eric Brugger, Wed Apr 20 10:25:53 PDT 2011
+#    I added support for Cielo at LANL.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1951,6 +1954,22 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /brutus/ )
    $remotehost = $remotehost . ".hpc-net.ethz.ch";
 }
 
+# ----
+# HACK for Cielo @ LANL
+# ----
+$IsRunningOnCieloLANL = 0;
+if ( $host =~ /^ci-fe\d+$/ or $host =~ /^ci-login\d+$/ or
+     $host =~ /^ci-vizlogin\d+$/ )
+{
+    chomp($domain = `hostname -d`);
+    if ( $domain eq "lanl.gov" )
+    {
+        $IsRunningOnCieloLANL = 1;
+        $ENV{LIBGL_ALWAYS_INDIRECT} = "1";
+        $ENV{LD_LIBRARY_PATH} = "/opt/cray/mpt/5.2.0/xt/gemini/mpich2-gnu/lib:/opt/gcc/mpc/0.8.1/lib:/opt/gcc/mpfr/2.4.2/lib:/opt/gcc/gmp/4.3.2/lib:/opt/gcc/4.5.2/snos/lib64:$ENV{LD_LIBRARY_PATH}";
+    }
+}
+
 #  We stripped off the "port" argument above, so put it back here. Put it
 #  at the beginning so that it ends after the -host argument, see below.
 if ($remoteport_set)
@@ -2928,7 +2947,11 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 @mpicmd = ("aprun");
                 push @mpicmd, @sublaunchargs if $sublaunchargs_set;
                 push @mpicmd, "-n",  $procs if $procs_set;
-                push @mpicmd, "-N",  $nodes if $nodes_set;
+                if ($nodes_set and $procs_set)
+                {
+                    $ppn = ceil($procs / $nodes);
+                    push @mpicmd, "-N",  $ppn;
+                }
                 if ( $IsRunningOnFranklinNERSC || $IsRunningOnHopperNERSC || $IsRunningOnJaguar_ORNL )
                 {
                     push @mpicmd, "$visitbindir/env LD_LIBRARY_PATH=$visitlibdir:$visitarchdir/system_libs";
@@ -2964,6 +2987,11 @@ if ($procs_set or ($parallel and $parlaunch_set))
             if ($IsRunningOnEureka_ANL)
             {
                 print TFILE "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/mx/lib\n";
+            }
+            if ($IsRunningOnCieloLANL)
+            {
+                print TFILE "module swap PrgEnv-pgi PrgEnv-gnu\n";
+                print TFILE "module swap xt-mpt xt-mpich2\n";
             }
             if ($IsRunningOnRanger_TACC)
             {

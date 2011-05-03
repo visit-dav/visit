@@ -101,6 +101,7 @@ void MachineProfile::Init()
     shareOneBatchJob = false;
     sshPortSpecified = false;
     sshPort = 22;
+    useGateway = false;
     clientHostDetermination = MachineName;
     tunnelSSH = false;
     activeProfile = -1;
@@ -135,6 +136,8 @@ void MachineProfile::Copy(const MachineProfile &obj)
     shareOneBatchJob = obj.shareOneBatchJob;
     sshPortSpecified = obj.sshPortSpecified;
     sshPort = obj.sshPort;
+    useGateway = obj.useGateway;
+    gatewayHost = obj.gatewayHost;
     clientHostDetermination = obj.clientHostDetermination;
     manualClientHostName = obj.manualClientHostName;
     tunnelSSH = obj.tunnelSSH;
@@ -332,6 +335,8 @@ MachineProfile::operator == (const MachineProfile &obj) const
             (shareOneBatchJob == obj.shareOneBatchJob) &&
             (sshPortSpecified == obj.sshPortSpecified) &&
             (sshPort == obj.sshPort) &&
+            (useGateway == obj.useGateway) &&
+            (gatewayHost == obj.gatewayHost) &&
             (clientHostDetermination == obj.clientHostDetermination) &&
             (manualClientHostName == obj.manualClientHostName) &&
             (tunnelSSH == obj.tunnelSSH) &&
@@ -488,6 +493,8 @@ MachineProfile::SelectAll()
     Select(ID_shareOneBatchJob,        (void *)&shareOneBatchJob);
     Select(ID_sshPortSpecified,        (void *)&sshPortSpecified);
     Select(ID_sshPort,                 (void *)&sshPort);
+    Select(ID_useGateway,              (void *)&useGateway);
+    Select(ID_gatewayHost,             (void *)&gatewayHost);
     Select(ID_clientHostDetermination, (void *)&clientHostDetermination);
     Select(ID_manualClientHostName,    (void *)&manualClientHostName);
     Select(ID_tunnelSSH,               (void *)&tunnelSSH);
@@ -542,6 +549,8 @@ MachineProfile::CreateSubAttributeGroup(int)
 // Creation:   April 29, 2010
 //
 // Modifications:
+//   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
+//   Added useGateway and gatewayHost.
 //   
 // ****************************************************************************
 
@@ -578,6 +587,12 @@ MachineProfile::CreateNode(DataNode *parentNode,
     if(completeSave || IsSelected(ID_sshPort))
         node->AddNode(new DataNode("sshPort", sshPort));
 
+    if(completeSave || IsSelected(ID_useGateway))
+        node->AddNode(new DataNode("useGateway", useGateway));
+
+    if(completeSave || IsSelected(ID_gatewayHost))
+        node->AddNode(new DataNode("gatewayHost", gatewayHost));
+
     if(completeSave || IsSelected(ID_clientHostDetermination))
         node->AddNode(new DataNode("clientHostDetermination", ClientHostDetermination_ToString(clientHostDetermination)));
 
@@ -613,6 +628,9 @@ MachineProfile::CreateNode(DataNode *parentNode,
 //   Jeremy Meredith, Wed Apr 28 17:26:30 EDT 2010
 //   For the launch profiles, override old values instead of clearing them.
 //   
+//   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
+//   Added useGateway and gatewayHost.
+//
 // ****************************************************************************
 
 void
@@ -643,6 +661,10 @@ MachineProfile::SetFromNode(DataNode *parentNode)
         SetSshPortSpecified(node->AsBool());
     if((node = searchNode->GetNode("sshPort")) != 0)
         SetSshPort(node->AsInt());
+    if((node = searchNode->GetNode("useGateway")) != 0)
+        SetUseGateway(node->AsBool());
+    if((node = searchNode->GetNode("gatewayHost")) != 0)
+        SetGatewayHost(node->AsString());
     if((node = searchNode->GetNode("activeProfile")) != 0)
         SetActiveProfile(node->AsInt());
     if((node = searchNode->GetNode("clientHostDetermination")) != 0)
@@ -772,6 +794,20 @@ MachineProfile::SetSshPort(int sshPort_)
 }
 
 void
+MachineProfile::SetUseGateway(bool useGateway_)
+{
+    useGateway = useGateway_;
+    Select(ID_useGateway, (void *)&useGateway);
+}
+
+void
+MachineProfile::SetGatewayHost(const std::string &gatewayHost_)
+{
+    gatewayHost = gatewayHost_;
+    Select(ID_gatewayHost, (void *)&gatewayHost);
+}
+
+void
 MachineProfile::SetClientHostDetermination(MachineProfile::ClientHostDetermination clientHostDetermination_)
 {
     clientHostDetermination = clientHostDetermination_;
@@ -881,6 +917,24 @@ MachineProfile::GetSshPort() const
     return sshPort;
 }
 
+bool
+MachineProfile::GetUseGateway() const
+{
+    return useGateway;
+}
+
+const std::string &
+MachineProfile::GetGatewayHost() const
+{
+    return gatewayHost;
+}
+
+std::string &
+MachineProfile::GetGatewayHost()
+{
+    return gatewayHost;
+}
+
 MachineProfile::ClientHostDetermination
 MachineProfile::GetClientHostDetermination() const
 {
@@ -955,6 +1009,12 @@ void
 MachineProfile::SelectDirectory()
 {
     Select(ID_directory, (void *)&directory);
+}
+
+void
+MachineProfile::SelectGatewayHost()
+{
+    Select(ID_gatewayHost, (void *)&gatewayHost);
 }
 
 void
@@ -1198,6 +1258,8 @@ MachineProfile::GetFieldName(int index) const
     case ID_shareOneBatchJob:        return "shareOneBatchJob";
     case ID_sshPortSpecified:        return "sshPortSpecified";
     case ID_sshPort:                 return "sshPort";
+    case ID_useGateway:              return "useGateway";
+    case ID_gatewayHost:             return "gatewayHost";
     case ID_clientHostDetermination: return "clientHostDetermination";
     case ID_manualClientHostName:    return "manualClientHostName";
     case ID_tunnelSSH:               return "tunnelSSH";
@@ -1235,6 +1297,8 @@ MachineProfile::GetFieldType(int index) const
     case ID_shareOneBatchJob:        return FieldType_bool;
     case ID_sshPortSpecified:        return FieldType_bool;
     case ID_sshPort:                 return FieldType_int;
+    case ID_useGateway:              return FieldType_bool;
+    case ID_gatewayHost:             return FieldType_string;
     case ID_clientHostDetermination: return FieldType_enum;
     case ID_manualClientHostName:    return FieldType_string;
     case ID_tunnelSSH:               return FieldType_bool;
@@ -1272,6 +1336,8 @@ MachineProfile::GetFieldTypeName(int index) const
     case ID_shareOneBatchJob:        return "bool";
     case ID_sshPortSpecified:        return "bool";
     case ID_sshPort:                 return "int";
+    case ID_useGateway:              return "bool";
+    case ID_gatewayHost:             return "string";
     case ID_clientHostDetermination: return "enum";
     case ID_manualClientHostName:    return "string";
     case ID_tunnelSSH:               return "bool";
@@ -1341,6 +1407,16 @@ MachineProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_sshPort:
         {  // new scope
         retval = (sshPort == obj.sshPort);
+        }
+        break;
+    case ID_useGateway:
+        {  // new scope
+        retval = (useGateway == obj.useGateway);
+        }
+        break;
+    case ID_gatewayHost:
+        {  // new scope
+        retval = (gatewayHost == obj.gatewayHost);
         }
         break;
     case ID_clientHostDetermination:
@@ -1616,6 +1692,10 @@ MachineProfile::GetActiveLaunchProfile() const
 // Programmer:  Jeremy Meredith
 // Creation:    April 29, 2010
 //
+// Modifications:
+//   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
+//   Added useGateway and gatewayHost.
+//   
 // ****************************************************************************
 
 void
@@ -1639,6 +1719,10 @@ MachineProfile::SelectOnlyDifferingFields(MachineProfile &other)
         Select(ID_sshPortSpecified,        (void *)&sshPortSpecified);
     if (sshPort != other.sshPort)
         Select(ID_sshPort,                 (void *)&sshPort);
+    if (useGateway != other.useGateway)
+        Select(ID_useGateway,              (void *)&useGateway);
+    if (gatewayHost != other.gatewayHost)
+        Select(ID_gatewayHost,             (void *)&gatewayHost);
     if (clientHostDetermination != other.clientHostDetermination)
         Select(ID_clientHostDetermination, (void *)&clientHostDetermination);
     if (manualClientHostName != other.manualClientHostName)

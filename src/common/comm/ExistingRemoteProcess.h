@@ -71,6 +71,10 @@
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile.
 //
+//   Eric Brugger, Mon May  2 16:44:20 PDT 2011
+//   I added the ability to use a gateway machine when connecting to a
+//   remote host.
+//
 // ****************************************************************************
 
 class COMM_API ExistingRemoteProcess : public RemoteProcess
@@ -83,6 +87,8 @@ public:
                       const std::string &clientHostName,
                       bool manualSSHPort,
                       int sshPort, bool useTunneling,
+                      bool useGateway,
+                      const std::string &gatewayHost,
                       int numRead, int numWrite,
                       bool createAsThoughLocal = false);
     void SetConnectCallback(ConnectCallback *cb);

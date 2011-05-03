@@ -26,6 +26,11 @@
     <Field name="sshPort" label="SSH port" type="int">
       22
     </Field>
+    <Field name="useGateway" label="Use gateway" type="bool">
+      false
+    </Field>
+    <Field name="gatewayHost" label="Gateway host" type="string">
+    </Field>
     <Field name="clientHostDetermination" label="Client host determination" type="enum" subtype="ClientHostDetermination">
       MachineName
     </Field>

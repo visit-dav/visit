@@ -99,6 +99,10 @@ class ViewerConnectionProgressDialog;
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Eric Brugger, Mon May  2 17:10:45 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerServerManager : public ViewerBase
@@ -137,6 +141,8 @@ protected:
     static void GetSSHPortOptions(const std::string &host,
                                   bool &manualSSHPort, int &sshPort);
     static void GetSSHTunnelOptions(const std::string &host, bool &tunnelSSH);
+    static void GetUseGatewayOptions(const std::string &host, bool &useGateway,
+                                     std::string &gatewayHost);
 
     static ViewerConnectionProgressDialog *
         SetupConnectionProgressWindow(RemoteProxyBase *component, 

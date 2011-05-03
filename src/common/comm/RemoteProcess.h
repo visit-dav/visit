@@ -122,6 +122,10 @@ class Connection;
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Eric Brugger, Mon May  2 16:35:56 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//
 // ****************************************************************************
 
 class COMM_API RemoteProcess
@@ -135,6 +139,8 @@ public:
                       bool manualSSHPort,
                       int sshPort,
                       bool useTunneling,
+                      bool useGateway,
+                      const std::string &gatewayHost,
                       int numRead, int numWrite,
                       bool createAsThoughLocal = false);
     void WaitForTermination();
@@ -169,6 +175,7 @@ protected:
                            int sshPort, bool useTunneling,
                            int numRead, int numWrite, bool local);
     virtual void Launch(const std::string &rHost, bool createAsThoughLocal,
+                        bool useGateway, const std::string &gatewayHost,
                         const stringVector &commandLine);
 protected:
     int                      listenPortNum;
@@ -181,9 +188,12 @@ private:
     int  MultiThreadedAcceptSocket();
     void CloseListenSocket();
     void ExchangeTypeRepresentations();
-    void LaunchRemote(const stringVector &args);
+    void LaunchRemote(bool useGateway, const std::string &gatewayHost,
+                      const stringVector &args);
     void LaunchLocal(const stringVector &args);
     char **CreateSplitCommandLine(const stringVector &args, int &argc) const;
+    char **CreateSSHCommandLine(const std::string &host,
+                                const stringVector &args, int &argc) const;
     void DestroySplitCommandLine(char **args, int argc) const;
     char *StrDup(const std::string &) const;
 private:

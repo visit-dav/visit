@@ -260,6 +260,9 @@ Definition:
 //   Jeremy Meredith, Wed Apr 28 17:26:30 EDT 2010
 //   For the launch profiles, override old values instead of clearing them.
 //   
+//   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
+//   Added useGateway and gatewayHost.
+//
 // ****************************************************************************
 
 void
@@ -290,6 +293,10 @@ MachineProfile::SetFromNode(DataNode *parentNode)
         SetSshPortSpecified(node->AsBool());
     if((node = searchNode->GetNode("sshPort")) != 0)
         SetSshPort(node->AsInt());
+    if((node = searchNode->GetNode("useGateway")) != 0)
+        SetUseGateway(node->AsBool());
+    if((node = searchNode->GetNode("gatewayHost")) != 0)
+        SetGatewayHost(node->AsString());
     if((node = searchNode->GetNode("activeProfile")) != 0)
         SetActiveProfile(node->AsInt());
     if((node = searchNode->GetNode("clientHostDetermination")) != 0)
@@ -385,6 +392,8 @@ Definition:
 // Creation:   April 29, 2010
 //
 // Modifications:
+//   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
+//   Added useGateway and gatewayHost.
 //   
 // ****************************************************************************
 
@@ -420,6 +429,12 @@ MachineProfile::CreateNode(DataNode *parentNode,
 
     if(completeSave || IsSelected(ID_sshPort))
         node->AddNode(new DataNode("sshPort", sshPort));
+
+    if(completeSave || IsSelected(ID_useGateway))
+        node->AddNode(new DataNode("useGateway", useGateway));
+
+    if(completeSave || IsSelected(ID_gatewayHost))
+        node->AddNode(new DataNode("gatewayHost", gatewayHost));
 
     if(completeSave || IsSelected(ID_clientHostDetermination))
         node->AddNode(new DataNode("clientHostDetermination", ClientHostDetermination_ToString(clientHostDetermination)));
@@ -457,6 +472,10 @@ Definition:
 // Programmer:  Jeremy Meredith
 // Creation:    April 29, 2010
 //
+// Modifications:
+//   Eric Brugger, Tue Apr 19 14:45:18 PDT 2011
+//   Added useGateway and gatewayHost.
+//   
 // ****************************************************************************
 
 void
@@ -480,6 +499,10 @@ MachineProfile::SelectOnlyDifferingFields(MachineProfile &other)
         Select(ID_sshPortSpecified,        (void *)&sshPortSpecified);
     if (sshPort != other.sshPort)
         Select(ID_sshPort,                 (void *)&sshPort);
+    if (useGateway != other.useGateway)
+        Select(ID_useGateway,              (void *)&useGateway);
+    if (gatewayHost != other.gatewayHost)
+        Select(ID_gatewayHost,             (void *)&gatewayHost);
     if (clientHostDetermination != other.clientHostDetermination)
         Select(ID_clientHostDetermination, (void *)&clientHostDetermination);
     if (manualClientHostName != other.manualClientHostName)

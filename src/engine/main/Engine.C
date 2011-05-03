@@ -190,6 +190,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 // Creation:   Thu Apr  9 11:51:35 PDT 2009
 //
 // Modifications:
+//   Eric Brugger, Mon May  2 17:00:41 PDT 2011
+//   I added the ability to use a gateway machine when connecting to a
+//   remote host.
 //
 // ****************************************************************************
 
@@ -252,7 +255,7 @@ protected:
             debug5 << ")" << endl;
         }
 
-        RemoteProcess::Launch(rHost, createAsThoughLocal, viewerArgs);
+        RemoteProcess::Launch(rHost, createAsThoughLocal, false, "", viewerArgs);
     }
 };
 
@@ -1270,6 +1273,10 @@ Engine::ExtractViewerArguments(int *argc, char **argv[])
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //   
+//    Eric Brugger, Mon May  2 17:00:41 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//
 // ****************************************************************************
 
 bool
@@ -1295,6 +1302,8 @@ Engine::ReverseLaunchViewer(int *argc, char **argv[])
                          false,                    // manual SSH port
                          0,                        // ssh port
                          false,                    // ssh tunnelling
+                         false,                    // use gateway
+                         "",                       // gateway host name
                          1,                        // num read sockets
                          simulationPluginsEnabled ? 3 : 2); // num write sockets
         }

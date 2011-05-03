@@ -417,6 +417,10 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Eric Brugger, Mon May  2 17:06:31 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//
 // ****************************************************************************
 
 bool
@@ -513,6 +517,10 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         // We don't set up tunnels when launching an engine, just the VCL
         bool useTunneling = false;
 
+        // We don't use a gateway when launching an engine, just the VCL
+        bool useGateway = false;
+        string gatewayHost = "";
+
         //
         // Launch the engine.
         //
@@ -530,7 +538,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
                 {
                     debug1 << "Launching a local engine" << endl;
                     newEngine.proxy->Create("localhost", chd, clientHostName,
-                                            manualSSHPort, sshPort, useTunneling);
+                                            manualSSHPort, sshPort,
+                                            useTunneling,
+                                            useGateway, gatewayHost);
                 }
             }
             else
@@ -540,6 +550,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
                 // Use VisIt's launcher to start the remote engine.
                 newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
                                   manualSSHPort, sshPort, useTunneling,
+                                  useGateway, gatewayHost,
                                   OpenWithLauncher, (void *)dialog, true);
             }
 
@@ -709,6 +720,10 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    Brad Whitlock, Wed Dec 1 23:35:34 PST 2010
 //    Tell EngineProxy that it is a simulation.
 //
+//    Eric Brugger, Mon May  2 17:06:31 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//
 // ****************************************************************************
 
 bool
@@ -779,6 +794,11 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         // just when launching the VCL
         bool useTunneling = false;
 
+        // We don't use a gateway when connecting to a simulation,
+        // just when launching the VCL
+        bool useGateway = false;
+        string gatewayHost = "";
+
         //
         // Launch the engine.
         //
@@ -797,6 +817,7 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
 
         newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
                           manualSSHPort, sshPort, useTunneling,
+                          useGateway, gatewayHost,
                           SimConnectThroughLauncher, (void *)&simData,
                           true);
 
