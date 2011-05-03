@@ -1392,6 +1392,10 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Eric Brugger, Mon May  2 17:09:13 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//
 // ****************************************************************************
 
 void
@@ -1426,6 +1430,10 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         // We don't set up tunnels when launching an MD server, just the VCL
         bool useTunneling = false;
 
+        // We don't use a gateway when launching an MD server, just the VCL
+        bool useGateway = false;
+        string gatewayHost = "";
+
         // Create a connection progress dialog and hook it up to the
         // mdserver proxy.
         dialog = SetupConnectionProgressWindow(newServer, host);
@@ -1434,13 +1442,15 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         if (!ShouldShareBatchJob(host) && HostIsLocalHost(host))
         {
             newServer->Create("localhost", chd, clientHostName,
-                              manualSSHPort, sshPort, useTunneling);
+                              manualSSHPort, sshPort, useTunneling,
+                              useGateway, gatewayHost);
         }
         else
         {
             // Use VisIt's launcher to start the remote mdserver.
             newServer->Create(host, chd, clientHostName,
                               manualSSHPort, sshPort, useTunneling,
+                              useGateway, gatewayHost,
                               OpenWithLauncher, (void*)dialog, true);
         }
 

@@ -260,12 +260,12 @@ if [ $cielo = true ]
 then
    if [ $test = no ]
    then
-      ssh red-fta05.lanl.gov "ssh ci-fe3 'cp /tmp/$user/cielo/visitbuild/visit$ver2.linux-x86_64.tar.gz .'"
+      ssh red-fta05.lanl.gov "ssh ci-fe2 'cp /tmp/$user/cielo/visitbuild/visit$ver2.linux-x86_64.tar.gz .'"
       scp red-fta05.lanl.gov:visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-cielo.tar.gz
       scp visit$ver2.linux-x86_64-cielo.tar.gz red-fta05.lanl.gov:
       scp visit-install red-fta05.lanl.gov:
       scp cielo red-fta05.lanl.gov:cielo_install
-      ssh red-fta05.lanl.gov "ssh ci-fe3 'chmod 750 cielo_install;./cielo_install'"
+      ssh red-fta05.lanl.gov "ssh ci-fe2 'chmod 750 cielo_install;./cielo_install'"
    fi
 fi
 

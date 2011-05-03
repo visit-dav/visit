@@ -125,6 +125,10 @@ RemoteProxyBase::~RemoteProxyBase()
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Eric Brugger, Mon May  2 16:42:59 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//
 // ****************************************************************************
 
 void
@@ -134,6 +138,8 @@ RemoteProxyBase::Create(const std::string &hostName,
                         bool manualSSHPort,
                         int sshPort,
                         bool useTunneling,
+                        bool useGateway,
+                        const std::string &gatewayHost,
                         ConnectCallback *connectCallback, void *data,
                         bool createAsThoughLocal)
 {
@@ -165,6 +171,7 @@ RemoteProxyBase::Create(const std::string &hostName,
     //
     component->Open(hostName, chd, clientHostName,
                     manualSSHPort, sshPort, useTunneling,
+                    useGateway, gatewayHost,
                     nRead, nWrite, createAsThoughLocal);
 
     //

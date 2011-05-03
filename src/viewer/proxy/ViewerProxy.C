@@ -421,6 +421,10 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Eric Brugger, Mon May  2 17:18:18 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//
 // ****************************************************************************
 
 void
@@ -474,7 +478,7 @@ ViewerProxy::Create(const char *visitProgram, int *inputArgc, char ***inputArgv)
         //
         viewer->Open("localhost",
                      MachineProfile::MachineName, "", 
-                     false, 0, false,
+                     false, 0, false, false, "",
                      1, 1);
 
         // Use viewer's connections for xfer.

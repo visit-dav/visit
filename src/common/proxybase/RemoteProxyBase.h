@@ -90,6 +90,10 @@ class RemoteProcess;
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Eric Brugger, Mon May  2 16:41:53 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//
 // ****************************************************************************
 
 class PROXYBASE_API RemoteProxyBase
@@ -110,6 +114,8 @@ public:
                 bool manualSSHPort,
                 int sshPort,
                 bool useTunneling,
+                bool useGateway,
+                const std::string &gatewayHost,
                 ConnectCallback *connectCallback = 0,
                 void *data = 0, bool createAsThoughLocal = false);
     void Close();

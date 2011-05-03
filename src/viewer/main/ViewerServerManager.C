@@ -447,6 +447,43 @@ ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
 }
 
 // ****************************************************************************
+// Method: ViewerServerManager::GetUseGatewayOptions
+//
+// Purpose: 
+//   This method finds a host profile that matches the specified hostname
+//   and returns the gateway options.
+//
+// Arguments:
+//   host          : The host where the component will be run.
+//   useGateway    : True if we need to use a gateway.
+//   gatewayHost   : The name of the gateway host.
+//
+// Programmer: Eric Brugger
+// Creation:   May 2, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ViewerServerManager::GetUseGatewayOptions(const std::string &host,
+                                          bool &useGateway,
+                                          std::string &gatewayHost)
+{
+    const MachineProfile *profile =
+        clientAtts->GetMachineProfileForHost(host);
+    if(profile != 0)
+    {
+        useGateway = profile->GetUseGateway();
+        gatewayHost = profile->GetGatewayHost();
+    }
+    else
+    {
+        useGateway = false;
+        gatewayHost = "";
+    }
+}
+
+// ****************************************************************************
 //  Method: ViewerServerManager::ShouldShareBatchJob
 //
 //  Purpose: 
@@ -710,6 +747,10 @@ ViewerServerManager::SendKeepAlivesToLaunchers()
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile.
 //
+//   Eric Brugger, Mon May  2 17:14:06 PDT 2011
+//   I added the ability to use a gateway machine when connecting to a
+//   remote host.
+//
 // ****************************************************************************
 
 void
@@ -775,11 +816,17 @@ ViewerServerManager::StartLauncher(const std::string &host,
             bool useTunneling;
             GetSSHTunnelOptions(host, useTunneling);
 
+            // Get the gateway options
+            bool useGateway;
+            std::string gatewayHost;
+            GetUseGatewayOptions(host, useGateway, gatewayHost);
+
             //
             // Launch the VisIt component launcher on the specified host.
             //
             newLauncher->Create(host, chd, clientHostName,
-                                manualSSHPort, sshPort, useTunneling);
+                                manualSSHPort, sshPort, useTunneling,
+                                useGateway, gatewayHost);
             launchers[host].launcher = newLauncher;
 
             // Create a socket notifier for the launcher's data socket so

@@ -631,6 +631,7 @@ if [ "$config" = "anl" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_anl_teragrid.xml "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "llnl_closed" ]; then
    ln -s visit-config-llnl_closed.ini "$dir"/$version+/.visit/config
+   cp "$dir"/$version+/.visit/allhosts/host_lanl_closed_cielo.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_eos.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_graph.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_inca.xml    "$dir"/$version+/.visit/hosts/

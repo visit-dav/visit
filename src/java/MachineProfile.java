@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class MachineProfile extends AttributeSubject
 {
-    private static int MachineProfile_numAdditionalAtts = 13;
+    private static int MachineProfile_numAdditionalAtts = 15;
 
     // Enum values
     public final static int CLIENTHOSTDETERMINATION_MACHINENAME = 0;
@@ -77,6 +77,8 @@ public class MachineProfile extends AttributeSubject
         shareOneBatchJob = false;
         sshPortSpecified = false;
         sshPort = 22;
+        useGateway = false;
+        gatewayHost = new String("");
         clientHostDetermination = CLIENTHOSTDETERMINATION_MACHINENAME;
         manualClientHostName = new String("");
         tunnelSSH = false;
@@ -96,6 +98,8 @@ public class MachineProfile extends AttributeSubject
         shareOneBatchJob = false;
         sshPortSpecified = false;
         sshPort = 22;
+        useGateway = false;
+        gatewayHost = new String("");
         clientHostDetermination = CLIENTHOSTDETERMINATION_MACHINENAME;
         manualClientHostName = new String("");
         tunnelSSH = false;
@@ -117,6 +121,8 @@ public class MachineProfile extends AttributeSubject
         shareOneBatchJob = obj.shareOneBatchJob;
         sshPortSpecified = obj.sshPortSpecified;
         sshPort = obj.sshPort;
+        useGateway = obj.useGateway;
+        gatewayHost = new String(obj.gatewayHost);
         clientHostDetermination = obj.clientHostDetermination;
         manualClientHostName = new String(obj.manualClientHostName);
         tunnelSSH = obj.tunnelSSH;
@@ -165,6 +171,8 @@ public class MachineProfile extends AttributeSubject
                 (shareOneBatchJob == obj.shareOneBatchJob) &&
                 (sshPortSpecified == obj.sshPortSpecified) &&
                 (sshPort == obj.sshPort) &&
+                (useGateway == obj.useGateway) &&
+                (gatewayHost.equals(obj.gatewayHost)) &&
                 (clientHostDetermination == obj.clientHostDetermination) &&
                 (manualClientHostName.equals(obj.manualClientHostName)) &&
                 (tunnelSSH == obj.tunnelSSH) &&
@@ -221,28 +229,40 @@ public class MachineProfile extends AttributeSubject
         Select(7);
     }
 
+    public void SetUseGateway(boolean useGateway_)
+    {
+        useGateway = useGateway_;
+        Select(8);
+    }
+
+    public void SetGatewayHost(String gatewayHost_)
+    {
+        gatewayHost = gatewayHost_;
+        Select(9);
+    }
+
     public void SetClientHostDetermination(int clientHostDetermination_)
     {
         clientHostDetermination = clientHostDetermination_;
-        Select(8);
+        Select(10);
     }
 
     public void SetManualClientHostName(String manualClientHostName_)
     {
         manualClientHostName = manualClientHostName_;
-        Select(9);
+        Select(11);
     }
 
     public void SetTunnelSSH(boolean tunnelSSH_)
     {
         tunnelSSH = tunnelSSH_;
-        Select(10);
+        Select(12);
     }
 
     public void SetActiveProfile(int activeProfile_)
     {
         activeProfile = activeProfile_;
-        Select(12);
+        Select(14);
     }
 
     // Property getting methods
@@ -254,6 +274,8 @@ public class MachineProfile extends AttributeSubject
     public boolean GetShareOneBatchJob() { return shareOneBatchJob; }
     public boolean GetSshPortSpecified() { return sshPortSpecified; }
     public int     GetSshPort() { return sshPort; }
+    public boolean GetUseGateway() { return useGateway; }
+    public String  GetGatewayHost() { return gatewayHost; }
     public int     GetClientHostDetermination() { return clientHostDetermination; }
     public String  GetManualClientHostName() { return manualClientHostName; }
     public boolean GetTunnelSSH() { return tunnelSSH; }
@@ -280,12 +302,16 @@ public class MachineProfile extends AttributeSubject
         if(WriteSelect(7, buf))
             buf.WriteInt(sshPort);
         if(WriteSelect(8, buf))
-            buf.WriteInt(clientHostDetermination);
+            buf.WriteBool(useGateway);
         if(WriteSelect(9, buf))
-            buf.WriteString(manualClientHostName);
+            buf.WriteString(gatewayHost);
         if(WriteSelect(10, buf))
-            buf.WriteBool(tunnelSSH);
+            buf.WriteInt(clientHostDetermination);
         if(WriteSelect(11, buf))
+            buf.WriteString(manualClientHostName);
+        if(WriteSelect(12, buf))
+            buf.WriteBool(tunnelSSH);
+        if(WriteSelect(13, buf))
         {
             buf.WriteInt(launchProfiles.size());
             for(int i = 0; i < launchProfiles.size(); ++i)
@@ -294,7 +320,7 @@ public class MachineProfile extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(12, buf))
+        if(WriteSelect(14, buf))
             buf.WriteInt(activeProfile);
     }
 
@@ -327,15 +353,21 @@ public class MachineProfile extends AttributeSubject
             SetSshPort(buf.ReadInt());
             break;
         case 8:
-            SetClientHostDetermination(buf.ReadInt());
+            SetUseGateway(buf.ReadBool());
             break;
         case 9:
-            SetManualClientHostName(buf.ReadString());
+            SetGatewayHost(buf.ReadString());
             break;
         case 10:
-            SetTunnelSSH(buf.ReadBool());
+            SetClientHostDetermination(buf.ReadInt());
             break;
         case 11:
+            SetManualClientHostName(buf.ReadString());
+            break;
+        case 12:
+            SetTunnelSSH(buf.ReadBool());
+            break;
+        case 13:
             {
                 int len = buf.ReadInt();
                 launchProfiles.clear();
@@ -346,9 +378,9 @@ public class MachineProfile extends AttributeSubject
                     launchProfiles.addElement(tmp);
                 }
             }
-            Select(11);
+            Select(13);
             break;
-        case 12:
+        case 14:
             SetActiveProfile(buf.ReadInt());
             break;
         }
@@ -365,6 +397,8 @@ public class MachineProfile extends AttributeSubject
         str = str + boolToString("shareOneBatchJob", shareOneBatchJob, indent) + "\n";
         str = str + boolToString("sshPortSpecified", sshPortSpecified, indent) + "\n";
         str = str + intToString("sshPort", sshPort, indent) + "\n";
+        str = str + boolToString("useGateway", useGateway, indent) + "\n";
+        str = str + stringToString("gatewayHost", gatewayHost, indent) + "\n";
         str = str + indent + "clientHostDetermination = ";
         if(clientHostDetermination == CLIENTHOSTDETERMINATION_MACHINENAME)
             str = str + "CLIENTHOSTDETERMINATION_MACHINENAME";
@@ -393,13 +427,13 @@ public class MachineProfile extends AttributeSubject
     public void AddLaunchProfiles(LaunchProfile obj)
     {
         launchProfiles.addElement(new LaunchProfile(obj));
-        Select(11);
+        Select(13);
     }
 
     public void ClearLaunchProfiles()
     {
         launchProfiles.clear();
-        Select(11);
+        Select(13);
     }
 
     public void RemoveLaunchProfiles(int index)
@@ -407,7 +441,7 @@ public class MachineProfile extends AttributeSubject
         if(index >= 0 && index < launchProfiles.size())
         {
             launchProfiles.remove(index);
-            Select(11);
+            Select(13);
         }
     }
 
@@ -432,6 +466,8 @@ public class MachineProfile extends AttributeSubject
     private boolean shareOneBatchJob;
     private boolean sshPortSpecified;
     private int     sshPort;
+    private boolean useGateway;
+    private String  gatewayHost;
     private int     clientHostDetermination;
     private String  manualClientHostName;
     private boolean tunnelSSH;

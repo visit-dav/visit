@@ -226,6 +226,10 @@ ViewerClientConnection::~ViewerClientConnection()
 //   clog the socket. It also gives more time for the gui to make requests
 //   from the viewer.
 //
+//   Eric Brugger, Mon May  2 17:05:03 PDT 2011
+//   I added the ability to use a gateway machine when connecting to a
+//   remote host.
+//
 // ****************************************************************************
 
 void
@@ -280,7 +284,7 @@ ViewerClientConnection::LaunchClient(const std::string &program,
     // Try opening the client.
     debug1 << mName << "Opening client connection." << endl;
     remoteProcess->Open("localhost", MachineProfile::MachineName, "",
-                        false, 0, false, 1, 1);
+                        false, 0, false, false, "", 1, 1);
 
     debug1 << mName << "Successfully opened client connection." << endl;
 

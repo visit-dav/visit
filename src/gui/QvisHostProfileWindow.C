@@ -191,6 +191,11 @@ QvisHostProfileWindow::CreateWindowContents()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//   Eric Brugger, Tue Apr 19 20:39:50 PDT 2011
+//   I added the ability to specify a gateway machine to use to get to the
+//   remote host.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateMachineSettingsGroup()
@@ -295,6 +300,16 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
             this, SLOT(toggleSSHPort(bool)));
     layout->addWidget(sshPortCheckBox, row, 0, 1, 2);
     layout->addWidget(sshPort, row, 2, 1, 2);
+    row++;
+
+    gatewayHost = new QLineEdit(currentGroup);
+    useGatewayCheckBox = new QCheckBox(tr("Use gateway"), currentGroup);
+    connect(gatewayHost, SIGNAL(textChanged(const QString &)),
+            this, SLOT(gatewayHostChanged(const QString &)));
+    connect(useGatewayCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleUseGateway(bool)));
+    layout->addWidget(useGatewayCheckBox, row, 0, 1, 2);
+    layout->addWidget(gatewayHost, row, 2, 1, 2);
     row++;
 
     directory = new QLineEdit(currentGroup);
@@ -448,9 +463,11 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
 // Creation:    February 18, 2010
 //
 // Modifications:
-//
 //   Hank Childs, Sat Mar 13 20:21:17 PST 2010
 //   Add support for salloc.
+//
+//   Eric Brugger, Tue Apr 19 17:40:38 PDT 2011
+//   Added support for aprun and msub/aprun.
 //
 // ****************************************************************************
 void
@@ -468,6 +485,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     
     launchMethod = new QComboBox(currentGroup);
     launchMethod->addItem(tr("(default)"));
+    launchMethod->addItem("aprun");
     launchMethod->addItem("bsub");
     launchMethod->addItem("dmpirun");
     launchMethod->addItem("ibrun");
@@ -479,6 +497,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("salloc");
     launchMethod->addItem("srun");
     launchMethod->addItem("yod");
+    launchMethod->addItem("msub/aprun");
     launchMethod->addItem("msub/srun");
     launchMethod->addItem("psub/mpirun");
     launchMethod->addItem("psub/poe");
@@ -800,6 +819,10 @@ QvisHostProfileWindow::UpdateWindow(bool doAll)
 //   Select one of the launch profiles if we wouldn't have otherwise.
 //   Choose the active one if we have one, the first one otherwise.
 //
+//   Eric Brugger, Tue Apr 19 20:39:50 PDT 2011
+//   I added the ability to specify a gateway machine to use to get to the
+//   remote host.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::UpdateMachineProfile()
@@ -812,6 +835,8 @@ QvisHostProfileWindow::UpdateMachineProfile()
     clientHostName->blockSignals(true);
     sshPortCheckBox->blockSignals(true);
     sshPort->blockSignals(true);
+    useGatewayCheckBox->blockSignals(true);
+    gatewayHost->blockSignals(true);
     tunnelSSH->blockSignals(true);
     directory->blockSignals(true);
     shareMDServerCheckBox->blockSignals(true);
@@ -829,6 +854,8 @@ QvisHostProfileWindow::UpdateMachineProfile()
         clientHostName->setText("");
         sshPortCheckBox->setChecked(false);
         sshPort->setText("");
+        useGatewayCheckBox->setChecked(false);
+        gatewayHost->setText("");
         tunnelSSH->setChecked(false);
         shareMDServerCheckBox->setChecked(false);
 
@@ -869,6 +896,8 @@ QvisHostProfileWindow::UpdateMachineProfile()
         char portStr[256];
         SNPRINTF(portStr, 256, "%d", mp.GetSshPort());
         sshPort->setText(portStr);
+        useGatewayCheckBox->setChecked(mp.GetUseGateway());
+        gatewayHost->setText(mp.GetGatewayHost().c_str());
         tunnelSSH->setChecked(mp.GetTunnelSSH());
         shareMDServerCheckBox->setChecked(mp.GetShareOneBatchJob());
         directory->setText(mp.GetDirectory().c_str());
@@ -920,6 +949,8 @@ QvisHostProfileWindow::UpdateMachineProfile()
     clientHostName->blockSignals(false);
     sshPortCheckBox->blockSignals(false);
     sshPort->blockSignals(false);
+    useGatewayCheckBox->blockSignals(false);
+    gatewayHost->blockSignals(false);
     tunnelSSH->blockSignals(false);
     directory->blockSignals(false);
     shareMDServerCheckBox->blockSignals(false);
@@ -1245,6 +1276,10 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile. Rewrote window.
 //
+//    Eric Brugger, Tue Apr 19 20:39:50 PDT 2011
+//    I added the ability to specify a gateway machine to use to get to the
+//    remote host.
+//
 // ****************************************************************************
 
 void
@@ -1283,6 +1318,7 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
                                currentMachine->GetClientHostDetermination() ==
                                               MachineProfile::ManuallySpecified);
     sshPort->setEnabled(hostEnabled && currentMachine->GetSshPortSpecified());
+    gatewayHost->setEnabled(hostEnabled && currentMachine->GetUseGateway());
     tunnelSSH->setEnabled(hostEnabled);
     shareMDServerCheckBox->setEnabled(hostEnabled);
     
@@ -1419,6 +1455,10 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //   Jeremy Meredith, Wed Apr 21 13:17:58 EDT 2010
 //   If the username in the window is the same one we would have gotten
 //   anyway, set the internal value back to the default "notset".
+//
+//   Eric Brugger, Tue Apr 19 20:39:50 PDT 2011
+//   I added the ability to specify a gateway machine to use to get to the
+//   remote host.
 //
 // ****************************************************************************
 
@@ -1710,6 +1750,14 @@ QvisHostProfileWindow::GetCurrentValues()
             needNotify = true;
 
         currentMachine->SetSshPort(newPort);
+    }
+
+    // Do the gateway host
+    if (currentMachine)
+    {
+        temp = gatewayHost->text();
+        temp = temp.trimmed();
+        currentMachine->SetGatewayHost(std::string(temp.toStdString()));
     }
 
     // Do the machine file
@@ -2909,6 +2957,64 @@ QvisHostProfileWindow::sshPortChanged(const QString &portStr)
     int port = atoi(portStr.toStdString().c_str());
 
     currentMachine->SetSshPort(port);
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::toggleUseGateway
+//
+//  Purpose:
+//    Change the flag to use the use the gateway host for all profiles with the
+//    same remote host name based on a changed widget value.
+//
+//  Arguments:
+//    state      true to use the gateway host, false to not use it
+//
+//  Programmer:  Eric Brugger
+//  Creation:    April 19, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::toggleUseGateway(bool state)
+{
+    if (currentMachine == NULL)
+        return;
+
+    currentMachine->SetUseGateway(state);
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::gatewayHostChanged
+//
+//  Purpose:
+//    Change the gateway host name for all profiles with the
+//    same remote host name based on a changed widget value.
+//
+//  Arguments:
+//    hostStr   the string containing the host name
+//
+//  Programmer:  Eric Brugger
+//  Creation:    April 19, 2011
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+QvisHostProfileWindow::gatewayHostChanged(const QString &hostStr)
+{
+    if (currentMachine == NULL)
+        return;
+
+    if (hostStr.isEmpty())
+        return;
+
+    // int port = atoi(portStr.toStdString().c_str());
+
+    currentMachine->SetGatewayHost(hostStr.toStdString());
 }
 
 // ****************************************************************************

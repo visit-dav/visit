@@ -332,7 +332,7 @@ then
       echo "Building on cielo"
       scp cielo red-fta05.lanl.gov:cielo_buildit
       scp $dist.tar.gz red-fta05.lanl.gov:cielo_$dist.tar.gz
-      ssh red-fta05.lanl.gov "ssh ci-fe3 'chmod 750 cielo_buildit;module swap PrgEnv-pgi PrgEnv-gnu;module swap xt-mpt xt-mpich2;./cielo_buildit'" &
+      ssh red-fta05.lanl.gov "ssh ci-fe2 'chmod 750 cielo_buildit;module swap PrgEnv-pgi PrgEnv-gnu;module swap xt-mpt xt-mpich2;./cielo_buildit'" &
    fi
 fi
 

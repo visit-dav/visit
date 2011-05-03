@@ -1054,12 +1054,16 @@ RemoteProcess::MultiThreadedAcceptSocket()
 // Creation:   Thu Apr  9 10:25:24 PDT 2009
 //
 // Modifications:
+//   Eric Brugger, Mon May  2 16:39:09 PDT 2011
+//   I added the ability to use a gateway machine when connecting to a
+//   remote host.
 //   
 // ****************************************************************************
 
 void
 RemoteProcess::Launch(const std::string &rHost, bool createAsThoughLocal,
-    const stringVector &commandLine)
+                      bool useGateway, const std::string &gatewayHost,
+                      const stringVector &commandLine)
 {
     const char *mName = "RemoteProcess::Launch: ";
 
@@ -1071,7 +1075,7 @@ RemoteProcess::Launch(const std::string &rHost, bool createAsThoughLocal,
     else
     {
         debug5 << mName << "Calling LaunchRemote" << endl;
-        LaunchRemote(commandLine);
+        LaunchRemote(useGateway, gatewayHost, commandLine);
     }
 }
 
@@ -1145,6 +1149,10 @@ RemoteProcess::Launch(const std::string &rHost, bool createAsThoughLocal,
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
 //
+//    Eric Brugger, Mon May  2 16:39:09 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//   
 // ****************************************************************************
 
 bool
@@ -1154,6 +1162,8 @@ RemoteProcess::Open(const std::string &rHost,
                     bool manualSSHPort,
                     int sshPort,
                     bool useTunneling,
+                    bool useGateway,
+                    const std::string &gatewayHost,
                     int numRead, int numWrite,
                     bool createAsThoughLocal)
 {
@@ -1170,6 +1180,8 @@ RemoteProcess::Open(const std::string &rHost,
     debug5 << ", manualSSHPort=" << (manualSSHPort?"true":"false");
     debug5 << ", sshPort=" << sshPort;
     debug5 << ", useTunneling=" << useTunneling;
+    debug5 << ", useGateway=" << useGateway;
+    debug5 << ", gatewayHost=" << gatewayHost.c_str();
     debug5 << ", numRead=" << numRead;
     debug5 << ", numWrite=" << numWrite;
     debug5 << ", createAsThoughLocal=" << (createAsThoughLocal?"true":"false");
@@ -1201,7 +1213,7 @@ RemoteProcess::Open(const std::string &rHost,
     //
     // Launch the remote process.
     //
-    Launch(rHost, createAsThoughLocal, commandLine);
+    Launch(rHost, createAsThoughLocal, useGateway, gatewayHost, commandLine);
 
     childDied[GetProcessId()] = false;
 
@@ -2068,18 +2080,33 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
 //    Added code to close the PTY if we could not connect.  Also attempt to 
 //    kill the child process with a TERM.
 //
+//    Eric Brugger, Mon May  2 16:39:09 PDT 2011
+//    I added the ability to use a gateway machine when connecting to a
+//    remote host.
+//   
 // ****************************************************************************
 
 void
-RemoteProcess::LaunchRemote(const stringVector &args)
+RemoteProcess::LaunchRemote(bool useGateway, const std::string &gatewayHost,
+                            const stringVector &args)
 {
     const char *mName = "RemoteProcess::LaunchRemote: ";
 
     // 
     // Create the parameters for the exec
     //
-    int  argc = 0;
-    char **argv = CreateSplitCommandLine(args, argc);
+    int argc;
+    char **argv;
+    if (useGateway == false)
+    {
+        argc = 0;
+        argv = CreateSplitCommandLine(args, argc);
+    }
+    else
+    {
+        argc = 0;
+        argv = CreateSSHCommandLine(gatewayHost, args, argc);
+    }
 
     //
     // Start the program on the remote host.
@@ -2303,6 +2330,59 @@ RemoteProcess::CreateSplitCommandLine(const stringVector &args, int &argc) const
     retval[argc] = NULL;
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: RemoteProcess::CreateSSHCommandLine
+//
+// Purpose: 
+//   Creates a char ** arrray that can be passed to exec an ssh command with
+//   a string vector.
+//
+// Arguments:
+//   host : The host to ssh to.
+//   args : The input string vector.
+//   argc : The number of strings in the return array.
+//
+// Returns:    An array of char strings.
+//
+// Programmer: Eric Brugger
+// Creation:   May 2, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+char **
+RemoteProcess::CreateSSHCommandLine(const std::string &host,
+                                    const stringVector &args, int &argc) const
+{
+    int nstrings = args.size();
+    int lstrings = 1;
+    for (int i = 0; i < nstrings; ++i)
+        lstrings += args[i].size() + 1;
+
+    argc = 4;
+    char **argv = new char*[argc];
+    argv[0] = StrDup("ssh");
+    argv[1] = StrDup(host.c_str());
+    argv[2] = new char[lstrings];
+    char *tmpstr = argv[2];
+    for (int i = 0; i < nstrings; ++i)
+    {
+        std::string const tmpstr2 = args[i];
+        for (int j = 0; j < tmpstr2.size(); ++j)
+        {
+            *tmpstr = tmpstr2[j];
+            tmpstr++;
+        }
+        *tmpstr = ' ';
+        tmpstr++;
+    }
+    *tmpstr = '\0';
+    argv[3] = NULL;
+
+    return argv;
 }
 
 // ****************************************************************************

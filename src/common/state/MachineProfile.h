@@ -99,6 +99,7 @@ public:
     void SelectHostAliases();
     void SelectHostNickname();
     void SelectDirectory();
+    void SelectGatewayHost();
     void SelectManualClientHostName();
     void SelectLaunchProfiles();
 
@@ -111,6 +112,8 @@ public:
     void SetShareOneBatchJob(bool shareOneBatchJob_);
     void SetSshPortSpecified(bool sshPortSpecified_);
     void SetSshPort(int sshPort_);
+    void SetUseGateway(bool useGateway_);
+    void SetGatewayHost(const std::string &gatewayHost_);
     void SetClientHostDetermination(ClientHostDetermination clientHostDetermination_);
     void SetManualClientHostName(const std::string &manualClientHostName_);
     void SetTunnelSSH(bool tunnelSSH_);
@@ -130,6 +133,9 @@ public:
     bool              GetShareOneBatchJob() const;
     bool              GetSshPortSpecified() const;
     int               GetSshPort() const;
+    bool              GetUseGateway() const;
+    const std::string &GetGatewayHost() const;
+          std::string &GetGatewayHost();
     ClientHostDetermination GetClientHostDetermination() const;
     const std::string &GetManualClientHostName() const;
           std::string &GetManualClientHostName();
@@ -188,6 +194,8 @@ public:
         ID_shareOneBatchJob,
         ID_sshPortSpecified,
         ID_sshPort,
+        ID_useGateway,
+        ID_gatewayHost,
         ID_clientHostDetermination,
         ID_manualClientHostName,
         ID_tunnelSSH,
@@ -207,6 +215,8 @@ private:
     bool                 shareOneBatchJob;
     bool                 sshPortSpecified;
     int                  sshPort;
+    bool                 useGateway;
+    std::string          gatewayHost;
     int                  clientHostDetermination;
     std::string          manualClientHostName;
     bool                 tunnelSSH;
@@ -217,6 +227,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MACHINEPROFILE_TMFS "sssssbbiisba*i"
+#define MACHINEPROFILE_TMFS "sssssbbibsisba*i"
 
 #endif

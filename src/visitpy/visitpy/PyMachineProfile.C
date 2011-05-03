@@ -99,6 +99,13 @@ PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssshPort = %d\n", prefix, atts->GetSshPort());
     str += tmpStr;
+    if(atts->GetUseGateway())
+        SNPRINTF(tmpStr, 1000, "%suseGateway = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%suseGateway = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sgatewayHost = \"%s\"\n", prefix, atts->GetGatewayHost().c_str());
+    str += tmpStr;
     const char *clientHostDetermination_names = "MachineName, ManuallySpecified, ParsedFromSSHCLIENT";
     switch (atts->GetClientHostDetermination())
     {
@@ -345,6 +352,54 @@ MachineProfile_GetSshPort(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+MachineProfile_SetUseGateway(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the useGateway in the object.
+    obj->data->SetUseGateway(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MachineProfile_GetUseGateway(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseGateway()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+MachineProfile_SetGatewayHost(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the gatewayHost in the object.
+    obj->data->SetGatewayHost(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MachineProfile_GetGatewayHost(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetGatewayHost().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
 MachineProfile_SetClientHostDetermination(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
@@ -584,6 +639,10 @@ PyMethodDef PyMachineProfile_methods[MACHINEPROFILE_NMETH] = {
     {"GetSshPortSpecified", MachineProfile_GetSshPortSpecified, METH_VARARGS},
     {"SetSshPort", MachineProfile_SetSshPort, METH_VARARGS},
     {"GetSshPort", MachineProfile_GetSshPort, METH_VARARGS},
+    {"SetUseGateway", MachineProfile_SetUseGateway, METH_VARARGS},
+    {"GetUseGateway", MachineProfile_GetUseGateway, METH_VARARGS},
+    {"SetGatewayHost", MachineProfile_SetGatewayHost, METH_VARARGS},
+    {"GetGatewayHost", MachineProfile_GetGatewayHost, METH_VARARGS},
     {"SetClientHostDetermination", MachineProfile_SetClientHostDetermination, METH_VARARGS},
     {"GetClientHostDetermination", MachineProfile_GetClientHostDetermination, METH_VARARGS},
     {"SetManualClientHostName", MachineProfile_SetManualClientHostName, METH_VARARGS},
@@ -641,6 +700,10 @@ PyMachineProfile_getattr(PyObject *self, char *name)
         return MachineProfile_GetSshPortSpecified(self, NULL);
     if(strcmp(name, "sshPort") == 0)
         return MachineProfile_GetSshPort(self, NULL);
+    if(strcmp(name, "useGateway") == 0)
+        return MachineProfile_GetUseGateway(self, NULL);
+    if(strcmp(name, "gatewayHost") == 0)
+        return MachineProfile_GetGatewayHost(self, NULL);
     if(strcmp(name, "clientHostDetermination") == 0)
         return MachineProfile_GetClientHostDetermination(self, NULL);
     if(strcmp(name, "MachineName") == 0)
@@ -688,6 +751,10 @@ PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args)
         obj = MachineProfile_SetSshPortSpecified(self, tuple);
     else if(strcmp(name, "sshPort") == 0)
         obj = MachineProfile_SetSshPort(self, tuple);
+    else if(strcmp(name, "useGateway") == 0)
+        obj = MachineProfile_SetUseGateway(self, tuple);
+    else if(strcmp(name, "gatewayHost") == 0)
+        obj = MachineProfile_SetGatewayHost(self, tuple);
     else if(strcmp(name, "clientHostDetermination") == 0)
         obj = MachineProfile_SetClientHostDetermination(self, tuple);
     else if(strcmp(name, "manualClientHostName") == 0)
