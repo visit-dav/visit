@@ -212,7 +212,11 @@
 #define NO_ARGUMENTS() if(!PyArg_ParseTuple(args, "")) return NULL;
 
 #if defined(_WIN32)
-# define VISITMODULE_API   /* not affected */
+# if defined(visitmodule_EXPORTS)
+#  define VISITMODULE_API __declspec(dllexport)
+# else
+#  define VISITMODULE_API __declspec(dllimport)
+# endif
 #else
 # if __GNUC__ >= 4
 #   define VISITMODULE_API __attribute__ ((visibility("default")))
