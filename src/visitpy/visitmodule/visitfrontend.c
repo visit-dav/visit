@@ -351,6 +351,9 @@ ReadVisItEnvironment(const char *visitProgram, char **LIBPATH,
  *   Use provided arguments to get the right version of VisIt. Also set 
  *   VISITPLUGINDIR.
  *
+ *   Kathleen Bonnell, Tue May 3 15:17:09 MST 2011
+ *   Change module extenstion to .pyd on Windows.
+ *
  * ***************************************************************************/
 
 PyObject *
@@ -360,10 +363,11 @@ visit_frontend_Launch(PyObject *self, PyObject *args)
          *LIBPATH = NULL, *VISITPLUGINDIR = NULL;
     int i, slen = 0;
     PyCFunction func = NULL;
-    static char *visitProgramDefault = "visit";
 #if defined(_WIN32)
-    static const char *moduleFile = "/visitmodule.dll";
+    static char *visitProgramDefault = "visit.exe";
+    static const char *moduleFile = "/visitmodule.pyd";
 #else
+    static char *visitProgramDefault = "visit";
     static const char *moduleFile = "/visitmodule.so";
 #endif
 #if defined(__APPLE__)
