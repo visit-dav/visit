@@ -423,6 +423,12 @@ avtTransform::TransformRectilinear(vtkRectilinearGrid *rgrid)
 //  Programmer: Hank Childs
 //  Creation:   August 5, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed May  4 16:47:19 PDT 2011
+//    Don't keep it rectilinear if we are scaling by a negative number; it
+//    just creates degenerate meshes.
+//
 // ****************************************************************************
 
 bool
@@ -442,6 +448,12 @@ avtTransform::OutputIsRectilinear(vtkMatrix4x4 *mat)
             {
                 return false;
             }
+
+            // If M[0][0], M[1][1], or M[2][2] is negative, then we are scaling
+            // by a negative number and that will create a degenerate mesh.
+            if (i == j && i <= 2)
+               if (e < 0.)
+                   return false;
         }
     }
 
