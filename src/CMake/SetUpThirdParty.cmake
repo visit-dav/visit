@@ -41,6 +41,11 @@
 #   Tom Fogal, Tue Mar 16 17:20:59 MDT 2010
 #   Set the proper type for some MESSAGE calls which report errors.
 #
+#   Brad Whitlock, Mon Apr 18 15:18:08 PDT 2011
+#   Added another check for xxx-NOTFOUND so we don't assume just because we
+#   didn't specify a library like TCMALLOC that we have an error situation
+#   when it does not exist.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -78,12 +83,13 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
   MESSAGE(STATUS "Looking for ${pkg}")
   SET(base_dir "${pkg}_DIR")
   SET(base_dir_val "${${base_dir}}")
+  SET(base_dir_NF "VISIT_${base_dir}-NOTFOUND")
 
   # If this packaged wasn't requested, thats ok so just return.
-  IF ("${base_dir_val}" STREQUAL "")
+  IF ("${base_dir_val}" STREQUAL "" OR "${base_dir_val}" STREQUAL "${base_dir_NF}")
     MESSAGE(STATUS "  ${pkg} not requested")
     RETURN()
-  ENDIF ("${base_dir_val}" STREQUAL "")
+  ENDIF ("${base_dir_val}" STREQUAL "" OR "${base_dir_val}" STREQUAL "${base_dir_NF}")
 
   # If base dir doesn't exist, we can't go further.
   IF (NOT (EXISTS "${base_dir_val}"))
