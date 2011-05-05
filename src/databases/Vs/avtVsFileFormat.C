@@ -2871,7 +2871,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
     RegisterExpressions(md);
 
     //add desperation last-ditch mesh if none exist in metadata
-    if (md->GetNumMeshes() == 0) {
+    if ((md->GetNumCurves() == 0) && (md->GetNumMeshes() == 0)) {
       VsLog::debugLog() <<methodSig <<"Warning: " << dataFileName << " contains no mesh "
       "information. Creating default mesh." << endl;
       avtMeshMetaData* mmd = new avtMeshMetaData("ERROR_READING_FILE", 1, 1, 1, 0, 3, 3,
