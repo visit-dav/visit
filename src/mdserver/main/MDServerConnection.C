@@ -1776,6 +1776,9 @@ MDServerConnection::FileMatchesFilterList(const std::string &fileName) const
 //   I made the routine exclude the .h5 file extension from the pattern search
 //   so we can group HDF5 files via automatic file grouping.
 //
+//   Brad Whitlock, Thu May  5 10:56:26 PDT 2011
+//   Allow files ending in .ch5 to be grouped.
+//
 // ****************************************************************************
 
 bool
@@ -1784,11 +1787,12 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
 {
     int i, isave = 0, ipat = 0;
     const char *H5_ext = ".h5";
+    const char *CaleH5_ext = ".ch5";
     char pattern[256];
     for(i = 0; i < 256; ++i) pattern[i] = '\0';
 
     std::string searchstring;
-    bool excludedH5 = false;
+    bool excludedH5 = false, excludedCaleH5;
     if(extraSmartFileGrouping)
     {
         // Exclude the .h5 file extension from the numeric pattern search.
@@ -1796,6 +1800,12 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
         {
             searchstring = file.substr(0, file.size()-3);
             excludedH5 = true;
+        }
+        // Exclude the .ch5 file extension from the numeric pattern match.
+        else if(file.size() > 4 && file.substr(file.size()-4, file.size()-1) == CaleH5_ext)
+        {
+            searchstring = file.substr(0, file.size()-4);
+            excludedCaleH5 = true;
         }
         else
             searchstring = file;
@@ -1849,6 +1859,8 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
 
     if(excludedH5)
         p += H5_ext;
+    if(excludedCaleH5)
+        p += CaleH5_ext;
 
     return (ipat > 0);
 }

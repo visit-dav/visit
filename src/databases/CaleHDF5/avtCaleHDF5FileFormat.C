@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtCaleFileFormat.C                            //
+//                            avtCaleHDF5FileFormat.C                        //
 // ************************************************************************* //
 
-#include <avtCaleFileFormat.h>
+#include <avtCaleHDF5FileFormat.h>
 
 #include <string>
 #include <vector>
@@ -69,7 +69,6 @@
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 
-
 #define TRY_MIXED_SCALARS
 
 using     std::string;
@@ -77,6 +76,57 @@ using     std::string;
 typedef enum {NO_TYPE, CHAR_TYPE, INTEGER_TYPE, FLOAT_TYPE, DOUBLE_TYPE,
               LONG_TYPE, CHARARRAY_TYPE, INTEGERARRAY_TYPE, FLOATARRAY_TYPE,
               DOUBLEARRAY_TYPE, LONGARRAY_TYPE, OBJECT_TYPE} TypeEnum;
+
+// ****************************************************************************
+// Method: avtCaleHDF5FileFormat::ReadHDF_Entry
+//
+// Purpose:
+//   Read an entry from the HDF5 file.
+//
+// Arguments:
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Rob Managan
+// Creation:   Fri Apr 29 11:29:35 PDT 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+hid_t
+avtCaleHDF5FileFormat::ReadHDF_Entry(hid_t group, const char* name, void* ptr)
+{
+    char msg[128] ;
+    hid_t hdf_dataset = H5Dopen(group, name, H5P_DEFAULT) ;
+    if (hdf_dataset < 0)
+    {
+        sprintf(msg,"Error %d reading dataset for %s from file\n",hdf_dataset,name) ;
+        EXCEPTION1(InvalidVariableException, msg) ;
+    }
+    hid_t hdf_type = H5Dget_type(hdf_dataset) ;
+    if (hdf_type < 0.0)
+    {
+        sprintf(msg,"Error %d reading datatype for %s from file\n",hdf_type,name) ;
+        EXCEPTION1(InvalidVariableException, msg) ;
+    }
+    herr_t hdf_err = H5Dread(hdf_dataset, hdf_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, ptr);
+    if (hdf_err < 0.0)
+    {
+        sprintf(msg,"Error %d reading %s from file\n",hdf_err,name) ;
+        EXCEPTION1(InvalidVariableException, msg) ;
+    }
+    hdf_err |= H5Dclose(hdf_dataset) ;
+    if (hdf_err < 0.0)
+    {
+        sprintf(msg,"Error %d closing dataset, %s\n",hdf_err,name) ;
+        EXCEPTION1(InvalidVariableException, msg) ;
+    }
+
+    return hdf_err ;
+}
 
 // ****************************************************************************
 // Method: SymbolInformation
@@ -90,20 +140,20 @@ typedef enum {NO_TYPE, CHAR_TYPE, INTEGER_TYPE, FLOAT_TYPE, DOUBLE_TYPE,
 //
 // Note:
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Oct 5 14:09:32 PST 2007
+// Programmer: Rob Managan
+// Creation:   Fri Apr 29 11:29:35 PDT 2011
 //
 // Modifications:
 //
 // ****************************************************************************
 
 bool
-SymbolInformation(PDBfile *pdb, const char *name, TypeEnum *t,
+SymbolInformation(hid_t hdf_fid, const char *name, TypeEnum *t,
     std::string &typeString, int *nTotalElements, int **dimensions,
     int *nDims)
 {
     bool retval = false;
-    syment *ep = 0;
+    char msg[128] ;
 
     // Indicate that there is no type initially.
     if (t)
@@ -115,35 +165,44 @@ SymbolInformation(PDBfile *pdb, const char *name, TypeEnum *t,
     if (nDims)
         *nDims = 0;
 
-    if((ep = PD_inquire_entry(pdb, (char *)name, 0, NULL)) != NULL)
+    hid_t hdf_dataset = H5Dopen(hdf_fid, name, H5P_DEFAULT) ;
+    debug4 << "HDF5File::SymbolExists: name=" << name << " dataset " << hdf_dataset << endl;
+    if (hdf_dataset < 0.0)
     {
-        dimdes *dimptr = NULL;
+        sprintf(msg,"Error %d reading dataset for %s from file\n",hdf_dataset,name) ;
+        EXCEPTION1(InvalidVariableException, msg) ;
+    }
+    hid_t hdf_type = H5Dget_type(hdf_dataset) ;
+    debug4 << " hdf_type " << hdf_type << endl ;
+    if (hdf_type < 0.0)
+    {
+        sprintf(msg,"Error %d reading datatype for %s from file\n",hdf_type,name) ;
+        EXCEPTION1(InvalidVariableException, msg) ;
+    }
+
+    if( hdf_type >= 0)
+    {
         int i = 0, nd = 0, length = 1;
         int *dims = 0;
-
-        // Return the actual name of type
-        typeString = PD_entry_type(ep);
+        int *maxdims = 0;
+        hid_t   hdf_dspace ;
 
         // Figure out the number of dimensions and the number of elements
         // that are in the entire array.
-        dimptr = PD_entry_dimensions(ep);
-        if(dimptr != NULL)
-        {
-            // Figure out the number of dimensions.
-            while(dimptr != NULL)
-            {
-                length *= dimptr->number;
-                dimptr = dimptr->next;
-                ++nd;
-            }
+        // Print the dimensions to the debug log.
 
+        hdf_dspace = H5Dget_space( hdf_dataset ) ;
+        nd = H5Sget_simple_extent_ndims( hdf_dspace ) ;
+        if (nd > 0)
+        {
             // Store the dimensions of the array.
+            hsize_t h_maxdims[nd], h_dims[nd];
             dims = new int[nd];
-            dimptr = PD_entry_dimensions(ep);
-            while(dimptr != NULL)
+            nd = H5Sget_simple_extent_dims(hdf_dspace, h_dims, h_maxdims ) ;
+            for ( i = 0 ; i < nd ; i++ )
             {
-                dims[i++] = dimptr->number;
-                dimptr = dimptr->next;
+                dims[i] = h_dims[i] ;
+                length *= dims[i] ;
             }
         }
         else
@@ -153,8 +212,7 @@ SymbolInformation(PDBfile *pdb, const char *name, TypeEnum *t,
         }
 
         // Print the dimensions to the debug log.
-        debug4 << "PDBFileObject::SymbolExists: name=" << name
-               << ", dimensions={";
+        debug4 << "dimensions={";
         for(i = 0; i < nd; ++i)
             debug4 << dims[i] << ", ";
         debug4 << "}" << endl;
@@ -174,23 +232,30 @@ SymbolInformation(PDBfile *pdb, const char *name, TypeEnum *t,
         //
         if (t)
         {
-            if(strcmp(PD_entry_type(ep), "char") == 0 ||
-               strcmp(PD_entry_type(ep), "string") == 0)
-                *t = (length > 1) ? CHARARRAY_TYPE : CHAR_TYPE;
-            else if(strcmp(PD_entry_type(ep), "int") == 0 ||
-                    strcmp(PD_entry_type(ep), "integer") == 0)
-                *t = (length > 1) ? INTEGERARRAY_TYPE : INTEGER_TYPE;
-            else if(strcmp(PD_entry_type(ep), "float") == 0)
-                *t = (length > 1) ? FLOATARRAY_TYPE : FLOAT_TYPE;
-            else if(strcmp(PD_entry_type(ep), "double") == 0)
-                *t = (length > 1) ? DOUBLEARRAY_TYPE : DOUBLE_TYPE;
-            else if(strcmp(PD_entry_type(ep), "long") == 0)
-                *t = (length > 1) ? LONGARRAY_TYPE : LONG_TYPE;
-            else
-            {
-                *t = OBJECT_TYPE;
-            }
+            hsize_t size ;
+            switch (H5Tget_class(hdf_type)) {
+                case H5T_STRING:
+                    *t = (length > 1) ? CHARARRAY_TYPE : CHAR_TYPE;
+                    break;
+                case H5T_INTEGER:
+                    size = H5Tget_size(hdf_type);
+                    if (size == sizeof(int))
+                        *t = (length > 1) ? INTEGERARRAY_TYPE : INTEGER_TYPE;
+                    else if (size == sizeof(long))
+                        *t = (length > 1) ? LONGARRAY_TYPE : LONG_TYPE;
+                    break;
+                case H5T_FLOAT:
+                    size = H5Tget_size(hdf_type);
+                    if (size == sizeof(float))
+                        *t = (length > 1) ? FLOATARRAY_TYPE : FLOAT_TYPE;
+                    else if (size == sizeof(double))
+                        *t = (length > 1) ? DOUBLEARRAY_TYPE : DOUBLE_TYPE;
+                    break;
+                default:
+                    *t = OBJECT_TYPE;
+             }
         }
+
 
         retval = true;
     }
@@ -200,11 +265,11 @@ SymbolInformation(PDBfile *pdb, const char *name, TypeEnum *t,
 
 
 // ****************************************************************************
-// Method: avtCaleFileFormat::Identify
+// Method: avtCaleHDF5FileFormat::Identify
 //
 // Purpose:
-//   Detects whether a file is a CALE file. The routine throws exceptions if
-//   the file is not a CALE file. This routine is used in
+//   Detects whether a file is a CaleHDF5 file. The routine throws exceptions if
+//   the file is not a CaleHDF5 file. This routine is used in
 //   cale_visitCommonPluginInfo::SetupDatabase. Doing it this way allows us to
 //   check 1 file in a series for CALE conformanace without having to check
 //   each and every file, making file loading *much* faster.
@@ -216,71 +281,81 @@ SymbolInformation(PDBfile *pdb, const char *name, TypeEnum *t,
 // Note:
 //
 // Programmer: Rob Managan
-// Creation:   Fri Sep 21 11:29:35 PDT 2007
+// Creation:   Fri Apr 29 11:29:35 PDT 2011
 //
 // Modifications:
-//   Rob Managan, Tue Jan 15 15:15:58 PST 2008
-//   Changed to support other related files.
-//
-//    Jeremy Meredith, Thu Aug  7 15:59:13 EDT 2008
-//    Assume PDB won't modify our string literals, so cast to char* as needed.
 //
 // ****************************************************************************
 
 void
-avtCaleFileFormat::Identify(const char *filename)
+avtCaleHDF5FileFormat::Identify(const char *filename)
 {
-    const char *mName = "avtCaleFileFormat::Identify: ";
-    PDBfile *pdb = PD_open((char *)filename,(char*)"r") ;
+    const char *mName = "avtCaleHDF5FileFormat::Identify: ";
 
-    if (pdb == NULL)
+    /* Save old error handler */
+    /*herr_t (*old_func)(void*);*/
+    H5E_auto_t old_func;
+    void *old_client_data;
+
+    /* Save old error handler */
+    H5Eget_auto( H5E_DEFAULT, &old_func, &old_client_data);
+
+    /* Turn off error handling to avoid library error messages if the file is not HDF5 */
+    H5Eset_auto( H5E_DEFAULT, NULL, NULL);
+
+    hid_t hdf_fid = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT) ;
+
+    /* Restore previous error handler */
+    H5Eset_auto( H5E_DEFAULT, old_func, old_client_data);
+
+    debug5 << mName << "hdf_fid = " <<hdf_fid << endl ;
+
+    if (hdf_fid < 0)
     {
-        EXCEPTION1(InvalidDBTypeException, "The file could not be opened") ;
+       EXCEPTION1(InvalidDBTypeException, "The hdf5 file could not be opened, Identify") ;
     }
     else
     {
         int nnalls = 0, kmax = 0, lmax = 0;
-        int pdberr ;
-        pdberr  = PD_read(pdb,(char*)"/parameters/nnalls",&nnalls) ;
-        pdberr |= PD_read(pdb,(char*)"/parameters/kmax",&kmax) ;
-        pdberr |= PD_read(pdb,(char*)"/parameters/lmax",&lmax) ;
+        herr_t  hdf_err ;
+        hdf_err  = ReadHDF_Entry(hdf_fid,"/parameters/nnalls",&nnalls) ;
+        hdf_err |= ReadHDF_Entry(hdf_fid,"/parameters/kmax",&kmax) ;
+        hdf_err |= ReadHDF_Entry(hdf_fid,"/parameters/lmax",&lmax) ;
 
+        debug5 << mName << "err = " << hdf_err << endl ;
         debug5 << mName << "nnalls = " << nnalls << endl;
         debug5 << mName << "kmax = " << kmax << endl;
         debug5 << mName << "lmax = " << lmax << endl;
 
-        if ((!pdberr) || (nnalls != (kmax + 2)*(lmax + 2)))
+        if ((hdf_err < 0) || (nnalls != (kmax + 2)*(lmax + 2)))
         {
-            PD_close(pdb);
-            EXCEPTION1(InvalidDBTypeException, "The file is not a Cale dump") ;
+            H5Fclose(hdf_fid);
+            EXCEPTION1(InvalidDBTypeException, "The file is not a CaleHDF5 dump") ;
         }
     }
-    PD_close(pdb);
+    H5Fclose(hdf_fid);
 }
 
 // ****************************************************************************
-//  Method: avtCaleFileFormat constructor
+//  Method: avtCaleHDF5FileFormat constructor
 //
 //  Programmer: Rob Managan
-//  Creation:   Wed Sep 19 13:30:36 PST 2007
+//  Creation:   Fri Apr 29 11:29:35 PDT 2011
 //
 // ****************************************************************************
 
-avtCaleFileFormat::avtCaleFileFormat(const char *filename)
+avtCaleHDF5FileFormat::avtCaleHDF5FileFormat(const char *filename)
     : avtSTSDFileFormat(filename)
 {
     kminmesh = kmaxmesh = lminmesh = lmaxmesh = -1 ;
 
-    pdbfile = NULL;
+    hdffile = 0;
+
 }
 
-avtCaleFileFormat::~avtCaleFileFormat()
-{
-    FreeUpResources();
-}
 
 // ****************************************************************************
-//  Method: avtCaleFileFormat::FreeUpResources
+//  Method: avtCaleHDF5FileFormat::FreeUpResources
 //
 //  Purpose:
 //      When VisIt is done focusing on a particular timestep, it asks that
@@ -289,47 +364,65 @@ avtCaleFileFormat::~avtCaleFileFormat()
 //      that.
 //
 //  Programmer: Rob Managan
-//  Creation:   Wed Sep 19 13:30:36 PST 2007
+//  Creation:   Thu Apr 21 15:29:31 PST 2011
 //
 // ****************************************************************************
 
 void
-avtCaleFileFormat::FreeUpResources(void)
+avtCaleHDF5FileFormat::FreeUpResources(void)
 {
-    if(pdbfile != NULL)
-        PD_close(pdbfile);
-    pdbfile = NULL;
+    if(hdffile != 0)
+        H5Fclose(hdffile);
+    hdffile = 0;
 }
 
 // ****************************************************************************
-// Method: avtCaleFileFormat::GetPDBFile
+// Method: avtCaleHDF5FileFormat::GetHDFFile
 //
 // Purpose:
-//   Opens the PDB file if it's not already open.
+//   Opens the HDF file if it's not already open.
 //
-// Returns:    The PDB file descriptor.
+// Returns:    The HDF file descriptor.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Sep 21 11:21:14 PDT 2007
+// Programmer: Rob Managan
+// Creation:   Fri Apr 29 11:29:35 PDT 2011
 //
-// Modifications:
-//
-//    Jeremy Meredith, Thu Aug  7 15:59:35 EDT 2008
-//    Assume PDB won't modify our string literals, so cast to char* as needed.
 //
 // ****************************************************************************
 
-PDBfile *
-avtCaleFileFormat::GetPDBFile()
+hid_t
+avtCaleHDF5FileFormat::GetHDF5File()
 {
-    if(pdbfile == NULL)
-        pdbfile = PD_open((char *)filename, (char*)"r");
+    if(hdffile == 0)
+    {
+        /* Save old error handler */
+        /*herr_t (*old_func)(void*);*/
+        H5E_auto_t old_func;
+        void *old_client_data;
 
-    return pdbfile;
+        /* Save old error handler */
+        H5Eget_auto( H5E_DEFAULT, &old_func, &old_client_data);
+
+        /* Turn off error handling to avoid library error messages if the file is not HDF5 */
+        H5Eset_auto( H5E_DEFAULT, NULL, NULL);
+
+        hdffile = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
+
+        /* Restore previous error handler */
+        H5Eset_auto( H5E_DEFAULT, old_func, old_client_data);
+
+        if (hdffile < 0)
+        {
+            EXCEPTION1(InvalidDBTypeException, "The hdf5 file could not be opened GetHDF5File") ;
+        }
+    }
+
+    return hdffile;
 }
 
+
 // ****************************************************************************
-//  Method: avtCaleFileFormat::PopulateDatabaseMetaData
+//  Method: avtCaleHDF5FileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
 //      This database meta-data object is like a table of contents for the
@@ -337,30 +430,23 @@ avtCaleFileFormat::GetPDBFile()
 //      information it can request from you.
 //
 //  Programmer: Rob Managan
-//  Creation:   Wed Sep 19 13:30:36 PST 2007
-//
-//  Modifications:
-//    Kathleen Bonnell, Tue Jul 1 16:00:00 PDT 2008
-//    Removed unreferenced variables.
-//
-//    Jeremy Meredith, Thu Aug  7 15:59:37 EDT 2008
-//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//  Creation:   Thu Apr 21 15:29:31 PST 2011
 //
 // ****************************************************************************
 
 void
-avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    const char *mName = "avtCaleFileFormat::PopulateDatabaseMetaData: ";
     //
     // CODE TO ADD A MESH
     //
     std::string meshname = "hydro";
     //
-    // Add the mesh to the metadata. Note that this example will
-    // always expose a mesh called "hydro" to VisIt. A real
-    // plug-in may want to read a list of meshes from the data
-    // file.
+
+    // Add the mesh to the metadata. Note that this example will 
+    // always expose a mesh called "hydro" to VisIt. A real 
+    // plug-in may want to read a list of meshes from the data 
+    // file. 
     avtMeshMetaData *mmd = new avtMeshMetaData;
     mmd->name = meshname;
     mmd->spatialDimension = 2;
@@ -384,25 +470,27 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Now walk the fpa arrays and put them all out like wsilo.
     // access this list in the dump through the fpalist structure
     //
-    int i, nfpa, nnalls, namix, pdberr;
+    int i, nfpa, nnalls, namix ;
     int npbin, ngrps, rdifmix;
     int iftmode ;
+    hid_t hdf_err;
     typedef struct
     {
         char name[8];
         int len;
     }  parec;
 
-    pdberr =           PD_read(GetPDBFile(),(char*)"/parameters/nfpa",&nfpa);
+    hdf_err =           ReadHDF_Entry(GetHDF5File(),"/parameters/nfpa",&nfpa);
     parec *palist = new parec[nfpa];
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/nnalls",&nnalls);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/namix",&namix);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/npbin",&npbin);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/rdifmix",&rdifmix);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/ngrps",&ngrps);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"fpalist",palist);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/iftmode",&iftmode);
-    if (!pdberr)
+    hdf_err  = ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/npbin",&npbin);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/rdifmix",&rdifmix);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ngrps",&ngrps);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"fpalist",palist);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/iftmode",&iftmode);
+
+    if (hdf_err < 0.0)
     {
         EXCEPTION1(InvalidDBTypeException,
             "Corrupt dump; error reading array related variables.");
@@ -428,21 +516,22 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             debug4 << " adding scalar variable " << palist[i].name << " len "
                    << palist[i].len << endl;
             strncpy(varname,palist[i].name,8);
-            if (!strcmp(name, "rvel")   ||
-                !strcmp(name, "zvel")   ||
-                !strcmp(name, "vr")     ||
-                !strcmp(name, "vt")     ||
-                !strcmp(name, "rad")    ||
-                !strcmp(name, "theta")  ||
-                !strcmp(name, "vtheta") ||
-                !strcmp(name, "vmag")   ||
-                !strcmp(name, "bmhdr")  ||
-                !strcmp(name, "bmhdz")  ||
-                !strcmp(name, "jmhdr")  ||
-                !strcmp(name, "jmhdz")  ||
-                !strcmp(name, "omega")  ||
-                !strcmp(name, "r2w")    ||
-                !strcmp(name, "lt")      )
+            varname[8] = '\0' ;
+            if (!strcmp(varname, "rvel")   ||
+                !strcmp(varname, "zvel")   ||
+                !strcmp(varname, "vr")     ||
+                !strcmp(varname, "vt")     ||
+                !strcmp(varname, "rad")    ||
+                !strcmp(varname, "theta")  ||
+                !strcmp(varname, "vtheta") ||
+                !strcmp(varname, "vmag")   ||
+                !strcmp(varname, "bmhdr")  ||
+                !strcmp(varname, "bmhdz")  ||
+                !strcmp(varname, "jmhdr")  ||
+                !strcmp(varname, "jmhdz")  ||
+                !strcmp(varname, "omega")  ||
+                !strcmp(varname, "r2w")    ||
+                !strcmp(varname, "lt")      )
             {
                 cent = AVT_NODECENT;
             }
@@ -639,6 +728,7 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     delete [] palist;
 
+
     //
     // CODE TO ADD A MATERIAL
     //
@@ -648,8 +738,8 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char name[33];
     }  trcname_str;
 
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nreg",&nreg);
-    if (!pdberr)
+    hdf_err = ReadHDF_Entry(GetHDF5File(),"/parameters/nreg",&nreg);
+    if (hdf_err < 0.0)
     {
         EXCEPTION1(InvalidDBTypeException,
             "Corrupt dump; error reading # of materials.");
@@ -659,8 +749,8 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         trcname_str *rname = new trcname_str[nreg+1];
 
-        pdberr = PD_read(GetPDBFile(),(char*)"/ppa/rname",rname);
-        if (!pdberr)
+        hdf_err = ReadHDF_Entry(GetHDF5File(),"/ppa/rname",rname);
+        if (hdf_err < 0.0)
         {
             EXCEPTION1(InvalidDBTypeException,
                 "Corrupt dump; error reading material names.");
@@ -683,20 +773,18 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // Here's the way to add expressions:
     Expression velocity_expr;
-
-    Expression vel_expr;
-    vel_expr.SetName("vel");
-    vel_expr.SetDefinition("{zvel, rvel}");
-    vel_expr.SetType(Expression::VectorMeshVar);
-    md->AddExpression(&vel_expr);
+    velocity_expr.SetName("vel");
+    velocity_expr.SetDefinition("{zvel, rvel}");
+    velocity_expr.SetType(Expression::VectorMeshVar);
+    md->AddExpression(&velocity_expr);
 
     int ifstr, ifstrain, iftpstr, ifmhda, ifmhdb;
-    pdberr =           PD_read(GetPDBFile(),(char*)"/parameters/ifstr",&ifstr);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/ifstrain",&ifstrain);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/iftpstr",&iftpstr);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/ifmhda",&ifmhda);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/ifmhdb",&ifmhdb);
-    if (!pdberr)
+    hdf_err =                      ReadHDF_Entry(GetHDF5File(), "/parameters/ifstr",&ifstr);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ifstrain",&ifstrain);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/iftpstr",&iftpstr);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ifmhda",&ifmhda);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ifmhdb",&ifmhdb);
+    if (hdf_err < 0.0)
     {
         EXCEPTION1(InvalidDBTypeException,
             "Corrupt dump; error reading memory layout parameters.");
@@ -817,30 +905,51 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
 
     int ntp, ncp, ncurves, ntimes, tplen ;
-    pdberr =           PD_read(GetPDBFile(),(char*)"/parameters/ntp",&ntp);
-    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/ncp",&ncp);
-    if (!pdberr)
+    hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/ntp",&ntp);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ncp",&ncp);
+    if (hdf_err < 0.0)
     {
         ntp = ncp = 0;
     }
 
     debug4 << ntp << " time plot sections" << endl;
+    typedef struct {
+       char tplab[30] ; /*!< curve label */
+       int type ;       /*!< the data type */
+       int tplen ;      /*!< # points stored so far */
+       hvl_t h5_tpdat_arr ; /*!< the curve data */
+       int tpx ;       /*!< unused */
+       }   h5_tpcur ;
+    typedef struct {
+       int ntimes ;    /*!< max number of times allowed */
+       int ncurs ;     /*!< number of curves */
+       }   h5_tpdat ;
+
+    h5_tpcur *h5_tpcurve ;
+    h5_tpdat h5_tpdata[ntp] ;
+    h5_tpdat h5_cpdata[ncp] ;
+
+    if (ntp > 0)
+        ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",h5_tpdata) ;
+
     for ( int i = 1 ; i <= ntp ; i++ )
     {
-        char vname[128], label[128];
-        sprintf(vname, "/ppa/tpdata_%d/ncurs",i);
-        pdberr = PD_read(GetPDBFile(),vname,&ncurves);
+        char dataname[128];
+        ncurves    = h5_tpdata[i-1].ncurs ;
+        h5_tpcurve = new h5_tpcur[ncurves] ;
+
+        sprintf(dataname,"/ppa/tpcurs_%d",i) ;
+
+        hdf_err =  ReadHDF_Entry(GetHDF5File(), dataname, h5_tpcurve) ;
+
         debug4 << "section " << i << " has " << ncurves << " curves " << endl;
 
         for ( int icur = 1 ; icur < ncurves ; icur++ )
         {
-            sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplab",i,icur);
-            pdberr = PD_read(GetPDBFile(),vname,label);
+            char *label = h5_tpcurve[icur].tplab ;
             debug4 << "label '" << label << "'" << endl;
-            sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplen",i,icur);
-            pdberr = PD_read(GetPDBFile(),vname,&tplen);
-            if (strlen(label) == 0)
-                break /*sprintf(label,"Curve %d",icur)*/;
+            //if (h5_tpcurve[icur].tplen == 0)
+            //    break;
             avtCurveMetaData *cmd = new avtCurveMetaData;
             cmd->name = label;
             // Labels and units are strings so use whatever you want.
@@ -850,27 +959,32 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             cmd->xUnits = "microseconds";
             md->Add(cmd);
         }
+        delete [] h5_tpcurve ;
     }
 
     debug4 << ncp << " cycle plot sections" << endl;
+
+    if (ncp > 0)
+        ReadHDF_Entry(GetHDF5File(),"/ppa/cpdata",h5_cpdata) ;
+
     for ( int i = 1 ; i <= ncp ; i++ )
     {
-        char vname[128], label[128];
-        sprintf(vname, "/ppa/cpdata_%d/ncurs",i);
-        pdberr = PD_read(GetPDBFile(),vname,&ncurves);
-        sprintf(vname, "/ppa/cpdata_%d/ntimes",i);
-        pdberr = PD_read(GetPDBFile(),vname,&ntimes);
+        char dataname[128];
+        ncurves    = h5_cpdata[i-1].ncurs ;
+        h5_tpcurve = new h5_tpcur[ncurves] ;
+
+        sprintf(dataname,"/ppa/cpcurs_%d",i) ;
+
+        hdf_err =  ReadHDF_Entry(GetHDF5File(), dataname, h5_tpcurve) ;
+
         debug4 << "section " << i << " has " << ncurves << " curves " << endl;
 
         for ( int icur = 1 ; icur < ncurves ; icur++ )
         {
-            sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplab",i,icur);
-            pdberr = PD_read(GetPDBFile(),vname,label);
+            char *label = h5_tpcurve[icur].tplab ;
             debug4 << "label '" << label << "'" << endl;
-            sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplen",i,icur);
-            pdberr = PD_read(GetPDBFile(),vname,&tplen);
-            if (strlen(label) == 0)
-                break /*sprintf(label,"Curve %d",icur)*/;
+            //if (h5_tpcurve[icur].tplen == 0)
+            //    break;
             avtCurveMetaData *cmd = new avtCurveMetaData;
             cmd->name = label;
             // Labels and units are strings so use whatever you want.
@@ -880,12 +994,14 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             cmd->xUnits = "microseconds";
             md->Add(cmd);
         }
+        delete [] h5_tpcurve ;
     }
+
 }
 
 
 // ****************************************************************************
-//  Method: avtCaleFileFormat::GetMesh
+//  Method: avtCaleHDF5FileFormat::GetMesh
 //
 //  Purpose:
 //      Gets the mesh associated with this file.  The mesh is returned as a
@@ -897,22 +1013,14 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //                  there is only one mesh.
 //
 //  Programmer: Rob Managan
-//  Creation:   Wed Sep 19 13:30:36 PST 2007
-//
-//  Modifications:
-//    Kathleen Bonnell, Mon Jul 14 13:34:37 PDT 2008
-//    Specify curves as 1D rectilinear grids with yvalues stored in point data.
-//
-//    Jeremy Meredith, Thu Aug  7 15:59:40 EDT 2008
-//    Assume PDB won't modify our string literals, so cast to char* as needed.
-//    Removed extra unused arguments to printf.
+//  Creation:   Thu Apr 21 15:29:31 PST 2011
 //
 // ****************************************************************************
 
 vtkDataSet *
-avtCaleFileFormat::GetMesh(const char *meshname)
+avtCaleHDF5FileFormat::GetMesh(const char *meshname)
 {
-    const char *mName = "avtCaleFileFormat::GetMesh: ";
+    const char *mName = "avtCaleHDF5FileFormat::GetMesh: ";
     // Determine which mesh to return.
     if (strcmp(meshname, "hydro") == 0)
     {
@@ -920,21 +1028,21 @@ avtCaleFileFormat::GetMesh(const char *meshname)
         int ndims = 2;
         int dims[3] = {1,1,1};
         int kmax, lmax, lp, nnalls = 0, namix;
-        int nk, nl, pdberr;
+        int nk, nl, hdf_err;
 
         if (kminmesh == -1)
             GetUsedMeshLimits();
         // Read the ndims and number of X,Y,Z nodes from file.
-        pdberr =           PD_read(GetPDBFile(),(char*)"/parameters/kmax",&kmax);
-        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/lmax",&lmax);
-        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/lp",&lp);
-        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/nnalls",&nnalls);
-        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/namix",&namix);
+        hdf_err =                     ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lp",&lp);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
         double *z = new double[nnalls];
         double *r = new double[nnalls];
-        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/arrays/z",z);
-        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/arrays/r",r);
-        if (!pdberr)
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/z",z);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/r",r);
+        if (hdf_err < 0.0)
         {
             EXCEPTION1(InvalidDBTypeException,
                        "Corrupt dump; error reading mesh related parameters.");
@@ -999,7 +1107,7 @@ avtCaleFileFormat::GetMesh(const char *meshname)
 
         int nCells = sgrid->GetNumberOfCells();
         int *blanks = new int[namix];
-        pdberr = PD_read(GetPDBFile(),(char*)"/arrays/ireg",blanks);
+        hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/ireg",blanks);
 
         debug4 << mName <<"nCells " << nCells << " nnalls " << nnalls
                << " k " << kminmesh << ":" << kmaxmesh << " l " << lminmesh
@@ -1043,32 +1151,50 @@ avtCaleFileFormat::GetMesh(const char *meshname)
     else // check for time or cycle plot
     {
         int ntp, ncp, ncurves, ntimes, tplen, foundit=0;
-        int pdberr;
-        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/ntp",&ntp);
-        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/ncp",&ncp);
+        herr_t hdf_err;
+        hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/ntp",&ntp);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ncp",&ncp);
         double *ttime, *data;
+        typedef struct {
+           char tplab[30] ; /*!< curve label */
+           int type ;       /*!< the data type */
+           int tplen ;      /*!< # points stored so far */
+           hvl_t h5_tpdat_arr ; /*!< the curve data */
+           int tpx ;       /*!< unused */
+           }   h5_tpcur ;
+        typedef struct {
+           int ntimes ;    /*!< max number of times allowed */
+           int ncurs ;     /*!< number of curves */
+           }   h5_tpdat ;
+
+        h5_tpcur *h5_tpcurve ;
+        h5_tpdat h5_tpdata[ntp] ;
+        h5_tpdat h5_cpdata[ncp] ;
+
+        if (ntp > 0)
+            ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",h5_tpdata) ;
 
         for ( int i = 1 ; i <= ntp ; i++ )
         {
-            char vname[128], label[128];
-            sprintf(vname, "/ppa/tpdata_%d/ncurs",i);
-            pdberr = PD_read(GetPDBFile(),vname,&ncurves);
-            sprintf(vname, "/ppa/tpdata_%d/ntimes",i);
-            pdberr = PD_read(GetPDBFile(),vname,&ntimes);
+            char dataname[128];
+            ncurves    = h5_tpdata[i-1].ncurs ;
+            ntimes     = h5_tpdata[i-1].ntimes ;
+            h5_tpcurve = new h5_tpcur[ncurves] ;
+
+            sprintf(dataname,"/ppa/tpcurs_%d",i) ;
+
+            hdf_err =  ReadHDF_Entry(GetHDF5File(), dataname, h5_tpcurve) ;
+
             debug4 << "section " << i << " has " << ncurves
                    << " curves " << endl;
 
             for ( int icur = 1 ; icur < ncurves ; icur++ )
             {
-                sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplab",i,icur);
-                pdberr = PD_read(GetPDBFile(),vname,label);
-                if (strcmp(meshname,label) == 0)
+                char *tplab = h5_tpcurve[icur].tplab ;
+                tplen = h5_tpcurve[icur].tplen ;
+                if (strcmp(meshname,tplab) == 0)
                 {
-                    debug4 << "matched label '" << label << "'" << endl;
-                    sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplen",i,icur);
-                    pdberr = PD_read(GetPDBFile(),vname,&tplen);
-                    if (strlen(label) == 0)
-                        break /*sprintf(label,"Curve %d",icur)*/;
+                    debug4 << "matched label '" << tplab << "'" << endl;
                     if (tplen == 0) 
                     {
                         tplen = 1 ;
@@ -1081,42 +1207,47 @@ avtCaleFileFormat::GetMesh(const char *meshname)
                     {
                         ttime = new double[tplen];
                         data  = new double[tplen];
-                        sprintf(vname, "/ppa/tpdata_%d/tpcur_0/tpdat",i);
-                        pdberr = PD_read(GetPDBFile(),vname,ttime);
-                        sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tpdat",i,icur);
-                        pdberr = PD_read(GetPDBFile(),vname,data);
+                        for ( int j = 0 ; j < tplen ; j++ )
+                        {
+                            ttime[j] = ((double*)(h5_tpcurve[0].h5_tpdat_arr.p))[j] ;
+                            data[j]  = ((double*)(h5_tpcurve[icur].h5_tpdat_arr.p))[j] ;
+                        }
                     }
                     foundit = 1;
                     break;
                 }
             }
+            delete [] h5_tpcurve ;
             if (foundit == 1)
                 break;
         }
 
         if (foundit == 0)
         {
+            if (ncp > 0)
+                ReadHDF_Entry(GetHDF5File(),"/ppa/cpdata",h5_cpdata) ;
+
             for ( int i = 1 ; i <= ncp ; i++ )
             {
-                char vname[128], label[128];
-                sprintf(vname, "/ppa/cpdata_%d/ncurs",i);
-                pdberr = PD_read(GetPDBFile(),vname,&ncurves);
-                sprintf(vname, "/ppa/cpdata_%d/ntimes",i);
-                pdberr = PD_read(GetPDBFile(),vname,&ntimes);
+                char dataname[128];
+                ncurves    = h5_cpdata[i-1].ncurs ;
+                ntimes     = h5_cpdata[i-1].ntimes ;
+                h5_tpcurve = new h5_tpcur[ncurves] ;
+
+                sprintf(dataname,"/ppa/cpcurs_%d",i) ;
+
+                hdf_err =  ReadHDF_Entry(GetHDF5File(), dataname, h5_tpcurve) ;
+
                 debug4 << "section " << i << " has " << ncurves
                        << " curves " << endl;
 
                 for ( int icur = 1 ; icur < ncurves ; icur++ )
                 {
-                    sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplab",i,icur);
-                    pdberr = PD_read(GetPDBFile(),vname,label);
-                    if (strcmp(meshname,label) == 0)
+                    char *tplab = h5_tpcurve[icur].tplab ;
+                    tplen = h5_tpcurve[icur].tplen ;
+                    if (strcmp(meshname,tplab) == 0)
                     {
-                        debug4 << "matched label '" << label << "'" << endl;
-                        sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplen",i,icur);
-                        pdberr = PD_read(GetPDBFile(),vname,&tplen);
-                        if (strlen(label) == 0)
-                            break /*sprintf(label,"Curve %d",icur)*/;
+                        debug4 << "matched label '" << tplab << "'" << endl;
                         if (tplen == 0) 
                         {
                             tplen = 1 ;
@@ -1129,15 +1260,17 @@ avtCaleFileFormat::GetMesh(const char *meshname)
                         {
                             ttime = new double[tplen];
                             data  = new double[tplen];
-                            sprintf(vname, "/ppa/cpdata_%d/cpcur_0/tpdat",i);
-                            pdberr = PD_read(GetPDBFile(),vname,ttime);
-                            sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tpdat",i,icur);
-                            pdberr = PD_read(GetPDBFile(),vname,data);
+                            for ( int j = 0 ; j < tplen ; j++ )
+                            {
+                                ttime[j] = ((double*)(h5_tpcurve[0].h5_tpdat_arr.p))[j] ;
+                                data[j]  = ((double*)(h5_tpcurve[icur].h5_tpdat_arr.p))[j] ;
+                            }
                         }
                         foundit = 1;
                         break;
                     }
                 }
+                delete [] h5_tpcurve ;
                 if (foundit == 1)
                     break ;
             }
@@ -1176,7 +1309,7 @@ avtCaleFileFormat::GetMesh(const char *meshname)
 
 
 // ****************************************************************************
-//  Method: avtCaleFileFormat::GetVar
+//  Method: avtCaleHDF5FileFormat::GetVar
 //
 //  Purpose:
 //      Gets a scalar variable associated with this file.  Although VTK has
@@ -1187,35 +1320,28 @@ avtCaleFileFormat::GetMesh(const char *meshname)
 //      varname    The name of the variable requested.
 //
 //  Programmer: Rob Managan
-//  Creation:   Wed Sep 19 13:30:36 PST 2007
-//
-//  Modifications:
-//    Brad Whitlock, Fri Oct 5 14:10:28 PST 2007
-//    Added support for mixed material variables.
-//
-//    Jeremy Meredith, Thu Aug  7 15:59:41 EDT 2008
-//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//  Creation:   Thu Apr 21 15:29:31 PST 2011
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtCaleFileFormat::GetVar(const char *varname)
+avtCaleHDF5FileFormat::GetVar(const char *varname)
 {
-    const char *mName = "avtCaleFileFormat::GetVar: ";
+    const char *mName = "avtCaleHDF5FileFormat::GetVar: ";
 
     debug4 << mName << varname << endl;
 
-    int kmax, lmax, lp, nnalls, namix, nvals, pdberr, nk, nl;
+    int kmax, lmax, lp, nnalls, namix, nvals, hdf_err, nk, nl;
     int npbin, ngrps, rdifmix;
     int length, group, grplen;
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/kmax",&kmax);
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lmax",&lmax);
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lp",&lp);
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nnalls",&nnalls);
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/namix",&namix);
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/npbin",&npbin);
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/rdifmix",&rdifmix);
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/ngrps",&ngrps);
+    hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lp",&lp);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/npbin",&npbin);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/rdifmix",&rdifmix);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ngrps",&ngrps);
     length = namix;
     char    vstring[33];
 
@@ -1249,7 +1375,7 @@ avtCaleFileFormat::GetVar(const char *varname)
     }
 
     double *vararray = new double[length];
-    pdberr = PD_read(GetPDBFile(),vstring,vararray);
+    hdf_err = ReadHDF_Entry(GetHDF5File(),vstring,vararray);
     double *varray = vararray + group*grplen;
 
     if (kminmesh == -1)
@@ -1312,7 +1438,7 @@ avtCaleFileFormat::GetVar(const char *varname)
         TypeEnum t = NO_TYPE;
         std::string typeString;
         int nTotalElements, *dims = 0, ndims = 0;
-        if(SymbolInformation(GetPDBFile(), vstring, &t,
+        if(SymbolInformation(GetHDF5File(), vstring, &t,
                              typeString, &nTotalElements, &dims, &ndims))
         {
             debug4 << mName << "nTotalElements = " << nTotalElements << endl;
@@ -1376,7 +1502,7 @@ avtCaleFileFormat::GetVar(const char *varname)
 
 
 // ****************************************************************************
-//  Method: avtCaleFileFormat::GetVectorVar
+//  Method: avtCaleHDF5FileFormat::GetVectorVar
 //
 //  Purpose:
 //      Gets a vector variable associated with this file.  Although VTK has
@@ -1387,51 +1513,55 @@ avtCaleFileFormat::GetVar(const char *varname)
 //      varname    The name of the variable requested.
 //
 //  Programmer: Rob Managan
-//  Creation:   Wed Sep 19 13:30:36 PST 2007
+//  Creation:   Thu Apr 21 15:29:31 PST 2011
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtCaleFileFormat::GetVectorVar(const char *varname)
+avtCaleHDF5FileFormat::GetVectorVar(const char *varname)
 {
-    return 0;
+    return 0 ;
 }
-
 // ***************************************************************************
-//  Method: avtCaleFileFormat::GetCycle
+//  Method: avtCaleHDF5FileFormat::GetCycle
 //
 //  Purpose: Return the cycle associated with this file
 //
-//  Modifications:
-//    Jeremy Meredith, Thu Aug  7 15:59:42 EDT 2008
-//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//  Programmer: Rob Managan
+//  Creation:   Fri Apr 29 11:29:35 PDT 2011
 //
 // ***************************************************************************
 int
-avtCaleFileFormat::GetCycle(void)
+avtCaleHDF5FileFormat::GetCycle(void)
 {
-    int pdberr ;
+    int hdf_err ;
     int cycle ;
 
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/cycle",&cycle) ;
+    hdf_err = ReadHDF_Entry(GetHDF5File(),"/parameters/cycle",&cycle) ;
     debug4 << " cycle " << cycle << endl ;
     return cycle;
 }
 
 // ***************************************************************************
-//  Method: avtCaleFileFormat::GetCycleFromFilename
+//  Method: avtCaleHDF5FileFormat::GetCycleFromFilename
 //
 //  Purpose: Return the cycle associated with this file
 //
 // ***************************************************************************
 
 int
-avtCaleFileFormat::GetCycleFromFilename(const char *f) const
+avtCaleHDF5FileFormat::GetCycleFromFilename(const char *f) const
 {
     int i,j,n,c;
     char cycstr[10];
 
-    n = strlen(f) - 4; // To get here there had to be a ".pdb" on the file
+    n = strlen(f) ;
+    if (strcmp(f+(n-3),".h5") == 0)
+       n = strlen(f) - 3; // To get here there had to be a ".h5" on the file
+    else if (strcmp(f+(n-4),".ch5") == 0)
+       n = strlen(f) - 4; // To get here there had to be a ".ch5" on the file
+    else if (strcmp(f+(n-5),".cale") == 0)
+       n = strlen(f) - 5; // To get here there had to be a ".cale" on the file
 
     j = 0;
 
@@ -1457,67 +1587,65 @@ avtCaleFileFormat::GetCycleFromFilename(const char *f) const
         c = -1;
     }
 
-    debug4 << " cycle from name " << cycstr << endl;
+    debug4 << " cycle from name '" << f << "' is " << cycstr << endl;
     return(c);
 }
 
 
 // ***************************************************************************
-//  Method: avtCaleFileFormat::GetTime
+//  Method: avtCaleHDF5FileFormat::GetTime
 //
 //  Purpose: Return the time associated with this file
 //
-//  Modifications:
-//    Jeremy Meredith, Thu Aug  7 15:59:42 EDT 2008
-//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//  Programmer: Rob Managan
+//  Creation:   Fri Apr 29 11:29:35 PDT 2011
 //
 // ***************************************************************************
 
 double
-avtCaleFileFormat::GetTime(void)
+avtCaleHDF5FileFormat::GetTime(void)
 {
-    int pdberr ;
+    int hdf_err ;
     double dtime ;
 
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/time",&dtime) ;
+    hdf_err = ReadHDF_Entry(GetHDF5File(),"/parameters/time",&dtime) ;
     debug4 << " time " << dtime << endl ;
     return dtime;
 }
 
 #include <avtMaterial.h>
 // ***************************************************************************
-//  Method: avtCaleFileFormat::GetAuxiliarData
+//  Method: avtCaleHDF5FileFormat::GetAuxiliaryData
 //
 //  Purpose: STMD version of GetAuxiliaryData.
 //
-//  Modifications:
-//    Jeremy Meredith, Thu Aug  7 15:59:43 EDT 2008
-//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//  Programmer: Rob Managan
+//  Creation:   Fri Apr 29 11:29:35 PDT 2011
 //
 // ***************************************************************************
 
 void *
-avtCaleFileFormat::GetAuxiliaryData(const char *var,
+avtCaleHDF5FileFormat::GetAuxiliaryData(const char *var,
     const char *type, void *, DestructorFunction &df)
 {
-    const char *mName = "avtCaleFileFormat::GetAuxiliaryData: ";
+    const char *mName = "avtCaleHDF5FileFormat::GetAuxiliaryData: ";
     void *retval = 0;
     debug4 << mName << "type " << type << " var " << var << endl;
     if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-        int i, kmax, lmax, lp, nnalls, namix, pdberr;
+        int i, kmax, lmax, lp, nnalls, namix, hdf_err;
         int nreg, nregx, nk, nl, mixmax;
         int dims[3] = {1,1,1}, ndims = 2;
 
         debug4 << mName << "Asked to read material information." << endl;
-        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/kmax",&kmax);
-        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lmax",&lmax);
-        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lp",&lp);
-        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nnalls",&nnalls);
-        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/namix",&namix);
-        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/mixmax",&mixmax);
-        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nregx",&nregx);
-        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nreg",&nreg);
+        hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lp",&lp);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nnalls",&nnalls);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/namix",&namix);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/mixmax",&mixmax);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nregx",&nregx);
+        if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nreg",&nreg);
 
         if (kminmesh == -1)
             GetUsedMeshLimits();
@@ -1566,7 +1694,7 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
             debug4 << mName << "nreg>=1, we have a material." << endl;
             trcname_str *rname = new trcname_str[nreg+1];
 
-            pdberr = PD_read(GetPDBFile(),(char*)"/ppa/rname",rname);
+            hdf_err = ReadHDF_Entry(GetHDF5File(),"/ppa/rname",rname);
             strcpy(rname[0].name,"Phony");
 
             for ( i = 0 ; i < nmats ; i++ )
@@ -1587,8 +1715,8 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
             double *zmass = new double[namix]; // volume fractions are in this
 
             int maxmixindx, ir, j;
-            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/ireg",ireg);
-            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/zmass",zmass);
+            hdf_err =                     ReadHDF_Entry(GetHDF5File(),"/arrays/ireg",ireg);
+            if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/zmass",zmass);
 
             for ( i = 0 ; i < nnalls ; i++ )
             {
@@ -1604,15 +1732,15 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
 
             int *nmatlst = new int[namix];
             int *grdlst  = new int[mixmax];
-            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/nmatlst",nmatlst);
-            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/grdlst",grdlst);
+            hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/arrays/nmatlst",nmatlst);
+            if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/grdlst",grdlst);
 
             int *rlen  = new int[nregx];
             int *rlencln  = new int[nregx];
             int *rlenmix  = new int[nregx];
-            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/rlen",rlen);
-            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/rlencln",rlencln);
-            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/rlenmix",rlenmix);
+            if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/rlen",rlen);
+            if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/rlencln",rlencln);
+            if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/arrays/rlenmix",rlenmix);
 
             int **rndx = new int*[nreg+1];
             int **rndxmix = new int*[nreg+1];
@@ -1785,35 +1913,35 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
 }
 
 // ***************************************************************************
-//  Method: avtCaleFileFormat::GetUsedMeshLimits
+//  Method: avtCaleHDF5FileFormat::GetUsedMeshLimits
 //
 //  Purpose:    find largest k,l used in mesh
 //
-//  Modifications:
-//    Jeremy Meredith, Thu Aug  7 15:59:44 EDT 2008
-//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//  Programmer: Rob Managan
+//  Creation:   Fri Apr 29 11:29:35 PDT 2011
 //
 // ***************************************************************************
 
 void
-avtCaleFileFormat::GetUsedMeshLimits (void)
+avtCaleHDF5FileFormat::GetUsedMeshLimits (void)
 {
-    int ibc, pdberr;
+    int ibc;
     int kmax, lmax, nbc, nbcx;
+    hid_t hdf_err ;
 
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/kmax",&kmax);
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lmax",&lmax);
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nbc",&nbc);
-    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nbcx",&nbcx);
+    hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/kmax",&kmax);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/lmax",&lmax);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nbc",&nbc);
+    if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/nbcx",&nbcx);
 
     int *bck1 = new int[nbcx];
     int *bck2 = new int[nbcx];
     int *bcl1 = new int[nbcx];
     int *bcl2 = new int[nbcx];
-    pdberr = PD_read(GetPDBFile(),(char*)"/arrays/bck1",bck1);
-    pdberr = PD_read(GetPDBFile(),(char*)"/arrays/bck2",bck2);
-    pdberr = PD_read(GetPDBFile(),(char*)"/arrays/bcl1",bcl1);
-    pdberr = PD_read(GetPDBFile(),(char*)"/arrays/bcl2",bcl2);
+    if (hdf_err >= 0.0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bck1",bck1);
+    if (hdf_err >= 0.0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bck2",bck2);
+    if (hdf_err >= 0.0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bcl1",bcl1);
+    if (hdf_err >= 0.0) hdf_err = ReadHDF_Entry(GetHDF5File(),"/arrays/bcl2",bcl2);
 
     kminmesh = kmax;
     lminmesh = lmax;
@@ -1864,7 +1992,7 @@ avtCaleFileFormat::GetUsedMeshLimits (void)
 // ***************************************************************************
 
 int
-avtCaleFileFormat::removezoneghost_index(int in,int zk,int zl, int lp)
+avtCaleHDF5FileFormat::removezoneghost_index(int in,int zk,int zl, int lp)
 {
     int k,l;
 

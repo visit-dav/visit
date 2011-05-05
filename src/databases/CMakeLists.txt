@@ -103,6 +103,10 @@
 #
 #    Mark C. Miller, Mon Apr  4 23:56:43 PDT 2011
 #    Re-enabled ITAPS after fixing config-site file
+#
+#    Brad Whitlock, Thu May  5 10:12:18 PDT 2011
+#    Add CaleHDF5 by Rob Managan.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -160,6 +164,7 @@ IF(NOT XDMF_FOUND)
 ENDIF(NOT XDMF_FOUND)
 THIRDPARTY_DEPENDENT_PLUGINS(HDF5     
 AMR
+CaleHDF5
 Chombo
 CosmosPP
 Enzo
