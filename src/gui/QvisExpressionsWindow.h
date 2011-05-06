@@ -85,6 +85,9 @@ class QvisPythonFilterEditor;
 //    Cyrus Harrison, Wed Jun 11 13:49:19 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Brad Whitlock, Fri May  6 14:42:31 PDT 2011
+//    I added an override for loadSubject.
+//
 // ****************************************************************************
 
 class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
@@ -100,6 +103,7 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
     virtual void CreateWindowContents();
   public  slots:
     virtual void apply();
+    virtual void loadSubject();
     void    newExpression();
   protected:
     void    UpdateWindow(bool doAll);
