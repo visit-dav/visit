@@ -78,6 +78,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>The coordinate transformation option in the Transform operator now correctly fixes up "wrap-arounds" over angles for polygonal data as well.  (It previously only worked with volumetric data.)</li>
   <li>The Transform operator now correctly handles the case where rectilinear meshes are scaled with a negative scaling factor.</li>
+  <li>The Cylinder operator was changed so it clips the plot, leaving the interior of the cylinder intact. If you need to calculate results on the cylinder surface, you can apply an ExternalSurface operator to achieve the operator's former behavior.</li>
 </ul>
 
 <a name="Expression_changes"></a>
