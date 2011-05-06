@@ -705,6 +705,9 @@ $0 = shift @ARGV;
 #    Eric Brugger, Wed Apr 20 10:25:53 PDT 2011
 #    I added support for Cielo at LANL.
 #
+#    Brad Whitlock, Fri May  6 15:21:05 PDT 2011
+#    Add support for version in the private plugin path.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2485,24 +2488,32 @@ $ENV{LD_LIBRARY_PATH}    = "$ENV{LD_LIBRARY_PATH}:/usr/local/lib";
 # Set up some environment flags that let VisIt run on Darwin.
 if($os eq "darwin")
 {
+    $privateplugins="$ENV{HOME}/.visit/$ver/$archdir/plugins/plots:$ENV{HOME}/.visit/$ver/$archdir/plugins/databases:$ENV{HOME}/.visit/$ver/$archdir/plugins/operators";
+    $oldprivateplugins="$ENV{HOME}/.visit/$archdir/plugins/plots:$ENV{HOME}/.visit/$archdir/plugins/databases:$ENV{HOME}/.visit/$archdir/plugins/operators";
     if ($ENV{DYLD_FALLBACK_LIBRARY_PATH} eq "")
     {
-        $ENV{DYLD_FALLBACK_LIBRARY_PATH} = "$visitlibdir:$ENV{HOME}/.visit/$archdir/plugins/plots:$ENV{HOME}/.visit/$archdir/plugins/databases:$ENV{HOME}/.visit/$archdir/plugins/operators:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries";
+        $ENV{DYLD_FALLBACK_LIBRARY_PATH} = "$visitlibdir:$privateplugins:$oldprivateplugins:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries";
     }
     else
     {
-        $ENV{DYLD_FALLBACK_LIBRARY_PATH} = "$visitlibdir:$ENV{HOME}/.visit/$archdir/plugins/plots:$ENV{HOME}/.visit/$archdir/plugins/databases:$ENV{HOME}/.visit/$archdir/plugins/operators:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries:$ENV{DYLD_FALLBACK_LIBRARY_PATH}";
+        $ENV{DYLD_FALLBACK_LIBRARY_PATH} = "$visitlibdir:$privateplugins:$oldprivateplugins:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries:$ENV{DYLD_FALLBACK_LIBRARY_PATH}";
     }
 }
 
 # Set up plugin search paths in the correct order
 if ($IsRunningOnJaguar_ORNL)
 {
-    $visitprivateplugins = "/lustre/widow1/scratch/$ENV{USER}/.visit/$archdir/plugins";
+    $visitprivateplugins = "/lustre/widow1/scratch/$ENV{USER}/.visit/$ver/$archdir/plugins";
+    $visitprivateplugins_old = "/lustre/widow1/scratch/$ENV{USER}/.visit/$archdir/plugins";
 }
 else
 {
-    $visitprivateplugins = "$ENV{HOME}/.visit/$archdir/plugins";
+    $visitprivateplugins = "$ENV{HOME}/.visit/$ver/$archdir/plugins";
+    $visitprivateplugins_old = "$ENV{HOME}/.visit/$archdir/plugins";
+}
+if ($ver eq "")
+{
+    $visitprivateplugins = $visitprivateplugins_old;
 }
 
 if ($publiconly)
@@ -2516,7 +2527,7 @@ else
     {
         $ENV{VISITPLUGINDIRORIG} = $ENV{VISITPLUGINDIR};
     }
-    $ENV{VISITPLUGINDIR}="$ENV{VISITPLUGINDIRORIG}:$visitprivateplugins:$visitplugins";
+    $ENV{VISITPLUGINDIR}="$ENV{VISITPLUGINDIRORIG}:$visitprivateplugins:$visitprivateplugins_old:$visitplugins";
 }
 
 
