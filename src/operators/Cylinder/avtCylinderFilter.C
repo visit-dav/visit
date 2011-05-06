@@ -42,12 +42,13 @@
 
 #include <avtCylinderFilter.h>
 
-#include <vtkVisItCutter.h>
+#include <vtkVisItClipper.h>
 #include <vtkCylinder.h>
 #include <vtkImplicitBoolean.h>
 #include <vtkMath.h>
 #include <vtkPlane.h>
 #include <vtkPolyData.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkTransform.h>
 
 
@@ -228,19 +229,23 @@ avtCylinderFilter::Equivalent(const AttributeGroup *a)
 //    Use vtkVisItCutter instead of vtkCutter since it has logic to handle
 //    CellData correctly.
 //
+//    Brad Whitlock, Fri May  6 13:41:40 PDT 2011
+//    Do clipping instead of cutting so we can leave the dataset interior.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtCylinderFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    vtkVisItCutter *cutter = vtkVisItCutter::New();
-    cutter->SetCutFunction(cylinderSlice);
-    cutter->SetInput(in_ds);
-    vtkDataSet *rv = cutter->GetOutput();
+    vtkVisItClipper *clipper = vtkVisItClipper::New();
+    clipper->SetInsideOut(true);
+    clipper->SetClipFunction(cylinderSlice);
+    clipper->SetInput(in_ds);
+    vtkDataSet *rv = clipper->GetOutput();
     rv->Update();
 
     ManageMemory(rv);
-    cutter->Delete();
+    clipper->Delete();
 
     return rv;
 }
@@ -260,6 +265,9 @@ avtCylinderFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
 //    Set ZonesSplit.
 //
+//    Brad Whitlock, Fri May  6 13:41:20 PDT 2011
+//    Do not reduce the topological dimension anymore.
+//
 // ****************************************************************************
 
 void
@@ -269,7 +277,6 @@ avtCylinderFilter::UpdateDataObjectInfo(void)
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
     avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
 
-    outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
     outValidity.InvalidateZones();
     outValidity.ZonesSplit();
 }
