@@ -3804,6 +3804,9 @@ Engine::GetProcessAttributes()
 //    Set the callback HW/SW rendering, since code outside of the Engine will
 //    use that to query what kind of rendering to do.
 //
+//    Tom Fogal, Tue May 25 16:09:31 MDT 2010
+//    Namespace was renamed to avoid X conflict
+//
 // ****************************************************************************
 
 void
@@ -3832,21 +3835,21 @@ Engine::SetupDisplay()
                static_cast<size_t>(rank-min) < this->nDisplays)
             {
                 display = rank-min;
-                this->renderingDisplay = Display::Create(Display::D_X);
+                this->renderingDisplay = VDisplay::Create(VDisplay::D_X);
             }
         }
     }
 #else
     if(this->nDisplays > 0)
     {
-        this->renderingDisplay = Display::Create(Display::D_X);
+        this->renderingDisplay = VDisplay::Create(VDisplay::D_X);
         avtCallback::SetSoftwareRendering(false);
         display = 0;
     }
 #endif
     if(this->renderingDisplay == NULL)
     {
-        this->renderingDisplay = Display::Create(Display::D_MESA);
+        this->renderingDisplay = VDisplay::Create(VDisplay::D_MESA);
         avtCallback::SetSoftwareRendering(true);
     }
     if(this->renderingDisplay->Initialize(display,
