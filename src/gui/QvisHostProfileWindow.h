@@ -158,6 +158,10 @@ class QRadioButton;
 //    I added the ability to specify a gateway machine to use to get to the
 //    remote host.
 //
+//    Tom Fogal, Fri May  6 18:14:43 MDT 2011
+//    New widgets for parallel GPU configuration.
+//    Removed deprecated/broken precommand/postcommand settings.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -234,11 +238,12 @@ private slots:
     void clientHostNameMethodChanged(int);
     void clientHostNameChanged(const QString &);
     void toggleCanDoHW(bool);
-    void preCommandChanged(const QString &);
-    void togglePreCommand(bool);
-    void postCommandChanged(const QString &);
-    void togglePostCommand(bool);
+    void nGPUsChanged(const QString&);
     void toggleTunnelSSH(bool);
+    void toggleXArgs(bool);
+    void xArgsChanged(const QString&);
+    void toggleLaunchX(bool);
+    void xDisplayChanged(const QString&);
 private:
     // Main Window
     QListWidget *hostList;
@@ -308,10 +313,11 @@ private:
     // Launch HW Accel Settings
     QLabel       *hwdisclaimer;
     QCheckBox    *canDoHW;
-    QLineEdit    *preCommand;
-    QCheckBox    *preCommandCheckBox;
-    QLineEdit    *postCommand;
-    QCheckBox    *postCommandCheckBox;
+    QCheckBox    *cbLaunchX;
+    QSpinBox     *sbNGPUs;
+    QCheckBox    *cbXArgs;
+    QLineEdit    *txtXArgs;
+    QLineEdit    *txtXDisplay;
 
     // Machine Settings
     QLabel       *hostNameLabel;
@@ -344,5 +350,4 @@ private:
     MachineProfile *currentMachine;
     LaunchProfile  *currentLaunch;
 };
-
 #endif
