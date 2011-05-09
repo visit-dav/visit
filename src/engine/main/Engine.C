@@ -597,6 +597,7 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 
     // Configure external options.
     RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
+    this->X_Args = RuntimeSetting::lookups("x-args");
 
     //
     // Set a different new handler for the engine
@@ -1859,9 +1860,6 @@ Engine::ProcessInput()
 //    Tom Fogal, Fri Jul 11 11:55:43 EDT 2008
 //    Added `icet' command line parameter.
 //
-//    Tom Fogal, Tue Aug  5 14:21:56 EDT 2008
-//    Add `x-args' command line parameter.
-//
 //    Jeremy Meredith, Thu Aug  7 16:23:22 EDT 2008
 //    Wrap parallel-only vars with appropriate ifdef.
 //
@@ -1907,6 +1905,9 @@ Engine::ProcessInput()
 //    Tom Fogal, Wed May 26 09:27:36 MDT 2010
 //    Add -launch-x, -no-launch-x command line options.
 //
+//    Tom Fogal, Wed May 26 09:56:08 MDT 2010
+//    Don't parse x-args here; use an RTS.
+//
 // ****************************************************************************
 
 void
@@ -1927,11 +1928,6 @@ Engine::ProcessCommandLine(int argc, char **argv)
             this->useIceT = false;
             if (this->nDisplays == 0)
                 this->nDisplays = 1;
-        }
-        else if (strcmp(argv[i], "-x-args") == 0 && i+1 < argc)
-        {
-            this->X_Args = std::string(argv[i+1]);
-            i++;
         }
         else if (strcmp(argv[i], "-n-gpus-per-node") == 0 && i+1 < argc)
         {
