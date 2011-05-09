@@ -56,6 +56,7 @@
 //
 //    Tom Fogal, Tue May 25 15:49:00 MDT 2010
 //    Add hostname storage, for printing error messages.
+//    Change ::Connect retval to bool.
 //
 // ****************************************************************************
 
@@ -67,7 +68,7 @@ class ENGINE_MAIN_API XDisplay : public VisItDisplay
 
     virtual bool   Initialize(size_t n,
                               const std::vector<std::string> &args);
-    virtual void   Connect();
+    virtual bool   Connect();
     virtual void   Teardown();
 
   private:

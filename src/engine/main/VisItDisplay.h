@@ -57,6 +57,9 @@
 //    Tom Fogal, Mon Sep  1 15:11:06 EDT 2008
 //    Add a method to create the appropriate display type (factory).
 //
+//    Tom Fogal, Tue May 25 16:08:39 MDT 2010
+//    Made ::Connect return a bool, to detect errors.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API VisItDisplay
@@ -78,7 +81,7 @@ class ENGINE_MAIN_API VisItDisplay
 
     /// Associates this process with the previously-`Initialize'd VisIt Display.
     /// Undefined if this VisItDisplay has not been initialized.
-    virtual void   Connect() = 0;
+    virtual bool   Connect() = 0;
 
     /// Closes down a VisItDisplay.  You may assume that this will be called by
     /// the destructor.  It is safe to call Teardown more than once.  It is not

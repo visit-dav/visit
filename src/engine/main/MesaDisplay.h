@@ -51,6 +51,11 @@
 //  Programmer:  Tom Fogal
 //  Creation:    September 1, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue May 25 16:08:23 MDT 2010
+//    Made connect return a bool.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API MesaDisplay : public VisItDisplay
@@ -61,7 +66,7 @@ class ENGINE_MAIN_API MesaDisplay : public VisItDisplay
 
     virtual bool   Initialize(size_t n,
                               const std::vector<std::string> &args);
-    virtual void   Connect();
+    virtual bool   Connect();
     virtual void   Teardown();
 };
 #endif /* VISIT_MESA_DISPLAY_H */
