@@ -12744,6 +12744,9 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
 //   Brad Whitlock, Thu Mar 22 03:24:48 PDT 2007
 //   Rewrote for new annotation object scheme.
 //
+//   Cyrus Harrison, Mon May  9 10:30:37 PDT 2011
+//   Remove fetch by index case (only support access by name - Issue #537).
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12755,12 +12758,12 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
     bool useIndex = true;
     int annotIndex;
     char *annotName = NULL;
-    if (!PyArg_ParseTuple(args, "i", &annotIndex))
+
+    if(!PyArg_ParseTuple(args, "s", &annotName))
     {
-        if(!PyArg_ParseTuple(args, "s", &annotName))
-            return NULL;
-        PyErr_Clear();
-        useIndex = false;
+        const char *errMsg = "GetAnnotationObject() takes a single string argument.";
+        VisItErrorFunc(errMsg);
+        return NULL;
     }
 
     // Make sure the annotation object list is up to date.
@@ -12770,95 +12773,58 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
 
     PyObject *retval = NULL;
 
-    if(useIndex)
+    debug1 << mName << "Look in the map for an object called "
+           << annotName << endl;
+    std::map<std::string, AnnotationObjectRef>::iterator pos =
+        localObjectMap.find(annotName);
+    if(pos != localObjectMap.end())
     {
-        if(annotIndex >= 0 &&
-           annotIndex < GetViewerState()->GetAnnotationObjectList()->GetNumAnnotations())
-        {
-            debug1 << mName << "Look in the map for an object that has index equal to "
-                   << annotIndex << endl;
-            for(std::map<std::string, AnnotationObjectRef>::iterator pos = localObjectMap.begin();
-                pos != localObjectMap.end(); ++pos)
-            {
-                if(pos->second.index == annotIndex)
-                {
-                    debug1 << mName << "Found object called "
-                           << pos->second.object->GetObjectName()
-                           << " with an index of " << annotIndex
-                           << endl;
+        AnnotationObject *annot = pos->second.object;
+        retval = CreateAnnotationWrapper(annot);
 
-                    AnnotationObject *annot = pos->second.object;
-                    retval = CreateAnnotationWrapper(annot);
-    
-                    // Increase the object's reference count.
-                    if(retval != 0)
-                        ++pos->second.refCount;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            const char *errMsg = "An invalid annotation object index was given!";
-            debug1 << mName << errMsg << endl;
-            VisItErrorFunc(errMsg);
-        }
+        // Increase the object's reference count.
+        if(retval != 0)
+            ++pos->second.refCount;
     }
     else
     {
-        debug1 << mName << "Look in the map for an object called "
-               << annotName << endl;
-        std::map<std::string, AnnotationObjectRef>::iterator pos =
-            localObjectMap.find(annotName);
-        if(pos != localObjectMap.end())
+        // The object was not in the map but see if we can add it.
+        int index = GetViewerState()->GetAnnotationObjectList()->
+            IndexForName(annotName);
+        if(index != -1)
         {
-            AnnotationObject *annot = pos->second.object;
-            retval = CreateAnnotationWrapper(annot);
-    
-            // Increase the object's reference count.
+            AnnotationObject &newObject = GetViewerState()->
+                GetAnnotationObjectList()->GetAnnotation(index);
+
+            //
+            // Create a copy of the new annotation object that we'll keep in the
+            // module's own annotation object list.
+            //
+            AnnotationObject *localCopy = new AnnotationObject(newObject);
+
+            retval = CreateAnnotationWrapper(localCopy);
+
             if(retval != 0)
-                ++pos->second.refCount;
-        }
-        else
-        {
-            // The object was not in the map but see if we can add it.
-            int index = GetViewerState()->GetAnnotationObjectList()->
-                IndexForName(annotName);
-            if(index != -1)
             {
-                AnnotationObject &newObject = GetViewerState()->
-                    GetAnnotationObjectList()->GetAnnotation(index);
+                // Cache references based on the object name.
+                AnnotationObjectRef ref;
+                ref.object = localCopy;
+                ref.refCount = 1;
+                ref.index = localObjectMap.size();
 
-                //
-                // Create a copy of the new annotation object that we'll keep in the
-                // module's own annotation object list.
-                //
-                AnnotationObject *localCopy = new AnnotationObject(newObject);
-
-                retval = CreateAnnotationWrapper(localCopy);
-
-                if(retval != 0)
-                {
-                    // Cache references based on the object name.
-                    AnnotationObjectRef ref;
-                    ref.object = localCopy;
-                    ref.refCount = 1;
-                    ref.index = localObjectMap.size();
-         
-                    localObjectMap[newObject.GetObjectName()] = ref;
-                }
-                else
-                {
-                    delete localCopy;
-                    debug1 << mName << "CreateAnnotationWrapper returned 0!" << endl;
-                }
+                localObjectMap[newObject.GetObjectName()] = ref;
             }
             else
             {
-                char msg[400];
-                SNPRINTF(msg, 400, "An unrecognized object name \"%s\" was requested.", annotName);
-                VisItErrorFunc(msg);
+                delete localCopy;
+                debug1 << mName << "CreateAnnotationWrapper returned 0!" << endl;
             }
+        }
+        else
+        {
+            char msg[400];
+            SNPRINTF(msg, 400, "An unrecognized object name \"%s\" was requested.", annotName);
+            VisItErrorFunc(msg);
         }
     }
 
