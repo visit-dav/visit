@@ -102,7 +102,9 @@ const struct Setting s::settings[] = {
     {"tuvok-shader-dir", "./share/Shaders", true, "--tuvok-shaders",
      "VISIT_TUVOK_SHADER_DIR", "Directory which holds Tuvok's GLSL shaders."},
     {"x-args", "", false, "-x-args", "VISIT_X_ARGS",
-     "Arguments to pass to X servers that VisIt starts up."}
+     "Arguments to pass to X servers that VisIt starts up."},
+    {"x-display", "", false, "-display", "VISIT_DISPLAY",
+     "Sets the display variable that VisIt will use when launching X servers."}
 };
 
 // Runtime modification map.  This is where we'll put settings we figure out
