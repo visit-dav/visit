@@ -129,6 +129,9 @@ XDisplay::~XDisplay()
 //    Prevent memory leaks in the event of failure.  Force "-ac" in X server
 //    command line options, as usage is unreliable otherwise.
 //
+//    Tom Fogal, Mon May 24 11:16:04 MDT 2010
+//    Add '-nolisten tcp' argument.  We don't need TCP access.
+//
 // ****************************************************************************
 
 bool
@@ -147,6 +150,8 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
     args.push_back("-sharevts");
     args.push_back("-once");
     args.push_back("-terminate");
+    args.push_back("-nolisten");
+    args.push_back("tcp");
     StringHelpers::append(args, user_args);
 
     argv = vec_convert(args, &v_elems);
