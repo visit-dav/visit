@@ -137,9 +137,12 @@ split(std::string str, size_t node, size_t display)
 //    Tom Fogal, Sat May 30 12:32:51 MDT 2009
 //    Add debug messages so we can figure out which display was created.
 //
+//    Tom Fogal, Tue May 25 16:09:02 MDT 2010
+//    Rename namespace to avoid X conflict.
+//
 // ****************************************************************************
 VisItDisplay *
-Display::Create(enum visitDisplayType vtype)
+VDisplay::Create(enum visitDisplayType vtype)
 {
     switch(vtype)
     {

@@ -93,7 +93,7 @@ class ENGINE_MAIN_API VisItDisplay
 std::string format(std::string s, size_t node, size_t display);
 std::vector<std::string> split(std::string, size_t, size_t);
 
-namespace Display {
+namespace VDisplay {
     enum visitDisplayType {
         D_MESA, // mesa based SW rendering
         D_X     // starts an X server to use HW rendering
