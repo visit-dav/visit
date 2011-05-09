@@ -60,6 +60,9 @@
 //    Tom Fogal, Wed May 26 09:10:08 MDT 2010
 //    Add a method to indicate we should not launch the server.
 //
+//    Tom Fogal, Wed May  4 14:30:00 MDT 2011
+//    Change display to a string for more flexibility.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API XDisplay : public VisItDisplay
@@ -68,7 +71,7 @@ class ENGINE_MAIN_API XDisplay : public VisItDisplay
                    XDisplay();
     virtual       ~XDisplay();
 
-    virtual bool   Initialize(size_t n,
+    virtual bool   Initialize(std::string display,
                               const std::vector<std::string> &args);
     virtual bool   Connect();
     virtual void   Teardown();
@@ -78,9 +81,9 @@ class ENGINE_MAIN_API XDisplay : public VisItDisplay
     void           Launch(bool);
 
   private:
-    pid_t   xserver;
-    size_t  display;
-    char    hostname[256];
-    bool    launch;
+    pid_t       xserver;
+    std::string display;
+    char        hostname[256];
+    bool        launch;
 };
 #endif /* VISIT_X_DISPLAY_H */
