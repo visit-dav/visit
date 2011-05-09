@@ -20,6 +20,9 @@ Definition:
 // Creation:   April 29, 2010
 //
 // Modifications:
+//
+//   Tom Fogal, Fri May  6 18:37:57 MDT 2011
+//   Adjust for new X launching options.
 //   
 // ****************************************************************************
 bool
@@ -207,28 +210,28 @@ LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("canDoHWAccel", canDoHWAccel));
     }
 
-    if(completeSave || IsSelected(ID_havePreCommand))
+    if(completeSave || IsSelected(ID_GPUsPerNode))
     {
         addToParent = true;
-        node->AddNode(new DataNode("havePreCommand", havePreCommand));
+        node->AddNode(new DataNode("GPUsPerNode", GPUsPerNode));
     }
 
-    if(completeSave || IsSelected(ID_hwAccelPreCommand))
+    if(completeSave || IsSelected(ID_XArguments))
     {
         addToParent = true;
-        node->AddNode(new DataNode("hwAccelPreCommand", hwAccelPreCommand));
+        node->AddNode(new DataNode("XArguments", XArguments));
     }
 
-    if(completeSave || IsSelected(ID_havePostCommand))
+    if(completeSave || IsSelected(ID_launchXServers))
     {
         addToParent = true;
-        node->AddNode(new DataNode("havePostCommand", havePostCommand));
+        node->AddNode(new DataNode("launchXServers", launchXServers));
     }
 
-    if(completeSave || IsSelected(ID_hwAccelPostCommand))
+    if(completeSave || IsSelected(ID_XDisplay))
     {
         addToParent = true;
-        node->AddNode(new DataNode("hwAccelPostCommand", hwAccelPostCommand));
+        node->AddNode(new DataNode("XDisplay", XDisplay));
     }
 
     if (addToParent)
@@ -259,6 +262,11 @@ Definition:
 //
 // Programmer:  Jeremy Meredith
 // Creation:    April 29, 2010
+//
+// Modifications:
+//
+//   Tom Fogal, Fri May  6 18:40:39 MDT 2011
+//   Adjust for new X launching options.
 //
 // ****************************************************************************
 void
@@ -326,12 +334,12 @@ LaunchProfile::SelectOnlyDifferingFields(LaunchProfile &other)
         Select(ID_visitSetsUpEnv,      (void *)&visitSetsUpEnv);
     if (canDoHWAccel != other.GetCanDoHWAccel())
         Select(ID_canDoHWAccel,        (void *)&canDoHWAccel);
-    if (havePreCommand != other.GetHavePreCommand())
-        Select(ID_havePreCommand,      (void *)&havePreCommand);
-    if (hwAccelPreCommand != other.GetHwAccelPreCommand())
-        Select(ID_hwAccelPreCommand,   (void *)&hwAccelPreCommand);
-    if (havePostCommand != other.GetHavePostCommand())
-        Select(ID_havePostCommand,     (void *)&havePostCommand);
-    if (hwAccelPostCommand != other.GetHwAccelPostCommand())
-        Select(ID_hwAccelPostCommand,  (void *)&hwAccelPostCommand);
+    if(GPUsPerNode != other.GetGPUsPerNode())
+        Select(ID_GPUsPerNode,        (void *)&GPUsPerNode);
+    if(XArguments != other.GetXArguments())
+        Select(ID_XArguments,        (void *)&XArguments);
+    if(launchXServers != other.GetLaunchXServers())
+        Select(ID_launchXServers,        (void *)&launchXServers);
+    if(XDisplay != other.GetXDisplay())
+        Select(ID_XDisplay,        (void *)&XDisplay);
 }

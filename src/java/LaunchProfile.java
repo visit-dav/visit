@@ -93,10 +93,10 @@ public class LaunchProfile extends AttributeSubject
         machinefile = new String("");
         visitSetsUpEnv = false;
         canDoHWAccel = false;
-        havePreCommand = false;
-        hwAccelPreCommand = new String("");
-        havePostCommand = false;
-        hwAccelPostCommand = new String("");
+        GPUsPerNode = 1;
+        XArguments = new String("");
+        launchXServers = false;
+        XDisplay = new String(":%l");
     }
 
     public LaunchProfile(int nMoreFields)
@@ -133,10 +133,10 @@ public class LaunchProfile extends AttributeSubject
         machinefile = new String("");
         visitSetsUpEnv = false;
         canDoHWAccel = false;
-        havePreCommand = false;
-        hwAccelPreCommand = new String("");
-        havePostCommand = false;
-        hwAccelPostCommand = new String("");
+        GPUsPerNode = 1;
+        XArguments = new String("");
+        launchXServers = false;
+        XDisplay = new String(":%l");
     }
 
     public LaunchProfile(LaunchProfile obj)
@@ -178,10 +178,10 @@ public class LaunchProfile extends AttributeSubject
         machinefile = new String(obj.machinefile);
         visitSetsUpEnv = obj.visitSetsUpEnv;
         canDoHWAccel = obj.canDoHWAccel;
-        havePreCommand = obj.havePreCommand;
-        hwAccelPreCommand = new String(obj.hwAccelPreCommand);
-        havePostCommand = obj.havePostCommand;
-        hwAccelPostCommand = new String(obj.hwAccelPostCommand);
+        GPUsPerNode = obj.GPUsPerNode;
+        XArguments = new String(obj.XArguments);
+        launchXServers = obj.launchXServers;
+        XDisplay = new String(obj.XDisplay);
 
         SelectAll();
     }
@@ -240,10 +240,10 @@ public class LaunchProfile extends AttributeSubject
                 (machinefile.equals(obj.machinefile)) &&
                 (visitSetsUpEnv == obj.visitSetsUpEnv) &&
                 (canDoHWAccel == obj.canDoHWAccel) &&
-                (havePreCommand == obj.havePreCommand) &&
-                (hwAccelPreCommand.equals(obj.hwAccelPreCommand)) &&
-                (havePostCommand == obj.havePostCommand) &&
-                (hwAccelPostCommand.equals(obj.hwAccelPostCommand)));
+                (GPUsPerNode == obj.GPUsPerNode) &&
+                (XArguments.equals(obj.XArguments)) &&
+                (launchXServers == obj.launchXServers) &&
+                (XDisplay.equals(obj.XDisplay)));
     }
 
     // Property setting methods
@@ -427,27 +427,27 @@ public class LaunchProfile extends AttributeSubject
         Select(29);
     }
 
-    public void SetHavePreCommand(boolean havePreCommand_)
+    public void SetGPUsPerNode(int GPUsPerNode_)
     {
-        havePreCommand = havePreCommand_;
+        GPUsPerNode = GPUsPerNode_;
         Select(30);
     }
 
-    public void SetHwAccelPreCommand(String hwAccelPreCommand_)
+    public void SetXArguments(String XArguments_)
     {
-        hwAccelPreCommand = hwAccelPreCommand_;
+        XArguments = XArguments_;
         Select(31);
     }
 
-    public void SetHavePostCommand(boolean havePostCommand_)
+    public void SetLaunchXServers(boolean launchXServers_)
     {
-        havePostCommand = havePostCommand_;
+        launchXServers = launchXServers_;
         Select(32);
     }
 
-    public void SetHwAccelPostCommand(String hwAccelPostCommand_)
+    public void SetXDisplay(String XDisplay_)
     {
-        hwAccelPostCommand = hwAccelPostCommand_;
+        XDisplay = XDisplay_;
         Select(33);
     }
 
@@ -482,10 +482,10 @@ public class LaunchProfile extends AttributeSubject
     public String  GetMachinefile() { return machinefile; }
     public boolean GetVisitSetsUpEnv() { return visitSetsUpEnv; }
     public boolean GetCanDoHWAccel() { return canDoHWAccel; }
-    public boolean GetHavePreCommand() { return havePreCommand; }
-    public String  GetHwAccelPreCommand() { return hwAccelPreCommand; }
-    public boolean GetHavePostCommand() { return havePostCommand; }
-    public String  GetHwAccelPostCommand() { return hwAccelPostCommand; }
+    public int     GetGPUsPerNode() { return GPUsPerNode; }
+    public String  GetXArguments() { return XArguments; }
+    public boolean GetLaunchXServers() { return launchXServers; }
+    public String  GetXDisplay() { return XDisplay; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -551,13 +551,13 @@ public class LaunchProfile extends AttributeSubject
         if(WriteSelect(29, buf))
             buf.WriteBool(canDoHWAccel);
         if(WriteSelect(30, buf))
-            buf.WriteBool(havePreCommand);
+            buf.WriteInt(GPUsPerNode);
         if(WriteSelect(31, buf))
-            buf.WriteString(hwAccelPreCommand);
+            buf.WriteString(XArguments);
         if(WriteSelect(32, buf))
-            buf.WriteBool(havePostCommand);
+            buf.WriteBool(launchXServers);
         if(WriteSelect(33, buf))
-            buf.WriteString(hwAccelPostCommand);
+            buf.WriteString(XDisplay);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -655,16 +655,16 @@ public class LaunchProfile extends AttributeSubject
             SetCanDoHWAccel(buf.ReadBool());
             break;
         case 30:
-            SetHavePreCommand(buf.ReadBool());
+            SetGPUsPerNode(buf.ReadInt());
             break;
         case 31:
-            SetHwAccelPreCommand(buf.ReadString());
+            SetXArguments(buf.ReadString());
             break;
         case 32:
-            SetHavePostCommand(buf.ReadBool());
+            SetLaunchXServers(buf.ReadBool());
             break;
         case 33:
-            SetHwAccelPostCommand(buf.ReadString());
+            SetXDisplay(buf.ReadString());
             break;
         }
     }
@@ -702,10 +702,10 @@ public class LaunchProfile extends AttributeSubject
         str = str + stringToString("machinefile", machinefile, indent) + "\n";
         str = str + boolToString("visitSetsUpEnv", visitSetsUpEnv, indent) + "\n";
         str = str + boolToString("canDoHWAccel", canDoHWAccel, indent) + "\n";
-        str = str + boolToString("havePreCommand", havePreCommand, indent) + "\n";
-        str = str + stringToString("hwAccelPreCommand", hwAccelPreCommand, indent) + "\n";
-        str = str + boolToString("havePostCommand", havePostCommand, indent) + "\n";
-        str = str + stringToString("hwAccelPostCommand", hwAccelPostCommand, indent) + "\n";
+        str = str + intToString("GPUsPerNode", GPUsPerNode, indent) + "\n";
+        str = str + stringToString("XArguments", XArguments, indent) + "\n";
+        str = str + boolToString("launchXServers", launchXServers, indent) + "\n";
+        str = str + stringToString("XDisplay", XDisplay, indent) + "\n";
         return str;
     }
 
@@ -741,9 +741,9 @@ public class LaunchProfile extends AttributeSubject
     private String  machinefile;
     private boolean visitSetsUpEnv;
     private boolean canDoHWAccel;
-    private boolean havePreCommand;
-    private String  hwAccelPreCommand;
-    private boolean havePostCommand;
-    private String  hwAccelPostCommand;
+    private int     GPUsPerNode;
+    private String  XArguments;
+    private boolean launchXServers;
+    private String  XDisplay;
 }
 
