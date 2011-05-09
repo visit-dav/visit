@@ -878,9 +878,9 @@ $fullusage = "$usage
         switch into scalable rendering mode when rendering complexity exceeds
         a predefined limit.
 
-        VisIt must manage the creation and teardown of X servers when the
-        number of GPUs per node exceeds one.  It will do this automatically,
-        though you may customize the procedure with the -x-args parameter.
+        VisIt can manage the creation and teardown of X servers for you.  It
+        will do this automatically if you specify the -launch-x parameter,
+        but you can customize the process with the -x-args parameter.
 
         See the VisIt wiki for more information:
 
@@ -889,6 +889,8 @@ $fullusage = "$usage
     ---------------------------------------------------------------------------
         -hw-accel              Tells VisIt that it should use graphics cards.
         -n-gpus-per-node <int> Number of GPUs per node of the cluster (1).
+        -launch-x              Tell VisIt to manage the X servers
+        -no-launch-x           Negate previous launch-x; cluster manages X.
         -x-args '<string>'     Extra arguments to X server.
 
     Load balance options
