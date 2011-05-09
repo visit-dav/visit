@@ -83,7 +83,7 @@ static void fix_signals();
 //
 // ****************************************************************************
 
-XDisplay::XDisplay(): xserver((pid_t)-1), display(0) { }
+XDisplay::XDisplay(): xserver((pid_t)-1), display(0), launch(true) { }
 
 // ****************************************************************************
 //  Method: XDisplay destructor
@@ -127,6 +127,9 @@ XDisplay::~XDisplay()
 //    Tom Fogal, Tue May 25 16:11:38 MDT 2010
 //    Lookup hostname; we'll use it in error messages.
 //
+//    Tom Fogal, Wed May 26 09:20:18 MDT 2010
+//    Do not launch X servers if the client does not want us to.
+//
 // ****************************************************************************
 
 bool
@@ -140,10 +143,11 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
         debug1 << "Error " << errno << " while getting hostname.\n";
         this->hostname[0] = 0;
     }
-    if((this->xserver = xinit(disp, user_args)) == -1)
+    if(this->launch && (this->xserver = xinit(disp, user_args)) == -1)
     {
       return false;
     }
+    debug2 << this->hostname << " saved X server PID " << this->xserver << "\n";
     return true;
 }
 
@@ -170,6 +174,9 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
 //    Tom Fogal, Wed May 26 09:05:00 MDT 2010
 //    Detect errors.
 //
+//    Tom Fogal, Wed May 26 10:15:05 MDT 2010
+//    Not initializing the X server shouldn't mean the connect fails.
+//
 // ****************************************************************************
 
 bool
@@ -188,14 +195,6 @@ XDisplay::Connect()
     }
     InitVTKRendering::UnforceMesa();
 
-    if(!initialized(this->xserver))
-    {
-        debug1 << this->hostname << ": X server PID is bad; impossible.  "
-               << "This method should not be called if X server startup "
-                  "failed!\n";
-        return false;
-    }
-
     std::string xh = std::string("xhost +") + this->hostname;
     system(xh.c_str());
 
@@ -203,21 +202,31 @@ XDisplay::Connect()
     Display* dpy=NULL;
     do
     {
-        int status;
-        // Our X server might have died.  Don't bother spinning until we can
-        // connect if it's never going to start!
-        if(waitpid(this->xserver, &status, WNOHANG) == -1)
+        int status=0;
+        if(initialized(this->xserver))
         {
-            debug1 << this->hostname << ": waitpid(" << this->xserver
-                   << ") failed.\n";
-            return false;
-        }
-        if(WIFEXITED(status) || WIFSIGNALED(status))
-        {
-            debug1 << this->hostname << ": X server exited before we could "
-                   << "connect!  This normally means the X server "
-                      "configuration is incorrect.\n";
-            return false;
+            // Our X server might have died.  Don't bother spinning
+            // until we can connect if it's never going to start!
+            switch(waitpid(this->xserver, &status, WNOHANG) == -1)
+            {
+            case -1:
+                debug1 << this->hostname << ": waitpid(" << this->xserver
+                       << ") failed.\n";
+                return false;
+                break;
+            case 0:
+                debug5 << "Good, X is still running.\n";
+                break;
+            default:
+                if(WIFEXITED(status) || WIFSIGNALED(status))
+                {
+                    debug1 << this->hostname << ": X server exited before we "
+                           << "could connect!  This normally means the X "
+                              "server configuration is incorrect.\n";
+                    return false;
+                }
+                break;
+            }
         }
         dpy = XOpenDisplay(NULL);
         if(dpy == NULL)
@@ -292,6 +301,20 @@ XDisplay::Teardown()
 
     set_uninitialized(&this->xserver);
 }
+
+// ****************************************************************************
+//  Method: XDisplay::Launch
+//
+//  Purpose:
+//    Lets the user tell us whether the X server should be launched by VisIt.
+//
+//  Programmer:  Tom Fogal
+//  Creation:    May 26, 2010
+//
+//  Modifications:
+//
+// ****************************************************************************
+void XDisplay::Launch(bool l) { this->launch = l; }
 
 // ****************************************************************************
 //  Function: vec_convert
@@ -393,6 +416,7 @@ xinit(const std::string& display, const std::vector<std::string>& user_args)
     std::copy(args.begin(), args.end(),
               std::ostream_iterator<std::string>(DebugStream::Stream5(),
                                                  "\n\t"));
+    debug5 << "\n";
 
     argv = vec_convert(args, &v_elems);
 

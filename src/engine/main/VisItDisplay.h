@@ -99,7 +99,7 @@ std::vector<std::string> split(std::string, size_t, size_t);
 namespace VDisplay {
     enum visitDisplayType {
         D_MESA, // mesa based SW rendering
-        D_X     // starts an X server to use HW rendering
+        D_X     // utilize an X server for HW rendering
     };
     /// Creates a display type based on the given parameter.  It is the
     /// caller's responsibility to deallocate the display via `delete'.

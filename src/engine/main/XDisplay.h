@@ -46,8 +46,7 @@
 //  Class:  XDisplay
 //
 //  Purpose:
-//    Launches and brings down X servers, utilized for HW rendering on UNIX
-//    clusters.
+//    Manages X servers, utilized for HW rendering on UNIX clusters.
 //
 //  Programmer:  Tom Fogal
 //  Creation:    August 29, 2008
@@ -57,6 +56,9 @@
 //    Tom Fogal, Tue May 25 15:49:00 MDT 2010
 //    Add hostname storage, for printing error messages.
 //    Change ::Connect retval to bool.
+//
+//    Tom Fogal, Wed May 26 09:10:08 MDT 2010
+//    Add a method to indicate we should not launch the server.
 //
 // ****************************************************************************
 
@@ -71,9 +73,14 @@ class ENGINE_MAIN_API XDisplay : public VisItDisplay
     virtual bool   Connect();
     virtual void   Teardown();
 
+    // Tell the implementation whether it should launch the X server or just
+    // use it.  Must be set before Initialize!
+    void           Launch(bool);
+
   private:
     pid_t   xserver;
     size_t  display;
     char    hostname[256];
+    bool    launch;
 };
 #endif /* VISIT_X_DISPLAY_H */
