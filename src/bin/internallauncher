@@ -880,7 +880,8 @@ $fullusage = "$usage
 
         VisIt can manage the creation and teardown of X servers for you.  It
         will do this automatically if you specify the -launch-x parameter,
-        but you can customize the process with the -x-args parameter.
+        but you can customize the process with the -x-args and -display
+        parameters, which respect %l and %n formatters.
 
         See the VisIt wiki for more information:
 
@@ -890,7 +891,8 @@ $fullusage = "$usage
         -hw-accel              Tells VisIt that it should use graphics cards.
         -n-gpus-per-node <int> Number of GPUs per node of the cluster (1).
         -launch-x              Tell VisIt to manage the X servers
-        -no-launch-x           Negate previous launch-x; cluster manages X.
+        -no-launch-x           Let the cluster manager X servers [default]
+        -display               Tells VisIt which display to use.
         -x-args '<string>'     Extra arguments to X server.
 
     Load balance options
