@@ -118,14 +118,19 @@ MesaDisplay::Initialize(size_t display, const std::vector<std::string> &user_arg
 //    Tom Fogal, Wed Apr 22 18:37:35 MDT 2009
 //    Use `Environment' namespace function instead of `unsetenv' directly.
 //
+//    Tom Fogal, Tue May 25 16:10:10 MDT 2010
+//    Interface change: retval void -> bool
+//
 // ****************************************************************************
 
-void
+bool
 MesaDisplay::Connect()
 {
     InitVTKRendering::ForceMesa();
 
     Environment::unset("DISPLAY");
+
+    return true;
 }
 
 // ****************************************************************************

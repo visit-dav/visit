@@ -162,9 +162,12 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
 //    Tom Fogal, Fri Aug 29 19:19:25 EDT 2008
 //    Removed a variable that was only useful in debugging.
 //
+//    Tom Fogal, Tue May 25 16:07:27 MDT 2010
+//    Made it return a bool so we can detect errors.
+//
 // ****************************************************************************
 
-void
+bool
 XDisplay::Connect()
 {
     static char env_display[128];
@@ -175,11 +178,13 @@ XDisplay::Connect()
     if(putenv(env_display) != 0)
     {
         perror("putenv");
-        debug1 << "putenv(\"" << env_display << "\") failed." << std::endl;
+        debug1 << this->hostname << ": putenv(\"" << env_display
+               << "\") failed.\n";
     }
     InitVTKRendering::UnforceMesa();
 
     system("xhost +");
+    return true;
 }
 
 // ****************************************************************************
