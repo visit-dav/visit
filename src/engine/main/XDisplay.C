@@ -177,6 +177,9 @@ XDisplay::Initialize(std::string display,
 //    Tom Fogal, Wed May 26 10:15:05 MDT 2010
 //    Not initializing the X server shouldn't mean the connect fails.
 //
+//    Tom Fogal, Thu May  5 11:36:39 MDT 2011
+//    Eventually the spinning should end.
+//
 // ****************************************************************************
 
 bool
@@ -200,6 +203,7 @@ XDisplay::Connect()
 
     // Test our connection.
     Display* dpy=NULL;
+    size_t spin_count = 0;
     do
     {
         int status=0;
@@ -233,6 +237,10 @@ XDisplay::Connect()
         {
             debug1 << this->hostname << ": could not connect to display "
                    << XDisplayName(NULL) << "; spinning...\n";
+            ++spin_count;
+            if(++spin_count > 10) {
+              return false;
+            }
             sleep(1);
         }
     } while(dpy == NULL);
