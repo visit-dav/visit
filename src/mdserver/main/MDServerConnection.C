@@ -1792,7 +1792,7 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
     for(i = 0; i < 256; ++i) pattern[i] = '\0';
 
     std::string searchstring;
-    bool excludedH5 = false, excludedCaleH5;
+    bool excludedH5 = false, excludedCaleH5 = false;
     if(extraSmartFileGrouping)
     {
         // Exclude the .h5 file extension from the numeric pattern search.
