@@ -83,7 +83,7 @@ static void fix_signals();
 //
 // ****************************************************************************
 
-XDisplay::XDisplay(): xserver((pid_t)-1), display(0), launch(true) { }
+XDisplay::XDisplay(): xserver((pid_t)-1), launch(true) { }
 
 // ****************************************************************************
 //  Method: XDisplay destructor
@@ -133,17 +133,17 @@ XDisplay::~XDisplay()
 // ****************************************************************************
 
 bool
-XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
+XDisplay::Initialize(std::string display,
+                     const std::vector<std::string>& user_args)
 {
     this->display = display;
-    std::string disp = format(":%l", /* unused */ 0, display);
 
     if(gethostname(this->hostname, 512) != 0)
     {
         debug1 << "Error " << errno << " while getting hostname.\n";
         this->hostname[0] = 0;
     }
-    if(this->launch && (this->xserver = xinit(disp, user_args)) == -1)
+    if(this->launch && (this->xserver = xinit(this->display, user_args)) == -1)
     {
       return false;
     }
@@ -185,7 +185,7 @@ XDisplay::Connect()
     static char env_display[128];
 
     debug3 << "Connecting to display " << this->display << std::endl;
-    SNPRINTF(env_display, 128, "DISPLAY=:%zu", this->display);
+    SNPRINTF(env_display, 128, "DISPLAY=%s", this->display.c_str());
 
     if(putenv(env_display) != 0)
     {

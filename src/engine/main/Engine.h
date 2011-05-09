@@ -393,6 +393,7 @@ class ENGINE_MAIN_API Engine
  private:
     bool                      useIceT;
     std::string               X_Args;
+    std::string               X_Display;
     size_t                    nDisplays;
     VisItDisplay             *renderingDisplay;
     bool                      launchXServers;

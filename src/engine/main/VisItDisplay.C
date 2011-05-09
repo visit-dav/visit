@@ -63,9 +63,12 @@
 //    Use a debug stream instead of cerr.  Use SNPRINTF macro instead of
 //    calling the function directly.
 //
+//    Tom Fogal, Wed May  4 14:58:42 MDT 2011
+//    Rename to avoid an apparent naming conflict.
+//
 // ****************************************************************************
 std::string
-format(std::string s, size_t node, size_t display)
+display_format(std::string s, size_t node, size_t display)
 {
     std::string::size_type percent;
     if((percent = s.find('%')) != std::string::npos) {
@@ -88,7 +91,7 @@ format(std::string s, size_t node, size_t display)
     }
     // If they gave multiple %'s in the same string, recurse.
     if(s.find('%') != std::string::npos) {
-        return format(s, node, display);
+        return display_format(s, node, display);
     }
     return s;
 }
@@ -114,7 +117,7 @@ split(std::string str, size_t node, size_t display)
 {
     namespace SH = StringHelpers;
     std::vector<std::string> ret;
-    ret.push_back(format(SH::car(str, ' '), node, display));
+    ret.push_back(display_format(SH::car(str, ' '), node, display));
     if(str.find(' ') != std::string::npos) {
         SH::append(ret, split(SH::cdr(str, ' '), node, display));
     }

@@ -2170,6 +2170,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 avtCallback::SetAuxSessionKey(s);
                 i++;
             }
+        }
         else if (strcmp(argv[i], "-launch-x") == 0)
         {
             this->launchXServers = true;
@@ -3822,12 +3823,15 @@ Engine::GetProcessAttributes()
 //    Tom Fogal, Wed May 26 09:28:12 MDT 2010
 //    Tell the display whether or not to launch servers.
 //
+//    Tom Fogal, Wed May  4 15:57:22 MDT 2011
+//    Handle displays as a string, to support variations more easily.
+//
 // ****************************************************************************
 
 void
 Engine::SetupDisplay()
 {
-    int display = -1;  // Display ID to create.
+    int display_num = -1;  // Display ID to create.
 #ifdef PARALLEL
     cog_set lnodes;
 
@@ -3849,7 +3853,7 @@ Engine::SetupDisplay()
             if(PAR_Rank() == rank &&
                static_cast<size_t>(rank-min) < this->nDisplays)
             {
-                display = rank-min;
+                display_num = rank-min;
                 this->renderingDisplay = VDisplay::Create(VDisplay::D_X);
             }
         }
@@ -3859,12 +3863,15 @@ Engine::SetupDisplay()
     {
         this->renderingDisplay = VDisplay::Create(VDisplay::D_X);
         avtCallback::SetSoftwareRendering(false);
-        display = 0;
+        display_num = 0;
     }
 #endif
     // Tell the display whether or not it should start X servers.  This must be
     // done before ::Initialize!
     XDisplay* xd = dynamic_cast<XDisplay*>(this->renderingDisplay);
+
+    std::string X_Display = RuntimeSetting::lookups("x-display");
+    std::string disp = display_format(X_Display, PAR_Rank(), display_num);
     if(xd != NULL)
     {
         xd->Launch(this->launchXServers);
@@ -3875,8 +3882,8 @@ Engine::SetupDisplay()
         this->renderingDisplay = VDisplay::Create(VDisplay::D_MESA);
         avtCallback::SetSoftwareRendering(true);
     }
-    if(this->renderingDisplay->Initialize(display,
-                               split(this->X_Args, PAR_Rank(), display)))
+    if(this->renderingDisplay->Initialize(disp,
+                               split(this->X_Args, PAR_Rank(), display_num)))
     {
         if(false == this->renderingDisplay->Connect())
         {

@@ -86,10 +86,16 @@ MesaDisplay::~MesaDisplay()
 //  Programmer:  Tom Fogal
 //  Creation:    September 1, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Wed May  4 15:00:24 MDT 2011
+//    Fix display type.
+//
 // ****************************************************************************
 
 bool
-MesaDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
+MesaDisplay::Initialize(std::string display,
+                        const std::vector<std::string> &user_args)
 {
     return true;
 }

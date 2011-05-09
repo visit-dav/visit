@@ -73,10 +73,10 @@ class ENGINE_MAIN_API VisItDisplay
     /// intervening `Teardown's result in undefined behavior.
     /// Initialization may fail; success is given via the return value.
     ///
-    /// n     The display number (identifier) for this display.
-    /// args  user arguments appropriate for configuring the VisIt display.
+    /// display the display string to utilize.
+    /// args    user arguments appropriate for configuring the VisIt display.
     /// returns: Display initialization status.
-    virtual bool   Initialize(size_t n,
+    virtual bool   Initialize(std::string display,
                               const std::vector<std::string> &args) = 0;
 
     /// Associates this process with the previously-`Initialize'd VisIt Display.
@@ -93,7 +93,7 @@ class ENGINE_MAIN_API VisItDisplay
 // Methods helpful in argument vector creation.
 // If these were to be generalized, they would more appropriately end up in
 // `StringHelpers'
-std::string format(std::string s, size_t node, size_t display);
+std::string display_format(std::string s, size_t node, size_t display);
 std::vector<std::string> split(std::string, size_t, size_t);
 
 namespace VDisplay {
