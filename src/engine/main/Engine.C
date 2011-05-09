@@ -55,6 +55,7 @@
 #endif
 #include <new>
 
+#include <vtkDebugStream.h>
 #include <visitstream.h>
 #include <visit-config.h>
 #include <snprintf.h>
@@ -89,7 +90,7 @@
 #include <StringHelpers.h>
 #include <StackTimer.h>
 #include <VisItDisplay.h>
-#include <vtkDebugStream.h>
+#include <XDisplay.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectReader.h>
@@ -321,6 +322,9 @@ protected:
 //    Tom Fogal, Fri Jan  8 17:09:26 MST 2010
 //    Enable IceT by default.
 //
+//    Tom Fogal, Wed May 26 09:26:08 MDT 2010
+//    State for launching X servers.
+//
 // ****************************************************************************
 
 Engine::Engine() : viewerArgs()
@@ -380,6 +384,7 @@ Engine::Engine() : viewerArgs()
 #endif
     nDisplays = 0;
     renderingDisplay = NULL;
+    launchXServers = false;
 }
 
 // ****************************************************************************
@@ -1899,6 +1904,9 @@ Engine::ProcessInput()
 //    For Windows, handle spaces and quotes for -dump and -infodump paths
 //    if specified.
 //
+//    Tom Fogal, Wed May 26 09:27:36 MDT 2010
+//    Add -launch-x, -no-launch-x command line options.
+//
 // ****************************************************************************
 
 void
@@ -2166,6 +2174,13 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 avtCallback::SetAuxSessionKey(s);
                 i++;
             }
+        else if (strcmp(argv[i], "-launch-x") == 0)
+        {
+            this->launchXServers = true;
+        }
+        else if (strcmp(argv[i], "-no-launch-x") == 0)
+        {
+            this->launchXServers = false;
         }
     }
     avtCallback::SetSoftwareRendering(!haveHWAccel);
@@ -3808,6 +3823,9 @@ Engine::GetProcessAttributes()
 //    Namespace was renamed to avoid X conflict
 //    Detect connection errors.
 //
+//    Tom Fogal, Wed May 26 09:28:12 MDT 2010
+//    Tell the display whether or not to launch servers.
+//
 // ****************************************************************************
 
 void
@@ -3848,6 +3866,14 @@ Engine::SetupDisplay()
         display = 0;
     }
 #endif
+    // Tell the display whether or not it should start X servers.  This must be
+    // done before ::Initialize!
+    XDisplay* xd = dynamic_cast<XDisplay*>(this->renderingDisplay);
+    if(xd != NULL)
+    {
+        xd->Launch(this->launchXServers);
+    }
+
     if(this->renderingDisplay == NULL)
     {
         this->renderingDisplay = VDisplay::Create(VDisplay::D_MESA);
