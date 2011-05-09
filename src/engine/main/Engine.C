@@ -550,6 +550,9 @@ Engine *Engine::Instance()
 //    Brad Whitlock, Wed Nov  4 12:05:18 PST 2009
 //    I removed a function that created an MPI type that we no longer use.
 //
+//    Tom Fogal, Mon May 24 19:36:40 MDT 2010
+//    Avoid an Open MPI warning when starting X servers.
+//
 // ****************************************************************************
 
 void
@@ -561,6 +564,13 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     ExtractViewerArguments(argc, argv);
 
 #ifdef PARALLEL
+    // We fork/exec X servers in some cases.  Open MPI will yell at us about
+    // it, but the warning is not relevant for us because our children are
+    // well behaved.
+    // This environment variable tells Open MPI we have good children, so it
+    // doesn't need to yell at us.
+    Environment::set("OMPI_MCA_mpi_warn_on_fork", "0");
+
     xfer = new MPIXfer;
     //
     // Initialize for MPI and get the process rank & size.
