@@ -41,6 +41,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt now provides a SWIG-generated Python binding for libsim that allows you to instrument your Python simulations so VisIt can connect to them and access their data.</li>
   <li>Libsim's <i>VisItSetupEnvironment</i> function was enhanced so it can automatically broadcast the environment from the rank 0 processor to other processors in order to reduce simulation startup time. To ensure that you benefit from this behavior, you must call <i>VisItSetupEnvironment</i> after making calls to <i>VisItSetParallel</i>, <i>VisItSetParallelRank</i>, and <i>VisItSetBroadcastStringFunction</i>.</li>
   <li>Libsim has new <i>VisItGetEnvironment</i> and <i>VisItSetupEnvironment2</i> functions. The <i>VisItGetEnvironment</i> function returns the environment that VisIt needs to run. This string must be passed to <i>VisItSetupEnvironment2</i> which is identical to <i>VisItSetupEnvironment</i> except that it lets you pass in the environment string. This is useful in the event that you need to determine the environment prior to calling MPI_Init. If you pass NULL to <i>VisItSetupEnvironment2</i> for non rank 0 processes then they will participate in a broadcast of the environment from rank 0 if you have informed libsim that your simulation is parallel.</li>
+  <LI>VisIt's X launching and parallel GPU acceleration features have
+  been rewritten to mesh better with modern cluster installations.  See
+  <A HREF="http://www.visitusers.org/index.php?title=Parallel_Hardware_Acceleration">
+  the wiki</A> for more information.</LI>
 </ul>
 
 <a name="File_format"></a>
