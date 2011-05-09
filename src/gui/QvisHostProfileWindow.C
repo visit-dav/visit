@@ -680,6 +680,12 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//
+//   Tom Fogal, Fri May  6 18:13:49 MDT 2011
+//   Add new X configuration widgets.
+//   Remove preCommand/postCommand widgets.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateHWAccelSettingsGroup()
@@ -713,28 +719,38 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
     layout->addWidget(canDoHW, row, 0, 1, 2);
     row++;
 
-    preCommand = new QLineEdit(currentGroup);
-    preCommandCheckBox = new QCheckBox(tr("Pre-command"), currentGroup);
-    connect(preCommand, SIGNAL(textChanged(const QString &)),
-            this, SLOT(preCommandChanged(const QString &)));
-    connect(preCommandCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(togglePreCommand(bool)));
-    layout->addWidget(preCommandCheckBox, row, 0, 1, 1);
-    layout->addWidget(preCommand, row, 1, 1, 1);
+    QLabel* lblXDisplay = new QLabel(tr("DISPLAY:"), currentGroup);
+    txtXDisplay = new QLineEdit(currentGroup);
+    txtXDisplay->setText(":%l");
+    connect(txtXDisplay, SIGNAL(textChanged(const QString&)), this,
+            SLOT(xDisplayChanged(const QString&)));
+    layout->addWidget(lblXDisplay, row,0, 1,1);
+    layout->addWidget(txtXDisplay, row,1, 1,1);
     row++;
 
-    postCommand = new QLineEdit(currentGroup);
-    postCommandCheckBox = new QCheckBox(tr("Post-command"), currentGroup);
-    connect(postCommand, SIGNAL(textChanged(const QString &)),
-            this, SLOT(postCommandChanged(const QString &)));
-    connect(postCommandCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(togglePostCommand(bool)));
-    layout->addWidget(postCommandCheckBox, row, 0, 1, 1);
-    layout->addWidget(postCommand, row, 1, 1, 1);
+    cbLaunchX = new QCheckBox(tr("Have VisIt launch X servers"), currentGroup);
+    connect(cbLaunchX, SIGNAL(toggled(bool)), this, SLOT(toggleLaunchX(bool)));
+    layout->addWidget(cbLaunchX, row,0, 1,2);
     row++;
 
+    QLabel* lblNGPUs = new QLabel(tr("Number of GPUs per node:"), currentGroup);
+    sbNGPUs = new QSpinBox();
+    sbNGPUs->setRange(0, 2048);
+    sbNGPUs->setEnabled(true);
+    connect(sbNGPUs, SIGNAL(valueChanged(const QString&)), this,
+            SLOT(nGPUsChanged(const QString&)));
+    layout->addWidget(lblNGPUs, row,0, 1,1);
+    layout->addWidget(sbNGPUs, row,1, 1,1);
+    row++;
 
-
+    cbXArgs = new QCheckBox(tr("X arguments:"), currentGroup);
+    txtXArgs = new QLineEdit(currentGroup);
+    connect(cbXArgs, SIGNAL(toggled(bool)), this, SLOT(toggleXArgs(bool)));
+    connect(txtXArgs, SIGNAL(textChanged(const QString&)), this,
+            SLOT(xArgsChanged(const QString&)));
+    layout->addWidget(cbXArgs, row,0, 1,1);
+    layout->addWidget(txtXArgs, row,1, 1,1);
+    row++;
 }
 
 // ****************************************************************************
@@ -972,6 +988,11 @@ QvisHostProfileWindow::UpdateMachineProfile()
 // Programmer:  Jeremy Meredith
 // Creation:    February 18, 2010
 //
+// Modifications:
+//
+//   Tom Fogal, Fri May  6 18:21:48 MDT 2011
+//   Update for new parallel GPU GUI elements.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::UpdateLaunchProfile()
@@ -1002,12 +1023,13 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     launchMethod->blockSignals(true);
     loadBalancing->blockSignals(true);
     canDoHW->blockSignals(true);
-    preCommand->blockSignals(true);
-    preCommandCheckBox->blockSignals(true);
-    postCommand->blockSignals(true);
-    postCommandCheckBox->blockSignals(true);
     timeout->blockSignals(true);
     engineArguments->blockSignals(true);
+    cbLaunchX->blockSignals(true);
+    sbNGPUs->blockSignals(true);
+    cbXArgs->blockSignals(true);
+    txtXArgs->blockSignals(true);
+    txtXDisplay->blockSignals(true);
 
     if (currentLaunch == NULL)
     {
@@ -1040,6 +1062,11 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         useVisItScriptForEnvCheckBox->setChecked(false);
         timeout->setValue(60*4);   // 4 hour default
         engineArguments->setText("");
+        cbLaunchX->setChecked(false);
+        sbNGPUs->setValue(0);
+        cbXArgs->setChecked(false);
+        txtXArgs->setText("");
+        txtXDisplay->setText(":%l");
     }
     else
     {
@@ -1129,10 +1156,6 @@ QvisHostProfileWindow::UpdateLaunchProfile()
             lb = 2;
         loadBalancing->setCurrentIndex(lb);
         canDoHW->setChecked(currentLaunch->GetCanDoHWAccel());
-        preCommandCheckBox->setChecked(currentLaunch->GetHavePreCommand());
-        preCommand->setText(currentLaunch->GetHwAccelPreCommand().c_str());
-        postCommandCheckBox->setChecked(currentLaunch->GetHavePostCommand());
-        postCommand->setText(currentLaunch->GetHwAccelPostCommand().c_str());
         timeout->setValue(currentLaunch->GetTimeout());
 
         QString temp;
@@ -1145,6 +1168,11 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         }
         engineArguments->setText(temp);
 
+        cbLaunchX->setChecked(currentLaunch->GetLaunchXServers());
+        sbNGPUs->setValue(currentLaunch->GetGPUsPerNode());
+        txtXArgs->setText(currentLaunch->GetXArguments().c_str());
+        cbXArgs->setChecked(!currentLaunch->GetXArguments().empty());
+        txtXDisplay->setText(currentLaunch->GetXDisplay().c_str());
     }
 
     // Restore signals.
@@ -1173,12 +1201,13 @@ QvisHostProfileWindow::UpdateLaunchProfile()
     launchMethod->blockSignals(false);
     loadBalancing->blockSignals(false);
     canDoHW->blockSignals(false);
-    preCommand->blockSignals(false);
-    preCommandCheckBox->blockSignals(false);
-    postCommand->blockSignals(false);
-    postCommandCheckBox->blockSignals(false);
     timeout->blockSignals(false);
     engineArguments->blockSignals(false);
+    cbLaunchX->blockSignals(false);
+    sbNGPUs->blockSignals(false);
+    cbXArgs->blockSignals(false);
+    txtXArgs->blockSignals(false);
+    txtXDisplay->blockSignals(false);
 }
 
 
@@ -1280,6 +1309,9 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    I added the ability to specify a gateway machine to use to get to the
 //    remote host.
 //
+//    Tom Fogal, Thu May  5 15:21:19 MDT 2011
+//    Enable/Disable new GPU options.
+//
 // ****************************************************************************
 
 void
@@ -1365,11 +1397,12 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 
     hwdisclaimer->setEnabled(launchEnabled);
     canDoHW->setEnabled(launchEnabled);
-    preCommandCheckBox->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
-    postCommandCheckBox->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
-    preCommand->setEnabled(launchEnabled && currentLaunch->GetHavePreCommand() && currentLaunch->GetCanDoHWAccel());
-    postCommand->setEnabled(launchEnabled && currentLaunch->GetHavePostCommand() && currentLaunch->GetCanDoHWAccel());
-
+    sbNGPUs->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
+    cbXArgs->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
+    txtXArgs->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel() &&
+                         cbXArgs->isChecked());
+    cbLaunchX->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
+    txtXDisplay->setEnabled(launchEnabled && currentLaunch->GetCanDoHWAccel());
 
     useVisItScriptForEnvCheckBox->setEnabled(parEnabled);
 }
@@ -3141,6 +3174,114 @@ QvisHostProfileWindow::toggleTunnelSSH(bool tunnel)
 }
 
 // ****************************************************************************
+//  Method:  QvisHostProfileWindow::toggleXArgs
+//
+//  Purpose:
+//      Toggles where the user has X arguments to pass.
+//
+//  Arguments:
+//      on       True if we can, false if we can't.
+//
+//  Programmer:  Tom Fogal
+//  Creation:    May 6, 2011
+//
+//  Modifications:
+// ****************************************************************************
+void QvisHostProfileWindow::toggleXArgs(bool on)
+{
+    if(NULL == currentLaunch) { return; }
+
+    txtXArgs->blockSignals(true);
+      txtXArgs->setEnabled(on);
+    txtXArgs->blockSignals(false);
+
+    if(false == on)
+    {
+        currentLaunch->SetXArguments(std::string(""));
+        SetUpdate(false);
+        Apply();
+    }
+    // ignore the on/true case: we'll update currentLaunch when the
+    // associated LineEdit changes.
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::xArgsChanged
+//
+//  Purpose:
+//      Grab the X arguments when the user modifies them.
+//
+//  Arguments:
+//      args     The arguments for the X server.
+//
+//  Programmer:  Tom Fogal
+//  Creation:    May 6, 2011
+//
+//  Modifications:
+// ****************************************************************************
+void QvisHostProfileWindow::xArgsChanged(const QString& args)
+{
+    if(NULL == currentLaunch || args.isEmpty()) { return; }
+
+    currentLaunch->SetXArguments(args.toStdString());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::toggleLaunchX
+//
+//  Purpose:
+//      Set whether or not VisIt should launch the X servers.
+//
+//  Arguments:
+//      on       true if VisIt should launch X servers
+//
+//  Programmer:  Tom Fogal
+//  Creation:    May 6, 2011
+//
+//  Modifications:
+// ****************************************************************************
+void QvisHostProfileWindow::toggleLaunchX(bool on)
+{
+    if(NULL == currentLaunch) { return; }
+
+    currentLaunch->SetLaunchXServers(on);
+
+    cbXArgs->blockSignals(true);
+    txtXArgs->blockSignals(true);
+      cbXArgs->setEnabled(on);
+      txtXArgs->setEnabled(on);
+    txtXArgs->blockSignals(false);
+    cbXArgs->blockSignals(false);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::xDisplayChanged
+//
+//  Purpose:
+//      Grab the X display setting when the user changes it
+//
+//  Arguments:
+//      display  the new display
+//
+//  Programmer:  Tom Fogal
+//  Creation:    May 6, 2011
+//
+//  Modifications:
+// ****************************************************************************
+void QvisHostProfileWindow::xDisplayChanged(const QString& display)
+{
+    if(NULL == currentLaunch) { return; }
+
+    currentLaunch->SetXDisplay(display.toStdString());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
 //  Method:  QvisHostProfileWindow::toggleCanDoHW
 //
 //  Purpose:
@@ -3170,163 +3311,28 @@ QvisHostProfileWindow::toggleCanDoHW(bool state)
 }
 
 // ****************************************************************************
-//  Method:  QvisHostProfileWindow::togglePreCommand
+//  Method:  QvisHostProfileWindow::nGPUsChanged
 //
 //  Purpose:
-//      Toggles whether or not there is a pre-command
+//      Notification that the user changed the number of GPUs in use.
 //
 //  Arguments:
-//      state    True if there is, false if there's not.
+//    unused, required by Qt prototype.
 //
-//  Programmer:  Hank Childs
-//  Creation:    December 2, 2005
-//
-//  Modifications:
-//   Jeremy Meredith, Thu Feb 18 15:54:50 EST 2010
-//   Split HostProfile int MachineProfile and LaunchProfile.  Rewrote window.
-//
-//   Jeremy Meredith, Thu Apr 29 13:19:48 EDT 2010
-//   Made UpdateWindowSensitivity last as it probably should be.
-//
-// ****************************************************************************
-void
-QvisHostProfileWindow::togglePreCommand(bool state)
-{
-    if (currentLaunch == NULL)
-        return;
-
-    currentLaunch->SetHavePreCommand(state);
-    SetUpdate(false);
-    Apply();
-    UpdateWindowSensitivity();
-}
-
-// ****************************************************************************
-//  Method:  QvisHostProfileWindow::togglePostCommand
-//
-//  Purpose:
-//      Toggles whether or not there is a post-command
-//
-//  Arguments:
-//      state    True if there is, false if there's not.
-//
-//  Programmer:  Hank Childs
-//  Creation:    December 2, 2005
+//  Programmer:  Tom Fogal
+//  Creation:    May 5, 2011
 //
 //  Modifications:
-//   Jeremy Meredith, Thu Feb 18 15:54:50 EST 2010
-//   Split HostProfile int MachineProfile and LaunchProfile.  Rewrote window.
-//
-//   Jeremy Meredith, Thu Apr 29 13:19:48 EDT 2010
-//   Made UpdateWindowSensitivity last as it probably should be.
-//
 // ****************************************************************************
 void
-QvisHostProfileWindow::togglePostCommand(bool state)
+QvisHostProfileWindow::nGPUsChanged(const QString&)
 {
-    if (currentLaunch == NULL)
-        return;
+    if(NULL == currentLaunch) { return; }
 
-    currentLaunch->SetHavePostCommand(state);
+    currentLaunch->SetGPUsPerNode(sbNGPUs->value());
     SetUpdate(false);
     Apply();
-    UpdateWindowSensitivity();
 }
-
-// ****************************************************************************
-//  Method:  QvisHostProfileWindow::preCommandChanged
-//
-//  Purpose:
-//      Changes the text for the pre-command
-//
-//  Arguments:
-//    portStr   the string indicating the port value
-//
-//  Programmer:  Hank Childs
-//  Creation:    December 2, 2005
-//
-//  Modifications:
-//    Jeremy Meredith, Mon Apr 10 13:24:13 PST 2006
-//    Fixed preCommand/postCommand error.
-//
-//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//    Support for internationalization.
-//
-//    Jeremy Meredith, Thu Feb 18 15:54:50 EST 2010
-//    Split HostProfile int MachineProfile and LaunchProfile.  Rewrote window.
-//
-//    Jeremy Meredith, Thu Apr 29 13:18:59 EDT 2010
-//    Fixed some bugs.
-//
-// ****************************************************************************
-
-void
-QvisHostProfileWindow::preCommandChanged(const QString &portStr)
-{
-    if (currentLaunch == NULL)
-        return;
-
-    QString temp, msg;
-    temp = preCommand->displayText();
-    currentLaunch->SetHwAccelPreCommand(std::string(temp.toStdString()));
-    if(temp.isEmpty())
-    {
-        msg = tr("Pre-command cannot be empty, turning off pre-command.");
-        currentLaunch->SetHavePreCommand(false);
-        preCommandCheckBox->blockSignals(true);
-        preCommandCheckBox->setChecked(false);
-        preCommandCheckBox->blockSignals(false);
-    }
-    SetUpdate(false);
-    Apply();
-    UpdateWindowSensitivity();
-}
-
-// ****************************************************************************
-//  Method:  QvisHostProfileWindow::postCommandChanged
-//
-//  Purpose:
-//      Changes the text for the post-command
-//
-//  Arguments:
-//    portStr   the string indicating the port value
-//
-//  Programmer:  Hank Childs
-//  Creation:    December 2, 2005
-//
-//  Modifications:
-//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//    Support for internationalization.
-//
-//    Jeremy Meredith, Thu Feb 18 15:54:50 EST 2010
-//    Split HostProfile int MachineProfile and LaunchProfile.  Rewrote window.
-//
-//    Jeremy Meredith, Thu Apr 29 13:18:59 EDT 2010
-//    Fixed some bugs.
-//
-// ****************************************************************************
-void
-QvisHostProfileWindow::postCommandChanged(const QString &portStr)
-{
-    if (currentLaunch == NULL)
-        return;
-
-    QString temp, msg;
-    temp = postCommand->displayText();
-    currentLaunch->SetHwAccelPostCommand(std::string(temp.toStdString()));
-    if(temp.isEmpty())
-    {
-        msg = tr("Post-command cannot be empty, turning off post-command.");
-        currentLaunch->SetHavePostCommand(false);
-        postCommandCheckBox->blockSignals(true);
-        postCommandCheckBox->setChecked(false);
-        postCommandCheckBox->blockSignals(false);
-    }
-    SetUpdate(false);
-    Apply();
-    UpdateWindowSensitivity();
-}
-
 
 // ****************************************************************************
 // Method:  QvisHostProfileWindow::currentHostChanged
