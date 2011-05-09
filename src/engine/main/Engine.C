@@ -3806,6 +3806,7 @@ Engine::GetProcessAttributes()
 //
 //    Tom Fogal, Tue May 25 16:09:31 MDT 2010
 //    Namespace was renamed to avoid X conflict
+//    Detect connection errors.
 //
 // ****************************************************************************
 
@@ -3855,7 +3856,12 @@ Engine::SetupDisplay()
     if(this->renderingDisplay->Initialize(display,
                                split(this->X_Args, PAR_Rank(), display)))
     {
-        this->renderingDisplay->Connect();
+        if(false == this->renderingDisplay->Connect())
+        {
+            debug1 << "Display initialization succeeded, but connection "
+                      "failed.  Try running with -debug_engine 5 and "
+                      "examining the log files.";
+        }
     }
     else
     {

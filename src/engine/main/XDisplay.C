@@ -48,6 +48,8 @@
 #include <iterator>
 #include <vector>
 
+#include <X11/Xlib.h>
+
 #include <XDisplay.h>
 
 #include <DebugStream.h>
@@ -165,6 +167,9 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
 //    Tom Fogal, Tue May 25 16:07:27 MDT 2010
 //    Made it return a bool so we can detect errors.
 //
+//    Tom Fogal, Wed May 26 09:05:00 MDT 2010
+//    Detect errors.
+//
 // ****************************************************************************
 
 bool
@@ -183,7 +188,47 @@ XDisplay::Connect()
     }
     InitVTKRendering::UnforceMesa();
 
-    system("xhost +");
+    if(!initialized(this->xserver))
+    {
+        debug1 << this->hostname << ": X server PID is bad; impossible.  "
+               << "This method should not be called if X server startup "
+                  "failed!\n";
+        return false;
+    }
+
+    std::string xh = std::string("xhost +") + this->hostname;
+    system(xh.c_str());
+
+    // Test our connection.
+    Display* dpy=NULL;
+    do
+    {
+        int status;
+        // Our X server might have died.  Don't bother spinning until we can
+        // connect if it's never going to start!
+        if(waitpid(this->xserver, &status, WNOHANG) == -1)
+        {
+            debug1 << this->hostname << ": waitpid(" << this->xserver
+                   << ") failed.\n";
+            return false;
+        }
+        if(WIFEXITED(status) || WIFSIGNALED(status))
+        {
+            debug1 << this->hostname << ": X server exited before we could "
+                   << "connect!  This normally means the X server "
+                      "configuration is incorrect.\n";
+            return false;
+        }
+        dpy = XOpenDisplay(NULL);
+        if(dpy == NULL)
+        {
+            debug1 << this->hostname << ": could not connect to display "
+                   << XDisplayName(NULL) << "; spinning...\n";
+            sleep(1);
+        }
+    } while(dpy == NULL);
+    XCloseDisplay(dpy);
+
     return true;
 }
 
