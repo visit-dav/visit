@@ -97,8 +97,8 @@ public:
     void SelectSublaunchPreCmd();
     void SelectSublaunchPostCmd();
     void SelectMachinefile();
-    void SelectHwAccelPreCommand();
-    void SelectHwAccelPostCommand();
+    void SelectXArguments();
+    void SelectXDisplay();
 
     // Property setting methods
     void SetProfileName(const std::string &profileName_);
@@ -131,10 +131,10 @@ public:
     void SetMachinefile(const std::string &machinefile_);
     void SetVisitSetsUpEnv(bool visitSetsUpEnv_);
     void SetCanDoHWAccel(bool canDoHWAccel_);
-    void SetHavePreCommand(bool havePreCommand_);
-    void SetHwAccelPreCommand(const std::string &hwAccelPreCommand_);
-    void SetHavePostCommand(bool havePostCommand_);
-    void SetHwAccelPostCommand(const std::string &hwAccelPostCommand_);
+    void SetGPUsPerNode(int GPUsPerNode_);
+    void SetXArguments(const std::string &XArguments_);
+    void SetLaunchXServers(bool launchXServers_);
+    void SetXDisplay(const std::string &XDisplay_);
 
     // Property getting methods
     const std::string  &GetProfileName() const;
@@ -178,12 +178,12 @@ public:
           std::string  &GetMachinefile();
     bool               GetVisitSetsUpEnv() const;
     bool               GetCanDoHWAccel() const;
-    bool               GetHavePreCommand() const;
-    const std::string  &GetHwAccelPreCommand() const;
-          std::string  &GetHwAccelPreCommand();
-    bool               GetHavePostCommand() const;
-    const std::string  &GetHwAccelPostCommand() const;
-          std::string  &GetHwAccelPostCommand();
+    int                GetGPUsPerNode() const;
+    const std::string  &GetXArguments() const;
+          std::string  &GetXArguments();
+    bool               GetLaunchXServers() const;
+    const std::string  &GetXDisplay() const;
+          std::string  &GetXDisplay();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -231,10 +231,10 @@ public:
         ID_machinefile,
         ID_visitSetsUpEnv,
         ID_canDoHWAccel,
-        ID_havePreCommand,
-        ID_hwAccelPreCommand,
-        ID_havePostCommand,
-        ID_hwAccelPostCommand,
+        ID_GPUsPerNode,
+        ID_XArguments,
+        ID_launchXServers,
+        ID_XDisplay,
         ID__LAST
     };
 
@@ -269,15 +269,15 @@ private:
     std::string  machinefile;
     bool         visitSetsUpEnv;
     bool         canDoHWAccel;
-    bool         havePreCommand;
-    std::string  hwAccelPreCommand;
-    bool         havePostCommand;
-    std::string  hwAccelPostCommand;
+    int          GPUsPerNode;
+    std::string  XArguments;
+    bool         launchXServers;
+    std::string  XDisplay;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LAUNCHPROFILE_TMFS "siibibsbsbsbsbbbs*bbsbsbsbsbsbbbsbs"
+#define LAUNCHPROFILE_TMFS "siibibsbsbsbsbbbs*bbsbsbsbsbsbbisbs"
 
 #endif

@@ -198,19 +198,16 @@ PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%scanDoHWAccel = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetHavePreCommand())
-        SNPRINTF(tmpStr, 1000, "%shavePreCommand = 1\n", prefix);
+    SNPRINTF(tmpStr, 1000, "%sGPUsPerNode = %d\n", prefix, atts->GetGPUsPerNode());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sXArguments = \"%s\"\n", prefix, atts->GetXArguments().c_str());
+    str += tmpStr;
+    if(atts->GetLaunchXServers())
+        SNPRINTF(tmpStr, 1000, "%slaunchXServers = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%shavePreCommand = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%slaunchXServers = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shwAccelPreCommand = \"%s\"\n", prefix, atts->GetHwAccelPreCommand().c_str());
-    str += tmpStr;
-    if(atts->GetHavePostCommand())
-        SNPRINTF(tmpStr, 1000, "%shavePostCommand = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%shavePostCommand = 0\n", prefix);
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shwAccelPostCommand = \"%s\"\n", prefix, atts->GetHwAccelPostCommand().c_str());
+    SNPRINTF(tmpStr, 1000, "%sXDisplay = \"%s\"\n", prefix, atts->GetXDisplay().c_str());
     str += tmpStr;
     return str;
 }
@@ -970,7 +967,7 @@ LaunchProfile_GetCanDoHWAccel(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LaunchProfile_SetHavePreCommand(PyObject *self, PyObject *args)
+LaunchProfile_SetGPUsPerNode(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
@@ -978,23 +975,23 @@ LaunchProfile_SetHavePreCommand(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the havePreCommand in the object.
-    obj->data->SetHavePreCommand(ival != 0);
+    // Set the GPUsPerNode in the object.
+    obj->data->SetGPUsPerNode((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LaunchProfile_GetHavePreCommand(PyObject *self, PyObject *args)
+LaunchProfile_GetGPUsPerNode(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetHavePreCommand()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetGPUsPerNode()));
     return retval;
 }
 
 /*static*/ PyObject *
-LaunchProfile_SetHwAccelPreCommand(PyObject *self, PyObject *args)
+LaunchProfile_SetXArguments(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
@@ -1002,23 +999,23 @@ LaunchProfile_SetHwAccelPreCommand(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "s", &str))
         return NULL;
 
-    // Set the hwAccelPreCommand in the object.
-    obj->data->SetHwAccelPreCommand(std::string(str));
+    // Set the XArguments in the object.
+    obj->data->SetXArguments(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LaunchProfile_GetHwAccelPreCommand(PyObject *self, PyObject *args)
+LaunchProfile_GetXArguments(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetHwAccelPreCommand().c_str());
+    PyObject *retval = PyString_FromString(obj->data->GetXArguments().c_str());
     return retval;
 }
 
 /*static*/ PyObject *
-LaunchProfile_SetHavePostCommand(PyObject *self, PyObject *args)
+LaunchProfile_SetLaunchXServers(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
@@ -1026,23 +1023,23 @@ LaunchProfile_SetHavePostCommand(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the havePostCommand in the object.
-    obj->data->SetHavePostCommand(ival != 0);
+    // Set the launchXServers in the object.
+    obj->data->SetLaunchXServers(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LaunchProfile_GetHavePostCommand(PyObject *self, PyObject *args)
+LaunchProfile_GetLaunchXServers(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetHavePostCommand()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetLaunchXServers()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-LaunchProfile_SetHwAccelPostCommand(PyObject *self, PyObject *args)
+LaunchProfile_SetXDisplay(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
 
@@ -1050,18 +1047,18 @@ LaunchProfile_SetHwAccelPostCommand(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "s", &str))
         return NULL;
 
-    // Set the hwAccelPostCommand in the object.
-    obj->data->SetHwAccelPostCommand(std::string(str));
+    // Set the XDisplay in the object.
+    obj->data->SetXDisplay(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LaunchProfile_GetHwAccelPostCommand(PyObject *self, PyObject *args)
+LaunchProfile_GetXDisplay(PyObject *self, PyObject *args)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetHwAccelPostCommand().c_str());
+    PyObject *retval = PyString_FromString(obj->data->GetXDisplay().c_str());
     return retval;
 }
 
@@ -1129,14 +1126,14 @@ PyMethodDef PyLaunchProfile_methods[LAUNCHPROFILE_NMETH] = {
     {"GetVisitSetsUpEnv", LaunchProfile_GetVisitSetsUpEnv, METH_VARARGS},
     {"SetCanDoHWAccel", LaunchProfile_SetCanDoHWAccel, METH_VARARGS},
     {"GetCanDoHWAccel", LaunchProfile_GetCanDoHWAccel, METH_VARARGS},
-    {"SetHavePreCommand", LaunchProfile_SetHavePreCommand, METH_VARARGS},
-    {"GetHavePreCommand", LaunchProfile_GetHavePreCommand, METH_VARARGS},
-    {"SetHwAccelPreCommand", LaunchProfile_SetHwAccelPreCommand, METH_VARARGS},
-    {"GetHwAccelPreCommand", LaunchProfile_GetHwAccelPreCommand, METH_VARARGS},
-    {"SetHavePostCommand", LaunchProfile_SetHavePostCommand, METH_VARARGS},
-    {"GetHavePostCommand", LaunchProfile_GetHavePostCommand, METH_VARARGS},
-    {"SetHwAccelPostCommand", LaunchProfile_SetHwAccelPostCommand, METH_VARARGS},
-    {"GetHwAccelPostCommand", LaunchProfile_GetHwAccelPostCommand, METH_VARARGS},
+    {"SetGPUsPerNode", LaunchProfile_SetGPUsPerNode, METH_VARARGS},
+    {"GetGPUsPerNode", LaunchProfile_GetGPUsPerNode, METH_VARARGS},
+    {"SetXArguments", LaunchProfile_SetXArguments, METH_VARARGS},
+    {"GetXArguments", LaunchProfile_GetXArguments, METH_VARARGS},
+    {"SetLaunchXServers", LaunchProfile_SetLaunchXServers, METH_VARARGS},
+    {"GetLaunchXServers", LaunchProfile_GetLaunchXServers, METH_VARARGS},
+    {"SetXDisplay", LaunchProfile_SetXDisplay, METH_VARARGS},
+    {"GetXDisplay", LaunchProfile_GetXDisplay, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1225,14 +1222,14 @@ PyLaunchProfile_getattr(PyObject *self, char *name)
         return LaunchProfile_GetVisitSetsUpEnv(self, NULL);
     if(strcmp(name, "canDoHWAccel") == 0)
         return LaunchProfile_GetCanDoHWAccel(self, NULL);
-    if(strcmp(name, "havePreCommand") == 0)
-        return LaunchProfile_GetHavePreCommand(self, NULL);
-    if(strcmp(name, "hwAccelPreCommand") == 0)
-        return LaunchProfile_GetHwAccelPreCommand(self, NULL);
-    if(strcmp(name, "havePostCommand") == 0)
-        return LaunchProfile_GetHavePostCommand(self, NULL);
-    if(strcmp(name, "hwAccelPostCommand") == 0)
-        return LaunchProfile_GetHwAccelPostCommand(self, NULL);
+    if(strcmp(name, "GPUsPerNode") == 0)
+        return LaunchProfile_GetGPUsPerNode(self, NULL);
+    if(strcmp(name, "XArguments") == 0)
+        return LaunchProfile_GetXArguments(self, NULL);
+    if(strcmp(name, "launchXServers") == 0)
+        return LaunchProfile_GetLaunchXServers(self, NULL);
+    if(strcmp(name, "XDisplay") == 0)
+        return LaunchProfile_GetXDisplay(self, NULL);
 
     return Py_FindMethod(PyLaunchProfile_methods, self, name);
 }
@@ -1307,14 +1304,14 @@ PyLaunchProfile_setattr(PyObject *self, char *name, PyObject *args)
         obj = LaunchProfile_SetVisitSetsUpEnv(self, tuple);
     else if(strcmp(name, "canDoHWAccel") == 0)
         obj = LaunchProfile_SetCanDoHWAccel(self, tuple);
-    else if(strcmp(name, "havePreCommand") == 0)
-        obj = LaunchProfile_SetHavePreCommand(self, tuple);
-    else if(strcmp(name, "hwAccelPreCommand") == 0)
-        obj = LaunchProfile_SetHwAccelPreCommand(self, tuple);
-    else if(strcmp(name, "havePostCommand") == 0)
-        obj = LaunchProfile_SetHavePostCommand(self, tuple);
-    else if(strcmp(name, "hwAccelPostCommand") == 0)
-        obj = LaunchProfile_SetHwAccelPostCommand(self, tuple);
+    else if(strcmp(name, "GPUsPerNode") == 0)
+        obj = LaunchProfile_SetGPUsPerNode(self, tuple);
+    else if(strcmp(name, "XArguments") == 0)
+        obj = LaunchProfile_SetXArguments(self, tuple);
+    else if(strcmp(name, "launchXServers") == 0)
+        obj = LaunchProfile_SetLaunchXServers(self, tuple);
+    else if(strcmp(name, "XDisplay") == 0)
+        obj = LaunchProfile_SetXDisplay(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

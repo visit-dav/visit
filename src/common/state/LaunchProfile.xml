@@ -80,15 +80,18 @@
     <Field name="canDoHWAccel" label="Machine can do hardware acceleration" type="bool">
       false
     </Field>
-    <Field name="havePreCommand" label="Have pre-command?" type="bool">
+    <Field name="GPUsPerNode" label="Number of GPUs Per Node" type="int">
+      1
+    </Field>
+    <Field name="XArguments" label="Arguments to pass to X servers"
+           type="string">
+    </Field>
+    <Field name="launchXServers" label="Have VisIt launch the X servers"
+           type="bool">
       false
     </Field>
-    <Field name="hwAccelPreCommand" label="Pre-command for hardware acceleration" type="string" enabler="havePreCommand:true">
-    </Field>
-    <Field name="havePostCommand" label="Have post-command?" type="bool">
-      false
-    </Field>
-    <Field name="hwAccelPostCommand" label="Post-command for hardware acceleration" type="string" enabler="havePostCommand:true">
+    <Field name="XDisplay" label="DISPLAY to use for X servers" type="string">
+      :%l
     </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>

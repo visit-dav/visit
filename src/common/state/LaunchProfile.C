@@ -76,8 +76,9 @@ void LaunchProfile::Init()
     machinefileSet = false;
     visitSetsUpEnv = false;
     canDoHWAccel = false;
-    havePreCommand = false;
-    havePostCommand = false;
+    GPUsPerNode = 1;
+    launchXServers = false;
+    XDisplay = ":%l";
 
     LaunchProfile::SelectAll();
 }
@@ -129,10 +130,10 @@ void LaunchProfile::Copy(const LaunchProfile &obj)
     machinefile = obj.machinefile;
     visitSetsUpEnv = obj.visitSetsUpEnv;
     canDoHWAccel = obj.canDoHWAccel;
-    havePreCommand = obj.havePreCommand;
-    hwAccelPreCommand = obj.hwAccelPreCommand;
-    havePostCommand = obj.havePostCommand;
-    hwAccelPostCommand = obj.hwAccelPostCommand;
+    GPUsPerNode = obj.GPUsPerNode;
+    XArguments = obj.XArguments;
+    launchXServers = obj.launchXServers;
+    XDisplay = obj.XDisplay;
 
     LaunchProfile::SelectAll();
 }
@@ -320,10 +321,10 @@ LaunchProfile::operator == (const LaunchProfile &obj) const
             (machinefile == obj.machinefile) &&
             (visitSetsUpEnv == obj.visitSetsUpEnv) &&
             (canDoHWAccel == obj.canDoHWAccel) &&
-            (havePreCommand == obj.havePreCommand) &&
-            (hwAccelPreCommand == obj.hwAccelPreCommand) &&
-            (havePostCommand == obj.havePostCommand) &&
-            (hwAccelPostCommand == obj.hwAccelPostCommand));
+            (GPUsPerNode == obj.GPUsPerNode) &&
+            (XArguments == obj.XArguments) &&
+            (launchXServers == obj.launchXServers) &&
+            (XDisplay == obj.XDisplay));
 }
 
 // ****************************************************************************
@@ -497,10 +498,10 @@ LaunchProfile::SelectAll()
     Select(ID_machinefile,         (void *)&machinefile);
     Select(ID_visitSetsUpEnv,      (void *)&visitSetsUpEnv);
     Select(ID_canDoHWAccel,        (void *)&canDoHWAccel);
-    Select(ID_havePreCommand,      (void *)&havePreCommand);
-    Select(ID_hwAccelPreCommand,   (void *)&hwAccelPreCommand);
-    Select(ID_havePostCommand,     (void *)&havePostCommand);
-    Select(ID_hwAccelPostCommand,  (void *)&hwAccelPostCommand);
+    Select(ID_GPUsPerNode,         (void *)&GPUsPerNode);
+    Select(ID_XArguments,          (void *)&XArguments);
+    Select(ID_launchXServers,      (void *)&launchXServers);
+    Select(ID_XDisplay,            (void *)&XDisplay);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -526,6 +527,9 @@ LaunchProfile::SelectAll()
 // Creation:   April 29, 2010
 //
 // Modifications:
+//
+//   Tom Fogal, Fri May  6 18:37:57 MDT 2011
+//   Adjust for new X launching options.
 //   
 // ****************************************************************************
 bool
@@ -713,28 +717,28 @@ LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("canDoHWAccel", canDoHWAccel));
     }
 
-    if(completeSave || IsSelected(ID_havePreCommand))
+    if(completeSave || IsSelected(ID_GPUsPerNode))
     {
         addToParent = true;
-        node->AddNode(new DataNode("havePreCommand", havePreCommand));
+        node->AddNode(new DataNode("GPUsPerNode", GPUsPerNode));
     }
 
-    if(completeSave || IsSelected(ID_hwAccelPreCommand))
+    if(completeSave || IsSelected(ID_XArguments))
     {
         addToParent = true;
-        node->AddNode(new DataNode("hwAccelPreCommand", hwAccelPreCommand));
+        node->AddNode(new DataNode("XArguments", XArguments));
     }
 
-    if(completeSave || IsSelected(ID_havePostCommand))
+    if(completeSave || IsSelected(ID_launchXServers))
     {
         addToParent = true;
-        node->AddNode(new DataNode("havePostCommand", havePostCommand));
+        node->AddNode(new DataNode("launchXServers", launchXServers));
     }
 
-    if(completeSave || IsSelected(ID_hwAccelPostCommand))
+    if(completeSave || IsSelected(ID_XDisplay))
     {
         addToParent = true;
-        node->AddNode(new DataNode("hwAccelPostCommand", hwAccelPostCommand));
+        node->AddNode(new DataNode("XDisplay", XDisplay));
     }
 
     if (addToParent)
@@ -836,14 +840,14 @@ LaunchProfile::SetFromNode(DataNode *parentNode)
         SetVisitSetsUpEnv(node->AsBool());
     if((node = searchNode->GetNode("canDoHWAccel")) != 0)
         SetCanDoHWAccel(node->AsBool());
-    if((node = searchNode->GetNode("havePreCommand")) != 0)
-        SetHavePreCommand(node->AsBool());
-    if((node = searchNode->GetNode("hwAccelPreCommand")) != 0)
-        SetHwAccelPreCommand(node->AsString());
-    if((node = searchNode->GetNode("havePostCommand")) != 0)
-        SetHavePostCommand(node->AsBool());
-    if((node = searchNode->GetNode("hwAccelPostCommand")) != 0)
-        SetHwAccelPostCommand(node->AsString());
+    if((node = searchNode->GetNode("GPUsPerNode")) != 0)
+        SetGPUsPerNode(node->AsInt());
+    if((node = searchNode->GetNode("XArguments")) != 0)
+        SetXArguments(node->AsString());
+    if((node = searchNode->GetNode("launchXServers")) != 0)
+        SetLaunchXServers(node->AsBool());
+    if((node = searchNode->GetNode("XDisplay")) != 0)
+        SetXDisplay(node->AsString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1061,31 +1065,31 @@ LaunchProfile::SetCanDoHWAccel(bool canDoHWAccel_)
 }
 
 void
-LaunchProfile::SetHavePreCommand(bool havePreCommand_)
+LaunchProfile::SetGPUsPerNode(int GPUsPerNode_)
 {
-    havePreCommand = havePreCommand_;
-    Select(ID_havePreCommand, (void *)&havePreCommand);
+    GPUsPerNode = GPUsPerNode_;
+    Select(ID_GPUsPerNode, (void *)&GPUsPerNode);
 }
 
 void
-LaunchProfile::SetHwAccelPreCommand(const std::string &hwAccelPreCommand_)
+LaunchProfile::SetXArguments(const std::string &XArguments_)
 {
-    hwAccelPreCommand = hwAccelPreCommand_;
-    Select(ID_hwAccelPreCommand, (void *)&hwAccelPreCommand);
+    XArguments = XArguments_;
+    Select(ID_XArguments, (void *)&XArguments);
 }
 
 void
-LaunchProfile::SetHavePostCommand(bool havePostCommand_)
+LaunchProfile::SetLaunchXServers(bool launchXServers_)
 {
-    havePostCommand = havePostCommand_;
-    Select(ID_havePostCommand, (void *)&havePostCommand);
+    launchXServers = launchXServers_;
+    Select(ID_launchXServers, (void *)&launchXServers);
 }
 
 void
-LaunchProfile::SetHwAccelPostCommand(const std::string &hwAccelPostCommand_)
+LaunchProfile::SetXDisplay(const std::string &XDisplay_)
 {
-    hwAccelPostCommand = hwAccelPostCommand_;
-    Select(ID_hwAccelPostCommand, (void *)&hwAccelPostCommand);
+    XDisplay = XDisplay_;
+    Select(ID_XDisplay, (void *)&XDisplay);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1338,40 +1342,40 @@ LaunchProfile::GetCanDoHWAccel() const
     return canDoHWAccel;
 }
 
-bool
-LaunchProfile::GetHavePreCommand() const
+int
+LaunchProfile::GetGPUsPerNode() const
 {
-    return havePreCommand;
+    return GPUsPerNode;
 }
 
 const std::string &
-LaunchProfile::GetHwAccelPreCommand() const
+LaunchProfile::GetXArguments() const
 {
-    return hwAccelPreCommand;
+    return XArguments;
 }
 
 std::string &
-LaunchProfile::GetHwAccelPreCommand()
+LaunchProfile::GetXArguments()
 {
-    return hwAccelPreCommand;
+    return XArguments;
 }
 
 bool
-LaunchProfile::GetHavePostCommand() const
+LaunchProfile::GetLaunchXServers() const
 {
-    return havePostCommand;
+    return launchXServers;
 }
 
 const std::string &
-LaunchProfile::GetHwAccelPostCommand() const
+LaunchProfile::GetXDisplay() const
 {
-    return hwAccelPostCommand;
+    return XDisplay;
 }
 
 std::string &
-LaunchProfile::GetHwAccelPostCommand()
+LaunchProfile::GetXDisplay()
 {
-    return hwAccelPostCommand;
+    return XDisplay;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1445,15 +1449,15 @@ LaunchProfile::SelectMachinefile()
 }
 
 void
-LaunchProfile::SelectHwAccelPreCommand()
+LaunchProfile::SelectXArguments()
 {
-    Select(ID_hwAccelPreCommand, (void *)&hwAccelPreCommand);
+    Select(ID_XArguments, (void *)&XArguments);
 }
 
 void
-LaunchProfile::SelectHwAccelPostCommand()
+LaunchProfile::SelectXDisplay()
 {
-    Select(ID_hwAccelPostCommand, (void *)&hwAccelPostCommand);
+    Select(ID_XDisplay, (void *)&XDisplay);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1510,10 +1514,10 @@ LaunchProfile::GetFieldName(int index) const
     case ID_machinefile:         return "machinefile";
     case ID_visitSetsUpEnv:      return "visitSetsUpEnv";
     case ID_canDoHWAccel:        return "canDoHWAccel";
-    case ID_havePreCommand:      return "havePreCommand";
-    case ID_hwAccelPreCommand:   return "hwAccelPreCommand";
-    case ID_havePostCommand:     return "havePostCommand";
-    case ID_hwAccelPostCommand:  return "hwAccelPostCommand";
+    case ID_GPUsPerNode:         return "GPUsPerNode";
+    case ID_XArguments:          return "XArguments";
+    case ID_launchXServers:      return "launchXServers";
+    case ID_XDisplay:            return "XDisplay";
     default:  return "invalid index";
     }
 }
@@ -1568,10 +1572,10 @@ LaunchProfile::GetFieldType(int index) const
     case ID_machinefile:         return FieldType_string;
     case ID_visitSetsUpEnv:      return FieldType_bool;
     case ID_canDoHWAccel:        return FieldType_bool;
-    case ID_havePreCommand:      return FieldType_bool;
-    case ID_hwAccelPreCommand:   return FieldType_string;
-    case ID_havePostCommand:     return FieldType_bool;
-    case ID_hwAccelPostCommand:  return FieldType_string;
+    case ID_GPUsPerNode:         return FieldType_int;
+    case ID_XArguments:          return FieldType_string;
+    case ID_launchXServers:      return FieldType_bool;
+    case ID_XDisplay:            return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -1626,10 +1630,10 @@ LaunchProfile::GetFieldTypeName(int index) const
     case ID_machinefile:         return "string";
     case ID_visitSetsUpEnv:      return "bool";
     case ID_canDoHWAccel:        return "bool";
-    case ID_havePreCommand:      return "bool";
-    case ID_hwAccelPreCommand:   return "string";
-    case ID_havePostCommand:     return "bool";
-    case ID_hwAccelPostCommand:  return "string";
+    case ID_GPUsPerNode:         return "int";
+    case ID_XArguments:          return "string";
+    case ID_launchXServers:      return "bool";
+    case ID_XDisplay:            return "string";
     default:  return "invalid index";
     }
 }
@@ -1806,24 +1810,24 @@ LaunchProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (canDoHWAccel == obj.canDoHWAccel);
         }
         break;
-    case ID_havePreCommand:
+    case ID_GPUsPerNode:
         {  // new scope
-        retval = (havePreCommand == obj.havePreCommand);
+        retval = (GPUsPerNode == obj.GPUsPerNode);
         }
         break;
-    case ID_hwAccelPreCommand:
+    case ID_XArguments:
         {  // new scope
-        retval = (hwAccelPreCommand == obj.hwAccelPreCommand);
+        retval = (XArguments == obj.XArguments);
         }
         break;
-    case ID_havePostCommand:
+    case ID_launchXServers:
         {  // new scope
-        retval = (havePostCommand == obj.havePostCommand);
+        retval = (launchXServers == obj.launchXServers);
         }
         break;
-    case ID_hwAccelPostCommand:
+    case ID_XDisplay:
         {  // new scope
-        retval = (hwAccelPostCommand == obj.hwAccelPostCommand);
+        retval = (XDisplay == obj.XDisplay);
         }
         break;
     default: retval = false;
@@ -1847,6 +1851,11 @@ LaunchProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //
 // Programmer:  Jeremy Meredith
 // Creation:    April 29, 2010
+//
+// Modifications:
+//
+//   Tom Fogal, Fri May  6 18:40:39 MDT 2011
+//   Adjust for new X launching options.
 //
 // ****************************************************************************
 void
@@ -1914,13 +1923,13 @@ LaunchProfile::SelectOnlyDifferingFields(LaunchProfile &other)
         Select(ID_visitSetsUpEnv,      (void *)&visitSetsUpEnv);
     if (canDoHWAccel != other.GetCanDoHWAccel())
         Select(ID_canDoHWAccel,        (void *)&canDoHWAccel);
-    if (havePreCommand != other.GetHavePreCommand())
-        Select(ID_havePreCommand,      (void *)&havePreCommand);
-    if (hwAccelPreCommand != other.GetHwAccelPreCommand())
-        Select(ID_hwAccelPreCommand,   (void *)&hwAccelPreCommand);
-    if (havePostCommand != other.GetHavePostCommand())
-        Select(ID_havePostCommand,     (void *)&havePostCommand);
-    if (hwAccelPostCommand != other.GetHwAccelPostCommand())
-        Select(ID_hwAccelPostCommand,  (void *)&hwAccelPostCommand);
+    if(GPUsPerNode != other.GetGPUsPerNode())
+        Select(ID_GPUsPerNode,        (void *)&GPUsPerNode);
+    if(XArguments != other.GetXArguments())
+        Select(ID_XArguments,        (void *)&XArguments);
+    if(launchXServers != other.GetLaunchXServers())
+        Select(ID_launchXServers,        (void *)&launchXServers);
+    if(XDisplay != other.GetXDisplay())
+        Select(ID_XDisplay,        (void *)&XDisplay);
 }
 

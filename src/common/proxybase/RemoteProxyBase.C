@@ -407,6 +407,10 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //
 //    Mark C. Miller, Tue Oct 19 21:42:22 PDT 2010
 //    Name of '-timeout' argument was changed to '-idle-timeout'.
+//
+//    Tom Fogal, Fri May  6 18:34:52 MDT 2011
+//    Adjust for new X launch options.
+//
 // ****************************************************************************
 
 void
@@ -566,15 +570,25 @@ RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
     if (launch->GetCanDoHWAccel())
     {
         AddArgument("-hw-accel");
-        if (launch->GetHavePreCommand())
+        if(launch->GetLaunchXServers())
         {
-            AddArgument("-hw-pre");
-            AddArgument(launch->GetHwAccelPreCommand());
+            AddArgument("-launch-x");
+            if(!launch->GetXArguments().empty())
+            {
+                AddArgument("-x-args");
+                AddArgument(launch->GetXArguments());
+            }
+            if(!launch->GetXDisplay().empty())
+            {
+                AddArgument("-display");
+                AddArgument(launch->GetXDisplay());
+            }
         }
-        if (launch->GetHavePostCommand())
+        AddArgument("-n-gpus-per-node");
         {
-            AddArgument("-hw-post");
-            AddArgument(launch->GetHwAccelPostCommand());
+            std::ostringstream gn;
+            gn << launch->GetGPUsPerNode();
+            AddArgument(gn.str());
         }
     }
 
