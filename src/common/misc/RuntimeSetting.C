@@ -295,17 +295,16 @@ lookupf(const char *key)
     return retval;
 }
 
+// Modifications:
+//
+//   Tom Fogal, Wed May 26 11:00:44 MDT 2010
+//   Fix parsing -- we should get the whole string!
 std::string
 lookups(const char *key)
 {
-    std::string retval;
     std::string value;
-    if(find_setting(key, value))
-    {
-        std::istringstream read_value(value);
-        read_value >> retval;
-    }
-    return retval;
+    find_setting(key, value);
+    return value;
 }
 
 bool
