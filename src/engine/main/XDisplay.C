@@ -45,6 +45,7 @@
 #if !defined(_WIN32)
 #include <unistd.h>
 #endif
+#include <iterator>
 #include <vector>
 
 #include <XDisplay.h>
@@ -65,6 +66,9 @@ static inline bool initialized(pid_t x) { return ((int)x != -1); }
 static inline void set_uninitialized(pid_t *x) { *x = (pid_t) -1; }
 static char **vec_convert(std::vector<std::string> svec, size_t *len);
 void vec_convert_free(char **vec, size_t len);
+static pid_t xinit(const std::string& display,
+                   const std::vector<std::string>& user_args);
+static void fix_signals();
 
 // ****************************************************************************
 //  Method: XDisplay constructor
@@ -115,74 +119,21 @@ XDisplay::~XDisplay()
 //
 //  Modifications:
 //
-//    Tom Fogal, Tue Aug  5 16:33:49 EDT 2008
-//    Add argument string-vector, and code to convert that into an argv-style
-//    array.  Finally, use execvp to start xinit.  All of this allows the user
-//    to specify their own custom arguments to the X launch.
-//
-//    Tom Fogal, Mon Aug 11 19:02:11 EDT 2008
-//    Move print out of the child; this is confusing for the output stream (two
-//    processes can write to it, concurrently!).  Convert to an argv[] array in
-//    both processes, so that we can still output the X server options.
-//
-//    Tom Fogal, Mon Sep  1 13:37:59 EDT 2008
-//    Prevent memory leaks in the event of failure.  Force "-ac" in X server
-//    command line options, as usage is unreliable otherwise.
-//
-//    Tom Fogal, Mon May 24 11:16:04 MDT 2010
-//    Add '-nolisten tcp' argument.  We don't need TCP access.
+//    Tom Fogal, Mon May 24 18:58:57 MDT 2010
+//    Abstract most of this method out to `xinit'.
 //
 // ****************************************************************************
 
 bool
 XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
 {
-    char **argv;
-    size_t v_elems;
-
     this->display = display;
+    std::string disp = format(":%l", /* unused */ 0, display);
 
-    std::vector<std::string> args;
-    args.push_back("xinit");
-    args.push_back("--");
-    args.push_back(format(":%l", /* unused */0, display));
-    args.push_back("-ac");
-    args.push_back("-sharevts");
-    args.push_back("-once");
-    args.push_back("-terminate");
-    args.push_back("-nolisten");
-    args.push_back("tcp");
-    StringHelpers::append(args, user_args);
-
-    argv = vec_convert(args, &v_elems);
-    if((this->xserver = fork()) == (pid_t) -1)
+    if((this->xserver = xinit(disp, user_args)) == -1)
     {
-        perror("fork");
-        vec_convert_free(argv, v_elems);
-        return false;
+      return false;
     }
-
-    if(this->xserver == 0)
-    {
-        execvp("xinit", argv);
-        perror("execvp of xinit");
-        vec_convert_free(argv, v_elems);
-        return false;
-    }
-    DEBUG_ONLY(
-        debug5 << "X server command line arguments:" << std::endl;
-        for(size_t i=0; i < args.size(); ++i)
-        {
-            debug5 << "\t" << argv[i] << std::endl;
-        }
-    )
-
-    vec_convert_free(argv, v_elems);
-    debug4 << "Giving a sec for the X server to start ...";
-    sleep(display);
-    debug4 << " done!" << std::endl;
-
-    debug3 << "Saved X server PID " << (int)this->xserver << std::endl;
     return true;
 }
 
@@ -343,4 +294,99 @@ vec_convert_free(char **vec, size_t len)
         free(vec[i]);
     }
     free(vec);
+}
+
+// ****************************************************************************
+//  Function: xinit
+//
+//  Purpose:
+//    Starts up an X server.
+//
+//  Arguments:
+//    display    the display to start the X server on.  Should start with ":".
+//    user_args  any additional server arguments to pass.
+//
+//  Programmer: Tom Fogal
+//  Creation:   May 24, 2010
+//
+// ****************************************************************************
+static pid_t
+xinit(const std::string& display, const std::vector<std::string>& user_args)
+{
+    char **argv;
+    size_t v_elems;
+
+    std::vector<std::string> args;
+    args.push_back("xinit");
+    args.push_back("sleep"); // sleep: make sure the server dies.
+    args.push_back("28800");
+    args.push_back("--");
+    args.push_back(display.c_str());
+    args.push_back("-ac");
+    args.push_back("-sharevts");
+    args.push_back("-once");
+    args.push_back("-terminate");
+    args.push_back("-nolisten");
+    args.push_back("tcp");
+    args.push_back("-allowMouseOpenFail");
+    StringHelpers::append(args, user_args);
+
+    debug5 << "X server command line arguments:\n\t";
+    std::copy(args.begin(), args.end(),
+              std::ostream_iterator<std::string>(DebugStream::Stream5(),
+                                                 "\n\t"));
+
+    argv = vec_convert(args, &v_elems);
+
+    // make sure we'll know when the child goes away.
+    signal(SIGCHLD, SIG_DFL);
+
+    pid_t xserver;
+    if((xserver = fork()) == (pid_t) -1)
+    {
+        perror("fork");
+        vec_convert_free(argv, v_elems);
+        return -1;
+    }
+
+    if(xserver == 0)
+    {
+        fix_signals(); // get rid of VisIt signal handlers.
+        execvp(argv[0], argv);
+        perror("execvp of xinit");
+        vec_convert_free(argv, v_elems);
+        _exit(0); // ignore atexit() handlers.
+    }
+    vec_convert_free(argv, v_elems);
+
+    return xserver;
+}
+
+// ****************************************************************************
+//  Function: fix_signals
+//
+//  Purpose:
+//    Fixes our signals for launching a child process.  VisIt tries to catch
+//    many signals so that we can report errors, but those handlers are
+//    inappropriate for our children.
+//
+//  Programmer: Tom Fogal
+//  Creation:   May 25, 2010
+//
+// ****************************************************************************
+static void fix_signals()
+{
+  alarm(0); // reset alarm.
+  signal(SIGCHLD, SIG_DFL);
+  signal(SIGQUIT, SIG_DFL);
+  signal(SIGTRAP, SIG_DFL);
+  signal(SIGSYS,  SIG_DFL);
+  signal(SIGBUS,  SIG_DFL);
+  signal(SIGPIPE, SIG_DFL);
+  signal(SIGILL,  SIG_DFL);
+  signal(SIGABRT, SIG_DFL);
+  signal(SIGFPE,  SIG_DFL);
+  signal(SIGSEGV, SIG_DFL);
+  signal(SIGTERM, SIG_DFL);
+  signal(SIGINT,  SIG_DFL);
 }
