@@ -52,6 +52,11 @@
 //  Programmer:  Tom Fogal
 //  Creation:    August 29, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue May 25 15:49:00 MDT 2010
+//    Add hostname storage, for printing error messages.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API XDisplay : public VisItDisplay
@@ -68,5 +73,6 @@ class ENGINE_MAIN_API XDisplay : public VisItDisplay
   private:
     pid_t   xserver;
     size_t  display;
+    char    hostname[256];
 };
 #endif /* VISIT_X_DISPLAY_H */
