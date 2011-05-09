@@ -122,6 +122,9 @@ XDisplay::~XDisplay()
 //    Tom Fogal, Mon May 24 18:58:57 MDT 2010
 //    Abstract most of this method out to `xinit'.
 //
+//    Tom Fogal, Tue May 25 16:11:38 MDT 2010
+//    Lookup hostname; we'll use it in error messages.
+//
 // ****************************************************************************
 
 bool
@@ -130,6 +133,11 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
     this->display = display;
     std::string disp = format(":%l", /* unused */ 0, display);
 
+    if(gethostname(this->hostname, 512) != 0)
+    {
+        debug1 << "Error " << errno << " while getting hostname.\n";
+        this->hostname[0] = 0;
+    }
     if((this->xserver = xinit(disp, user_args)) == -1)
     {
       return false;
