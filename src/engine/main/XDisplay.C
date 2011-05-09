@@ -180,6 +180,9 @@ XDisplay::Initialize(std::string display,
 //    Tom Fogal, Thu May  5 11:36:39 MDT 2011
 //    Eventually the spinning should end.
 //
+//    Tom Fogal, Thu May  5 11:43:36 MDT 2011
+//    xhost +hostname really isn't needed.
+//
 // ****************************************************************************
 
 bool
@@ -197,9 +200,6 @@ XDisplay::Connect()
                << "\") failed.\n";
     }
     InitVTKRendering::UnforceMesa();
-
-    std::string xh = std::string("xhost +") + this->hostname;
-    system(xh.c_str());
 
     // Test our connection.
     Display* dpy=NULL;
