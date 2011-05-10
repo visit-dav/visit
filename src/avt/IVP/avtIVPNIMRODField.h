@@ -44,12 +44,15 @@
 #define AVT_IVP_NIMROD_FIELD_H
 
 #include "avtIVPVTKField.h"
+#include <avtMatrix.h>
 
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
 #include <ivp_exports.h>
 
+typedef avtVector vec3;
+typedef avtMatrix mat3;
 
 // ****************************************************************************
 //  Class:  avtIVPNIMRODField
@@ -67,85 +70,49 @@
 class IVP_API avtIVPNIMRODField: public avtIVPVTKField
 {
  protected:
-/* Local typedefs */
-  typedef struct {
-    double x,y;
-  } v_entry;
+  double lagrange_nodes[6][6];
   
-  typedef struct {
-    int el0, v, side;
-  } d_edge;
-  
-  typedef struct{
-    d_edge o[8];
-    int    n;
-  } edge;
-  
-  public:
+ public:
   avtIVPNIMRODField( vtkDataSet* ds, avtCellLocator* loc ); 
-    avtIVPNIMRODField( float *elementsPtr, int nelements );
+  avtIVPNIMRODField( unsigned int nRad,
+                     unsigned int nTheta,
+                     unsigned int nPhi,
+                     float *grid_fourier_series,
+                     float *data_fourier_series );
 
-    ~avtIVPNIMRODField();
+  ~avtIVPNIMRODField();
 
-    avtVector operator()( const double &t, const avtVector &p ) const;
+  avtVector operator()( const double &t, const avtVector &p ) const;
 
-    virtual bool IsInside(const double& t, const avtVector& x) const;
-
-    void findElementNeighbors();
-    void register_vert(v_entry *vlist, int *len,
-                       double x, double y, int *index);
-    void add_edge(edge *list, int *tri, int side, int el, int *nlist);
-
-    int get_tri_coords2D(double *x, double *xout) const;
-    int get_tri_coords2D(double *x, int el, double *xout) const;
-
-    float interp    (float *var, int el, double *lcoords) const;
-    float interpdR  (float *var, int el, double *lcoords) const;
-    float interpdz  (float *var, int el, double *lcoords) const;
-    float interpdR2 (float *var, int el, double *lcoords) const;
-    float interpdz2 (float *var, int el, double *lcoords) const;
-    float interpdRdz(float *var, int el, double *lcoords) const;
-
-    void interpBcomps(float *B, double *x, int element, double *xieta) const;
+  avtVector ConvertToCartesian(const avtVector& pt) const;
+  avtVector ConvertToCylindrical(const avtVector& pt) const;
 
  protected:
-    template< class type >
-      type* SetDataPointer( vtkDataSet *ds,
-                            const type var,
-                            const char* varname,
-                            const int ntuples,
-                            const int ncomponents );
+  template< class type >
+    type* SetDataPointer( vtkDataSet *ds,
+                          const type var,
+                          const char* varname,
+                          const int ncomponents );
 
-    // Variables calculated in findElementNeighbors (trigtable,
-    // neighbors) or read as part of the mesh (elements).
-    float *elements;
-    double *trigtable;   /* Geometry of each triangle */
-    int    *neighbors;   /* Element neighbor table for efficient searches */
+  void lagrange_weights( unsigned int DEG, const double s, 
+                         double* w = NULL, double *d = NULL ) const;
 
- public:
-    //  variables on the mesh
-    float *psi0, *f0;                  /* Equilibrium field */
-    float *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
+  void fourier_weights( unsigned int N, const double t, 
+                        double* w, double* d = NULL ) const;
 
-    // variable based on attributes (bzero and rzero)
-    double F0;                      /* Strength of vacuum toroidal field */
-    
-    // Variables calculated in findElementNeighbors
-    double Rmin, Rmax, zmin, zmax;  /* Mesh bounds */
+  void interpolate( double rad, double theta, double phi,
+                    vec3* P, mat3* DRV ) const;
 
-    // unused variables read from header attributes
-    // (xlim, zlim) or explicitly set (psilim).
-//  double xlim, zlim, psilim;      /* Information about limiting surface */
+ public: 
+  // Variables read as part of the mesh.
+  float *grid_fourier_series;
+  float *data_fourier_series;
 
-    // unused variables read from header attributes (ntime == nframes)
-//  int    nframes;
+  unsigned int Nrad, Ntheta, Nphi;
 
-    // variables read from header attributes (linear == linflag,
-    // ntor == tmode) or part of the mesh (nelms).
-    int linflag, nelms, tmode;
-
-    // variables read from header attributes.
-    double bzero, rzero;
+  // variables read from header attributes.
+  unsigned int Drad;   // = 2;
+  unsigned int Dtheta; // = 2;
 };
 
 #endif

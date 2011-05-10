@@ -95,7 +95,6 @@ avtIVPAdamsBashforth::avtIVPAdamsBashforth()
     initialized = 0;
     degenerate_iterations = 0;
     stiffness_eps = tol / 1000.0;
-    convertToCartesian = false;
 }
 
 // ****************************************************************************
@@ -507,8 +506,8 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
 
         if( convertToCartesian )
         {
-          (*ivpstep)[0] = CylindricalToCartesian( yCur );
-          (*ivpstep)[1] = CylindricalToCartesian( yNew );
+          (*ivpstep)[0] = field->ConvertToCartesian( yCur );
+          (*ivpstep)[1] = field->ConvertToCartesian( yNew );
         }
         else
         {

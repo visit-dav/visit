@@ -99,6 +99,9 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
 
   avtVector operator()( const double &t, const avtVector &v ) const;
 
+  avtVector ConvertToCartesian(const avtVector& pt) const;
+  avtVector ConvertToCylindrical(const avtVector& pt) const;
+
   void interpBcomps(float *B, double *x, int element, double *xieta) const;
 
   float interp(float *var, int el, double *lcoords) const;

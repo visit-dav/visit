@@ -215,7 +215,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     integrationTypeCombo->addItem(tr("Adams-Bashforth (Multi-step)"));
     integrationTypeCombo->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D data only)"));
     integrationTypeCombo->addItem(tr("M3D-C1 3D Integrator (M3D-C1 3D data only)"));
-    integrationTypeCombo->addItem(tr("NIMROD Integrator (NIMROD data only)"));
+//    integrationTypeCombo->addItem(tr("NIMROD Integrator (NIMROD data only)"));
     connect(integrationTypeCombo, SIGNAL(activated(int)),
            this, SLOT(integrationTypeChanged(int)));
     integrationLayout->addWidget(integrationTypeCombo, 0, 1);
@@ -958,7 +958,7 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             break;
 
           case PoincareAttributes::ID_rationalTemplateSeedParm:
-            rationalTemplateSeedParm->setText(DoubleToQString(atts->GetWindingPairConfidence()));
+            rationalTemplateSeedParm->setText(DoubleToQString(atts->GetRationalTemplateSeedParm()));
             break;
           case PoincareAttributes::ID_adjustPlane:
             adjustPlane->blockSignals(true);

@@ -104,8 +104,6 @@ avtIVPDopri5::avtIVPDopri5()
      
      h_max = 0.0;
      nonsti = 0;
-
-     convertToCartesian = false;
 }
 
 
@@ -689,15 +687,15 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
 
                 if( convertToCartesian )
                 {
-                  (*ivpstep)[0] = CylindricalToCartesian( y );
-                  (*ivpstep)[1] = CylindricalToCartesian( y + (h*k1/4.) );
-                  (*ivpstep)[2] = CylindricalToCartesian( (y + y_new)/2 +
+                  (*ivpstep)[0] = field->ConvertToCartesian( y );
+                  (*ivpstep)[1] = field->ConvertToCartesian( y + (h*k1/4.) );
+                  (*ivpstep)[2] = field->ConvertToCartesian( (y + y_new)/2 +
                                                           h*( (d1+1)*k1 +
                                                               d3*k3 + d4*k4 +
                                                               d5*k5 + d6*k6 +
                                                               (d7-1)*k7 )/6. );
-                  (*ivpstep)[3] = CylindricalToCartesian( y_new - h*k7/4 );
-                  (*ivpstep)[4] = CylindricalToCartesian( y_new );
+                  (*ivpstep)[3] = field->ConvertToCartesian( y_new - h*k7/4 );
+                  (*ivpstep)[4] = field->ConvertToCartesian( y_new );
                 }
                 else
                 {
@@ -783,5 +781,3 @@ avtIVPDopri5::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(y)
         .Accept(k1);
 }
-
-

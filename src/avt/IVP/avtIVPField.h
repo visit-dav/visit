@@ -103,6 +103,10 @@ class IVP_API avtIVPField
 
     virtual avtVector    operator()(const double& t, 
                                     const avtVector& x) const = 0;
+
+    virtual avtVector ConvertToCartesian(const avtVector& pt) const = 0;
+    virtual avtVector ConvertToCylindrical(const avtVector& pt) const = 0;
+
     virtual double       ComputeVorticity(const double& t, 
                                           const avtVector& x ) const = 0;
     virtual double       ComputeScalarVariable(unsigned char index,

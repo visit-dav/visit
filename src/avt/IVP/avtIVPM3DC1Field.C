@@ -782,6 +782,41 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p ) const
 }
 
 
+
+// ****************************************************************************
+//  Method: avtIVPM3DC1Field::ConvertToCartesian
+//
+//  Purpose: Converts the coordinates from local cylindrical to
+//      cartesian coordinates
+//
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPM3DC1Field::ConvertToCartesian(const avtVector& pt) const
+{
+  return avtVector(pt[0]*cos(pt[1]), pt[0]*sin(pt[1]), pt[2] );
+}
+
+// ****************************************************************************
+//  Method: avtIVPM3DC1Field::ConvertToCylindrical
+//
+//  Purpose: Converts the coordinates from local cylindrical to
+//      cartesian coordinates
+//
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPM3DC1Field::ConvertToCylindrical(const avtVector& pt) const
+{
+  return pt;
+}
+
 // ****************************************************************************
 //  Method: interpBcomps
 //

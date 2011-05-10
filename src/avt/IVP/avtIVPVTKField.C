@@ -257,6 +257,40 @@ avtIVPVTKField::operator()( const double &t, const avtVector &p ) const
 }
 
 // ****************************************************************************
+//  Method: avtIVPVTKField::ConvertToCartesian
+//
+//  Purpose: Does nothing because the original coordinate system is
+//      unknown.
+//
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPVTKField::ConvertToCartesian(const avtVector& pt) const
+{
+  return pt;
+}
+
+// ****************************************************************************
+//  Method: avtIVPVTKField::ConvertToCylindrical
+//
+//  Purpose: Does nothing because the original coordinate system is
+//      unknown.
+//
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPVTKField::ConvertToCylindrical(const avtVector& pt) const
+{
+  return pt;
+}
+
+// ****************************************************************************
 //  Method: avtIVPVTKField::ComputeVorticity
 //
 //  Purpose:
