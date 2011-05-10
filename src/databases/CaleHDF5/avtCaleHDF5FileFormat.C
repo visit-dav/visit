@@ -926,11 +926,11 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
        }   h5_tpdat ;
 
     h5_tpcur *h5_tpcurve ;
-    std::vector<h5_tpdat> h5_tpdata(ntp) ;
-    std::vector<h5_tpdat> h5_cpdata(ncp) ;
+    h5_tpdat *h5_tpdata = new h5_tpdat[ntp] ;
+    h5_tpdat *h5_cpdata = new h5_tpdat[ncp] ;
 
     if (ntp > 0)
-        ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",&h5_tpdata[0]) ;
+        ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",h5_tpdata) ;
 
     for ( int i = 1 ; i <= ntp ; i++ )
     {
@@ -965,7 +965,7 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     debug4 << ncp << " cycle plot sections" << endl;
 
     if (ncp > 0)
-        ReadHDF_Entry(GetHDF5File(),"/ppa/cpdata",&h5_cpdata[0]) ;
+        ReadHDF_Entry(GetHDF5File(),"/ppa/cpdata",h5_cpdata) ;
 
     for ( int i = 1 ; i <= ncp ; i++ )
     {
@@ -996,6 +996,8 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         delete [] h5_tpcurve ;
     }
+    delete [] h5_tpdata;
+    delete [] h5_cpdata;
 
 }
 
@@ -1168,11 +1170,11 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
            }   h5_tpdat ;
 
         h5_tpcur *h5_tpcurve ;
-        std::vector<h5_tpdat> h5_tpdata(ntp) ;
-        std::vector<h5_tpdat> h5_cpdata(ncp) ;
+        h5_tpdat *h5_tpdata = new h5_tpdat[ntp] ;
+        h5_tpdat *h5_cpdata = new h5_tpdat[ncp] ;
 
         if (ntp > 0)
-            ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",&h5_tpdata[0]) ;
+            ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",h5_tpdata) ;
 
         for ( int i = 1 ; i <= ntp ; i++ )
         {
@@ -1225,7 +1227,7 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
         if (foundit == 0)
         {
             if (ncp > 0)
-                ReadHDF_Entry(GetHDF5File(),"/ppa/cpdata",&h5_cpdata[0]) ;
+                ReadHDF_Entry(GetHDF5File(),"/ppa/cpdata",h5_cpdata) ;
 
             for ( int i = 1 ; i <= ncp ; i++ )
             {
@@ -1275,6 +1277,8 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
                     break ;
             }
         }
+        delete [] h5_tpdata;
+        delete [] h5_cpdata;
         if (foundit == 1)
         {
             vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(tplen,
