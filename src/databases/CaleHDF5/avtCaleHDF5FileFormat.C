@@ -196,9 +196,9 @@ SymbolInformation(hid_t hdf_fid, const char *name, TypeEnum *t,
         if (nd > 0)
         {
             // Store the dimensions of the array.
-            hsize_t h_maxdims[nd], h_dims[nd];
+            std::vector<hsize_t> h_maxdims(nd), h_dims(nd);
             dims = new int[nd];
-            nd = H5Sget_simple_extent_dims(hdf_dspace, h_dims, h_maxdims ) ;
+            nd = H5Sget_simple_extent_dims(hdf_dspace, &h_dims[0], &h_maxdims[0] ) ;
             for ( i = 0 ; i < nd ; i++ )
             {
                 dims[i] = h_dims[i] ;
@@ -904,7 +904,7 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Add time history curve data
     //
 
-    int ntp, ncp, ncurves, ntimes, tplen ;
+    int ntp, ncp, ncurves;
     hdf_err =                      ReadHDF_Entry(GetHDF5File(),"/parameters/ntp",&ntp);
     if (hdf_err >= 0.0) hdf_err |= ReadHDF_Entry(GetHDF5File(),"/parameters/ncp",&ncp);
     if (hdf_err < 0.0)
@@ -926,11 +926,11 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
        }   h5_tpdat ;
 
     h5_tpcur *h5_tpcurve ;
-    h5_tpdat h5_tpdata[ntp] ;
-    h5_tpdat h5_cpdata[ncp] ;
+    std::vector<h5_tpdat> h5_tpdata(ntp) ;
+    std::vector<h5_tpdat> h5_cpdata(ncp) ;
 
     if (ntp > 0)
-        ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",h5_tpdata) ;
+        ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",&h5_tpdata[0]) ;
 
     for ( int i = 1 ; i <= ntp ; i++ )
     {
@@ -965,7 +965,7 @@ avtCaleHDF5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     debug4 << ncp << " cycle plot sections" << endl;
 
     if (ncp > 0)
-        ReadHDF_Entry(GetHDF5File(),"/ppa/cpdata",h5_cpdata) ;
+        ReadHDF_Entry(GetHDF5File(),"/ppa/cpdata",&h5_cpdata[0]) ;
 
     for ( int i = 1 ; i <= ncp ; i++ )
     {
@@ -1168,11 +1168,11 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
            }   h5_tpdat ;
 
         h5_tpcur *h5_tpcurve ;
-        h5_tpdat h5_tpdata[ntp] ;
-        h5_tpdat h5_cpdata[ncp] ;
+        std::vector<h5_tpdat> h5_tpdata(ntp) ;
+        std::vector<h5_tpdat> h5_cpdata(ncp) ;
 
         if (ntp > 0)
-            ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",h5_tpdata) ;
+            ReadHDF_Entry(GetHDF5File(),"/ppa/tpdata",&h5_tpdata[0]) ;
 
         for ( int i = 1 ; i <= ntp ; i++ )
         {
@@ -1225,7 +1225,7 @@ avtCaleHDF5FileFormat::GetMesh(const char *meshname)
         if (foundit == 0)
         {
             if (ncp > 0)
-                ReadHDF_Entry(GetHDF5File(),"/ppa/cpdata",h5_cpdata) ;
+                ReadHDF_Entry(GetHDF5File(),"/ppa/cpdata",&h5_cpdata[0]) ;
 
             for ( int i = 1 ; i <= ncp ; i++ )
             {
