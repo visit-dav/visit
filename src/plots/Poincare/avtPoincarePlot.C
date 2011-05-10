@@ -433,7 +433,8 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
                                            atts.GetWorkGroupSize());
 
     if (atts.GetIntegrationType() == PoincareAttributes::M3DC13DIntegrator ||
-        atts.GetIntegrationType() == PoincareAttributes::NIMRODIntegrator )
+//      atts.GetIntegrationType() == PoincareAttributes::NIMRODIntegrator ||
+        0 )
       poincareFilter->ConvertToCartesian( true );
     else
       poincareFilter->ConvertToCartesian( false );

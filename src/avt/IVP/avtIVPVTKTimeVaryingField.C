@@ -291,6 +291,40 @@ avtIVPVTKTimeVaryingField::operator()( const double &t, const avtVector &p ) con
 }
 
 // ****************************************************************************
+//  Method: avtIVPVTKTimeVaryingField::ConvertToCartesian
+//
+//  Purpose: Does nothing because the original coordinate system is
+//      unknown.
+//
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPVTKTimeVaryingField::ConvertToCartesian(const avtVector& pt) const
+{
+  return pt;
+}
+
+// ****************************************************************************
+//  Method: avtIVPVTKTimeVaryingField::ConvertToCylindrical
+//
+//  Purpose: Does nothing because the original coordinate system is
+//      unknown.
+//
+//  Programmer: Christoph Garth
+//  Creation:   February 25, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPVTKTimeVaryingField::ConvertToCylindrical(const avtVector& pt) const
+{
+  return pt;
+}
+
+// ****************************************************************************
 //  Method: avtIVPVTKTimeVaryingField::ComputeVorticity
 //
 //  Purpose:

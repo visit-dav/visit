@@ -419,6 +419,9 @@ class avtIVPSolver
         STIFFNESS_DETECTED,
         UNSPECIFIED_ERROR,
     };
+                    avtIVPSolver();
+    virtual         ~avtIVPSolver() {};
+
     
     virtual void    Reset(const double& t_start, const avtVector& y_start) = 0;
 
@@ -446,7 +449,7 @@ class avtIVPSolver
     virtual avtIVPSolver* Clone() const = 0;
 
     bool convertToCartesian;
-    avtVector CylindricalToCartesian(const avtVector& pt) const;
+    bool convertToCylindrical;
 
 protected:
     virtual void    AcceptStateVisitor(avtIVPStateHelper& sv) = 0;

@@ -98,6 +98,10 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
 
     // avtIVPField interface
     virtual avtVector operator()(const double& t, const avtVector &pt) const;
+
+    virtual avtVector ConvertToCartesian(const avtVector& pt) const;
+    virtual avtVector ConvertToCylindrical(const avtVector& pt) const;
+
     virtual double    ComputeVorticity(const double& t, const avtVector &pt) const;
 
     virtual double    ComputeScalarVariable(unsigned char index,
