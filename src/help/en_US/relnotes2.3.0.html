@@ -36,6 +36,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li> The cli method <i>GetAnnotationObject</i> now only accepts a string argument for the desired object's name.
   To access an object by index, use the index in combination with the result of <i>GetAnnotationObjectNames</i>.
   </li>
+  <li>For Windows installs, there is now an install option to associate curve file types <i>(*.curve, *.ultra, *.ult, *.u)</i> with VisIt, allowing double-clicking to start VisIt and open the file.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -97,7 +98,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.3</font></b></p>
 <ul>
-  <li></li>
+  <li>Pick over time now supports multiple variables. There are options in the Pick window and the Query window (pick options) to select whether the time curve creates a plot with a single Y-Axis or Multiple Y-Axes. Default is single Y Axis.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -105,6 +106,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Launching the gui from the viewer no longer causes the gui to hang on startup on Windows after having first opened a database.</li>
   <li>The plot list's context menu now shows the right checked state that indicates whether the selected plot follows the time slider.</li>
+  <li>Command recording issues on Windows have been corrected.</li>
+  <li>Fixed problem with pick on transformed rectilinear grids.</li>
+  <li>Applying the OnionPeel operator to a transformed rectilinear grid no longer crashes the engine.</li>
 </ul>
 
   
