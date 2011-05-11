@@ -496,13 +496,13 @@ void avtIVPNIMRODField::interpolate( double rad, double theta, double phi,
 
     // ---
 
-    double wtheta[Dtheta+1], dtheta[Dtheta+1];
+    double *wtheta = new double[Dtheta+1], *dtheta = new double[Dtheta+1];
     lagrange_weights( Dtheta, theta, wtheta, dtheta );
 
-    double wrad[Drad+1], drad[Drad+1];
+    double *wrad = new double[Drad+1], *drad = new double[Drad+1];
     lagrange_weights( Drad, rad, wrad, drad );
 
-    double wphi[Nphi-1], dphi[Nphi-1];
+    double *wphi = new double[Nphi-1], *dphi = new double[Nphi-1];
     fourier_weights( Nphi-1, phi, wphi, dphi );
 
     // Returned vector value in physical space.
@@ -542,4 +542,11 @@ void avtIVPNIMRODField::interpolate( double rad, double theta, double phi,
     
     *P   = p;
 //    *DRV = Dp;
+
+    delete wtheta;
+    delete dtheta;
+    delete wrad;
+    delete drad;
+    delete wphi;
+    delete dphi;
 }
