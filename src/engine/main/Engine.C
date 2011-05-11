@@ -90,7 +90,9 @@
 #include <StringHelpers.h>
 #include <StackTimer.h>
 #include <VisItDisplay.h>
-#include <XDisplay.h>
+#ifndef _WIN32
+# include <XDisplay.h>
+#endif
 
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectReader.h>
@@ -3826,6 +3828,9 @@ Engine::GetProcessAttributes()
 //    Tom Fogal, Wed May  4 15:57:22 MDT 2011
 //    Handle displays as a string, to support variations more easily.
 //
+//    Tom Fogal, Wed May 11 07:14:04 MDT 2011
+//    (Hopefully) fix Win32 compilation problem.
+//
 // ****************************************************************************
 
 void
@@ -3866,16 +3871,17 @@ Engine::SetupDisplay()
         display_num = 0;
     }
 #endif
+    std::string X_Display = RuntimeSetting::lookups("x-display");
+    std::string disp = display_format(X_Display, PAR_Rank(), display_num);
+#ifndef _WIN32
     // Tell the display whether or not it should start X servers.  This must be
     // done before ::Initialize!
     XDisplay* xd = dynamic_cast<XDisplay*>(this->renderingDisplay);
-
-    std::string X_Display = RuntimeSetting::lookups("x-display");
-    std::string disp = display_format(X_Display, PAR_Rank(), display_num);
     if(xd != NULL)
     {
         xd->Launch(this->launchXServers);
     }
+#endif
 
     if(this->renderingDisplay == NULL)
     {
