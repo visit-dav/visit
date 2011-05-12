@@ -280,4 +280,6 @@
 /* Disable ssh tunneling on Panther. */
 #cmakedefine PANTHERHACK
 
+/* Force ssh tunneling. */
+#cmakedefine VISIT_FORCE_SSH_TUNNELING
 
