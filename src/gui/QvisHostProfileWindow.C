@@ -469,6 +469,9 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
 //   Eric Brugger, Tue Apr 19 17:40:38 PDT 2011
 //   Added support for aprun and msub/aprun.
 //
+//   Eric Brugger, Thu May 12 16:12:59 PDT 2011
+//   Added support for sbatch/mpiexec.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateLaunchSettingsGroup()
@@ -507,6 +510,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("qsub/mpiexec");
     launchMethod->addItem("qsub/mpirun");
     launchMethod->addItem("qsub/srun");
+    launchMethod->addItem("sbatch/mpiexec");
     connect(launchMethod, SIGNAL(activated(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox(tr("Parallel launch method"), currentGroup);
