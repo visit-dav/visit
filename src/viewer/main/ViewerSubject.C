@@ -2579,6 +2579,10 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //    fallback formats anymore, such usage still has some conveniences.
 //    Added support to munge the preferred list when given those options.
 //
+//    Vern Staats, Thu May 12 12:54:40 PDT 2011
+//    Add code to always force ssh tunneling of all data connections that
+//    is conditional on VISIT_FORCE_SSH_TUNNELING.
+//
 // ****************************************************************************
 
 void
@@ -2943,6 +2947,10 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
             clientArguments.push_back(argv[i]);
             unknownArguments.push_back(argv[i]);
         }
+#ifdef VISIT_FORCE_SSH_TUNNELING
+        // 20110318 VRS patch to lock in ssh tunneling
+        ViewerServerManager::ForceSSHTunnelingForAllConnections();
+#endif
     }
 
     // Set the geometry based on the argument that was provided with

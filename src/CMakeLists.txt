@@ -234,6 +234,11 @@
 #    Mark C. Miller, Wed Mar 30 09:30:49 PDT 2011
 #    Fixed VISIT_3RDPARTY_VAR/DEP macros to define empty string ("") when
 #    a lib's symbols are not defined instead of -NOTFOUND.
+#
+#    Eric Brugger, Thu May 12 12:50:58 PDT 2011
+#    Add VISIT_FORCE_SSH_TUNNELING that always forces ssh tunneling for all
+#    data connections.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -432,6 +437,7 @@ OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
 OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
+OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
 
 
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
