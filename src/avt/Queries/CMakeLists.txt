@@ -45,6 +45,9 @@
 #    Eric Brugger, Wed Jun 30 13:37:54 PDT 2010
 #    Added avtXRayQuery.
 #
+#    Hank Childs, Thu May 12 15:37:21 PDT 2011
+#    Add avtAverageValueQuery.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -85,6 +88,7 @@ Queries/avtAggregateChordLengthDistributionQuery.C
 Queries/avtAggregateRayLengthDistributionQuery.C
 Queries/avtAreaBetweenCurvesQuery.C
 Queries/avtAverageMeanCurvatureQuery.C
+Queries/avtAverageValueQuery.C
 Queries/avtBestFitLineQuery.C
 Queries/avtCentroidQuery.C
 Queries/avtCompactnessQuery.C

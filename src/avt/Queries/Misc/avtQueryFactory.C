@@ -47,6 +47,7 @@
 #include <avtAggregateRayLengthDistributionQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
 #include <avtAverageMeanCurvatureQuery.h>
+#include <avtAverageValueQuery.h>
 #include <avtBestFitLineQuery.h>
 #include <avtCentroidQuery.h>
 #include <avtCompactnessQuery.h>
@@ -305,6 +306,9 @@ avtQueryFactory::Instance()
 //    Kathleen Bonnell, Thu Feb 17 09:51:44 PST 2011
 //    Set number of vars for LocateAndPickNode/Zone queries, and 
 //    VariableyByNode/Zone queries.
+//
+//    Hank Childs, Thu May 12 15:37:21 PDT 2011
+//    Add average value query.
 //
 // ****************************************************************************
 
@@ -580,6 +584,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Average Mean Curvature")
     {
         query = new avtAverageMeanCurvatureQuery();
+    }
+    else if (qname == "Average Value")
+    {
+        query = new avtAverageValueQuery();
     }
     else if (qname == "Hohlraum Flux")
     {
