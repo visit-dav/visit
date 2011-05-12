@@ -708,6 +708,10 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Fri May  6 15:21:05 PDT 2011
 #    Add support for version in the private plugin path.
 #
+#    Eric Brugger, Wed May 11 14:10:24 PDT 2011
+#    I added support for the sbatch launch method. I added support for Glory
+#    at Sandia.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1977,6 +1981,16 @@ if ( $host =~ /^ci-fe\d+$/ or $host =~ /^ci-login\d+$/ or
     }
 }
 
+# ----
+# HACK for Glory @ Sandia
+# ----
+$IsRunningOnGlorySandia = 0;
+if ( $host =~ /^glory\d+$/ )
+{
+    $IsRunningOnGlorySandia = 1;
+    $ENV{LD_LIBRARY_PATH} = "apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:$ENV{LD_LIBRARY_PATH}";
+}
+
 #  We stripped off the "port" argument above, so put it back here. Put it
 #  at the beginning so that it ends after the -host argument, see below.
 if ($remoteport_set)
@@ -2851,6 +2865,81 @@ if ($procs_set or ($parallel and $parlaunch_set))
         if ($security_key_set) { push @parcmd, "-key", $security_key; }
         push @parcmd, @post_args;
         @printcmd = @parcmd;
+        push @printcmd, ("\"".(pop @printcmd)."\"");
+    }
+    # sbatch
+    elsif (substr($launch,0,6) eq "sbatch")
+    {
+        @parcmd = ("sbatch");
+        push @parcmd, "--partition=$part" if $part_set;
+        push @parcmd, "--account=$bank" if $bank_set;
+        push @parcmd, "--time=$time" if $time_set;
+        push @parcmd, "--nodes=$nodes" if $nodes_set;
+        push @parcmd, "--ntasks=$procs" if $procs_set;
+
+        $ppn = 8;
+        if ($nodes_set)
+        {
+           $ppn = ceil($procs / $nodes);
+        }
+
+        ($sbatchcmd, $sublauncher) = split /\W+/, substr($launch,6);
+        $sublauncher = "" if (!defined $sublauncher);
+        if ($sublauncher eq "mpiexec")
+        {
+            @mpicmd = ("mpiexec");
+            push @mpicmd, @sublaunchargs if $sublaunchargs_set;
+            if ($IsRunningOnGlorySandia)
+            {
+                push @mpicmd, "--np", $procs;
+                push @mpicmd, "/apps/contrib/numa_wrapper-16ppn";
+            }
+            else
+            {
+                push @mpicmd, "--npernode", $ppn;
+                push @mpicmd, "numa_wrapper";
+                push @mpicmd, "--ppn", $ppn;
+            }
+            push @mpicmd, "@visitcmd";
+            if ($security_key_set) { push @mpicmd, "-key", $security_key; }
+            push @mpicmd, @post_args;
+        }
+        elsif ($sublauncher eq "")
+        {
+            @mpicmd = "@visitcmd";
+        }
+
+        chomp($tdate = `date | cut -c 12-19`);
+        chomp($tuser = `whoami`);
+        $script_dir="/tmp";
+        $tfilename = "$script_dir/visit.$tuser.$tdate";
+        $tfile_opened = 1;
+        open(TFILE, ">$tfilename") or $tfile_opened = 0;
+        if ($tfile_opened)
+        {
+            print TFILE "#!/bin/sh\n";
+            if ($IsRunningOnGlorySandia)
+            {
+                print TFILE "module load compilers/gcc-4.3.4\n";
+            }
+            print TFILE $cdcmd;
+            print TFILE $limitcmd;
+            print TFILE "@sublaunchprecmd", "\n", if $sublaunchprecmd_set;
+            print TFILE "@mpicmd", "\n";
+            print TFILE "@sublaunchpostcmd", "\n", if $sublaunchpostcmd_set;
+            close(TFILE);
+        }
+
+        @printcmd = @parcmd;
+        push @parcmd, $tfilename;
+        push @printcmd, $cdcmd;
+        push @printcmd, $limitcmd;
+        push @printcmd, $libcmd;
+        push @printcmd, $ldlibcmd;
+        push @printcmd, $plugincmd;
+        push @printcmd, @sublaunchprecmd, "\n", if $sublaunchprecmd_set;
+        push @printcmd, @mpicmd;
+        push @printcmd, @sublaunchpostcmd, "\n", if $sublaunchpostcmd_set;
         push @printcmd, ("\"".(pop @printcmd)."\"");
     }
     # bsub
