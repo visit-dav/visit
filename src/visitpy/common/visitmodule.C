@@ -215,7 +215,7 @@
 # if defined(visitmodule_EXPORTS)
 #  define VISITMODULE_API __declspec(dllexport)
 # else
-#  define VISITMODULE_API __declspec(dllimport)
+#  define VISITMODULE_API 
 # endif
 #else
 # if __GNUC__ >= 4
@@ -12756,7 +12756,6 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     bool useIndex = true;
-    int annotIndex;
     char *annotName = NULL;
 
     if(!PyArg_ParseTuple(args, "s", &annotName))
