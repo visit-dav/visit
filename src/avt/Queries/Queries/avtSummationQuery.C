@@ -306,6 +306,9 @@ avtSummationQuery::PreExecute(void)
 //    Cyrus Harrison, Wed Aug 18 14:41:26 PDT 2010
 //    Fix parallel problem when we have more procs than chunks to execute.
 //
+//    Hank Childs, Thu May 12 15:37:21 PDT 2011
+//    Improve message a bit.
+//
 // ****************************************************************************
 
 void
@@ -340,7 +343,7 @@ avtSummationQuery::PostExecute(void)
     char buf[1024];
     std::string str;
     if (CalculateAverage())
-        str += "The average ";
+        str += "The average value of ";
     else
         str += "The total ";
 

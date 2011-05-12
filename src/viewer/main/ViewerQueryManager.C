@@ -3785,6 +3785,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Eric Brugger, Wed Jun 30 14:10:00 PDT 2010
 //    Added the xray image query.
 //
+//    Hank Childs, Thu May 12 15:37:21 PDT 2011
+//    Add average value query.
+//
 // ****************************************************************************
 
 void
@@ -3874,6 +3877,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Elliptical Compactness Factor", dq, sr, basic, 1, 0, qt);
     queryTypes->AddQuery("Spherical Compactness Factor", dq, sr, basic, 1, 0, qt);
     queryTypes->AddQuery("Average Mean Curvature", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Average Value", dq, vr, basic, 1, 0, qt);
     queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, qt);
     queryTypes->AddQuery("Watertight", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, qt);
