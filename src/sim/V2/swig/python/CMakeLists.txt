@@ -35,6 +35,9 @@
 # DAMAGE.
 #
 # Modifications:
+#  Cyrus Harrison, Thu May 12 15:46:45 PDT 2011
+#  Remove COMPONENT RUNTIME statement from INSTALL command to avoid
+#  cpack problems.
 #
 #****************************************************************************/
 
@@ -62,8 +65,7 @@ ENDIF(NOT APPLE)
 VISIT_INSTALL_TARGETS(pysimV2)
 INSTALL(FILES simV2.py
         DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-        COMPONENT RUNTIME
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                     WORLD_READ             WORLD_EXECUTE
        )
