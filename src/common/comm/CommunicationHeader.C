@@ -51,9 +51,11 @@
 #include <sys/types.h>    // 20110314 VRS for /dev/urandom
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifndef _WIN32
 #include <sys/ipc.h>      // 20110316 VRS for passing random seed in shared mem
 #include <sys/shm.h>
 #include <unistd.h>
+#endif
 #include <errno.h>
 #ifndef PATH_MAX
 #define PATH_MAX 1024
