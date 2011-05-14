@@ -183,6 +183,9 @@ XDisplay::Initialize(std::string display,
 //    Tom Fogal, Thu May  5 11:43:36 MDT 2011
 //    xhost +hostname really isn't needed.
 //
+//    Tom Fogal, Fri May 13 18:56:52 MDT 2011
+//    Quick hacks to fix mac.
+//
 // ****************************************************************************
 
 bool
@@ -232,11 +235,15 @@ XDisplay::Connect()
                 break;
             }
         }
+#ifdef __linux__
         dpy = XOpenDisplay(NULL);
+#endif
         if(dpy == NULL)
         {
+#ifdef __linux__
             debug1 << this->hostname << ": could not connect to display "
                    << XDisplayName(NULL) << "; spinning...\n";
+#endif
             ++spin_count;
             if(++spin_count > 10) {
               return false;
@@ -244,7 +251,9 @@ XDisplay::Connect()
             sleep(1);
         }
     } while(dpy == NULL);
+#ifdef __linux__
     XCloseDisplay(dpy);
+#endif
 
     return true;
 }
