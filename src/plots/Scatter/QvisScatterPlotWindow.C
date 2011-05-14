@@ -681,7 +681,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     scalingLayout->setMargin(5);
     scalingLayout->setSpacing(10);
  
-    scaleCube = new QCheckBox(tr("Normlize the axis to a cube"), appearanceGroup);
+    scaleCube = new QCheckBox(tr("Normalize the axis to a cube"), appearanceGroup);
     connect(scaleCube, SIGNAL(toggled(bool)),
             this, SLOT(scaleCubeChanged(bool)));
     scalingLayout->addWidget(scaleCube, 0, 0 );
