@@ -158,6 +158,26 @@ QvisDialogLineEdit::setDialogMode(QvisDialogLineEdit::DialogMode m)
 }
 
 // ****************************************************************************
+// Method: QvisDialogLineEdit::setFallbackPath
+//
+// Purpose: 
+//   Sets a fallback path to use if the default path in the File Open Dialog
+//   does not exist.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   Fri May 13 14:07:12 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisDialogLineEdit::setFallbackPath(const QString &p)
+{
+    fallbackPath = p;
+}
+
+// ****************************************************************************
 // Method: QvisDialogLineEdit::changeEvent
 //
 // Purpose: 
@@ -211,6 +231,9 @@ QvisDialogLineEdit::changeEvent(QEvent *e)
 //
 //   Brad Whitlock, Thu Jun 19 11:27:32 PDT 2008
 //   Qt 4.
+// 
+//   Kathleen Bonnell, Fri May 13 14:08:08 PDT 2011
+//   Use new getOpenFileNameWithFallbackPath for ChooseFile option.
 //
 // ****************************************************************************
 
@@ -227,7 +250,7 @@ QvisDialogLineEdit::pushButtonClicked()
         name = QFileDialog::getOpenFileName (this, dialogCaption, name, dialogFilter);
 #else
         // Choose a new filename using VisIt's file open dialog.
-        name = QvisFileOpenDialog::getOpenFileName(name, dialogCaption);
+        name = QvisFileOpenDialog::getOpenFileNameWithFallbackPath(name, dialogCaption, fallbackPath);
 #endif
     }
     else if(dialogMode == ChooseLocalFile)

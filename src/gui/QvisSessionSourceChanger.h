@@ -62,6 +62,9 @@ class QvisDialogLineEdit;
 //   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Bonnell, Fri May 13 14:26:19 PDT 2011
+//   Added setFallbackpath.
+//
 // ****************************************************************************
 
 class QvisSessionSourceChanger : public QWidget
@@ -74,6 +77,8 @@ public:
     void setSources(const stringVector &keys, const stringVector &values,
                     const std::map<std::string, stringVector> &uses);
     const stringVector &getSources() const;
+
+    void setFallbackPath(const QString &path);
 
 private slots:
     void selectedSourceChanged();

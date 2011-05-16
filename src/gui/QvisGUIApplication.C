@@ -4663,6 +4663,9 @@ QvisGUIApplication::RestoreSession()
 //   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
 //   Search for '.session' on windows. Keep .vses for loading older sessions.
 //   
+//   Kathleen Bonnell, Fri May 13 14:05:11 PDT 2011
+//   Set fallbackPath of srcChanger to sessionDir.
+//
 // ****************************************************************************
 
 void
@@ -4680,6 +4683,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
     // If the user chose a valid filename then try to replace its sources.
     if(!s.isNull())
     {
+        UpdateSessionDir(s.toStdString());
         // Try and read the session file that goes with the template
         // so we can get the list of source ids and sources as well as
         // how they are used so we can populate the source control.
@@ -4693,6 +4697,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
                 QvisSessionSourceChangerDialog *srcChanger = new 
                     QvisSessionSourceChangerDialog(0);
                 srcChanger->setSources(keys, values, uses);
+                srcChanger->setFallbackPath(sessionDir.c_str());
 
                 // Let the user change the sources that are used to 
                 // restore the session.
@@ -4723,8 +4728,6 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
             stringVector noSources;
             RestoreSessionFile(s, noSources);
         }
-        
-        UpdateSessionDir(s.toStdString());
     }
 
     sessionFile = QString(""); // Make sure the session file name is

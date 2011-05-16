@@ -272,3 +272,9 @@ QvisSessionSourceChanger::sourceChanged(const QString &s)
         sources[ci] = std::string(s.toStdString());
 }
 
+void
+QvisSessionSourceChanger::setFallbackPath(const QString &path)
+{
+   if (fileLineEdit != 0)
+      fileLineEdit->setFallbackPath(path);
+}

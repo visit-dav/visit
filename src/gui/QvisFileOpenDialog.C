@@ -144,15 +144,18 @@ QvisFileOpenDialog::setResult(int r)
 // Creation:   Wed Nov 15 16:29:09 PST 2006
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Fri May 13 14:19:18 PDT 2011
+//   Added argument for fallbackPath.
+//
 // ****************************************************************************
 
 void
 QvisFileOpenDialog::delayedChangePath(const QString &initialFile, 
-    const QString &fltr)
+    const QString &fltr, const QString &fbPath)
 {
     filename = initialFile;
     filter = fltr;
+    fallbackPath = fbPath;
     QTimer::singleShot(500, this, SLOT(changeThePath()));
 }
 
@@ -179,11 +182,14 @@ QvisFileOpenDialog::delayedChangePath(const QString &initialFile,
 //   Brad Whitlock, Tue Oct 12 14:26:21 PDT 2010
 //   Pass back the right return value.
 //
+//   Kathleen Bonnell, Fri May 13 14:21:27 PDT 2011
+//   Added fallbackPath arg, pass it to delayedChangePath.
+//
 // ****************************************************************************
 
 QString
 QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile, 
-    const QString &fltr)
+    const QString &fltr, const QString &fallbackPath)
 {
     QString ret;
 
@@ -194,7 +200,7 @@ QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile,
     std::string oldfilter(fileServer->GetFilter());
 
     // Set up a delayed order to change the path.
-    delayedChangePath(initialFile, fltr);
+    delayedChangePath(initialFile, fltr, fallbackPath);
 
     // Set the return value for the method based on the event loop return value.
     if(exec() == Accepted)
@@ -275,6 +281,22 @@ QvisFileOpenDialog::getOpenFileName(const QString &initialFile,
     return filename;
 }
 
+QString
+QvisFileOpenDialog::getOpenFileNameWithFallbackPath(const QString &initialFile, 
+    const QString &caption, const QString &fallbackPath)
+{
+    QString filename;
+    QString fltr(fileServer->GetFilter().c_str());
+
+    // Create a new file open window
+    QvisFileOpenDialog *dlg = new QvisFileOpenDialog(caption);
+    dlg->SetUsageMode(QvisFileOpenDialog::SelectFilename);
+    filename = dlg->getOpenFileNameEx(initialFile, fltr, fallbackPath);
+    dlg->deleteLater();
+
+    return filename;
+}
+
 //
 // Qt slot functions.
 //
@@ -300,6 +322,12 @@ QvisFileOpenDialog::getOpenFileName(const QString &initialFile,
 //
 //   Brad Whitlock, Mon Oct 11 15:33:53 PDT 2010
 //   Set the filter too.
+//
+//   Kathleen Bonnell, Fri May 13 14:21:27 PDT 2011
+//   If there is a fallbackPath, use it the first time ChangeDirectoryException
+//   occurs, instead of the home dir, and send Message instead of Error.
+//   (Current use-case is when restoring sessions with different sources and
+//   the original path specified in the sessionfile does not exist). 
 //
 // ****************************************************************************
 
@@ -330,11 +358,22 @@ QvisFileOpenDialog::changeThePath()
         }
         CATCH(ChangeDirectoryException)
         {
-            msg = tr("VisIt could not access the directory: %1 so your "
-                     "home directory will be used.").
-                  arg(f.path.c_str());
-            Error(msg);
-            f.path = "~";
+            if (!fallbackPath.isEmpty() && nTries < 1)
+            { 
+                msg = tr("VisIt could not access the directory: %1 so %2 "
+                        "directory will be used.").
+                        arg(f.path.c_str(), fallbackPath.toStdString().c_str());
+                Message(msg);
+                f.path = fallbackPath.toStdString();
+            }
+            else
+            {
+                msg = tr("VisIt could not access the directory: %1 so your "
+                         "home directory will be used.").
+                      arg(f.path.c_str());
+                Error(msg);
+                f.path = "~";
+            }
             retry_loop = true;
         }
         CATCH(VisItException)
