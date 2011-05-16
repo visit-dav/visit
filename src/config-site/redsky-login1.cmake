@@ -1,8 +1,8 @@
 #/projects/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake
 ##
-## ./build_visit2_2_2 generated host.cmake
-## created: Mon May  9 14:51:21 MDT 2011
-## system: Linux redsky-login3 2.6.18-93.2redsky_chaos #1 SMP Tue Nov 2 16:56:13 MDT 2010 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_3_0 generated host.cmake
+## created: Mon May 16 14:21:33 MDT 2011
+## system: Linux redsky-login2 2.6.18-93.2redsky_chaos #1 SMP Tue Nov 2 16:56:13 MDT 2010 x86_64 x86_64 x86_64 GNU/Linux
 ## by: ebrugge
 
 ##
@@ -14,12 +14,12 @@ SET(VISITARCH linux-x86_64_gcc-4.1)
 ##
 ## Specify the location of the mesa.
 ##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 
 ##
 ## Specify the location of the vtk.
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0g/${VISITARCH}/lib/vtk-5.0/)
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0i/${VISITARCH}/lib/vtk-5.0/)
 
 ##
 ## Specify the Qt4 binary dir. 
@@ -66,7 +66,7 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/apps/x86_64/mpi/openmpi/gcc-4.1.2/o
 ## HDF4
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.0.0g/${VISITARCH}/lib vtkjpeg)
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.0.0i/${VISITARCH}/lib vtkjpeg)
 
 ##
 ## HDF5
@@ -83,7 +83,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/2010.10.01/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/2011.04.28/${VISITARCH})
 
 ##
 ## CCMIO
@@ -132,6 +132,11 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## Xdmf
 ##
-VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP})
+
+##
+## Ice-T
+##
+VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
 
