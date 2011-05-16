@@ -41,6 +41,10 @@
 #include <QLayout>
 #include <QFileDialog>
 #include <SingleAttributeConfigManager.h>
+#ifdef _WIN32
+#include <QTemporaryFile>
+#include <InstallationFunctions.h>
+#endif
 
 #include <AttributeSubject.h>
 
@@ -198,6 +202,12 @@ QvisPostableWindowObserver::loadSubject()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January  2, 2009
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri May 13 13:28:45 PDT 2011
+//    Explicitly set the path in call to getSaveFileName, so the writeability
+//    of the 'cwd' can be tested (on Windows) before the call (eg don't 
+//    present user with a place to save a file if they cannot save there!).
+//
 // ****************************************************************************
 
 void
@@ -206,9 +216,24 @@ QvisPostableWindowObserver::saveSubject()
     if (!subject)
         return;
 
+    QString useDir;
+    useDir = QDir::current().path();
+
+#ifdef _WIN32
+    { // new scope
+        // force a temporary file creation in cwd to see if user can
+        // write a file there, if not change useDir to users' VisIt Dir.
+        QTemporaryFile tf("mytemp");
+        if (!tf.open())
+        {
+            useDir = GetUserVisItDirectory().c_str();
+        }
+    }
+#endif
+
     QString filename = QFileDialog::getSaveFileName(this,
                                                     tr("Save Attribute XML"),
-                                                    NULL,
+                                                    useDir,
                                                     tr("XML Files (*.xml)"));
     if (filename.isNull())
         return;

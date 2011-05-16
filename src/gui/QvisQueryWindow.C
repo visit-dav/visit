@@ -66,6 +66,11 @@
 
 #include <ViewerProxy.h>
 
+#ifdef _WIN32
+#include <QTemporaryFile>
+#include <InstallationFunctions.h>
+#endif
+
 using std::string;
 
 // ****************************************************************************
@@ -2160,6 +2165,11 @@ QvisQueryWindow::dumpStepsToggled(bool val)
 //   Added default file support to the save as dialog.
 //   Skip file save if no results are available. 
 //
+//    Kathleen Bonnell, Fri May 13 13:28:45 PDT 2011
+//    On Windows, explicitly test writeability of the 'cwd' before passing it 
+//    to getSaveFileName (eg don't present user with a place to save a file if 
+//    they cannot save there!)
+//
 // ****************************************************************************
 
 void
@@ -2181,10 +2191,20 @@ QvisQueryWindow::saveResultText()
     defaultFile.sprintf("visit%04d", saveCount);
     defaultFile += saveExtension;
     
-    QString currentDir;
-    currentDir = QDir::current().path();
-    
-    defaultFile = currentDir + "/" + defaultFile;
+    QString useDir = QDir::current().path();
+  
+#ifdef _WIN32
+    { // new scope
+        // force a temporary file creation in cwd
+        QTemporaryFile tf("mytemp");
+        if (!tf.open())
+        {
+            useDir = GetUserVisItDirectory().c_str();
+        }
+    }
+#endif
+   
+    defaultFile = useDir + "/" + defaultFile;
 
     // Get the name of the file that the user saved.
     QString sFilter(QString("VisIt ") + tr("save") + QString(" (*") + saveExtension + ")");

@@ -64,6 +64,11 @@
 #include <DataNode.h>
 #include <StringHelpers.h>
 
+#ifdef _WIN32
+#include <QTemporaryFile>
+#include <InstallationFunctions.h>
+#endif
+
 using std::string;
 using std::vector;
 
@@ -1703,6 +1708,11 @@ QvisPickWindow::ResizeTabs()
 //   Brad Whitlock, Fri Jun  6 14:59:53 PDT 2008
 //   Qt 4.
 //
+//    Kathleen Bonnell, Fri May 13 13:28:45 PDT 2011
+//    On Windows, explicitly test writeability of the 'cwd' before passing it 
+//    to getSaveFileName (eg don't present user with a place to save a file if 
+//    they cannot save there!)
+//
 // ****************************************************************************
 
 void
@@ -1715,10 +1725,21 @@ QvisPickWindow::savePickText()
     defaultFile.sprintf("visit%04d", saveCount);
     defaultFile += saveExtension;
     
-    QString currentDir;
-    currentDir = QDir::current().path();
-    
-    defaultFile = currentDir + "/" + defaultFile;
+    QString useDir;
+    useDir = QDir::current().path();
+
+#ifdef _WIN32
+    { // new scope
+        // force a temporary file creation in cwd
+        QTemporaryFile tf("mytemp");
+        if (!tf.open())
+        {
+            useDir = GetUserVisItDirectory().c_str();
+        }
+    }
+#endif
+
+    defaultFile = useDir + "/" + defaultFile;
 
     // Get the name of the file that the user saved.
     QString sFilter(QString("VisIt ") + QString("save") + QString(" (*") + saveExtension + ")");

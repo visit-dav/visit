@@ -46,6 +46,9 @@
 #include <QPushButton>
 #include <QMenu>
 #include <QFileDialog>
+#ifdef _WIN32
+#include <QTemporaryFile>
+#endif
 
 #include <QvisPythonSyntaxHighlighter.h>
 #include <visit-config.h>
@@ -265,13 +268,30 @@ QvisPythonFilterEditor::loadScript(const QString &py_script)
 //   Added 'All Files' to the filter, to support scripts without a '.py'
 //   extension.
 //
+//    Kathleen Bonnell, Fri May 13 13:28:45 PDT 2011
+//    On Windows, explicitly test writeability of the 'cwd' before passing it 
+//    to getSaveFileName (eg don't present user with a place to save a file if 
+//    they cannot save there!)
+//
 // ****************************************************************************
 
 void
 QvisPythonFilterEditor::cmdSaveClick()
 {
-    QString default_file = QDir::current().path()
-                           + "/" + QString("visit_filter.py");
+    QString useDir = QDir::current().path();
+
+#ifdef _WIN32
+    { // new scope
+        // force a temporary file creation in cwd
+        QTemporaryFile tf("mytemp");
+        if (!tf.open())
+        {
+            useDir = GetUserVisItDirectory().c_str();
+        }
+    }
+#endif
+
+    QString default_file = useDir + "/" + QString("visit_filter.py");
 
     // Get the name of the file that the user saved.
     QString filter(tr("Python Script File") +  QString(" (*.py);;")
