@@ -18,6 +18,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
+#    Update due to change 
+#
 # ----------------------------------------------------------------------------
 
 # Set up the annotation colors, etc.
@@ -76,7 +80,7 @@ Test("timeslider08")
 
 # Create a new slider
 SetTimeSliderState(18)
-slider2 = CreateAnnotationObject("TimeSlider")
+slider2 = CreateAnnotationObject("TimeSlider","slider_obj")
 slider2.position = (0.3, 0.8)
 slider2.height = 0.15
 Test("timeslider09")
@@ -86,7 +90,7 @@ slider.Delete()
 Test("timeslider10")
 
 # Create an alias to the second slider using the GetAnnotationObject call.
-foo = GetAnnotationObject(0)
+foo = GetAnnotationObject("slider_obj")
 foo.startColor = (255, 0, 255, 255)
 foo.endColor = (0, 255, 255, 100)
 Test("timeslider11")
