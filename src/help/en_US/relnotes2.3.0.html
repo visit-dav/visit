@@ -37,6 +37,7 @@ enhancements and bug-fixes that were added to this release.</p>
   To access an object by index, use the index in combination with the result of <i>GetAnnotationObjectNames</i>.
   </li>
   <li>For Windows installs, there is now an install option to associate curve file types <i>(*.curve, *.ultra, *.ult, *.u)</i> with VisIt, allowing double-clicking to start VisIt and open the file.</li>
+  <li>When restoring a Session with different sources via the GUI, if the data directory specified in the session file no longer exists, VisIt will present the session file location as the default data directory instead of the User's home directory.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -110,6 +111,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Command recording issues on Windows have been corrected.</li>
   <li>Fixed problem with pick on transformed rectilinear grids.</li>
   <li>Applying the OnionPeel operator to a transformed rectilinear grid no longer crashes the engine.</li>
+  <li>Fixed issue with File Open dialog's focus on Windows when restoring session with different sources and the directory specified by the session file does not exist.</li>
+  <li>On Windows, default save location for Picks, Queries, Python Filters and Transfer functions via the GUI will only be the 'current working directory' if the user has write-permissions there.  Otherwise, it will be the user's VisIt directory.</li>
 </ul>
 
   
