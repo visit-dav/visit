@@ -1320,6 +1320,10 @@ def NPick(nodeIds):
 # Programmer: Mark C. Miller 
 # Date:       Wed Jul 18 18:12:28 PDT 2007 
 #
+# Modifications:
+#   Cyrus Harrison, Mon May 16 09:15:21 PDT 2011
+#   Update argument passed to GetAnnotationObject().
+#
 ###############################################################################
 def SyncWindows(srcWin):
     global dbr
@@ -1362,7 +1366,7 @@ def SyncWindows(srcWin):
         SetActiveWindow(win)
 
 	# re-set the annotations
-        ao = GetAnnotationObject(1)
+        ao = GetAnnotationObject(GetAnnotationObjectNames()[1])
         if win == 1:
             ReplaceDatabase(dbl)
 	    if cmfeMode == 0:
