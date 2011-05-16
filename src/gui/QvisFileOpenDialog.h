@@ -54,6 +54,10 @@
 //   Brad Whitlock, Wed Apr  9 10:40:07 PDT 2008
 //   Made captions use QString.
 //
+//   Kathleen Bonnell, Fri May 13 14:20:19 PDT 2011
+//   Added getOpenFileNameWithFallbackPath, and added fallbackPath arg to
+//   delayedChangePath and getOpenFileNamEx.
+//
 // ****************************************************************************
 
 class QvisFileOpenDialog : public QvisFileOpenWindow
@@ -73,6 +77,9 @@ public:
     static QString getOpenFileName(const QString &initialFile, 
                                    const QString &filter,
                                    const QString &caption);
+    static QString getOpenFileNameWithFallbackPath(const QString &initialFile, 
+                                   const QString &caption,
+                                   const QString &fallbackPath);
 
     int exec();
     void setFilename(const QString &);
@@ -87,14 +94,16 @@ private slots:
 private:
     void setResult(int);
     int result() const;
-    void delayedChangePath(const QString &initialFile, const QString &fltr);
+    void delayedChangePath(const QString &initialFile, const QString &fltr, const QString &fallbackPath);
     void restoreHostPathFilter(const QString &host,
                                const QString &path, const QString &filter);
-    QString getOpenFileNameEx(const QString &initialFile, const QString &filter);
+    QString getOpenFileNameEx(const QString &initialFile, const QString &filter,
+                              const QString &fallbacKPath = "");
     void done(int r);
 
     QString filename;
     QString filter;
+    QString fallbackPath;
     bool    in_loop;
     int     _result;
 };

@@ -56,6 +56,9 @@
 //   Cyrus Harrison, Tue Jul  1 09:14:16 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Bonnell, Fri May 13 14:04:25 PDT 2011
+//   Added setFallbackPath.
+//
 // ****************************************************************************
 
 class QvisSessionSourceChangerDialog : public QDialog
@@ -68,6 +71,9 @@ public:
     void setSources(const stringVector &keys, const stringVector &values,
                     const std::map<std::string, stringVector> &uses);
     const stringVector &getSources() const;
+
+    void setFallbackPath(const QString &);
+
 protected:
     virtual void keyPressEvent(QKeyEvent *e);
 private:

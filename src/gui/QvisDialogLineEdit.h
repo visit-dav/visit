@@ -61,6 +61,9 @@ class QPushButton;
 //   Brad Whitlock, Thu Jun 19 11:23:38 PDT 2008
 //   QT 4.
 //
+//   Kathleen Bonnell, Fri May 13 14:18:37 PDT 2011
+//   Added fallbackPath.
+//
 // ****************************************************************************
 
 class GUI_API QvisDialogLineEdit : public QWidget
@@ -84,6 +87,7 @@ public:
     void setDialogFilter(const QString &);
     void setDialogMode(DialogMode m);
     void setDialogCaption(const QString &);
+    void setFallbackPath(const QString &);
 
 signals:
     void returnPressed();
@@ -98,6 +102,7 @@ private:
     QString      dialogCaption;
     QLineEdit   *lineEdit;
     QPushButton *pushButton;
+    QString      fallbackPath;
 };
 
 #endif

@@ -227,3 +227,28 @@ QvisSessionSourceChangerDialog::SplitPrompt(const QString &s) const
         return r;
     }
 }
+
+
+// ****************************************************************************
+// Method: QvisSessionSourceChangerDialog::setFallbackPath
+//
+// Purpose: 
+//   Sets a fallbackpath to in the FileOpen dialog if the current source
+//   directory listed in the session file no longer exists.
+//
+// Arguments:
+//   path : The path to use
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   Fri May 13 14:27:49 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSessionSourceChangerDialog::setFallbackPath(const QString &path)
+{
+    if (body != 0)
+        body->setFallbackPath(path);
+}
