@@ -48,8 +48,8 @@ contains
     REAL(real8), DIMENSION(m,mp) :: vnew
     INTEGER :: m, mp
 #if ( defined _VISIT_ )
-    external visittimestepchanged
-    integer visittimestepchanged
+    external visittimestepchanged, visitupdateplots
+    integer visittimestepchanged, visitupdateplots
 #endif
 
     REAL(real8), DIMENSION(:,:), POINTER :: c, n, e, w, s
@@ -74,6 +74,7 @@ contains
     iter = iter + 1
 #if ( defined _VISIT_ )
     ierr = visittimestepchanged()
+    ierr = visitupdateplots()
 #endif
   end subroutine simulate_one_timestep
 
@@ -140,4 +141,53 @@ contains
 
     call neighbors()  ! determines MPI-domain border flags    
   end subroutine InitMPI
+
+  subroutine MPIIOWriteData(Filename, v, m, mp)
+    INTEGER :: m, mp
+    REAL(real8), dimension(0:m+1,0:mp+1) :: v
+    INTEGER :: dimuids(2), ustart(2), ucount(2)
+    CHARACTER(len=*) :: Filename
+    INTEGER(KIND=MPI_OFFSET_KIND) :: disp
+    INTEGER :: ierr, filehandle, filetype
+    ! global size of array on disk
+    dimuids(1) = m + 2
+    dimuids(2) = m + 2  
+    disp = 0
+    call MPI_File_open(MPI_COMM_WORLD, Filename,             &
+                          IOR(MPI_MODE_CREATE, MPI_MODE_WRONLY),  &
+                          MPI_INFO_NULL, filehandle, ierr)
+
+    if(par_rank .eq. 0) then
+      call MPI_File_write(filehandle, dimuids, 2, MPI_INTEGER, MPI_STATUS_IGNORE, ierr)
+    endif
+    disp = SIZEOF(dimuids) !offset because we just wrote 2 integers
+
+    ustart(2) = (mp * par_rank) + 1
+    if(par_rank .eq. 0) then
+      ustart(2) = 0
+    endif
+    ustart(1) = 0 ! X direction
+
+    ucount(1) = m+2;
+    ucount(2) = mp;
+! all tasks write mp lines except rank 0 and last rank which write (mp+1)
+! in total, we have  the (m+2)*(m+2) grid written, including the b.c.
+    if((par_rank .eq. 0) .or. (par_rank .eq. (par_size-1))) then
+      ucount(2) = ucount(2) + 1
+    endif
+
+! Create the subarray representing the local block
+    call MPI_Type_create_subarray(2, dimuids, ucount, ustart, &
+                                       MPI_ORDER_FORTRAN, MPI_REAL8, filetype, ierr)
+    call MPI_Type_commit(filetype, ierr)
+
+    call MPI_File_set_view(filehandle, disp, MPI_REAL8, &
+                                filetype, "native", MPI_INFO_NULL, ierr)
+
+    call MPI_File_write_all(filehandle, v, PRODUCT(ucount), MPI_REAL8, MPI_STATUS_IGNORE, ierr)
+    call MPI_Type_free(filetype, ierr)
+    call MPI_File_close(filehandle, ierr)
+
+  end subroutine MPIIOWriteData
+
 end module jacobi_module

@@ -103,7 +103,7 @@ implicit none
     call simulate_one_timestep(v, m, mp, vnew)
 #endif
   end do
-
+  call MPIIOWriteData('/tmp/Jacobi.bin', v, m, mp)
   deallocate (vnew, v)
 
   call MPI_Finalize(ierr)

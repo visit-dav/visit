@@ -1,0 +1,16 @@
+TIME: 1.23456
+DATA_FILE: /tmp/Jacobi.bin
+# The data size corresponds to NX,NY,NZ in the above example code.
+DATA_SIZE: 22 22 1
+# Allowable values for DATA_FORMAT are: BYTE,SHORT,INT,FLOAT,DOUBLE
+DATA_FORMAT: DOUBLE
+VARIABLE: temperature
+# Endian representation of the computer that created the data.
+# Intel is LITTLE, many other processors are BIG.
+DATA_ENDIAN: LITTLE
+# Centering refers to how the data is distributed in a cell. If you
+# give “zonal” then it’s 1 data value per zone. Otherwise the data
+# will be centered at the nodes.
+CENTERING: nodal
+
+
