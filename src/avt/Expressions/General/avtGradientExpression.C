@@ -360,6 +360,12 @@ avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
 //  Programmer: Hank Childs
 //  Creation:   December 4, 2010
 //
+//  Modifications:
+//    Eric Brugger, Tue May 17 16:15:27 PDT 2011
+//    I modified the general gradient calculating code so that it ignored
+//    neighboring cells that had an extent of zero in either of the x, y
+//    or z directions, since this caused a divide by zero.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -484,15 +490,15 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
         {
             double *bounds = in_ds->GetCell(neighborCellIds->GetId(ci))
                                                                  ->GetBounds();
-            if (bounds[1]-bounds[0] < xDELTA*5)
+            if ((bounds[1]-bounds[0] < xDELTA*5) && (bounds[1]-bounds[0] != 0))
             {
                 xDELTA = (bounds[1]-bounds[0]) / 5.0;
             }
-            if (bounds[3]-bounds[2] < yDELTA*5)
+            if ((bounds[3]-bounds[2] < yDELTA*5) && (bounds[3]-bounds[2] != 0))
             {
                 yDELTA = (bounds[3]-bounds[2]) / 5.0;
             }
-            if (bounds[5]-bounds[4] < zDELTA*5)
+            if ((bounds[5]-bounds[4] < zDELTA*5) && (bounds[3]-bounds[2] != 0))
             {
                 zDELTA = (bounds[5]-bounds[4]) / 5.0;
             }
