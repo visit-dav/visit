@@ -3532,6 +3532,10 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //
 //    Mark C. Miller, Sun Aug 29 23:31:55 PDT 2010
 //    Removed extraneous cerr statements left over from debugging.
+//
+//    Eric Brugger, Tue May 17 10:56:46 PDT 2011
+//    I had the routine return NULL if the dataset didn't have any cells.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -3586,6 +3590,14 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
               "with nzones=%d and dataset object with ncells=%d do not agree.",
                dom, mat->GetNZones(), ds->GetNumberOfCells());
         EXCEPTION1(InvalidDBTypeException, msg); 
+    }
+
+    //
+    // If there aren't any cells, then we are finished.
+    //
+    if (ds->GetNumberOfCells() == 0)
+    {
+        return NULL;
     }
 
     //
