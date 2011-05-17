@@ -383,6 +383,14 @@
 #     Disable Java in FastBit built (we do not use it, and some systems
 #     do not have a working Java install).
 #
+#     Eric Brugger, Tue May 17 12:11:09 PDT 2011
+#     I changed the script to use mesa 7.8.2 on Darwin and 7.10.2 otherwise. 
+#
+#     Eric Brugger, Tue May 17 13:34:44 PDT 2011
+#     I replaced the sed command in build_hdf4 with a patch, so that running
+#     build_visit multiple times without successfully building hdf4 won't
+#     apply the change multiple times.
+#
 # *****************************************************************************
 
 
@@ -754,10 +762,17 @@ export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.3.tar.gz"}
 export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.3"}
 export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.3"}
 
-export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
-export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
-export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.10.2"
+if [[ "$OPSYS" == "Darwin" ]]; then
+    export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
+    export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
+    export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
+    export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2"
+else
+    export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
+    export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
+    export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
+    export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.10.2"
+fi
 
 export PYTHON_FILE_SUFFIX="tgz"
 export PYTHON_VERSION="2.6.4"
@@ -5597,6 +5612,231 @@ function apply_hdf4_421_patch
    return 0
 }
 
+function apply_hdf4_425_patch
+{
+   patch -p0 << \EOF
+diff -c a/configure hdf-4.2.5/configure
+*** a/configure
+--- hdf-4.2.5/configure
+***************
+*** 6770,6782 ****
+
+  done
+
+!     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for jpeg_start_decompress in -ljpeg" >&5
+! $as_echo_n "checking for jpeg_start_decompress in -ljpeg... " >&6; }
+! if test "${ac_cv_lib_jpeg_jpeg_start_decompress+set}" = set; then :
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-ljpeg  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+
+--- 6770,6782 ----
+
+  done
+
+!     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for vtk_jpeg_start_decompress in -lvtkjpeg" >&5
+! $as_echo_n "checking for vtk_jpeg_start_decompress in -lvtkjpeg... " >&6; }
+! if test "${ac_cv_lib_jpeg_vtk_jpeg_start_decompress+set}" = set; then :
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lvtkjpeg  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+
+***************
+*** 6786,6792 ****
+  #ifdef __cplusplus
+  extern "C"
+  #endif
+! char jpeg_start_decompress ();
+  #ifdef F77_DUMMY_MAIN
+
+  #  ifdef __cplusplus
+--- 6786,6792 ----
+  #ifdef __cplusplus
+  extern "C"
+  #endif
+! char vtk_jpeg_start_decompress ();
+  #ifdef F77_DUMMY_MAIN
+
+  #  ifdef __cplusplus
+***************
+*** 6798,6825 ****
+  int
+  main ()
+  {
+! return jpeg_start_decompress ();
+    ;
+    return 0;
+  }
+  _ACEOF
+  if ac_fn_c_try_link "$LINENO"; then :
+!   ac_cv_lib_jpeg_jpeg_start_decompress=yes
+  else
+!   ac_cv_lib_jpeg_jpeg_start_decompress=no
+  fi
+  rm -f core conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+  LIBS=$ac_check_lib_save_LIBS
+  fi
+! { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jpeg_jpeg_start_decompress" >&5
+! $as_echo "$ac_cv_lib_jpeg_jpeg_start_decompress" >&6; }
+! if test "x$ac_cv_lib_jpeg_jpeg_start_decompress" = x""yes; then :
+    cat >>confdefs.h <<_ACEOF
+  #define HAVE_LIBJPEG 1
+  _ACEOF
+
+!   LIBS="-ljpeg $LIBS"
+
+  else
+    unset HAVE_JPEG
+--- 6798,6825 ----
+  int
+  main ()
+  {
+! return vtk_jpeg_start_decompress ();
+    ;
+    return 0;
+  }
+  _ACEOF
+  if ac_fn_c_try_link "$LINENO"; then :
+!   ac_cv_lib_jpeg_vtk_jpeg_start_decompress=yes
+  else
+!   ac_cv_lib_jpeg_vtk_jpeg_start_decompress=no
+  fi
+  rm -f core conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+  LIBS=$ac_check_lib_save_LIBS
+  fi
+! { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jpeg_vtk_jpeg_start_decompress" >&5
+! $as_echo "$ac_cv_lib_jpeg_vtk_jpeg_start_decompress" >&6; }
+! if test "x$ac_cv_lib_jpeg_vtk_jpeg_start_decompress" = x""yes; then :
+    cat >>confdefs.h <<_ACEOF
+  #define HAVE_LIBJPEG 1
+  _ACEOF
+
+!   LIBS="-lvtkjpeg $LIBS"
+
+  else
+    unset HAVE_JPEG
+***************
+*** 6878,6890 ****
+        LDFLAGS="$LDFLAGS -L$jpeg_lib"
+      fi
+
+!     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for jpeg_start_decompress in -ljpeg" >&5
+! $as_echo_n "checking for jpeg_start_decompress in -ljpeg... " >&6; }
+! if test "${ac_cv_lib_jpeg_jpeg_start_decompress+set}" = set; then :
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-ljpeg  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+
+--- 6878,6890 ----
+        LDFLAGS="$LDFLAGS -L$jpeg_lib"
+      fi
+
+!     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for vtk_jpeg_start_decompress in -lvtkjpeg" >&5
+! $as_echo_n "checking for vtk_jpeg_start_decompress in -lvtkjpeg... " >&6; }
+! if test "${ac_cv_lib_jpeg_vtk_jpeg_start_decompress+set}" = set; then :
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lvtkjpeg  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+
+***************
+*** 6894,6900 ****
+  #ifdef __cplusplus
+  extern "C"
+  #endif
+! char jpeg_start_decompress ();
+  #ifdef F77_DUMMY_MAIN
+
+  #  ifdef __cplusplus
+--- 6894,6900 ----
+  #ifdef __cplusplus
+  extern "C"
+  #endif
+! char vtk_jpeg_start_decompress ();
+  #ifdef F77_DUMMY_MAIN
+
+  #  ifdef __cplusplus
+***************
+*** 6906,6933 ****
+  int
+  main ()
+  {
+! return jpeg_start_decompress ();
+    ;
+    return 0;
+  }
+  _ACEOF
+  if ac_fn_c_try_link "$LINENO"; then :
+!   ac_cv_lib_jpeg_jpeg_start_decompress=yes
+  else
+!   ac_cv_lib_jpeg_jpeg_start_decompress=no
+  fi
+  rm -f core conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+  LIBS=$ac_check_lib_save_LIBS
+  fi
+! { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jpeg_jpeg_start_decompress" >&5
+! $as_echo "$ac_cv_lib_jpeg_jpeg_start_decompress" >&6; }
+! if test "x$ac_cv_lib_jpeg_jpeg_start_decompress" = x""yes; then :
+    cat >>confdefs.h <<_ACEOF
+  #define HAVE_LIBJPEG 1
+  _ACEOF
+
+!   LIBS="-ljpeg $LIBS"
+
+  else
+    unset HAVE_JPEG
+--- 6906,6933 ----
+  int
+  main ()
+  {
+! return vtk_jpeg_start_decompress ();
+    ;
+    return 0;
+  }
+  _ACEOF
+  if ac_fn_c_try_link "$LINENO"; then :
+!   ac_cv_lib_jpeg_vtk_jpeg_start_decompress=yes
+  else
+!   ac_cv_lib_jpeg_vtk_jpeg_start_decompress=no
+  fi
+  rm -f core conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+  LIBS=$ac_check_lib_save_LIBS
+  fi
+! { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jpeg_vtk_jpeg_start_decompress" >&5
+! $as_echo "$ac_cv_lib_jpeg_vtk_jpeg_start_decompress" >&6; }
+! if test "x$ac_cv_lib_jpeg_vtk_jpeg_start_decompress" = x""yes; then :
+    cat >>confdefs.h <<_ACEOF
+  #define HAVE_LIBJPEG 1
+  _ACEOF
+
+!   LIBS="-lvtkjpeg $LIBS"
+
+  else
+    unset HAVE_JPEG
+EOF
+   if [[ $? != 0 ]] ; then
+      warn "HDF4 patch failed."
+      return 1
+   fi
+
+   return 0
+}
+
 function apply_hdf4_patch
 {
    if [[ ${HDF4_VERSION} == 4.2.1 ]] ; then
@@ -5605,10 +5845,16 @@ function apply_hdf4_patch
            return 1
        fi
    fi
-    if [[ `uname -m` == "ppc64" ]]; then
-        apply_hdf4_421_ppc_patch
-        apply_hdf4_421_ppc_patch_endianness
-    fi
+   if [[ ${HDF4_VERSION} == 4.2.5 ]] ; then
+       apply_hdf4_425_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+   if [[ `uname -m` == "ppc64" ]]; then
+       apply_hdf4_421_ppc_patch
+       apply_hdf4_421_ppc_patch_endianness
+   fi
 
    return 0
 }
@@ -5645,9 +5891,6 @@ function build_hdf4
     cd $HDF4_BUILD_DIR || error "Can't cd to hdf4 build dir."
     info "Invoking command to configure HDF4"
     MAKEOPS=""
-    mv configure configure.old
-    sed "s/-ljpeg/-lvtkjpeg/g" configure.old | sed "s/jpeg_start_decompress/vtk_jpeg_start_decompress/g" > configure
-    chmod 700 configure
     if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
         ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
