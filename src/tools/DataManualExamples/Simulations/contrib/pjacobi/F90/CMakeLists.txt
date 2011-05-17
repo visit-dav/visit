@@ -2,9 +2,9 @@ CMAKE_MINIMUM_REQUIRED( VERSION 2.8)
 PROJECT (PJACOBI Fortran)
 
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}")
-INCLUDE_DIRECTORIES(/local/apps/VisItSrc/src/sim/V2/lib)
+INCLUDE_DIRECTORIES("$ENV{VISITHOME}/linux-x86_64/libsim/V2/include")
 
-LINK_DIRECTORIES(/local/apps/VisIt/current/linux-x86_64/libsim/V2/lib)
+LINK_DIRECTORIES("$ENV{VISITHOME}/linux-x86_64/libsim/V2/lib")
 
 SET(F90_SRCS
 jacobi_module.f90
