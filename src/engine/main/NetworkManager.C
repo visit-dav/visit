@@ -137,8 +137,6 @@ using std::set;
 //
 // Static functions.
 //
-static void   DumpImage(avtDataObject_p, const char *fmt, bool allprocs=true);
-static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 static ref_ptr<avtDatabase> GetDatabase(void *, const std::string &,
                                         int, const char *);
 static avtDataBinning *GetDataBinningCallbackBridge(void *arg, const char *name);
@@ -2263,6 +2261,9 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    Make sure to call *our* render methods.  Allows derived classes to fall
 //    back on this class, even if it overrides rendering methods.
 //
+//    Tom Fogal, Wed May 18 12:31:48 MDT 2011
+//    Adjust for new debug image dumping interface.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -2345,12 +2346,9 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
         imageCompositer->AddImageInput(theImage, 0, 0);
         visitTimer->StopTimer(t1A, "Setting up background image");
 
-        // Dump the composited image when debugging.  Note that we only
-        // want all processors to dump it if we have done an Allreduce
-        // in the compositor, and this only happens in two pass mode.
+        // Dump the composited image when debugging.
         if (dump_renders)
-            DumpImage(theImage, "after_OpaqueComposite",
-                      this->MemoMultipass(viswin));
+            DumpImage(theImage, "after_OpaqueComposite");
         //
         // Parallel composite (via 1 stage `pipeline')
         //
@@ -2436,8 +2434,7 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
 
         retval = compositedImageAsDataObject;
         if (dump_renders)
-            DumpImage(retval,
-                      "after_AllComposites", false);
+            DumpImage(retval, "after_AllComposites");
         delete imageCompositer;
         
         this->RenderCleanup(windowID);
@@ -4553,38 +4550,51 @@ NetworkManager::CallProgressCallback(const char *module, const char *msg,
 //    Cyrus Harrison, Tue Feb 19 08:38:12 PST 2008
 //    Added support for optional debug dump directory.
 //
+//    Tom Fogal, Wed May 18 12:07:36 MDT 2011
+//    Promote to a class method, simplify a bit.
+//
 // ****************************************************************************
-static void
-DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
+void
+NetworkManager::DumpImage(avtDataObject_p img, const char *fmt)
+const
 {
-    if (!allprocs && PAR_Rank() != 0)
-        return;
-
-    static int numDumps = 0;
-    static int numDumpsAll = 0;
     char tmpName[256];
     avtFileWriter *fileWriter = new avtFileWriter();
 
-#ifdef PARALLEL
-    if (allprocs)
-        SNPRINTF(tmpName, 256, "%s_%03d_%03d.png", fmt, PAR_Rank(), numDumpsAll);
-    else
-        SNPRINTF(tmpName, 256, "%s_%03d.png", fmt, numDumps);
-#else
-    SNPRINTF(tmpName, 256, "%s_%03d.png", fmt, numDumps);
-#endif
+    this->FormatDebugImage(tmpName, 256, fmt);
 
-    string dump_image = avtDebugDumpOptions::GetDumpDirectory() + tmpName;
+    string dump_image = avtDebugDumpOptions::GetDumpDirectory() + tmpName +
+                        ".png";
 
     fileWriter->SetFormat(SaveWindowAttributes::PNG);
     int compress = 1;
     fileWriter->Write(dump_image.c_str(), img, 100, false, compress, false);
     delete fileWriter;
+}
 
-    if (allprocs)
-        numDumpsAll++;
-    else
-        numDumps++;
+// ****************************************************************************
+//  Function:  FormatDebugImage
+//
+//  Purpose:
+//    Formats a string to use for writing debug images.
+//
+//  Arguments:
+//    out        where to write the string to
+//    outlen     length of the 'out' buffer.
+//    prefix     string to tack on to the beginning of saved images
+//
+//  Programmer:  Tom Fogal
+//  Creation:    May 18, 2011
+//
+//  Modifications:
+// ****************************************************************************
+void
+NetworkManager::FormatDebugImage(char *out, size_t outlen, const char *prefix)
+const
+{
+  static int numDumps = 0;
+  SNPRINTF(out, outlen, "%s_%03d_%03d", prefix, PAR_Rank(), numDumps);
+  numDumps++;
 }
 
 // ****************************************************************************
@@ -4595,19 +4605,21 @@ DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
 //
 //  Arguments:
 //    img        the image
-//    fmt        the file format for the avtFileWriter
-//    allprocs   if false, only the first processor writes
+//    prefix     prefix for the filename
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 21, 2004
 //
+//  Tom Fogal, Wed May 18 12:13:16 MDT 2011
+//  Remove allprocs argument.  Make it a class method.
+//
 // ****************************************************************************
-static void
-DumpImage(avtImage_p img, const char *fmt, bool allprocs)
+void
+NetworkManager::DumpImage(const avtImage_p img, const char *prefix) const
 {
     avtDataObject_p tmpImage;
     CopyTo(tmpImage, img);
-    DumpImage(tmpImage, fmt, allprocs);
+    DumpImage(tmpImage, prefix);
 }
 
 
