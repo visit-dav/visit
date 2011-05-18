@@ -127,7 +127,6 @@ class avtTecplotFileFormat : public avtSTMDFileFormat
     std::string title;
     int                       numTotalVars;
     std::vector<std::string>  variableNames;
-    std::vector<std::string>  allVariableNames;
     std::vector<int>          variableCellCentered;
     std::vector<std::string>  curveNames;
     std::map<std::string,int> curveIndices;
