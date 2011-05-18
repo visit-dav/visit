@@ -218,6 +218,49 @@ write_hdf5_3d_rect_data(hid_t file_id)
 }
 
 void
+write_hdf5_3d_point_data(hid_t file_id)
+{
+    /*
+     * Create an index list for the point array.
+     */
+    int *indexes = (int *) malloc((NX+1)*(NY+1)*(NZ+1) * sizeof(int));
+
+    for (int i = 0; i < (NX+1)*(NY+1)*(NZ+1); i++)
+        indexes[i] = i;
+    
+    /*
+     * Write the data file.
+     */
+    /*
+     * Data types: H5T_NATIVE_CHAR
+     *             H5T_NATIVE_INT
+     *             H5T_NATIVE_LONG
+     *             H5T_NATIVE_FLOAT
+     *             H5T_NATIVE_DOUBLE
+     */
+    hid_t     dataset_id, dataspace_id;
+    hsize_t   dims[3];
+    herr_t    status;
+
+    /*
+     * Write the index list for the points.
+     */
+    dims[0] = (NX+1)*(NY+1)*(NZ+1);
+    dataspace_id = H5Screate_simple(1, dims, NULL);
+    dataset_id = H5Dcreate(file_id, "/Indexes", H5T_NATIVE_INT, dataspace_id,
+                           H5P_DEFAULT);
+    status = H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+                      H5P_DEFAULT, indexes);
+    status = H5Dclose(dataset_id);
+    status = H5Sclose(dataspace_id);
+
+    /*
+     * Free the data.
+     */
+    free(indexes);
+}
+
+void
 write_hdf5_3d_curv_data(hid_t file_id)
 {
     /*
@@ -841,6 +884,7 @@ create_hdf5_file()
     write_hdf5_2d_curv_data(file_id);
     write_hdf5_3d_rect_data(file_id);
     write_hdf5_3d_curv_data(file_id);
+    write_hdf5_3d_point_data(file_id);
 
     /*
      * Close the file.
@@ -1554,6 +1598,51 @@ create_rect3d()
 }
 
 void
+create_point3d()
+{
+    FILE *xmf = 0;
+
+    /*
+     * Open the file and write the header.
+     */
+    xmf = fopen("point3d.xmf", "w");
+    fprintf(xmf, "<?xml version=\"1.0\" ?>\n");
+    fprintf(xmf, "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n");
+    fprintf(xmf, "<Xdmf Version=\"2.0\">\n");
+
+    /*
+     * Write the mesh description and the variables defined on the mesh.
+     */
+    fprintf(xmf, " <Domain>\n");
+
+    fprintf(xmf, "   <Grid Name=\"points\" GridType=\"Uniform\">\n");
+    fprintf(xmf, "     <Topology TopologyType=\"Polyvertex\" Dimensions=\"%d\" NodesPerElement=\"1\">\n", (NX+1)*(NY+1)*(NZ+1));
+    fprintf(xmf, "       <DataItem Format=\"HDF\" Dimensions=\"%d\" NumberType=\"Int\">\n", (NX+1)*(NY+1)*(NZ+1));
+    fprintf(xmf, "        mesh.h5:/Indexes\n");
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Topology>\n");
+    fprintf(xmf, "     <Geometry Type=\"XYZ\">\n");
+    fprintf(xmf, "       <DataItem Format=\"HDF\" Dimensions=\"%d 3\" NumberType=\"Float\">\n", (NX+1)*(NY+1)*(NZ+1));
+    fprintf(xmf, "        mesh.h5:/XYZ\n");
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Geometry>\n");
+    fprintf(xmf, "     <Attribute Name=\"VelocityZ\" AttributeType=\"Scalar\" Center=\"Node\">\n");
+    fprintf(xmf, "       <DataItem Format=\"HDF\" Dimensions=\"%d\" NumberType=\"Int\">\n", (NX+1)*(NY+1)*(NZ+1));
+    fprintf(xmf, "        mesh.h5:/VelocityZ\n");
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Attribute>\n");
+    fprintf(xmf, "   </Grid>\n");
+
+    fprintf(xmf, " </Domain>\n");
+
+    /*
+     * Write the footer and close the file.
+     */
+    fprintf(xmf, "</Xdmf>\n");
+    fclose(xmf);
+}
+
+void
 create_err_dataitem1()
 {
     FILE *xmf = 0;
@@ -2088,6 +2177,7 @@ main()
     create_corect3d();
     create_rect2d();
     create_rect3d();
+    create_point3d();
 
     create_err_dataitem1();
     create_err_dataitem2();
