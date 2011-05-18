@@ -343,6 +343,10 @@ avtTecplotFileFormat::GetNextToken()
 //    Jeremy Meredith, Tue Oct 26 17:13:39 EDT 2010
 //    Added support for comments.
 //
+//    Jeremy Meredith, Wed May 18 13:23:11 EDT 2011
+//    Removed distinction between allVariableNames and variableNames, since
+//    we treat even X/Y/Z coordinate arrays as normal variables, still.
+//
 // ****************************************************************************
 vtkPoints*
 avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
@@ -367,7 +371,7 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(numVals);
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        vars[allVariableNames[v]].push_back(scalars);
+        vars[variableNames[v]].push_back(scalars);
 
         allScalars.push_back(scalars);
         allptr.push_back(ptr);
@@ -435,6 +439,9 @@ avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
 //    Jeremy Meredith, Tue Oct 26 17:13:39 EDT 2010
 //    Added support for comments.
 //
+//    Removed distinction between allVariableNames and variableNames, since
+//    we treat even X/Y/Z coordinate arrays as normal variables, still.
+//
 // ****************************************************************************
 vtkPoints*
 avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
@@ -467,7 +474,7 @@ avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
 
             ptr[i] = atof(tok.c_str());
         }
-        vars[allVariableNames[v]].push_back(scalars);
+        vars[variableNames[v]].push_back(scalars);
 
         if (v==Xindex)
         {
@@ -921,6 +928,14 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Added code to skip over these when needed.  Also added parsing
 //    support for complex version of VARLOCATION parameter.
 //
+//    Jeremy Meredith, Wed May 18 13:24:06 EDT 2011
+//    Removed unused numVars and eliminated distinction between variableNames
+//    and allVariablesNames, since we now exposed even X/Y/Z coordinate
+//    arrays as normal variables.
+//    Allow multiple passes through VARIABLES records, as long as the number
+//    of variables (and we assume their names, too, though don't yet check)
+//    doesn't vary between passes.
+//
 // ****************************************************************************
 
 void
@@ -929,7 +944,6 @@ avtTecplotFileFormat::ReadFile()
     file.open(filename.c_str());
     string tok = GetNextToken();
     int zoneIndex = 0;
-    int numVars = 0;
     bool got_next_token_already = false;
     bool first_token = true;
 
@@ -992,6 +1006,11 @@ avtTecplotFileFormat::ReadFile()
         }
         else if (tok == "VARIABLES")
         {
+            // keep track of values from previous pass through VARIABLES
+            int old_numTotalVars = numTotalVars;
+            numTotalVars = 0;
+            variableNames.clear();
+
             int guessedXindex = -1;
             int guessedYindex = -1;
             int guessedZindex = -1;
@@ -1030,9 +1049,7 @@ avtTecplotFileFormat::ReadFile()
                 }
 
                 variableNames.push_back(tok);
-                allVariableNames.push_back(tok);
                 numTotalVars++;
-                numVars = variableNames.size();
                 tok = GetNextToken();
             }
             if (numTotalVars==0)
@@ -1066,9 +1083,7 @@ avtTecplotFileFormat::ReadFile()
                     }
 
                     variableNames.push_back(tok);
-                    allVariableNames.push_back(tok);
                     numTotalVars++;
-                    numVars = variableNames.size();
                     if (next_char_eol)
                     {
                         tok = GetNextToken();
@@ -1077,6 +1092,16 @@ avtTecplotFileFormat::ReadFile()
                     else
                         tok = GetNextToken();
                 }
+            }
+
+            // Make sure if we've encountered a VARAIBLES record before, the
+            // number of variables hasn't changed.  (We assume they are
+            // consistent across all zones.)
+            if (old_numTotalVars > 0 &&
+                old_numTotalVars != numTotalVars)
+            {
+                EXCEPTION2(InvalidFilesException, filename,
+                           "VARIABLES record differed among zones.");
             }
 
             // Default the centering to nodal
@@ -1538,7 +1563,6 @@ avtTecplotFileFormat::FreeUpResources(void)
     }
     vars.clear();
     variableNames.clear();
-    allVariableNames.clear();
     variableCellCentered.clear();
     curveNames.clear();
     curveFirstVar.clear();
@@ -1601,6 +1625,15 @@ avtMeshType avtTecplotFileFormat::DetermineAVTMeshType() const
 //    Brad Whitlock, Wed Sep  2 14:15:37 PDT 2009
 //    Set node origin to 1.
 //
+//    Jeremy Meredith, Wed May 18 13:26:05 EDT 2011
+//    If we have at least two spatial dims, always expose a point
+//    mesh, even if we have curves or a spatial mesh.  There are too
+//    many conventions for doing point meshes to deal with.  It's
+//    simplest to just expose the darn point mesh, and any
+//    node-centered variables, and let the user choose it if that's
+//    what they wanted.  Also, get rid of the "vs X" enforced
+//    convention for curves if the file has X coordinates; it never worked.
+//
 // ****************************************************************************
 
 void
@@ -1609,6 +1642,35 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (!file_read)
         ReadFile();
 
+    // we always want a point mesh, whether or not we think they have
+    // some sort of real grid or just curves
+    if (spatialDimension > 1)
+    {
+        avtMeshMetaData *mesh = new avtMeshMetaData;
+        mesh->name = "points";
+        mesh->topologicalDimension = 0;
+        mesh->spatialDimension = spatialDimension;
+        mesh->meshType = AVT_POINT_MESH;
+        mesh->numBlocks = zoneTitles.size();
+        mesh->blockOrigin = 1;
+        mesh->cellOrigin = 1;
+        mesh->nodeOrigin = 1;
+        mesh->blockTitle = "Zones";
+        mesh->blockPieceName = "Zone";
+        mesh->hasSpatialExtents = false;
+        md->Add(mesh);
+
+        for (unsigned int i=0; i<variableNames.size(); i++)
+        {
+            if (variableCellCentered[i] == false)
+            {
+                AddScalarVarToMetaData(md, variableNames[i],
+                                       "points", AVT_NODECENT);
+            }
+        }
+    }
+
+    // and now do either curves or a real grid, depending....
     if ((topologicalDimension==2 || topologicalDimension==3) ||
         (topologicalDimension==0 && spatialDimension > 1))
     {
@@ -1644,60 +1706,30 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char s[200];
         for (unsigned int z = 0 ; z < zoneTitles.size(); z++)
         {
-            if (Xindex < 0)
+            for (unsigned int i=0; i<variableNames.size(); i++)
             {
-                for (unsigned int i=0; i<allVariableNames.size(); i++)
+                for (unsigned int j=0; j<variableNames.size(); j++)
                 {
-                    for (unsigned int j=0; j<allVariableNames.size(); j++)
-                    {
-                        if (i==j) 
-                            continue;
-                        if (zoneTitles.size() > 1)
-                        {
-                            sprintf(s, "%s/%s vs/%s",
-                                    zoneTitles[z].c_str(),
-                                    allVariableNames[i].c_str(),
-                                    allVariableNames[j].c_str());
-                        }
-                        else
-                        {
-                            sprintf(s, "%s vs/%s",
-                                    allVariableNames[i].c_str(),
-                                    allVariableNames[j].c_str());
-                        }
-                        curveIndices[s] = curveNames.size();
-                        curveNames.push_back(s);
-                        curveDomains.push_back(z);
-                        curveFirstVar.push_back(i);
-                        curveSecondVar.push_back(j);
-                        avtCurveMetaData *curve = new avtCurveMetaData;
-                        curve->name = s;
-                        md->Add(curve);
-                    }
-                }
-            }
-            else
-            {
-                for (int i=0; i<(int)allVariableNames.size(); i++)
-                {
-                    if (i==Xindex)
+                    if (i==j) 
                         continue;
-
                     if (zoneTitles.size() > 1)
                     {
-                        sprintf(s, "%s/%s vs/X",
+                        sprintf(s, "%s/%s vs/%s",
                                 zoneTitles[z].c_str(),
-                                allVariableNames[i].c_str());
+                                variableNames[i].c_str(),
+                                variableNames[j].c_str());
                     }
                     else
                     {
-                        sprintf(s, "%s vs/X", allVariableNames[i].c_str());
+                        sprintf(s, "%s vs/%s",
+                                variableNames[i].c_str(),
+                                variableNames[j].c_str());
                     }
                     curveIndices[s] = curveNames.size();
                     curveNames.push_back(s);
                     curveDomains.push_back(z);
                     curveFirstVar.push_back(i);
-                    curveSecondVar.push_back(-1);
+                    curveSecondVar.push_back(j);
                     avtCurveMetaData *curve = new avtCurveMetaData;
                     curve->name = s;
                     md->Add(curve);
@@ -1743,6 +1775,9 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Changed curves to be created as rectilinear grids instead of polydata
 //    (so that they work with expressions).
 //
+//    Jeremy Meredith, Wed May 18 13:31:03 EDT 2011
+//    We always expose a point mesh if they have 2 or more spatial dims.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1751,6 +1786,42 @@ avtTecplotFileFormat::GetMesh(int domain, const char *meshname)
     if (!file_read)
         ReadFile();
 
+    // they might ask for points, no matter what was in the file
+    if (string(meshname) == "points")
+    {
+        vtkPolyData *pd  = vtkPolyData::New();
+        vtkPoints   *pts = vtkPoints::New();
+
+        vtkFloatArray *x = vars[variableNames[Xindex]][domain];
+        vtkFloatArray *y = vars[variableNames[Yindex]][domain];
+        vtkFloatArray *z = (Zindex >= 0) ? vars[variableNames[Xindex]][domain] : NULL;
+
+        int npts = x->GetNumberOfTuples();
+
+        pts->SetNumberOfPoints(npts);
+        pd->SetPoints(pts);
+        pts->Delete();
+        for (int j = 0 ; j < npts ; j++)
+        {
+            pts->SetPoint(j,
+                          x->GetComponent(j,0),
+                          y->GetComponent(j,0),
+                          z ? z->GetComponent(j,0) : 0);
+        }
+ 
+        vtkCellArray *verts = vtkCellArray::New();
+        pd->SetVerts(verts);
+        verts->Delete();
+        for (int k = 0 ; k < npts ; k++)
+        {
+            verts->InsertNextCell(1);
+            verts->InsertCellPoint(k);
+        }
+
+        return pd;
+    }
+
+    // otherwise, what they get depends on the file contents
     if ((topologicalDimension == 2 || topologicalDimension == 3) ||
         (topologicalDimension == 0 && spatialDimension > 1))
     {
@@ -1778,8 +1849,8 @@ avtTecplotFileFormat::GetMesh(int domain, const char *meshname)
         if (index2 < 0)
             EXCEPTION1(InvalidVariableException, meshname);
 
-        vtkFloatArray *var1 = vars[allVariableNames[index1]][curveDomain];
-        vtkFloatArray *var2 = vars[allVariableNames[index2]][curveDomain];
+        vtkFloatArray *var1 = vars[variableNames[index1]][curveDomain];
+        vtkFloatArray *var2 = vars[variableNames[index2]][curveDomain];
         int nPts = var1->GetNumberOfTuples();
 
         vtkFloatArray *vals = vtkFloatArray::New();

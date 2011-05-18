@@ -22,7 +22,7 @@ VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 ##
 ## Specify the location of the vtk.
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0g/${VISITARCH}/lib/vtk-5.0/)
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.0.0i/${VISITARCH}/lib/vtk-5.0/)
 
 ##
 ## Specify the Qt4 binary dir. 
