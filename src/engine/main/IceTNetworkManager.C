@@ -42,6 +42,7 @@
 
 #include "IceTNetworkManager.h"
 #include <avtCallback.h>
+#include <avtDebugDumpOptions.h>
 #include <avtParallel.h>
 #include <avtSoftwareShader.h>
 #include <avtSourceFromImage.h>
@@ -177,8 +178,13 @@ extern "C" void render();
 //  Programmer: Tom Fogal
 //  Creation:   June 17, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Wed May 18 11:57:34 MDT 2011
+//    Initialize 'renderings'.
+//
 // ****************************************************************************
-IceTNetworkManager::IceTNetworkManager(void): NetworkManager()
+IceTNetworkManager::IceTNetworkManager(void): NetworkManager(), renderings(0)
 {
     this->comm = icetCreateMPICommunicator(VISIT_MPI_COMM);
     DEBUG_ONLY(ICET_CHECK_ERROR);
@@ -305,6 +311,8 @@ IceTNetworkManager::Render(bool, intVector networkIds, bool getZBuffer,
     viswinInfo.markedForDeletion = false;
     VisWindow *viswin = viswinInfo.viswin;
     std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
+
+    renderings = 0;
 
     TRY
     {
@@ -486,18 +494,35 @@ IceTNetworkManager::Render(bool, intVector networkIds, bool getZBuffer,
 //    Remove the DataObject; since we override the method, it's always NULL
 //    (and was never used anyway).
 //
+//    Tom Fogal, Wed May 18 11:59:50 MDT 2011
+//    Save images in debug mode.
+//
 // ****************************************************************************
 
 void
 IceTNetworkManager::RealRender()
 {
     avtImage_p dob = this->RenderGeometry();
+    if(avtDebugDumpOptions::DumpEnabled())
+    {
+        this->DumpImage(dob, "icet-render-geom");
+    }
+
     VisWindow *viswin =
         this->viswinMap.find(this->r_mgmt.windowID)->second.viswin;
     if(this->MemoMultipass(viswin))
     {
-        this->RenderTranslucent(this->r_mgmt.windowID, dob);
+        avtDataObject_p trans_dob;
+        // why doesn't RenderTranslucent return an avtImage_p??
+        trans_dob = this->RenderTranslucent(this->r_mgmt.windowID, dob);
+        CopyTo(dob, trans_dob);
     }
+
+    if(avtDebugDumpOptions::DumpEnabled())
+    {
+        this->DumpImage(dob, "icet-render-translucent");
+    }
+    this->renderings++;
 }
 
 // ****************************************************************************
@@ -690,7 +715,6 @@ IceTNetworkManager::Readback(VisWindow * const viswin,
             *img_pix++ = *pixels++;
             pixels++; // Alpha
         }
-        //memcpy(img_pix, pixels, width*height*4);
     }
     float *visit_depth_buffer = NULL;
 
@@ -751,6 +775,23 @@ IceTNetworkManager::StopTimer(int windowID)
              GetTotalGlobalCellCounts(windowID), rows*cols);
     visitTimer->StopTimer(this->r_mgmt.timer, msg);
     this->r_mgmt.timer = -1;
+}
+
+// ****************************************************************************
+//  Method: FormatDebugImage
+//
+//  Purpose: Figure out a name for our debug image.  This is complicated in the
+//           IceT case, because IceT can call our render function as much as it
+//           wants.
+//
+//  Programmer: Tom Fogal
+//  Creation:   May 18, 2011
+//
+// ****************************************************************************
+void IceTNetworkManager::FormatDebugImage(char* out, size_t len,
+                                          const char* prefix) const
+{
+  SNPRINTF(out, len, "%s-%03d-%03u", prefix, PAR_Rank(), this->renderings);
 }
 
 // ****************************************************************************
