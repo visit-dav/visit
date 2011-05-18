@@ -130,6 +130,11 @@ avtCCSMReader::~avtCCSMReader()
 //    Brad Whitlock, Thu Oct 29 11:04:18 PDT 2009
 //    I made it support both time-varying and static variables.
 //
+//    Gunther H. Weber, Tue May 17 19:48:29 PDT 2011
+//    Populate varToDimensions map even if a null pointer is passed as
+//    avtDatabaseMetaData. Otherwise the reader will not work with .visit
+//    files listing multiple time steps.
+//
 // ****************************************************************************
 
 void
@@ -358,25 +363,28 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                         varname, "units", smd->units);
                     smd->validVariable = nSpatialDims <= 3;
                     md->Add(smd);
+                }
 
-                    // So we can keep track of the var's size
-                    varToDimensions[varname] = meshDims;
+                // So we can keep track of the var's size
+                varToDimensions[varname] = meshDims;
 
-                    debug4 << "Variable " << varname << " on mesh " << meshName << " with size: {";
-                    for(int j = 0; j < meshDims.size(); ++j)
-                        debug4 << meshDims[j] << ", ";
-                    debug4 << "}" << endl;
+                debug4 << "Variable " << varname << " on mesh " << meshName << " with size: {";
+                for(int j = 0; j < meshDims.size(); ++j)
+                    debug4 << meshDims[j] << ", ";
+                debug4 << "}" << endl;
 
-                    // Add a global variable too.
-                    std::string globalVar = std::string("global/") + varname;
-                    smd = new avtScalarMetaData(globalVar,
+                // Add a global variable too.
+                std::string globalVar = std::string("global/") + varname;
+                varToDimensions[globalVar] = meshDims;
+                if(md != 0)
+                {
+                   avtScalarMetaData *smd = new avtScalarMetaData(globalVar,
                         globalMesh, AVT_ZONECENT);
                     smd->hasUnits = fileObject->ReadStringAttribute(
                         varname, "units", smd->units);
                     smd->validVariable = nSpatialDims <= 3;
                     md->Add(smd);
-                    varToDimensions[globalVar] = meshDims;
-                } 
+                }
             }
         } // if nc_inc_var
     } // for nVars
