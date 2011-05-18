@@ -1873,14 +1873,16 @@ void QvisPickWindow::redoPickWithSpreadsheetClicked()
 // Creation:   Fri Aug 15 10:52:49 PDT 2008
 //
 // Modifications:
-//   
+//    Gunther H. Weber, Tue May 17 19:45:24 PDT 2011
+//    Replaced generic "Pick" with "ZonePick" to get re-picking to work again.
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::redoPick()
 {
     if (pickAtts->GetPickType() == PickAttributes::Zone)
-        GetViewerMethods()->PointQuery("Pick", pickAtts->GetPickPoint(), pickAtts->GetVariables());
+        GetViewerMethods()->PointQuery("ZonePick", pickAtts->GetPickPoint(), pickAtts->GetVariables());
     else if (pickAtts->GetPickType() == PickAttributes::Node)
         GetViewerMethods()->PointQuery("NodePick", pickAtts->GetPickPoint(),  pickAtts->GetVariables());
 
