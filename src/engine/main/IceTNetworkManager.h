@@ -72,6 +72,9 @@
 //    Brad Whitlock, Mon Mar  2 16:38:12 PST 2009
 //    I made Render return an avtDataObject_p.
 //
+//    Tom Fogal, Wed May 18 13:08:40 MDT 2011
+//    Add new state for the number of renderings we've seen.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
@@ -94,6 +97,7 @@ class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
                                          const avtImage_p& input);
     virtual avtImage_p Readback(VisWindow * const, bool) const;
     virtual void       StopTimer(int windowID);
+    virtual void       FormatDebugImage(char*, size_t, const char*) const;
 
  private:
 
@@ -102,6 +106,6 @@ class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
  private:
     IceTCommunicator comm;
     IceTContext context;
+    unsigned int renderings; ///< counts how many renderings we've done.
 };
-
 #endif /* ICET_NETWORK_MANAGER_H */
