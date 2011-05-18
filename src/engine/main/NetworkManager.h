@@ -412,6 +412,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
 //
+//    Tom Fogal, Wed May 18 12:17:18 MDT 2011
+//    Need some debug code in IceT; promoting it to class methods.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager
@@ -557,6 +560,9 @@ class ENGINE_MAIN_API NetworkManager
     bool               DepthCueing(int windowID) const;
     virtual void       StartTimer();
     virtual void       StopTimer(int windowID);
+    void               DumpImage(avtDataObject_p img, const char* prefix) const;
+    void               DumpImage(const avtImage_p, const char *fmt) const;
+    virtual void       FormatDebugImage(char*, size_t, const char*) const;
 
     static double      RenderBalance(int numTrianglesIHave);
     static void        CallInitializeProgressCallback(int);
