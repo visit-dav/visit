@@ -4780,7 +4780,6 @@ OnlyRootNodeHasData(avtImage_p &img)
     return true;
 #else
     std::vector<int> data = BuildBlankImageVector(img);
-    const bool root_is_blank = data[0];
 
     // Starting from the 2nd element in the list, search for an element which
     // is greater than 0.  If we find one, than somebody else has data; we
