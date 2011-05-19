@@ -107,6 +107,9 @@
 #    Brad Whitlock, Thu May  5 10:12:18 PDT 2011
 #    Add CaleHDF5 by Rob Managan.
 #
+#    Oliver Ruebel, Thu May 12 11:30 PDT 2011
+#    I added a CUBE reader
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -228,6 +231,7 @@ BOW
 CEAucd
 CMAT
 CTRL
+Cube
 Curve2D
 DDCMD
 Dyna3D
