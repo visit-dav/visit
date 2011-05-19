@@ -1,1 +1,0 @@
-/local/apps/VisIt/src/tools/DataManualExamples/Simulations/SimulationExample.h
