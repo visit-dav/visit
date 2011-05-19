@@ -12,5 +12,8 @@ DATA_ENDIAN: LITTLE
 # give “zonal” then it’s 1 data value per zone. Otherwise the data
 # will be centered at the nodes.
 CENTERING: nodal
+# our MPI code dumps the resolution in X and Y at offset 0, so the
+# real data start at offset 8
+BYTE_OFFSET: 8
 
 
