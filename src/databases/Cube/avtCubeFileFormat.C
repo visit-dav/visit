@@ -455,4 +455,5 @@ avtCubeFileFormat::GetVar(int timestate, const char *varname)
 vtkDataArray *
 avtCubeFileFormat::GetVectorVar(int timestate, const char *varname)
 {
+    return NULL;
 }
