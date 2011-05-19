@@ -1634,6 +1634,9 @@ avtMeshType avtTecplotFileFormat::DetermineAVTMeshType() const
 //    what they wanted.  Also, get rid of the "vs X" enforced
 //    convention for curves if the file has X coordinates; it never worked.
 //
+//    Jeremy Meredith, Thu May 19 10:46:22 EDT 2011
+//    Make point mesh variables on a separate namespace from the normal mesh.
+//
 // ****************************************************************************
 
 void
@@ -1647,7 +1650,7 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (spatialDimension > 1)
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
-        mesh->name = "points";
+        mesh->name = "points/mesh";
         mesh->topologicalDimension = 0;
         mesh->spatialDimension = spatialDimension;
         mesh->meshType = AVT_POINT_MESH;
@@ -1664,8 +1667,9 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             if (variableCellCentered[i] == false)
             {
-                AddScalarVarToMetaData(md, variableNames[i],
-                                       "points", AVT_NODECENT);
+                string vn = string("points/")+variableNames[i];
+                AddScalarVarToMetaData(md, vn,
+                                       "points/mesh", AVT_NODECENT);
             }
         }
     }
@@ -1778,6 +1782,10 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Wed May 18 13:31:03 EDT 2011
 //    We always expose a point mesh if they have 2 or more spatial dims.
 //
+//    Jeremy Meredith, Thu May 19 10:46:22 EDT 2011
+//    Make point mesh variables on a separate namespace from the normal mesh.
+//    Also, fixed a bug with point mesh Z coordinates.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1787,14 +1795,14 @@ avtTecplotFileFormat::GetMesh(int domain, const char *meshname)
         ReadFile();
 
     // they might ask for points, no matter what was in the file
-    if (string(meshname) == "points")
+    if (string(meshname) == "points/mesh")
     {
         vtkPolyData *pd  = vtkPolyData::New();
         vtkPoints   *pts = vtkPoints::New();
 
         vtkFloatArray *x = vars[variableNames[Xindex]][domain];
         vtkFloatArray *y = vars[variableNames[Yindex]][domain];
-        vtkFloatArray *z = (Zindex >= 0) ? vars[variableNames[Xindex]][domain] : NULL;
+        vtkFloatArray *z = (Zindex >= 0) ? vars[variableNames[Zindex]][domain] : NULL;
 
         int npts = x->GetNumberOfTuples();
 
@@ -1898,13 +1906,22 @@ avtTecplotFileFormat::GetMesh(int domain, const char *meshname)
 //    With dynamic load balancing, we may get here after calling FreeResources.
 //    Make sure we read the file again if necessary.
 //
+//    Jeremy Meredith, Thu May 19 10:46:22 EDT 2011
+//    Make point mesh variables on a separate namespace from the normal mesh.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtTecplotFileFormat::GetVar(int domain, const char *varname)
+avtTecplotFileFormat::GetVar(int domain, const char *vn)
 {
     if (!file_read)
         ReadFile();
+
+    string varname(vn);
+    if (varname.length() > 7 && varname.substr(0,7) == "points/")
+    {
+        varname = varname.substr(7);
+    }
 
     vars[varname][domain]->Register(NULL);
     return vars[varname][domain];
