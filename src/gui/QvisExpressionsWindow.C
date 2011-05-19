@@ -1579,6 +1579,10 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Hank Childs, Thu Jul  8 08:14:23 PDT 2010
 //    Added min_coord and max_coord.
 //    
+//    Kathleen Bonnell, Thu May 19 15:57:50 PDT 2011
+//    Fixed value_for_material so it shows up correctly in windows.
+//    (was showing arguments first, then expression name).
+//
 // ****************************************************************************
 
 QString
@@ -1688,7 +1692,7 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     }
     else if(func_name == "value_for_material")
     {
-        stdDefinitionEdit->insertPlainText("(<var>, <material-name-or-number>)");
+        res += QString("(<var>, <material-name-or-number>)");
         doParens = false;
     }
     else if (func_name == "enumerate")
