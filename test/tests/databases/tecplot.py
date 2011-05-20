@@ -13,8 +13,8 @@
 #    Rename variables that have unsupported characters.
 #
 #    Brad Whitlock, Thu Mar 31 17:12:06 PST 2005
-#    Changed the data directory to ../data/tecplot_test_data/tecplot_test_data, which is now
-#    created from a bzipped tar file.
+#    Changed the data directory to ../data/tecplot_test_data/tecplot_test_data,
+#    which is now created from a bzipped tar file.
 #
 #    Brad Whitlock, Tue Jul 26 16:27:57 PST 2005
 #    I added a test that has 2D data with a vector expression.
@@ -29,6 +29,9 @@
 #
 #    Hank Childs, Sat Mar 13 11:13:26 PST 2010
 #    Change variable names for forbidden characters.
+#
+#    Jeremy Meredith, Fri May 20 09:37:14 EDT 2011
+#    Change subset mesh variable name since files have more than one mesh now.
 #
 # ----------------------------------------------------------------------------
 
@@ -50,7 +53,7 @@ DeleteAllPlots();
 
 OpenDatabase("../data/tecplot_test_data/3dgeom.tec")
 AddPlot("Mesh","mesh")
-AddPlot("Subset","Zones")
+AddPlot("Subset","Zones(mesh)")
 DrawPlots()
 SetTheView()
 Test("tecplot_02")
@@ -155,7 +158,7 @@ DeleteAllPlots();
 
 OpenDatabase("../data/tecplot_test_data/movie.tec")
 AddPlot("Mesh","mesh")
-AddPlot("Subset","Zones")
+AddPlot("Subset","Zones(mesh)")
 DrawPlots()
 SetTheView()
 Test("tecplot_14")
