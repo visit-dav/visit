@@ -8,8 +8,10 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc | umich] [-g group] [-gw] [-l] [-dmg]
-#                  [-beta | -private] version platform directory
+#    visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl |
+#                      princeton | sandia | tacc | umich | nics] [-g group]
+#                  [-gw] [-l] [-dmg] [-beta | -private]
+#                  version platform directory
 #
 #    The default is to install this version as the current version.
 #    The -beta flag makes this version the current beta version instead.
@@ -261,6 +263,9 @@
 #    I corrected a bug in some code that was setting file permissions
 #    on Mac OS X.
 #
+#    Eric Brugger, Mon May 16 14:46:53 PDT 2011
+#    I added host profiles for glory and redsky.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -326,7 +331,7 @@ while [ "$option_found" = "true" ]; do
 done
 
 if [ "$#" != "3" ]; then
-   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | tacc | umich | nics]"
+   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_closed | nersc | ornl | princeton | sandia | tacc | umich | nics]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -446,11 +451,12 @@ while [ "$config" = "prompt" ]; do
    echo "   6) NERSC network"
    echo "   7) ORNL network"
    echo "   8) Princeton network"
-   echo "   9) TACC network"
-   echo "   10) U of Michigan Center for Advanced Computing network"
-   echo "   11) NICS at University of Tennessee at Knoxville"
+   echo "   9) Sandia network"
+   echo "   10) TACC network"
+   echo "   11) U of Michigan Center for Advanced Computing network"
+   echo "   12) NICS at University of Tennessee at Knoxville"
    echo ""
-   echo "(1,2,3,4,5,6,7,8,9,10,11):"
+   echo "(1,2,3,4,5,6,7,8,9,10,11,12):"
 
    read config
    case "$config" in
@@ -479,12 +485,15 @@ while [ "$config" = "prompt" ]; do
          config=princeton
          ;;
       9)
-         config=tacc
+         config=sandia
          ;;
       10)
-         config=umich
+         config=tacc
          ;;
       11)
+         config=umich
+         ;;
+      12)
          config=nics
          ;;
       *)
@@ -510,6 +519,8 @@ case "$config" in
       ;;
    princeton)
       ;;
+   sandia)
+      ;;
    tacc)
       ;;
    umich)
@@ -518,7 +529,8 @@ case "$config" in
       ;;
    *)
       echo "Illegal configuration option, choices are none, anag, anl,"
-      echo "llnl_open, llnl_closed, nersc, ornl, princeton, tacc, umich, and nics."
+      echo "llnl_open, llnl_closed, nersc, ornl, princeton, sandia, tacc,"
+      echo "umich, and nics."
       exit 4
       ;;
 esac
@@ -667,6 +679,9 @@ elif [ "$config" = "princeton" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_princeton_artemis.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_princeton_hecate.xml      "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_princeton_tigressdata.xml "$dir"/$version+/.visit/hosts/
+elif [ "$config" = "sandia" ]; then
+   cp "$dir"/$version+/.visit/allhosts/host_sandia_glory.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_sandia_redsky.xml "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "tacc" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_tacc_longhorn.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_tacc_ranger.xml "$dir"/$version+/.visit/hosts/

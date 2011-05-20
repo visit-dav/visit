@@ -61,6 +61,9 @@
 #   Pass types on command line for cmake vars:
 #      CMAKE_BUILD_TYPE & VISIT_THIRD_PARTY_INSTALL
 #
+#   Eric Brugger, Mon May 16 14:51:39 PDT 2011
+#   I added glory and redsky.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -107,6 +110,8 @@ alastor=false
 xchem=false
 euclid=true
 ellipse=true
+glory=false
+redsky=false
 
 dist=undefined
 
@@ -125,6 +130,8 @@ do
          xchem=false
          euclid=false
          ellipse=false
+         glory=false
+         redsky=false
          shift
          ;;
       -hoth)
@@ -175,6 +182,22 @@ do
          ellipse=true
          shift
          ;;
+      -glory)
+         glory=false
+         shift
+         ;;
+      +glory)
+         glory=true
+         shift
+         ;;
+      -redsky)
+         redsky=false
+         shift
+         ;;
+      +redsky)
+         redsky=true
+         shift
+         ;;
       -d)
          dist=$2
          shift 2
@@ -195,6 +218,8 @@ then
    echo "    xchem (HEAF, Linux),"
    echo "    euclid (LBNL, Linux, x86_64),"
    echo "    ellipse (UChicago, Linux)"
+   echo "    glory (Sandia, Linux)"
+   echo "    redsky (Sandia, Linux)"
    exit
 fi
 
@@ -531,9 +556,118 @@ then
 fi
 
 #
+# Build on glory.
+#
+rm -f glory
+cat <<EOF > glory
+#!/bin/sh
+module load compilers/gcc-4.3.4
+if test ! -d /usr/tmp ; then
+   mkdir /usr/tmp
+fi
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/glory; then
+   mkdir /usr/tmp/$user/glory
+fi
+rm -rf /usr/tmp/$user/glory/visitbuild
+mkdir /usr/tmp/$user/glory/visitbuild
+mv glory_$dist.tar.gz /usr/tmp/$user/glory/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/glory/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/projects/visit/cmake/2.8.3/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
+make -j 2 >> ../../buildlog 2>&1
+make -j 2 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on glory"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): glory" $emailName < resultlog
+EOF
+
+if [ $glory = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on glory"
+      cp glory glory_buildit
+      cp $dist.tar.gz glory_$dist.tar.gz
+      chmod 750 glory_buildit;./glory_buildit &
+   fi
+fi
+
+#
+# Build on redsky.
+#
+rm -f redsky
+cat <<EOF > redsky
+#!/bin/sh
+if test ! -d /usr/tmp ; then
+   mkdir /usr/tmp
+fi
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/redsky; then
+   mkdir /usr/tmp/$user/redsky
+fi
+rm -rf /usr/tmp/$user/redsky/visitbuild
+mkdir /usr/tmp/$user/redsky/visitbuild
+mv redsky_$dist.tar.gz /usr/tmp/$user/redsky/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/redsky/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/projects/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
+make -j 2 >> ../../buildlog 2>&1
+make -j 2 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on redsky"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): redsky" $emailName < resultlog
+EOF
+
+if [ $redsky = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on redsky"
+      cp redsky redsky_buildit
+      cp $dist.tar.gz redsky_$dist.tar.gz
+      chmod 750 redsky_buildit;./redsky_buildit &
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f hoth aztec alastor xchem euclid ellipse
+   rm -f hoth aztec alastor xchem euclid ellipse glory redsky
 fi
