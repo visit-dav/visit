@@ -87,6 +87,10 @@
 //
 //    Mark C. Miller, Mon Jul 26 21:24:12 PDT 2010
 //    Added initialization of currentScaleFactors to fix UMR.
+//
+//    Hank Childs, Mon May 23 13:26:09 PDT 2011
+//    Initialize boundsOverriden.
+//
 // ****************************************************************************
 
 VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p),
@@ -111,7 +115,9 @@ VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p),
     for (int i = 0; i < 6; i++)
     {
         currentBounds[i] = -1;
+        overrideBounds[i] = -1;
     }
+    boundsOverridden = false;
     addedAxes3D = false;
 
     for (int i = 0; i < 3; i++)
@@ -366,6 +372,36 @@ VisWinAxes3D::RemoveAxes3DFromWindow(void)
 
 
 // ****************************************************************************
+//  Method: VisWinAxes3D::SetBBoxLocation
+//
+//  Purpose:
+//      Allows the user to override the bounds of a data set.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2011
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetBBoxLocation(bool override, const double *b)
+{
+    bool oldOverride = boundsOverridden;
+
+    boundsOverridden = override;
+    overrideBounds[0] = b[0];
+    overrideBounds[1] = b[1];
+    overrideBounds[2] = b[2];
+    overrideBounds[3] = b[3];
+    overrideBounds[4] = b[4];
+    overrideBounds[5] = b[5];
+
+    bool callRoutine = boundsOverridden || (oldOverride && !boundsOverridden);
+    if (callRoutine)
+        SetBounds(overrideBounds, currentScaleFactors);
+}
+
+
+// ****************************************************************************
 //  Method: VisWinAxes3D::SetBounds
 //
 //  Purpose:
@@ -396,12 +432,21 @@ VisWinAxes3D::RemoveAxes3DFromWindow(void)
 //    This affects the extents where the bounding box is drawn, but 
 //    not the labels applied to the axes.
 //
+//    Hank Childs, Mon May 23 13:26:09 PDT 2011
+//    Add support for overriding bounds.
+//
 // ****************************************************************************
 
 void
 VisWinAxes3D::SetBounds(double bounds[6], double scales[3])
 {
-    bool boundsChanged = false; 
+    bool boundsChanged = false;
+
+    if (boundsOverridden)
+    {
+        for (int i = 0 ; i < 6 ; i++)
+            bounds[i] = overrideBounds[i];
+    }
 
     // See if any bounds have changed
     for (int i = 0; i < 6 ; i++)

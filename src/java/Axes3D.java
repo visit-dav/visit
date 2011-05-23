@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class Axes3D extends AttributeSubject
 {
-    private static int Axes3D_numAdditionalAtts = 11;
+    private static int Axes3D_numAdditionalAtts = 13;
 
     // Enum values
     public final static int AXES_CLOSESTTRIAD = 0;
@@ -85,6 +85,14 @@ public class Axes3D extends AttributeSubject
         xAxis = new AxisAttributes();
         yAxis = new AxisAttributes();
         zAxis = new AxisAttributes();
+        setBBoxLocation = false;
+        bboxLocation = new double[6];
+        bboxLocation[0] = 0;
+        bboxLocation[1] = 1;
+        bboxLocation[2] = 0;
+        bboxLocation[3] = 1;
+        bboxLocation[4] = 0;
+        bboxLocation[5] = 1;
     }
 
     public Axes3D(int nMoreFields)
@@ -102,11 +110,21 @@ public class Axes3D extends AttributeSubject
         xAxis = new AxisAttributes();
         yAxis = new AxisAttributes();
         zAxis = new AxisAttributes();
+        setBBoxLocation = false;
+        bboxLocation = new double[6];
+        bboxLocation[0] = 0;
+        bboxLocation[1] = 1;
+        bboxLocation[2] = 0;
+        bboxLocation[3] = 1;
+        bboxLocation[4] = 0;
+        bboxLocation[5] = 1;
     }
 
     public Axes3D(Axes3D obj)
     {
         super(Axes3D_numAdditionalAtts);
+
+        int i;
 
         visible = obj.visible;
         autoSetTicks = obj.autoSetTicks;
@@ -119,6 +137,11 @@ public class Axes3D extends AttributeSubject
         xAxis = new AxisAttributes(obj.xAxis);
         yAxis = new AxisAttributes(obj.yAxis);
         zAxis = new AxisAttributes(obj.zAxis);
+        setBBoxLocation = obj.setBBoxLocation;
+        bboxLocation = new double[6];
+        for(i = 0; i < obj.bboxLocation.length; ++i)
+            bboxLocation[i] = obj.bboxLocation[i];
+
 
         SelectAll();
     }
@@ -135,6 +158,13 @@ public class Axes3D extends AttributeSubject
 
     public boolean equals(Axes3D obj)
     {
+        int i;
+
+        // Compare the bboxLocation arrays.
+        boolean bboxLocation_equal = true;
+        for(i = 0; i < 6 && bboxLocation_equal; ++i)
+            bboxLocation_equal = (bboxLocation[i] == obj.bboxLocation[i]);
+
         // Create the return value
         return ((visible == obj.visible) &&
                 (autoSetTicks == obj.autoSetTicks) &&
@@ -146,7 +176,9 @@ public class Axes3D extends AttributeSubject
                 (bboxFlag == obj.bboxFlag) &&
                 (xAxis.equals(obj.xAxis)) &&
                 (yAxis.equals(obj.yAxis)) &&
-                (zAxis.equals(obj.zAxis)));
+                (zAxis.equals(obj.zAxis)) &&
+                (setBBoxLocation == obj.setBBoxLocation) &&
+                bboxLocation_equal);
     }
 
     // Property setting methods
@@ -216,6 +248,19 @@ public class Axes3D extends AttributeSubject
         Select(10);
     }
 
+    public void SetSetBBoxLocation(boolean setBBoxLocation_)
+    {
+        setBBoxLocation = setBBoxLocation_;
+        Select(11);
+    }
+
+    public void SetBboxLocation(double[] bboxLocation_)
+    {
+        for(int i = 0; i < 6; ++i)
+             bboxLocation[i] = bboxLocation_[i];
+        Select(12);
+    }
+
     // Property getting methods
     public boolean        GetVisible() { return visible; }
     public boolean        GetAutoSetTicks() { return autoSetTicks; }
@@ -228,6 +273,8 @@ public class Axes3D extends AttributeSubject
     public AxisAttributes GetXAxis() { return xAxis; }
     public AxisAttributes GetYAxis() { return yAxis; }
     public AxisAttributes GetZAxis() { return zAxis; }
+    public boolean        GetSetBBoxLocation() { return setBBoxLocation; }
+    public double[]       GetBboxLocation() { return bboxLocation; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -254,6 +301,10 @@ public class Axes3D extends AttributeSubject
             yAxis.Write(buf);
         if(WriteSelect(10, buf))
             zAxis.Write(buf);
+        if(WriteSelect(11, buf))
+            buf.WriteBool(setBBoxLocation);
+        if(WriteSelect(12, buf))
+            buf.WriteDoubleArray(bboxLocation);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -296,6 +347,12 @@ public class Axes3D extends AttributeSubject
             zAxis.Read(buf);
             Select(10);
             break;
+        case 11:
+            SetSetBBoxLocation(buf.ReadBool());
+            break;
+        case 12:
+            SetBboxLocation(buf.ReadDoubleArray());
+            break;
         }
     }
 
@@ -331,6 +388,8 @@ public class Axes3D extends AttributeSubject
         str = str + indent + "xAxis = {\n" + xAxis.toString(indent + "    ") + indent + "}\n";
         str = str + indent + "yAxis = {\n" + yAxis.toString(indent + "    ") + indent + "}\n";
         str = str + indent + "zAxis = {\n" + zAxis.toString(indent + "    ") + indent + "}\n";
+        str = str + boolToString("setBBoxLocation", setBBoxLocation, indent) + "\n";
+        str = str + doubleArrayToString("bboxLocation", bboxLocation, indent) + "\n";
         return str;
     }
 
@@ -347,5 +406,7 @@ public class Axes3D extends AttributeSubject
     private AxisAttributes xAxis;
     private AxisAttributes yAxis;
     private AxisAttributes zAxis;
+    private boolean        setBBoxLocation;
+    private double[]       bboxLocation;
 }
 

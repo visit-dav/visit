@@ -167,6 +167,27 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
         objPrefix += "zAxis.";
         str += PyAxisAttributes_ToString(&atts->GetZAxis(), objPrefix.c_str());
     }
+    if(atts->GetSetBBoxLocation())
+        SNPRINTF(tmpStr, 1000, "%ssetBBoxLocation = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%ssetBBoxLocation = 0\n", prefix);
+    str += tmpStr;
+    {   const double *bboxLocation = atts->GetBboxLocation();
+        SNPRINTF(tmpStr, 1000, "%sbboxLocation = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 6; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", bboxLocation[i]);
+            str += tmpStr;
+            if(i < 5)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -498,6 +519,84 @@ Axes3D_GetZAxis(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+Axes3D_SetSetBBoxLocation(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the setBBoxLocation in the object.
+    obj->data->SetSetBBoxLocation(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Axes3D_GetSetBBoxLocation(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetSetBBoxLocation()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+Axes3D_SetBboxLocation(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+
+    double *dvals = obj->data->GetBboxLocation();
+    if(!PyArg_ParseTuple(args, "dddddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3], &dvals[4], &dvals[5]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 6)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the bboxLocation in the object as modified.
+    obj->data->SelectBboxLocation();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Axes3D_GetBboxLocation(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+    // Allocate a tuple the with enough entries to hold the bboxLocation.
+    PyObject *retval = PyTuple_New(6);
+    const double *bboxLocation = obj->data->GetBboxLocation();
+    for(int i = 0; i < 6; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(bboxLocation[i]));
+    return retval;
+}
+
 
 
 PyMethodDef PyAxes3D_methods[AXES3D_NMETH] = {
@@ -524,6 +623,10 @@ PyMethodDef PyAxes3D_methods[AXES3D_NMETH] = {
     {"GetYAxis", Axes3D_GetYAxis, METH_VARARGS},
     {"SetZAxis", Axes3D_SetZAxis, METH_VARARGS},
     {"GetZAxis", Axes3D_GetZAxis, METH_VARARGS},
+    {"SetSetBBoxLocation", Axes3D_SetSetBBoxLocation, METH_VARARGS},
+    {"GetSetBBoxLocation", Axes3D_GetSetBBoxLocation, METH_VARARGS},
+    {"SetBboxLocation", Axes3D_SetBboxLocation, METH_VARARGS},
+    {"GetBboxLocation", Axes3D_GetBboxLocation, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -592,6 +695,10 @@ PyAxes3D_getattr(PyObject *self, char *name)
         return Axes3D_GetYAxis(self, NULL);
     if(strcmp(name, "zAxis") == 0)
         return Axes3D_GetZAxis(self, NULL);
+    if(strcmp(name, "setBBoxLocation") == 0)
+        return Axes3D_GetSetBBoxLocation(self, NULL);
+    if(strcmp(name, "bboxLocation") == 0)
+        return Axes3D_GetBboxLocation(self, NULL);
 
     return Py_FindMethod(PyAxes3D_methods, self, name);
 }
@@ -628,6 +735,10 @@ PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
         obj = Axes3D_SetYAxis(self, tuple);
     else if(strcmp(name, "zAxis") == 0)
         obj = Axes3D_SetZAxis(self, tuple);
+    else if(strcmp(name, "setBBoxLocation") == 0)
+        obj = Axes3D_SetSetBBoxLocation(self, tuple);
+    else if(strcmp(name, "bboxLocation") == 0)
+        obj = Axes3D_SetBboxLocation(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

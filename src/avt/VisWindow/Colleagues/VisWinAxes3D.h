@@ -93,6 +93,9 @@ class vtkOutlineSource;
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Hank Childs, Mon May 23 13:26:09 PDT 2011
+//    Add method for overriding bounding box location.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes3D : public VisWinColleague
@@ -112,6 +115,7 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     virtual void              NoPlots(void);
     virtual void              ReAddToWindow(void);
 
+    void                      SetBBoxLocation(bool, const double *);
     void                      SetBounds(double [6], double scales[3]);
     void                      SetXTickVisibility(int, int);
     void                      SetYTickVisibility(int, int);
@@ -168,6 +172,9 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     double                    currentBounds[6];
     double                    currentScaleFactors[3];
     bool                      visibility;
+
+    bool                      boundsOverridden;
+    double                    overrideBounds[6];
 
     std::string               userXTitle;
     std::string               userYTitle;

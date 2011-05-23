@@ -42,4 +42,15 @@
     </Field>
     <Field name="zAxis" label="Z axis" type="att" subtype="AxisAttributes" init="true">
     </Field>
+    <Field name="setBBoxLocation" label="Set bounding box location?" type="bool">
+      false
+    </Field>
+    <Field name="bboxLocation" label="Bounding box location" type="doubleArray" length="6" enabler="setBBoxLocation:true">
+      0.000000
+      1.000000
+      0.000000
+      1.000000
+      0.000000
+      1.000000
+    </Field>
   </Attribute>
