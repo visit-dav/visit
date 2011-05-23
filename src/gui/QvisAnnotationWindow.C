@@ -760,6 +760,9 @@ QvisAnnotationWindow::Create3DTab()
 //   Brad Whitlock, Thu Jun 26 10:37:10 PDT 2008
 //   Qt 4.
 //
+//   Hank Childs, Fri May 13 16:00:24 PDT 2011
+//   Add widgets for setting bounding box location.
+//
 // ****************************************************************************
 
 QWidget *
@@ -825,6 +828,32 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     l = new QLabel(tr("Line width"), top);
     l->setBuddy(axesLineWidth);
     rLayout->addWidget(l, row, 0);
+    ++row;
+
+    setBBoxLocationToggle = new QCheckBox(tr("Set bounding box location manually"), top);
+    connect(setBBoxLocationToggle, SIGNAL(toggled(bool)),
+            this, SLOT(setBBoxLocationChecked(bool)));
+    rLayout->addWidget(setBBoxLocationToggle, row, 0, 1, 2);
+    ++row;
+    
+    std::vector<std::string> labels;
+    labels.push_back("X-Minimum");
+    labels.push_back("X-Maximum");
+    labels.push_back("Y-Minimum");
+    labels.push_back("Y-Maximum");
+    labels.push_back("Z-Minimum");
+    labels.push_back("Z-Maximum");
+
+    for (int i = 0 ; i < 6 ; i++)
+    {
+      bboxLabels[i] = new QLabel(labels[i].c_str());
+      rLayout->addWidget(bboxLabels[i], row, 0);
+      bboxLocations[i] = new QNarrowLineEdit(top);
+      rLayout->addWidget(bboxLocations[i], row, 1);
+      ++row;
+      connect(bboxLocations[i], SIGNAL(returnPressed()),
+            this, SLOT(bboxLocationChanged()));
+    }
 
     return top;
 }
@@ -1423,6 +1452,8 @@ QvisAnnotationWindow::UpdateAxes2D()
 //   3D tab, when "show axes" is unchecked.  (If you set the whole
 //   tab, then you've even disabled "show axes" and can't re-check it.)
 //   
+//   Hank Childs, Mon May 23 10:31:29 PDT 2011
+//   Add support for setting bounding box location.
 // ****************************************************************************
 
 void
@@ -1474,6 +1505,35 @@ QvisAnnotationWindow::UpdateAxes3D()
     axes3D[2]->setAutoScaling(axes.GetAutoSetScaling());
     axes3D[2]->setAutoTickMarks(axes.GetAutoSetTicks());
     axes3D[2]->setAxisAttributes(axes.GetZAxis());
+
+    setBBoxLocationToggle->blockSignals(true);
+    setBBoxLocationToggle->setChecked(axes.GetSetBBoxLocation());
+    if (axes.GetSetBBoxLocation())
+    {
+        for (int i = 0 ; i < 6 ; i++)
+        {
+            bboxLocations[i]->setEnabled(true);
+            bboxLabels[i]->setEnabled(true);
+        }
+    }
+    else
+    {
+        for (int i = 0 ; i < 6 ; i++)
+        {
+            bboxLocations[i]->setEnabled(false);
+            bboxLabels[i]->setEnabled(false);
+        }
+    }
+    setBBoxLocationToggle->blockSignals(false);
+    
+    const double *loc = axes.GetBboxLocation();
+    for (int i = 0 ; i < 6 ; i++)
+    {
+        bboxLocations[i]->blockSignals(true);
+        QString val;  val.setNum(loc[i]);
+        bboxLocations[i]->setText(val);
+        bboxLocations[i]->blockSignals(false);
+    }
 }
 
 // ****************************************************************************
@@ -1823,6 +1883,9 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
 //   Brad Whitlock, Mon Mar  2 14:40:38 PST 2009
 //   I added database time scale and offset.
 //
+//   Hank Childs, Mon May 23 10:31:29 PDT 2011
+//   Added support for setting the bounding box location.
+//
 // ****************************************************************************
 
 void
@@ -1842,6 +1905,13 @@ QvisAnnotationWindow::GetCurrentValues(int which_widget)
         annotationAtts->GetAxes3D().SetXAxis(axes3D[0]->getAxisAttributes());
         annotationAtts->GetAxes3D().SetYAxis(axes3D[1]->getAxisAttributes());
         annotationAtts->GetAxes3D().SetZAxis(axes3D[2]->getAxisAttributes());
+        double loc[6];
+        for (int i = 0 ; i < 6 ; i++)
+        {
+            QString temp(bboxLocations[i]->displayText().trimmed());
+            loc[i] = temp.toDouble();
+        }
+        annotationAtts->GetAxes3D().SetBboxLocation(loc);
         annotationAtts->SelectAxes3D();
     }
 
@@ -2322,6 +2392,26 @@ QvisAnnotationWindow::databaseInfoFontChanged(const FontAttributes &f)
 }
 
 // ****************************************************************************
+// Method: QvisAnnotationWindow::bboxLocationChanged
+//
+// Purpose: 
+//   This is a Qt slot that is called when the bbox location changes.
+//
+// Programmer: Hank Childs
+// Creation:   May 23, 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::bboxLocationChanged()
+{
+    GetCurrentValues(AnnotationAttributes::ID_axes3D);
+    Apply();
+}
+
+// ****************************************************************************
 // Method: QvisAnnotationWindow::databaseTimeScaleChanged
 //
 // Purpose: 
@@ -2525,6 +2615,27 @@ QvisAnnotationWindow::labelAutoSetScalingChecked2D(bool val)
 {
     annotationAtts->GetAxes2D().SetAutoSetScaling(val);
     annotationAtts->SelectAxes2D();
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::setBBoxLocationChecked
+//
+// Purpose:
+//   This is a Qt slot function that is called when the setBBoxLocation
+//   is changed.
+//
+// Programmer: Hank Childs
+// Creation:   May 13, 2011
+//
+// ****************************************************************************
+ 
+void
+QvisAnnotationWindow::setBBoxLocationChecked(bool val)
+{
+    annotationAtts->GetAxes3D().SetSetBBoxLocation(val);
+    annotationAtts->SelectAxes3D();
+    SetUpdate(true);
     Apply();
 }
 

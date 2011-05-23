@@ -143,6 +143,13 @@ void Axes3D::Init()
     xAxis.GetTitle().SetTitle("X-Axis");
     yAxis.GetTitle().SetTitle("Y-Axis");
     zAxis.GetTitle().SetTitle("Z-Axis");
+    setBBoxLocation = false;
+    bboxLocation[0] = 0;
+    bboxLocation[1] = 1;
+    bboxLocation[2] = 0;
+    bboxLocation[3] = 1;
+    bboxLocation[4] = 0;
+    bboxLocation[5] = 1;
 
     Axes3D::SelectAll();
 }
@@ -164,6 +171,7 @@ void Axes3D::Init()
 
 void Axes3D::Copy(const Axes3D &obj)
 {
+
     visible = obj.visible;
     autoSetTicks = obj.autoSetTicks;
     autoSetScaling = obj.autoSetScaling;
@@ -175,6 +183,10 @@ void Axes3D::Copy(const Axes3D &obj)
     xAxis = obj.xAxis;
     yAxis = obj.yAxis;
     zAxis = obj.zAxis;
+    setBBoxLocation = obj.setBBoxLocation;
+    for(int i = 0; i < 6; ++i)
+        bboxLocation[i] = obj.bboxLocation[i];
+
 
     Axes3D::SelectAll();
 }
@@ -331,6 +343,11 @@ Axes3D::operator = (const Axes3D &obj)
 bool
 Axes3D::operator == (const Axes3D &obj) const
 {
+    // Compare the bboxLocation arrays.
+    bool bboxLocation_equal = true;
+    for(int i = 0; i < 6 && bboxLocation_equal; ++i)
+        bboxLocation_equal = (bboxLocation[i] == obj.bboxLocation[i]);
+
     // Create the return value
     return ((visible == obj.visible) &&
             (autoSetTicks == obj.autoSetTicks) &&
@@ -342,7 +359,9 @@ Axes3D::operator == (const Axes3D &obj) const
             (bboxFlag == obj.bboxFlag) &&
             (xAxis == obj.xAxis) &&
             (yAxis == obj.yAxis) &&
-            (zAxis == obj.zAxis));
+            (zAxis == obj.zAxis) &&
+            (setBBoxLocation == obj.setBBoxLocation) &&
+            bboxLocation_equal);
 }
 
 // ****************************************************************************
@@ -486,17 +505,19 @@ Axes3D::NewInstance(bool copy) const
 void
 Axes3D::SelectAll()
 {
-    Select(ID_visible,        (void *)&visible);
-    Select(ID_autoSetTicks,   (void *)&autoSetTicks);
-    Select(ID_autoSetScaling, (void *)&autoSetScaling);
-    Select(ID_lineWidth,      (void *)&lineWidth);
-    Select(ID_tickLocation,   (void *)&tickLocation);
-    Select(ID_axesType,       (void *)&axesType);
-    Select(ID_triadFlag,      (void *)&triadFlag);
-    Select(ID_bboxFlag,       (void *)&bboxFlag);
-    Select(ID_xAxis,          (void *)&xAxis);
-    Select(ID_yAxis,          (void *)&yAxis);
-    Select(ID_zAxis,          (void *)&zAxis);
+    Select(ID_visible,         (void *)&visible);
+    Select(ID_autoSetTicks,    (void *)&autoSetTicks);
+    Select(ID_autoSetScaling,  (void *)&autoSetScaling);
+    Select(ID_lineWidth,       (void *)&lineWidth);
+    Select(ID_tickLocation,    (void *)&tickLocation);
+    Select(ID_axesType,        (void *)&axesType);
+    Select(ID_triadFlag,       (void *)&triadFlag);
+    Select(ID_bboxFlag,        (void *)&bboxFlag);
+    Select(ID_xAxis,           (void *)&xAxis);
+    Select(ID_yAxis,           (void *)&yAxis);
+    Select(ID_zAxis,           (void *)&zAxis);
+    Select(ID_setBBoxLocation, (void *)&setBBoxLocation);
+    Select(ID_bboxLocation,    (void *)bboxLocation, 6);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -613,6 +634,18 @@ Axes3D::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
             delete zAxisNode;
     }
 
+    if(completeSave || !FieldsEqual(ID_setBBoxLocation, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("setBBoxLocation", setBBoxLocation));
+    }
+
+    if(completeSave || !FieldsEqual(ID_bboxLocation, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("bboxLocation", bboxLocation, 6));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -699,6 +732,10 @@ Axes3D::SetFromNode(DataNode *parentNode)
         yAxis.SetFromNode(node);
     if((node = searchNode->GetNode("zAxis")) != 0)
         zAxis.SetFromNode(node);
+    if((node = searchNode->GetNode("setBBoxLocation")) != 0)
+        SetSetBBoxLocation(node->AsBool());
+    if((node = searchNode->GetNode("bboxLocation")) != 0)
+        SetBboxLocation(node->AsDoubleArray());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -780,6 +817,21 @@ Axes3D::SetZAxis(const AxisAttributes &zAxis_)
 {
     zAxis = zAxis_;
     Select(ID_zAxis, (void *)&zAxis);
+}
+
+void
+Axes3D::SetSetBBoxLocation(bool setBBoxLocation_)
+{
+    setBBoxLocation = setBBoxLocation_;
+    Select(ID_setBBoxLocation, (void *)&setBBoxLocation);
+}
+
+void
+Axes3D::SetBboxLocation(const double *bboxLocation_)
+{
+    for(int i = 0; i < 6; ++i)
+        bboxLocation[i] = bboxLocation_[i];
+    Select(ID_bboxLocation, (void *)bboxLocation, 6);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -870,6 +922,24 @@ Axes3D::GetZAxis()
     return zAxis;
 }
 
+bool
+Axes3D::GetSetBBoxLocation() const
+{
+    return setBBoxLocation;
+}
+
+const double *
+Axes3D::GetBboxLocation() const
+{
+    return bboxLocation;
+}
+
+double *
+Axes3D::GetBboxLocation()
+{
+    return bboxLocation;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -890,6 +960,12 @@ void
 Axes3D::SelectZAxis()
 {
     Select(ID_zAxis, (void *)&zAxis);
+}
+
+void
+Axes3D::SelectBboxLocation()
+{
+    Select(ID_bboxLocation, (void *)bboxLocation, 6);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -916,17 +992,19 @@ Axes3D::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_visible:        return "visible";
-    case ID_autoSetTicks:   return "autoSetTicks";
-    case ID_autoSetScaling: return "autoSetScaling";
-    case ID_lineWidth:      return "lineWidth";
-    case ID_tickLocation:   return "tickLocation";
-    case ID_axesType:       return "axesType";
-    case ID_triadFlag:      return "triadFlag";
-    case ID_bboxFlag:       return "bboxFlag";
-    case ID_xAxis:          return "xAxis";
-    case ID_yAxis:          return "yAxis";
-    case ID_zAxis:          return "zAxis";
+    case ID_visible:         return "visible";
+    case ID_autoSetTicks:    return "autoSetTicks";
+    case ID_autoSetScaling:  return "autoSetScaling";
+    case ID_lineWidth:       return "lineWidth";
+    case ID_tickLocation:    return "tickLocation";
+    case ID_axesType:        return "axesType";
+    case ID_triadFlag:       return "triadFlag";
+    case ID_bboxFlag:        return "bboxFlag";
+    case ID_xAxis:           return "xAxis";
+    case ID_yAxis:           return "yAxis";
+    case ID_zAxis:           return "zAxis";
+    case ID_setBBoxLocation: return "setBBoxLocation";
+    case ID_bboxLocation:    return "bboxLocation";
     default:  return "invalid index";
     }
 }
@@ -951,17 +1029,19 @@ Axes3D::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_visible:        return FieldType_bool;
-    case ID_autoSetTicks:   return FieldType_bool;
-    case ID_autoSetScaling: return FieldType_bool;
-    case ID_lineWidth:      return FieldType_linewidth;
-    case ID_tickLocation:   return FieldType_enum;
-    case ID_axesType:       return FieldType_enum;
-    case ID_triadFlag:      return FieldType_bool;
-    case ID_bboxFlag:       return FieldType_bool;
-    case ID_xAxis:          return FieldType_att;
-    case ID_yAxis:          return FieldType_att;
-    case ID_zAxis:          return FieldType_att;
+    case ID_visible:         return FieldType_bool;
+    case ID_autoSetTicks:    return FieldType_bool;
+    case ID_autoSetScaling:  return FieldType_bool;
+    case ID_lineWidth:       return FieldType_linewidth;
+    case ID_tickLocation:    return FieldType_enum;
+    case ID_axesType:        return FieldType_enum;
+    case ID_triadFlag:       return FieldType_bool;
+    case ID_bboxFlag:        return FieldType_bool;
+    case ID_xAxis:           return FieldType_att;
+    case ID_yAxis:           return FieldType_att;
+    case ID_zAxis:           return FieldType_att;
+    case ID_setBBoxLocation: return FieldType_bool;
+    case ID_bboxLocation:    return FieldType_doubleArray;
     default:  return FieldType_unknown;
     }
 }
@@ -986,17 +1066,19 @@ Axes3D::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_visible:        return "bool";
-    case ID_autoSetTicks:   return "bool";
-    case ID_autoSetScaling: return "bool";
-    case ID_lineWidth:      return "linewidth";
-    case ID_tickLocation:   return "enum";
-    case ID_axesType:       return "enum";
-    case ID_triadFlag:      return "bool";
-    case ID_bboxFlag:       return "bool";
-    case ID_xAxis:          return "att";
-    case ID_yAxis:          return "att";
-    case ID_zAxis:          return "att";
+    case ID_visible:         return "bool";
+    case ID_autoSetTicks:    return "bool";
+    case ID_autoSetScaling:  return "bool";
+    case ID_lineWidth:       return "linewidth";
+    case ID_tickLocation:    return "enum";
+    case ID_axesType:        return "enum";
+    case ID_triadFlag:       return "bool";
+    case ID_bboxFlag:        return "bool";
+    case ID_xAxis:           return "att";
+    case ID_yAxis:           return "att";
+    case ID_zAxis:           return "att";
+    case ID_setBBoxLocation: return "bool";
+    case ID_bboxLocation:    return "doubleArray";
     default:  return "invalid index";
     }
 }
@@ -1076,6 +1158,21 @@ Axes3D::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_zAxis:
         {  // new scope
         retval = (zAxis == obj.zAxis);
+        }
+        break;
+    case ID_setBBoxLocation:
+        {  // new scope
+        retval = (setBBoxLocation == obj.setBBoxLocation);
+        }
+        break;
+    case ID_bboxLocation:
+        {  // new scope
+        // Compare the bboxLocation arrays.
+        bool bboxLocation_equal = true;
+        for(int i = 0; i < 6 && bboxLocation_equal; ++i)
+            bboxLocation_equal = (bboxLocation[i] == obj.bboxLocation[i]);
+
+        retval = bboxLocation_equal;
         }
         break;
     default: retval = false;

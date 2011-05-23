@@ -3626,12 +3626,18 @@ VisWindow::SetShowCallback(VisCallback *cb, void *data)
 //   in order to force the update. This is needed when we are constructing
 //   the axes for the first time with default atts.
 //
+//   Hank Childs, Mon May 23 13:24:50 PDT 2011
+//   Tell the Axes3D colleague if the bounding box location is being overridden
+//
 // ****************************************************************************
 
 void
 VisWindow::SetAnnotationAtts(const AnnotationAttributes *atts, bool force)
 {
     bool changed = (annotationAtts != *atts);
+
+    axes3D->SetBBoxLocation(atts->GetAxes3D().GetSetBBoxLocation(),
+                            atts->GetAxes3D().GetBboxLocation());
 
     if (changed || force)
     {

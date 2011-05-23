@@ -105,6 +105,7 @@ public:
     void SelectXAxis();
     void SelectYAxis();
     void SelectZAxis();
+    void SelectBboxLocation();
 
     // Property setting methods
     void SetVisible(bool visible_);
@@ -118,6 +119,8 @@ public:
     void SetXAxis(const AxisAttributes &xAxis_);
     void SetYAxis(const AxisAttributes &yAxis_);
     void SetZAxis(const AxisAttributes &zAxis_);
+    void SetSetBBoxLocation(bool setBBoxLocation_);
+    void SetBboxLocation(const double *bboxLocation_);
 
     // Property getting methods
     bool                 GetVisible() const;
@@ -134,6 +137,9 @@ public:
           AxisAttributes &GetYAxis();
     const AxisAttributes &GetZAxis() const;
           AxisAttributes &GetZAxis();
+    bool                 GetSetBBoxLocation() const;
+    const double         *GetBboxLocation() const;
+          double         *GetBboxLocation();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -171,6 +177,8 @@ public:
         ID_xAxis,
         ID_yAxis,
         ID_zAxis,
+        ID_setBBoxLocation,
+        ID_bboxLocation,
         ID__LAST
     };
 
@@ -186,11 +194,13 @@ private:
     AxisAttributes xAxis;
     AxisAttributes yAxis;
     AxisAttributes zAxis;
+    bool           setBBoxLocation;
+    double         bboxLocation[6];
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AXES3D_TMFS "bbbiiibbaaa"
+#define AXES3D_TMFS "bbbiiibbaaabD"
 
 #endif

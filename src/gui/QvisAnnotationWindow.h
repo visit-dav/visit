@@ -137,6 +137,9 @@ class QvisLineWidthWidget;
 //   Brad Whitlock, Mon Mar  2 14:31:48 PST 2009
 //   I added support for scaling and offsetting time.
 //
+//   Hank Childs, Fri May 13 16:00:24 PDT 2011
+//   Add ability to set location of bounding box.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -223,6 +226,8 @@ private slots:
     void xAxisChanged(const AxisAttributes &);
     void yAxisChanged(const AxisAttributes &);
     void zAxisChanged(const AxisAttributes &);
+    void setBBoxLocationChecked(bool);
+    void bboxLocationChanged(void);
 
     // Color option slots
     void backgroundColorChanged(const QColor &c);
@@ -300,6 +305,9 @@ private:
     QCheckBox                *triadFlagToggle;
     QCheckBox                *bboxFlagToggle;
     QvisAxisAttributesWidget *axes3D[3];
+    QCheckBox                *setBBoxLocationToggle;
+    QNarrowLineEdit          *bboxLocations[6];
+    QLabel                   *bboxLabels[6];
 
     // Color tab widgets
     QWidget                  *pageColor;
