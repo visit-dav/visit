@@ -647,6 +647,12 @@ avtMinMaxQuery::TimeVaryingPostExecute(void)
 //    Hank Childs, Sun Dec 26 12:13:19 PST 2010
 //    Renamed method to StandardPostExecute.
 //
+//    Gunther H. Weber, Mon May 23 16:08:38 PDT 2011
+//    Return additional information (position, domain, element number) in
+//    XML output to make it possible to access it in Python via
+//    GetQueryOutputObject() without needing to parse the query output
+//    string.
+//
 // ****************************************************************************
 
 void 
@@ -707,28 +713,32 @@ avtMinMaxQuery::StandardPostExecute(void)
 
         nMin = (nMin == 0 ? nMin : (nMax > nMin ? nMax : nMin));
         nMax = (nMax == 0 ? nMax : (nMin > nMax ? nMin : nMax));
-       
+
         doubleVector resVals;
         CreateMessage(nMin, minInfo1, minInfo2, minMsg, resVals);
         CreateMessage(nMax, maxInfo1, maxInfo2, maxMsg, resVals);
         CreateResultMessage((nMin > nMax ? nMin : nMax));
         SetResultValues(resVals);
         MapNode result_node;
-        
-        if(doMax && doMin)
+
+        if(doMax)
         {
-            result_node["min"] = minInfo1.GetValue();
             result_node["max"] = maxInfo1.GetValue();
-        }
-        else if(doMax)
-        {
-            result_node = maxInfo1.GetValue();
+            result_node["max_domain"] = maxInfo1.GetDomain();
+            result_node["max_element_num"] = maxInfo1.GetElementNum();
+            doubleVector maxCoord(maxInfo1.GetCoord(), maxInfo1.GetCoord() + dimension);
+            result_node["max_coord"] = maxCoord;
+
         }
         else if(doMin)
         {
-            result_node = minInfo1.GetValue();
+            result_node["min"] = minInfo1.GetValue();
+            result_node["min_domain"] = minInfo1.GetDomain();
+            result_node["min_element_num"] = minInfo1.GetElementNum();
+            doubleVector minCoord(minInfo1.GetCoord(), minInfo1.GetCoord() + dimension);
+            result_node["min_coord"] = minCoord;
         }
-        
+
         SetXmlResult(result_node.ToXML());
     }
 }
