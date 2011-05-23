@@ -681,6 +681,10 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 //
 //    Mark C. Miller, Mon Mar 31 14:27:21 PDT 2008
 //    Modified to handle the 'materials' variable ghosting correctly.
+//
+//    Cyrus Harrison, Mon May 23 14:16:47 PDT 2011
+//    Added Nathan Masters' fix for ghost data w/ 'levels' and 'patches'.
+//
 // ****************************************************************************
 vtkDataSet *
 avtSAMRAIFileFormat::ReadMesh(int patch)
@@ -706,7 +710,11 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         cur_var = var_names_num_components.find(active_visit_var_name);
 
         if (active_visit_var_name == "amr_mesh" ||
-            active_visit_var_name == "materials")
+            active_visit_var_name == "materials" ||
+            // This fixes level boundaries "levels"
+            active_visit_var_name == "levels" ||
+            // This fixes patch boundaries "patches"
+            active_visit_var_name == "patches")
         {
             num_ghosts[0] = var_max_ghosts[0];
             num_ghosts[1] = var_max_ghosts[1];
@@ -4281,6 +4289,9 @@ avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
 //    Mark C. Miller, Mon Mar 31 14:27:21 PDT 2008
 //    Modified to handle the 'materials' variable correctly.
 //
+//    Cyrus Harrison, Mon May 23 14:16:47 PDT 2011
+//    Added Nathan Masters' fix for ghost data w/ 'levels' and 'patches'.
+//
 // ****************************************************************************
 int
 avtSAMRAIFileFormat::GetGhostCodeForVar(const char *visit_var_name)
@@ -4292,7 +4303,9 @@ avtSAMRAIFileFormat::GetGhostCodeForVar(const char *visit_var_name)
     int num_ghosts[3];
 
     if (var_name == "amr_mesh" ||
-        var_name == "materials")
+        var_name == "materials" ||
+        var_name == "levels" ||
+        var_name  == "patches")
     {
         num_ghosts[0] = var_max_ghosts[0];
         num_ghosts[1] = var_max_ghosts[1];
