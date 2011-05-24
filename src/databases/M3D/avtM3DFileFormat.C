@@ -622,8 +622,7 @@ avtM3DFileFormat::GetVar( int timestate, int domain, const char *nm )
         hsize_t dims[10];
         H5Sget_simple_extent_dims( spaceID, dims, NULL );
                         
-        int N = dims[0]*dims[1];
-        int *vals = new int[N];
+        float *vals = new float[dims[0]*dims[1]];
                 
         H5Dread( dataID, H5T_NATIVE_FLOAT, H5S_ALL, spaceID, H5P_DEFAULT, vals );
         
@@ -636,9 +635,13 @@ avtM3DFileFormat::GetVar( int timestate, int domain, const char *nm )
         }
 
         var->SetNumberOfTuples( nScalars );
+        float *entry = &vals[offset];
         for ( int j = 0; j < nScalars; j++ )
-            var->SetTuple1( j, vals[offset+j] );
-                                
+        {
+            var->SetTuple1( j, vals[j] );
+            ++entry;
+        }
+                        
         delete [] vals;
         return var;
     }
