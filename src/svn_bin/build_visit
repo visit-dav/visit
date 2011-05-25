@@ -391,6 +391,12 @@
 #     build_visit multiple times without successfully building hdf4 won't
 #     apply the change multiple times.
 #
+#     Mark C. Miller, Tue May 24 17:36:32 PDT 2011
+#     Fixed problems with ITAPS_GRUMMP missing CGM libraries. In theory, 
+#     GRUMMP's configure should have handled this automagically. But, it was
+#     failing. So, I opted to handle CGM explicitly in build_visit and then
+#     just tell GRUMMP where to find it; the same install point we install
+#     GRUMMP to.
 # *****************************************************************************
 
 
@@ -887,6 +893,14 @@ export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.2"}
 export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE:-"FMDB-${ITAPS_FMDB_VERSION}.tar.gz"}
 export ITAPS_FMDB_URL=${ITAPS_FMDB_URL:-http://www.scorec.rpi.edu/FMDB/source}
 export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR:-"${ITAPS_FMDB_FILE%.tar*}"}
+
+# CGM is an indirect dependency introduced by ITAPS_GRUMMP. No other part
+# of VisIt uses CGM, presently. That is likely to change in the future
+# if we add an iGeom reader to VisIt.
+export ITAPS_GRUMMP_CGM_VERSION=${ITAPS_GRUMMP_CGM_VERSION:-"10.2.3"}
+export ITAPS_GRUMMP_CGM_FILE=${ITAPS_GRUMMP_CGM_FILE:-"cgma-${ITAPS_GRUMMP_CGM_VERSION}.tar.gz"}
+export ITAPS_GRUMMP_CGM_URL=${ITAPS_GRUMMP_CGM_URL:-https://redmine.scorec.rpi.edu/anonsvn/itaps/software/tags/1.2/release_distros}
+export ITAPS_GRUMMP_CGM_BUILD_DIR=${ITAPS_GRUMMP_CGM_BUILD_DIR:-"${ITAPS_GRUMMP_CGM_FILE%.tar*}"}
 
 export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"0.6.3"}
 export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"GRUMMP-${ITAPS_GRUMMP_VERSION}.tar.gz"}
@@ -7775,6 +7789,64 @@ function build_itaps_fmdb
 function build_itaps_grummp
 {
     #
+    # Prepare build dir for CGM
+    #
+    prepare_build_dir $ITAPS_GRUMMP_CGM_BUILD_DIR $ITAPS_GRUMMP_CGM_FILE
+    untarred_itaps_cgm_grummp=$?
+    if [[ $untarred_itaps_cgm_grummp == -1 ]] ; then
+       warn "Unable to prepare ITAPS_GRUMMP_CGM build directory. Giving Up!"
+       return 1
+    fi
+
+    #
+    # Call configure for CGM
+    #
+    info "Configuring ITAPS_GRUMMP_CGM. . ."
+    cd $ITAPS_GRUMMP_CGM_BUILD_DIR || error "Cannot cd to $ITAPS_GRUMMP_CGM_BUILD_DIR build dir."
+    info "Invoking command to configure ITAPS_GRUMMP_CGM"
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+        --prefix="$VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       warn "ITAPS_GRUMMP_CGM configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build ITAPS_GRUMMP_CGM
+    #
+    info "Building ITAPS_GRUMMP_CGM. . . (~10 minutes)"
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+       warn "ITAPS_GRUMMP_CGM build failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing ITAPS_GRUMMP_CGM"
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        warn "I do not know how to install ITAPS_GRUMMP_CGM on a Mac. Giving up"
+    else
+        $MAKE install
+        if [[ $? != 0 ]] ; then
+           warn "ITAPS_GRUMMP_CGM install failed.  Giving up"
+           return 1
+        fi
+        # To make it easier to package this build up, ensure we don't wind up
+        # liking to shared libraries.
+        find $VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH -name 'lib*.so*' -exec rm -f {} \;
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/itaps/GRUMMP"
+       chgrp -R ${GROUP} "$VISITDIR/itaps/GRUMMP"
+    fi
+    info "Done with ITAPS_GRUMMP_CGM"
+
+    #
     # Prepare build dir
     #
     prepare_build_dir $ITAPS_GRUMMP_BUILD_DIR $ITAPS_GRUMMP_FILE
@@ -7793,6 +7865,7 @@ function build_itaps_grummp
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH" \
+        --with-CGM-path="$VISITDIR/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH" \
         --enable-imesh
     if [[ $? != 0 ]] ; then
        warn "ITAPS_GRUMMP configure failed.  Giving up"
@@ -8620,7 +8693,7 @@ function build_hostconf
         echo "ITAPS_INCLUDE_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/include)" \
         >> $HOSTCONF
         echo "ITAPS_FILE_PATTERNS(GRUMMP *.bdry *.smesh *.vmesh)" >> $HOSTCONF
-        echo "ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_geom GR_base SUMAAlog_lite OptMS vtkGraphics)" \
+        echo "ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_geom GR_base SUMAAlog_lite OptMS vtkGraphics cgm dl)" \
         >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/lib)" \
         >> $HOSTCONF
