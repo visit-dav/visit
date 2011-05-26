@@ -960,6 +960,9 @@ VisitInteractor::EndBoundingBox(void)
 //    Added a fix suggested by Brad Whitlock to fix the problem that 
 //    zooming in with a mouse wheel can result in an invalid view
 //
+//    Eric Brugger, Thu May 26 12:37:11 PDT 2011
+//    Remove an unnecessary render call.
+//
 // ****************************************************************************
 
 void
@@ -1038,8 +1041,6 @@ VisitInteractor::ZoomCamera2D(double f)
     newView2D.window[3] += dY;
 
     vw->SetView2D(newView2D);
-
-    rwi->Render();
 }
 
 // ****************************************************************************
@@ -1100,6 +1101,9 @@ VisitInteractor::ZoomCamera2D(const int x, const int y)
 //    I changed the pan behavior so that it pans the image and doesn't
 //    change the camera or focal point.
 //
+//    Eric Brugger, Thu May 26 12:37:11 PDT 2011
+//    Remove an unnecessary render call.
+//
 // ****************************************************************************
 
 void
@@ -1130,11 +1134,10 @@ VisitInteractor::PanImage3D(const int x, const int y)
         newView3D.imagePan[0] += pan[0];
         newView3D.imagePan[1] += pan[1];
 
-        vw->SetView3D(newView3D);
-
         OldX = x;
         OldY = y;
-        rwi->Render();
+
+        vw->SetView3D(newView3D);
     }
 }
 
@@ -1148,9 +1151,11 @@ VisitInteractor::PanImage3D(const int x, const int y)
 //  Creation:   October 28, 2004
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Jun  9 14:51:31 PDT 2006
 //    Remove unused variable.
+//
+//    Eric Brugger, Thu May 26 12:37:11 PDT 2011
+//    Remove an unnecessary render call.
 //
 // ****************************************************************************
 
@@ -1237,11 +1242,10 @@ VisitInteractor::PanCamera3D(const int x, const int y)
         newView3D.focus[1] += pan2.y;
         newView3D.focus[2] += pan2.z;
 
-        vw->SetView3D(newView3D);
-
         OldX = x;
         OldY = y;
-        rwi->Render();
+
+        vw->SetView3D(newView3D);
     }
 }
 
@@ -1272,6 +1276,9 @@ VisitInteractor::PanCamera3D(const int x, const int y)
 //    mouse move and one computing the zommed view so that mouse wheel 
 //    events can make use of this function.
 //
+//    Eric Brugger, Thu May 26 12:37:11 PDT 2011
+//    Remove an unnecessary render call.
+//
 // ****************************************************************************
 
 void
@@ -1294,8 +1301,6 @@ VisitInteractor::ZoomImage3D(double f)
     newView3D.imageZoom = newView3D.imageZoom * zoomFactor;
 
     vw->SetView3D(newView3D);
-
-    rwi->Render();
 }
 
 // ****************************************************************************
@@ -1352,6 +1357,10 @@ VisitInteractor::ZoomImage3D(const int x, const int y)
 //  Programmer: Eric Brugger
 //  Creation:   December 27, 2004
 //
+//  Modifications:
+//    Eric Brugger, Thu May 26 12:37:11 PDT 2011
+//    Remove an unnecessary render call.
+//
 // ****************************************************************************
 
 void
@@ -1377,11 +1386,10 @@ VisitInteractor::DollyCameraTowardFocus3D(const int x, const int y)
 
         newView3D.parallelScale = newView3D.parallelScale / zoomFactor;
 
-        vw->SetView3D(newView3D);
-
         OldX = x;
         OldY = y;
-        rwi->Render();
+
+        vw->SetView3D(newView3D);
     }
 }
 
@@ -1393,6 +1401,10 @@ VisitInteractor::DollyCameraTowardFocus3D(const int x, const int y)
 //
 //  Programmer: Eric Brugger
 //  Creation:   October 28, 2004
+//
+//  Modifications:
+//    Eric Brugger, Thu May 26 12:37:11 PDT 2011
+//    Remove an unnecessary render call.
 //
 // ****************************************************************************
 
@@ -1423,11 +1435,10 @@ VisitInteractor::DollyCameraAndFocus3D(const int x, const int y)
         newView3D.focus[2] +=
             newView3D.normal[2] * newView3D.parallelScale * dyf;
 
-        vw->SetView3D(newView3D);
-
         OldX = x;
         OldY = y;
-        rwi->Render();
+
+        vw->SetView3D(newView3D);
     }
 }
 
@@ -1455,6 +1466,9 @@ VisitInteractor::DollyCameraAndFocus3D(const int x, const int y)
 //    I added useCenter, a flag that forces the routine to rotate about the
 //    center of rotation if set.
 // 
+//    Eric Brugger, Thu May 26 12:37:11 PDT 2011
+//    Remove an unnecessary render call.
+//
 // ****************************************************************************
 
 void
@@ -1594,11 +1608,10 @@ VisitInteractor::RotateAboutFocus3D(const int x, const int y,
             newView3D.focus[2]  = newFocus.z;
         }
 
-        vw->SetView3D(newView3D);
-
         OldX = x;
         OldY = y;
-        rwi->Render();
+
+        vw->SetView3D(newView3D);
     }
 }
 
@@ -1612,9 +1625,11 @@ VisitInteractor::RotateAboutFocus3D(const int x, const int y,
 //  Creation:   October 28, 2004
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Jun  9 14:51:31 PDT 2006
 //    Remove unused variable.
+//
+//    Eric Brugger, Thu May 26 12:37:11 PDT 2011
+//    Remove an unnecessary render call.
 //
 // ****************************************************************************
 
@@ -1745,11 +1760,10 @@ VisitInteractor::RotateAboutCamera3D(const int x, const int y)
         newView3D.focus[1]  = newFocus.y;
         newView3D.focus[2]  = newFocus.z;
 
-        vw->SetView3D(newView3D);
-
         OldX = x;
         OldY = y;
-        rwi->Render();
+
+        vw->SetView3D(newView3D);
     }
 }
 

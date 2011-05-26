@@ -773,6 +773,9 @@ Zoom2D::DrawGuideLine(int x1, int y1, int x2, int y2)
 //    Kathleen Bonnell, Tue Aug  3 15:22:58 PDT 2004 
 //    Modified to handle Un-Zoom mode (controlKey is pressed.). 
 //
+//    Eric Brugger, Thu May 26 12:32:21 PDT 2011
+//    Remove an unnecessary render call.
+//
 // ****************************************************************************
 
 void
@@ -918,12 +921,8 @@ Zoom2D::ZoomCamera(void)
     // handle full-frame;
     newView2D.window[2] /= s;
     newView2D.window[3] /= s;
-    vw->SetView2D(newView2D);
 
-    //
-    // It looks like we need to explicitly re-render.
-    //
-    proxy.Render();
+    vw->SetView2D(newView2D);
 }
 
 
