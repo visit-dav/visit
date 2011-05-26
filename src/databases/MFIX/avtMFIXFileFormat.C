@@ -2539,6 +2539,11 @@ void avtMFIXFileFormat::GetAllTimesTweaked(void)
 #endif
 }
 
+//----------------------------------------------------------------------------
+//  Modifications:
+//    Kathleen Bonnell, Thu May 26 08:13:50 PDT 2011
+//    Windows specific fopen, from Terry Jordan.
+
 void
 avtMFIXFileFormat::GetSubBlock(void *buf, const char *fname, DataType datatype,
     long long startOffsetBytes, int startSkipVals,
@@ -2551,7 +2556,11 @@ avtMFIXFileFormat::GetSubBlock(void *buf, const char *fname, DataType datatype,
             free(this->GSB_currentFname);
             this->GSB_currentFname = NULL;
         }
+#ifdef _WIN32
+        this->GSB_file = fopen(fname,"rb");
+#else
         this->GSB_file = fopen(fname,"r");
+#endif
         if (!this->GSB_file)
             EXCEPTION1(InvalidFilesException,fname);
         this->GSB_currentFname = strdup(fname);
