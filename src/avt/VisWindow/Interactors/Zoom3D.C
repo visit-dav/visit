@@ -244,6 +244,9 @@ Zoom3D::EndMiddleButtonAction()
 //    Kathleen Bonnell, Wed Aug  4 07:59:41 PDT 2004 
 //    Added logic for un-zoom. 
 //
+//    Eric Brugger, Thu May 26 12:29:20 PDT 2011
+//    Remove an unnecessary render call.
+//
 // ****************************************************************************
 
 void
@@ -306,11 +309,6 @@ Zoom3D::ZoomCamera(void)
     }
 
     vw->SetView3D(newView3D);
-
-    //
-    // It looks like we need to explicitly re-render.
-    //
-    proxy.Render();
 }
 
 
@@ -327,6 +325,9 @@ Zoom3D::ZoomCamera(void)
 //    Eric Brugger, Fri Jun 13 09:06:00 PDT 2003
 //    I changed the zoom behavior so that it zooms the image and doesn't
 //    change the camera or focal point.
+//
+//    Eric Brugger, Thu May 26 12:29:20 PDT 2011
+//    Remove an unnecessary render call.
 //
 // ****************************************************************************
 
@@ -353,10 +354,9 @@ Zoom3D::ZoomCamera(const int x, const int y)
 
         newView3D.imageZoom = newView3D.imageZoom * zoomFactor;
 
-        vw->SetView3D(newView3D);
-
         OldX = x;
         OldY = y;
-        rwi->Render();
+
+        vw->SetView3D(newView3D);
     }
 }

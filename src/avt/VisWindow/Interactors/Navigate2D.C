@@ -276,6 +276,10 @@ Navigate2D::OnMouseWheelBackward()
 //  Programmer: Eric Brugger
 //  Creation:   October 10, 2003
 //
+//  Modifications:
+//    Eric Brugger, Thu May 26 12:35:49 PDT 2011
+//    Remove an unnecessary render call.
+//
 // ****************************************************************************
 
 void
@@ -316,11 +320,10 @@ Navigate2D::PanCamera(const int x, const int y)
         newView2D.window[2] -= pan[1];
         newView2D.window[3] -= pan[1];
 
-        vw->SetView2D(newView2D);
-
         OldX = x;
         OldY = y;
-        rwi->Render();
+
+        vw->SetView2D(newView2D);
     }
 }
 
