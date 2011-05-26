@@ -397,6 +397,11 @@
 #     failing. So, I opted to handle CGM explicitly in build_visit and then
 #     just tell GRUMMP where to find it; the same install point we install
 #     GRUMMP to.
+#
+#     Eric Brugger, Thu May 26 13:29:28 PDT 2011
+#     I changed the script to use mesa 7.8.2 always, since even some linux
+#     platforms had problems building 7.10.2.
+#
 # *****************************************************************************
 
 
@@ -768,17 +773,10 @@ export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.3.tar.gz"}
 export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.3"}
 export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.3"}
 
-if [[ "$OPSYS" == "Darwin" ]]; then
-    export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
-    export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
-    export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
-    export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2"
-else
-    export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
-    export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
-    export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
-    export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.10.2"
-fi
+export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
+export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
+export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
+export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2"
 
 export PYTHON_FILE_SUFFIX="tgz"
 export PYTHON_VERSION="2.6.4"
