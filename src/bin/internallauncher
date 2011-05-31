@@ -712,6 +712,9 @@ $0 = shift @ARGV;
 #    I added support for the sbatch launch method. I added support for Glory
 #    at Sandia.
 #
+#    Eric Brugger, Tue May 24 11:05:30 PDT 2011
+#    I added support for the aprun launch method.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2696,6 +2699,19 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, "$ENV{VISITHOME}";
         push @parcmd, "-visitarchhome";
         push @parcmd, "$ENV{VISITARCHHOME}";
+
+        @printcmd = @parcmd;
+        if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        push @parcmd, @post_args;
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
+    # aprun
+    elsif ($launch eq "aprun")
+    {
+        @parcmd = ("aprun");
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-n", $procs if $procs_set;
+        push @parcmd, @visitcmd;
 
         @printcmd = @parcmd;
         if ($security_key_set) { push @parcmd, "-key", $security_key; }
