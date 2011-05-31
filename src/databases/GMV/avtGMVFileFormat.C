@@ -309,7 +309,7 @@ gmvCreateRectilinearGrid()
 // Modifications:
 //   
 // ****************************************************************************
-
+#define GMV_DEBUG_PRINT
 bool
 gmvAddRegularCell(vtkUnstructuredGrid *ugrid)
 {
@@ -558,6 +558,83 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
 }
 
 // ****************************************************************************
+// Method: gmvAddVFace2D
+//
+// Purpose: 
+//   Add VFace2D cells to the mesh.
+//
+// Arguments:
+//   ugrid : The mesh to which we're adding cells.
+//
+// Returns:    Number of splits.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 31 14:38:38 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+gmvAddVFace(vtkUnstructuredGrid *ugrid, const std::vector<int> &nodes)
+{
+    const char *mName = "gmvAddVFace: ";
+    int nsplits = 1;
+
+    int nPoints = nodes.size()-1;
+    vtkIdType verts[10];
+    if(nPoints == 3)
+    {
+        // Add a triangle
+        verts[0] = nodes[0]-1;
+        verts[1] = nodes[1]-1;
+        verts[2] = nodes[2]-1;
+        debug5 << mName << "Adding triangle ("
+               << verts[0] << ", " << verts[1] << ", " << verts[2]
+               << ")" << endl;
+        ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
+    }
+    else if(nPoints == 4)
+    {
+        // Add a quad
+        verts[0] = nodes[0]-1;
+        verts[1] = nodes[1]-1;
+        verts[2] = nodes[2]-1;
+        verts[3] = nodes[3]-1;
+        debug5 << mName << "Adding quad ("
+               << verts[0] << ", " << verts[1] << ", " << verts[2] << ", " << verts[3]
+               << ")" << endl;
+        ugrid->InsertNextCell(VTK_QUAD, 4, verts);
+    }
+    else if(nPoints <= 10)
+    {
+        debug4 << mName << "Break " << nPoints << "-gon into triangles" << endl;
+        int nTri = nPoints - 2;
+        for(int t = 0; t < nTri; ++t)
+        {
+            // Add triangles
+            verts[0] = nodes[0]-1;
+            verts[1] = nodes[t+1]-1;
+            verts[2] = nodes[t+2]-1;
+            debug5 << "    triangle ("
+                   << verts[0] << ", " << verts[1] << ", " << verts[2]
+                   << ")" << endl;
+            ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
+        }
+
+        nsplits = nTri;
+    }
+    else
+    {
+        debug5 << "gmvAddVFace2D: an invalid number of points in the vface2d" << endl;
+    }
+
+    return nsplits;
+}
+
+// ****************************************************************************
 // Method: gmvCreateUnstructuredGrid
 //
 // Purpose: 
@@ -566,6 +643,7 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
 //
 // Arguments:
 //   polyhedralSplit : The object we use to track splits to polyhedral cells.
+//   topoDim         : Return the topological dimension.
 //
 // Returns:    
 //
@@ -580,11 +658,13 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
 // Creation:   Wed Oct 27 12:23:38 PDT 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue May 31 16:44:17 PDT 2011
+//   I added initial vfaces support for 2D.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
-gmvCreateUnstructuredGrid(gmvPolyhedralSplit *polyhedralSplit)
+gmvCreateUnstructuredGrid(gmvPolyhedralSplit *polyhedralSplit, int &topoDim)
 {
     const char *mName = "gmvCreateUnstructuredGrid: ";
 
@@ -592,6 +672,7 @@ gmvCreateUnstructuredGrid(gmvPolyhedralSplit *polyhedralSplit)
     vtkPoints *pts = gmvCreatePoints();
 
     // Create a ugrid
+    debug4 << mName << "Allocating initial cells " << (gmv_data.num * 8) << endl;
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->Allocate(gmv_data.num * 8);
 
@@ -601,6 +682,7 @@ gmvCreateUnstructuredGrid(gmvPolyhedralSplit *polyhedralSplit)
     floatVector newNodes;
     int phCells = 0;
     int phNode = pts->GetNumberOfPoints();
+    bool foundVFace2D = false;
     while(gmv_data.datatype != ENDKEYWORD)
     {
         bool addedCell = false;
@@ -617,20 +699,90 @@ gmvCreateUnstructuredGrid(gmvPolyhedralSplit *polyhedralSplit)
             addedCell = gmvAddRegularCell(ugrid);
             normalCells++;
         }
+        else if(gmv_data.datatype == VFACE2D)
+        {
+            // Make a note that we had vface2d cells. We ignore the vface2d definitions
+            // currently because it does not look like they appear in multiple cells.
+            foundVFace2D = true;
+
+            // Indicate the mesh is topologically 2D.
+            topoDim = 2;
+        }
+        else if(gmv_data.datatype == VFACE3D)
+        {
+            debug5 << "VFACE3D not supported" << endl;
+        }
 #if 0
         else
         {
             pts->Delete();
             ugrid->Delete();
             // For now...
+            debug5 << "Unsupported cell type: " << gmv_data.datatype << endl;
             EXCEPTION1(ImproperUseException, "Unsupported cell type");
         }
 #endif
 
         gmvread_data();
 
+//#ifndef MDSERVER
+//        print_gmv_data(DebugStream::Stream5());
+//#endif
+
         if(addedCell)
             vtkCellId++;
+    }
+
+    if(foundVFace2D)
+    {
+        // Read the vfaces now
+        std::map<int, std::vector<int> > cellVertices;
+        std::map<int, std::vector<int> >::iterator it;
+        do
+        {
+            gmvread_data();
+//#ifndef MDSERVER
+//            print_gmv_data(DebugStream::Stream5());
+//#endif
+            if(gmv_data.longdata1 != 0 && gmv_data.longdata2 != 0)
+            {
+                int cellid = (int)gmv_data.longdata2[3];
+
+                int A = (int)gmv_data.longdata1[0];
+                int B = (int)gmv_data.longdata1[1];
+
+                if((it = cellVertices.find(cellid)) == cellVertices.end())
+                {
+                    std::vector<int> pts;
+                    pts.push_back(A);
+                    pts.push_back(B);
+                    cellVertices[cellid] = pts;
+                }
+                else
+                {
+                    if(it->second[it->second.size()-1] != A)
+                        it->second.push_back(A);
+                    it->second.push_back(B);
+                }
+            }
+        } while(gmv_data.datatype != ENDKEYWORD);
+
+        // Add cells for the vfaces that we just read.
+        for(it = cellVertices.begin(); it != cellVertices.end(); ++it)
+        {
+            int nsplits = gmvAddVFace(ugrid, it->second);
+            if(nsplits > 1)
+            {
+                polyhedralSplit->AppendCellSplits(vtkCellId, nsplits);
+                phCells++;
+            }
+            else
+            {
+                ++normalCells;
+            }
+
+            ++vtkCellId;
+        }
     }
 
     // Tack the new polyhedron nodes onto the end of the points.
@@ -985,7 +1137,9 @@ avtGMVFileFormat::ReadData()
             {
                 gmvread_data();
 
+//#ifndef MDSERVER
 //                print_gmv_data(DebugStream::Stream5());
+//#endif
 
                 switch (gmv_data.keyword)
                 {
@@ -999,13 +1153,15 @@ avtGMVFileFormat::ReadData()
                     meshdata.materialCentering = CELL;
 
                     avtMeshType mt;
+                    int topological_dimension = 3;
                     if(gmv_data.datatype == UNSTRUCT)
                     {
 #ifndef MDSERVER
                         TRY
                         {
                             meshdata.polyhedralSplit = new gmvPolyhedralSplit;
-                            meshdata.dataset = gmvCreateUnstructuredGrid(meshdata.polyhedralSplit);
+                            meshdata.dataset = gmvCreateUnstructuredGrid(meshdata.polyhedralSplit,
+                                                                         topological_dimension);
                         }
                         CATCH(ImproperUseException)
                         {
@@ -1047,7 +1203,6 @@ avtGMVFileFormat::ReadData()
                     int nblocks = 1;
                     int block_origin = 0;
                     int spatial_dimension = 3;
-                    int topological_dimension = 3;
                     double *extents = NULL;
                     AddMeshToMetaData(&md, meshname, mt, extents, nblocks, 
                                       block_origin, spatial_dimension, 
