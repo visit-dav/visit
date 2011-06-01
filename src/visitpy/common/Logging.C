@@ -1948,6 +1948,10 @@ static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 //   Brad Whitlock, Fri Aug 27 10:43:32 PDT 2010
 //   I added RenamePickLabel.
 //
+//   Brad Whitlock, Tue May 31 17:14:27 PDT 2011
+//   Do not return early when the log file is not open because that breaks
+//   command recording.
+//
 // ****************************************************************************
 
 void
@@ -1955,9 +1959,6 @@ LogRPCs(Subject *subj, void *)
 {
     std::string str;
     bool record = true;
-
-    if(logFile == 0) 
-        return;
 
     // empty the string.
     str[0] = '\0';
