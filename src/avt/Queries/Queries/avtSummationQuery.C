@@ -309,6 +309,10 @@ avtSummationQuery::PreExecute(void)
 //    Hank Childs, Thu May 12 15:37:21 PDT 2011
 //    Improve message a bit.
 //
+//    Brad Whitlock, Tue May 31 23:29:23 PST 2011
+//    Fix the case where sums.size can return zero, causing a crash when we
+//    index the first element in the empty vector.
+//
 // ****************************************************************************
 
 void
@@ -319,7 +323,10 @@ avtSummationQuery::PostExecute(void)
     // still particpate in the global sum.
     ncomps = UnifyMaximumValue(ncomps);
     if(sums.size() == 0)
+    {
+        ncomps = 1;
         sums = vector<double>(ncomps,0.0);
+    }
 
     doubleVector final_sums(ncomps);
     SumDoubleArrayAcrossAllProcessors(&sums[0], &final_sums[0], ncomps);
