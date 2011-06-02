@@ -46,6 +46,7 @@
 #include <FileServerList.h>
 #include <NameSimplifier.h>
 #include <QualifiedFilename.h>
+#include <StringHelpers.h>
 #include <VariableMenuPopulator.h>
 
 #include <avtExpressionTypeConversions.h>
@@ -1325,6 +1326,11 @@ QvisCMFEWizard::GetMeshForTargetDatabase(void)
 //   Cyrus Harrison, Mon Aug 30 11:59:25 PDT 2010
 //   Simplify wizard & add ability to open new databases.
 //
+//   Brad Whitlock, Wed Jun 1 18:10:23 PST 2011
+//   Escape Windows-style filenames so the drive letter does not mess up the
+//   expression. Also account for difference variables that contain special
+//   characters.
+//
 // ****************************************************************************
 
 void
@@ -1336,7 +1342,14 @@ QvisCMFEWizard::AddCMFEExpression(void)
     char filepart[1024];
     if (decision_donorType == DONOR_FILE)
     {
-        const char *src = decision_donorDatabase.c_str();
+        std::string filteredDB(decision_donorDatabase);
+#ifdef _WIN32
+        // Escape back slashes and drive letter punctuation so it can exist
+        // in the generated expression.
+        filteredDB = StringHelpers::Replace(filteredDB, "\\", "\\\\");
+        filteredDB = StringHelpers::Replace(filteredDB, ":\\", "\\:\\");
+#endif
+        const char *src = filteredDB.c_str();
         const char *after_colon = strstr(src, ":");
         if (after_colon != NULL)
             src = after_colon+1;
@@ -1377,15 +1390,23 @@ QvisCMFEWizard::AddCMFEExpression(void)
                                           decision_mesh.c_str(), fillstr);
     }
 
+    // Account for some variables that have slashes or spaces.
+    std::string filteredVar(decision_diffvarname);
+    if(filteredVar.find("/") != std::string::npos ||
+       filteredVar.find(" ") != std::string::npos)
+    {
+        filteredVar = std::string("<") + filteredVar + std::string(">");
+    }
+
     char defn[1024];
     if (decision_exprtype == EXPRESSION_SIMPLE)
         strcpy(defn, cmfe_part);
     else if (decision_exprtype == EXPRESSION_DIFF_FIRST)
-        SNPRINTF(defn, 1024, "%s-%s", cmfe_part, decision_diffvarname.c_str());
+        SNPRINTF(defn, 1024, "%s-%s", cmfe_part, filteredVar.c_str());
     else if (decision_exprtype == EXPRESSION_DIFF_SECOND)
-        SNPRINTF(defn, 1024, "%s-%s", decision_diffvarname.c_str(), cmfe_part);
+        SNPRINTF(defn, 1024, "%s-%s", filteredVar.c_str(), cmfe_part);
     else
-        SNPRINTF(defn, 1024, "abs(%s-%s)", decision_diffvarname.c_str(), cmfe_part);
+        SNPRINTF(defn, 1024, "abs(%s-%s)", filteredVar.c_str(), cmfe_part);
 
     e->SetDefinition(defn);
     e->SetType(GetVarType(decision_variable));
