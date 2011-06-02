@@ -136,6 +136,11 @@ class avtVsFileFormat: public avtSTMDFileFormat {
 
   private:
   /**
+   * A counter to track the number of avtVsFileFormat objects in existence
+   */
+  static int instanceCounter;
+
+  /**
    * A user-specified setting for the stride to use when loading data.
    * Default is 1 on all axes.
    */

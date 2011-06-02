@@ -76,13 +76,16 @@
 #include "VsRegistry.h"
 #include "VsH5Reader.h"
 
+int avtVsFileFormat::instanceCounter = 0;
+
 avtVsFileFormat::avtVsFileFormat(const char* dfnm, std::vector<int> settings) :
   avtSTMDFileFormat(&dfnm, 1), dataFileName(dfnm) {
 
     VsLog::initialize(DebugStream::Stream3(), DebugStream::Stream4(), DebugStream::Stream5());
     
-    VsLog::debugLog() <<"avtVsFileFormat::constructor() - entering" <<std::endl;
-    VsLog::debugLog() <<"avtVsFileFormat::constructor() - VizSchema Revision #742" <<std::endl;
+    VsLog::debugLog() <<"avtVsFileFormat::constructor() - entering." <<std::endl;
+    VsLog::debugLog() <<"avtVsFileFormat::constructor() - This is avtVsFileFormat instance #" <<instanceCounter++ <<std::endl;
+    VsLog::debugLog() <<"avtVsFileFormat::constructor() - data file is " <<dfnm <<"." <<std::endl;
 
     //reader starts off empty
     reader = NULL;
@@ -2697,7 +2700,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
 
       VsLog::debugLog() << methodSig <<"Mesh has dimension " <<meta->getNumSpatialDims() <<"." <<std::endl;
 
-      avtMeshMetaData* vmd =new avtMeshMetaData(it->c_str(),
+      avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
           meta->getNumBlocks(), 1, 1, 0, meta->getNumSpatialDims(), meta->getNumSpatialDims(), meshType);
       setAxisLabels(vmd);
       md->Add(vmd);
