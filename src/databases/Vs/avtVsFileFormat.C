@@ -2796,17 +2796,77 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
   void avtVsFileFormat::ActivateTimestep() {
     LoadData();
   }
-  
-  void avtVsFileFormat::UpdateCyclesAndTimes() {
+
+  bool avtVsFileFormat::ReturnsValidCycle() {
+    VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidCycle()  - entering" <<endl;
+    LoadData();
+
+    if (registry->hasStep()) {
+      VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidCycle()  - returning TRUE." <<endl;
+      return true;
+    }
+    
+    VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidCycle()  - returning FALSE." <<endl;
+    return false;
+  }
+
+  int avtVsFileFormat::GetCycle() {
+    VsLog::debugLog() <<"avtVsFileFormat::GetCycle()  - entering" <<endl;
+    LoadData();
+
+    if (registry->hasStep()) {
+      VsLog::debugLog() <<"avtVsFileFormat::GetCycle() - This file supplies cycle: " <<registry->getStep() <<std::endl;
+      return registry->getStep();
+    }
+
+    VsLog::debugLog() <<"avtVsFileFormat::GetCycle() - This file does not supply cycle.  Returning INVALID_CYCLE." <<std::endl;
+    return INVALID_CYCLE;
+  }
+
+  bool avtVsFileFormat::ReturnsValidTime() {
+    VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidTime()  - entering" <<endl;
+    LoadData();
+
+    if (registry->hasTime()) {
+      VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidTime()  - returning TRUE." <<endl;
+      return true;
+    }
+
+    VsLog::debugLog() <<"avtVsFileFormat::ReturnsValidTime()  - returning FALSE." <<endl;
+    return false;
+  }
+
+  double avtVsFileFormat::GetTime() {
+    VsLog::debugLog() <<"avtVsFileFormat::GetTime()  - entering" <<endl;
+    LoadData();
+
+    if (registry->hasTime()) {
+      VsLog::debugLog() <<"avtVsFileFormat::GetTime() - This file supplies time: " <<registry->getTime() <<std::endl;
+      return registry->getTime();
+    }
+
+    VsLog::debugLog() <<"avtVsFileFormat::GetTime() - This file does not supply time.  Returning INVALID_TIME." <<std::endl;
+    return INVALID_TIME;
+  }
+
+  /*  void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md) {
+    VsLog::debugLog() <<"avtVsFileFormat::UpdateCyclesAndTimes() - entering" <<endl;
+    if (!md) {
+      VsLog::debugLog() <<"avtVsFileFormat::UpdateCyclesAndTimes() - md was NULL, returning." <<endl;
+      return;
+    }
+
     LoadData();
     
     //If we have time data, tell VisIt
-    if (registry->hasTime()) {
+      if (registry->hasTime()) {
       VsLog::debugLog() <<"avtVsFileFormat::UpdateCyclesAndTimes() - This file supplies time: " <<registry->getTime() <<std::endl;
       doubleVector times;
       times.push_back(registry->getTime());
-      metadata->SetTimes(times);
-      metadata->SetTimeIsAccurate(true, registry->getTime());
+      md->SetTimes(times);
+      md->SetTimeIsAccurate(true, registry->getTime());
+    } else {
+      VsLog::debugLog() <<"avtVsFileFormat::UpdateCyclesAndTimes() - This file has no time data." <<std::endl;
     }
     
     //If we have step data, tell VisIt
@@ -2814,10 +2874,14 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
       VsLog::debugLog() <<"avtVsFileFormat::UpdateCyclesAndTimes() - This file supplies step: " <<registry->getStep() <<std::endl;
       intVector cycles;
       cycles.push_back(registry->getStep());
-      metadata->SetCycles(cycles);
-      metadata->SetCycleIsAccurate(true, registry->getStep());
+      md->SetCycles(cycles);
+      md->SetCycleIsAccurate(true, registry->getStep());
+    } else {
+      VsLog::debugLog() <<"avtVsFileFormat::UpdateCyclesAndTimes() - This file has no step data." <<std::endl;
     }
+    VsLog::debugLog() <<"avtVsFileFormat::UpdateCyclesAndTimes() - exiting" <<endl;
   }
+  */
   
   void avtVsFileFormat::LoadData() {
     if (reader)
@@ -2883,7 +2947,7 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
       md->Add(mmd);
     }
 
-    UpdateCyclesAndTimes();
+    //    UpdateCyclesAndTimes(md);
     
     VsLog::debugLog() <<methodSig <<"Exiting normally." << endl;
   }

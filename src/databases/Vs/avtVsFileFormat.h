@@ -119,9 +119,38 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    */
   virtual void ActivateTimestep(void);
   
-  virtual void UpdateCyclesAndTimes();
+  /**
+   * Updates cycles and times in the given database metadata object
+   * Deprecated 06.02.2011 in favor of GetCycle and GetTime
+   * Marc Durant
+   */
+  //virtual void UpdateCyclesAndTimes(avtDatabaseMetaData* md);
   
   protected:
+  /**
+   * Determines if the associated file has a valid cycle number
+   * @return true if cycle is valid, otherwise false
+   */
+  virtual bool ReturnsValidCycle();
+
+  /**
+   * Get the cycle for the associated file
+   * @return the cycle, or INVALID_CYCLE if none is available
+   */
+  virtual int GetCycle();
+
+  /**
+   * Determines if the associated file has a valid time
+   * @return true if time is valid, otherwise false
+   */
+  virtual bool ReturnsValidTime();
+
+  /**
+   * Get the time for the associated file
+   * @return the time, or INVALID_TIME if none is available
+   */
+  virtual double GetTime();
+
   /** Populate the meta data */
   virtual void PopulateDatabaseMetaData(avtDatabaseMetaData* md);
 
