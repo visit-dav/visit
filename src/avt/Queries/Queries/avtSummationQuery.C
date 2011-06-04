@@ -322,15 +322,32 @@ avtSummationQuery::PostExecute(void)
     // for procs with no data, broadcast the # of comps so they can
     // still particpate in the global sum.
     ncomps = UnifyMaximumValue(ncomps);
-    if(sums.size() == 0)
-    {
-        ncomps = 1;
-        sums = vector<double>(ncomps,0.0);
-    }
 
-    doubleVector final_sums(ncomps);
-    SumDoubleArrayAcrossAllProcessors(&sums[0], &final_sums[0], ncomps);
-    sums = final_sums;
+    // Allocate an input_sum array to contain the sum vector. We allocate it
+    // using ncomps+1 elements because ncomps is the global size agreed upon
+    // by all processors for this exchange. The +1 is done in case ncomps is
+    // zero, which can happen. We fill the potentially extra slots with zeroes
+    // so they will not contribute to the sum.
+    double *input_sum = new double[ncomps + 1];
+    memset(input_sum, 0, sizeof(double) * (ncomps + 1));
+    for(size_t i = 0; i < sums.size(); ++i)
+        input_sum[i] = sums[i];
+
+    // Allocate a final_sums array to contain the final sum. We add 1 in case
+    // ncomps==0
+    double *final_sum = new double[ncomps + 1];
+    memset(final_sum, 0, sizeof(double) * (ncomps + 1));
+
+    // Element-wise sum across all processors.
+    SumDoubleArrayAcrossAllProcessors(input_sum, final_sum, ncomps);
+
+    // Store the final sum back into sums.
+    sums.clear();
+    for(int i = 0; i < ncomps; ++i)
+        sums.push_back(final_sum[i]);
+
+    delete [] input_sum;
+    delete [] final_sum;
 
     if (CalculateAverage())
     {
