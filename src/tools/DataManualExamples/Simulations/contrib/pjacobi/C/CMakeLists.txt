@@ -11,8 +11,8 @@ solvers.c
 pjacobi.c
 )
 
-ADD_EXECUTABLE(pjacobi ${C_SRCS} PJacobi_InSitu.c)
-TARGET_LINK_LIBRARIES(pjacobi simV2.a dl m)
+ADD_EXECUTABLE(pjacobi ${C_SRCS})
+TARGET_LINK_LIBRARIES(pjacobi m)
 SET_PROPERTY(TARGET pjacobi APPEND PROPERTY COMPILE_FLAGS "-DPARALLEL")
 
 ADD_EXECUTABLE(pjacobi_visit ${C_SRCS} PJacobi_InSitu.c)
