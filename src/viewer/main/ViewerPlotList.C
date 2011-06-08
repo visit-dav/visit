@@ -6982,7 +6982,7 @@ ViewerPlotList::UpdateWindow(const intVector &somePlots, bool immediateUpdate)
             {
                 if (errorCount == 0)
                 {
-                    Error(tr("The plot dimensions do not match."));
+                    Error(tr("The plot spatial dimensions do not match, 2D vs 3D. Plots needs to be in windows with similar spatial dimensions."));
                     ++errorCount;
                 }
 
