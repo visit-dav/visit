@@ -38,7 +38,7 @@
 
 #include "NamedSelectionRPC.h"
 #include <DebugStream.h>
-
+#include <ImproperUseException.h>
 
 // ****************************************************************************
 //  Constructor: NamedSelectionRPC::NamedSelectionRPC
@@ -51,9 +51,13 @@
 //  Programmer: Hank Childs
 //  Creation:   January 29, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Tue Dec 14 12:05:51 PST 2010
+//    I added selection properties and summary return value.
+//
 // ****************************************************************************
 
-NamedSelectionRPC::NamedSelectionRPC() : BlockingRPC("is*si")
+NamedSelectionRPC::NamedSelectionRPC() : NonBlockingRPC("is*sia", &summary)
 {
 }
 
@@ -75,66 +79,129 @@ NamedSelectionRPC::~NamedSelectionRPC()
 }
 
 // ****************************************************************************
-//  Method: NamedSelectionRPC::operator()
+// Method: ApplyNamedSelection
 //
-//  Purpose: 
-//    This is the RPC's invocation method.
+// Purpose: 
+//   Invocation method for apply.
 //
-//  Programmer: Hank Childs
-//  Creation:   January 29, 2009
+// Arguments:
+//   ids     : The plot names of the plots to which we're applying a selection.
+//   selName : The nameof the selection to apply.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 12:09:51 PST 2010
 //
 // ****************************************************************************
 
 void
-NamedSelectionRPC::operator()(NamedSelectionType t, 
-                              const std::vector<std::string> &ids,
-                              const std::string &n)
+NamedSelectionRPC::ApplyNamedSelection(const std::vector<std::string> &ids, const std::string &selName)
 {
     SetPlotNames(ids);
-    SetSelectionName(n);
-    SetNamedSelectionType(t);
+    SetSelectionName(selName);
+    SetNamedSelectionOperation(NS_APPLY);
 
     Execute();
 }
 
 // ****************************************************************************
-//  Method: NamedSelectionRPC::operator()
+// Method: ApplyNamedSelection
 //
-//  Purpose: 
-//    This is the RPC's invocation method.
+// Purpose: 
+//   Invocation method for apply.
 //
-//  Programmer: Hank Childs
-//  Creation:   February 2, 2009
+// Arguments:
+//   id     : The network id of the plot that creates our selection.
+//   p      : The selection properties.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 12:09:51 PST 2010
 //
 // ****************************************************************************
 
-void
-NamedSelectionRPC::operator()(NamedSelectionType t, int id,
-                              const std::string &n)
+const SelectionSummary &
+NamedSelectionRPC::CreateNamedSelection(int id, const SelectionProperties &p)
 {
     SetPlotID(id);
-    SetSelectionName(n);
-    SetNamedSelectionType(t);
+    SetSelectionName(p.GetName());
+    SetSelectionProperties(p);
+    SetNamedSelectionOperation(NS_CREATE);
+
+    Execute();
+
+    // If the RPC returned an error, throw an exception.
+    if(GetReply()->GetStatus() == error)
+    {
+        EXCEPTION1(ImproperUseException, GetReply()->Message());
+    }
+
+    return summary;
+}
+
+// ****************************************************************************
+// Method: DeleteNamedSelection
+//
+// Purpose: 
+//   Invocation method for delete selection.
+//
+// Arguments:
+//   selName : The name of the selection to delete.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 12:09:51 PST 2010
+//
+// ****************************************************************************
+
+void
+NamedSelectionRPC::DeleteNamedSelection(const std::string &selName)
+{
+    SetSelectionName(selName);
+    SetNamedSelectionOperation(NS_DELETE);
 
     Execute();
 }
 
 // ****************************************************************************
-//  Method: NamedSelectionRPC::operator()
+// Method: LoadNamedSelection
 //
-//  Purpose: 
-//    This is the RPC's invocation method.
+// Purpose: 
+//   Invocation method for load selection.
 //
-//  Programmer: Hank Childs
-//  Creation:   January 29, 2009
+// Arguments:
+//   selName : The name of the selection to load.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 12:09:51 PST 2010
 //
 // ****************************************************************************
 
 void
-NamedSelectionRPC::operator()(NamedSelectionType t, const std::string &n)
+NamedSelectionRPC::LoadNamedSelection(const std::string &selName)
 {
-    SetSelectionName(n);
-    SetNamedSelectionType(t);
+    SetSelectionName(selName);
+    SetNamedSelectionOperation(NS_LOAD);
+
+    Execute();
+}
+
+// ****************************************************************************
+// Method: SaveNamedSelection
+//
+// Purpose: 
+//   Invocation method for save selection.
+//
+// Arguments:
+//   selName : The name of the selection to save.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 12:09:51 PST 2010
+//
+// ****************************************************************************
+
+void
+NamedSelectionRPC::SaveNamedSelection(const std::string &selName)
+{
+    SetSelectionName(selName);
+    SetNamedSelectionOperation(NS_SAVE);
 
     Execute();
 }
@@ -150,6 +217,10 @@ NamedSelectionRPC::operator()(NamedSelectionType t, const std::string &n)
 //  Programmer: Hank Childs
 //  Creation:   January 29, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Tue Dec 14 12:05:07 PST 2010
+//    I added selection properties.
+//
 // ****************************************************************************
 
 void
@@ -158,7 +229,8 @@ NamedSelectionRPC::SelectAll()
     Select(0, (void*)&plotId);
     Select(1, (void*)&plotNames);
     Select(2, (void*)&selName);
-    Select(3, (void*)&selType);
+    Select(3, (void*)&selOperation);
+    Select(4, (void*)&properties);
 }
 
 
@@ -220,7 +292,7 @@ NamedSelectionRPC::SetSelectionName(const std::string &n)
 
 
 // ****************************************************************************
-//  Method: NamedSelectionRPC::SetNamedSelectionType
+//  Method: NamedSelectionRPC::SetNamedSelectionOperation
 //
 //  Purpose: 
 //    This sets the selection type.
@@ -231,10 +303,29 @@ NamedSelectionRPC::SetSelectionName(const std::string &n)
 // ****************************************************************************
 
 void
-NamedSelectionRPC::SetNamedSelectionType(NamedSelectionType t)
+NamedSelectionRPC::SetNamedSelectionOperation(NamedSelectionOperation t)
 {
-    selType = t;
-    Select(3, (void*)&selType);
+    selOperation = t;
+    Select(3, (void*)&selOperation);
 }
 
 
+// ****************************************************************************
+// Method: NamedSelectionRPC::SetSelectionProperties
+//
+// Purpose: 
+//   Set the selection properties.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 12:04:33 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+NamedSelectionRPC::SetSelectionProperties(const SelectionProperties &p)
+{
+    properties = p;
+    Select(4, (void*)&properties);
+}

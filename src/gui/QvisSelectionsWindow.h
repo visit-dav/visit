@@ -41,18 +41,29 @@
 #include <gui_exports.h>
 #include <QvisPostableWindowSimpleObserver.h>
 #include <AttributeSubject.h>
+#include <SelectionProperties.h>
 
 // Forward declarations
-class QPushButton;
+class QButtonGroup;
 class QCheckBox;
+class QComboBox;
 class QGroupBox;
 class QLabel;
 class QListWidget;
+class QPushButton;
+class QRadioButton;
+class QSpinBox;
+class QTableWidget;
 class QTabWidget;
+
+class QvisHistogram;
+class QvisVariableButton;
+class QvisVariableListLimiter;
 
 class PlotList;
 class SelectionList;
 class EngineList;
+class WindowInformation;
 
 // ****************************************************************************
 // Class: QvisSelectionsWindow
@@ -82,15 +93,28 @@ public:
     void ConnectSelectionList(SelectionList *);
     void ConnectPlotList(PlotList *);
     void ConnectEngineList(EngineList *);
+    void ConnectWindowInformation(WindowInformation *);
 
     virtual void SubjectRemoved(Subject *);
+
 public  slots:
     void highlightSelection(const QString &);
 protected:
     void    UpdateWindow(bool doAll);
+    void    UpdateSelectionProperties();
+    void    UpdateSelectionSummary();
+    void    UpdateHistogram(const double *values, int nvalues,
+                            int minBin, int maxBin, bool useBins);
+    void    UpdateHistogram();
+    void    UpdateHistogramTitle();
+    void    UpdateMinMaxBins(bool, bool, bool);
     void    Apply(bool forceUpdate = false);
+    void    GetCurrentValues(int);
 
     QString GetLoadHost() const;
+
+    void    NewEnabled(QString &, QString &);
+
 private slots:
     void    automaticallyApplyChanged(bool val);
     void    UpdateWindowSingleItem();
@@ -100,12 +124,29 @@ private slots:
     void    loadSelection();
     void    updateSelection();
 
-    void    nameTextChanged(const QString &);
+    void    cumulativeQueryClicked(bool);
+    void    addVariable(const QString &);
+    void    setVariableRange(const QString &,float,float);
+    void    deleteVariable(const QString &);
+    void    initializeVariableList();
+    void    processTimeMin();
+    void    processTimeMax();
+    void    processTimeStride();
+
+    void    histogramTypeChanged(int value);
+    void    summationChanged(int);
+    void    histogramVariableChanged(int);
+    void    histogramNumBinsChanged(int);
+    void    histogramStartChanged(int);
+    void    histogramEndChanged(int);
 
 private:
-    QWidget *CreateRangeTab(QWidget *parent);
-    QWidget *CreateHistogramTab(QWidget *parent);
+    QWidget *CreatePropertiesTab(QWidget *parent);
     QWidget *CreateStatisticsTab(QWidget *parent);
+
+    QWidget *CreateCQRangeControls(QWidget *parent);
+    QWidget *CreateCQHistogramControls(QWidget *parent);
+    QGroupBox *CreateTimeControls(QWidget *parent);
 
     // Widgets and layouts.
     QCheckBox          *automaticallyApply;
@@ -116,15 +157,47 @@ private:
     QPushButton        *saveButton;
     QPushButton        *updateButton;
 
-    QLineEdit          *nameEdit;
-    QLabel             *nameEditLabel;
-    QLabel             *plotNameLabel;
     QTabWidget         *editorTabs;
+
+    QLabel             *plotNameLabel;
+
+    QGroupBox               *cqControls;
+    QTabWidget              *cqTabs;
+    QvisVariableButton      *cqVarButton;
+    QPushButton             *cqInitializeVarButton;
+    QvisVariableListLimiter *cqLimits;
+    QGroupBox               *cqTimeGroupBox;
+    QLineEdit               *cqTimeMin;
+    QLineEdit               *cqTimeMax;
+    QLineEdit               *cqTimeStride;
+
+    QvisHistogram           *cqHistogram;
+    QLabel                  *cqHistogramTitle;
+    QButtonGroup            *cqHistogramType;
+    QRadioButton            *cqHistogramVariableButton;
+    QComboBox               *cqHistogramVariable;
+    QLabel                  *cqHistogramNumBinsLabel;
+    QSpinBox                *cqHistogramNumBins;
+    QLabel                  *cqHistogramMinLabel;
+    QSpinBox                *cqHistogramMin;
+    QLabel                  *cqHistogramMaxLabel;
+    QSpinBox                *cqHistogramMax;
+    QComboBox               *cqSummation;
+
+    QTableWidget            *statVars;
+    QLabel                  *statSelectedCells;
+    QLabel                  *statTotalCells;
 
     // State information
     SelectionList      *selectionList;
     PlotList           *plotList;
     EngineList         *engineList;
+    WindowInformation  *windowInformation;
+
+    bool                selectionPropsValid;
+    SelectionProperties selectionProps;
+
+    int                 selectionCounter;
 };
 
 #endif

@@ -61,6 +61,24 @@
 class STATE_API SelectionProperties : public AttributeSubject
 {
 public:
+    enum SelectionType
+    {
+        BasicSelection,
+        CumulativeQuerySelection
+    };
+    enum CombinationType
+    {
+        CombineAnd,
+        CombineOr
+    };
+    enum HistogramType
+    {
+        HistogramTime,
+        HistogramMatches,
+        HistogramID,
+        HistogramVariable
+    };
+
     // These constructors are for objects of this class
     SelectionProperties();
     SelectionProperties(const SelectionProperties &obj);
@@ -87,28 +105,72 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectName();
-    void SelectOriginatingPlot();
+    void SelectSource();
+    void SelectVariables();
+    void SelectVariableMins();
+    void SelectVariableMaxs();
 
     // Property setting methods
     void SetName(const std::string &name_);
-    void SetOriginatingPlot(const std::string &originatingPlot_);
-    void SetRangeProperty(int rangeProperty_);
-    void SetHistogramProperty(int histogramProperty_);
-    void SetStatisticsProperty(int statisticsProperty_);
+    void SetSource(const std::string &source_);
+    void SetSelectionType(SelectionType selectionType_);
+    void SetVariables(const stringVector &variables_);
+    void SetVariableMins(const doubleVector &variableMins_);
+    void SetVariableMaxs(const doubleVector &variableMaxs_);
+    void SetTimeEnabled(bool timeEnabled_);
+    void SetMinTimeState(int minTimeState_);
+    void SetMaxTimeState(int maxTimeState_);
+    void SetTimeStateStride(int timeStateStride_);
+    void SetCombineRule(CombinationType combineRule_);
+    void SetHistogramType(HistogramType histogramType_);
+    void SetHistogramNumBins(int histogramNumBins_);
+    void SetHistogramStartBin(int histogramStartBin_);
+    void SetHistogramEndBin(int histogramEndBin_);
+    void SetHistogramVariableIndex(int histogramVariableIndex_);
 
     // Property getting methods
-    const std::string &GetName() const;
-          std::string &GetName();
-    const std::string &GetOriginatingPlot() const;
-          std::string &GetOriginatingPlot();
-    int               GetRangeProperty() const;
-    int               GetHistogramProperty() const;
-    int               GetStatisticsProperty() const;
+    const std::string  &GetName() const;
+          std::string  &GetName();
+    const std::string  &GetSource() const;
+          std::string  &GetSource();
+    SelectionType      GetSelectionType() const;
+    const stringVector &GetVariables() const;
+          stringVector &GetVariables();
+    const doubleVector &GetVariableMins() const;
+          doubleVector &GetVariableMins();
+    const doubleVector &GetVariableMaxs() const;
+          doubleVector &GetVariableMaxs();
+    bool               GetTimeEnabled() const;
+    int                GetMinTimeState() const;
+    int                GetMaxTimeState() const;
+    int                GetTimeStateStride() const;
+    CombinationType    GetCombineRule() const;
+    HistogramType      GetHistogramType() const;
+    int                GetHistogramNumBins() const;
+    int                GetHistogramStartBin() const;
+    int                GetHistogramEndBin() const;
+    int                GetHistogramVariableIndex() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
+    // Enum conversion functions
+    static std::string SelectionType_ToString(SelectionType);
+    static bool SelectionType_FromString(const std::string &, SelectionType &);
+protected:
+    static std::string SelectionType_ToString(int);
+public:
+    static std::string CombinationType_ToString(CombinationType);
+    static bool CombinationType_FromString(const std::string &, CombinationType &);
+protected:
+    static std::string CombinationType_ToString(int);
+public:
+    static std::string HistogramType_ToString(HistogramType);
+    static bool HistogramType_FromString(const std::string &, HistogramType &);
+protected:
+    static std::string HistogramType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -116,28 +178,53 @@ public:
     virtual std::string               GetFieldTypeName(int index) const;
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
+    // User-defined methods
+    const std::string &GetOriginatingPlot() const;
+    void SetOriginatingPlot(const std::string &);
 
     // IDs that can be used to identify fields in case statements
     enum {
         ID_name = 0,
-        ID_originatingPlot,
-        ID_rangeProperty,
-        ID_histogramProperty,
-        ID_statisticsProperty,
+        ID_source,
+        ID_selectionType,
+        ID_variables,
+        ID_variableMins,
+        ID_variableMaxs,
+        ID_timeEnabled,
+        ID_minTimeState,
+        ID_maxTimeState,
+        ID_timeStateStride,
+        ID_combineRule,
+        ID_histogramType,
+        ID_histogramNumBins,
+        ID_histogramStartBin,
+        ID_histogramEndBin,
+        ID_histogramVariableIndex,
         ID__LAST
     };
 
 private:
-    std::string name;
-    std::string originatingPlot;
-    int         rangeProperty;
-    int         histogramProperty;
-    int         statisticsProperty;
+    std::string  name;
+    std::string  source;
+    int          selectionType;
+    stringVector variables;
+    doubleVector variableMins;
+    doubleVector variableMaxs;
+    bool         timeEnabled;
+    int          minTimeState;
+    int          maxTimeState;
+    int          timeStateStride;
+    int          combineRule;
+    int          histogramType;
+    int          histogramNumBins;
+    int          histogramStartBin;
+    int          histogramEndBin;
+    int          histogramVariableIndex;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SELECTIONPROPERTIES_TMFS "ssiii"
+#define SELECTIONPROPERTIES_TMFS "ssis*d*d*biiiiiiiii"
 
 #endif

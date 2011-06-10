@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+  <Attribute name="SelectionSummary" purpose="Contains attributes for a selection" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="name" label="Name of the selection" type="string">
+    </Field>
+    <Field name="variables" label="Variables" type="attVector" subtype="SelectionVariableSummary">
+    </Field>
+    <Field name="cellCount" label="Count of cells in selection" type="int">
+       0
+    </Field>
+    <Field name="totalCellCount" label="Total cell count in dataset" type="int">
+       0
+    </Field>
+    <Field name="histogramValues" label="A vector of values for the histogram" type="doubleVector">
+    </Field>
+    <Field name="histogramMinBin" label="Minimum value on the histgram X axis" type="double">
+       0.
+    </Field>
+    <Field name="histogramMaxBin" label="Maximum value on the histogram X axis" type="double">
+       1.
+    </Field>
+  </Attribute>

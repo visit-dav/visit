@@ -35,9 +35,15 @@
 # DAMAGE.
 #
 # Modifications:
-#
 #  Hank Childs, Thu Jul 22 09:55:03 PDT 2010
 #  Add attributes for multi-window saves.
+#
+#  Kathleen Bonnell, Wed Apr 20 12:10:37 MST 2011
+#  Allow visitfrontend to be built on windows.
+#
+#  Brad Whitlock, Tue Dec 14 16:25:32 PST 2010
+#  Add PySelectionProperties, PySelectionList, PySelectionSummary,
+#  PySelectionVariableSummary.
 #
 #  Kathleen Bonnell, Wed Apr 20 12:10:37 MST 2011
 #  Allow visitfrontend to be built on windows.
@@ -136,6 +142,10 @@ visitpy/PyRenderingAttributes.C
 visitpy/PySaveWindowAttributes.C 
 visitpy/PySaveSubWindowAttributes.C 
 visitpy/PySaveSubWindowsAttributes.C 
+visitpy/PySelectionProperties.C
+visitpy/PySelectionSummary.C
+visitpy/PySelectionVariableSummary.C
+visitpy/PySelectionList.C
 visitpy/PyView2DAttributes.C 
 visitpy/PyView3DAttributes.C 
 visitpy/PyViewAttributes.C 

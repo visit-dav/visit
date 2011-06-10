@@ -44,11 +44,11 @@
 #include <vector>
 
 #include <avtDataObject.h>
-
+#include <SelectionProperties.h>
 #include <visitstream.h>
 
 class     avtNamedSelection;
-
+class     avtNamedSelectionExtension;
 
 // ****************************************************************************
 //  Class: avtNamedSelectionManager
@@ -69,6 +69,15 @@ class     avtNamedSelection;
 //    loading of selections to help with fault tolerance, save/restore 
 //    sessions, etc.
 //
+//    Brad Whitlock, Mon Dec 13 16:15:41 PST 2010
+//    I added an avtNamedSelectionExtension argument to CreateNamedSelection,
+//    which lets us pass in an object that can perform additional setup for a
+//    selection based on its properties. This class manages named selections,
+//    which are the actual resulting data that is used to restrict selections.
+//    I also added selection properties which describe how the selection was 
+//    defined. These properties can be queried in the event that we need to
+//    create a selection using some other method.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelectionManager
@@ -83,16 +92,23 @@ class PIPELINE_API avtNamedSelectionManager
     avtNamedSelection *
                   GetNamedSelection(const std::string &);
 
-    void          CreateNamedSelection(avtDataObject_p, const std::string &);
+    void          CreateNamedSelection(avtDataObject_p,
+                                       const SelectionProperties &,
+                                       avtNamedSelectionExtension *);
 
     void          DeleteNamedSelection(const std::string &, 
                                        bool expectThisSelToBeThere = true);
     bool          LoadNamedSelection(const std::string &, bool = false);
     void          SaveNamedSelection(const std::string &, bool = false);
 
+    const SelectionProperties *GetSelectionProperties(const std::string &selName) const;
+
   protected:
     static avtNamedSelectionManager    *instance;
     std::vector<avtNamedSelection *>    selList;
+
+    void          AddSelectionProperties(const SelectionProperties &);
+    std::vector<SelectionProperties>    properties;
 
   private:
     // These methods are defined to prevent accidental use of bitwise copy

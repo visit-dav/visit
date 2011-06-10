@@ -36,17 +36,23 @@
 *
 *****************************************************************************/
 
-#include <DebugStream.h>
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
-#include <GUIBase.h>
-#include <MessageAttributes.h>
-#include <StatusSubject.h>
-#include <ViewerProxy.h>
+#include <DebugStream.h>
 #include <FileServerList.h>
+#include <GUIBase.h>
 #include <GetMetaDataException.h>
+#include <MessageAttributes.h>
+#include <OperatorPluginInfo.h>
+#include <Plot.h>
+#include <PlotList.h>
+#include <PlotPluginInfo.h>
+#include <StatusSubject.h>
 #include <UnicodeHelper.h>
+#include <ViewerProxy.h>
+#include <ViewerState.h>
 #include <WindowInformation.h>
+
 
 #include <SimpleObserver.h>
 
@@ -1582,6 +1588,60 @@ GUIBase::QStringToInts(const QString &str, intVector &vals, int maxVals)
                 vals.push_back(0);
         }
         retval = okay;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: GUIBase::GetPlotDescription
+//
+// Purpose: 
+//   Return a "nice" name for a plot from its plot name (e.g. Plot0000).
+//
+// Arguments:
+//   plotName : The plot's unique plot name.
+//
+// Returns:    A nicer description than the plot name.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun  1 12:10:33 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+GUIBase::GetPlotDescription(const QString &plotName) const
+{
+    std::string pName(plotName.toStdString());
+    QString retval;
+    PlotPluginManager *pMgr = GetViewerProxy()->GetPlotPluginManager();
+    OperatorPluginManager *oMgr = GetViewerProxy()->GetOperatorPluginManager();
+    for(int i = 0; i < GetViewerState()->GetPlotList()->GetNumPlots(); ++i)
+    {
+        const Plot &plot = GetViewerState()->GetPlotList()->GetPlots(i);
+        if(plot.GetPlotName() == pName)
+        {
+            CommonPlotPluginInfo *plotInfo = pMgr->GetCommonPluginInfo(
+                pMgr->GetEnabledID(plot.GetPlotType()));
+            retval += QString(plotInfo->GetName());
+            retval += " - ";
+            for(int j = 0; j < plot.GetNumOperators(); ++j)
+            {
+                CommonOperatorPluginInfo *info = oMgr->GetCommonPluginInfo(
+                oMgr->GetEnabledID(plot.GetOperator(plot.GetNumOperators() - 1 - j)));
+                retval += info->GetName();
+                retval += "(";
+            }
+            retval += plot.GetPlotVar().c_str();
+            for(int j = 0; j < plot.GetNumOperators(); ++j)
+                retval += ")";
+
+            break;
+        }
     }
 
     return retval;

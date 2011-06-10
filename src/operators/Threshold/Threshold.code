@@ -79,243 +79,6 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
 }
 
 
-Function: SupplyMissingDefaultsIfAppropriate
-Declaration: void SupplyMissingDefaultsIfAppropriate();
-Definition:
-// ****************************************************************************
-// Method: ThresholdAttributes::SupplyMissingDefaultsIfAppropriate
-//
-// Purpose: If attributes are set up for a single threshold variable, supply
-//          default values for any attribute values that are missing.
-//
-// Programmer: Mark Blair
-// Creation:   Thu Sep 28 12:07:05 PDT 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ThresholdAttributes::SupplyMissingDefaultsIfAppropriate()
-{
-    int totalEntryCount = 0;
-    
-    if (listedVarNames.size() > 1) return;
-    totalEntryCount += listedVarNames.size();
-        
-    if (zonePortions.size() > 1) return;
-    totalEntryCount += zonePortions.size();
-        
-    if (lowerBounds.size() > 1) return;
-    totalEntryCount += lowerBounds.size();
-        
-    if (upperBounds.size() > 1) return;
-    totalEntryCount += upperBounds.size();
-    
-    if ((totalEntryCount & 3) == 0) return;
-    
-    stringVector singleVarName;
-    intVector    singleZonePortion;
-    doubleVector singleLowerBound;
-    doubleVector singleUpperBound;
-    
-    if (listedVarNames.size() == 0)
-    {
-        singleVarName.push_back(std::string("default"));
-        SetListedVarNames(singleVarName);
-    }
-        
-    if (zonePortions.size() == 0)
-    {
-        singleZonePortion.push_back((int)PartOfZone);
-        SetZonePortions(singleZonePortion);
-    }
-        
-    if (lowerBounds.size() == 0)
-    {
-        singleLowerBound.push_back(-1e+37);
-        SetLowerBounds(singleLowerBound);
-    }
-        
-    if (upperBounds.size() == 0)
-    {
-        singleUpperBound.push_back(+1e+37);
-        SetUpperBounds(singleUpperBound);
-    }
-}
-
-
-Function: AttributesAreConsistent
-Declaration: bool AttributesAreConsistent() const;
-Definition:
-// ****************************************************************************
-// Method: ThresholdAttributes::AttributesAreConsistent
-//
-// Purpose: Returns true only if (1) all vector attributes are the same length
-//          and (2) the index of the currently displayable variable information
-//          in the Threshold GUI window is in range.
-//
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar  7 13:25:00 PST 2006
-//
-// Modifications:
-//   
-//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
-//   Now accommodates an empty list of threshold variables.
-//
-//   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
-//   Rewritten to support new Threshold GUI; no more shown variable.
-//
-// ****************************************************************************
-
-bool
-ThresholdAttributes::AttributesAreConsistent() const
-{
-    size_t varListSize = listedVarNames.size();
-    
-    if ((zonePortions.size() != varListSize) ||
-        (lowerBounds.size()  != varListSize) ||
-        (upperBounds.size()  != varListSize))
-    {
-        return false;
-    }
-    
-    return true;
-}
-
-
-Function: ForceAttributeConsistency
-Declaration: void ForceAttributeConsistency();
-Definition:
-// ****************************************************************************
-// Method: ThresholdAttributes::ForceAttributeConsistency
-//
-// Purpose: Forces Threshold attributes to be consistent.  Attributes can be
-//          inconsistent, for instance, if the user has specified an invalid
-//          combination of them in the CLI.  If current attributes are in fact
-//          inconsistent, this is recorded in the debug log.
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar 13 19:51:29 PDT 2007
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ThresholdAttributes::ForceAttributeConsistency()
-{
-    size_t varListSize = listedVarNames.size();
-    size_t varNum;
-    double boundValue;
-    bool consistent = ((zonePortions.size() == varListSize) &&
-                       ( lowerBounds.size() == varListSize) &&
-                       ( upperBounds.size() == varListSize));
-                       
-    if (!consistent)
-    {
-        if (zonePortions.size() > varListSize) zonePortions.resize(varListSize);
-        if ( lowerBounds.size() > varListSize)  lowerBounds.resize(varListSize);
-        if ( upperBounds.size() > varListSize)  upperBounds.resize(varListSize);
-
-        for (varNum = 0; varNum < varListSize; varNum++ )
-        {
-            if (zonePortions.size() < varListSize)
-                zonePortions.push_back((int)ThresholdAttributes::PartOfZone);
-            if (lowerBounds.size() < varListSize)
-                lowerBounds.push_back(-1e+37);
-            if (upperBounds.size() < varListSize)
-                upperBounds.push_back(+1e+37);
-        }
-    }
-
-    for (varNum = 0; varNum < varListSize; varNum++ )
-    {
-        if (lowerBounds[varNum] > upperBounds[varNum])
-        {
-            consistent = false;
-                
-            boundValue          = lowerBounds[varNum];
-            lowerBounds[varNum] = upperBounds[varNum];
-            upperBounds[varNum] = boundValue;
-        }
-    }
-    
-    if (!consistent && (varListSize > 0))
-    {
-        if (defaultVarName == std::string("default"))
-            defaultVarName = listedVarNames[0];
-    }
-
-    if (!consistent)
-    {
-        debug3 << "Threshold operator attributes are inconsistent; "
-               << "corrections will be applied." << endl;
-        SelectAll();
-    }
-}
-
-
-Function: SwitchDefaultVariableNameToTrueName
-Declaration: void SwitchDefaultVariableNameToTrueName();
-Definition:
-// ****************************************************************************
-// Method: ThresholdAttributes::SwitchDefaultVariableNameToTrueName
-//
-// Purpose: Replaces the anonymous "default" variable name with its true name
-//          if the default variable is scalar.
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar  7 13:25:00 PST 2006
-//
-// Modifications:
-//   
-//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
-//   Deletes default variable from threshold variable list if not scalar.
-//
-//   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
-//   Rewritten to support new Threshold GUI; no more "shown variable".
-//
-//   Mark Blair, Tue Sep 18 17:06:28 PDT 2007
-//   No longer deletes variable from threshold variable list if not scalar.
-//   Also changed method name to reflect this.
-//
-// ****************************************************************************
-
-void
-ThresholdAttributes::SwitchDefaultVariableNameToTrueName()
-{
-    size_t varPosition;
-    bool changedTheList;
-    std::string listedVarName;
-
-    do
-    {
-        for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
-        {
-            listedVarName = listedVarNames[varPosition];
-
-            if (listedVarName == std::string("default")) break;
-            if (listedVarName == defaultVarName) break;
-        }
-        
-        changedTheList = false;
-    
-        if (varPosition < listedVarNames.size())
-        {
-            if (listedVarName == std::string("default"))
-            {
-                listedVarNames[varPosition] = defaultVarName;
-                Select(1, (void *)&listedVarNames);
-
-                changedTheList = true;
-            }
-        }
-    }
-    while (changedTheList);
-}
-
 Target: xml2info
 Function: ThresholdViewerPluginInfo::InitializeOperatorAtts
 Declaration: virtual void ThresholdViewerPluginInfo::InitializeOperatorAtts(...);
@@ -372,4 +135,27 @@ ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     
     initAtts->SetDefaultVarName(plot->GetVariableName());
     initAtts->SetDefaultVarIsScalar(plot->GetVarType() == AVT_SCALAR_VAR);
+}
+
+Target: xml2info
+Function: ThresholdEnginePluginInfo::AllocAvtPluginFilter
+Declaration: virtual avtPluginFilter *AllocAvtPluginFilter();
+Definition:
+// ****************************************************************************
+//  Method: ThresholdEnginePluginInfo::AllocAvtPluginFilter
+//
+//  Purpose:
+//    Return a pointer to a newly allocated avtPluginFilter.
+//
+//  Returns:    A pointer to the newly allocated avtPluginFilter.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Dec 10 16:40:13 PST 2010
+//
+// ****************************************************************************
+#include <avtThresholdPluginFilter.h>
+avtPluginFilter *
+ThresholdEnginePluginInfo::AllocAvtPluginFilter()
+{
+    return new avtThresholdPluginFilter;
 }

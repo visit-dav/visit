@@ -45,6 +45,7 @@
 #include <NetworkManager.h>
 #include <DataNetwork.h>
 #include <ClonedDataNetwork.h>
+#include <CumulativeQueryNamedSelectionExtension.h>
 #include <DebugStream.h>
 #include <avtDatabaseFactory.h>
 #include <LoadBalancer.h>
@@ -67,6 +68,7 @@
 #include <AnnotationObjectList.h>
 #include <AnnotationAttributes.h>
 #include <PickAttributes.h>
+#include <SelectionProperties.h>
 #include <VisualCueInfo.h>
 #include <VisualCueList.h>
 #include <avtApplyDataBinningExpression.h>
@@ -75,6 +77,7 @@
 #include <avtDebugDumpOptions.h>
 #include <avtExtents.h>
 #include <avtNullData.h>
+#include <avtDatabaseMetaData.h>
 #include <avtDataObjectQuery.h>
 #include <avtMultipleInputQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
@@ -88,6 +91,7 @@
 #include <avtActualNodeCoordsQuery.h>
 #include <avtActualZoneCoordsQuery.h>
 #include <avtPickQuery.h>
+#include <avtNamedSelection.h>
 #include <avtNodePickQuery.h>
 #include <avtParallel.h>
 #include <avtPickByNodeQuery.h>
@@ -1348,7 +1352,7 @@ NetworkManager::EndNetwork(int windowID)
         workingNetnodeList.pop_back();
         filt->GetInputNodes().push_back(n);
 
-        // Push the ExpressionEvaluator onto the working list.
+        // Push the NamedSelection filter onto the working list.
         workingNetnodeList.push_back(filt);
 
         workingNet->AddNode(filt);
@@ -3724,7 +3728,6 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
     ENDTRY
 }
 
-
 // ****************************************************************************
 //  Method:  NetworkManager::CreateNamedSelection
 //
@@ -3733,41 +3736,135 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 //
 //  Arguments:
 //    id         The network to use.
-//    selName    The name of the selection.
+//    props      The new selection properties.
 //
 //  Programmer:  Hank Childs
 //  Creation:    January 30, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Mon Dec 13 15:22:00 PST 2010
+//    I added support for cumulative query selections.
+//
 // ****************************************************************************
 
-void
-NetworkManager::CreateNamedSelection(int id, const std::string &selName)
+SelectionSummary
+NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
 {
-    if (id >= networkCache.size())
+    const char *mName = "NetworkManager::CreateNamedSelection: ";
+    avtExpressionEvaluatorFilter *f = NULL;
+    avtDataObject_p dob;
+
+    debug1 << mName << "selection source " << props.GetSource() << endl;
+
+    if(id < 0)
     {
-        debug1 << "Internal error:  asked to use network ID (" << id 
-               << ") >= num saved networks ("
-               << networkCache.size() << ")" << endl;
-        EXCEPTION0(ImproperUseException);
+        // We're going to assume that the props.source is a database name.
+        int ts = 0;
+        NetnodeDB *netDB = GetDBFromCache(props.GetSource(), ts);
+        if(netDB != NULL)
+        {
+            // Try and determine a suitable variable to use to start our pipeline.
+            std::string var;
+            if(props.GetSelectionType() == SelectionProperties::CumulativeQuerySelection)
+            {
+                if(!props.GetVariables().empty())
+                    var = props.GetVariables()[0];
+            }
+            if(var.empty())
+            {
+                // We had no variables. Try and pick one using this heuristic. Most
+                // of the time the user would have been doing CQ and we won't get here.
+                TRY
+                {
+                    avtDatabaseMetaData *md = netDB->GetDB()->GetMetaData(0);
+                    if(md->GetNumScalars() > 0)
+                        var = md->GetScalars(0).name;
+                    if(var.empty() && md->GetNumVectors() > 0)
+                        var = md->GetVectors(0).name;
+                    if(var.empty() && md->GetNumTensors() > 0)
+                        var = md->GetTensors(0).name;
+                    if(var.empty() && md->GetNumArrays() > 0)
+                        var = md->GetArrays(0).name;
+                }
+                CATCH(VisItException)
+                {
+                }
+                ENDTRY
+            }
+
+            if(!var.empty())
+            {
+                // We're going to try and compute a selection without a plot so
+                // we need to create a pipeline to do the work. This section is a
+                // stripped down hybrid of StartNetwork and EndNetwork.
+                TRY
+                {
+                    std::string leaf = ParsingExprList::GetRealVariable(var);
+
+                    // Add an expression filter since we may need to do expressions.
+                    f = new avtExpressionEvaluatorFilter();
+                    f->SetInput(netDB->GetDB()->GetOutput(leaf.c_str(), ts));
+                    dob = f->GetOutput();
+
+                    // Create the data request and the contract.
+                    avtSILRestriction_p silr = new avtSILRestriction(netDB->GetDB()->
+                        GetSIL(ts, false));
+                    std::string mesh = netDB->GetDB()->GetMetaData(0)->MeshForVar(var);
+                    silr->SetTopSet(mesh.c_str());
+                    avtDataRequest_p dataRequest = new avtDataRequest(var.c_str(), ts, silr);
+                    int pipelineIndex = loadBalancer->AddPipeline(props.GetSource());
+                    avtContract_p contract = new avtContract(dataRequest, pipelineIndex);
+
+                    // Execute with an empty source so the contract gets put in the data
+                    // object's contract from last execute without really executing. This
+                    // will make the contract available for when we really create the
+                    // selection.
+                    avtDataObjectSource *oldSrc = dob->GetSource();
+                    dob->SetSource(NULL);
+                    dob->Update(contract);
+
+                    dob->SetSource(oldSrc);
+                }
+                CATCH(VisItException)
+                {
+                }
+                ENDTRY
+            }
+        }
+        else
+        {
+           debug1 << "Could not get database " << props.GetSource() << " from cache." << endl;
+        }
     }
+    else
+    {
+        // The selection source is a plot that has been executed.
+
+        if (id >= networkCache.size())
+        {
+            debug1 << "Internal error:  asked to use network ID (" << id 
+                   << ") >= num saved networks ("
+                   << networkCache.size() << ")" << endl;
+            EXCEPTION0(ImproperUseException);
+        }
  
-    if (networkCache[id] == NULL)
-    {
-        debug1 << "Asked to construct a named selection from a network "
-               << "that has already been cleared." << endl;
-        EXCEPTION0(ImproperUseException);
-    }
+        if (networkCache[id] == NULL)
+        {
+            debug1 << "Asked to construct a named selection from a network "
+                   << "that has already been cleared." << endl;
+            EXCEPTION0(ImproperUseException);
+        }
 
-    if (id != networkCache[id]->GetNetID())
-    {
-        debug1 << "Internal error: network at position[" << id << "] "
-               << "does not have same id (" << networkCache[id]->GetNetID()
-               << ")" << endl;
-        EXCEPTION0(ImproperUseException);
-    }
+        if (id != networkCache[id]->GetNetID())
+        {
+            debug1 << "Internal error: network at position[" << id << "] "
+                   << "does not have same id (" << networkCache[id]->GetNetID()
+                   << ")" << endl;
+            EXCEPTION0(ImproperUseException);
+        }
 
-    avtDataObject_p dob = 
-        networkCache[id]->GetPlot()->GetIntermediateDataObject();
+        dob = networkCache[id]->GetPlot()->GetIntermediateDataObject();
+    }
 
     if (*dob == NULL)
     {
@@ -3777,7 +3874,49 @@ NetworkManager::CreateNamedSelection(int id, const std::string &selName)
     }
 
     avtNamedSelectionManager *nsm = avtNamedSelectionManager::GetInstance();
-    nsm->CreateNamedSelection(dob, selName);
+    SelectionSummary summary;
+    if(props.GetSelectionType() == SelectionProperties::CumulativeQuerySelection &&
+       !props.GetVariables().empty())
+    {
+        CumulativeQueryNamedSelectionExtension CQ;
+
+        if(props.GetVariables().size() != props.GetVariableMins().size() ||
+           props.GetVariableMins().size() != props.GetVariableMaxs().size())
+        {
+            debug1 << "The cumulative query is malformed. It must have the same "
+                      "number of elements for each of the variables, mins, maxs lists."
+                   << endl;
+            EXCEPTION0(ImproperUseException);
+        }
+
+        // For cumulative queries, we need to set up additional processing that
+        // we can't do within the pipeline library so we do it here.
+        nsm->CreateNamedSelection(dob, props, &CQ);
+
+        // Get the filled out summary from the CQ object.
+        summary = CQ.GetSelectionSummary();
+    }
+    else
+    {
+        nsm->CreateNamedSelection(dob, props, NULL);
+    }
+
+    if(f != NULL)
+        delete f;
+
+    summary.SetName(props.GetName());
+
+    // Get the size of the selection.
+    avtNamedSelection *sel = nsm->GetNamedSelection(props.GetName());
+
+    if(sel != 0)
+    {
+        summary.SetCellCount(sel->GetSize());
+
+        // Some way to get the total number of cells for the summary...
+    }
+
+    return summary;
 }
 
 

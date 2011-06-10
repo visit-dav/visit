@@ -1867,6 +1867,11 @@ static std::string log_UpdateNamedSelectionRPC(ViewerRPC *rpc)
     return std::string("UpdateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
 }
 
+static std::string log_InitializeNamedSelectionVariablesRPC(ViewerRPC *rpc)
+{
+    return std::string("InitializeNamedSelectionVariables(\"") + rpc->GetStringArg1() + "\")\n"; 
+}
+
 static std::string log_SetPlotDescriptionRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
@@ -2483,6 +2488,9 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::UpdateNamedSelectionRPC:
         str = log_UpdateNamedSelectionRPC(rpc);
+        break;
+    case ViewerRPC::InitializeNamedSelectionVariablesRPC:
+        str = log_InitializeNamedSelectionVariablesRPC(rpc);
         break;
     case ViewerRPC::SetPlotDescriptionRPC:
         str = log_SetPlotDescriptionRPC(rpc);

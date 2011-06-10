@@ -38,8 +38,7 @@
 
 #ifndef THRESHOLDATTRIBUTES_H
 #define THRESHOLDATTRIBUTES_H
-#include <string>
-#include <AttributeSubject.h>
+#include <ThresholdOpAttributes.h>
 
 #include <AxisRestrictionAttributes.h>
 #include <DebugStream.h>
@@ -59,20 +58,9 @@
 //   
 // ****************************************************************************
 
-class ThresholdAttributes : public AttributeSubject
+class ThresholdAttributes : public ThresholdOpAttributes
 {
 public:
-    enum OutputMeshType
-    {
-        InputZones,
-        PointMesh
-    };
-    enum ZonePortion
-    {
-        EntireZone,
-        PartOfZone
-    };
-
     // These constructors are for objects of this class
     ThresholdAttributes();
     ThresholdAttributes(const ThresholdAttributes &obj);
@@ -98,50 +86,11 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectListedVarNames();
-    void SelectZonePortions();
-    void SelectLowerBounds();
-    void SelectUpperBounds();
-    void SelectDefaultVarName();
-
-    // Property setting methods
-    void SetOutputMeshType(int outputMeshType_);
-    void SetListedVarNames(const stringVector &listedVarNames_);
-    void SetZonePortions(const intVector &zonePortions_);
-    void SetLowerBounds(const doubleVector &lowerBounds_);
-    void SetUpperBounds(const doubleVector &upperBounds_);
-    void SetDefaultVarName(const std::string &defaultVarName_);
-    void SetDefaultVarIsScalar(bool defaultVarIsScalar_);
-
-    // Property getting methods
-    int                GetOutputMeshType() const;
-    const stringVector &GetListedVarNames() const;
-          stringVector &GetListedVarNames();
-    const intVector    &GetZonePortions() const;
-          intVector    &GetZonePortions();
-    const doubleVector &GetLowerBounds() const;
-          doubleVector &GetLowerBounds();
-    const doubleVector &GetUpperBounds() const;
-          doubleVector &GetUpperBounds();
-    const std::string  &GetDefaultVarName() const;
-          std::string  &GetDefaultVarName();
-    bool               GetDefaultVarIsScalar() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
-    // Enum conversion functions
-    static std::string OutputMeshType_ToString(OutputMeshType);
-    static bool OutputMeshType_FromString(const std::string &, OutputMeshType &);
-protected:
-    static std::string OutputMeshType_ToString(int);
-public:
-    static std::string ZonePortion_ToString(ZonePortion);
-    static bool ZonePortion_FromString(const std::string &, ZonePortion &);
-protected:
-    static std::string ZonePortion_ToString(int);
-public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -149,37 +98,13 @@ public:
     virtual std::string               GetFieldTypeName(int index) const;
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
-    // User-defined methods
-    void SupplyMissingDefaultsIfAppropriate();
-    bool AttributesAreConsistent() const;
-    void ForceAttributeConsistency();
-    void SwitchDefaultVariableNameToTrueName();
 
-    // IDs that can be used to identify fields in case statements
-    enum {
-        ID_outputMeshType = 0,
-        ID_listedVarNames,
-        ID_zonePortions,
-        ID_lowerBounds,
-        ID_upperBounds,
-        ID_defaultVarName,
-        ID_defaultVarIsScalar,
-        ID__LAST
-    };
 
 private:
-    int          outputMeshType;
-    stringVector listedVarNames;
-    intVector    zonePortions;
-    doubleVector lowerBounds;
-    doubleVector upperBounds;
-    std::string  defaultVarName;
-    bool         defaultVarIsScalar;
-
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define THRESHOLDATTRIBUTES_TMFS "is*i*d*d*sb"
+#define THRESHOLDATTRIBUTES_TMFS THRESHOLDOPATTRIBUTES_TMFS ""
 
 #endif

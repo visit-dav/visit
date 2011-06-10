@@ -42,6 +42,8 @@
 #include <engine_rpc_exports.h>
 
 #include <VisItRPC.h>
+#include <SelectionProperties.h>
+#include <SelectionSummary.h>
 
 // ****************************************************************************
 //  Class:  NamedSelectionRPC
@@ -56,11 +58,18 @@
 //    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
 //    Renamed NamedSelectionType enum names to compile on windows.
 //
+//    Brad Whitlock, Tue Dec 14 12:13:28 PST 2010
+//    I changed the invocation methods and added selection properties when we
+//    create a selection. I also added a SelectionSummary return value.
+//
+//    Brad Whitlock, Wed Jun  8 16:44:15 PDT 2011
+//    I made it be non-blocking.
+//
 // ****************************************************************************
 
-class ENGINE_RPC_API NamedSelectionRPC : public BlockingRPC
+class ENGINE_RPC_API NamedSelectionRPC : public NonBlockingRPC
 {
-  public:
+public:
     typedef enum
     {
         NS_APPLY       = 0,
@@ -68,7 +77,7 @@ class ENGINE_RPC_API NamedSelectionRPC : public BlockingRPC
         NS_DELETE,    /* 2 */
         NS_LOAD,      /* 3 */
         NS_SAVE       /* 4 */
-    } NamedSelectionType;
+    } NamedSelectionOperation;
 
     NamedSelectionRPC();
     virtual ~NamedSelectionRPC();
@@ -76,9 +85,11 @@ class ENGINE_RPC_API NamedSelectionRPC : public BlockingRPC
     virtual const std::string TypeName() const { return "NamedSelectionRPC"; }
 
     // Invocation method
-    void operator()(NamedSelectionType, const std::vector<std::string> &, const std::string &);
-    void operator()(NamedSelectionType, int, const std::string &);
-    void operator()(NamedSelectionType, const std::string &);
+    void ApplyNamedSelection(const std::vector<std::string> &ids, const std::string &selName);
+    const SelectionSummary &CreateNamedSelection(int id, const SelectionProperties &);
+    void DeleteNamedSelection(const std::string &selName);
+    void LoadNamedSelection(const std::string &selName);
+    void SaveNamedSelection(const std::string &selName);
 
     // Property selection methods
     virtual void SelectAll();
@@ -87,19 +98,24 @@ class ENGINE_RPC_API NamedSelectionRPC : public BlockingRPC
     void SetPlotNames(const std::vector<std::string> &ids);
     void SetPlotID(int);
     void SetSelectionName(const std::string &s);
-    void SetNamedSelectionType(NamedSelectionType t);
+    void SetNamedSelectionOperation(NamedSelectionOperation t);
+    void SetSelectionProperties(const SelectionProperties &p);
 
     // Property getting methods
-    const std::vector<std::string> &GetPlotNames(void) const { return plotNames; };
-    int                             GetPlotID(void) const { return plotId; };
-    const std::string      &GetSelectionName(void) const { return selName; };
-    NamedSelectionType      GetNamedSelectionType(void) const { return selType; };
-
-  private:
+    const std::vector<std::string> &GetPlotNames(void) const { return plotNames; }
+    int                             GetPlotID(void) const { return plotId; }
+    const std::string              &GetSelectionName(void) const { return selName; }
+    NamedSelectionOperation         GetNamedSelectionOperation(void) const { return selOperation; }
+    const SelectionProperties      &GetSelectionProperties() const { return properties; }
+private:
     std::vector<std::string> plotNames;
     int                      plotId;
     std::string              selName;
-    NamedSelectionType       selType;
+    NamedSelectionOperation  selOperation;
+    SelectionProperties      properties;
+
+    // Return values
+    SelectionSummary         summary;
 };
 
 #endif

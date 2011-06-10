@@ -47,11 +47,15 @@
 #    Hank Childs, Sat Aug 21 11:56:26 PDT 2010
 #    Rename DDF as DataBinning.
 #
+#    Brad Whitlock, Mon Dec 13 16:06:42 PST 2010
+#    I added CumulativeQueryNamedSelectionExtension.
+#
 #****************************************************************************/
 
 SET(LIBENGINE_SOURCES
 DataNetwork.C
 ClonedDataNetwork.C
+CumulativeQueryNamedSelectionExtension.C
 Engine.C
 LoadBalancer.C
 MesaDisplay.C

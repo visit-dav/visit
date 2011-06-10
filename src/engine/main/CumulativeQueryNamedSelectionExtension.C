@@ -1,0 +1,1288 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <CumulativeQueryNamedSelectionExtension.h>
+
+#include <avtThresholdFilter.h>
+#include <Expression.h>
+#include <ExpressionList.h>
+#include <ParsingExprList.h>
+#include <SelectionVariableSummary.h>
+
+#include <DebugStream.h>
+
+#include <algorithm>
+#include <map>
+#include <avtDataTreeIterator.h>
+#include <avtExtents.h>
+#include <avtDatasetExaminer.h>
+#include <avtHistogramSpecification.h>
+#include <avtMetaData.h>
+#include <avtParallel.h>
+#include <avtTimeLoopCollectorFilter.h>
+
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
+#include <vtkPointDataToCellData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkUnsignedIntArray.h>
+
+//
+// Brad Whitlock, Fri May 20 14:48:44 PDT 2011
+//
+// Implementation notes:
+//    In this form, cumulative queries are implemented as 3 extra filters:
+//
+//    CQHistogramCalculationFilter
+//         A filter that calculates histograms for the CQ's input variables.
+//
+//    avtThresholdFilter
+//        Threshold away all of the cells that do not match the limits for 
+//        the variables set in the CQ properties. Using this filter may
+//        allow the database to use selections to fulfill the threshold
+//        operation. That would be good.
+//
+//    CQFilter
+//        This is a time loop filter that gets the thresholded output for all 
+//        time steps. We then examine the datasets and count the number of cells
+//        in each time step and we then figure out the list of cells that exist
+//        in any or all time steps, depending on the summation rule. We then take
+//        that set of cells and sort it based on the desired histogramming
+//        method and then we select a range of bins from the histogram to
+//        contribute cells to our final selection. The final dataset produced
+//        by the filter is a dummy dataset that contains the original cell numbers
+//        that describe the cells in the selection. That array is used later in
+//        named selection to create the selection.
+//
+//        This filter also computes an average frequency value for the cells in
+//        each histogram bin. This is saved and returned to the gui.
+//
+
+// ****************************************************************************
+// Class: CQHistogramCalculationFilter
+//
+// Purpose:
+//   This class is a specialized filter that computes histograms on specific
+//   variables. We cache the histograms and make them available to the named
+//   selection extension object that creates this filter.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 17 14:50:16 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class CQHistogramCalculationFilter : public avtDataTreeIterator
+{
+public:
+    struct Histogram
+    {
+        double minimum;
+        double maximum;
+        double frequency[256];
+    };
+
+    CQHistogramCalculationFilter() : avtDataTreeIterator(), histograms()
+    {
+        cellCount = 0;
+    }
+
+    virtual const char *GetType() { return "CQHistogramCalculationFilter"; }
+    virtual const char *GetDescription() { return "Calculating histograms"; }
+
+    virtual ~CQHistogramCalculationFilter()
+    {
+        for(std::map<std::string,Histogram*>::iterator it = histograms.begin();
+            it != histograms.end(); ++it)
+        {
+            if(it->second != 0)
+                delete it->second;
+        }
+    }
+
+    void AddVariable(const std::string &var)
+    {
+        histograms[var] = 0;
+    }
+
+    stringVector GetVariables() const
+    {
+        stringVector names;
+        for(std::map<std::string,Histogram*>::const_iterator it = histograms.begin();
+            it != histograms.end(); ++it)
+        {
+            names.push_back(it->first);
+        }
+        return names;
+    }
+
+    const Histogram *GetHistogram(const std::string &var) const
+    {
+        const Histogram *retval = 0;
+        std::map<std::string,Histogram*>::const_iterator it = histograms.find(var);
+        if(it != histograms.end())
+            retval = it->second;
+        return retval;
+    }
+
+    long GetCellCount() const
+    {
+        return cellCount;
+    }
+
+protected:
+    virtual vtkDataSet *ExecuteData(vtkDataSet *ds, int dom, std::string)
+    {
+        cellCount += ds->GetNumberOfCells();
+
+        return ds;
+    }
+
+    virtual void PostExecute(void)
+    {
+        avtDataObject_p dob = GetInput();
+        avtDataset_p ds;
+        CopyTo(ds, dob);
+
+        for(std::map<std::string,Histogram*>::iterator it = histograms.begin();
+            it != histograms.end(); ++it)
+        {
+            // Get the extents
+            double minmax[2] = {0.,0.};
+#if 0
+            avtExtents *ext = dob->GetInfo().GetAttributes().
+                GetThisProcsOriginalDataExtents(it->first.c_str());
+            if(ext != 0)
+                ext->CopyTo(minmax);
+            else
+#endif
+                avtDatasetExaminer::GetDataExtents(ds, minmax, it->first.c_str());
+
+            // If we have not created a histogram yet for this variable then do it now.
+            if(it->second == 0)
+            {
+                std::vector<VISIT_LONG_LONG> hist(256, 0);
+                avtDatasetExaminer::CalculateHistogram(ds, it->first, minmax[0], minmax[1], hist);
+
+                it->second = new Histogram;
+                for(int i = 0; i < 256; ++i)
+                    it->second->frequency[i] = (double)hist[i];
+            }
+            it->second->minimum = minmax[0];
+            it->second->maximum = minmax[1];
+        }
+
+        // Sum the cells and send to all procs.
+        SumLongAcrossAllProcessors(cellCount);
+    }
+
+    virtual avtContract_p ModifyContract(avtContract_p contract)
+    {
+        avtContract_p newContract = new avtContract(contract);
+        std::string origvar(newContract->GetDataRequest()->GetOriginalVariable());
+ 
+        for(std::map<std::string,Histogram*>::iterator it = histograms.begin();
+            it != histograms.end(); ++it)
+        {
+            // Request extents
+            newContract->SetCalculateVariableExtents(it->first, true);
+
+            // Try and get a histogram. If we can't then request the data as a
+            // secondary variable.
+            avtHistogramSpecification hist;
+            hist.SpecifyHistogram(contract->GetDataRequest()->GetTimestep(), it->first, 256);
+            if(GetMetaData()->GetHistogram(&hist))
+            {
+                it->second = new Histogram;
+                it->second->minimum = hist.GetBounds()[0][0];
+                it->second->maximum = hist.GetBounds()[0][1];
+                for(int i = 0; i < 256; ++i)
+                    it->second->frequency[i] = (double)(hist.GetCounts()[i]);
+            }
+            else if(origvar != it->first &&
+                    !newContract->GetDataRequest()->HasSecondaryVariable(it->first.c_str()))
+            {
+                newContract->GetDataRequest()->AddSecondaryVariable(it->first.c_str());
+            }
+       }
+
+       return newContract;
+    }
+
+    std::map<std::string, Histogram *> histograms;
+    long                               cellCount;
+};
+
+
+// *****************************************************************************
+// *****************************************************************************
+// ***
+// *** CQFilter
+// ***
+// *****************************************************************************
+// *****************************************************************************
+
+// ****************************************************************************
+// Class: CQFilter
+//
+// Purpose:
+//   This filter collects selected time steps and comes up with the set of cells
+//   that are present in any of the time steps. That set of cells then gets
+//   further reduced using different "histogramming" functions. The final,
+//   reduced set of cells is returned as a new dataset which is used to construct
+//   the CQ selection. 
+//
+// Notes:      We also extract information about the selection cells and store
+//             them so we can use them in the selection summary.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May  9 15:24:10 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class CQFilter : public avtTimeLoopCollectorFilter
+{
+public:
+    struct CQCellData
+    {
+        int    frequency;
+        double variable;
+    };
+
+    typedef std::pair<unsigned int, unsigned int>  CQCellIdentifier;
+    typedef std::map<CQCellIdentifier, CQCellData> CQCellIdentifierCQCellDataMap;
+
+    CQFilter() : avtTimeLoopCollectorFilter(), props(), summary()
+    {
+    }
+
+    virtual ~CQFilter()
+    {
+    }
+
+    void SetSelectionProperties(const SelectionProperties &p)
+    {
+        props = p;
+    }
+
+    const SelectionSummary &GetSummary() const { return summary; }
+
+    virtual const char *GetType() { return "CQFilter"; }
+    virtual const char *GetDescription() { return "Creating cumulative query selection"; }
+
+    virtual bool ExecutionSuccessful() { return true; }
+
+    virtual avtDataTree_p ExecuteAllTimesteps(std::vector<avtDataTree_p> &);
+
+protected:
+    virtual avtContract_p ModifyContract(avtContract_p contract);
+
+private:
+    void CalculateFrequency(std::vector<avtDataTree_p> &timesteps,
+                            CQCellIdentifierCQCellDataMap &cellFrequency,
+                            int *cellsPerTimestep);
+
+    void Summation(unsigned int nts, 
+                   const CQCellIdentifierCQCellDataMap &cellFrequency,
+                   CQCellIdentifierCQCellDataMap &selection) const;
+
+    bool GlobalizeSelection(const CQCellIdentifierCQCellDataMap &selection,
+                            int *&allDomains, int *&allCellIds, int *&allFrequencies, double *&allVariables,
+                            int &totalCells) const;
+
+    void SelectAndHistogram(const int *allDomains, const int *allCellIds, 
+                            const int *allFrequencies, const double *allVariables,
+                            int totalCells,
+                            const CQCellIdentifierCQCellDataMap &selection,
+                            CQCellIdentifierCQCellDataMap &narrowedSelection,
+                            doubleVector &histogram) const;
+
+    avtDataTree_p CreateSelectedDataset(const CQCellIdentifierCQCellDataMap &selection) const;
+
+
+    void SetSelectionData(int *d, int *c, int *f, int nc);
+    void SetCellsOverTimeData(int *d, int nc);
+
+    SelectionProperties props;
+    SelectionSummary    summary;
+};
+
+// ****************************************************************************
+// Method: CQFilter::CalculateFrequency
+//
+// Purpose: 
+//   This class iterates over this processor's datasets for all time steps and
+//   builds up a map of cellid to number of times the cell appears in different
+//   time steps.
+//
+// Arguments:
+//   timesteps : The vector of datasets for all time steps.
+//   cellFrequency : The cell frequency map we're creating.
+//   cellsPerTimestep : The number of cells in each time step that match
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 20 14:33:41 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+CQFilter::CalculateFrequency(std::vector<avtDataTree_p> &timesteps,
+    CQCellIdentifierCQCellDataMap &cellFrequency, int *cellsPerTimestep)
+{
+    CQCellIdentifierCQCellDataMap::const_iterator it;
+
+    std::string histVar;
+    if(props.GetHistogramType() == SelectionProperties::HistogramVariable)
+    {
+        // We need to extract another variable.
+        if(props.GetHistogramVariableIndex() < 0 ||
+           props.GetHistogramVariableIndex() >= int(props.GetVariables().size()))
+        {
+            EXCEPTION1(ImproperUseException, "An invalid histogram variable was specified");
+        }
+
+        histVar = props.GetVariables()[props.GetHistogramVariableIndex()];
+        debug5 << "We're doing histogram by variable " << histVar << endl;
+    }
+
+    for(size_t ts = 0; ts < timesteps.size(); ++ts)
+    {
+        // Iterate over all pieces of the data for the current time step and 
+        // figure out the set of cells.
+        int nleaves = 0;
+        vtkDataSet **leaves = timesteps[ts]->GetAllLeaves(nleaves);
+        CQCellIdentifierCQCellDataMap thisTS;
+        for (int i = 0 ; i < nleaves ; i++)
+        {
+            vtkIdType ncells = leaves[i]->GetNumberOfCells();
+            if(ncells == 0)
+                continue;
+
+            // Get the original zone numbers
+            vtkDataArray *ocn = leaves[i]->GetCellData()->
+                                    GetArray("avtOriginalCellNumbers");
+            if (ocn == NULL)
+            {
+                delete [] leaves;
+                EXCEPTION0(ImproperUseException);
+            }
+            unsigned int *ptr = (unsigned int *) ocn->GetVoidPointer(0);
+            if (ptr == NULL)
+            {
+                delete [] leaves;
+                EXCEPTION0(ImproperUseException);
+            }
+
+            // If we need an extra variable, get it.
+            vtkDataArray *var = 0, *cellVar = 0;
+            if(!histVar.empty())
+            {
+                var = leaves[i]->GetCellData()->GetArray(histVar.c_str());
+                if(var == 0)
+                {
+                    // If we find that the variable is point data then recenter it.
+                    vtkDataArray *pointVar = leaves[i]->GetPointData()->GetArray(histVar.c_str());
+                    if(pointVar != NULL)
+                    {
+                        debug5 << "Recentering " << histVar << " so we can histogram with it." << endl;
+                        vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
+                        pd2cd->SetInput(leaves[i]);
+                        pd2cd->Update();
+
+                        vtkDataSet *ds2 = pd2cd->GetOutput();
+                        cellVar = ds2->GetCellData()->GetArray(histVar.c_str());
+                        if(cellVar != NULL)
+                        {
+                            debug5 << "We have forced " << histVar << " to be zonal" << endl;
+                            cellVar->Register(NULL);
+                        }
+                        var = cellVar;
+
+                        pd2cd->Delete();
+                    }
+                    else
+                    {
+                        debug5 << "Could not get requested histogram variable: " << histVar << endl;
+                    }
+                }
+            }
+
+            for(vtkIdType j = 0; j < ncells; ++j, ptr += 2)
+            {
+                CQCellIdentifier cellId(ptr[0], ptr[1]);
+                CQCellData c;
+                c.frequency = 1;
+                c.variable = var ? var->GetTuple1(j) : 0.;
+
+                CQCellIdentifierCQCellDataMap::iterator p = thisTS.find(cellId);
+                if(p == thisTS.end())
+                    thisTS[cellId] = c;
+                else
+                {
+                    // we have a cell we've seen before so we must have fragments
+                    // of that cell so sum the variables.
+                    p->second.variable += c.variable;
+                }
+            }
+
+            if(cellVar != NULL)
+                cellVar->Delete();
+        }
+
+        delete [] leaves;
+
+        // Merge the results from the current time step into the overall
+        // cell frequency map. We do this so there are no duplicates from
+        // cells that may have been split up previously. This way, cell fragments
+        // do not impact the frequency.
+        for(it = thisTS.begin(); it != thisTS.end(); ++it)
+        {
+            CQCellIdentifierCQCellDataMap::iterator p;
+            p = cellFrequency.find(it->first);
+            if(p == cellFrequency.end())
+            {
+                // insert new cell
+                cellFrequency[it->first] = it->second;
+            }
+            else
+            {
+                // we've seen this cell before in another time step so increment.
+                p->second.frequency += 1;
+            }
+        }
+
+        // Record the number of cells for this time step
+        cellsPerTimestep[ts] = thisTS.size();
+    }
+}
+
+// ****************************************************************************
+// Method: CQFilter::Summation
+//
+// Purpose: 
+//   Examine the cell frequency map and apply the right "summation" to combine
+//   the cells over time into a new selection.
+//
+// Arguments:
+//   nts           : The number of time steps used in the selection.
+//   cellFrequency : The number of times each cell was found in the datasets
+//                   over time.
+//   selection     : The new "summed" selection.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 11:04:39 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+CQFilter::Summation(unsigned int nts, 
+    const CQCellIdentifierCQCellDataMap &cellFrequency,
+    CQCellIdentifierCQCellDataMap &selection) const
+{
+    if(props.GetCombineRule() == SelectionProperties::CombineAnd)
+    {
+        CQCellIdentifierCQCellDataMap::const_iterator it;
+        for(it = cellFrequency.begin(); it != cellFrequency.end(); ++it)
+        {
+            if(it->second.frequency == nts)
+                selection[it->first] = it->second;
+        }
+    }
+    else
+        selection = cellFrequency;
+}
+
+// ****************************************************************************
+// Method: CQFilter::CreateSelectedDataset
+//
+// Purpose: 
+//   Create a bogus 1D rectilinear grid that we'll pass back as the results
+//   of the CQ selection creation.
+//
+// Arguments:
+//   selection : The selection that we're translating into a VTK dataset.
+//
+// Returns:    A data tree with the bogus mesh.
+//
+// Note:       We pass back a bogus grid because the grid does not matter. Only
+//             the original zones array on it matters because the named selection
+//             manager gets that array and uses it to determine which cells are
+//             in the named selection. This dataset tells it which cells.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 11:02:13 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtDataTree_p
+CQFilter::CreateSelectedDataset(const CQCellIdentifierCQCellDataMap &selection) const
+{
+    // We can translate this list into a new mesh with avtOriginalCellNumbers 
+    // that contains the contents of the map.
+    int dims[] = {1,1,1};
+    dims[0] = selection.size()+1;
+    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+    rgrid->SetDimensions(dims);
+    vtkFloatArray *x = vtkFloatArray::New();
+    x->SetNumberOfTuples(dims[0]);
+    for(int i = 0; i < dims[0]; ++i)
+        x->SetTuple1(i, i);
+    rgrid->SetXCoordinates(x);
+    x->Delete();
+
+    vtkUnsignedIntArray *ocn = vtkUnsignedIntArray::New();
+    ocn->SetName("avtOriginalCellNumbers");
+    ocn->SetNumberOfTuples(2 * selection.size());
+    unsigned int *ptr = (unsigned int *)ocn->GetVoidPointer(0);
+
+    CQCellIdentifierCQCellDataMap::const_iterator it;
+    for(it = selection.begin(); it != selection.end(); ++it)
+    {
+        *ptr++ = it->first.first;
+        *ptr++ = it->first.second;
+    }
+    rgrid->GetCellData()->AddArray(ocn);
+    ocn->Delete();
+
+    avtDataTree_p outputTree = new avtDataTree(rgrid, -1);
+    rgrid->Delete();
+
+    return outputTree;
+}
+
+// ****************************************************************************
+// Method: CQFilter::GlobalizeSelection
+//
+// Purpose: 
+//   This method takes the selections from each processor and combines them
+//   and sends the results to each processor as a set of arrays that describe
+//   the selection that was created.
+//
+// Arguments:
+//   selection      : This processor's selection
+//
+//   allDomains     : The array of domain numbers for each cell in the global selection.
+//   allCellIds     : The array of cell ids for each cell in the global selection.
+//   allFrequencies : The array of frequencies for each cell in the global selection.
+//   allVariables   : The array of variable values for each cell in the global selection.
+//   totalCells     : The total number of cells in the global selection.
+//
+// Returns:    True if the selection was globalized; False otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 10:58:41 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+CQFilter::GlobalizeSelection(
+    const CQCellIdentifierCQCellDataMap &selection,
+    int *&allDomains, int *&allCellIds, int *&allFrequencies, double *&allVariables,
+    int &totalCells) const
+{
+    int i = 0;
+    CQCellIdentifierCQCellDataMap::const_iterator it;
+#ifdef PARALLEL
+    // Figure out how many cells are in the summed selection by adding the selection
+    // sizes over all processors.
+    int nCellsTotal = (int)selection.size();
+    SumIntAcrossAllProcessors(nCellsTotal);
+    if(nCellsTotal > 1000000)
+    {
+        return false;
+    }
+
+    //
+    // Let's get all of the selected cells from all processors to rank 0.
+    //
+    int *receiveCounts = 0;
+    int *sendDomains = new int[selection.size()+1];
+    int *sendCellIds = new int[selection.size()+1];
+    int *sendFrequencies = new int[selection.size()+1];
+    double *sendVariables = new double[selection.size() + 1];
+    for(it = selection.begin(); it != selection.end(); ++it, ++i)
+    {
+        sendDomains[i] = it->first.first;
+        sendCellIds[i] = it->first.second;
+        sendFrequencies[i] = it->second.frequency;
+        sendVariables[i] = it->second.variable;
+    }
+    int *recvCounts = 0;
+    CollectIntArraysOnRootProc(allDomains, recvCounts, sendDomains, selection.size());
+    delete [] recvCounts;
+    CollectIntArraysOnRootProc(allCellIds, recvCounts, sendCellIds, selection.size());
+    delete [] recvCounts;
+    CollectIntArraysOnRootProc(allFrequencies, recvCounts, sendFrequencies, selection.size());
+    delete [] recvCounts;
+    CollectDoubleArraysOnRootProc(allVariables, recvCounts, sendVariables, selection.size());
+    delete [] sendDomains;
+    delete [] sendCellIds;
+    delete [] sendFrequencies;
+    delete [] sendVariables;
+
+    // Count the number of cells in the whole selection.
+    totalCells = 0;
+    if(PAR_Rank() == 0)
+    {
+        for(i = 0; i < PAR_Size(); ++i)
+            totalCells += recvCounts[i];
+    }
+    delete [] recvCounts;
+    SumIntAcrossAllProcessors(totalCells);
+
+    // Send the entire selection back to all processors
+    if(PAR_Rank() != 0)
+    {
+        allDomains = new int[totalCells];
+        allCellIds = new int[totalCells];
+        allFrequencies = new int[totalCells];
+        allVariables = new double[totalCells];
+    }
+    BroadcastIntArray(allDomains, totalCells);
+    BroadcastIntArray(allCellIds, totalCells);
+    BroadcastIntArray(allFrequencies, totalCells);
+    BroadcastDoubleArray(allVariables, totalCells);
+#else
+    // Convert the selection into "all" arrays.
+    totalCells = selection.size();
+    allDomains = new int[totalCells];
+    allCellIds = new int[totalCells];
+    allFrequencies = new int[totalCells];
+    allVariables = new double[totalCells];
+    for(it = selection.begin(); it != selection.end(); ++it, ++i)
+    {
+        allDomains[i] = it->first.first;
+        allCellIds[i] = it->first.second;
+        allFrequencies[i] = it->second.frequency;
+        allVariables[i] = it->second.variable;
+    }
+#endif
+
+    return true;
+}
+
+// ****************************************************************************
+// Class: cq_sort_by_value
+//
+// Purpose:
+//   This class is a functor that lets std::sort sort an array of values using
+//   value[i] instead of i.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 20 14:04:49 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <class T>
+class cq_sort_by_value
+{
+public:
+    cq_sort_by_value(const T *v) : value(v) { }
+    bool operator()(int A, int B) const
+    {
+        return value[A] < value[B];
+    }
+private:
+    const T *value;
+};
+
+// ****************************************************************************
+// Method: CQFilter::SelectAndHistogram
+//
+// Purpose: 
+//   This method takes the globalized selection (the list of matching cells 
+//   for all domains for all time) and sorts it in the manner prescribed by
+//   the desired histogram operation and then we keep some number of bins
+//   from that and create our final "narrowed" selection. We also compute an
+//   average frequency for the cells in each histogram bin.
+//
+// Arguments:
+//   allDomains        : The array containing the domains for the global selection.
+//   allCellIds        : The array containing the cellids for the global selection.
+//   allFrequencies    : the array containing the frequencies for the global selection.
+//   allVariables      : The array containing the variables for the global selection.
+//   totalCells        : The number of cells in the selection.
+//   selection         : The local selection.
+//   narrowedSelection : The returned selection.
+//   histogram         : The returned histogram of avg frequency per bin.
+//
+// Returns:    narrowedSelection, histogram.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 20 14:20:58 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+CQFilter::SelectAndHistogram(const int *allDomains, const int *allCellIds, 
+    const int *allFrequencies, const double *allVariables, int totalCells,
+    const CQFilter::CQCellIdentifierCQCellDataMap &selection,
+    CQFilter::CQCellIdentifierCQCellDataMap &narrowedSelection,
+    doubleVector &histogram) const
+{
+    const char *mName = "CQFilter::SelectAndHistogram: ";
+    debug5 << mName << "start" << endl;
+
+    // Create an index variable that we'll sort using another variable.
+    int *index = new int[totalCells];
+    for(int i = 0; i < totalCells; ++i)
+        index[i] = i;
+
+    //
+    // Sort the index based on different histogram criteria
+    //
+    if(props.GetHistogramType() == SelectionProperties::HistogramMatches)
+    {
+        // Sort the index based on frequency
+        debug5 << mName << "Sorting index based on frequency" << endl;
+        std::sort(index, index + totalCells, cq_sort_by_value<int>(allFrequencies));
+    }
+    else if(props.GetHistogramType() == SelectionProperties::HistogramID)
+    {
+        // Sort the index based on cellid
+        debug5 << mName << "Sorting index based on cellid" << endl;
+        std::sort(index, index + totalCells, cq_sort_by_value<int>(allCellIds));
+    }
+    else if(props.GetHistogramType() == SelectionProperties::HistogramVariable)
+    {
+        // Sort the index based on variable
+        debug5 << mName << "Sorting index based on variable" << endl;
+        std::sort(index, index + totalCells, cq_sort_by_value<double>(allVariables));
+    }
+
+    // We need to bin the index array into some number of bins and select
+    // the cells in the selected bins into our new narrowed selection.
+    int *binPoints = new int[props.GetHistogramNumBins() + 1];
+    for(int i = 0; i < props.GetHistogramNumBins()+1; ++i)
+    {
+        float t = float(i) / float(props.GetHistogramNumBins());
+        binPoints[i] = int(t * float(totalCells));
+    }
+
+    debug5 << "numBins=" << props.GetHistogramNumBins()
+           << ", startBin=" << props.GetHistogramStartBin()
+           << ", endBin=" << props.GetHistogramEndBin() << endl;
+
+    for(int bin = 0; bin < props.GetHistogramNumBins(); ++bin)
+    {
+        // If the bin is one that we're selecting then add its cells to the
+        // narrowed selection.
+        if(bin >= props.GetHistogramStartBin() &&
+           bin <= props.GetHistogramEndBin())
+        {
+            debug5 << "Bin " << bin << "contains indices ["
+                   << binPoints[bin] << ", " << binPoints[bin+1]
+                   << "). Adding cells from this bin to the new selection."
+                   << endl;
+            for(int i = binPoints[bin]; i < binPoints[bin+1]; ++i)
+            {
+                int idx = index[i];
+                CQCellIdentifier cellid(allDomains[idx],allCellIds[idx]);
+
+#ifdef PARALLEL
+                // Only keep the piece local to this processor since there is 
+                // another combination step later that will reunite the pieces.
+                if(selection.find(cellid) != selection.end())
+#endif
+                {
+                    CQCellData c;
+                    c.frequency = allFrequencies[idx];
+                    c.variable = 0.; // we don't need the variable anymore
+
+                    narrowedSelection[cellid] = c;
+                }
+            }
+        }
+
+        // Compute an average for the bin.
+        double sum = 0.;
+        for(int i = binPoints[bin]; i < binPoints[bin+1]; ++i)
+            sum += allFrequencies[index[i]];
+        double averageForBin = sum / double(binPoints[bin+1] - binPoints[bin]);
+        histogram.push_back(averageForBin);
+        debug5 << "Bin " << bin << " average frequency: " << averageForBin << endl;
+    }
+
+    delete [] binPoints;
+    delete [] index;
+    debug5 << mName << "end" << endl;
+}
+
+#if 0
+// Debugging function to save out selections to a text file.
+void
+SaveSelection(const char *filename, const CQFilter::CQCellIdentifierCQCellDataMap &sel)
+{
+    FILE *f = fopen(filename, "wt");
+    if(f != NULL)
+    {
+        CQFilter::CQCellIdentifierCQCellDataMap::const_iterator it;
+        for(it = sel.begin(); it != sel.end(); ++it)
+            fprintf(f, "%d %d %d %lg\n", it->first.first, it->first.second, it->second.frequency, it->second.variable);
+
+        fclose(f);
+    }
+}
+#endif
+
+// ****************************************************************************
+// Method: CQFilter::ExecuteAllTimesteps
+//
+// Purpose: 
+//   This method implements the filter's time iteration loop. We take in the
+//   datasets for all time steps and iterate over them, calculating our
+//   histogrammed selection.
+//
+// Arguments:
+//   timesteps : The data trees for each timestep.
+//
+// Returns:    We return a data tree with a dummy dataset that has the number
+//             of cells in our final selection and we place the original zones
+//             array on it since that is what is used later to define the
+//             named selection.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 20 14:28:53 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtDataTree_p
+CQFilter::ExecuteAllTimesteps(std::vector<avtDataTree_p> &timesteps)
+{
+    summary = SelectionSummary();
+
+    // This map holds a count of the number of times steps that contain
+    // a given cell.
+    CQCellIdentifierCQCellDataMap cellFrequency;
+    int *cellsPerTimestep = new int[timesteps.size()];
+    memset(cellsPerTimestep, 0, timesteps.size() * sizeof(int));
+
+    //
+    // Iterate through the data for all time steps and come up with a 
+    // "cell frequency". We may find different cell ids over time so we
+    // create a set that includes any cell that was present in any dataset
+    // over time. Each time we find that cell in a different time step,
+    // we increment its "cell frequency". The cell frequency thus becomes
+    // a count of how many time steps contained the cell.
+    //
+    CalculateFrequency(timesteps, cellFrequency, cellsPerTimestep);
+//    SaveSelection("selection0.txt", cellFrequency);
+
+    //
+    // Apply the summation rule so we get a subset of the cellFrequency
+    // map that will contribute to our selection.
+    //
+    CQCellIdentifierCQCellDataMap selection;
+    Summation(timesteps.size(), cellFrequency, selection);
+    cellFrequency.clear();
+//    SaveSelection("selection1.txt", selection);
+
+#ifdef PARALLEL
+    //
+    // We have a number of cells per timestep for this processor. We need to
+    // sum those values across processors so we have the whole picture.
+    //
+    int *cellsPerTimestepTotal = new int[timesteps.size()];
+    memset(cellsPerTimestepTotal, 0, timesteps.size() * sizeof(int));
+    SumIntArrayAcrossAllProcessors(cellsPerTimestep, cellsPerTimestepTotal, timesteps.size());
+    delete [] cellsPerTimestep;
+    cellsPerTimestep = cellsPerTimestepTotal;
+#endif
+
+    //
+    // Let's combine the selections from all processors and then send that
+    // global selection to all processors, in the process transforming it into
+    // a set of arrays.
+    //
+    int *allDomains = 0, *allCellIds = 0, *allFrequencies = 0;
+    double *allVariables = 0;
+    int totalCells = 0;
+    if(!GlobalizeSelection(selection, 
+                           allDomains, allCellIds, allFrequencies, allVariables,
+                           totalCells))
+    {
+        delete [] cellsPerTimestep;
+        EXCEPTION1(VisItException, "You have selected too many zones in your "
+                   "named selection.  Disallowing ... no selection created");
+    }
+
+    //
+    // Sort the entire selection according to the selected sorting mode and
+    // further narrow the selection. This is the "histogramming" part.
+    //
+    CQCellIdentifierCQCellDataMap narrowedSelection;
+    doubleVector hist;
+    if(props.GetHistogramType() == SelectionProperties::HistogramTime)
+    {
+        narrowedSelection = selection;
+
+        for(size_t i = 0; i < timesteps.size(); ++i)
+            hist.push_back(double(cellsPerTimestep[i]));
+    }
+    else
+    {
+        SelectAndHistogram(allDomains, allCellIds, allFrequencies, allVariables, 
+                           totalCells,
+                           selection, narrowedSelection, hist);
+    }
+    selection.clear();
+
+    // Save the histogram values in the summary.
+    summary.SetHistogramValues(hist);
+
+    delete [] allDomains;
+    delete [] allCellIds;
+    delete [] allFrequencies;
+    delete [] allVariables;
+    delete [] cellsPerTimestep;
+
+    //
+    // Now that we have the final set of local cells derived from the selection,
+    // we create an output dataset that identifies this processor's portion
+    // of the cells in the selection.
+    //
+    avtDataTree_p outputTree = CreateSelectedDataset(narrowedSelection);
+
+//    SaveSelection("selection2.txt", narrowedSelection);
+
+    return outputTree;
+}
+
+// ****************************************************************************
+// Method: CQFilter::ModifyContract
+//
+// Purpose: 
+//   We use this method to make sure that the histogram variable that we want
+//   to use has been requested in the contract.
+//
+// Arguments:
+//   contract : The input contract.
+//
+// Returns:    The output contract.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 10:50:51 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtContract_p
+CQFilter::ModifyContract(avtContract_p contract)
+{
+    avtContract_p newContract = avtTimeLoopCollectorFilter::ModifyContract(contract);
+
+    // We may need to extract another variable.
+    if(props.GetHistogramType() == SelectionProperties::HistogramVariable)
+    {
+        if(props.GetHistogramVariableIndex() < 0 ||
+           props.GetHistogramVariableIndex() >= int(props.GetVariables().size()))
+        {
+            EXCEPTION1(ImproperUseException, "An invalid histogram variable was specified");
+        }
+
+        std::string histVar = props.GetVariables()[props.GetHistogramVariableIndex()];
+        debug5 << "We're doing histogram by variable " << histVar << endl;
+
+        std::string origvar(newContract->GetDataRequest()->GetOriginalVariable());
+        if(origvar != histVar &&
+           !newContract->GetDataRequest()->HasSecondaryVariable(histVar.c_str()))
+        {
+            debug5 << "Making sure we add " << histVar
+                   << " to the contract so we'll have it" << endl;
+            newContract->GetDataRequest()->AddSecondaryVariable(histVar.c_str());
+        }
+    }
+
+    return newContract;
+}
+
+// *****************************************************************************
+// *****************************************************************************
+// ***
+// *** CumulativeQueryNamedSelectionExtension 
+// ***
+// *****************************************************************************
+// *****************************************************************************
+
+
+CumulativeQueryNamedSelectionExtension::CumulativeQueryNamedSelectionExtension() : 
+    avtNamedSelectionExtension()
+{
+    cqFilter = NULL;
+    hist = NULL;
+    threshold = NULL;
+    nts = 1;
+}
+
+CumulativeQueryNamedSelectionExtension::~CumulativeQueryNamedSelectionExtension()
+{
+    if(cqFilter != NULL)
+        delete cqFilter;
+
+    if(hist != NULL)
+        delete hist;
+
+    if(threshold != NULL)
+        delete threshold;
+}
+
+// ****************************************************************************
+// Method: CumulativeQueryNamedSelectionExtension::GetSelectedData
+//
+// Purpose: 
+//   Inject additional filters that we'll use to set up the pipeline that we'll
+//   execute to arrive at the datasets that give us our data selection.
+//
+// Arguments:
+//   dob      : the input data object.
+//   contract : The input contract.
+//   props    : The selection properties for the selection we're creating.
+//
+// Returns:   The output of any filters that we've added to the pipeline. 
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 17 14:48:47 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtDataObject_p
+CumulativeQueryNamedSelectionExtension::GetSelectedData(avtDataObject_p dob, 
+    avtContract_p contract, const SelectionProperties &props)
+{
+    avtDataObject_p retval(dob);
+
+    if(!props.GetVariables().empty())
+    {
+        // Set up the variable that we're going to use to threshold.
+        SelectionProperties prop2(props);
+        if(prop2.GetMaxTimeState() < 0)
+            prop2.SetMaxTimeState(dob->GetInfo().GetAttributes().GetNumStates()-1);
+
+        // Save the number of time steps.
+        nts = prop2.GetMaxTimeState() - prop2.GetMinTimeState() + 1;
+
+        //
+        // Add a CQHistogramCalculationFilter so we can calculate histograms for
+        // the variables that we care about.
+        //
+        if(hist != NULL)
+            delete hist;
+        hist = new CQHistogramCalculationFilter;
+        hist->SetInput(dob);
+        for(int i = 0; i < prop2.GetVariables().size(); ++i)
+            hist->AddVariable(prop2.GetVariables()[i]);
+        retval = hist->GetOutput(); 
+
+        //
+        // Add a threshold operator to the pipeline, thresholding out the variables
+        // in our CQ selection.
+        //
+        ThresholdOpAttributes thresholdAtts;
+        if(!props.GetVariables().empty())
+            thresholdAtts.SetDefaultVarName(props.GetVariables()[0]);
+        thresholdAtts.SetListedVarNames(props.GetVariables());
+        thresholdAtts.SetLowerBounds(props.GetVariableMins());
+        thresholdAtts.SetUpperBounds(props.GetVariableMaxs());
+
+        if(threshold != NULL)
+            delete threshold;
+        threshold = new avtThresholdFilter;
+        threshold->SetInput(retval);
+        threshold->SetAtts(&thresholdAtts);
+        retval = threshold->GetOutput();
+
+        //
+        // Add our time iteration CQ filter.
+        //
+        cqFilter = new CQFilter;
+        cqFilter->SetInput(retval);
+        cqFilter->SetTimeLoop(prop2.GetMinTimeState(), prop2.GetMaxTimeState(),
+            prop2.GetTimeStateStride());
+        cqFilter->SetSelectionProperties(prop2);
+        retval = cqFilter->GetOutput();
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: CumulativeQueryNamedSelectionExtension::FreeUpResources
+//
+// Purpose: 
+//   The named selection manager calls this after updating the pipeline that
+//   will create the named selection data. We use it as an opportunity to
+//   retrieve the histograms we've calculate as well as for cleaning up.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 17 14:47:17 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+CumulativeQueryNamedSelectionExtension::FreeUpResources()
+{
+    const char *mName = "CumulativeQueryNamedSelectionExtension::FreeUpResources: ";
+
+    // Stash hist's histograms into this class so we can return them from the engine.
+    SelectionSummary s;
+    stringVector vars = hist->GetVariables();
+    for(size_t i = 0; i < vars.size(); ++i)
+    {
+        const CQHistogramCalculationFilter::Histogram *h = hist->GetHistogram(vars[i]);
+        if(h != 0)
+        {
+            SelectionVariableSummary vs;
+            vs.SetName(vars[i]);
+            vs.SetMinimum(h->minimum);    
+            vs.SetMaximum(h->maximum);    
+            vs.SetHistogram(h->frequency);    
+
+            s.AddVariables(vs);
+        }
+        else
+        {
+            debug5 << mName << "Could not locate histogram for " << vars[i]
+                   << " so create a default histogram." << endl;
+            double frequency[256];
+            memset(frequency, 0, 256 * sizeof(double));
+
+            SelectionVariableSummary vs;
+            vs.SetName(vars[i]);
+            vs.SetMinimum(0.);
+            vs.SetMaximum(1.);    
+            vs.SetHistogram(frequency);    
+
+            s.AddVariables(vs);
+        }
+    }
+
+    // Set the total cell count. Note that we now divide that number by the number
+    // of time steps that were processed because the time loop filter causes our
+    // local histogram filter that counts the number of original cells to sum the
+    // total number of cells for all time steps. This gives us the per time step avg.
+    s.SetTotalCellCount((int)hist->GetCellCount() / nts);
+    if(hist != NULL)
+        delete hist;
+    hist = NULL;
+
+    // Get the histogram computed by the CQ filter.
+    if(cqFilter != NULL)
+    {
+        const SelectionSummary &histSummary = cqFilter->GetSummary();
+        s.SetHistogramValues(histSummary.GetHistogramValues());
+
+        delete cqFilter;
+    }
+    cqFilter = NULL;
+
+    // Delete the threshold.
+    if(threshold != NULL)
+        delete threshold;
+    threshold = NULL;
+
+    // Save the summary we created.
+    summary = s;
+}
+
+// ****************************************************************************
+// Method: CumulativeQueryNamedSelectionExtension::GetSelectionSummary
+//
+// Purpose: 
+//   Get the selection summary.
+//
+// Returns:    Get the selection summary.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 17 14:55:13 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const SelectionSummary &
+CumulativeQueryNamedSelectionExtension::GetSelectionSummary() const
+{
+    return summary;
+}
+

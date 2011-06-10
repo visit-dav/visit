@@ -1511,6 +1511,61 @@ EngineProxy::CloneNetwork(const int id, const QueryOverTimeAttributes *qa)
     }
 }
 
+// ****************************************************************************
+// Method: EngineProxy::BlockForNamedSelectionOperation
+//
+// Purpose: 
+//   Block for named selection operations.
+//
+// Note:       This code is common to the various methods that use the 
+//             namedSelectionRPC to do operations. It's necessary since I 
+//             changed the namedSelectionRPC to be non-blocking so we could
+//             get progress updates.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun  8 16:42:49 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::BlockForNamedSelectionOperation()
+{
+    // Get the reply and update the progress bar
+    while (namedSelectionRPC.GetStatus() == VisItRPC::incomplete ||
+           namedSelectionRPC.GetStatus() == VisItRPC::warning)
+    {
+        namedSelectionRPC.RecvReply();
+ 
+        // Send a warning message if the status is a warning.
+        if(namedSelectionRPC.GetStatus() == VisItRPC::incomplete)
+        {
+            // Send a status message.
+            Status(namedSelectionRPC.GetPercent(), namedSelectionRPC.GetCurStageNum(),
+                   namedSelectionRPC.GetCurStageName(), namedSelectionRPC.GetMaxStageNum());
+        }
+        else if(namedSelectionRPC.GetStatus() == VisItRPC::warning)
+        {
+            debug4 << "Warning: " << namedSelectionRPC.Message().c_str() << endl;
+            Warning(namedSelectionRPC.Message().c_str());
+        }
+    }
+
+    ClearStatus();
+
+    // Check for abort
+    if (namedSelectionRPC.GetStatus() == VisItRPC::abort)
+    {
+        EXCEPTION0(AbortException);
+    }
+
+    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
+                               namedSelectionRPC.Message());
+    }
+}
 
 // ****************************************************************************
 //  Method:  EngineProxy::ApplyNamedSelection
@@ -1529,20 +1584,19 @@ EngineProxy::CloneNetwork(const int id, const QueryOverTimeAttributes *qa)
 //    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
 //    Renamed NamedSelectionRPC enum names to compile on windows.
 //
+//    Brad Whitlock, Tue Dec 14 11:58:33 PST 2010
+//    I changed the invocation method.
+//
 // ****************************************************************************
 
 void
 EngineProxy::ApplyNamedSelection(const std::vector<std::string> &ids, 
                                  const std::string selName)
 {
-    namedSelectionRPC(NamedSelectionRPC::NS_APPLY, ids, selName);
-    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
-    {
-        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
-                               namedSelectionRPC.Message());
-    }
-}
+    namedSelectionRPC.ApplyNamedSelection(ids, selName);
 
+    BlockForNamedSelectionOperation();
+}
 
 // ****************************************************************************
 //  Method:  EngineProxy::CreateNamedSelection
@@ -1552,7 +1606,7 @@ EngineProxy::ApplyNamedSelection(const std::vector<std::string> &ids,
 //
 //  Arguments:
 //    ids        the id of the network to create the selection from.
-//    selName    the name of the named selection.
+//    props      the properties of the named selection.
 //
 //  Programmer:  Hank Childs
 //  Creation:    January 29, 2009
@@ -1561,17 +1615,20 @@ EngineProxy::ApplyNamedSelection(const std::vector<std::string> &ids,
 //    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
 //    Renamed NamedSelectionRPC enum names to compile on windows.
 //
+//    Brad Whitlock, Tue Dec 14 12:00:36 PST 2010
+//    I changed the code so we pass in the selection properties instead of 
+//    just the name. I made it return a selection summary.
+//
 // ****************************************************************************
 
-void
-EngineProxy::CreateNamedSelection(int id, const std::string selName)
+const SelectionSummary &
+EngineProxy::CreateNamedSelection(int id, const SelectionProperties &props)
 {
-    namedSelectionRPC(NamedSelectionRPC::NS_CREATE, id, selName);
-    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
-    {
-        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
-                               namedSelectionRPC.Message());
-    }
+    const SelectionSummary &s = namedSelectionRPC.CreateNamedSelection(id, props);
+
+    BlockForNamedSelectionOperation();
+
+    return s;
 }
 
 
@@ -1597,12 +1654,9 @@ EngineProxy::CreateNamedSelection(int id, const std::string selName)
 void
 EngineProxy::DeleteNamedSelection(const std::string selName)
 {
-    namedSelectionRPC(NamedSelectionRPC::NS_DELETE, selName);
-    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
-    {
-        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
-                               namedSelectionRPC.Message());
-    }
+    namedSelectionRPC.DeleteNamedSelection(selName);
+
+    BlockForNamedSelectionOperation();
 }
 
 
@@ -1628,12 +1682,9 @@ EngineProxy::DeleteNamedSelection(const std::string selName)
 void
 EngineProxy::LoadNamedSelection(const std::string selName)
 {
-    namedSelectionRPC(NamedSelectionRPC::NS_LOAD, selName);
-    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
-    {
-        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
-                               namedSelectionRPC.Message());
-    }
+    namedSelectionRPC.LoadNamedSelection(selName);
+
+    BlockForNamedSelectionOperation();
 }
 
 
@@ -1659,12 +1710,9 @@ EngineProxy::LoadNamedSelection(const std::string selName)
 void
 EngineProxy::SaveNamedSelection(const std::string selName)
 {
-    namedSelectionRPC(NamedSelectionRPC::NS_SAVE, selName);
-    if (namedSelectionRPC.GetStatus() == VisItRPC::error)
-    {
-        RECONSTITUTE_EXCEPTION(namedSelectionRPC.GetExceptionType(),
-                               namedSelectionRPC.Message());
-    }
+    namedSelectionRPC.SaveNamedSelection(selName);
+
+    BlockForNamedSelectionOperation();
 }
 
 

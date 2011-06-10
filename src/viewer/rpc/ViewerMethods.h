@@ -40,6 +40,7 @@
 #include <string>
 #include <vectortypes.h>
 #include <viewerrpc_exports.h>
+#include <SelectionProperties.h>
 
 class ViewerState;
 
@@ -139,6 +140,10 @@ class ViewerState;
 //   Dave Pugmire, Tue Nov  9 16:09:44 EST 2010
 //   Added dumpSteps for streamline info query.
 //
+//   Brad Whitlock, Tue Dec 14 16:45:05 PST 2010
+//   I added new methods that let me pass selection properties when creating
+//   or updating a selection.
+//
 //   Kathleen Bonnell, Tue Mar  1 11:12:51 PST 2011
 //   Added another int arg to PointQuery.
 //
@@ -211,6 +216,7 @@ public:
 
     void ApplyNamedSelection(const std::string &selName);
     void CreateNamedSelection(const std::string &selName);
+    void CreateNamedSelection(const std::string &selName, const SelectionProperties &props);
     void DeleteNamedSelection(const std::string &selName);
     void LoadNamedSelection(const std::string &selName,
                             const std::string &hostName,
@@ -218,6 +224,8 @@ public:
     void SaveNamedSelection(const std::string &selName);
     void SetNamedSelectionAutoApply(bool);
     void UpdateNamedSelection(const std::string &selName);
+    void UpdateNamedSelection(const std::string &selName, const SelectionProperties &props);
+    void InitializeNamedSelectionVariables(const std::string &selName);
 
     void AnimationSetNFrames(int nFrames);
     void AnimationPlay();

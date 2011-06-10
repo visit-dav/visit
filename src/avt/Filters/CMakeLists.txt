@@ -51,6 +51,9 @@
 #   Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 #   Renamed avtCurrentExtentFilter to avtActualExtentsFilter.
 #
+#   Brad Whitlock, Fri Dec 10 16:21:23 PST 2010
+#   I moved avtThresholdFilter to here from the Threshold plugin.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -95,6 +98,7 @@ avtStreamlineFilter.C
 avtStreamlinePolyDataFilter.C
 avtSummationFilter.C
 avtSurfaceFilter.C
+avtThresholdFilter.C
 avtTiledImageCompositor.C
 avtTransform.C
 avtVertexNormalsFilter.C

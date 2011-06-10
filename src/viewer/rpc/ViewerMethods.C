@@ -39,6 +39,7 @@
 #include <ViewerState.h>
 #include <ViewerRPC.h>
 #include <ColorTableAttributes.h>
+#include <SelectionList.h>
 
 #include <snprintf.h>
 
@@ -797,11 +798,49 @@ ViewerMethods::ApplyNamedSelection(const std::string &selName)
 void
 ViewerMethods::CreateNamedSelection(const std::string &selName)
 {
+    SelectionProperties s;
+    s.SetName(selName);
+    (*state->GetSelectionProperties()) = s;
+    state->GetSelectionProperties()->Notify();
+
     //
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::CreateNamedSelectionRPC);
     state->GetViewerRPC()->SetStringArg1(selName);
+    state->GetViewerRPC()->SetBoolFlag(true);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::CreateNamedSelection
+//
+// Purpose: 
+//     Creates a named selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 16:40:57 PST 2010
+//
+// ****************************************************************************
+
+void
+ViewerMethods::CreateNamedSelection(const std::string &selName,
+    const SelectionProperties &props)
+{
+    // Set the selection properties.
+    (*state->GetSelectionProperties()) = props;
+    state->GetSelectionProperties()->Notify();
+
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::CreateNamedSelectionRPC);
+    state->GetViewerRPC()->SetStringArg1(selName);
+    state->GetViewerRPC()->SetBoolFlag(false);
 
     //
     // Issue the RPC.
@@ -942,6 +981,65 @@ ViewerMethods::UpdateNamedSelection(const std::string &selName)
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::UpdateNamedSelectionRPC);
+    state->GetViewerRPC()->SetStringArg1(selName);
+    state->GetViewerRPC()->SetBoolFlag(false);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::UpdateNamedSelection
+//
+// Purpose: 
+//     Updates a named selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 16:40:57 PST 2010
+//
+// ****************************************************************************
+
+void
+ViewerMethods::UpdateNamedSelection(const std::string &selName,
+    const SelectionProperties &props)
+{
+    // Set the selection properties.
+    (*state->GetSelectionProperties()) = props;
+    state->GetSelectionProperties()->Notify();
+
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::UpdateNamedSelectionRPC);
+    state->GetViewerRPC()->SetStringArg1(selName);
+    state->GetViewerRPC()->SetBoolFlag(true);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::InitializeNamedSelectionVariables
+//
+// Purpose: 
+//     Updates a named selection's variables from the currently selected plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 13 14:28:09 PDT 2010
+//
+// ****************************************************************************
+
+void
+ViewerMethods::InitializeNamedSelectionVariables(const std::string &selName)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::InitializeNamedSelectionVariablesRPC);
     state->GetViewerRPC()->SetStringArg1(selName);
 
     //

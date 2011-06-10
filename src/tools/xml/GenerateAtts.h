@@ -200,6 +200,9 @@ using std::vector;
 //    clear the old vector.  This mirrors the behavior for other
 //    types of fields.
 //
+//    Brad Whitlock, Fri Dec 10 16:09:42 PST 2010
+//    I made protected members generate Set/Get methods like public members.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1771,7 +1774,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Write out all the set prototypes
         for (size_t i=0; i<fields.size(); i++)
         {
-            if(fields[i]->accessType != Field::AccessPrivate)
+            if(fields[i]->accessType == Field::AccessPublic)
                 continue;
             fields[i]->WriteHeaderSetFunction(h);
         }
@@ -1785,7 +1788,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         // Write out all the get prototypes
         for (size_t i=0; i<fields.size(); i++)
         {
-            if(fields[i]->accessType != Field::AccessPrivate)
+            if(fields[i]->accessType == Field::AccessPublic)
                 continue;
             int minus = 0;
             if (fields[i]->CanHaveConst())
@@ -2050,7 +2053,7 @@ class AttsGeneratorAttribute : public GeneratorBase
             c << "///////////////////////////////////////////////////////////////////////////////" << Endl << Endl;
             for (size_t i=0; i<fields.size(); i++)
             {
-                if(fields[i]->accessType != Field::AccessPrivate)
+                if(fields[i]->accessType == Field::AccessPublic)
                     continue;
                 fields[i]->WriteSourceAGVectorFunctions(c, name, purpose);
             }
@@ -2132,8 +2135,8 @@ private:
     {
         for (size_t i=0; i<fields.size(); i++)
         {
-            if(fields[i]->accessType == Field::AccessPrivate)
-            fields[i]->WriteHeaderSelectFunction(h);
+            if(fields[i]->accessType != Field::AccessPublic)
+                fields[i]->WriteHeaderSelectFunction(h);
         }
     }
     void WriteHeaderFieldIDs(QTextStream &h)
@@ -2208,7 +2211,7 @@ private:
     {
         for (size_t i=0; i<fields.size(); i++)
         {
-            if(fields[i]->accessType != Field::AccessPrivate)
+            if(fields[i]->accessType == Field::AccessPublic)
                 continue;
             if (fields[i]->CanHaveConst())
                 return true;

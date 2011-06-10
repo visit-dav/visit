@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+  <Attribute name="ThresholdOpAttributes" purpose="This class contains attributes for the threshold operator." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ThresholdOpAttributes.code">
+    <Enum name="OutputMeshType">
+      InputZones
+      PointMesh
+    </Enum>
+    <Enum name="ZonePortion">
+      EntireZone
+      PartOfZone
+    </Enum>
+    <Field name="outputMeshType" label="outputMeshType" type="int" access="protected">
+      0
+    </Field>
+    <Field name="listedVarNames" label="listedVarNames" type="stringVector" access="protected">
+      default
+    </Field>
+    <Field name="zonePortions" label="zonePortions" type="intVector" access="protected">
+    </Field>
+    <Field name="lowerBounds" label="lowerBounds" type="doubleVector" access="protected">
+    </Field>
+    <Field name="upperBounds" label="upperBounds" type="doubleVector" access="protected">
+    </Field>
+    <Field name="defaultVarName" label="defaultVarName" type="string" access="protected">
+      default
+    </Field>
+    <Field name="defaultVarIsScalar" label="defaultVarIsScalar" type="bool" access="protected">
+      false
+    </Field>
+    <Function name="SupplyMissingDefaultsIfAppropriate" user="true" member="true">
+    </Function>
+    <Function name="AttributesAreConsistent" user="true" member="true">
+    </Function>
+    <Function name="ForceAttributeConsistency" user="true" member="true">
+    </Function>
+    <Function name="SwitchDefaultVariableNameToTrueName" user="true" member="true">
+    </Function>
+  </Attribute>

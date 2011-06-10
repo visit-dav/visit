@@ -72,6 +72,7 @@ class ExportDBAttributes;
 class ConstructDataBinningAttributes;
 class avtDatabaseMetaData;
 class FileOpenOptions;
+class SelectionProperties;
 
 // ****************************************************************************
 //  Class: ViewerEngineManager
@@ -417,7 +418,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ConstructDataBinning(const EngineKey &ek, int id);
     bool ApplyNamedSelection(const EngineKey &ek, const std::vector<std::string> &ids, 
                              const std::string &);
-    bool CreateNamedSelection(const EngineKey &ek, int, const std::string &);
+    bool CreateNamedSelection(const EngineKey &ek, int, const SelectionProperties &);
     bool DeleteNamedSelection(const EngineKey &ek, const std::string &);
     bool LoadNamedSelection(const EngineKey &ek, const std::string &);
     bool SaveNamedSelection(const EngineKey &ek, const std::string &);

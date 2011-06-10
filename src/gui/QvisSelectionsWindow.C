@@ -42,21 +42,36 @@
 #include <Plot.h>
 #include <PlotList.h>
 #include <SelectionProperties.h>
+#include <SelectionSummary.h>
+#include <SelectionVariableSummary.h>
 #include <SelectionList.h>
 #include <ViewerProxy.h>
+#include <WindowInformation.h>
+
 #include <QualifiedFilename.h>
 #include <QvisFileOpenDialog.h>
+#include <QvisSelectionsDialog.h>
 
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGroupBox>
+#include <QHeaderView>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
+#include <QRadioButton>
+#include <QSpinBox>
 #include <QSplitter>
+#include <QTableWidget>
+
+#include <QvisHistogram.h>
+#include <QvisHistogramLimits.h>
+#include <QvisVariableButton.h>
+#include <QvisVariableListLimiter.h>
 
 // ****************************************************************************
 // Method: QvisSelectionsWindow::QvisSelectionsWindow
@@ -83,6 +98,10 @@ QvisSelectionsWindow::QvisSelectionsWindow(const QString &caption,
     selectionList = 0;
     plotList = 0;
     engineList = 0;
+    windowInformation = 0;
+
+    selectionPropsValid = false;
+    selectionCounter = 1;
 }
 
 // ****************************************************************************
@@ -105,6 +124,8 @@ QvisSelectionsWindow::~QvisSelectionsWindow()
         plotList->Detach(this);
     if(engineList != 0)
         engineList->Detach(this);
+    if(windowInformation != 0)
+        windowInformation->Detach(this);
 }
 
 void
@@ -129,6 +150,13 @@ QvisSelectionsWindow::ConnectEngineList(EngineList *el)
 }
 
 void
+QvisSelectionsWindow::ConnectWindowInformation(WindowInformation *wi)
+{
+    windowInformation = wi;
+    windowInformation->Attach(this);
+}
+
+void
 QvisSelectionsWindow::SubjectRemoved(Subject *s)
 {
     if(selectionList == s)
@@ -139,6 +167,9 @@ QvisSelectionsWindow::SubjectRemoved(Subject *s)
 
     if(engineList == s)
         engineList = 0;
+
+    if(windowInformation == s)
+        windowInformation = 0;
 }
 
 // ****************************************************************************
@@ -169,7 +200,7 @@ QvisSelectionsWindow::CreateWindowContents()
     //
     // Selections group
     //
-    QGroupBox *f1 = new QGroupBox(tr("Selections"));
+    QGroupBox *f1 = new QGroupBox(tr("Selections"), central);
     mainSplitter->addWidget(f1);
     QGridLayout *listLayout = new QGridLayout(f1);
     listLayout->setMargin(5);
@@ -189,76 +220,353 @@ QvisSelectionsWindow::CreateWindowContents()
             this, SLOT(deleteSelection()));
     listLayout->addWidget(deleteButton, 2,1);
 
-    updateButton = new QPushButton(tr("Update"), f1);
-    connect(updateButton, SIGNAL(pressed()),
-            this, SLOT(updateSelection()));
-    listLayout->addWidget(updateButton, 3,0);
-#define SELECTIONS_ARENT_DONE
     saveButton = new QPushButton(tr("Save"), f1);
     connect(saveButton, SIGNAL(pressed()),
             this, SLOT(saveSelection()));
-    listLayout->addWidget(saveButton, 4,0);
+    listLayout->addWidget(saveButton, 3,0);
 
     loadButton = new QPushButton(tr("Load"), f1);
     connect(loadButton, SIGNAL(pressed()),
             this, SLOT(loadSelection()));
-    listLayout->addWidget(loadButton, 4,1);
+    listLayout->addWidget(loadButton, 3,1);
 
+    editorTabs = new QTabWidget();
+    mainSplitter->addWidget(editorTabs);
+
+    editorTabs->addTab(CreatePropertiesTab(central), tr("Properties"));
+    editorTabs->addTab(CreateStatisticsTab(central), tr("Statistics"));
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::CreatePropertiesTab
+//
+// Purpose: 
+//   Create the properties tab.
+//
+// Arguments:
+//   parent : The parent widget.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 29 11:17:36 PST 2010
+//
+// Modifications:
+//   Brad Whitlock, Fri May 20 15:30:19 PDT 2011
+//   I made it look more like the image from visitusers.org.
+//
+// ****************************************************************************
+
+QWidget *
+QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
+{
     //
     // Properties group
     //
-    QGroupBox *f2 = new QGroupBox(tr("Properties"));
-    mainSplitter->addWidget(f2);
+    QWidget *f2 = new QWidget(parent);
     QGridLayout *definitionLayout = new QGridLayout(f2);
     definitionLayout->setMargin(5);
 
-    nameEditLabel = new QLabel(tr("Name"), f2);
-    nameEdit = new QLineEdit(f2);
-#ifndef SELECTIONS_ARENT_DONE
-    connect(nameEdit, SIGNAL(textChanged(const QString&)),
-            this, SLOT(nameTextChanged(const QString&)));
-#else
-    // for now.
-    nameEdit->setEnabled(false);
-#endif
-    definitionLayout->addWidget(nameEditLabel, 0,0, 1,1);
-    definitionLayout->addWidget(nameEdit, 0,1, 1,3);
-
-    QLabel *plotNameEditLabel = new QLabel(tr("Plot"), f2);
-    plotNameEditLabel->setToolTip(tr("Plot the defines the selection"));
+    QLabel *plotNameEditLabel = new QLabel(tr("Selection source"), f2);
+    plotNameEditLabel->setToolTip(tr("The data source that defines the selection"));
     plotNameLabel = new QLabel(f2);
-    definitionLayout->addWidget(plotNameEditLabel, 1,0, 1,1);
-    definitionLayout->addWidget(plotNameLabel, 1,1, 1,3);
+    definitionLayout->addWidget(plotNameEditLabel, 0,0);
+    definitionLayout->addWidget(plotNameLabel, 0,1, 1,3);
 
-#ifndef SELECTIONS_ARENT_DONE
-    editorTabs = new QTabWidget(f2);
-    definitionLayout->addWidget(editorTabs, 2,0,1,4);
+    QFrame *spacer = new QFrame(f2);
+    spacer->setFrameStyle(QFrame::HLine | QFrame::Raised);
+    definitionLayout->addWidget(spacer, 1,0, 1,4);
+
+    cqControls = new QGroupBox(f2);
+    cqControls->setTitle(tr("Cumulative Query"));
+    cqControls->setCheckable(true);
+    connect(cqControls, SIGNAL(clicked(bool)),
+            this, SLOT(cumulativeQueryClicked(bool)));
+    QVBoxLayout *vLayout = new QVBoxLayout(cqControls);
+    definitionLayout->addWidget(cqControls, 2,0,1,4);
     definitionLayout->setRowStretch(2, 10);
 
-    editorTabs->addTab(CreateRangeTab(f2), tr("Range"));
-    editorTabs->addTab(CreateHistogramTab(f2), tr("Histogram"));
-    editorTabs->addTab(CreateStatisticsTab(f2), tr("Statistics"));
-#else
-    definitionLayout->setRowStretch(2, 10);
-#endif
+    cqTabs = new QTabWidget(cqControls);
+    vLayout->addWidget(cqTabs);
+    cqTabs->addTab(CreateCQRangeControls(cqControls), tr("Range"));
+    cqTabs->addTab(CreateCQHistogramControls(cqControls), tr("Histogram"));
+
+    updateButton = new QPushButton(tr("Update Selection"), f2);
+    connect(updateButton, SIGNAL(pressed()),
+            this, SLOT(updateSelection()));
+    definitionLayout->addWidget(updateButton, 3,3);
+
+    return f2;
 }
 
-QWidget *
-QvisSelectionsWindow::CreateRangeTab(QWidget *parent)
-{
-    return new QWidget(parent);
-}
+// ****************************************************************************
+// Method: QvisSelectionsWindow::CreateCQRangeControls
+//
+// Purpose: 
+//   Create the CQ controls.
+//
+// Arguments:
+//   parent : The parent widget.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 29 11:17:07 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 QWidget *
-QvisSelectionsWindow::CreateHistogramTab(QWidget *parent)
+QvisSelectionsWindow::CreateCQRangeControls(QWidget *parent)
 {
-    return new QWidget(parent);
+    QWidget *central = new QWidget(parent);
+    QGridLayout *lLayout = new QGridLayout(central);
+    lLayout->setMargin(5);
+
+    // Add the variable button
+    QLabel *addVar = new QLabel(tr("Add variable"), central);
+    lLayout->addWidget(addVar, 0, 0);
+    cqVarButton = new QvisVariableButton(central);
+    cqVarButton->setVarTypes(QvisVariableButton::Scalars);
+    cqVarButton->setAddDefault(false);
+    connect(cqVarButton, SIGNAL(activated(const QString &)),
+            this, SLOT(addVariable(const QString &)));
+    lLayout->addWidget(cqVarButton, 0, 1);
+
+    cqInitializeVarButton = new QPushButton(tr("Get variable ranges"), central);
+    connect(cqInitializeVarButton, SIGNAL(clicked()),
+            this, SLOT(initializeVariableList()));
+    cqInitializeVarButton->setToolTip(tr(
+        "Populate the list of variables used for the cumulative query\n"
+        "selection from the list of variables used in the selection's\n"
+        "originating plot. The originating plot must be a Parallel\n"
+        "Coordinates plot."));
+    lLayout->addWidget(cqInitializeVarButton, 0, 2);
+
+    // Add the variable list.
+    cqLimits = new QvisVariableListLimiter(central);
+    cqLimits->setMinimumHeight(200);
+    connect(cqLimits, SIGNAL(selectedRangeChanged(const QString &,float,float)),
+            this, SLOT(setVariableRange(const QString &,float,float)));
+    connect(cqLimits, SIGNAL(deleteVariable(const QString &)),
+            this, SLOT(deleteVariable(const QString &)));
+    lLayout->addWidget(cqLimits, 1, 0, 1, 3);
+
+    // Add the time controls
+    cqTimeGroupBox = CreateTimeControls(central);
+    lLayout->addWidget(cqTimeGroupBox, 2, 0, 1, 3);
+
+    return central;
 }
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::CreateTimeControls
+//
+// Purpose: 
+//   Create the time controls group box for CQ selections.
+//
+// Arguments:
+//   parent : The parent widget.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 29 11:16:16 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QGroupBox *
+QvisSelectionsWindow::CreateTimeControls(QWidget *parent)
+{
+    QGroupBox *central = new QGroupBox(parent);
+    central->setTitle(tr("Query over time"));
+    QGridLayout *gLayout = new QGridLayout(central);
+    gLayout->setMargin(5);
+
+    // Time controls
+    gLayout->addWidget(new QLabel(tr("Start"), central), 0, 0);
+    cqTimeMin = new QLineEdit(central);
+    connect(cqTimeMin, SIGNAL(returnPressed()),
+            this, SLOT(processTimeMin()));
+    gLayout->addWidget(cqTimeMin, 0, 1);
+
+    gLayout->addWidget(new QLabel(tr("End"), central), 0, 2);
+    cqTimeMax = new QLineEdit(central);
+    connect(cqTimeMax, SIGNAL(returnPressed()),
+            this, SLOT(processTimeMax()));
+    gLayout->addWidget(cqTimeMax, 0, 3);
+
+    gLayout->addWidget(new QLabel(tr("Stride"), central), 0, 4);
+    cqTimeStride = new QLineEdit(central);
+    connect(cqTimeStride, SIGNAL(returnPressed()),
+            this, SLOT(processTimeStride()));
+    gLayout->addWidget(cqTimeStride, 0, 5);
+
+    return central;
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::CreateCQHistogramControls
+//
+// Purpose: 
+//   Create the histogram controls for CQ selections.
+//
+// Arguments:
+//
+// Returns:    A widget containing the parent widget.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 20 16:06:09 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QWidget *
+QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
+{
+    QWidget *central = new QWidget(parent);
+    QVBoxLayout *vLayout = new QVBoxLayout(central);
+    vLayout->setMargin(5);
+
+    QWidget *titleParent = new QWidget(central);
+    vLayout->addWidget(titleParent);
+    QHBoxLayout *thLayout = new QHBoxLayout(titleParent);
+    thLayout->setMargin(0);
+
+    QLabel *histLabel = new QLabel(tr("Histogram"), titleParent);
+    thLayout->addWidget(histLabel);
+    cqHistogramTitle = new QLabel(titleParent);
+    thLayout->addWidget(cqHistogramTitle, Qt::AlignLeft);
+
+    cqHistogram = new QvisHistogram(central);
+    cqHistogram->setDrawBinLines(true);
+    cqHistogram->setSelectionEnabled(false);
+    cqHistogram->setMinimumHeight(150);
+    vLayout->addWidget(cqHistogram);
+
+    //
+    // Axis controls
+    //
+    QGroupBox *axisGroup = new QGroupBox(tr("Axis"), central);
+    vLayout->addWidget(axisGroup);
+    QGridLayout *aLayout = new QGridLayout(axisGroup);
+    aLayout->setMargin(5);
+
+    aLayout->addWidget(new QLabel(tr("Display axis type"), axisGroup), 0,0);
+
+    QRadioButton *timeSlice = new QRadioButton(tr("Time slice"), axisGroup);
+    QRadioButton *id = new QRadioButton(tr("ID"), axisGroup);
+    QRadioButton *matches = new QRadioButton(tr("Matches"), axisGroup);
+    cqHistogramVariableButton = new QRadioButton(tr("Variable"), axisGroup);
+    cqHistogramType = new QButtonGroup(axisGroup);
+    connect(cqHistogramType, SIGNAL(buttonClicked(int)),
+            this, SLOT(histogramTypeChanged(int)));
+    cqHistogramType->addButton(timeSlice,0);
+    cqHistogramType->addButton(matches,1);
+    cqHistogramType->addButton(id,2);
+    cqHistogramType->addButton(cqHistogramVariableButton,3);
+    aLayout->addWidget(timeSlice, 0, 1);
+    aLayout->addWidget(id, 0, 2);
+    aLayout->addWidget(matches, 1, 1);
+    aLayout->addWidget(cqHistogramVariableButton, 1, 2);
+
+    cqHistogramVariable = new QComboBox(axisGroup);
+    aLayout->addWidget(cqHistogramVariable, 1, 3);
+    connect(cqHistogramVariable, SIGNAL(activated(int)),
+            this, SLOT(histogramVariableChanged(int)));
+
+    cqHistogramNumBinsLabel = new QLabel(tr("Number of bins"), axisGroup);
+    aLayout->addWidget(cqHistogramNumBinsLabel, 2, 0);
+    cqHistogramNumBins = new QSpinBox(axisGroup);
+    connect(cqHistogramNumBins, SIGNAL(valueChanged(int)),
+            this, SLOT(histogramNumBinsChanged(int)));
+    aLayout->addWidget(cqHistogramNumBins, 2, 1);
+
+    //
+    // Summation controls
+    //
+    QGroupBox *summationGroup = new QGroupBox(tr("Summation"), central);
+    vLayout->addWidget(summationGroup);
+    QGridLayout *sLayout = new QGridLayout(summationGroup);
+    sLayout->setMargin(5);
+
+    sLayout->addWidget(new QLabel(tr("Type"), central), 0, 0);   
+    cqSummation = new QComboBox(summationGroup);
+    cqSummation->addItem(tr("Include cells matching in any time step"));
+    cqSummation->addItem(tr("Include cells matching in all time steps"));
+    connect(cqSummation, SIGNAL(activated(int)),
+            this, SLOT(summationChanged(int)));
+    sLayout->addWidget(cqSummation, 0, 1, 1, 3);
+
+    cqHistogramMinLabel = new QLabel(tr("Minimum bin"), summationGroup);
+    cqHistogramMin = new QSpinBox(summationGroup);
+    connect(cqHistogramMin, SIGNAL(valueChanged(int)),
+            this, SLOT(histogramStartChanged(int)));
+    sLayout->addWidget(cqHistogramMinLabel, 1, 0);
+    sLayout->addWidget(cqHistogramMin, 1, 1);
+
+    cqHistogramMaxLabel = new QLabel(tr("Maximum bin"), summationGroup);
+    cqHistogramMax = new QSpinBox(summationGroup);
+    connect(cqHistogramMax, SIGNAL(valueChanged(int)),
+            this, SLOT(histogramEndChanged(int)));
+    sLayout->addWidget(cqHistogramMaxLabel, 1, 2);
+    sLayout->addWidget(cqHistogramMax, 1, 3);
+
+    return central;
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::CreateStatisticsTab
+//
+// Purpose: 
+//   Create the widgets for the statistics tab.
+//
+// Arguments:
+//   parent : the parent widget.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 29 11:15:46 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 QWidget *
 QvisSelectionsWindow::CreateStatisticsTab(QWidget *parent)
 {
-    return new QWidget(parent);
+    QWidget *central = new QWidget(parent);
+    QGridLayout *gLayout = new QGridLayout(central);
+    gLayout->setMargin(5);
+
+    statVars = new QTableWidget(central);
+    statVars->verticalHeader()->hide();
+    gLayout->addWidget(statVars, 0, 0, 1, 3);
+
+    gLayout->addWidget(new QLabel(tr("Cells in selection:"), central), 1, 0);
+    statSelectedCells = new QLabel(central);
+    gLayout->addWidget(statSelectedCells, 1, 1);
+
+    gLayout->addWidget(new QLabel(tr("Cells in dataset:"), central), 2, 0);
+    statTotalCells = new QLabel(central);
+    gLayout->addWidget(statTotalCells, 2, 1);
+
+    return central;
 }
 
 // ****************************************************************************
@@ -297,6 +605,7 @@ QvisSelectionsWindow::UpdateWindow(bool doAll)
         automaticallyApply->setChecked(selectionList->GetAutoApplyUpdates());
         automaticallyApply->blockSignals(false);
 
+        // Update the list of selections.
         int cur = selectionListBox->currentRow();
         selectionListBox->blockSignals(true);
         selectionListBox->clear();
@@ -310,21 +619,81 @@ QvisSelectionsWindow::UpdateWindow(bool doAll)
         }
         selectionListBox->blockSignals(false);
 
+        // Update the selection properties and summary so it shows the results for
+        // the current selection.
         UpdateWindowSingleItem();
     }
 
-    if(SelectedSubject() == plotList || doAll)
+    if(SelectedSubject() == plotList || 
+       SelectedSubject() == windowInformation ||
+       doAll)
     {
-        // Only enable the new Button if the plot list's first selected plot has
-        // been drawn.
-        int index = plotList->FirstSelectedIndex();
-        bool enabled = false;
-        if(index != -1)
-        {
-            enabled = (plotList->GetPlots(index).GetStateType() == 
-                       Plot::Completed);
-        }
+        QString pName, sName;
+        NewEnabled(pName, sName);
+
+        bool enabled = !sName.isEmpty() ||
+                       !pName.isEmpty();
+
         newButton->setEnabled(enabled);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::GetCurrentValues
+//
+// Purpose: 
+//   Gets the values from text widgets
+//
+// Arguments:
+//   which_widget : The widget that we need to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 29 10:30:14 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::GetCurrentValues(int which_widget)
+{
+    bool doAll = which_widget == -1;
+
+    if(which_widget == SelectionProperties::ID_minTimeState || doAll)
+    {
+        int val;
+        if(LineEditGetInt(cqTimeMin, val))
+            selectionProps.SetMinTimeState(val);
+        else
+            ResettingError(tr("minimum time state"), IntToQString(selectionProps.GetMinTimeState()));
+    }
+
+    if(which_widget == SelectionProperties::ID_maxTimeState || doAll)
+    {
+        int val;
+        if(LineEditGetInt(cqTimeMax, val))
+            selectionProps.SetMaxTimeState(val);
+        else if(cqTimeMax->text().contains("max"))
+            selectionProps.SetMaxTimeState(-1);
+        else
+            ResettingError(tr("maximum time state"), IntToQString(selectionProps.GetMaxTimeState()));
+    }
+
+    if(which_widget == SelectionProperties::ID_timeStateStride || doAll)
+    {
+        int val;
+        bool err = true;
+        if(LineEditGetInt(cqTimeStride, val))
+        {
+            if(val >= 1)
+            {
+                selectionProps.SetTimeStateStride(val);
+                err = false;
+            }
+        }
+
+        if(err)
+            ResettingError(tr("time stride"), IntToQString(selectionProps.GetTimeStateStride()));
     }
 }
 
@@ -344,33 +713,15 @@ QvisSelectionsWindow::UpdateWindow(bool doAll)
 void
 QvisSelectionsWindow::Apply(bool forceUpdate)
 {
+    if(forceUpdate || AutoUpdate())
+    {
+        GetCurrentValues(-1);
 
-}
-
-//
-// Qt slots
-//
-
-// ****************************************************************************
-// Method: QvisSelectionsWindow::automaticallyApplyChanged
-//
-// Purpose: 
-//   Sets the named selection auto apply mode.
-//
-// Arguments:
-//   val : Whether the selections update automatically when plots change.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Aug 11 16:22:37 PDT 2010
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisSelectionsWindow::automaticallyApplyChanged(bool val)
-{
-    GetViewerMethods()->SetNamedSelectionAutoApply(val);
+        if(selectionListBox->currentItem() != 0)
+        {
+            GetViewerMethods()->UpdateNamedSelection(selectionProps.GetName(), selectionProps);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -421,6 +772,465 @@ QvisSelectionsWindow::GetLoadHost() const
 }
 
 // ****************************************************************************
+// Method: QvisSelectionsWindow::UpdateHistogram
+//
+// Purpose: 
+//   Update the histogram on the histogram tab.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat May 21 00:53:37 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::UpdateHistogram(const double *values, int nvalues, 
+    int minBin, int maxBin, bool useBins)
+{
+    if(values == 0 || nvalues == 0)
+        cqHistogram->setHistogramTexture(0,0);
+    else
+    {
+        float *normalized = new float[nvalues];
+        bool  *mask = new bool[nvalues];
+        double maxVal = values[0];
+        for(int i = 1; i < nvalues; ++i)
+        {
+            maxVal = (values[i] > maxVal) ? values[i] : maxVal;
+        }
+
+        for(int i = 0; i < nvalues; ++i)
+        {
+            normalized[i] = values[i] / maxVal;
+            mask[i] = (i >= minBin && i <= maxBin);
+        }
+
+        cqHistogram->setHistogramTexture(normalized, useBins ? mask : 0, nvalues);
+
+        delete [] normalized;
+        delete [] mask;
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::UpdateHistogram
+//
+// Purpose: 
+//   Update the histogram on the histogram tab.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 15:58:43 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::UpdateHistogram()
+{ 
+    int sumIndex = selectionList->GetSelectionSummary(selectionProps.GetName());
+    // Histogram controls
+    if(sumIndex >= 0)
+    {
+        const SelectionSummary &summary = selectionList->
+            GetSelectionSummary(sumIndex);
+        const doubleVector &hist = summary.GetHistogramValues();
+        if(hist.empty())
+            UpdateHistogram(0,0,0,0,false);
+        else
+        {
+            UpdateHistogram(&hist[0], hist.size(), 
+                selectionProps.GetHistogramStartBin(),
+                selectionProps.GetHistogramEndBin(),
+                selectionProps.GetHistogramType() != SelectionProperties::HistogramTime);
+        }
+    }
+    else
+    {
+        UpdateHistogram(0,0,0,0,false);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::UpdateHistogramTitle
+//
+// Purpose: 
+//   Update the histogram title based on selectionProps.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 15:59:07 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::UpdateHistogramTitle()
+{
+    if(selectionProps.GetSelectionType() != 
+        SelectionProperties::CumulativeQuerySelection)
+    {
+        cqHistogramTitle->setText("");
+    }
+    else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramTime)
+        cqHistogramTitle->setText(tr("Number of Cells vs. Time"));
+    else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramMatches)
+        cqHistogramTitle->setText(tr("Frequency vs. Matches"));
+    else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramID)
+        cqHistogramTitle->setText(tr("Frequency vs. ID"));
+    else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable)
+        cqHistogramTitle->setText(tr("Frequency vs. Variable"));
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::UpdateMinMaxBins
+//
+// Purpose: 
+//   Update the min and max limits for the histogram start/end spin boxes.
+//
+// Arguments:
+//   updateMin : Whether to update the min widgets.
+//   updateMax : Whether to update the max widgets.
+//   updateValues : Whether to update the values.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 15:59:35 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::UpdateMinMaxBins(bool updateMin, bool updateMax, 
+    bool updateValues)
+{
+    bool notTime = selectionProps.GetHistogramType() != SelectionProperties::HistogramTime;
+
+    // Set the min value and extents.
+    int hMin = 0, hMax = 100000;
+    if(updateMin)
+    {
+        int val = selectionProps.GetHistogramStartBin();
+        if(val < 0)
+            val = 0;
+        if(notTime)
+        {
+            hMin = 0;
+            hMax = qMin(selectionProps.GetHistogramEndBin(),
+                        selectionProps.GetHistogramNumBins()-1);
+        }
+        cqHistogramMin->blockSignals(true);
+        cqHistogramMin->setMinimum(hMin);
+        cqHistogramMin->setMaximum(hMax);
+        if(updateValues)
+            cqHistogramMin->setValue(val);
+        cqHistogramMin->blockSignals(false);
+        cqHistogramMin->setEnabled(notTime);
+        cqHistogramMinLabel->setEnabled(notTime);
+    }
+
+    if(updateMax)
+    {
+        // Set the max value and extents.
+        int val = selectionProps.GetHistogramEndBin();
+        if(val >= selectionProps.GetHistogramNumBins()-1)
+            val = selectionProps.GetHistogramNumBins()-1;
+        if(notTime)
+        {
+            hMin = qMax(selectionProps.GetHistogramStartBin(), 0);
+            hMax = selectionProps.GetHistogramNumBins()-1;
+        }
+        cqHistogramMax->blockSignals(true);
+        cqHistogramMax->setMinimum(hMin);
+        cqHistogramMax->setMaximum(hMax);
+        if(updateValues)
+            cqHistogramMax->setValue(val);
+        cqHistogramMax->blockSignals(false);
+        cqHistogramMax->setEnabled(notTime);
+        cqHistogramMaxLabel->setEnabled(notTime);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::UpdateSelectionProperties
+//
+// Purpose: 
+//   Update the property controls using the selectionProps object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 29 11:14:20 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::UpdateSelectionProperties()
+{
+    UpdateHistogramTitle();
+
+    if (!selectionPropsValid)
+    {
+        plotNameLabel->setText(tr("none"));
+
+        // Range controls
+        cqControls->blockSignals(true);
+        cqControls->setChecked(false);
+        cqControls->blockSignals(false);
+
+        cqLimits->setNumVariables(0);
+
+        cqTimeMin->setText("");
+        cqTimeMax->setText("");
+        cqTimeStride->setText("");
+
+        // Histogram controls
+        UpdateHistogram(0,0,0,0,false);
+
+        cqHistogramType->blockSignals(true);
+        cqHistogramType->button(0)->setChecked(true);
+        cqHistogramType->blockSignals(false);
+        cqHistogramVariableButton->setEnabled(true);
+
+        cqHistogramVariable->blockSignals(true);
+        cqHistogramVariable->clear();
+        cqHistogramVariable->blockSignals(false);
+
+        SelectionProperties defaults;
+        cqHistogramNumBins->blockSignals(true);
+        cqHistogramNumBins->setValue(defaults.GetHistogramNumBins());
+        cqHistogramNumBins->blockSignals(false);
+
+        cqHistogramMin->blockSignals(true);
+        cqHistogramMin->setValue(defaults.GetHistogramStartBin());
+        cqHistogramMin->blockSignals(false);
+
+        cqHistogramMax->blockSignals(true);
+        cqHistogramMax->setValue(defaults.GetHistogramEndBin());
+        cqHistogramMax->blockSignals(false);
+
+        cqSummation->blockSignals(true);
+        cqSummation->setCurrentIndex(0);
+        cqSummation->blockSignals(false);
+    }
+    else
+    {
+        // Update the window based on the working copy of the selection 
+        // properties.
+        if(selectionProps.GetSource().empty())
+            plotNameLabel->setText(tr("none"));
+        else
+        {
+            QString plotDesc(GetPlotDescription(selectionProps.GetSource().c_str()));
+            if(plotDesc.isEmpty())
+                plotNameLabel->setText(selectionProps.GetSource().c_str());
+            else
+                plotNameLabel->setText(plotDesc);
+        }
+
+        cqControls->blockSignals(true);
+        cqControls->setChecked(selectionProps.GetSelectionType() == 
+            SelectionProperties::CumulativeQuerySelection);
+        cqControls->blockSignals(false);
+
+        //
+        // Set the variable limits
+        //
+        int sumIndex = selectionList->GetSelectionSummary(selectionProps.GetName());
+        int nvars = (int)selectionProps.GetVariables().size();
+        cqLimits->setNumVariables(nvars);
+        for(int i = 0; i < nvars; ++i)
+        {
+            const std::string &varname = selectionProps.GetVariables()[i];
+
+            QvisHistogramLimits *limits = cqLimits->getVariable(i);
+            limits->setVariable(varname.c_str());
+            // reset
+            limits->invalidateTotalRange();
+            limits->setHistogram(0,0);
+
+            float r0 = (float)selectionProps.GetVariableMins()[i];
+            float r1 = (float)selectionProps.GetVariableMaxs()[i];
+            limits->setSelectedRange(r0, r1);
+
+            // Try and get the variable total min/max and histogram from 
+            // the selection summary if it exists.
+            if(sumIndex >= 0)
+            {
+                const SelectionSummary &summary = selectionList->
+                    GetSelectionSummary(sumIndex);
+                for(int s = 0; s < summary.GetNumVariables(); ++s)
+                {
+                    const SelectionVariableSummary &vsummary = 
+                        summary.GetVariables(s);
+                    if(vsummary.GetName() == varname)
+                    {
+                        limits->setTotalRange(vsummary.GetMinimum(),
+                                              vsummary.GetMaximum());
+
+                        float hist[256];
+                        vsummary.NormalizedHistogram(hist);
+                        limits->setHistogram(hist, 256);
+                        break;
+                    }
+                }
+            }
+        }
+
+        cqTimeMin->setText(QString().setNum(selectionProps.GetMinTimeState()));
+        int maxts = selectionProps.GetMaxTimeState();
+        if(maxts == -1)
+        {
+            // Get the max value from the plot database
+
+            // For now:
+            cqTimeMax->setText("max");
+        }
+        else
+            cqTimeMax->setText(QString().setNum(maxts));
+        cqTimeStride->setText(QString().setNum(selectionProps.GetTimeStateStride()));
+
+        // Update the histogram controls
+        UpdateHistogram();
+
+        cqHistogramType->blockSignals(true);
+        if(selectionProps.GetHistogramType() == SelectionProperties::HistogramTime)
+            cqHistogramType->button(0)->setChecked(true);
+        else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramMatches)
+            cqHistogramType->button(1)->setChecked(true);
+        else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramID)
+            cqHistogramType->button(2)->setChecked(true);
+        else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable)
+            cqHistogramType->button(3)->setChecked(true);
+        cqHistogramType->blockSignals(false);
+        cqHistogramVariableButton->setEnabled(!selectionProps.GetVariables().empty());
+
+        cqHistogramVariable->blockSignals(true);
+        cqHistogramVariable->clear();
+        for(size_t v = 0; v < selectionProps.GetVariables().size(); ++v)
+            cqHistogramVariable->addItem(QString(selectionProps.GetVariables()[v].c_str()));
+        if(selectionProps.GetHistogramVariableIndex() > 0 &&
+           selectionProps.GetHistogramVariableIndex() < 4)
+        {
+            cqHistogramVariable->setCurrentIndex(selectionProps.GetHistogramVariableIndex());
+        }
+        cqHistogramVariable->blockSignals(false);
+        cqHistogramVariable->setEnabled(!selectionProps.GetVariables().empty() &&
+            selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable);
+
+        cqHistogramNumBins->blockSignals(true);
+        cqHistogramNumBins->setValue(selectionProps.GetHistogramNumBins());
+        cqHistogramNumBins->blockSignals(false);
+        bool notTime = selectionProps.GetHistogramType() != SelectionProperties::HistogramTime;
+        cqHistogramNumBins->setEnabled(notTime);
+        cqHistogramNumBinsLabel->setEnabled(notTime);
+
+        UpdateMinMaxBins(true, true, true);
+
+        cqSummation->blockSignals(true);
+        cqSummation->setCurrentIndex((selectionProps.GetCombineRule() == 
+            SelectionProperties::CombineOr) ? 0 : 1);
+        cqSummation->blockSignals(false);
+    }
+
+    deleteButton->setEnabled(selectionPropsValid);
+    saveButton->setEnabled(selectionPropsValid);
+
+    // Set the enabled state of the load button.
+    loadButton->setEnabled(!GetLoadHost().isEmpty());
+
+    updateButton->setEnabled(selectionPropsValid);
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::UpdateSelectionSummary
+//
+// Purpose: 
+//   Update the selection summary controls using the summary named by selectionProps
+//   and the summary stored in the selectionList.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 29 11:38:42 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::UpdateSelectionSummary()
+{
+    int sumIndex = -1;
+    if(selectionPropsValid)
+        sumIndex = selectionList->GetSelectionSummary(selectionProps.GetName());
+
+    if(sumIndex >= 0)
+    {
+        const SelectionSummary &summary = selectionList->GetSelectionSummary(sumIndex);
+
+        statVars->clear();
+        statVars->setColumnCount(3);
+        QStringList header;
+        header << tr("Variable") 
+               << tr("Minimum") 
+               << tr("Maximum");
+        statVars->setHorizontalHeaderLabels(header);
+
+        statVars->setRowCount(summary.GetNumVariables());
+        for(int i = 0; i < summary.GetNumVariables(); ++i)
+        {
+            const SelectionVariableSummary &vsummary = summary.GetVariables(i);
+            QTableWidgetItem *item0 = new QTableWidgetItem(vsummary.GetName().c_str());
+            QTableWidgetItem *item1 = new QTableWidgetItem(QString().setNum(vsummary.GetMinimum()));
+            QTableWidgetItem *item2 = new QTableWidgetItem(QString().setNum(vsummary.GetMaximum()));
+
+            item0->setFlags(Qt::ItemIsSelectable); // disable edits
+            item1->setFlags(Qt::ItemIsSelectable);
+            item2->setFlags(Qt::ItemIsSelectable);
+
+            statVars->setItem(i, 0, item0);
+            statVars->setItem(i, 1, item1);
+            statVars->setItem(i, 2, item2);
+        }
+
+        statSelectedCells->setText(QString().setNum(summary.GetCellCount()));
+        statTotalCells->setText(QString().setNum(summary.GetTotalCellCount()));
+    }
+    else
+    {
+        statVars->clear();
+        statSelectedCells->setText("");
+        statTotalCells->setText("");
+    }
+}
+
+//
+// Qt slots
+//
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::automaticallyApplyChanged
+//
+// Purpose: 
+//   Sets the named selection auto apply mode.
+//
+// Arguments:
+//   val : Whether the selections update automatically when plots change.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 11 16:22:37 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::automaticallyApplyChanged(bool val)
+{
+    GetViewerMethods()->SetNamedSelectionAutoApply(val);
+}
+
+// ****************************************************************************
 //  Method:  QvisSelectionsWindow::UpdateWindowSingleItem
 //
 //  Purpose:
@@ -433,40 +1243,31 @@ QvisSelectionsWindow::GetLoadHost() const
 //    Brad Whitlock, Mon Oct 11 15:15:37 PDT 2010
 //    Set the enabled state for the load button.
 //
+//    Brad Whitlock, Tue Dec 28 21:23:12 PST 2010
+//    I added cumulative query support.
+//
 // ****************************************************************************
 
 void
 QvisSelectionsWindow::UpdateWindowSingleItem()
 {
     int index = selectionListBox->currentRow();
-    nameEdit->blockSignals(true);
     if (index <  0)
     {
-        nameEdit->setText("");
-        plotNameLabel->setText(tr("none"));
+        selectionPropsValid = false;
+        selectionProps = SelectionProperties();
     }
     else
     {
-        const SelectionProperties &sel = (*selectionList)[index];
-        nameEdit->setText(sel.GetName().c_str());
-        if(sel.GetOriginatingPlot().empty())
-            plotNameLabel->setText(tr("none"));
-        else
-            plotNameLabel->setText(sel.GetOriginatingPlot().c_str());
+        selectionPropsValid = true;
+        // Copy the list's selection properties into the working copy.
+        selectionProps = selectionList->GetSelections(index);
     }
-    nameEdit->blockSignals(false);
 
-    deleteButton->setEnabled(index >= 0);
-    saveButton->setEnabled(index >= 0);
+    UpdateSelectionProperties();
+    UpdateSelectionSummary();
 
-    // Set the enabled state of the load button.
-    loadButton->setEnabled(!GetLoadHost().isEmpty());
-
-#ifndef SELECTIONS_ARENT_DONE
-    nameEdit->setEnabled(index >= 0);
-#endif
-    updateButton->setEnabled(index >= 0);
-    nameEditLabel->setEnabled(index >= 0);
+    cqControls->setEnabled(index >= 0);
 }
 
 // ****************************************************************************
@@ -486,33 +1287,111 @@ void
 QvisSelectionsWindow::addSelection()
 {
     // Find an unused Selection name
-    int newid = 1;
     bool okay = false;
     QString newName;
     while (!okay)
     {
-        newName.sprintf("selection%d", newid);
+        newName.sprintf("selection%d", selectionCounter);
         if(selectionList->GetSelection(newName.toStdString()) >= 0)
-            newid++;
+            selectionCounter++;
         else
             okay = true;
     }
 
-    newName = QInputDialog::getText(this, "VisIt", 
-        tr("Enter a name for the new selection."),
-        QLineEdit::Normal, newName, &okay);
-    if(okay && !newName.isEmpty())
+    QString pName, sName;
+    NewEnabled(pName, sName);
+
+    QString selName, selSource;
+    bool plotSource = false;
+
+    int dlgRet;
+    if(pName.isEmpty() && sName.isEmpty())
+    {
+        // do nothing
+    }
+    else if(!pName.isEmpty() && !sName.isEmpty())
+    {
+        QString plotDesc(GetPlotDescription(pName));
+        if(plotDesc.isEmpty())
+            plotDesc = pName;
+
+        QvisSelectionsDialog dlg(QvisSelectionsDialog::SOURCE_USE_DB_OR_PLOT, this);
+        dlg.setSelectionName(newName);
+        dlg.setPlotName(plotDesc);
+        dlg.setDBName(sName);
+        dlgRet = dlg.exec(selName, selSource, plotSource);
+
+        if(plotSource)
+            selSource = pName;
+    }
+    else if(!sName.isEmpty())
+    {
+        QvisSelectionsDialog dlg(QvisSelectionsDialog::SOURCE_USE_DB, this);
+        dlg.setSelectionName(newName);
+        dlg.setDBName(sName);
+        dlgRet = dlg.exec(selName, selSource, plotSource);
+    }
+
+    if(dlgRet == QDialog::Accepted && !selName.isEmpty())
     {
         // Create a temporary entry in the selectionListBox so the new selection
         // will get selected when its data comes from the viewer.
         selectionListBox->blockSignals(true);
-        selectionListBox->addItem(newName);
+        selectionListBox->addItem(selName);
         selectionListBox->setCurrentRow(selectionListBox->count()-1);
         selectionListBox->blockSignals(false);
 
-        // Tell the viewer to add the new named selection
-        GetViewerMethods()->CreateNamedSelection(newName.toStdString());
+        if(plotSource)
+        {
+            // Tell the viewer to add the new named selection based on the plot
+            GetViewerMethods()->CreateNamedSelection(selName.toStdString());
+        }
+        else
+        {
+            // Tell the viewer to add the new named selection based on the db
+            SelectionProperties p;
+            p.SetName(selName.toStdString());
+            p.SetSource(selSource.toStdString());
+            GetViewerMethods()->CreateNamedSelection(p.GetName(), p);
+        }
     }
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::NewEnabled
+//
+// Purpose: 
+//   Returns plot name and db name that can be used to create new selections.
+//
+// Arguments:
+//   plotName : The name of the plot that might be used to generate a selection.
+//   dbName   : The name of the database that might be used to generate a selection.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 15:24:29 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::NewEnabled(QString &plotName, QString &dbName)
+{
+    // Determine if there is a plot to use.
+    int index = plotList->FirstSelectedIndex();
+    if(index != -1)
+    {
+        if(plotList->GetPlots(index).GetStateType() == Plot::Completed)
+            plotName = QString(plotList->GetPlots(index).GetPlotName().c_str());
+    }
+
+    QString src(GetViewerState()->GetWindowInformation()->GetActiveSource().c_str());
+    if(src != "notset")
+        dbName = src;
 }
 
 // ****************************************************************************
@@ -548,17 +1427,15 @@ QvisSelectionsWindow::deleteSelection()
 // Creation:   Fri Aug  6 15:44:09 PDT 2010
 //
 // Modifications:
+//   Brad Whitlock, Tue Dec 28 22:19:05 PST 2010
+//   Send the selection properties down.
 //
 // ****************************************************************************
 
 void
 QvisSelectionsWindow::updateSelection()
 {
-    if(selectionListBox->currentItem() != 0)
-    {
-        GetViewerMethods()->UpdateNamedSelection(selectionListBox->currentItem()->
-            text().toStdString());
-    }
+    Apply(true);
 }
 
 // ****************************************************************************
@@ -622,28 +1499,6 @@ QvisSelectionsWindow::saveSelection()
 }
 
 // ****************************************************************************
-//  Method:  QvisSelectionsWindow::nameTextChanged
-//
-//  Purpose:
-//    Slot function when any change happens to the selection names.
-//
-//  Arguments:
-//    text       the new text.
-//
-//  Programmer:  Brad Whitlock
-//  Creation:    Fri Aug  6 15:44:09 PDT 2010
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-QvisSelectionsWindow::nameTextChanged(const QString &text)
-{
-    qDebug("rename the named selection as %s", text.toStdString().c_str());
-}
-
-// ****************************************************************************
 // Method: QvisSelectionsWindow::highlightSelection
 //
 // Purpose: 
@@ -667,3 +1522,423 @@ QvisSelectionsWindow::highlightSelection(const QString &selName)
         selectionListBox->setCurrentItem(items.first());
 }
 
+// ****************************************************************************
+// Method: QvisSelectionsWindow::cumulativeQueryClicked
+//
+// Purpose: 
+//   Change the selection type to/from CQ.
+//
+// Arguments:
+//   value : True for CQ selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:02:03 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::cumulativeQueryClicked(bool value)
+{
+    selectionProps.SetSelectionType(value ? SelectionProperties::CumulativeQuerySelection :
+        SelectionProperties::BasicSelection);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::addVariable
+//
+// Purpose: 
+//   Add a new variable to the CQ selection.
+//
+// Arguments:
+//   var : The variable to add to the selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:02:31 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::addVariable(const QString &var)
+{
+    selectionProps.GetVariables().push_back(var.toStdString());
+    selectionProps.GetVariableMins().push_back(0.);
+    selectionProps.GetVariableMaxs().push_back(1.);
+
+    // Update the window using the new selectionProps.
+    UpdateSelectionProperties();
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::setVariableRange
+//
+// Purpose: 
+//   Set the variable range for the specified variable into the selection.
+//
+// Arguments:
+//   var : The variable for which we want to set the range.
+//   r0  : The min range.
+//   r1  : The max range.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:02:59 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::setVariableRange(const QString &var, float r0, float r1)
+{
+    const stringVector &vars = selectionProps.GetVariables();
+    for(size_t i = 0; i < vars.size(); ++i)
+    {
+        if(vars[i] == var.toStdString())
+        {
+            selectionProps.GetVariableMins()[i] = r0;
+            selectionProps.GetVariableMaxs()[i] = r1;
+            Apply();
+            return;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::deleteVariable
+//
+// Purpose: 
+//   Remove a variable from the CQ selection.
+//
+// Arguments:
+//   var : The variable to remove.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:03:46 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::deleteVariable(const QString &var)
+{
+    const stringVector &vars = selectionProps.GetVariables();
+    for(size_t i = 0; i < vars.size(); ++i)
+    {
+        if(vars[i] == var.toStdString())
+        {
+            stringVector newvar;
+            doubleVector newmin, newmax;
+            for(size_t j = 0; j < vars.size(); ++j)
+            {
+                if(j == i)
+                    continue;
+                newvar.push_back(vars[j]);
+                newmin.push_back(selectionProps.GetVariableMins()[j]);
+                newmax.push_back(selectionProps.GetVariableMaxs()[j]);
+            }
+            selectionProps.SetVariables(newvar);
+            selectionProps.SetVariableMins(newmin);
+            selectionProps.SetVariableMaxs(newmax);
+
+            Apply();
+            return;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::summationChanged
+//
+// Purpose: 
+//   Set the summation mode for the selection.
+//
+// Arguments:
+//   val : The new "summation" mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:05:50 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::summationChanged(int val)
+{
+    if(val == 0)
+        selectionProps.SetCombineRule(SelectionProperties::CombineOr);
+    else
+        selectionProps.SetCombineRule(SelectionProperties::CombineAnd);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::processTimeMin
+//
+// Purpose: 
+//   This Qt slot function is called when we need to process the min time.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:06:27 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::processTimeMin()
+{
+    GetCurrentValues(SelectionProperties::ID_minTimeState);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::processTimeMax
+//
+// Purpose: 
+//   This Qt slot function is called when we need to process the max time.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:06:27 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::processTimeMax()
+{
+    GetCurrentValues(SelectionProperties::ID_maxTimeState);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::processTimeStride
+//
+// Purpose: 
+//   This Qt slot function is called when we need to process the time stride.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:06:27 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::processTimeStride()
+{
+    GetCurrentValues(SelectionProperties::ID_timeStateStride);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::initializeVariableList
+//
+// Purpose: 
+//   Tell the viewer to get the selection variables from a ParallelCoordinates plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:07:57 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::initializeVariableList()
+{
+    Apply();
+
+    // Ask the viewer to populate the selection's variables using the
+    // current plot's attributes.
+    GetViewerMethods()->InitializeNamedSelectionVariables(selectionProps.GetName());
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::histogramTypeChanged
+//
+// Purpose: 
+//   This Qt slot function is called when we change the histogram type.
+//
+// Arguments:
+//   value : The new histogram type.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:06:27 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::histogramTypeChanged(int value)
+{
+    switch(value)
+    {
+    case 0:
+        selectionProps.SetHistogramType(SelectionProperties::HistogramTime);
+        break;
+    case 1:
+        selectionProps.SetHistogramType(SelectionProperties::HistogramMatches);
+        break;
+    case 2:
+        selectionProps.SetHistogramType(SelectionProperties::HistogramID);
+        break;
+    case 3:
+        { // new scope.
+        bool err = false;
+
+        if(selectionProps.GetHistogramVariableIndex() < 0)
+        {
+           if(selectionProps.GetVariables().size() > 0)
+           {
+              // Select the first variable in the list.
+              selectionProps.SetHistogramVariableIndex(0);
+           }
+           else
+           {
+              Error(tr("Variable display is not supported when the selection "
+                       "does not have any variables."));
+              err = true;
+           }
+        }
+
+        if(!err)
+            selectionProps.SetHistogramType(SelectionProperties::HistogramVariable);
+        }
+        break;
+    }
+
+    Apply();
+    //UpdateHistogram();
+    UpdateHistogramTitle();
+
+    cqHistogramVariableButton->setEnabled(!selectionProps.GetVariables().empty());
+    cqHistogramVariable->setEnabled(!selectionProps.GetVariables().empty() &&
+            selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable);
+    bool notTime = selectionProps.GetHistogramType() != SelectionProperties::HistogramTime;
+    cqHistogramNumBins->setEnabled(notTime);
+    cqHistogramNumBinsLabel->setEnabled(notTime);
+
+    UpdateMinMaxBins(true, true, true);
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::histogramVariableChanged
+//
+// Purpose: 
+//   This Qt slot function is called when we change the histogram variable.
+//
+// Arguments:
+//   index : The histogram variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:08:26 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::histogramVariableChanged(int index)
+{
+    selectionProps.SetHistogramVariableIndex(index);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::histogramNumBinsChanged
+//
+// Purpose: 
+//   This Qt slot is called when we adjust the number of histogram bins.
+//
+// Arguments:
+//   index : The new number of bins.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:09:28 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::histogramNumBinsChanged(int index)
+{
+    selectionProps.SetHistogramNumBins(index);
+
+    // Adjust the min,max if needed
+    int b0 = selectionProps.GetHistogramStartBin();
+    int b1 = selectionProps.GetHistogramEndBin();
+    if(b0 >= selectionProps.GetHistogramNumBins())
+        b0 = selectionProps.GetHistogramNumBins()-1;
+    if(b1 >= selectionProps.GetHistogramNumBins())
+        b1 = selectionProps.GetHistogramNumBins()-1;
+
+    selectionProps.SetHistogramStartBin(b0);
+    selectionProps.SetHistogramEndBin(b1);
+
+    Apply();
+
+    UpdateMinMaxBins(true, true, true);
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::histogramStartChanged
+//
+// Purpose: 
+//   This Qt slot is called when we adjust the histogram start bin.
+//
+// Arguments:
+//   index : The new start bin.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:10:11 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::histogramStartChanged(int index)
+{
+    selectionProps.SetHistogramStartBin(index);
+
+    Apply();
+
+    UpdateMinMaxBins(false, true, false);
+    UpdateHistogram();
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::histogramEndChanged
+//
+// Purpose: 
+//   This Qt slot is called when we adjust the histogram end bin.
+//
+// Arguments:
+//   index : The new end bin.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  9 16:10:11 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::histogramEndChanged(int index)
+{
+    selectionProps.SetHistogramEndBin(index);
+
+    Apply();
+    UpdateMinMaxBins(true, false, false);
+    UpdateHistogram();
+}

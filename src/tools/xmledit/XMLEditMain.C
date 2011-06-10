@@ -76,7 +76,6 @@ QString Endl("\n");
 int
 main( int argc, char **argv )
 {
-    QApplication::setColorSpec(QApplication::ManyColor);
     QApplication *a = new QApplication(argc, argv);
     XMLEdit *w;
     if (argc > 1)

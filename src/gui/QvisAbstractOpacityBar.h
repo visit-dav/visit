@@ -63,6 +63,9 @@ class ColorControlPointList;
 //    Brad Whitlock, Thu Dec 18 10:55:02 PST 2008
 //    I added histogram textures.
 //
+//    Brad Whitlock, Mon Dec 27 15:34:08 PST 2010
+//    I added some knobs that alter how histograms are drawn.
+//
 // ****************************************************************************
 
 class GUI_API QvisAbstractOpacityBar : public QFrame
@@ -75,6 +78,7 @@ public:
     void           setBackgroundColorControlPoints(const ColorControlPointList *ccp);
 
     void           setHistogramTexture(const float *t, int ts);
+    void           setHistogramTexture(const float *t, const bool *tm, int ts);
 
 signals:
     void           mouseReleased();
@@ -86,7 +90,12 @@ protected:
     float          y2val(int);
 
     void           drawColorBackground();
-    void           drawFilledCurve(float *curve, int nc, const QColor &cc, float opac);
+    void           drawFilledCurve(float *curve, bool *mask, int nc, const QColor &cc, float opac);
+    void           drawFilledCurveWithSelection(float *curve, bool *mask, int nc,
+                                          const QColor &curveOn,  float curveOnOpacity,
+                                          const QColor &curveOff, float curveOffOpacity,
+                                          const QColor &binLines, bool  drawBinLines,
+                                          float range[2], float minval, float maxval);
     void           imageDirty();
 
     virtual void   paintEvent(QPaintEvent*);
@@ -97,7 +106,9 @@ protected:
     const ColorControlPointList
                   *backgroundColorControlPoints;
     float         *histTexture;
+    bool          *histTextureMask;
     int            histTextureSize;
+    QColor         histogramColor;
 
 private:
     bool           ensureImageExists(int,int);

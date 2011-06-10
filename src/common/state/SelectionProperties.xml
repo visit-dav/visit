@@ -1,16 +1,64 @@
 <?xml version="1.0"?>
-  <Attribute name="SelectionProperties" purpose="Contains attributes for a selection" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="SelectionProperties" purpose="Contains attributes for a selection" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="SelectionProperties.code">
+    <Enum name="SelectionType">
+      BasicSelection
+      CumulativeQuerySelection
+    </Enum>
+    <Enum name="CombinationType">
+      CombineAnd
+      CombineOr
+    </Enum>
+    <Enum name="HistogramType">
+      HistogramTime
+      HistogramMatches
+      HistogramID
+      HistogramVariable
+    </Enum>
     <Field name="name" label="Name of the selection" type="string">
     </Field>
-    <Field name="originatingPlot" label="The plotName of the plot that defines the selection" type="string">
+    <Field name="source" label="The source of data that defines the selection. This is a plot name or a database name." type="string">
     </Field>
-    <Field name="rangeProperty" label="Dummy property for ranges -- more to come later" type="int">
+    <Field name="selectionType" label="Selection type" type="enum" subtype="SelectionType">
+      BasicSelection
+    </Field>
+    <Field name="variables" label="Variables" type="stringVector">
+    </Field>
+    <Field name="variableMins" label="Variable minimums" type="doubleVector">
+    </Field>
+    <Field name="variableMaxs" label="Variable maximums" type="doubleVector">
+    </Field>
+    <Field name="timeEnabled" label="Time enabled" type="bool">
+      true
+    </Field>
+    <Field name="minTimeState" label="Minimum time state" type="int">
       0
     </Field>
-    <Field name="histogramProperty" label="Dummy property for histograms -- more to come." type="int">
-      0
+    <Field name="maxTimeState" label="Maximum time state" type="int">
+      -1
     </Field>
-    <Field name="statisticsProperty" label="Dummy property for statistics -- more to come" type="int">
-      0
+    <Field name="timeStateStride" label="Time state stride" type="int">
+      1
     </Field>
+    <Field name="combineRule" label="Combination rule for multiple time states" type="enum" subtype="CombinationType">
+      CombineOr
+    </Field>
+    <Field name="histogramType" label="Type of histogram being shown" type="enum" subtype="HistogramType">
+       HistogramTime
+    </Field>   
+    <Field name="histogramNumBins" label="Number of bins for histogram display" type="int">
+       10
+    </Field>
+    <Field name="histogramStartBin" label="Starting bin for histogram selection" type="int">
+       0
+    </Field>
+    <Field name="histogramEndBin" label="Ending bin for histogram selection" type="int">
+       9
+    </Field>
+    <Field name="histogramVariableIndex" label="Histogram variable index" type="int">
+       -1
+    </Field>
+    <Function name="GetOriginatingPlot" user="true" member="true">
+    </Function>   
+    <Function name="SetOriginatingPlot" user="true" member="true">
+    </Function>   
   </Attribute>

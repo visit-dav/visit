@@ -250,6 +250,7 @@ public:
         SaveNamedSelectionRPC,
         SetNamedSelectionAutoApplyRPC,
         UpdateNamedSelectionRPC,
+        InitializeNamedSelectionVariablesRPC,
         MenuQuitRPC,
         SetPlotDescriptionRPC,
         MovePlotOrderTowardFirstRPC,

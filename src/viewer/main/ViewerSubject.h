@@ -596,6 +596,7 @@ private:
     void SetNamedSelectionAutoApply();
     void UpdateNamedSelection();
     void UpdateNamedSelection(const std::string &);
+    void InitializeNamedSelectionVariables();
 
     void SetDefaultPlotOptions();
     void ResetPlotOptions();

@@ -3385,6 +3385,7 @@ public class ViewerMethods
     {
         GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_CREATENAMEDSELECTIONRPC);
         GetViewerState().GetViewerRPC().SetStringArg1(selName);
+        GetViewerState().GetViewerRPC().SetBoolFlag(true);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }

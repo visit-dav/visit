@@ -180,6 +180,8 @@ protected:
     int  GetTimeSliderStateForDatabaseState(const std::string &tsName,
                                             const QualifiedFilename &source,
                                             int dbState) const;
+
+    QString GetPlotDescription(const QString &plotName) const;
 private:
     static ViewerProxy       *viewer;
 protected:

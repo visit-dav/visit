@@ -72,6 +72,7 @@
 #include <ExpressionList.h>
 #include <FileOpenOptions.h>
 #include <SetEFileOpenOptionsRPC.h>
+#include <SelectionProperties.h>
 
 #include <avtDataObjectReader.h>
 #include <avtDatabaseMetaData.h>
@@ -414,7 +415,7 @@ public:
 
     void                     ApplyNamedSelection(const std::vector<std::string> &ids, 
                                                  const std::string selName);
-    void                     CreateNamedSelection(int id, const std::string selName);
+    const SelectionSummary  &CreateNamedSelection(int id, const SelectionProperties &props);
     void                     DeleteNamedSelection(const std::string selName);
     void                     LoadNamedSelection(const std::string selName);
     void                     SaveNamedSelection(const std::string selName);
@@ -434,6 +435,7 @@ public:
 protected:
     virtual void             SetupComponentRPCs();
     void                     ExtractEngineInformation();
+    void                     BlockForNamedSelectionOperation();
     void                     Status(const char *message);
     void                     Status(int percent, int curStage,
                                     const std::string &curStageName,

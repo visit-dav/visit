@@ -78,13 +78,127 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
 
     SNPRINTF(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%soriginatingPlot = \"%s\"\n", prefix, atts->GetOriginatingPlot().c_str());
+    SNPRINTF(tmpStr, 1000, "%ssource = \"%s\"\n", prefix, atts->GetSource().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%srangeProperty = %d\n", prefix, atts->GetRangeProperty());
+    const char *selectionType_names = "BasicSelection, CumulativeQuerySelection";
+    switch (atts->GetSelectionType())
+    {
+      case SelectionProperties::BasicSelection:
+          SNPRINTF(tmpStr, 1000, "%sselectionType = %sBasicSelection  # %s\n", prefix, prefix, selectionType_names);
+          str += tmpStr;
+          break;
+      case SelectionProperties::CumulativeQuerySelection:
+          SNPRINTF(tmpStr, 1000, "%sselectionType = %sCumulativeQuerySelection  # %s\n", prefix, prefix, selectionType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    {   const stringVector &variables = atts->GetVariables();
+        SNPRINTF(tmpStr, 1000, "%svariables = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < variables.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "\"%s\"", variables[i].c_str());
+            str += tmpStr;
+            if(i < variables.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const doubleVector &variableMins = atts->GetVariableMins();
+        SNPRINTF(tmpStr, 1000, "%svariableMins = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < variableMins.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", variableMins[i]);
+            str += tmpStr;
+            if(i < variableMins.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const doubleVector &variableMaxs = atts->GetVariableMaxs();
+        SNPRINTF(tmpStr, 1000, "%svariableMaxs = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < variableMaxs.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", variableMaxs[i]);
+            str += tmpStr;
+            if(i < variableMaxs.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    if(atts->GetTimeEnabled())
+        SNPRINTF(tmpStr, 1000, "%stimeEnabled = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%stimeEnabled = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%shistogramProperty = %d\n", prefix, atts->GetHistogramProperty());
+    SNPRINTF(tmpStr, 1000, "%sminTimeState = %d\n", prefix, atts->GetMinTimeState());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sstatisticsProperty = %d\n", prefix, atts->GetStatisticsProperty());
+    SNPRINTF(tmpStr, 1000, "%smaxTimeState = %d\n", prefix, atts->GetMaxTimeState());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stimeStateStride = %d\n", prefix, atts->GetTimeStateStride());
+    str += tmpStr;
+    const char *combineRule_names = "CombineAnd, CombineOr";
+    switch (atts->GetCombineRule())
+    {
+      case SelectionProperties::CombineAnd:
+          SNPRINTF(tmpStr, 1000, "%scombineRule = %sCombineAnd  # %s\n", prefix, prefix, combineRule_names);
+          str += tmpStr;
+          break;
+      case SelectionProperties::CombineOr:
+          SNPRINTF(tmpStr, 1000, "%scombineRule = %sCombineOr  # %s\n", prefix, prefix, combineRule_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *histogramType_names = "HistogramTime, HistogramMatches, HistogramID, HistogramVariable";
+    switch (atts->GetHistogramType())
+    {
+      case SelectionProperties::HistogramTime:
+          SNPRINTF(tmpStr, 1000, "%shistogramType = %sHistogramTime  # %s\n", prefix, prefix, histogramType_names);
+          str += tmpStr;
+          break;
+      case SelectionProperties::HistogramMatches:
+          SNPRINTF(tmpStr, 1000, "%shistogramType = %sHistogramMatches  # %s\n", prefix, prefix, histogramType_names);
+          str += tmpStr;
+          break;
+      case SelectionProperties::HistogramID:
+          SNPRINTF(tmpStr, 1000, "%shistogramType = %sHistogramID  # %s\n", prefix, prefix, histogramType_names);
+          str += tmpStr;
+          break;
+      case SelectionProperties::HistogramVariable:
+          SNPRINTF(tmpStr, 1000, "%shistogramType = %sHistogramVariable  # %s\n", prefix, prefix, histogramType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%shistogramNumBins = %d\n", prefix, atts->GetHistogramNumBins());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%shistogramStartBin = %d\n", prefix, atts->GetHistogramStartBin());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%shistogramEndBin = %d\n", prefix, atts->GetHistogramEndBin());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%shistogramVariableIndex = %d\n", prefix, atts->GetHistogramVariableIndex());
     str += tmpStr;
     return str;
 }
@@ -123,7 +237,7 @@ SelectionProperties_GetName(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-SelectionProperties_SetOriginatingPlot(PyObject *self, PyObject *args)
+SelectionProperties_SetSource(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
 
@@ -131,23 +245,23 @@ SelectionProperties_SetOriginatingPlot(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "s", &str))
         return NULL;
 
-    // Set the originatingPlot in the object.
-    obj->data->SetOriginatingPlot(std::string(str));
+    // Set the source in the object.
+    obj->data->SetSource(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-SelectionProperties_GetOriginatingPlot(PyObject *self, PyObject *args)
+SelectionProperties_GetSource(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetOriginatingPlot().c_str());
+    PyObject *retval = PyString_FromString(obj->data->GetSource().c_str());
     return retval;
 }
 
 /*static*/ PyObject *
-SelectionProperties_SetRangeProperty(PyObject *self, PyObject *args)
+SelectionProperties_SetSelectionType(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
 
@@ -155,23 +269,207 @@ SelectionProperties_SetRangeProperty(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the rangeProperty in the object.
-    obj->data->SetRangeProperty((int)ival);
+    // Set the selectionType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetSelectionType(SelectionProperties::SelectionType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid selectionType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "BasicSelection, CumulativeQuerySelection.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-SelectionProperties_GetRangeProperty(PyObject *self, PyObject *args)
+SelectionProperties_GetSelectionType(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetRangeProperty()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetSelectionType()));
     return retval;
 }
 
 /*static*/ PyObject *
-SelectionProperties_SetHistogramProperty(PyObject *self, PyObject *args)
+SelectionProperties_SetVariables(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    stringVector  &vec = obj->data->GetVariables();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyString_Check(item))
+                vec[i] = std::string(PyString_AS_STRING(item));
+            else
+                vec[i] = std::string("");
+        }
+    }
+    else if(PyString_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = std::string(PyString_AS_STRING(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the variables in the object as modified.
+    obj->data->SelectVariables();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetVariables(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    // Allocate a tuple the with enough entries to hold the variables.
+    const stringVector &variables = obj->data->GetVariables();
+    PyObject *retval = PyTuple_New(variables.size());
+    for(size_t i = 0; i < variables.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(variables[i].c_str()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetVariableMins(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    doubleVector  &vec = obj->data->GetVariableMins();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                vec[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = PyLong_AsDouble(item);
+            else
+                vec[i] = 0.;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyFloat_AS_DOUBLE(tuple);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = double(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyLong_AsDouble(tuple);
+    }
+    else
+        return NULL;
+
+    // Mark the variableMins in the object as modified.
+    obj->data->SelectVariableMins();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetVariableMins(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    // Allocate a tuple the with enough entries to hold the variableMins.
+    const doubleVector &variableMins = obj->data->GetVariableMins();
+    PyObject *retval = PyTuple_New(variableMins.size());
+    for(size_t i = 0; i < variableMins.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(variableMins[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetVariableMaxs(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    doubleVector  &vec = obj->data->GetVariableMaxs();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                vec[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = PyLong_AsDouble(item);
+            else
+                vec[i] = 0.;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyFloat_AS_DOUBLE(tuple);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = double(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyLong_AsDouble(tuple);
+    }
+    else
+        return NULL;
+
+    // Mark the variableMaxs in the object as modified.
+    obj->data->SelectVariableMaxs();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetVariableMaxs(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    // Allocate a tuple the with enough entries to hold the variableMaxs.
+    const doubleVector &variableMaxs = obj->data->GetVariableMaxs();
+    PyObject *retval = PyTuple_New(variableMaxs.size());
+    for(size_t i = 0; i < variableMaxs.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(variableMaxs[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetTimeEnabled(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
 
@@ -179,23 +477,23 @@ SelectionProperties_SetHistogramProperty(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the histogramProperty in the object.
-    obj->data->SetHistogramProperty((int)ival);
+    // Set the timeEnabled in the object.
+    obj->data->SetTimeEnabled(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-SelectionProperties_GetHistogramProperty(PyObject *self, PyObject *args)
+SelectionProperties_GetTimeEnabled(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramProperty()));
+    PyObject *retval = PyInt_FromLong(obj->data->GetTimeEnabled()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-SelectionProperties_SetStatisticsProperty(PyObject *self, PyObject *args)
+SelectionProperties_SetMinTimeState(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
 
@@ -203,18 +501,228 @@ SelectionProperties_SetStatisticsProperty(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the statisticsProperty in the object.
-    obj->data->SetStatisticsProperty((int)ival);
+    // Set the minTimeState in the object.
+    obj->data->SetMinTimeState((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-SelectionProperties_GetStatisticsProperty(PyObject *self, PyObject *args)
+SelectionProperties_GetMinTimeState(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetStatisticsProperty()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMinTimeState()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetMaxTimeState(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maxTimeState in the object.
+    obj->data->SetMaxTimeState((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetMaxTimeState(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxTimeState()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetTimeStateStride(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the timeStateStride in the object.
+    obj->data->SetTimeStateStride((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetTimeStateStride(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStateStride()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetCombineRule(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the combineRule in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetCombineRule(SelectionProperties::CombinationType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid combineRule value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "CombineAnd, CombineOr.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetCombineRule(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCombineRule()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetHistogramType(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the histogramType in the object.
+    if(ival >= 0 && ival < 4)
+        obj->data->SetHistogramType(SelectionProperties::HistogramType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid histogramType value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "HistogramTime, HistogramMatches, HistogramID, HistogramVariable.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetHistogramType(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetHistogramNumBins(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the histogramNumBins in the object.
+    obj->data->SetHistogramNumBins((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetHistogramNumBins(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramNumBins()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetHistogramStartBin(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the histogramStartBin in the object.
+    obj->data->SetHistogramStartBin((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetHistogramStartBin(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramStartBin()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetHistogramEndBin(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the histogramEndBin in the object.
+    obj->data->SetHistogramEndBin((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetHistogramEndBin(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramEndBin()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetHistogramVariableIndex(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the histogramVariableIndex in the object.
+    obj->data->SetHistogramVariableIndex((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetHistogramVariableIndex(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramVariableIndex()));
     return retval;
 }
 
@@ -224,14 +732,36 @@ PyMethodDef PySelectionProperties_methods[SELECTIONPROPERTIES_NMETH] = {
     {"Notify", SelectionProperties_Notify, METH_VARARGS},
     {"SetName", SelectionProperties_SetName, METH_VARARGS},
     {"GetName", SelectionProperties_GetName, METH_VARARGS},
-    {"SetOriginatingPlot", SelectionProperties_SetOriginatingPlot, METH_VARARGS},
-    {"GetOriginatingPlot", SelectionProperties_GetOriginatingPlot, METH_VARARGS},
-    {"SetRangeProperty", SelectionProperties_SetRangeProperty, METH_VARARGS},
-    {"GetRangeProperty", SelectionProperties_GetRangeProperty, METH_VARARGS},
-    {"SetHistogramProperty", SelectionProperties_SetHistogramProperty, METH_VARARGS},
-    {"GetHistogramProperty", SelectionProperties_GetHistogramProperty, METH_VARARGS},
-    {"SetStatisticsProperty", SelectionProperties_SetStatisticsProperty, METH_VARARGS},
-    {"GetStatisticsProperty", SelectionProperties_GetStatisticsProperty, METH_VARARGS},
+    {"SetSource", SelectionProperties_SetSource, METH_VARARGS},
+    {"GetSource", SelectionProperties_GetSource, METH_VARARGS},
+    {"SetSelectionType", SelectionProperties_SetSelectionType, METH_VARARGS},
+    {"GetSelectionType", SelectionProperties_GetSelectionType, METH_VARARGS},
+    {"SetVariables", SelectionProperties_SetVariables, METH_VARARGS},
+    {"GetVariables", SelectionProperties_GetVariables, METH_VARARGS},
+    {"SetVariableMins", SelectionProperties_SetVariableMins, METH_VARARGS},
+    {"GetVariableMins", SelectionProperties_GetVariableMins, METH_VARARGS},
+    {"SetVariableMaxs", SelectionProperties_SetVariableMaxs, METH_VARARGS},
+    {"GetVariableMaxs", SelectionProperties_GetVariableMaxs, METH_VARARGS},
+    {"SetTimeEnabled", SelectionProperties_SetTimeEnabled, METH_VARARGS},
+    {"GetTimeEnabled", SelectionProperties_GetTimeEnabled, METH_VARARGS},
+    {"SetMinTimeState", SelectionProperties_SetMinTimeState, METH_VARARGS},
+    {"GetMinTimeState", SelectionProperties_GetMinTimeState, METH_VARARGS},
+    {"SetMaxTimeState", SelectionProperties_SetMaxTimeState, METH_VARARGS},
+    {"GetMaxTimeState", SelectionProperties_GetMaxTimeState, METH_VARARGS},
+    {"SetTimeStateStride", SelectionProperties_SetTimeStateStride, METH_VARARGS},
+    {"GetTimeStateStride", SelectionProperties_GetTimeStateStride, METH_VARARGS},
+    {"SetCombineRule", SelectionProperties_SetCombineRule, METH_VARARGS},
+    {"GetCombineRule", SelectionProperties_GetCombineRule, METH_VARARGS},
+    {"SetHistogramType", SelectionProperties_SetHistogramType, METH_VARARGS},
+    {"GetHistogramType", SelectionProperties_GetHistogramType, METH_VARARGS},
+    {"SetHistogramNumBins", SelectionProperties_SetHistogramNumBins, METH_VARARGS},
+    {"GetHistogramNumBins", SelectionProperties_GetHistogramNumBins, METH_VARARGS},
+    {"SetHistogramStartBin", SelectionProperties_SetHistogramStartBin, METH_VARARGS},
+    {"GetHistogramStartBin", SelectionProperties_GetHistogramStartBin, METH_VARARGS},
+    {"SetHistogramEndBin", SelectionProperties_SetHistogramEndBin, METH_VARARGS},
+    {"GetHistogramEndBin", SelectionProperties_GetHistogramEndBin, METH_VARARGS},
+    {"SetHistogramVariableIndex", SelectionProperties_SetHistogramVariableIndex, METH_VARARGS},
+    {"GetHistogramVariableIndex", SelectionProperties_GetHistogramVariableIndex, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -262,14 +792,55 @@ PySelectionProperties_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "name") == 0)
         return SelectionProperties_GetName(self, NULL);
-    if(strcmp(name, "originatingPlot") == 0)
-        return SelectionProperties_GetOriginatingPlot(self, NULL);
-    if(strcmp(name, "rangeProperty") == 0)
-        return SelectionProperties_GetRangeProperty(self, NULL);
-    if(strcmp(name, "histogramProperty") == 0)
-        return SelectionProperties_GetHistogramProperty(self, NULL);
-    if(strcmp(name, "statisticsProperty") == 0)
-        return SelectionProperties_GetStatisticsProperty(self, NULL);
+    if(strcmp(name, "source") == 0)
+        return SelectionProperties_GetSource(self, NULL);
+    if(strcmp(name, "selectionType") == 0)
+        return SelectionProperties_GetSelectionType(self, NULL);
+    if(strcmp(name, "BasicSelection") == 0)
+        return PyInt_FromLong(long(SelectionProperties::BasicSelection));
+    if(strcmp(name, "CumulativeQuerySelection") == 0)
+        return PyInt_FromLong(long(SelectionProperties::CumulativeQuerySelection));
+
+    if(strcmp(name, "variables") == 0)
+        return SelectionProperties_GetVariables(self, NULL);
+    if(strcmp(name, "variableMins") == 0)
+        return SelectionProperties_GetVariableMins(self, NULL);
+    if(strcmp(name, "variableMaxs") == 0)
+        return SelectionProperties_GetVariableMaxs(self, NULL);
+    if(strcmp(name, "timeEnabled") == 0)
+        return SelectionProperties_GetTimeEnabled(self, NULL);
+    if(strcmp(name, "minTimeState") == 0)
+        return SelectionProperties_GetMinTimeState(self, NULL);
+    if(strcmp(name, "maxTimeState") == 0)
+        return SelectionProperties_GetMaxTimeState(self, NULL);
+    if(strcmp(name, "timeStateStride") == 0)
+        return SelectionProperties_GetTimeStateStride(self, NULL);
+    if(strcmp(name, "combineRule") == 0)
+        return SelectionProperties_GetCombineRule(self, NULL);
+    if(strcmp(name, "CombineAnd") == 0)
+        return PyInt_FromLong(long(SelectionProperties::CombineAnd));
+    if(strcmp(name, "CombineOr") == 0)
+        return PyInt_FromLong(long(SelectionProperties::CombineOr));
+
+    if(strcmp(name, "histogramType") == 0)
+        return SelectionProperties_GetHistogramType(self, NULL);
+    if(strcmp(name, "HistogramTime") == 0)
+        return PyInt_FromLong(long(SelectionProperties::HistogramTime));
+    if(strcmp(name, "HistogramMatches") == 0)
+        return PyInt_FromLong(long(SelectionProperties::HistogramMatches));
+    if(strcmp(name, "HistogramID") == 0)
+        return PyInt_FromLong(long(SelectionProperties::HistogramID));
+    if(strcmp(name, "HistogramVariable") == 0)
+        return PyInt_FromLong(long(SelectionProperties::HistogramVariable));
+
+    if(strcmp(name, "histogramNumBins") == 0)
+        return SelectionProperties_GetHistogramNumBins(self, NULL);
+    if(strcmp(name, "histogramStartBin") == 0)
+        return SelectionProperties_GetHistogramStartBin(self, NULL);
+    if(strcmp(name, "histogramEndBin") == 0)
+        return SelectionProperties_GetHistogramEndBin(self, NULL);
+    if(strcmp(name, "histogramVariableIndex") == 0)
+        return SelectionProperties_GetHistogramVariableIndex(self, NULL);
 
     return Py_FindMethod(PySelectionProperties_methods, self, name);
 }
@@ -286,14 +857,36 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "name") == 0)
         obj = SelectionProperties_SetName(self, tuple);
-    else if(strcmp(name, "originatingPlot") == 0)
-        obj = SelectionProperties_SetOriginatingPlot(self, tuple);
-    else if(strcmp(name, "rangeProperty") == 0)
-        obj = SelectionProperties_SetRangeProperty(self, tuple);
-    else if(strcmp(name, "histogramProperty") == 0)
-        obj = SelectionProperties_SetHistogramProperty(self, tuple);
-    else if(strcmp(name, "statisticsProperty") == 0)
-        obj = SelectionProperties_SetStatisticsProperty(self, tuple);
+    else if(strcmp(name, "source") == 0)
+        obj = SelectionProperties_SetSource(self, tuple);
+    else if(strcmp(name, "selectionType") == 0)
+        obj = SelectionProperties_SetSelectionType(self, tuple);
+    else if(strcmp(name, "variables") == 0)
+        obj = SelectionProperties_SetVariables(self, tuple);
+    else if(strcmp(name, "variableMins") == 0)
+        obj = SelectionProperties_SetVariableMins(self, tuple);
+    else if(strcmp(name, "variableMaxs") == 0)
+        obj = SelectionProperties_SetVariableMaxs(self, tuple);
+    else if(strcmp(name, "timeEnabled") == 0)
+        obj = SelectionProperties_SetTimeEnabled(self, tuple);
+    else if(strcmp(name, "minTimeState") == 0)
+        obj = SelectionProperties_SetMinTimeState(self, tuple);
+    else if(strcmp(name, "maxTimeState") == 0)
+        obj = SelectionProperties_SetMaxTimeState(self, tuple);
+    else if(strcmp(name, "timeStateStride") == 0)
+        obj = SelectionProperties_SetTimeStateStride(self, tuple);
+    else if(strcmp(name, "combineRule") == 0)
+        obj = SelectionProperties_SetCombineRule(self, tuple);
+    else if(strcmp(name, "histogramType") == 0)
+        obj = SelectionProperties_SetHistogramType(self, tuple);
+    else if(strcmp(name, "histogramNumBins") == 0)
+        obj = SelectionProperties_SetHistogramNumBins(self, tuple);
+    else if(strcmp(name, "histogramStartBin") == 0)
+        obj = SelectionProperties_SetHistogramStartBin(self, tuple);
+    else if(strcmp(name, "histogramEndBin") == 0)
+        obj = SelectionProperties_SetHistogramEndBin(self, tuple);
+    else if(strcmp(name, "histogramVariableIndex") == 0)
+        obj = SelectionProperties_SetHistogramVariableIndex(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

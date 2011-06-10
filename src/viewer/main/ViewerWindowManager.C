@@ -145,6 +145,7 @@ RenderingAttributes *ViewerWindowManager::renderAtts=0;
 AnnotationObjectList *ViewerWindowManager::annotationObjectList = 0;
 AnnotationObjectList *ViewerWindowManager::defaultAnnotationObjectList = 0;
 SelectionList *ViewerWindowManager::selectionList = 0;
+SelectionProperties *ViewerWindowManager::selectionProperties = 0;
 
 //
 // Global variables.  These should be removed.
@@ -8899,6 +8900,29 @@ ViewerWindowManager::GetSelectionList()
 }
 
 // ****************************************************************************
+// Method: ViewerWindowManager::GetSelectionProperties
+//
+// Purpose: 
+//   Return the selection Properties, creating it first if needed.
+//
+// Returns:    The selection Properties object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 23 11:27:10 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SelectionProperties *
+ViewerWindowManager::GetSelectionProperties()
+{
+    if(selectionProperties == 0)
+        selectionProperties = new SelectionProperties;
+    return selectionProperties;
+}
+
+// ****************************************************************************
 // Method: ViewerWindowManager::GetLineoutWindow
 //
 // Purpose:    
@@ -9410,7 +9434,7 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
     DataNode *mgrNode = new DataNode("ViewerWindowManager");
     parentNode->AddNode(mgrNode);
 
-    GetSelectionList()->CreateNode(mgrNode, true, true);    
+    GetSelectionList()->CreateNode(mgrNode, detailed, true);    
 
     //
     // Add information about the ViewerWindowManager.
@@ -9507,6 +9531,9 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Wed Aug 11 16:54:38 PDT 2010
 //   I added the selection node and code to regenerate named selections from
 //   the plots that generate them.
+//
+//   Brad Whitlock, Tue Dec 14 13:34:58 PST 2010
+//   Pass selection properties when creating named selections.
 //
 // ****************************************************************************
 
@@ -9739,7 +9766,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
         // Look over the plots in all windows and save the indices of the 
         // originating plots for a selection. Save the name too.
         intVector *originatingPlots = new intVector[maxWindows];
-        stringVector *selNames = new stringVector[maxWindows];
+        std::vector<SelectionProperties> *selProps = new std::vector<SelectionProperties>[maxWindows];
         for(i = 0; i < maxWindows; ++i)
         {
             if(windows[i] == 0)
@@ -9751,7 +9778,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
                     if(GetSelectionList()->GetSelections(k).GetOriginatingPlot() ==
                        windows[i]->GetPlotList()->GetPlot(j)->GetPlotName())
                     {
-                        selNames[i].push_back(GetSelectionList()->GetSelections(k).GetName());
+                        selProps[i].push_back(GetSelectionList()->GetSelections(k));
                         originatingPlots[i].push_back(j);
                         break;
                     }
@@ -9775,17 +9802,17 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
                 {
                     TRY
                     {
-                        debug4 << "Creating named selection " << selNames[i][j]
+                        debug4 << "Creating named selection " << selProps[i][j].GetName()
                                << " from plot " << origPlots[j] << " in window "
                                << i << endl;
                         ViewerEngineManager::Instance()->CreateNamedSelection(
                             windows[i]->GetPlotList()->GetPlot(origPlots[j])->GetEngineKey(),
                             windows[i]->GetPlotList()->GetPlot(origPlots[j])->GetNetworkID(),
-                            selNames[i][j]);
+                            selProps[i][j]);
                     }
                     CATCH(VisItException)
                     {
-                        Error(tr("Could not create named selection %1.").arg(selNames[i][j].c_str()));
+                        Error(tr("Could not create named selection %1.").arg(selProps[i][j].GetName().c_str()));
                     }
                     ENDTRY
                 }
@@ -9795,8 +9822,9 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
         }
 
         GetSelectionList()->SetAutoApplyUpdates(tmpApply);
+        GetSelectionList()->Notify();
         delete [] originatingPlots;
-        delete [] selNames;
+        delete [] selProps;
     }
 
     //

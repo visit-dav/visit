@@ -122,9 +122,9 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
         "SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, "
         "TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, "
         "CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, "
-        "SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, MenuQuitRPC, SetPlotDescriptionRPC, "
-        "MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, "
-        "RenamePickLabelRPC, MaxRPC";
+        "SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, "
+        "SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, "
+        "SetPlotOrderToLastRPC, RenamePickLabelRPC, MaxRPC";
     switch (atts->GetRPCType())
     {
       case ViewerRPC::CloseRPC:
@@ -875,6 +875,10 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sUpdateNamedSelectionRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
+      case ViewerRPC::InitializeNamedSelectionVariablesRPC:
+          SNPRINTF(tmpStr, 1000, "%sRPCType = %sInitializeNamedSelectionVariablesRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
       case ViewerRPC::MenuQuitRPC:
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sMenuQuitRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
@@ -1082,6 +1086,8 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sintArg3 = %d\n", prefix, atts->GetIntArg3());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sintArg4 = %d\n", prefix, atts->GetIntArg4());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sstringArg1 = \"%s\"\n", prefix, atts->GetStringArg1().c_str());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sstringArg2 = \"%s\"\n", prefix, atts->GetStringArg2().c_str());
@@ -1142,12 +1148,12 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the RPCType in the object.
-    if(ival >= 0 && ival < 195)
+    if(ival >= 0 && ival < 196)
         obj->data->SetRPCType(ViewerRPC::ViewerRPCType(ival));
     else
     {
         fprintf(stderr, "An invalid RPCType value was given. "
-                        "Valid values are in the range of [0,194]. "
+                        "Valid values are in the range of [0,195]. "
                         "You can also use the following names: "
                         "CloseRPC, DetachRPC, AddWindowRPC, DeleteWindowRPC, SetWindowLayoutRPC, "
                         "SetActiveWindowRPC, ClearWindowRPC, ClearAllWindowsRPC, OpenDatabaseRPC, "
@@ -1195,9 +1201,9 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
                         "SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, "
                         "TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, "
                         "CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, "
-                        "SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, MenuQuitRPC, SetPlotDescriptionRPC, "
-                        "MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, "
-                        "RenamePickLabelRPC, MaxRPC.");
+                        "SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, "
+                        "SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, "
+                        "SetPlotOrderToLastRPC, RenamePickLabelRPC, MaxRPC.");
         return NULL;
     }
 
@@ -2143,6 +2149,30 @@ ViewerRPC_GetIntArg3(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+ViewerRPC_SetIntArg4(PyObject *self, PyObject *args)
+{
+    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the intArg4 in the object.
+    obj->data->SetIntArg4((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ViewerRPC_GetIntArg4(PyObject *self, PyObject *args)
+{
+    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntArg4()));
+    return retval;
+}
+
+/*static*/ PyObject *
 ViewerRPC_SetStringArg1(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
@@ -2402,6 +2432,8 @@ PyMethodDef PyViewerRPC_methods[VIEWERRPC_NMETH] = {
     {"GetIntArg2", ViewerRPC_GetIntArg2, METH_VARARGS},
     {"SetIntArg3", ViewerRPC_SetIntArg3, METH_VARARGS},
     {"GetIntArg3", ViewerRPC_GetIntArg3, METH_VARARGS},
+    {"SetIntArg4", ViewerRPC_SetIntArg4, METH_VARARGS},
+    {"GetIntArg4", ViewerRPC_GetIntArg4, METH_VARARGS},
     {"SetStringArg1", ViewerRPC_SetStringArg1, METH_VARARGS},
     {"GetStringArg1", ViewerRPC_GetStringArg1, METH_VARARGS},
     {"SetStringArg2", ViewerRPC_SetStringArg2, METH_VARARGS},
@@ -2816,6 +2848,8 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ViewerRPC::SetNamedSelectionAutoApplyRPC));
     if(strcmp(name, "UpdateNamedSelectionRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::UpdateNamedSelectionRPC));
+    if(strcmp(name, "InitializeNamedSelectionVariablesRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::InitializeNamedSelectionVariablesRPC));
     if(strcmp(name, "MenuQuitRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::MenuQuitRPC));
     if(strcmp(name, "SetPlotDescriptionRPC") == 0)
@@ -2889,6 +2923,8 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return ViewerRPC_GetIntArg2(self, NULL);
     if(strcmp(name, "intArg3") == 0)
         return ViewerRPC_GetIntArg3(self, NULL);
+    if(strcmp(name, "intArg4") == 0)
+        return ViewerRPC_GetIntArg4(self, NULL);
     if(strcmp(name, "stringArg1") == 0)
         return ViewerRPC_GetStringArg1(self, NULL);
     if(strcmp(name, "stringArg2") == 0)
@@ -2971,6 +3007,8 @@ PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewerRPC_SetIntArg2(self, tuple);
     else if(strcmp(name, "intArg3") == 0)
         obj = ViewerRPC_SetIntArg3(self, tuple);
+    else if(strcmp(name, "intArg4") == 0)
+        obj = ViewerRPC_SetIntArg4(self, tuple);
     else if(strcmp(name, "stringArg1") == 0)
         obj = ViewerRPC_SetStringArg1(self, tuple);
     else if(strcmp(name, "stringArg2") == 0)
