@@ -50,6 +50,12 @@
 #   Brad Whitlock, Fri Aug  6 16:34:54 PDT 2010
 #   Added QvisSelectionsWindow.
 #
+#   Brad Whitlock, Mon Dec 27 16:15:50 PST 2010
+#   Added QvisHistogram, QvisHistogramLimits, QvisVariableListLimiter.
+#
+#   Brad Whitlock, Thu Jun  9 15:22:21 PDT 2011
+#   Added QvisSelectionsDialog.
+#
 #****************************************************************************/
 
 SET(GUILIB_SOURCES
@@ -114,6 +120,8 @@ QvisGaussianOpacityBar.C
 QvisGlobalLineoutWindow.C
 QvisGridWidget.C
 QvisHelpWindow.C
+QvisHistogram.C
+QvisHistogramLimits.C
 QvisHostProfileWindow.C
 QvisImageAnnotationInterface.C
 QvisInteractorWindow.C
@@ -166,6 +174,7 @@ QvisSaveWindow.C
 QvisScreenPositionEdit.C
 QvisScreenPositioner.C
 QvisScribbleOpacityBar.C
+QvisSelectionsDialog.C
 QvisSelectionsWindow.C
 QvisSequenceButton.C
 QvisSequenceMappingModel.C
@@ -191,6 +200,7 @@ QvisTimeSliderControlWidget.C
 QvisTimeSliderInterface.C
 QvisTurnDownButton.C
 QvisUiLoader.C
+QvisVariableListLimiter.C
 QvisVCRControl.C
 QvisViewWindow.C
 QvisViewportWidget.C
@@ -243,6 +253,8 @@ QvisGlobalLineoutWindow.h
 QvisGridWidget.h
 QvisGUIApplication.h
 QvisHelpWindow.h
+QvisHistogram.h
+QvisHistogramLimits.h
 QvisHostProfileWindow.h
 QvisImageAnnotationInterface.h
 QvisInteractorWindow.h
@@ -282,6 +294,7 @@ QvisSaveWindow.h
 QvisScreenPositionEdit.h
 QvisScreenPositioner.h
 QvisScribbleOpacityBar.h
+QvisSelectionsDialog.h
 QvisSelectionsWindow.h
 QvisSessionFileDatabaseLoader.h
 QvisSessionSourceChanger.h
@@ -314,6 +327,7 @@ QvisLine2DInterface.h
 QvisText3DInterface.h
 QvisText2DInterface.h
 QvisTimeSliderControlWidget.h
+QvisVariableListLimiter.h
 QvisVisItUpdate.h
 QvisSequenceButton.h
 QvisCompositeTransition.h

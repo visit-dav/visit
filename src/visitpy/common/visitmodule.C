@@ -113,6 +113,8 @@
 #include <QueryAttributes.h>
 #include <PrinterAttributes.h>
 #include <RenderingAttributes.h>
+#include <SelectionProperties.h>
+#include <SelectionList.h>
 #include <StatusAttributes.h>
 #include <SyncAttributes.h>
 #include <QueryOverTimeAttributes.h>
@@ -166,6 +168,9 @@
 #include <PyProcessAttributes.h>
 #include <PyRenderingAttributes.h>
 #include <PySaveWindowAttributes.h>
+#include <PySelectionProperties.h>
+#include <PySelectionSummary.h>
+#include <PySelectionList.h>
 #include <PySILRestrictionBase.h>
 #include <PySILRestriction.h>
 #include <PyText2DObject.h>
@@ -13082,7 +13087,7 @@ visit_ApplyNamedSelection(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *selName;
+    char *selName = NULL;
     if (!PyArg_ParseTuple(args, "s", &selName))
        return NULL;
 
@@ -13106,6 +13111,8 @@ visit_ApplyNamedSelection(PyObject *self, PyObject *args)
 // Creation:   January 28, 2009
 //
 // Modifications:
+//   Brad Whitlock, Tue Dec 14 16:36:13 PST 2010
+//   Allow a SelectionProperties object to be passed too.
 //
 // ****************************************************************************
 
@@ -13114,14 +13121,38 @@ visit_CreateNamedSelection(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *selName;
-    if (!PyArg_ParseTuple(args, "s", &selName))
-       return NULL;
+    PyObject *props = NULL;
+    char *selName = NULL;
+    if(!PyArg_ParseTuple(args, "sO", &selName, &props))
+    {
+        if (!PyArg_ParseTuple(args, "s", &selName))
+            return NULL;
+        PyErr_Clear();
+    }
 
-    // Activate the database.
-    MUTEX_LOCK();
-        GetViewerMethods()->CreateNamedSelection(selName);
-    MUTEX_UNLOCK();
+    if(props != NULL)
+    {
+        if(PySelectionProperties_Check(props))
+        {
+            // We have a selection properties object. Add it to the selection
+            // list and send it to the viewer.
+            const SelectionProperties *p = PySelectionProperties_FromPyObject(props);
+
+            // Create the named selection.
+            MUTEX_LOCK();   
+                GetViewerMethods()->CreateNamedSelection(p->GetName(), *p);
+            MUTEX_UNLOCK();
+        }
+        else
+            return NULL;
+    }
+    else
+    {
+        // Create the named selection.
+        MUTEX_LOCK();        
+            GetViewerMethods()->CreateNamedSelection(selName);
+        MUTEX_UNLOCK();
+    }
 
     // Return the success value.
     return IntReturnValue(Synchronize());
@@ -13145,7 +13176,7 @@ visit_DeleteNamedSelection(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *selName;
+    char *selName = NULL;
     if (!PyArg_ParseTuple(args, "s", &selName))
        return NULL;
 
@@ -13168,7 +13199,9 @@ visit_DeleteNamedSelection(PyObject *self, PyObject *args)
 // Creation:   Fri Aug 13 14:39:21 PDT 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 14 16:36:13 PST 2010
+//   Allow a SelectionProperties object to be passed too.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -13176,14 +13209,38 @@ visit_UpdateNamedSelection(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *selName;
-    if (!PyArg_ParseTuple(args, "s", &selName))
-       return NULL;
+    PyObject *props = NULL;
+    char *selName = NULL;
+    if(!PyArg_ParseTuple(args, "sO", &selName, &props))
+    {
+        if (!PyArg_ParseTuple(args, "s", &selName))
+            return NULL;
+        PyErr_Clear();
+    }
 
-    // Activate the database.
-    MUTEX_LOCK();
-        GetViewerMethods()->UpdateNamedSelection(selName);
-    MUTEX_UNLOCK();
+    if(props != NULL)
+    {
+        if(PySelectionProperties_Check(props))
+        {
+            // We have a selection properties object. Add it to the selection
+            // list and send it to the viewer.
+            const SelectionProperties *p = PySelectionProperties_FromPyObject(props);
+
+            // Create the named selection.
+            MUTEX_LOCK();
+                GetViewerMethods()->UpdateNamedSelection(selName, *p);
+            MUTEX_UNLOCK();
+        }
+        else
+            return NULL;
+    }
+    else
+    {
+        // Create the named selection.
+        MUTEX_LOCK();        
+            GetViewerMethods()->UpdateNamedSelection(selName);
+        MUTEX_UNLOCK();
+    }
 
     // Return the success value.
     return IntReturnValue(Synchronize());
@@ -13345,9 +13402,144 @@ visit_SetNamedSelectionAutoApply(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &apply))
        return NULL;
 
-    // Activate the database.
+    // Set the named selection auto apply mode.
     MUTEX_LOCK();
         GetViewerMethods()->SetNamedSelectionAutoApply(apply != 0);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Method: visit_GetSelection
+//
+// Purpose: 
+//   Return the selection with the right name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  2 15:42:46 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetSelection(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *selName = 0;
+    if (!PyArg_ParseTuple(args, "s", &selName))
+        return NULL;
+
+    // Try and stash the selection properties in the new object.
+    PyObject *ret = PySelectionProperties_New();
+
+    MUTEX_LOCK();
+    int index = GetViewerState()->GetSelectionList()->GetSelection(selName);
+    if(index >= 0)
+    {
+        SelectionProperties *props = PySelectionProperties_FromPyObject(ret);
+        *props = GetViewerState()->GetSelectionList()->GetSelections(index);
+    }
+    MUTEX_UNLOCK();
+
+    return ret;
+}
+
+// ****************************************************************************
+// Method: visit_GetSelectionSummary
+//
+// Purpose: 
+//   Return the selection with the right name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  2 15:42:46 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetSelectionSummary(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *selName = 0;
+    if (!PyArg_ParseTuple(args, "s", &selName))
+        return NULL;
+
+    // Try and stash the selection summary in the new object.
+    PyObject *ret = PySelectionSummary_New();
+
+    MUTEX_LOCK();
+    int index = GetViewerState()->GetSelectionList()->GetSelectionSummary(selName);
+    if(index >= 0)
+    {
+        SelectionSummary *sum = PySelectionSummary_FromPyObject(ret);
+        *sum = GetViewerState()->GetSelectionList()->GetSelectionSummary(index);
+    }
+    MUTEX_UNLOCK();
+
+    return ret;
+}
+
+// ****************************************************************************
+// Method: visit_GetSelectionList
+//
+// Purpose: 
+//   Return the current selection list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 17 11:18:58 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetSelectionList(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *ret = 0;
+    MUTEX_LOCK();
+        ret = PySelectionList_New();
+        // Copy the selection list into the new object's SelectionList object.
+        *PySelectionList_FromPyObject(ret) =
+            *GetViewerState()->GetSelectionList();
+
+    MUTEX_UNLOCK();
+
+    return ret;
+}
+
+// ****************************************************************************
+// Function: visit_InitializeNamedSelectionVariables
+//
+// Purpose: 
+//   Tells the viewer to set the named selection auto apply mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May  2 14:58:48 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_InitializeNamedSelectionVariables(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *selName = 0;
+    if (!PyArg_ParseTuple(args, "s", &selName))
+       return NULL;
+
+    // Tell the named selection to update itself based on the plot's variables.
+    MUTEX_LOCK();
+        GetViewerMethods()->InitializeNamedSelectionVariables(selName);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -14698,6 +14890,9 @@ AddMethod(const char *methodName,
 //   Brad Whitlock, Wed Dec  8 16:04:37 PST 2010
 //   I exposed SetPlotFollowsTime.
 //
+//   Brad Whitlock, Fri Dec 17 11:19:57 PST 2010
+//   I added GetSelectionList.
+//
 // ****************************************************************************
 
 static void
@@ -14880,6 +15075,8 @@ AddDefaultMethods()
     AddMethod("HideToolbars", visit_HideToolbars, visit_HideToolbars_doc);
     AddMethod("IconifyAllWindows", visit_IconifyAllWindows,
                                                   visit_IconifyAllWindows_doc);
+    AddMethod("InitializeNamedSelectionVariables", visit_InitializeNamedSelectionVariables, 
+                                                   NULL /*DOCUMENT ME*/);
     AddMethod("InvertBackgroundColor", visit_InvertBackgroundColor,
                                               visit_InvertBackgroundColor_doc);
     AddMethod("Lineout", visit_Lineout, visit_Lineout_doc);
@@ -15124,6 +15321,9 @@ AddDefaultMethods()
     AddMethod("SetColorTexturingEnabled", visit_SetColorTexturingEnabled, NULL/*DOCUMENT ME*/);
     AddMethod("GetMetaData", visit_GetMetaData, NULL/*DOCUMENT ME*/);
     AddMethod("GetPlotList", visit_GetPlotList, NULL/*DOCUMENT ME*/);
+    AddMethod("GetSelection", visit_GetSelection, NULL/*DOCUMENT ME*/);
+    AddMethod("GetSelectionSummary", visit_GetSelectionSummary, NULL/*DOCUMENT ME*/);
+    AddMethod("GetSelectionList", visit_GetSelectionList, NULL/*DOCUMENT ME*/);
 
     AddMethod("ClearMacros", visit_ClearMacros, NULL/*DOCUMENT ME*/);
     AddMethod("ExecuteMacro", visit_ExecuteMacro, NULL/*DOCUMENT ME*/);
@@ -15221,6 +15421,9 @@ AddDefaultMethods()
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile.
 //
+//   Brad Whitlock, Tue Dec 14 16:27:10 PST 2010
+//   Add SelectionProperties.
+//
 // ****************************************************************************
 
 static void
@@ -15248,6 +15451,7 @@ AddExtensions()
     ADD_EXTENSION(PyProcessAttributes_GetMethodTable);
     ADD_EXTENSION(PyRenderingAttributes_GetMethodTable);
     ADD_EXTENSION(PySaveWindowAttributes_GetMethodTable);
+    ADD_EXTENSION(PySelectionProperties_GetMethodTable);
     ADD_EXTENSION(PySILRestriction_GetMethodTable);
     ADD_EXTENSION(PyViewAttributes_GetMethodTable);
     ADD_EXTENSION(PyViewAxisArrayAttributes_GetMethodTable);
@@ -15322,6 +15526,9 @@ AddExtensions()
 //   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //   Split HostProfile int MachineProfile and LaunchProfile.
 //
+//   Brad Whitlock, Tue Dec 14 16:27:46 PST 2010
+//   Add PySelectionProperties.
+//
 // ****************************************************************************
 
 static void
@@ -15341,6 +15548,7 @@ InitializeExtensions()
     PyProcessAttributes_StartUp(GetViewerState()->GetProcessAttributes(), 0);
     PyRenderingAttributes_StartUp(GetViewerState()->GetRenderingAttributes(), 0);
     PySaveWindowAttributes_StartUp(GetViewerState()->GetSaveWindowAttributes(), 0);
+    PySelectionProperties_StartUp(0, 0);
     PyWindowInformation_StartUp(GetViewerState()->GetWindowInformation(), 0);
 
     PyViewAxisArrayAttributes_StartUp(GetViewerState()->GetViewAxisArrayAttributes(), (void *)SS_log_ViewAxisArray);
@@ -15378,6 +15586,9 @@ InitializeExtensions()
 //   Jeremy Meredith, Mon Feb  4 13:42:08 EST 2008
 //   Added ViewAxisArrayAttributes.
 //
+//   Brad Whitlock, Tue Dec 14 16:28:11 PST 2010
+//   Add PySelectionProperties.
+//
 // ****************************************************************************
 
 static void
@@ -15391,6 +15602,7 @@ CloseExtensions()
     PyPickAttributes_CloseDown();
     PyPrinterAttributes_CloseDown();
     PySaveWindowAttributes_CloseDown();
+    PySelectionProperties_CloseDown();
     PyViewAxisArrayAttributes_CloseDown();
     PyViewCurveAttributes_CloseDown();
     PyView2DAttributes_CloseDown();

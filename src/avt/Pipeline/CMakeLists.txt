@@ -42,6 +42,9 @@
 #   Tom Fogal,  Tue Aug 10 12:55:19 MDT 2010
 #   Added include directory.
 #
+#   Brad Whitlock, Mon Dec 13 16:13:43 PST 2010
+#   I added avtNamedSelectionExtension.
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -126,6 +129,7 @@ Pipeline/avtImageTiler.C
 Pipeline/avtImageWriter.C
 Pipeline/avtMultiWindowSaver.C
 Pipeline/avtNamedSelection.C
+Pipeline/avtNamedSelectionExtension.C
 Pipeline/avtNamedSelectionManager.C
 Pipeline/avtNullDataReader.C
 Pipeline/avtNullDataWriter.C

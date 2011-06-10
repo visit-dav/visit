@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include <snprintf.h>
 #include <PySelectionProperties.h>
+#include <PySelectionSummary.h>
 
 // ****************************************************************************
 // Module: PySelectionList
@@ -94,6 +95,19 @@ PySelectionList_ToString(const SelectionList *atts, const char *prefix)
         }
         if(index == 0)
             str += "#selections does not contain any SelectionProperties objects.\n";
+    }
+    { // new scope
+        int index = 0;
+        // Create string representation of selectionSummary from atts.
+        for(AttributeGroupVector::const_iterator pos = atts->GetSelectionSummary().begin(); pos != atts->GetSelectionSummary().end(); ++pos, ++index)
+        {
+            const SelectionSummary *current = (const SelectionSummary *)(*pos);
+            SNPRINTF(tmpStr, 1000, "GetSelectionSummary(%d).", index);
+            std::string objPrefix(prefix + std::string(tmpStr));
+            str += PySelectionSummary_ToString(current, objPrefix.c_str());
+        }
+        if(index == 0)
+            str += "#selectionSummary does not contain any SelectionSummary objects.\n";
     }
     return str;
 }
@@ -246,6 +260,121 @@ SelectionList_ClearSelections(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+/*static*/ PyObject *
+SelectionList_GetSelectionSummary(PyObject *self, PyObject *args)
+{
+    SelectionListObject *obj = (SelectionListObject *)self;
+    int index;
+    if(!PyArg_ParseTuple(args, "i", &index))
+        return NULL;
+    if(index < 0 || index >= obj->data->GetSelectionSummary().size())
+    {
+        char msg[200];
+        if(obj->data->GetSelectionSummary().size() == 0)
+            SNPRINTF(msg, 200, "The index is invalid because selectionSummary is empty.");
+        else
+            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetSelectionSummary().size());
+        PyErr_SetString(PyExc_IndexError, msg);
+        return NULL;
+    }
+
+    // Since the new object will point to data owned by the this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
+
+    PyObject *retval = PySelectionSummary_Wrap(&obj->data->GetSelectionSummary(index));
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PySelectionSummary_SetParent(retval, self);
+
+    return retval;
+}
+
+PyObject *
+SelectionList_GetNumSelectionSummary(PyObject *self, PyObject *args)
+{
+    SelectionListObject *obj = (SelectionListObject *)self;
+    return PyInt_FromLong((long)obj->data->GetSelectionSummary().size());
+}
+
+PyObject *
+SelectionList_AddSelectionSummary(PyObject *self, PyObject *args)
+{
+    SelectionListObject *obj = (SelectionListObject *)self;
+    PyObject *element = NULL;
+    if(!PyArg_ParseTuple(args, "O", &element))
+        return NULL;
+    if(!PySelectionSummary_Check(element))
+    {
+        char msg[400];
+        SNPRINTF(msg, 400, "The AddSelectionSummary method only accepts SelectionSummary objects.");
+        PyErr_SetString(PyExc_TypeError, msg);
+        return NULL;
+    }
+    SelectionSummary *newData = PySelectionSummary_FromPyObject(element);
+    obj->data->AddSelectionSummary(*newData);
+    obj->data->SelectSelectionSummary();
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *
+SelectionList_Remove_One_SelectionSummary(PyObject *self, int index)
+{
+    SelectionListObject *obj = (SelectionListObject *)self;
+    // Remove in the AttributeGroupVector instead of calling RemoveSelectionSummary() because we don't want to delete the object; just remove it.
+    AttributeGroupVector &atts = obj->data->GetSelectionSummary();
+    AttributeGroupVector::iterator pos = atts.begin();
+    // Iterate through the vector "index" times. 
+    for(int i = 0; i < index; ++i)
+        ++pos;
+
+    // If pos is still a valid iterator, remove that element.
+    if(pos != atts.end())
+    {
+        // NOTE: Leak the object since other Python objects may reference it. Ideally,
+        // we would put the object into some type of pool to be cleaned up later but
+        // this will do for now.
+        //
+        // delete *pos;
+        atts.erase(pos);
+    }
+
+    obj->data->SelectSelectionSummary();
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *
+SelectionList_RemoveSelectionSummary(PyObject *self, PyObject *args)
+{
+    int index;
+    if(!PyArg_ParseTuple(args, "i", &index))
+        return NULL;
+    SelectionListObject *obj = (SelectionListObject *)self;
+    if(index < 0 || index >= obj->data->GetNumSelectionSummarys())
+    {
+        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        return NULL;
+    }
+
+    return SelectionList_Remove_One_SelectionSummary(self, index);
+}
+
+PyObject *
+SelectionList_ClearSelectionSummary(PyObject *self, PyObject *args)
+{
+    SelectionListObject *obj = (SelectionListObject *)self;
+    int n = obj->data->GetNumSelectionSummarys();
+    for(int i = 0; i < n; ++i)
+    {
+        SelectionList_Remove_One_SelectionSummary(self, 0);
+        Py_DECREF(Py_None);
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 
 PyMethodDef PySelectionList_methods[SELECTIONLIST_NMETH] = {
@@ -257,6 +386,11 @@ PyMethodDef PySelectionList_methods[SELECTIONLIST_NMETH] = {
     {"AddSelections", SelectionList_AddSelections, METH_VARARGS},
     {"RemoveSelections", SelectionList_RemoveSelections, METH_VARARGS},
     {"ClearSelections", SelectionList_ClearSelections, METH_VARARGS},
+    {"GetSelectionSummary", SelectionList_GetSelectionSummary, METH_VARARGS},
+    {"GetNumSelectionSummary", SelectionList_GetNumSelectionSummary, METH_VARARGS},
+    {"AddSelectionSummary", SelectionList_AddSelectionSummary, METH_VARARGS},
+    {"RemoveSelectionSummary", SelectionList_RemoveSelectionSummary, METH_VARARGS},
+    {"ClearSelectionSummary", SelectionList_ClearSelectionSummary, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -289,6 +423,8 @@ PySelectionList_getattr(PyObject *self, char *name)
         return SelectionList_GetAutoApplyUpdates(self, NULL);
     if(strcmp(name, "selections") == 0)
         return SelectionList_GetSelections(self, NULL);
+    if(strcmp(name, "selectionSummary") == 0)
+        return SelectionList_GetSelectionSummary(self, NULL);
 
     return Py_FindMethod(PySelectionList_methods, self, name);
 }

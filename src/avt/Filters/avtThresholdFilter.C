@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2010, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -142,7 +142,7 @@ avtThresholdFilter::Create()
 void
 avtThresholdFilter::SetAtts(const AttributeGroup *a)
 {
-    atts = *(const ThresholdAttributes*)a;
+    atts = *(const ThresholdOpAttributes*)a;
     
     atts.SupplyMissingDefaultsIfAppropriate();
     
@@ -188,7 +188,7 @@ avtThresholdFilter::SetAtts(const AttributeGroup *a)
 bool
 avtThresholdFilter::Equivalent(const AttributeGroup *a)
 {
-    return (atts == *(ThresholdAttributes*)a);
+    return (atts == *(ThresholdOpAttributes*)a);
 }
 
 
@@ -290,7 +290,7 @@ avtThresholdFilter::ProcessOneChunk(
         return in_ds;
     }
 
-    if (atts.GetOutputMeshType() == ThresholdAttributes::PointMesh)
+    if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh)
     {
         return ThresholdToPointMesh(in_ds);
     }
@@ -349,11 +349,11 @@ avtThresholdFilter::ProcessOneChunk(
                 0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS,
                 vtkDataSetAttributes::SCALARS);
 
-            if (curZonePortions[curVarNum] == (int)ThresholdAttributes::PartOfZone)
+            if (curZonePortions[curVarNum] == (int)ThresholdOpAttributes::PartOfZone)
             {
                 threshold->AllScalarsOff();
             }
-            else if (curZonePortions[curVarNum] == (int)ThresholdAttributes::EntireZone)
+            else if (curZonePortions[curVarNum] == (int)ThresholdOpAttributes::EntireZone)
             {
                 threshold->AllScalarsOn();
             }
@@ -667,7 +667,7 @@ avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
 
         if (varIsPointData)
         {
-            if (curZonePortions[curVarNum] == ThresholdAttributes::PartOfZone)
+            if (curZonePortions[curVarNum] == ThresholdOpAttributes::PartOfZone)
             {
                 for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
                     curVarZDs[zoneNum] = avtStructuredMeshChunker::DISCARD;
@@ -748,7 +748,7 @@ avtThresholdFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 
-    if (atts.GetOutputMeshType() == ThresholdAttributes::PointMesh)
+    if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh)
     {
         GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
     }
@@ -1074,15 +1074,13 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
         lowerBound = curLowerBounds[listedVarNum];
         upperBound = curUpperBounds[listedVarNum];
 
-        selIDs[std::string(curListedVars[listedVarNum])] =
-            outSpec->GetDataRequest()->AddDataSelection(
-                new avtDataRangeSelection(
-                    std::string(curListedVars[listedVarNum]),
-                    lowerBound, upperBound
-                )
+        std::string curVar(curListedVars[listedVarNum]);
+
+        selIDs[curVar] = outSpec->GetDataRequest()->AddDataSelection(
+            new avtDataRangeSelection(curVar, lowerBound, upperBound)
             );
 
-        debug1 << "Added variable " << curListedVar[listedVarNum]
+        debug1 << "Added variable " << curVar
             << " as Data Selection with range ("
             << lowerBound << ", " << upperBound << ")" << endl;
     }

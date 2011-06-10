@@ -39,80 +39,6 @@
 #include <ThresholdAttributes.h>
 #include <DataNode.h>
 
-//
-// Enum conversion methods for ThresholdAttributes::OutputMeshType
-//
-
-static const char *OutputMeshType_strings[] = {
-"InputZones", "PointMesh"};
-
-std::string
-ThresholdAttributes::OutputMeshType_ToString(ThresholdAttributes::OutputMeshType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return OutputMeshType_strings[index];
-}
-
-std::string
-ThresholdAttributes::OutputMeshType_ToString(int t)
-{
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return OutputMeshType_strings[index];
-}
-
-bool
-ThresholdAttributes::OutputMeshType_FromString(const std::string &s, ThresholdAttributes::OutputMeshType &val)
-{
-    val = ThresholdAttributes::InputZones;
-    for(int i = 0; i < 2; ++i)
-    {
-        if(s == OutputMeshType_strings[i])
-        {
-            val = (OutputMeshType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
-// Enum conversion methods for ThresholdAttributes::ZonePortion
-//
-
-static const char *ZonePortion_strings[] = {
-"EntireZone", "PartOfZone"};
-
-std::string
-ThresholdAttributes::ZonePortion_ToString(ThresholdAttributes::ZonePortion t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return ZonePortion_strings[index];
-}
-
-std::string
-ThresholdAttributes::ZonePortion_ToString(int t)
-{
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return ZonePortion_strings[index];
-}
-
-bool
-ThresholdAttributes::ZonePortion_FromString(const std::string &s, ThresholdAttributes::ZonePortion &val)
-{
-    val = ThresholdAttributes::EntireZone;
-    for(int i = 0; i < 2; ++i)
-    {
-        if(s == ZonePortion_strings[i])
-        {
-            val = (ZonePortion)i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // ****************************************************************************
 // Method: ThresholdAttributes::ThresholdAttributes
 //
@@ -130,10 +56,6 @@ ThresholdAttributes::ZonePortion_FromString(const std::string &s, ThresholdAttri
 
 void ThresholdAttributes::Init()
 {
-    outputMeshType = 0;
-    listedVarNames.push_back("default");
-    defaultVarName = "default";
-    defaultVarIsScalar = false;
 
     ThresholdAttributes::SelectAll();
 }
@@ -155,13 +77,6 @@ void ThresholdAttributes::Init()
 
 void ThresholdAttributes::Copy(const ThresholdAttributes &obj)
 {
-    outputMeshType = obj.outputMeshType;
-    listedVarNames = obj.listedVarNames;
-    zonePortions = obj.zonePortions;
-    lowerBounds = obj.lowerBounds;
-    upperBounds = obj.upperBounds;
-    defaultVarName = obj.defaultVarName;
-    defaultVarIsScalar = obj.defaultVarIsScalar;
 
     ThresholdAttributes::SelectAll();
 }
@@ -187,7 +102,7 @@ const AttributeGroup::private_tmfs_t ThresholdAttributes::TmfsStruct = {THRESHOL
 // ****************************************************************************
 
 ThresholdAttributes::ThresholdAttributes() : 
-    AttributeSubject(ThresholdAttributes::TypeMapFormatString)
+    ThresholdOpAttributes(ThresholdAttributes::TmfsStruct)
 {
     ThresholdAttributes::Init();
 }
@@ -208,7 +123,7 @@ ThresholdAttributes::ThresholdAttributes() :
 // ****************************************************************************
 
 ThresholdAttributes::ThresholdAttributes(private_tmfs_t tmfs) : 
-    AttributeSubject(tmfs.tmfs)
+    ThresholdOpAttributes(tmfs)
 {
     ThresholdAttributes::Init();
 }
@@ -229,7 +144,7 @@ ThresholdAttributes::ThresholdAttributes(private_tmfs_t tmfs) :
 // ****************************************************************************
 
 ThresholdAttributes::ThresholdAttributes(const ThresholdAttributes &obj) : 
-    AttributeSubject(ThresholdAttributes::TypeMapFormatString)
+    ThresholdOpAttributes(obj,ThresholdAttributes::TmfsStruct)
 {
     ThresholdAttributes::Copy(obj);
 }
@@ -250,7 +165,7 @@ ThresholdAttributes::ThresholdAttributes(const ThresholdAttributes &obj) :
 // ****************************************************************************
 
 ThresholdAttributes::ThresholdAttributes(const ThresholdAttributes &obj, private_tmfs_t tmfs) : 
-    AttributeSubject(tmfs.tmfs)
+    ThresholdOpAttributes(obj,tmfs)
 {
     ThresholdAttributes::Copy(obj);
 }
@@ -295,6 +210,9 @@ ThresholdAttributes::operator = (const ThresholdAttributes &obj)
 {
     if (this == &obj) return *this;
 
+    // call the base class' assignment operator first
+    ThresholdOpAttributes::operator=(obj);
+
     ThresholdAttributes::Copy(obj);
 
     return *this;
@@ -319,13 +237,7 @@ bool
 ThresholdAttributes::operator == (const ThresholdAttributes &obj) const
 {
     // Create the return value
-    return ((outputMeshType == obj.outputMeshType) &&
-            (listedVarNames == obj.listedVarNames) &&
-            (zonePortions == obj.zonePortions) &&
-            (lowerBounds == obj.lowerBounds) &&
-            (upperBounds == obj.upperBounds) &&
-            (defaultVarName == obj.defaultVarName) &&
-            (defaultVarIsScalar == obj.defaultVarIsScalar));
+    return (true);
 }
 
 // ****************************************************************************
@@ -518,13 +430,8 @@ ThresholdAttributes::NewInstance(bool copy) const
 void
 ThresholdAttributes::SelectAll()
 {
-    Select(ID_outputMeshType,     (void *)&outputMeshType);
-    Select(ID_listedVarNames,     (void *)&listedVarNames);
-    Select(ID_zonePortions,       (void *)&zonePortions);
-    Select(ID_lowerBounds,        (void *)&lowerBounds);
-    Select(ID_upperBounds,        (void *)&upperBounds);
-    Select(ID_defaultVarName,     (void *)&defaultVarName);
-    Select(ID_defaultVarIsScalar, (void *)&defaultVarIsScalar);
+    // call the base class' SelectAll() first
+    ThresholdOpAttributes::SelectAll();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -556,48 +463,6 @@ ThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     bool addToParent = false;
     // Create a node for ThresholdAttributes.
     DataNode *node = new DataNode("ThresholdAttributes");
-
-    if(completeSave || !FieldsEqual(ID_outputMeshType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("outputMeshType", outputMeshType));
-    }
-
-    if(completeSave || !FieldsEqual(ID_listedVarNames, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("listedVarNames", listedVarNames));
-    }
-
-    if(completeSave || !FieldsEqual(ID_zonePortions, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("zonePortions", zonePortions));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lowerBounds, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lowerBounds", lowerBounds));
-    }
-
-    if(completeSave || !FieldsEqual(ID_upperBounds, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("upperBounds", upperBounds));
-    }
-
-    if(completeSave || !FieldsEqual(ID_defaultVarName, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("defaultVarName", defaultVarName));
-    }
-
-    if(completeSave || !FieldsEqual(ID_defaultVarIsScalar, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("defaultVarIsScalar", defaultVarIsScalar));
-    }
 
 
     // Add the node to the parent node.
@@ -635,184 +500,15 @@ ThresholdAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
-    if((node = searchNode->GetNode("outputMeshType")) != 0)
-        SetOutputMeshType(node->AsInt());
-    if((node = searchNode->GetNode("listedVarNames")) != 0)
-        SetListedVarNames(node->AsStringVector());
-    if((node = searchNode->GetNode("zonePortions")) != 0)
-        SetZonePortions(node->AsIntVector());
-    if((node = searchNode->GetNode("lowerBounds")) != 0)
-        SetLowerBounds(node->AsDoubleVector());
-    if((node = searchNode->GetNode("upperBounds")) != 0)
-        SetUpperBounds(node->AsDoubleVector());
-    if((node = searchNode->GetNode("defaultVarName")) != 0)
-        SetDefaultVarName(node->AsString());
-    if((node = searchNode->GetNode("defaultVarIsScalar")) != 0)
-        SetDefaultVarIsScalar(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-void
-ThresholdAttributes::SetOutputMeshType(int outputMeshType_)
-{
-    outputMeshType = outputMeshType_;
-    Select(ID_outputMeshType, (void *)&outputMeshType);
-}
-
-void
-ThresholdAttributes::SetListedVarNames(const stringVector &listedVarNames_)
-{
-    listedVarNames = listedVarNames_;
-    Select(ID_listedVarNames, (void *)&listedVarNames);
-}
-
-void
-ThresholdAttributes::SetZonePortions(const intVector &zonePortions_)
-{
-    zonePortions = zonePortions_;
-    Select(ID_zonePortions, (void *)&zonePortions);
-}
-
-void
-ThresholdAttributes::SetLowerBounds(const doubleVector &lowerBounds_)
-{
-    lowerBounds = lowerBounds_;
-    Select(ID_lowerBounds, (void *)&lowerBounds);
-}
-
-void
-ThresholdAttributes::SetUpperBounds(const doubleVector &upperBounds_)
-{
-    upperBounds = upperBounds_;
-    Select(ID_upperBounds, (void *)&upperBounds);
-}
-
-void
-ThresholdAttributes::SetDefaultVarName(const std::string &defaultVarName_)
-{
-    defaultVarName = defaultVarName_;
-    Select(ID_defaultVarName, (void *)&defaultVarName);
-}
-
-void
-ThresholdAttributes::SetDefaultVarIsScalar(bool defaultVarIsScalar_)
-{
-    defaultVarIsScalar = defaultVarIsScalar_;
-    Select(ID_defaultVarIsScalar, (void *)&defaultVarIsScalar);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
-
-int
-ThresholdAttributes::GetOutputMeshType() const
-{
-    return outputMeshType;
-}
-
-const stringVector &
-ThresholdAttributes::GetListedVarNames() const
-{
-    return listedVarNames;
-}
-
-stringVector &
-ThresholdAttributes::GetListedVarNames()
-{
-    return listedVarNames;
-}
-
-const intVector &
-ThresholdAttributes::GetZonePortions() const
-{
-    return zonePortions;
-}
-
-intVector &
-ThresholdAttributes::GetZonePortions()
-{
-    return zonePortions;
-}
-
-const doubleVector &
-ThresholdAttributes::GetLowerBounds() const
-{
-    return lowerBounds;
-}
-
-doubleVector &
-ThresholdAttributes::GetLowerBounds()
-{
-    return lowerBounds;
-}
-
-const doubleVector &
-ThresholdAttributes::GetUpperBounds() const
-{
-    return upperBounds;
-}
-
-doubleVector &
-ThresholdAttributes::GetUpperBounds()
-{
-    return upperBounds;
-}
-
-const std::string &
-ThresholdAttributes::GetDefaultVarName() const
-{
-    return defaultVarName;
-}
-
-std::string &
-ThresholdAttributes::GetDefaultVarName()
-{
-    return defaultVarName;
-}
-
-bool
-ThresholdAttributes::GetDefaultVarIsScalar() const
-{
-    return defaultVarIsScalar;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Select property methods
-///////////////////////////////////////////////////////////////////////////////
-
-void
-ThresholdAttributes::SelectListedVarNames()
-{
-    Select(ID_listedVarNames, (void *)&listedVarNames);
-}
-
-void
-ThresholdAttributes::SelectZonePortions()
-{
-    Select(ID_zonePortions, (void *)&zonePortions);
-}
-
-void
-ThresholdAttributes::SelectLowerBounds()
-{
-    Select(ID_lowerBounds, (void *)&lowerBounds);
-}
-
-void
-ThresholdAttributes::SelectUpperBounds()
-{
-    Select(ID_upperBounds, (void *)&upperBounds);
-}
-
-void
-ThresholdAttributes::SelectDefaultVarName()
-{
-    Select(ID_defaultVarName, (void *)&defaultVarName);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
@@ -838,13 +534,6 @@ ThresholdAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_outputMeshType:     return "outputMeshType";
-    case ID_listedVarNames:     return "listedVarNames";
-    case ID_zonePortions:       return "zonePortions";
-    case ID_lowerBounds:        return "lowerBounds";
-    case ID_upperBounds:        return "upperBounds";
-    case ID_defaultVarName:     return "defaultVarName";
-    case ID_defaultVarIsScalar: return "defaultVarIsScalar";
     default:  return "invalid index";
     }
 }
@@ -869,13 +558,6 @@ ThresholdAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_outputMeshType:     return FieldType_int;
-    case ID_listedVarNames:     return FieldType_stringVector;
-    case ID_zonePortions:       return FieldType_intVector;
-    case ID_lowerBounds:        return FieldType_doubleVector;
-    case ID_upperBounds:        return FieldType_doubleVector;
-    case ID_defaultVarName:     return FieldType_string;
-    case ID_defaultVarIsScalar: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -900,13 +582,6 @@ ThresholdAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_outputMeshType:     return "int";
-    case ID_listedVarNames:     return "stringVector";
-    case ID_zonePortions:       return "intVector";
-    case ID_lowerBounds:        return "doubleVector";
-    case ID_upperBounds:        return "doubleVector";
-    case ID_defaultVarName:     return "string";
-    case ID_defaultVarIsScalar: return "bool";
     default:  return "invalid index";
     }
 }
@@ -933,41 +608,6 @@ ThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
-    case ID_outputMeshType:
-        {  // new scope
-        retval = (outputMeshType == obj.outputMeshType);
-        }
-        break;
-    case ID_listedVarNames:
-        {  // new scope
-        retval = (listedVarNames == obj.listedVarNames);
-        }
-        break;
-    case ID_zonePortions:
-        {  // new scope
-        retval = (zonePortions == obj.zonePortions);
-        }
-        break;
-    case ID_lowerBounds:
-        {  // new scope
-        retval = (lowerBounds == obj.lowerBounds);
-        }
-        break;
-    case ID_upperBounds:
-        {  // new scope
-        retval = (upperBounds == obj.upperBounds);
-        }
-        break;
-    case ID_defaultVarName:
-        {  // new scope
-        retval = (defaultVarName == obj.defaultVarName);
-        }
-        break;
-    case ID_defaultVarIsScalar:
-        {  // new scope
-        retval = (defaultVarIsScalar == obj.defaultVarIsScalar);
-        }
-        break;
     default: retval = false;
     }
 
@@ -977,226 +617,4 @@ ThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
-
-// ****************************************************************************
-// Method: ThresholdAttributes::SupplyMissingDefaultsIfAppropriate
-//
-// Purpose: If attributes are set up for a single threshold variable, supply
-//          default values for any attribute values that are missing.
-//
-// Programmer: Mark Blair
-// Creation:   Thu Sep 28 12:07:05 PDT 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ThresholdAttributes::SupplyMissingDefaultsIfAppropriate()
-{
-    int totalEntryCount = 0;
-    
-    if (listedVarNames.size() > 1) return;
-    totalEntryCount += listedVarNames.size();
-        
-    if (zonePortions.size() > 1) return;
-    totalEntryCount += zonePortions.size();
-        
-    if (lowerBounds.size() > 1) return;
-    totalEntryCount += lowerBounds.size();
-        
-    if (upperBounds.size() > 1) return;
-    totalEntryCount += upperBounds.size();
-    
-    if ((totalEntryCount & 3) == 0) return;
-    
-    stringVector singleVarName;
-    intVector    singleZonePortion;
-    doubleVector singleLowerBound;
-    doubleVector singleUpperBound;
-    
-    if (listedVarNames.size() == 0)
-    {
-        singleVarName.push_back(std::string("default"));
-        SetListedVarNames(singleVarName);
-    }
-        
-    if (zonePortions.size() == 0)
-    {
-        singleZonePortion.push_back((int)PartOfZone);
-        SetZonePortions(singleZonePortion);
-    }
-        
-    if (lowerBounds.size() == 0)
-    {
-        singleLowerBound.push_back(-1e+37);
-        SetLowerBounds(singleLowerBound);
-    }
-        
-    if (upperBounds.size() == 0)
-    {
-        singleUpperBound.push_back(+1e+37);
-        SetUpperBounds(singleUpperBound);
-    }
-}
-
-// ****************************************************************************
-// Method: ThresholdAttributes::AttributesAreConsistent
-//
-// Purpose: Returns true only if (1) all vector attributes are the same length
-//          and (2) the index of the currently displayable variable information
-//          in the Threshold GUI window is in range.
-//
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar  7 13:25:00 PST 2006
-//
-// Modifications:
-//   
-//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
-//   Now accommodates an empty list of threshold variables.
-//
-//   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
-//   Rewritten to support new Threshold GUI; no more shown variable.
-//
-// ****************************************************************************
-
-bool
-ThresholdAttributes::AttributesAreConsistent() const
-{
-    size_t varListSize = listedVarNames.size();
-    
-    if ((zonePortions.size() != varListSize) ||
-        (lowerBounds.size()  != varListSize) ||
-        (upperBounds.size()  != varListSize))
-    {
-        return false;
-    }
-    
-    return true;
-}
-
-// ****************************************************************************
-// Method: ThresholdAttributes::ForceAttributeConsistency
-//
-// Purpose: Forces Threshold attributes to be consistent.  Attributes can be
-//          inconsistent, for instance, if the user has specified an invalid
-//          combination of them in the CLI.  If current attributes are in fact
-//          inconsistent, this is recorded in the debug log.
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar 13 19:51:29 PDT 2007
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ThresholdAttributes::ForceAttributeConsistency()
-{
-    size_t varListSize = listedVarNames.size();
-    size_t varNum;
-    double boundValue;
-    bool consistent = ((zonePortions.size() == varListSize) &&
-                       ( lowerBounds.size() == varListSize) &&
-                       ( upperBounds.size() == varListSize));
-                       
-    if (!consistent)
-    {
-        if (zonePortions.size() > varListSize) zonePortions.resize(varListSize);
-        if ( lowerBounds.size() > varListSize)  lowerBounds.resize(varListSize);
-        if ( upperBounds.size() > varListSize)  upperBounds.resize(varListSize);
-
-        for (varNum = 0; varNum < varListSize; varNum++ )
-        {
-            if (zonePortions.size() < varListSize)
-                zonePortions.push_back((int)ThresholdAttributes::PartOfZone);
-            if (lowerBounds.size() < varListSize)
-                lowerBounds.push_back(-1e+37);
-            if (upperBounds.size() < varListSize)
-                upperBounds.push_back(+1e+37);
-        }
-    }
-
-    for (varNum = 0; varNum < varListSize; varNum++ )
-    {
-        if (lowerBounds[varNum] > upperBounds[varNum])
-        {
-            consistent = false;
-                
-            boundValue          = lowerBounds[varNum];
-            lowerBounds[varNum] = upperBounds[varNum];
-            upperBounds[varNum] = boundValue;
-        }
-    }
-    
-    if (!consistent && (varListSize > 0))
-    {
-        if (defaultVarName == std::string("default"))
-            defaultVarName = listedVarNames[0];
-    }
-
-    if (!consistent)
-    {
-        debug3 << "Threshold operator attributes are inconsistent; "
-               << "corrections will be applied." << endl;
-        SelectAll();
-    }
-}
-
-// ****************************************************************************
-// Method: ThresholdAttributes::SwitchDefaultVariableNameToTrueName
-//
-// Purpose: Replaces the anonymous "default" variable name with its true name
-//          if the default variable is scalar.
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar  7 13:25:00 PST 2006
-//
-// Modifications:
-//   
-//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
-//   Deletes default variable from threshold variable list if not scalar.
-//
-//   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
-//   Rewritten to support new Threshold GUI; no more "shown variable".
-//
-//   Mark Blair, Tue Sep 18 17:06:28 PDT 2007
-//   No longer deletes variable from threshold variable list if not scalar.
-//   Also changed method name to reflect this.
-//
-// ****************************************************************************
-
-void
-ThresholdAttributes::SwitchDefaultVariableNameToTrueName()
-{
-    size_t varPosition;
-    bool changedTheList;
-    std::string listedVarName;
-
-    do
-    {
-        for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
-        {
-            listedVarName = listedVarNames[varPosition];
-
-            if (listedVarName == std::string("default")) break;
-            if (listedVarName == defaultVarName) break;
-        }
-        
-        changedTheList = false;
-    
-        if (varPosition < listedVarNames.size())
-        {
-            if (listedVarName == std::string("default"))
-            {
-                listedVarNames[varPosition] = defaultVarName;
-                Select(1, (void *)&listedVarNames);
-
-                changedTheList = true;
-            }
-        }
-    }
-    while (changedTheList);
-}
 

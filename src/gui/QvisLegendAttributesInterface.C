@@ -57,11 +57,6 @@
 #include <QvisScreenPositionEdit.h>
 
 #include <AnnotationObject.h>
-#include <Plot.h>
-#include <PlotList.h>
-#include <ViewerState.h>
-#include <PlotPluginInfo.h>
-#include <OperatorPluginInfo.h>
 #include <ViewerProxy.h>
 #include <legend_defines.h>
 
@@ -408,6 +403,9 @@ QvisLegendAttributesInterface::~QvisLegendAttributesInterface()
 //   Brad Whitlock, Mon Jul 21 10:29:13 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Wed Jun  1 12:10:10 PDT 2011
+//   I moved much of the code into the GUIBase base class.
+//
 // ****************************************************************************
 
 QString
@@ -416,41 +414,9 @@ QvisLegendAttributesInterface::GetMenuText(const AnnotationObject &annot) const
     // Look for the name of a plot in the plot list that has the same name as 
     // the annotation object. There should be a match because of how plots are
     // created.
-    QString retval;
-    bool match = false;
-    PlotPluginManager *pMgr = GetViewerProxy()->GetPlotPluginManager();
-    OperatorPluginManager *oMgr = GetViewerProxy()->GetOperatorPluginManager();
-    for(int i = 0; i < GetViewerState()->GetPlotList()->GetNumPlots(); ++i)
-    {
-        const Plot &plot = GetViewerState()->GetPlotList()->GetPlots(i);
-        if(plot.GetPlotName() == annot.GetObjectName())
-        {
-            match = true;
-            retval = GetName();
-            retval += ":";
-
-            CommonPlotPluginInfo *plotInfo = pMgr->GetCommonPluginInfo(
-                pMgr->GetEnabledID(plot.GetPlotType()));
-            retval += QString(plotInfo->GetName());
-            retval += " - ";
-            for(int j = 0; j < plot.GetNumOperators(); ++j)
-            {
-                CommonOperatorPluginInfo *info = oMgr->GetCommonPluginInfo(
-                oMgr->GetEnabledID(plot.GetOperator(plot.GetNumOperators() - 1 - j)));
-                retval += info->GetName();
-                retval += "(";
-            }
-            retval += plot.GetPlotVar().c_str();
-            for(int j = 0; j < plot.GetNumOperators(); ++j)
-                retval += ")";
-
-            match = true;
-            break;
-        }
-    }
-
-    if(!match)
-        retval = QString("%1 - %2").arg(GetName()).arg(annot.GetObjectName().c_str());
+    QString retval, plotDescription;
+    plotDescription = GetPlotDescription(annot.GetObjectName().c_str());
+    retval = QString("%1:%2").arg(GetName()).arg(plotDescription);
 
     return retval;
 }

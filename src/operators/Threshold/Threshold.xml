@@ -1,41 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="Threshold" type="operator" label="Threshold" version="1.0" iconFile="Threshold.xpm" category="Selection">
-    <Attribute name="ThresholdAttributes" purpose="This class contains attributes for the threshold operator." persistent="true" exportAPI="" exportInclude="" codefile="Threshold.code">
-      <Enum name="OutputMeshType">
-        InputZones
-        PointMesh
-      </Enum>
-      <Enum name="ZonePortion">
-        EntireZone
-        PartOfZone
-      </Enum>
-      <Field name="outputMeshType" label="outputMeshType" type="int">
-        InputZones
-      </Field>
-      <Field name="listedVarNames" label="listedVarNames" type="stringVector">
-	default
-      </Field>
-      <Field name="zonePortions" label="zonePortions" type="intVector">
-      </Field>
-      <Field name="lowerBounds" label="lowerBounds" type="doubleVector">
-      </Field>
-      <Field name="upperBounds" label="upperBounds" type="doubleVector">
-      </Field>
-      <Field name="defaultVarName" label="defaultVarName" type="string">
-	default
-      </Field>
-      <Field name="defaultVarIsScalar" label="defaultVarIsScalar" type="bool">
-	false
-      </Field>
+    <Files components="E">
+      avtThresholdPluginFilter.C
+    </Files>
+    <Attribute name="ThresholdAttributes" purpose="This class contains attributes for the threshold operator." persistent="true" exportAPI="" exportInclude="" codefile="Threshold.code" baseClass="ThresholdOpAttributes">
       <Function name="CopyAttributes" user="false" member="true">
-      </Function>
-      <Function name="SupplyMissingDefaultsIfAppropriate" user="true" member="true">
-      </Function>
-      <Function name="AttributesAreConsistent" user="true" member="true">
-      </Function>
-      <Function name="ForceAttributeConsistency" user="true" member="true">
-      </Function>
-      <Function name="SwitchDefaultVariableNameToTrueName" user="true" member="true">
       </Function>
       <Function name="ThresholdViewerPluginInfo::InitializeOperatorAtts" user="false" member="true">
       </Function>
@@ -45,5 +14,7 @@
       <Include file="header" quoted="false">
         DebugStream.h
       </Include>
+      <Function name="ThresholdEnginePluginInfo::AllocAvtPluginFilter" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

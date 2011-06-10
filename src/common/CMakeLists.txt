@@ -47,9 +47,15 @@
 #   Mark C. Miller, Fri Oct 29 10:02:16 PDT 2010
 #   Added DBYieldedNoDataException
 #
+#   Brad Whitlock, Fri Dec 10 15:42:46 PST 2010
+#   I added ThresholdOpAttributes, the bulk of the ThresholdAttributes. I also
+#   added SelectionSummary and SelectionVariableSummary.
+#
+#
 #   Mark C. Miller, Tue Feb  8 16:28:32 PST 2011
 #   Added custom 'init' target for pareser re-gen. It was lost in transition
 #   from autoconf to CMake.
+#
 #****************************************************************************/
 
 SET(COMM_SOURCES
@@ -258,6 +264,8 @@ state/SaveSubWindowAttributes.C
 state/SaveSubWindowsAttributes.C
 state/SelectionList.C
 state/SelectionProperties.C
+state/SelectionSummary.C
+state/SelectionVariableSummary.C
 state/SILArrayAttributes.C
 state/SILAttributes.C
 state/SILMatrixAttributes.C
@@ -271,6 +279,7 @@ state/StatusAttributes.C
 state/Subject.C
 state/SurfaceFilterAttributes.C
 state/SyncAttributes.C
+state/ThresholdOpAttributes.C
 state/TimeFormat.C
 state/Variant.C
 state/View2DAttributes.C

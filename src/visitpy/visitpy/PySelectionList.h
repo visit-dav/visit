@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SELECTIONLIST_NMETH 9
+#define SELECTIONLIST_NMETH 14
 void VISITPY_API           PySelectionList_StartUp(SelectionList *subj, void *data);
 void VISITPY_API           PySelectionList_CloseDown();
 VISITPY_API PyMethodDef *  PySelectionList_GetMethodTable(int *nMethods);

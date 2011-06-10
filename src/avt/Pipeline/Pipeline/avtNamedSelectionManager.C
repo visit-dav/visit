@@ -42,6 +42,7 @@
 
 #include <sstream>
 #include <avtNamedSelectionManager.h>
+#include <avtNamedSelectionExtension.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -108,12 +109,17 @@ avtNamedSelectionManager::GetInstance(void)
     return instance;
 }
 
-
 // ****************************************************************************
 //  Method: avtNamedSelectionManager::CreateNamedSelection
 //
 //  Purpose:
 //      Creates a named selection from a data object.
+//
+//  Arguments:
+//    dob      : The data object used to create the named selection.
+//    selProps : The named selection properties.
+//    ext      : The named selection extension object that helps set up the 
+//               pipeline and contract.
 //
 //  Programmer: Hank Childs
 //  Creation:   January 30, 2009
@@ -130,11 +136,16 @@ avtNamedSelectionManager::GetInstance(void)
 //    Automatically save out an internal named selection, for fault tolerance
 //    and for save/restore sessions.
 //
+//    Brad Whitlock, Mon Dec 13 15:59:51 PST 2010
+//    I added support for named selection "extensions" that add more stuff
+//    to the pipeline before we reexecute it. I also changed things so we pass
+//    in selection properties.
+//
 // ****************************************************************************
 
 void
 avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob, 
-                                               const std::string &selName)
+    const SelectionProperties &selProps, avtNamedSelectionExtension *ext)
 {
     int   i;
 
@@ -142,6 +153,9 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     {
         EXCEPTION1(VisItException, "Named selections only work on data sets");
     }
+
+    // Save the selection properties.
+    AddSelectionProperties(selProps);
 
     avtContract_p c1 = dob->GetContractFromPreviousExecution();
     avtContract_p contract;
@@ -161,6 +175,7 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     // Let the input try to create the named selection ... some have special
     // logic, for example the parallel coordinates filter.
     //
+    const std::string &selName = selProps.GetName();
     avtNamedSelection *ns = dob->GetSource()->CreateNamedSelection(contract, 
                                                                    selName);
     if (ns != NULL)
@@ -178,15 +193,30 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
         return;
     }
 
-    if (c1->GetDataRequest()->NeedZoneNumbers() == false)
+    bool needZoneNumbers = c1->GetDataRequest()->NeedZoneNumbers() == false;
+    avtDataset_p ds;
+    if(ext != 0)
     {
-        debug1 << "Must re-execute pipeline to create named selection" << endl;
-        dob->Update(contract);
-        debug1 << "Done re-executing pipeline to create named selection" << endl;
+        // Perform additional setup using the extension.
+        avtDataObject_p newdob = ext->GetSelectedData(dob, contract, selProps);
+
+        debug5 << "Must execute the pipeline to create the named selection" << endl;
+        newdob->Update(contract);
+        debug5 << "Done executing the pipeline to create the named selection" << endl;
+
+        CopyTo(ds, newdob);
+    }
+    else
+    {
+        if (needZoneNumbers)
+        {
+            debug1 << "Must re-execute pipeline to create named selection" << endl;
+            dob->Update(contract);
+            debug1 << "Done re-executing pipeline to create named selection" << endl;
+        }
+        CopyTo(ds, dob);
     }
 
-    avtDataset_p ds;
-    CopyTo(ds, dob);
     avtDataTree_p tree = ds->GetDataTree();
     std::vector<int> doms;
     std::vector<int> zones;
@@ -222,6 +252,10 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
         }
     }
     delete [] leaves;
+
+    // Let the extension free its resources. (We could just do this later...)
+    if(ext != 0)
+        ext->FreeUpResources();
 
     // Note the poor use of MPI below, coded for expediency, as I believe all
     // of the named selections will be small.
@@ -518,4 +552,73 @@ avtNamedSelectionManager::CreateQualifiedSelectionName(const std::string &name,
     return qualName;
 }
 
+// ****************************************************************************
+// Method: avtNamedSelectionManager::GetSelectionProperties
+//
+// Purpose: 
+//   Gets the selection properties based on the selection name.
+//
+// Arguments:
+//   selName : The name of the selection for which to get selection properties.
+//
+// Returns:    A pointer to the selection properties or NULL if not found.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 14:19:56 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+const SelectionProperties *
+avtNamedSelectionManager::GetSelectionProperties(const std::string &selName) const
+{
+    for(size_t i = 0; i < properties.size(); ++i)
+    {
+        if(selName == properties[i].GetName())
+            return &properties[i];
+    }
+    return NULL;
+}
+
+// ****************************************************************************
+// Method: avtNamedSelectionManager::AddSelectionProperties
+//
+// Purpose: 
+//   Adds the new selection properties to the list of selection properties, 
+//   overwriting properties with the same name, if present.
+//
+// Arguments:
+//   srcp : The new selection properties.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 14:21:14 PST 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtNamedSelectionManager::AddSelectionProperties(const SelectionProperties &srcp)
+{
+    SelectionProperties *p = NULL;
+    for(size_t i = 0; i < properties.size(); ++i)
+    {
+        if(srcp.GetName() == properties[i].GetName())
+        {
+            p = &properties[i];
+            break;
+        }
+    }
+
+    if(p != NULL)
+        *p = srcp;
+    else
+        properties.push_back(srcp);
+}

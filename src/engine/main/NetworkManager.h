@@ -44,6 +44,7 @@
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
 #include <SaveWindowAttributes.h>
+#include <SelectionSummary.h>
 #include <VisualCueList.h>
 #include <WindowAttributes.h>
 #include <vectortypes.h>
@@ -68,6 +69,7 @@ class QueryAttributes;
 class QueryOverTimeAttributes;
 class MaterialAttributes;
 class MeshManagementAttributes;
+class SelectionProperties;
 class VisWindow;
 class avtDataBinning;
 class avtWholeImageCompositer;
@@ -412,6 +414,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
 //
+//    Brad Whitlock, Tue Dec 14 14:04:33 PST 2010
+//    I made CreateNamedSelection take SelectionProperties.
+//
 //    Tom Fogal, Wed May 18 12:17:18 MDT 2011
 //    Need some debug code in IceT; promoting it to class methods.
 //
@@ -523,7 +528,7 @@ class ENGINE_MAIN_API NetworkManager
     avtDataBinning *GetDataBinning(const char *);
     void          ApplyNamedSelection(const std::vector<std::string> &, 
                                       const std::string &);
-    void          CreateNamedSelection(int, const std::string &);
+    SelectionSummary CreateNamedSelection(int, const SelectionProperties &);
     void          DeleteNamedSelection(const std::string &);
     void          LoadNamedSelection(const std::string &);
     void          SaveNamedSelection(const std::string &);

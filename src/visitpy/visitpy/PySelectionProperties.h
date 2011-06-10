@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SELECTIONPROPERTIES_NMETH 12
+#define SELECTIONPROPERTIES_NMETH 34
 void VISITPY_API           PySelectionProperties_StartUp(SelectionProperties *subj, void *data);
 void VISITPY_API           PySelectionProperties_CloseDown();
 VISITPY_API PyMethodDef *  PySelectionProperties_GetMethodTable(int *nMethods);

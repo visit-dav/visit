@@ -1067,6 +1067,32 @@ SumIntAcrossAllProcessors(int &value)
 #endif
 }
 
+// ****************************************************************************
+//  Function: SumLongAcrossAllProcessors
+//
+//  Purpose:
+//      Sums a single int across all processors.
+//
+//  Arguments:
+//      value      The input and output.
+//
+//  Programmer:    Jeremy Meredith
+//  Creation:      April 17, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+SumLongAcrossAllProcessors(long &value)
+{
+#ifdef PARALLEL
+    long newvalue;
+    MPI_Allreduce(&value, &newvalue, 1, MPI_LONG, MPI_SUM,
+                  VISIT_MPI_COMM);
+    value = newvalue;
+#endif
+}
 
 // ****************************************************************************
 //  Function: SumDoubleAcrossAllProcessors
@@ -1222,6 +1248,34 @@ void BroadcastInt(int &i)
 }
 
 // ****************************************************************************
+// Function: BroadcastIntArray
+//
+// Purpose: 
+//   Broadcast an array of int from processor 0 to all other processors.
+//
+// Arguments:
+//   array  : The array to send (or receive on non-rank-0).
+//   nArray : The number of values to send/receive.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 20 15:00:02 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void BroadcastIntArray(int *array, int nArray)
+{
+#ifdef PARALLEL
+    MPI_Bcast(array, nArray, MPI_INT, 0, VISIT_MPI_COMM);
+#endif
+}
+
+// ****************************************************************************
 //  Function:  BroadcastIntVector
 //
 //  Purpose:
@@ -1352,6 +1406,34 @@ void BroadcastDouble(double &i)
 {
 #ifdef PARALLEL
     MPI_Bcast(&i, 1, MPI_DOUBLE, 0, VISIT_MPI_COMM);
+#endif
+}
+
+// ****************************************************************************
+// Function: BroadcastDoubleArray
+//
+// Purpose: 
+//   Broadcast an array of double from processor 0 to all other processors.
+//
+// Arguments:
+//   array  : The array to send (or receive on non-rank-0).
+//   nArray : The number of values to send/receive.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 20 15:00:02 PDT 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void BroadcastDoubleArray(double *array, int nArray)
+{
+#ifdef PARALLEL
+    MPI_Bcast(array, nArray, MPI_DOUBLE, 0, VISIT_MPI_COMM);
 #endif
 }
 
@@ -1662,140 +1744,95 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
 //  Creation:   June 22, 2009
 //
 //  Modifications:
+//    Brad Whitlock, Fri May 20 13:54:46 PDT 2011
+//    I moved the body into a static helper that I templated so I could add
+//    another version that uses doubles.
 //
 // ****************************************************************************
+
+template <class T>
+static void
+CollectArraysOnRootProc(T *&receiveBuf, int *&receiveCounts,
+    T *sendBuf, int sendCount
+#ifdef PARALLEL
+    , MPI_Datatype dataType
+#endif
+    )
+{
+#ifdef PARALLEL
+    int rank = PAR_Rank();
+    int nProc = PAR_Size();
+
+    // Determine the receive counts.
+    receiveCounts = NULL;
+    if (rank == 0)
+    {
+        receiveCounts = new int[nProc];
+    }
+    MPI_Gather(&sendCount, 1, MPI_INT, receiveCounts, 1, MPI_INT,
+               0, VISIT_MPI_COMM);
+
+    // Determine the processor offsets.
+    int *procOffset = NULL;
+    if (rank == 0)
+    {
+        procOffset = new int[nProc];
+        procOffset[0] = 0;
+        for (int i = 1; i < nProc; i++)
+            procOffset[i] = procOffset[i-1] + receiveCounts[i-1];
+    }
+
+    // Allocate the receive buffer.
+    receiveBuf = NULL;
+    if (rank == 0)
+    {
+        // Determine the size of the receive buffer.
+        int nReceiveBuf = 0;
+        for (int i  = 0 ; i < nProc; i++)
+            nReceiveBuf += receiveCounts[i];
+
+        // Allocate it.
+        receiveBuf = new T[nReceiveBuf];
+    }
+
+    MPI_Gatherv(sendBuf, sendCount, dataType, receiveBuf,
+                receiveCounts, procOffset, dataType, 0, VISIT_MPI_COMM);
+
+    if (rank == 0)
+    {
+        delete [] procOffset;
+    }
+#else
+    receiveCounts = new int[1];
+    receiveCounts[0] = sendCount;
+
+    receiveBuf = new T[sendCount];
+    for (int i = 0; i < sendCount; i++)
+        receiveBuf[i] = sendBuf[i];
+#endif
+}
 
 void
 CollectIntArraysOnRootProc(int *&receiveBuf, int *&receiveCounts,
     int *sendBuf, int sendCount)
 {
+    CollectArraysOnRootProc<int>(receiveBuf, receiveCounts, sendBuf, sendCount
 #ifdef PARALLEL
-    int rank = PAR_Rank();
-    int nProc = PAR_Size();
-
-    // Determine the receive counts.
-    receiveCounts = NULL;
-    if (rank == 0)
-    {
-        receiveCounts = new int[nProc];
-    }
-    MPI_Gather(&sendCount, 1, MPI_INT, receiveCounts, 1, MPI_INT,
-               0, VISIT_MPI_COMM);
-
-    // Determine the processor offsets.
-    int *procOffset = NULL;
-    if (rank == 0)
-    {
-        procOffset = new int[nProc];
-        procOffset[0] = 0;
-        for (int i = 1; i < nProc; i++)
-            procOffset[i] = procOffset[i-1] + receiveCounts[i-1];
-    }
-
-    // Allocate the receive buffer.
-    receiveBuf = NULL;
-    if (rank == 0)
-    {
-        // Determine the size of the receive buffer.
-        int nReceiveBuf = 0;
-        for (int i  = 0 ; i < nProc; i++)
-            nReceiveBuf += receiveCounts[i];
-
-        // Allocate it.
-        receiveBuf = new int[nReceiveBuf];
-    }
-
-    MPI_Gatherv(sendBuf, sendCount, MPI_INT, receiveBuf,
-                receiveCounts, procOffset, MPI_INT, 0, VISIT_MPI_COMM);
-
-    if (rank == 0)
-    {
-        delete [] procOffset;
-    }
-#else
-    receiveCounts = new int[1];
-    receiveCounts[0] = sendCount;
-
-    receiveBuf = new int[sendCount];
-    for (int i = 0; i < sendCount; i++)
-        receiveBuf[i] = sendBuf[i];
+                                 , MPI_INT
 #endif
+                                );
 }
-
-
-// ****************************************************************************
-//  Function: CollectDoubleArraysOnRootProc
-//
-//  Purpose:
-//      Collects a collection of arrays from all the processors on the root
-//      process.  The arrays can be of different sizes.  The receiveBuf and
-//      receiveCounts are allocated in this routine and must be deleted by
-//      the caller.
-//
-//  Programmer: Hank Childs
-//  Creation:   December 26, 2010
-//
-//  Modifications:
-//
-// ****************************************************************************
 
 void
 CollectDoubleArraysOnRootProc(double *&receiveBuf, int *&receiveCounts,
-                              double *sendBuf, int sendCount)
+    double *sendBuf, int sendCount)
 {
+    CollectArraysOnRootProc<double>(receiveBuf, receiveCounts, sendBuf, sendCount
 #ifdef PARALLEL
-    int rank = PAR_Rank();
-    int nProc = PAR_Size();
-
-    // Determine the receive counts.
-    receiveCounts = NULL;
-    if (rank == 0)
-    {
-        receiveCounts = new int[nProc];
-    }
-    MPI_Gather(&sendCount, 1, MPI_INT, receiveCounts, 1, MPI_INT,
-               0, VISIT_MPI_COMM);
-
-    // Determine the processor offsets.
-    int *procOffset = NULL;
-    if (rank == 0)
-    {
-        procOffset = new int[nProc];
-        procOffset[0] = 0;
-        for (int i = 1; i < nProc; i++)
-            procOffset[i] = procOffset[i-1] + receiveCounts[i-1];
-    }
-
-    // Allocate the receive buffer.
-    receiveBuf = NULL;
-    if (rank == 0)
-    {
-        // Determine the size of the receive buffer.
-        int nReceiveBuf = 0;
-        for (int i  = 0 ; i < nProc; i++)
-            nReceiveBuf += receiveCounts[i];
-
-        // Allocate it.
-        receiveBuf = new double[nReceiveBuf];
-    }
-
-    MPI_Gatherv(sendBuf, sendCount, MPI_DOUBLE, receiveBuf,
-                receiveCounts, procOffset, MPI_DOUBLE, 0, VISIT_MPI_COMM);
-
-    if (rank == 0)
-    {
-        delete [] procOffset;
-    }
-#else
-    receiveCounts = new int[1];
-    receiveCounts[0] = sendCount;
-
-    receiveBuf = new double[sendCount];
-    for (int i = 0; i < sendCount; i++)
-        receiveBuf[i] = sendBuf[i];
+                                    , MPI_DOUBLE
 #endif
+                                   );
 }
-
 
 // ****************************************************************************
 //  Function: GetUniqueMessageTag

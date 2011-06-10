@@ -6441,7 +6441,7 @@ ViewerPlotList::UpdatePlots(const intVector &somePlots, bool animating)
             const SelectionList *sList = ViewerWindowManager::GetSelectionList();
             for(int j = 0; j < sList->GetNumSelections(); ++j)
             {
-                if(sList->operator[](j).GetOriginatingPlot() == 
+                if(sList->GetSelections(j).GetOriginatingPlot() == 
                    plots[i].plot->GetPlotName())
                 {
                     originatingPlot = true;
@@ -6570,7 +6570,7 @@ ViewerPlotList::UpdatePlots(const intVector &somePlots, bool animating)
             const SelectionList *sList = ViewerWindowManager::GetSelectionList();
             for(int j = 0; j < sList->GetNumSelections(); ++j)
             {
-                const SelectionProperties &sel = sList->operator[](j);
+                const SelectionProperties &sel = sList->GetSelections(j);
                 if(sel.GetOriginatingPlot() == 
                    plots[originatingPlots[p]].plot->GetPlotName())
                 {
@@ -6982,7 +6982,9 @@ ViewerPlotList::UpdateWindow(const intVector &somePlots, bool immediateUpdate)
             {
                 if (errorCount == 0)
                 {
-                    Error(tr("The plot spatial dimensions do not match, 2D vs 3D. Plots needs to be in windows with similar spatial dimensions."));
+                    Error(tr("The plot spatial dimensions do not match, 2D vs "
+                        "3D. Plots need to be in windows with plots of the "
+                        "same spatial dimension."));
                     ++errorCount;
                 }
 

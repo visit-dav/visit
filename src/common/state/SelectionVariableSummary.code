@@ -1,0 +1,43 @@
+Initialization: histogram
+for(int i = 0; i < 256; ++i)
+    histogram[i] = 0.;
+
+
+Function: SetHistogram
+Declaration: void SetHistogram(int index, double value);
+Definition:
+void
+SelectionVariableSummary::SetHistogram(int index, double value)
+{
+    if(index >= 0 && index < 256)
+        histogram[index] = value;
+}
+
+Function: NormalizedHistogram
+Declaration: void NormalizedHistogram(float hist[256]) const;
+Definition:
+void
+SelectionVariableSummary::NormalizedHistogram(float hist[256]) const
+{
+    // find the min/max
+    double minval = histogram[0];
+    double maxval = histogram[0];
+    for(int i = 1; i < 256; ++i)
+    {
+        if(histogram[i] < minval)
+            minval = histogram[i];
+        if(histogram[i] > maxval)
+            maxval = histogram[i];
+    }
+
+    if(minval == maxval)
+    {
+        for(int i = 0; i < 256; ++i)
+            hist[i] = (minval != 0.) ? 1.f : 0.f;
+    }
+    else
+    {
+        for(int i = 0; i < 256; ++i)
+            hist[i] = (float)(histogram[i] / maxval);
+    }
+}

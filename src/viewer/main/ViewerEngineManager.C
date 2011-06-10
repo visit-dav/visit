@@ -61,6 +61,8 @@
 #include <PickAttributes.h>
 #include <ProcessAttributes.h>
 #include <QueryAttributes.h>
+#include <SelectionList.h>
+#include <SelectionSummary.h>
 #include <SimulationCommand.h>
 #include <StatusAttributes.h>
 #include <ViewerFileServer.h>
@@ -3358,14 +3360,31 @@ ViewerEngineManager::ApplyNamedSelection(const EngineKey &ek,
 //  Programmer: Hank Childs
 //  Creation:   January 28, 2009
 //
+//  Modifications:
+//    Brad Whitlock, Tue Dec 14 11:48:13 PST 2010
+//    Pass the selection properties to the engine.
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::CreateNamedSelection(const EngineKey &ek, 
-                                          int id, const std::string &selName)
+    int id, const SelectionProperties &props)
 {
+    SelectionSummary summary;
     ENGINE_PROXY_RPC_BEGIN("CreateNamedSelection");
-    engine->CreateNamedSelection(id, selName);
+
+        // Remove the summary if it is there.
+        int sindex = ViewerWindowManager::GetSelectionList()->
+            GetSelectionSummary(props.GetName());
+        if(sindex >= 0)
+            ViewerWindowManager::GetSelectionList()->RemoveSelectionSummary(sindex);
+
+        // Create the named selection
+        summary = engine->CreateNamedSelection(id, props);
+
+        // Add the new summary to the list.
+        ViewerWindowManager::GetSelectionList()->AddSelectionSummary(summary);
+
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
@@ -3383,10 +3402,18 @@ ViewerEngineManager::CreateNamedSelection(const EngineKey &ek,
 
 bool
 ViewerEngineManager::DeleteNamedSelection(const EngineKey &ek, 
-                                         const std::string &selName)
+                                          const std::string &selName)
 {
     ENGINE_PROXY_RPC_BEGIN("DeleteNamedSelection");
-    engine->DeleteNamedSelection(selName);
+
+        // Remove the summary if it is there.
+        int sindex = ViewerWindowManager::GetSelectionList()->GetSelectionSummary(selName);
+        if(sindex >= 0)
+            ViewerWindowManager::GetSelectionList()->RemoveSelectionSummary(sindex);
+
+        // Delete the selection on the engine.
+        engine->DeleteNamedSelection(selName);
+
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 

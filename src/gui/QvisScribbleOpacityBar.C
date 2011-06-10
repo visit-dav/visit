@@ -133,9 +133,9 @@ QvisScribbleOpacityBar::drawOpacities()
 {
     QColor white(255, 255, 255 );
     if(histTexture != 0)
-        drawFilledCurve(values, nvalues, white, 0.7f);
+        drawFilledCurve(values, NULL, nvalues, white, 0.7f);
     else
-        drawFilledCurve(values, nvalues, white, 1.f);
+        drawFilledCurve(values, NULL, nvalues, white, 1.f);
 }
 
 

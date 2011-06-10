@@ -1556,6 +1556,10 @@ RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
 //    Kathleen Bonnell, Wed Mar 25 15:35:32 MST 2009
 //    Renamed NamedSelectionRPC enum names to compile on windows.
 //
+//    Brad Whitlock, Tue Dec 14 14:05:04 PST 2010
+//    Pass selection properties to CreateNamedSelection. I also added status
+//    updates since the RPC is now non-blocking.
+//
 // ****************************************************************************
 template<>
 void
@@ -1564,37 +1568,48 @@ RPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
     Engine *engine = Engine::Instance();
     NetworkManager *netmgr = engine->GetNetMgr();
 
-    debug2 << "Executing NamedSelectionRPC." << endl;
+    const char *mName = "Executing NamedSelectionRPC: ";
+    debug2 << mName << "0" << endl;
 
-    avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
-    LoadBalancer::RegisterProgressCallback(NULL, NULL);
-    avtOriginatingSource::RegisterInitializeProgressCallback(NULL, NULL);
+    avtDataObjectSource::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, (void*)rpc);
+    LoadBalancer::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, (void*)rpc);
+    avtOriginatingSource::RegisterInitializeProgressCallback(
+                               Engine::EngineInitializeProgressCallback, (void*)rpc);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
+
     TRY
     {
-        NamedSelectionRPC::NamedSelectionType t = rpc->GetNamedSelectionType();
-        switch (t)
+        SelectionSummary summary;
+        summary.SetName(rpc->GetSelectionName());
+
+        switch (rpc->GetNamedSelectionOperation())
         {
-          case NamedSelectionRPC::NS_APPLY:
+        case NamedSelectionRPC::NS_APPLY:
             netmgr->ApplyNamedSelection(rpc->GetPlotNames(), rpc->GetSelectionName());
             break;
-          case NamedSelectionRPC::NS_CREATE:
-            netmgr->CreateNamedSelection(rpc->GetPlotID(), rpc->GetSelectionName());
+        case NamedSelectionRPC::NS_CREATE:
+            summary = netmgr->CreateNamedSelection(
+                rpc->GetPlotID(), rpc->GetSelectionProperties());
             break;
-          case NamedSelectionRPC::NS_DELETE:
+        case NamedSelectionRPC::NS_DELETE:
             netmgr->DeleteNamedSelection(rpc->GetSelectionName());
             break;
-          case NamedSelectionRPC::NS_LOAD:
+        case NamedSelectionRPC::NS_LOAD:
             netmgr->LoadNamedSelection(rpc->GetSelectionName());
             break;
-          case NamedSelectionRPC::NS_SAVE:
+        case NamedSelectionRPC::NS_SAVE:
             netmgr->SaveNamedSelection(rpc->GetSelectionName());
             break;
         }
-        rpc->SendReply();
+    debug2 << mName << "1" << endl;
+        rpc->SendReply(&summary);
     }
     CATCH2(VisItException, e)
     {
+    debug2 << mName << "2" << endl;
+
         rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
@@ -1606,6 +1621,8 @@ RPCExecutor<NamedSelectionRPC>::Execute(NamedSelectionRPC *rpc)
     avtOriginatingSource::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, NULL);
+
+    debug2 << mName << "3,end" << endl;
 }
 
 // ****************************************************************************

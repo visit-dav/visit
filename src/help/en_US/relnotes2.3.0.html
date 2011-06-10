@@ -32,6 +32,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 2.3</font></b></p>
 <ul>
+  <li>Selections have been enhanced to support <i>cumulative queries</i>. A cumulative query lets you threshold multiple variables on a 
+dataset for a range of time steps and then combine the results into a single time-aware selection that can then be further reduced using a histogram. The results from each time step can be combined such that the final selection will contain cells that are present in either <i>all</i> or <i>any</i> time steps. The number of cells for each time step can be displayed as a histogram. The other histogram modes are: <i>Matches, ID, Variable</i>. The matches histogram mode takes the selection and sorts the cells in the selection into bins based on how frequently they appear over time. The ID histogram mode sorts the selection based on cell id, creating bins of cell ids. The variable histogram mode sorts the cells in the selection using an auxiliary variable and uses that variable to create bins that group the cells. Once cells have been binned into a histogram, the histogram is returned to the GUI where users can turn off a number of start end end bins to focus on high or low histogram bins. Cumulative query selections can be created using the Selections window.  
+  </li>
+  <li>Selections are no longer required to be tied to plots. This lets you create complex selections using datasets that have not yet been plotted. Note that data is read and processed to create the selection but it is not plotted.</li>
   <li>The <b>Expression</b> window's <b>Load</b> button now causes expressions from XML files to be appended to the expression list instead of replacing the expressions in the list.</li>
   <li> The cli method <i>GetAnnotationObject</i> now only accepts a string argument for the desired object's name.
   To access an object by index, use the index in combination with the result of <i>GetAnnotationObjectNames</i>.

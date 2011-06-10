@@ -30,7 +30,7 @@ ${COMMON_SOURCES}
 
 SET(LIBE_SOURCES
 ThresholdEnginePluginInfo.C
-avtThresholdFilter.C
+avtThresholdPluginFilter.C
 ${COMMON_SOURCES}
 )
 

@@ -68,6 +68,9 @@
 //    Brad Whitlock, Thu Dec 18 10:56:33 PST 2008
 //    I added histogram textures.
 //
+//    Brad Whitlock, Mon Dec 27 15:37:41 PST 2010
+//    I added histogramColor.
+//
 // ****************************************************************************
 
 QvisAbstractOpacityBar::QvisAbstractOpacityBar(QWidget *parent)
@@ -84,7 +87,9 @@ QvisAbstractOpacityBar::QvisAbstractOpacityBar(QWidget *parent)
     image = 0;
     backgroundColorControlPoints = 0;
     histTexture = 0;
+    histTextureMask = 0;
     histTextureSize = 0;
+    histogramColor = QColor(30,30,30);
 }
 
 // ****************************************************************************
@@ -111,6 +116,8 @@ QvisAbstractOpacityBar::~QvisAbstractOpacityBar()
     image = 0;
     if(histTexture != 0)
         delete [] histTexture;
+    if(histTextureMask != 0)
+        delete [] histTextureMask;
 }
 
 void
@@ -163,15 +170,25 @@ QvisAbstractOpacityBar::setBackgroundColorControlPoints(const ColorControlPointL
 void
 QvisAbstractOpacityBar::setHistogramTexture(const float *t, int ts)
 {
+    setHistogramTexture(t, 0, ts);
+}
+
+void
+QvisAbstractOpacityBar::setHistogramTexture(const float *t, const bool *tm, int ts)
+{
     if(t == 0)
     {
         if(histTexture != 0)
             delete [] histTexture;
+        if(histTextureMask != 0)
+            delete [] histTextureMask;
         histTexture = 0;
+        histTextureMask = 0;
         histTextureSize = 0;
     }
     else
     {
+        // Copy the texture.        
         if(ts != histTextureSize)
         {
             if(histTexture != 0)
@@ -180,6 +197,18 @@ QvisAbstractOpacityBar::setHistogramTexture(const float *t, int ts)
         }
         histTextureSize = ts;
         memcpy(histTexture, t, sizeof(float) * histTextureSize);
+
+        // Copy the mask
+        if(histTextureMask != 0)
+        {
+            delete [] histTextureMask;
+            histTextureMask = 0;
+        }
+        if(tm != 0)
+        {
+            histTextureMask = new bool[ts];
+            memcpy(histTextureMask, tm, sizeof(bool) * histTextureSize);
+        }
     }
 
     imageDirty();
@@ -331,45 +360,146 @@ QvisAbstractOpacityBar::drawColorBackground()
 // Creation:   Thu Dec 18 14:08:16 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Mon Dec 27 15:31:59 PST 2010
+//   I made it call drawFilledCurveWithSelection.
+//
+// ****************************************************************************
+
+void
+QvisAbstractOpacityBar::drawFilledCurve(float *curve, bool *mask, int nc,
+    const QColor &cc, float opac)
+{
+    float range[2] = {0.f, 1.f};
+    drawFilledCurveWithSelection(curve, 0, nc, 
+                                 cc, opac,
+                                 cc, 0.f,
+                                 cc, false,
+                                 range, 0.f, 1.f);
+}
+
+// ****************************************************************************
+// Method: QvisAbstractOpacityBar::drawFilledCurveWithSelection
+//
+// Purpose: 
+//   This method draws a filled curve into the image, blending the pixels if
+//   necessary.
+//
+// Arguments: 
+//   curve           : The curve to draw.
+//   mask            : A mask for the curve so we can turn off different bins.
+//                     This can be NULL.
+//   nc              : The length of the curve array.
+//   curveOn         : The curve fill color when it is on.
+//   curveOnOpacity  : The curve's opacity when it is on. If < 1. then the pixels
+//                     get blended. Zero opacity pixels do not get drawn.
+//   curveOff        : The curve fill color when it is off.
+//   curveOffOpacity : The curve's opacity when it is off. If < 1. then the pixels
+//                     get blended. Zero opacity pixels do not get drawn.
+//   binLines        : The color for bin lines.
+//   drawBinLines    : Draw the bin lines.
+//   range           : The total range for the opacity bar.
+//   minval          : The minimum range value that we'll draw.
+//   maxval          : The maximum range value that we'll draw.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 27 15:32:58 PST 2010
+//
+// Modifications:
 //   
 // ****************************************************************************
 
 void
-QvisAbstractOpacityBar::drawFilledCurve(float *curve, int nc, const QColor &cc, float opac)
+QvisAbstractOpacityBar::drawFilledCurveWithSelection(float *curve, bool *mask, int nc,
+    const QColor &curveOn,  float curveOnOpacity,
+    const QColor &curveOff, float curveOffOpacity,
+    const QColor &binLines, bool  drawBinLines,
+    float range[2], float minval, float maxval)
 {
     int w = contentsRect().width();
     int h = contentsRect().height();
-    QRgb CC = cc.rgb();
-    bool blend = opac < 1.;
+    QRgb BL = binLines.rgb();
 
     for (int x = 0; x < w; x++)
     {
         float tx = float(x) / float(w-1);
-        int   cx = int(tx * (nc-1));
+        int   cx = qMin((nc-1), int(tx * nc));
         float yval = curve[cx];
+        //qDebug("tx=%g, cx=%d, yval=%g", tx, cx, yval);
 
-        if(blend)
+        // Determine whether we will need to draw the column
+        bool drawColumn = true;
+        if(mask != NULL)
+            drawColumn = mask[cx];
+        else
         {
+            // Restrict the columns we draw to a range.
+            float xval = (1.f-tx)*range[0] + tx*range[1];
+            if(xval < minval || xval > maxval)
+                drawColumn = false;
+        }
+
+        // Determine the proper color and opacity to use for the column
+        // based on whether we're drawing it.
+        QRgb color;
+        float opacity;
+        if(drawColumn)
+        {
+            color = curveOn.rgb();
+            opacity = curveOnOpacity; 
+        }
+        else
+        {
+            color = curveOff.rgb();
+            opacity = curveOffOpacity; 
+        }
+
+        // Draw the column
+        if(opacity == 1.f)
+        {
+            // Draw full opacity.
+            for (int y = 0; y < h; y++)
+            { 
+                float yval2 = 1 - float(y)/float(h-1);
+                if (yval2 <= yval)
+                    image->setPixel(x, y, color); 
+            }
+        }
+        else if(opacity > 0.f)
+        {
+            // Blend the column with the background.
             for (int y = 0; y < h; y++)
             { 
                 float yval2 = 1 - float(y)/float(h-1);
                 if (yval2 <= yval)
                 {
                     QRgb p = image->pixel(x, y);
-                    int r = int((1.f - opac)*float(qRed(p))   + opac*float(qRed(CC)));
-                    int g = int((1.f - opac)*float(qGreen(p)) + opac*float(qGreen(CC)));
-                    int b = int((1.f - opac)*float(qBlue(p))  + opac*float(qBlue(CC)));
+                    int r = int((1.f - opacity)*float(qRed(p))   + opacity*float(qRed(color)));
+                    int g = int((1.f - opacity)*float(qGreen(p)) + opacity*float(qGreen(color)));
+                    int b = int((1.f - opacity)*float(qBlue(p))  + opacity*float(qBlue(color)));
                     image->setPixel(x,y, qRgb(r,g,b));
                 }
             }
         }
-        else
+
+        if(drawBinLines)
         {
-            for (int y = 0; y < h; y++)
-            { 
-                float yval2 = 1 - float(y)/float(h-1);
-                if (yval2 <= yval)
-                    image->setPixel(x, y, CC); 
+            int yv = int((1.-yval) * (h-1));
+            yv = qMin(yv, h-1);
+            image->setPixel(x, yv, BL);
+        }
+    }
+
+    // Draw the bin dividers
+    if(drawBinLines)
+    {
+        for(int i = 1; i < histTextureSize+1; ++i)
+        {
+            float t = float(i) / float(histTextureSize);
+            int x = int(t * w);
+            if(x < w)
+            {
+                for (int y = 0; y < h; y++)
+                    image->setPixel(x,y, BL);
             }
         }
     }
@@ -391,7 +521,11 @@ QvisAbstractOpacityBar::drawFilledCurve(float *curve, int nc, const QColor &cc, 
 //    Brad Whitlock, Thu Dec 18 11:07:13 PST 2008
 //    Added code to draw the background and a histogram.
 //
+//    Brad Whitlock, Mon Dec 27 15:39:24 PST 2010
+//    Use histogramColor for the solid histogram color.
+//
 // ****************************************************************************
+
 void
 QvisAbstractOpacityBar::paintEvent(QPaintEvent *e)
 {
@@ -406,9 +540,9 @@ QvisAbstractOpacityBar::paintEvent(QPaintEvent *e)
         if(histTexture != 0)
         {
             if(backgroundColorControlPoints)
-                drawFilledCurve(histTexture, histTextureSize, QColor(0,0,0), 0.8f);
+                drawFilledCurve(histTexture, histTextureMask, histTextureSize, QColor(0,0,0), 0.8f);
             else
-                drawFilledCurve(histTexture, histTextureSize, QColor(30,30,30), 1.f);
+                drawFilledCurve(histTexture, histTextureMask, histTextureSize, histogramColor, 1.f);
         }
         drawOpacities();
     }
