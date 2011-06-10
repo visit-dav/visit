@@ -10608,7 +10608,8 @@ ViewerSubject::LoadNamedSelection()
 
             // Remove any selection that may already exist by this name.
             int index = wMgr->GetSelectionList()->GetSelection(selName);
-            wMgr->GetSelectionList()->RemoveSelections(index);
+            if(index >= 0)
+                wMgr->GetSelectionList()->RemoveSelections(index);
 
             // Add a new selection to the selection list. Just set the name so
             // it will not have an originating plot.
