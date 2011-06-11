@@ -75,7 +75,10 @@ bool VsStructuredMesh::initialize()
   }
   else
   {
-    numSpatialDims = dims[dims.size()-1];
+    if( isCompMinor() )
+      numSpatialDims = dims[dims.size()-1];
+    else
+      numSpatialDims = dims[0];
   }
   
   VsLog::debugLog() << methodSig
@@ -120,7 +123,14 @@ void VsStructuredMesh::getMeshDataDims(std::vector<int>& dims)
   if( dims.size() == 1 )
   {
     dims.resize(dims.size()+1);
-    dims[dims.size()-1] = 1;
+
+    if( isCompMinor() )
+      dims[dims.size()-1] = 1;
+    else
+    {
+      dims[dims.size()-1] = dims[0];
+      dims[0] = 1;
+    }
   }
 }
 
