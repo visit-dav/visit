@@ -247,7 +247,8 @@ avtVsFileFormat::ProcessDataSelections(int *mins, int *maxs, int *strides)
         }
         else if (string(selList[i]->GetType()) == "Spatial Box Data Selection")
         {
-            avtSpatialBoxSelection *sel = (avtSpatialBoxSelection *) *(selList[i]);
+            avtSpatialBoxSelection *sel =
+              (avtSpatialBoxSelection *) *(selList[i]);
 
             double dmins[3], dmaxs[3];
             sel->GetMins(dmins);
