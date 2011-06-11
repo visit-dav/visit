@@ -96,6 +96,7 @@ public:
     void SelectSubsetName();
 
     // Property setting methods
+    void SetMaxDim(Dimension maxDim_);
     void SetDim(Dimension dim_);
     void SetXAbsMax(int xAbsMax_);
     void SetXMin(int xMin_);
@@ -117,6 +118,7 @@ public:
     void SetSubsetName(const std::string &subsetName_);
 
     // Property getting methods
+    Dimension         GetMaxDim() const;
     Dimension         GetDim() const;
     int               GetXAbsMax() const;
     int               GetXMin() const;
@@ -161,7 +163,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_dim = 0,
+        ID_maxDim = 0,
+        ID_dim,
         ID_xAbsMax,
         ID_xMin,
         ID_xMax,
@@ -184,6 +187,7 @@ public:
     };
 
 private:
+    int         maxDim;
     int         dim;
     int         xAbsMax;
     int         xMin;
@@ -208,6 +212,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define INDEXSELECTATTRIBUTES_TMFS "iiiiibiiiibiiiibbss"
+#define INDEXSELECTATTRIBUTES_TMFS "iiiiiibiiiibiiiibbss"
 
 #endif

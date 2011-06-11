@@ -76,6 +76,25 @@ PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *
     std::string str; 
     char tmpStr[1000]; 
 
+    const char *maxDim_names = "OneD, TwoD, ThreeD";
+    switch (atts->GetMaxDim())
+    {
+      case IndexSelectAttributes::OneD:
+          SNPRINTF(tmpStr, 1000, "%smaxDim = %sOneD  # %s\n", prefix, prefix, maxDim_names);
+          str += tmpStr;
+          break;
+      case IndexSelectAttributes::TwoD:
+          SNPRINTF(tmpStr, 1000, "%smaxDim = %sTwoD  # %s\n", prefix, prefix, maxDim_names);
+          str += tmpStr;
+          break;
+      case IndexSelectAttributes::ThreeD:
+          SNPRINTF(tmpStr, 1000, "%smaxDim = %sThreeD  # %s\n", prefix, prefix, maxDim_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *dim_names = "OneD, TwoD, ThreeD";
     switch (atts->GetDim())
     {
@@ -153,6 +172,39 @@ IndexSelectAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/*static*/ PyObject *
+IndexSelectAttributes_SetMaxDim(PyObject *self, PyObject *args)
+{
+    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the maxDim in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetMaxDim(IndexSelectAttributes::Dimension(ival));
+    else
+    {
+        fprintf(stderr, "An invalid maxDim value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "OneD, TwoD, ThreeD.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IndexSelectAttributes_GetMaxDim(PyObject *self, PyObject *args)
+{
+    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxDim()));
+    return retval;
 }
 
 /*static*/ PyObject *
@@ -624,6 +676,8 @@ IndexSelectAttributes_GetSubsetName(PyObject *self, PyObject *args)
 
 PyMethodDef PyIndexSelectAttributes_methods[INDEXSELECTATTRIBUTES_NMETH] = {
     {"Notify", IndexSelectAttributes_Notify, METH_VARARGS},
+    {"SetMaxDim", IndexSelectAttributes_SetMaxDim, METH_VARARGS},
+    {"GetMaxDim", IndexSelectAttributes_GetMaxDim, METH_VARARGS},
     {"SetDim", IndexSelectAttributes_SetDim, METH_VARARGS},
     {"GetDim", IndexSelectAttributes_GetDim, METH_VARARGS},
     {"SetXAbsMax", IndexSelectAttributes_SetXAbsMax, METH_VARARGS},
@@ -690,6 +744,15 @@ IndexSelectAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyIndexSelectAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "maxDim") == 0)
+        return IndexSelectAttributes_GetMaxDim(self, NULL);
+    if(strcmp(name, "OneD") == 0)
+        return PyInt_FromLong(long(IndexSelectAttributes::OneD));
+    if(strcmp(name, "TwoD") == 0)
+        return PyInt_FromLong(long(IndexSelectAttributes::TwoD));
+    if(strcmp(name, "ThreeD") == 0)
+        return PyInt_FromLong(long(IndexSelectAttributes::ThreeD));
+
     if(strcmp(name, "dim") == 0)
         return IndexSelectAttributes_GetDim(self, NULL);
     if(strcmp(name, "OneD") == 0)
@@ -749,7 +812,9 @@ PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "dim") == 0)
+    if(strcmp(name, "maxDim") == 0)
+        obj = IndexSelectAttributes_SetMaxDim(self, tuple);
+    else if(strcmp(name, "dim") == 0)
         obj = IndexSelectAttributes_SetDim(self, tuple);
     else if(strcmp(name, "xAbsMax") == 0)
         obj = IndexSelectAttributes_SetXAbsMax(self, tuple);
