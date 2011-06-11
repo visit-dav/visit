@@ -6,6 +6,9 @@
         TwoD
         ThreeD
       </Enum>
+      <Field name="maxDim" label="MaxDimension" type="enum" subtype="Dimension">
+        ThreeD
+      </Field>
       <Field name="dim" label="Dimension" type="enum" subtype="Dimension">
         TwoD
       </Field>

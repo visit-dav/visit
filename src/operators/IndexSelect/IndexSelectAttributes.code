@@ -196,7 +196,6 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
         defaultAtts->SetCategoryName(firstCategoryName);
     }
 
-
     // Set the topological dimension and the logical bounds
     const avtDatabaseMetaData *md = plot->GetMetaData();
     if(md != 0)
@@ -204,26 +203,41 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
        const avtMeshMetaData *mmd = md->GetMesh(plot->GetMeshName());
        if(mmd && mmd->hasLogicalBounds)
        {
-           if( mmd->topologicalDimension >= 1 && mmd->logicalBounds[0] > 1)
+           if( mmd->meshType == AVT_POINT_MESH ||
+               mmd->meshType == AVT_UNSTRUCTURED_MESH)
            {
+               isAtts->SetMaxDim(IndexSelectAttributes::OneD);
                isAtts->SetDim(IndexSelectAttributes::OneD);
-               isAtts->SetXAbsMax(mmd->logicalBounds[0]-1);
+               isAtts->SetXAbsMax(mmd->logicalBounds[0]);
                if( isAtts->GetXMax() == -1 )
-                   isAtts->SetXMax(mmd->logicalBounds[0]-1);
+                   isAtts->SetXMax(mmd->logicalBounds[0]);
            }
-           if( mmd->topologicalDimension >= 2 && mmd->logicalBounds[1] > 1 )
+           else
            {
+             if( mmd->topologicalDimension >= 1 && mmd->logicalBounds[0] > 1)
+             {
+                 isAtts->SetMaxDim(IndexSelectAttributes::OneD);
+                 isAtts->SetDim(IndexSelectAttributes::OneD);
+                 isAtts->SetXAbsMax(mmd->logicalBounds[0]);
+                 if( isAtts->GetXMax() == -1 )
+                     isAtts->SetXMax(mmd->logicalBounds[0]);
+             }
+             if( mmd->topologicalDimension >= 2 && mmd->logicalBounds[1] > 1 )
+             {
+               isAtts->SetMaxDim(IndexSelectAttributes::TwoD);
                isAtts->SetDim(IndexSelectAttributes::TwoD);
-               isAtts->SetYAbsMax(mmd->logicalBounds[1]-1);
+               isAtts->SetYAbsMax(mmd->logicalBounds[1]);
                if( isAtts->GetYMax() == -1 )
-                   isAtts->SetYMax(mmd->logicalBounds[1]-1);
-           }
-           if( mmd->topologicalDimension >= 3 && mmd->logicalBounds[2] > 1 )
-           {
-               isAtts->SetDim(IndexSelectAttributes::ThreeD);
-               isAtts->SetZAbsMax(mmd->logicalBounds[2]-1);
-               if( isAtts->GetZMax() == -1 )
-                   isAtts->SetZMax(mmd->logicalBounds[2]-1);
+                   isAtts->SetYMax(mmd->logicalBounds[1]);
+             }
+             if( mmd->topologicalDimension >= 3 && mmd->logicalBounds[2] > 1 )
+             {
+                 isAtts->SetMaxDim(IndexSelectAttributes::ThreeD);
+                 isAtts->SetDim(IndexSelectAttributes::ThreeD);
+                 isAtts->SetZAbsMax(mmd->logicalBounds[2]);
+                 if( isAtts->GetZMax() == -1 )
+                     isAtts->SetZMax(mmd->logicalBounds[2]);
+              }
            }
        }
    }
