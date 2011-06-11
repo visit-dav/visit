@@ -25,8 +25,9 @@ public:
   
   static VsStructuredMesh* buildStructuredMesh(VsH5Dataset* data);
 
-  virtual size_t getMeshDims(std::vector<int>* dims, bool useStride, std::vector<int> stride);
-  
+  virtual void getMeshDataDims(std::vector<int>& dims);
+  virtual void getNumMeshDims(std::vector<int>& dims);
+
 private:
   VsStructuredMesh(VsH5Dataset* data);
   virtual bool initialize();

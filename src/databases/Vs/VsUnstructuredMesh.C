@@ -14,6 +14,7 @@
 
 VsUnstructuredMesh::VsUnstructuredMesh(VsH5Group* group):VsMesh(group) {
   numPoints = 0;
+  numCells = 0;
   splitPoints = false;
 }
 
@@ -22,6 +23,10 @@ VsUnstructuredMesh::~VsUnstructuredMesh() {
 
 unsigned int VsUnstructuredMesh::getNumPoints() {
   return numPoints;
+}
+
+unsigned int VsUnstructuredMesh::getNumCells() {
+  return numCells;
 }
 
 bool VsUnstructuredMesh::usesSplitPoints()  {
@@ -336,39 +341,85 @@ bool VsUnstructuredMesh::initialize() {
 
     numPoints = points0->getDims()[0];
   }
-  
+
+  if( isPointMesh() )
+  {
+    numCells = numPoints;
+  }
+  else
+  {
+    // For now users can have only one connectivity dataset.
+    VsH5Dataset* connectivityMeta = 0;
+    std::string connectivityDatasetName;
+
+    if( (connectivityMeta = getLinesDataset())) {
+      connectivityDatasetName = getLinesDatasetName();
+    } else if( (connectivityMeta = getPolygonsDataset()) ) {
+      connectivityDatasetName = getPolygonsDatasetName();
+    } else if( (connectivityMeta = getTrianglesDataset()) ) {
+      connectivityDatasetName = getTrianglesDatasetName();
+    } else if( (connectivityMeta = getQuadrilateralsDataset()) ) {
+      connectivityDatasetName = getQuadrilateralsDatasetName();
+    } else if( (connectivityMeta = getPolyhedraDataset()) ) {
+      connectivityDatasetName = getPolyhedraDatasetName();
+    } else if( (connectivityMeta = getTetrahedralsDataset()) ) {
+      connectivityDatasetName = getTetrahedralsDatasetName();
+    } else if( (connectivityMeta = getPyramidsDataset()) ) {
+      connectivityDatasetName = getPyramidsDatasetName();
+    } else if( (connectivityMeta = getPrismsDataset()) ) {
+      connectivityDatasetName = getPrismsDatasetName();
+    } else if( (connectivityMeta = getHexahedralsDataset()) ){
+      connectivityDatasetName = getHexahedralsDatasetName();
+    }
+
+    VsH5Dataset* connectivityDataset =
+      registry->getDataset(connectivityDatasetName);
+    
+    std::vector<int> connectivityDims = connectivityMeta->getDims();
+    
+    if( isCompMajor() )
+    {
+      numCells = connectivityDims[1];
+    }
+    else
+    {
+      numCells = connectivityDims[0];
+    }
+  }
+
   return initializeRoot();
 }
 
 bool VsUnstructuredMesh::isPointMesh() {
   return ((getPolygonsDataset() == NULL) &&
-        (getPolyhedraDataset() == NULL) &&
+          (getPolyhedraDataset() == NULL) &&
     
-        (getLinesDataset() == NULL) &&
-        (getTrianglesDataset() == NULL) &&
-        (getQuadrilateralsDataset() == NULL) &&
-    
-        (getTetrahedralsDataset() == NULL) &&
-        (getPyramidsDataset() == NULL) &&
-        (getPrismsDataset() == NULL) &&
-        (getHexahedralsDataset() == NULL));
+          (getLinesDataset() == NULL) &&
+          (getTrianglesDataset() == NULL) &&
+          (getQuadrilateralsDataset() == NULL) &&
+          
+          (getTetrahedralsDataset() == NULL) &&
+          (getPyramidsDataset() == NULL) &&
+          (getPrismsDataset() == NULL) &&
+          (getHexahedralsDataset() == NULL));
 }
 
 std::string VsUnstructuredMesh::getKind() {
   return VsSchema::Unstructured::key;
 }
 
-size_t VsUnstructuredMesh::getMeshDims(std::vector<int>* dims, bool useStride, std::vector<int> stride) {
-  VsLog::debugLog() << "VsUnstructuredMesh::getMeshDims(): Entering." << std::endl;
+void VsUnstructuredMesh::getMeshDataDims(std::vector<int>& dims)
+{
+  VsLog::debugLog() << "VsUnstructuredMesh::getMeshDims(): Entering."
+                    << std::endl;
   
-  //Unstructured mesh is funny, because meshDims is:
-  // [#points][#dims]
-  dims->resize(2);
-  (*dims)[0] = numPoints;
-  (*dims)[1] = numSpatialDims;
+  // Unstructured mesh is meshDataDims is: [#points][#spatialDims]
+  dims.resize(2);
+  dims[0] = numPoints;
+  dims[1] = numSpatialDims;
 
-  size_t len = numPoints * numSpatialDims;
+//   size_t len = numPoints * numSpatialDims;
   
-  VsLog::debugLog() << "VsUnstructuredMesh::getMeshDims(): Returning " <<len <<"." << std::endl;
-  return len;
+//   VsLog::debugLog() << "VsUnstructuredMesh::getMeshDims(): Returning " <<len <<"." << std::endl;
+//   return len;
 }

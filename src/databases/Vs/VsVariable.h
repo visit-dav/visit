@@ -27,6 +27,8 @@ public:
   virtual ~VsVariable();
 
   bool isZonal();
+
+  bool isFortranOrder();
   bool isCompMinor();
   bool isCompMajor();
 
@@ -72,8 +74,8 @@ public:
    * Returns NULL on error.*/
   static VsVariable* buildObject(VsH5Dataset* dataset);
 
-  void createComponents(bool useStride, std::vector<int> stride);
-  size_t getNumComps(bool useStride, std::vector<int> stride);
+  void createComponents();
+  size_t getNumComps();
 
 protected:
   VsVariable(VsH5Dataset* data);

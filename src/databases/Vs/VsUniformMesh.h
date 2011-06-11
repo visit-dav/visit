@@ -13,7 +13,7 @@
 
 #include "VsMesh.h"
 #include <hdf5.h>
-#include <vector>
+
 class VsH5Group;
 
 class VsUniformMesh: public VsMesh {
@@ -30,7 +30,8 @@ public:
   herr_t getUpperBounds(std::vector<float>* fVals);
   herr_t getStartCell(std::vector<int>* startCell);
 
-  virtual size_t getMeshDims(std::vector<int>* dims, bool useStride, std::vector<int> stride);
+  virtual void getMeshDataDims(std::vector<int>& dims);
+  virtual void getNumMeshDims(std::vector<int>& dims);
   
 private:
   //required attributes

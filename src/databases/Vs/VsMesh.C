@@ -40,17 +40,17 @@ VsMesh::~VsMesh() {
 
 bool VsMesh::isFortranOrder() {
   return ((indexOrder == VsSchema::compMinorFKey) ||
-      (indexOrder == VsSchema::compMajorFKey));
+          (indexOrder == VsSchema::compMajorFKey));
 }
 
 bool VsMesh::isCompMinor() {
   return ((indexOrder == VsSchema::compMinorCKey) ||
-      (indexOrder == VsSchema::compMinorFKey));
+          (indexOrder == VsSchema::compMinorFKey));
 }
 
 bool VsMesh::isCompMajor() {
   return ((indexOrder == VsSchema::compMajorCKey) ||
-      (indexOrder == VsSchema::compMajorFKey));
+          (indexOrder == VsSchema::compMajorFKey));
 }
 
 void VsMesh::write() {

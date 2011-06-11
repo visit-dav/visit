@@ -11,105 +11,135 @@
 #include "VsH5Dataset.h"
 #include "VsLog.h"
 
+#include <string>
+
+using namespace std;
+
+
 VsStructuredMesh::VsStructuredMesh(VsH5Dataset* data):VsMesh(data) {
 }
+
 
 VsStructuredMesh::~VsStructuredMesh() {
 }
 
-VsStructuredMesh* VsStructuredMesh::buildStructuredMesh(VsH5Dataset* dataset) {
+
+VsStructuredMesh* VsStructuredMesh::buildStructuredMesh(VsH5Dataset* dataset)
+{
+  string methodSig("VsStructuredMesh::buildStructuredMesh() - ");
+
   VsStructuredMesh* newMesh = new VsStructuredMesh(dataset);
   bool success = newMesh->initialize();
   
   if (success) {
-    VsLog::debugLog() <<"VsStructuredMesh::buildStructuredMesh() - returning success." <<std::endl;
+    VsLog::debugLog() << methodSig << "returning success." <<endl;
     return newMesh;
   }
   
   delete (newMesh);
   newMesh = NULL;
-  VsLog::debugLog() <<"VsStructuredMesh::buildStructuredMesh() - returning failure." <<std::endl;
+  VsLog::debugLog() << methodSig << "returning failure." <<endl;
   return NULL;
 }
 
-bool VsStructuredMesh::initialize() {
-  VsLog::debugLog() <<"VsStructuredMesh::initialize() - Entering" <<std::endl;
+
+bool VsStructuredMesh::initialize()
+{
+  string methodSig("VsStructuredMesh::initialize() - ");
+    
+  VsLog::debugLog() << methodSig << "Entering" <<endl;
+
+  VsH5Dataset* dm = registry->getDataset(getFullName());
+
+  vector< int > dims = dm->getDims();
   
-  //determine num spatial dims
-  //For a structured mesh, it is the size of the last component of the dataset
+  // Determine num spatial dims. For a structured mesh, it is the size
+  // of the last component of the dataset.
   int index = ((VsH5Dataset*)h5Object)->getDims().size() - 1;
-  if (index < 0) {
-    VsLog::debugLog() <<"VsStructuredMesh::initialize() - Failed to create mesh because dataset->dims.size() is zero." <<std::endl;
+
+  if (dims.empty())
+  {
+    VsLog::debugLog() << methodSig
+      << "Failed to create mesh because dataset->dims.size() is zero." << endl;
     return false;
-  } else if (index == 0) {
-    VsLog::warningLog() <<"VsStructuredMesh::initialize() - in special 1-d case." <<std::endl;
-    VsLog::warningLog() <<"VsStructuredMesh::initialize() - This file attempts to declare a 1-d structured mesh." <<std::endl;
-    VsLog::warningLog() <<"VsStructuredMesh::initialize() - As an array of size [numPoints]" <<std::endl;
-    VsLog::warningLog() <<"VsStructuredMesh::initialize() - Whereas the normal dimensions would be [numPoints][1]" <<std::endl;
-    VsLog::warningLog() <<"VsStructuredMesh::initialize() - Although this is acceptable by vizschema documentation," <<std::endl;
-    VsLog::warningLog() <<"VsStructuredMesh::initialize() - it is not implemented at the moment." <<std::endl;
-    return false;
-  } else {
-    numSpatialDims = ((VsH5Dataset*)h5Object)->getDims()[index];
+  }
+  else if( dims.size() == 1 )
+  {
+    VsLog::warningLog() << methodSig << "Special 1D case." << endl
+      << "This file attempts to declare a 1D structured mesh with" << endl
+      << "an array of size [numPoints] but with no spatial dimension." << endl
+      << "Whereas the normal dimensions would be [numPoints][spatialDim]" << endl
+      << "As such, assume the spatial dimenson is 1." << endl;
+
+    numSpatialDims = 1;
+  }
+  else
+  {
+    numSpatialDims = dims[dims.size()-1];
   }
   
-  VsLog::debugLog() <<"VsStructuredMesh::initialize() - Mesh has num spatial dims = " <<numSpatialDims <<std::endl;
+  VsLog::debugLog() << methodSig
+                    << "Mesh has num spatial dims = " << numSpatialDims << endl;
     
-  VsLog::debugLog() <<"VsStructuredMesh::initialize() - Success." <<std::endl;
+  VsLog::debugLog() << methodSig << "Success." << endl;
   return initializeRoot();
 }
+
 
 std::string VsStructuredMesh::getKind() {
   return VsSchema::structuredMeshKey;
 }
 
-size_t VsStructuredMesh::getMeshDims(std::vector<int>* dims, bool useStride, std::vector<int> stride) {
-  VsLog::debugLog() << "VsStructuredMesh::getMeshDims(): Entering." << std::endl;
+
+void VsStructuredMesh::getMeshDataDims(std::vector<int>& dims)
+{
+  string methodSig("VsStructuredMesh::getMeshDims() - ");
+    
+  VsLog::debugLog() << methodSig << "Entering." << endl;
   
   // Read dataset's dims
   VsH5Dataset* dm = registry->getDataset(getFullName());
+
   if (!dm) {
-    VsLog::errorLog() << "VsStructuredMesh::getMeshDims(): Error: dataset " << getFullName()
-    << " not found" << std::endl;
-    VsLog::errorLog() << "VsStructuredMesh::getMeshDims(): Returning 0." << std::endl;
-    return 0;
+    VsLog::errorLog() << methodSig << "Error: dataset " << getFullName()
+                      << " not found" << endl;
+    VsLog::errorLog() << methodSig << "Returning 0." << endl;
+    return;
   }
  
-  *dims = dm->getDims();
-  
+  dims = dm->getDims();
+
   //Structured is funny because dims is one of these:
-  // 3d: [i][j][k][3]
-  // 2d: [i][j][2]
-  // 1d: [i][1] or [i]
-  if (useStride) {
-    VsLog::debugLog() <<"VsStructuredMesh::getMeshDims() - Adjusting size of mesh using stride." <<std::endl;
-    
-    //we do dims - 1 because structured meshes store their coordinates in the last dimension
-    // and we don't want to resize it
-    for (unsigned int i = 0; i < dims->size() - 1; i++) {
-      int value = (*dims)[i];
-      VsLog::debugLog() <<"VsStructuredMesh::getMeshDims() - dims[" <<i <<"] = " <<value <<" stride[" <<i <<"] = " <<stride[i] <<std::endl;
-      
-      value = value / stride[i];
-      
-      //we round UP if there is a remainder
-      if ((*dims)[i] % stride[i] != 0) {
-        VsLog::debugLog() <<"VsStructuredMesh::getMeshDims() - Added 1 because there was a remainder." <<std::endl;
-        value ++;
-      }
-      
-      if (value < 1)
-        value = 1;
-      
-      (*dims)[i] = value;
-      VsLog::debugLog() <<"VsStructuredMesh::getMeshDims() - dims[" <<i <<"] was adjusted to " <<(*dims)[i] <<std::endl;
+  // 3D: [i][j][k][N] where N == 3
+  // 2D: [i][j][N]    where 2 <= N <= 3
+  // 1D: [i][N]       where 1 <= N <= 3
+  // 1D: [i]
+
+  // Special case were there is 1D data with only one coordinate, if
+  // so for consistancy add in the spatial dimension.
+  if( dims.size() == 1 )
+  {
+    dims.resize(dims.size()+1);
+    dims[dims.size()-1] = 1;
+  }
+}
+
+
+void VsStructuredMesh::getNumMeshDims(std::vector<int>& dims)
+{
+  getMeshDataDims(dims);
+
+  // Lop off the spatial dimension.
+  if( dims.size() > 1 )
+  {
+    if( isCompMinor() )
+      dims.resize(dims.size()-1);
+    else
+    {
+      for( int i=0; i<dims.size()-1; ++i )
+        dims[i] = dims[i+1];
+
+      dims.resize(dims.size()-1);
     }
   }
-  
-  size_t len = 1;
-  for (size_t i = 0; i < dims->size(); ++i)
-    len *= (*dims)[i];
-  
-  VsLog::debugLog() << "VsStructuredMesh::getMeshDims(): Returning " <<len <<"." << std::endl;
-  return len;
 }
