@@ -308,11 +308,21 @@ bool VsUnstructuredMesh::initialize() {
   VsH5Dataset* pointsDataset = getPointsDataset();
   if (pointsDataset != NULL) {
     splitPoints = false;
-    numSpatialDims = pointsDataset->getDims()[1];
-    numPoints = pointsDataset->getDims()[0];
+
+    if( isCompMinor() )
+    {
+      numPoints = pointsDataset->getDims()[0];
+      numSpatialDims = pointsDataset->getDims()[1];
+    }
+    else
+    {
+      numSpatialDims = pointsDataset->getDims()[0];
+      numPoints = pointsDataset->getDims()[1];
+    }
   }
   else {
     splitPoints = true;
+
     //it's possible that we have multiple points datasets
     VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - path = " <<getPath() <<std::endl;
     VsLog::debugLog() <<"VsUnstructuredMesh::initialize() - vsPoints0 = " <<getPointsDatasetName(0) <<std::endl;
@@ -377,13 +387,13 @@ bool VsUnstructuredMesh::initialize() {
     
     std::vector<int> connectivityDims = connectivityMeta->getDims();
     
-    if( isCompMajor() )
+    if( isCompMinor() )
     {
-      numCells = connectivityDims[1];
+      numCells = connectivityDims[0];
     }
     else
     {
-      numCells = connectivityDims[0];
+      numCells = connectivityDims[1];
     }
   }
 
@@ -415,11 +425,15 @@ void VsUnstructuredMesh::getMeshDataDims(std::vector<int>& dims)
   
   // Unstructured mesh is meshDataDims is: [#points][#spatialDims]
   dims.resize(2);
-  dims[0] = numPoints;
-  dims[1] = numSpatialDims;
 
-//   size_t len = numPoints * numSpatialDims;
-  
-//   VsLog::debugLog() << "VsUnstructuredMesh::getMeshDims(): Returning " <<len <<"." << std::endl;
-//   return len;
+  if( isCompMinor() )
+  {
+    dims[0] = numPoints;
+    dims[1] = numSpatialDims;
+  }
+  else
+  {
+    dims[0] = numSpatialDims;
+    dims[1] = numPoints;
+  }
 }
