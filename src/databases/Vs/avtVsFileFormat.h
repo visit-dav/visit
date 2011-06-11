@@ -56,9 +56,8 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    * Construct a file reader from a data file.
    *
    * @param dfnm the name of the data file
-   * @param newStride The stride to use when loading data
    */
-  avtVsFileFormat(const char* dfnm, std::vector<int> settings);
+  avtVsFileFormat(const char* dfnm);
 
   /**
    * Destructor
@@ -73,6 +72,8 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   virtual const char* GetType(void) {
     return "Vs";
   };
+
+  virtual bool CanCacheVariable(const char *var);
 
   /**
    * Get the data selections
@@ -124,7 +125,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    * Deprecated 06.02.2011 in favor of GetCycle and GetTime
    * Marc Durant
    */
-  //virtual void UpdateCyclesAndTimes(avtDatabaseMetaData* md);
+  virtual void UpdateCyclesAndTimes(avtDatabaseMetaData* md);
   
   protected:
   /**
@@ -169,12 +170,6 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    */
   static int instanceCounter;
 
-  /**
-   * A user-specified setting for the stride to use when loading data.
-   * Default is 1 on all axes.
-   */
-  std::vector<int> stride;
-
   VsRegistry* registry;
 
     vector<avtDataSelection_p> selList;
@@ -190,12 +185,11 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   /**
    * Create various meshes.
    */
-  vtkDataSet* getUniformMesh(VsUniformMesh*);
-  vtkDataSet* getUnstructuredMesh(VsUnstructuredMesh*);
-  vtkDataSet* getRectilinearMesh(VsRectilinearMesh*);
-  vtkDataSet* getStructuredMesh(VsStructuredMesh*);
-  vtkDataSet* getPointMesh(VsVariableWithMesh*);
-  vtkDataSet* getSplitPointMesh(VsUnstructuredMesh*);
+  vtkDataSet* getUniformMesh(VsUniformMesh*, bool, int*, int*, int*);
+  vtkDataSet* getRectilinearMesh(VsRectilinearMesh*, bool, int*, int*, int*);
+  vtkDataSet* getStructuredMesh(VsStructuredMesh*, bool, int*, int*, int*);
+  vtkDataSet* getUnstructuredMesh(VsUnstructuredMesh*, bool, int*, int*, int*);
+  vtkDataSet* getPointMesh(VsVariableWithMesh*, bool, int*, int*, int*);
   vtkDataSet* getCurve(int domain, const std::string& name);
 
   /**
@@ -214,4 +208,3 @@ class avtVsFileFormat: public avtSTMDFileFormat {
 };
 
 #endif
-

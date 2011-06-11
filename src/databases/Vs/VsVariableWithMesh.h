@@ -45,7 +45,12 @@ public:
 
   /** Get dimensions of associated dataset. */
   std::vector<int> getDims();
-  
+
+  unsigned int getNumPoints();
+
+  virtual void getMeshDataDims(std::vector<int>& dims);
+  virtual void getNumMeshDims(std::vector<int>& dims);
+
   /** Get hdf5 type */
   hid_t getType();
 

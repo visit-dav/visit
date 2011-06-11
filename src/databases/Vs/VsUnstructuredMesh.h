@@ -22,6 +22,7 @@ public:
   virtual ~VsUnstructuredMesh();
   
   unsigned int getNumPoints();
+  unsigned int getNumCells();
 
   static VsUnstructuredMesh* buildUnstructuredMesh(VsH5Group* group);
   
@@ -55,12 +56,13 @@ public:
   VsH5Dataset* getHexahedralsDataset();
   bool isPointMesh();
   
-  virtual size_t getMeshDims(std::vector<int>* dims, bool useStride, std::vector<int> stride);
+  virtual void getMeshDataDims(std::vector<int>& dims);
   
 private:
   VsUnstructuredMesh(VsH5Group* group);
   virtual bool initialize();
   unsigned int numPoints;
+  unsigned int numCells;
   bool splitPoints;
   
 };

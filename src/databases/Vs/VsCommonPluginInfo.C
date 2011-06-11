@@ -40,35 +40,6 @@
 #include <avtVsFileFormat.h>
 #include <avtSTMDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
-#include <DBOptionsAttributes.h>
-#include <DebugStream.h>
-// definition of VISIT_VERSION
-#include <visit-config.h>
-#include <visit-hdf5.h>
-#include <hdf5.h>
-
-//by default we load 100% of data
-const int VsCommonPluginInfo::defaultStride = 1;
-std::string VsCommonPluginInfo::strideSettingAxis1_Name ="Stride for loading data - Axis 1:";
-std::string VsCommonPluginInfo::strideSettingAxis2_Name ="Stride for loading data - Axis 2:";
-std::string VsCommonPluginInfo::strideSettingAxis3_Name ="Stride for loading data - Axis 3:";
-
-// ****************************************************************************
-//  Method:  VsCommonPluginInfo::VsCommonPluginInfo
-//
-//  Purpose:
-//    Constructs a VsCommonPluginInfo with default values
-//
-//  Programmer:  Marc Durant
-//  Creation:    omitted
-//
-// ****************************************************************************
-VsCommonPluginInfo::VsCommonPluginInfo() {
-       settings.resize(3);
-       settings[0] = defaultStride;
-       settings[1] = defaultStride;
-       settings[2] = defaultStride;
-}
 
 // ****************************************************************************
 //  Method:  VsCommonPluginInfo::GetDatabaseType
@@ -83,7 +54,7 @@ VsCommonPluginInfo::VsCommonPluginInfo() {
 DatabaseType
 VsCommonPluginInfo::GetDatabaseType()
 {
-    return DB_TYPE_STSD;
+    return DB_TYPE_STMD;
 }
 
 // ****************************************************************************
@@ -107,104 +78,12 @@ avtDatabase *
 VsCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
-#if HDF5_VERSION_GE(1,8,1)
     avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
     for (int i = 0 ; i < nList ; i++)
     {
-        ffl[i] = new avtVsFileFormat(list[i], settings);
+        ffl[i] = new avtVsFileFormat(list[i]);
     }
-    avtSTMDFileFormatInterface *inter
+    avtSTMDFileFormatInterface *inter 
            = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
-#else
-    DebugStream::Stream3() <<"VsCommonPluginInfo::SetupDatabase() - Vizschema database plugin requires hdf5 1.8.1 or later." <<std::endl;
-    DebugStream::Stream3() <<"VsCommonPluginInfo::SetupDatabase() - Plugin is disabled and will not open files." <<std::endl;
-    return NULL;
-#endif
-}
-
-// ****************************************************************************
-//  Method: VsCommonPluginInfo::GetReadOptions
-//
-//  Purpose:
-//      Returns a list of available plugin settings and their defaults
-//
-//  Arguments:
-//
-//  Returns:    A DBOptionsAttributes object populated with setting names & defaults
-//
-//  Programmer: Marc Durant
-//  Creation:   omitted
-//
-// ****************************************************************************
-DBOptionsAttributes *
-VsCommonPluginInfo::GetReadOptions() const
-{
-    /* This code is from the SILO plugin and is here as reference
-    DBOptionsAttributes *rv = new DBOptionsAttributes;
-    vector<string> ignoreOpts;
-    ignoreOpts.push_back("Always"); // 0
-    ignoreOpts.push_back("Auto");   // 1
-    ignoreOpts.push_back("Never");  // 2
-    ignoreOpts.push_back("Undef");  // 3
-    rv->SetEnum(SILO_RDOPT_IGNORE_SEXTS, 3); // Undef
-    rv->SetEnumStrings(SILO_RDOPT_IGNORE_SEXTS, ignoreOpts);
-    rv->SetEnum(SILO_RDOPT_IGNORE_DEXTS, 3); // Undef
-    rv->SetEnumStrings(SILO_RDOPT_IGNORE_DEXTS, ignoreOpts);
-    rv->SetBool(SILO_RDOPT_FORCE_SINGLE, true);
-    rv->SetBool(SILO_RDOPT_SEARCH_ANNOTINT, false);
-
-    // Specify obsolete options and their default values
-    rv->SetObsolete(SILO_RDOPT_IGNORE_SEXTS2);
-    rv->SetObsolete(SILO_RDOPT_IGNORE_DEXTS2);
-
-    return rv;*/
-
-    DBOptionsAttributes *rv = new DBOptionsAttributes;
-    rv->SetInt(VsCommonPluginInfo::strideSettingAxis1_Name.c_str(), defaultStride);
-    rv->SetInt(VsCommonPluginInfo::strideSettingAxis2_Name.c_str(), defaultStride);
-    rv->SetInt(VsCommonPluginInfo::strideSettingAxis3_Name.c_str(), defaultStride);
-
-    return rv;
-
-}
-
-// ****************************************************************************
-//  Method: VsCommonPluginInfo::SetReadOptions
-//
-//  Purpose:
-//      Accepts a list of settings and values, stores those values for the plugin
-//
-//  Arguments:
-//      opts    A DBOptionsAttributes object containing settings
-//
-//  Returns:
-//
-//  Programmer: Marc Durant
-//  Creation:   omitted
-//
-// ****************************************************************************
-void VsCommonPluginInfo::SetReadOptions(DBOptionsAttributes *opts) {
-
-    for (int i = 0; i < opts->GetNumberOfOptions(); i++)
-    {
-        string optname = opts->GetName(i);
-        if (optname == VsCommonPluginInfo::strideSettingAxis1_Name.c_str()) {
-               settings[0] = opts->GetInt(VsCommonPluginInfo::strideSettingAxis1_Name.c_str());
-               if (settings[0] < 0)
-                      settings[0] = defaultStride;
-        }
-
-        if (optname == VsCommonPluginInfo::strideSettingAxis2_Name.c_str()) {
-               settings[1] = opts->GetInt(VsCommonPluginInfo::strideSettingAxis2_Name.c_str());
-                if (settings[1] < 0)
-                       settings[1] = defaultStride;
-        }
-
-        if (optname == VsCommonPluginInfo::strideSettingAxis3_Name.c_str()) {
-               settings[2] = opts->GetInt(VsCommonPluginInfo::strideSettingAxis3_Name.c_str());
-                if (settings[2] < 0)
-                       settings[2] = defaultStride;
-         }
-    }
 }

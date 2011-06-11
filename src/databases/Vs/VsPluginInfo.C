@@ -43,9 +43,6 @@
 #include <VsPluginInfo.h>
 
 #include <visit-config.h>
-#include <hdf5.h>
-#include <visit-hdf5.h>
-
 extern "C" DBP_EXPORT const char *VsVisItPluginVersion = VISIT_VERSION;
 
 // ****************************************************************************
@@ -98,7 +95,7 @@ VsGeneralPluginInfo::GetName() const
 const char *
 VsGeneralPluginInfo::GetVersion() const
 {
-    return "2.1.0md";
+    return "@VERSION@";
 }
 
 // ****************************************************************************
@@ -117,7 +114,7 @@ VsGeneralPluginInfo::GetVersion() const
 const char *
 VsGeneralPluginInfo::GetID() const
 {
-    return "Vs_2.1.0";
+    return "Vs_@VERSION@";
 }
 // ****************************************************************************
 //  Method: VsGeneralPluginInfo::EnabledByDefault
@@ -169,10 +166,8 @@ std::vector<std::string>
 VsGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-#if HDF5_VERSION_GE(1,8,1)
     defaultPatterns.push_back("*.vsh5");
     defaultPatterns.push_back("*.h5");
-#endif
 
     return defaultPatterns;
 }

@@ -48,8 +48,29 @@ bool VsVariableWithMesh::isCompMajor() {
 }
 
 // Get dims
-std::vector<int> VsVariableWithMesh::getDims() {
+std::vector<int> VsVariableWithMesh::getDims()
+{
   return dataset->getDims();
+}
+
+void VsVariableWithMesh::getMeshDataDims(std::vector<int>& dims)
+{
+  dims = dataset->getDims();
+}
+
+void VsVariableWithMesh::getNumMeshDims(std::vector<int>& dims)
+{
+  dims.resize(1);
+
+  dims[0] = getNumPoints();
+}
+
+unsigned int VsVariableWithMesh::getNumPoints()
+{
+  if( isCompMinor() )
+    return dataset->getDims()[0];
+  else
+    return dataset->getDims()[1];
 }
 
 // Get hdf5 type
