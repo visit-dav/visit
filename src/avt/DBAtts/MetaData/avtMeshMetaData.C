@@ -933,9 +933,17 @@ avtMeshMetaData::SetBounds(const int *bounds)
     else
     {
         hasLogicalBounds = true;
-        for (int i = 0 ; i < std::min(topologicalDimension, 3) ; i++)
+        if( meshType == AVT_POINT_MESH || meshType == AVT_UNSTRUCTURED_MESH)
         {
+          cerr << endl << "Setting bounds ..............." << endl;
+            logicalBounds[0] = bounds[0];
+        }
+        else
+        {
+          for (int i = 0 ; i < std::min(topologicalDimension, 3) ; i++)
+          {
             logicalBounds[i] = bounds[i];
+          }
         }
     }
 }
@@ -1171,12 +1179,19 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "Logical bounds are: (";
-        for (int j = 0 ; j < std::min(topologicalDimension, 3) ; j++)
+
+        if( meshType == AVT_POINT_MESH || meshType == AVT_UNSTRUCTURED_MESH)
+            out << logicalBounds[0];
+        else
         {
-            out << logicalBounds[j];
-            if(j < topologicalDimension-1)
-                out << ", ";
+          for (int j = 0 ; j < std::min(topologicalDimension, 3) ; j++)
+          {
+              out << logicalBounds[j];
+              if(j < topologicalDimension-1)
+                  out << ", ";
+          }
         }
+
         out << ")" << endl;
     }
     else
@@ -1185,6 +1200,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
         {
           case AVT_RECTILINEAR_MESH:
           case AVT_CURVILINEAR_MESH:
+          case AVT_UNSTRUCTURED_MESH:
           case AVT_POINT_MESH:
             Indent(out, indent);
             out << "The logical bounds are not set." << endl;
@@ -1406,4 +1422,3 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
     atts.SetNamescheme(base_string);
     this->blockNameScheme = atts;
 }
-
