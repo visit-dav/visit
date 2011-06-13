@@ -4605,7 +4605,7 @@ visit_RedrawWindow(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
-// Function: visit_MoveAndResizeWindow
+// Function: visit_ResizeWindow
 //
 // Purpose:
 //   Moves a window.
@@ -13910,7 +13910,7 @@ visit_ExecuteMacro(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
-// Function: visit_ClearMacro
+// Function: visit_ClearMacros
 //
 // Purpose:
 //   Gives a function a name that can be called from the VisIt GUI.
@@ -14893,6 +14893,9 @@ AddMethod(const char *methodName,
 //   Brad Whitlock, Fri Dec 17 11:19:57 PST 2010
 //   I added GetSelectionList.
 //
+//   Brad Whitlock, Mon Jun 13 15:54:38 PDT 2011
+//   I added doc strings for a bunch of functions that did not have them.
+//
 // ****************************************************************************
 
 static void
@@ -15005,7 +15008,7 @@ AddDefaultMethods()
     AddMethod("EnableTool", visit_EnableTool, visit_EnableTool_doc);
     AddMethod("ExportDatabase", visit_ExportDatabase, visit_ExportDatabase_doc);
     AddMethod("GetAnimationAttributes", visit_GetAnimationAttributes,
-                                                NULL /* DOCUMENT ME*/);
+                                        visit_GetAnimationAttributes_doc);
     AddMethod("GetAnimationTimeout", visit_GetAnimationTimeout,
                                                 visit_GetAnimationTimeout_doc);
     AddMethod("GetAnnotationObject", visit_GetAnnotationObject,
@@ -15076,21 +15079,23 @@ AddDefaultMethods()
     AddMethod("IconifyAllWindows", visit_IconifyAllWindows,
                                                   visit_IconifyAllWindows_doc);
     AddMethod("InitializeNamedSelectionVariables", visit_InitializeNamedSelectionVariables, 
-                                                   NULL /*DOCUMENT ME*/);
+                                                   visit_InitializeNamedSelectionVariables_doc);
     AddMethod("InvertBackgroundColor", visit_InvertBackgroundColor,
                                               visit_InvertBackgroundColor_doc);
     AddMethod("Lineout", visit_Lineout, visit_Lineout_doc);
     AddMethod("LoadNamedSelection", visit_LoadNamedSelection,
                                            visit_LoadNamedSelection_doc);
     AddMethod("LoadUltra", visit_LoadUltra, visit_LoadUltra_doc);
-    AddMethod("GetUltraScript", visit_GetUltraScript, NULL /*DOCUMENT ME */);
-    AddMethod("SetUltraScript", visit_SetUltraScript, NULL /*DOCUMENT ME */);
+    AddMethod("GetUltraScript", visit_GetUltraScript, visit_GetUltraScript_doc);
+    AddMethod("SetUltraScript", visit_SetUltraScript, visit_SetUltraScript_doc);
     AddMethod("MovePlotDatabaseKeyframe", visit_MovePlotDatabaseKeyframe,
                                            visit_MovePlotDatabaseKeyframe_doc);
     AddMethod("MovePlotKeyframe", visit_MovePlotKeyframe,
                                                    visit_MovePlotKeyframe_doc);
-    AddMethod("MovePlotOrderTowardFirst", visit_MovePlotOrderTowardFirst, NULL /*DOCUMENT ME*/);
-    AddMethod("MovePlotOrderTowardLast", visit_MovePlotOrderTowardLast, NULL /*DOCUMENT ME*/);
+    AddMethod("MovePlotOrderTowardFirst", visit_MovePlotOrderTowardFirst,
+              visit_MovePlotOrderTowardFirst_doc);
+    AddMethod("MovePlotOrderTowardLast", visit_MovePlotOrderTowardLast,
+              visit_MovePlotOrderTowardLast_doc);
 
     AddMethod("MoveViewKeyframe", visit_MoveViewKeyframe,
                                                    visit_MoveViewKeyframe_doc);
@@ -15128,7 +15133,7 @@ AddDefaultMethods()
     AddMethod("RemoveLastOperator", visit_RemoveLastOperator,
                                                      visit_RemoveOperator_doc);
     AddMethod("RemoveOperator", visit_RemoveOperator,visit_RemoveOperator_doc);
-    AddMethod("RenamePickLabel", visit_RenamePickLabel, NULL /* DOCUMENT ME*/);
+    AddMethod("RenamePickLabel", visit_RenamePickLabel, visit_RenamePickLabel_doc);
     AddMethod("ReOpenDatabase", visit_ReOpenDatabase,visit_ReOpenDatabase_doc);
     AddMethod("ReplaceDatabase", visit_ReplaceDatabase,
                                                     visit_ReplaceDatabase_doc);
@@ -15203,7 +15208,8 @@ AddDefaultMethods()
                                             visit_SetMaterialAttributes_doc);
     AddMethod("SetMeshManagementAttributes", visit_SetMeshManagementAttributes,
                                         visit_SetMeshManagementAttributes_doc);
-    AddMethod("SetNamedSelectionAutoApply", visit_SetNamedSelectionAutoApply, NULL /*DOCUMENT ME*/);
+    AddMethod("SetNamedSelectionAutoApply", visit_SetNamedSelectionAutoApply,
+              visit_SetNamedSelectionAutoApply_doc);
     AddMethod("SetOperatorOptions", visit_SetOperatorOptions,
                                                  visit_SetOperatorOptions_doc);
     AddMethod("SetPickAttributes", visit_SetPickAttributes,
@@ -15212,14 +15218,14 @@ AddDefaultMethods()
                                              visit_SetPipelineCachingMode_doc);
     AddMethod("SetPlotDatabaseState", visit_SetPlotDatabaseState,
                                                visit_SetPlotDatabaseState_doc);
-    AddMethod("SetPlotDescription", visit_SetPlotDescription, NULL /*DOCUMENT ME*/);
+    AddMethod("SetPlotDescription", visit_SetPlotDescription, visit_SetPlotDescription_doc);
     AddMethod("SetPlotFollowsTime", visit_SetPlotFollowsTime, 
                                                visit_SetPlotFollowsTime_doc);
     AddMethod("SetPlotFrameRange", visit_SetPlotFrameRange,
                                                   visit_SetPlotFrameRange_doc);
     AddMethod("SetPlotOptions", visit_SetPlotOptions,visit_SetPlotOptions_doc);
-    AddMethod("SetPlotOrderToFirst", visit_SetPlotOrderToFirst, NULL /*DOCUMENT ME*/);
-    AddMethod("SetPlotOrderToLast", visit_SetPlotOrderToLast, NULL /*DOCUMENT ME*/);
+    AddMethod("SetPlotOrderToFirst", visit_SetPlotOrderToFirst, visit_SetPlotOrderToFirst_doc);
+    AddMethod("SetPlotOrderToLast", visit_SetPlotOrderToLast, visit_SetPlotOrderToLast_doc);
     AddMethod("SetPlotSILRestriction", visit_SetPlotSILRestriction,
                                               visit_SetPlotSILRestriction_doc);
     AddMethod("SetPreferredFileFormats", visit_SetPreferredFileFormats,
@@ -15278,7 +15284,7 @@ AddDefaultMethods()
                                                          visit_ToggleMode_doc);
     AddMethod("ToggleSpinMode", visit_ToggleSpinMode, visit_ToggleMode_doc);
     AddMethod("UndoView",  visit_UndoView, visit_UndoView_doc);
-    AddMethod("UpdateNamedSelection", visit_UpdateNamedSelection, NULL /*DOCUMENT ME*/);
+    AddMethod("UpdateNamedSelection", visit_UpdateNamedSelection, visit_UpdateNamedSelection_doc);
 
     AddMethod("UserActionFinished",visit_UserActionFinished,NULL);
     AddMethod("RedoView",  visit_RedoView, visit_RedoView_doc);
@@ -15297,8 +15303,8 @@ AddDefaultMethods()
                                                 visit_GetActiveTimeSlider_doc);
     AddMethod("GetDomains", visit_GetDomains, visit_GetDomains_doc);
     AddMethod("GetMaterials", visit_GetMaterials, visit_GetMaterials_doc);
-    AddMethod("GetOperatorOptions", visit_GetOperatorOptions, NULL/*DOCUMENT ME*/);
-    AddMethod("GetPlotOptions", visit_GetPlotOptions, NULL/*DOCUMENT ME*/);
+    AddMethod("GetOperatorOptions", visit_GetOperatorOptions, visit_GetOperatorOptions_doc);
+    AddMethod("GetPlotOptions", visit_GetPlotOptions, visit_GetPlotOptions_doc);
     AddMethod("GetTimeSliders", visit_GetTimeSliders,visit_GetTimeSliders_doc);
     AddMethod("ListDomains", visit_ListDomains, visit_List_doc);
     AddMethod("ListMaterials", visit_ListMaterials, visit_List_doc);
@@ -15318,21 +15324,23 @@ AddDefaultMethods()
     AddMethod("TurnMaterialsOn", visit_TurnMaterialsOn, visit_Turn_doc);
     AddMethod("QueriesOverTime",  visit_QueriesOverTime,
                                                     visit_QueriesOverTime_doc);
-    AddMethod("SetColorTexturingEnabled", visit_SetColorTexturingEnabled, NULL/*DOCUMENT ME*/);
-    AddMethod("GetMetaData", visit_GetMetaData, NULL/*DOCUMENT ME*/);
-    AddMethod("GetPlotList", visit_GetPlotList, NULL/*DOCUMENT ME*/);
-    AddMethod("GetSelection", visit_GetSelection, NULL/*DOCUMENT ME*/);
-    AddMethod("GetSelectionSummary", visit_GetSelectionSummary, NULL/*DOCUMENT ME*/);
-    AddMethod("GetSelectionList", visit_GetSelectionList, NULL/*DOCUMENT ME*/);
+    AddMethod("SetColorTexturingEnabled", visit_SetColorTexturingEnabled, 
+              visit_SetColorTexturingEnabled_doc);
+    AddMethod("GetMetaData", visit_GetMetaData, visit_GetMetaData_doc);
+    AddMethod("GetPlotList", visit_GetPlotList, visit_GetPlotList_doc);
+    AddMethod("GetSelection", visit_GetSelection, visit_GetSelection_doc);
+    AddMethod("GetSelectionSummary", visit_GetSelectionSummary, visit_GetSelectionSummary_doc);
+    AddMethod("GetSelectionList", visit_GetSelectionList, visit_GetSelectionList_doc);
 
-    AddMethod("ClearMacros", visit_ClearMacros, NULL/*DOCUMENT ME*/);
-    AddMethod("ExecuteMacro", visit_ExecuteMacro, NULL/*DOCUMENT ME*/);
-    AddMethod("RegisterMacro", visit_RegisterMacro, NULL/*DOCUMENT ME*/);
+    AddMethod("ClearMacros", visit_ClearMacros, visit_ClearMacros_doc);
+    AddMethod("ExecuteMacro", visit_ExecuteMacro, visit_ExecuteMacro_doc);
+    AddMethod("RegisterMacro", visit_RegisterMacro, visit_RegisterMacro_doc);
     AddMethod("SuppressMessages", visit_SuppressMessages, visit_SuppressMessages_doc);
 
     AddMethod("GetCallbackNames", visit_GetCallbackNames, visit_GetCallbackNames_doc);
     AddMethod("RegisterCallback", visit_RegisterCallback, visit_RegisterCallback_doc);
-    AddMethod("GetCallbackArgumentCount", visit_GetCallbackArgumentCount, NULL/*DOCUMENT ME*/);
+    AddMethod("GetCallbackArgumentCount", visit_GetCallbackArgumentCount, 
+              visit_GetCallbackArgumentCount_doc);
 
     AddMethod("LoadAttribute", visit_LoadAttribute, visit_LoadSaveAttribute_doc);
     AddMethod("SaveAttribute", visit_SaveAttribute, visit_LoadSaveAttribute_doc);
