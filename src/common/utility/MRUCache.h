@@ -39,11 +39,10 @@
 #ifndef MRU_CACHE_H
 #define MRU_CACHE_H
 
+#include <cstddef>
 #include <map>
 #include <vector>
 using std::map;
-using std::vector;
-
 
 // ****************************************************************************
 //
@@ -174,7 +173,7 @@ class MRUCacheBase {
       };
       const_iterator find(const kT& key) const { return cache.find(key); };
 
-      iterator find(const vector<kT>& keys)
+      iterator find(const std::vector<kT>& keys)
       {
           iterator mpos;
           for (size_t i = 0; i < keys.size(); i++)
@@ -185,7 +184,7 @@ class MRUCacheBase {
           }
           return mpos;
       }
-      const_iterator find(const vector<kT>& keys) const
+      const_iterator find(const std::vector<kT>& keys) const
       {
           iterator mpos;
           for (int i = 0; i < keys.size(); i++)

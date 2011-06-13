@@ -44,11 +44,10 @@
 #define AVT_STREAMING_GHOST_GENERATOR_H
 
 #include <database_exports.h>
+#include <cstddef>
+#include <vector>
 
 #include <avtGhostData.h>
-
-#include <vector>
-using std::vector;
 
 class vtkDataSet;
 class vtkDataArray;

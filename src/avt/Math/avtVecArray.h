@@ -40,6 +40,7 @@
 #define AVT_VECARRAY_H
 
 #include <avtVec.h>
+#include <cstddef>
 #include <iterator>
 #include <vector>
 
