@@ -47,6 +47,7 @@
 #define CACHE_SIZE 20
 
 using std::string;
+using std::vector;
 
 // define some types via a typedef
 typedef MRUCache<string, char*, MRUCache_Free, CACHE_SIZE> FreeCache;

@@ -40,6 +40,7 @@
 //                       avtSweepPlanePartitionStrategy.C                    //
 // ************************************************************************* //
 
+#include <cstddef>
 #include <avtSweepPlanePartitionStrategy.h>
 
 

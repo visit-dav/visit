@@ -44,10 +44,10 @@
 #define AVT_STRUCTURED_DOMAIN_NESTING_H
 
 #include <database_exports.h>
+#include <cstddef>
+#include <vector>
 
 #include <avtDomainNesting.h>
-
-#include <vector>
 
 class vtkDataSet;
 class vtkDataArray;
