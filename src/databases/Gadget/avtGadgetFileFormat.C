@@ -332,6 +332,10 @@ int avtGadgetFileFormat::read_gadget_head(int *npart,double *massarr,double *tim
 //  Programmer: Ralph Bruckschen
 //  Creation:   Wed Oct 22 12:47:04 PDT 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jun 14 13:17:28 MST 2011
+//    Open file as 'binary'.
+//
 // ****************************************************************************
 
 avtGadgetFileFormat::avtGadgetFileFormat(const char *filename)
@@ -345,7 +349,7 @@ avtGadgetFileFormat::avtGadgetFileFormat(const char *filename)
 #ifdef MY_DEBUG
   fprintf(stderr,"loading %s\n",filename);
 #endif
-  if(!(fd = fopen(filename,"r")))
+  if(!(fd = fopen(filename,"rb")))
     {
       EXCEPTION1(InvalidDBTypeException,"Cant open file\n");
     }  
