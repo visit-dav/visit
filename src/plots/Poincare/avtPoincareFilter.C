@@ -83,7 +83,9 @@ static const int DATA_WindingPointOrder = 6;
 static const int DATA_WindingPointOrderModulo = 7;
 static const int DATA_ToroidalWindings = 8;
 static const int DATA_PoloidalWindings = 9;
-static const int DATA_SafetyFactor = 10;
+static const int DATA_SecondaryPoloidalWindings = 10;
+static const int DATA_SafetyFactorQ = 11;
+static const int DATA_SafetyFactorP = 12;
 
 // ****************************************************************************
 //  Method: CreateSphere
@@ -163,7 +165,7 @@ avtPoincareFilter::avtPoincareFilter() :
     overlaps(1),
 
     is_curvemesh(1),
-    dataValue(DATA_SafetyFactor),
+    dataValue(DATA_SafetyFactorQ),
 
     showOPoints( false ),
     OPointMaxIterations(2),
@@ -613,10 +615,9 @@ avtPoincareFilter::ClassifyStreamlines(vector<avtIntegralCurve *> &ics)
                << poincare_ic->properties.toroidalWinding << ","
                << poincare_ic->properties.poloidalWinding
                << "  (" << safetyFactor << ")"
-               << "  toroidalHarmonic = "
-               << poincare_ic->properties.toroidalHarmonic
-               << "  poloidalHarmonic = "
-               << poincare_ic->properties.poloidalHarmonic
+               << "  toroidal/poloidal Resonance = "
+               << poincare_ic->properties.toroidalResonance << ","
+               << poincare_ic->properties.poloidalResonance
                << "  windingGroupOffset = "
                << poincare_ic->properties.windingGroupOffset
                << "  islands = " << poincare_ic->properties.islands
@@ -739,8 +740,9 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
         unsigned int toroidalWinding    = properties.toroidalWinding;
         unsigned int poloidalWinding    = properties.poloidalWinding;
-        unsigned int toroidalHarmonic   = properties.toroidalHarmonic;
-        unsigned int poloidalHarmonic   = properties.poloidalHarmonic;
+        unsigned int poloidalWindingP   = properties.poloidalWindingP;
+        unsigned int toroidalResonance   = properties.toroidalResonance;
+        unsigned int poloidalResonance   = properties.poloidalResonance;
         unsigned int windingGroupOffset = properties.windingGroupOffset;
         unsigned int islands            = properties.islands;
         unsigned int islandGroups       = properties.islandGroups;
@@ -758,7 +760,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
                << poincare_ic->points[0].z << " >  "
                << toroidalWinding << "," << poloidalWinding << " ("
                << (double) toroidalWinding / (double) poloidalWinding << ")  "
-               << toroidalHarmonic << "," << poloidalHarmonic << "  ";
+               << toroidalResonance << "," << poloidalResonance << "  ";
 
           if( type == FieldlineProperties::RATIONAL )
             cerr << "rational surface  ";
@@ -771,7 +773,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
           else if( type == FieldlineProperties::ISLANDS_WITHIN_ISLANDS )
             cerr << islands << " islands around "
-                 << islandGroups << "islandGroups ";
+                 << islandGroups << " islandGroups ";
 
           else if( type == FieldlineProperties::CHAOTIC )
             cerr << "chaotic  ";
@@ -1301,8 +1303,18 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
                 color_value = toroidalWinding;
             else if( dataValue == DATA_PoloidalWindings )
                 color_value = poloidalWinding;
-            else if( dataValue == DATA_SafetyFactor )
+            else if( dataValue == DATA_SecondaryPoloidalWindings )
+                color_value = poloidalWindingP;
+            else if( dataValue == DATA_SafetyFactorQ )
                 color_value = (double) toroidalWinding / (double) poloidalWinding;
+            else if( dataValue == DATA_SafetyFactorP )
+            {
+              if( poloidalWindingP )
+                color_value = (double) toroidalWinding / (double) poloidalWindingP;
+              else
+                color_value = 0;
+//                color_value = (double) toroidalWinding / (double) poloidalWinding;
+            }
             else
               color_value = 0;
 
@@ -1369,7 +1381,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
 
             if( show1DPlots )
               drawPeriodicity( dt, tempPts,
-                               toroidalHarmonic,
+                               toroidalResonance,
 //                             tempPts.size(),
                                nnodes, islands, poloidalWinding,
                                dataValue, color_value, true );
@@ -1377,7 +1389,7 @@ avtPoincareFilter::CreatePoincareOutput(vector<avtIntegralCurve *> &ic)
             
             if( show1DPlots )
               drawPeriodicity( dt, ridgelinePts,
-                               poloidalHarmonic,
+                               poloidalResonance,
 //                             ridgelinePts.size(),
                                nnodes, islands, poloidalWinding,
                                dataValue, color_value, true );

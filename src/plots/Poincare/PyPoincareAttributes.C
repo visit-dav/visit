@@ -335,7 +335,7 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     const char *dataValue_names = "Solid, OriginalValue, InputOrder, PointIndex, Plane, "
         "WindingOrder, WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, "
-        "PoloidalWindings, SafetyFactor";
+        "PoloidalWindings, SecondaryPoloidalWindings, SafetyFactorQ, SafetyFactorP";
     switch (atts->GetDataValue())
     {
       case PoincareAttributes::Solid:
@@ -378,8 +378,16 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           SNPRINTF(tmpStr, 1000, "%sdataValue = %sPoloidalWindings  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
-      case PoincareAttributes::SafetyFactor:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactor  # %s\n", prefix, prefix, dataValue_names);
+      case PoincareAttributes::SecondaryPoloidalWindings:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSecondaryPoloidalWindings  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::SafetyFactorQ:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactorQ  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::SafetyFactorP:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactorP  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       default:
@@ -1545,16 +1553,17 @@ PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the dataValue in the object.
-    if(ival >= 0 && ival < 11)
+    if(ival >= 0 && ival < 13)
         obj->data->SetDataValue(PoincareAttributes::DataValue(ival));
     else
     {
         fprintf(stderr, "An invalid dataValue value was given. "
-                        "Valid values are in the range of [0,10]. "
+                        "Valid values are in the range of [0,12]. "
                         "You can also use the following names: "
                         "Solid, OriginalValue, InputOrder, PointIndex, Plane, "
                         "WindingOrder, WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, "
-                        "PoloidalWindings, SafetyFactor.");
+                        "PoloidalWindings, SecondaryPoloidalWindings, SafetyFactorQ, SafetyFactorP"
+                        ".");
         return NULL;
     }
 
@@ -2415,8 +2424,12 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PoincareAttributes::ToroidalWindings));
     if(strcmp(name, "PoloidalWindings") == 0)
         return PyInt_FromLong(long(PoincareAttributes::PoloidalWindings));
-    if(strcmp(name, "SafetyFactor") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::SafetyFactor));
+    if(strcmp(name, "SecondaryPoloidalWindings") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::SecondaryPoloidalWindings));
+    if(strcmp(name, "SafetyFactorQ") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::SafetyFactorQ));
+    if(strcmp(name, "SafetyFactorP") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::SafetyFactorP));
 
     if(strcmp(name, "showOPoints") == 0)
         return PoincareAttributes_GetShowOPoints(self, NULL);

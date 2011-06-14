@@ -60,7 +60,9 @@
         WindingPointOrderModulo
         ToroidalWindings
         PoloidalWindings
-        SafetyFactor
+        SecondaryPoloidalWindings
+        SafetyFactorQ
+        SafetyFactorP
       </Enum>
       <Enum name="StreamlineAlgorithmType">
         LoadOnDemand
@@ -184,7 +186,7 @@
         Default
       </Field>
       <Field name="dataValue" label="dataValue" type="enum" subtype="DataValue">
-        SafetyFactor
+        SafetyFactorQ
       </Field>
       <Field name="showOPoints" label="Detect O Points" type="bool">
         false

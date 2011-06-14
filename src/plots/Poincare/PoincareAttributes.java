@@ -106,7 +106,9 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int DATAVALUE_WINDINGPOINTORDERMODULO = 7;
     public final static int DATAVALUE_TOROIDALWINDINGS = 8;
     public final static int DATAVALUE_POLOIDALWINDINGS = 9;
-    public final static int DATAVALUE_SAFETYFACTOR = 10;
+    public final static int DATAVALUE_SECONDARYPOLOIDALWINDINGS = 10;
+    public final static int DATAVALUE_SAFETYFACTORQ = 11;
+    public final static int DATAVALUE_SAFETYFACTORP = 12;
 
     public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
@@ -165,7 +167,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
         singleColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
-        dataValue = DATAVALUE_SAFETYFACTOR;
+        dataValue = DATAVALUE_SAFETYFACTORQ;
         showOPoints = false;
         OPointMaxIterations = 2;
         showXPoints = false;
@@ -236,7 +238,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         colorType = COLORINGMETHOD_COLORBYCOLORTABLE;
         singleColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
-        dataValue = DATAVALUE_SAFETYFACTOR;
+        dataValue = DATAVALUE_SAFETYFACTORQ;
         showOPoints = false;
         OPointMaxIterations = 2;
         showXPoints = false;
@@ -1262,8 +1264,12 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "DATAVALUE_TOROIDALWINDINGS";
         if(dataValue == DATAVALUE_POLOIDALWINDINGS)
             str = str + "DATAVALUE_POLOIDALWINDINGS";
-        if(dataValue == DATAVALUE_SAFETYFACTOR)
-            str = str + "DATAVALUE_SAFETYFACTOR";
+        if(dataValue == DATAVALUE_SECONDARYPOLOIDALWINDINGS)
+            str = str + "DATAVALUE_SECONDARYPOLOIDALWINDINGS";
+        if(dataValue == DATAVALUE_SAFETYFACTORQ)
+            str = str + "DATAVALUE_SAFETYFACTORQ";
+        if(dataValue == DATAVALUE_SAFETYFACTORP)
+            str = str + "DATAVALUE_SAFETYFACTORP";
         str = str + "\n";
         str = str + boolToString("showOPoints", showOPoints, indent) + "\n";
         str = str + intToString("OPointMaxIterations", OPointMaxIterations, indent) + "\n";
