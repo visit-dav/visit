@@ -50,6 +50,9 @@
 
 #include <ivp_exports.h>
 
+#include <map>
+#include <vector> 
+
 
 // ****************************************************************************
 //  Class:  avtIVPM3DC1Field
@@ -67,18 +70,14 @@
 class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
 {
  protected:
+
 /* Local typedefs */
   typedef struct {
     double x,y;
-  } v_entry;
+  } vertex;
   
   typedef struct {
-    int el0, v, side;
-  } d_edge;
-  
-  typedef struct{
-    d_edge o[8];
-    int    n;
+    int element, vertex, side;
   } edge;
   
  public:
@@ -90,10 +89,12 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   virtual bool IsInside( const double& t, const avtVector &pt ) const;
 
   void findElementNeighbors();
-  void register_vert(v_entry *vlist, int *len,
-                     double x, double y, int *index);
-  void add_edge(edge *list, int *tri, int side, int el, int *nlist);
-
+  int register_vert(std::vector< vertex > &vlist,
+                    double x, double y);
+  
+  void add_edge(std::map< int, std::vector< edge > > &elist,
+                int *vertexIndexs, int side, int element, int *nlist);
+  
   int get_tri_coords2D(double *x, double *xout) const;
   int get_tri_coords2D(double *x, int el, double *xout) const;
 
@@ -103,6 +104,8 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   avtVector ConvertToCylindrical(const avtVector& pt) const;
 
   void interpBcomps(float *B, double *x, int element, double *xieta) const;
+
+  void reparameterizeBcomps( const avtVector &p, avtVector &v ) const;
 
   float interp(float *var, int el, double *lcoords) const;
 
@@ -148,6 +151,7 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
 
  public:
 
+  bool reparameterize;
 
   // 2D Variables variables on the mesh
   float *psi0, *f0;                  /* Equilibrium B field conponents */
