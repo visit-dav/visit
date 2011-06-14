@@ -406,7 +406,7 @@ bool avtIVPM3DC1Field::IsInside(const double& t, const avtVector& x) const
 void avtIVPM3DC1Field::findElementNeighbors()
 {
   std::vector< vertex > vertexList;
-  std::map< int, std::vector < edge > > edgeListMap;
+  std::multimap< int, edge > edgeListMap;
 
   float   *ptr;
   double  x[3], y[3], co, sn;
@@ -522,15 +522,13 @@ int avtIVPM3DC1Field::register_vert(std::vector< vertex > &vlist,
 //
 // ****************************************************************************
 void
-avtIVPM3DC1Field::add_edge(std::map< int, std::vector< edge > > &edgeListMap,
-                           int *vertexIndexs,
-                           int side, int el, int *nlist)
+avtIVPM3DC1Field::add_edge(std::multimap< int, edge > &edgeListMap,
+                             int *vertexIndexs,
+                             int side, int element, int *neighborList)
 {
   int v0, v1, key, vertex;
 
-  std::map<int, std::vector<edge > >::iterator it;
-
-  // Sort the vertices using the smallest index as the key.
+  // Use the smallest vertex index as the key.
   v0 = vertexIndexs[side];
   v1 = vertexIndexs[(side+1)%3];
 
@@ -538,46 +536,34 @@ avtIVPM3DC1Field::add_edge(std::map< int, std::vector< edge > > &edgeListMap,
   if (v0 < v1) { key = v0;  vertex = v1; }
   else         { key = v1;  vertex = v0; }
 
-  it = edgeListMap.find(key);
+  // Find all of the edges with that key (i.e. edges that start with
+  // the same vertex).
+  std::pair<std::multimap<int,edge>::iterator,
+            std::multimap<int,edge>::iterator>
+    ret = edgeListMap.equal_range(key);
 
-  // Has the vertex been used before?
-  if( it != edgeListMap.end() )
+  // For all the edges returned find one with the ssame second vertex
+  for (std::multimap<int, edge>::iterator  it=ret.first; it!=ret.second; ++it)
   {
-    // Search for a matching second vertex
-    for (int i=0; i<it->second.size(); i++) {
-
-      if (it->second[i].vertex == vertex) {
-
-        // If the edge is already present update the neighbor table.
-        nlist[3*el + side] = it->second[i].element;
-        nlist[3*it->second[i].element + it->second[i].side] = el;
+    if( vertex == it->second.vertex )
+    {
+      // If the edge is present update the neighbor table.
+      neighborList[3*element + side] = it->second.element;
+      neighborList[3*it->second.element + it->second.side] = element;
         
-        return;
-      }
+      return;
     }
   }
 
-  // Vertex was not found or the edge was not present; add it.
-  edge new_edge;
+  // No with either the first vertex index or no edge with the second
+  // vertex index so create a new edge.
+  edge newEdge;
   
-  new_edge.vertex = vertex;
-  new_edge.element = el;
-  new_edge.side = side;
+  newEdge.vertex = vertex;
+  newEdge.side = side;
+  newEdge.element = element;
   
-  // Found the first vertex but not the second so new edge.
-  if( it != edgeListMap.end() )
-  {
-      it->second.push_back(new_edge);
-  }
-  // No first vertex, so create a new edge list.
-  else
-  {
-    std::vector< edge > newList;
-    
-    newList.push_back(new_edge);
-      
-    edgeListMap.insert( std::pair< int, std::vector< edge > >( key, newList ) );
-  }
+  edgeListMap.insert( std::pair< int, edge >( key, newEdge ) );
 }
 
 
