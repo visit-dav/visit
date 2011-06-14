@@ -528,7 +528,9 @@ QvisPoincarePlotWindow::CreateWindowContents()
     dataValueCombo->addItem(tr("Winding Point Order Modulo"));
     dataValueCombo->addItem(tr("Toroidal Windings"));
     dataValueCombo->addItem(tr("Poloidal Windings"));
-    dataValueCombo->addItem(tr("Safety Factor"));
+    dataValueCombo->addItem(tr("Secondary Poloidal Windings"));
+    dataValueCombo->addItem(tr("Safety FactorQ"));
+    dataValueCombo->addItem(tr("Safety FactorP"));
     connect(dataValueCombo, SIGNAL(activated(int)),
            this, SLOT(dataValueChanged(int)));
     dataLayout->addWidget(dataValueCombo, 0, 1);
@@ -1401,6 +1403,7 @@ QvisPoincarePlotWindow::UpdateIntegrationAttributes()
     switch( atts->GetIntegrationType() )
     {
     case PoincareAttributes::DormandPrince:
+    case PoincareAttributes::M3DC13DIntegrator:
         maxStepLength->show();
         maxStepLengthLabel->show();
         maxStepLengthLabel->setText(tr("Maximum step length"));
@@ -1412,7 +1415,6 @@ QvisPoincarePlotWindow::UpdateIntegrationAttributes()
 
     case PoincareAttributes::AdamsBashforth:
     case PoincareAttributes::M3DC12DIntegrator:
-    case PoincareAttributes::M3DC13DIntegrator:
     case PoincareAttributes::NIMRODIntegrator:
         maxStepLength->show();
         maxStepLengthLabel->show();

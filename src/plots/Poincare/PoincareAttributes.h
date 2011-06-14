@@ -124,7 +124,9 @@ public:
         WindingPointOrderModulo,
         ToroidalWindings,
         PoloidalWindings,
-        SafetyFactor
+        SecondaryPoloidalWindings,
+        SafetyFactorQ,
+        SafetyFactorP
     };
     enum StreamlineAlgorithmType
     {
