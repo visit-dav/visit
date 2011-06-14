@@ -92,8 +92,8 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   int register_vert(std::vector< vertex > &vlist,
                     double x, double y);
   
-  void add_edge(std::map< int, std::vector< edge > > &elist,
-                int *vertexIndexs, int side, int element, int *nlist);
+  void add_edge(std::multimap< int, edge > &edgeMaplist,
+                int *vertexIndexs, int side, int element, int *neighborList);
   
   int get_tri_coords2D(double *x, double *xout) const;
   int get_tri_coords2D(double *x, int el, double *xout) const;
