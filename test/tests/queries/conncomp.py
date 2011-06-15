@@ -13,8 +13,57 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Cyrus Harrison, Wed Jun 15 14:21:10 PDT 2011
+#    Added tests for line meshes.
+#
 # ----------------------------------------------------------------------------
 
+OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE, 0)
+
+DefineScalarExpression("_ccl_test_1d", "conn_components(quadmesh2d)")
+
+#Add an iso surface
+AddPlot("Pseudocolor", "_ccl_test_1d")
+AddOperator("Isosurface")
+
+isatts = IsosurfaceAttributes()
+isatts .variable = "d"
+SetOperatorOptions(isatts)
+
+#Add Defer Exp Op
+AddOperator("DeferExpression")
+DeferExpressionAtts = DeferExpressionAttributes()
+DeferExpressionAtts.exprs = ("_ccl_test_1d")
+SetOperatorOptions(DeferExpressionAtts)
+
+DrawPlots()
+
+Test("conncomp_1d_lbl")
+
+ChangeActivePlotsVar("d")
+
+Query("Number of Connected Components")
+res = GetQueryOutputString()
+TestText("conncomp_1d_count",res)
+
+Query("Connected Component Centroids")
+res = GetQueryOutputString()
+TestText("conncomp_1d_centroid",res)
+
+Query("Connected Component Length")
+res = GetQueryOutputString()
+TestText("conncomp_1d_length",res)
+
+Query("Connected Component Variable Sum")
+res = GetQueryOutputString()
+TestText("conncomp_1d_var_sum",res)
+
+Query("Connected Component Weighted Variable Sum")
+res = GetQueryOutputString()
+TestText("conncomp_1d_weighted_var_sum",res)
+
+DeleteAllPlots()
 
 OpenDatabase("../data/silo_%s_test_data/multi_rect2d.silo"%SILO_MODE, 0)
 DefineScalarExpression("_rand_test_2d", "rand(mesh1)")
