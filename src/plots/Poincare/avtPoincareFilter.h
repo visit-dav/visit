@@ -190,8 +190,9 @@ class avtPoincareFilter : public avtStreamlineFilter
                                 bool ptFlag );
 
     // Poincare filter methods.
-    bool          ClassifyStreamlines(vector<avtIntegralCurve *> &ic);
-    avtDataTree *CreatePoincareOutput(vector<avtIntegralCurve *> &ic);
+    bool ClassifyStreamlines(vector<avtIntegralCurve *> &ic);
+    void CreatePoincareOutput(avtDataTree *dt,
+                              vector<avtIntegralCurve *> &ic);
 
     void CreateIntegralCurveOutput(std::vector<avtIntegralCurve*,
                                    std::allocator<avtIntegralCurve*> >&) {};

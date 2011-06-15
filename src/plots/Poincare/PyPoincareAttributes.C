@@ -333,53 +333,14 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scolorTableName = \"%s\"\n", prefix, atts->GetColorTableName().c_str());
     str += tmpStr;
-    const char *dataValue_names = "Solid, OriginalValue, InputOrder, PointIndex, Plane, "
-        "WindingOrder, WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, "
-        "PoloidalWindings, SecondaryPoloidalWindings, SafetyFactorQ, SafetyFactorP";
+    const char *dataValue_names = "Solid, SafetyFactorQ, SafetyFactorP, SafetyFactorQ_NotP, SafetyFactorP_NotQ, "
+        "ToroidalWindings, PoloidalWindingsQ, PoloidalWindingsP, FieldlineIndex, "
+        "PointIndex, PlaneIndex, WindingGroup, WindingPointOrder, "
+        "WindingPointOrderModulo";
     switch (atts->GetDataValue())
     {
       case PoincareAttributes::Solid:
           SNPRINTF(tmpStr, 1000, "%sdataValue = %sSolid  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::OriginalValue:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sOriginalValue  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::InputOrder:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sInputOrder  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::PointIndex:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPointIndex  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::Plane:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPlane  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::WindingOrder:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingOrder  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::WindingPointOrder:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingPointOrder  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::WindingPointOrderModulo:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingPointOrderModulo  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::ToroidalWindings:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sToroidalWindings  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::PoloidalWindings:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPoloidalWindings  # %s\n", prefix, prefix, dataValue_names);
-          str += tmpStr;
-          break;
-      case PoincareAttributes::SecondaryPoloidalWindings:
-          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSecondaryPoloidalWindings  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       case PoincareAttributes::SafetyFactorQ:
@@ -388,6 +349,50 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           break;
       case PoincareAttributes::SafetyFactorP:
           SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactorP  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::SafetyFactorQ_NotP:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactorQ_NotP  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::SafetyFactorP_NotQ:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sSafetyFactorP_NotQ  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::ToroidalWindings:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sToroidalWindings  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::PoloidalWindingsQ:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPoloidalWindingsQ  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::PoloidalWindingsP:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPoloidalWindingsP  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::FieldlineIndex:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sFieldlineIndex  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::PointIndex:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPointIndex  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::PlaneIndex:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sPlaneIndex  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::WindingGroup:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingGroup  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::WindingPointOrder:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingPointOrder  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::WindingPointOrderModulo:
+          SNPRINTF(tmpStr, 1000, "%sdataValue = %sWindingPointOrderModulo  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       default:
@@ -1553,17 +1558,17 @@ PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the dataValue in the object.
-    if(ival >= 0 && ival < 13)
+    if(ival >= 0 && ival < 14)
         obj->data->SetDataValue(PoincareAttributes::DataValue(ival));
     else
     {
         fprintf(stderr, "An invalid dataValue value was given. "
-                        "Valid values are in the range of [0,12]. "
+                        "Valid values are in the range of [0,13]. "
                         "You can also use the following names: "
-                        "Solid, OriginalValue, InputOrder, PointIndex, Plane, "
-                        "WindingOrder, WindingPointOrder, WindingPointOrderModulo, ToroidalWindings, "
-                        "PoloidalWindings, SecondaryPoloidalWindings, SafetyFactorQ, SafetyFactorP"
-                        ".");
+                        "Solid, SafetyFactorQ, SafetyFactorP, SafetyFactorQ_NotP, SafetyFactorP_NotQ, "
+                        "ToroidalWindings, PoloidalWindingsQ, PoloidalWindingsP, FieldlineIndex, "
+                        "PointIndex, PlaneIndex, WindingGroup, WindingPointOrder, "
+                        "WindingPointOrderModulo.");
         return NULL;
     }
 
@@ -2406,30 +2411,32 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetDataValue(self, NULL);
     if(strcmp(name, "Solid") == 0)
         return PyInt_FromLong(long(PoincareAttributes::Solid));
-    if(strcmp(name, "OriginalValue") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::OriginalValue));
-    if(strcmp(name, "InputOrder") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::InputOrder));
-    if(strcmp(name, "PointIndex") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::PointIndex));
-    if(strcmp(name, "Plane") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::Plane));
-    if(strcmp(name, "WindingOrder") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::WindingOrder));
-    if(strcmp(name, "WindingPointOrder") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::WindingPointOrder));
-    if(strcmp(name, "WindingPointOrderModulo") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::WindingPointOrderModulo));
-    if(strcmp(name, "ToroidalWindings") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::ToroidalWindings));
-    if(strcmp(name, "PoloidalWindings") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::PoloidalWindings));
-    if(strcmp(name, "SecondaryPoloidalWindings") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::SecondaryPoloidalWindings));
     if(strcmp(name, "SafetyFactorQ") == 0)
         return PyInt_FromLong(long(PoincareAttributes::SafetyFactorQ));
     if(strcmp(name, "SafetyFactorP") == 0)
         return PyInt_FromLong(long(PoincareAttributes::SafetyFactorP));
+    if(strcmp(name, "SafetyFactorQ_NotP") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::SafetyFactorQ_NotP));
+    if(strcmp(name, "SafetyFactorP_NotQ") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::SafetyFactorP_NotQ));
+    if(strcmp(name, "ToroidalWindings") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::ToroidalWindings));
+    if(strcmp(name, "PoloidalWindingsQ") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::PoloidalWindingsQ));
+    if(strcmp(name, "PoloidalWindingsP") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::PoloidalWindingsP));
+    if(strcmp(name, "FieldlineIndex") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::FieldlineIndex));
+    if(strcmp(name, "PointIndex") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::PointIndex));
+    if(strcmp(name, "PlaneIndex") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::PlaneIndex));
+    if(strcmp(name, "WindingGroup") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::WindingGroup));
+    if(strcmp(name, "WindingPointOrder") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::WindingPointOrder));
+    if(strcmp(name, "WindingPointOrderModulo") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::WindingPointOrderModulo));
 
     if(strcmp(name, "showOPoints") == 0)
         return PoincareAttributes_GetShowOPoints(self, NULL);
