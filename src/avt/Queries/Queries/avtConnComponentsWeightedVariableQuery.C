@@ -46,6 +46,7 @@
 #include <avtConnComponentsExpression.h>
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
+#include <avtEdgeLength.h>
 #include <avtRevolvedVolume.h>
 #include <avtVMetricArea.h>
 #include <avtVMetricVolume.h>
@@ -69,10 +70,14 @@
 // ****************************************************************************
 //  Method: avtConnComponentsWeightedVariableQuery constructor
 //
-//  Notes:  
+//  Notes:
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   February 8, 2007
+//
+//  Modifications:
+//    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
+//    Support lengthFilter.
 //
 // ****************************************************************************
 
@@ -81,6 +86,9 @@ avtConnComponentsWeightedVariableQuery()
 {
     // (base class creates the connected components filter)
     // create weight filters
+
+    lengthFilter = new avtEdgeLength;
+    lengthFilter->SetOutputVariableName("avt_weight");
 
     areaFilter = new avtVMetricArea;
     areaFilter->SetOutputVariableName("avt_weight");
@@ -99,11 +107,16 @@ avtConnComponentsWeightedVariableQuery()
 //  Programmer: Cyrus Harrison
 //  Creation:   February 8, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
+//    Support lengthFilter.
+//
 // ****************************************************************************
 
 avtConnComponentsWeightedVariableQuery::
 ~avtConnComponentsWeightedVariableQuery()
 {
+    delete lengthFilter;
     delete areaFilter;
     delete revolvedVolumeFilter;
     delete volumeFilter;
@@ -129,12 +142,9 @@ avtConnComponentsWeightedVariableQuery::PreExecute(void)
     // let base class get the # of connected components
     avtConnComponentsQuery::PreExecute();
 
-    // prepare component arrays 
-    sumPerComp.resize(nComps);
-    for(int i=0;i<nComps;i++)
-    {
-        sumPerComp[i] = 0;
-    }
+    // prepare component arrays
+    sumPerComp = vector<double>(nComps,0.0);
+
 }
 
 
@@ -180,10 +190,10 @@ avtConnComponentsWeightedVariableQuery::PostExecute(void)
         {SNPRINTF(buff,2048,"Found %d connected components\n",nComps);}
 
         msg += buff;
-    
+
         string format  =  "Component %d Weighted Sum = (" 
                               + queryAtts.GetFloatFormat() +")\n";
-    
+
         for(int i=0;i<nComps;i++)
         {
             SNPRINTF(buff,1024,
@@ -289,6 +299,10 @@ avtConnComponentsWeightedVariableQuery::Execute(vtkDataSet *ds, const int dom)
 //  Programmer: Cyrus Harrison
 //  Creation:   February 2, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Jun  6 17:04:12 PDT 2011
+//    Support lines.
+//
 // ****************************************************************************
 avtDataObject_p
 avtConnComponentsWeightedVariableQuery::ApplyFilters(avtDataObject_p inData)
@@ -301,9 +315,15 @@ avtConnComponentsWeightedVariableQuery::ApplyFilters(avtDataObject_p inData)
     avtSourceFromAVTDataset termsrc(ds);
     avtDataObject_p dob = termsrc.GetOutput();
 
-    // add either areaFilter, or volumeFilter based on input dimension
+    // add either lengthFilter, areaFilter, or volumeFilter based on input dimension
     int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
-    if (topo == 2)
+    if (topo == 1)
+    {
+        debug5 << "ConnComponentsWeightedVariable query using length" << endl;
+        lengthFilter->SetInput(dob);
+        dob = lengthFilter->GetOutput();
+    }
+    else if (topo == 2)
     {
         if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType()== AVT_XY)
         {
