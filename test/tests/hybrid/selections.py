@@ -91,14 +91,6 @@ def SetupPlots(var1, var2):
     SetOperatorOptions(t)
     DrawPlots()
 
-def wait_for_file(filename):
-    import os
-    while 1:
-        try: 
-            s = os.stat(filename)
-            return
-        except OSError:
-            pass
 #
 # Test basic selection creation and usage.
 #
@@ -137,7 +129,6 @@ def test0(datapath):
     v.shear = (0, 0, 1)
     SetView3D(v)
     Test("selections_0_00")
-    #wait_for_file("/g/g19/whitlocb/Development/trunk/test/proceed")
 
     # Create a selection and apply it to the 2nd plot
     selName = "threeslice_sel"
@@ -276,7 +267,6 @@ def test123(datapath):
     s.histogramStartBin = 0
     s.histogramEndBin = 4
     UpdateNamedSelection(selName, s)
-    wait_for_file("/g/g19/whitlocb/Development/trunk/test/proceed")
     
     # Plot the m2 variable's sum over time, which is kind of like a frequency
     # since cells that contain the material in more time steps have a higher
