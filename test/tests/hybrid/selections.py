@@ -84,31 +84,21 @@ def SetupPlots(var1, var2):
     SetView3D(v)
 
     AddPlot("Pseudocolor", var2)
-    DrawPlots()
     t = TransformAttributes()
     t.doTranslate = 1
     t.translateZ = 6
     AddOperator("Transform")
     SetOperatorOptions(t)
     DrawPlots()
-    v1 = View3DAttributes()
-    v1.viewNormal = (-0.4992, 0.804573, 0.321654)
-    v1.focus = (5, 0.88487, 5.5)
-    v1.viewUp = (0.71837, 0.591864, -0.365571)
-    v1.viewAngle = 30
-    v1.parallelScale = 7.49279
-    v1.nearPlane = -14.8822
-    v1.farPlane = 14.8822
-    v1.imagePan = (0.0109433, 0.0300858)
-    v1.imageZoom = 1.03131
-    v1.perspective = 1
-    v1.eyeAngle = 2
-    v1.centerOfRotationSet = 0
-    v1.centerOfRotation = (5, 0.353448, 5.5)
-    v1.axis3DScaleFlag = 0
-    v1.axis3DScales = (1, 1, 1)
-    v1.shear = (0, 0, 1)
 
+def wait_for_file(filename):
+    import os
+    while 1:
+        try: 
+            s = os.stat(filename)
+            return
+        except OSError:
+            pass
 #
 # Test basic selection creation and usage.
 #
@@ -147,6 +137,7 @@ def test0(datapath):
     v.shear = (0, 0, 1)
     SetView3D(v)
     Test("selections_0_00")
+    #wait_for_file("/g/g19/whitlocb/Development/trunk/test/proceed")
 
     # Create a selection and apply it to the 2nd plot
     selName = "threeslice_sel"
@@ -186,9 +177,9 @@ def test0(datapath):
     SetNamedSelectionAutoApply(0)
 
     DeleteWindow()
-    DeleteAllPlots()
     DeleteNamedSelection(selName)
-    CloseDatabase(db)
+    DeleteAllPlots()
+    #CloseDatabase(db)  #Uncomment this if you want to debug an engine crash
 
 #
 # Test Cumulative Query selections.
@@ -277,7 +268,6 @@ def test123(datapath):
 #
 # Test 2
 #
-
     # Test setting the min/max bounds of the histogram in different
     # histogram modes
     TestSection("Cumulative Query - Histogram Matches")
@@ -286,6 +276,7 @@ def test123(datapath):
     s.histogramStartBin = 0
     s.histogramEndBin = 4
     UpdateNamedSelection(selName, s)
+    wait_for_file("/g/g19/whitlocb/Development/trunk/test/proceed")
     
     # Plot the m2 variable's sum over time, which is kind of like a frequency
     # since cells that contain the material in more time steps have a higher
