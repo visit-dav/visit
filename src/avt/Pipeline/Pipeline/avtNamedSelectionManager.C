@@ -141,6 +141,10 @@ avtNamedSelectionManager::GetInstance(void)
 //    to the pipeline before we reexecute it. I also changed things so we pass
 //    in selection properties.
 //
+//    Brad Whitlock, Tue Jun 14 16:58:15 PST 2011
+//    I fixed a memory corruption problem that caused bad selections to be
+//    generated in parallel.
+//
 // ****************************************************************************
 
 void
@@ -148,6 +152,7 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     const SelectionProperties &selProps, avtNamedSelectionExtension *ext)
 {
     int   i;
+    const char *mName = "avtNamedSelectionManager::CreateNamedSelection: ";
 
     if (strcmp(dob->GetType(), "avtDataset") != 0)
     {
@@ -189,7 +194,6 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
         // save/restore session, etc.
         //  
         SaveNamedSelection(selName, true);
-
         return;
     }
 
@@ -200,9 +204,9 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
         // Perform additional setup using the extension.
         avtDataObject_p newdob = ext->GetSelectedData(dob, contract, selProps);
 
-        debug5 << "Must execute the pipeline to create the named selection" << endl;
+        debug5 << mName << "Must execute the pipeline to create the named selection" << endl;
         newdob->Update(contract);
-        debug5 << "Done executing the pipeline to create the named selection" << endl;
+        debug5 << mName << "Done executing the pipeline to create the named selection" << endl;
 
         CopyTo(ds, newdob);
     }
@@ -210,9 +214,9 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     {
         if (needZoneNumbers)
         {
-            debug1 << "Must re-execute pipeline to create named selection" << endl;
+            debug1 << mName << "Must re-execute pipeline to create named selection" << endl;
             dob->Update(contract);
-            debug1 << "Done re-executing pipeline to create named selection" << endl;
+            debug1 << mName << "Done re-executing pipeline to create named selection" << endl;
         }
         CopyTo(ds, dob);
     }
@@ -231,24 +235,36 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
                                             GetArray("avtOriginalCellNumbers");
         if (ocn == NULL)
         {
-            delete [] leaves;
-            EXCEPTION0(ImproperUseException);
+            // Write an error to the logs but don't fail out since we have
+            // a collective communication coming up.
+            debug5 << mName
+                   << "This dataset has no original cell numbers so it cannot "
+                      "contribute to the selection." << endl;
         }
-        unsigned int *ptr = (unsigned int *) ocn->GetVoidPointer(0);
-        if (ptr == NULL)
+        else
         {
-            delete [] leaves;
-            EXCEPTION0(ImproperUseException);
-        }
-
-        int ncells = leaves[i]->GetNumberOfCells();
-        int curSize = doms.size();
-        doms.resize(curSize+ncells);
-        zones.resize(curSize+ncells);
-        for (int j = 0 ; j < ncells ; j++)
-        {
-            doms[curSize+j]  = ptr[2*j];
-            zones[curSize+j] = ptr[2*j+1];
+            unsigned int *ptr = (unsigned int *) ocn->GetVoidPointer(0);
+            if (ptr == NULL)
+            {
+                // Write an error to the logs but don't fail out since we have
+                // a collective communication coming up.
+                debug5 << mName
+                       << "This dataset has no original cell numbers so it "
+                          "cannot contribute to the selection." << endl;
+            }
+            else
+            {
+                // We have original cell numbers so add them to the selection.
+                int ncells = leaves[i]->GetNumberOfCells();
+                int curSize = doms.size();
+                doms.resize(curSize+ncells);
+                zones.resize(curSize+ncells);
+                for (int j = 0 ; j < ncells ; j++)
+                {
+                    doms[curSize+j]  = ptr[2*j];
+                    zones[curSize+j] = ptr[2*j+1];
+                }
+            }
         }
     }
     delete [] leaves;
@@ -273,20 +289,22 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
         EXCEPTION1(VisItException, "You have selected too many zones in your "
                    "named selection.  Disallowing ... no selection created");
     }
+
     int myStart = 0;
     for (i = 0 ; i < PAR_Rank()-1 ; i++)
         myStart += numPerProc[i];
-
     int *selForDomsIn = new int[numTotal];
-    int *selForDoms   = new int[numTotal];
+    memset(selForDomsIn, 0, sizeof(int) * numTotal);
     for (i = 0 ; i < doms.size() ; i++)
         selForDomsIn[myStart+i] = doms[i];
+    int *selForDoms   = new int[numTotal];
     SumIntArrayAcrossAllProcessors(selForDomsIn, selForDoms, numTotal);
 
     int *selForZonesIn = new int[numTotal];
-    int *selForZones   = new int[numTotal];
+    memset(selForZonesIn, 0, sizeof(int) * numTotal);
     for (i = 0 ; i < zones.size() ; i++)
         selForZonesIn[myStart+i] = zones[i];
+    int *selForZones   = new int[numTotal];
     SumIntArrayAcrossAllProcessors(selForZonesIn, selForZones, numTotal);
 
     //

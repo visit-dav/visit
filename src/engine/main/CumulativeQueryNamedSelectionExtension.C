@@ -125,6 +125,8 @@ public:
     CQHistogramCalculationFilter() : avtDataTreeIterator(), histograms()
     {
         cellCount = 0;
+        totalCellCount = 0;
+        totalNotSet = true;
     }
 
     virtual const char *GetType() { return "CQHistogramCalculationFilter"; }
@@ -165,12 +167,17 @@ public:
         return retval;
     }
 
-    long GetCellCount() const
+    long GetTotalCellCount() const
     {
-        return cellCount;
+        return totalCellCount;
     }
 
 protected:
+    virtual void PreExecute(void)
+    {
+        cellCount = 0;
+    }
+
     virtual vtkDataSet *ExecuteData(vtkDataSet *ds, int dom, std::string)
     {
         cellCount += ds->GetNumberOfCells();
@@ -180,6 +187,7 @@ protected:
 
     virtual void PostExecute(void)
     {
+        const char *mName = "CQHistogramCalculationFilter::PostExecute: ";
         avtDataObject_p dob = GetInput();
         avtDataset_p ds;
         CopyTo(ds, dob);
@@ -187,8 +195,7 @@ protected:
         for(std::map<std::string,Histogram*>::iterator it = histograms.begin();
             it != histograms.end(); ++it)
         {
-            // Get the extents
-            double minmax[2] = {0.,0.};
+            double minmax[2] = {0.,1.};
 #if 0
             avtExtents *ext = dob->GetInfo().GetAttributes().
                 GetThisProcsOriginalDataExtents(it->first.c_str());
@@ -196,17 +203,26 @@ protected:
                 ext->CopyTo(minmax);
             else
 #endif
-                avtDatasetExaminer::GetDataExtents(ds, minmax, it->first.c_str());
-
             // If we have not created a histogram yet for this variable then do it now.
             if(it->second == 0)
             {
-                std::vector<VISIT_LONG_LONG> hist(256, 0);
-                avtDatasetExaminer::CalculateHistogram(ds, it->first, minmax[0], minmax[1], hist);
+                // Get the extents
+                avtDatasetExaminer::GetDataExtents(ds, minmax, it->first.c_str());
+                debug5 << mName << "Calculated data extents for " << it->first
+                       << " [" << minmax[0] << ", " << minmax[1] << "]" << endl;
 
+                std::vector<VISIT_LONG_LONG> hist(256, 0);
+                if(!avtDatasetExaminer::CalculateHistogram(ds, it->first, minmax[0], minmax[1], hist))
+                    debug1 << "CalculateHistogram failed" << endl;
+                
                 it->second = new Histogram;
                 for(int i = 0; i < 256; ++i)
                     it->second->frequency[i] = (double)hist[i];
+
+                // Print the histogram.
+                debug5 << mName << "Calculated histogram for " << it->first << endl;
+                for(int i = 0; i < 256; ++i)
+                    debug5 << "\thist[" << i << "] = " << hist[i] << endl;
             }
             it->second->minimum = minmax[0];
             it->second->maximum = minmax[1];
@@ -214,10 +230,17 @@ protected:
 
         // Sum the cells and send to all procs.
         SumLongAcrossAllProcessors(cellCount);
+
+        if(totalNotSet)
+        {
+            totalCellCount += cellCount;
+            totalNotSet = false;
+        }
     }
 
     virtual avtContract_p ModifyContract(avtContract_p contract)
     {
+        const char *mName = "CQHistogramCalculationFilter::ModifyContract: ";
         avtContract_p newContract = new avtContract(contract);
         std::string origvar(newContract->GetDataRequest()->GetOriginalVariable());
  
@@ -225,7 +248,7 @@ protected:
             it != histograms.end(); ++it)
         {
             // Request extents
-            newContract->SetCalculateVariableExtents(it->first, true);
+//            newContract->SetCalculateVariableExtents(it->first, true);
 
             // Try and get a histogram. If we can't then request the data as a
             // secondary variable.
@@ -238,6 +261,11 @@ protected:
                 it->second->maximum = hist.GetBounds()[0][1];
                 for(int i = 0; i < 256; ++i)
                     it->second->frequency[i] = (double)(hist.GetCounts()[i]);
+
+                // Print the histogram.
+                debug5 << mName << "Obtained existing histogram for " << it->first << endl;
+                for(int i = 0; i < 256; ++i)
+                    debug5 << "\thist[" << i << "] = " << hist.GetCounts()[i] << endl;
             }
             else if(origvar != it->first &&
                     !newContract->GetDataRequest()->HasSecondaryVariable(it->first.c_str()))
@@ -251,6 +279,8 @@ protected:
 
     std::map<std::string, Histogram *> histograms;
     long                               cellCount;
+    long                               totalCellCount;
+    bool                               totalNotSet;
 };
 
 
@@ -377,6 +407,7 @@ void
 CQFilter::CalculateFrequency(std::vector<avtDataTree_p> &timesteps,
     CQCellIdentifierCQCellDataMap &cellFrequency, int *cellsPerTimestep)
 {
+    const char *mName = "CQFilter::CalculateFrequency: ";
     CQCellIdentifierCQCellDataMap::const_iterator it;
 
     std::string histVar;
@@ -411,14 +442,16 @@ CQFilter::CalculateFrequency(std::vector<avtDataTree_p> &timesteps,
                                     GetArray("avtOriginalCellNumbers");
             if (ocn == NULL)
             {
-                delete [] leaves;
-                EXCEPTION0(ImproperUseException);
+                debug5 << mName << "Could not locate original cells. This "
+                    "dataset will not contribute to the selection." << endl;
+                continue;
             }
             unsigned int *ptr = (unsigned int *) ocn->GetVoidPointer(0);
             if (ptr == NULL)
             {
-                delete [] leaves;
-                EXCEPTION0(ImproperUseException);
+                debug5 << mName << "Could not locate original cells. This "
+                    "dataset will not contribute to the selection." << endl;
+                continue;
             }
 
             // If we need an extra variable, get it.
@@ -1241,7 +1274,8 @@ CumulativeQueryNamedSelectionExtension::FreeUpResources()
     // of time steps that were processed because the time loop filter causes our
     // local histogram filter that counts the number of original cells to sum the
     // total number of cells for all time steps. This gives us the per time step avg.
-    s.SetTotalCellCount((int)hist->GetCellCount() / nts);
+debug5 << "CQnamedSelectionExtension: total cells = " << hist->GetTotalCellCount() << endl;
+    s.SetTotalCellCount((int)hist->GetTotalCellCount());
     if(hist != NULL)
         delete hist;
     hist = NULL;
