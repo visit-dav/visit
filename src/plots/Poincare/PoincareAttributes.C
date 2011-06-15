@@ -383,24 +383,24 @@ PoincareAttributes::Opacity_FromString(const std::string &s, PoincareAttributes:
 //
 
 static const char *DataValue_strings[] = {
-"Solid", "OriginalValue", "InputOrder", 
-"PointIndex", "Plane", "WindingOrder", 
-"WindingPointOrder", "WindingPointOrderModulo", "ToroidalWindings", 
-"PoloidalWindings", "SecondaryPoloidalWindings", "SafetyFactorQ", 
-"SafetyFactorP"};
+"Solid", "SafetyFactorQ", "SafetyFactorP", 
+"SafetyFactorQ_NotP", "SafetyFactorP_NotQ", "ToroidalWindings", 
+"PoloidalWindingsQ", "PoloidalWindingsP", "FieldlineIndex", 
+"PointIndex", "PlaneIndex", "WindingGroup", 
+"WindingPointOrder", "WindingPointOrderModulo"};
 
 std::string
 PoincareAttributes::DataValue_ToString(PoincareAttributes::DataValue t)
 {
     int index = int(t);
-    if(index < 0 || index >= 13) index = 0;
+    if(index < 0 || index >= 14) index = 0;
     return DataValue_strings[index];
 }
 
 std::string
 PoincareAttributes::DataValue_ToString(int t)
 {
-    int index = (t < 0 || t >= 13) ? 0 : t;
+    int index = (t < 0 || t >= 14) ? 0 : t;
     return DataValue_strings[index];
 }
 
@@ -408,7 +408,7 @@ bool
 PoincareAttributes::DataValue_FromString(const std::string &s, PoincareAttributes::DataValue &val)
 {
     val = PoincareAttributes::Solid;
-    for(int i = 0; i < 13; ++i)
+    for(int i = 0; i < 14; ++i)
     {
         if(s == DataValue_strings[i])
         {
@@ -1716,7 +1716,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 13)
+            if(ival >= 0 && ival < 14)
                 SetDataValue(DataValue(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

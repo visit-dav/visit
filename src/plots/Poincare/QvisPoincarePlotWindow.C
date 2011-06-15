@@ -519,18 +519,19 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
     dataValueCombo = new QComboBox(dataGroup);
     dataValueCombo->addItem(tr("None"));
-    dataValueCombo->addItem(tr("Original Value"));
-    dataValueCombo->addItem(tr("Input Order"));
-    dataValueCombo->addItem(tr("Point Index"));
-    dataValueCombo->addItem(tr("Plane"));
-    dataValueCombo->addItem(tr("Winding Group"));
+    dataValueCombo->addItem(tr("Safety Factor Q"));
+    dataValueCombo->addItem(tr("Safety Factor P"));
+    dataValueCombo->addItem(tr("Safety Factor Q if Q==P"));
+    dataValueCombo->addItem(tr("Safety Factor P if P!=Q"));
+    dataValueCombo->addItem(tr("Toroidal Windings"));
+    dataValueCombo->addItem(tr("Poloidal Windings Q"));
+    dataValueCombo->addItem(tr("Poloidal Windings P"));
+    dataValueCombo->addItem(tr("Fieldline Order"));
+    dataValueCombo->addItem(tr("Point Order"));
+    dataValueCombo->addItem(tr("Plane Order"));
+    dataValueCombo->addItem(tr("Winding Group Order"));
     dataValueCombo->addItem(tr("Winding Point Order"));
     dataValueCombo->addItem(tr("Winding Point Order Modulo"));
-    dataValueCombo->addItem(tr("Toroidal Windings"));
-    dataValueCombo->addItem(tr("Poloidal Windings"));
-    dataValueCombo->addItem(tr("Secondary Poloidal Windings"));
-    dataValueCombo->addItem(tr("Safety FactorQ"));
-    dataValueCombo->addItem(tr("Safety FactorP"));
     connect(dataValueCombo, SIGNAL(activated(int)),
            this, SLOT(dataValueChanged(int)));
     dataLayout->addWidget(dataValueCombo, 0, 1);

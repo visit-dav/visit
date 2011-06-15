@@ -51,18 +51,19 @@
       </Enum>
       <Enum name="DataValue">
         Solid
-        OriginalValue
-        InputOrder
-        PointIndex
-        Plane
-        WindingOrder
-        WindingPointOrder
-        WindingPointOrderModulo
-        ToroidalWindings
-        PoloidalWindings
-        SecondaryPoloidalWindings
         SafetyFactorQ
         SafetyFactorP
+        SafetyFactorQ_NotP
+        SafetyFactorP_NotQ
+        ToroidalWindings
+        PoloidalWindingsQ
+        PoloidalWindingsP
+        FieldlineOrder
+        PointOrder
+        PlaneOrder
+        WindingGroupOrder
+        WindingPointOrder
+        WindingPointOrderModulo
       </Enum>
       <Enum name="StreamlineAlgorithmType">
         LoadOnDemand
