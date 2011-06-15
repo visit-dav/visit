@@ -106,6 +106,7 @@ dataset for a range of time steps and then combine the results into a single tim
 <ul>
   <li>Pick over time now supports multiple variables. There are options in the Pick window and the Query window (pick options) to select whether the time curve creates a plot with a single Y-Axis or Multiple Y-Axes. The default is a single Y Axis.</li>
   <li>There is now a query that calculates the average value of a scalar or vector field.  The calculation uses area-based weighting for 2D and volume-based weighting for 3D.</li>
+  <li>A <i>Connected Components Length</i> query was added. This query provides length of each connected component of a line mesh. The Connected Components Weighted Variable Sum and Connected Components Summary queries were also updated to support line meshes. Note: The summary query now provides 17 entries per component packed into the <i>GetQueryOutputValue()</i> result. </li>
 </ul>
 
 <a name="Bugs_fixed"></a>

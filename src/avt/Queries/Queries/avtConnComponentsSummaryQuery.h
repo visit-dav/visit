@@ -50,6 +50,7 @@
 #include <string>
 
 
+class avtEdgeLength;
 class avtRevolvedVolume;
 class avtVMetricArea;
 class avtVMetricVolume;
@@ -84,6 +85,9 @@ class vtkDataSet;
 //    Cyrus Harrison, Wed Dec 22 14:53:33 PST 2010
 //    Added output for the number of processors each component spans.
 //
+//    Cyrus Harrison, Mon Jun  6 17:02:12 PDT 2011
+//    Added lengthFilter.
+//
 // ****************************************************************************
 
 class QUERY_API avtConnComponentsSummaryQuery 
@@ -104,6 +108,7 @@ class QUERY_API avtConnComponentsSummaryQuery
 
     std::string                outputFileName;
 
+    avtEdgeLength             *lengthFilter;
     avtRevolvedVolume         *revolvedVolumeFilter;
     avtVMetricArea            *areaFilter;
     avtVMetricVolume          *volumeFilter;
@@ -125,12 +130,14 @@ class QUERY_API avtConnComponentsSummaryQuery
     vector<double>             zMinPerComp;
     vector<double>             zMaxPerComp;
 
+    vector<double>             lengthPerComp;
     vector<double>             areaPerComp;
     vector<double>             volPerComp;
 
     vector<double>             sumPerComp;
     vector<double>             wsumPerComp;
 
+    bool                       findLength;
     bool                       findArea;
     bool                       findVolume;
 

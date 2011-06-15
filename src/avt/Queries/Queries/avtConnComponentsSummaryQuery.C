@@ -46,6 +46,7 @@
 #include <avtConnComponentsExpression.h>
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
+#include <avtEdgeLength.h>
 #include <avtRevolvedVolume.h>
 #include <avtVMetricArea.h>
 #include <avtVMetricVolume.h>
@@ -75,6 +76,10 @@
 //  Programmer: Cyrus Harrison
 //  Creation:   March 1, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
+//    Support lengthFilter.
+//
 // ****************************************************************************
 
 avtConnComponentsSummaryQuery::
@@ -82,6 +87,9 @@ avtConnComponentsSummaryQuery()
 {
     // (base class creates the connected components filter)
     // create weight filters
+
+    lengthFilter = new avtEdgeLength;
+    lengthFilter->SetOutputVariableName("avt_length");
 
     areaFilter = new avtVMetricArea;
     areaFilter->SetOutputVariableName("avt_area");
@@ -102,11 +110,16 @@ avtConnComponentsSummaryQuery()
 //  Programmer: Cyrus Harrison
 //  Creation:   March 1, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
+//    Support 1D case (line length).
+//
 // ****************************************************************************
 
 avtConnComponentsSummaryQuery::
 ~avtConnComponentsSummaryQuery()
 {
+    delete lengthFilter;
     delete areaFilter;
     delete revolvedVolumeFilter;
     delete volumeFilter;
@@ -131,6 +144,9 @@ avtConnComponentsSummaryQuery::
 //    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
 //    Added output of the number of processors each component spans.
 //
+//    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
+//    Support 1D case (line length).
+//
 // ****************************************************************************
 
 void
@@ -142,60 +158,36 @@ avtConnComponentsSummaryQuery::PreExecute(void)
     // prepare component vectors
 
     // cell count
-    nCellsPerComp.resize(nComps);
-    nProcsPerComp.resize(nComps);
+    nCellsPerComp = vector<int>(nComps,0);
+    nProcsPerComp = vector<int>(nComps,0);
 
     // centroid vectors
-    xCentroidPerComp.resize(nComps);
-    yCentroidPerComp.resize(nComps);
-    zCentroidPerComp.resize(nComps);
+    xCentroidPerComp = vector<double>(nComps,0.0);
+    yCentroidPerComp = vector<double>(nComps,0.0);
+    zCentroidPerComp = vector<double>(nComps,0.0);
 
     // bounding box vectors
-    xMinPerComp.resize(nComps);
-    xMaxPerComp.resize(nComps);
+    xMinPerComp = vector<double>(nComps, DBL_MAX);
+    xMaxPerComp = vector<double>(nComps,-DBL_MAX);
 
-    yMinPerComp.resize(nComps);
-    yMaxPerComp.resize(nComps);
+    yMinPerComp = vector<double>(nComps, DBL_MAX);
+    yMaxPerComp = vector<double>(nComps,-DBL_MAX);
 
-    zMinPerComp.resize(nComps);
-    zMaxPerComp.resize(nComps);
+    zMinPerComp = vector<double>(nComps, DBL_MAX);
+    zMaxPerComp = vector<double>(nComps,-DBL_MAX);
 
-    // area & volume vectors
+    // length, area & volume vectors
+    if(findLength)
+        lengthPerComp = vector<double>(nComps,0.0);
     if(findArea)
-        areaPerComp.resize(nComps);
+        areaPerComp = vector<double>(nComps,0.0);
     if(findVolume)
-        volPerComp.resize(nComps);
+        volPerComp = vector<double>(nComps,0.0);
 
     // sum vectors
-    sumPerComp.resize(nComps);
-    wsumPerComp.resize(nComps);
+    sumPerComp = vector<double>(nComps,0.0);
+    wsumPerComp = vector<double>(nComps,0.0);
 
-    // init per comp vals
-    for(int i=0;i<nComps;i++)
-    {
-        nCellsPerComp[i] = 0;
-        nProcsPerComp[i] = 0;
-
-        xCentroidPerComp[i] = 0;
-        yCentroidPerComp[i] = 0;
-        zCentroidPerComp[i] = 0;
-
-        xMinPerComp[i] =  DBL_MAX;
-        yMinPerComp[i] =  DBL_MAX;
-        zMinPerComp[i] =  DBL_MAX;
-
-        xMaxPerComp[i] = -DBL_MAX;
-        yMaxPerComp[i] = -DBL_MAX;
-        zMaxPerComp[i] = -DBL_MAX;
-
-        if(findArea)
-            areaPerComp[i] = 0;
-        if(findVolume)
-            volPerComp[i] = 0;
-
-        sumPerComp[i] = 0;
-        wsumPerComp[i] = 0;
-    }
 }
 
 
@@ -218,6 +210,9 @@ avtConnComponentsSummaryQuery::PreExecute(void)
 //
 //    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
 //    Added output of the number of processors each component spans.
+//
+//    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
+//    Support 1D case (line length).
 //
 // ****************************************************************************
 
@@ -259,6 +254,14 @@ avtConnComponentsSummaryQuery::PostExecute(void)
                                       sum_res_dbl,
                                       nComps);
     memcpy(&zCentroidPerComp[0],sum_res_dbl,nComps * sizeof(double));
+
+    if(findLength)
+    {
+        // get length sum
+        SumDoubleArrayAcrossAllProcessors(&lengthPerComp[0], sum_res_dbl, nComps);
+        memcpy(&lengthPerComp[0],sum_res_dbl,nComps * sizeof(double));
+    }
+
 
     if(findArea)
     {
@@ -362,9 +365,9 @@ avtConnComponentsSummaryQuery::PostExecute(void)
 //      Processes a single input domain to update the per component sums.
 //
 //  Arguments:
-//      ds       Input dataset         
-//      dom      Input domain number   
-// 
+//      ds       Input dataset
+//      dom      Input domain number
+//
 //  Programmer: Cyrus Harrison
 //  Creation:   February 8, 2007
 //
@@ -374,6 +377,9 @@ avtConnComponentsSummaryQuery::PostExecute(void)
 //
 //    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
 //    Added output of the number of processors each component spans.
+//
+//    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
+//    Support 1D case (line length).
 //
 // ****************************************************************************
 
@@ -390,6 +396,7 @@ avtConnComponentsSummaryQuery::Execute(vtkDataSet *ds, const int dom)
     vtkDataArray *values  =ds->GetCellData()->GetArray(var);
 
     // attemp to get area, volume and revolved volume arrays
+    vtkDataArray *lengths = ds->GetCellData()->GetArray("avt_length");
     vtkDataArray *areas =ds->GetCellData()->GetArray("avt_area");
     vtkDataArray *volumes =ds->GetCellData()->GetArray("avt_volume");
     vtkDataArray *rvolumes =ds->GetCellData()->GetArray("avt_rvolume");
@@ -469,6 +476,14 @@ avtConnComponentsSummaryQuery::Execute(vtkDataSet *ds, const int dom)
 
         double weight = 0;
 
+        if(findLength)
+        {
+            // get length value
+            weight = lengths->GetTuple1(i);
+            // update area
+            lengthPerComp[comp_id] += weight;
+        }
+
         if(findArea)
         {
             // get area value
@@ -512,6 +527,10 @@ avtConnComponentsSummaryQuery::Execute(vtkDataSet *ds, const int dom)
 //  Programmer: Cyrus Harrison
 //  Creation:   February 2, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
+//    Support 1D case (line length).
+//
 // ****************************************************************************
 avtDataObject_p
 avtConnComponentsSummaryQuery::ApplyFilters(avtDataObject_p inData)
@@ -524,9 +543,21 @@ avtConnComponentsSummaryQuery::ApplyFilters(avtDataObject_p inData)
     avtSourceFromAVTDataset termsrc(ds);
     avtDataObject_p dob = termsrc.GetOutput();
 
-    // add either areaFilter, or volumeFilter based on input dimension
+    // add either lengthFilter, areaFilter, or volumeFilter based on input dimension
     int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
-    if (topo == 2)
+
+    findLength = false;
+    findArea   = false;
+    findVolume = false;
+
+    if (topo == 1)
+    {
+        debug5 << "ConnComponentsSummary query using length" << endl;
+        lengthFilter->SetInput(dob);
+        dob = lengthFilter->GetOutput();
+        findLength = true;
+    }
+    else if (topo == 2)
     {
         if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType()== AVT_XY)
         {
@@ -536,7 +567,6 @@ avtConnComponentsSummaryQuery::ApplyFilters(avtDataObject_p inData)
             areaFilter->SetInput(dob);
             dob = areaFilter->GetOutput();
             findArea = true;
-            findVolume = false;
         }
         else
         {
@@ -549,7 +579,6 @@ avtConnComponentsSummaryQuery::ApplyFilters(avtDataObject_p inData)
             areaFilter->SetInput(dob); 
             dob = areaFilter->GetOutput();
 
-            findArea   = true;
             findVolume = true;
         }
     }
@@ -560,7 +589,6 @@ avtConnComponentsSummaryQuery::ApplyFilters(avtDataObject_p inData)
 
         volumeFilter->SetInput(dob);
         dob = volumeFilter->GetOutput();
-        findArea = false;
         findVolume = true;
     }
 
@@ -614,6 +642,9 @@ avtConnComponentsSummaryQuery::VerifyInput(void)
 //    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
 //    Added output of the number of processors each component spans.
 //
+//    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
+//    Support 1D case (line length).
+//
 // ****************************************************************************
 
 void
@@ -645,7 +676,9 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
     int nrows = nComps;
     int ncols = 14;
 
-    // inc # of columns if we are including area and/or volume
+    // inc # of columns if we are including lengt, area and/or volume
+    if(findLength)
+        ncols++;
     if(findArea)
         ncols++;
     if(findVolume)
@@ -662,6 +695,9 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
     outs << "comp_label" << endl;
     outs << "comp_num_cells" << endl;
     outs << "comp_num_procs" << endl;
+
+    if(findLength)
+        outs << "comp_length" << endl;
 
     if(findArea)
         outs << "comp_area" << endl;
@@ -696,6 +732,9 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
 
     double cent_z_min =  DBL_MAX;
     double cent_z_max = -DBL_MAX;
+
+    double length_min =  DBL_MAX;
+    double length_max = -DBL_MAX;
 
     double area_min   =  DBL_MAX;
     double area_max   = -DBL_MAX;
@@ -734,6 +773,13 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
         if(cent_z_min > yCentroidPerComp[i]) cent_z_min = yCentroidPerComp[i];
         if(cent_z_max < zCentroidPerComp[i]) cent_z_max = zCentroidPerComp[i];
 
+        if(findLength)
+        {
+            // update length range
+            if(length_min > lengthPerComp[i]) length_min = lengthPerComp[i];
+            if(length_max < lengthPerComp[i]) length_max = lengthPerComp[i];
+        }
+
         if(findArea)
         {
             // update area range
@@ -756,7 +802,7 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
         if(wsum_min > wsumPerComp[i]) wsum_min = wsumPerComp[i];
         if(wsum_max < wsumPerComp[i]) wsum_max = wsumPerComp[i];
 
-        // min range over bb values    
+        // min range over bb values
         if(xMinPerComp[i] < comp_bb_min[0]) comp_bb_min[0] = xMinPerComp[i];
         if(xMaxPerComp[i] < comp_bb_min[1]) comp_bb_min[1] = xMaxPerComp[i];
         if(yMinPerComp[i] < comp_bb_min[2]) comp_bb_min[2] = yMinPerComp[i];
@@ -786,6 +832,10 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
     outs << ncells_min << "\t" << ncells_max << "\t10"<< endl;
     // # of procs range
     outs << nprocs_min << "\t" << nprocs_max << "\t10"<< endl;
+
+    // length range
+    if(findLength)
+        outs << length_min << "\t" << length_max << "\t10"<< endl;
 
     // area range
     if(findArea)
@@ -822,11 +872,15 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
         // # of procs
         outs << nProcsPerComp[i] << "\t";
 
+        // length
+        if(findLength)
+            outs << lengthPerComp[i] << "\t";
+
         // area
         if(findArea)
             outs << areaPerComp[i] << "\t";
 
-        // volume 
+        // volume
         if(findVolume)
             outs << volPerComp[i] << "\t";
 
@@ -864,6 +918,9 @@ avtConnComponentsSummaryQuery::SaveComponentResults(string fname)
 //    Cyrus Harrison, Fri Mar 27 09:57:45 PDT 2009
 //    Added output of the number of processors each component spans.
 //
+//    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
+//    Support 1D case (line length).
+//
 // ****************************************************************************
 
 void
@@ -876,7 +933,7 @@ avtConnComponentsSummaryQuery::PrepareComponentResults(vector<double> &results)
     // They are set to zero if vals do not exist
     //
 
-    results.resize(nComps *16);
+    results.resize(nComps *17);
 
     // loop index
     int i;
@@ -898,6 +955,12 @@ avtConnComponentsSummaryQuery::PrepareComponentResults(vector<double> &results)
 
         // number of procs
         results[idx++] = nProcsPerComp[i];
+
+        // length
+        if(findLength)
+            results[idx++] = lengthPerComp[i];
+        else
+            results[idx++] = 0;
 
         // area
         if(findArea)

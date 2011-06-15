@@ -95,6 +95,7 @@ Queries/avtCompactnessQuery.C
 Queries/avtConnComponentsQuery.C
 Queries/avtConnComponentsAreaQuery.C
 Queries/avtConnComponentsCentroidQuery.C
+Queries/avtConnComponentsLengthQuery.C
 Queries/avtConnComponentsSummaryQuery.C
 Queries/avtConnComponentsVolumeQuery.C
 Queries/avtConnComponentsVariableQuery.C

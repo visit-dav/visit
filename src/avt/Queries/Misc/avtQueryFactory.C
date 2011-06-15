@@ -54,6 +54,7 @@
 #include <avtConnComponentsQuery.h>
 #include <avtConnComponentsAreaQuery.h>
 #include <avtConnComponentsCentroidQuery.h>
+#include <avtConnComponentsLengthQuery.h>
 #include <avtConnComponentsSummaryQuery.h>
 #include <avtConnComponentsVolumeQuery.h>
 #include <avtConnComponentsVariableQuery.h>
@@ -309,6 +310,9 @@ avtQueryFactory::Instance()
 //
 //    Hank Childs, Thu May 12 15:37:21 PDT 2011
 //    Add average value query.
+//
+//    Cyrus Harrison, Wed Jun 15 13:14:49 PDT 2011
+//    Added Connected Components Length.
 //
 // ****************************************************************************
 
@@ -613,6 +617,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if( qname == "Connected Component Area")
     {
         query = new avtConnComponentsAreaQuery();
+    }
+    else if( qname == "Connected Component Length")
+    {
+        query = new avtConnComponentsLengthQuery();
     }
     else if( qname == "Connected Component Volume")
     {
