@@ -3788,6 +3788,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Thu May 12 15:37:21 PDT 2011
 //    Add average value query.
 //
+//    Cyrus Harrison, Wed Jun 15 13:14:49 PDT 2011
+//    Added Connected Components Length.
+//
 // ****************************************************************************
 
 void
@@ -3886,6 +3889,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("PointPick (aka NodePick)", pq, pr, sp, 1, 0, qt);
 
     queryTypes->AddQuery("Number of Connected Components", dq, ccl_r, basic, 1, 0, qo);
+    queryTypes->AddQuery("Connected Component Length", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Component Area", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Component Centroids", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Component Volume", dq, ccl_r, basic, 1, 0, qo);

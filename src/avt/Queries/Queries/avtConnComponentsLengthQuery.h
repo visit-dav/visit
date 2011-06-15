@@ -37,11 +37,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                avtConnComponentsWeightedVariableQuery.h                   //
+//                      avtConnComponentsLengthQuery.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_CONN_COMPONENTS_WEIGHTED_VARIABLE_QUERY_H
-#define AVT_CONN_COMPONENTS_WEIGHTED_VARIABLE_QUERY_H
+#ifndef AVT_CONN_COMPONENTS_LENGTH_QUERY_H
+#define AVT_CONN_COMPONENTS_LENGTH_QUERY_H
 #include <query_exports.h>
 
 #include <avtDatasetQuery.h>
@@ -50,58 +50,43 @@
 #include <string>
 
 class avtEdgeLength;
-class avtRevolvedVolume;
-class avtVMetricArea;
-class avtVMetricVolume;
 
 class vtkDataSet;
 
 
 // ****************************************************************************
-//  Class: avtConnComponentsWeightedVariableQuery
+//  Class: avtConnComponentsLengthQuery
 //
 //  Purpose:
-//      Finds the weighted sum of a specified variable for each connected 
-//      component. The sum values are weighted by area, revolved volume, or 
-//      volume as appropriate.
+//      Obtains the length of each connected component.
+//      Requires a 1D (lines) dataset.
 //
 //  Programmer: Cyrus Harrison
-//  Creation:   February 8, 2007
-//
-//  Modifications:
-//    Cyrus Harrison, Mon Jun  6 17:02:12 PDT 2011
-//    Added lengthFilter.
+//  Creation:   Wed Jun 15 13:16:47 PDT 2011 
 //
 // ****************************************************************************
 
-class QUERY_API avtConnComponentsWeightedVariableQuery 
-: public avtConnComponentsQuery
+class QUERY_API avtConnComponentsLengthQuery : public avtConnComponentsQuery
 {
   public:
-                                     avtConnComponentsWeightedVariableQuery();
-    virtual                         ~avtConnComponentsWeightedVariableQuery();
+                                    avtConnComponentsLengthQuery();
+    virtual                        ~avtConnComponentsLengthQuery();
 
     virtual const char             *GetType(void)
-                          { return "avtConnComponentsWeightedVariableQuery"; };
+                                  { return "avtConnComponentsLengthQuery"; };
     virtual const char             *GetDescription(void)
-                          { return "Finding per component weighted sum."; };
+                                  { return "Finding per component length."; };
 
   protected:
 
     avtEdgeLength                  *lengthFilter;
-    avtRevolvedVolume              *revolvedVolumeFilter;
-    avtVMetricArea                 *areaFilter;
-    avtVMetricVolume               *volumeFilter;
-
-    std::string                     variableName;
-    vector<double>                  sumPerComp;
+    vector<double>                  lengthPerComp;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
     virtual avtDataObject_p         ApplyFilters(avtDataObject_p);
     virtual void                    VerifyInput(void);
-
 
 };
 
