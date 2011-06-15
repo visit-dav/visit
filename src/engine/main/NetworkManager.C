@@ -455,6 +455,7 @@ NetworkManager::ClearAllNetworks(void)
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Modified for viswinMap object
+//
 // ****************************************************************************
 void
 NetworkManager::ClearNetworksWithDatabase(const std::string &db)
@@ -480,6 +481,7 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
         }
     }
 
+    // Remove the database from the cache and delete it.
     for (size_t i = 0; i < databaseCache.size(); i++)
     {
         if (databaseCache[i] != NULL)
@@ -3799,6 +3801,8 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
                 // stripped down hybrid of StartNetwork and EndNetwork.
                 TRY
                 {
+                    debug1 << mName << "Try creating new db source for "
+                           << props.GetSource() << " named selection." << endl;
                     std::string leaf = ParsingExprList::GetRealVariable(var);
 
                     // Add an expression filter since we may need to do expressions.
@@ -3833,7 +3837,7 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
         }
         else
         {
-           debug1 << "Could not get database " << props.GetSource() << " from cache." << endl;
+           debug1 << mName << "Could not get database " << props.GetSource() << " from cache." << endl;
         }
     }
     else
@@ -3842,7 +3846,7 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
 
         if (id >= networkCache.size())
         {
-            debug1 << "Internal error:  asked to use network ID (" << id 
+            debug1 << mName << "Internal error:  asked to use network ID (" << id 
                    << ") >= num saved networks ("
                    << networkCache.size() << ")" << endl;
             EXCEPTION0(ImproperUseException);
@@ -3850,26 +3854,30 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
  
         if (networkCache[id] == NULL)
         {
-            debug1 << "Asked to construct a named selection from a network "
+            debug1 << mName << "Asked to construct a named selection from a network "
                    << "that has already been cleared." << endl;
             EXCEPTION0(ImproperUseException);
         }
 
         if (id != networkCache[id]->GetNetID())
         {
-            debug1 << "Internal error: network at position[" << id << "] "
+            debug1 << mName << "Internal error: network at position[" << id << "] "
                    << "does not have same id (" << networkCache[id]->GetNetID()
                    << ")" << endl;
             EXCEPTION0(ImproperUseException);
         }
 
         dob = networkCache[id]->GetPlot()->GetIntermediateDataObject();
+
+        debug1 << mName << "Cached network's plot id: "
+               << networkCache[id]->GetPlotName()
+               << ", selection plot: " << props.GetSource() << endl;
     }
 
     if (*dob == NULL)
     {
-        debug1 << "Could not find a valid data set to create a named "
-               << "selection from" << endl;
+        debug1 << mName << "Could not find a valid data set from which to create"
+                           " a named selection." << endl;
         EXCEPTION0(NoInputException);
     }
 
@@ -3883,7 +3891,7 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
         if(props.GetVariables().size() != props.GetVariableMins().size() ||
            props.GetVariableMins().size() != props.GetVariableMaxs().size())
         {
-            debug1 << "The cumulative query is malformed. It must have the same "
+            debug1 << mName << "The cumulative query is malformed. It must have the same "
                       "number of elements for each of the variables, mins, maxs lists."
                    << endl;
             EXCEPTION0(ImproperUseException);
@@ -3891,6 +3899,7 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
 
         // For cumulative queries, we need to set up additional processing that
         // we can't do within the pipeline library so we do it here.
+        debug1 << mName << "Creating CQ named selection." << endl;
         nsm->CreateNamedSelection(dob, props, &CQ);
 
         // Get the filled out summary from the CQ object.
@@ -3898,6 +3907,7 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
     }
     else
     {
+        debug1 << mName << "Creating named selection." << endl;
         nsm->CreateNamedSelection(dob, props, NULL);
     }
 

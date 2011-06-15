@@ -734,6 +734,14 @@ avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, VISIT_LONG_LONG &nReal,
 //  Programmer: Hank Childs
 //  Creation:   May 21, 2010
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jun 14 13:41:24 PST 2011
+//    Don't return early if any processors failed. Those processors will just
+//    not contribute to the results. We still return false in the event that
+//    any processors failed though so we can test for it. I made this change
+//    because I was calling this routine in a filter where some processors
+//    had no data and it caused me to have NO histogram information.
+//
 // ****************************************************************************
 
 bool
@@ -744,7 +752,7 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
 {
     avtDataTree_p dataTree = ds->dataTree;
 
-    bool ranGood = true;
+    bool err = false;
     CalculateHistogramArgs args;
     int t1 = visitTimer->StartTimer();
     if (*dataTree != NULL)
@@ -753,22 +761,29 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
         args.max      = max;
         args.variable = var;
         args.numVals.resize(numvals.size(), 0);
-        dataTree->Traverse(CCalculateHistogram, (void *) &args, ranGood);
+        dataTree->Traverse(CCalculateHistogram, (void *) &args, err);
     }
     visitTimer->StopTimer(t1, "Per-processor histogram calculation");
 
     int t2 = visitTimer->StartTimer();
-    int iFailed        = (ranGood ? 1 : 0);
+    int iFailed        = (err ? 1 : 0);
     int somebodyFailed = UnifyMaximumValue(iFailed);
 
-    if (somebodyFailed)
-        return false;
-
-    SumLongLongArrayAcrossAllProcessors(&(args.numVals[0]), &(numvals[0]),
+    // Create a vector that will serve as input to the global sum. We put
+    // zeroes if this processor has no data. Otherwise, we use the histogram.
+    std::vector<VISIT_LONG_LONG> input(numvals.size(), 0);
+    if(!err)
+    {
+        for(size_t i = 0; i < numvals.size(); ++i)
+            input[i] = args.numVals[i];
+    }
+    
+    // Sum the vector element-wise, placing results in numvals.
+    SumLongLongArrayAcrossAllProcessors(&input[0], &(numvals[0]),
                                         numvals.size());
     visitTimer->StopTimer(t2, "Parallel processing of histogram");
     
-    return true;
+    return somebodyFailed;
 }
 
 
