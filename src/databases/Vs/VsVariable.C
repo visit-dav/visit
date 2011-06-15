@@ -47,12 +47,12 @@ bool VsVariable::isFortranOrder() {
 
 bool VsVariable::isCompMinor() {
   return ((indexOrder == VsSchema::compMinorCKey) ||
-      (indexOrder == VsSchema::compMinorFKey));
+          (indexOrder == VsSchema::compMinorFKey));
 }
 
 bool VsVariable::isCompMajor() {
   return ((indexOrder == VsSchema::compMajorCKey) ||
-      (indexOrder == VsSchema::compMajorFKey));
+          (indexOrder == VsSchema::compMajorFKey));
 }
 
 // Get dims
