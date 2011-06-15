@@ -117,12 +117,49 @@ avtPFLOTRANFileFormat::avtPFLOTRANFileFormat(const char *fname):
 //  Programmer: Sean Ahern
 //  Creation:   Thu Apr 24 14:00:58 PST 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Mar 30 12:30:09 EDT 2011
+//    Close the data sets we opened earlier.  Also, we can now check for an
+//    error during H5Fclose (due to file access property setting when opening
+//    the file), and report it if we encountered it.
+//
+//    Jeremy Meredith, Wed Jun 15 14:55:51 EDT 2011
+//    Move file-closing code here from FreeUpResources -- that's called
+//    when changing time steps; we don't want to close the file then.
+//    Also, don't make the check report an error; that's too severe.
+//    Just print to cerr.
+//
 // ****************************************************************************
 
 avtPFLOTRANFileFormat::~avtPFLOTRANFileFormat()
 {
     free(filename);
     filename = NULL;
+
+    if (dimID[0] > 0)
+        H5Dclose(dimID[0]);
+    if (dimID[1] > 0)
+        H5Dclose(dimID[1]);
+    if (dimID[2] > 0)
+        H5Dclose(dimID[2]);
+    dimID[0] = -1;
+    dimID[1] = -1;
+    dimID[2] = -1;
+
+    if (fileID > 0)
+    {
+        herr_t err = H5Fclose(fileID);
+        if (err < 0)
+        {
+            cerr <<    "avtPFLOTRANFileFormat::~avtPFLOTRANFileFormat: "
+                       "Couldn't close the file properly; this is likely due "
+                       "to not closing all open objects in the file.  Please "
+                       "report this to a VisIt developer.\n";
+        }
+    }
+    fileID = -1;
+    opened = false;
+
 }
 
 // ****************************************************************************
@@ -168,6 +205,9 @@ avtPFLOTRANFileFormat::GetNTimesteps(void)
 //    Jeremy Meredith, Wed Mar 30 12:33:56 EDT 2011
 //    More ids left to close.  Also, open the file in a way that is more
 //    strict about detecting unclosed files/ids.
+//
+//    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
+//    Missed an ID to close.
 //
 // ****************************************************************************
 
@@ -217,6 +257,7 @@ avtPFLOTRANFileFormat::LoadFile(void)
         dimID[dim] = H5Dopen(coordsGID, coordNames[dim].c_str());
         if (dimID[dim] < 0)
         {
+            H5Gclose(coordsGID);
             H5Fclose(fileID);
             debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open the " << coordNames[dim] << "dataset in file " << filename << endl;
             EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have valid coordinates data.");
@@ -288,40 +329,15 @@ avtPFLOTRANFileFormat::LoadFile(void)
 //  Creation:   Thu Apr 24 14:00:58 PST 2008
 //
 //  Modifications:
-//    Jeremy Meredith, Wed Mar 30 12:30:09 EDT 2011
-//    Close the data sets we opened earlier.  Also, we can now check for an
-//    error during H5Fclose (due to file access property setting when opening
-//    the file), and report it if we encountered it.
+//    Jeremy Meredith, Wed Jun 15 14:55:51 EDT 2011
+//    Move file-closing code from here to destructor.  This function is called
+//    when changing time steps; we don't want to close the file then.
 //
 // ****************************************************************************
 
 void
 avtPFLOTRANFileFormat::FreeUpResources(void)
 {
-    if (dimID[0] > 0)
-        H5Dclose(dimID[0]);
-    if (dimID[1] > 0)
-        H5Dclose(dimID[1]);
-    if (dimID[2] > 0)
-        H5Dclose(dimID[2]);
-    dimID[0] = -1;
-    dimID[1] = -1;
-    dimID[2] = -1;
-
-    if (fileID > 0)
-    {
-        herr_t err = H5Fclose(fileID);
-        if (err < 0)
-        {
-            EXCEPTION1(ImproperUseException,
-                       "avtPFLOTRANFileFormat::FreeUpResources: "
-                       "Couldn't close the file properly; this is likely due "
-                       "to not closing all open objects in the file.  Please "
-                       "report this to a VisIt developer.");
-        }
-    }
-    fileID = -1;
-    opened = false;
 }
 
 
@@ -544,6 +560,9 @@ avtPFLOTRANFileFormat::AddGhostCellInfo(vtkDataSet *ds)
 //    Jeremy Meredith, Wed Mar 30 12:58:02 EDT 2011
 //    Close any HDF5 group/dataset we open.
 //
+//    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
+//    More aggressive about closing ids, including spaces.
+//
 // ****************************************************************************
 
 void
@@ -603,7 +622,11 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
         hid_t dsSpace = H5Dget_space(ds);
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
         if (ndims != 3)
+        {
+            H5Sclose(dsSpace);
+            H5Dclose(ds);
             continue; // skip it
+        }
 
 
         // set metadata for Materials
@@ -677,6 +700,10 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
                 delete [] names[i];
             delete [] names;
 
+            H5Sclose(memSpace);
+            H5Sclose(dsSpace);
+            H5Sclose(slabSpace);
+            H5Dclose(ds);
             continue; // Don't add materials as a scalar.
         }
 
@@ -763,6 +790,9 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
 //    Add support for old-style PFLOTRAN files where the coordinate
 //    arrays represented cell centers.
 //
+//    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
+//    More aggressive about closing ids, including spaces.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -789,6 +819,10 @@ avtPFLOTRANFileFormat::GetMesh(int, int domain, const char *)
 
         herr_t err = H5Dread(dimID[dim], H5T_NATIVE_DOUBLE,
                              memSpace, slabSpace, H5P_DEFAULT, coords);
+
+        H5Sclose(memSpace);
+        H5Sclose(slabSpace);
+        H5Sclose(arraySpace);
     }
 
     vtkRectilinearGrid *mesh = vtkRectilinearGrid::New();
@@ -879,6 +913,9 @@ avtPFLOTRANFileFormat::GetMesh(int, int domain, const char *)
 //    Jeremy Meredith, Wed Mar 30 12:58:02 EDT 2011
 //    Close any HDF5 group/dataset we open.
 //
+//    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
+//    More aggressive about closing ids, including spaces.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -894,6 +931,7 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
     int ndims = H5Sget_simple_extent_ndims(dsSpace);
     if (ndims != 3)
     {
+        H5Sclose(dsSpace);
         H5Dclose(ds);
         H5Gclose(ts);
         debug1 << "The variable " << varname << " had only " << ndims << " dimensions" << endl;
@@ -959,6 +997,9 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
         delete [] in;
     }
 
+    H5Sclose(memSpace);
+    H5Sclose(slabSpace);
+    H5Sclose(dsSpace);
     H5Dclose(ds);
     H5Gclose(ts);
 
@@ -988,6 +1029,9 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
 //
 //    Jeremy Meredith, Wed Mar 30 12:58:02 EDT 2011
 //    Close any HDF5 group/dataset we open.
+//
+//    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
+//    More aggressive about closing ids, including spaces.
 //
 // ****************************************************************************
 
@@ -1082,6 +1126,9 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
             delete [] in;
         }
 
+        H5Sclose(memSpace);
+        H5Sclose(slabSpace);
+        H5Sclose(dsSpace);
         H5Dclose(ds);
     }
 
