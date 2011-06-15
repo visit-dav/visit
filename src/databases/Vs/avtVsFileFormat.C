@@ -575,7 +575,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     {
       for (size_t i=0; i<numTopologicalDims; ++i)
       {
-        if( maxs[i] <= 0 || numCells[i] - 1 < maxs[i] )
+        if( maxs[i] < 0 || numCells[i] - 1 < maxs[i] )
           maxs[i] = numCells[i] - 1; // numCells - 1 = last cell
                                      // index, not number of cells
         if( maxs[i] < mins[i] )
@@ -834,7 +834,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     {
       for (size_t i=0; i<numTopologicalDims; ++i)
       {
-        if( maxs[i] <= 0 || numNodes[i] - 1 < maxs[i] )
+        if( maxs[i] < 0 || numNodes[i] - 1 < maxs[i] )
           maxs[i] = numNodes[i] - 2; // dims - 2 = last cell index, not
                                      // number of cells
         if( maxs[i] < mins[i] )
@@ -1144,7 +1144,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     {
       for (size_t i=0; i<numTopologicalDims; ++i)
       {
-        if( maxs[i] <= 0 || numNodes[i] - 1 < maxs[i] )
+        if( maxs[i] < 0 || numNodes[i] - 1 < maxs[i] )
           maxs[i] = numNodes[i] - 2; // numNodes - 2 = last cell index, not
                                      // number of cells
         if( maxs[i] < mins[i] )
@@ -1434,7 +1434,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     // Adjust for the data selections which are ZONAL.
     if (unstructuredMesh->isPointMesh() && haveDataSelections)
     {
-      if( maxs[0] <= 0 || numNodes - 1 < maxs[0] )
+      if( maxs[0] < 0 || numNodes - 1 < maxs[0] )
         maxs[0] = numNodes - 1; // numNodes - 1 = last cell index,
                                 // not number of cells
 
@@ -1704,7 +1704,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     // Adjust for the data selections which are ZONAL.
     if( haveDataSelections )
     {
-      if( maxs[0] <= 0 || numCells - 1 < maxs[0] )
+      if( maxs[0] < 0 || numCells - 1 < maxs[0] )
         maxs[0] = numCells - 1; // numCells - 1 = last cell index,
                                 // not number of cells
 
@@ -1836,29 +1836,29 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
       switch (cellVerts) {
         case 1:
-        cellType = VTK_VERTEX;
+          cellType = VTK_VERTEX;
         break;
         case 2:
-        cellType = VTK_LINE;
+          cellType = VTK_LINE;
         break;
         case 3:
-        cellType = VTK_TRIANGLE;
+          cellType = VTK_TRIANGLE;
         break;
         case 4:
-        if( numTopologicalDims == 2 ) cellType = VTK_QUAD;
-        else if( numTopologicalDims == 3 ) cellType = VTK_TETRA;
+          if( numTopologicalDims == 2 ) cellType = VTK_QUAD;
+          else if( numTopologicalDims == 3 ) cellType = VTK_TETRA;
         break;
         case 5:
-        if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
-        else if( numTopologicalDims == 3 ) cellType = VTK_PYRAMID;
+          if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
+          else if( numTopologicalDims == 3 ) cellType = VTK_PYRAMID;
         break;
         case 6:
-        if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
-        else if( numTopologicalDims == 3 ) cellType = VTK_WEDGE;
+          if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
+          else if( numTopologicalDims == 3 ) cellType = VTK_WEDGE;
         break;
         case 8:
-        if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
-        else if( numTopologicalDims == 3 ) cellType = VTK_HEXAHEDRON;
+          if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
+          else if( numTopologicalDims == 3 ) cellType = VTK_HEXAHEDRON;
         break;
         default:
         if (warningCount < 30) {
@@ -2491,6 +2491,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     hid_t varType = 0;
     vector<int> varDims;
     bool isFortranOrder = false;
+    bool isCompMajor = false;
     bool isZonal = false;
 
     std::string indexOrder;
@@ -2506,6 +2507,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       isZonal = true;
 
       indexOrder = vmMeta->getIndexOrder();
+      isCompMajor  = vmMeta->isCompMajor();
 
       numTopologicalDims = 1;
     }
@@ -2521,6 +2523,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
         isZonal = true;
 
       indexOrder = meta->getIndexOrder();
+      isCompMajor  = meta->isCompMajor();
 
       string meshName = meta->getMeshName();
       VsMesh* meshMetaPtr = registry->getMesh(meshName);
@@ -2545,6 +2548,14 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       // spatial dimension so subtract it off.
       if( meshMetaPtr->isStructuredMesh() || meshMetaPtr->isUnstructuredMesh() )
         numTopologicalDims -= 1;
+
+      if( varDims.size() - (int) isAComponent < numTopologicalDims )
+      {
+        VsLog::debugLog() << methodSig
+                          << "Var and mesh do not have the spatial dimension"
+                          << "Returning NULL." << endl;
+        return NULL;
+      }
 
       // For unstructured data only subset the variable is the data is
       // zonal.
@@ -2578,14 +2589,14 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
       for (size_t i=0; i<numTopologicalDims; ++i)
       {
         if( maxs[i] <= 0 ||
-            ( isZonal && varDims[i] - 1 < maxs[i]) ||
-            (!isZonal && varDims[i] - 2 < maxs[i]) )
+            ( isZonal && varDims[i+isCompMajor] - 1 < maxs[i]) ||
+            (!isZonal && varDims[i+isCompMajor] - 2 < maxs[i]) )
         {
           if( isZonal )
-            maxs[i] = varDims[i] - 1;  // varDims - 2 = last cell index, not
+            maxs[i] = varDims[i+isCompMajor] - 1;  // varDims - 2 = last cell index, not
                                        // number of cells
           else // is nodal
-            maxs[i] = varDims[i] - 2;  // varDims - 1 = last cell index,
+            maxs[i] = varDims[i+isCompMajor] - 2;  // varDims - 1 = last cell index,
                                        // not number of cells
         }
 
@@ -2600,10 +2611,10 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
         mins[i] = 0;
         
         if( isZonal )
-          maxs[i] = varDims[i] - 1;  // varDims - 2 = last cell index, not
+          maxs[i] = varDims[i+isCompMajor] - 1;  // varDims - 2 = last cell index, not
                                      // number of cells
         else // is nodal
-          maxs[i] = varDims[i] - 2;  // varDims - 1 = last cell index,
+          maxs[i] = varDims[i+isCompMajor] - 2;  // varDims - 1 = last cell index,
                                      // not number of cells
         strides[i] = 1;
       }
@@ -2623,7 +2634,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
     for (size_t i=0; i<numTopologicalDims; ++i)
     {
-      vdims[i] = ((maxs[i]-mins[i]+1)/strides[i] +            // Number of cells
+      vdims[i] = ((maxs[i]-mins[i]+1)/strides[i] +    // Number of cells
 //  COMMENTED OUT FOR NOW AS HDF5 DOES NOT HANDLE PARTIAL CELLS
 //                 ((maxs[i]-mins[i]+1)%strides[i] ? 1 : 0) + // Partial cell
                   (isZonal ? 0 : 1) );                // Last variable
@@ -3716,7 +3727,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
     vector<string>::const_iterator it;
     for (it = names.begin(); it != names.end(); ++it) {
       VsLog::debugLog() << methodSig << "Processing varWithMesh '"
-      << *it << "'." << endl;
+                        << *it << "'." << endl;
       VsVariableWithMesh* vMeta = registry->getVariableWithMesh(*it);
 
       // add var components
@@ -3731,8 +3742,9 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
 
       size_t lastDim = 0;
       if (vMeta->isCompMinor())
-      lastDim = dims[dims.size()-1];
-      else lastDim = dims[0];
+        lastDim = dims[dims.size()-1];
+      else
+        lastDim = dims[0];
 
       if (lastDim < vMeta->getNumSpatialDims()) {
         VsLog::debugLog() << methodSig
