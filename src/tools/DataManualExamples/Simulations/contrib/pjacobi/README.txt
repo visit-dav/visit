@@ -40,7 +40,7 @@ See file jacobi.bov
 
 
 in the Python directory, just run
-mpiexec -n 4 ./jacobi_insitu.py
+mpiexec -n 4 python ./jacobi_insitu.py
 
 ----------------------------------
 These are examples are provided by:
